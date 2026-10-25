@@ -18,9 +18,9 @@ const SELECT_CLASS =
  * «Parto da zero» of a canone concordato: the contract is prepared with the partner (ConcordatoFacile). Here only its property is
  * asked, and a real draft is saved at once (`POST /leases/drafts/concordatofacile`: an imported draft marked as the partner's, one per
  * property, so a second click or a second visit opens the same one), so the contract has its leaseId (the reference the partner links the
- * practice to) before anything else; then the person goes straight to the page of the service (pay it, or use the practice that is a
- * gift, and open the partner's form with our signed link). No APE, parties, rent or dates: they come from the partner's contract, which
- * comes back to this draft to be read and imported (`CfImportPanel`).
+ * practice to) before anything else; then the person lands on the sheet of the contract (CF-FLOW), the centre of everything: from its
+ * main button the privacy notice, the payment (or the gift practice) and the guided form follow. No APE, parties, rent or dates: they
+ * come from the partner's contract, which comes back to this draft to be read and imported (`CfImportPanel`).
  */
 export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?: string }) {
   const { t } = useTranslation();
@@ -38,8 +38,8 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
     if (!propertyId || createDraft.isPending) return;
     try {
       const draft = await createDraft.mutateAsync(propertyId);
-      // Replaced, not pushed: "back" from the page of the service must not land on this form again.
-      navigate(`/app/long-rent/leases/${draft.id}/concordatofacile`, { replace: true });
+      // Replaced, not pushed: "back" from the sheet of the contract must not land on this form again.
+      navigate(`/app/long-rent/leases/${draft.id}`, { replace: true });
     } catch {
       // useCreateCfDraft.onError says why; the property stays chosen to try again (the server gives back the draft it made).
     }

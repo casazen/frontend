@@ -41,6 +41,13 @@ export const ConcordatoFacileApi = {
     ApiClient.post<CfLinkResponse>(`/leases/${leaseId}/concordatofacile/link`),
 
   /**
+   * The person accepted the privacy notice before the guided form (CF-FLOW). Idempotent: it answers with the access as it is now.
+   * Needs the same permission as the link.
+   */
+  acceptPrivacy: (leaseId: string): Promise<CfAccessResponse> =>
+    ApiClient.post<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/privacy-acceptance`),
+
+  /**
    * Get practice status for a lease (ADR-008-R11, ADR-008-R15).
    * Returns cached practices with staleness indicator and polling schedule.
    * Requires LeaseRead policy.

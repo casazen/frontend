@@ -595,12 +595,23 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).LeaseWizardPage }),
   },
   {
-    // ConcordatoFacile offer page (NF-02, ADR-005-R12): service info, pricing, and checkout for CF one-time payment.
-    path: '/app/long-rent/leases/:id/concordatofacile',
+    // The guided contract of a canone concordato (NF-02, ADR-005-R12; CF-FLOW): the step between the click and the guided form. With the
+    // access active it opens the form by itself; without it, it is the page of the service (price, payment or gift practice).
+    path: '/app/long-rent/leases/:id/guided-contract',
     context: 'long-rent',
     requiredPermissions: ['lease.read', 'lease.create'],
     component: async () => ({
       default: (await import('@/pages/long-rent/leases/concordatofacile-offer-page')).ConcordatoFacileOfferPage,
+    }),
+  },
+  {
+    // The old address of the page above: the server still returns here from the Stripe checkout (`?checkout=success|cancelled`) and there
+    // are bookmarks. It goes on to the new one, keeping the query.
+    path: '/app/long-rent/leases/:id/concordatofacile',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read', 'lease.create'],
+    component: async () => ({
+      default: (await import('@/pages/long-rent/leases/guided-contract-redirect')).GuidedContractRedirect,
     }),
   },
   // Long-term landlord's properties and their APE (A7-06): the property core only, never the short-stay pages.

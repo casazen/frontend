@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
@@ -6,12 +7,14 @@ import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { useLeases } from '@/queries/use-leases';
 import { useCfPracticeLease } from '@/queries/use-concordatofacile';
 import type { LeaseDetail } from '@/types';
 import { CfImportPanel } from './components/cf-import-panel';
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
 import { isCfImportDraft, useCfDeliveredContract } from './lib/cf-import';
+import { LEASE_CONFIRMED_STATE, isLeaseConfirmed } from './lib/upload-link';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Number of a practice of ConcordatoFacile: `P-` and 16 hexadecimal characters (the button «Carica i dati in CasaZen» sends it as `?practice=`). */
@@ -25,7 +28,7 @@ function ChooseLease({ practiceId }: { practiceId?: string }) {
   if (leases.isError) return <ErrorState title={t('cfDocuments.leaseError')} error={leases.error} onRetry={() => void leases.refetch()} />;
   const chosen = (leaseId: string) => `?leaseId=${encodeURIComponent(leaseId)}${practiceId ? `&practice=${encodeURIComponent(practiceId)}` : ''}`;
   return <div className="space-y-4"><p>{t('cfDocuments.chooseLease')}</p>
-    <ul className="space-y-3">{leases.data?.map((lease) => <li key={lease.id}><Link className="break-words underline" to={chosen(lease.id)}>{lease.property?.name ?? t('cfDocuments.leaseLabel')} · {lease.id}</Link></li>)}</ul>
+    <ul className="space-y-3">{leases.data?.map((lease) => <li key={lease.id}><Link className="break-words underline" to={chosen(lease.id)} state={LEASE_CONFIRMED_STATE}>{lease.property?.name ?? t('cfDocuments.leaseLabel')} · {lease.id}</Link></li>)}</ul>
     {leases.data?.length === 0 ? <p>{t('cfDocuments.noLeases')}</p> : null}
     <Link className="inline-block underline" to="/app/long-rent/properties">{t('cfDocuments.backToHouses')}</Link>
   </div>;
@@ -40,13 +43,37 @@ function DeliveredContract({ lease }: { lease: LeaseDetail }) {
   return reading ? <CfImportPanel leaseId={lease.id} reading={reading} /> : null;
 }
 
-/** The documents of one lease. `practiceLine` says where the practice of the link stands in relation to it (when there is one). */
-function LeaseDocuments({ leaseId, practiceLine }: { leaseId: string; practiceLine?: string }) {
+/**
+ * CF-FIX-FU4: a link from outside says which contract the documents are for (the practice of the e-mail, or the old link with only the
+ * `leaseId`), and the person has not said it. Before anything can be uploaded, one explicit step: this contract, named by its house, or
+ * another one. The confirmation stays in the history entry (a reload does not ask again).
+ */
+function ConfirmLease({ lease, practiceId, onChooseOther }: { lease: LeaseDetail; practiceId?: string; onChooseOther: () => void }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const name = [lease.property?.name, lease.property?.city].filter(Boolean).join(' · ') || t('cfDocuments.leaseLabel');
+  return <div className="space-y-4" data-testid="cf-documents-confirm">
+    <Alert>{practiceId ? t('guidedContract.confirmWithPractice', { practice: practiceId, lease: name }) : t('guidedContract.confirmWithoutPractice', { lease: name })}</Alert>
+    <div className="flex flex-wrap gap-2">
+      <Button type="button" data-testid="cf-documents-confirm-button" onClick={() => navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: LEASE_CONFIRMED_STATE })}>{t('guidedContract.confirmAction')}</Button>
+      <Button type="button" variant="outline" data-testid="cf-documents-confirm-other" onClick={onChooseOther}>{t('guidedContract.confirmOther')}</Button>
+    </div>
+  </div>;
+}
+
+/**
+ * The documents of one lease. `practiceLine` says where the practice of the link stands in relation to it (when there is one);
+ * `confirmed` is false for a contract the link decided (see `ConfirmLease`).
+ */
+function LeaseDocuments({ leaseId, practiceId, practiceLine, confirmed }: { leaseId: string; practiceId?: string; practiceLine?: string; confirmed: boolean }) {
+  const { t } = useTranslation();
+  const [choosing, setChoosing] = useState(false);
   const lease = useQuery({ queryKey: ['leases', leaseId], queryFn: () => leasesApi.getById(leaseId), refetchOnMount: 'always' });
   if (lease.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
   if (lease.isError) return <ErrorState title={t('cfDocuments.leaseError')} error={lease.error} onRetry={() => void lease.refetch()} />;
   if (!lease.data.propertyId) return <Alert variant="danger">{t('cfDocuments.invalidLease')}</Alert>;
+  if (!confirmed) return choosing ? <ChooseLease practiceId={practiceId} /> : <ConfirmLease lease={lease.data} practiceId={practiceId} onChooseOther={() => setChoosing(true)} />;
   // On the draft ConcordatoFacile made, the contract uploaded is read and fills in the draft: the generic line («non modifica i dati del contratto») would be untrue.
   const instructions = isCfImportDraft(lease.data) ? t('cfDocuments.import.instructions') : t('cfDocuments.instructions');
   return <div className="space-y-6">
@@ -66,7 +93,7 @@ function LeaseDocuments({ leaseId, practiceLine }: { leaseId: string; practiceLi
  * linked, that is not the person's or that cannot be read (also while the service is off: the server answers 404) leaves the choice of
  * the contract to the person, who is told why.
  */
-function PracticeDocuments({ practiceId }: { practiceId: string }) {
+function PracticeDocuments({ practiceId, confirmed }: { practiceId: string; confirmed: boolean }) {
   const { t } = useTranslation();
   const lookup = useCfPracticeLease(practiceId);
   if (lookup.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
@@ -83,12 +110,14 @@ function PracticeDocuments({ practiceId }: { practiceId: string }) {
       <ChooseLease practiceId={practiceId} />
     </div>;
   }
-  return <LeaseDocuments key={leaseId} leaseId={leaseId} practiceLine={t('cfDocuments.practice.linked', { practice: practiceId })} />;
+  return <LeaseDocuments key={leaseId} leaseId={leaseId} practiceId={practiceId} practiceLine={t('cfDocuments.practice.linked', { practice: practiceId })} confirmed={confirmed} />;
 }
 
 export function LeaseDocumentsUploadPage() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
+  // A link of the app (the sheet, the Documents tab, the list below) or a confirmation already given: the contract is the person's choice.
+  const confirmed = isLeaseConfirmed(useLocation().state);
   const ids = params.getAll('leaseId');
   const leaseId = ids[0] ?? '';
   const invalid = ids.length > 1 || (ids.length === 1 && !UUID.test(leaseId)) || (ids.length === 0 && params.has('propertyId'));
@@ -98,12 +127,12 @@ export function LeaseDocumentsUploadPage() {
   return <div className="mx-auto max-w-3xl space-y-6" data-testid="cf-documents-page">
     <PageHeader title={t('cfDocuments.title')} description={t('cfDocuments.description')} />
     {invalid ? <Alert variant="danger" action={<Link className="underline" to="/app/long-rent/properties">{t('cfDocuments.backToHouses')}</Link>}>{t('cfDocuments.invalidLease')}</Alert>
-      : leaseId ? <LeaseDocuments key={leaseId} leaseId={leaseId} practiceLine={practiceId ? t('cfDocuments.practice.chosen', { practice: practiceId }) : undefined} />
+      : leaseId ? <LeaseDocuments key={leaseId} leaseId={leaseId} practiceId={practiceId || undefined} practiceLine={practiceId ? t('cfDocuments.practice.chosen', { practice: practiceId }) : undefined} confirmed={confirmed} />
       : practiceInvalid ? <div className="space-y-6">
         <Alert variant="warning" data-testid="cf-documents-practice-invalid">{t('cfDocuments.practice.invalid')}</Alert>
         <ChooseLease />
       </div>
-      : practiceId ? <PracticeDocuments key={practiceId} practiceId={practiceId} />
+      : practiceId ? <PracticeDocuments key={practiceId} practiceId={practiceId} confirmed={confirmed} />
       : <ChooseLease />}
   </div>;
 }

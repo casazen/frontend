@@ -11,14 +11,9 @@
     "reference": "Lease reference: {{id}}",
     "openHouse": "Open property",
     "openLease": "Open lease",
-    "instructions": "Upload the contract, attestation and registration receipt from your partner. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
-    "partnerReference": "Partner reference (leaseId)",
-    "copy": "Copy reference",
-    "copied": "Reference copied.",
-    "copyFailed": "Select the reference and copy it manually.",
-    "referenceHelp": "Share this identifier with the partner to link the case to the correct lease and property.",
+    "instructions": "Upload the contract, attestation and registration receipt you received. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
     "chooseLease": "Select the lease to attach documents to.",
-    "noLeases": "No leases have been saved yet. You need a leaseId, not a property ID.",
+    "noLeases": "No leases have been saved yet: create a lease to be able to attach documents.",
     "practice": {
       "chosen": "Practice {{practice}}: the documents are saved on this lease.",
       "invalid": "Invalid link: the practice number is not correct.",
@@ -41,8 +36,8 @@
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
-      "instructions": "Upload the contract ConcordatoFacile gave you: we read it and fill in the data of the draft, then you check them and import the contract. The attestation and the registration receipt are uploaded the same way. Uploading needs no new payment.",
-      "title": "The ConcordatoFacile contract has arrived"
+      "instructions": "Upload the contract you received: we read it and fill in the data of the draft, then you check them and import the contract. The attestation and the registration receipt are uploaded the same way. Uploading needs no new payment.",
+      "title": "The contract has arrived"
     },
     "kinds": {
       "Contract": "Contract",
@@ -53,12 +48,7 @@
   },
   "concordatofacile": {
     "entry": {
-      "access": "Access your practice",
-      "error": "Unable to generate link. Please try again later.",
-      "generating": "Generating link…",
-      "proceed": "Proceed with contract creation",
-      "statusFailed": "Unable to verify status: if you already submitted the form do not reopen it",
-      "warning": "The form resumes only on the same device/browser used"
+      "statusFailed": "We cannot check the status: if you have already sent the form, do not reopen it."
     },
     "gift": {
       "available": "Complimentary practice available",
@@ -68,27 +58,24 @@
       "error": "Unable to use complimentary practice. Please try again later."
     },
     "offer": {
-      "title": "ConcordatoFacile",
+      "title": "Create the contract",
       "price": "119.00 EUR total VAT included",
       "steps": "How it works",
       "stepsTitle": "The 5-step process:",
-      "step1": "Pay 119 euros or use the complimentary practice (biennial subscriptions)",
-      "step2": "Fill out the ConcordatoFacile form with contract data",
-      "step3": "Coordinate via email with ConcordatoFacile for preparation",
-      "step4": "Receive the final email with ready documents",
-      "step5": "Upload documents to CasaZen for reference",
+      "step1": "You pay 119 euros or use the complimentary practice (biennial subscriptions)",
+      "step2": "You fill in the guided form with the data of the contract",
+      "step3": "The contract is prepared for you",
+      "step4": "You receive it by e-mail, ready to sign",
+      "step5": "You upload it here: we read it and fill in the data",
       "payButton": "Pay 119 euros and continue",
       "giftButton": "Use complimentary practice and continue",
       "processing": "Loading…",
       "error": "Error",
-      "success": "Payment completed successfully! You can now access the ConcordatoFacile service.",
       "cancelled": "Payment was cancelled. If you wish to proceed, please try again.",
-      "hasAccess": "You already have access to the ConcordatoFacile service for this contract.",
-      "proceed": "Proceed with contract creation",
       "contractDetails": "Contract details",
       "property": "Property",
       "city": "City",
-      "serviceTitle": "ConcordatoFacile Service",
+      "serviceTitle": "Agreed-rent contract",
       "serviceDescription": "Preparation and registration of regulated rent contract",
       "info": "Payment is secure and handled by Stripe. You will receive email confirmation.",
       "invalidLease": "Invalid contract reference.",
@@ -100,23 +87,9 @@
       "loadError": "Unable to load contract data.",
       "accessError": "Unable to verify service access.",
       "checkoutError": "Unable to create payment session. Please try again later.",
-      "giftError": "Unable to use complimentary practice. Please try again later.",
-      "adminBypass": "Admin access active: you can access the service without payment.",
-      "adminAccessButton": "Access practice",
-      "adminNoAccess": "As an administrator, you can proceed directly to practice creation."
+      "giftError": "Unable to use complimentary practice. Please try again later."
     },
     "status": {
-      "closeReason": "Close reason",
-      "comune": "Municipality",
-      "comuneMismatch": "The municipality associated by the partner differs from the lease property",
-      "errorMessage": "Unable to load practice status",
-      "lastCheck": "Last CasaZen check",
-      "loading": "Loading practice status…",
-      "noPractices": "No practices found for this contract",
-      "practiceId": "Practice ID",
-      "staleExplanation": "The data shown is the last known state. Try again in a few minutes.",
-      "staleWarning": "Unable to contact the ConcordatoFacile service",
-      "statusChangedAt": "Last CF status change",
       "statusLabels": {
         "Attested": "Attested",
         "AwaitingUser": "Awaiting user",
@@ -129,9 +102,31 @@
         "SentToAssociation": "Sent to association",
         "Suspended": "Suspended"
       },
-      "title": "ConcordatoFacile Practice Status",
       "unknownStatus": "Unknown status"
     }
+  },
+  "guidedContract": {
+    "checkAgain": "Check again",
+    "confirmAction": "Confirm",
+    "confirmOther": "Choose another contract",
+    "confirmWithoutPractice": "You are uploading the documents to the contract “{{lease}}”: confirm it is the right one.",
+    "confirmWithPractice": "You are uploading the documents of practice {{practice}} to the contract “{{lease}}”: confirm it is the right one.",
+    "formReady": "The form opens on a page of its own. If you stop halfway, it picks up again only on the same device and browser.",
+    "lastChange": "Updated {{date}}",
+    "lastCheck": "Last check: {{time}}",
+    "open": "Open the form",
+    "openError": "We cannot open the guided form. Please try again in a moment.",
+    "opening": "Taking you to the guided form…",
+    "paymentPending": "The activation takes a few moments. Check again shortly.",
+    "paymentReceived": "Payment received, activating the form…",
+    "privacyLabel": "I have read and accept the privacy notice",
+    "privacyRead": "Read the notice",
+    "reading": "Reading the contract…",
+    "resume": "Resume filling in the form",
+    "sent": "The form has been sent. When you receive the documents, upload them here: we read them and fill in the data.",
+    "statusLabel": "Status of the practice",
+    "taxesNote": "Registration tax and stamp duty, where due, are not included in the price.",
+    "uploadDocuments": "Upload the documents"
   },
   "admin": {
     "dashboard": {
@@ -1247,7 +1242,10 @@
       "NoticeRecorded": "Notice recorded",
       "NoticeRemoved": "Notice withdrawn",
       "Terminated": "Lease ended early",
-      "TermRenewed": "Renewed for another period"
+      "TermRenewed": "Renewed for another period",
+      "ConcordatoFacileAdminAccess": "Administrator access to the guided form",
+      "ConcordatoFacileGiftConsumed": "Complimentary practice used",
+      "ConcordatoFacileLinkGenerated": "Guided form opened"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -1310,11 +1308,11 @@
       }
     },
     "partnerDraft": {
-      "title": "Draft — waiting for the partner’s contract",
-      "description": "You prepare this canone concordato contract with ConcordatoFacile: parties, rent and term are entered there. The draft and its reference are already saved here.",
+      "title": "Creating the contract",
+      "description": "You prepare this agreed-rent contract with the guided form: you enter parties, rent and term there. The draft is already saved here.",
       "proceed": "Go on with the creation of the contract",
-      "ready": "You pay or use the gift practice, then the ConcordatoFacile form opens with the reference of this contract already linked.",
-      "soon": "The direct connection with ConcordatoFacile is coming soon. Meanwhile you can give the partner the reference of the contract below."
+      "ready": "You pay or use the complimentary practice, then you fill in the guided form, already linked to this contract.",
+      "soon": "The guided form is not available yet."
     }
   },
   "leaseList": {
@@ -1897,9 +1895,9 @@
         },
         "legend": "Do you already have the lease and the documents?",
         "noProperties": "You have no long-term property yet: add the property to create the lease.",
-        "whatHappens": "We save the draft of the lease and take you to the ConcordatoFacile service: you enter parties, rent and term in its form.",
+        "whatHappens": "We save the draft of the contract and take you to a page of its own: you enter parties, rent and term in the guided form.",
         "zero": {
-          "description": "You activate the service of ConcordatoFacile, our partner, and fill in its form: the lease is born there.",
+          "description": "You activate the service and fill in the guided form: the contract is born there.",
           "soon": "Available soon.",
           "title": "I start from scratch"
         }
@@ -2065,7 +2063,7 @@
           "Transitorio": "Not available yet."
         },
         "partner": {
-          "Concordato": "It is prepared with our partner ConcordatoFacile: choose «Canone concordato» when you create a new lease."
+          "Concordato": "It is prepared with the guided form: choose «Canone concordato» when you create a new lease."
         }
       },
       "legend": "Type of lease",
@@ -9875,7 +9873,7 @@
       "orgSeatLimitReached": "You have used all the seats of the plan: deactivate someone who no longer works with you or move to a plan with more seats.",
       "staleDocuments": "The legal documents have been updated: reload the page and accept them again.",
       "threadClosed": "This conversation is closed: no more messages can be written.",
-      "concordatofacileAlreadyPurchased": "ConcordatoFacile is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
+      "concordatofacileAlreadyPurchased": "The guided form is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
       "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
       "leaseAlreadyTerminated": "This lease has already ended.",
@@ -11598,8 +11596,8 @@
       },
       "AwaitPartnerContract": {
         "action": "Open the lease",
-        "detail": "The partner prepares the contract of this draft.",
-        "title": "Wait for the contract of the partner"
+        "detail": "The contract of this draft is prepared with the guided form.",
+        "title": "Wait for the contract"
       },
       "ChooseProperty": {
         "action": "Choose the property",

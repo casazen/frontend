@@ -11,14 +11,9 @@
     "reference": "Riferimento contratto: {{id}}",
     "openHouse": "Apri la casa",
     "openLease": "Apri il contratto",
-    "instructions": "Carica il contratto, l’attestazione e la ricevuta di registrazione ricevuti dal partner. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
-    "partnerReference": "Riferimento per il partner (leaseId)",
-    "copy": "Copia riferimento",
-    "copied": "Riferimento copiato.",
-    "copyFailed": "Seleziona il riferimento e copialo manualmente.",
-    "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti.",
+    "instructions": "Carica il contratto, l’attestazione e la ricevuta di registrazione che hai ricevuto. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
     "chooseLease": "Seleziona il contratto a cui allegare i documenti.",
-    "noLeases": "Non hai ancora contratti salvati. Il riferimento necessario è il leaseId del contratto, non l’ID della casa.",
+    "noLeases": "Non hai ancora contratti salvati: crea un contratto per poter allegare i documenti.",
     "practice": {
       "chosen": "Pratica {{practice}}: i documenti si salvano su questo contratto.",
       "invalid": "Collegamento non valido: il numero della pratica non è corretto.",
@@ -41,8 +36,8 @@
     "import": {
       "action": "Completa e importa il contratto",
       "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
-      "instructions": "Carica il contratto che ti ha consegnato ConcordatoFacile: lo leggiamo e compiliamo i dati della bozza, poi li controlli e importi il contratto. L’attestazione e la ricevuta di registrazione si caricano allo stesso modo. Il caricamento non richiede un nuovo pagamento.",
-      "title": "Il contratto di ConcordatoFacile è arrivato"
+      "instructions": "Carica il contratto che hai ricevuto: lo leggiamo e compiliamo i dati della bozza, poi li controlli e importi il contratto. L’attestazione e la ricevuta di registrazione si caricano allo stesso modo. Il caricamento non richiede un nuovo pagamento.",
+      "title": "Il contratto è arrivato"
     },
     "kinds": {
       "Contract": "Contratto",
@@ -53,12 +48,7 @@
   },
   "concordatofacile": {
     "entry": {
-      "access": "Accedi alla tua pratica",
-      "error": "Impossibile generare il link. Riprova più tardi.",
-      "generating": "Generazione link in corso…",
-      "proceed": "Procedi con la creazione del contratto",
-      "statusFailed": "Non riusciamo a verificare lo stato: se hai gia inviato il modulo non riaprirlo",
-      "warning": "Il modulo riprende solo sullo stesso dispositivo/browser utilizzato"
+      "statusFailed": "Non riusciamo a verificare lo stato: se hai già inviato il modulo, non riaprirlo."
     },
     "gift": {
       "available": "Pratica omaggio disponibile",
@@ -68,27 +58,24 @@
       "error": "Impossibile utilizzare la pratica omaggio. Riprova più tardi."
     },
     "offer": {
-      "title": "ConcordatoFacile",
+      "title": "Crea il contratto",
       "price": "119,00 EUR totali IVA compresa",
       "steps": "Come funziona",
       "stepsTitle": "Il processo in 5 passi:",
-      "step1": "Paga 119 euro o usa la pratica omaggio (abbonamenti biennali)",
-      "step2": "Compila il modulo ConcordatoFacile con i dati del contratto",
-      "step3": "Coordina via email con ConcordatoFacile per la preparazione",
-      "step4": "Ricevi l'email finale con i documenti pronti",
-      "step5": "Carica i documenti in CasaZen per consultarli",
+      "step1": "Paghi 119 euro o usi la pratica omaggio (abbonamenti biennali)",
+      "step2": "Compili il modulo guidato con i dati del contratto",
+      "step3": "Il contratto viene preparato per te",
+      "step4": "Lo ricevi via e-mail, pronto da firmare",
+      "step5": "Lo carichi qui: lo leggiamo e compiliamo i dati",
       "payButton": "Paga 119 euro e continua",
       "giftButton": "Usa la pratica omaggio e continua",
       "processing": "Caricamento in corso…",
       "error": "Errore",
-      "success": "Pagamento completato con successo! Puoi ora accedere al servizio ConcordatoFacile.",
       "cancelled": "Il pagamento è stato annullato. Se desideri procedere, riprova il pagamento.",
-      "hasAccess": "Hai già accesso al servizio ConcordatoFacile per questo contratto.",
-      "proceed": "Procedi con la creazione del contratto",
       "contractDetails": "Dettagli contratto",
       "property": "Immobile",
       "city": "Città",
-      "serviceTitle": "Servizio ConcordatoFacile",
+      "serviceTitle": "Contratto a canone concordato",
       "serviceDescription": "Preparazione e registrazione del contratto a canone concordato",
       "info": "Il pagamento è sicuro e gestito da Stripe. Riceverai conferma via email.",
       "invalidLease": "Riferimento del contratto non valido.",
@@ -100,23 +87,9 @@
       "loadError": "Impossibile caricare i dati del contratto.",
       "accessError": "Impossibile verificare l'accesso al servizio.",
       "checkoutError": "Impossibile creare la sessione di pagamento. Riprova più tardi.",
-      "giftError": "Impossibile utilizzare la pratica omaggio. Riprova più tardi.",
-      "adminBypass": "Accesso amministratore attivo: puoi accedere al servizio senza pagamento.",
-      "adminAccessButton": "Accedi alla pratica",
-      "adminNoAccess": "Come amministratore, puoi procedere direttamente alla creazione della pratica."
+      "giftError": "Impossibile utilizzare la pratica omaggio. Riprova più tardi."
     },
     "status": {
-      "closeReason": "Motivo di chiusura",
-      "comune": "Comune",
-      "comuneMismatch": "Il comune associato dal partner differisce dalla casa del contratto",
-      "errorMessage": "Impossibile caricare lo stato delle pratiche",
-      "lastCheck": "Ultimo controllo CasaZen",
-      "loading": "Caricamento stato pratiche…",
-      "noPractices": "Nessuna pratica trovata per questo contratto",
-      "practiceId": "ID Pratica",
-      "staleExplanation": "I dati mostrati sono l'ultimo stato noto. Riprova tra qualche minuto.",
-      "staleWarning": "Non riusciamo a contattare il servizio ConcordatoFacile",
-      "statusChangedAt": "Ultimo cambio stato CF",
       "statusLabels": {
         "Attested": "Attestato",
         "AwaitingUser": "In attesa dell'utente",
@@ -129,9 +102,31 @@
         "SentToAssociation": "Inviato all'associazione",
         "Suspended": "Sospeso"
       },
-      "title": "Stato pratica ConcordatoFacile",
       "unknownStatus": "Stato sconosciuto"
     }
+  },
+  "guidedContract": {
+    "checkAgain": "Controlla di nuovo",
+    "confirmAction": "Conferma",
+    "confirmOther": "Scegli un altro contratto",
+    "confirmWithoutPractice": "Stai caricando i documenti sul contratto «{{lease}}»: conferma che è quello giusto.",
+    "confirmWithPractice": "Stai caricando i documenti della pratica {{practice}} sul contratto «{{lease}}»: conferma che è quello giusto.",
+    "formReady": "Il modulo si apre in una pagina dedicata. Se lo interrompi, riprende solo dallo stesso dispositivo e browser.",
+    "lastChange": "Aggiornato il {{date}}",
+    "lastCheck": "Ultimo controllo: {{time}}",
+    "open": "Apri il modulo",
+    "openError": "Non riusciamo ad aprire il modulo guidato. Riprova tra poco.",
+    "opening": "Ti porto al modulo guidato…",
+    "paymentPending": "L’attivazione richiede qualche istante. Controlla di nuovo tra poco.",
+    "paymentReceived": "Pagamento ricevuto, attivo il modulo…",
+    "privacyLabel": "Ho letto e accetto l’informativa privacy",
+    "privacyRead": "Leggi l’informativa",
+    "reading": "Sto leggendo il contratto…",
+    "resume": "Riprendi la compilazione",
+    "sent": "Il modulo è stato inviato. Quando ricevi i documenti, caricali qui: li leggiamo e compiliamo i dati.",
+    "statusLabel": "Stato della pratica",
+    "taxesNote": "Registro e bollo, se dovuti, non sono compresi nel prezzo.",
+    "uploadDocuments": "Carica i documenti"
   },
   "admin": {
     "dashboard": {
@@ -1247,7 +1242,10 @@
       "NoticeRecorded": "Disdetta registrata",
       "NoticeRemoved": "Disdetta tolta",
       "Terminated": "Contratto terminato in anticipo",
-      "TermRenewed": "Rinnovato da solo per un altro periodo"
+      "TermRenewed": "Rinnovato da solo per un altro periodo",
+      "ConcordatoFacileAdminAccess": "Accesso amministratore al modulo guidato",
+      "ConcordatoFacileGiftConsumed": "Pratica omaggio usata",
+      "ConcordatoFacileLinkGenerated": "Modulo guidato aperto"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -1310,11 +1308,11 @@
       }
     },
     "partnerDraft": {
-      "title": "Bozza — in attesa del contratto del partner",
-      "description": "Questo contratto a canone concordato lo prepari con ConcordatoFacile: lì inserisci parti, canone e durata. La bozza e il suo riferimento sono già salvati qui.",
+      "title": "Creazione del contratto",
+      "description": "Questo contratto a canone concordato lo prepari con il modulo guidato: parti, canone e durata li inserisci lì. La bozza è già salvata qui.",
       "proceed": "Procedi con la creazione del contratto",
-      "ready": "Paghi o usi la pratica omaggio, poi si apre il modulo di ConcordatoFacile con il riferimento di questo contratto già collegato.",
-      "soon": "Il collegamento diretto con ConcordatoFacile è in arrivo. Intanto puoi comunicare al partner il riferimento del contratto qui sotto."
+      "ready": "Paghi o usi la pratica omaggio, poi compili il modulo guidato, già collegato a questo contratto.",
+      "soon": "Il modulo guidato non è ancora disponibile."
     }
   },
   "leaseList": {
@@ -1897,9 +1895,9 @@
         },
         "legend": "Hai già il contratto e i documenti?",
         "noProperties": "Non hai ancora case in affitto lungo: aggiungi la casa per creare il contratto.",
-        "whatHappens": "Salviamo la bozza del contratto e ti portiamo al servizio di ConcordatoFacile: parti, canone e durata li inserisci nel suo modulo.",
+        "whatHappens": "Salviamo la bozza del contratto e ti portiamo alla pagina dedicata: parti, canone e durata li inserisci nel modulo guidato.",
         "zero": {
-          "description": "Attivi il servizio di ConcordatoFacile, il nostro partner, e compili il suo modulo: il contratto nasce lì.",
+          "description": "Attivi il servizio e compili il modulo guidato: il contratto nasce lì.",
           "soon": "Disponibile a breve.",
           "title": "Parto da zero"
         }
@@ -2065,7 +2063,7 @@
           "Transitorio": "Non ancora disponibile."
         },
         "partner": {
-          "Concordato": "Si prepara con il partner ConcordatoFacile: scegli «Canone concordato» quando crei un nuovo contratto."
+          "Concordato": "Si prepara con il modulo guidato: scegli «Canone concordato» quando crei un nuovo contratto."
         }
       },
       "legend": "Tipo di contratto",
@@ -9875,7 +9873,7 @@
       "orgSeatLimitReached": "Hai usato tutti i posti del piano: disattiva chi non lavora più con te o passa a un piano con più posti.",
       "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo.",
       "threadClosed": "Questa conversazione è chiusa: non si possono più scrivere messaggi.",
-      "concordatofacileAlreadyPurchased": "Per questo contratto il servizio ConcordatoFacile risulta già pagato o attivato: non serve pagare di nuovo. Se l'accesso non compare subito, riprova tra qualche istante.",
+      "concordatofacileAlreadyPurchased": "Per questo contratto il modulo guidato risulta già pagato o attivato: non serve pagare di nuovo. Se l'accesso non compare subito, riprova tra qualche istante.",
       "guestMessageTextInvalid": "Scrivi un messaggio: non può essere vuoto né più lungo di 2000 caratteri.",
       "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova.",
       "leaseAlreadyTerminated": "Questo contratto è già terminato.",
@@ -11598,8 +11596,8 @@
       },
       "AwaitPartnerContract": {
         "action": "Apri il contratto",
-        "detail": "Il contratto di questa bozza lo prepara il partner.",
-        "title": "Aspetta il contratto del partner"
+        "detail": "Il contratto di questa bozza lo prepariamo con il modulo guidato.",
+        "title": "Aspetta il contratto"
       },
       "ChooseProperty": {
         "action": "Scegli l'immobile",

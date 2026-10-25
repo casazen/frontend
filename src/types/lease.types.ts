@@ -43,6 +43,11 @@ export const LEASE_EVENT_TYPES = [
   'NoticeRemoved',
   'Terminated',
   'TermRenewed',
+  // CF-FLOW: the guided form of a canone concordato opened (the signed link made), the gift practice used, a platform administrator in.
+  // They had no label, so the history showed the name of the enum.
+  'ConcordatoFacileAdminAccess',
+  'ConcordatoFacileGiftConsumed',
+  'ConcordatoFacileLinkGenerated',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
