@@ -13,11 +13,12 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { toastUndo } from '@/lib/toast-undo';
 import { useForgetLeaseReads, useLeaseReview } from '@/queries/use-lease-draft';
-import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseNeed, LeaseReading, LongRentRules } from '@/types';
+import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseReading, LongRentRules } from '@/types';
 import { DatesStep } from './dates-step';
 import { ImportStep } from './import-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
+import { MissingNote, type MissingItem } from './missing-note';
 import { PartiesStep } from './parties-step';
 import { PropertyStep } from './property-step';
 import { ReadingArrivedNotice, ReadingBanner, ReadingProvider } from './reading-marks';
@@ -25,7 +26,7 @@ import { ReviewStep } from './review-step';
 import { SigningStep } from './signing-step';
 import { TermsStep } from './terms-step';
 import { STEP_SCHEMAS } from './wizard-schemas';
-import { needMessage } from './wizard-messages';
+import { stepWords } from './step-words';
 import { useLeaseDraftSaver, type DraftSaveStatus, type SavedStep } from './use-lease-draft-saver';
 import {
   REVIEW_STEP,
@@ -50,10 +51,11 @@ import {
 const FORM_ID = 'lease-wizard-form';
 const LEASES_PATH = '/app/long-rent/leases';
 
-/** What a refused «Avanti» tells: the things in the way, each with the step where it is put right. */
+/** What a refused main button tells: the things in the way, each with the step where it is put right; `pressed` counts the refusals. */
 interface Raised {
   step: number;
-  items: { step: number; need: LeaseNeed }[];
+  items: MissingItem[];
+  pressed: number;
 }
 
 function SaveIndicator({ status, savedAt, onRetry }: { status: DraftSaveStatus; savedAt: number | null; onRetry: () => void }) {
@@ -62,7 +64,7 @@ function SaveIndicator({ status, savedAt, onRetry }: { status: DraftSaveStatus; 
   return (
     <p aria-live="polite" className="min-w-0 text-xs text-muted-foreground" data-testid="lease-save-status">
       {status === 'pending' || status === 'saving' ? t('leaseWizard.save.saving') : null}
-      {status === 'saved' ? t('leaseWizard.save.saved', { time }) : null}
+      {status === 'saved' ? <span className="max-sm:sr-only">{t('leaseWizard.save.saved', { time })}</span> : null}
       {status === 'error' ? (
         <>
           <span className="text-[color:var(--color-danger-foreground,#b4232a)]">{t('leaseWizard.save.error')}</span>{' '}
@@ -114,6 +116,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const arrived = sawReading && reading?.state === 'Done' && reading.fields.some((field) => field.state === 'Read');
   const [showing, setShowing] = useState(false);
   const [raised, setRaised] = useState<Raised | null>(null);
+  const pressCount = useRef(0);
   const [focusRequest, setFocusRequest] = useState(0);
   const handledFocus = useRef(0);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -143,6 +146,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       flowRef.current = saved.flow;
       setFlow(saved.flow);
       setMaxStep((value) => Math.max(value, step));
+      // What was left when the main button was pressed may be done now: the line under the fields reads the flow again.
+      setRaised(null);
       forgetReads();
       // The server gave an id to each entry it kept: it goes back with the next save, so the entry keeps its row.
       if (!parties) return;
@@ -203,14 +208,27 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const focusField = (id: string | null) => {
     if (id) document.getElementById(id)?.focus();
   };
-  const raise = (step: number, items: Raised['items']) => {
-    setRaised({ step, items });
+  /** The main button was pressed with something left: the focus goes to the first thing, and the line under the fields says what it is. */
+  const raise = (step: number, items: MissingItem[]) => {
+    pressCount.current += 1;
+    setRaised({ step, items, pressed: pressCount.current });
     const first = items[0];
     if (first && first.step === step) focusField(fieldIdOfNeed(first.need, form.getValues()));
   };
 
   const here = flowStep(flow, current);
-  const remaining = isDataStep(current) ? blockingNeeds(here) : [];
+  // What is left to do on this step. For a contract made in CasaZen the APE and the cadastral data of the property are part of it (they keep
+  // the next step shut); for one already signed they are a notice and do not stop (`blockingNeeds`).
+  const remaining = isDataStep(current) ? (imported ? blockingNeeds(here) : (here?.needs ?? [])) : [];
+  // On the review what is left are the checks that block: each is put right at its own step.
+  const blockingChecks: MissingItem[] =
+    current === REVIEW_STEP
+      ? (review.data?.checks ?? [])
+          .filter((check) => check.severity === 'Block')
+          .map((check) => ({ step: check.step, need: { code: check.code, params: check.params } }))
+      : [];
+  const nudge = raised && raised.step === current ? raised : null;
+  const left: MissingItem[] = nudge ? nudge.items : [...remaining.map((need) => ({ step: current, need })), ...blockingChecks];
   const position = steps.indexOf(current);
   const previous = position > 0 ? steps[position - 1] : null;
   const next = position >= 0 && position < steps.length - 1 ? steps[position + 1] : null;
@@ -243,6 +261,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       applyServerFlow(confirmation.version, confirmation.flow);
       await review.refetch();
       toastUndo(t('leaseWizard.review.confirmedToast'), { undo: withdrawReview });
+      // «Conferma e vai alla firma» is one gesture: the confirmation can be taken back with the toast, which comes back to the review.
+      if (next !== null) goTo(next);
     } catch (error) {
       if (!stopOn(error)) toast.error(getProblemMessage(error, t) ?? t('leaseWizard.review.confirmFailed'));
       void review.refetch();
@@ -255,6 +275,12 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     setRaised(null);
     try {
       if (current === REVIEW_STEP) {
+        // Something blocks: the main button leads to the step where the first thing is put right, and the line under the checks says what.
+        const firstBlock = reviewConfirmed ? undefined : blockingChecks[0];
+        if (firstBlock) {
+          goTo(firstBlock.step);
+          return;
+        }
         await confirmReview();
         return;
       }
@@ -289,8 +315,11 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     }
   };
 
-  const saveDraft = async () => {
-    if (await flush()) toast.success(t('leaseWizard.save.draftSaved'));
+  /** «Salva e continua dopo»: what is typed is saved, the person leaves, and the contract waits among the drafts. */
+  const saveAndLeave = async () => {
+    if (!(await flush())) return;
+    toast.success(t('leaseWizardGuide.later.saved'));
+    navigate(LEASES_PATH);
   };
 
   /**
@@ -307,13 +336,15 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     }
   };
 
+  // The main button says what it does, with the verb of the step it leads to: «Salva e vai alle parti».
   const nextLabel =
     current === REVIEW_STEP && !reviewConfirmed
-      ? t('leaseWizard.review.confirm')
+      ? t('leaseWizardGuide.next.confirm')
       : next === null
         ? t('leaseWizard.finish')
-        : t('leaseWizard.next', { step: t(`leaseWizard.steps.${stepKey(next, draft.origin)}.label`) });
-  const reviewBlocked = current === REVIEW_STEP && (review.isLoading || review.isError || (review.data?.counts.block ?? 0) > 0) && !reviewConfirmed;
+        : t(`leaseWizardGuide.next.to.${stepKey(next, draft.origin)}`);
+  // It stays pressable while something is left (it leads to the first thing); only a review that is not there yet cannot be confirmed.
+  const reviewBlocked = current === REVIEW_STEP && (review.isLoading || review.isError) && !reviewConfirmed;
 
   const entries = steps.map((step) => ({
     step,
@@ -357,84 +388,62 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         <SigningStep leaseId={draft.id} flow={flow} getVersion={getVersion} onServerFlow={applyServerFlow} stopOn={stopOn} flush={flush} />
       );
   } else {
-    body = <ReviewStep review={review} hrefOfStep={stepHref} />;
+    body = <ReviewStep review={review} hrefOfStep={stepHref} values={form.getValues()} rules={rules} />;
   }
+
+  const words = stepWords(t, i18n, current, draft.origin);
 
   const footer = (
     <>
-      {raised && raised.step === current ? (
-        <Alert variant="warning" data-testid="lease-wizard-blocked" title={t('leaseWizard.blocked.title')}>
-          <ul className="list-disc space-y-1 pl-5">
-            {raised.items.map(({ step, need }, index) => (
-              <li key={`${need.code}-${index}`}>
-                {needMessage(t, i18n, need)}
-                {step !== current ? (
-                  <>
-                    {' '}
-                    <Link to={stepHref(step)} className="font-semibold underline underline-offset-2">
-                      {t('leaseWizard.blocked.goToStep', { step: t(`leaseWizard.steps.${step}.label`) })}
-                    </Link>
-                  </>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </Alert>
-      ) : null}
-
-      {isDataStep(current) ? (
-        <p className="text-sm" data-testid="lease-wizard-remaining">
-          {remaining.length === 0 ? (
-            <span className="text-muted-foreground">{t('leaseWizard.remaining.none')}</span>
-          ) : (
-            <>
-              <strong>{t('leaseWizard.remaining.label')}</strong>{' '}
-              {remaining.slice(0, 2).map((need, index) => (
-                <span key={`${need.code}-${index}`}>
-                  {index > 0 ? ' · ' : null}
-                  <button
-                    type="button"
-                    className="text-left underline underline-offset-2"
-                    onClick={() => focusField(fieldIdOfNeed(need, form.getValues()))}
-                  >
-                    {needMessage(t, i18n, need)}
-                  </button>
-                </span>
-              ))}
-              {remaining.length > 2 ? ` · ${t('leaseWizard.remaining.more')}` : null}
-            </>
-          )}
-        </p>
-      ) : null}
-
-      <div className="flex flex-wrap items-center gap-2">
-        {previous !== null ? (
-          <Button type="button" variant="outline" className={WIZARD_BUTTON} onClick={() => goTo(previous)} data-testid="lease-wizard-back">
-            <ArrowLeft aria-hidden="true" className="size-4 shrink-0" />
-            {t('leaseWizard.back')}
-          </Button>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {isDataStep(current) || (current === REVIEW_STEP && left.length > 0) ? (
+          <MissingNote
+            className="min-w-0 sm:flex-1"
+            items={left}
+            current={current}
+            pressed={nudge?.pressed ?? 0}
+            hrefOfStep={stepHref}
+            onGo={(need) => focusField(fieldIdOfNeed(need, form.getValues()))}
+          />
         ) : null}
-        {current !== SIGN_STEP ? (
-          <Button type="button" variant="ghost" className={WIZARD_BUTTON} onClick={() => void saveDraft()} disabled={stopped} data-testid="lease-wizard-save">
-            {t('leaseWizard.saveDraft')}
-          </Button>
-        ) : null}
-        <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3">
-          <SaveIndicator status={saver.status} savedAt={saver.savedAt} onRetry={() => void flush()} />
+        <SaveIndicator status={saver.status} savedAt={saver.savedAt} onRetry={() => void flush()} />
+      </div>
+
+      {/* The main button is the one strong thing; on a phone it is on top and the two quiet ones under it. */}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
+          {previous !== null ? (
+            <Button type="button" variant="ghost" className={`${WIZARD_BUTTON} max-sm:min-w-11`} onClick={() => goTo(previous)} data-testid="lease-wizard-back">
+              <ArrowLeft aria-hidden="true" className="size-4 shrink-0" />
+              <span className="max-sm:sr-only">{t('leaseWizard.back')}</span>
+            </Button>
+          ) : null}
           {current !== SIGN_STEP ? (
             <Button
-              type="submit"
-              form={FORM_ID}
-              loading={busy}
-              disabled={stopped || reviewBlocked}
-              iconRight={next === null ? <Check /> : <ArrowRight />}
-              className={`${WIZARD_BUTTON} grow sm:grow-0`}
-              data-testid="lease-wizard-next"
+              type="button"
+              variant="ghost"
+              className={`${WIZARD_BUTTON} max-sm:flex-1`}
+              onClick={() => void saveAndLeave()}
+              disabled={stopped}
+              data-testid="lease-wizard-save"
             >
-              {nextLabel}
+              {t('leaseWizardGuide.later.action')}
             </Button>
           ) : null}
         </div>
+        {current !== SIGN_STEP ? (
+          <Button
+            type="submit"
+            form={FORM_ID}
+            loading={busy}
+            disabled={stopped || reviewBlocked}
+            iconRight={next === null ? <Check /> : <ArrowRight />}
+            className={`${WIZARD_BUTTON} w-full sm:ml-auto sm:w-auto`}
+            data-testid="lease-wizard-next"
+          >
+            {nextLabel}
+          </Button>
+        ) : null}
       </div>
     </>
   );
@@ -446,9 +455,10 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       {arrived ? <ReadingArrivedNotice onShow={() => void showReading()} busy={showing} /> : null}
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={current} />}
-        title={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
-        purpose={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.purpose`)}
-        why={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.why`)}
+        position={{ current: position + 1, total: steps.length }}
+        title={words.title}
+        summary={words.summary}
+        inHand={words.inHand}
         titleRef={titleRef}
         footer={footer}
       >
@@ -470,7 +480,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
             <form
               id={FORM_ID}
               noValidate
-              aria-label={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
+              aria-label={words.title}
               onSubmit={(event) => {
                 event.preventDefault();
                 void advance();

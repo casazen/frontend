@@ -44,7 +44,7 @@ export function DatesStep({ rules, origin }: { rules: LongRentRules; origin: Lea
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Field label={t('leaseWizard.dates.start')} hint={imported ? undefined : t('leaseWizard.dates.startHint')} error={formState.errors.startDate}>
+          <Field label={t('leaseWizard.dates.start')} hint={imported ? undefined : t('leaseWizardGuide.fields.start.hint')} error={formState.errors.startDate}>
             <Input id="lw-startDate" type="date" {...register('startDate')} />
           </Field>
           <ReadMark step={4} fields={['startDate']} name="startDate" />

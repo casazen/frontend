@@ -95,7 +95,7 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
           <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3 text-sm">
             <FileText aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
             <span className="min-w-0 flex-1 break-all">{t('leaseWizard.documents.import.uploaded', { name: kept.name })}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setReplacing(true)} data-testid="lease-import-other">
+            <Button type="button" variant="ghost" size="sm" className="max-sm:min-h-11" onClick={() => setReplacing(true)} data-testid="lease-import-other">
               {t('leaseWizard.documents.import.other')}
             </Button>
           </div>

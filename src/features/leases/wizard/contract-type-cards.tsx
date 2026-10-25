@@ -11,6 +11,9 @@ type CardType = (typeof TYPES)[number];
 
 const ICONS: Record<CardType, LucideIcon> = { Libero: Home, Concordato: Handshake, Transitorio: Hourglass, Studenti: GraduationCap };
 
+/** Where the line that says what each type is lives (the same lines as the first question of «Nuovo contratto»). */
+const KIND_OF_TYPE = { Libero: 'libero', Concordato: 'concordato', Transitorio: 'transitorio' } as const;
+
 interface ContractTypeCardsProps {
   origin: LeaseOrigin;
   rules: LongRentRules;
@@ -81,7 +84,7 @@ export function ContractTypeCards({ origin, rules, value, onChange, firstId }: C
           onChange={() => onChange(type)}
           icon={ICONS[type]}
           title={type === 'Studenti' ? t('leaseWizard.type.students') : getLeaseContractTypeLabel(type, t)}
-          description={t(`leaseWizard.type.description.${reason}.${type}`)}
+          description={available && type !== 'Studenti' ? t(`leaseWizardGuide.start.kind.${KIND_OF_TYPE[type]}`) : t(`leaseWizard.type.description.${reason}.${type}`)}
           data-testid={`lease-type-${type}`}
         />
       ))}

@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { getCountryOptions } from '@/lib/countries';
 import { classifyFiscalCode } from '@/lib/fiscal-code';
 import { ReadMark } from './reading-marks';
+import { WhyAsk } from './why-ask';
 import { MAX_PARTIES_PER_ROLE, newPartyRow, type PartyList, type WizardValues } from './wizard-model';
 
 /** The 27 member states of the European Union: they come first in the list, the others follow (the Questura asks for who is not one). */
@@ -79,7 +80,12 @@ function PartyGroup({ list }: { list: PartyList }) {
               <Field label={t('leaseWizard.parties.lastName')}>
                 <Input id={id('lastName')} autoComplete="off" {...register(`${list}.${index}.lastName`)} />
               </Field>
-              <Field label={t('leaseWizard.parties.fiscalCode')} hint={t('leaseWizard.parties.fiscalCodeHint')} error={rowErrors?.fiscalCode}>
+              <Field
+                label={t('leaseWizard.parties.fiscalCode')}
+                hint={t('leaseWizard.parties.fiscalCodeHint')}
+                example={t('leaseWizardGuide.fields.fiscalCode.example')}
+                error={rowErrors?.fiscalCode}
+              >
                 <Input
                   id={id('fiscalCode')}
                   autoComplete="off"
@@ -98,7 +104,12 @@ function PartyGroup({ list }: { list: PartyList }) {
                   <Countries />
                 </Select>
               </Field>
-              <Field label={t('leaseWizard.parties.residence')} hint={t('leaseWizard.parties.residenceHint')} className="sm:col-span-2">
+              <Field
+                label={t('leaseWizard.parties.residence')}
+                hint={t('leaseWizard.parties.residenceHint')}
+                example={t('leaseWizardGuide.fields.residence.example')}
+                className="sm:col-span-2"
+              >
                 <Input id={id('residence')} autoComplete="off" {...register(`${list}.${index}.residence`)} />
               </Field>
               <Field
@@ -112,7 +123,7 @@ function PartyGroup({ list }: { list: PartyList }) {
               </Field>
             </div>
             {fields.length > 1 ? (
-              <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} aria-label={t(`leaseWizard.parties.${role}.remove`, { n: index + 1 })}>
+              <Button type="button" variant="ghost" size="sm" className="max-sm:min-h-11" onClick={() => remove(index)} aria-label={t(`leaseWizard.parties.${role}.remove`, { n: index + 1 })}>
                 <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
                 {t('leaseWizard.parties.remove')}
               </Button>
@@ -122,7 +133,7 @@ function PartyGroup({ list }: { list: PartyList }) {
       })}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="outline" size="sm" onClick={() => append(newPartyRow())} disabled={atMax}>
+        <Button type="button" variant="outline" size="sm" className="max-sm:min-h-11" onClick={() => append(newPartyRow())} disabled={atMax}>
           <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {t(`leaseWizard.parties.${role}.add`)}
         </Button>
@@ -149,6 +160,7 @@ export function PartiesStep() {
 
   return (
     <div className="space-y-8">
+      <WhyAsk>{t('leaseWizardGuide.why.parties')}</WhyAsk>
       <PartyGroup list="landlords" />
       <PartyGroup list="tenants" />
       {hasCompany ? (

@@ -25,6 +25,15 @@ const MARK_BOX: Record<StepMark, string> = {
   locked: 'bg-muted text-muted-foreground',
 };
 
+/** The segment of a step in the bar of a phone: done is filled, the one the person is on is filled and taller, the others are pale. */
+const MARK_SEGMENT: Record<StepMark, string> = {
+  current: 'h-2.5 bg-primary',
+  done: 'h-1.5 bg-primary/70',
+  issue: 'h-1.5 bg-[color:var(--color-warning-border,#f5d49a)]',
+  todo: 'h-1.5 bg-muted-foreground/25',
+  locked: 'h-1.5 bg-muted-foreground/15',
+};
+
 function StepItem({ entry, number, current }: { entry: StepperEntry; number: number; current: boolean }) {
   const { t } = useTranslation();
   const body = (
@@ -34,7 +43,7 @@ function StepItem({ entry, number, current }: { entry: StepperEntry; number: num
       </span>
       <span className="min-w-0">
         <span className={cn('block break-words text-sm font-semibold', entry.mark === 'current' ? 'text-foreground' : 'text-foreground/80')}>{entry.label}</span>
-        <span className="block text-xs text-muted-foreground">{t(`leaseWizard.stepper.state.${entry.mark}`)}</span>
+        <span className="block text-xs text-muted-foreground">{t(`leaseWizardGuide.stepper.state.${entry.mark}`)}</span>
       </span>
     </>
   );
@@ -59,13 +68,13 @@ function StepItem({ entry, number, current }: { entry: StepperEntry; number: num
 }
 
 /**
- * The steps of the wizard (LR-06a): a list on the side of a computer, and on a phone one line, «Passo 3 di 5», that opens the list.
- * The steps are the ones that apply to this contract, numbered in order.
+ * The steps of the wizard (LR-06a, LR-WIZ-1): a list at the side of a computer, each with its state in words (done, you are here, to do),
+ * and on a phone a thin bar with one segment for each step and a button, «Tutti i passi», that opens the list. The place of the person
+ * («Passo 3 di 7») is in the head of the screen. The steps are the ones that apply to this contract, numbered in order.
  */
 export function LeaseWizardStepper({ entries, current }: { entries: StepperEntry[]; current: number }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const index = Math.max(entries.findIndex((entry) => entry.step === current), 0);
   const list = (
     <ol className="space-y-1">
       {entries.map((entry, position) => (
@@ -76,19 +85,25 @@ export function LeaseWizardStepper({ entries, current }: { entries: StepperEntry
 
   return (
     <nav aria-label={t('leaseWizard.stepper.label')} data-testid="lease-wizard-stepper" className="min-w-0">
-      {/* Phone: one line that opens the list. Hidden with CSS from `lg`, so assistive technology reads one version. */}
-      <div className="space-y-2 lg:hidden">
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
-          data-testid="lease-wizard-stepper-toggle"
-          className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2 text-left ring-1 ring-inset ring-border outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <span className="shrink-0 text-sm font-semibold">{t('leaseWizard.stepper.position', { current: index + 1, total: entries.length })}</span>
-          <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{entries[index]?.label}</span>
-          <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
-        </button>
+      {/* Phone: the bar and the button that opens the list. Hidden with CSS from `lg`, so assistive technology reads one version. */}
+      <div className="space-y-1 lg:hidden">
+        <div className="flex items-center gap-3">
+          <div aria-hidden="true" className="flex min-w-0 flex-1 items-center gap-1" data-testid="lease-wizard-bar">
+            {entries.map((entry) => (
+              <span key={entry.step} className={cn('flex-1 rounded-full transition-all motion-reduce:transition-none', MARK_SEGMENT[entry.mark])} />
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            data-testid="lease-wizard-stepper-toggle"
+            className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md px-1 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t('leaseWizardGuide.stepper.all')}
+            <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform motion-reduce:transition-none', open && 'rotate-180')} />
+          </button>
+        </div>
         {open ? list : null}
       </div>
       <div className="hidden lg:block">{list}</div>

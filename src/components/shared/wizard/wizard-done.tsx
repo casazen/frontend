@@ -16,6 +16,8 @@ export interface WizardDoneProps {
   title: string;
   /** A line under it, if it adds something (the name of what was created). */
   description?: string;
+  /** One sentence that says what the screen is for, between the confirmation and the list («Ecco cosa succede ora»). */
+  lead?: string;
   /** What happens now, in two or three short points. Only true things: what the system does, and what is still up to the person. */
   whatNext: ReadonlyArray<{ text: string; icon?: LucideIcon }>;
   /** The recommended next step: toward the thing that was created. */
@@ -32,7 +34,7 @@ export interface WizardDoneProps {
  * one toward what was just created. There is no dead end: both actions are links. The focus goes to the confirmation
  * when the screen opens, so a screen reader reads it.
  */
-export function WizardDone({ title, description, whatNext, primary, secondary, className, children }: WizardDoneProps) {
+export function WizardDone({ title, description, lead, whatNext, primary, secondary, className, children }: WizardDoneProps) {
   const { t } = useTranslation();
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const titleId = React.useId();
@@ -52,6 +54,7 @@ export function WizardDone({ title, description, whatNext, primary, secondary, c
           {title}
         </h2>
         {description && <p className="break-words text-muted-foreground">{description}</p>}
+        {lead && <p className="max-w-prose break-words text-base">{lead}</p>}
       </div>
 
       <section aria-labelledby={whatNextId} className="space-y-3 rounded-lg bg-muted p-4">
