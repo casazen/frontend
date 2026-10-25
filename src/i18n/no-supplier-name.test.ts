@@ -15,6 +15,7 @@ const OF_THE_FLOW = [
   'concordatofacile',
   'guidedContract',
   'cfDocuments',
+  'leaseDocs',
   'leases.partnerDraft',
   'leases.eventType',
   'leaseFlow.nextStep.AwaitPartnerContract',

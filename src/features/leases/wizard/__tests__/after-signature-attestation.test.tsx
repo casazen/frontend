@@ -85,6 +85,36 @@ describe('AfterSignatureStep — the attestation of a canone concordato (CF-END)
     expect(screen.getByTestId('lease-after-attestation-upload')).toHaveTextContent('Carica un nuovo file');
   });
 
+  // CF-DOCS-REAL: the contract file that was uploaded holds the attestation too (the reading recognized its pages): it is not asked twice.
+  it('render_ContractFileThatHoldsTheAttestation_SaysItIsIncluded_AndAsksForNothingMore', async () => {
+    mockDocuments(() => [
+      {
+        id: 'doc-contract',
+        leaseId: 'lease-1',
+        kind: 'Contract',
+        fileName: 'contratto-e-attestazione.pdf',
+        sizeBytes: 4096,
+        uploadedAt: '2026-10-24T10:00:00Z',
+        sections: [
+          { kind: 'contract', firstPage: 1, lastPage: 6 },
+          { kind: 'attestation', firstPage: 7, lastPage: 10 },
+          { kind: 'calculationSheet', firstPage: 11, lastPage: 14 },
+        ],
+        containsAttestation: true,
+        containsCalculationSheet: true,
+      },
+    ]);
+
+    renderStep(signed({ contractType: 'Concordato' }));
+
+    const status = await screen.findByTestId('lease-after-attestation-included');
+    expect(status).toHaveTextContent('Attestazione: inclusa nel contratto caricato');
+    expect(within(screen.getByTestId('lease-after-attestation')).getByTestId('lease-after-attestation-status')).toHaveTextContent('contratto-e-attestazione.pdf');
+    // No second request: nothing to upload and nothing says «ancora da caricare».
+    expect(screen.queryByTestId('lease-after-attestation-upload')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lease-after-attestation')).not.toHaveTextContent('ancora da caricare');
+  });
+
   it('render_ContractMadeWithTheService_AsksForItWhateverItsType', async () => {
     mockDocuments(() => []);
 

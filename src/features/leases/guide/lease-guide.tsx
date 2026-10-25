@@ -8,7 +8,7 @@ import { useLeaseDocuments } from '@/queries/use-lease-documents';
 import { useLongRentRules } from '@/queries/use-lease-draft';
 import { useRliAdvisory } from '@/queries/use-leases';
 import type { CedolareAdvisoryInput, LeaseDetail, LeaseStage } from '@/types';
-import { newestDocument } from '../lib/lease-benefits';
+import { hasAttestation } from '../lib/lease-benefits';
 import { isPartnerDraft } from '../lib/lease-sheet';
 import { AdviceItem } from './advice-item';
 import type { GuideTool } from './advice-catalogue';
@@ -54,12 +54,13 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const today = todayInRome();
   const ata = advisory.data?.ata;
   const imuApplicable = imu.data?.applicable;
-  const hasAttestation = documents.data ? newestDocument(documents.data, 'Attestation') !== undefined : undefined;
+  // The attestation is a document of its own, or the contract file that holds it (CF-DOCS-REAL).
+  const attested = documents.data ? hasAttestation(documents.data) : undefined;
   const rulesData = rules.data;
 
   const facts = useMemo(
-    () => buildGuideFacts({ lease, stage, stepCode, today, rules: rulesData, ata, hasAttestation, imuApplicable }),
-    [lease, stage, stepCode, today, rulesData, ata, hasAttestation, imuApplicable],
+    () => buildGuideFacts({ lease, stage, stepCode, today, rules: rulesData, ata, hasAttestation: attested, imuApplicable }),
+    [lease, stage, stepCode, today, rulesData, ata, attested, imuApplicable],
   );
   const advice = useMemo(() => selectAdvice(facts), [facts]);
   const values = useMemo(() => guideValues(facts, i18n.language), [facts, i18n.language]);
