@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlloggiatiReports, useAlloggiatiErrors } from '@/queries/use-alloggiati';
+import { AppShell } from '@/components/layout/app-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Alert } from '@/components/ui/alert';
 import { Select } from '@/components/ui/select';
@@ -50,11 +52,14 @@ export function AlloggiatiPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
-          {t('alloggiati.loadError')}
-        </Alert>
-      </div>
+      <AppShell>
+        <div className="space-y-6 md:space-y-8">
+          <PageHeader title={t('alloggiati.title')} description={t('alloggiati.description')} crumbs="auto" />
+          <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
+            {t('alloggiati.loadError')}
+          </Alert>
+        </div>
+      </AppShell>
     );
   }
 
@@ -69,15 +74,11 @@ export function AlloggiatiPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8" data-testid="alloggiati-dashboard">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('alloggiati.title')}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t('alloggiati.description')}
-        </p>
-      </div>
+    <AppShell>
+      <div className="space-y-6 md:space-y-8" data-testid="alloggiati-dashboard">
+        <PageHeader title={t('alloggiati.title')} description={t('alloggiati.description')} crumbs="auto" />
 
-      {/* Dashboard summary cards */}
+        {/* Dashboard summary cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Object.entries(reportsByStatus).map(([status, statusReports]) => (
           <div
@@ -222,6 +223,7 @@ export function AlloggiatiPage() {
           ))
         )}
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }
