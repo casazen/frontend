@@ -109,7 +109,7 @@ export function AlloggiatiPage() {
             <option value="">{t('alloggiati.filter.allStatuses')}</option>
             {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {t(`alloggiati.status.${status.toLowerCase().replace(/([A-Z])/g, '_$1').toLowerCase()}`)}
+                {t(`alloggiati.status.${status.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')}`)}
               </option>
             ))}
           </Select>

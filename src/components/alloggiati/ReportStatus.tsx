@@ -68,7 +68,7 @@ export function ReportStatus({
   const { Icon } = config;
 
   // Get label from i18n
-  const label = t(`alloggiati.status.${status.toLowerCase().replace(/([A-Z])/g, '_$1').toLowerCase()}`);
+  const label = t(`alloggiati.status.${status.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')}`);
 
   // Determine if we should show deadline alert
   const showDeadlineAlert = isOverdue || (hoursUntilDeadline !== undefined && hoursUntilDeadline < 6);
