@@ -1975,8 +1975,6 @@
       "depositNone": "Se non c'è, scrivi 0.",
       "depositTooHigh": "Il deposito supera il massimo: {{max}} mensilità, cioè {{amount}}",
       "regime": {
-        "CedolareSecca": "Un'imposta fissa sul canone, al posto di IRPEF e imposta di registro.",
-        "Ordinario": "Il canone entra nel tuo reddito e si paga l'imposta di registro.",
         "companyNotAllowed": "Un conduttore è una società: con la cedolare secca il contratto non si può confermare. Scegli il regime ordinario.",
         "help": "Non sai quale scegliere?",
         "helpText": "La cedolare secca è un'imposta sostitutiva sul canone; con il regime ordinario il canone entra nel tuo reddito. Per decidere chiedi al tuo commercialista.",
@@ -12099,6 +12097,8 @@
         "hint": "Se la casa non è nell'elenco, aggiungila: ci vuole un minuto."
       },
       "regime": {
+        "CedolareSecca": "Un'imposta fissa sul canone, al posto dell'imposta sul reddito, dell'imposta di registro e del bollo.",
+        "Ordinario": "Il canone si somma al tuo reddito e si paga l'imposta di registro.",
         "intro": "Il regime è il modo in cui paghi le tasse sul canone."
       },
       "rent": {

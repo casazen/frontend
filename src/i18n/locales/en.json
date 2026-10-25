@@ -1975,8 +1975,6 @@
       "depositNone": "If there is none, enter 0.",
       "depositTooHigh": "The deposit is over the limit: {{max}} × the monthly rent, that is {{amount}}",
       "regime": {
-        "CedolareSecca": "A flat tax on the rent, instead of IRPEF and registration tax.",
-        "Ordinario": "The rent is part of your income and registration tax is paid.",
         "companyNotAllowed": "A tenant is a company: with the cedolare secca the lease cannot be confirmed. Choose the ordinary regime.",
         "help": "Not sure which to pick?",
         "helpText": "The cedolare secca is a substitute tax on the rent; with the ordinary regime the rent is part of your income. Ask your accountant to decide.",
@@ -12099,6 +12097,8 @@
         "hint": "If the property is not in the list, add it: it takes a minute."
       },
       "regime": {
+        "CedolareSecca": "A flat tax on the rent, instead of income tax, registration tax and stamp duty.",
+        "Ordinario": "The rent is added to your income and registration tax is paid.",
         "intro": "The regime is the way you pay tax on the rent."
       },
       "rent": {

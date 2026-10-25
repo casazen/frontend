@@ -100,7 +100,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
               checked={taxRegime === regime}
               onChange={() => setValue('taxRegime', regime, { shouldDirty: true })}
               title={getLeaseTaxRegimeLabel(regime, t)}
-              description={t(`leaseWizard.terms.regime.${regime}`)}
+              description={t(`leaseWizardGuide.fields.regime.${regime}`)}
               data-testid={`lease-regime-${regime}`}
             />
           ))}
