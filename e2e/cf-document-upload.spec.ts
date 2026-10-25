@@ -19,6 +19,9 @@ test('email → lease → upload → persisted lease documents after reload, nev
   page.on('request', (request) => { if (/^\/api\/properties\/[^/]+\/documents/.test(new URL(request.url()).pathname)) propertyDocumentCalls.push(request.url()); });
   await page.goto(demoUrl(`/app/long-rent/documents/upload?leaseId=${leaseId}`, 'long-term'));
   await expect(page.getByRole('heading', { name: 'Carica i documenti in CasaZen' })).toBeVisible();
+  // CF-FIX-FU4: a link from outside asks which contract it is before anything can be uploaded; the confirmation survives the reload below.
+  await expect(page.getByTestId('cf-documents-confirm')).toContainText('Casa di prova');
+  await page.getByRole('button', { name: 'Conferma', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Casa di prova' })).toBeVisible(); expect(uploaded).toBe(false);
   await page.getByLabel('Scegli PDF o foto delle pagine').setInputFiles({ name: 'contratto-definitivo.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\noriginale\n%%EOF') });
   await page.getByRole('button', { name: 'Carica documento', exact: true }).click();
@@ -53,6 +56,7 @@ test('ordered and rotated photos become one PDF; reload and download preserve th
     await route.fulfill({ contentType: 'application/pdf', body: stored! });
   });
   await page.goto(demoUrl(`/app/long-rent/documents/upload?leaseId=${leaseId}`, 'long-term'));
+  await page.getByRole('button', { name: 'Conferma', exact: true }).click();
   const photo = (color: string) => page.evaluate(color => {
     const canvas = document.createElement('canvas'); canvas.width = 500; canvas.height = 700;
     const ctx = canvas.getContext('2d')!; ctx.fillStyle = color; ctx.fillRect(0, 0, 500, 700);

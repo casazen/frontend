@@ -42,8 +42,8 @@ const RULES: LongRentRules = {
   transitoryBandFromInhabitants: 10000,
 };
 
-/** The page of the service of the partner, where a canone concordato started from zero goes. */
-function PaymentPage() {
+/** The sheet of the contract, where a canone concordato started from zero lands (CF-FLOW): the payment and the guided form follow from it. */
+function LeaseSheetStub() {
   const { id } = useParams();
   return <p data-testid="lease-page">{id}</p>;
 }
@@ -60,7 +60,7 @@ function renderPage(path = '/app/long-rent/leases/new', { partner = true }: { pa
         <MemoryRouter initialEntries={[path]}>
           <Routes>
             <Route path="/app/long-rent/leases/new" element={<><LeaseCreatePage /><Search /></>} />
-            <Route path="/app/long-rent/leases/:id/concordatofacile" element={<PaymentPage />} />
+            <Route path="/app/long-rent/leases/:id" element={<LeaseSheetStub />} />
           </Routes>
         </MemoryRouter>
       </FeatureFlagsContext.Provider>
@@ -120,7 +120,7 @@ describe('LeaseCreatePage', () => {
     expect(screen.getByRole('button', { name: i18n.t('leaseWizard.next', { step: i18n.t('leaseWizard.steps.2.label') }) })).toBeInTheDocument();
   });
 
-  it('saves the draft for the partner with only its property and goes to the page of the service, with no APE asked', async () => {
+  it('saves the draft for the partner with only its property and lands on the sheet of the contract, with no APE asked', async () => {
     renderPage('/app/long-rent/leases/new?propertyId=prop-1');
 
     chooseKind('concordato');
@@ -132,6 +132,7 @@ describe('LeaseCreatePage', () => {
     fireEvent.click(screen.getByTestId('concordato-draft-create'));
 
     expect(await screen.findByTestId('lease-page')).toHaveTextContent('lease-cf-1');
+    // The sheet is the centre (the only route of the test that matches): its main button leads on to the privacy notice, the payment and the form.
     // One call to the route of the draft for the partner (an imported draft marked as theirs, typed as a concordato by the server):
     // not the generic draft, and nothing saved after it.
     expect(leasesApi.createCfDraft).toHaveBeenCalledWith('prop-1');
