@@ -76,9 +76,10 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
             {cadastralMissing ? (
               <>
                 <p id="lw-cadastral" tabIndex={-1} className="text-muted-foreground outline-none">
-                  {t('leaseWizard.property.cadastralMissing')}
+                  {t('leaseWizardGuide.property.cadastralMissing')}
                 </p>
-                <Button asChild variant="outline" size="sm">
+                <p className="text-muted-foreground">{t('leaseWizardGuide.property.cadastralExplain')}</p>
+                <Button asChild variant="outline" size="sm" className="max-sm:min-h-11">
                   <Link to={`/app/long-rent/properties/${property.id}`}>{t('leaseWizard.property.cadastralAdd')}</Link>
                 </Button>
               </>
@@ -94,7 +95,7 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
               className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-destructive"
             >
               <span className="flex-1">{getProblemMessage(documentsError, t) ?? t('leases.form.documentsLoadError')}</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void refetchDocuments()}>
+              <Button type="button" variant="outline" size="sm" className="max-sm:min-h-11" onClick={() => void refetchDocuments()}>
                 {t('leases.form.retry')}
               </Button>
             </div>
@@ -103,7 +104,8 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
           {apeMissing ? (
             <div data-testid="lease-ape-missing" className="space-y-2">
               <p>{imported ? t('leaseWizard.property.apeMissingImported') : t('leases.form.apeMissingError')}</p>
-              <Button id="lw-ape" type="button" variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
+              <p className="text-muted-foreground">{t('leaseWizardGuide.property.apeExplain')}</p>
+              <Button id="lw-ape" type="button" variant="outline" size="sm" className="max-sm:min-h-11" onClick={() => setUploadOpen(true)}>
                 <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
                 {t('leases.form.uploadApe')}
               </Button>
@@ -133,7 +135,7 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
               className="space-y-1 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 outline-none"
             >
               <p className="font-medium">{t('leases.form.apeIdentificationRequired')}</p>
-              <p className="text-foreground/80">{t('leases.form.apeIdentificationHelp')}</p>
+              <p className="text-foreground/80">{t('leaseWizardGuide.property.apeIdentificationHelp')}</p>
               <ApeIdentificationForm
                 key={`${ape.id}-${ape.apeCode ?? ''}-${ape.apeEnergyClass ?? ''}`}
                 propertyId={property.id}

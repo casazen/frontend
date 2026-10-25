@@ -13,6 +13,7 @@ import { AfterSignatureStep } from './after-signature-step';
 import { LeaseDone } from './lease-done';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
+import { stepWords } from './step-words';
 import { AFTER_STEP, DONE_STEP, leaseEditPath, registeredSteps, stepKey } from './wizard-model';
 
 const LEASES_PATH = '/app/long-rent/leases';
@@ -24,7 +25,7 @@ const LEASES_PATH = '/app/long-rent/leases';
  * the existing window, opened at once when the contract was brought in as already registered.
  */
 export function SignedWizard({ leaseId, view }: { leaseId: string; view: 'after' | 'done' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const lease = useLease(leaseId);
   const rules = useLongRentRules();
@@ -53,23 +54,26 @@ export function SignedWizard({ leaseId, view }: { leaseId: string; view: 'after'
 
   const origin = data.origin ?? 'Created';
   const declareFirst = (location.state as { declareRegistration?: boolean } | null)?.declareRegistration === true;
-  const entries = registeredSteps(origin).map((step) => ({
+  const steps = registeredSteps(origin);
+  const entries = steps.map((step) => ({
     step,
     label: t(`leaseWizard.steps.${stepKey(step, origin)}.label`),
     mark: step === AFTER_STEP ? ('current' as const) : ('done' as const),
   }));
+  const words = stepWords(t, i18n, AFTER_STEP, origin);
 
   return (
     <LeaseWizardFrame
       stepper={<LeaseWizardStepper entries={entries} current={AFTER_STEP} />}
-      title={t('leaseWizard.steps.8.title')}
-      purpose={t('leaseWizard.steps.8.purpose')}
-      why={t('leaseWizard.steps.8.why')}
+      position={{ current: steps.indexOf(AFTER_STEP) + 1, total: steps.length }}
+      title={words.title}
+      summary={words.summary}
+      inHand={words.inHand}
       footer={
         <div className="flex justify-end">
-          <Button asChild className={`${WIZARD_BUTTON} grow sm:grow-0`}>
+          <Button asChild className={`${WIZARD_BUTTON} w-full sm:w-auto`}>
             <Link to={leaseEditPath(leaseId, DONE_STEP)} data-testid="lease-after-finish">
-              {t('leaseWizard.after.finish')}
+              {t('leaseWizardGuide.next.finish')}
             </Link>
           </Button>
         </div>

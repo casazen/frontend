@@ -15,6 +15,7 @@ import { ContextSidebar } from './context-sidebar';
 import { GuideLink } from '@/features/help/guide-link';
 import { NotificationBell } from '@/features/notifications/notification-bell';
 import { Header } from './header';
+import { LegalConsentsNotice } from './legal-consents-notice';
 import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
 import { SkipLink } from './skip-link';
@@ -84,6 +85,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
               )}
             >
               {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
+              <LegalConsentsNotice />
               {children}
             </main>
             <BottomNav contextKey={contextKey} />

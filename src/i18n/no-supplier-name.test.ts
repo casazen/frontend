@@ -20,6 +20,7 @@ const OF_THE_FLOW = [
   'leaseFlow.nextStep.AwaitPartnerContract',
   'leaseWizard.start',
   'leaseWizard.type',
+  'leaseWizardGuide',
   'apiErrors.codes.concordatofacileAlreadyPurchased',
 ];
 

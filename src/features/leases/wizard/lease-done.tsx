@@ -191,8 +191,9 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
       <WizardDone
         title={t(`leaseWizard.done.title.${imported ? 'Imported' : 'Created'}`)}
         description={leasePropertyLine(lease, t)}
+        lead={t(`leaseWizardGuide.done.lead.${imported ? 'Imported' : 'Created'}`)}
         whatNext={rows}
-        primary={{ label: t('leaseWizard.goToLease'), to: `${LEASES_PATH}/${lease.id}` }}
+        primary={{ label: t('leaseWizardGuide.done.open'), to: `${LEASES_PATH}/${lease.id}` }}
         secondary={{ label: t('leaseWizard.done.another'), to: `${LEASES_PATH}/new` }}
       >
         {benefits ? <RegisteredBenefits lease={lease} /> : null}

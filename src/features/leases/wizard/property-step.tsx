@@ -47,13 +47,13 @@ export function PropertyStep({ value, onChange, error, needs, imported }: Proper
           className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
         >
           <span className="flex-1">{getProblemMessage(loadError, t) ?? t('leases.form.propertiesLoadError')}</span>
-          <Button type="button" variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+          <Button type="button" variant="outline" size="sm" className="max-sm:min-h-11" onClick={() => void refetch()} disabled={isFetching}>
             {t('leases.form.retry')}
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
-          <Field label={t('leases.form.propertyLabel')} error={error}>
+          <Field label={t('leases.form.propertyLabel')} hint={t('leaseWizardGuide.fields.property.hint')} error={error}>
             <Select
               id="lw-property"
               value={value}
@@ -74,7 +74,7 @@ export function PropertyStep({ value, onChange, error, needs, imported }: Proper
               {t('leases.form.noProperties')}
             </p>
           ) : null}
-          <Button asChild variant={noProperties ? 'default' : 'ghost'} size="sm">
+          <Button asChild variant={noProperties ? 'default' : 'ghost'} size="sm" className="max-sm:min-h-11">
             <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>
               <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
               {t('leaseWizard.property.addNew')}

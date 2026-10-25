@@ -1563,7 +1563,6 @@
   },
   "leaseWizard": {
     "after": {
-      "finish": "Done",
       "registration": {
         "body": "The contract has to be registered with the Agenzia delle Entrate (the Italian Revenue Agency). Then declare it here with the receipt: the contract becomes “Registered” and the deadline goes away.",
         "costs": {
@@ -1602,10 +1601,6 @@
       }
     },
     "back": "Back",
-    "blocked": {
-      "goToStep": "Go to «{{step}}»",
-      "title": "Before you go on"
-    },
     "conflict": {
       "description": "So that nobody's work is lost, reload the draft: you will see the version saved most recently. What you wrote in this tab after the last save was not saved.",
       "reload": "Reload the draft",
@@ -1625,7 +1620,6 @@
       "months_one": "{{count}} month",
       "months_other": "{{count}} months",
       "start": "Start date",
-      "startHint": "The day the lease starts, even if you sign it earlier.",
       "summary": {
         "lasts": "Lasts {{length}}: from {{from}} to {{to}}.",
         "notice_one": "To refuse the renewal you need a reason set by law, in writing, at least {{count}} month before: by {{date}}.",
@@ -1649,7 +1643,6 @@
       "manual": "I don't have the file: I'll type the data",
       "privacy": "The file is read on our servers and stays in your space: no outside service sees it.",
       "promise": "We read the contract and fill in the data: we only ask for what is missing.",
-      "purpose": "Upload the signed contract: we read it and fill in the data.",
       "read": {
         "banner": "We filled in the data by reading the contract. Check it and complete what is missing.",
         "conflict": "The contract shows a different value from the one entered: check it",
@@ -1667,17 +1660,13 @@
         "property": "The address read in the contract looks different from the property you chose. Check that you chose the right property and the right contract."
       },
       "reading": {
-        "purpose": "It usually takes less than a minute.",
         "slow": "It is taking longer than usual. You can continue by hand: the data read will arrive as soon as it is ready.",
         "status": "We are reading the document…",
-        "title": "We are reading the document…",
         "wait": "You can leave this page open: as soon as it is done we take you to the data to check."
       },
       "retry": "Try again",
       "submit": "Read the contract",
-      "title": "Upload the documents",
-      "uploadFailed": "We could not upload the file. Try again, or continue by hand.",
-      "why": "If the contract is already signed you do not have to type anything: we read names, rent, dates and the rest, and ask only for what we cannot read. You check everything before it is entered."
+      "uploadFailed": "We could not upload the file. Try again, or continue by hand."
     },
     "done": {
       "another": "Create another contract",
@@ -1814,7 +1803,6 @@
       "transitory_rent_band_to_check": "In municipalities with more than {{inhabitants}} inhabitants the rent of a transitory lease must fall within the bands of the territorial agreement: check it before signing. If it does not, the lease is brought back to the ordinary term of a free-rent lease",
       "unknown": "Something in this step still needs a look"
     },
-    "next": "Continue: {{step}}",
     "parties": {
       "citizenship": "Citizenship",
       "citizenshipChoose": "Choose the country",
@@ -1854,7 +1842,6 @@
       "apeMissingImported": "The APE is missing: for a lease already signed this is a notice, you can upload it later.",
       "cadastral": "Cadastral data",
       "cadastralAdd": "Add them on the property page",
-      "cadastralMissing": "Missing: they are needed for the lease and for the registration.",
       "importedNotice": "The lease is already signed: we tell you if the APE or the cadastral data are missing, but they do not stop you.",
       "requirementsTitle": "What the lease needs",
       "shortMode": "This property is let for short stays. You can prepare the lease, but to use it the property has to move to long stays."
@@ -1864,15 +1851,9 @@
       "lease_term_too_long": "it is too long (at most {{maxMonths}} months)",
       "lease_term_too_short": "it is too short (at least {{minMonths}} months)"
     },
-    "remaining": {
-      "label": "Still to do:",
-      "more": "and more",
-      "none": "This step is complete"
-    },
     "review": {
       "blocked_one": "{{count}} thing has to be put right before you can confirm.",
       "blocked_other": "{{count}} things have to be put right before you can confirm.",
-      "confirm": "Confirm the review",
       "confirmFailed": "Could not confirm the review. Try again.",
       "confirmed": "Review confirmed on {{date}}. If you change something in the earlier steps you will have to confirm it again.",
       "confirmedToast": "Review confirmed",
@@ -1889,13 +1870,11 @@
       "ready": "All good: you can confirm the review."
     },
     "save": {
-      "draftSaved": "Draft saved",
       "error": "Could not save",
       "retry": "Try again",
       "saved": "Saved at {{time}}",
       "saving": "Saving…"
     },
-    "saveDraft": "Save draft",
     "sign": {
       "dataMissing": "Some data the contract model needs are missing: open “Read the preview” to see which ones (they are marked DATO MANCANTE) and complete them in the earlier steps.",
       "download": "Download to sign",
@@ -1920,7 +1899,6 @@
       "changeKind": "Change type of lease",
       "concordato": {
         "documents": {
-          "description": "You upload them to CasaZen to keep deadlines, registration and rents under control.",
           "title": "I already have the lease and the documents"
         },
         "legend": "Do you already have the lease and the documents?",
@@ -1932,20 +1910,16 @@
           "title": "I start from scratch"
         }
       },
-      "continue": "Continue",
       "kind": {
         "concordato": {
-          "description": "The rent follows the territorial agreement of the municipality.",
           "title": "Agreed rent (3+2)"
         },
         "description": "First choose the type of lease: how we prepare it depends on it.",
         "legend": "What lease do you want to make?",
         "libero": {
-          "description": "You set the rent freely with the tenant.",
           "title": "Free rent (4+4)"
         },
         "transitorio": {
-          "description": "For a temporary need, with a limited term.",
           "title": "Transitional"
         }
       },
@@ -1959,73 +1933,40 @@
           }
         },
         "documents": {
-          "description": "The lease is already signed: you enter it in CasaZen to keep deadlines, registration and rents under control.",
           "title": "I already have the documents"
         },
         "legend": "How do you want to proceed?"
       }
     },
     "stepper": {
-      "label": "Steps of the lease",
-      "position": "Step {{current}} of {{total}}",
-      "state": {
-        "current": "Current step",
-        "done": "Done",
-        "issue": "To complete",
-        "locked": "The earlier steps first",
-        "todo": "To do"
-      }
+      "label": "Steps of the lease"
     },
     "steps": {
       "1": {
-        "label": "Property",
-        "purpose": "Pick the home of the lease and check what it needs.",
-        "title": "Choose the property",
-        "why": "The address, the cadastral data and the APE go into the lease and its registration."
+        "label": "Property"
       },
       "2": {
-        "label": "Parties",
-        "purpose": "The landlord and the tenants, with the data the lease requires.",
-        "title": "Who signs the lease",
-        "why": "Name, fiscal code and residence go into the lease and into the registration form."
+        "label": "Parties"
       },
       "3": {
-        "label": "Terms",
-        "purpose": "Type of lease, tax regime, rent and deposit.",
-        "title": "Financial terms",
-        "why": "Rent and tax regime decide how much is paid and which taxes apply: we check that the values are consistent."
+        "label": "Terms"
       },
       "4": {
-        "label": "Dates",
-        "purpose": "When the lease starts and what happens at the end.",
-        "title": "Term and dates",
-        "why": "The dates decide registration, renewal and notice: we put them in your deadlines."
+        "label": "Dates"
       },
       "6": {
-        "label": "Review",
-        "purpose": "We check that it is complete and consistent; then you confirm.",
-        "title": "Review of the lease",
-        "why": "Before the lease goes to signature we check that it is complete and consistent."
+        "label": "Review"
       },
       "7": {
         "Created": {
-          "label": "Signature",
-          "purpose": "Download the contract, have it signed by hand and upload the signed copy.",
-          "title": "Signing on paper",
-          "why": "The signed copy stays in CasaZen and the deadlines start from it, beginning with the registration."
+          "label": "Signature"
         },
         "Imported": {
-          "label": "Signed contract",
-          "purpose": "Upload the signed PDF and enter the day it was signed.",
-          "title": "Add the signed contract",
-          "why": "The signed contract stays in CasaZen, and the day of the signature sets the registration deadline."
+          "label": "Signed contract"
         }
       },
       "8": {
-        "label": "After the signature",
-        "purpose": "Registration, keys and rents.",
-        "title": "What to do after the signature",
-        "why": "The deadlines run from the signature: here you keep them in view."
+        "label": "After the signature"
       }
     },
     "terms": {
@@ -2034,8 +1975,6 @@
       "depositNone": "If there is none, enter 0.",
       "depositTooHigh": "The deposit is over the limit: {{max}} × the monthly rent, that is {{amount}}",
       "regime": {
-        "CedolareSecca": "A flat tax on the rent, instead of IRPEF and registration tax.",
-        "Ordinario": "The rent is part of your income and registration tax is paid.",
         "companyNotAllowed": "A tenant is a company: with the cedolare secca the lease cannot be confirmed. Choose the ordinary regime.",
         "help": "Not sure which to pick?",
         "helpText": "The cedolare secca is a substitute tax on the rent; with the ordinary regime the rent is part of your income. Ask your accountant to decide.",
@@ -2108,8 +2047,7 @@
       "fiscalCode": "Not a valid fiscal code or VAT number",
       "property": "Choose the property",
       "rent": "The rent must be more than zero, with at most two decimals"
-    },
-    "why": "Why we ask"
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -12128,6 +12066,244 @@
       "row": "Registration: the service that prepared the contract does it (deadline: {{date}}). When you have the receipt, upload it among the Documents and declare it on the lease page.",
       "rowUnknown": "Registration: the service that prepared the contract does it. When you have the receipt, upload it among the Documents and declare it on the lease page. The deadline is still to be determined.",
       "title": "Declare the registration"
+    }
+  },
+  "leaseWizardGuide": {
+    "adminNotice": {
+      "action": "Go to the documents",
+      "message": "Legal documents updated: accept them to see your workspaces again"
+    },
+    "documents": {
+      "inHand": "the signed lease, as a PDF or as photos of its pages.",
+      "summary": "Upload the lease that is already signed: we read it and fill in the data for you. We only ask what we cannot read.",
+      "title": "Upload the lease"
+    },
+    "done": {
+      "lead": {
+        "Created": "The lease is signed and safe in CasaZen. Here is what happens now.",
+        "Imported": "The lease is in CasaZen, with its documents and its deadlines. Here is what happens now."
+      },
+      "open": "Open the lease sheet"
+    },
+    "fields": {
+      "deposit": {
+        "example": "1300",
+        "why": "The deposit is a sum the tenant leaves as a guarantee and that you give back at the end, if the home is in good order."
+      },
+      "fiscalCode": {
+        "example": "RSSMRA80A01H501U"
+      },
+      "property": {
+        "hint": "If the property is not in the list, add it: it takes a minute."
+      },
+      "regime": {
+        "CedolareSecca": "A flat tax on the rent, instead of income tax, registration tax and stamp duty.",
+        "Ordinario": "The rent is added to your income and registration tax is paid.",
+        "intro": "The regime is the way you pay tax on the rent."
+      },
+      "rent": {
+        "example": "650",
+        "hint": "The amount the tenant pays every month for the rent."
+      },
+      "residence": {
+        "example": "Via Roma 10, 20822 Seveso (MB)"
+      },
+      "start": {
+        "hint": "The day the lease starts, even if you sign it earlier: for example the first of the month."
+      }
+    },
+    "header": {
+      "inHand": "Have at hand:",
+      "position": "Step {{current}} of {{total}}"
+    },
+    "later": {
+      "action": "Save and continue later",
+      "saved": "Draft saved: you will find it among your leases."
+    },
+    "missing": {
+      "fix": "To fix:",
+      "goTo": "Go to the field",
+      "goToStep": "Go to “{{step}}”",
+      "label": "Missing:",
+      "more_one": "and one more thing",
+      "more_other": "and {{count}} more things",
+      "none": "All filled in: you can go on.",
+      "what": {
+        "ape_identification_missing": "the code and the energy class of the APE",
+        "ape_missing": "the APE energy certificate of the property",
+        "cadastral_missing": "the cadastral data of the property",
+        "contract_file_missing": "the signed lease (a PDF or photos of its pages)",
+        "contract_pages_unconfirmed": "the confirmation that the photos are in order",
+        "contract_type_missing": "the type of lease",
+        "deposit_missing": "the deposit (write 0 if there is none)",
+        "end_missing": "the last day of the lease",
+        "landlord_incomplete": "{{fields}} of landlord {{n}}",
+        "landlord_missing": "who lets the property (the landlord)",
+        "property_missing": "the property of the lease",
+        "rent_missing": "the monthly rent",
+        "start_missing": "the start date of the lease",
+        "tax_regime_missing": "the tax regime",
+        "tenant_incomplete": "{{fields}} of tenant {{n}}",
+        "tenant_missing": "who rents the property (the tenant)",
+        "transitory_documentation_missing": "the documents that prove the need",
+        "transitory_need_missing": "the need that justifies the transitional lease",
+        "transitory_party_missing": "who has the need: the landlord or the tenant"
+      }
+    },
+    "next": {
+      "confirm": "Confirm and go to the signature",
+      "finish": "Finish and see what happens now",
+      "to": {
+        "2": "Save and go to the parties",
+        "3": "Save and go to the terms",
+        "4": "Save and go to the dates",
+        "6": "Save and go to the check",
+        "7": {
+          "Created": "Go to the signature",
+          "Imported": "Save and go to the signed lease"
+        }
+      }
+    },
+    "property": {
+      "apeExplain": "It is the document that says how much energy the property uses, with a class from A4 to G. A qualified technician issues it.",
+      "apeIdentificationHelp": "Write the code and the energy class as they are printed on the certificate. The class is a letter from A4 (the best) to G, for example B.",
+      "cadastralExplain": "They are the sheet, the parcel and the sub-unit of the property: you find them in the cadastral survey or in the deed of purchase.",
+      "cadastralMissing": "They are missing. Add them from the property page: they are needed for the lease and for the registration."
+    },
+    "review": {
+      "edit": "Edit",
+      "editGroup": "Edit: {{group}}",
+      "groups": {
+        "dates": "Dates",
+        "house": "The property",
+        "people": "Who signs",
+        "terms": "Rent and taxes"
+      },
+      "rows": {
+        "address": "Address",
+        "deposit": "Deposit",
+        "end": "End of the first period",
+        "landlords": "Landlord",
+        "regime": "Tax on the rent",
+        "rent": "Rent per month",
+        "start": "Start",
+        "tenants": "Tenant",
+        "type": "Type of lease"
+      },
+      "story": {
+        "kind": "{{type}}, with {{regime}}.",
+        "money": "{{rent}} a month, with a deposit of {{deposit}}.",
+        "moneyNoDeposit": "{{rent}} a month, no deposit.",
+        "moneyRentOnly": "{{rent}} a month.",
+        "parties_one": "You let {{property}} to {{tenants}}.",
+        "parties_other": "You let {{property}} to {{tenants}}.",
+        "regime": {
+          "CedolareSecca": "the flat-rate tax (cedolare secca)",
+          "Ordinario": "the ordinary regime"
+        },
+        "term": "From {{from}} for {{length}}, until {{to}}.",
+        "termFrom": "From {{from}}.",
+        "termSpan": "From {{from}} to {{to}}.",
+        "thisProperty": "the property",
+        "title": "The lease in words"
+      }
+    },
+    "start": {
+      "how": {
+        "choose": "Choose one of the two ways to go on.",
+        "continue": {
+          "casazen": "Continue: choose the property",
+          "documenti": "Continue: upload the documents",
+          "none": "Continue",
+          "zero": "Continue: choose the property"
+        },
+        "documents": {
+          "concordato": "You upload the lease and the documents: we read the data and keep an eye on deadlines, registration and rents.",
+          "other": "You upload the lease that is already signed: we read it and fill in the data, we only ask what is missing."
+        }
+      },
+      "kind": {
+        "concordato": "The rent follows the amounts agreed by the municipality, with tax benefits.",
+        "libero": "You decide the rent together: ordinary term, with automatic renewal.",
+        "transitorio": "For a temporary need (work, study…), with a short term."
+      },
+      "which": {
+        "choose": "Choose a type of lease to go on.",
+        "continue": "Continue: how you prepare it",
+        "help": {
+          "concordato": "Agreed rent: the rent stays within the amounts of the municipality and there are tax benefits.",
+          "libero": "Free rent: the two of you decide the rent.",
+          "summary": "Which one to choose?",
+          "transitorio": "Transitional: for a need that lasts a while ({{min}} to {{max}} months), written in the lease.",
+          "transitorioBare": "Transitional: for a need that lasts a while, written in the lease."
+        }
+      },
+      "zero": {
+        "continue": "Save the draft and go to the lease"
+      }
+    },
+    "stepper": {
+      "all": "All steps",
+      "state": {
+        "current": "You are here",
+        "done": "Done",
+        "issue": "To complete",
+        "locked": "After the previous steps",
+        "todo": "To do"
+      }
+    },
+    "steps": {
+      "1": {
+        "inHand": "the cadastral data of the property (sheet, parcel, sub-unit) and its APE energy certificate.",
+        "summary": "Say which property the lease is about. The address, the cadastral data and the APE certificate go into the lease and its registration.",
+        "title": "Choose the property"
+      },
+      "2": {
+        "inHand": "the tax code and an identity document of everyone who signs.",
+        "summary": "Enter the details of the landlord and of the tenant: they are needed for the lease and to register it.",
+        "title": "Write who signs"
+      },
+      "3": {
+        "inHand": "the amounts you agreed (monthly rent and deposit).",
+        "summary": "Choose how the tax on the rent is paid and write the amount of the rent and of the deposit.",
+        "title": "Enter the rent and the terms"
+      },
+      "4": {
+        "inHand": "the start date of the lease (and, for a transitional one, the last day).",
+        "inHandImported": "the dates written in the lease.",
+        "summary": "Say the day the lease starts: from there we work out the term, the renewal and the deadlines.",
+        "title": "Choose the dates"
+      },
+      "6": {
+        "inHand": "nothing special, just read it through.",
+        "summary": "Read the lease in plain words: if everything is right you confirm it and go to the signature.",
+        "title": "Check and confirm"
+      },
+      "7": {
+        "Created": {
+          "inHand": "a printer, a pen and everyone who signs.",
+          "summary": "Download the lease, have everyone sign it by hand and upload the signed copy here.",
+          "title": "Print, sign and upload"
+        },
+        "Imported": {
+          "inHand": "the signed lease as a PDF and the day it was signed.",
+          "summary": "Add the PDF with the signatures and the day it was signed: the deadlines start from there.",
+          "title": "Upload the signed lease"
+        }
+      },
+      "8": {
+        "inHand": "the registration receipt, as soon as you receive it.",
+        "summary": "The signed lease has to be registered: here you find what to do, by when, and the other things to sort out.",
+        "title": "Register and tidy up"
+      },
+      "reading": {
+        "summary": "It usually takes less than a minute. When we are done we take you to the data to check.",
+        "title": "We are reading the lease…"
+      }
+    },
+    "why": {
+      "parties": "Name, tax code and residence are written in the lease and are needed to register it with the Revenue Agency. You check the identity document yourself: CasaZen does not keep it.",
+      "summary": "Why we ask"
     }
   },
   "longRentDeadlines": {

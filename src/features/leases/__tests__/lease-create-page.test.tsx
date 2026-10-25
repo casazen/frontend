@@ -97,13 +97,38 @@ describe('LeaseCreatePage', () => {
     vi.mocked(leasesApi.getRules).mockResolvedValue(RULES);
   });
 
-  it('asks the type of contract first, before any field', () => {
+  it('asks the type of contract first, before any field; the main button is pressable and, with nothing chosen, leads to the list and says to choose', () => {
     renderPage();
 
     expect(screen.getByText(i18n.t('leaseWizard.start.kind.legend'))).toBeInTheDocument();
     expect(screen.getAllByRole('radio')).toHaveLength(3);
-    expect(screen.getByTestId('lease-kind-continue')).toBeDisabled();
     expect(screen.queryByLabelText(i18n.t('leases.form.monthlyRentLabel'))).not.toBeInTheDocument();
+
+    // Not disabled: a closed button explains nothing. It puts the focus on the first answer and one line says what to do (LR-WIZ-1).
+    expect(screen.getByTestId('lease-kind-continue')).toBeEnabled();
+    expect(screen.queryByTestId('lease-kind-choose')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('lease-kind-continue'));
+    expect(screen.getByTestId('lease-kind-choose')).toHaveTextContent(i18n.t('leaseWizardGuide.start.which.choose'));
+    expect(screen.getAllByRole('radio')[0]).toHaveFocus();
+    // Nothing was answered: the address is still the bare one.
+    expect(screen.getByTestId('search')).toBeEmptyDOMElement();
+  });
+
+  it('says in a line what each type is and how to choose, and the second question names where its button leads', async () => {
+    renderPage();
+
+    // A line under each answer, and «Quale scegliere?» that compares them (shut until it is asked for).
+    expect(screen.getByText(i18n.t('leaseWizardGuide.start.kind.libero'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('leaseWizardGuide.start.which.help.summary'))).toBeInTheDocument();
+
+    chooseKind('libero');
+    await waitFor(() => expect(screen.getByTestId('lease-way-casazen')).toBeEnabled());
+    // Nothing chosen: the button says only «Continua», and pressing it asks for an answer; once chosen it says where it goes.
+    expect(screen.getByTestId('lease-way-continue')).toHaveTextContent(i18n.t('leaseWizardGuide.start.how.continue.none'));
+    fireEvent.click(screen.getByTestId('lease-way-continue'));
+    expect(screen.getByTestId('lease-way-choose')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('lease-way-documenti'));
+    expect(screen.getByTestId('lease-way-continue')).toHaveTextContent(i18n.t('leaseWizardGuide.start.how.continue.documenti'));
   });
 
   it('names the transitory type with the term the server states, and moves the focus to the title when the question changes', async () => {
@@ -136,7 +161,7 @@ describe('LeaseCreatePage', () => {
     expect(screen.getByTestId('search')).toHaveTextContent('?tipo=libero&come=casazen');
     expect(screen.getByLabelText(i18n.t('leases.form.propertyLabel'))).toBeInTheDocument();
     expect(screen.queryByLabelText(i18n.t('leases.form.monthlyRentLabel'))).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: i18n.t('leaseWizard.next', { step: i18n.t('leaseWizard.steps.2.label') }) })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('leaseWizardGuide.next.to.2') })).toBeInTheDocument();
   });
 
   it('saves the draft for the partner with only its property and lands on the sheet of the contract, with no APE asked', async () => {
@@ -158,6 +183,21 @@ describe('LeaseCreatePage', () => {
     expect(leasesApi.createDraft).not.toHaveBeenCalled();
     expect(leasesApi.saveDraft).not.toHaveBeenCalled();
     expect(propertiesApi.getDocuments).not.toHaveBeenCalled();
+  });
+
+  it('lets the button of the way from zero be pressed with no house chosen: the focus goes to the list and a line says what is missing', async () => {
+    renderPage();
+    chooseKind('concordato');
+    chooseWay('zero');
+
+    const button = await screen.findByTestId('concordato-draft-create');
+    expect(button).toBeEnabled();
+    expect(screen.getByTestId('lease-wizard-remaining')).toHaveTextContent(i18n.t('leaseWizardGuide.missing.what.property_missing'));
+    fireEvent.click(button);
+
+    expect(screen.getByLabelText(i18n.t('leases.form.propertyLabel'))).toHaveFocus();
+    expect(screen.getByTestId('lease-wizard-remaining')).toHaveAttribute('data-pressed', 'true');
+    expect(leasesApi.createCfDraft).not.toHaveBeenCalled();
   });
 
   it('opens nothing when making the draft failed, and the next click asks again: the server gives back the draft it made', async () => {
