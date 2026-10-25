@@ -998,6 +998,23 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
+  // CRM guest profiles (NF-23, ADR-021): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  {
+    path: '/app/short-rent/crm/guests',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.crm',
+    navPlacement: 'secondary',
+    navOrder: 21,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
+  },
+  {
+    path: '/app/short-rent/crm/guests/:id',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
+  },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
   // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
   {
