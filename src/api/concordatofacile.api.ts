@@ -20,9 +20,11 @@ export const ConcordatoFacileApi = {
    * Create Stripe checkout session for CF one-time payment (ADR-005-R1).
    * Returns sessionUrl to redirect to Stripe. Idempotent: reuses pending sessions (ADR-005-R2).
    * Requires LeaseCreate OR LeaseRead policy (ADR-005-R9).
+   * The body is an empty JSON object on purpose: the endpoint binds a body, and a POST with no body carries no content type, which
+   * the server answers with 415 (the first real payment on the test environment, 25/10, ended there).
    */
   createCheckout: (leaseId: string): Promise<CfCheckoutResponse> =>
-    ApiClient.post<CfCheckoutResponse>(`/leases/${leaseId}/concordatofacile/checkout`),
+    ApiClient.post<CfCheckoutResponse>(`/leases/${leaseId}/concordatofacile/checkout`, {}),
 
   /**
    * Consume the org's gift for a lease (NF-03, ADR-006-R10).
