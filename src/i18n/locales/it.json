@@ -724,6 +724,50 @@
       "en": "English"
     }
   },
+  "guidedForm": {
+    "applied": "Stato aggiornato.",
+    "apply": "Applica",
+    "applyError": "Non è stato possibile cambiare lo stato. Riprova.",
+    "backToContract": "Torna al contratto",
+    "checking": "Controllo del collegamento…",
+    "closeReason": "Motivo della chiusura",
+    "closeReasons": {
+      "duplicate": "Doppione di un'altra pratica",
+      "not_compliant": "Contratto non attestabile",
+      "other": "Altro motivo",
+      "withdrawn": "L'utente ha rinunciato"
+    },
+    "comune": "Comune",
+    "documentError": "Non è stato possibile scaricare il documento. Riprova.",
+    "documents": {
+      "attestation": "Scarica l'attestazione",
+      "contract": "Scarica il contratto di esempio",
+      "receipt": "Scarica la ricevuta di registrazione",
+      "title": "Documenti di esempio"
+    },
+    "linkInvalid": "Il collegamento non è valido o è scaduto: puoi compilare lo stesso, la pratica arriverà senza riferimento al contratto.",
+    "linkValid": "Collegamento valido",
+    "loadError": "Non è stato possibile caricare il modulo.",
+    "notNamed": "Non indicato",
+    "panel": {
+      "description": "Qui chi sta provando il giro fa quello che farebbe il servizio: porta la pratica in un altro stato e scarica i documenti che arriverebbero per e-mail.",
+      "title": "Pannello di prova"
+    },
+    "practiceLinked": "La pratica è collegata al contratto.",
+    "practiceNotLinked": "La pratica è arrivata senza riferimento al contratto.",
+    "practiceNumber": "Numero della pratica",
+    "practiceStatus": "Stato della pratica",
+    "provincia": "Provincia",
+    "retry": "Riprova",
+    "status": "Nuovo stato",
+    "submit": "Invia la pratica",
+    "submitError": "Non è stato possibile inviare la pratica. Riprova.",
+    "submitted": "Pratica inviata",
+    "testNotice": "Ambiente di prova: questo modulo simula il servizio che prepara il contratto. Non invia nulla a nessuno.",
+    "title": "Modulo guidato",
+    "unavailable": "Pagina non disponibile",
+    "uploadData": "Carica i dati in CasaZen"
+  },
   "shell": {
     "shortRentSubtitle": "Affitti brevi",
     "longRentSubtitle": "Affitti lungo termine",
