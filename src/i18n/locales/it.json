@@ -708,7 +708,8 @@
     },
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
-    "channels": "Canali e calendari"
+    "channels": "Canali e calendari",
+    "verifications": "Verifiche"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -1770,8 +1771,7 @@
       "landlord_missing": "Aggiungi chi affitta (il locatore)",
       "landlords_ok_one": "{{count}} locatore con tutti i dati",
       "landlords_ok_other": "{{count}} locatori con tutti i dati",
-      "lease_overlap_one": "Su questo immobile c'è già {{count}} altro contratto nelle stesse date",
-      "lease_overlap_other": "Su questo immobile ci sono già {{count}} altri contratti nelle stesse date",
+      "lease_overlap": "Per questo immobile c'è già un contratto dal {{from}} al {{to}}. Due contratti non possono coprire gli stessi giorni: apri quello esistente o cambia le date.",
       "lease_type_not_available": "Questo tipo di contratto non è ancora disponibile",
       "party_fiscal_code_duplicate": "Lo stesso codice fiscale compare più volte nel contratto: cambia quello delle ultime voci",
       "property_missing": "Scegli l'immobile del contratto",
@@ -1836,6 +1836,9 @@
         "remove": "Togli il conduttore {{n}}",
         "title": "Chi prende in affitto (conduttore)"
       }
+    },
+    "periodConflict": {
+      "open": "Apri il contratto esistente"
     },
     "property": {
       "addNew": "Aggiungi un nuovo immobile",
@@ -3250,6 +3253,7 @@
     },
     "confirm": "Conferma",
     "cancel": "Annulla",
+    "error": "Errore",
     "confirmationDialog": {
       "consequences": "Cosa succede se confermi",
       "requireText": "Per confermare scrivi <strong>{{text}}</strong>"
@@ -10887,6 +10891,61 @@
     "email": "Indirizzo email non valido",
     "format": "Formato non valido",
     "invalidOption": "Seleziona un'opzione valida"
+  },
+  "verification": {
+    "action": {
+      "photoRequested": "Richiesta foto inviata al cliente",
+      "photoRequestFailed": "Impossibile inviare la richiesta foto",
+      "reject": "Rifiuta",
+      "rejectFailed": "Impossibile rifiutare la verifica",
+      "rejected": "Verifica rifiutata",
+      "request_photo": "Richiedi nuova foto",
+      "verified": "Verifica registrata",
+      "verification": "Verifica",
+      "verificationRejected": "Verifica respinta",
+      "verify": "Verifica",
+      "verifyFailed": "Impossibile registrare la verifica"
+    },
+    "attempts": "Tentativi",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "dialog": {
+      "acceptButton": "Accetta verifica",
+      "confirmReject": "Conferma rifiuto",
+      "noteLabel": "Nota (opzionale per accettazione, obbligatoria per rifiuto)",
+      "notePlaceholder": "Inserisci una nota...",
+      "reasonLabel": "Motivo del rifiuto",
+      "reasonPlaceholder": "Inserisci il motivo del rifiuto...",
+      "rejectButton": "Rifiuta verifica",
+      "rejectDescription": "Il rifiuto impedirà ulteriori tentativi di verifica per questa prenotazione.",
+      "rejectTitle": "Rifiuta verifica biometrica",
+      "verifyDescription": "Accetta la verifica per completare il check-in, oppure rifiutala con una nota.",
+      "verifyTitle": "Registra verifica manuale"
+    },
+    "filter": {
+      "allDeadlines": "Tutte le scadenze",
+      "allReasons": "Tutti i motivi",
+      "deadline": "Scadenza",
+      "past": "Scadute",
+      "reason": "Motivo",
+      "today": "Oggi",
+      "upcoming": "Prossime"
+    },
+    "queue": {
+      "description": "Prenotazioni in attesa di verifica biometrica manuale",
+      "emptyFiltered": "Nessuna verifica corrisponde ai filtri selezionati",
+      "emptyQueue": "Nessuna verifica in attesa",
+      "emptyTitle": "Nessun elemento",
+      "loadError": "Impossibile caricare la coda di verifica",
+      "loading": "Caricamento coda di verifica...",
+      "title": "Coda di verifica"
+    },
+    "reason": {
+      "consent_refused": "Consenso rifiutato",
+      "label": "Motivo",
+      "model_error": "Errore del modello",
+      "unverified": "Foto non verificata"
+    }
   },
   "insecureOrigin": {
     "title": "Origine non sicura",

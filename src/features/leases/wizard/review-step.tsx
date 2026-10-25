@@ -9,6 +9,7 @@ import { formatRomeDateTime, formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import { useProperty } from '@/queries/use-properties';
 import type { LeaseReview, LeaseReviewCheck, LeaseReviewSeverity, LongRentRules } from '@/types';
+import { PERIOD_CONFLICT_CHECK, conflictingLeasePath } from './period-conflict';
 import { needMessage } from './wizard-messages';
 import { isBlankRow, isDataStep, type WizardValues } from './wizard-model';
 import { contractStory, partyName } from './wizard-story';
@@ -26,10 +27,22 @@ const ICONS: Record<LeaseReviewSeverity, { Icon: LucideIcon; tone: string }> = {
 function CheckLine({ check, href }: { check: LeaseReviewCheck; href?: string }) {
   const { t, i18n } = useTranslation();
   const { Icon, tone } = ICONS[check.severity];
+  // Another lease on the same days (LR-OVERLAP): the check says which one, and the link opens it.
+  const conflictId =
+    check.code === PERIOD_CONFLICT_CHECK && typeof check.params?.conflictingLeaseId === 'string' ? check.params.conflictingLeaseId : null;
   return (
     <li className="flex items-start gap-3 text-sm" data-testid={`lease-review-check-${check.code}`}>
       <Icon aria-hidden="true" className={cn('mt-0.5 size-5 shrink-0', tone)} />
-      <span className="min-w-0 flex-1 break-words">{needMessage(t, i18n, check)}</span>
+      <span className="min-w-0 flex-1 break-words">
+        {needMessage(t, i18n, check)}
+        {conflictId ? (
+          <Button asChild variant="link" size="sm" className="block h-auto min-h-11 px-0">
+            <Link to={conflictingLeasePath(conflictId)} data-testid="lease-review-conflict-link">
+              {t('leaseWizard.periodConflict.open')}
+            </Link>
+          </Button>
+        ) : null}
+      </span>
       {href ? (
         <Button asChild variant="ghost" size="sm" className="min-h-11 shrink-0">
           <Link to={href}>{t('leaseWizard.review.goToStep')}</Link>
