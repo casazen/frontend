@@ -59,6 +59,7 @@ import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
+import { ownerPortalRoutes } from './ownerPortalRoutes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -318,6 +319,11 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/help/ical',
     element: <IcalHelpPage />,
+  },
+  // Owner portal routes (ADR-011-R6): dedicated portal with Auth0 login
+  {
+    element: <AuthProviderBoundary />,
+    children: ownerPortalRoutes,
   },
   // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
   ...devRoutes,
