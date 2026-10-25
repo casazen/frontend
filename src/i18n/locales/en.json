@@ -721,6 +721,50 @@
       "en": "English"
     }
   },
+  "guidedForm": {
+    "applied": "Status updated.",
+    "apply": "Apply",
+    "applyError": "The status could not be changed. Try again.",
+    "backToContract": "Back to the contract",
+    "checking": "Checking the link…",
+    "closeReason": "Reason for closing",
+    "closeReasons": {
+      "duplicate": "Duplicate of another practice",
+      "not_compliant": "Contract that cannot be attested",
+      "other": "Other reason",
+      "withdrawn": "The user withdrew"
+    },
+    "comune": "Municipality",
+    "documentError": "The document could not be downloaded. Try again.",
+    "documents": {
+      "attestation": "Download the attestation",
+      "contract": "Download the sample contract",
+      "receipt": "Download the registration receipt",
+      "title": "Sample documents"
+    },
+    "linkInvalid": "The link is not valid or has expired: you can fill in the form anyway, the practice will arrive with no reference to the contract.",
+    "linkValid": "Valid link",
+    "loadError": "The form could not be loaded.",
+    "notNamed": "Not given",
+    "panel": {
+      "description": "Here whoever is trying the round does what the service would do: moves the practice to another status and downloads the documents that would arrive by e-mail.",
+      "title": "Test panel"
+    },
+    "practiceLinked": "The practice is linked to the contract.",
+    "practiceNotLinked": "The practice arrived with no reference to the contract.",
+    "practiceNumber": "Practice number",
+    "practiceStatus": "Practice status",
+    "provincia": "Province",
+    "retry": "Try again",
+    "status": "New status",
+    "submit": "Send the practice",
+    "submitError": "The practice could not be sent. Try again.",
+    "submitted": "Practice sent",
+    "testNotice": "Test environment: this form simulates the service that prepares the contract. It sends nothing to anyone.",
+    "title": "Guided form",
+    "unavailable": "Page not available",
+    "uploadData": "Upload the data in CasaZen"
+  },
   "shell": {
     "shortRentSubtitle": "Short-term rentals",
     "longRentSubtitle": "Long-term rentals",
