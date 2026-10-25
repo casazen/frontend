@@ -184,9 +184,13 @@ export async function sendThePractice(page: Page): Promise<{ practiceId: string;
   return body;
 }
 
-/** The test panel: whoever tries the round does what the service would do, and moves the practice to another state. */
-export async function movePracticeTo(page: Page, status: string): Promise<void> {
+/**
+ * The test panel: whoever tries the round does what the service would do, and moves the practice to another state (with the reason, when
+ * the practice is closed without an attestation).
+ */
+export async function movePracticeTo(page: Page, status: string, closeReason?: string): Promise<void> {
   await page.getByTestId('guided-form-status').selectOption(status);
+  if (closeReason) await page.getByTestId('guided-form-close-reason').selectOption(closeReason);
   await page.getByTestId('guided-form-apply').click();
   await expect(page.getByText('Stato aggiornato.')).toBeVisible({ timeout: 15_000 });
 }

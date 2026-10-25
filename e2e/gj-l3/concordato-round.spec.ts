@@ -42,6 +42,10 @@ import {
  * What is NOT covered: the payment with a real card, the webhook of Stripe that records it, and the real form of the service (the form is the
  * simulated page `/guided-form`; its look is not the supplier's).
  *
+ * Three tests: the whole round with each of the two accesses, and (admin access) the way of a practice that the service closes without an
+ * attestation: the sheet says why, offers «Riprendi la compilazione» with no privacy notice asked again, and the second form makes a second
+ * practice.
+ *
  * Every action goes through the UI; the API is only an oracle for the assertions (read-only, on behalf of the landlord), except the move of
  * a practice by the module (`status`, the call the test panel itself makes) and the gift of the fixture. On every key screen the visible text
  * must not name the supplier of the guided contract nor say «partner». Pictures of the screens are kept with the files of the test.
@@ -64,7 +68,10 @@ type AccessView = {
   privacyAccepted?: boolean;
   linkOpenedAt?: string | null;
 };
-type StatusView = { practices: Array<{ practiceId: string; status: string; comuneDiffersFromLink: boolean }>; available?: boolean };
+type StatusView = {
+  practices: Array<{ practiceId: string; status: string; comuneDiffersFromLink: boolean; closeReason?: string | null }>;
+  available?: boolean;
+};
 type RegistrationView = { status: string; channel: string; registrationCode?: string | null; registrationDate?: string | null; hasReceipt: boolean };
 type LeaseView = {
   id: string;
@@ -125,7 +132,10 @@ async function describeFailure(actors: Actor[], trouble: ApiTrouble[]): Promise<
   log(`FAILED, answers of the API that were not a success: ${JSON.stringify(trouble.map((entry) => entry.line))}`);
 }
 
-async function runRound(browser: Browser, request: APIRequestContext, access: Access): Promise<void> {
+/** `whole`: the round to the registration; `closed-then-again`: a practice closed without an attestation, and the form filled in again. */
+type Scenario = 'whole' | 'closed-then-again';
+
+async function runRound(browser: Browser, request: APIRequestContext, access: Access, scenario: Scenario): Promise<void> {
   const run = Date.now().toString(36);
   const trouble: ApiTrouble[] = [];
   const email = access === 'admin' ? `gj-admin-cf-${run}@example.test` : `cf-host-${run}@example.test`;
@@ -244,6 +254,55 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       else expect.soft(count(events, 'ConcordatoFacileAdminAccess'), 'the access of the administrator was recorded').toBeGreaterThanOrEqual(1);
     });
 
+    if (scenario === 'closed-then-again') {
+      await step('The service closes the practice without an attestation: the sheet says why and offers the form again; the second practice arrives', async () => {
+        await movePracticeTo(page, 'ClosedWithoutAttestation', 'not_compliant');
+        await page.getByTestId('guided-form-back').click();
+
+        const closed = page.getByTestId('lease-partner-closed');
+        await expect(closed).toBeVisible({ timeout: 30_000 });
+        await expect(closed).toContainText(practiceId);
+        await expect(closed).toContainText('non è attestabile');
+        await expect(page.getByTestId('lease-partner-status'), 'a closed practice is not a practice under way').toHaveCount(0);
+        await expect(page.getByTestId('lease-partner-privacy'), 'the privacy notice is accepted once for the contract').toHaveCount(0);
+        await expectNoSupplierName(page, 'the sheet with a practice closed without an attestation');
+        await snap('sheet-with-the-closed-practice');
+
+        const again = page.getByTestId('lease-partner-proceed');
+        await expect(again).toHaveText('Riprendi la compilazione');
+        await expect(again).toBeEnabled();
+        await again.click();
+        await page.waitForURL(/\/guided-form/, { timeout: 60_000 });
+        const first = practiceId;
+        const second = await sendThePractice(page);
+        log(`second practice ${second.practiceId}`);
+        expect(second.practiceId, 'the second form makes a practice of its own').not.toBe(first);
+        await snap('second-practice-sent');
+
+        await expect
+          .poll(
+            async () =>
+              (await hostApi.get<StatusView>(`/leases/${leaseId}/concordatofacile/status`)).practices
+                .map((p) => `${p.practiceId}:${p.status}:${p.closeReason ?? ''}`)
+                .sort(),
+            { message: 'the status lists the closed practice and the new one', timeout: 30_000, intervals: [500, 1_000, 2_000] },
+          )
+          .toEqual([`${first}:ClosedWithoutAttestation:not_compliant`, `${second.practiceId}:Received:`].sort());
+        const events = await eventsOfTheLease();
+        expect.soft(count(events, 'ConcordatoFacilePrivacyAccepted'), 'the privacy notice was not asked again').toBe(1);
+        expect.soft(count(events, 'ConcordatoFacileLinkGenerated'), 'one link for each opening of the form').toBe(2);
+
+        await page.getByTestId('guided-form-back').click();
+        await expect(page.getByTestId('lease-partner-status')).toContainText('Ricevuto', { timeout: 30_000 });
+        await expect.soft(page.getByTestId('lease-partner-practice'), 'the sheet says the number of the new practice').toContainText(second.practiceId);
+        await expect(page.getByTestId('lease-partner-closed')).toHaveCount(0);
+        await expect(page.getByTestId('lease-partner-proceed')).toHaveCount(0);
+        await expectNoSupplierName(page, 'the sheet with the second practice');
+      });
+      expect(trouble.filter((entry) => entry.status >= 500).map((entry) => entry.line), 'no API 5xx during the round').toEqual([]);
+      return;
+    }
+
     await step('«Torna al contratto»: the sheet shows the STATE of the practice, offers no way to open the form again, and follows the service', async () => {
       await page.getByTestId('guided-form-back').click();
       const status = page.getByTestId('lease-partner-status');
@@ -304,6 +363,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
 
       await page.getByTestId('lease-partner-upload').click();
       await expect(page).toHaveURL(/\/app\/long-rent\/documents\/upload\?leaseId=/, { timeout: 20_000 });
+      // The address changes before the screen does: the screen is waited for before it is read.
+      await expect(page.getByTestId('lease-documents-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the page that takes the documents in');
       await uploadDocument(page, files.contract, 'Contratto');
     });
@@ -380,6 +441,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await expect(page.getByTestId('cf-documents-confirm')).toContainText(propertyName);
       await snap('which-contract');
       await page.getByTestId('cf-documents-confirm-button').click();
+      await expect(page.getByTestId('lease-documents-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the page that takes the documents in, for the practice');
       await uploadDocument(page, files.attestation, 'Attestazione');
       await uploadDocument(page, files.receipt, 'Registrazione');
@@ -391,6 +453,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     await step('The registration made by the service is declared with the receipt already uploaded; the lease is Registered', async () => {
       await page.getByTestId('cf-documents-page').getByRole('link', { name: 'Apri il contratto' }).click();
       await expect(page).toHaveURL(new RegExp(`/app/long-rent/leases/${leaseId}`), { timeout: 20_000 });
+      await expect(page.getByTestId('lease-sheet')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the sheet of the signed contract');
       await snap('sheet-of-the-signed-contract');
       const code = `RLI-ESEMPIO-${practiceId.slice(-8).toUpperCase()}`;
@@ -435,10 +498,14 @@ test.describe('Guided contract of a canone concordato, the whole round (CF-L3)',
   test.setTimeout(10 * 60_000);
 
   test('the whole round, with the access of a platform administrator', async ({ browser, request }) => {
-    await runRound(browser, request, 'admin');
+    await runRound(browser, request, 'admin', 'whole');
   });
 
   test('the whole round, with the gift practice used from the page of payment', async ({ browser, request }) => {
-    await runRound(browser, request, 'gift');
+    await runRound(browser, request, 'gift', 'whole');
+  });
+
+  test('a practice closed without an attestation: the sheet says why and the form is filled in again', async ({ browser, request }) => {
+    await runRound(browser, request, 'admin', 'closed-then-again');
   });
 });
