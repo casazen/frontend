@@ -1512,12 +1512,15 @@
         "rent": "I canoni futuri non ancora pagati non vengono più richiesti.",
         "revenue": "La cessazione va comunicata all'Agenzia delle Entrate."
       },
-      "dateHint": "Dal primo giorno del contratto alla fine del periodo in corso; può essere anche un giorno passato.",
-      "dateInvalid": "Scegli un giorno tra l'inizio del contratto e la fine del periodo in corso.",
+      "dateHint": "Dal {{from}} al {{to}}; può essere anche un giorno passato.",
+      "dateInvalid": "Scegli un giorno dal {{from}} al {{to}}: dopo l'inizio del contratto e non oltre la fine del periodo in corso.",
       "dateLabel": "Ultimo giorno del contratto",
       "description": "{{tenant}} · {{property}}. Il contratto finisce il giorno che scegli.",
       "done": "Contratto terminato: l'ultimo giorno è il {{date}}",
+      "facts": "Il conduttore che recede per gravi motivi deve dare {{notice}} mesi di preavviso, e la cessazione di un contratto registrato va comunicata all'Agenzia delle Entrate entro {{days}} giorni, con un'imposta fissa che non si paga se tutti i locatori hanno scelto la cedolare secca.",
       "failed": "Non è stato possibile terminare il contratto.",
+      "noDay": "Questo contratto non ha un giorno in cui terminare: il suo periodo è di un solo giorno.",
+      "notStarted": "Non è ancora iniziato: per annullarlo serve la risoluzione consensuale, da comunicare all'Agenzia delle Entrate entro {{days}} giorni.",
       "title": "Termina il contratto",
       "word": "TERMINA"
     }
@@ -9901,7 +9904,6 @@
       "leaseNotFound": "Contratto non trovato.",
       "leaseNotInForce": "Il contratto non è ancora in vigore: deve essere firmato da tutte le parti.",
       "leaseTermAlreadyEnded": "Il periodo del contratto è già finito: la disdetta non si può più togliere.",
-      "leaseTerminationDateInvalid": "L'ultimo giorno deve essere tra l'inizio del contratto e la fine del periodo in corso.",
       "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta."
     }
   },
