@@ -3339,8 +3339,10 @@
     }
   },
   "common": {
+    "cancel": "Cancel",
     "planLimitMessage": "You have reached your plan limit",
-    "planUpgradeCta": "Upgrade to a higher plan"
+    "planUpgradeCta": "Upgrade to a higher plan",
+    "sending": "Sending..."
   },
   "property": {
     "country": "Country",

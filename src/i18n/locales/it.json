@@ -3339,8 +3339,10 @@
     }
   },
   "common": {
+    "cancel": "Annulla",
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
-    "planUpgradeCta": "Passa a un piano superiore"
+    "planUpgradeCta": "Passa a un piano superiore",
+    "sending": "Invio in corso..."
   },
   "property": {
     "country": "Paese",
