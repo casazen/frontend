@@ -3336,6 +3336,10 @@
     "planUpgradeCta": "Passa a un piano superiore"
   },
   "property": {
+    "country": "Paese",
+    "country.ch": "Svizzera",
+    "country.it": "Italia",
+    "currency": "Valuta",
     "page": {
       "title": "Immobili",
       "description": "Gestisci le tue strutture ricettive per affitti brevi",

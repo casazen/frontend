@@ -117,6 +117,7 @@ export function PropertyForm({
 
   const selectedAmenities = watch('amenities') || [];
   const comuneIstatCode = watch('comuneIstatCode') || null;
+  const country = watch('country');
 
   const toggleAmenity = (amenity: string) => {
     const current = selectedAmenities;
@@ -125,6 +126,12 @@ export function PropertyForm({
       : [...current, amenity];
     setValue('amenities', updated, { shouldDirty: true });
   };
+
+  // Auto-update currency when country changes
+  useEffect(() => {
+    const newCurrency = country === 'CH' ? 'CHF' : 'EUR';
+    setValue('currency', newCurrency, { shouldDirty: true });
+  }, [country, setValue]);
 
   // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
   return (
@@ -212,6 +219,20 @@ export function PropertyForm({
                   </p>
                 )}
                 <FormFieldError error={errors.comuneIstatCode} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country">{t('property.country')}</Label>
+                  <select id="country" className={selectClassName} {...register('country')}>
+                    <option value="IT">{t('property.country.it')}</option>
+                    <option value="CH">{t('property.country.ch')}</option>
+                  </select>
+                  <FormFieldError error={errors.country} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t('property.currency')}</Label>
+                  <Input id="currency" value={watch('currency')} readOnly disabled className="bg-muted" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit">{t('property.form.unit')}</Label>
