@@ -238,7 +238,7 @@ export function ReviewStep({
                 {group.rows
                   .filter((row) => row.lines.length > 0)
                   .map((row, index) => (
-                    <div key={row.label ?? index} className="flex flex-wrap gap-x-2">
+                    <div key={row.label ?? index} className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-2">
                       {row.label ? <dt className="text-muted-foreground">{row.label}</dt> : null}
                       <dd className="min-w-0 break-words font-medium">
                         {row.lines.map((line) => (

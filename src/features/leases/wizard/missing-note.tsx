@@ -37,12 +37,14 @@ export function MissingNote({ items, current, pressed = 0, onGo, hrefOfStep, cla
     );
   }
 
-  const line = guideNeed(t, i18n, first.need);
-  const more = items.length - 1;
+  // The first two things are named, the others counted: «Manca: il canone mensile · il deposito e altre 2 cose».
+  const named = items.slice(0, 2).map((item) => guideNeed(t, i18n, item.need));
+  const more = items.length - named.length;
   const sameStep = first.step === current;
   const body = (
     <>
-      <strong className="font-semibold">{t(`leaseWizardGuide.missing.${line.lead}`)}</strong> {line.text}
+      <strong className="font-semibold">{t(named[0].lead === 'missing' ? 'leaseWizardGuide.missing.label' : 'leaseWizardGuide.missing.fix')}</strong>{' '}
+      {named.map((line) => line.text).join(' · ')}
       {more > 0 ? ` ${t('leaseWizardGuide.missing.more', { count: more })}` : null}.{' '}
       <span className="font-semibold underline underline-offset-2">
         {sameStep ? t('leaseWizardGuide.missing.goTo') : t('leaseWizardGuide.missing.goToStep', { step: t(`leaseWizard.steps.${first.step}.label`) })}

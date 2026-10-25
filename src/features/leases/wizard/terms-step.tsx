@@ -89,7 +89,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
         </section>
       ) : null}
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-3">
         <ChoiceGroup legend={t('leaseWizard.terms.regime.legend')} legendVisible minCardWidth={14}>
           {LEASE_TAX_REGIMES.map((regime, position) => (
             <ChoiceCard

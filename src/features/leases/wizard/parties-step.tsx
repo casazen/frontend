@@ -160,7 +160,7 @@ export function PartiesStep() {
 
   return (
     <div className="space-y-8">
-      <WhyAsk className="-mb-4">{t('leaseWizardGuide.why.parties')}</WhyAsk>
+      <WhyAsk>{t('leaseWizardGuide.why.parties')}</WhyAsk>
       <PartyGroup list="landlords" />
       <PartyGroup list="tenants" />
       {hasCompany ? (

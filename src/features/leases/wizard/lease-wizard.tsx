@@ -217,7 +217,9 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   };
 
   const here = flowStep(flow, current);
-  const remaining = isDataStep(current) ? blockingNeeds(here) : [];
+  // What is left to do on this step. For a contract made in CasaZen the APE and the cadastral data of the property are part of it (they keep
+  // the next step shut); for one already signed they are a notice and do not stop (`blockingNeeds`).
+  const remaining = isDataStep(current) ? (imported ? blockingNeeds(here) : (here?.needs ?? [])) : [];
   // On the review what is left are the checks that block: each is put right at its own step.
   const blockingChecks: MissingItem[] =
     current === REVIEW_STEP
@@ -276,7 +278,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         // Something blocks: the main button leads to the step where the first thing is put right, and the line under the checks says what.
         const firstBlock = reviewConfirmed ? undefined : blockingChecks[0];
         if (firstBlock) {
-          raise(current, blockingChecks);
           goTo(firstBlock.step);
           return;
         }

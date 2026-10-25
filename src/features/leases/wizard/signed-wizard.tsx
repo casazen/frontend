@@ -73,7 +73,7 @@ export function SignedWizard({ leaseId, view }: { leaseId: string; view: 'after'
         <div className="flex justify-end">
           <Button asChild className={`${WIZARD_BUTTON} w-full sm:w-auto`}>
             <Link to={leaseEditPath(leaseId, DONE_STEP)} data-testid="lease-after-finish">
-              {t('leaseWizard.after.finish')}
+              {t('leaseWizardGuide.next.finish')}
             </Link>
           </Button>
         </div>
