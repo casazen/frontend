@@ -1,4 +1,4 @@
-import { expect, type APIRequestContext, type Browser, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pickComune } from './host-steps';
@@ -57,6 +57,16 @@ export async function expectNoSupplierName(page: Page, where: string): Promise<v
   expect.soft(found, `the text of "${where}" names the supplier or says "partner": «…${around}…»`).toBeNull();
 }
 
+/**
+ * A picture of the screen, kept with the files of the test (the CI uploads them): it is how a person who was not there sees the round. A
+ * picture that cannot be taken is no reason to fail.
+ */
+export async function shot(page: Page, name: string): Promise<void> {
+  await page
+    .screenshot({ path: test.info().outputPath(`${name}.jpg`), type: 'jpeg', quality: 60, fullPage: true, timeout: 15_000 })
+    .catch((error: unknown) => log(`no picture of ${name}: ${String(error)}`));
+}
+
 /** A card of a `ChoiceCard`: the radio under it is not drawn, so the person clicks the card (its label). */
 export async function chooseCard(page: Page, testId: string): Promise<void> {
   const input = page.getByTestId(testId);
@@ -104,7 +114,12 @@ export async function becomeLongTermLandlord(page: Page, propertyName: string): 
  * «Nuovo contratto» → «Canone concordato» → «Parto da zero» → the house → the draft is saved and the person lands on the SHEET of the contract.
  * Returns the id of the lease (the reference the guided form is linked to).
  */
-export async function startConcordatoFromZero(page: Page, propertyName: string): Promise<string> {
+export async function startConcordatoFromZero(
+  page: Page,
+  propertyName: string,
+  /** Called on each of the three screens of the new contract (a picture of it). */
+  onScreen?: (name: string) => Promise<void>,
+): Promise<string> {
   const guide = page.getByTestId('long-rent-guide');
   await expect(guide).toBeVisible({ timeout: 20_000 });
   await guide.getByRole('link', { name: 'Crea contratto' }).click();
@@ -112,6 +127,7 @@ export async function startConcordatoFromZero(page: Page, propertyName: string):
 
   await expect(page.getByTestId('lease-kind-choice')).toBeVisible({ timeout: 20_000 });
   await expectNoSupplierName(page, 'the first question of the new contract');
+  await onScreen?.('new-contract-which');
   await chooseCard(page, 'lease-kind-concordato');
   await page.getByTestId('lease-kind-continue').click();
 
@@ -119,6 +135,7 @@ export async function startConcordatoFromZero(page: Page, propertyName: string):
   // Open only while the guided service is on: the flags are read first (the card is closed, not hidden, until they are).
   await expect(page.getByTestId('lease-way-zero')).toBeEnabled({ timeout: 20_000 });
   await expectNoSupplierName(page, 'the second question of the new contract');
+  await onScreen?.('new-contract-how');
   await chooseCard(page, 'lease-way-zero');
   await page.getByTestId('lease-way-continue').click();
 
@@ -128,6 +145,7 @@ export async function startConcordatoFromZero(page: Page, propertyName: string):
   await expect(option).toHaveCount(1, { timeout: 20_000 });
   await form.locator('select').selectOption((await option.getAttribute('value')) as string);
   await expectNoSupplierName(page, 'the choice of the house');
+  await onScreen?.('new-contract-house');
   await page.getByTestId('concordato-draft-create').click();
 
   await expect(page.getByTestId('lease-partner-draft')).toBeVisible({ timeout: 30_000 });
@@ -138,13 +156,15 @@ export async function startConcordatoFromZero(page: Page, propertyName: string):
  * The block of the sheet that waits for the form: the main button is closed until the privacy notice is ticked, then the person goes on.
  * With the access (platform administrator, payment, gift) the click opens the guided form in this same tab; without it, the page of payment.
  */
-export async function acceptPrivacyAndProceed(page: Page): Promise<void> {
+export async function acceptPrivacyAndProceed(page: Page, onScreen?: (name: string) => Promise<void>): Promise<void> {
   const privacy = page.getByTestId('lease-partner-privacy');
   const proceed = page.getByTestId('lease-partner-proceed');
   await expect(privacy).toBeVisible({ timeout: 20_000 });
   await expect(proceed).toBeDisabled();
+  await onScreen?.('sheet-privacy-not-ticked');
   await privacy.getByRole('checkbox').check();
   await expect(proceed).toBeEnabled();
+  await onScreen?.('sheet-privacy-ticked');
   await proceed.click();
 }
 
@@ -198,9 +218,15 @@ export async function uploadDocument(page: Page, file: string, kindLabel: 'Contr
 
 // ---- the wizard that imports the contract ---------------------------------------------------------------------------------------------
 
-/** The step the address names (`?step=`). */
-function stepOf(page: Page): number {
-  return Number(new URL(page.url()).searchParams.get('step'));
+/**
+ * The step the wizard SHOWS now, read from its list of steps (the one marked as the current): the address changes before the screen does,
+ * so the address is not a safe way to know on which step the fields are. 0 while the list is not there.
+ */
+async function wizardStepOnScreen(page: Page): Promise<number> {
+  const item = page.getByTestId('lease-wizard-stepper').locator('li:has([aria-current="step"])').first();
+  if ((await item.count()) === 0) return 0;
+  const id = (await item.getAttribute('data-testid')) ?? '';
+  return Number(id.replace('lease-wizard-step-', '')) || 0;
 }
 
 /** Fills a field only if it is empty (what the reading of the contract wrote is not touched); says what it filled. */
@@ -240,15 +266,19 @@ export async function walkTheWizardToTheImport(page: Page): Promise<number[]> {
   await expect(page.getByTestId('lease-wizard-page')).toBeVisible({ timeout: 30_000 });
   const seen: number[] = [];
   for (let guard = 0; guard < 8; guard += 1) {
-    const step = stepOf(page);
+    await expect.poll(() => wizardStepOnScreen(page), { message: 'the wizard shows a step', timeout: 30_000 }).toBeGreaterThan(0);
+    const step = await wizardStepOnScreen(page);
     if (step === 7) return seen;
     seen.push(step);
     const remaining = (await page.getByTestId('lease-wizard-remaining').innerText()).replace(/\s+/g, ' ');
     log(`wizard step ${step}: ${remaining}`);
     await expectNoSupplierName(page, `the step ${step} of the wizard`);
+    await shot(page, `wizard-step-${step}`);
     await completeWhatIsMissing(page, step);
     await page.getByTestId('lease-wizard-next').click();
-    await expect.poll(() => stepOf(page), { message: `the wizard goes on from the step ${step}`, timeout: 30_000 }).not.toBe(step);
+    await expect
+      .poll(() => wizardStepOnScreen(page), { message: `the wizard goes on from the step ${step}`, timeout: 30_000 })
+      .not.toBe(step);
   }
   throw new Error(`the wizard did not reach the step of the signed contract: it went through ${seen.join(', ')}`);
 }
@@ -276,7 +306,14 @@ export async function importTheSignedContract(page: Page): Promise<void> {
  * The registration made by the service is declared on the sheet: the receipt already uploaded among the documents is the one used (not sent
  * twice), the number and the day are typed from it, the person confirms.
  */
-export async function declareTheRegistration(page: Page, leaseId: string, code: string, day: string): Promise<void> {
+export async function declareTheRegistration(
+  page: Page,
+  leaseId: string,
+  code: string,
+  day: string,
+  /** Called with the window filled in and not yet sent (a picture of it). */
+  beforeSaving?: () => Promise<void>,
+): Promise<void> {
   const panel = page.getByTestId('rli-registration-panel');
   await expect(panel).toBeVisible({ timeout: 30_000 });
   await panel.getByRole('button', { name: 'Dichiara la registrazione' }).click();
@@ -287,6 +324,7 @@ export async function declareTheRegistration(page: Page, leaseId: string, code: 
   await dialog.locator(`#rli-code-${leaseId}`).fill(code);
   await dialog.locator(`#rli-date-${leaseId}`).fill(day);
   await dialog.getByRole('checkbox', { name: /Dichiaro che il contratto è stato registrato/ }).check();
+  await beforeSaving?.();
   await dialog.getByRole('button', { name: 'Salva registrazione' }).click();
   await expect(dialog).toHaveCount(0, { timeout: 30_000 });
 }

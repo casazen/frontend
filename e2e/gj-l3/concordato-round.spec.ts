@@ -14,6 +14,7 @@ import {
   movePracticeTo,
   newActor,
   sendThePractice,
+  shot,
   startConcordatoFromZero,
   uploadDocument,
   walkTheWizardToTheImport,
@@ -41,8 +42,9 @@ import {
  * What is NOT covered: the payment with a real card, the webhook of Stripe that records it, and the real form of the service (the form is the
  * simulated page `/guided-form`; its look is not the supplier's).
  *
- * Every action goes through the UI; the API is only an oracle for the assertions (read-only, on behalf of the landlord). On every key screen
- * the visible text must not name the supplier of the guided contract nor say «partner».
+ * Every action goes through the UI; the API is only an oracle for the assertions (read-only, on behalf of the landlord), except the move of
+ * a practice by the module (`status`, the call the test panel itself makes) and the gift of the fixture. On every key screen the visible text
+ * must not name the supplier of the guided contract nor say «partner». Pictures of the screens are kept with the files of the test.
  */
 
 const stack: StackEnv = loadStack();
@@ -77,6 +79,7 @@ type LeaseView = {
   securityDeposit: number | null;
   stipulaDate: string | null;
   registration?: RegistrationView | null;
+  events?: Array<{ eventType: string }>;
 };
 type DraftParty = { firstName?: string | null; lastName?: string | null; fiscalCode?: string | null };
 type DraftView = {
@@ -122,7 +125,7 @@ async function describeFailure(actors: Actor[], trouble: ApiTrouble[]): Promise<
   log(`FAILED, answers of the API that were not a success: ${JSON.stringify(trouble.map((entry) => entry.line))}`);
 }
 
-async function runRound(browser: Browser, request: APIRequestContext, access: Access, whole: boolean): Promise<void> {
+async function runRound(browser: Browser, request: APIRequestContext, access: Access): Promise<void> {
   const run = Date.now().toString(36);
   const trouble: ApiTrouble[] = [];
   const email = access === 'admin' ? `gj-admin-cf-${run}@example.test` : `cf-host-${run}@example.test`;
@@ -137,7 +140,15 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
   let hostApi!: Oracle;
   let leaseId = '';
   let practiceId = '';
+  let controlToken = '';
+  let pictures = 0;
   const t0 = Date.now();
+
+  /** A picture of the screen, numbered in the order of the round. */
+  const snap = (name: string) => shot(page, `${access}-${String((pictures += 1)).padStart(2, '0')}-${name}`);
+  /** The types of the events of the lease, as the API lists them. */
+  const eventsOfTheLease = async () => ((await hostApi.get<LeaseView>(`/leases/${leaseId}`)).events ?? []).map((event) => event.eventType);
+  const count = (events: string[], type: string) => events.filter((candidate) => candidate === type).length;
 
   try {
     await step('The stack has the guided contract on: the flag, and the simulated module', async () => {
@@ -157,6 +168,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         // A platform administrator is not sent through the onboarding (it has no organization and does not need one): it opens it.
         if (access === 'admin') await page.goto('/onboarding');
         await becomeLongTermLandlord(page, propertyName);
+        await snap('leases-with-the-guide');
         hostApi = oracleFor(request, stack, await accessToken(page));
         const me = await hostApi.get<{ orgId?: string | null; rentalType?: string }>('/users/me');
         expect(me.orgId, 'the landlord has an organization').toBeTruthy();
@@ -176,16 +188,17 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     );
 
     await step('«Nuovo contratto» · «Canone concordato» · «Parto da zero» · the house: the draft is saved and the sheet opens', async () => {
-      leaseId = await startConcordatoFromZero(page, propertyName);
+      leaseId = await startConcordatoFromZero(page, propertyName, snap);
       log(`lease ${leaseId}`);
       const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
       expect(lease).toMatchObject({ id: leaseId, status: 'Draft', origin: 'Imported', isConcordatoFacileSource: true, contractType: 'Concordato' });
       await expect(page.getByTestId('lease-partner-upload')).toBeVisible();
       await expectNoSupplierName(page, 'the sheet of the draft');
+      await snap('sheet-of-the-draft');
     });
 
     await step('The main button waits for the privacy notice; with it ticked the person goes on to the access', async () => {
-      await acceptPrivacyAndProceed(page);
+      await acceptPrivacyAndProceed(page, snap);
       if (access === 'gift') {
         // Without the access the sheet sends the person to the page of payment, where the gift practice stands in for the payment.
         await expect(page).toHaveURL(new RegExp(`/app/long-rent/leases/${leaseId}/guided-contract`), { timeout: 20_000 });
@@ -193,6 +206,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         await expect(page.getByTestId('cf-offer-taxes')).toBeVisible();
         await expect(page.getByTestId('cf-pay-button')).toHaveCount(0);
         await expectNoSupplierName(page, 'the page of payment');
+        await snap('page-of-payment');
         await page.getByTestId('cf-gift-button').click();
       }
       await page.waitForURL(/\/guided-form/, { timeout: 60_000 });
@@ -201,12 +215,15 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     await step('The guided form opens in the same tab with a good link; the person sends the practice', async () => {
       await expect(page.getByTestId('guided-form-comune')).toContainText('Milano', { timeout: 30_000 });
       await expectNoSupplierName(page, 'the guided form');
+      await snap('guided-form');
       const practice = await sendThePractice(page);
       log(`practice ${practice.practiceId}`);
       await expect(page.getByTestId('guided-form-linked')).toHaveText('La pratica è collegata al contratto.');
       await expectNoSupplierName(page, 'the guided form after the sending');
+      await snap('guided-form-sent');
 
       practiceId = practice.practiceId;
+      controlToken = practice.controlToken;
 
       const seen = await hostApi.get<AccessView>(`/leases/${leaseId}/concordatofacile/access`);
       expect(seen, `the access of this round comes from the ${access}`).toMatchObject({ hasAccess: true, source: access, privacyAccepted: true });
@@ -218,11 +235,16 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
           intervals: [500, 1_000, 2_000],
         })
         .toContain(`${practiceId}:Received`);
+
+      // One gesture, one link: the dev server runs the effects twice, and the link is worth 15 minutes and is recorded at every call.
+      const events = await eventsOfTheLease();
+      expect.soft(count(events, 'ConcordatoFacilePrivacyAccepted'), 'the privacy notice was accepted once').toBe(1);
+      expect.soft(count(events, 'ConcordatoFacileLinkGenerated'), 'the signed link was made once, by one click').toBe(1);
+      if (access === 'gift') expect.soft(count(events, 'ConcordatoFacileGiftConsumed'), 'the gift practice was used once').toBe(1);
+      else expect.soft(count(events, 'ConcordatoFacileAdminAccess'), 'the access of the administrator was recorded').toBeGreaterThanOrEqual(1);
     });
 
-    if (!whole) return;
-
-    await step('«Torna al contratto»: the sheet shows the STATE of the practice and offers no way to open the form again', async () => {
+    await step('«Torna al contratto»: the sheet shows the STATE of the practice, offers no way to open the form again, and follows the service', async () => {
       await page.getByTestId('guided-form-back').click();
       const status = page.getByTestId('lease-partner-status');
       await expect(status).toBeVisible({ timeout: 30_000 });
@@ -231,6 +253,12 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await expect(page.getByTestId('lease-partner-proceed')).toHaveCount(0);
       await expect(page.getByTestId('lease-partner-upload')).toBeVisible();
       await expectNoSupplierName(page, 'the sheet with the status of the practice');
+      await snap('sheet-with-the-status');
+
+      // The service moves the practice on its own (here with the call the test panel makes): the sheet shows it, with no reload.
+      const moved = await request.post(`${stack.apiUrl}/cf-simulator/practices/${practiceId}/status`, { data: { controlToken, status: 'InProgress' } });
+      expect(moved.status(), 'the module moves the practice').toBe(200);
+      await expect(status, 'the sheet follows the status of the practice by itself').toContainText('In lavorazione', { timeout: 30_000 });
     });
 
     const files = { contract: '', attestation: '', receipt: '' };
@@ -238,6 +266,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await page.goBack();
       await expect(page.getByTestId('guided-form-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the test panel of the form');
+      await snap('test-panel');
       for (const next of ['SignedReceived', 'Attested']) {
         await movePracticeTo(page, next);
         await expect
@@ -251,11 +280,28 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       files.contract = await downloadSample(page, 'contract', samples);
       files.attestation = await downloadSample(page, 'attestation', samples);
       files.receipt = await downloadSample(page, 'receipt', samples);
+
+      // The documents of the module answer only to the control token that the sending of the practice returned (the panel sends it for the
+      // person): the right one gives the PDF, another one finds nothing, as if the practice did not exist.
+      const documentUrl = `${stack.apiUrl}/cf-simulator/practices/${practiceId}/documents/contract`;
+      const withToken = await request.get(documentUrl, { params: { controlToken } });
+      expect.soft(withToken.status(), 'the sample contract with the control token of the practice').toBe(200);
+      expect.soft(withToken.headers()['content-type'], 'the sample contract is a PDF').toContain('application/pdf');
+      const withOtherToken = await request.get(documentUrl, { params: { controlToken: `${controlToken}x` } });
+      expect.soft(withOtherToken.status(), 'the sample contract with another token').toBe(404);
     });
 
     await step('Back on the sheet (Attestato) the person uploads the contract with «Carica i documenti»', async () => {
       await page.getByTestId('guided-form-back').click();
       await expect(page.getByTestId('lease-partner-status')).toContainText('Attestato', { timeout: 30_000 });
+      await expect(page.getByTestId('lease-partner-proceed')).toHaveCount(0);
+
+      // The page of payment is not a place to go back to once the form is open: it sends the person to the sheet and makes no new link.
+      await page.goto(`/app/long-rent/leases/${leaseId}/guided-contract`);
+      await expect(page).toHaveURL(new RegExp(`/app/long-rent/leases/${leaseId}$`), { timeout: 20_000 });
+      await expect(page.getByTestId('lease-partner-status')).toBeVisible({ timeout: 30_000 });
+      expect.soft(count(await eventsOfTheLease(), 'ConcordatoFacileLinkGenerated'), 'the page of payment, seen again, made no new link').toBe(1);
+
       await page.getByTestId('lease-partner-upload').click();
       await expect(page).toHaveURL(/\/app\/long-rent\/documents\/upload\?leaseId=/, { timeout: 20_000 });
       await expectNoSupplierName(page, 'the page that takes the documents in');
@@ -295,6 +341,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       });
 
       await expect(page.getByTestId('cf-import-open')).toBeEnabled({ timeout: 30_000 });
+      await snap('contract-arrived');
       await page.getByTestId('cf-import-open').click();
     });
 
@@ -302,10 +349,12 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await expect(page).toHaveURL(/\/app\/long-rent\/leases\/[0-9a-f-]{36}\/edit\?step=\d/, { timeout: 30_000 });
       const seen = await walkTheWizardToTheImport(page);
       log(`the wizard went through the steps ${seen.join(', ')}`);
+      await snap('step-of-the-signed-contract');
     });
 
     await step('The contract is imported: the same lease is now Signed, with its PDF', async () => {
       await importTheSignedContract(page);
+      await snap('after-the-signature');
       const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
       log(`the lease after the import: ${JSON.stringify(lease)}`);
       expect.soft(lease, 'the contract imported').toMatchObject({
@@ -329,10 +378,12 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       // The link comes from outside the app: the page asks which contract it is before anything is uploaded.
       await expect(page.getByTestId('cf-documents-confirm')).toContainText(practiceId, { timeout: 30_000 });
       await expect(page.getByTestId('cf-documents-confirm')).toContainText(propertyName);
+      await snap('which-contract');
       await page.getByTestId('cf-documents-confirm-button').click();
       await expectNoSupplierName(page, 'the page that takes the documents in, for the practice');
       await uploadDocument(page, files.attestation, 'Attestazione');
       await uploadDocument(page, files.receipt, 'Registrazione');
+      await snap('documents-of-the-contract');
       const documents = await hostApi.get<DocumentView[]>(`/leases/${leaseId}/documents`);
       expect.soft(documents.map((d) => d.kind).sort(), 'the three documents of the practice, each of its own kind').toEqual(['Attestation', 'Contract', 'Registration']);
     });
@@ -341,9 +392,10 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await page.getByTestId('cf-documents-page').getByRole('link', { name: 'Apri il contratto' }).click();
       await expect(page).toHaveURL(new RegExp(`/app/long-rent/leases/${leaseId}`), { timeout: 20_000 });
       await expectNoSupplierName(page, 'the sheet of the signed contract');
+      await snap('sheet-of-the-signed-contract');
       const code = `RLI-ESEMPIO-${practiceId.slice(-8).toUpperCase()}`;
       const day = romeDay(0);
-      await declareTheRegistration(page, leaseId, code, day);
+      await declareTheRegistration(page, leaseId, code, day, () => snap('declaration-of-the-registration'));
       await expect
         .poll(async () => (await hostApi.get<LeaseView>(`/leases/${leaseId}`)).status, { message: 'the lease is Registered', timeout: 30_000 })
         .toBe('Registered');
@@ -351,7 +403,21 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       log(`the lease after the declaration: ${JSON.stringify(lease.registration)}`);
       expect.soft(lease.registration, 'the registration declared').toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: code, hasReceipt: true });
       expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day of the registration').toBe(day);
-      await expectNoSupplierName(page, 'the sheet of the registered contract');
+    });
+
+    await step('The history of the contract tells the round in words, with no name of the supplier', async () => {
+      await page.getByRole('button', { name: 'Mostra tutta la cronologia' }).click();
+      const timeline = page.getByTestId('lease-timeline');
+      const told = [
+        'Informativa privacy accettata',
+        'Modulo guidato aperto',
+        access === 'gift' ? 'Pratica omaggio usata' : 'Accesso amministratore al modulo guidato',
+        'Contratto già firmato importato',
+        'Contratto registrato (RLI)',
+      ];
+      for (const sentence of told) await expect.soft(timeline, `the history says «${sentence}»`).toContainText(sentence, { timeout: 10_000 });
+      await expectNoSupplierName(page, 'the sheet of the registered contract, with its whole history');
+      await snap('sheet-of-the-registered-contract');
     });
 
     expect(trouble.filter((entry) => entry.status >= 500).map((entry) => entry.line), 'no API 5xx during the whole round').toEqual([]);
@@ -369,10 +435,10 @@ test.describe('Guided contract of a canone concordato, the whole round (CF-L3)',
   test.setTimeout(10 * 60_000);
 
   test('the whole round, with the access of a platform administrator', async ({ browser, request }) => {
-    await runRound(browser, request, 'admin', true);
+    await runRound(browser, request, 'admin');
   });
 
   test('the whole round, with the gift practice used from the page of payment', async ({ browser, request }) => {
-    await runRound(browser, request, 'gift', true);
+    await runRound(browser, request, 'gift');
   });
 });
