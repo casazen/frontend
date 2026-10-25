@@ -106,7 +106,7 @@ describe('LeaseWizard — the head of every step and the line for what is missin
     expect(screen.getByTestId('lease-wizard-save')).toHaveTextContent('Salva e continua dopo');
   });
 
-  it('the review and the signature open the same way', async () => {
+  it('the review opens the same way, and its main button confirms and leads to the signature', async () => {
     renderWizard(6);
     expect(await screen.findByTestId('lease-review')).toBeInTheDocument();
     expect(screen.getByTestId('lease-wizard-position')).toHaveTextContent('Passo 5 di 7');
