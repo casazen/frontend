@@ -32,13 +32,20 @@ interface RegistrationStatusPanelProps {
   providerFilingAvailable: boolean;
   onSubmitToProvider?: () => void;
   isSubmittingToProvider?: boolean;
+  /**
+   * The contract was prepared by the guided service (`isConcordatoFacileSource`, CF-END): the service registers it, so the panel gives no
+   * steps to register it oneself and no way to send it to a provider (that would be a second registration); it says who registers and
+   * offers the declaration, with the receipt the service sent.
+   */
+  viaService?: boolean;
 }
 
 /**
  * RLI registration of a lease (LT-01, A7-01). Honest states: "to register" (with the steps to register on the official
  * channel and the manual declaration), "in progress" (provider only: not registered yet), "registered" (details and
  * receipt) and "failed" (reason and the ways forward). Nothing is presented as registered before the registration is
- * recorded with its receipt.
+ * recorded with its receipt. For a contract made with the guided service (CF-END) the steps and the provider button give way to one
+ * sentence (the service registers; when the receipt arrives, upload it among the documents and declare the registration here).
  */
 export function RegistrationStatusPanel({
   leaseId,
@@ -48,13 +55,14 @@ export function RegistrationStatusPanel({
   providerFilingAvailable,
   onSubmitToProvider,
   isSubmittingToProvider,
+  viaService = false,
 }: RegistrationStatusPanelProps) {
   const { t } = useTranslation();
   const [isDownloading, setIsDownloading] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const state = getRliRegistrationState(leaseStatus, registration);
   const canRegister = state === 'toRegister' || state === 'failed';
-  const canUseProvider = canRegister && providerFilingAvailable && !!onSubmitToProvider;
+  const canUseProvider = canRegister && !viaService && providerFilingAvailable && !!onSubmitToProvider;
   const deadlineText = registrationDeadline
     ? t('leases.rli.deadline', { date: formatDate(registrationDeadline) })
     : t('leases.rli.deadlineToBeDetermined');
@@ -74,7 +82,7 @@ export function RegistrationStatusPanel({
 
   return (
     <PlainSection id={RLI_REGISTRATION_PANEL_ID} title={t('leases.rli.registrationTitle')} data-testid="rli-registration-panel">
-      <p className="text-sm text-foreground/70">{t('leases.rli.registrationDescription')}</p>
+      {viaService ? null : <p className="text-sm text-foreground/70">{t('leases.rli.registrationDescription')}</p>}
       <Badge variant={RLI_REGISTRATION_STATE_VARIANTS[state]} data-testid="rli-registration-state">
         {getRliRegistrationStateLabel(state, t)}
       </Badge>
@@ -82,7 +90,10 @@ export function RegistrationStatusPanel({
         {state === 'notSigned' && <p className="text-muted-foreground">{t('leases.rli.notSignedHint')}</p>}
 
         {state === 'failed' && (
-          <Alert variant="danger" title={t(canUseProvider ? 'leases.rli.failedHintWithRetry' : 'leases.rli.failedHint')}>
+          <Alert
+            variant="danger"
+            title={viaService ? t('leaseRound.service.failedHint') : t(canUseProvider ? 'leases.rli.failedHintWithRetry' : 'leases.rli.failedHint')}
+          >
             <span className="text-foreground/70">{t('leases.rli.failureReason')}: </span>
             {getRliFailureLabel(registration?.failureCode, t)}
           </Alert>
@@ -92,28 +103,32 @@ export function RegistrationStatusPanel({
           <>
             <p className="font-medium" data-testid="rli-registration-deadline">{deadlineText}</p>
             {!registrationDeadline && <p className="text-muted-foreground">{t('leases.rli.deadlineRule')}</p>}
-            <div className="space-y-2" data-testid="rli-manual-steps">
-              <p className="font-medium">{t('leases.rli.manualSteps.title')}</p>
-              <ol className="list-decimal space-y-1 pl-5">
-                <li>{t('leases.rli.manualSteps.step1')}</li>
-                <li>{t('leases.rli.manualSteps.step2')}</li>
-                <li>{t('leases.rli.manualSteps.step3')}</li>
-              </ol>
-              <a
-                href={RLI_OFFICIAL_INFO_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
-              >
-                {t('leases.rli.manualSteps.officialLink')}
-                <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
-              <p className="text-xs text-muted-foreground">{t('leases.rli.manualSteps.notIntermediary')}</p>
-            </div>
+            {viaService ? (
+              <p data-testid="rli-service-note">{t('leaseRound.service.note')}</p>
+            ) : (
+              <div className="space-y-2" data-testid="rli-manual-steps">
+                <p className="font-medium">{t('leases.rli.manualSteps.title')}</p>
+                <ol className="list-decimal space-y-1 pl-5">
+                  <li>{t('leases.rli.manualSteps.step1')}</li>
+                  <li>{t('leases.rli.manualSteps.step2')}</li>
+                  <li>{t('leases.rli.manualSteps.step3')}</li>
+                </ol>
+                <a
+                  href={RLI_OFFICIAL_INFO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+                >
+                  {t('leases.rli.manualSteps.officialLink')}
+                  <ExternalLink className="h-3 w-3" aria-hidden />
+                </a>
+                <p className="text-xs text-muted-foreground">{t('leases.rli.manualSteps.notIntermediary')}</p>
+              </div>
+            )}
             <div className="flex flex-wrap gap-3">
               <Button onClick={() => setManualOpen(true)}>
                 <FileCheck2 className="mr-2 h-4 w-4" />
-                {t('leases.rli.declareManual')}
+                {viaService ? t('leaseRound.service.declare') : t('leases.rli.declareManual')}
               </Button>
               {canUseProvider && (
                 <Button variant="outline" onClick={onSubmitToProvider} disabled={isSubmittingToProvider}>

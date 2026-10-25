@@ -147,13 +147,15 @@ export interface LeaseRegistration {
   hasReceipt: boolean;
 }
 
-/** `POST /leases/:id/registration/manual` (multipart): what the landlord reads on the receipt, plus the PDF. */
-export interface ManualRegistrationInput {
+/**
+ * `POST /leases/:id/registration/manual` (multipart): what the landlord reads on the receipt, plus the receipt: the PDF sent now (`receipt`), or
+ * the id of the document of kind `Registration` already uploaded to the lease (`receiptDocumentId`, CF-END), one of the two.
+ */
+export type ManualRegistrationInput = {
   registrationCode: string;
   /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
   registrationDate: string;
-  receipt: File;
-}
+} & ({ receipt: File } | { receiptDocumentId: string });
 
 export interface LeasePropertySummary {
   id: string;

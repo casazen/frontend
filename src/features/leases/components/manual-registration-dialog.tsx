@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
+import { leaseDocumentsApi } from '@/api/lease-documents.api';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import {
   Dialog,
   DialogContent,
@@ -13,10 +16,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { useDeclareManualRegistration } from '@/queries/use-leases';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/utils';
 import { isStayDate, todayInRome } from '@/lib/stay-dates';
 import { RLI_MAX_RECEIPT_BYTES, RLI_MAX_REGISTRATION_CODE_LENGTH } from '@/lib/rli-registration-state';
+import type { ManualRegistrationInput } from '@/types';
 
 interface ManualRegistrationDialogProps {
   leaseId: string;
@@ -24,15 +29,20 @@ interface ManualRegistrationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/** Where the receipt comes from: one already among the documents of the lease, or a file sent now. */
+type ReceiptSource = 'uploaded' | 'file';
+
 function isPdf(file: File | null): file is File {
   if (!file || file.size === 0 || file.size > RLI_MAX_RECEIPT_BYTES) return false;
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 }
 
 /**
- * Manual RLI registration (LT-01, D15): after registering the contract on the official channel of the Agenzia delle
- * Entrate the landlord enters the registration number or protocol, its date and the receipt PDF, and confirms the
- * declaration. Only then the lease becomes Registered. The server checks the PDF content and the date again.
+ * Registration of a contract (LT-01, D15; CF-END): once the contract is registered (by the landlord on the official channel of the Agenzia
+ * delle Entrate, or by the guided service that prepared it) the landlord enters the registration number or protocol, its date and the receipt
+ * PDF, and confirms the declaration. Only then the lease becomes Registered. The receipt is the one already uploaded among the documents of the
+ * lease (kind «Registrazione», preselected when it is the only one), so it is not sent twice, or a new file. Number and date are always typed:
+ * the receipt is not read. The server checks the PDF content, the date and that the document is one of this lease again.
  */
 export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: ManualRegistrationDialogProps) {
   const { t } = useTranslation();
@@ -42,11 +52,26 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
   const [registrationDate, setRegistrationDate] = useState(today);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [chosenSource, setChosenSource] = useState<ReceiptSource | null>(null);
+  const [chosenDocument, setChosenDocument] = useState('');
+
+  // The documents of the lease are asked when the window opens (the receipt may have been uploaded since the last time). A list that cannot be
+  // read is no list: the window then asks for the file, as it always did.
+  const documents = useQuery({
+    queryKey: ['lease-documents', leaseId],
+    queryFn: () => leaseDocumentsApi.list(leaseId),
+    enabled: open,
+    staleTime: 0,
+  });
+  const uploaded = (documents.data ?? []).filter((document) => document.kind === 'Registration');
+  const source: ReceiptSource = uploaded.length === 0 ? 'file' : (chosenSource ?? 'uploaded');
+  // One receipt: it is the one. Several: the person chooses.
+  const documentId = uploaded.some((document) => document.id === chosenDocument) ? chosenDocument : uploaded.length === 1 ? uploaded[0].id : '';
 
   const code = registrationCode.trim();
   const codeValid = code.length > 0 && code.length <= RLI_MAX_REGISTRATION_CODE_LENGTH;
   const dateValid = isStayDate(registrationDate) && registrationDate <= today;
-  const receiptValid = isPdf(receipt);
+  const receiptValid = source === 'uploaded' ? documentId !== '' : isPdf(receipt);
   const canSubmit = codeValid && dateValid && receiptValid && confirmed && !declare.isPending;
 
   function reset() {
@@ -54,6 +79,8 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
     setRegistrationDate(today);
     setReceipt(null);
     setConfirmed(false);
+    setChosenSource(null);
+    setChosenDocument('');
   }
 
   function handleOpenChange(next: boolean) {
@@ -62,11 +89,12 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
   }
 
   function handleSubmit() {
-    if (!canSubmit || !receipt) return;
-    declare.mutate(
-      { id: leaseId, input: { registrationCode: code, registrationDate, receipt } },
-      { onSuccess: () => handleOpenChange(false) },
-    );
+    if (!canSubmit) return;
+    const declared = { registrationCode: code, registrationDate };
+    const input: ManualRegistrationInput | null =
+      source === 'uploaded' ? { ...declared, receiptDocumentId: documentId } : receipt ? { ...declared, receipt } : null;
+    if (!input) return;
+    declare.mutate({ id: leaseId, input }, { onSuccess: () => handleOpenChange(false) });
   }
 
   return (
@@ -105,18 +133,60 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
               </p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor={`rli-receipt-${leaseId}`}>{t('leases.rli.manualDialog.receiptLabel')}</Label>
-            <Input
-              id={`rli-receipt-${leaseId}`}
-              type="file"
-              accept="application/pdf,.pdf"
-              onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
-            />
-            {receipt && !receiptValid && (
-              <p className="text-sm text-destructive" role="alert">
-                {t('leases.rli.manualDialog.receiptInvalid')}
-              </p>
+          <div className="space-y-3" data-testid="rli-receipt-source">
+            {uploaded.length > 0 ? (
+              <ChoiceGroup legend={t('leaseRound.receipt.legend')} legendVisible minCardWidth={12}>
+                <ChoiceCard
+                  name={`rli-receipt-source-${leaseId}`}
+                  value="uploaded"
+                  checked={source === 'uploaded'}
+                  onChange={() => setChosenSource('uploaded')}
+                  title={t('leaseRound.receipt.uploaded.title')}
+                  description={t('leaseRound.receipt.uploaded.description')}
+                  data-testid="rli-receipt-uploaded"
+                />
+                <ChoiceCard
+                  name={`rli-receipt-source-${leaseId}`}
+                  value="file"
+                  checked={source === 'file'}
+                  onChange={() => setChosenSource('file')}
+                  title={t('leaseRound.receipt.file.title')}
+                  data-testid="rli-receipt-new"
+                />
+              </ChoiceGroup>
+            ) : null}
+            {source === 'uploaded' ? (
+              <div className="space-y-2">
+                <Label htmlFor={`rli-document-${leaseId}`}>{t('leaseRound.receipt.documentLabel')}</Label>
+                <Select
+                  id={`rli-document-${leaseId}`}
+                  value={documentId}
+                  onChange={(e) => setChosenDocument(e.target.value)}
+                  data-testid="rli-receipt-document"
+                >
+                  {documentId === '' ? <option value="">{t('leaseRound.receipt.documentPlaceholder')}</option> : null}
+                  {uploaded.map((document) => (
+                    <option key={document.id} value={document.id}>
+                      {document.fileName} · {formatDateTime(document.uploadedAt)}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor={`rli-receipt-${leaseId}`}>{t('leases.rli.manualDialog.receiptLabel')}</Label>
+                <Input
+                  id={`rli-receipt-${leaseId}`}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
+                />
+                {receipt && !receiptValid && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {t('leases.rli.manualDialog.receiptInvalid')}
+                  </p>
+                )}
+              </div>
             )}
           </div>
           <div className="flex items-start gap-2">

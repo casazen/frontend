@@ -103,7 +103,10 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   const schedule = ledger.data?.schedule ?? null;
   const nextRent = ledger.data?.installments.find((rent) => rent.status === 'Scheduled' || rent.status === 'Failed' || rent.status === 'Processing');
   const started = parseStayDate(lease.startDate) <= todayInRome();
-  const costs = registrationCosts(advisory.data, t);
+  // A contract the guided service prepared is registered by the service (CF-END): no summary to register with, no cost of ours, one
+  // sentence, and the declaration with the receipt it sends.
+  const viaService = lease.isConcordatoFacileSource === true;
+  const costs = viaService ? null : registrationCosts(advisory.data, t);
 
   const downloadSummary = async () => {
     try {
@@ -136,10 +139,10 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         data-testid="lease-after-registration"
         tone={typeof daysLeft === 'number' && daysLeft < 0 ? 'danger' : 'neutral'}
         kicker={t('leaseWizard.after.registration.kicker')}
-        title={t('leaseWizard.after.registration.title')}
+        title={viaService ? t('leaseRound.service.title') : t('leaseWizard.after.registration.title')}
         body={
           <>
-            <p>{t('leaseWizard.after.registration.body')}</p>
+            <p>{viaService ? t('leaseRound.service.note') : t('leaseWizard.after.registration.body')}</p>
             {costs ? (
               <p className="mt-2" data-testid="lease-after-costs">
                 {costs}
@@ -149,13 +152,21 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         }
         who={t('leaseWizard.after.registration.who')}
         when={registrationWhen(lease, checklist.data, t, i18n.language)}
-        primary={{ label: t('leaseWizard.after.registration.mark'), onClick: () => setDeclareOpen(true), testId: 'lease-after-mark-registered' }}
-        secondary={{
-          label: t('leaseWizard.after.registration.download'),
-          onClick: () => void downloadSummary(),
-          loading: exportRli.isPending,
-          testId: 'lease-after-download-summary',
+        primary={{
+          label: viaService ? t('leaseRound.service.declare') : t('leaseWizard.after.registration.mark'),
+          onClick: () => setDeclareOpen(true),
+          testId: 'lease-after-mark-registered',
         }}
+        secondary={
+          viaService
+            ? undefined
+            : {
+                label: t('leaseWizard.after.registration.download'),
+                onClick: () => void downloadSummary(),
+                loading: exportRli.isPending,
+                testId: 'lease-after-download-summary',
+              }
+        }
       />
     );
   }

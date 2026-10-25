@@ -251,12 +251,17 @@ export const leasesApi = {
   triggerRegistration: (id: string, body: { tosVersion: string; attestationAccepted: boolean }) =>
     ApiClient.post<TriggerRegistrationResult>(`/leases/${id}/registration`, body),
 
-  /** LT-01: the landlord registered the contract on the official channel and declares number, date and receipt. */
+  /**
+   * LT-01: the contract was registered (by the landlord on the official channel, or by the guided service) and the landlord declares number,
+   * date and receipt. The receipt is the file sent now, or (CF-END) the id of the registration document already uploaded to the lease: it
+   * is not sent twice. Exactly one of the two goes to the server.
+   */
   declareManualRegistration: async (id: string, input: ManualRegistrationInput): Promise<LeaseRegistration> => {
     const formData = new FormData();
     formData.append('registrationCode', input.registrationCode);
     formData.append('registrationDate', input.registrationDate);
-    formData.append('receipt', input.receipt);
+    if ('receiptDocumentId' in input) formData.append('receiptDocumentId', input.receiptDocumentId);
+    else formData.append('receipt', input.receipt);
     const response = await axios.post<LeaseRegistration>(`/leases/${id}/registration/manual`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
