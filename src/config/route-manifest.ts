@@ -409,7 +409,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 1,
     icon: 'ShieldCheck',
     component: async () => ({
-      default: (await import('@/features/alloggiati/alloggiati-dashboard-page')).AlloggiatiDashboardPage,
+      default: (await import('@/pages/AlloggiatiPage')).AlloggiatiPage,
     }),
   },
   {
