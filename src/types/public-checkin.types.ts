@@ -160,3 +160,24 @@ export interface CheckInLinkResponse {
   emailStatus: CheckInLinkEmailStatus;
   emailError?: string | null;
 }
+
+/** Biometric verification outcome (API enum `BiometricOutcome`). */
+export type BiometricOutcome = 'Accept' | 'Escalate' | 'Reject';
+
+/**
+ * Response of `POST /api/public/checkin/{token}/selfie`. The backend processes the selfie
+ * synchronously and returns the outcome within 3 seconds per ADR-013-R1.
+ */
+export interface BiometricVerificationResponse {
+  outcome: BiometricOutcome;
+  attemptsRemaining: number;
+}
+
+/**
+ * Biometric consent request. Records the consent timestamp and version per ADR-013-R9.
+ */
+export interface BiometricConsentRequest {
+  consentGiven: boolean;
+  consentVersion: string;
+  consentTimestamp: string;
+}

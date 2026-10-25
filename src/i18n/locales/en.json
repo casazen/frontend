@@ -7525,6 +7525,37 @@
     "citizenship": "Citizenship *",
     "removeGuest": "Remove guest",
     "addGuest": "Add guest",
+    "biometric": {
+      "consent": {
+        "title": "Optional biometric verification",
+        "description": "We can compare your photo with your document to speed up check-in.",
+        "purposeTitle": "What it's for",
+        "purpose": "Biometric verification compares your face with the photo on your document. The comparison happens on the server and your photo is deleted immediately after.",
+        "optionalTitle": "It's optional",
+        "optional": "You can refuse without consequences: the property manager will still receive your data and document. The refusal is noted but does not block check-in.",
+        "accept": "I consent to verification",
+        "decline": "I refuse",
+        "version": "Consent version: {{version}}"
+      },
+      "capture": {
+        "title": "Take a selfie",
+        "instructions": "Frame your face, make sure it's well lit and centered, then take the photo. We'll compare it with your document.",
+        "cameraError": "Cannot access camera. Check browser permissions.",
+        "takePhoto": "Take photo",
+        "retake": "Retake",
+        "submit": "Submit photo",
+        "attemptsRemaining": "Attempts remaining: {{count}}",
+        "maxAttemptsReached": "You have reached the maximum number of attempts. Check-in will be verified manually by the manager."
+      },
+      "outcome": {
+        "accept": "Verified",
+        "acceptMessage": "Biometric verification succeeded. Your check-in is complete.",
+        "escalate": "To be verified",
+        "escalateMessage": "Biometric verification requires manual confirmation. The property manager will check your details.",
+        "reject": "Not verified",
+        "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
+      }
+    },
     "documentIntro": "Identity document of the single guest or of the head of family or group. Family and group members do not need one.",
     "documentOf": "Document of {{name}}",
     "documentIssuePlace": "Place of issue *",
