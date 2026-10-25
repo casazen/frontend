@@ -136,7 +136,7 @@ describe('LeaseCreatePage', () => {
     expect(screen.getByTestId('search')).toHaveTextContent('?tipo=libero&come=casazen');
     expect(screen.getByLabelText(i18n.t('leases.form.propertyLabel'))).toBeInTheDocument();
     expect(screen.queryByLabelText(i18n.t('leases.form.monthlyRentLabel'))).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: i18n.t('leaseWizard.next', { step: i18n.t('leaseWizard.steps.2.label') }) })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('leaseWizardGuide.next.to.2') })).toBeInTheDocument();
   });
 
   it('saves the draft for the partner with only its property and lands on the sheet of the contract, with no APE asked', async () => {

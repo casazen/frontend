@@ -13,13 +13,16 @@ import { useCreateLeaseDraft, useDraftReading } from '@/queries/use-lease-draft'
 import type { LeaseContractType } from '@/types';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
+import { MissingNote, type MissingItem } from './missing-note';
 import { NewLeaseStep } from './new-lease-step';
 import { PropertyStep } from './property-step';
+import { stepWordsAt } from './step-words';
 import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from './wizard-model';
 import { wizardPath } from './wizard-path';
 
 /** After this long the person is told it takes more than usual and may go on by hand while the reading goes on. */
 const SLOW_AFTER_MS = 120_000;
+const NOTHING_TO_LINK = () => '';
 
 /**
  * «Ho già i documenti» of a new contract (NL-DOCS): the person gives the property and the signed contract (a PDF, or photos of its
@@ -29,14 +32,17 @@ const SLOW_AFTER_MS = 120_000;
  * seconds. Then the wizard opens on the first step with something missing, with the values read in their fields (marked «letto dal
  * contratto — controlla») and editable. If the reading fails, or finds nothing, the person is told so and goes on by hand with the PDF
  * already uploaded: it is the one the final import uses. Nothing of the contract is kept in the browser.
+ *
+ * The main button is pressable before the file is there (LR-WIZ-1): it puts the focus on what is missing, and the line under the fields
+ * says what.
  */
 export function DocumentsStart({ contractType, defaultPropertyId }: { contractType: LeaseContractType; defaultPropertyId?: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const createDraft = useCreateLeaseDraft();
   const [propertyId, setPropertyId] = useState(defaultPropertyId ?? '');
   const [selection, setSelection] = useState<DocumentSelection>(EMPTY_DOCUMENT);
-  const [missingProperty, setMissingProperty] = useState(false);
+  const [pressed, setPressed] = useState(0);
   const [leaseId, setLeaseId] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState(false);
   const [working, setWorking] = useState(false);
@@ -69,17 +75,28 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
     label: t(`leaseWizard.steps.${stepKey(step, 'Imported')}.label`),
     mark: step === 1 ? ('current' as const) : ('todo' as const),
   }));
+  const position = { current: 1, total: steps.length };
+
+  // What is missing before the contract can be read: the property (until the draft exists) and the file, or the confirmation of the photos.
+  const propertyLeft = leaseId === null && !propertyId;
+  const missing: MissingItem[] = [
+    ...(propertyLeft ? [{ step: 1, need: { code: 'property_missing' } }] : []),
+    ...(documentReady(selection) ? [] : [{ step: 1, need: { code: selection.pages.length === 0 ? 'contract_file_missing' : 'contract_pages_unconfirmed' } }]),
+  ];
+  const focusMissing = (code?: string) => {
+    if (code === 'property_missing') document.getElementById('lw-property')?.focus();
+    else document.querySelector<HTMLElement>('[data-testid="lease-documents-start"] input[type="file"]')?.focus();
+  };
 
   const submit = async () => {
     if (working) return;
     setProblem('');
     setFailure(null);
-    if (!propertyId) {
-      setMissingProperty(true);
-      document.getElementById('lw-property')?.focus();
+    if (missing.length > 0) {
+      setPressed((count) => count + 1);
+      focusMissing(missing[0].need.code);
       return;
     }
-    if (!documentReady(selection)) return;
 
     setWorking(true);
     try {
@@ -112,11 +129,13 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
   }
 
   if (uploaded && leaseId !== null) {
+    const words = stepWordsAt(t, i18n, 'leaseWizardGuide.steps.reading');
     return (
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={1} />}
-        title={t('leaseWizard.documents.reading.title')}
-        purpose={t('leaseWizard.documents.reading.purpose')}
+        position={position}
+        title={words.title}
+        summary={words.summary}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
@@ -142,47 +161,57 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
     );
   }
 
+  const words = stepWordsAt(t, i18n, 'leaseWizardGuide.documents');
   return (
     <LeaseWizardFrame
       stepper={<LeaseWizardStepper entries={entries} current={1} />}
-      title={t('leaseWizard.documents.title')}
-      purpose={t('leaseWizard.documents.purpose')}
-      why={t('leaseWizard.documents.why')}
+      position={position}
+      title={words.title}
+      summary={words.summary}
+      inHand={words.inHand}
       footer={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {leaseId === null ? (
-            <Button type="button" variant="ghost" className={WIZARD_BUTTON} onClick={() => setByHand(true)} data-testid="lease-documents-manual">
-              {t('leaseWizard.documents.manual')}
-            </Button>
-          ) : (
+        <>
+          <MissingNote
+            items={missing}
+            current={1}
+            pressed={missing.length > 0 ? pressed : 0}
+            onGo={(need) => focusMissing(need.code)}
+            hrefOfStep={NOTHING_TO_LINK}
+          />
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+            {leaseId === null ? (
+              <Button type="button" variant="ghost" className={WIZARD_BUTTON} onClick={() => setByHand(true)} data-testid="lease-documents-manual">
+                {t('leaseWizard.documents.manual')}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                className={WIZARD_BUTTON}
+                onClick={() => navigate(leaseEditPath(leaseId, 2), { replace: true })}
+                data-testid="lease-documents-continue"
+              >
+                {t('leaseWizard.documents.continueByHand')}
+              </Button>
+            )}
             <Button
-              type="button"
-              variant="ghost"
-              className={WIZARD_BUTTON}
-              onClick={() => navigate(leaseEditPath(leaseId, 2), { replace: true })}
-              data-testid="lease-documents-continue"
+              type="submit"
+              form="lease-documents-form"
+              loading={working}
+              iconRight={<ArrowRight />}
+              className={`${WIZARD_BUTTON} w-full sm:ml-auto sm:w-auto`}
+              data-testid="lease-documents-submit"
             >
-              {t('leaseWizard.documents.continueByHand')}
+              {failure ? t('leaseWizard.documents.retry') : t('leaseWizard.documents.submit')}
             </Button>
-          )}
-          <Button
-            type="submit"
-            form="lease-documents-form"
-            loading={working}
-            disabled={!documentReady(selection)}
-            iconRight={<ArrowRight />}
-            className={`${WIZARD_BUTTON} grow sm:grow-0`}
-            data-testid="lease-documents-submit"
-          >
-            {failure ? t('leaseWizard.documents.retry') : t('leaseWizard.documents.submit')}
-          </Button>
-        </div>
+          </div>
+        </>
       }
     >
       <form
         id="lease-documents-form"
         noValidate
-        aria-label={t('leaseWizard.documents.title')}
+        aria-label={words.title}
         className="space-y-6"
         data-testid="lease-documents-start"
         onSubmit={(event) => {
@@ -191,17 +220,7 @@ export function DocumentsStart({ contractType, defaultPropertyId }: { contractTy
         }}
       >
         {/* The property is the draft's from the moment it exists: a retry of the upload does not ask for it again. */}
-        {leaseId === null ? (
-          <PropertyStep
-            value={propertyId}
-            onChange={(id) => {
-              setPropertyId(id);
-              setMissingProperty(false);
-            }}
-            error={missingProperty ? 'leaseWizard.validation.property' : undefined}
-            imported
-          />
-        ) : null}
+        {leaseId === null ? <PropertyStep value={propertyId} onChange={setPropertyId} imported /> : null}
 
         <section className="space-y-3" aria-labelledby="lease-documents-heading">
           <div className="space-y-1">

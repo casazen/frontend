@@ -11797,6 +11797,235 @@
       "title": "Declare the registration"
     }
   },
+  "leaseWizardGuide": {
+    "adminNotice": {
+      "action": "Go to the documents",
+      "message": "Legal documents updated: accept them to see your workspaces again"
+    },
+    "documents": {
+      "inHand": "the signed contract, as a PDF or as photos of its pages.",
+      "summary": "Upload the contract that is already signed: we read it and fill in the data for you. We only ask what we cannot read.",
+      "title": "Upload the contract"
+    },
+    "done": {
+      "lead": {
+        "Created": "The contract is signed and safe in CasaZen. Here is what happens now.",
+        "Imported": "The contract is in CasaZen, with its documents and its deadlines. Here is what happens now."
+      },
+      "open": "Open the contract sheet"
+    },
+    "fields": {
+      "deposit": {
+        "example": "1300",
+        "why": "The deposit is a sum the tenant leaves as a guarantee and that you give back at the end, if the home is in good order."
+      },
+      "fiscalCode": {
+        "example": "RSSMRA80A01H501U"
+      },
+      "property": {
+        "hint": "If the property is not in the list, add it: it takes a minute."
+      },
+      "regime": {
+        "intro": "The regime is the way you pay tax on the rent."
+      },
+      "rent": {
+        "example": "650",
+        "hint": "The amount the tenant pays every month for the rent."
+      },
+      "residence": {
+        "example": "Via Roma 10, 20822 Seveso (MB)"
+      }
+    },
+    "header": {
+      "inHand": "Have at hand:",
+      "position": "Step {{current}} of {{total}}"
+    },
+    "later": {
+      "action": "Save and continue later",
+      "saved": "Draft saved: you will find it among your contracts."
+    },
+    "missing": {
+      "fix": "To fix:",
+      "goTo": "Go to the field",
+      "goToStep": "Go to “{{step}}”",
+      "label": "Missing:",
+      "more_one": "and one more thing",
+      "more_other": "and {{count}} more things",
+      "none": "All filled in: you can go on.",
+      "what": {
+        "ape_identification_missing": "the code and the energy class of the APE",
+        "ape_missing": "the APE energy certificate of the property",
+        "cadastral_missing": "the cadastral data of the property",
+        "contract_file_missing": "the signed contract (a PDF or photos of its pages)",
+        "contract_pages_unconfirmed": "the confirmation that the photos are in order",
+        "contract_type_missing": "the type of contract",
+        "deposit_missing": "the deposit (write 0 if there is none)",
+        "end_missing": "the last day of the contract",
+        "landlord_incomplete": "{{fields}} of landlord {{n}}",
+        "landlord_missing": "who lets the property (the landlord)",
+        "property_missing": "the property of the contract",
+        "rent_missing": "the monthly rent",
+        "start_missing": "the start date of the contract",
+        "tax_regime_missing": "the tax regime",
+        "tenant_incomplete": "{{fields}} of tenant {{n}}",
+        "tenant_missing": "who rents the property (the tenant)",
+        "transitory_documentation_missing": "the documents that prove the need",
+        "transitory_need_missing": "the need that justifies the transitional contract",
+        "transitory_party_missing": "who has the need: the landlord or the tenant"
+      }
+    },
+    "next": {
+      "confirm": "Confirm and go to the signature",
+      "to": {
+        "2": "Save and go to the parties",
+        "3": "Save and go to the terms",
+        "4": "Save and go to the dates",
+        "6": "Save and go to the check",
+        "7": {
+          "Created": "Go to the signature",
+          "Imported": "Save and go to the signed contract"
+        }
+      }
+    },
+    "property": {
+      "apeExplain": "It is the document that says how much energy the property uses, with a class from A4 to G. A qualified technician issues it.",
+      "apeIdentificationHelp": "Write the code and the energy class as they are printed on the certificate. The class is a letter from A4 (the best) to G, for example B.",
+      "cadastralExplain": "They are the sheet, the parcel and the sub-unit of the property: you find them in the cadastral survey or in the deed of purchase.",
+      "cadastralMissing": "They are missing. Add them from the property page: they are needed for the contract and for the registration."
+    },
+    "review": {
+      "edit": "Edit",
+      "editGroup": "Edit: {{group}}",
+      "groups": {
+        "dates": "Dates",
+        "house": "The property",
+        "people": "Who signs",
+        "terms": "Rent and taxes"
+      },
+      "rows": {
+        "address": "Address",
+        "deposit": "Deposit",
+        "end": "End of the first period",
+        "landlords": "Landlord",
+        "regime": "Tax on the rent",
+        "rent": "Rent per month",
+        "start": "Start",
+        "tenants": "Tenant",
+        "type": "Type of contract"
+      },
+      "story": {
+        "kind": "{{type}}, with {{regime}}.",
+        "money": "{{rent}} a month, with a deposit of {{deposit}}.",
+        "moneyNoDeposit": "{{rent}} a month, no deposit.",
+        "moneyRentOnly": "{{rent}} a month.",
+        "parties_one": "You let {{property}} to {{tenants}}.",
+        "parties_other": "You let {{property}} to {{tenants}}.",
+        "regime": {
+          "CedolareSecca": "the flat-rate tax (cedolare secca)",
+          "Ordinario": "the ordinary regime"
+        },
+        "term": "From {{from}} for {{length}}, until {{to}}.",
+        "termFrom": "From {{from}}.",
+        "termSpan": "From {{from}} to {{to}}.",
+        "thisProperty": "the property",
+        "title": "The contract in words"
+      }
+    },
+    "start": {
+      "how": {
+        "choose": "Choose one of the two ways to go on.",
+        "continue": {
+          "casazen": "Continue: choose the property",
+          "documenti": "Continue: upload the documents",
+          "none": "Continue",
+          "zero": "Continue: choose the property"
+        },
+        "documents": {
+          "concordato": "You upload the contract and the documents: we read the data and keep an eye on deadlines, registration and rents.",
+          "other": "You upload the contract that is already signed: we read it and fill in the data, we only ask what is missing."
+        }
+      },
+      "kind": {
+        "concordato": "The rent follows the amounts agreed by the municipality, with tax benefits.",
+        "libero": "You decide the rent together: ordinary term, with automatic renewal.",
+        "transitorio": "For a temporary need (work, study…), with a short term."
+      },
+      "which": {
+        "choose": "Choose a type of contract to go on.",
+        "continue": "Continue: how you prepare it",
+        "help": {
+          "concordato": "Agreed rent: the rent stays within the amounts of the municipality and there are tax benefits.",
+          "libero": "Free rent: the two of you decide the rent.",
+          "summary": "Which one to choose?",
+          "transitorio": "Transitional: for a need that lasts a while ({{min}} to {{max}} months), written in the contract.",
+          "transitorioBare": "Transitional: for a need that lasts a while, written in the contract."
+        }
+      }
+    },
+    "stepper": {
+      "all": "All steps",
+      "state": {
+        "current": "You are here",
+        "done": "Done",
+        "issue": "To complete",
+        "locked": "After the previous steps",
+        "todo": "To do"
+      }
+    },
+    "steps": {
+      "1": {
+        "inHand": "the cadastral data of the property (sheet, parcel, sub-unit) and its APE energy certificate.",
+        "summary": "Say which property the contract is about. The address, the cadastral data and the APE certificate go into the contract and its registration.",
+        "title": "Choose the property"
+      },
+      "2": {
+        "inHand": "the tax code and an identity document of everyone who signs.",
+        "summary": "Enter the details of the landlord and of the tenant: they are needed for the contract and to register it.",
+        "title": "Write who signs"
+      },
+      "3": {
+        "inHand": "the amounts you agreed: monthly rent and deposit.",
+        "summary": "Choose how the tax on the rent is paid and write the amount of the rent and of the deposit.",
+        "title": "Enter the rent and the terms"
+      },
+      "4": {
+        "inHand": "the start date of the contract (and, for a transitional one, the last day).",
+        "inHandImported": "the dates written in the contract.",
+        "summary": "Say the day the contract starts: from there we work out the term, the renewal and the deadlines.",
+        "title": "Choose the dates"
+      },
+      "6": {
+        "inHand": "nothing special: just read it through.",
+        "summary": "Read the contract in plain words: if everything is right you confirm it and go to the signature.",
+        "title": "Check and confirm"
+      },
+      "7": {
+        "Created": {
+          "inHand": "a printer, a pen and everyone who signs.",
+          "summary": "Download the contract, have everyone sign it by hand and upload the signed copy here.",
+          "title": "Print, sign and upload"
+        },
+        "Imported": {
+          "inHand": "the signed contract as a PDF and the day it was signed.",
+          "summary": "Add the PDF with the signatures and the day it was signed: the deadlines start from there.",
+          "title": "Upload the signed contract"
+        }
+      },
+      "8": {
+        "inHand": "the registration receipt, as soon as you receive it.",
+        "summary": "The signed contract has to be registered: here you find what to do, by when, and the other things to sort out.",
+        "title": "Register the contract"
+      },
+      "reading": {
+        "summary": "It usually takes less than a minute. When we are done we take you to the data to check.",
+        "title": "We are reading the contract…"
+      }
+    },
+    "why": {
+      "parties": "Name, tax code and residence are written in the contract and are needed to register it with the Revenue Agency. You check the identity document yourself: CasaZen does not keep it.",
+      "summary": "Why we ask"
+    }
+  },
   "longRentDeadlines": {
     "csv": {
       "button": "Download CSV",

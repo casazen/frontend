@@ -53,7 +53,7 @@ export function PropertyStep({ value, onChange, error, needs, imported }: Proper
         </div>
       ) : (
         <div className="space-y-3">
-          <Field label={t('leases.form.propertyLabel')} error={error}>
+          <Field label={t('leases.form.propertyLabel')} hint={t('leaseWizardGuide.fields.property.hint')} error={error}>
             <Select
               id="lw-property"
               value={value}

@@ -11797,6 +11797,235 @@
       "title": "Dichiara la registrazione"
     }
   },
+  "leaseWizardGuide": {
+    "adminNotice": {
+      "action": "Vai ai documenti",
+      "message": "Documenti legali aggiornati: accettali per rivedere i tuoi spazi di lavoro"
+    },
+    "documents": {
+      "inHand": "il contratto firmato, in PDF o in foto delle pagine.",
+      "summary": "Carica il contratto già firmato: lo leggiamo noi e compiliamo i dati al posto tuo. Ti chiediamo solo quello che non riusciamo a leggere.",
+      "title": "Carica il contratto"
+    },
+    "done": {
+      "lead": {
+        "Created": "Il contratto è firmato ed è al sicuro in CasaZen. Ecco cosa succede ora.",
+        "Imported": "Il contratto è in CasaZen, con i suoi documenti e le sue scadenze. Ecco cosa succede ora."
+      },
+      "open": "Apri la scheda del contratto"
+    },
+    "fields": {
+      "deposit": {
+        "example": "1300",
+        "why": "Il deposito è una somma che l'inquilino lascia a garanzia e che gli restituisci alla fine, se la casa è in ordine."
+      },
+      "fiscalCode": {
+        "example": "RSSMRA80A01H501U"
+      },
+      "property": {
+        "hint": "Se la casa non è nell'elenco, aggiungila: ci vuole un minuto."
+      },
+      "regime": {
+        "intro": "Il regime è il modo in cui paghi le tasse sul canone."
+      },
+      "rent": {
+        "example": "650",
+        "hint": "L'importo che l'inquilino paga ogni mese per l'affitto."
+      },
+      "residence": {
+        "example": "Via Roma 10, 20822 Seveso (MB)"
+      }
+    },
+    "header": {
+      "inHand": "Ti serve in mano:",
+      "position": "Passo {{current}} di {{total}}"
+    },
+    "later": {
+      "action": "Salva e continua dopo",
+      "saved": "Bozza salvata: la ritrovi tra i tuoi contratti."
+    },
+    "missing": {
+      "fix": "Da sistemare:",
+      "goTo": "Vai al campo",
+      "goToStep": "Vai a «{{step}}»",
+      "label": "Manca:",
+      "more_one": "e un’altra cosa",
+      "more_other": "e altre {{count}} cose",
+      "none": "Tutto compilato: puoi continuare.",
+      "what": {
+        "ape_identification_missing": "il codice e la classe energetica dell'APE",
+        "ape_missing": "l'attestato APE della casa",
+        "cadastral_missing": "i dati catastali della casa",
+        "contract_file_missing": "il contratto firmato (un PDF o le foto delle pagine)",
+        "contract_pages_unconfirmed": "la conferma che le foto sono in ordine",
+        "contract_type_missing": "il tipo di contratto",
+        "deposit_missing": "il deposito (scrivi 0 se non c’è)",
+        "end_missing": "l'ultimo giorno del contratto",
+        "landlord_incomplete": "{{fields}} del locatore {{n}}",
+        "landlord_missing": "chi affitta (il locatore)",
+        "property_missing": "la casa del contratto",
+        "rent_missing": "il canone mensile",
+        "start_missing": "la data di inizio del contratto",
+        "tax_regime_missing": "il regime fiscale",
+        "tenant_incomplete": "{{fields}} del conduttore {{n}}",
+        "tenant_missing": "chi prende in affitto (il conduttore)",
+        "transitory_documentation_missing": "i documenti che provano l'esigenza",
+        "transitory_need_missing": "l'esigenza che giustifica il contratto transitorio",
+        "transitory_party_missing": "chi ha l'esigenza: il locatore o il conduttore"
+      }
+    },
+    "next": {
+      "confirm": "Conferma e vai alla firma",
+      "to": {
+        "2": "Salva e vai alle parti",
+        "3": "Salva e vai alle condizioni",
+        "4": "Salva e vai alle date",
+        "6": "Salva e vai al controllo",
+        "7": {
+          "Created": "Vai alla firma",
+          "Imported": "Salva e vai al contratto firmato"
+        }
+      }
+    },
+    "property": {
+      "apeExplain": "È il documento che dice quanta energia consuma la casa, con una classe da A4 a G. Lo rilascia un tecnico abilitato.",
+      "apeIdentificationHelp": "Scrivi il codice e la classe energetica come sono stampati sull’attestato. La classe è una lettera da A4 (la migliore) a G, per esempio B.",
+      "cadastralExplain": "Sono il foglio, la particella e il subalterno della casa: li trovi nella visura catastale o nell'atto di acquisto.",
+      "cadastralMissing": "Mancano. Aggiungili dalla scheda della casa: servono per il contratto e per la registrazione."
+    },
+    "review": {
+      "edit": "Modifica",
+      "editGroup": "Modifica: {{group}}",
+      "groups": {
+        "dates": "Date",
+        "house": "La casa",
+        "people": "Chi firma",
+        "terms": "Canone e tasse"
+      },
+      "rows": {
+        "address": "Indirizzo",
+        "deposit": "Deposito",
+        "end": "Fine del primo periodo",
+        "landlords": "Chi affitta",
+        "regime": "Tasse sul canone",
+        "rent": "Canone al mese",
+        "start": "Inizio",
+        "tenants": "Chi prende in affitto",
+        "type": "Tipo di contratto"
+      },
+      "story": {
+        "kind": "{{type}}, con {{regime}}.",
+        "money": "{{rent}} al mese, con {{deposit}} di deposito.",
+        "moneyNoDeposit": "{{rent}} al mese, senza deposito.",
+        "moneyRentOnly": "{{rent}} al mese.",
+        "parties_one": "Affitti {{property}} a {{tenants}}.",
+        "parties_other": "Affittate {{property}} a {{tenants}}.",
+        "regime": {
+          "CedolareSecca": "la cedolare secca",
+          "Ordinario": "il regime ordinario"
+        },
+        "term": "Dal {{from}} per {{length}}, fino al {{to}}.",
+        "termFrom": "Dal {{from}}.",
+        "termSpan": "Dal {{from}} al {{to}}.",
+        "thisProperty": "la casa",
+        "title": "Il contratto in parole"
+      }
+    },
+    "start": {
+      "how": {
+        "choose": "Scegli una delle due strade per continuare.",
+        "continue": {
+          "casazen": "Continua: scegli la casa",
+          "documenti": "Continua: carica i documenti",
+          "none": "Continua",
+          "zero": "Continua: scegli la casa"
+        },
+        "documents": {
+          "concordato": "Carichi il contratto e i documenti: leggiamo noi i dati e teniamo sotto controllo scadenze, registrazione e canoni.",
+          "other": "Carichi il contratto già firmato: lo leggiamo noi e compiliamo i dati, ti chiediamo solo ciò che manca."
+        }
+      },
+      "kind": {
+        "concordato": "Il canone segue gli importi concordati dal comune, con agevolazioni fiscali.",
+        "libero": "Il canone lo decidete voi: durata ordinaria, con rinnovo automatico.",
+        "transitorio": "Per un bisogno temporaneo (lavoro, studio…), con una durata breve."
+      },
+      "which": {
+        "choose": "Scegli un tipo di contratto per continuare.",
+        "continue": "Continua: come lo prepari",
+        "help": {
+          "concordato": "Concordato: il canone rientra negli importi del comune e ci sono agevolazioni fiscali.",
+          "libero": "Libero: il canone lo decidete voi due.",
+          "summary": "Quale scegliere?",
+          "transitorio": "Transitorio: per un bisogno a tempo (da {{min}} a {{max}} mesi), scritto nel contratto.",
+          "transitorioBare": "Transitorio: per un bisogno a tempo, scritto nel contratto."
+        }
+      }
+    },
+    "stepper": {
+      "all": "Tutti i passi",
+      "state": {
+        "current": "Sei qui",
+        "done": "Fatto",
+        "issue": "Da completare",
+        "locked": "Dopo i passi precedenti",
+        "todo": "Da fare"
+      }
+    },
+    "steps": {
+      "1": {
+        "inHand": "i dati catastali della casa (foglio, particella, subalterno) e l'attestato APE.",
+        "summary": "Indica a quale casa si riferisce il contratto. L'indirizzo, i dati catastali e l'attestato APE finiscono nel contratto e nella registrazione.",
+        "title": "Scegli la casa"
+      },
+      "2": {
+        "inHand": "il codice fiscale e un documento di identità di ogni persona che firma.",
+        "summary": "Inserisci i dati di chi affitta e di chi prende la casa in affitto: servono per il contratto e per registrarlo.",
+        "title": "Scrivi chi firma"
+      },
+      "3": {
+        "inHand": "gli importi che avete concordato: canone mensile e deposito.",
+        "summary": "Scegli come si pagano le tasse sul canone e scrivi l'importo dell'affitto e quello del deposito.",
+        "title": "Indica canone e condizioni"
+      },
+      "4": {
+        "inHand": "la data di inizio del contratto (e, se è transitorio, l'ultimo giorno).",
+        "inHandImported": "le date scritte nel contratto.",
+        "summary": "Indica il giorno in cui il contratto inizia: da lì calcoliamo la durata, il rinnovo e le scadenze.",
+        "title": "Scegli le date"
+      },
+      "6": {
+        "inHand": "niente di particolare: ti basta rileggere con calma.",
+        "summary": "Rileggi il contratto in parole semplici: se è tutto giusto lo confermi e passi alla firma.",
+        "title": "Controlla e conferma"
+      },
+      "7": {
+        "Created": {
+          "inHand": "una stampante, una penna e tutte le persone che firmano.",
+          "summary": "Scarica il contratto, fallo firmare a mano da tutti e carica qui la copia firmata.",
+          "title": "Stampa, firma e carica"
+        },
+        "Imported": {
+          "inHand": "il contratto firmato in PDF e il giorno della firma.",
+          "summary": "Aggiungi il PDF con le firme e il giorno in cui è stato firmato: da lì partono le scadenze.",
+          "title": "Carica il contratto firmato"
+        }
+      },
+      "8": {
+        "inHand": "la ricevuta di registrazione, appena la ricevi.",
+        "summary": "Il contratto firmato va registrato: qui trovi cosa fare, entro quando e le altre cose da sistemare.",
+        "title": "Registra il contratto"
+      },
+      "reading": {
+        "summary": "Di solito ci vuole meno di un minuto. Quando abbiamo finito ti portiamo ai dati da controllare.",
+        "title": "Stiamo leggendo il contratto…"
+      }
+    },
+    "why": {
+      "parties": "Nome, codice fiscale e residenza vanno scritti nel contratto e servono per registrarlo all'Agenzia delle Entrate. Il documento di identità lo controlli tu: CasaZen non lo conserva.",
+      "summary": "Perché lo chiediamo?"
+    }
+  },
   "longRentDeadlines": {
     "csv": {
       "button": "Scarica CSV",

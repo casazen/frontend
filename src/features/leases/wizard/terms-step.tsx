@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/utils';
 import { LEASE_TAX_REGIMES, type LeaseOrigin, type LongRentRules } from '@/types';
 import { ContractTypeCards } from './contract-type-cards';
 import { ReadMark } from './reading-marks';
+import { WhyAsk } from './why-ask';
 import { TRANSITORY_NEED_MAX_LENGTH, TRANSITORY_PARTIES, makesItsNeed, type WizardValues } from './wizard-model';
 
 /**
@@ -105,7 +106,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
           ))}
         </ChoiceGroup>
         <p className="text-sm text-muted-foreground">
-          {t('leaseWizard.terms.regime.help')}{' '}
+          {t('leaseWizardGuide.fields.regime.intro')} {t('leaseWizard.terms.regime.help')}{' '}
           <HelpTip title={t('leaseWizard.terms.regime.helpTitle')}>{t('leaseWizard.terms.regime.helpText')}</HelpTip>
         </p>
         <ReadMark step={3} fields={['taxRegime']} name="taxRegime" />
@@ -118,7 +119,12 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Field label={t('leaseWizard.terms.rent')} error={formState.errors.monthlyRent}>
+          <Field
+            label={t('leaseWizard.terms.rent')}
+            hint={t('leaseWizardGuide.fields.rent.hint')}
+            example={t('leaseWizardGuide.fields.rent.example')}
+            error={formState.errors.monthlyRent}
+          >
             <Input id="lw-monthlyRent" type="number" inputMode="decimal" step="0.01" min="0" {...register('monthlyRent')} />
           </Field>
           <ReadMark step={3} fields={['monthlyRent']} name="monthlyRent" />
@@ -128,11 +134,13 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
             label={t('leaseWizard.terms.deposit')}
             optional={!depositRequired}
             hint={depositHint || undefined}
+            example={t('leaseWizardGuide.fields.deposit.example')}
             error={depositTooHigh ? t('leaseWizard.terms.depositTooHigh', { max: maxRents, amount: maxText }) : formState.errors.securityDeposit}
           >
             <Input id="lw-securityDeposit" type="number" inputMode="decimal" step="0.01" min="0" {...register('securityDeposit')} />
           </Field>
           <ReadMark step={3} fields={['securityDeposit']} name="securityDeposit" />
+          <WhyAsk>{t('leaseWizardGuide.fields.deposit.why')}</WhyAsk>
         </div>
       </div>
     </div>
