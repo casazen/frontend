@@ -433,11 +433,11 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(other).toHaveAttribute('aria-expanded', 'true');
 
       await page.keyboard.press('Tab');
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toBeFocused();
+      await expect(menu.getByRole('link', { name: 'Ospiti', exact: true })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Ospiti');
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(/\/app\/short-rent\/guests$/);
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toHaveAttribute('aria-current', 'page');
+      await expect(menu.getByRole('link', { name: 'Ospiti', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
     test('with several areas the switcher is the icon of the area, with its name, and it works', async ({ page }) => {
