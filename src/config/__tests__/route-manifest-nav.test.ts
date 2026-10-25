@@ -76,6 +76,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(withoutFlag).toEqual([
       '/app/short-rent/guests',
       '/app/short-rent/compliance',
+      '/app/short-rent/crm/guests',
       '/app/short-rent/payments/revenue',
       '/app/short-rent/fiscal',
       '/app/short-rent/reports',

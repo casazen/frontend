@@ -195,6 +195,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       const more = screen.getByTestId('nav-more');
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Ospiti',
+        'CRM Ospiti',
         'Adempimenti',
         'Ricavi',
         'Regime fiscale',
