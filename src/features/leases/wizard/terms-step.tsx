@@ -11,6 +11,7 @@ import { getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
 import { formatCurrency } from '@/lib/utils';
 import { LEASE_TAX_REGIMES, type LeaseOrigin, type LongRentRules } from '@/types';
 import { ContractTypeCards } from './contract-type-cards';
+import { ReadMark } from './reading-marks';
 import { TRANSITORY_NEED_MAX_LENGTH, TRANSITORY_PARTIES, makesItsNeed, type WizardValues } from './wizard-model';
 
 /**
@@ -52,6 +53,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
         onChange={(type) => setValue('contractType', type, { shouldDirty: true })}
         firstId="lw-type"
       />
+      <ReadMark step={3} fields={['contractType']} name="contractType" />
 
       {makesItsNeed({ contractType }, origin) ? (
         <section className="space-y-4" aria-labelledby="lw-transitory-title" data-testid="lease-transitory-need">
@@ -106,6 +108,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
           {t('leaseWizard.terms.regime.help')}{' '}
           <HelpTip title={t('leaseWizard.terms.regime.helpTitle')}>{t('leaseWizard.terms.regime.helpText')}</HelpTip>
         </p>
+        <ReadMark step={3} fields={['taxRegime']} name="taxRegime" />
         {hasCompany && taxRegime === 'CedolareSecca' ? (
           <Alert variant="warning" data-testid="lease-company-cedolare">
             {t('leaseWizard.terms.regime.companyNotAllowed')}
@@ -114,17 +117,23 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t('leaseWizard.terms.rent')} error={formState.errors.monthlyRent}>
-          <Input id="lw-monthlyRent" type="number" inputMode="decimal" step="0.01" min="0" {...register('monthlyRent')} />
-        </Field>
-        <Field
-          label={t('leaseWizard.terms.deposit')}
-          optional={!depositRequired}
-          hint={depositHint || undefined}
-          error={depositTooHigh ? t('leaseWizard.terms.depositTooHigh', { max: maxRents, amount: maxText }) : formState.errors.securityDeposit}
-        >
-          <Input id="lw-securityDeposit" type="number" inputMode="decimal" step="0.01" min="0" {...register('securityDeposit')} />
-        </Field>
+        <div className="space-y-1.5">
+          <Field label={t('leaseWizard.terms.rent')} error={formState.errors.monthlyRent}>
+            <Input id="lw-monthlyRent" type="number" inputMode="decimal" step="0.01" min="0" {...register('monthlyRent')} />
+          </Field>
+          <ReadMark step={3} fields={['monthlyRent']} name="monthlyRent" />
+        </div>
+        <div className="space-y-1.5">
+          <Field
+            label={t('leaseWizard.terms.deposit')}
+            optional={!depositRequired}
+            hint={depositHint || undefined}
+            error={depositTooHigh ? t('leaseWizard.terms.depositTooHigh', { max: maxRents, amount: maxText }) : formState.errors.securityDeposit}
+          >
+            <Input id="lw-securityDeposit" type="number" inputMode="decimal" step="0.01" min="0" {...register('securityDeposit')} />
+          </Field>
+          <ReadMark step={3} fields={['securityDeposit']} name="securityDeposit" />
+        </div>
       </div>
     </div>
   );

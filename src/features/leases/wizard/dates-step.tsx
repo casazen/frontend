@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
 import type { LeaseOrigin, LongRentRules } from '@/types';
+import { ReadMark } from './reading-marks';
 import { TRANSITORY_DOCUMENTATION_MAX_LENGTH, addMonths, makesItsNeed, periodEnd, termDays, termMonthsOf, type WizardValues } from './wizard-model';
 
 /**
@@ -42,22 +43,28 @@ export function DatesStep({ rules, origin }: { rules: LongRentRules; origin: Lea
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t('leaseWizard.dates.start')} hint={imported ? undefined : t('leaseWizard.dates.startHint')} error={formState.errors.startDate}>
-          <Input id="lw-startDate" type="date" {...register('startDate')} />
-        </Field>
-        {statesEnd ? (
-          <Field
-            label={imported ? t('leaseWizard.dates.end') : t('leaseWizard.transitory.endLabel')}
-            optional={!transitory}
-            hint={
-              transitory
-                ? t('leaseWizard.dates.endHintTransitory', { min: rules.transitoryTermMonths.min, max: rules.transitoryTermMonths.max })
-                : t('leaseWizard.dates.endHint')
-            }
-            error={formState.errors.endDate}
-          >
-            <Input id="lw-endDate" type="date" {...register('endDate')} />
+        <div className="space-y-1.5">
+          <Field label={t('leaseWizard.dates.start')} hint={imported ? undefined : t('leaseWizard.dates.startHint')} error={formState.errors.startDate}>
+            <Input id="lw-startDate" type="date" {...register('startDate')} />
           </Field>
+          <ReadMark step={4} fields={['startDate']} name="startDate" />
+        </div>
+        {statesEnd ? (
+          <div className="space-y-1.5">
+            <Field
+              label={imported ? t('leaseWizard.dates.end') : t('leaseWizard.transitory.endLabel')}
+              optional={!transitory}
+              hint={
+                transitory
+                  ? t('leaseWizard.dates.endHintTransitory', { min: rules.transitoryTermMonths.min, max: rules.transitoryTermMonths.max })
+                  : t('leaseWizard.dates.endHint')
+              }
+              error={formState.errors.endDate}
+            >
+              <Input id="lw-endDate" type="date" {...register('endDate')} />
+            </Field>
+            <ReadMark step={4} fields={['endDate']} name="endDate" />
+          </div>
         ) : null}
       </div>
 

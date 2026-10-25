@@ -1605,6 +1605,46 @@
       "years_one": "{{count}} year",
       "years_other": "{{count}} years"
     },
+    "documents": {
+      "areaTitle": "The signed contract",
+      "continueByHand": "Continue by hand",
+      "import": {
+        "other": "Use another file",
+        "uploaded": "Contract uploaded: {{name}}"
+      },
+      "manual": "I don't have the file: I'll type the data",
+      "privacy": "The file is read on our servers and stays in your space: no outside service sees it.",
+      "promise": "We read the contract and fill in the data: we only ask for what is missing.",
+      "purpose": "Upload the signed contract: we read it and fill in the data.",
+      "read": {
+        "banner": "We filled in the data by reading the contract. Check it and complete what is missing.",
+        "conflict": "The contract shows a different value from the one entered: check it",
+        "derived": "Worked out from the contract — check it",
+        "failed": {
+          "default": "We could not read the document. Enter the data by hand: the contract stays uploaded and we will use it at the end.",
+          "file_missing": "We can no longer find the uploaded file. Enter the data by hand: at the end you will be able to upload the contract again.",
+          "no_text": "We could not read any text in the document (a photo that is too dark or blurred?). Enter the data by hand: the contract stays uploaded.",
+          "nothing_found": "We did not find the data of a lease in the document. Check that you uploaded the right file, or enter the data by hand.",
+          "ocr_unavailable": "Reading documents is not available right now. Enter the data by hand: the contract stays uploaded.",
+          "unreadable": "The file does not open or is too long to be read. Enter the data by hand or upload another file."
+        },
+        "mark": "Read from the contract — check it",
+        "ongoing": "We are still reading the document: as soon as it is done we fill in the data.",
+        "property": "The address read in the contract looks different from the property you chose. Check that you chose the right property and the right contract."
+      },
+      "reading": {
+        "purpose": "It usually takes less than a minute.",
+        "slow": "It is taking longer than usual. You can continue by hand: the data read will arrive as soon as it is ready.",
+        "status": "We are reading the document…",
+        "title": "We are reading the document…",
+        "wait": "You can leave this page open: as soon as it is done we take you to the data to check."
+      },
+      "retry": "Try again",
+      "submit": "Read the contract",
+      "title": "Upload the documents",
+      "uploadFailed": "We could not upload the file. Try again, or continue by hand.",
+      "why": "If the contract is already signed you do not have to type anything: we read names, rent, dates and the rest, and ask only for what we cannot read. You check everything before it is entered."
+    },
     "done": {
       "another": "Create another contract",
       "apeMissing": "Energy certificate (APE): still missing for the property. Upload it from the property page: it does not block the contract.",
