@@ -1733,6 +1733,11 @@
       "tenants_ok_one": "{{count}} tenant with all the data",
       "tenants_ok_other": "{{count}} tenants with all the data",
       "term_out_of_range": "The term is not allowed for this type of lease: {{reason}}",
+      "transitory_documentation_missing": "Say which documents you attach to prove the need",
+      "transitory_documentation_too_long": "The documentation is too long: at most {{characters}} characters",
+      "transitory_need_missing": "Write which need justifies the transitory lease",
+      "transitory_party_missing": "Say who has the need: the landlord or the tenant",
+      "transitory_rent_band_to_check": "In municipalities with more than {{inhabitants}} inhabitants the rent of a transitory lease must fall within the bands of the territorial agreement: check it before signing. If it does not, the lease is brought back to the ordinary term of a free-rent lease",
       "unknown": "Something in this step still needs a look"
     },
     "next": "Continue: {{step}}",
@@ -1966,6 +1971,32 @@
       "rent": "Monthly rent (€)"
     },
     "title": "Create lease",
+    "transitory": {
+      "documentation": {
+        "hint_one": "The lease lasts more than {{count}} day: the need must be proved with documents attached to the lease (for example an employment letter). Write which.",
+        "hint_other": "The lease lasts more than {{count}} days: the need must be proved with documents attached to the lease (for example an employment letter). Write which.",
+        "label": "Documents you attach"
+      },
+      "endLabel": "Last day of the lease",
+      "intro": "A transitory lease can only be made for a precise, temporary need, written in the lease.",
+      "need": {
+        "hint": "Write it in a few words. It must be one of the needs listed in the territorial agreement of the municipality of the property (for example work, study or training for a limited period).",
+        "label": "Which need"
+      },
+      "party": {
+        "Landlord": {
+          "description": "Whoever rents the property out: for example they will need it back soon.",
+          "title": "The landlord"
+        },
+        "Tenant": {
+          "description": "Whoever takes the property: for example they work or study here for a while.",
+          "title": "The tenant"
+        },
+        "legend": "Who has the need"
+      },
+      "summaryEnds": "At the end of the term the lease ends by itself: it does not renew and no notice is needed.",
+      "title": "The need that justifies the lease"
+    },
     "type": {
       "chosen": "You chose it at the start.",
       "description": {

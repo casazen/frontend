@@ -1,4 +1,4 @@
-import { addDays } from '@/lib/stay-dates';
+import { addDays, nightsBetween } from '@/lib/stay-dates';
 import { normalizeFiscalCode } from '@/lib/fiscal-code';
 import type {
   LandlordDefaults,
@@ -18,6 +18,17 @@ import type {
 
 /** At most this many landlords, and as many tenants (the limit of the API: 422 `lease_parties_too_many`). */
 export const MAX_PARTIES_PER_ROLE = 10;
+
+/**
+ * The length of the texts of the need of a transitory contract (TR), as the server states it: the need itself and the documents that
+ * prove it. A text longer than that is kept and reported by the server (`transitory_documentation_too_long`), so the fields stop typing
+ * at the limit instead.
+ */
+export const TRANSITORY_NEED_MAX_LENGTH = 500;
+export const TRANSITORY_DOCUMENTATION_MAX_LENGTH = 300;
+
+/** Who can have the need that justifies a transitory contract, in the order the cards show them (the names of `PartyRole`). */
+export const TRANSITORY_PARTIES = ['Landlord', 'Tenant'] as const;
 
 /** The steps of the data of the contract: the ones that are saved with their values (the server's 1 to 4 here). */
 export type DataStep = 1 | 2 | 3 | 4;
@@ -47,9 +58,14 @@ export interface WizardValues {
   taxRegime: string;
   monthlyRent: string;
   securityDeposit: string;
+  /** The transitory type made here only: who has the need that justifies the short term (`Landlord` or `Tenant`), and what it is. */
+  transitoryParty: string;
+  transitoryNeed: string;
   startDate: string;
-  /** Contracts brought in only: the last day of the first period, as the contract states it. */
+  /** Contracts brought in and the transitory type: the last day of the term, as the contract states it. */
   endDate: string;
+  /** The transitory type made here only: the documents that prove the need, asked when the term is long enough. */
+  transitoryDocumentation: string;
 }
 
 let rowCounter = 0;
@@ -118,8 +134,11 @@ export function toWizardValues(values: LeaseDraftValues, defaults?: LandlordDefa
     taxRegime: values.taxRegime ?? '',
     monthlyRent: amountText(values.monthlyRent),
     securityDeposit: amountText(values.securityDeposit),
+    transitoryParty: values.transitoryParty ?? '',
+    transitoryNeed: values.transitoryNeed ?? '',
     startDate: dayText(values.startDate),
     endDate: dayText(values.endDate),
+    transitoryDocumentation: values.transitoryDocumentation ?? '',
   };
 }
 
@@ -185,6 +204,10 @@ export function stepPayload(step: DataStep, form: WizardValues, origin: LeaseOri
           taxRegime: form.taxRegime || null,
           ...(rent === undefined ? {} : { monthlyRent: rent }),
           ...(deposit === undefined ? {} : { securityDeposit: deposit }),
+          // The need that justifies a transitory contract made here: who has it and what it is.
+          ...(makesItsNeed(form, origin)
+            ? { transitoryParty: form.transitoryParty || null, transitoryNeed: form.transitoryNeed.trim() || null }
+            : {}),
         },
       };
     }
@@ -192,11 +215,28 @@ export function stepPayload(step: DataStep, form: WizardValues, origin: LeaseOri
       return {
         values: {
           startDate: form.startDate || null,
-          // The end is typed only for a contract that is already signed; a contract made here has the term of its type.
-          ...(origin === 'Imported' ? { endDate: form.endDate || null } : {}),
+          // The end is typed for a contract that is already signed and for a transitory one; a libero or a concordato made here has
+          // the term of its type.
+          ...(origin === 'Imported' || form.contractType === 'Transitorio' ? { endDate: form.endDate || null } : {}),
+          // The documents that prove the need of a transitory contract made here (asked when the term is long enough).
+          ...(makesItsNeed(form, origin) ? { transitoryDocumentation: form.transitoryDocumentation.trim() || null } : {}),
         },
       };
   }
+}
+
+/** A transitory contract made in CasaZen states the need that justifies its term; one already signed prints nothing of its own. */
+export function makesItsNeed(form: Pick<WizardValues, 'contractType'>, origin: LeaseOrigin): boolean {
+  return origin !== 'Imported' && form.contractType === 'Transitorio';
+}
+
+/**
+ * The days a term lasts from `start` to the inclusive `end` (both `yyyy-MM-dd`); 0 when either is not a day or the end is not after the
+ * start. A transitory contract that lasts more days than `rules.transitoryDocumentationAfterDays` proves its need with documents.
+ */
+export function termDays(start: string, end: string): number {
+  const nights = nightsBetween(start, end);
+  return nights > 0 ? nights + 1 : 0;
 }
 
 /** The step a field of the form belongs to, from the name RHF gives to a change (`landlords.0.firstName`). */
@@ -214,9 +254,12 @@ export function stepOfField(name: string | undefined): DataStep | null {
     case 'taxRegime':
     case 'monthlyRent':
     case 'securityDeposit':
+    case 'transitoryParty':
+    case 'transitoryNeed':
       return 3;
     case 'startDate':
     case 'endDate':
+    case 'transitoryDocumentation':
       return 4;
     default:
       return null;
@@ -354,6 +397,13 @@ export function fieldIdOfNeed(need: LeaseNeed, form: WizardValues): string | nul
     case 'contract_type_missing':
     case 'lease_type_not_available':
       return 'lw-type';
+    case 'transitory_party_missing':
+      return 'lw-transitoryParty';
+    case 'transitory_need_missing':
+      return 'lw-transitoryNeed';
+    case 'transitory_documentation_missing':
+    case 'transitory_documentation_too_long':
+      return 'lw-transitoryDocumentation';
     case 'tax_regime_missing':
     case 'cedolare_not_allowed_company':
       return 'lw-regime';

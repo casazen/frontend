@@ -98,8 +98,9 @@ function ConcordatoWays({ onChoose }: { onChoose: (way: StartWay) => void }) {
 
 /**
  * A libero or a transitory: «Come vuoi procedere?». Whether CasaZen can prepare the type is the server's to say (`availableTypes` of
- * `GET /long-rent/rules`, nothing is written here): a type it cannot prepare (today the transitory one has no approved model) keeps
- * the card, closed, with an honest sentence, and «Ho già i documenti» stays open.
+ * `GET /long-rent/rules`, nothing is written here): a type it cannot prepare keeps the card, closed, with an honest sentence, and
+ * «Ho già i documenti» stays open. The transitory type is open since TR (its model is the official Allegato B, still to be approved:
+ * the download for the signature says so honestly at the end, as for the other types).
  */
 function PreparableWays({ kind, onChoose }: { kind: Exclude<ContractKind, 'concordato'>; onChoose: (way: StartWay) => void }) {
   const { t } = useTranslation();

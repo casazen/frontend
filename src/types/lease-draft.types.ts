@@ -46,9 +46,15 @@ export interface LeaseDraftValues {
   taxRegime?: string | null;
   monthlyRent?: number | null;
   securityDeposit?: number | null;
+  /** The transitory type made in CasaZen only (step ③): who has the need that justifies the short term, `Landlord` or `Tenant`. */
+  transitoryParty?: string | null;
+  /** The transitory type made in CasaZen only (step ③): the need itself, in a few words. */
+  transitoryNeed?: string | null;
   startDate?: string | null;
-  /** Imported contracts only: the last day of the first period, as the contract states it. */
+  /** Imported contracts and the transitory type: the last day of the term, as the contract states it. */
   endDate?: string | null;
+  /** The transitory type made in CasaZen only (step ④): the documents attached to prove the need, asked when the term is long enough. */
+  transitoryDocumentation?: string | null;
 }
 
 /** `GET /leases/:id/draft`. */
@@ -120,12 +126,16 @@ export interface LongRentRules {
   noticeMonths: number;
   registrationDays: number;
   depositMaxRents: number;
-  /** Types that can be made in CasaZen. */
+  /** Types that can be made in CasaZen (the transitory one too, with the official model, since TR). */
   availableTypes: string[];
   /** Types a contract already signed elsewhere can have. */
   importedTypes: string[];
   /** The free term of the transitory type. */
   transitoryTermMonths: { min: number; max: number };
+  /** A transitory contract that lasts more days than this proves its need with documents attached to the contract. */
+  transitoryDocumentationAfterDays: number;
+  /** In a municipality with more inhabitants than this the rent of a transitory contract has to be inside the bands of the territorial agreement. */
+  transitoryBandFromInhabitants: number;
 }
 
 /** `GET /long-rent/landlord-defaults`: the landlord the wizard starts from; every field may be null. */

@@ -25,16 +25,18 @@ vi.mock('@/api/leases.api', () => ({ leasesApi: { createDraft: vi.fn(), saveDraf
 /** What a save of a step answers: the version it made, the flow again and the ids of the parties. */
 const SAVED = { version: 2, flow: { steps: [] }, landlordIds: [], tenantIds: [] };
 
-/** The rules of the area as the server gives them today: the transitory type is made only for a contract already signed. */
+/** The rules of the area as the server gives them today: the transitory type is made in CasaZen too, with the official model. */
 const RULES: LongRentRules = {
   termMonths: { Libero: 48, Concordato: 36 },
   renewalMonths: { Libero: 48, Concordato: 24 },
   noticeMonths: 6,
   registrationDays: 30,
   depositMaxRents: 3,
-  availableTypes: ['Libero', 'Concordato'],
+  availableTypes: ['Libero', 'Concordato', 'Transitorio'],
   importedTypes: ['Libero', 'Concordato', 'Transitorio'],
   transitoryTermMonths: { min: 1, max: 18 },
+  transitoryDocumentationAfterDays: 30,
+  transitoryBandFromInhabitants: 10000,
 };
 
 /** The page of the service of the partner, where a canone concordato started from zero goes. */

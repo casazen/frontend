@@ -45,8 +45,9 @@ function ChosenType({ type, id }: { type: CardType; id?: string }) {
 }
 
 /**
- * The type of the contract as cards (LR-06a, LR-D12): the libero 4+4 where the server offers it, the concordato 3+2 and the
- * transitory one for a contract already signed (`importedTypes`), the student one never («non ancora disponibile»). A canone
+ * The type of the contract as cards (LR-06a, LR-D12): the libero 4+4 and the transitory one (since TR) where the server offers them
+ * (`availableTypes`), the concordato 3+2 and all of them for a contract already signed (`importedTypes`), the student one never
+ * («non ancora disponibile»). A canone
  * concordato made in CasaZen is prepared with the partner (ConcordatoFacile) and is chosen before the wizard starts, so here it is
  * shown and blocked. No figure is written here: the terms are in the title of the type, as the rest of the app says them.
  *
