@@ -9,16 +9,18 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
 import { useProperties } from '@/queries/use-properties';
-import { useCreateConcordatoDraft } from '@/queries/use-leases';
+import { useCreateCfDraft } from '@/queries/use-leases';
 
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /**
  * «Parto da zero» of a canone concordato: the contract is prepared with the partner (ConcordatoFacile). Here only its property is
- * asked, and a real draft is saved at once, so the contract has its leaseId (the reference the partner links the practice to) before
- * anything else; then the person goes straight to the page of the service (pay it, or use the practice that is a gift, and open the
- * partner's form with our signed link). No APE, parties, rent or dates: they come from the partner's contract.
+ * asked, and a real draft is saved at once (`POST /leases/drafts/concordatofacile`: an imported draft marked as the partner's, one per
+ * property, so a second click or a second visit opens the same one), so the contract has its leaseId (the reference the partner links the
+ * practice to) before anything else; then the person goes straight to the page of the service (pay it, or use the practice that is a
+ * gift, and open the partner's form with our signed link). No APE, parties, rent or dates: they come from the partner's contract, which
+ * comes back to this draft to be read and imported (`CfImportPanel`).
  */
 export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?: string }) {
   const { t } = useTranslation();
@@ -30,16 +32,16 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
   // Null until the person picks one: then the property of the link "new contract" of a property page, once it is in the list.
   const [chosen, setChosen] = useState<string | null>(null);
   const propertyId = chosen ?? (defaultPropertyId && properties.some((property) => property.id === defaultPropertyId) ? defaultPropertyId : '');
-  const createDraft = useCreateConcordatoDraft();
+  const createDraft = useCreateCfDraft();
 
   const create = async () => {
     if (!propertyId || createDraft.isPending) return;
     try {
-      const leaseId = await createDraft.mutateAsync(propertyId);
-      // Replaced, not pushed: "back" from the page of the service must not land on this form again, where a click would make a second draft.
-      navigate(`/app/long-rent/leases/${leaseId}/concordatofacile`, { replace: true });
+      const draft = await createDraft.mutateAsync(propertyId);
+      // Replaced, not pushed: "back" from the page of the service must not land on this form again.
+      navigate(`/app/long-rent/leases/${draft.id}/concordatofacile`, { replace: true });
     } catch {
-      // useCreateConcordatoDraft.onError says why; the property stays chosen to try again on the same draft.
+      // useCreateCfDraft.onError says why; the property stays chosen to try again (the server gives back the draft it made).
     }
   };
 

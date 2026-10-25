@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi, type LeaseListParams } from '@/api/leases.api';
 import type {
@@ -79,44 +78,11 @@ export function useLeaseNextStep(id: string) {
 }
 
 /**
- * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile): a real draft with only its
- * property (`POST /leases/drafts`, no APE, parties, dates or rent), then typed as a concordato. Resolves with its id, the
- * leaseId the partner links its practice to. A retry after a failure goes on with the draft already created (a second click
- * never makes a second contract); a new contract on the same property is a new visit of the page.
- */
-export function useCreateConcordatoDraft() {
-  const queryClient = useQueryClient();
-  const created = useRef<{ id: string; version: number; propertyId: string } | null>(null);
-
-  return useMutation({
-    mutationFn: async (propertyId: string) => {
-      let draft = created.current;
-      if (!draft) {
-        draft = { ...(await leasesApi.createDraft(propertyId)), propertyId };
-        created.current = draft;
-      }
-      if (draft.propertyId !== propertyId) {
-        const moved = await leasesApi.saveDraft(draft.id, { version: draft.version, step: 1, values: { propertyId } });
-        draft = { id: draft.id, version: moved.version, propertyId };
-        created.current = draft;
-      }
-      const typed = await leasesApi.saveDraft(draft.id, { version: draft.version, step: 3, values: { contractType: 'Concordato' } });
-      created.current = { ...draft, version: typed.version };
-      return draft.id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
-      toast.success(i18n.t('toast.leaseDraftCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));
-    },
-  });
-}
-
-/**
- * E01/F02/US01: creates a minimal ConcordatoFacile draft.
- * Calls POST /api/leases/drafts/concordatofacile and invalidates lease queries on success.
+ * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile) — «Parto da zero» (E01/F02/US01,
+ * CF-IMPORT): a real draft with only its property (`POST /leases/drafts/concordatofacile`, no APE, parties, dates or rent), an imported
+ * draft marked as the partner's, typed as a concordato by the server. Resolves with it: its `id` is the leaseId the partner links its
+ * practice to. The server makes one per property, so a retry or a second visit for the same property gets the draft already made and
+ * never a second contract; a new contract on the same property comes once this one is imported.
  */
 export function useCreateCfDraft() {
   const queryClient = useQueryClient();
@@ -125,6 +91,7 @@ export function useCreateCfDraft() {
     mutationFn: (propertyId: string) => leasesApi.createCfDraft(propertyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+      toast.success(i18n.t('toast.leaseDraftCreated'));
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));

@@ -38,6 +38,12 @@
     "saved": "Document saved and attached to the lease.",
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
+    "import": {
+      "action": "Complete and import the contract",
+      "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
+      "instructions": "Upload the contract ConcordatoFacile gave you: we read it and fill in the data of the draft, then you check them and import the contract. The attestation and the registration receipt are uploaded the same way. Uploading needs no new payment.",
+      "title": "The ConcordatoFacile contract has arrived"
+    },
     "kinds": {
       "Contract": "Contract",
       "Attestation": "Attestation",

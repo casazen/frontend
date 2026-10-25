@@ -38,6 +38,12 @@
     "saved": "Documento salvato e allegato al contratto.",
     "download": "Scarica",
     "downloadError": "Impossibile scaricare il documento.",
+    "import": {
+      "action": "Completa e importa il contratto",
+      "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
+      "instructions": "Carica il contratto che ti ha consegnato ConcordatoFacile: lo leggiamo e compiliamo i dati della bozza, poi li controlli e importi il contratto. L’attestazione e la ricevuta di registrazione si caricano allo stesso modo. Il caricamento non richiede un nuovo pagamento.",
+      "title": "Il contratto di ConcordatoFacile è arrivato"
+    },
     "kinds": {
       "Contract": "Contratto",
       "Attestation": "Attestazione",

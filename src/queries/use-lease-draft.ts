@@ -73,6 +73,15 @@ export function useDraftReading(id: string, enabled = true) {
 }
 
 /**
+ * Marks what is known of the reading of a draft as old: a contract document was just uploaded to it, so the next answer is `Reading`
+ * (CF-IMPORT: the contract ConcordatoFacile delivers is uploaded to its draft from the page of the documents, which shows the reading).
+ */
+export function useRefreshDraftReading(id: string) {
+  const queryClient = useQueryClient();
+  return useCallback(() => queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, id, 'reading'] }), [queryClient, id]);
+}
+
+/**
  * The checks of the review of a draft, read again every time the review is opened: they depend on what was saved a moment ago.
  * `gcTime: 0`: nothing of it is kept once the page is closed.
  */
@@ -114,7 +123,7 @@ export function useLandlordDefaults(enabled: boolean) {
 /**
  * Creates the draft of a new contract with its property, its origin and the type chosen as the first question of «Nuovo contratto»
  * (`POST /leases/drafts`, LR-12). The type is written at once (the same save as step ③): a contract made in CasaZen is that type from
- * the start (step ③ shows it as chosen, the concordato is prepared with the partner, see `useCreateConcordatoDraft`), one already
+ * the start (step ③ shows it as chosen, the concordato is prepared with the partner, see `useCreateCfDraft`), one already
  * signed has it preselected there and can still correct it. If only the second call fails the draft exists all the same and that step
  * asks for the type: a retry never makes a second contract. Resolves with the id.
  */

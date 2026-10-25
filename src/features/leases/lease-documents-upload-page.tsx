@@ -8,7 +8,10 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { useLeases } from '@/queries/use-leases';
 import { useCfPracticeLease } from '@/queries/use-concordatofacile';
+import type { LeaseDetail } from '@/types';
+import { CfImportPanel } from './components/cf-import-panel';
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
+import { isCfImportDraft, useCfDeliveredContract } from './lib/cf-import';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Number of a practice of ConcordatoFacile: `P-` and 16 hexadecimal characters (the button «Carica i dati in CasaZen» sends it as `?practice=`). */
@@ -28,6 +31,15 @@ function ChooseLease({ practiceId }: { practiceId?: string }) {
   </div>;
 }
 
+/**
+ * The contract ConcordatoFacile delivered, once it is uploaded to the draft it was made for (CF-IMPORT): where the reading stands and
+ * «Completa e importa il contratto». Nothing for any other lease, and nothing before a contract document is there.
+ */
+function DeliveredContract({ lease }: { lease: LeaseDetail }) {
+  const reading = useCfDeliveredContract(lease);
+  return reading ? <CfImportPanel leaseId={lease.id} reading={reading} /> : null;
+}
+
 /** The documents of one lease. `practiceLine` says where the practice of the link stands in relation to it (when there is one). */
 function LeaseDocuments({ leaseId, practiceLine }: { leaseId: string; practiceLine?: string }) {
   const { t } = useTranslation();
@@ -35,11 +47,14 @@ function LeaseDocuments({ leaseId, practiceLine }: { leaseId: string; practiceLi
   if (lease.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
   if (lease.isError) return <ErrorState title={t('cfDocuments.leaseError')} error={lease.error} onRetry={() => void lease.refetch()} />;
   if (!lease.data.propertyId) return <Alert variant="danger">{t('cfDocuments.invalidLease')}</Alert>;
+  // On the draft ConcordatoFacile made, the contract uploaded is read and fills in the draft: the generic line («non modifica i dati del contratto») would be untrue.
+  const instructions = isCfImportDraft(lease.data) ? t('cfDocuments.import.instructions') : t('cfDocuments.instructions');
   return <div className="space-y-6">
     <h2 className="text-lg font-semibold">{lease.data.property?.name ?? t('cfDocuments.house')}</h2>
     <p className="break-all text-sm text-muted-foreground">{t('cfDocuments.reference', { id: lease.data.id })}</p>
     {practiceLine ? <p className="break-words text-sm text-muted-foreground" data-testid="cf-documents-practice">{practiceLine}</p> : null}
-    <Alert>{t('cfDocuments.instructions')}</Alert>
+    <Alert>{instructions}</Alert>
+    <DeliveredContract lease={lease.data} />
     <LeaseDocumentsPanel leaseId={leaseId} canUpload />
     <Link className="inline-block underline" to={`/app/long-rent/leases/${leaseId}`}>{t('cfDocuments.openLease')}</Link>
   </div>;
