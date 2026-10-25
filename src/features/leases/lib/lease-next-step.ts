@@ -38,6 +38,11 @@ interface StepDefinition {
   /** A line more, when the step has something to add. */
   detailKey?: string;
   target: StepTarget;
+  /**
+   * The words of the same step for a contract brought in already signed (`params.imported`), when they differ: the registration of such a
+   * contract may be done already, or be done by the guided service that prepared it, so the step is to declare it (CF-END).
+   */
+  imported?: { titleKey: string; actionKey: string; detailKey?: string };
 }
 
 // The keys are written out, one by one, so that the i18n test finds a missing translation (`*Key:` properties are scanned).
@@ -88,6 +93,11 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.RegisterLease.title',
     actionKey: 'leaseFlow.nextStep.RegisterLease.action',
     target: { kind: 'sheet', tab: 'scadenze' },
+    imported: {
+      titleKey: 'leaseRound.nextStep.RegisterImported.title',
+      actionKey: 'leaseRound.nextStep.RegisterImported.action',
+      detailKey: 'leaseRound.nextStep.RegisterImported.detail',
+    },
   },
   RecordKeyHandover: {
     titleKey: 'leaseFlow.nextStep.RecordKeyHandover.title',
@@ -237,16 +247,18 @@ function actorText(actor: LeaseNextStepActor, t: TFunction): string {
 /** The sentence, the button and the destination of the step `step` of the lease `leaseId`. */
 export function describeLeaseStep(leaseId: string, step: LeaseNextStep, { t, language, today }: LeaseStepContext): LeaseStepView {
   const definition = definitionOf(step.code);
+  // A contract brought in already signed says «declare the registration» (it may be registered already, or be registered by the service).
+  const words = step.params?.imported === true && definition.imported ? definition.imported : definition;
   const values = sentenceValues(step.code, step.params);
   const leaseTo = leaseSheetPath(leaseId);
 
   return {
-    title: t(definition.titleKey, values.title),
-    detail: definition.detailKey && values.detail ? t(definition.detailKey, values.detail) : null,
+    title: t(words.titleKey, values.title),
+    detail: words.detailKey && values.detail ? t(words.detailKey, values.detail) : null,
     who: actorText(step.actor, t),
     when: dueText(step.dueOn, today, language, t),
     tone: toneOf(step.priority),
-    action: t(definition.actionKey),
+    action: t(words.actionKey),
     to: targetPath(leaseId, definition.target, step, today),
     leaseTo,
     leavesTheSheet: definition.target.kind === 'rents',

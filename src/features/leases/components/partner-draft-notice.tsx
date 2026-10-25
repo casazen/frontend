@@ -72,12 +72,32 @@ function StatusView({ leaseId, practice }: { leaseId: string; practice: CfPracti
         <CfStatusBadge status={practice.status} />
         {changed ? <span className="text-foreground/70">{t('guidedContract.lastChange', { date: changed })}</span> : null}
       </p>
+      <p className="text-xs text-foreground/70" data-testid="lease-partner-practice">
+        {t('leaseRound.practice.number', { id: practice.practiceId })}
+      </p>
       <p className="text-sm">{t('guidedContract.sent')}</p>
       {practice.comuneDiffersFromLink ? <p className="text-sm font-medium" data-testid="lease-partner-comune">{t('guidedContract.comuneDiffers')}</p> : null}
       <div className={BUTTONS}>
         <UploadLink leaseId={leaseId} primary />
       </div>
     </NoticeFrame>
+  );
+}
+
+/** Why a practice is closed without an attestation, as the server says it (`closeReason`); any other reason, or none, is the plain sentence. */
+const CLOSE_REASONS = ['duplicate', 'withdrawn', 'not_compliant'] as const;
+
+/** The practice that was closed, with its number and why, in plain words: what the person fills in the form again knows what happened. */
+function ClosedPractice({ practice }: { practice: CfPracticeResponse }) {
+  const { t } = useTranslation();
+  const reason = CLOSE_REASONS.find((known) => known === practice.closeReason) ?? 'other';
+  return (
+    <div className="space-y-0.5" data-testid="lease-partner-closed">
+      <p className="text-xs text-foreground/70" data-testid="lease-partner-practice">
+        {t('leaseRound.practice.number', { id: practice.practiceId })}
+      </p>
+      <p className="text-sm font-medium">{t(`leaseRound.practice.closed.${reason}`)}</p>
+    </div>
   );
 }
 
@@ -90,6 +110,8 @@ interface FormViewProps {
   checking: boolean;
   /** The form was opened before and the status could not be read. */
   unavailable: boolean;
+  /** The last practice of the lease, when it was closed without an attestation: the form can be filled in again. */
+  closed?: CfPracticeResponse;
 }
 
 /**
@@ -98,7 +120,7 @@ interface FormViewProps {
  * before. Without the access it goes to the page of the service (payment, or the gift practice); with it (platform administrator,
  * payment, gift) it goes straight to the form, in this same tab, with no page in between.
  */
-function FormView({ leaseId, access, accessPending, checking, unavailable }: FormViewProps) {
+function FormView({ leaseId, access, accessPending, checking, unavailable, closed }: FormViewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const privacyId = useId();
@@ -128,6 +150,7 @@ function FormView({ leaseId, access, accessPending, checking, unavailable }: For
 
   return (
     <NoticeFrame>
+      {closed ? <ClosedPractice practice={closed} /> : null}
       {unavailable && opened ? (
         <p className="text-sm font-medium" data-testid="lease-partner-status-unavailable">
           {t('concordatofacile.entry.statusFailed')}
@@ -178,6 +201,10 @@ function LiveNotice({ leaseId }: { leaseId: string }) {
   // Asked only where there is an access and the form was opened at least once: before that there is nothing to read.
   const status = useCfStatus(leaseId, { enabled: opened });
   const running = status.data?.practices.find((practice) => practice.status !== CLOSED);
+  // No practice under way: the last one that was closed (the newest), to say what became of it.
+  const closed = status.data?.practices
+    .filter((practice) => practice.status === CLOSED)
+    .sort((a, b) => (Date.parse(b.statusChangedAt) || 0) - (Date.parse(a.statusChangedAt) || 0))[0];
 
   if (running) return <StatusView leaseId={leaseId} practice={running} />;
 
@@ -188,6 +215,7 @@ function LiveNotice({ leaseId }: { leaseId: string }) {
       accessPending={access.isPending}
       checking={opened && status.isPending}
       unavailable={opened && (status.isError || status.data?.available === false)}
+      closed={closed}
     />
   );
 }

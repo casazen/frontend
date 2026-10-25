@@ -65,6 +65,10 @@ function doneRows({ lease, checklist, ledger, rules, apeMissing, t, language }: 
     rows.push({ text: date ? t('leaseWizard.done.registered', { date }) : t('leaseWizard.done.registeredNoDate'), icon: FileCheck2 });
   } else if (registration === 'inProgress') {
     rows.push({ text: t('leases.rli.inProgressHint'), icon: FileCheck2 });
+  } else if (lease.isConcordatoFacileSource === true) {
+    // A contract the guided service prepared is registered by the service (CF-END): what is left to the person is the declaration.
+    const deadline = day(lease.registrationDeadline);
+    rows.push({ text: deadline ? t('leaseRound.service.row', { date: deadline }) : t('leaseRound.service.rowUnknown'), icon: FileCheck2 });
   } else {
     const deadline = day(lease.registrationDeadline);
     const when = dueText(checklist?.daysRemaining, t);
@@ -166,7 +170,7 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
             </Button>
           }
         >
-          {t('leaseWizard.done.notRegistered.text')}
+          {lease.isConcordatoFacileSource === true ? t('leaseRound.service.doneText') : t('leaseWizard.done.notRegistered.text')}
         </Alert>
       ) : null}
 

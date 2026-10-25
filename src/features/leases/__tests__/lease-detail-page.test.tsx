@@ -312,6 +312,8 @@ describe('LeaseDetailPage', () => {
     const status = await screen.findByTestId('lease-partner-status');
     expect(within(status).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'InProgress');
     expect(status).toHaveTextContent(/Aggiornato il 24\/10\/2026/);
+    // The number of the practice, discreet, for whoever has to find it (CF-END).
+    expect(screen.getByTestId('lease-partner-practice')).toHaveTextContent('Pratica P-0123456789abcdef');
     expect(screen.getByText(i18n.t('guidedContract.sent'))).toBeInTheDocument();
     // The municipality the person chose in the form is not the one of the house: said, as the status always did.
     expect(screen.getByTestId('lease-partner-comune')).toHaveTextContent(i18n.t('guidedContract.comuneDiffers'));
@@ -333,6 +335,31 @@ describe('LeaseDetailPage', () => {
     const proceed = await mainButton();
     expect(proceed).toHaveTextContent(i18n.t('guidedContract.resume'));
     expect(screen.queryByTestId('lease-partner-status')).not.toBeInTheDocument();
+    // CF-END: what became of the practice is said, with its number, before the button that starts again.
+    const closed = screen.getByTestId('lease-partner-closed');
+    expect(closed).toHaveTextContent('Pratica P-0123456789abcdef');
+    expect(closed).toHaveTextContent('La pratica è stata ritirata.');
+  });
+
+  it.each([
+    ['duplicate', "Era un doppione di un'altra pratica."],
+    ['not_compliant', 'Il contratto non è attestabile (per esempio con il canone fuori fascia): correggi i dati e ricomincia.'],
+    ['other', 'Chiusa senza attestazione.'],
+    [undefined, 'Chiusa senza attestazione.'],
+  ])('render_ConcordatoDraftForThePartner_PracticeClosedFor_%s_SaysWhyInPlainWords', async (closeReason, sentence) => {
+    mockLeaseWithService(partnerDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: 'ClosedWithoutAttestation', closeReason }] } }),
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    await mainButton();
+    const closed = screen.getByTestId('lease-partner-closed');
+    expect(closed).toHaveTextContent(sentence);
+    expect(closed).toHaveTextContent('Pratica P-0123456789abcdef');
+    // No name of the supplier, no «partner»: the words are the product's.
+    expect(screen.getByTestId('lease-partner-draft').textContent).not.toMatch(/partner|concordato\s*facile/i);
   });
 
   it('render_ConcordatoDraftForThePartner_StatusNotAvailable_SaysNotToReopenIfSent_NotAnError_AndTheFormCanBeResumed', async () => {

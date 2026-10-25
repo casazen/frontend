@@ -1963,7 +1963,7 @@
         },
         "transitorio": {
           "description": "Per un'esigenza temporanea, con una durata limitata.",
-          "title": "Transitorio (da 1 a 18 mesi)"
+          "title": "Transitorio"
         }
       },
       "other": {
@@ -11711,6 +11711,58 @@
         "action": "Apri il contratto",
         "title": "C'è un passo da fare su questo contratto"
       }
+    }
+  },
+  "leaseRound": {
+    "activity": {
+      "adminGrantedGift": "Pratica omaggio assegnata"
+    },
+    "kind": {
+      "transitorio": {
+        "title": "Transitorio (da {{min}} a {{max}} mesi)"
+      }
+    },
+    "nextStep": {
+      "RegisterImported": {
+        "action": "Dichiara la registrazione",
+        "detail": "Quando hai la ricevuta di registrazione, caricala nei Documenti e dichiara qui la registrazione.",
+        "title": "Dichiara la registrazione del contratto"
+      }
+    },
+    "practice": {
+      "closed": {
+        "duplicate": "Era un doppione di un'altra pratica.",
+        "not_compliant": "Il contratto non è attestabile (per esempio con il canone fuori fascia): correggi i dati e ricomincia.",
+        "other": "Chiusa senza attestazione.",
+        "withdrawn": "La pratica è stata ritirata."
+      },
+      "number": "Pratica {{id}}"
+    },
+    "reading": {
+      "arrived": "Ho letto il contratto. Quello che hai scritto resta com'è: i dati letti li vedi quando vuoi.",
+      "conflict": "Ho letto il contratto: ricarica la bozza per vedere i dati letti",
+      "show": "Mostra i dati letti"
+    },
+    "receipt": {
+      "documentLabel": "Ricevuta caricata",
+      "documentPlaceholder": "Scegli la ricevuta",
+      "file": {
+        "title": "Carica un nuovo file"
+      },
+      "legend": "Ricevuta di registrazione",
+      "uploaded": {
+        "description": "È tra i Documenti del contratto: non serve caricarla di nuovo.",
+        "title": "Usa la ricevuta già caricata"
+      }
+    },
+    "service": {
+      "declare": "Dichiara la registrazione",
+      "doneText": "La registrazione la esegue il servizio che ha preparato il contratto. Quando ricevi la ricevuta, caricala nei Documenti e dichiara qui la registrazione: la scadenza sparisce e non ti mandiamo promemoria inutili.",
+      "failedHint": "Il contratto NON risulta registrato qui. Se il servizio lo ha registrato, dichiara la registrazione con la ricevuta.",
+      "note": "La registrazione la esegue il servizio che ha preparato il contratto. Quando ricevi la ricevuta di registrazione, caricala nei Documenti e dichiara qui la registrazione.",
+      "row": "Registrazione: la esegue il servizio che ha preparato il contratto (scadenza: {{date}}). Quando hai la ricevuta, caricala nei Documenti e dichiarala nella scheda.",
+      "rowUnknown": "Registrazione: la esegue il servizio che ha preparato il contratto. Quando hai la ricevuta, caricala nei Documenti e dichiarala nella scheda. La scadenza è ancora da determinare.",
+      "title": "Dichiara la registrazione"
     }
   },
   "longRentDeadlines": {

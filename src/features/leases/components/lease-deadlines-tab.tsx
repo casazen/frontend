@@ -46,8 +46,9 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
         providerFilingAvailable={providerFilingAvailable}
         onSubmitToProvider={() => setDelegaOpen(true)}
         isSubmittingToProvider={triggerRegistration.isPending}
+        viaService={lease.isConcordatoFacileSource === true}
       />
-      {providerFilingAvailable && checklist && (
+      {providerFilingAvailable && !lease.isConcordatoFacileSource && checklist && (
         <DelegaCaptureDialog
           open={delegaOpen}
           onOpenChange={setDelegaOpen}

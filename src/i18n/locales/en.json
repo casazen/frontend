@@ -1963,7 +1963,7 @@
         },
         "transitorio": {
           "description": "For a temporary need, with a limited term.",
-          "title": "Transitional (1 to 18 months)"
+          "title": "Transitional"
         }
       },
       "other": {
@@ -11711,6 +11711,58 @@
         "action": "Open the lease",
         "title": "This lease has a step to take"
       }
+    }
+  },
+  "leaseRound": {
+    "activity": {
+      "adminGrantedGift": "Complimentary practice assigned"
+    },
+    "kind": {
+      "transitorio": {
+        "title": "Transitional (from {{min}} to {{max}} months)"
+      }
+    },
+    "nextStep": {
+      "RegisterImported": {
+        "action": "Declare the registration",
+        "detail": "When you have the registration receipt, upload it among the Documents and declare the registration here.",
+        "title": "Declare the registration of the contract"
+      }
+    },
+    "practice": {
+      "closed": {
+        "duplicate": "It was a duplicate of another practice.",
+        "not_compliant": "The contract cannot be attested (for example with the rent outside the band): correct the data and start again.",
+        "other": "Closed without attestation.",
+        "withdrawn": "The practice was withdrawn."
+      },
+      "number": "Practice {{id}}"
+    },
+    "reading": {
+      "arrived": "I have read the contract. What you wrote stays as it is: you see the data read when you want.",
+      "conflict": "I have read the contract: reload the draft to see the data read",
+      "show": "Show the data read"
+    },
+    "receipt": {
+      "documentLabel": "Receipt uploaded",
+      "documentPlaceholder": "Choose the receipt",
+      "file": {
+        "title": "Upload a new file"
+      },
+      "legend": "Registration receipt",
+      "uploaded": {
+        "description": "It is among the documents of the contract: no need to upload it again.",
+        "title": "Use the receipt already uploaded"
+      }
+    },
+    "service": {
+      "declare": "Declare the registration",
+      "doneText": "The service that prepared the contract registers it. When you receive the receipt, upload it among the Documents and declare the registration here: the deadline goes away and we stop sending you needless reminders.",
+      "failedHint": "The contract is NOT recorded as registered here. If the service registered it, declare the registration with the receipt.",
+      "note": "The service that prepared the contract registers it. When you receive the registration receipt, upload it among the Documents and declare the registration here.",
+      "row": "Registration: the service that prepared the contract does it (deadline: {{date}}). When you have the receipt, upload it among the Documents and declare it on the lease page.",
+      "rowUnknown": "Registration: the service that prepared the contract does it. When you have the receipt, upload it among the Documents and declare it on the lease page. The deadline is still to be determined.",
+      "title": "Declare the registration"
     }
   },
   "longRentDeadlines": {
