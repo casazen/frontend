@@ -1,4 +1,4 @@
-import { Navigate, type RouteObject } from 'react-router-dom';
+import type { RouteObject } from 'react-router-dom';
 import { LoginPage } from '@/pages/login-page';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OwnerDashboard } from '@/pages/owner-portal/OwnerDashboard';
