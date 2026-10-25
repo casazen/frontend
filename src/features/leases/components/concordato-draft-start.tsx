@@ -9,6 +9,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
 import { useProperties } from '@/queries/use-properties';
+import { MissingNote } from '../wizard/missing-note';
 import { useCreateCfDraft } from '@/queries/use-leases';
 
 const SELECT_CLASS =
@@ -33,9 +34,17 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
   const [chosen, setChosen] = useState<string | null>(null);
   const propertyId = chosen ?? (defaultPropertyId && properties.some((property) => property.id === defaultPropertyId) ? defaultPropertyId : '');
   const createDraft = useCreateCfDraft();
+  const [pressed, setPressed] = useState(0);
+  const focusProperty = () => document.getElementById(selectId)?.focus();
 
   const create = async () => {
-    if (!propertyId || createDraft.isPending) return;
+    if (createDraft.isPending) return;
+    // Pressable with no house chosen (LR-WIZ-1): the focus goes to the list and the line under it says what is missing.
+    if (!propertyId) {
+      setPressed((count) => count + 1);
+      focusProperty();
+      return;
+    }
     try {
       const draft = await createDraft.mutateAsync(propertyId);
       // Replaced, not pushed: "back" from the sheet of the contract must not land on this form again.
@@ -101,8 +110,18 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
 
       <p className="text-sm text-foreground/70">{t('leaseWizard.start.concordato.whatHappens')}</p>
 
-      <Button type="submit" disabled={!propertyId} loading={createDraft.isPending} data-testid="concordato-draft-create">
-        {createDraft.isPending ? t('leases.form.creating') : t('leaseWizard.start.continue')}
+      {properties.length > 0 ? (
+        <MissingNote
+          items={propertyId ? [] : [{ step: 1, need: { code: 'property_missing' } }]}
+          current={1}
+          pressed={propertyId ? 0 : pressed}
+          onGo={focusProperty}
+          hrefOfStep={() => ''}
+        />
+      ) : null}
+
+      <Button type="submit" loading={createDraft.isPending} className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight max-sm:w-full" data-testid="concordato-draft-create">
+        {createDraft.isPending ? t('leases.form.creating') : t('leaseWizardGuide.start.zero.continue')}
       </Button>
     </form>
   );

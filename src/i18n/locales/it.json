@@ -11960,6 +11960,9 @@
           "transitorio": "Transitorio: per un bisogno a tempo (da {{min}} a {{max}} mesi), scritto nel contratto.",
           "transitorioBare": "Transitorio: per un bisogno a tempo, scritto nel contratto."
         }
+      },
+      "zero": {
+        "continue": "Salva la bozza e vai al contratto"
       }
     },
     "stepper": {

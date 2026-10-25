@@ -11960,6 +11960,9 @@
           "transitorio": "Transitional: for a need that lasts a while ({{min}} to {{max}} months), written in the contract.",
           "transitorioBare": "Transitional: for a need that lasts a while, written in the contract."
         }
+      },
+      "zero": {
+        "continue": "Save the draft and go to the contract"
       }
     },
     "stepper": {
