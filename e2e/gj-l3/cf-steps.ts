@@ -153,6 +153,25 @@ export async function startConcordatoFromZero(
 }
 
 /**
+ * «Leggi l'informativa» of the sheet opens the privacy notice in another tab: the page is there and does not fail. Its text is the legal one
+ * and is not read here (the pages `/legale/*` are the one place that may name the service); where the notice is not published yet the page
+ * says it is being prepared. Returns what the page shows: the notice, «in preparation», or the error.
+ */
+export async function readThePrivacyNotice(page: Page): Promise<'notice' | 'in-preparation' | 'error'> {
+  const link = page.getByTestId('lease-partner-privacy').getByRole('link', { name: /Leggi l.informativa/ });
+  await expect(link).toBeVisible({ timeout: 20_000 });
+  const [tab] = await Promise.all([page.context().waitForEvent('page', { timeout: 20_000 }), link.click()]);
+  try {
+    await expect(tab).toHaveURL(/\/legale\/privacy/, { timeout: 20_000 });
+    await expect(tab.locator('[data-testid="legal-document-privacy"], [data-testid="legal-document-error"]').first()).toBeVisible({ timeout: 30_000 });
+    if ((await tab.getByTestId('legal-document-error').count()) > 0) return 'error';
+    return (await tab.getByTestId('legal-document-in-preparation').count()) > 0 ? 'in-preparation' : 'notice';
+  } finally {
+    await tab.close();
+  }
+}
+
+/**
  * The block of the sheet that waits for the form: the main button is closed until the privacy notice is ticked, then the person goes on.
  * With the access (platform administrator, payment, gift) the click opens the guided form in this same tab; without it, the page of payment.
  */

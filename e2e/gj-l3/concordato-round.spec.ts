@@ -13,6 +13,7 @@ import {
   log,
   movePracticeTo,
   newActor,
+  readThePrivacyNotice,
   sendThePractice,
   shot,
   startConcordatoFromZero,
@@ -208,6 +209,9 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     });
 
     await step('The main button waits for the privacy notice; with it ticked the person goes on to the access', async () => {
+      const notice = await readThePrivacyNotice(page);
+      log(`the privacy notice of the sheet opens in another tab and shows: ${notice}`);
+      expect.soft(notice, 'the notice linked from the sheet opens').not.toBe('error');
       await acceptPrivacyAndProceed(page, snap);
       if (access === 'gift') {
         // Without the access the sheet sends the person to the page of payment, where the gift practice stands in for the payment.
@@ -279,6 +283,10 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         expect(second.practiceId, 'the second form makes a practice of its own').not.toBe(first);
         await snap('second-practice-sent');
 
+        // A reload of the module does not lose the practice that was sent (the tab remembers it, with its control token).
+        await page.reload();
+        await expect(page.getByTestId('guided-form-practice-id')).toHaveText(second.practiceId, { timeout: 30_000 });
+
         await expect
           .poll(
             async () =>
@@ -292,7 +300,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         expect.soft(count(events, 'ConcordatoFacilePrivacyAccepted'), 'the privacy notice was not asked again').toBe(1);
         expect.soft(count(events, 'ConcordatoFacileLinkGenerated'), 'one link for each opening of the form').toBe(2);
 
-        await page.getByTestId('guided-form-back').click();
+        // «Indietro» of the browser, and not the link of the module: the sheet it comes back to shows the practice, not the button that opens the form.
+        await page.goBack();
         await expect(page.getByTestId('lease-partner-status')).toContainText('Ricevuto', { timeout: 30_000 });
         await expect.soft(page.getByTestId('lease-partner-practice'), 'the sheet says the number of the new practice').toContainText(second.practiceId);
         await expect(page.getByTestId('lease-partner-closed')).toHaveCount(0);
