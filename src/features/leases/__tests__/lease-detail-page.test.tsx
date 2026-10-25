@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
@@ -20,6 +22,10 @@ vi.mock('../components/delega-capture-dialog', () => ({ DelegaCaptureDialog: () 
 vi.mock('../components/lease-signing-panel', () => ({ LeaseSigningPanel: () => null }));
 
 const get = vi.mocked(axios.get);
+const post = vi.mocked(axios.post);
+
+/** The address the server signs for the guided form (CF-FLOW): the tab of the browser goes to it. */
+const FORM_URL = 'https://form.example.test/?leaseId=lease-1&signature=abc123';
 
 function mockLease(response: () => Promise<unknown>) {
   get.mockImplementation((url: string) =>
@@ -32,25 +38,55 @@ function renderPage(search = '') {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
-// The same page with the backend flags a person would have (all off without a provider, as in the tests above).
+// The same page with the backend flags a person would have (all off without a provider, as in the tests above), and the page of
+// payment as a second route: the main button of the sheet leads there when the access is missing.
 function renderPageWithFlags(search: string, flags: Partial<FeatureFlags>) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const value = { flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false };
-  return renderAt(
-    `/app/long-rent/leases/lease-1${search}`,
-    '/app/long-rent/leases/:id',
-    createElement(FeatureFlagsContext.Provider, { value }, createElement(LeaseDetailPage)),
+  return render(
+    <QueryClientProvider client={client}>
+      <FeatureFlagsContext.Provider value={value}>
+        <MemoryRouter initialEntries={[`/app/long-rent/leases/lease-1${search}`]}>
+          <Routes>
+            <Route path="/app/long-rent/leases/:id" element={<LeaseDetailPage />} />
+            <Route path="/app/long-rent/leases/:id/guided-contract" element={<div data-testid="payment-page-stub" />} />
+          </Routes>
+        </MemoryRouter>
+      </FeatureFlagsContext.Provider>
+    </QueryClientProvider>,
   );
 }
 
-/** A lease whose access to the ConcordatoFacile service is not active; the service answers 404 to anything else. */
-function mockLeaseWithService(detail: Parameters<typeof buildDetail>[0]) {
+/** What the server says about the access to the guided form: none, with the privacy notice accepted, unless `overrides` say otherwise. */
+const accessOf = (overrides: object = {}) => ({ hasAccess: false, source: null, giftAvailable: false, giftConsumed: false, privacyAccepted: true, ...overrides });
+const ACTIVE = { hasAccess: true, source: 'payment' };
+/** The form was opened before (the link was made on this day). */
+const OPENED = { linkOpenedAt: '2026-10-24T09:00:00Z' };
+/** The status of the practices of a lease with none yet (a date in the past: nothing asks again). */
+const NO_PRACTICES = { practices: [], lastCheckedAt: '2020-01-01T00:00:00Z', nextUpdateAt: '2020-01-01T00:15:00Z', stale: false, available: true };
+const PRACTICE = { practiceId: 'P-0123456789abcdef', status: 'InProgress', statusChangedAt: '2026-10-24T12:00:00Z', comuneDiffersFromLink: false };
+
+/**
+ * A lease with the access to the guided form as `access()` says now (none, by default) and the status of its practices as `status()`
+ * answers (none yet, by default); the service answers 404 to anything else.
+ */
+function mockLeaseWithService(
+  detail: Parameters<typeof buildDetail>[0],
+  { access = () => accessOf(), status = () => Promise.resolve({ data: NO_PRACTICES }) }: { access?: () => object; status?: () => Promise<unknown> } = {},
+) {
   get.mockImplementation((url: string) => {
     if (url === '/leases/lease-1') return Promise.resolve({ data: buildDetail(detail) });
-    if (url === '/leases/lease-1/concordatofacile/access') {
-      return Promise.resolve({ data: { hasAccess: false, source: null, giftAvailable: false, giftConsumed: false } });
-    }
+    if (url === '/leases/lease-1/concordatofacile/access') return Promise.resolve({ data: access() });
+    if (url === '/leases/lease-1/concordatofacile/status') return status();
     return Promise.reject(httpError(404));
   });
+}
+
+/** The main button of the block of the draft, once the server has said what it needs to (a button that is working is not pressed yet). */
+async function mainButton() {
+  const button = await screen.findByTestId('lease-partner-proceed');
+  await waitFor(() => expect(button).not.toHaveAttribute('aria-busy'));
+  return button;
 }
 
 /** A draft saved with only its property for ConcordatoFacile: the API keeps 1 January 3000 and a rent of 0 until they are typed. */
@@ -68,6 +104,10 @@ describe('LeaseDetailPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     await i18n.changeLanguage('it');
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('render_Lease_ShowsMaskedPartiesTranslatedRolesAndTimeline', async () => {
@@ -192,31 +232,140 @@ describe('LeaseDetailPage', () => {
 
     renderPage('?tab=dati');
 
-    expect(await screen.findByTestId('lease-partner-draft')).toHaveTextContent('Bozza — in attesa del contratto del partner');
+    const notice = await screen.findByTestId('lease-partner-draft');
+    expect(notice).toHaveTextContent(i18n.t('leases.partnerDraft.title'));
+    // The service is off (the flags default): the guided form is not available yet, so the button waits and the way to the documents stays.
     expect(screen.getByTestId('lease-partner-proceed')).toBeDisabled();
-    // The reference to give the partner is the id of this contract.
-    expect(screen.getByDisplayValue('lease-1')).toBeInTheDocument();
+    expect(within(notice).getByText(i18n.t('leases.partnerDraft.soon'))).toBeInTheDocument();
+    expect(screen.getByTestId('lease-partner-upload')).toHaveAttribute('href', '/app/long-rent/documents/upload?leaseId=lease-1');
+    // CF-FLOW: nothing to give anyone, and no name of the supplier (nor «partner») in the block.
+    expect(screen.queryByDisplayValue('lease-1')).not.toBeInTheDocument();
+    expect(notice.textContent).not.toMatch(/partner|concordato\s*facile/i);
     expect(screen.getByText(/Casa Trastevere · Roma · .* · Canone da definire/)).toBeInTheDocument();
     expect(screen.queryByText(/3000/)).not.toBeInTheDocument();
     expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
   });
 
-  // CF-FIX: the switch of the ConcordatoFacile service.
-  it('render_ConcordatoDraftForThePartner_ServiceOn_ProceedOpensTheServicePage_AndTheComingSoonLineIsGone', async () => {
-    mockLeaseWithService(partnerDraft());
+  // CF-FIX: the switch of the service. CF-FLOW: the sheet of the draft is the centre — the privacy notice, the way to the payment or
+  // straight into the form, and once the form is sent the status of the practice.
+  it('render_ConcordatoDraftForThePartner_NoAccess_TheBoxOfThePrivacyGatesTheButton_ThenItAcceptsAndGoesToThePayment', async () => {
+    mockLeaseWithService(partnerDraft(), { access: () => accessOf({ privacyAccepted: false }) });
+    post.mockResolvedValue({ data: accessOf({ privacyAccepted: true }) });
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
-    const proceed = await screen.findByTestId('lease-partner-proceed');
-    expect(proceed).toBeEnabled();
-    expect(proceed).toHaveAttribute('href', '/app/long-rent/leases/lease-1/concordatofacile');
+    const privacy = await screen.findByTestId('lease-partner-privacy');
+    expect(within(privacy).getByRole('link', { name: i18n.t('guidedContract.privacyRead') })).toHaveAttribute('href', '/legale/privacy');
+    const proceed = screen.getByTestId('lease-partner-proceed');
+    expect(proceed).toHaveTextContent(i18n.t('leases.partnerDraft.proceed'));
+    expect(proceed).toBeDisabled();
     expect(screen.getByText(i18n.t('leases.partnerDraft.ready'))).toBeInTheDocument();
-    expect(screen.queryByText(i18n.t('leases.partnerDraft.soon'))).not.toBeInTheDocument();
-    // The reference to give the partner stays.
-    expect(screen.getByDisplayValue('lease-1')).toBeInTheDocument();
-    // One way in: the panel of the service is not laid next to the notice of a draft for the partner.
-    expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
+    // Nothing for the person to communicate, and the status is not read where there is no access.
+    expect(screen.queryByDisplayValue('lease-1')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).endsWith('/concordatofacile/status'))).toBe(false);
+
+    fireEvent.click(within(privacy).getByRole('checkbox'));
+    expect(proceed).toBeEnabled();
+    fireEvent.click(proceed);
+
+    // The acceptance is recorded, then the person goes to the page of payment: no link of the form is made without the access.
+    expect(await screen.findByTestId('payment-page-stub')).toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post.mock.calls[0][0]).toBe('/leases/lease-1/concordatofacile/privacy-acceptance');
+  });
+
+  it('render_ConcordatoDraftForThePartner_AccessActive_TheMainButtonOpensTheFormInThisTabFromTheClick', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    post.mockResolvedValue({ data: { url: FORM_URL } });
+    mockLeaseWithService(partnerDraft(), { access: () => accessOf(ACTIVE) });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const proceed = await mainButton();
+    // The privacy notice was accepted: no box. The form was never opened: the status is not read.
+    expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).endsWith('/concordatofacile/status'))).toBe(false);
+    expect(screen.getByTestId('lease-partner-upload')).toHaveAttribute('href', '/app/long-rent/documents/upload?leaseId=lease-1');
+
+    fireEvent.click(proceed);
+
+    // One call for the link, then this tab (not a new window, no page in between) goes to the address the server signed.
+    await waitFor(() => expect(assign).toHaveBeenCalledWith(FORM_URL));
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post.mock.calls[0][0]).toBe('/leases/lease-1/concordatofacile/link');
+    expect(open).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('payment-page-stub')).not.toBeInTheDocument();
+    open.mockRestore();
+  });
+
+  it('render_ConcordatoDraftForThePartner_FormSentAndPracticeUnderWay_ShowsOnlyItsStatusAndTheWayToTheDocuments', async () => {
+    mockLeaseWithService(partnerDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, comuneDiffersFromLink: true }] } }),
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const status = await screen.findByTestId('lease-partner-status');
+    expect(within(status).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'InProgress');
+    expect(status).toHaveTextContent(/Aggiornato il 24\/10\/2026/);
+    expect(screen.getByText(i18n.t('guidedContract.sent'))).toBeInTheDocument();
+    // The municipality the person chose in the form is not the one of the house: said, as the status always did.
+    expect(screen.getByTestId('lease-partner-comune')).toHaveTextContent(i18n.t('guidedContract.comuneDiffers'));
+    // A second visit to the form after the sending would make a second practice: nothing in the block opens it.
+    expect(screen.queryByTestId('lease-partner-proceed')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('render_ConcordatoDraftForThePartner_PracticeClosed_TheFormCanBeResumed', async () => {
+    mockLeaseWithService(partnerDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: 'ClosedWithoutAttestation', closeReason: 'withdrawn' }] } }),
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const proceed = await mainButton();
+    expect(proceed).toHaveTextContent(i18n.t('guidedContract.resume'));
+    expect(screen.queryByTestId('lease-partner-status')).not.toBeInTheDocument();
+  });
+
+  it('render_ConcordatoDraftForThePartner_StatusNotAvailable_SaysNotToReopenIfSent_NotAnError_AndTheFormCanBeResumed', async () => {
+    mockLeaseWithService(partnerDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: () => Promise.resolve({ data: { practices: [], lastCheckedAt: null, nextUpdateAt: '2020-01-01T00:15:00Z', stale: false, available: false } }),
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const quiet = await screen.findByTestId('lease-partner-status-unavailable');
+    expect(quiet).toHaveTextContent(i18n.t('concordatofacile.entry.statusFailed'));
+    const notice = screen.getByTestId('lease-partner-draft');
+    expect(within(notice).queryByRole('alert')).not.toBeInTheDocument();
+    expect(notice.textContent).not.toMatch(/partner|concordato\s*facile/i);
+    const proceed = await mainButton();
+    expect(proceed).toHaveTextContent(i18n.t('guidedContract.resume'));
+    expect(proceed).toBeEnabled();
+  });
+
+  it('render_ConcordatoDraftForThePartner_LinkRefusedForThePrivacyNotice_AsksForTheBoxAndShowsNoError', async () => {
+    let accepted = true;
+    mockLeaseWithService(partnerDraft(), { access: () => accessOf({ ...ACTIVE, privacyAccepted: accepted }) });
+    post.mockImplementation(() => {
+      accepted = false; // the server does not have the notice: the access, read again, says so
+      return Promise.reject(httpError(409, { code: 'concordatofacile_privacy_not_accepted' }));
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+    fireEvent.click(await mainButton());
+
+    expect(await screen.findByTestId('lease-partner-privacy')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-partner-open-error')).not.toBeInTheDocument();
   });
 
   it('render_ConcordatoLease_ServiceOff_ShowsNoPaymentPanelAndAsksNothingOfTheService', async () => {
@@ -229,13 +378,16 @@ describe('LeaseDetailPage', () => {
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
 
-  it('render_ConcordatoLease_ServiceOn_ShowsThePaymentPanel', async () => {
+  it('render_ConcordatoLeaseNotMadeForThePartner_ServiceOn_OffersNoWayIntoTheService', async () => {
+    // CF-DOC-FU4: a canone concordato that is not the draft made for the partner (made in CasaZen, imported, signed) has no entrance to it.
     mockLeaseWithService({ contractType: 'Concordato' });
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
-    expect(await screen.findByTestId('cf-entry-panel')).toBeInTheDocument();
+    await screen.findAllByTestId('lease-party');
+    expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
 
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {

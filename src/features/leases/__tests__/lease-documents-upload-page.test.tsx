@@ -5,6 +5,7 @@ import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import { LeaseDocumentsUploadPage } from '../lease-documents-upload-page';
+import { LEASE_CONFIRMED_STATE } from '../lib/upload-link';
 import { buildDetail, buildSummary, httpError, renderAt } from './lease-test-utils';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() } }));
@@ -13,7 +14,10 @@ const practice = 'P-0123456789ABCDEF';
 const lookupUrl = `/concordatofacile/practices/${practice}/lease`;
 const path = '/app/long-rent/documents/upload';
 const get = vi.mocked(axios.get); const post = vi.mocked(axios.post);
-function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
+// A link of the app, or a contract the person has confirmed: the documents come at once (CF-FIX-FU4).
+function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage), LEASE_CONFIRMED_STATE); }
+// A link from outside (the button of the e-mail, an old link with only the lease): the page asks which contract before anything else.
+function renderFromOutside(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
 
 describe('lease-owned partner documents', () => {
   beforeEach(async () => { vi.clearAllMocks(); await i18n.changeLanguage('it'); });
@@ -137,6 +141,49 @@ describe('lease-owned partner documents', () => {
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
 
+  // CF-FIX-FU4: a link from outside says which contract, the person has not: one explicit step before the upload, for the practice of the
+  // e-mail and for the old link with only the lease, with the way to another contract.
+  it.each([
+    ['a practice the server links to a lease', `?practice=${practice}`, 'confirmWithPractice'],
+    ['an old link with only the lease', `?leaseId=${id}`, 'confirmWithoutPractice'],
+  ] as const)('%s asks to confirm the contract before showing the upload', async (_label, query, key) => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: id, practiceId: practice, status: 'InProgress', manualSelectionRequired: false } });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderFromOutside(query);
+
+    const confirm = await screen.findByTestId('cf-documents-confirm');
+    expect(confirm).toHaveTextContent(i18n.t(`guidedContract.${key}`, { practice, lease: 'Casa Trastevere · Roma' }));
+    // Nothing can be uploaded, and the contract is not shown, before the person has said it is the right one.
+    expect(screen.queryByLabelText(i18n.t('documentPages.select'))).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => url === `/leases/${id}/documents`)).toBe(false);
+
+    fireEvent.click(screen.getByTestId('cf-documents-confirm-button'));
+
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByLabelText(i18n.t('documentPages.select'))).toBeInTheDocument();
+    expect(screen.queryByTestId('cf-documents-confirm')).not.toBeInTheDocument();
+  });
+  it('«Scegli un altro contratto» lists the contracts, and the one chosen there needs no second confirmation', async () => {
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderFromOutside(`?leaseId=${id}`);
+
+    fireEvent.click(await screen.findByTestId('cf-documents-confirm-other'));
+    fireEvent.click(await screen.findByRole('link', { name: new RegExp(id) }));
+
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.queryByTestId('cf-documents-confirm')).not.toBeInTheDocument();
+  });
+
   // CF-IMPORT: the contract ConcordatoFacile delivers goes on to «Completa e importa il contratto» only from the draft it was made for,
   // once a contract document is there; any other contract is left alone (it does not even ask how a reading stands).
   it.each([
@@ -167,5 +214,20 @@ describe('lease-owned partner documents', () => {
       expect(screen.queryByTestId('cf-import-panel')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
     }
+  });
+  it('while the contract is being read the import button waits and says so', async () => {
+    const documents = [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Processing', error: null }];
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, origin: 'Imported', isConcordatoFacileSource: true }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === `/leases/${id}/draft/reading`) return Promise.resolve({ data: { state: 'Reading', documents, fields: [], stipulaDate: null, contractDocumentId: 'doc-1' } });
+      return Promise.reject(httpError(404));
+    });
+
+    renderPage(`?leaseId=${id}`);
+
+    const waiting = await screen.findByRole('button', { name: i18n.t('guidedContract.reading') });
+    expect(waiting).toBeDisabled();
+    expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
   });
 });
