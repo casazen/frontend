@@ -20,6 +20,8 @@ export function isPublicUnauthenticatedPath(pathname: string): boolean {
     path.startsWith('/check-in') ||
     path.startsWith('/checkin') ||
     path.startsWith('/rent/pay/') ||
+    // The simulated module of the service that prepares the contract (CF-SIM, test environments): public like the real one.
+    path.startsWith('/guided-form') ||
     path.startsWith('/help/')
   );
 }
