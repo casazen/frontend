@@ -5,26 +5,31 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Field } from '@/components/ui/field';
 import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { classifyFiscalCode } from '@/lib/fiscal-code';
 import { getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
 import { formatCurrency } from '@/lib/utils';
 import { LEASE_TAX_REGIMES, type LeaseOrigin, type LongRentRules } from '@/types';
 import { ContractTypeCards } from './contract-type-cards';
 import { ReadMark } from './reading-marks';
-import type { WizardValues } from './wizard-model';
+import { TRANSITORY_NEED_MAX_LENGTH, TRANSITORY_PARTIES, makesItsNeed, type WizardValues } from './wizard-model';
 
 /**
  * Step ③ «Condizioni economiche» (LR-06a): the type, the tax regime, the rent and the deposit. The limit of the deposit is the server's
  * (`rules.depositMaxRents`) and is told live from the rent typed; nothing is written here as a figure of law. The deposit is asked for
  * («0 se non c'è») on a contract made in CasaZen, because its model prints it (LR-DEP), and is optional on one already signed. No
  * frequency and day of payment, no expenses, no ISTAT: the plan of the rents is set up later, once the contract is in force.
+ *
+ * A transitory contract made in CasaZen also states the need that justifies its short term (TR, D.M. 16/01/2017 art. 2 c. 4): who has it,
+ * the landlord or the tenant, and what it is. The documents that prove it are asked at step ④, with the term that decides whether they
+ * are needed.
  */
 export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: LeaseOrigin }) {
   const { t } = useTranslation();
   const { control, register, setValue, formState } = useFormContext<WizardValues>();
-  const [contractType, taxRegime, rentText, depositText, tenants] = useWatch({
+  const [contractType, taxRegime, rentText, depositText, tenants, transitoryParty, transitoryNeed] = useWatch({
     control,
-    name: ['contractType', 'taxRegime', 'monthlyRent', 'securityDeposit', 'tenants'],
+    name: ['contractType', 'taxRegime', 'monthlyRent', 'securityDeposit', 'tenants', 'transitoryParty', 'transitoryNeed'],
   });
 
   const rent = Number(rentText);
@@ -49,6 +54,39 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
         firstId="lw-type"
       />
       <ReadMark step={3} fields={['contractType']} name="contractType" />
+
+      {makesItsNeed({ contractType }, origin) ? (
+        <section className="space-y-4" aria-labelledby="lw-transitory-title" data-testid="lease-transitory-need">
+          <div className="space-y-1">
+            <h3 id="lw-transitory-title" className="text-sm font-semibold">
+              {t('leaseWizard.transitory.title')}
+            </h3>
+            <p className="text-sm text-muted-foreground">{t('leaseWizard.transitory.intro')}</p>
+          </div>
+          <ChoiceGroup legend={t('leaseWizard.transitory.party.legend')} legendVisible minCardWidth={14}>
+            {TRANSITORY_PARTIES.map((party, position) => (
+              <ChoiceCard
+                key={party}
+                id={position === 0 ? 'lw-transitoryParty' : undefined}
+                name="lease-transitory-party"
+                value={party}
+                checked={transitoryParty === party}
+                onChange={() => setValue('transitoryParty', party, { shouldDirty: true })}
+                title={t(`leaseWizard.transitory.party.${party}.title`)}
+                description={t(`leaseWizard.transitory.party.${party}.description`)}
+                data-testid={`lease-transitory-party-${party}`}
+              />
+            ))}
+          </ChoiceGroup>
+          <Field
+            label={t('leaseWizard.transitory.need.label')}
+            hint={t('leaseWizard.transitory.need.hint')}
+            counter={`${transitoryNeed.length}/${TRANSITORY_NEED_MAX_LENGTH}`}
+          >
+            <Textarea id="lw-transitoryNeed" rows={3} maxLength={TRANSITORY_NEED_MAX_LENGTH} {...register('transitoryNeed')} />
+          </Field>
+        </section>
+      ) : null}
 
       <div className="space-y-2">
         <ChoiceGroup legend={t('leaseWizard.terms.regime.legend')} legendVisible minCardWidth={14}>

@@ -45,6 +45,9 @@ export function needMessage(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'c
     minMonthly: amountOf(params.minMonthly),
     maxMonthly: amountOf(params.maxMonthly),
     months: params.months,
+    // The limit of a text (the documentation of a transitory contract) and the inhabitants above which its rent has a band to respect.
+    characters: params.maxLength,
+    inhabitants: typeof params.inhabitants === 'number' ? new Intl.NumberFormat(i18n.language).format(params.inhabitants) : undefined,
     start: dayOf(params.start, i18n.language),
     end: dayOf(params.end, i18n.language),
     // A review check that names the whole term (start and end) is told in full; the one with the start alone, briefly.

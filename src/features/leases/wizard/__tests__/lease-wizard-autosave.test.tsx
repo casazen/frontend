@@ -47,9 +47,11 @@ const RULES: LongRentRules = {
   noticeMonths: 6,
   registrationDays: 30,
   depositMaxRents: 3,
-  availableTypes: ['Libero', 'Concordato'],
+  availableTypes: ['Libero', 'Concordato', 'Transitorio'],
   importedTypes: ['Libero', 'Concordato', 'Transitorio'],
   transitoryTermMonths: { min: 1, max: 18 },
+  transitoryDocumentationAfterDays: 30,
+  transitoryBandFromInhabitants: 10000,
 };
 
 describe('LeaseWizard autosave', () => {

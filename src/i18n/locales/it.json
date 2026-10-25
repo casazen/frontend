@@ -1773,6 +1773,11 @@
       "tenants_ok_one": "{{count}} conduttore con tutti i dati",
       "tenants_ok_other": "{{count}} conduttori con tutti i dati",
       "term_out_of_range": "La durata non è ammessa per questo tipo di contratto: {{reason}}",
+      "transitory_documentation_missing": "Indica la documentazione che alleghi per provare l'esigenza",
+      "transitory_documentation_too_long": "La documentazione è troppo lunga: al massimo {{characters}} caratteri",
+      "transitory_need_missing": "Scrivi quale esigenza giustifica il contratto transitorio",
+      "transitory_party_missing": "Indica chi ha l'esigenza: il locatore o il conduttore",
+      "transitory_rent_band_to_check": "Nei comuni con più di {{inhabitants}} abitanti il canone di un contratto transitorio deve rientrare nelle fasce dell'accordo territoriale: verificalo prima di firmare. Se non rientra, il contratto viene ricondotto alla durata ordinaria del canone libero",
       "unknown": "C'è ancora qualcosa da controllare in questo passo"
     },
     "next": "Continua: {{step}}",
@@ -2006,6 +2011,32 @@
       "rent": "Canone mensile (€)"
     },
     "title": "Crea contratto",
+    "transitory": {
+      "documentation": {
+        "hint_one": "Il contratto dura più di {{count}} giorno: l'esigenza va provata con documenti da allegare al contratto (per esempio una lettera di assunzione). Scrivi quali.",
+        "hint_other": "Il contratto dura più di {{count}} giorni: l'esigenza va provata con documenti da allegare al contratto (per esempio una lettera di assunzione). Scrivi quali.",
+        "label": "Documentazione che alleghi"
+      },
+      "endLabel": "Ultimo giorno del contratto",
+      "intro": "Un contratto transitorio si può fare solo per un'esigenza precisa e temporanea, scritta nel contratto.",
+      "need": {
+        "hint": "Scrivila in poche parole. Deve essere una delle esigenze previste dall'accordo territoriale del comune dell'immobile (per esempio lavoro, studio o formazione per un periodo limitato).",
+        "label": "Quale esigenza"
+      },
+      "party": {
+        "Landlord": {
+          "description": "Chi affitta: per esempio la casa gli servirà di nuovo tra poco.",
+          "title": "Il locatore"
+        },
+        "Tenant": {
+          "description": "Chi prende la casa: per esempio lavora o studia qui per un periodo.",
+          "title": "Il conduttore"
+        },
+        "legend": "Chi ha l'esigenza"
+      },
+      "summaryEnds": "Alla scadenza il contratto finisce da solo: non si rinnova e non serve la disdetta.",
+      "title": "L'esigenza che giustifica il contratto"
+    },
     "type": {
       "chosen": "Lo hai scelto all'inizio.",
       "description": {
