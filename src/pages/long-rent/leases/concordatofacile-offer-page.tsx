@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Info, Loader2, ShieldCheck } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
@@ -11,10 +11,11 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PageHeader } from '@/components/layout/page-header';
 import { BackLink } from '@/components/shared/back-link';
 import { useLease } from '@/queries/use-leases';
-import { useCfAccess, useCfCheckout, useCfConsumeGift, useCfGenerateLink } from '@/queries/use-concordatofacile';
+import { isCfAlreadyPurchased, useCfAccess, useCfCheckout, useCfConsumeGift, useCfGenerateLink } from '@/queries/use-concordatofacile';
 import { redirectToStripe } from '@/features/billing/billing-utils';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useAuth } from '@/hooks/use-auth';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { isAdmin } from '@/lib/auth-roles';
 import { CfStatusSection } from './components/cf-status-section';
 
@@ -22,8 +23,26 @@ import { CfStatusSection } from './components/cf-status-section';
  * ConcordatoFacile offer page (NF-02, ADR-005-R11-R14).
  * Route: /app/long-rent/leases/:id/concordatofacile
  * Displays service info, price, and handles checkout or gift consumption.
+ * With the service off (`concordatoFacile`, CF-FIX) the page does not exist: the person goes back to the contract. The address is also
+ * the return address of the Stripe checkout, so it can be opened long after the payment, and then the contract is the place to be.
  */
 export function ConcordatoFacileOfferPage() {
+  const { t } = useTranslation();
+  const { id } = useParams<{ id: string }>();
+  const { flags, isLoading } = useFeatureFlags();
+
+  if (isLoading) {
+    return <LoadingScreen message={t('concordatofacile.offer.processing')} />;
+  }
+
+  if (!flags.concordatoFacile) {
+    return <Navigate to={id ? `/app/long-rent/leases/${id}` : '/app/long-rent/leases'} replace />;
+  }
+
+  return <ConcordatoFacileOffer />;
+}
+
+function ConcordatoFacileOffer() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -185,6 +204,11 @@ export function ConcordatoFacileOfferPage() {
       <div className="container max-w-3xl py-8">
         <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
         <div className="mt-6 space-y-6">
+          {isCfAlreadyPurchased(checkoutMutation.error) ? (
+            <Alert variant="success" data-testid="cf-already-purchased-active">
+              {t('concordatofacile.offer.hasAccess')}
+            </Alert>
+          ) : null}
           <Card>
             <CardHeader>
               <CardTitle>{t('concordatofacile.entry.access')}</CardTitle>
@@ -331,7 +355,13 @@ export function ConcordatoFacileOfferPage() {
                 </Button>
               )}
 
-              {checkoutMutation.isError && (
+              {checkoutMutation.isError && isCfAlreadyPurchased(checkoutMutation.error) && (
+                <Alert role="alert" className="mt-4" data-testid="cf-already-purchased">
+                  {t('apiErrors.codes.concordatofacileAlreadyPurchased')}
+                </Alert>
+              )}
+
+              {checkoutMutation.isError && !isCfAlreadyPurchased(checkoutMutation.error) && (
                 <Alert variant="danger" className="mt-4">
                   <AlertCircle className="size-4" />
                   {t('concordatofacile.offer.checkoutError')}

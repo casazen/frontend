@@ -60,6 +60,21 @@ export interface CfPracticeResponse {
   closeReason?: string;
 }
 
+/**
+ * Response from GET /api/concordatofacile/practices/{practiceId}/lease (NF-06): which lease of the org a practice of the partner
+ * belongs to. 404 `practice_not_found` when the number is wrong, unknown or the lease is not the org's (the backend never says which).
+ */
+export interface CfPracticeLookupResponse {
+  /** The lease of the org the partner linked the practice to; null when the practice is not linked to a lease. */
+  leaseId: string | null;
+  /** CF practice identifier (`P-` and 16 hexadecimal characters). */
+  practiceId: string;
+  /** Current status of the practice, null when it is not linked. */
+  status: CfPracticeStatus | null;
+  /** True when the practice is not linked to a lease: the user picks the contract. */
+  manualSelectionRequired: boolean;
+}
+
 /** Response from GET /api/leases/{leaseId}/concordatofacile/status (ADR-008-R15). */
 export interface CfStatusResponse {
   /** List of practices for the lease. */

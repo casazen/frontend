@@ -3,6 +3,8 @@ import { fireEvent, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { LeaseDetailPage } from '../lease-detail-page';
 import { buildDetail, HTML_FALLBACK, httpError, renderAt } from './lease-test-utils';
 
@@ -29,6 +31,38 @@ function mockLease(response: () => Promise<unknown>) {
 function renderPage(search = '') {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
+
+// The same page with the backend flags a person would have (all off without a provider, as in the tests above).
+function renderPageWithFlags(search: string, flags: Partial<FeatureFlags>) {
+  const value = { flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false };
+  return renderAt(
+    `/app/long-rent/leases/lease-1${search}`,
+    '/app/long-rent/leases/:id',
+    createElement(FeatureFlagsContext.Provider, { value }, createElement(LeaseDetailPage)),
+  );
+}
+
+/** A lease whose access to the ConcordatoFacile service is not active; the service answers 404 to anything else. */
+function mockLeaseWithService(detail: Parameters<typeof buildDetail>[0]) {
+  get.mockImplementation((url: string) => {
+    if (url === '/leases/lease-1') return Promise.resolve({ data: buildDetail(detail) });
+    if (url === '/leases/lease-1/concordatofacile/access') {
+      return Promise.resolve({ data: { hasAccess: false, source: null, giftAvailable: false, giftConsumed: false } });
+    }
+    return Promise.reject(httpError(404));
+  });
+}
+
+/** A draft saved with only its property for ConcordatoFacile: the API keeps 1 January 3000 and a rent of 0 until they are typed. */
+const partnerDraft = (): Parameters<typeof buildDetail>[0] => ({
+  contractType: 'Concordato',
+  startDate: '3000-01-01T00:00:00Z',
+  endDate: '3000-01-01T00:00:00Z',
+  monthlyRent: 0,
+  registrationDeadline: null,
+  parties: [],
+  events: [{ eventType: 'Created', occurredAt: '2026-10-23T10:00:00Z' }],
+});
 
 describe('LeaseDetailPage', () => {
   beforeEach(async () => {
@@ -166,6 +200,42 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByText(/3000/)).not.toBeInTheDocument();
     expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
+  });
+
+  // CF-FIX: the switch of the ConcordatoFacile service.
+  it('render_ConcordatoDraftForThePartner_ServiceOn_ProceedOpensTheServicePage_AndTheComingSoonLineIsGone', async () => {
+    mockLeaseWithService(partnerDraft());
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const proceed = await screen.findByTestId('lease-partner-proceed');
+    expect(proceed).toBeEnabled();
+    expect(proceed).toHaveAttribute('href', '/app/long-rent/leases/lease-1/concordatofacile');
+    expect(screen.getByText(i18n.t('leases.partnerDraft.ready'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('leases.partnerDraft.soon'))).not.toBeInTheDocument();
+    // The reference to give the partner stays.
+    expect(screen.getByDisplayValue('lease-1')).toBeInTheDocument();
+    // One way in: the panel of the service is not laid next to the notice of a draft for the partner.
+    expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
+  });
+
+  it('render_ConcordatoLease_ServiceOff_ShowsNoPaymentPanelAndAsksNothingOfTheService', async () => {
+    mockLeaseWithService({ contractType: 'Concordato' });
+
+    renderPage('?tab=dati');
+
+    await screen.findAllByTestId('lease-party');
+    expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
+  });
+
+  it('render_ConcordatoLease_ServiceOn_ShowsThePaymentPanel', async () => {
+    mockLeaseWithService({ contractType: 'Concordato' });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    expect(await screen.findByTestId('cf-entry-panel')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
   });
 
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {

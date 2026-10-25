@@ -33,9 +33,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   supplierOnlinePayments: false,
   /**
-   * ConcordatoFacile, the partner that prepares a canone concordato contract: off until its integration is tested. While it is off the
-   * card «Parto da zero» of a new canone concordato is disabled («disponibile a breve») and its address shows the question again;
-   * «Ho già il contratto e i documenti» does not depend on it.
+   * ConcordatoFacile, the partner that prepares a canone concordato contract (backend `ConcordatoFacile`): on in the test environment,
+   * off in production until CasaZen confirms the trial run and the privacy framework to ConcordatoFacile. While it is off the card
+   * «Parto da zero» of a new canone concordato is disabled («disponibile a breve») and its address shows the question again; «Ho già il
+   * contratto e i documenti» does not depend on it. It also keeps the payment panel off the contract page (CF-FIX), sends the route
+   * `/app/long-rent/leases/:id/concordatofacile` back to the contract, leaves the banner of a draft made for the partner with its button
+   * off and its «coming soon» line, and makes the upload page opened from the partner's button (`?practice=`) fall back to choosing the
+   * contract (the backend answers 404 to the lookup).
    */
   concordatoFacile: false,
 };

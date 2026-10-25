@@ -5,10 +5,12 @@ import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import { LeaseDocumentsUploadPage } from '../lease-documents-upload-page';
-import { buildDetail, httpError, renderAt } from './lease-test-utils';
+import { buildDetail, buildSummary, httpError, renderAt } from './lease-test-utils';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() } }));
 const id = '0b6f7a3e-5a2d-4c58-9e0a-6c8b0f2e1d11';
+const practice = 'P-0123456789ABCDEF';
+const lookupUrl = `/concordatofacile/practices/${practice}/lease`;
 const path = '/app/long-rent/documents/upload';
 const get = vi.mocked(axios.get); const post = vi.mocked(axios.post);
 function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
@@ -70,5 +72,68 @@ describe('lease-owned partner documents', () => {
     get.mockResolvedValue({ data: [] }); renderPage();
     await screen.findByText(i18n.t('cfDocuments.noLeases')); expect(post).not.toHaveBeenCalled();
     await waitFor(() => expect(get).toHaveBeenCalled());
+  });
+
+  // CF-FIX: the button «Carica i dati in CasaZen» of ConcordatoFacile opens this page with `?practice=P-…`.
+  it('a practice the server links to a lease shows the documents of that lease, never the list of contracts', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: id, practiceId: practice, status: 'InProgress', manualSelectionRequired: false } });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.linked', { practice }));
+    expect(screen.queryByText(i18n.t('cfDocuments.chooseLease'))).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => url === '/leases')).toBe(false);
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('a practice the server does not find (or while the service is off) loads no contract until the person chooses one', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.reject(httpError(404, { code: 'practice_not_found' }));
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    expect(await screen.findByText(i18n.t('cfDocuments.practice.notFound'))).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('cfDocuments.chooseLease'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('cfDocuments.backToHouses'))).toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).startsWith('/leases/'))).toBe(false);
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('a practice not linked yet asks for the contract and goes on with the one chosen, keeping the practice in the address', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: null, practiceId: practice, status: null, manualSelectionRequired: true } });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    expect(await screen.findByTestId('cf-documents-practice-manual')).toHaveTextContent(practice);
+    expect(get.mock.calls.some(([url]) => String(url).startsWith('/leases/'))).toBe(false);
+    fireEvent.click(await screen.findByRole('link', { name: new RegExp(id) }));
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.chosen', { practice }));
+    expect(get.mock.calls.filter(([url]) => url === lookupUrl)).toHaveLength(1);
+  });
+  it.each(['?practice=P-123', `?practice=${practice}&practice=${practice}`, '?practice='])('a practice number that is not one is an invalid link, never looked up: %s', async (query) => {
+    get.mockResolvedValue({ data: [] });
+    renderPage(query);
+    expect(await screen.findByTestId('cf-documents-practice-invalid')).toHaveTextContent(i18n.t('cfDocuments.practice.invalid'));
+    await screen.findByText(i18n.t('cfDocuments.noLeases'));
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
+  });
+  it('a lease named in the link is the only one shown, whatever the practice says', async () => {
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?leaseId=${id}&practice=${practice}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.chosen', { practice }));
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
 });

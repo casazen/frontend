@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLease, useLeaseNextStep } from '@/queries/use-leases';
 import { useCfAccess, useCfGenerateLink } from '@/queries/use-concordatofacile';
 import { getHttpStatus } from '@/lib/api-errors';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
@@ -76,7 +77,8 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 
 /**
  * ConcordatoFacile entry point panel for Concordato lease contracts (ADR-007-R12-R16).
- * Shows state-driven button: no access -> offer page, access -> link generation.
+ * Shows state-driven button: no access -> offer page, access -> link generation. Only with the service on (`concordatoFacile`, CF-FIX),
+ * and not on a draft made for the partner: there the draft notice is the one way in.
  * TODO: Show status section when practices exist (E02).
  * TODO: Handle status query failure with ADR-007-R14 fallback when status query exists (E02).
  */
@@ -155,6 +157,7 @@ function ConcordatoFacilePanel({ leaseId }: { leaseId: string }) {
  */
 function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNextStep | null }) {
   const { t, i18n } = useTranslation();
+  const { flags } = useFeatureFlags();
   const [searchParams] = useSearchParams();
   // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen. Its
   // notice is its one voice, so the step of the server is not laid over it.
@@ -204,12 +207,12 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
 
       {now ? <LeaseNowBlock step={now} /> : null}
 
-      {partnerDraft ? <PartnerDraftNotice /> : null}
+      {partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
       {lease.status === 'Draft' && !partnerDraft && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
       <LeasePartnerReference leaseId={lease.id} />
 
-      {lease.contractType === 'Concordato' ? <ConcordatoFacilePanel leaseId={lease.id} /> : null}
+      {lease.contractType === 'Concordato' && flags.concordatoFacile && !partnerDraft ? <ConcordatoFacilePanel leaseId={lease.id} /> : null}
 
       {showExtraEuBanner && !questuraSaid ? <ExtraEUWarningBanner /> : null}
 

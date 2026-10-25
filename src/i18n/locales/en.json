@@ -19,6 +19,13 @@
     "referenceHelp": "Share this identifier with the partner to link the case to the correct lease and property.",
     "chooseLease": "Select the lease to attach documents to.",
     "noLeases": "No leases have been saved yet. You need a leaseId, not a property ID.",
+    "practice": {
+      "chosen": "Practice {{practice}}: the documents are saved on this lease.",
+      "invalid": "Invalid link: the practice number is not correct.",
+      "linked": "Practice {{practice}} linked to this lease",
+      "manual": "Practice {{practice}} is not linked to a lease yet.",
+      "notFound": "We cannot find this practice among your leases."
+    },
     "leaseLabel": "Lease",
     "documentsTitle": "Lease documents",
     "kind": "Document type",
@@ -1300,6 +1307,7 @@
       "title": "Draft — waiting for the partner’s contract",
       "description": "You prepare this canone concordato contract with ConcordatoFacile: parties, rent and term are entered there. The draft and its reference are already saved here.",
       "proceed": "Go on with the creation of the contract",
+      "ready": "You pay or use the gift practice, then the ConcordatoFacile form opens with the reference of this contract already linked.",
       "soon": "The direct connection with ConcordatoFacile is coming soon. Meanwhile you can give the partner the reference of the contract below."
     }
   },
@@ -9790,6 +9798,7 @@
       "orgSeatLimitReached": "You have used all the seats of the plan: deactivate someone who no longer works with you or move to a plan with more seats.",
       "staleDocuments": "The legal documents have been updated: reload the page and accept them again.",
       "threadClosed": "This conversation is closed: no more messages can be written.",
+      "concordatofacileAlreadyPurchased": "ConcordatoFacile is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
       "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
       "leaseAlreadyTerminated": "This lease has already ended.",
