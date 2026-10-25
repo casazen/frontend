@@ -81,6 +81,8 @@ type LeaseView = {
 type DraftParty = { firstName?: string | null; lastName?: string | null; fiscalCode?: string | null };
 type DraftView = {
   origin: string;
+  /** What follows from the values: the end of the first period and its months (null while the start is not valid). */
+  computed: { endDate: string | null; termMonths: number | null };
   values: {
     landlords: DraftParty[];
     tenants: DraftParty[];
@@ -92,7 +94,12 @@ type DraftView = {
   };
   flow: { steps: Array<{ step: number; state: string; needs: Array<{ code: string }> }> };
 };
-type ReadingView = { state: string; documents: Array<{ id: string; status: string; error: string | null }>; contractDocumentId: string | null };
+type ReadingView = {
+  state: string;
+  documents: Array<{ id: string; status: string; error: string | null }>;
+  fields: Array<{ field: string; role: string | null; state: string; derived: boolean }>;
+  contractDocumentId: string | null;
+};
 type DocumentView = { id: string; kind: string; fileName: string };
 
 /** The last day of a period of three years that starts on `start` (`YYYY-MM-01`): the first period of a 3+2 contract. */
@@ -266,19 +273,25 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         .toBe('Done');
       const documents = await hostApi.get<DocumentView[]>(`/leases/${leaseId}/documents`);
       const reading = await hostApi.get<ReadingView>(`/leases/${leaseId}/draft/reading`);
-      expect(documents.filter((d) => d.kind === 'Contract')).toHaveLength(1);
-      expect(reading.contractDocumentId, 'the import can use the contract already uploaded').toBe(documents.find((d) => d.kind === 'Contract')?.id);
+      expect.soft(documents.filter((d) => d.kind === 'Contract')).toHaveLength(1);
+      expect.soft(reading.contractDocumentId, 'the import can use the contract already uploaded').toBe(documents.find((d) => d.kind === 'Contract')?.id);
 
-      // The proof that the sample contract (a real PDF written by the simulator) was READ: what the draft holds now is what it says.
+      // The proof that the sample contract (a real PDF written by the simulator) was READ: what the draft holds now is what it says. Soft:
+      // the round goes on, so that one run says everything that is wrong.
       const draft = await hostApi.get<DraftView>(`/leases/${leaseId}/draft`);
       const { values } = draft;
-      expect(values.landlords[0], 'the landlord read from the contract').toMatchObject({ firstName: 'Mario', lastName: 'Rossi', fiscalCode: 'RSSMRA80A01H501U' });
-      expect(values.tenants[0], 'the tenant read from the contract').toMatchObject({ firstName: 'Giulia', lastName: 'Verdi', fiscalCode: 'VRDGLI85B42F205E' });
-      expect(values).toMatchObject({ contractType: 'Concordato', monthlyRent: 650, securityDeposit: 1300 });
-      expect(values.startDate?.slice(8, 10), 'the contract starts on the first day of a month').toBe('01');
-      expect(values.endDate, 'the first period of a 3+2 lasts three years').toBe(threeYearsFrom(values.startDate as string));
       const missing = draft.flow.steps.flatMap((s) => s.needs.map((need) => `${s.step}:${need.code}`));
+      log(`the draft after the reading: ${JSON.stringify({ values, computed: draft.computed, fields: reading.fields })}`);
       log(`what the contract did not say (the wizard will ask): ${missing.join(', ') || 'nothing'}`);
+      expect.soft(values.landlords[0], 'the landlord read from the contract').toMatchObject({ firstName: 'Mario', lastName: 'Rossi', fiscalCode: 'RSSMRA80A01H501U' });
+      expect.soft(values.tenants[0], 'the tenant read from the contract').toMatchObject({ firstName: 'Giulia', lastName: 'Verdi', fiscalCode: 'VRDGLI85B42F205E' });
+      expect.soft(values, 'type, rent and deposit read from the contract').toMatchObject({ contractType: 'Concordato', monthlyRent: 650, securityDeposit: 1300 });
+      expect.soft(values.startDate?.slice(8, 10), 'the contract starts on the first day of a month').toBe('01');
+      // A term that follows its type is not written in the draft (the draft computes it): the end is the one of three years from the start.
+      expect.soft(draft.computed, 'the first period of a 3+2 lasts three years').toMatchObject({
+        endDate: threeYearsFrom(values.startDate ?? ''),
+        termMonths: 36,
+      });
 
       await expect(page.getByTestId('cf-import-open')).toBeEnabled({ timeout: 30_000 });
       await page.getByTestId('cf-import-open').click();
@@ -293,7 +306,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     await step('The contract is imported: the same lease is now Signed, with its PDF', async () => {
       await importTheSignedContract(page);
       const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
-      expect(lease).toMatchObject({
+      log(`the lease after the import: ${JSON.stringify(lease)}`);
+      expect.soft(lease, 'the contract imported').toMatchObject({
         id: leaseId,
         status: 'Signed',
         origin: 'Imported',
@@ -303,8 +317,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         monthlyRent: 650,
         securityDeposit: 1300,
       });
-      expect(lease.stipulaDate, 'the day of the signature').toBeTruthy();
-      expect(leaseIdOf(page), 'the lease is the same as the draft').toBe(leaseId);
+      expect.soft(lease.stipulaDate, 'the day of the signature').toBeTruthy();
+      expect.soft(leaseIdOf(page), 'the lease is the same as the draft').toBe(leaseId);
     });
 
     await step('Attestation and receipt are uploaded from the module («Carica i dati in CasaZen») as documents of their own kinds', async () => {
@@ -319,7 +333,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await uploadDocument(page, files.attestation, 'Attestazione');
       await uploadDocument(page, files.receipt, 'Registrazione');
       const documents = await hostApi.get<DocumentView[]>(`/leases/${leaseId}/documents`);
-      expect(documents.map((d) => d.kind).sort()).toEqual(['Attestation', 'Contract', 'Registration']);
+      expect.soft(documents.map((d) => d.kind).sort(), 'the three documents of the practice, each of its own kind').toEqual(['Attestation', 'Contract', 'Registration']);
     });
 
     await step('The registration made by the service is declared with the receipt already uploaded; the lease is Registered', async () => {
@@ -333,8 +347,9 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         .poll(async () => (await hostApi.get<LeaseView>(`/leases/${leaseId}`)).status, { message: 'the lease is Registered', timeout: 30_000 })
         .toBe('Registered');
       const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
-      expect(lease.registration).toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: code, hasReceipt: true });
-      expect(lease.registration?.registrationDate?.slice(0, 10)).toBe(day);
+      log(`the lease after the declaration: ${JSON.stringify(lease.registration)}`);
+      expect.soft(lease.registration, 'the registration declared').toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: code, hasReceipt: true });
+      expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day of the registration').toBe(day);
       await expectNoSupplierName(page, 'the sheet of the registered contract');
     });
 

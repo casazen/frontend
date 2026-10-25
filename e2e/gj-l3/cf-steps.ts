@@ -46,12 +46,15 @@ export async function newActor(browser: Browser, name: string, trouble: ApiTroub
 /** What no text of the app may name: the service that prepares the contract, and «partner». The legal pages (`/legale/*`) are not visited. */
 const SUPPLIER_NAME = /concordato\s*facile|concordatofacile|partner/i;
 
-/** The text a person can read on the screen now names neither the supplier of the guided contract nor «partner». */
+/**
+ * The text a person can read on the screen now names neither the supplier of the guided contract nor «partner». A soft check: the round
+ * goes on, so that one run lists every screen that names it, and the test fails at the end.
+ */
 export async function expectNoSupplierName(page: Page, where: string): Promise<void> {
   const text = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
   const found = SUPPLIER_NAME.exec(text);
   const around = found ? text.slice(Math.max(0, found.index - 70), found.index + 90) : '';
-  expect(found, `the text of "${where}" names the supplier or says "partner": «…${around}…»`).toBeNull();
+  expect.soft(found, `the text of "${where}" names the supplier or says "partner": «…${around}…»`).toBeNull();
 }
 
 /** A card of a `ChoiceCard`: the radio under it is not drawn, so the person clicks the card (its label). */
