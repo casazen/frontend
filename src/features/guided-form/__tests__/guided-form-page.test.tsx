@@ -7,6 +7,7 @@ import { CfSimulatorApi } from '@/api/cf-simulator.api';
 import { httpError } from '@/features/leases/__tests__/lease-test-utils';
 import type { CfSimulatorCreatedPractice, CfSimulatorLinkResponse } from '@/types/cf-simulator.types';
 import { GuidedFormPage } from '../guided-form-page';
+import { savePractice } from '../lib/guided-form-link';
 
 // CF-SIM: the module of the service that prepares the contract, simulated for the test environments. It checks the signed link, takes the
 // practice in, and leads back into CasaZen; where the simulator is off the API answers 404 and the page says it is not available.
@@ -106,6 +107,16 @@ describe('GuidedFormPage (CF-SIM)', () => {
     expect(await screen.findByTestId('guided-form-linked')).toHaveTextContent('senza riferimento al contratto');
     expect(screen.getByTestId('guided-form-upload')).toBeInTheDocument();
     expect(screen.queryByTestId('guided-form-back')).not.toBeInTheDocument();
+  });
+
+  it('render_ReloadWithoutTheSignedParameters_GivesBackThePracticeSentFromThisTab_AndAsksNothing', async () => {
+    savePractice({ practiceId: PRACTICE_ID, controlToken: 'control-token', status: 'Attested', linked: true, leaseId: LEASE_ID });
+
+    renderPage('/guided-form?partner=casazen&comune=Monza&provincia=MB');
+
+    expect(await screen.findByTestId('guided-form-practice-id')).toHaveTextContent(PRACTICE_ID);
+    expect(screen.getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'Attested');
+    expect(checkLink).not.toHaveBeenCalled();
   });
 
   it('render_SimulatorOff_SaysThePageIsNotAvailableAndShowsNothingOfTheTest', async () => {

@@ -12,6 +12,7 @@ import type { CfPracticeStatus } from '@/types/concordatofacile.types';
 import type { CfSimulatorLinkResponse } from '@/types/cf-simulator.types';
 import { GuidedFormSubmitted } from './guided-form-panel';
 import {
+  clearSavedPractice,
   hasSignedParams,
   readGuidedFormLink,
   readSavedPractice,
@@ -33,13 +34,16 @@ export function GuidedFormPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   useSeoMeta({ title: t('guidedForm.title'), noindex: true });
 
-  // The link as it arrived, read once; the practice sent from this tab, if the page is opened again without a link (a reload).
+  // The link as it arrived, read once; the practice sent from this tab, if the page is opened again without the signed parameters (a reload).
   const [link] = useState<GuidedFormLink>(() => readGuidedFormLink(searchParams));
-  const [practice, setPractice] = useState<SubmittedPractice | null>(() => (link.hasParams ? null : readSavedPractice()));
+  const [practice, setPractice] = useState<SubmittedPractice | null>(() => (link.hasSignedParams ? null : readSavedPractice()));
   const check = useCfSimulatorLink(link.params, practice === null);
 
   useEffect(() => {
-    if (hasSignedParams(searchParams)) setSearchParams(withoutSignedParams(searchParams), { replace: true });
+    if (!hasSignedParams(searchParams)) return;
+    // A new link starts a new round: the signed parameters leave the address and the earlier practice of this tab is forgotten.
+    clearSavedPractice();
+    setSearchParams(withoutSignedParams(searchParams), { replace: true });
   }, [searchParams, setSearchParams]);
 
   const sent = (next: SubmittedPractice) => {

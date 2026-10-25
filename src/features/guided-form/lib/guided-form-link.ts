@@ -9,10 +9,10 @@ const SIGNED_PARAMS = ['leaseId', 'expiresAt', 'signature'] as const;
 
 const PARAMS = ['partner', 'leaseId', 'expiresAt', 'signature', 'comune', 'provincia'] as const;
 
-/** The link as it arrived: the parameters that are there, and whether there are any. */
+/** The link as it arrived: the parameters that are there, and whether it still carries the signed ones (a new link, not a reload). */
 export interface GuidedFormLink {
   params: CfSimulatorLinkParams;
-  hasParams: boolean;
+  hasSignedParams: boolean;
 }
 
 /** Reads the six parameters of the signed link from the address. */
@@ -22,7 +22,7 @@ export function readGuidedFormLink(search: URLSearchParams): GuidedFormLink {
     const value = search.get(name);
     if (value) params[name] = value;
   }
-  return { params, hasParams: Object.keys(params).length > 0 };
+  return { params, hasSignedParams: SIGNED_PARAMS.some((name) => name in params) };
 }
 
 /** True while the address still carries something the signature covers. */
@@ -73,6 +73,15 @@ export function readSavedPractice(): SubmittedPractice | null {
     };
   } catch {
     return null;
+  }
+}
+
+/** A new link starts a new round: what the tab remembered of the earlier one is forgotten. */
+export function clearSavedPractice(): void {
+  try {
+    window.sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Nothing to forget if the storage cannot be reached.
   }
 }
 
