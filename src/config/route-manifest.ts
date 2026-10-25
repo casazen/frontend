@@ -595,8 +595,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).LeaseWizardPage }),
   },
   {
-    // The guided contract of a canone concordato (NF-02, ADR-005-R12; CF-FLOW): the step between the click and the guided form. With the
-    // access active it opens the form by itself; without it, it is the page of the service (price, payment or gift practice).
+    // The page of payment of the guided contract of a canone concordato (NF-02, ADR-005-R12; CF-FLOW): the price, the steps and the way
+    // in (pay, or the gift practice), reached from the sheet of the contract when the access is missing. Whoever has the access is sent
+    // back to the sheet, which opens the form; the form opens from here only straight after the payment or the gift practice.
     path: '/app/long-rent/leases/:id/guided-contract',
     context: 'long-rent',
     requiredPermissions: ['lease.read', 'lease.create'],
