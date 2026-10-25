@@ -6526,9 +6526,10 @@
     "choosePlan": "Scegli piano",
     "managePlan": "Gestisci piano",
     "tier": {
-      "Starter": "Starter",
+      "Agency": "Agency",
       "Pro": "Pro",
-      "Scale": "Scale"
+      "Scale": "Scale",
+      "Starter": "Starter"
     },
     "upToProperties_one": "Fino a {{count}} proprietà",
     "upToProperties_other": "Fino a {{count}} proprietà"
