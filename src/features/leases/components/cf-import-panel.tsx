@@ -19,6 +19,8 @@ export function CfImportPanel({ leaseId, reading }: { leaseId: string; reading: 
   const navigate = useNavigate();
   const titleId = useId();
   const [opening, setOpening] = useState(false);
+  // While the contract is being read the button waits (CF-FLOW, NL-DOCS-FU8): the wizard would open before there is anything to check.
+  const stillReading = reading.state === 'Reading';
 
   const open = async () => {
     if (opening) return;
@@ -33,8 +35,8 @@ export function CfImportPanel({ leaseId, reading }: { leaseId: string; reading: 
       </h2>
       <p className="text-sm">{t('cfDocuments.import.description')}</p>
       <ReadingBanner reading={reading} flow={emptyFlow('Imported')} />
-      <Button type="button" loading={opening} onClick={() => void open()} data-testid="cf-import-open">
-        {t('cfDocuments.import.action')}
+      <Button type="button" loading={opening} disabled={stillReading} onClick={() => void open()} data-testid="cf-import-open">
+        {stillReading ? t('guidedContract.reading') : t('cfDocuments.import.action')}
       </Button>
     </section>
   );

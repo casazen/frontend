@@ -12,6 +12,15 @@ export interface CfAccessResponse {
   purchasedAt?: string;
   /** ISO8601 timestamp when the gift was assigned (if source=gift). */
   giftAssignedAt?: string;
+  /**
+   * CF-FLOW (backend): the person accepted the privacy notice for this lease, which comes before the guided form. Absent counts as not
+   * accepted: the form is not opened without it (the server answers 409 `concordatofacile_privacy_not_accepted`).
+   */
+  privacyAccepted?: boolean;
+  /** ISO8601 timestamp of that acceptance; null when there is none. */
+  privacyAcceptedAt?: string | null;
+  /** CF-FLOW (backend): when the signed link of the form was last made, i.e. the form was last opened; null (or absent) if it never was. */
+  linkOpenedAt?: string | null;
 }
 
 /** Response from POST /api/leases/{leaseId}/concordatofacile/checkout (ADR-005-R1). */
@@ -79,10 +88,15 @@ export interface CfPracticeLookupResponse {
 export interface CfStatusResponse {
   /** List of practices for the lease. */
   practices: CfPracticeResponse[];
-  /** When the backend last checked the CF API (ISO8601). */
-  lastCheckedAt: string;
+  /** When the backend last checked the CF API (ISO8601); null when it never could (no successful reading). */
+  lastCheckedAt: string | null;
   /** When the frontend should poll again (ISO8601). */
   nextUpdateAt: string;
   /** Whether the snapshot is stale due to CF API error. */
   stale: boolean;
+  /**
+   * CF-FLOW (backend): false when the status could not be read at all (no successful reading yet): `practices` is then empty and the
+   * answer is still a 200. Absent counts as available.
+   */
+  available?: boolean;
 }

@@ -1,10 +1,9 @@
-import { LeasePartnerReference } from './components/lease-partner-reference';
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
 import { useId, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { AlertCircle, ChevronDown, FileText, Info, Loader2 } from 'lucide-react';
+import { ChevronDown, FileText } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { BackLink } from '@/components/shared/back-link';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -13,13 +12,8 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
-import { Alert } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLease, useLeaseNextStep } from '@/queries/use-leases';
-import { useCfAccess, useCfGenerateLink } from '@/queries/use-concordatofacile';
 import { getHttpStatus } from '@/lib/api-errors';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
@@ -78,79 +72,6 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 }
 
 /**
- * ConcordatoFacile entry point panel for Concordato lease contracts (ADR-007-R12-R16).
- * Shows state-driven button: no access -> offer page, access -> link generation. Only with the service on (`concordatoFacile`, CF-FIX),
- * and not on a draft made for the partner: there the draft notice is the one way in.
- * TODO: Show status section when practices exist (E02).
- * TODO: Handle status query failure with ADR-007-R14 fallback when status query exists (E02).
- */
-function ConcordatoFacilePanel({ leaseId }: { leaseId: string }) {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const accessQuery = useCfAccess(leaseId);
-  const linkMutation = useCfGenerateLink(leaseId);
-
-  // Still loading or no access data available
-  if (accessQuery.isLoading || !accessQuery.data) {
-    return null;
-  }
-
-  const access = accessQuery.data;
-
-  // No access - navigate to offer page
-  if (!access.hasAccess) {
-    return (
-      <Card data-testid="cf-entry-panel">
-        <CardHeader>
-          <CardTitle>{t('concordatofacile.offer.title')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            size="lg"
-            onClick={() => navigate(`/app/long-rent/leases/${leaseId}/concordatofacile`)}
-            className="w-full"
-          >
-            {t('concordatofacile.entry.proceed')}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Has access - show link generation button (ADR-007-R12, ADR-007-R13)
-  // TODO: Check status query for existing practices (E02) - for now, always show entry button
-  return (
-    <Card data-testid="cf-entry-panel">
-      <CardHeader>
-        <CardTitle>{t('concordatofacile.offer.title')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Button
-          size="lg"
-          onClick={() => linkMutation.mutate()}
-          disabled={linkMutation.isPending}
-          data-testid="cf-entry-button"
-          className="w-full"
-        >
-          {linkMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-          {linkMutation.isPending ? t('concordatofacile.entry.generating') : t('concordatofacile.entry.access')}
-        </Button>
-        <Alert data-testid="cf-access-warning">
-          <Info className="size-4" />
-          {t('concordatofacile.entry.warning')}
-        </Alert>
-        {linkMutation.isError && (
-          <Alert variant="danger">
-            <AlertCircle className="size-4" />
-            {t('concordatofacile.entry.error')}
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-/**
  * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, then what the page always had in
  * four tabs (Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The panels of the
  * signature, the registration, the Questura communication, the tax advisory and the rent are the ones that existed, moved here.
@@ -159,7 +80,6 @@ function ConcordatoFacilePanel({ leaseId }: { leaseId: string }) {
  */
 function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNextStep | null }) {
   const { t, i18n } = useTranslation();
-  const { flags } = useFeatureFlags();
   const [searchParams] = useSearchParams();
   // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen. Its
   // notice is its one voice, so the step of the server is not laid over it.
@@ -215,10 +135,6 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
 
       {cfContract ? <CfImportPanel leaseId={lease.id} reading={cfContract} /> : partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
       {lease.status === 'Draft' && !partnerDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
-
-      <LeasePartnerReference leaseId={lease.id} />
-
-      {lease.contractType === 'Concordato' && flags.concordatoFacile && !partnerDraft && !cfContract ? <ConcordatoFacilePanel leaseId={lease.id} /> : null}
 
       {showExtraEuBanner && !questuraSaid ? <ExtraEUWarningBanner /> : null}
 
