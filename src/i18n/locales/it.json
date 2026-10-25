@@ -3318,6 +3318,7 @@
       "authenticating": "Autenticazione in corso...",
       "loadingWorkspace": "Caricamento dell'area di lavoro..."
     },
+    "back": "Indietro",
     "close": "Chiudi",
     "profileLoadError": {
       "title": "Impossibile caricare il tuo profilo",
@@ -13448,6 +13449,56 @@
     "mixed": "Un documento è un solo PDF oppure un gruppo di foto: rimuovi i file già scelti per cambiare.",
     "tooManyPhotos": "Puoi aggiungere al massimo {{max}} foto per documento.",
     "onePdf": "Scegli un solo PDF per documento."
+  },
+  "statement": {
+    "title": "Rendiconti proprietari",
+    "description": "Visualizza e gestisci i rendiconti mensili dei proprietari",
+    "loading": "Caricamento rendiconti…",
+    "loadError": "Impossibile caricare i rendiconti",
+    "emptyTitle": "Nessun rendiconto",
+    "emptyList": "Non ci sono ancora rendiconti generati",
+    "emptyFiltered": "Nessun rendiconto trovato con i filtri selezionati",
+    "viewDetails": "Vedi dettagli",
+    "period": "Periodo",
+    "revenue": "Ricavi",
+    "commission": "Commissioni",
+    "expenses": "Spese",
+    "withholdingTax": "Ritenuta",
+    "netPayable": "Netto pagabile",
+    "summary": "Riepilogo",
+    "publishedAt": "Pubblicato il",
+    "ownershipPercent": "Quota di proprietà: {{percent}}%",
+    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
+    "status": {
+      "draft": "Bozza",
+      "approved": "Approvato",
+      "published": "Pubblicato"
+    },
+    "filter": {
+      "status": "Filtra per stato",
+      "allStatuses": "Tutti gli stati"
+    },
+    "generate": "Genera rendiconto",
+    "approve": "Approva",
+    "publish": "Pubblica",
+    "download": {
+      "pdf": "Scarica PDF",
+      "csv": "Scarica CSV",
+      "pdfError": "Impossibile scaricare il PDF",
+      "csvError": "Impossibile scaricare il CSV"
+    },
+    "generate": {
+      "success": "Rendiconto generato con successo",
+      "error": "Impossibile generare il rendiconto"
+    },
+    "approve": {
+      "success": "Rendiconto approvato con successo",
+      "error": "Impossibile approvare il rendiconto"
+    },
+    "publish": {
+      "success": "Rendiconto pubblicato con successo",
+      "error": "Impossibile pubblicare il rendiconto"
+    }
   },
   "notifications": {
     "bell": "Notifiche",
