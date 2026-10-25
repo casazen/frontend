@@ -35,13 +35,6 @@ export function SelfieCapture({
 
   const attemptsRemaining = maxAttempts - attemptsUsed;
 
-  useEffect(() => {
-    startCamera();
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
   const startCamera = async () => {
     try {
       setCameraError(null);
@@ -64,6 +57,14 @@ export function SelfieCapture({
       setStream(null);
     }
   };
+
+  useEffect(() => {
+    void startCamera();
+    return () => {
+      stopCamera();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Resize image to max 1920px width, maintaining aspect ratio.
