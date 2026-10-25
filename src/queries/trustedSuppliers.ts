@@ -23,7 +23,7 @@ export function useInviteSupplier() {
       toast.success(i18n.t('supplier.trusted.inviteSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error) ?? i18n.t('supplier.trusted.inviteError'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.trusted.inviteError'));
     },
   });
 }
@@ -39,7 +39,7 @@ export function useUpdateVisibility() {
       toast.success(i18n.t('supplier.trusted.visibilitySuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error) ?? i18n.t('supplier.trusted.visibilityError'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.trusted.visibilityError'));
     },
   });
 }
@@ -54,7 +54,7 @@ export function useRemoveSupplier() {
       toast.success(i18n.t('supplier.trusted.removeSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error) ?? i18n.t('supplier.trusted.removeError'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.trusted.removeError'));
     },
   });
 }
