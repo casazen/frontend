@@ -69,7 +69,7 @@ export function AlloggiatiPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8" data-testid="alloggiati-dashboard">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t('alloggiati.title')}</h1>
         <p className="text-muted-foreground mt-2">
