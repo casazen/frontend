@@ -19,6 +19,7 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
 import type { OrgSettings } from '@/types';
 import { ORG_NAME_FIELD_ID } from './org-profile';
+import { Badge } from '@/components/ui/badge';
 import {
   SLUG_CHECK_DEBOUNCE_MS,
   useDebouncedValue,
@@ -143,7 +144,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
-  const { user } = useCurrentUser();
+  const { user, org } = useCurrentUser();
   const settingsQuery = useOrgSettings(isAdmin);
   const updateSettings = useUpdateOrgSettings();
 
@@ -234,6 +235,12 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
 
   return (
     <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
+      {org?.planTier ? (
+        <div className="flex items-center gap-2" data-testid="org-tier-badge">
+          <span className="text-sm text-foreground/70">{t('org.tier.badge')}:</span>
+          <Badge variant="secondary">{org.planTier}</Badge>
+        </div>
+      ) : null}
       <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
         <Input
           id={ORG_NAME_FIELD_ID}

@@ -5726,6 +5726,13 @@
       "loadError": "We cannot load the address of your site."
     }
   },
+  "org": {
+    "tier": {
+      "agency": "Agency",
+      "badge": "Plan",
+      "requires_agency": "This feature requires Agency tier"
+    }
+  },
   "orgSettings": {
     "title": "Organization settings",
     "description": "Your organization's name, public address and contact email.",
