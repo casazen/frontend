@@ -3247,6 +3247,7 @@
     },
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "error": "Error",
     "confirmationDialog": {
       "consequences": "What happens if you confirm",
       "requireText": "To confirm, type <strong>{{text}}</strong>"
@@ -10787,6 +10788,61 @@
     "email": "Invalid email address",
     "format": "Invalid format",
     "invalidOption": "Select a valid option"
+  },
+  "verification": {
+    "action": {
+      "photoRequested": "Photo request sent to guest",
+      "photoRequestFailed": "Failed to send photo request",
+      "reject": "Reject",
+      "rejectFailed": "Failed to reject verification",
+      "rejected": "Verification rejected",
+      "request_photo": "Request new photo",
+      "verified": "Verification recorded",
+      "verification": "Verification",
+      "verificationRejected": "Verification rejected",
+      "verify": "Verify",
+      "verifyFailed": "Failed to record verification"
+    },
+    "attempts": "Attempts",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "dialog": {
+      "acceptButton": "Accept verification",
+      "confirmReject": "Confirm rejection",
+      "noteLabel": "Note (optional for acceptance, required for rejection)",
+      "notePlaceholder": "Enter a note...",
+      "reasonLabel": "Reason for rejection",
+      "reasonPlaceholder": "Enter the reason for rejection...",
+      "rejectButton": "Reject verification",
+      "rejectDescription": "Rejection will prevent further verification attempts for this booking.",
+      "rejectTitle": "Reject biometric verification",
+      "verifyDescription": "Accept the verification to complete check-in, or reject it with a note.",
+      "verifyTitle": "Record manual verification"
+    },
+    "filter": {
+      "allDeadlines": "All deadlines",
+      "allReasons": "All reasons",
+      "deadline": "Deadline",
+      "past": "Past due",
+      "reason": "Reason",
+      "today": "Today",
+      "upcoming": "Upcoming"
+    },
+    "queue": {
+      "description": "Bookings awaiting manual biometric verification",
+      "emptyFiltered": "No verifications match the selected filters",
+      "emptyQueue": "No verifications pending",
+      "emptyTitle": "No items",
+      "loadError": "Failed to load verification queue",
+      "loading": "Loading verification queue...",
+      "title": "Verification Queue"
+    },
+    "reason": {
+      "consent_refused": "Consent refused",
+      "label": "Reason",
+      "model_error": "Model error",
+      "unverified": "Photo unverified"
+    }
   },
   "insecureOrigin": {
     "title": "Insecure origin",
