@@ -68,7 +68,8 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',
     ]);
-    expect(primary).toHaveLength(MAX_PRIMARY_NAV_ENTRIES);
+    expect(primary).toHaveLength(7);
+    expect(primary.length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
   });
 
   it('puts the rest of short-rent in "Altro", the OTA channels only with their flag', () => {
@@ -135,6 +136,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/seo',
       '/app/admin/marketing',
       '/app/admin/cin',
+      '/app/admin/statements',
     ]);
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin/suppliers/invite',
