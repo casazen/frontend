@@ -1768,8 +1768,7 @@
       "landlord_missing": "Add the landlord (who lets the property)",
       "landlords_ok_one": "{{count}} landlord with all the data",
       "landlords_ok_other": "{{count}} landlords with all the data",
-      "lease_overlap_one": "There is already {{count}} other lease on this property in the same dates",
-      "lease_overlap_other": "There are already {{count}} other leases on this property in the same dates",
+      "lease_overlap": "This property already has a lease from {{from}} to {{to}}. Two leases cannot cover the same days: open the existing one or change the dates.",
       "lease_type_not_available": "This type of lease is not available yet",
       "party_fiscal_code_duplicate": "The same fiscal code appears more than once in the lease: change the one of the later entries",
       "property_missing": "Choose the property of the lease",
@@ -1834,6 +1833,9 @@
         "remove": "Remove tenant {{n}}",
         "title": "Who rents (tenant)"
       }
+    },
+    "periodConflict": {
+      "open": "Open the existing lease"
     },
     "property": {
       "addNew": "Add a new property",

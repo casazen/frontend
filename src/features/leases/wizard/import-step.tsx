@@ -14,6 +14,7 @@ import { isPdfFile, LEASE_MAX_SIGNED_CONTRACT_BYTES } from '@/lib/lease-signing'
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
 import { useImportSignedLease } from '@/queries/use-lease-draft';
 import { WIZARD_BUTTON } from './lease-wizard-frame';
+import { conflictingLeasePath, periodConflictOf } from './period-conflict';
 import { AFTER_STEP, leaseEditPath } from './wizard-model';
 
 type Registered = 'yes' | 'no';
@@ -63,6 +64,8 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const day = formatStayDate(stipulaDate, i18n.language);
 
   const focus = (id: string) => document.getElementById(id)?.focus();
+  // Another lease on the same days refused the import (409): the message has the days, the link opens that lease.
+  const conflict = periodConflictOf(failure);
 
   const submit = async () => {
     setSubmitted(true);
@@ -182,6 +185,14 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
               {' '}
               <Link to={`/app/long-rent/leases/${leaseId}`} className="font-semibold underline underline-offset-2">
                 {t('leaseWizard.goToLease')}
+              </Link>
+            </>
+          ) : null}
+          {conflict ? (
+            <>
+              {' '}
+              <Link to={conflictingLeasePath(conflict.conflictingLeaseId)} className="font-semibold underline underline-offset-2">
+                {t('leaseWizard.periodConflict.open')}
               </Link>
             </>
           ) : null}
