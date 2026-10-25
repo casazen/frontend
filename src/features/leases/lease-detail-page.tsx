@@ -32,9 +32,11 @@ import { LeaseNowBlock } from './components/lease-now-block';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { useCfDeliveredContract } from './lib/cf-import';
 import { describeLeaseStep, leaseStepTab } from './lib/lease-next-step';
 import { defaultLeaseTab, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
 import { useLeaseActions } from './lifecycle/use-lease-actions';
+import { CfImportPanel } from './components/cf-import-panel';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
@@ -162,7 +164,11 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
   // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen. Its
   // notice is its one voice, so the step of the server is not laid over it.
   const partnerDraft = isPartnerDraft(lease);
-  const step = partnerDraft ? null : nextStep;
+  // The contract the partner delivered, uploaded to that draft (CF-IMPORT): the notice that waited for it gives way to the one that
+  // goes on (where the reading stands and «Completa e importa il contratto»), which is then the one voice of the draft, and the way
+  // in to the partner's service (the practice is done) is not offered any more. Null for any lease that is not that draft.
+  const cfContract = useCfDeliveredContract(lease);
+  const step = partnerDraft || cfContract ? null : nextStep;
   // The tab a lease opens on is decided once, when the page opens: the tab where the step the server sent is done, if it has one,
   // else where the state of the lease puts the next thing to do. Signing it or registering it does not move the person to another
   // tab under their hands (and an address with `?tab=` is always obeyed).
@@ -207,12 +213,12 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
 
       {now ? <LeaseNowBlock step={now} /> : null}
 
-      {partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
-      {lease.status === 'Draft' && !partnerDraft && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
+      {cfContract ? <CfImportPanel leaseId={lease.id} reading={cfContract} /> : partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
+      {lease.status === 'Draft' && !partnerDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
       <LeasePartnerReference leaseId={lease.id} />
 
-      {lease.contractType === 'Concordato' && flags.concordatoFacile && !partnerDraft ? <ConcordatoFacilePanel leaseId={lease.id} /> : null}
+      {lease.contractType === 'Concordato' && flags.concordatoFacile && !partnerDraft && !cfContract ? <ConcordatoFacilePanel leaseId={lease.id} /> : null}
 
       {showExtraEuBanner && !questuraSaid ? <ExtraEUWarningBanner /> : null}
 

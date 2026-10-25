@@ -136,4 +136,36 @@ describe('lease-owned partner documents', () => {
     expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.chosen', { practice }));
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
+
+  // CF-IMPORT: the contract ConcordatoFacile delivers goes on to «Completa e importa il contratto» only from the draft it was made for,
+  // once a contract document is there; any other contract is left alone (it does not even ask how a reading stands).
+  it.each([
+    ['the draft of the partner with the contract uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'Done', true, true],
+    ['the draft of the partner before any contract is uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'None', false, true],
+    ['an imported draft that is not the partner’s', { origin: 'Imported', isConcordatoFacileSource: false }, 'Done', false, false],
+    ['the contract of the partner once it is signed', { origin: 'Imported', isConcordatoFacileSource: true, status: 'Signed' }, 'Done', false, false],
+  ] as const)('offers the import of the contract only for %s', async (_label, detail, state, offered, asked) => {
+    const readingUrl = `/leases/${id}/draft/reading`;
+    const documents = state === 'None' ? [] : [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Completed', error: null }];
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, ...detail }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === readingUrl) return Promise.resolve({ data: { state, documents, fields: [], stipulaDate: null, contractDocumentId: documents[0]?.id ?? null } });
+      return Promise.reject(httpError(404));
+    });
+
+    renderPage(`?leaseId=${id}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+
+    if (asked) await waitFor(() => expect(get.mock.calls.some(([url]) => url === readingUrl)).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(get.mock.calls.some(([url]) => url === readingUrl)).toBe(asked);
+    if (offered) {
+      expect(await screen.findByTestId('cf-import-panel')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: i18n.t('cfDocuments.import.action') })).toBeEnabled();
+    } else {
+      expect(screen.queryByTestId('cf-import-panel')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
+    }
+  });
 });

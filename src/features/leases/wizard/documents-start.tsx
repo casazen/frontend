@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, FileText, Loader2 } from 'lucide-react';
 import { leaseDocumentsApi } from '@/api/lease-documents.api';
-import { leasesApi } from '@/api/leases.api';
 import { DocumentPages } from '@/components/documents/document-pages';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -16,22 +15,11 @@ import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { NewLeaseStep } from './new-lease-step';
 import { PropertyStep } from './property-step';
-import { emptyFlow, firstStepWithNeeds, leaseEditPath, registeredSteps, stepKey, visibleSteps } from './wizard-model';
+import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from './wizard-model';
+import { wizardPath } from './wizard-path';
 
 /** After this long the person is told it takes more than usual and may go on by hand while the reading goes on. */
 const SLOW_AFTER_MS = 120_000;
-
-/** The wizard of a contract already signed, from its second step: the first one with something missing, or by hand from the parties. */
-async function wizardPath(leaseId: string, read: boolean): Promise<string> {
-  if (!read) return leaseEditPath(leaseId, 2);
-  try {
-    const draft = await leasesApi.getDraft(leaseId);
-    return leaseEditPath(leaseId, firstStepWithNeeds(draft.flow, registeredSteps('Imported')));
-  } catch {
-    // The wizard reads the draft itself and says what is wrong with it.
-    return leaseEditPath(leaseId, 2);
-  }
-}
 
 /**
  * «Ho già i documenti» of a new contract (NL-DOCS): the person gives the property and the signed contract (a PDF, or photos of its

@@ -20,10 +20,13 @@ vi.mock('@/queries/use-properties', () => ({
   useApeAutoRead: vi.fn(() => ({ isFetching: false, isSuccess: false })),
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getDocuments: vi.fn() } }));
-vi.mock('@/api/leases.api', () => ({ leasesApi: { createDraft: vi.fn(), saveDraft: vi.fn(), getRules: vi.fn() } }));
+vi.mock('@/api/leases.api', () => ({ leasesApi: { createDraft: vi.fn(), createCfDraft: vi.fn(), saveDraft: vi.fn(), getRules: vi.fn() } }));
 
 /** What a save of a step answers: the version it made, the flow again and the ids of the parties. */
 const SAVED = { version: 2, flow: { steps: [] }, landlordIds: [], tenantIds: [] };
+
+/** What the route of the draft for the partner answers: the draft (an imported one, marked as the partner's) with its id. */
+const CF_DRAFT = { id: 'lease-cf-1', propertyId: 'prop-1', status: 'Draft' } as const;
 
 /** The rules of the area as the server gives them today: the transitory type is made in CasaZen too, with the official model. */
 const RULES: LongRentRules = {
@@ -88,7 +91,8 @@ describe('LeaseCreatePage', () => {
       refetch: vi.fn(),
     } as unknown as ReturnType<typeof useProperties>);
     vi.mocked(propertiesApi.getDocuments).mockResolvedValue([]);
-    vi.mocked(leasesApi.createDraft).mockResolvedValue({ id: 'lease-cf-1', version: 1, flow: { steps: [] } });
+    vi.mocked(leasesApi.createDraft).mockResolvedValue({ id: 'lease-1', version: 1, flow: { steps: [] } });
+    vi.mocked(leasesApi.createCfDraft).mockResolvedValue(CF_DRAFT);
     vi.mocked(leasesApi.saveDraft).mockResolvedValue(SAVED);
     vi.mocked(leasesApi.getRules).mockResolvedValue(RULES);
   });
@@ -116,7 +120,7 @@ describe('LeaseCreatePage', () => {
     expect(screen.getByRole('button', { name: i18n.t('leaseWizard.next', { step: i18n.t('leaseWizard.steps.2.label') }) })).toBeInTheDocument();
   });
 
-  it('saves a concordato draft with only its property and goes to the page of the service, with no APE asked', async () => {
+  it('saves the draft for the partner with only its property and goes to the page of the service, with no APE asked', async () => {
     renderPage('/app/long-rent/leases/new?propertyId=prop-1');
 
     chooseKind('concordato');
@@ -128,26 +132,29 @@ describe('LeaseCreatePage', () => {
     fireEvent.click(screen.getByTestId('concordato-draft-create'));
 
     expect(await screen.findByTestId('lease-page')).toHaveTextContent('lease-cf-1');
-    expect(leasesApi.createDraft).toHaveBeenCalledWith('prop-1');
-    expect(leasesApi.saveDraft).toHaveBeenCalledWith('lease-cf-1', { version: 1, step: 3, values: { contractType: 'Concordato' } });
+    // One call to the route of the draft for the partner (an imported draft marked as theirs, typed as a concordato by the server):
+    // not the generic draft, and nothing saved after it.
+    expect(leasesApi.createCfDraft).toHaveBeenCalledWith('prop-1');
+    expect(leasesApi.createDraft).not.toHaveBeenCalled();
+    expect(leasesApi.saveDraft).not.toHaveBeenCalled();
     expect(propertiesApi.getDocuments).not.toHaveBeenCalled();
   });
 
-  it('retries on the same draft when saving its type failed: one click, one contract', async () => {
-    vi.mocked(leasesApi.saveDraft).mockRejectedValueOnce(httpError()).mockResolvedValueOnce(SAVED);
+  it('opens nothing when making the draft failed, and the next click asks again: the server gives back the draft it made', async () => {
+    vi.mocked(leasesApi.createCfDraft).mockRejectedValueOnce(httpError()).mockResolvedValueOnce(CF_DRAFT);
     renderPage();
     chooseKind('concordato');
     chooseWay('zero');
     fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
 
     fireEvent.click(screen.getByTestId('concordato-draft-create'));
-    await waitFor(() => expect(leasesApi.saveDraft).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(leasesApi.createCfDraft).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByTestId('concordato-draft-create')).not.toHaveAttribute('aria-busy'));
+    expect(screen.queryByTestId('lease-page')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('concordato-draft-create'));
 
     expect(await screen.findByTestId('lease-page')).toHaveTextContent('lease-cf-1');
-    expect(leasesApi.createDraft).toHaveBeenCalledTimes(1);
-    expect(leasesApi.saveDraft).toHaveBeenCalledTimes(2);
+    expect(leasesApi.createCfDraft).toHaveBeenCalledTimes(2);
   });
 
   it('closes the way from zero while ConcordatoFacile is off: the card is disabled and the address alone does not open it', () => {
