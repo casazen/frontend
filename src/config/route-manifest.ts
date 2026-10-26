@@ -1094,6 +1094,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
   },
+  {
+    path: '/app/admin/activities',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    navKey: 'nav.staffActivities',
+    navGroup: 'platform',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'ClipboardCheck',
+    component: async () => ({ default: (await import('@/pages/StaffActivitiesPage')).StaffActivitiesPage }),
+  },
   // ============================================================
   // Supplier console
   // ============================================================
