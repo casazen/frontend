@@ -119,6 +119,7 @@
     "preview_count": "{{count}} matches",
     "preview_loading": "Loading preview...",
     "remove_group": "Remove group",
+    "remove_rule": "Remove rule",
     "select_field": "Select field",
     "select_operator": "Select operator",
     "value": {

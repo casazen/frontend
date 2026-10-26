@@ -147,7 +147,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
         size="icon"
         onClick={onRemove}
         type="button"
-        aria-label="Remove rule"
+        aria-label={t('condition.remove_rule')}
         className="shrink-0"
       >
         <Trash2 className="size-4" />

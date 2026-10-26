@@ -119,6 +119,7 @@
     "preview_count": "{{count}} corrispondenze",
     "preview_loading": "Caricamento anteprima...",
     "remove_group": "Rimuovi gruppo",
+    "remove_rule": "Rimuovi regola",
     "select_field": "Seleziona campo",
     "select_operator": "Seleziona operatore",
     "value": {
