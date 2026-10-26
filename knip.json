@@ -38,7 +38,16 @@
     "src/layouts/ConsoleLayout.tsx": [
       "exports"
     ],
+    "src/components/campaigns/CampaignEditor.tsx": [
+      "exports"
+    ],
+    "src/pages/CampaignsPage.tsx": [
+      "exports"
+    ],
     "src/pages/RoutinesPage.tsx": [
+      "exports"
+    ],
+    "src/pages/SegmentsPage.tsx": [
       "exports"
     ]
   },
