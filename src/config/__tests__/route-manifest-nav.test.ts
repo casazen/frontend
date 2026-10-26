@@ -263,6 +263,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     expect(visible).not.toContain('/app/short-rent/compliance/cin');
     expect(paths(getNavChildren('/app/short-rent/compliance', allowAll))).toEqual([
       '/app/short-rent/alloggiati',
+      '/app/short-rent/alloggiati/reports',
       '/app/short-rent/compliance/cin',
     ]);
     expect(paths(getNavMatchEntries('short-rent', allowAll))).toEqual(
@@ -323,7 +324,7 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
     '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/organization',
     '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/site-documents',
     '/app/short-rent/settings/payments', '/app/short-rent/bookings', '/app/short-rent/bookings/calendar',
-    '/app/short-rent/marketplace', '/app/short-rent/alloggiati', '/app/short-rent/compliance/cin',
+    '/app/short-rent/marketplace', '/app/short-rent/alloggiati', '/app/short-rent/alloggiati/reports', '/app/short-rent/compliance/cin',
     '/app/short-rent/payments', '/app/short-rent/payments/revenue', '/app/short-rent/ota', '/app/short-rent/vetrina',
     '/app/short-rent/profile', '/app/short-rent/guests',
     '/app/long-rent/leases', '/app/long-rent/properties', '/app/long-rent/profile', '/app/long-rent/settings/plan',
