@@ -3,6 +3,9 @@ import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   AlloggiatiGuestSummaryDto,
+  AlloggiatiReportDto,
+  AlloggiatiReportFilters,
+  AlloggiatiRowErrorDto,
   AlloggiatiStatusDto,
   AlloggiatiSummaryDto,
   MarkAlloggiatiSentManuallyRequest,
@@ -57,4 +60,12 @@ export const alloggiatiApi = {
   /** The host declares having sent the schedina on the portal (CasaZen does not transmit). */
   markSentManually: (bookingId: string, request: MarkAlloggiatiSentManuallyRequest) =>
     ApiClient.post<AlloggiatiStatusDto>(`/alloggiati/${bookingId}/mark-sent-manually`, request),
+
+  /** Get all alloggiati reports with optional filters. */
+  getReports: (filters?: AlloggiatiReportFilters) =>
+    ApiClient.get<AlloggiatiReportDto[]>('/alloggiati/reports', filters),
+
+  /** Get row-level errors for a specific report. */
+  getReportErrors: (reportId: string) =>
+    ApiClient.get<AlloggiatiRowErrorDto[]>(`/alloggiati/reports/${reportId}/errors`),
 };

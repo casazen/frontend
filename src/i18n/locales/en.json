@@ -1,4 +1,47 @@
 {
+  "approval": {
+    "action": {
+      "approve": "Approve",
+      "approved": "Item approved",
+      "approveFailed": "Failed to approve item",
+      "reject": "Reject",
+      "rejected": "Item rejected",
+      "rejectFailed": "Failed to reject item"
+    },
+    "ai_generated": "AI Generated",
+    "content": "Content",
+    "dialog": {
+      "reasonLabel": "Rejection reason",
+      "reasonPlaceholder": "Describe why you are rejecting this item…",
+      "rejectDescription": "Specify the reason for rejecting this item. The reason will be logged.",
+      "rejectTitle": "Reject item"
+    },
+    "expires": "Expires",
+    "filter": {
+      "allTypes": "All types",
+      "type": "Type"
+    },
+    "queue": {
+      "description": "Items awaiting approval before execution",
+      "emptyFiltered": "No items match the selected filters",
+      "emptyQueue": "There are no items awaiting approval",
+      "emptyTitle": "No items",
+      "loadError": "Failed to load approval queue",
+      "loading": "Loading approval queue…",
+      "title": "Approval Queue"
+    },
+    "status": {
+      "approved": "Approved",
+      "expired": "Expired",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "type": {
+      "aiText": "AI Text",
+      "campaign": "Campaign",
+      "routine": "Routine"
+    }
+  },
   "cfDocuments": {
     "title": "Upload documents to CasaZen",
     "description": "Keep and view documents attached to your lease.",
@@ -126,6 +169,48 @@
       "false": "False",
       "true": "True"
     }
+  },
+  "crm": {
+    "actions": "Actions",
+    "backToList": "Back to list",
+    "consent": "Consents",
+    "consentEmail": "Email",
+    "consentGrantedEmail": "Email consent granted",
+    "consentGrantedWhatsApp": "WhatsApp consent granted",
+    "consentNotGrantedEmail": "Email consent not granted",
+    "consentNotGrantedWhatsApp": "WhatsApp consent not granted",
+    "consentWhatsApp": "WhatsApp",
+    "country": "Country",
+    "description": "Search and view guest profiles for marketing and segmentation",
+    "email": "Email",
+    "empty": "No guests found. Guests who have stayed at your properties will appear here.",
+    "error": "Loading error",
+    "errorDescription": "Could not load guest profiles. Please try again later.",
+    "firstStay": "First stay",
+    "guestSince": "Guest since {{date}}",
+    "language": "Language",
+    "lastStay": "Last stay",
+    "loading": "Loading CRM guests...",
+    "loadingProfile": "Loading guest profile...",
+    "marketingConsent": "Marketing consents",
+    "next": "Next",
+    "noConsent": "No consent",
+    "noResults": "No results for your search. Try different terms.",
+    "noTags": "No tags assigned",
+    "previous": "Previous",
+    "profileError": "Profile loading error",
+    "profileErrorDescription": "Could not load guest profile. Please try again later.",
+    "profileInfo": "Profile information",
+    "searchPlaceholder": "Search by email or country...",
+    "showing": "Showing {{start}}-{{end}} of {{total}}",
+    "spend": "Total spend",
+    "stayHistory": "Stay history",
+    "stays": "Stays",
+    "tags": "Tags",
+    "title": "Guest CRM",
+    "totalSpend": "Total spend",
+    "totalStays": "Total stays",
+    "viewDetails": "Details"
   },
   "guidedContract": {
     "checkAgain": "Check again",
@@ -659,6 +744,7 @@
     "marketplace": "Marketplace",
     "calendar": "Calendar",
     "alloggiati": "Alloggiati",
+    "alloggiatiReports": "Alloggiati reports",
     "cin": "CIN",
     "fiscal": "Fiscal regime",
     "payments": "Payments",
@@ -686,6 +772,7 @@
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "ai": "AI configuration",
+    "approvalQueue": "Approval Queue",
     "marketing": "Marketing",
     "more": "More",
     "brandShort": "CASAZEN",
@@ -715,10 +802,12 @@
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
     "siteDocuments": "Site documents",
+    "staffActivities": "Activities",
     "statements": "Statements",
     "supplierShowcase": "Showcase",
     "compliance": "Compliance",
     "complianceAudit": "Compliance audit",
+    "crm": "Guest CRM",
     "demoEnvironment": "Demo environment",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
@@ -3360,12 +3449,18 @@
     "errorState": {
       "retry": "Try again",
       "supportWithEmail": "If the problem continues, write to support:"
-    }
+    },
+    "save": "Save",
+    "saving": "Saving...",
+    "scheduling": "Scheduling...",
+    "submitting": "Submitting..."
   },
   "common": {
     "cancel": "Cancel",
     "planLimitMessage": "You have reached your plan limit",
     "planUpgradeCta": "Upgrade to a higher plan",
+    "save": "Save",
+    "saving": "Saving...",
     "sending": "Sending..."
   },
   "property": {
@@ -6505,6 +6600,13 @@
         "label": "Sent manually",
         "explain": "You declared that you sent it on the portal. CasaZen has no receipt: keep the one from the portal."
       },
+      "SentReceiptPending": {
+        "label": "Sent, receipt pending",
+        "explain": "The communication was sent successfully. CasaZen is retrieving the receipt from the portal.",
+        "need": [
+          "Waiting for automatic receipt retrieval"
+        ]
+      },
       "Inviato": {
         "label": "Sent (receipt)",
         "explain": "The communication was transmitted and has the receipt of the portal."
@@ -6750,14 +6852,43 @@
     "guest": "Guest",
     "property": "Property",
     "checkIn": "Check-in",
-    "status": "Status",
+    "confirmationNumber": "Confirmation number",
+    "error": {
+      "row": "Row",
+      "row_invalid": "Row errors"
+    },
+    "filter": {
+      "allStatuses": "All statuses",
+      "fromDate": "From date",
+      "status": "Filter by status",
+      "toDate": "To date"
+    },
+    "loadError": "Unable to load Alloggiati reports.",
+    "noErrors": "No errors detected.",
+    "noReports": "No reports found.",
+    "report": "report",
+    "reports": "reports",
+    "status": {
+      "da_inviare": "To send",
+      "da_inviare_manualmente": "To send manually",
+      "deadline_soon": "Deadline in {{hours}} hours",
+      "errore": "Error",
+      "inviato": "Sent (receipt)",
+      "inviato_manualmente": "Sent manually",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "rifiutato": "Rejected",
+      "sent": "Sent",
+      "sent_receipt_pending": "Sent, receipt pending"
+    },
     "statusLabel": {
       "DaInviare": "To send",
       "DaInviareManualmente": "To send manually",
       "InviatoManualmente": "Sent manually",
       "Inviato": "Sent (receipt)",
       "Rifiutato": "Rejected",
-      "Errore": "Error"
+      "Errore": "Error",
+      "SentReceiptPending": "Sent, receipt pending"
     },
     "deadline": "Deadline",
     "incompleteData": "Incomplete data",
@@ -8217,6 +8348,104 @@
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
     }
   },
+  "routines": {
+    "activatedSuccess": "Routine activated",
+    "active": "Active",
+    "activeBadge": "Active",
+    "activeDescription": "Active routines are executed when configured events occur",
+    "activeTab": "Active",
+    "actions": "Actions",
+    "actionTypes": {
+      "addTag": "Add tag",
+      "createActivity": "Create activity",
+      "messageToGuest": "Send message to guest",
+      "notifyOwner": "Notify owner",
+      "notifyStaff": "Notify staff",
+      "notifyTeam": "Notify team",
+      "requestReview": "Request review",
+      "sendAccessCode": "Send access code",
+      "wait": "Wait"
+    },
+    "addAction": "Add action",
+    "completed": "Completed",
+    "conditions": "Conditions",
+    "conditionsHint": "JSON format ADR-014. Leave {} to always execute.",
+    "conditionsPlaceholder": "{\"operator\": \"and\", \"rules\": []}",
+    "create": "Create routine",
+    "createError": "Cannot create routine",
+    "createSuccess": "Routine created successfully",
+    "createTitle": "New routine",
+    "days": "days",
+    "deactivatedSuccess": "Routine deactivated",
+    "deleteConfirm": "Are you sure you want to delete this routine?",
+    "deleteError": "Cannot delete routine",
+    "deleteSuccess": "Routine deleted",
+    "description": "Automate recurring actions like guest messages, cleaning activities, and reminders",
+    "editTitle": "Edit routine",
+    "editorDescription": "Configure the event that triggers the routine, conditions, and actions to execute",
+    "eventType": "Event type",
+    "events": {
+      "activityCompleted": "Activity completed",
+      "afterCheckin": "After check-in",
+      "afterCheckout": "After check-out",
+      "alloggiatiReceiptArrived": "Alloggiati receipt arrived",
+      "beforeCheckin": "Before check-in",
+      "beforeCheckout": "Before check-out",
+      "bookingCanceled": "Booking canceled",
+      "bookingConfirmed": "Booking confirmed",
+      "bookingNew": "New booking",
+      "checkinOccurred": "Check-in occurred",
+      "checkoutOccurred": "Check-out occurred",
+      "guestMessageReceived": "Guest message received",
+      "idVerificationCompleted": "ID verification completed",
+      "paymentFailed": "Payment failed",
+      "paymentSucceeded": "Payment succeeded",
+      "reviewReceived": "Review received",
+      "weeklyRecurrence": "Weekly recurrence"
+    },
+    "executionLog": "Execution log",
+    "hours": "hours",
+    "inactiveTab": "Inactive",
+    "library": {
+      "activate": "Activate",
+      "activating": "Activating…",
+      "cleaningDescription": "Automatically create a cleaning activity when guest checks out",
+      "cleaningTitle": "Cleaning at check-out",
+      "description": "Activate a predefined routine with one click. You can edit it after activation.",
+      "documentReminderDescription": "Send a reminder 3 days before check-in if documents are not uploaded",
+      "documentReminderTitle": "Missing document reminder",
+      "instructionsDescription": "Send instructions 2 days before check-in",
+      "instructionsTitle": "Instructions before arrival",
+      "reviewDescription": "Request a review 1 day after check-out",
+      "reviewTitle": "Review request after departure",
+      "title": "Routine library"
+    },
+    "loadError": "Cannot load routines",
+    "loading": "Loading routines…",
+    "messageTemplate": "Message template",
+    "messageTemplatePlaceholder": "Template ID or text",
+    "name": "Name",
+    "namePlaceholder": "E.g.: Send instructions 2 days before",
+    "noActions": "No actions configured. Add at least one action.",
+    "noActiveRoutines": "You have no active routines. Create one or activate one from the library.",
+    "noExecutions": "No executions recorded",
+    "noInactiveRoutines": "You have no inactive routines",
+    "noTestRoutines": "You have no routines in test mode",
+    "simulateError": "Cannot simulate routine",
+    "testMode": "Test mode",
+    "testModeBadge": "Test",
+    "testModeDescription": "In test mode, the routine is executed in simulation without real effects",
+    "testModeOffSuccess": "Test mode disabled",
+    "testModeOnSuccess": "Test mode enabled",
+    "testTab": "Test",
+    "timing": "Timing",
+    "title": "Automation routines",
+    "toggleActiveError": "Cannot change routine status",
+    "toggleTestModeError": "Cannot change test mode",
+    "updateError": "Cannot update routine",
+    "updateSuccess": "Routine updated",
+    "waitDays": "Days to wait"
+  },
   "siteReviews": {
     "count_one": "{{count}} review",
     "count_other": "{{count}} reviews",
@@ -8351,6 +8580,41 @@
     "siteBanner": {
       "title": "Guests cannot book from your site yet"
     }
+  },
+  "activity": {
+    "staff": {
+      "title": "My activities",
+      "description": "View and update assigned activities",
+      "loading": "Loading activities…",
+      "loadError": "Activities could not be loaded.",
+      "empty": "There are no assigned activities.",
+      "emptyFiltered": "No activities found with the selected filters."
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    },
+    "type": {
+      "cleaning": "Cleaning",
+      "maintenance": "Maintenance",
+      "checkin": "Check-in Assistance"
+    },
+    "filter": {
+      "property": "Property",
+      "status": "Status",
+      "allProperties": "All properties",
+      "allStatuses": "All statuses"
+    },
+    "updateStatus": "Update status",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes about the activity...",
+    "propertyId": "Property",
+    "bookingId": "Booking",
+    "internalRate": "Internal rate",
+    "scheduledAt": "Scheduled for {{date}}",
+    "statusUpdateSuccess": "Activity status updated",
+    "statusUpdateError": "Could not update activity status."
   },
   "onboarding": {
     "casaZen": "CasaZen",
@@ -10716,6 +10980,93 @@
       "items_other": "{{count}} items",
       "label": "Days of the week",
       "today": "today"
+    }
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "description": "Manage email marketing campaigns",
+    "loading": "Loading campaigns…",
+    "loadError": "Could not load campaigns",
+    "create": "Create campaign",
+    "emptyTitle": "No campaigns",
+    "emptyList": "You have not created any campaigns yet",
+    "emptyFiltered": "No campaigns match the selected filters",
+    "createdAt": "Created on {{date}}",
+    "scheduledAt": "Scheduled for {{date}}",
+    "sentAt": "Sent on {{date}}",
+    "segment": "Segment",
+    "filter": {
+      "status": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "draft": "Draft",
+      "pendingApproval": "Pending approval",
+      "approved": "Approved",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "draft": {
+      "created": "Draft saved successfully",
+      "createError": "Could not save draft"
+    },
+    "approval": {
+      "submitted": "Campaign submitted for approval",
+      "submitError": "Could not submit campaign for approval"
+    },
+    "schedule": {
+      "scheduled": "Campaign scheduled successfully",
+      "scheduleError": "Could not schedule campaign"
+    },
+    "report": {
+      "title": "Campaign report",
+      "sent": "Sent",
+      "errors": "Errors",
+      "unsubscribes": "Unsubscribes",
+      "view": "View report",
+      "hide": "Hide report"
+    },
+    "generate": {
+      "error": "Could not generate content"
+    },
+    "segment": {
+      "title": "Segments",
+      "description": "Manage recipient segments",
+      "loading": "Loading segments…",
+      "loadError": "Could not load segments",
+      "create": "Create segment",
+      "newSegment": "New segment",
+      "name": "Segment name",
+      "namePlaceholder": "E.g. Frequent guests",
+      "created": "Segment created successfully",
+      "createError": "Could not create segment",
+      "emptyTitle": "No segments",
+      "emptyList": "You have not created any segments yet",
+      "createdAt": "Created on {{date}}",
+      "preview": "Preview",
+      "hidePreview": "Hide preview",
+      "previewCount": "{{count}} recipients"
+    },
+    "editor": {
+      "segment": "Segment",
+      "selectSegment": "Select a segment",
+      "recipients": "{{count}} recipients",
+      "subject": "Subject",
+      "subjectPlaceholder": "Email subject",
+      "body": "Body",
+      "bodyPlaceholder": "Email text",
+      "generate": "Generate with AI",
+      "generating": "Generating…",
+      "saveDraft": "Save draft",
+      "submitForApproval": "Submit for approval",
+      "schedule": "Schedule sending",
+      "date": "Date",
+      "time": "Time",
+      "scheduleButton": "Schedule",
+      "noSegments": "No segments available",
+      "noSegmentsMessage": "You need to create at least one segment before you can create a campaign"
     }
   },
   "dataView": {
