@@ -196,6 +196,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Ospiti',
         'Adempimenti',
+        'CRM Ospiti',
         'Ricavi',
         'Regime fiscale',
         'Report',

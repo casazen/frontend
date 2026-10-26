@@ -114,6 +114,7 @@ describe('MoreSheet (UI-04b)', () => {
       expect(tiles(groups[2])).toEqual([
         'Ospiti',
         'Adempimenti',
+        'CRM Ospiti',
         'Ricavi',
         'Regime fiscale',
         'Report',
