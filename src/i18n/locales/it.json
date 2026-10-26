@@ -8203,9 +8203,14 @@
     "activeTab": "Attive",
     "actions": "Azioni",
     "actionTypes": {
+      "addTag": "Aggiungi tag",
       "createActivity": "Crea attività",
+      "messageToGuest": "Invia messaggio all'ospite",
+      "notifyOwner": "Notifica proprietario",
+      "notifyStaff": "Notifica staff",
+      "notifyTeam": "Notifica team",
+      "requestReview": "Richiedi recensione",
       "sendAccessCode": "Invia codice di accesso",
-      "sendMessage": "Invia messaggio",
       "wait": "Attendi"
     },
     "addAction": "Aggiungi azione",
@@ -8227,6 +8232,7 @@
     "editorDescription": "Configura l'evento che attiva la routine, le condizioni e le azioni da eseguire",
     "eventType": "Tipo di evento",
     "events": {
+      "activityCompleted": "Attività completata",
       "afterCheckin": "Dopo il check-in",
       "afterCheckout": "Dopo il check-out",
       "alloggiatiReceiptArrived": "Ricevuta Alloggiati arrivata",
@@ -8241,7 +8247,8 @@
       "idVerificationCompleted": "Verifica identità completata",
       "paymentFailed": "Pagamento fallito",
       "paymentSucceeded": "Pagamento riuscito",
-      "reviewReceived": "Recensione ricevuta"
+      "reviewReceived": "Recensione ricevuta",
+      "weeklyRecurrence": "Ricorrenza settimanale"
     },
     "executionLog": "Registro esecuzioni",
     "hours": "ore",

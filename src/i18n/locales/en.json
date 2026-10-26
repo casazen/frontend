@@ -8203,9 +8203,14 @@
     "activeTab": "Active",
     "actions": "Actions",
     "actionTypes": {
+      "addTag": "Add tag",
       "createActivity": "Create activity",
+      "messageToGuest": "Send message to guest",
+      "notifyOwner": "Notify owner",
+      "notifyStaff": "Notify staff",
+      "notifyTeam": "Notify team",
+      "requestReview": "Request review",
       "sendAccessCode": "Send access code",
-      "sendMessage": "Send message",
       "wait": "Wait"
     },
     "addAction": "Add action",
@@ -8227,6 +8232,7 @@
     "editorDescription": "Configure the event that triggers the routine, conditions, and actions to execute",
     "eventType": "Event type",
     "events": {
+      "activityCompleted": "Activity completed",
       "afterCheckin": "After check-in",
       "afterCheckout": "After check-out",
       "alloggiatiReceiptArrived": "Alloggiati receipt arrived",
@@ -8241,7 +8247,8 @@
       "idVerificationCompleted": "ID verification completed",
       "paymentFailed": "Payment failed",
       "paymentSucceeded": "Payment succeeded",
-      "reviewReceived": "Review received"
+      "reviewReceived": "Review received",
+      "weeklyRecurrence": "Weekly recurrence"
     },
     "executionLog": "Execution log",
     "hours": "hours",

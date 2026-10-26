@@ -1,4 +1,5 @@
 // Routine types - mirrors backend contract (E12/F01/US01/T01, ADR-022)
+// Backend enum: Casazen.Core/Entities/Enums/RoutineEventType.cs
 
 export type RoutineEventType =
   | 'BookingNew'
@@ -18,9 +19,20 @@ export type RoutineEventType =
   | 'ReviewReceived'
   | 'PaymentSucceeded'
   | 'PaymentFailed'
-  | 'Weekly';
+  | 'ActivityCompleted'
+  | 'WeeklyRecurrence';
 
-export type RoutineActionType = 'Wait' | 'SendMessage' | 'CreateActivity' | 'SendAccessCode';
+// Backend enum: Casazen.Core/Entities/Enums/RoutineActionType.cs
+export type RoutineActionType =
+  | 'MessageToGuest'
+  | 'NotifyOwner'
+  | 'NotifyStaff'
+  | 'NotifyTeam'
+  | 'CreateActivity'
+  | 'SendAccessCode'
+  | 'RequestReview'
+  | 'AddTag'
+  | 'Wait';
 
 export interface RoutineEventConfig {
   days?: number;

@@ -92,7 +92,7 @@ export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEd
   const isTimeBasedEvent = TIME_BASED_EVENTS.includes(eventType);
 
   const handleAddAction = () => {
-    setActions([...actions, { type: 'SendMessage' as RoutineActionType, config: {} }]);
+    setActions([...actions, { type: 'MessageToGuest' as RoutineActionType, config: {} }]);
   };
 
   const handleRemoveAction = (index: number) => {
@@ -265,9 +265,14 @@ export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEd
                           data-testid={`action-type-select-${index}`}
                         >
                           <option value="Wait">{t('routines.actionTypes.wait')}</option>
-                          <option value="SendMessage">{t('routines.actionTypes.sendMessage')}</option>
+                          <option value="MessageToGuest">{t('routines.actionTypes.messageToGuest')}</option>
+                          <option value="NotifyOwner">{t('routines.actionTypes.notifyOwner')}</option>
+                          <option value="NotifyStaff">{t('routines.actionTypes.notifyStaff')}</option>
+                          <option value="NotifyTeam">{t('routines.actionTypes.notifyTeam')}</option>
                           <option value="CreateActivity">{t('routines.actionTypes.createActivity')}</option>
                           <option value="SendAccessCode">{t('routines.actionTypes.sendAccessCode')}</option>
+                          <option value="RequestReview">{t('routines.actionTypes.requestReview')}</option>
+                          <option value="AddTag">{t('routines.actionTypes.addTag')}</option>
                         </Select>
                       </div>
                       <Button
@@ -298,7 +303,7 @@ export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEd
                       </div>
                     )}
 
-                    {action.type === 'SendMessage' && (
+                    {action.type === 'MessageToGuest' && (
                       <div className="mt-3">
                         <Label htmlFor={`template-${index}`} className="text-sm">
                           {t('routines.messageTemplate')}

@@ -37,7 +37,7 @@ export function RoutineLibrary({ onActivate, isActivating }: RoutineLibraryProps
       },
       actions: [
         {
-          type: 'SendMessage' as RoutineActionType,
+          type: 'MessageToGuest' as RoutineActionType,
           config: {
             channel: 'email',
           },
@@ -54,7 +54,7 @@ export function RoutineLibrary({ onActivate, isActivating }: RoutineLibraryProps
       },
       actions: [
         {
-          type: 'SendMessage' as RoutineActionType,
+          type: 'MessageToGuest' as RoutineActionType,
           config: {
             channel: 'email',
           },
@@ -81,7 +81,7 @@ export function RoutineLibrary({ onActivate, isActivating }: RoutineLibraryProps
       },
       actions: [
         {
-          type: 'SendMessage' as RoutineActionType,
+          type: 'MessageToGuest' as RoutineActionType,
           config: {
             channel: 'email',
           },
