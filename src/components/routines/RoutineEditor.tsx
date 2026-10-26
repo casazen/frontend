@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,42 +32,62 @@ const TIME_BASED_EVENTS: RoutineEventType[] = [
   'AfterCheckout' as RoutineEventType,
 ];
 
+function parseActions(actionsJson: string): RoutineAction[] {
+  try {
+    const parsed = JSON.parse(actionsJson);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseEventConfig(eventConfig: string): { days: number; hours: number } {
+  try {
+    const config: RoutineEventConfig = JSON.parse(eventConfig);
+    return { days: config.days || 0, hours: config.hours || 0 };
+  } catch {
+    return { days: 0, hours: 0 };
+  }
+}
+
 export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEditorProps) {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [eventType, setEventType] = useState<RoutineEventType>('BookingConfirmed' as RoutineEventType);
-  const [days, setDays] = useState<number>(0);
-  const [hours, setHours] = useState<number>(0);
-  const [conditionJson, setConditionJson] = useState('{}');
-  const [actions, setActions] = useState<RoutineAction[]>([]);
-  const [testMode, setTestMode] = useState(false);
-  const [active, setActive] = useState(true);
 
-  useEffect(() => {
-    if (routine) {
-      setName(routine.name);
-      setEventType(routine.eventType);
-      setConditionJson(routine.conditionJson);
-      setTestMode(routine.testMode);
-      setActive(routine.active);
-
-      try {
-        const parsedActions = JSON.parse(routine.actionsJson);
-        setActions(Array.isArray(parsedActions) ? parsedActions : []);
-      } catch {
-        setActions([]);
-      }
-
-      try {
-        const config: RoutineEventConfig = JSON.parse(routine.eventConfig);
-        setDays(config.days || 0);
-        setHours(config.hours || 0);
-      } catch {
-        setDays(0);
-        setHours(0);
-      }
+  // Derive initial values from routine prop
+  const initialValues = useMemo(() => {
+    if (!routine) {
+      return {
+        name: '',
+        eventType: 'BookingConfirmed' as RoutineEventType,
+        days: 0,
+        hours: 0,
+        conditionJson: '{}',
+        actions: [] as RoutineAction[],
+        testMode: false,
+        active: true,
+      };
     }
+    const { days, hours } = parseEventConfig(routine.eventConfig);
+    return {
+      name: routine.name,
+      eventType: routine.eventType,
+      days,
+      hours,
+      conditionJson: routine.conditionJson,
+      actions: parseActions(routine.actionsJson),
+      testMode: routine.testMode,
+      active: routine.active,
+    };
   }, [routine]);
+
+  const [name, setName] = useState(initialValues.name);
+  const [eventType, setEventType] = useState<RoutineEventType>(initialValues.eventType);
+  const [days, setDays] = useState<number>(initialValues.days);
+  const [hours, setHours] = useState<number>(initialValues.hours);
+  const [conditionJson, setConditionJson] = useState(initialValues.conditionJson);
+  const [actions, setActions] = useState<RoutineAction[]>(initialValues.actions);
+  const [testMode, setTestMode] = useState(initialValues.testMode);
+  const [active, setActive] = useState(initialValues.active);
 
   const isTimeBasedEvent = TIME_BASED_EVENTS.includes(eventType);
 
