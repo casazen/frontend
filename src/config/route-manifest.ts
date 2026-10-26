@@ -409,8 +409,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 1,
     icon: 'ShieldCheck',
     component: async () => ({
-      default: (await import('@/pages/AlloggiatiPage')).AlloggiatiPage,
+      default: (await import('@/features/alloggiati/alloggiati-dashboard-page')).AlloggiatiDashboardPage,
     }),
+  },
+  {
+    path: '/app/short-rent/alloggiati/reports',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'alloggiati.reports',
+    navParent: '/app/short-rent/compliance',
+    navOrder: 1.5,
+    icon: 'ShieldCheck',
+    component: async () => ({ default: (await import('@/pages/AlloggiatiPage')).AlloggiatiPage }),
   },
   {
     path: '/app/short-rent/compliance/cin',
