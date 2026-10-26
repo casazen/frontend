@@ -10696,6 +10696,93 @@
       "today": "oggi"
     }
   },
+  "campaigns": {
+    "title": "Campagne",
+    "description": "Gestisci le campagne di email marketing",
+    "loading": "Caricamento delle campagne…",
+    "loadError": "Impossibile caricare le campagne",
+    "create": "Crea campagna",
+    "emptyTitle": "Nessuna campagna",
+    "emptyList": "Non hai ancora creato campagne",
+    "emptyFiltered": "Nessuna campagna corrisponde ai filtri selezionati",
+    "createdAt": "Creata il {{date}}",
+    "scheduledAt": "Programmata per {{date}}",
+    "sentAt": "Inviata il {{date}}",
+    "segment": "Segmento",
+    "filter": {
+      "status": "Filtra per stato",
+      "allStatuses": "Tutti gli stati"
+    },
+    "status": {
+      "draft": "Bozza",
+      "pendingApproval": "In attesa di approvazione",
+      "approved": "Approvata",
+      "scheduled": "Programmata",
+      "sending": "Invio in corso",
+      "sent": "Inviata",
+      "failed": "Fallita"
+    },
+    "draft": {
+      "created": "Bozza salvata con successo",
+      "createError": "Impossibile salvare la bozza"
+    },
+    "approval": {
+      "submitted": "Campagna inviata per l'approvazione",
+      "submitError": "Impossibile inviare la campagna per l'approvazione"
+    },
+    "schedule": {
+      "scheduled": "Campagna programmata con successo",
+      "scheduleError": "Impossibile programmare la campagna"
+    },
+    "report": {
+      "title": "Rapporto campagna",
+      "sent": "Inviate",
+      "errors": "Errori",
+      "unsubscribes": "Disiscrizioni",
+      "view": "Visualizza rapporto",
+      "hide": "Nascondi rapporto"
+    },
+    "generate": {
+      "error": "Impossibile generare il contenuto"
+    },
+    "segment": {
+      "title": "Segmenti",
+      "description": "Gestisci i segmenti di destinatari",
+      "loading": "Caricamento dei segmenti…",
+      "loadError": "Impossibile caricare i segmenti",
+      "create": "Crea segmento",
+      "newSegment": "Nuovo segmento",
+      "name": "Nome del segmento",
+      "namePlaceholder": "Es. Ospiti frequenti",
+      "created": "Segmento creato con successo",
+      "createError": "Impossibile creare il segmento",
+      "emptyTitle": "Nessun segmento",
+      "emptyList": "Non hai ancora creato segmenti",
+      "createdAt": "Creato il {{date}}",
+      "preview": "Anteprima",
+      "hidePreview": "Nascondi anteprima",
+      "previewCount": "{{count}} destinatari"
+    },
+    "editor": {
+      "segment": "Segmento",
+      "selectSegment": "Seleziona un segmento",
+      "recipients": "{{count}} destinatari",
+      "subject": "Oggetto",
+      "subjectPlaceholder": "Oggetto dell'email",
+      "body": "Corpo",
+      "bodyPlaceholder": "Testo dell'email",
+      "generate": "Genera con AI",
+      "generating": "Generazione in corso…",
+      "saveDraft": "Salva bozza",
+      "submitForApproval": "Invia per approvazione",
+      "schedule": "Programma invio",
+      "date": "Data",
+      "time": "Ora",
+      "scheduleButton": "Programma",
+      "noSegments": "Nessun segmento disponibile",
+      "noSegmentsMessage": "Devi prima creare almeno un segmento per poter creare una campagna"
+    }
+  },
   "dataView": {
     "selectAll": "Seleziona tutte le righe",
     "selectRow": "Seleziona la riga",

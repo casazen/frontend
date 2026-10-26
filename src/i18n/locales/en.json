@@ -10696,6 +10696,93 @@
       "today": "today"
     }
   },
+  "campaigns": {
+    "title": "Campaigns",
+    "description": "Manage email marketing campaigns",
+    "loading": "Loading campaigns…",
+    "loadError": "Could not load campaigns",
+    "create": "Create campaign",
+    "emptyTitle": "No campaigns",
+    "emptyList": "You have not created any campaigns yet",
+    "emptyFiltered": "No campaigns match the selected filters",
+    "createdAt": "Created on {{date}}",
+    "scheduledAt": "Scheduled for {{date}}",
+    "sentAt": "Sent on {{date}}",
+    "segment": "Segment",
+    "filter": {
+      "status": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "draft": "Draft",
+      "pendingApproval": "Pending approval",
+      "approved": "Approved",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "draft": {
+      "created": "Draft saved successfully",
+      "createError": "Could not save draft"
+    },
+    "approval": {
+      "submitted": "Campaign submitted for approval",
+      "submitError": "Could not submit campaign for approval"
+    },
+    "schedule": {
+      "scheduled": "Campaign scheduled successfully",
+      "scheduleError": "Could not schedule campaign"
+    },
+    "report": {
+      "title": "Campaign report",
+      "sent": "Sent",
+      "errors": "Errors",
+      "unsubscribes": "Unsubscribes",
+      "view": "View report",
+      "hide": "Hide report"
+    },
+    "generate": {
+      "error": "Could not generate content"
+    },
+    "segment": {
+      "title": "Segments",
+      "description": "Manage recipient segments",
+      "loading": "Loading segments…",
+      "loadError": "Could not load segments",
+      "create": "Create segment",
+      "newSegment": "New segment",
+      "name": "Segment name",
+      "namePlaceholder": "E.g. Frequent guests",
+      "created": "Segment created successfully",
+      "createError": "Could not create segment",
+      "emptyTitle": "No segments",
+      "emptyList": "You have not created any segments yet",
+      "createdAt": "Created on {{date}}",
+      "preview": "Preview",
+      "hidePreview": "Hide preview",
+      "previewCount": "{{count}} recipients"
+    },
+    "editor": {
+      "segment": "Segment",
+      "selectSegment": "Select a segment",
+      "recipients": "{{count}} recipients",
+      "subject": "Subject",
+      "subjectPlaceholder": "Email subject",
+      "body": "Body",
+      "bodyPlaceholder": "Email text",
+      "generate": "Generate with AI",
+      "generating": "Generating…",
+      "saveDraft": "Save draft",
+      "submitForApproval": "Submit for approval",
+      "schedule": "Schedule sending",
+      "date": "Date",
+      "time": "Time",
+      "scheduleButton": "Schedule",
+      "noSegments": "No segments available",
+      "noSegmentsMessage": "You need to create at least one segment before you can create a campaign"
+    }
+  },
   "dataView": {
     "selectAll": "Select all rows",
     "selectRow": "Select row",
