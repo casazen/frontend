@@ -3338,7 +3338,11 @@
     "errorState": {
       "retry": "Riprova",
       "supportWithEmail": "Se il problema continua, scrivi al supporto:"
-    }
+    },
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "scheduling": "Programmazione...",
+    "submitting": "Invio..."
   },
   "common": {
     "cancel": "Annulla",
