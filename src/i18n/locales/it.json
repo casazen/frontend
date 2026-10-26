@@ -700,6 +700,7 @@
     "users": "Utenti",
     "jobs": "Processi",
     "suppliers": "Fornitori",
+    "trustedSuppliers": "Fornitori fidati",
     "guests": "Ospiti",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
@@ -3382,8 +3383,10 @@
     }
   },
   "common": {
+    "cancel": "Annulla",
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
-    "planUpgradeCta": "Passa a un piano superiore"
+    "planUpgradeCta": "Passa a un piano superiore",
+    "sending": "Invio in corso..."
   },
   "property": {
     "country": "Paese",
@@ -5651,6 +5654,35 @@
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
       "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
+    },
+    "trusted": {
+      "title": "Fornitori di fiducia",
+      "description": "Gestisci i fornitori con cui collabori direttamente",
+      "loading": "Caricamento fornitori…",
+      "loadError": "Impossibile caricare i fornitori di fiducia",
+      "empty": "Nessun fornitore di fiducia ancora configurato",
+      "invite": "Invita fornitore",
+      "inviteTitle": "Invita fornitore di fiducia",
+      "inviteEmail": "Email fornitore",
+      "inviteEmailPlaceholder": "fornitore@esempio.it",
+      "inviteSend": "Invia invito",
+      "inviteSuccess": "Invito inviato con successo",
+      "inviteError": "Impossibile inviare l'invito",
+      "properties": "Proprietà assegnate",
+      "propertiesPlaceholder": "ID proprietà separati da virgola",
+      "propertiesHint": "Inserisci gli ID delle proprietà separati da virgola",
+      "propertiesCount_one": "{{count}} proprietà assegnata",
+      "propertiesCount_other": "{{count}} proprietà assegnate",
+      "assignedProperties": "Proprietà assegnate",
+      "visibility": "Visibilità nel marketplace",
+      "visibilityHint": "Rendi visibile questo fornitore nel marketplace",
+      "visibilitySuccess": "Visibilità aggiornata",
+      "visibilityError": "Impossibile aggiornare la visibilità",
+      "remove": "Rimuovi",
+      "removeConfirm": "Vuoi davvero rimuovere questo fornitore di fiducia?",
+      "removeSuccess": "Fornitore rimosso",
+      "removeError": "Impossibile rimuovere il fornitore",
+      "supplierLabel": "Fornitore {{id}}"
     }
   },
   "settings": {

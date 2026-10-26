@@ -700,6 +700,7 @@
     "users": "Users",
     "jobs": "Processes",
     "suppliers": "Suppliers",
+    "trustedSuppliers": "Trusted Suppliers",
     "guests": "Guests",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
@@ -3382,8 +3383,10 @@
     }
   },
   "common": {
+    "cancel": "Cancel",
     "planLimitMessage": "You have reached your plan limit",
-    "planUpgradeCta": "Upgrade to a higher plan"
+    "planUpgradeCta": "Upgrade to a higher plan",
+    "sending": "Sending..."
   },
   "property": {
     "country": "Country",
@@ -5651,6 +5654,35 @@
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
       "notIndexed": "The page does not appear in search engines: it is reached only through the link."
+    },
+    "trusted": {
+      "title": "Trusted suppliers",
+      "description": "Manage the suppliers you work with directly",
+      "loading": "Loading suppliers…",
+      "loadError": "Unable to load trusted suppliers",
+      "empty": "No trusted suppliers configured yet",
+      "invite": "Invite supplier",
+      "inviteTitle": "Invite trusted supplier",
+      "inviteEmail": "Supplier email",
+      "inviteEmailPlaceholder": "supplier@example.com",
+      "inviteSend": "Send invite",
+      "inviteSuccess": "Invite sent successfully",
+      "inviteError": "Unable to send invite",
+      "properties": "Assigned properties",
+      "propertiesPlaceholder": "Comma-separated property IDs",
+      "propertiesHint": "Enter property IDs separated by commas",
+      "propertiesCount_one": "{{count}} assigned property",
+      "propertiesCount_other": "{{count}} assigned properties",
+      "assignedProperties": "Assigned properties",
+      "visibility": "Marketplace visibility",
+      "visibilityHint": "Make this supplier visible in the marketplace",
+      "visibilitySuccess": "Visibility updated",
+      "visibilityError": "Unable to update visibility",
+      "remove": "Remove",
+      "removeConfirm": "Do you really want to remove this trusted supplier?",
+      "removeSuccess": "Supplier removed",
+      "removeError": "Unable to remove supplier",
+      "supplierLabel": "Supplier {{id}}"
     }
   },
   "settings": {
