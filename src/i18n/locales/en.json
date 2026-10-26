@@ -1,4 +1,47 @@
 {
+  "approval": {
+    "action": {
+      "approve": "Approve",
+      "approved": "Item approved",
+      "approveFailed": "Failed to approve item",
+      "reject": "Reject",
+      "rejected": "Item rejected",
+      "rejectFailed": "Failed to reject item"
+    },
+    "ai_generated": "AI Generated",
+    "content": "Content",
+    "dialog": {
+      "reasonLabel": "Rejection reason",
+      "reasonPlaceholder": "Describe why you are rejecting this item…",
+      "rejectDescription": "Specify the reason for rejecting this item. The reason will be logged.",
+      "rejectTitle": "Reject item"
+    },
+    "expires": "Expires",
+    "filter": {
+      "allTypes": "All types",
+      "type": "Type"
+    },
+    "queue": {
+      "description": "Items awaiting approval before execution",
+      "emptyFiltered": "No items match the selected filters",
+      "emptyQueue": "There are no items awaiting approval",
+      "emptyTitle": "No items",
+      "loadError": "Failed to load approval queue",
+      "loading": "Loading approval queue…",
+      "title": "Approval Queue"
+    },
+    "status": {
+      "approved": "Approved",
+      "expired": "Expired",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "type": {
+      "aiText": "AI Text",
+      "campaign": "Campaign",
+      "routine": "Routine"
+    }
+  },
   "cfDocuments": {
     "title": "Upload documents to CasaZen",
     "description": "Keep and view documents attached to your lease.",
@@ -664,6 +707,7 @@
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "ai": "AI configuration",
+    "approvalQueue": "Approval Queue",
     "marketing": "Marketing",
     "more": "More",
     "brandShort": "CASAZEN",
