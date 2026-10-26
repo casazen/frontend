@@ -1,47 +1,26 @@
 // Routine types - mirrors backend contract (E12/F01/US01/T01, ADR-022)
 
-export enum RoutineEventType {
-  // Booking lifecycle events
-  BookingNew = 'BookingNew',
-  BookingConfirmed = 'BookingConfirmed',
-  BookingModified = 'BookingModified',
-  BookingCanceled = 'BookingCanceled',
+export type RoutineEventType =
+  | 'BookingNew'
+  | 'BookingConfirmed'
+  | 'BookingModified'
+  | 'BookingCanceled'
+  | 'BeforeCheckin'
+  | 'AfterCheckin'
+  | 'BeforeCheckout'
+  | 'AfterCheckout'
+  | 'CheckinOccurred'
+  | 'CheckoutOccurred'
+  | 'OnlineCheckinCompleted'
+  | 'IdVerificationCompleted'
+  | 'AlloggiatiReceiptArrived'
+  | 'GuestMessageReceived'
+  | 'ReviewReceived'
+  | 'PaymentSucceeded'
+  | 'PaymentFailed'
+  | 'Weekly';
 
-  // Check-in/check-out timing events (relative to dates)
-  BeforeCheckin = 'BeforeCheckin',
-  AfterCheckin = 'AfterCheckin',
-  BeforeCheckout = 'BeforeCheckout',
-  AfterCheckout = 'AfterCheckout',
-
-  // Check-in/check-out occurrence events
-  CheckinOccurred = 'CheckinOccurred',
-  CheckoutOccurred = 'CheckoutOccurred',
-
-  // Guest flow completion events
-  OnlineCheckinCompleted = 'OnlineCheckinCompleted',
-  IdVerificationCompleted = 'IdVerificationCompleted',
-
-  // Compliance events
-  AlloggiatiReceiptArrived = 'AlloggiatiReceiptArrived',
-
-  // Communication events
-  GuestMessageReceived = 'GuestMessageReceived',
-  ReviewReceived = 'ReviewReceived',
-
-  // Payment events
-  PaymentSucceeded = 'PaymentSucceeded',
-  PaymentFailed = 'PaymentFailed',
-
-  // Recurring event
-  Weekly = 'Weekly',
-}
-
-export enum RoutineActionType {
-  Wait = 'Wait',
-  SendMessage = 'SendMessage',
-  CreateActivity = 'CreateActivity',
-  SendAccessCode = 'SendAccessCode',
-}
+export type RoutineActionType = 'Wait' | 'SendMessage' | 'CreateActivity' | 'SendAccessCode';
 
 export interface RoutineEventConfig {
   days?: number;

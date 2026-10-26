@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Plus } from 'lucide-react';
 import type {
@@ -173,25 +173,23 @@ export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEd
           {/* Event Type */}
           <div className="space-y-2">
             <Label htmlFor="event-type">{t('routines.eventType')}</Label>
-            <Select value={eventType} onValueChange={(value) => setEventType(value as RoutineEventType)}>
-              <SelectTrigger id="event-type" data-testid="event-type-select">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BookingNew">{t('routines.events.bookingNew')}</SelectItem>
-                <SelectItem value="BookingConfirmed">{t('routines.events.bookingConfirmed')}</SelectItem>
-                <SelectItem value="BookingCanceled">{t('routines.events.bookingCanceled')}</SelectItem>
-                <SelectItem value="BeforeCheckin">{t('routines.events.beforeCheckin')}</SelectItem>
-                <SelectItem value="AfterCheckin">{t('routines.events.afterCheckin')}</SelectItem>
-                <SelectItem value="BeforeCheckout">{t('routines.events.beforeCheckout')}</SelectItem>
-                <SelectItem value="AfterCheckout">{t('routines.events.afterCheckout')}</SelectItem>
-                <SelectItem value="CheckinOccurred">{t('routines.events.checkinOccurred')}</SelectItem>
-                <SelectItem value="CheckoutOccurred">{t('routines.events.checkoutOccurred')}</SelectItem>
-                <SelectItem value="IdVerificationCompleted">
-                  {t('routines.events.idVerificationCompleted')}
-                </SelectItem>
-                <SelectItem value="GuestMessageReceived">{t('routines.events.guestMessageReceived')}</SelectItem>
-              </SelectContent>
+            <Select
+              id="event-type"
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value as RoutineEventType)}
+              data-testid="event-type-select"
+            >
+              <option value="BookingNew">{t('routines.events.bookingNew')}</option>
+              <option value="BookingConfirmed">{t('routines.events.bookingConfirmed')}</option>
+              <option value="BookingCanceled">{t('routines.events.bookingCanceled')}</option>
+              <option value="BeforeCheckin">{t('routines.events.beforeCheckin')}</option>
+              <option value="AfterCheckin">{t('routines.events.afterCheckin')}</option>
+              <option value="BeforeCheckout">{t('routines.events.beforeCheckout')}</option>
+              <option value="AfterCheckout">{t('routines.events.afterCheckout')}</option>
+              <option value="CheckinOccurred">{t('routines.events.checkinOccurred')}</option>
+              <option value="CheckoutOccurred">{t('routines.events.checkoutOccurred')}</option>
+              <option value="IdVerificationCompleted">{t('routines.events.idVerificationCompleted')}</option>
+              <option value="GuestMessageReceived">{t('routines.events.guestMessageReceived')}</option>
             </Select>
           </div>
 
@@ -263,17 +261,13 @@ export function RoutineEditor({ routine, onSave, onCancel, isSaving }: RoutineEd
                       <div className="flex-1">
                         <Select
                           value={action.type}
-                          onValueChange={(value) => handleActionChange(index, 'type', value)}
+                          onChange={(e) => handleActionChange(index, 'type', e.target.value)}
+                          data-testid={`action-type-select-${index}`}
                         >
-                          <SelectTrigger data-testid={`action-type-select-${index}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Wait">{t('routines.actionTypes.wait')}</SelectItem>
-                            <SelectItem value="SendMessage">{t('routines.actionTypes.sendMessage')}</SelectItem>
-                            <SelectItem value="CreateActivity">{t('routines.actionTypes.createActivity')}</SelectItem>
-                            <SelectItem value="SendAccessCode">{t('routines.actionTypes.sendAccessCode')}</SelectItem>
-                          </SelectContent>
+                          <option value="Wait">{t('routines.actionTypes.wait')}</option>
+                          <option value="SendMessage">{t('routines.actionTypes.sendMessage')}</option>
+                          <option value="CreateActivity">{t('routines.actionTypes.createActivity')}</option>
+                          <option value="SendAccessCode">{t('routines.actionTypes.sendAccessCode')}</option>
                         </Select>
                       </div>
                       <Button

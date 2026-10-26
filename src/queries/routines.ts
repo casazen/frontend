@@ -41,7 +41,7 @@ export function useCreateRoutine() {
       toast.success(i18n.t('routines.createSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.createError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.createError'));
     },
   });
 }
@@ -57,7 +57,7 @@ export function useUpdateRoutine() {
       toast.success(i18n.t('routines.updateSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.updateError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.updateError'));
     },
   });
 }
@@ -72,7 +72,7 @@ export function useDeleteRoutine() {
       toast.success(i18n.t('routines.deleteSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.deleteError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.deleteError'));
     },
   });
 }
@@ -88,7 +88,7 @@ export function useSetRoutineActive() {
       toast.success(i18n.t(variables.active ? 'routines.activatedSuccess' : 'routines.deactivatedSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.toggleActiveError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.toggleActiveError'));
     },
   });
 }
@@ -104,7 +104,7 @@ export function useSetRoutineTestMode() {
       toast.success(i18n.t(variables.testMode ? 'routines.testModeOnSuccess' : 'routines.testModeOffSuccess'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.toggleTestModeError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.toggleTestModeError'));
     },
   });
 }
@@ -113,7 +113,7 @@ export function useSimulateRoutine() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: object }) => routinesApi.simulate(id, payload),
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('routines.simulateError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('routines.simulateError'));
     },
   });
 }

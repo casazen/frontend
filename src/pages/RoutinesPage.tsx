@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/shared/error-state';
 import { RoutineEditor } from '@/components/routines/RoutineEditor';
@@ -36,6 +35,7 @@ export function RoutinesPage() {
   const [executionLogOpen, setExecutionLogOpen] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | undefined>();
   const [selectedRoutineForLog, setSelectedRoutineForLog] = useState<string | undefined>();
+  const [activeTab, setActiveTab] = useState<'active' | 'test' | 'inactive'>('active');
 
   const { data: executions } = useRoutineExecutions(selectedRoutineForLog);
 
@@ -144,85 +144,108 @@ export function RoutinesPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList>
-          <TabsTrigger value="active" data-testid="active-tab">
+      <div className="space-y-4">
+        <div className="flex gap-2 border-b">
+          <Button
+            variant={activeTab === 'active' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('active')}
+            data-testid="active-tab"
+            className="rounded-b-none"
+          >
             {t('routines.activeTab')} ({activeRoutines.length})
-          </TabsTrigger>
-          <TabsTrigger value="test" data-testid="test-tab">
+          </Button>
+          <Button
+            variant={activeTab === 'test' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('test')}
+            data-testid="test-tab"
+            className="rounded-b-none"
+          >
             {t('routines.testTab')} ({testRoutines.length})
-          </TabsTrigger>
-          <TabsTrigger value="inactive" data-testid="inactive-tab">
+          </Button>
+          <Button
+            variant={activeTab === 'inactive' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('inactive')}
+            data-testid="inactive-tab"
+            className="rounded-b-none"
+          >
             {t('routines.inactiveTab')} ({inactiveRoutines.length})
-          </TabsTrigger>
-        </TabsList>
+          </Button>
+        </div>
 
-        <TabsContent value="active" className="space-y-4">
-          {activeRoutines.length === 0 ? (
-            <Card data-testid="active-empty">
-              <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">{t('routines.noActiveRoutines')}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            activeRoutines.map((routine) => (
-              <RoutineCard
-                key={routine.id}
-                routine={routine}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onToggleActive={handleToggleActive}
-                onToggleTestMode={handleToggleTestMode}
-                onShowLog={handleShowExecutionLog}
-              />
-            ))
+        <div className="space-y-4">
+          {activeTab === 'active' && (
+            <>
+              {activeRoutines.length === 0 ? (
+                <Card data-testid="active-empty">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-sm text-muted-foreground">{t('routines.noActiveRoutines')}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                activeRoutines.map((routine) => (
+                  <RoutineCard
+                    key={routine.id}
+                    routine={routine}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleActive={handleToggleActive}
+                    onToggleTestMode={handleToggleTestMode}
+                    onShowLog={handleShowExecutionLog}
+                  />
+                ))
+              )}
+            </>
           )}
-        </TabsContent>
 
-        <TabsContent value="test" className="space-y-4">
-          {testRoutines.length === 0 ? (
-            <Card data-testid="test-empty">
-              <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">{t('routines.noTestRoutines')}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            testRoutines.map((routine) => (
-              <RoutineCard
-                key={routine.id}
-                routine={routine}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onToggleActive={handleToggleActive}
-                onToggleTestMode={handleToggleTestMode}
-                onShowLog={handleShowExecutionLog}
-              />
-            ))
+          {activeTab === 'test' && (
+            <>
+              {testRoutines.length === 0 ? (
+                <Card data-testid="test-empty">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-sm text-muted-foreground">{t('routines.noTestRoutines')}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                testRoutines.map((routine) => (
+                  <RoutineCard
+                    key={routine.id}
+                    routine={routine}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleActive={handleToggleActive}
+                    onToggleTestMode={handleToggleTestMode}
+                    onShowLog={handleShowExecutionLog}
+                  />
+                ))
+              )}
+            </>
           )}
-        </TabsContent>
 
-        <TabsContent value="inactive" className="space-y-4">
-          {inactiveRoutines.length === 0 ? (
-            <Card data-testid="inactive-empty">
-              <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">{t('routines.noInactiveRoutines')}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            inactiveRoutines.map((routine) => (
-              <RoutineCard
-                key={routine.id}
-                routine={routine}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onToggleActive={handleToggleActive}
-                onToggleTestMode={handleToggleTestMode}
-                onShowLog={handleShowExecutionLog}
-              />
-            ))
+          {activeTab === 'inactive' && (
+            <>
+              {inactiveRoutines.length === 0 ? (
+                <Card data-testid="inactive-empty">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-sm text-muted-foreground">{t('routines.noInactiveRoutines')}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                inactiveRoutines.map((routine) => (
+                  <RoutineCard
+                    key={routine.id}
+                    routine={routine}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleActive={handleToggleActive}
+                    onToggleTestMode={handleToggleTestMode}
+                    onShowLog={handleShowExecutionLog}
+                  />
+                ))
+              )}
+            </>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       {/* Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
