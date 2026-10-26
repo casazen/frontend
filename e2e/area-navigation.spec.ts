@@ -35,7 +35,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(more).toHaveAttribute('aria-expanded', 'true');
       const others = ['Ospiti', 'Adempimenti', 'Ricavi', 'Regime fiscale', 'Profilo', 'Stripe Connect', 'Dominio pubblico', 'Organizzazione'];
       for (const name of others) {
-        await expect(menu.getByRole('link', { name })).toBeVisible();
+        await expect(menu.getByRole('link', { name, exact: true })).toBeVisible();
       }
       // The pages that hang from an entry, and plan and billing, are in no menu.
       for (const name of ['Alloggiati', 'CIN', 'Aspetto sito', 'Documenti sito', 'Piano', 'Fatturazione']) {
@@ -154,7 +154,7 @@ test.describe('Area navigation (UI-04a)', () => {
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toHaveAttribute('aria-current', 'page');
+      await expect(menu.getByRole('link', { name: 'Ospiti', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
     test('a page that hangs from an entry is reached from that entry and highlights it', async ({ page }) => {

@@ -68,7 +68,8 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',
     ]);
-    expect(primary).toHaveLength(MAX_PRIMARY_NAV_ENTRIES);
+    expect(primary).toHaveLength(7);
+    expect(primary.length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
   });
 
   it('puts the rest of short-rent in "Altro", the OTA channels only with their flag', () => {
@@ -76,12 +77,15 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(withoutFlag).toEqual([
       '/app/short-rent/guests',
       '/app/short-rent/compliance',
+      '/app/short-rent/crm/guests',
       '/app/short-rent/payments/revenue',
       '/app/short-rent/fiscal',
       '/app/short-rent/reports',
       '/app/short-rent/reviews',
       '/app/short-rent/channels',
       '/app/short-rent/verifications',
+      '/app/short-rent/approval-queue',
+      '/app/short-rent/trusted-suppliers',
       '/app/short-rent/profile',
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',
@@ -135,12 +139,14 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/seo',
       '/app/admin/marketing',
       '/app/admin/cin',
+      '/app/admin/statements',
     ]);
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin/suppliers/invite',
       '/app/admin/invite-qr',
       '/app/admin/ai',
       '/app/admin/demo',
+      '/app/admin/activities',
       '/app/admin/profile',
     ]);
   });

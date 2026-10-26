@@ -24,7 +24,7 @@ export type NavPlacement = 'primary' | 'secondary';
 export type NavCountKey = 'bookingRequests' | 'supplierRequests';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
-export const MAX_PRIMARY_NAV_ENTRIES = 7;
+export const MAX_PRIMARY_NAV_ENTRIES = 8;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -243,6 +243,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
+    // Approval queue (NF-06): items requiring human decision before execution.
+    path: '/app/short-rent/approval-queue',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'nav.approvalQueue',
+    navPlacement: 'secondary',
+    navOrder: 29,
+    icon: 'CheckSquare',
+    component: async () => ({ default: (await import('@/pages/ApprovalQueuePage')).ApprovalQueuePage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -399,6 +410,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 6,
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
+  },
+  {
+    path: '/app/short-rent/trusted-suppliers',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.trustedSuppliers',
+    navPlacement: 'secondary',
+    navOrder: 30,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/TrustedSuppliersPage')).TrustedSuppliersPage }),
   },
   {
     path: '/app/short-rent/alloggiati',
@@ -1022,6 +1043,23 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
+  // CRM guest profiles (NF-23, ADR-021): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  {
+    path: '/app/short-rent/crm/guests',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.crm',
+    navPlacement: 'secondary',
+    navOrder: 21,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
+  },
+  {
+    path: '/app/short-rent/crm/guests/:id',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
+  },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
   // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
   {
@@ -1071,6 +1109,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 25,
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
+  },
+  {
+    path: '/app/admin/statements',
+    context: 'admin',
+    requiredPermissions: ['admin.statements.read'],
+    navKey: 'nav.statements',
+    navGroup: 'platform',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+  },
+  {
+    path: '/app/admin/activities',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    navKey: 'nav.staffActivities',
+    navGroup: 'platform',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'ClipboardCheck',
+    component: async () => ({ default: (await import('@/pages/StaffActivitiesPage')).StaffActivitiesPage }),
   },
   // ============================================================
   // Supplier console

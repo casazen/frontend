@@ -1,4 +1,47 @@
 {
+  "approval": {
+    "action": {
+      "approve": "Approva",
+      "approved": "Elemento approvato",
+      "approveFailed": "Impossibile approvare l'elemento",
+      "reject": "Rifiuta",
+      "rejected": "Elemento rifiutato",
+      "rejectFailed": "Impossibile rifiutare l'elemento"
+    },
+    "ai_generated": "Generato da AI",
+    "content": "Contenuto",
+    "dialog": {
+      "reasonLabel": "Motivo del rifiuto",
+      "reasonPlaceholder": "Descrivi il motivo per cui rifiuti questo elemento…",
+      "rejectDescription": "Specifica il motivo per cui rifiuti questo elemento. Il motivo sarà registrato.",
+      "rejectTitle": "Rifiuta elemento"
+    },
+    "expires": "Scade",
+    "filter": {
+      "allTypes": "Tutti i tipi",
+      "type": "Tipo"
+    },
+    "queue": {
+      "description": "Elementi in attesa di approvazione prima dell'esecuzione",
+      "emptyFiltered": "Nessun elemento corrisponde ai filtri selezionati",
+      "emptyQueue": "Non ci sono elementi in attesa di approvazione",
+      "emptyTitle": "Nessun elemento",
+      "loadError": "Impossibile caricare la coda di approvazione",
+      "loading": "Caricamento coda di approvazione…",
+      "title": "Coda di approvazione"
+    },
+    "status": {
+      "approved": "Approvato",
+      "expired": "Scaduto",
+      "pending": "In attesa",
+      "rejected": "Rifiutato"
+    },
+    "type": {
+      "aiText": "Testo AI",
+      "campaign": "Campagna",
+      "routine": "Routine"
+    }
+  },
   "cfDocuments": {
     "title": "Carica i documenti in CasaZen",
     "description": "Conserva e consulta i documenti allegati al tuo contratto.",
@@ -104,6 +147,48 @@
       },
       "unknownStatus": "Stato sconosciuto"
     }
+  },
+  "crm": {
+    "actions": "Azioni",
+    "backToList": "Torna all'elenco",
+    "consent": "Consensi",
+    "consentEmail": "Email",
+    "consentGrantedEmail": "Consenso email concesso",
+    "consentGrantedWhatsApp": "Consenso WhatsApp concesso",
+    "consentNotGrantedEmail": "Consenso email non concesso",
+    "consentNotGrantedWhatsApp": "Consenso WhatsApp non concesso",
+    "consentWhatsApp": "WhatsApp",
+    "country": "Paese",
+    "description": "Cerca e visualizza i profili degli ospiti per marketing e segmentazione",
+    "email": "Email",
+    "empty": "Nessun ospite trovato. Gli ospiti che hanno soggiornato nelle tue proprietà appariranno qui.",
+    "error": "Errore nel caricamento",
+    "errorDescription": "Impossibile caricare i profili ospiti. Riprova più tardi.",
+    "firstStay": "Primo soggiorno",
+    "guestSince": "Ospite dal {{date}}",
+    "language": "Lingua",
+    "lastStay": "Ultimo soggiorno",
+    "loading": "Caricamento ospiti CRM...",
+    "loadingProfile": "Caricamento profilo ospite...",
+    "marketingConsent": "Consensi marketing",
+    "next": "Avanti",
+    "noConsent": "Nessun consenso",
+    "noResults": "Nessun risultato per la ricerca. Prova con altri termini.",
+    "noTags": "Nessun tag assegnato",
+    "previous": "Indietro",
+    "profileError": "Errore nel caricamento del profilo",
+    "profileErrorDescription": "Impossibile caricare il profilo dell'ospite. Riprova più tardi.",
+    "profileInfo": "Informazioni profilo",
+    "searchPlaceholder": "Cerca per email o paese...",
+    "showing": "Mostrando {{start}}-{{end}} di {{total}}",
+    "spend": "Spesa totale",
+    "stayHistory": "Storico soggiorni",
+    "stays": "Soggiorni",
+    "tags": "Tag",
+    "title": "CRM Ospiti",
+    "totalSpend": "Spesa totale",
+    "totalStays": "Soggiorni totali",
+    "viewDetails": "Dettagli"
   },
   "guidedContract": {
     "checkAgain": "Controlla di nuovo",
@@ -659,10 +744,12 @@
     "users": "Utenti",
     "jobs": "Processi",
     "suppliers": "Fornitori",
+    "trustedSuppliers": "Fornitori fidati",
     "guests": "Ospiti",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "ai": "Configurazione AI",
+    "approvalQueue": "Coda di approvazione",
     "marketing": "Marketing",
     "more": "Altro",
     "brandShort": "CASAZEN",
@@ -692,9 +779,12 @@
     "ltrReferenceData": "Dati normativi LTR",
     "siteAppearance": "Aspetto sito",
     "siteDocuments": "Documenti sito",
+    "staffActivities": "Attività",
+    "statements": "Rendiconti",
     "supplierShowcase": "Vetrina",
     "compliance": "Adempimenti",
     "complianceAudit": "Conformità",
+    "crm": "CRM Ospiti",
     "demoEnvironment": "Ambiente demo",
     "collapse": "Comprimi menu",
     "expand": "Espandi menu",
@@ -3324,6 +3414,7 @@
       "authenticating": "Autenticazione in corso...",
       "loadingWorkspace": "Caricamento dell'area di lavoro..."
     },
+    "back": "Indietro",
     "close": "Chiudi",
     "profileLoadError": {
       "title": "Impossibile caricare il tuo profilo",
@@ -3335,11 +3426,19 @@
     "errorState": {
       "retry": "Riprova",
       "supportWithEmail": "Se il problema continua, scrivi al supporto:"
-    }
+    },
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "scheduling": "Programmazione...",
+    "submitting": "Invio..."
   },
   "common": {
+    "cancel": "Annulla",
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
-    "planUpgradeCta": "Passa a un piano superiore"
+    "planUpgradeCta": "Passa a un piano superiore",
+    "save": "Salva",
+    "saving": "Salvataggio in corso...",
+    "sending": "Invio in corso..."
   },
   "property": {
     "country": "Paese",
@@ -5607,6 +5706,35 @@
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
       "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
+    },
+    "trusted": {
+      "title": "Fornitori di fiducia",
+      "description": "Gestisci i fornitori con cui collabori direttamente",
+      "loading": "Caricamento fornitori…",
+      "loadError": "Impossibile caricare i fornitori di fiducia",
+      "empty": "Nessun fornitore di fiducia ancora configurato",
+      "invite": "Invita fornitore",
+      "inviteTitle": "Invita fornitore di fiducia",
+      "inviteEmail": "Email fornitore",
+      "inviteEmailPlaceholder": "fornitore@esempio.it",
+      "inviteSend": "Invia invito",
+      "inviteSuccess": "Invito inviato con successo",
+      "inviteError": "Impossibile inviare l'invito",
+      "properties": "Proprietà assegnate",
+      "propertiesPlaceholder": "ID proprietà separati da virgola",
+      "propertiesHint": "Inserisci gli ID delle proprietà separati da virgola",
+      "propertiesCount_one": "{{count}} proprietà assegnata",
+      "propertiesCount_other": "{{count}} proprietà assegnate",
+      "assignedProperties": "Proprietà assegnate",
+      "visibility": "Visibilità nel marketplace",
+      "visibilityHint": "Rendi visibile questo fornitore nel marketplace",
+      "visibilitySuccess": "Visibilità aggiornata",
+      "visibilityError": "Impossibile aggiornare la visibilità",
+      "remove": "Rimuovi",
+      "removeConfirm": "Vuoi davvero rimuovere questo fornitore di fiducia?",
+      "removeSuccess": "Fornitore rimosso",
+      "removeError": "Impossibile rimuovere il fornitore",
+      "supplierLabel": "Fornitore {{id}}"
     }
   },
   "settings": {
@@ -8197,6 +8325,104 @@
       "NightlyPriceRequired": "Indica il prezzo di una notte per calcolare la tassa."
     }
   },
+  "routines": {
+    "activatedSuccess": "Routine attivata",
+    "active": "Attiva",
+    "activeBadge": "Attiva",
+    "activeDescription": "Le routine attive vengono eseguite quando si verificano gli eventi configurati",
+    "activeTab": "Attive",
+    "actions": "Azioni",
+    "actionTypes": {
+      "addTag": "Aggiungi tag",
+      "createActivity": "Crea attività",
+      "messageToGuest": "Invia messaggio all'ospite",
+      "notifyOwner": "Notifica proprietario",
+      "notifyStaff": "Notifica staff",
+      "notifyTeam": "Notifica team",
+      "requestReview": "Richiedi recensione",
+      "sendAccessCode": "Invia codice di accesso",
+      "wait": "Attendi"
+    },
+    "addAction": "Aggiungi azione",
+    "completed": "Completata",
+    "conditions": "Condizioni",
+    "conditionsHint": "Formato JSON ADR-014. Lascia {} per eseguire sempre.",
+    "conditionsPlaceholder": "{\"operator\": \"and\", \"rules\": []}",
+    "create": "Crea routine",
+    "createError": "Impossibile creare la routine",
+    "createSuccess": "Routine creata con successo",
+    "createTitle": "Nuova routine",
+    "days": "giorni",
+    "deactivatedSuccess": "Routine disattivata",
+    "deleteConfirm": "Sei sicuro di voler eliminare questa routine?",
+    "deleteError": "Impossibile eliminare la routine",
+    "deleteSuccess": "Routine eliminata",
+    "description": "Automatizza le azioni ricorrenti come messaggi agli ospiti, attività di pulizia e promemoria",
+    "editTitle": "Modifica routine",
+    "editorDescription": "Configura l'evento che attiva la routine, le condizioni e le azioni da eseguire",
+    "eventType": "Tipo di evento",
+    "events": {
+      "activityCompleted": "Attività completata",
+      "afterCheckin": "Dopo il check-in",
+      "afterCheckout": "Dopo il check-out",
+      "alloggiatiReceiptArrived": "Ricevuta Alloggiati arrivata",
+      "beforeCheckin": "Prima del check-in",
+      "beforeCheckout": "Prima del check-out",
+      "bookingCanceled": "Prenotazione annullata",
+      "bookingConfirmed": "Prenotazione confermata",
+      "bookingNew": "Nuova prenotazione",
+      "checkinOccurred": "Check-in effettuato",
+      "checkoutOccurred": "Check-out effettuato",
+      "guestMessageReceived": "Messaggio ospite ricevuto",
+      "idVerificationCompleted": "Verifica identità completata",
+      "paymentFailed": "Pagamento fallito",
+      "paymentSucceeded": "Pagamento riuscito",
+      "reviewReceived": "Recensione ricevuta",
+      "weeklyRecurrence": "Ricorrenza settimanale"
+    },
+    "executionLog": "Registro esecuzioni",
+    "hours": "ore",
+    "inactiveTab": "Inattive",
+    "library": {
+      "activate": "Attiva",
+      "activating": "Attivazione…",
+      "cleaningDescription": "Crea automaticamente un'attività di pulizia quando l'ospite fa il check-out",
+      "cleaningTitle": "Pulizia al check-out",
+      "description": "Attiva una routine predefinita con un clic. Puoi modificarla dopo l'attivazione.",
+      "documentReminderDescription": "Invia un promemoria 3 giorni prima del check-in se i documenti non sono stati caricati",
+      "documentReminderTitle": "Promemoria documenti mancanti",
+      "instructionsDescription": "Invia le istruzioni 2 giorni prima del check-in",
+      "instructionsTitle": "Istruzioni prima dell'arrivo",
+      "reviewDescription": "Richiedi una recensione 1 giorno dopo il check-out",
+      "reviewTitle": "Richiesta recensione dopo la partenza",
+      "title": "Libreria routine"
+    },
+    "loadError": "Impossibile caricare le routine",
+    "loading": "Caricamento routine…",
+    "messageTemplate": "Modello messaggio",
+    "messageTemplatePlaceholder": "ID del modello o testo",
+    "name": "Nome",
+    "namePlaceholder": "Es: Invia istruzioni 2 giorni prima",
+    "noActions": "Nessuna azione configurata. Aggiungi almeno un'azione.",
+    "noActiveRoutines": "Non hai routine attive. Creane una o attivane una dalla libreria.",
+    "noExecutions": "Nessuna esecuzione registrata",
+    "noInactiveRoutines": "Non hai routine inattive",
+    "noTestRoutines": "Non hai routine in modalità test",
+    "simulateError": "Impossibile simulare la routine",
+    "testMode": "Modalità test",
+    "testModeBadge": "Test",
+    "testModeDescription": "In modalità test, la routine viene eseguita in simulazione senza effetti reali",
+    "testModeOffSuccess": "Modalità test disattivata",
+    "testModeOnSuccess": "Modalità test attivata",
+    "testTab": "Test",
+    "timing": "Temporizzazione",
+    "title": "Routine di automazione",
+    "toggleActiveError": "Impossibile modificare lo stato della routine",
+    "toggleTestModeError": "Impossibile modificare la modalità test",
+    "updateError": "Impossibile aggiornare la routine",
+    "updateSuccess": "Routine aggiornata",
+    "waitDays": "Giorni di attesa"
+  },
   "siteReviews": {
     "count_one": "{{count}} recensione",
     "count_other": "{{count}} recensioni",
@@ -8331,6 +8557,41 @@
     "siteBanner": {
       "title": "Gli ospiti non possono ancora prenotare dal tuo sito"
     }
+  },
+  "activity": {
+    "staff": {
+      "title": "Le mie attività",
+      "description": "Visualizza e aggiorna le attività assegnate",
+      "loading": "Caricamento attività…",
+      "loadError": "Impossibile caricare le attività.",
+      "empty": "Non ci sono attività assegnate.",
+      "emptyFiltered": "Nessuna attività trovata con i filtri selezionati."
+    },
+    "status": {
+      "pending": "In attesa",
+      "in_progress": "In corso",
+      "completed": "Completata"
+    },
+    "type": {
+      "cleaning": "Pulizia",
+      "maintenance": "Manutenzione",
+      "checkin": "Assistenza check-in"
+    },
+    "filter": {
+      "property": "Proprietà",
+      "status": "Stato",
+      "allProperties": "Tutte le proprietà",
+      "allStatuses": "Tutti gli stati"
+    },
+    "updateStatus": "Aggiorna stato",
+    "notes": "Note",
+    "notesPlaceholder": "Aggiungi note sull'attività...",
+    "propertyId": "Proprietà",
+    "bookingId": "Prenotazione",
+    "internalRate": "Tariffa interna",
+    "scheduledAt": "Programmata per {{date}}",
+    "statusUpdateSuccess": "Stato dell'attività aggiornato",
+    "statusUpdateError": "Impossibile aggiornare lo stato dell'attività."
   },
   "onboarding": {
     "casaZen": "CasaZen",
@@ -10696,6 +10957,93 @@
       "items_other": "{{count}} elementi",
       "label": "Giorni della settimana",
       "today": "oggi"
+    }
+  },
+  "campaigns": {
+    "title": "Campagne",
+    "description": "Gestisci le campagne di email marketing",
+    "loading": "Caricamento delle campagne…",
+    "loadError": "Impossibile caricare le campagne",
+    "create": "Crea campagna",
+    "emptyTitle": "Nessuna campagna",
+    "emptyList": "Non hai ancora creato campagne",
+    "emptyFiltered": "Nessuna campagna corrisponde ai filtri selezionati",
+    "createdAt": "Creata il {{date}}",
+    "scheduledAt": "Programmata per {{date}}",
+    "sentAt": "Inviata il {{date}}",
+    "segment": "Segmento",
+    "filter": {
+      "status": "Filtra per stato",
+      "allStatuses": "Tutti gli stati"
+    },
+    "status": {
+      "draft": "Bozza",
+      "pendingApproval": "In attesa di approvazione",
+      "approved": "Approvata",
+      "scheduled": "Programmata",
+      "sending": "Invio in corso",
+      "sent": "Inviata",
+      "failed": "Fallita"
+    },
+    "draft": {
+      "created": "Bozza salvata con successo",
+      "createError": "Impossibile salvare la bozza"
+    },
+    "approval": {
+      "submitted": "Campagna inviata per l'approvazione",
+      "submitError": "Impossibile inviare la campagna per l'approvazione"
+    },
+    "schedule": {
+      "scheduled": "Campagna programmata con successo",
+      "scheduleError": "Impossibile programmare la campagna"
+    },
+    "report": {
+      "title": "Rapporto campagna",
+      "sent": "Inviate",
+      "errors": "Errori",
+      "unsubscribes": "Disiscrizioni",
+      "view": "Visualizza rapporto",
+      "hide": "Nascondi rapporto"
+    },
+    "generate": {
+      "error": "Impossibile generare il contenuto"
+    },
+    "segment": {
+      "title": "Segmenti",
+      "description": "Gestisci i segmenti di destinatari",
+      "loading": "Caricamento dei segmenti…",
+      "loadError": "Impossibile caricare i segmenti",
+      "create": "Crea segmento",
+      "newSegment": "Nuovo segmento",
+      "name": "Nome del segmento",
+      "namePlaceholder": "Es. Ospiti frequenti",
+      "created": "Segmento creato con successo",
+      "createError": "Impossibile creare il segmento",
+      "emptyTitle": "Nessun segmento",
+      "emptyList": "Non hai ancora creato segmenti",
+      "createdAt": "Creato il {{date}}",
+      "preview": "Anteprima",
+      "hidePreview": "Nascondi anteprima",
+      "previewCount": "{{count}} destinatari"
+    },
+    "editor": {
+      "segment": "Segmento",
+      "selectSegment": "Seleziona un segmento",
+      "recipients": "{{count}} destinatari",
+      "subject": "Oggetto",
+      "subjectPlaceholder": "Oggetto dell'email",
+      "body": "Corpo",
+      "bodyPlaceholder": "Testo dell'email",
+      "generate": "Genera con AI",
+      "generating": "Generazione in corso…",
+      "saveDraft": "Salva bozza",
+      "submitForApproval": "Invia per approvazione",
+      "schedule": "Programma invio",
+      "date": "Data",
+      "time": "Ora",
+      "scheduleButton": "Programma",
+      "noSegments": "Nessun segmento disponibile",
+      "noSegmentsMessage": "Devi prima creare almeno un segmento per poter creare una campagna"
     }
   },
   "dataView": {
@@ -13489,6 +13837,56 @@
     "mixed": "Un documento è un solo PDF oppure un gruppo di foto: rimuovi i file già scelti per cambiare.",
     "tooManyPhotos": "Puoi aggiungere al massimo {{max}} foto per documento.",
     "onePdf": "Scegli un solo PDF per documento."
+  },
+  "statement": {
+    "title": "Rendiconti proprietari",
+    "description": "Visualizza e gestisci i rendiconti mensili dei proprietari",
+    "loading": "Caricamento rendiconti…",
+    "loadError": "Impossibile caricare i rendiconti",
+    "emptyTitle": "Nessun rendiconto",
+    "emptyList": "Non ci sono ancora rendiconti generati",
+    "emptyFiltered": "Nessun rendiconto trovato con i filtri selezionati",
+    "viewDetails": "Vedi dettagli",
+    "period": "Periodo",
+    "revenue": "Ricavi",
+    "commission": "Commissioni",
+    "expenses": "Spese",
+    "withholdingTax": "Ritenuta",
+    "netPayable": "Netto pagabile",
+    "summary": "Riepilogo",
+    "publishedAt": "Pubblicato il",
+    "ownershipPercent": "Quota di proprietà: {{percent}}%",
+    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
+    "status": {
+      "draft": "Bozza",
+      "approved": "Approvato",
+      "published": "Pubblicato"
+    },
+    "filter": {
+      "status": "Filtra per stato",
+      "allStatuses": "Tutti gli stati"
+    },
+    "generateButton": "Genera rendiconto",
+    "approveButton": "Approva",
+    "publishButton": "Pubblica",
+    "download": {
+      "pdf": "Scarica PDF",
+      "csv": "Scarica CSV",
+      "pdfError": "Impossibile scaricare il PDF",
+      "csvError": "Impossibile scaricare il CSV"
+    },
+    "generate": {
+      "success": "Rendiconto generato con successo",
+      "error": "Impossibile generare il rendiconto"
+    },
+    "approve": {
+      "success": "Rendiconto approvato con successo",
+      "error": "Impossibile approvare il rendiconto"
+    },
+    "publish": {
+      "success": "Rendiconto pubblicato con successo",
+      "error": "Impossibile pubblicare il rendiconto"
+    }
   },
   "notifications": {
     "bell": "Notifiche",
