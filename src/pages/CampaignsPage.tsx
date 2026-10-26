@@ -6,7 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { AlertCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import type { Campaign, CampaignStatus } from '@/types/campaign.types';
+import type { CampaignStatus } from '@/types/campaign.types';
 
 export function CampaignsPage() {
   const { t } = useTranslation();

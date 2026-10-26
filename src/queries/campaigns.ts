@@ -33,7 +33,7 @@ export function useCreateSegment() {
       toast.success(i18n.t('campaigns.segment.created'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('campaigns.segment.createError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.segment.createError'));
     },
   });
 }
@@ -80,7 +80,7 @@ export function useCreateDraft() {
       toast.success(i18n.t('campaigns.draft.created'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('campaigns.draft.createError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.draft.createError'));
     },
   });
 }
@@ -95,7 +95,7 @@ export function useSubmitForApproval() {
       toast.success(i18n.t('campaigns.approval.submitted'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('campaigns.approval.submitError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.approval.submitError'));
     },
   });
 }
@@ -110,7 +110,7 @@ export function useScheduleCampaign() {
       toast.success(i18n.t('campaigns.schedule.scheduled'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('campaigns.schedule.scheduleError')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.schedule.scheduleError'));
     },
   });
 }
@@ -127,7 +127,7 @@ export function useGenerateContent() {
   return useMutation({
     mutationFn: (data: GenerateContentRequest) => campaignsApi.generateContent(data),
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t('campaigns.generate.error')));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.generate.error'));
     },
   });
 }
