@@ -37,6 +37,9 @@
     ],
     "src/layouts/ConsoleLayout.tsx": [
       "exports"
+    ],
+    "src/pages/RoutinesPage.tsx": [
+      "exports"
     ]
   },
   "compilers": {
