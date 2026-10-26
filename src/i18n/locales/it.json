@@ -1,4 +1,47 @@
 {
+  "approval": {
+    "action": {
+      "approve": "Approva",
+      "approved": "Elemento approvato",
+      "approveFailed": "Impossibile approvare l'elemento",
+      "reject": "Rifiuta",
+      "rejected": "Elemento rifiutato",
+      "rejectFailed": "Impossibile rifiutare l'elemento"
+    },
+    "ai_generated": "Generato da AI",
+    "content": "Contenuto",
+    "dialog": {
+      "reasonLabel": "Motivo del rifiuto",
+      "reasonPlaceholder": "Descrivi il motivo per cui rifiuti questo elemento…",
+      "rejectDescription": "Specifica il motivo per cui rifiuti questo elemento. Il motivo sarà registrato.",
+      "rejectTitle": "Rifiuta elemento"
+    },
+    "expires": "Scade",
+    "filter": {
+      "allTypes": "Tutti i tipi",
+      "type": "Tipo"
+    },
+    "queue": {
+      "description": "Elementi in attesa di approvazione prima dell'esecuzione",
+      "emptyFiltered": "Nessun elemento corrisponde ai filtri selezionati",
+      "emptyQueue": "Non ci sono elementi in attesa di approvazione",
+      "emptyTitle": "Nessun elemento",
+      "loadError": "Impossibile caricare la coda di approvazione",
+      "loading": "Caricamento coda di approvazione…",
+      "title": "Coda di approvazione"
+    },
+    "status": {
+      "approved": "Approvato",
+      "expired": "Scaduto",
+      "pending": "In attesa",
+      "rejected": "Rifiutato"
+    },
+    "type": {
+      "aiText": "Testo AI",
+      "campaign": "Campagna",
+      "routine": "Routine"
+    }
+  },
   "cfDocuments": {
     "title": "Carica i documenti in CasaZen",
     "description": "Conserva e consulta i documenti allegati al tuo contratto.",
@@ -664,6 +707,7 @@
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "ai": "Configurazione AI",
+    "approvalQueue": "Coda di approvazione",
     "marketing": "Marketing",
     "more": "Altro",
     "brandShort": "CASAZEN",
