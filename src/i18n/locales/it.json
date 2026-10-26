@@ -148,6 +148,28 @@
       "unknownStatus": "Stato sconosciuto"
     }
   },
+  "condition": {
+    "add_group": "Aggiungi gruppo",
+    "add_rule": "Aggiungi regola",
+    "group": {
+      "and": "E",
+      "or": "OPPURE"
+    },
+    "placeholder": {
+      "number": "Inserisci un numero",
+      "value": "Inserisci un valore"
+    },
+    "preview_count": "{{count}} corrispondenze",
+    "preview_loading": "Caricamento anteprima...",
+    "remove_group": "Rimuovi gruppo",
+    "remove_rule": "Rimuovi regola",
+    "select_field": "Seleziona campo",
+    "select_operator": "Seleziona operatore",
+    "value": {
+      "false": "Falso",
+      "true": "Vero"
+    }
+  },
   "crm": {
     "actions": "Azioni",
     "backToList": "Torna all'elenco",

@@ -148,6 +148,28 @@
       "unknownStatus": "Unknown status"
     }
   },
+  "condition": {
+    "add_group": "Add group",
+    "add_rule": "Add rule",
+    "group": {
+      "and": "AND",
+      "or": "OR"
+    },
+    "placeholder": {
+      "number": "Enter number",
+      "value": "Enter value"
+    },
+    "preview_count": "{{count}} matches",
+    "preview_loading": "Loading preview...",
+    "remove_group": "Remove group",
+    "remove_rule": "Remove rule",
+    "select_field": "Select field",
+    "select_operator": "Select operator",
+    "value": {
+      "false": "False",
+      "true": "True"
+    }
+  },
   "crm": {
     "actions": "Actions",
     "backToList": "Back to list",
