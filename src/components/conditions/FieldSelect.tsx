@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ export interface FieldSelectProps {
 }
 
 export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectProps) {
+  const { t } = useTranslation();
   const selectedField = fields.find((f) => f.field === rule.field);
   const availableOperators = selectedField?.operators || [];
 
@@ -69,8 +71,8 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
     if (type === 'Boolean') {
       return (
         <Select value={String(rule.value)} onChange={handleBooleanChange} className="flex-1">
-          <option value="true">True</option>
-          <option value="false">False</option>
+          <option value="true">{t('condition.value.true')}</option>
+          <option value="false">{t('condition.value.false')}</option>
         </Select>
       );
     }
@@ -83,7 +85,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
           value={rule.value as number}
           onChange={handleValueChange}
           className="flex-1"
-          placeholder="Enter number"
+          placeholder={t('condition.placeholder.number')}
         />
       );
     }
@@ -108,7 +110,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
         value={rule.value as string}
         onChange={handleValueChange}
         className="flex-1"
-        placeholder="Enter value"
+        placeholder={t('condition.placeholder.value')}
       />
     );
   };
@@ -116,7 +118,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
   return (
     <div className="flex flex-wrap items-start gap-2">
       <Select value={rule.field} onChange={handleFieldChange} wrapperClassName="min-w-40 flex-1">
-        <option value="">Select field</option>
+        <option value="">{t('condition.select_field')}</option>
         {fields.map((field) => (
           <option key={field.field} value={field.field}>
             {field.label || field.field}
@@ -130,7 +132,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
         wrapperClassName="min-w-32 flex-1"
         disabled={!selectedField}
       >
-        <option value="">Select operator</option>
+        <option value="">{t('condition.select_operator')}</option>
         {availableOperators.map((op) => (
           <option key={op} value={op}>
             {op}

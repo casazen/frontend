@@ -112,8 +112,19 @@
       "and": "E",
       "or": "OPPURE"
     },
+    "placeholder": {
+      "number": "Inserisci un numero",
+      "value": "Inserisci un valore"
+    },
     "preview_count": "{{count}} corrispondenze",
-    "preview_loading": "Caricamento anteprima..."
+    "preview_loading": "Caricamento anteprima...",
+    "remove_group": "Rimuovi gruppo",
+    "select_field": "Seleziona campo",
+    "select_operator": "Seleziona operatore",
+    "value": {
+      "false": "Falso",
+      "true": "Vero"
+    }
   },
   "guidedContract": {
     "checkAgain": "Controlla di nuovo",

@@ -112,8 +112,19 @@
       "and": "AND",
       "or": "OR"
     },
+    "placeholder": {
+      "number": "Enter number",
+      "value": "Enter value"
+    },
     "preview_count": "{{count}} matches",
-    "preview_loading": "Loading preview..."
+    "preview_loading": "Loading preview...",
+    "remove_group": "Remove group",
+    "select_field": "Select field",
+    "select_operator": "Select operator",
+    "value": {
+      "false": "False",
+      "true": "True"
+    }
   },
   "guidedContract": {
     "checkAgain": "Check again",
