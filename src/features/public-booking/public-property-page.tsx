@@ -13,6 +13,7 @@ import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-met
 import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
 import { PropertyDescription } from '@/features/public-booking/components/property-description';
 import { PropertyFacts } from '@/features/public-booking/components/property-facts';
+import { PropertyStructuredData } from '@/components/seo/PropertyStructuredData';
 import { AmenitySkeleton, PropertyLoadError, PropertyNotFound, PropertyPageSkeleton } from '@/features/public-booking/components/property-page-states';
 import { PropertySectionBar, type PropertySection } from '@/features/public-booking/components/property-section-bar';
 import { buildOrgBookingPath } from '@/lib/booking-url';
@@ -93,6 +94,7 @@ export function PublicPropertyPage() {
 
   return (
     <div className="space-y-6 md:space-y-8" data-testid="public-property-page">
+      <PropertyStructuredData property={property} org={org} />
       <PublicBreadcrumb
         segments={[
           { label: org.displayName, href: basePath },
