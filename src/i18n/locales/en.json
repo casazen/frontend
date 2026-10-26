@@ -105,6 +105,16 @@
       "unknownStatus": "Unknown status"
     }
   },
+  "condition": {
+    "add_group": "Add group",
+    "add_rule": "Add rule",
+    "group": {
+      "and": "AND",
+      "or": "OR"
+    },
+    "preview_count": "{{count}} matches",
+    "preview_loading": "Loading preview..."
+  },
   "guidedContract": {
     "checkAgain": "Check again",
     "comuneDiffers": "The municipality chosen in the form differs from the one of the property of the contract.",

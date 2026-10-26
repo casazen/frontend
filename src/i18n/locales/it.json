@@ -105,6 +105,16 @@
       "unknownStatus": "Stato sconosciuto"
     }
   },
+  "condition": {
+    "add_group": "Aggiungi gruppo",
+    "add_rule": "Aggiungi regola",
+    "group": {
+      "and": "E",
+      "or": "OPPURE"
+    },
+    "preview_count": "{{count}} corrispondenze",
+    "preview_loading": "Caricamento anteprima..."
+  },
   "guidedContract": {
     "checkAgain": "Controlla di nuovo",
     "comuneDiffers": "Il comune scelto nel modulo è diverso da quello della casa del contratto.",
