@@ -1091,7 +1091,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navGroup: 'platform',
     navPlacement: 'secondary',
     navOrder: 26,
-    icon: 'ClipboardList',
+    icon: 'ClipboardCheck',
     component: async () => ({ default: (await import('@/pages/StaffActivitiesPage')).StaffActivitiesPage }),
   },
   // ============================================================
