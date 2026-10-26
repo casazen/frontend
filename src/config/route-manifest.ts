@@ -437,7 +437,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/alloggiati/reports',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    navKey: 'alloggiati.reports',
+    navKey: 'nav.alloggiatiReports',
     navParent: '/app/short-rent/compliance',
     navOrder: 1.5,
     icon: 'ShieldCheck',
