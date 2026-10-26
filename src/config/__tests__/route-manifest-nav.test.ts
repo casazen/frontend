@@ -145,6 +145,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/invite-qr',
       '/app/admin/ai',
       '/app/admin/demo',
+      '/app/admin/activities',
       '/app/admin/profile',
     ]);
   });

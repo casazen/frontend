@@ -737,6 +737,7 @@
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
     "siteDocuments": "Site documents",
+    "staffActivities": "Activities",
     "statements": "Statements",
     "supplierShowcase": "Showcase",
     "compliance": "Compliance",
@@ -3392,6 +3393,8 @@
     "cancel": "Cancel",
     "planLimitMessage": "You have reached your plan limit",
     "planUpgradeCta": "Upgrade to a higher plan",
+    "save": "Save",
+    "saving": "Saving...",
     "sending": "Sending..."
   },
   "property": {
@@ -8377,6 +8380,41 @@
     "siteBanner": {
       "title": "Guests cannot book from your site yet"
     }
+  },
+  "activity": {
+    "staff": {
+      "title": "My activities",
+      "description": "View and update assigned activities",
+      "loading": "Loading activities…",
+      "loadError": "Activities could not be loaded.",
+      "empty": "There are no assigned activities.",
+      "emptyFiltered": "No activities found with the selected filters."
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    },
+    "type": {
+      "cleaning": "Cleaning",
+      "maintenance": "Maintenance",
+      "checkin": "Check-in Assistance"
+    },
+    "filter": {
+      "property": "Property",
+      "status": "Status",
+      "allProperties": "All properties",
+      "allStatuses": "All statuses"
+    },
+    "updateStatus": "Update status",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes about the activity...",
+    "propertyId": "Property",
+    "bookingId": "Booking",
+    "internalRate": "Internal rate",
+    "scheduledAt": "Scheduled for {{date}}",
+    "statusUpdateSuccess": "Activity status updated",
+    "statusUpdateError": "Could not update activity status."
   },
   "onboarding": {
     "casaZen": "CasaZen",
