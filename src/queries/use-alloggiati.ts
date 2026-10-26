@@ -3,6 +3,7 @@ import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import type { AlloggiatiReportFilters } from '@/types/alloggiati.types';
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
 const ALLOGGIATI_KEY = 'alloggiati';
@@ -61,5 +62,29 @@ export function useReplaceStayGuests(bookingId: string) {
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
       toast.success(i18n.t('alloggiati.editGuests.saved'));
     },
+  });
+}
+
+/**
+ * List of Alloggiati Web reports with filters (NF-14). The list changes as reports are sent or receive errors, so it
+ * reads again when the page is opened.
+ */
+export function useAlloggiatiReports(filters?: AlloggiatiReportFilters) {
+  return useQuery({
+    queryKey: [ALLOGGIATI_KEY, 'reports', filters],
+    queryFn: () => alloggiatiApi.getReports(filters),
+    refetchOnMount: true,
+  });
+}
+
+/**
+ * Row-level errors for a specific Alloggiati report (AC-NF14-3). Errors are displayed with TipoErrore codes from the
+ * Test operation.
+ */
+export function useAlloggiatiErrors(reportId: string) {
+  return useQuery({
+    queryKey: [ALLOGGIATI_KEY, 'errors', reportId],
+    queryFn: () => alloggiatiApi.getReportErrors(reportId),
+    enabled: !!reportId,
   });
 }

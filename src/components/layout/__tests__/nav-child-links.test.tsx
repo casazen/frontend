@@ -40,6 +40,7 @@ describe('NavChildLinks (UI-04a)', () => {
     const links = within(group).getAllByRole('link');
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Alloggiati', '/app/short-rent/alloggiati'],
+      ['Report Alloggiati', '/app/short-rent/alloggiati/reports'],
       ['CIN', '/app/short-rent/compliance/cin'],
     ]);
   });
@@ -78,7 +79,7 @@ describe('NavChildLinks (UI-04a)', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['Alloggiati', 'CIN']);
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['Alloggiati', 'Report Alloggiati', 'CIN']);
   });
 
   it('NavChildLinks_NoRouter_ShowsNothingAndDoesNotFail', () => {

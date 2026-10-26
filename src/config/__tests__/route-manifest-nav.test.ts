@@ -241,6 +241,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       ['/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
       ['/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
       ['/app/short-rent/alloggiati', '/app/short-rent/compliance'],
+      ['/app/short-rent/alloggiati/reports', '/app/short-rent/compliance'],
       ['/app/short-rent/compliance/cin', '/app/short-rent/compliance'],
       ['/app/admin/compliance/tax-rates', '/app/admin/cin'],
       ['/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
@@ -269,6 +270,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     expect(visible).not.toContain('/app/short-rent/compliance/cin');
     expect(paths(getNavChildren('/app/short-rent/compliance', allowAll))).toEqual([
       '/app/short-rent/alloggiati',
+      '/app/short-rent/alloggiati/reports',
       '/app/short-rent/compliance/cin',
     ]);
     expect(paths(getNavMatchEntries('short-rent', allowAll))).toEqual(

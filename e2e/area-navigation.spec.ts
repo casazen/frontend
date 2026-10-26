@@ -171,8 +171,8 @@ test.describe('Area navigation (UI-04a)', () => {
 
       // The page of the entry links to the pages that hang from it.
       const related = page.getByRole('group', { name: 'Pagine collegate' });
-      await expect(related.getByRole('link')).toHaveText(['Alloggiati', 'CIN']);
-      await related.getByRole('link', { name: 'Alloggiati' }).click();
+      await expect(related.getByRole('link')).toHaveText(['Alloggiati', 'Report Alloggiati', 'CIN']);
+      await related.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/alloggiati$/);
       // Still "Adempimenti" that is highlighted, and "Altro" stays open.

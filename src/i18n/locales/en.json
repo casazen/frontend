@@ -722,6 +722,7 @@
     "marketplace": "Marketplace",
     "calendar": "Calendar",
     "alloggiati": "Alloggiati",
+    "alloggiatiReports": "Alloggiati reports",
     "cin": "CIN",
     "fiscal": "Fiscal regime",
     "payments": "Payments",
@@ -6577,6 +6578,13 @@
         "label": "Sent manually",
         "explain": "You declared that you sent it on the portal. CasaZen has no receipt: keep the one from the portal."
       },
+      "SentReceiptPending": {
+        "label": "Sent, receipt pending",
+        "explain": "The communication was sent successfully. CasaZen is retrieving the receipt from the portal.",
+        "need": [
+          "Waiting for automatic receipt retrieval"
+        ]
+      },
       "Inviato": {
         "label": "Sent (receipt)",
         "explain": "The communication was transmitted and has the receipt of the portal."
@@ -6822,14 +6830,43 @@
     "guest": "Guest",
     "property": "Property",
     "checkIn": "Check-in",
-    "status": "Status",
+    "confirmationNumber": "Confirmation number",
+    "error": {
+      "row": "Row",
+      "row_invalid": "Row errors"
+    },
+    "filter": {
+      "allStatuses": "All statuses",
+      "fromDate": "From date",
+      "status": "Filter by status",
+      "toDate": "To date"
+    },
+    "loadError": "Unable to load Alloggiati reports.",
+    "noErrors": "No errors detected.",
+    "noReports": "No reports found.",
+    "report": "report",
+    "reports": "reports",
+    "status": {
+      "da_inviare": "To send",
+      "da_inviare_manualmente": "To send manually",
+      "deadline_soon": "Deadline in {{hours}} hours",
+      "errore": "Error",
+      "inviato": "Sent (receipt)",
+      "inviato_manualmente": "Sent manually",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "rifiutato": "Rejected",
+      "sent": "Sent",
+      "sent_receipt_pending": "Sent, receipt pending"
+    },
     "statusLabel": {
       "DaInviare": "To send",
       "DaInviareManualmente": "To send manually",
       "InviatoManualmente": "Sent manually",
       "Inviato": "Sent (receipt)",
       "Rifiutato": "Rejected",
-      "Errore": "Error"
+      "Errore": "Error",
+      "SentReceiptPending": "Sent, receipt pending"
     },
     "deadline": "Deadline",
     "incompleteData": "Incomplete data",
