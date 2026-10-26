@@ -243,6 +243,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
+    // Approval queue (NF-06): items requiring human decision before execution.
+    path: '/app/short-rent/approval-queue',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'nav.approvalQueue',
+    navPlacement: 'secondary',
+    navOrder: 29,
+    icon: 'CheckSquare',
+    component: async () => ({ default: (await import('@/pages/ApprovalQueuePage')).ApprovalQueuePage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -406,7 +417,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.read'],
     navKey: 'nav.trustedSuppliers',
     navPlacement: 'secondary',
-    navOrder: 29,
+    navOrder: 30,
     icon: 'Users',
     component: async () => ({ default: (await import('@/pages/TrustedSuppliersPage')).TrustedSuppliersPage }),
   },
