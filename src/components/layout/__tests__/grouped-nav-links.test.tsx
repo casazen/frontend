@@ -202,6 +202,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Recensioni',
         'Canali e calendari',
         'Verifiche',
+        'Coda di approvazione',
         'Fornitori fidati',
         'Profilo',
         'Stripe Connect',
