@@ -123,6 +123,7 @@
     "errorDescription": "Could not load guest profiles. Please try again later.",
     "firstStay": "First stay",
     "guestSince": "Guest since {{date}}",
+    "language": "Language",
     "lastStay": "Last stay",
     "loading": "Loading CRM guests...",
     "loadingProfile": "Loading guest profile...",
