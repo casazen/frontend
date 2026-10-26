@@ -35,6 +35,15 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   const isUpdating = updateStatus.isPending;
   const hasChanges = selectedStatus !== activity.status || notes !== (activity.notes || '');
 
+  const getStatusKey = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'Pending': 'pending',
+      'InProgress': 'in_progress',
+      'Completed': 'completed',
+    };
+    return statusMap[status] || status.toLowerCase();
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Pending':
@@ -63,7 +72,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             </CardDescription>
           </div>
           <Badge variant={getStatusVariant(activity.status)} data-testid="activity-status-badge">
-            {t(`activity.status.${activity.status.toLowerCase()}`)}
+            {t(`activity.status.${getStatusKey(activity.status)}`)}
           </Badge>
         </div>
       </CardHeader>
