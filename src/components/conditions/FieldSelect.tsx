@@ -45,13 +45,18 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
 
     if (selectedField?.type === 'Number') {
       convertedValue = value === '' ? '' : Number(value);
-    } else if (selectedField?.type === 'Boolean') {
-      convertedValue = value === 'true';
     }
 
     onChange({
       ...rule,
       value: convertedValue,
+    });
+  };
+
+  const handleBooleanChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange({
+      ...rule,
+      value: event.target.value === 'true',
     });
   };
 
@@ -63,7 +68,7 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
     // Boolean field
     if (type === 'Boolean') {
       return (
-        <Select value={String(rule.value)} onChange={handleValueChange} className="flex-1">
+        <Select value={String(rule.value)} onChange={handleBooleanChange} className="flex-1">
           <option value="true">True</option>
           <option value="false">False</option>
         </Select>
