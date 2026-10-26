@@ -3344,6 +3344,8 @@
     "cancel": "Annulla",
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
     "planUpgradeCta": "Passa a un piano superiore",
+    "save": "Salva",
+    "saving": "Salvataggio...",
     "sending": "Invio in corso..."
   },
   "property": {
@@ -8329,6 +8331,41 @@
     "siteBanner": {
       "title": "Gli ospiti non possono ancora prenotare dal tuo sito"
     }
+  },
+  "activity": {
+    "staff": {
+      "title": "Le mie attività",
+      "description": "Visualizza e aggiorna le attività assegnate",
+      "loading": "Caricamento attività…",
+      "loadError": "Impossibile caricare le attività.",
+      "empty": "Non ci sono attività assegnate.",
+      "emptyFiltered": "Nessuna attività trovata con i filtri selezionati."
+    },
+    "status": {
+      "pending": "In attesa",
+      "in_progress": "In corso",
+      "completed": "Completata"
+    },
+    "type": {
+      "cleaning": "Pulizia",
+      "maintenance": "Manutenzione",
+      "checkin": "Assistenza check-in"
+    },
+    "filter": {
+      "property": "Proprietà",
+      "status": "Stato",
+      "allProperties": "Tutte le proprietà",
+      "allStatuses": "Tutti gli stati"
+    },
+    "updateStatus": "Aggiorna stato",
+    "notes": "Note",
+    "notesPlaceholder": "Aggiungi note sull'attività...",
+    "propertyId": "Proprietà",
+    "bookingId": "Prenotazione",
+    "internalRate": "Tariffa interna",
+    "scheduledAt": "Programmata per {{date}}",
+    "statusUpdateSuccess": "Stato dell'attività aggiornato",
+    "statusUpdateError": "Impossibile aggiornare lo stato dell'attività."
   },
   "onboarding": {
     "casaZen": "CasaZen",
