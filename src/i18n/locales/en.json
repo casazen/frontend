@@ -3388,6 +3388,8 @@
     "cancel": "Cancel",
     "planLimitMessage": "You have reached your plan limit",
     "planUpgradeCta": "Upgrade to a higher plan",
+    "save": "Save",
+    "saving": "Saving...",
     "sending": "Sending..."
   },
   "property": {

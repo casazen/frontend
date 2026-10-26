@@ -3388,6 +3388,8 @@
     "cancel": "Annulla",
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
     "planUpgradeCta": "Passa a un piano superiore",
+    "save": "Salva",
+    "saving": "Salvataggio in corso...",
     "sending": "Invio in corso..."
   },
   "property": {
