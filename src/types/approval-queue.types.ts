@@ -1,5 +1,5 @@
 /**
- * Approval queue types (NF-06, ADR-014).
+ * Approval queue types (NF-06).
  * Items requiring human decision before execution.
  */
 

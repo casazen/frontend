@@ -2,7 +2,7 @@ import { ApiClient } from './client';
 import type { ApprovalQueueItem, RejectApprovalRequest } from '@/types/approval-queue.types';
 
 /**
- * Approval queue API (NF-06, ADR-014).
+ * Approval queue API (NF-06).
  * Items requiring human decision before execution.
  */
 export const approvalQueueApi = {
