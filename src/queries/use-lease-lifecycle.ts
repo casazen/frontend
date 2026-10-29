@@ -5,7 +5,14 @@ import i18n from '@/i18n/config';
 import { leaseLifecycleApi } from '@/api/lease-lifecycle.api';
 import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseDetail, LeaseStage, LeaseSummary, RecordLeaseNoticeInput, TerminateLeaseInput } from '@/types';
+import type {
+  LeaseDetail,
+  LeaseStage,
+  LeaseSummary,
+  RecordLeaseNoticeInput,
+  TenantWithdrawalInput,
+  TerminateLeaseInput,
+} from '@/types';
 import { LEASES_KEY, useLeases } from './use-leases';
 import { RENT_KEY, RENT_REGISTER_KEY } from './use-rent';
 
@@ -102,6 +109,26 @@ export function useTerminateLease() {
     onError: (error, { leaseId }) => {
       refreshAfterChange(queryClient, leaseId);
       reportFailure(error, 'leaseLifecycle.terminate.failed');
+    },
+  });
+}
+
+/**
+ * The withdrawal the tenant sent, recorded (`POST /leases/:id/withdrawal`, LR-OPS-1): the lease ends on the day its notice runs out, like
+ * the early termination and with its effects, and cannot be taken back. The answer is the lease as it is now.
+ */
+export function useRecordTenantWithdrawal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leaseId, input }: { leaseId: string; input: TenantWithdrawalInput }) =>
+      leaseLifecycleApi.recordWithdrawal(leaseId, input),
+    onSuccess: (detail, { leaseId }) => {
+      queryClient.setQueryData([LEASES_KEY, leaseId], detail);
+      refreshAfterChange(queryClient, leaseId);
+    },
+    onError: (error, { leaseId }) => {
+      refreshAfterChange(queryClient, leaseId);
+      reportFailure(error, 'leaseOperations.withdrawal.failed');
     },
   });
 }

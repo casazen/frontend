@@ -54,6 +54,8 @@ const EVENT_ACTORS: Readonly<Record<string, LeaseEventActor>> = {
   StipulaDeclared: 'you',
   TermRenewed: 'casazen',
   Terminated: 'you',
+  LetterSent: 'you',
+  WithdrawalRecorded: 'you',
 };
 
 export function leaseEventActor(eventType: string): LeaseEventActor | undefined {
