@@ -153,7 +153,7 @@ describe('MoreSheet (UI-04b)', () => {
 
       open();
 
-      expect(tiles(sheet())).toEqual(['Scadenze', 'Report fiscale', 'Profilo', 'Organizzazione']);
+      expect(tiles(sheet())).toEqual(['Inquilini', 'Scadenze', 'Report fiscale', 'Profilo', 'Organizzazione']);
       // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();
