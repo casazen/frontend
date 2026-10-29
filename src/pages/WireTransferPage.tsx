@@ -8,7 +8,7 @@ import { AlertCircle, Download, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { OwnerStatement, WireBatch, WireBatchStatus } from '@/types';
+import type { WireBatch, WireBatchStatus } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function WireTransferPage() {
