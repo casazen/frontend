@@ -59,6 +59,10 @@ export function PropertyQrCodePage() {
   const { propertyId } = useParams<{ propertyId: string }>();
   const origin = window.location.origin;
 
+  // The QR directs to the guest verification entry page where they enter booking code + email
+  const verificationUrl = propertyId ? `${origin}/guest/verify?property=${propertyId}` : '';
+  const image = useQrDataUrl(verificationUrl);
+
   if (!propertyId) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
@@ -71,10 +75,6 @@ export function PropertyQrCodePage() {
       </div>
     );
   }
-
-  // The QR directs to the guest verification entry page where they enter booking code + email
-  const verificationUrl = `${origin}/guest/verify?property=${propertyId}`;
-  const image = useQrDataUrl(verificationUrl);
 
   if (!image) {
     return <LoadingScreen message={t('property.qr.loading')} />;
