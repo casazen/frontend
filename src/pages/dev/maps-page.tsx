@@ -29,6 +29,7 @@ const LABELS: Record<LocalKind, MapLabel[]> = {
   coast: [{ text: 'Centro storico', x: 36, y: 30 }, { text: 'Mare Adriatico', x: 84, y: 82 }],
   historic: [{ text: 'Piazza Duomo', x: 30, y: 22 }, { text: 'Castello', x: 80, y: 16 }],
 };
+const NO_LABELS: MapLabel[] = [];
 const SEA_BEARINGS = [90, 0, 180, 270, 45, 200];
 
 /** The SVG text of the engine as real nodes, filling a box with the aspect ratio of the map. */
@@ -73,7 +74,8 @@ interface LocalCardProps {
 }
 function LocalCard({ kind, seed, width, title, pois = false, seaBearingDeg }: LocalCardProps) {
   const spec: LocalSpec = { kind, seed, spanM: 1500, seaBearingDeg };
-  const svg = useMemo(() => localMapSvg({ kind, seed, spanM: 1500, seaBearingDeg, width, labels: pois ? LABELS[kind] : [] }), [kind, seed, width, pois, seaBearingDeg]);
+  const labels = pois ? LABELS[kind] : NO_LABELS;
+  const svg = useMemo(() => localMapSvg({ kind, seed, spanM: 1500, seaBearingDeg, width, labels }), [kind, seed, width, labels, seaBearingDeg]);
   const places = pois ? POIS.map((p) => ({ ...p, ...localPlace(spec, { bearingDeg: p.b, distM: p.d }) })) : [];
   const beach = seaBearingDeg == null ? null : localPlace(spec, { bearingDeg: seaBearingDeg, distM: 600 });
   return (
