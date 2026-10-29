@@ -1,6 +1,13 @@
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
-import type { LeaseDetail, LeaseErasureResult, LeaseErasureStatus, RecordLeaseNoticeInput, TerminateLeaseInput } from '@/types';
+import type {
+  LeaseDetail,
+  LeaseErasureResult,
+  LeaseErasureStatus,
+  RecordLeaseNoticeInput,
+  TenantWithdrawalInput,
+  TerminateLeaseInput,
+} from '@/types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -56,6 +63,14 @@ export const leaseLifecycleApi = {
    */
   terminate: async (id: string, input: TerminateLeaseInput): Promise<LeaseDetail> =>
     expectLease(await ApiClient.post<unknown>(`/leases/${id}/terminate`, input), '/leases/:id/terminate'),
+
+  /**
+   * Records the withdrawal the tenant sent and ends the lease on the day its notice runs out (LR-OPS-1): the day received plus the months of
+   * notice, through the same rules as the early termination. **Irreversible.** 422 `lease_withdrawal_date_invalid`,
+   * `lease_withdrawal_notice_invalid`, `lease_termination_date_invalid`; 409 `lease_not_in_force`, `lease_already_terminated`, `lease_busy`.
+   */
+  recordWithdrawal: async (id: string, input: TenantWithdrawalInput): Promise<LeaseDetail> =>
+    expectLease(await ApiClient.post<unknown>(`/leases/${id}/withdrawal`, input), '/leases/:id/withdrawal'),
 
   /** Records the erasure request of the parties (art. 17 GDPR). Idempotent: asking again answers where the first request stands. */
   requestErasure: async (id: string): Promise<LeaseErasureResult> => {

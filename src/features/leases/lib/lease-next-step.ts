@@ -3,6 +3,7 @@ import type { CalmTone } from '@/components/shared/calm';
 import { formatStayDate, nightsBetween, parseStayDate } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { LeaseNextStep, LeaseNextStepActor, LeaseNextStepCode } from '@/types';
+import { LEASE_OPERATION_PARAM, type LeaseOperationId } from '../operations/operation-ids';
 import { REVIEW_STEP, SIGN_STEP, leaseEditPath } from '../wizard/wizard-model';
 import type { LeaseTab } from './lease-sheet';
 import { monthOfDate, rentRegisterPath } from './rent-register';
@@ -22,13 +23,19 @@ export function leaseSheetPath(leaseId: string, tab?: LeaseTab): string {
   return tab ? `${base}?tab=${tab}` : base;
 }
 
+/** The sheet of a lease with the window of one of its operations open on it (`?operazione=disdetta`, LR-OPS-1). */
+export function operationPath(leaseId: string, operation: LeaseOperationId): string {
+  return `${leaseSheetPath(leaseId)}?${LEASE_OPERATION_PARAM}=${operation}`;
+}
+
 /**
- * Where a step is done: a tab of the sheet of the lease (or the sheet as it opens), the wizard that goes on with a draft («Continua il
- * contratto», LR-06a) at a step of the server's numbering (`fromParams`: the step the server names in `params.step`; none: where the
- * draft opens), or the rent register for the rents that are late.
+ * Where a step is done: a tab of the sheet of the lease (or the sheet as it opens), the window of an operation of the guide («Prepara la
+ * disdetta»), the wizard that goes on with a draft («Continua il contratto», LR-06a) at a step of the server's numbering (`fromParams`: the
+ * step the server names in `params.step`; none: where the draft opens), or the rent register for the rents that are late.
  */
 type StepTarget =
   | { kind: 'sheet'; tab?: LeaseTab }
+  | { kind: 'operation'; operation: LeaseOperationId }
   | { kind: 'wizard'; step?: number; fromParams?: true }
   | { kind: 'rents' };
 
@@ -127,7 +134,7 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.DecideNotice.title',
     actionKey: 'leaseFlow.nextStep.DecideNotice.action',
     detailKey: 'leaseFlow.nextStep.DecideNotice.detail',
-    target: { kind: 'sheet', tab: 'dati' },
+    target: { kind: 'operation', operation: 'disdetta' },
   },
   OrganizeEnd: {
     titleKey: 'leaseFlow.nextStep.OrganizeEnd.title',
@@ -279,5 +286,7 @@ function targetPath(leaseId: string, target: StepTarget, step: LeaseNextStep, to
       return leaseEditPath(leaseId, target.fromParams ? (numberParam(step.params, 'step') ?? undefined) : target.step);
     case 'sheet':
       return leaseSheetPath(leaseId, target.tab);
+    case 'operation':
+      return operationPath(leaseId, target.operation);
   }
 }
