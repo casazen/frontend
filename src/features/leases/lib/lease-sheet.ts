@@ -46,6 +46,7 @@ const EVENT_ACTORS: Readonly<Record<string, LeaseEventActor>> = {
   RegistrationAuthorized: 'you',
   RegistrationFailed: 'casazen',
   RegistrationSubmitted: 'you',
+  RenewalRecorded: 'you',
   ReviewConfirmed: 'you',
   RliExported: 'you',
   SentForSignature: 'you',

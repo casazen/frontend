@@ -5179,6 +5179,12 @@
         "title": "Se l'esigenza continua, confermala per iscritto",
         "why": "Il transitorio vale finché dura l'esigenza che lo giustifica. Se questa continua oltre la scadenza, la parte interessata la conferma per iscritto all'altra parte prima della fine del contratto; se non lo fa, o se l'esigenza viene meno, il contratto può essere trattato come un normale 4+4. Il termine esatto chiedilo al commercialista."
       },
+      "transitorioConfirmNeedLandlord": {
+        "action": "Prepara la conferma",
+        "body": "Il contratto finisce da solo. Se l'esigenza è tua e vuoi che continui, confermala all'inquilino prima della scadenza, con raccomandata o PEC. CasaZen prepara la bozza della lettera.",
+        "title": "Se l'esigenza continua, confermala per iscritto",
+        "why": "Il transitorio vale finché dura l'esigenza che lo giustifica. Se questa continua oltre la scadenza, la parte interessata la conferma per iscritto all'altra parte prima della fine del contratto; se non lo fa, o se l'esigenza viene meno, il contratto può essere trattato come un normale 4+4. Il termine esatto chiedilo al commercialista."
+      },
       "transitorioCosts": {
         "action": "Stima i costi",
         "body": "Nel modello ufficiale il bollo è a carico dell'inquilino e l'imposta di registro si divide a metà. Con la cedolare secca non si pagano.",
@@ -5524,6 +5530,18 @@
       "Pec": "PEC",
       "RegisteredMail": "Raccomandata"
     },
+    "needConfirmation": {
+      "dialog": {
+        "deadline": "Va spedita prima della scadenza del contratto, il {{date}}.",
+        "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu: non scriviamo all'inquilino.",
+        "effects": "Senza la conferma, o se l'esigenza viene meno, il contratto può essere trattato come un 4+4. Il termine esatto chiedilo al commercialista.",
+        "title": "Conferma l'esigenza"
+      },
+      "open": "Prepara la conferma",
+      "summary": "Se l'esigenza continua, confermala per iscritto all'inquilino prima del {{date}}.",
+      "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
+      "title": "Conferma dell'esigenza"
+    },
     "reasons": {
       "DamagedBuilding": "Edificio danneggiato da ricostruire o mettere in sicurezza",
       "LegalEntityUse": "Uso di un ente o di una società, offrendo un altro immobile",
@@ -5532,6 +5550,52 @@
       "Sale": "Vendita dell'immobile",
       "TenantAbsent": "L'inquilino non abita la casa",
       "TenantOtherHome": "L'inquilino ha un altro alloggio idoneo nello stesso comune"
+    },
+    "renewal": {
+      "dialog": {
+        "agreedHint": "Il giorno in cui finisce il contratto secondo l'accordo con l'inquilino.",
+        "agreedInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "agreedLabel": "Ultimo giorno del contratto",
+        "confirm": "Registra il rinnovo",
+        "consequences": {
+          "final": "Non si può annullare da qui: la fine del contratto si sposta davvero.",
+          "plan": "Il piano dei canoni si allunga fino a quel giorno con le rate nuove: quelle che esistono già non cambiano."
+        },
+        "description": "Il contratto continua per un altro periodo. CasaZen sposta la fine e allunga il piano dei canoni; non scrive all'inquilino.",
+        "effect": "Il contratto continuerà fino al {{date}}.",
+        "effectPending": "Scegli il giorno in cui finisce il contratto concordato.",
+        "mode": {
+          "agreed": {
+            "description": "Tu e l'inquilino avete concordato una durata diversa.",
+            "title": "Proroga a un giorno concordato"
+          },
+          "standard": {
+            "description": "Dal {{from}} al {{to}} ({{months}} mesi), alle stesse condizioni.",
+            "title": "Rinnovo standard"
+          }
+        },
+        "modeLegend": "Che rinnovo è",
+        "title": "Registra il rinnovo"
+      },
+      "done": "Rinnovo registrato: il contratto continua fino al {{date}}.",
+      "doneDialog": {
+        "description": "Il contratto continua dal {{from}} al {{to}}.",
+        "download": "Scarica l'accordo",
+        "steps": {
+          "agreement": "Se vuoi metterlo per iscritto, scarica l'accordo da far firmare alle due parti: la bozza è qui sotto e CasaZen non la manda a nessuno.",
+          "communicate": "Comunica il rinnovo all'Agenzia delle Entrate entro {{days}} giorni (modello RLI).",
+          "plan": "Il piano dei canoni è già esteso fino alla nuova fine: non devi cambiare niente.",
+          "taxCedolare": "Con la cedolare secca non c'è imposta di registro, ma la comunicazione resta.",
+          "taxOrdinary": "Senza cedolare secca si paga l'imposta di registro delle annualità che si aggiungono: chiedi al commercialista come e quando."
+        },
+        "title": "Rinnovo registrato"
+      },
+      "failed": "Non sono riuscito a registrare il rinnovo. Riprova.",
+      "open": "Registra il rinnovo",
+      "openRecorded": "Accordo e prossimi passi",
+      "summary": "Il periodo finisce il {{date}}. Se il contratto continua, registra il rinnovo: allunghiamo noi il piano dei canoni.",
+      "summaryRecorded": "Rinnovo registrato: il contratto continua fino al {{date}}.",
+      "title": "Rinnovo del contratto"
     },
     "sent": {
       "again": "Segna di nuovo",
@@ -6951,7 +7015,8 @@
       "ConcordatoFacileLinkGenerated": "Modulo guidato aperto",
       "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata",
       "WithdrawalRecorded": "Recesso dell'inquilino registrato",
-      "LetterSent": "Lettera segnata come inviata"
+      "LetterSent": "Lettera segnata come inviata",
+      "RenewalRecorded": "Rinnovo registrato"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",

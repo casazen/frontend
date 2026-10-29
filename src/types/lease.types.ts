@@ -53,6 +53,8 @@ export const LEASE_EVENT_TYPES = [
   // LR-OPS-1: the withdrawal of the tenant recorded (the lease ends on the day its notice runs out), a letter marked as sent.
   'WithdrawalRecorded',
   'LetterSent',
+  // LR-OPS-1b: the renewal or extension recorded by the landlord (the tacit renewal is `TermRenewed`).
+  'RenewalRecorded',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
