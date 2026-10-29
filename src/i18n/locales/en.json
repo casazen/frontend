@@ -293,6 +293,16 @@
         "body": "Guests see the name and the address on your booking site: for now they are still the temporary ones.",
         "title": "Choose the name and the address of your site"
       }
+    },
+    "privacy": {
+      "body": "Download right away a file with the fiscal data of the organization, the people of the team and, if you may read it, the activity log.",
+      "done": "File downloaded",
+      "export": "Download the organization data",
+      "failed": "We could not prepare the file. Please try again in a moment.",
+      "fileName": "casazen-organization-data",
+      "hint": "The file holds personal data: keep it safe.",
+      "support": "To close the account or have data erased, write to",
+      "title": "Privacy and data"
     }
   },
   "activation": {

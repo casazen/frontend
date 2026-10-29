@@ -293,6 +293,16 @@
         "body": "Gli ospiti vedono il nome e l'indirizzo sul tuo sito di prenotazione: per ora sono ancora quelli provvisori.",
         "title": "Scegli il nome e l'indirizzo del tuo sito"
       }
+    },
+    "privacy": {
+      "body": "Scarica subito un file con i dati fiscali dell'organizzazione, le persone del team e, se puoi leggerlo, il registro delle attività.",
+      "done": "File scaricato",
+      "export": "Scarica i dati dell'organizzazione",
+      "failed": "Non riusciamo a preparare il file. Riprova tra poco.",
+      "fileName": "casazen-dati-organizzazione",
+      "hint": "Il file contiene dati personali: conservalo con cura.",
+      "support": "Per chiudere l'account o far cancellare i dati scrivi a",
+      "title": "Privacy e dati"
     }
   },
   "activation": {
