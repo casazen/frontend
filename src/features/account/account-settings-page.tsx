@@ -11,6 +11,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { reachableEntry, type Reach } from './account-home-model';
+import { AccountPrivacySection } from './account-privacy-section';
 
 // The pages of the rental areas that this one gathers: it shows what they show, to the people who may open them, with the same endpoints.
 const PAYMENTS_PATH = '/app/short-rent/settings/payments';
@@ -78,6 +79,9 @@ export function AccountSettingsPage() {
               <p className="text-sm text-foreground/70">{t('accountSettings.billing.body')}</p>
             </PlainSection>
           ) : null}
+
+          {/* The data of the organization, to take away (AM-08b-c): the endpoint is the one of the org billing administrator. */}
+          {isOrgBillingAdmin(contexts) ? <AccountPrivacySection /> : null}
         </div>
       </div>
     </div>
