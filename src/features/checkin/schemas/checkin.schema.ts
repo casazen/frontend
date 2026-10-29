@@ -218,11 +218,38 @@ export function guestFormPathOf(serverPath: string, guestCount: number): `guests
 
 /**
  * The guest portal form. No consent is asked for the Alloggiati registration (CO-15, A5-15): it is a legal obligation
- * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional.
+ * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional (NF-05).
  */
 export const publicCheckInFormSchema = z.object({
   guests: stayGuestListSchema,
+  /** Legacy single consent (kept for compatibility); new screens leave it false. */
   marketingConsent: z.boolean().optional(),
+  /** Guest ticked the email marketing channel (NF-05). */
+  marketingConsentEmail: z.boolean().optional(),
+  /** Guest ticked the WhatsApp marketing channel (NF-05). */
+  marketingConsentWhatsApp: z.boolean().optional(),
+  /** Marketing email address (required when any channel is ticked, NF-05). */
+  marketingEmail: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Marketing email is required when any channel is ticked (NF-05).
+  if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && !data.marketingEmail?.trim()) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['marketingEmail'],
+      message: 'checkin.validation.marketingEmail.required',
+    });
+  }
+  // Validate email format when provided.
+  if (data.marketingEmail?.trim()) {
+    const email = data.marketingEmail.trim();
+    if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['marketingEmail'],
+        message: 'checkin.validation.marketingEmail.invalid',
+      });
+    }
+  }
 });
 
 export type PublicCheckInFormValues = z.input<typeof publicCheckInFormSchema>;
@@ -318,5 +345,8 @@ export function toPublicCheckInSubmitRequest(values: PublicCheckInFormValues): P
   return {
     guests: values.guests.map(toStayGuestSubmit),
     marketingConsent: values.marketingConsent ?? false,
+    marketingConsentEmail: values.marketingConsentEmail ?? false,
+    marketingConsentWhatsApp: values.marketingConsentWhatsApp ?? false,
+    marketingEmail: values.marketingEmail?.trim() || null,
   };
 }

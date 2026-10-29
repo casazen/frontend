@@ -6,10 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { formatDate } from '@/lib/utils';
-import { FormFieldError } from '@/components/shared/form-field-error';
 import { useCheckInContext, useSubmitGuestCheckIn } from '@/queries/use-checkin';
 import { publicCheckinApi } from '@/api/checkin.api';
 import {
@@ -30,6 +27,7 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getServerFieldErrorsByPath } from '@/lib/server-validation-errors';
 import { CheckCircle2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import type { StayGuestType } from '@/types/public-checkin.types';
+import { ConsentStep } from './ConsentStep';
 
 type FormPath = FieldPath<PublicCheckInFormValues>;
 
@@ -70,11 +68,20 @@ function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
 /** Server error path → the form path that shows it, or null when the form has no such field. */
 function toFormPath(path: string, guestCount: number): FormPath | null {
   if (path === 'marketingConsent') return 'marketingConsent';
+  if (path === 'marketingConsentEmail') return 'marketingConsentEmail';
+  if (path === 'marketingConsentWhatsApp') return 'marketingConsentWhatsApp';
+  if (path === 'marketingEmail') return 'marketingEmail';
   return guestFormPathOf(path, guestCount);
 }
 
 function emptyForm(): PublicCheckInFormValues {
-  return { guests: [stayGuestDefaults('SingleGuest')], marketingConsent: false };
+  return {
+    guests: [stayGuestDefaults('SingleGuest')],
+    marketingConsent: false,
+    marketingConsentEmail: false,
+    marketingConsentWhatsApp: false,
+    marketingEmail: '',
+  };
 }
 
 export function CheckInPage() {
@@ -98,6 +105,9 @@ export function CheckInPage() {
     reset({
       guests: initialStayGuests(context.guests, context.declaredGuests),
       marketingConsent: false,
+      marketingConsentEmail: false,
+      marketingConsentWhatsApp: false,
+      marketingEmail: '',
     });
   }, [context, reset]);
 
@@ -111,7 +121,6 @@ export function CheckInPage() {
   );
 
   const guests = useWatch({ control, name: 'guests' });
-  const marketingConsent = useWatch({ control, name: 'marketingConsent' });
 
   const changeLeaderType = (type: StayGuestType) => {
     const follower = followerTypeOf(type);
@@ -126,7 +135,7 @@ export function CheckInPage() {
     const current = getValues('guests');
     if (currentStep === 1) return personalPaths(current);
     if (currentStep === 2) return documentPaths(current);
-    return ['marketingConsent'];
+    return ['marketingConsent', 'marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
   };
 
   const goNext = async () => {
@@ -268,43 +277,10 @@ export function CheckInPage() {
                   </div>
                 )}
                 {step === 3 && (
-                  <div className="space-y-4">
-                    {/* CO-15 (A5-15): the Alloggiati registration is a legal obligation, not a consent: notice only, no checkbox. */}
-                    <section
-                      className="rounded-md border p-4 space-y-2 text-sm"
-                      aria-labelledby="checkin-privacy-notice-title"
-                      data-testid="checkin-privacy-notice"
-                    >
-                      <h2 id="checkin-privacy-notice-title" className="font-medium">
-                        {t('checkin.privacyNotice.title')}
-                      </h2>
-                      <p>{t('checkin.privacyNotice.legalObligation')}</p>
-                      <p className="text-muted-foreground">{t('checkin.privacyNotice.body')}</p>
-                      {context.privacyNoticeVersion && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('checkin.privacyNotice.version', { version: context.privacyNoticeVersion })}
-                        </p>
-                      )}
-                    </section>
-                    {context.marketingConsentVersion && (
-                      <div className="flex items-start gap-3 rounded-md border p-4" data-testid="checkin-marketing-consent">
-                        <Checkbox
-                          id="marketingConsent"
-                          checked={marketingConsent === true}
-                          onCheckedChange={(v) => setValue('marketingConsent', v === true)}
-                        />
-                        <div className="space-y-1">
-                          <Label htmlFor="marketingConsent" className="text-sm leading-relaxed cursor-pointer">
-                            {t('checkin.marketingConsent')}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            {t('checkin.marketingConsentVersion', { version: context.marketingConsentVersion })}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    <FormFieldError id="marketingConsent-error" error={errors.marketingConsent} />
-                  </div>
+                  <ConsentStep
+                    privacyNoticeVersion={context.privacyNoticeVersion}
+                    marketingConsentVersion={context.marketingConsentVersion}
+                  />
                 )}
                 {submitError && (
                   <p role="alert" className="text-sm text-destructive" data-testid="checkin-submit-error">

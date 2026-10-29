@@ -2679,6 +2679,10 @@
       },
       "guests": {
         "count": "Enter from 1 to 30 guests"
+      },
+      "marketingEmail": {
+        "required": "Enter the email address to receive communications",
+        "invalid": "Enter a valid email address (maximum 255 characters)"
       }
     },
     "loading": "Loading check-in...",
@@ -2803,6 +2807,18 @@
         "reject": "Not verified",
         "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
       }
+    },
+    "consent": {
+      "title": "Marketing consent (optional)",
+      "intro": "Would you like to receive updates, offers and news from the property? Choose your preferred channels. It's not mandatory: you can complete the check-in without giving consent.",
+      "emailChannel": "I consent to receive promotional communications via email",
+      "emailChannelDescription": "You will receive offers, news and promotions via email.",
+      "whatsappChannel": "I consent to receive promotional communications via WhatsApp",
+      "whatsappChannelDescription": "You will receive offers, news and promotions via WhatsApp.",
+      "marketingEmail": "Your email address *",
+      "marketingEmailPlaceholder": "example@email.com",
+      "marketingEmailHint": "Enter your personal email address. Do not use the temporary booking email (e.g. Booking.com).",
+      "skipAllowed": "You can skip this step: the check-in will be completed anyway."
     },
     "documentIntro": "Identity document of the single guest or of the head of family or group. Family and group members do not need one.",
     "documentOf": "Document of {{name}}",
