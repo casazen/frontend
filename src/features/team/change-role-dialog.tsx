@@ -48,11 +48,11 @@ function ChangeList({ icon: Icon, title, empty, items }: { icon: LucideIcon; tit
   );
 }
 
-function ChangeRoleForm({ row, onClose }: { row: PersonRow; onClose: () => void }) {
+function ChangeRoleForm({ row, initialRole, onClose }: { row: PersonRow; initialRole?: OrgRole; onClose: () => void }) {
   const { t } = useTranslation();
   const roles = useOrgRoles();
   const actions = useOrgTeamActions();
-  const [selected, setSelected] = useState<OrgRole>(row.role);
+  const [selected, setSelected] = useState<OrgRole>(initialRole ?? row.role);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,12 +141,25 @@ function ChangeRoleForm({ row, onClose }: { row: PersonRow; onClose: () => void 
 
 /**
  * «Cambia ruolo» (AM-04b-FU1): the roles the caller may give, as cards, and what changes for the person before anything is saved.
- * The role is saved when the button is pressed, and «Annulla» in the toast that follows gives the old one back.
+ * The role is saved when the button is pressed, and «Annulla» in the toast that follows gives the old one back. `initialRole` starts
+ * with another role chosen: «Rendi X ...» of the page «Cosa vede» (AM-04b-FU2) opens it on the role that was being tried.
  */
-export function ChangeRoleDialog({ row, open, onOpenChange }: { row: PersonRow; open: boolean; onOpenChange: (open: boolean) => void }) {
+export function ChangeRoleDialog({
+  row,
+  open,
+  onOpenChange,
+  initialRole,
+}: {
+  row: PersonRow;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialRole?: OrgRole;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">{open ? <ChangeRoleForm row={row} onClose={() => onOpenChange(false)} /> : null}</DialogContent>
+      <DialogContent className="sm:max-w-2xl">
+        {open ? <ChangeRoleForm row={row} initialRole={initialRole} onClose={() => onOpenChange(false)} /> : null}
+      </DialogContent>
     </Dialog>
   );
 }

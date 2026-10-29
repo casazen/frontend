@@ -1,7 +1,7 @@
 import type { OrgRoleInfo } from '@/types/org-team.types';
 
 /** The areas a person can work in, in the order of the area switcher. `account` is the Amministrazione: the role gives it, not the person's areas. */
-const PREVIEW_AREAS = ['short-rent', 'long-rent', 'account'] as const;
+export const PREVIEW_AREAS = ['short-rent', 'long-rent', 'account'] as const;
 
 export type PreviewArea = (typeof PREVIEW_AREAS)[number];
 

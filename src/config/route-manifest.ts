@@ -859,6 +859,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
   },
   {
+    // "Ruoli e permessi" (AM-04b-FU2): what each role can do, in one table; opened from the page of the people. In no menu, like the invitation.
+    path: '/app/account/people/roles',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    component: async () => ({ default: (await import('@/features/team/roles-page')).RolesPage }),
+  },
+  {
+    // "Cosa vede" (AM-04b-FU2): what one person finds in CasaZen, with «E se fosse…» to try another role. `:key` is the row of the page of
+    // the people (`m-<id>` or `i-<id>`). In no menu either: «Persone» stays the highlighted entry.
+    path: '/app/account/people/:key/preview',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    component: async () => ({ default: (await import('@/features/team/person-preview-page')).PersonPreviewPage }),
+  },
+  {
     // "Immobili" (AM-13): every property of the account, short-term and long-term, with who looks after it and who can open it. For the
     // owner and the administrators (`org.members.manage`, like the people): the pages of a property stay in the section of its mode.
     path: '/app/account/properties',
