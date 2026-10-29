@@ -12,6 +12,7 @@
       "memberReactivated": "Accesso di {{member}} riattivato",
       "memberRemoved": "{{member}} rimosso dal team",
       "memberRoleChanged": "Ruolo di {{member}} cambiato: da {{from}} a {{to}}",
+      "orgSettingsChanged": "Dati dell'azienda modificati",
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "system": "Sistema"
@@ -7629,6 +7630,122 @@
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
   },
+  "longRentTenants": {
+    "chips": {
+      "all": "Tutti",
+      "current": "Attuali",
+      "currentHint": "Chi ha almeno un contratto non ancora concluso",
+      "former": "Ex inquilini",
+      "formerHint": "Chi ha solo contratti conclusi"
+    },
+    "citizenship": {
+      "Eu": "Cittadino UE",
+      "NonEu": "Cittadino non UE"
+    },
+    "columns": {
+      "end": "Fine contratto",
+      "lease": "Contratto",
+      "punctuality": "Puntualità",
+      "tenant": "Inquilino"
+    },
+    "contacts": {
+      "citizenship": "Cittadinanza",
+      "email": "Email",
+      "title": "Contatti"
+    },
+    "count_one": "{{count}} inquilino",
+    "count_other": "{{count}} inquilini",
+    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
+    "detail": {
+      "backToList": "Vai agli inquilini",
+      "description": "Inquilino · {{citizenship}}",
+      "fallbackTitle": "Inquilino",
+      "loadError": "Non siamo riusciti a caricare questo inquilino.",
+      "loading": "Caricamento dell'inquilino",
+      "notFound": "Inquilino non trovato",
+      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
+    },
+    "empty": {
+      "action": "Crea contratto",
+      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
+      "title": "Qui trovi i tuoi inquilini"
+    },
+    "end": {
+      "former": "Finito il {{date}}",
+      "running": "Fino al {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · e un altro contratto",
+    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
+    "leases": {
+      "title": "Contratti"
+    },
+    "loadError": "Non siamo riusciti a caricare gli inquilini.",
+    "newLease": "Crea contratto",
+    "noLease": "Nessun contratto",
+    "noResults": {
+      "description": "Controlla il nome o cambia scheda.",
+      "title": "Nessun inquilino trovato"
+    },
+    "now": {
+      "action": "Vedi i canoni in ritardo",
+      "body_one": "{{amount}} scaduti il {{date}}.",
+      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
+      "kicker": "Adesso",
+      "title": "Il canone di {{month}} non è arrivato",
+      "when_one": "In ritardo da {{count}} giorno",
+      "when_other": "In ritardo da {{count}} giorni",
+      "who": "Tocca a te"
+    },
+    "open": "Apri la scheda",
+    "payments": {
+      "all": "Vedi i canoni",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Pagato",
+      "title": "Ultimi pagamenti"
+    },
+    "privacy": {
+      "erase": "Chiedi la cancellazione",
+      "erasure": {
+        "confirm": "Chiedi la cancellazione",
+        "consequences": {
+          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
+          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
+          "final": "L'anonimizzazione non si può annullare.",
+          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
+          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
+        },
+        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
+        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
+        "title": "Chiedere la cancellazione dei dati?"
+      },
+      "export": "Esporta i suoi dati",
+      "exportFailed": "Non è stato possibile preparare il file.",
+      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
+      "exported": "File scaricato.",
+      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
+      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
+      "result": {
+        "anonymized": "Dati anonimizzati.",
+        "description": "Ecco cosa è successo su ogni contratto.",
+        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
+        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
+        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
+        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
+        "title": "Richiesta registrata"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
+      "none": "Nessun canone ancora scaduto.",
+      "summary": "{{onTime}} su {{total}} canoni in orario"
+    },
+    "search": {
+      "label": "Cerca inquilini",
+      "placeholder": "Cerca per nome o immobile"
+    },
+    "title": "Inquilini"
+  },
   "longRentRequests": {
     "cancel": {
       "back": "Torna indietro",
@@ -8099,6 +8216,7 @@
     "rents": "Canoni",
     "longRentOverview": "Panoramica",
     "longRentDeadlines": "Scadenze",
+    "longRentTenants": "Inquilini",
     "serviceRequests": "Interventi",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
@@ -8302,6 +8420,16 @@
     }
   },
   "orgSettings": {
+    "contactPhoneHelp": "Per essere raggiunti da CasaZen e dal tuo team. Non lo pubblichiamo mai.",
+    "contactPhoneLabel": "Telefono",
+    "currencyLabel": "Valuta",
+    "currencyValue": "Euro",
+    "languageEn": "English",
+    "languageHelp": "È la lingua delle email che mandi alla tua squadra, per esempio gli inviti. I tuoi ospiti scelgono la loro.",
+    "languageIt": "Italiano",
+    "languageLabel": "Lingua dell'account",
+    "timezoneLabel": "Fuso orario",
+    "timezoneValue": "Ora italiana (Roma)",
     "title": "Impostazioni organizzazione",
     "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
     "adminRequired": {
@@ -11715,6 +11843,57 @@
           "Controlla il motivo indicato",
           "Correggi i dati e riprova"
         ]
+      }
+    },
+    "leaseStage": {
+      "Draft": {
+        "label": "Bozza",
+        "explain": "Il contratto è in preparazione: manca ancora qualcosa nei primi passi.",
+        "need": [
+          "Immobile e parti del contratto",
+          "Canone, durata e tipo di contratto"
+        ]
+      },
+      "DataPending": {
+        "label": "Dati da completare",
+        "explain": "Aspettiamo i dati del conduttore.",
+        "need": [
+          "I dati del conduttore"
+        ]
+      },
+      "InReview": {
+        "label": "In revisione",
+        "explain": "I dati ci sono tutti: controlla l'anteprima e conferma.",
+        "need": [
+          "Controllare l'anteprima del contratto",
+          "Confermare la revisione"
+        ]
+      },
+      "SentForSignature": {
+        "label": "In firma",
+        "explain": "Il contratto è stato scaricato per la firma su carta: aspettiamo la copia firmata.",
+        "need": [
+          "La copia firmata da tutte le parti"
+        ]
+      },
+      "Signed": {
+        "label": "Firmato",
+        "explain": "Il contratto è firmato da tutti: resta da dichiarare la registrazione.",
+        "need": [
+          "La registrazione all'Agenzia delle Entrate"
+        ]
+      },
+      "Active": {
+        "label": "In corso",
+        "explain": "Il contratto è registrato e in vigore."
+      },
+      "Expiring": {
+        "label": "In scadenza",
+        "explain": "Il periodo in corso finisce entro sei mesi, oppure è stata registrata una disdetta."
+      },
+      "Concluded": {
+        "label": "Concluso",
+        "explain": "Il contratto è finito: i documenti e i pagamenti restano consultabili."
       }
     },
     "rent": {
