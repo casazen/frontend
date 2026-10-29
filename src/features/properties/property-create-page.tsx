@@ -7,7 +7,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { toast } from 'sonner';
-import { PropertyForm } from './components/property-form';
 import { QuickPropertyForm } from './components/quick-property-form';
 import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
@@ -18,13 +17,15 @@ import {
   getPlanUpgradePath,
 } from '@/lib/entitlement-error';
 import type { CreatePropertyDto } from '@/types';
+import { PropertyWizardPage } from './wizard/property-wizard-page';
 
-export function PropertyCreatePage() {
+/**
+ * The first property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest. The
+ * onboarding and the Golden Journey go through it (SR-D47), so the wizard does not replace it.
+ */
+function FirstPropertyPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // First property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest.
-  const [searchParams] = useSearchParams();
-  const quick = searchParams.get('first') === '1';
   const createProperty = useCreateProperty('Short');
   const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
@@ -40,12 +41,8 @@ export function PropertyCreatePage() {
       await createProperty.mutateAsync(data);
       // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
       await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      if (quick) {
-        toast.success(t('property.quick.created'));
-        navigate('/app/short-rent');
-        return;
-      }
-      navigate('/app/short-rent/properties');
+      toast.success(t('property.quick.created'));
+      navigate('/app/short-rent');
     } catch (error) {
       if (isPlanLimitError(error)) {
         setPlanLimitHit(true);
@@ -58,10 +55,7 @@ export function PropertyCreatePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          title={quick ? t('property.quick.title') : t('property.create.title')}
-          description={quick ? t('property.quick.description') : t('property.create.description')}
-        />
+        <PageHeader title={t('property.quick.title')} description={t('property.quick.description')} />
 
         {blockedByPlan && (
           <div
@@ -79,24 +73,25 @@ export function PropertyCreatePage() {
           </div>
         )}
 
-        {quick ? (
-          <div className={FOCUS_COLUMN}>
-            <QuickPropertyForm
-              variant="short-rent"
-              onSubmit={handleSubmit}
-              isLoading={createProperty.isPending}
-              disabled={blockedByPlan}
-              onFullForm={() => navigate('/app/short-rent/properties/create')}
-            />
-          </div>
-        ) : (
-          <PropertyForm
+        <div className={FOCUS_COLUMN}>
+          <QuickPropertyForm
+            variant="short-rent"
             onSubmit={handleSubmit}
             isLoading={createProperty.isPending}
             disabled={blockedByPlan}
+            onFullForm={() => navigate('/app/short-rent/properties/create')}
           />
-        )}
+        </div>
       </div>
     </AppShell>
   );
+}
+
+/**
+ * `/app/short-rent/properties/create`: «Aggiungi immobile» (SR-07b), the guided flow that replaces the form. The first property of a
+ * new host (`?first=1`) keeps its short form: it is the destination of the onboarding guard.
+ */
+export function PropertyCreatePage() {
+  const [searchParams] = useSearchParams();
+  return searchParams.get('first') === '1' ? <FirstPropertyPage /> : <PropertyWizardPage />;
 }

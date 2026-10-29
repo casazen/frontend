@@ -43,6 +43,16 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
+    // The wizard of a new property asks how many properties the plan allows (SR-07a): a plan with room, whatever the store holds.
+    if (method === 'GET' && path.endsWith('/properties/plan-usage')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ used: store.properties.length, max: null, unlimited: true, canAdd: true }),
+      });
+      return;
+    }
+
     if (method === 'POST' && isCollectionPath(url)) {
       const body = route.request().postDataJSON() as Partial<Property>;
       const created = buildCreatedProperty({
@@ -80,6 +90,18 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
         contentType: 'application/json',
         body: JSON.stringify(property),
       });
+      return;
+    }
+
+    // PATCH semantics on PUT (A2-04): what the body carries is changed, the rest stays. The API answers 204.
+    if (method === 'PUT' && byIdMatch) {
+      const index = store.properties.findIndex((p) => p.id === byIdMatch[1]);
+      if (index < 0) {
+        await route.fulfill({ status: 404, body: JSON.stringify({ title: 'Not Found' }) });
+        return;
+      }
+      store.properties[index] = { ...store.properties[index], ...(route.request().postDataJSON() as Partial<Property>) };
+      await route.fulfill({ status: 204 });
       return;
     }
 
@@ -160,34 +182,39 @@ export async function mockComuniApi(page: Page): Promise<void> {
   });
 }
 
-export interface PropertyFormInput {
+export interface PropertyWizardInput {
   name: string;
-  description: string;
   address: string;
   /** Name of a comune of the mocked ISTAT list: it gives the city. */
   comune: string;
-  postalCode: string;
-  bedrooms: number;
-  bathrooms: number;
-  maxGuests: number;
-  nightlyRate: number;
-  cinCode?: string;
+  postalCode?: string;
 }
 
-/** Fills the short-stay property form (SU-04: the city comes from the ISTAT comune picker, there is no country field). */
-export async function fillPropertyForm(page: Page, values: PropertyFormInput): Promise<void> {
-  await page.locator('#name').fill(values.name);
-  await page.locator('#description').fill(values.description);
-  await page.locator('#address').fill(values.address);
-  await page.locator('#comune').fill(values.comune);
+/**
+ * Fills the first step of «Aggiungi immobile» (SR-07b): the kind and the spaces keep the defaults of the design, and the city comes
+ * from the ISTAT comune picker (there is no free text). Only the answers the test cares about are given.
+ */
+export async function fillPropertyWizard(page: Page, values: PropertyWizardInput): Promise<void> {
+  await page.getByLabel("Nome dell'immobile", { exact: true }).fill(values.name);
+  await page.getByLabel('Indirizzo', { exact: true }).fill(values.address);
+  await page.getByTestId('comune-picker-input').fill(values.comune);
   await page.getByRole('option', { name: new RegExp(`^${values.comune}`) }).first().click();
-  await expect(page.locator('#city')).toHaveValue(values.comune);
-  await page.locator('#postalCode').fill(values.postalCode);
-  await page.locator('#bedrooms').fill(String(values.bedrooms));
-  await page.locator('#bathrooms').fill(String(values.bathrooms));
-  await page.locator('#maxGuests').fill(String(values.maxGuests));
-  await page.locator('#nightlyRate').fill(String(values.nightlyRate));
-  if (values.cinCode) await page.locator('#cinCode').fill(values.cinCode);
+  // The region under the field is read from the chosen comune: it is there once the choice has taken effect.
+  await expect(page.getByTestId('comune-picker-region')).toBeVisible();
+  if (values.postalCode) await page.getByLabel('CAP', { exact: true }).fill(values.postalCode);
+}
+
+/**
+ * Goes through the first step of the wizard and presses «Continua»: that is where the property is created. Returns the answer of the
+ * creation, so the test can look at its status; the wizard is then on its next step.
+ */
+export async function createPropertyWithWizard(page: Page, values: PropertyWizardInput) {
+  await fillPropertyWizard(page, values);
+  const created = page.waitForResponse(
+    (response) => response.request().method() === 'POST' && /\/properties\/?$/.test(new URL(response.url()).pathname),
+  );
+  await page.getByTestId('property-wizard-next').click();
+  return created;
 }
 
 /** iCal calendars of a property (PC-10, PC-12): no feed connected, an export link. */
