@@ -1,12 +1,34 @@
 /* eslint-disable i18next/no-literal-string -- A page for developers and for the Playwright runs, not a screen of the product: it is not in the production build (see routes/dev-routes.tsx), so its words are not translated. */
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Segmented } from '@/components/ui/segmented';
-import { LOCAL_KINDS, localMapSvg, localPlace, resetMapIds, type LocalKind, type LocalSpec, type MapLabel } from '@/features/site-maps';
-import { mountMapSvg } from '@/features/site-maps/mount-svg';
+import {
+  LOCAL_KINDS,
+  VIEW_PUGLIA,
+  fitView,
+  loadRegionData,
+  localMapSvg,
+  localPlace,
+  makeView,
+  panView,
+  projectPoint,
+  publicPoint,
+  regionMapSvg,
+  resetMapIds,
+  snapToLand,
+  unprojectPoint,
+  zoomView,
+  type LocalKind,
+  type LocalSpec,
+  type MapLabel,
+} from '@/features/site-maps';
+import { PUGLIA } from '@/features/site-maps/data/puglia';
+import { HOUSES, RegionSection } from './maps-region-section';
+import { HomePin, PoiDot, SvgBox } from './maps-shared';
 
-type Section = 'local' | 'checks';
+type Section = 'region' | 'local' | 'checks';
 const SECTIONS: { value: Section; label: string }[] = [
+  { value: 'region', label: 'Mappe regionali' },
   { value: 'local', label: 'Mappe locali' },
   { value: 'checks', label: 'Dimensioni e controlli' },
 ];
@@ -31,38 +53,6 @@ const LABELS: Record<LocalKind, MapLabel[]> = {
 };
 const NO_LABELS: MapLabel[] = [];
 const SEA_BEARINGS = [90, 0, 180, 270, 45, 200];
-
-/** The SVG text of the engine as real nodes, filling a box with the aspect ratio of the map. */
-function SvgBox({ svg, className = '' }: { svg: string; className?: string }) {
-  const host = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (host.current) mountMapSvg(host.current, svg);
-  }, [svg]);
-  return <div ref={host} className={`absolute inset-0 [&>svg]:absolute [&>svg]:inset-0 [&>svg]:h-full [&>svg]:w-full ${className}`} />;
-}
-
-function HomePin() {
-  return (
-    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full" aria-hidden="true">
-      <svg viewBox="0 0 26 34" width="26" height="34" className="drop-shadow">
-        <path d="M13 1C6.4 1 1.5 6 1.5 12.4c0 8.4 11.5 20.6 11.5 20.6s11.5-12.2 11.5-20.6C24.5 6 19.6 1 13 1z" fill="#a3431f" stroke="#fff" strokeWidth="2" />
-        <path d="M7.6 13 13 8l5.4 5v5.4H7.6z" fill="#fff" />
-      </svg>
-    </div>
-  );
-}
-
-function PoiDot({ letter, x, y }: { letter: string; x: number; y: number }) {
-  return (
-    <div
-      className="absolute flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-[#27506b] text-[11px] font-bold leading-none text-white shadow"
-      style={{ left: `${x}%`, top: `${y}%` }}
-      aria-hidden="true"
-    >
-      {letter}
-    </div>
-  );
-}
 
 interface LocalCardProps {
   kind: LocalKind;
@@ -149,29 +139,73 @@ interface Measure {
   ms: number;
 }
 
+const near = (a: number, b: number, e = 1e-9): boolean => Math.abs(a - b) < e;
+
 function ChecksSection() {
   const [result, setResult] = useState<{ rows: Measure[]; checks: Check[] } | null>(null);
-  const run = () => {
+  const run = async () => {
+    await Promise.all([loadRegionData('italia'), loadRegionData('puglia')]);
     const rows: Measure[] = [];
-    for (const kind of LOCAL_KINDS) {
-      for (const seed of [1, 2, 3]) {
-        const t0 = performance.now();
-        const svg = localMapSvg({ kind, seed, width: 800 });
-        rows.push({ name: `locale ${kind} · seme ${seed} · 800 px`, kb: (svg.length / 1024).toFixed(1), ms: Math.round(performance.now() - t0) });
-      }
+    const time = (name: string, fn: () => string) => {
+      const t0 = performance.now();
+      const svg = fn();
+      rows.push({ name, kb: (svg.length / 1024).toFixed(1), ms: Math.round(performance.now() - t0) });
+      return svg;
+    };
+    for (const span of [1050, 360, 150, 80, 40, 20, 10, 4]) {
+      time(`regione · larghezza ${span} km · 1000 px`, () => regionMapSvg(makeView({ lat: 40.9, lon: 17.3, spanKm: span }), { width: 1000 }));
     }
+    time('regione · tutta l’Italia · 700 px', () => regionMapSvg({ lat: 41.5, lon: 12.5, spanKm: 1400, aspect: 0.8 }, { width: 700 }));
+    for (const kind of LOCAL_KINDS) for (const seed of [1, 2, 3]) time(`locale ${kind} · seme ${seed} · 800 px`, () => localMapSvg({ kind, seed, width: 800 }));
+
     const checks: Check[] = [];
     const idless = (svg: string) => svg.replace(/sm[0-9]+/g, 'smX');
+    const v = VIEW_PUGLIA;
+    const p0 = projectPoint(v.lat, v.lon, v);
+    checks.push({ name: 'projectPoint del centro della vista = 50 %, 50 %', pass: near(p0.x, 50) && near(p0.y, 50), info: '' });
+    const pp = projectPoint(40.9, 17.1, v);
+    const q = unprojectPoint(pp.x, pp.y, v);
+    checks.push({ name: 'unprojectPoint(projectPoint(p)) = p', pass: near(q.lat, 40.9) && near(q.lon, 17.1), info: '' });
+    const a = { lat: 40.8, lon: 17.3 };
+    const z0 = projectPoint(a.lat, a.lon, v);
+    const z1 = projectPoint(a.lat, a.lon, zoomView(v, 4, a));
+    checks.push({ name: 'zoomView con ancora: il punto resta fermo', pass: near(z0.x, z1.x) && near(z0.y, z1.y), info: '' });
+    const pn = projectPoint(v.lat, v.lon, panView(v, 0.25, 0.25));
+    checks.push({ name: 'panView(0,25; 0,25): il vecchio centro finisce a 25 % e 25 %', pass: near(pn.x, 25) && near(pn.y, 25), info: '' });
+    const fv = fitView(HOUSES.slice(0, 3));
+    checks.push({
+      name: 'fitView contiene le case con il margine del 20 %',
+      pass: HOUSES.slice(0, 3).every((h) => {
+        const p = projectPoint(h.lat, h.lon, fv);
+        return p.x >= 10 - 1e-6 && p.x <= 90 + 1e-6 && p.y >= 10 - 1e-6 && p.y <= 90 + 1e-6;
+      }),
+      info: '',
+    });
+    let refused = false;
+    try {
+      publicPoint({ lat: 40.9965, lon: 17.2195 });
+    } catch {
+      refused = true;
+    }
+    checks.push({ name: 'una posizione con più di due decimali è rifiutata (in sviluppo)', pass: refused, info: '' });
+    const view = makeView({ lat: 40.9, lon: 17.3, spanKm: 40 });
     checks.push({
       name: 'stessi input, stesso disegno (a meno del contatore degli id)',
-      pass: LOCAL_KINDS.every((kind) => idless(localMapSvg({ kind, seed: 'x' })) === idless(localMapSvg({ kind, seed: 'x' }))),
+      pass: idless(regionMapSvg(view)) === idless(regionMapSvg(view)) && LOCAL_KINDS.every((kind) => idless(localMapSvg({ kind, seed: 'x' })) === idless(localMapSvg({ kind, seed: 'x' }))),
       info: '',
     });
     resetMapIds();
     checks.push({ name: 'dopo resetMapIds il primo id è sm1', pass: localMapSvg({ kind: 'country', seed: 1 }).includes('id="sm1'), info: '' });
     let max = 0;
-    for (const kind of LOCAL_KINDS) for (let seed = 1; seed <= 12; seed++) max = Math.max(max, localMapSvg({ kind, seed, width: 800 }).length);
-    checks.push({ name: 'locali: massimo 25 kB (3 tipi × 12 semi)', pass: max < 25 * 1024, info: `massimo ${(max / 1024).toFixed(1)} kB` });
+    for (const span of [1050, 360, 150, 60, 30, 12, 5, 3]) {
+      for (const [la, lo] of [[40.9, 17.3], [40.35, 18.17], [41.12, 16.87], [43.4, 11.2], [37.9, 14.0], [45.9, 9.3]]) {
+        max = Math.max(max, regionMapSvg(makeView({ lat: la, lon: lo, spanKm: span }), { width: 1000, highlight: ['ostuni', 'lecce'] }).length);
+      }
+    }
+    checks.push({ name: 'regione: massimo 60 kB a ogni zoom (48 combinazioni)', pass: max < 60 * 1024, info: `massimo ${(max / 1024).toFixed(1)} kB` });
+    let maxLocal = 0;
+    for (const kind of LOCAL_KINDS) for (let seed = 1; seed <= 12; seed++) maxLocal = Math.max(maxLocal, localMapSvg({ kind, seed, width: 800 }).length);
+    checks.push({ name: 'locali: massimo 25 kB (3 tipi × 12 semi)', pass: maxLocal < 25 * 1024, info: `massimo ${(maxLocal / 1024).toFixed(1)} kB` });
     let seed = 7;
     const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
     let outside = 0;
@@ -182,12 +216,24 @@ function ChecksSection() {
       }
     }
     checks.push({ name: 'localPlace: sempre dentro il riquadro (1200 punti casuali, mare in ogni direzione)', pass: outside === 0, info: `${outside} fuori` });
+    // the detail of Puglia against the base: every town, airport and station of the pack must be on land (or at most 1.5 km from it)
+    const places = [...PUGLIA.towns, ...PUGLIA.airports, ...PUGLIA.stations];
+    let moved = 0;
+    let far = 0;
+    for (const place of places) {
+      const rounded = { lat: Math.round(place.lat * 100) / 100, lon: Math.round(place.lon * 100) / 100 };
+      const s = snapToLand(rounded);
+      const km = Math.hypot((s.lat - rounded.lat) * 111.19, (s.lon - rounded.lon) * 84.3);
+      if (km > 0.01) moved++;
+      if (km > far) far = km;
+    }
+    checks.push({ name: 'il dettaglio della Puglia combacia con la base: luoghi (arrotondati a 2 decimali) in mare', pass: moved <= 3, info: `${moved} su ${places.length} spostati a terra, al massimo di ${far.toFixed(2)} km` });
     setResult({ rows, checks });
   };
   return (
     <section aria-labelledby="maps-checks" className="grid gap-4">
       <h2 id="maps-checks" className="text-lg font-semibold">Dimensioni, tempi e controlli</h2>
-      <button type="button" onClick={run} className="h-10 w-fit rounded-md border bg-background px-4 text-sm font-medium hover:bg-muted">
+      <button type="button" onClick={() => void run()} className="h-10 w-fit rounded-md border bg-background px-4 text-sm font-medium hover:bg-muted">
         Misura e controlla
       </button>
       {result ? (
@@ -227,10 +273,10 @@ function ChecksSection() {
   );
 }
 
-/** The schematic maps of the public site (DB-19a), to look at them and to approve them by image: `/dev/maps?s=local|checks`. */
+/** The schematic maps of the public site (DB-19a), to look at them and to approve them by image: `/dev/maps?s=region|local|checks`. */
 export default function MapsPage() {
   const [params, setParams] = useSearchParams();
-  const section: Section = SECTIONS.find((s) => s.value === params.get('s'))?.value ?? 'local';
+  const section: Section = SECTIONS.find((s) => s.value === params.get('s'))?.value ?? 'region';
   return (
     <main className="mx-auto grid max-w-[1500px] gap-6 p-6">
       <header className="grid gap-3">
@@ -240,7 +286,7 @@ export default function MapsPage() {
         </p>
         <Segmented label="Sezione" options={SECTIONS} value={section} onValueChange={(value) => setParams({ s: value })} />
       </header>
-      {section === 'local' ? <LocalSection /> : <ChecksSection />}
+      {section === 'region' ? <RegionSection /> : section === 'local' ? <LocalSection /> : <ChecksSection />}
     </main>
   );
 }

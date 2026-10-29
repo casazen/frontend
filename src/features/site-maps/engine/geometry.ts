@@ -236,3 +236,30 @@ export function ellipsePoly(cx: number, cy: number, rx: number, ry: number, rot 
   }
   return out;
 }
+
+/** Voronoi cells (half-plane cuts) inside a convex region. */
+export function voronoiCells(sites: readonly Pt[], region: readonly Pt[]): (Poly | null)[] {
+  const n = sites.length;
+  const cells: (Poly | null)[] = new Array<Poly | null>(n).fill(null);
+  for (let i = 0; i < n; i++) {
+    const [sx, sy] = sites[i];
+    const order: [number, number][] = [];
+    for (let j = 0; j < n; j++) if (j !== i) order.push([(sites[j][0] - sx) ** 2 + (sites[j][1] - sy) ** 2, j]);
+    order.sort((a, b) => a[0] - b[0]);
+    let poly: Poly = region.slice();
+    let reach = 0;
+    for (const p of poly) reach = Math.max(reach, Math.hypot(p[0] - sx, p[1] - sy));
+    for (const [d2, j] of order) {
+      if (Math.sqrt(d2) / 2 > reach) break;
+      const [tx, ty] = sites[j];
+      const nx = tx - sx;
+      const ny = ty - sy;
+      poly = clipHalf(poly, nx, ny, nx * ((sx + tx) / 2) + ny * ((sy + ty) / 2));
+      if (poly.length < 3) break;
+      reach = 0;
+      for (const p of poly) reach = Math.max(reach, Math.hypot(p[0] - sx, p[1] - sy));
+    }
+    cells[i] = poly.length >= 3 ? poly : null;
+  }
+  return cells;
+}
