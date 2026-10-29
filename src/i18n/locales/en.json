@@ -12,6 +12,7 @@
       "memberReactivated": "Access of {{member}} switched back on",
       "memberRemoved": "{{member}} removed from the team",
       "memberRoleChanged": "Role of {{member}} changed: from {{from}} to {{to}}",
+      "orgSettingsChanged": "Company data changed",
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
       "system": "System"
@@ -8286,6 +8287,16 @@
     }
   },
   "orgSettings": {
+    "contactPhoneHelp": "So CasaZen and your team can reach you. We never publish it.",
+    "contactPhoneLabel": "Phone",
+    "currencyLabel": "Currency",
+    "currencyValue": "Euro",
+    "languageEn": "English",
+    "languageHelp": "The language of the emails you send to your team, such as invitations. Your guests choose theirs.",
+    "languageIt": "Italiano",
+    "languageLabel": "Account language",
+    "timezoneLabel": "Time zone",
+    "timezoneValue": "Italian time (Rome)",
     "title": "Organization settings",
     "description": "Your organization's name, public address and contact email.",
     "adminRequired": {
