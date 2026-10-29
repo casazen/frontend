@@ -8084,6 +8084,10 @@
       "serviceRequestProposalAccepted": "L'orario proposto è stato accettato.",
       "serviceRequestProposalRejected": "L'orario proposto è stato rifiutato.",
       "serviceRequestRescheduled": "Una richiesta è stata spostata a un altro orario.",
+      "serviceRequestQuoteSent": "Hai ricevuto un preventivo.",
+      "serviceRequestQuoteAccepted": "Il preventivo è stato approvato.",
+      "serviceRequestQuoteRejected": "Il preventivo è stato rifiutato.",
+      "serviceRequestQuoteExpired": "Il preventivo è scaduto: il cliente non ha risposto in tempo.",
       "generic": "Hai una nuova notifica."
     }
   },
@@ -11431,9 +11435,9 @@
         ],
         "supplier": {
           "label": "In attesa di pagamento",
-          "explain": "Hai finito il lavoro: ora il cliente deve pagarti e segnare la richiesta come pagata.",
+          "explain": "Hai finito il lavoro: ora aspetti il pagamento del cliente.",
           "need": [
-            "Il cliente segna la richiesta come pagata"
+            "Il cliente paga il lavoro"
           ]
         }
       },
@@ -11441,7 +11445,7 @@
         "label": "Pagato",
         "explain": "Intervento concluso e pagato.",
         "supplier": {
-          "explain": "Il cliente ha segnato il lavoro come pagato."
+          "explain": "Il lavoro risulta pagato."
         }
       },
       "Rifiutato": {
@@ -12235,9 +12239,15 @@
         "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
+        "editQuote": "Modifica il preventivo",
         "openPage": "Apri la scheda completa",
+        "quote": "Invia un preventivo",
+        "recordPayment": "Ho incassato fuori da CasaZen",
         "reject": "Rifiuta",
-        "take": "Accetta"
+        "remindPayment": "Ricorda il pagamento",
+        "take": "Accetta",
+        "takeWithoutQuote": "Accetta senza preventivo",
+        "withdrawQuote": "Ritira il preventivo"
       },
       "actor": {
         "client": "Il cliente",
@@ -12257,7 +12267,7 @@
         "archive": "Archivio",
         "archiveHint": "Pagate, rifiutate o annullate",
         "awaiting": "In attesa del cliente",
-        "awaitingHint": "Hai proposto un altro orario e aspetti il cliente",
+        "awaitingHint": "Hai proposto un altro orario o inviato un preventivo e aspetti il cliente",
         "scheduled": "Programmate",
         "scheduledHint": "Accettate e in agenda, o in corso",
         "toAnswer": "Da rispondere",
@@ -12298,6 +12308,7 @@
         "net": "Netto {{amount}} dopo la commissione",
         "price": "Prezzo",
         "priceTbd": "Da concordare",
+        "quoteWaiting": "Preventivo in attesa",
         "urgency": "Urgenza: {{level}}",
         "when": "Quando",
         "whenTbd": "Da concordare",
@@ -12322,6 +12333,11 @@
         "PresoInCarico": "Hai accettato la richiesta",
         "PresoInCaricoAuto": "Accettata in automatico",
         "PresoInCaricoAutoNote": "È un cliente abituale e hai attivato l’accettazione automatica. Puoi annullare il lavoro fino all’avvio.",
+        "quoteAccepted": "Il cliente ha approvato il preventivo",
+        "quoteExpired": "Il cliente non ha risposto al preventivo in tempo",
+        "quoteRejected": "Il cliente ha rifiutato il preventivo",
+        "quoteSent": "Hai inviato un preventivo",
+        "quoteWithdrawn": "Hai ritirato il preventivo",
         "Richiesto": "Richiesta ricevuta",
         "Rifiutato": "Hai rifiutato la richiesta",
         "sub": "Cosa è successo finora",
@@ -12398,6 +12414,11 @@
           "you": "Hai proposto un altro orario: non devi fare altro."
         },
         "quietTitle": "Stato della richiesta",
+        "quotePending": {
+          "client": "Vede le voci e il totale e può approvarlo o rifiutarlo.",
+          "title": "Aspetta la risposta del cliente",
+          "you": "Hai inviato un preventivo: non devi fare altro. Finché il cliente non risponde puoi modificarlo o ritirarlo."
+        },
         "reason": "Motivo: {{reason}}",
         "rejected": {
           "client": "Ha ricevuto il tuo motivo e può scegliere un altro fornitore.",
@@ -12420,7 +12441,8 @@
           "client": "Ha inviato la richiesta e aspetta la tua risposta.",
           "then": "Poi: dopo che accetti vedi indirizzo e contatti del cliente.",
           "title": "Rispondi alla richiesta",
-          "you": "Accetta se puoi fare il lavoro, altrimenti rifiutalo e spiega il motivo."
+          "you": "Accetta se puoi fare il lavoro, altrimenti rifiutalo e spiega il motivo.",
+          "youQuote": "Rispondi con un preventivo: se il cliente lo approva, il lavoro è accettato. Se non serve, accetta senza preventivo; se non puoi, rifiuta e spiega il motivo."
         },
         "unknown": {
           "client": "Vede la richiesta nel suo elenco.",
@@ -12429,11 +12451,35 @@
         }
       },
       "payment": {
+        "agreed": "Prezzo concordato",
         "amount": "Importo",
         "commission": "Commissione CasaZen",
+        "how": "Come si paga",
+        "inside": "Online, con CasaZen",
         "late": "Il cliente è in ritardo con il pagamento.",
+        "lines": "Voci del prezzo",
         "net": "Compenso netto",
+        "outside": "Fuori da CasaZen",
         "paidAt": "Pagato il",
+        "paidOutside": "Incassato fuori da CasaZen",
+        "record": {
+          "confirm": "Registra l’incasso",
+          "customerTold": "Il cliente riceve un avviso: il lavoro risulta pagato.",
+          "description": "Il lavoro risulterà pagato anche al cliente.",
+          "descriptionOnline": "Questo lavoro si paga in CasaZen. Se il cliente ti ha pagato in un altro modo, segnalalo qui e spiega il motivo.",
+          "noCommission": "CasaZen non trattiene nessuna commissione su questo incasso.",
+          "noUndo": "Non si può annullare.",
+          "reason": "Motivo",
+          "reasonHint": "Per esempio: bonifico o contanti.",
+          "reasonHintOnline": "Obbligatorio: spiega perché il cliente non ha pagato in CasaZen. Resta nella pratica del pagamento.",
+          "title": "Hai incassato fuori da CasaZen?"
+        },
+        "recordedToast": "Pagamento registrato",
+        "remindedToast": "Promemoria inviato al cliente",
+        "reminders": "Promemoria",
+        "remindersValue_one": "{{count}} inviato · l’ultimo il {{date}}",
+        "remindersValue_other": "{{count}} inviati · l’ultimo il {{date}}",
+        "remindHint": "Il cliente riceve un’email con un nuovo link. Puoi inviarne una al giorno.",
         "state": "Stato del pagamento",
         "status": {
           "Failed": "Pagamento non riuscito",
@@ -12446,15 +12492,85 @@
           "unknown": "In verifica"
         },
         "subNet": "Netto {{amount}}",
-        "title": "Pagamento e compenso"
+        "title": "Pagamento e compenso",
+        "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."
       },
       "phase": {
-        "proposalPending": "In attesa del cliente"
+        "proposalPending": "In attesa del cliente",
+        "quotePending": "In attesa del cliente"
+      },
+      "quote": {
+        "add": "Aggiungi una voce",
+        "amount": "Importo della voce {{number}}",
+        "amountPlaceholder": "80",
+        "cancel": "Annulla",
+        "errors": {
+          "amountInvalid": "Scrivi un importo valido, per esempio 80 o 80,50.",
+          "amountRange": "L’importo va da 0,01 € a 100.000 €.",
+          "amountRequired": "Scrivi l’importo.",
+          "labelRequired": "Scrivi che cosa comprende la voce.",
+          "timeInvalid": "A quell’ora non c’è un orario valido: scegline un altro.",
+          "timeRequired": "Scegli il giorno e l’ora.",
+          "totalRange": "Il totale può arrivare al massimo a 100.000 €."
+        },
+        "intro": "Il cliente vede le voci e il totale e li approva o li rifiuta. Il lavoro si accetta solo se li approva.",
+        "introEdit": "Il nuovo preventivo prende il posto di quello inviato: il cliente non ha ancora risposto.",
+        "line": "Descrizione della voce {{number}}",
+        "linePlaceholder": "Per esempio: manodopera",
+        "lines": "Voci",
+        "maxLines": "Al massimo {{max}} voci.",
+        "note": "Nota per il cliente",
+        "notePlaceholder": "Per esempio: il prezzo comprende i materiali.",
+        "remove": "Togli la voce {{number}}",
+        "send": "Invia il preventivo",
+        "sentToast": "Preventivo inviato al cliente",
+        "summary": {
+          "answer": "Risposta",
+          "answerBy": "Il cliente può rispondere entro il {{when}}",
+          "answerHost": "L’host risponde quando può: non c’è un termine",
+          "answerNoDate": "Il cliente può rispondere per un tempo limitato",
+          "lines": "Voci del preventivo",
+          "note": "Nota",
+          "otherTime": "{{when}}: un altro orario, non riservato finché il cliente non accetta",
+          "sameTime": "Quello della richiesta",
+          "sentAt": "Inviato",
+          "total": "Totale",
+          "when": "Quando"
+        },
+        "terms": {
+          "deadlineHost": "L’host risponde quando può: non c’è un termine.",
+          "deadlineShowcase": "Il cliente ha un tempo limitato per rispondere: poi la richiesta si chiude.",
+          "limit": "Se a lavoro finito chiedi più del totale (oltre il 20 %), il cliente deve confermare l’importo prima di pagare."
+        },
+        "title": "Invia un preventivo",
+        "titleEdit": "Modifica il preventivo",
+        "total": "Totale",
+        "update": "Aggiorna il preventivo",
+        "when": {
+          "day": "Giorno",
+          "hint": "L’orario non è riservato finché il cliente non accetta.",
+          "keep": "Tieni l’orario della richiesta",
+          "none": "La richiesta non ha ancora un orario: lo concordi dopo con il cliente.",
+          "propose": "Proponi un altro orario",
+          "same": "Resta l’orario della richiesta: {{when}}.",
+          "start": "Inizio",
+          "title": "Quando"
+        },
+        "withdraw": {
+          "again": "Potrai accettare la richiesta, inviare un altro preventivo o rifiutarla.",
+          "back": "Indietro",
+          "confirm": "Ritira il preventivo",
+          "description": "Il cliente non lo vede più e la richiesta torna «da rispondere».",
+          "silent": "Il cliente non riceve nessun messaggio.",
+          "title": "Ritirare il preventivo?"
+        },
+        "withdrawnToast": "Preventivo ritirato"
       },
       "reason": {
         "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
         "NoResponse": "Nessuno ha risposto in tempo.",
-        "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario."
+        "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario.",
+        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo."
       },
       "reject": {
         "cancel": "Annulla",

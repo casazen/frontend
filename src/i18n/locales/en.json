@@ -8084,6 +8084,10 @@
       "serviceRequestProposalAccepted": "The proposed time was accepted.",
       "serviceRequestProposalRejected": "The proposed time was declined.",
       "serviceRequestRescheduled": "A request was moved to another time.",
+      "serviceRequestQuoteSent": "You received a quote.",
+      "serviceRequestQuoteAccepted": "The quote was approved.",
+      "serviceRequestQuoteRejected": "The quote was declined.",
+      "serviceRequestQuoteExpired": "The quote expired: the customer did not answer in time.",
       "generic": "You have a new notification."
     }
   },
@@ -11431,9 +11435,9 @@
         ],
         "supplier": {
           "label": "Waiting for payment",
-          "explain": "You have finished the work: now the customer has to pay you and mark the request as paid.",
+          "explain": "You have finished the work: now you wait for the customer’s payment.",
           "need": [
-            "The customer marks the request as paid"
+            "The customer pays for the job"
           ]
         }
       },
@@ -11441,7 +11445,7 @@
         "label": "Paid",
         "explain": "Job done and paid.",
         "supplier": {
-          "explain": "The customer marked the work as paid."
+          "explain": "The job shows as paid."
         }
       },
       "Rifiutato": {
@@ -12235,9 +12239,15 @@
         "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
+        "editQuote": "Change the quote",
         "openPage": "Open the full page",
+        "quote": "Send a quote",
+        "recordPayment": "I was paid outside CasaZen",
         "reject": "Decline",
-        "take": "Accept"
+        "remindPayment": "Remind about the payment",
+        "take": "Accept",
+        "takeWithoutQuote": "Accept without a quote",
+        "withdrawQuote": "Take the quote back"
       },
       "actor": {
         "client": "The customer",
@@ -12257,7 +12267,7 @@
         "archive": "Archive",
         "archiveHint": "Paid, declined or cancelled",
         "awaiting": "Waiting for the customer",
-        "awaitingHint": "You proposed another time and wait for the customer",
+        "awaitingHint": "You proposed another time or sent a quote and wait for the customer",
         "scheduled": "Scheduled",
         "scheduledHint": "Accepted and on your calendar, or in progress",
         "toAnswer": "To answer",
@@ -12298,6 +12308,7 @@
         "net": "Net {{amount}} after the commission",
         "price": "Price",
         "priceTbd": "To be agreed",
+        "quoteWaiting": "Quote waiting",
         "urgency": "Urgency: {{level}}",
         "when": "When",
         "whenTbd": "To be agreed",
@@ -12322,6 +12333,11 @@
         "PresoInCarico": "You accepted the request",
         "PresoInCaricoAuto": "Accepted automatically",
         "PresoInCaricoAutoNote": "It is a regular customer and you turned on automatic acceptance. You can cancel the job until it starts.",
+        "quoteAccepted": "The customer approved the quote",
+        "quoteExpired": "The customer did not answer the quote in time",
+        "quoteRejected": "The customer declined the quote",
+        "quoteSent": "You sent a quote",
+        "quoteWithdrawn": "You took the quote back",
         "Richiesto": "Request received",
         "Rifiutato": "You declined the request",
         "sub": "What has happened so far",
@@ -12398,6 +12414,11 @@
           "you": "You proposed another time: there is nothing else to do."
         },
         "quietTitle": "State of the request",
+        "quotePending": {
+          "client": "Sees the lines and the total and can approve or decline it.",
+          "title": "Wait for the customer’s answer",
+          "you": "You sent a quote: there is nothing else to do. Until the customer answers you can change it or take it back."
+        },
         "reason": "Reason: {{reason}}",
         "rejected": {
           "client": "Received your reason and can choose another supplier.",
@@ -12420,7 +12441,8 @@
           "client": "Sent the request and is waiting for your answer.",
           "then": "Next: once you accept you see the customer’s address and contact details.",
           "title": "Answer the request",
-          "you": "Accept if you can do the job, otherwise decline it and say why."
+          "you": "Accept if you can do the job, otherwise decline it and say why.",
+          "youQuote": "Answer with a quote: if the customer approves it, the job is accepted. If you do not need one, accept without a quote; if you cannot do it, decline and say why."
         },
         "unknown": {
           "client": "Sees the request in their list.",
@@ -12429,11 +12451,35 @@
         }
       },
       "payment": {
+        "agreed": "Agreed price",
         "amount": "Amount",
         "commission": "CasaZen commission",
+        "how": "How it is paid",
+        "inside": "Online, through CasaZen",
         "late": "The customer is late with the payment.",
+        "lines": "What the price is made of",
         "net": "Net pay",
+        "outside": "Outside CasaZen",
         "paidAt": "Paid on",
+        "paidOutside": "Received outside CasaZen",
+        "record": {
+          "confirm": "Record the payment",
+          "customerTold": "The customer is told: the job shows as paid.",
+          "description": "The job will show as paid to the customer too.",
+          "descriptionOnline": "This job is paid through CasaZen. If the customer paid you another way, record it here and say why.",
+          "noCommission": "CasaZen keeps no commission on this payment.",
+          "noUndo": "It cannot be undone.",
+          "reason": "Reason",
+          "reasonHint": "For example: bank transfer or cash.",
+          "reasonHintOnline": "Required: say why the customer did not pay through CasaZen. It stays with the payment.",
+          "title": "Were you paid outside CasaZen?"
+        },
+        "recordedToast": "Payment recorded",
+        "remindedToast": "Reminder sent to the customer",
+        "reminders": "Reminders",
+        "remindersValue_one": "{{count}} sent · the last on {{date}}",
+        "remindersValue_other": "{{count}} sent · the last on {{date}}",
+        "remindHint": "The customer gets an e-mail with a new link. You can send one a day.",
         "state": "Payment status",
         "status": {
           "Failed": "Payment failed",
@@ -12446,15 +12492,85 @@
           "unknown": "Being checked"
         },
         "subNet": "Net {{amount}}",
-        "title": "Payment and pay"
+        "title": "Payment and pay",
+        "tooSoon": "You sent a reminder a short while ago: you can try again tomorrow."
       },
       "phase": {
-        "proposalPending": "Waiting for the customer"
+        "proposalPending": "Waiting for the customer",
+        "quotePending": "Waiting for the customer"
+      },
+      "quote": {
+        "add": "Add a line",
+        "amount": "Amount of line {{number}}",
+        "amountPlaceholder": "80",
+        "cancel": "Cancel",
+        "errors": {
+          "amountInvalid": "Write a valid amount, for example 80 or 80.50.",
+          "amountRange": "The amount goes from €0.01 to €100,000.",
+          "amountRequired": "Write the amount.",
+          "labelRequired": "Write what the line covers.",
+          "timeInvalid": "That time does not exist on that day: choose another.",
+          "timeRequired": "Choose the day and the time.",
+          "totalRange": "The total can be €100,000 at most."
+        },
+        "intro": "The customer sees the lines and the total and approves or declines them. The job is accepted only if they approve.",
+        "introEdit": "The new quote takes the place of the one you sent: the customer has not answered yet.",
+        "line": "Description of line {{number}}",
+        "linePlaceholder": "For example: labour",
+        "lines": "Lines",
+        "maxLines": "At most {{max}} lines.",
+        "note": "Note for the customer",
+        "notePlaceholder": "For example: the price includes the materials.",
+        "remove": "Remove line {{number}}",
+        "send": "Send the quote",
+        "sentToast": "Quote sent to the customer",
+        "summary": {
+          "answer": "Answer",
+          "answerBy": "The customer can answer by {{when}}",
+          "answerHost": "The host answers when they can: there is no deadline",
+          "answerNoDate": "The customer has a limited time to answer",
+          "lines": "Lines of the quote",
+          "note": "Note",
+          "otherTime": "{{when}}: another time, not held until the customer accepts",
+          "sameTime": "The one of the request",
+          "sentAt": "Sent",
+          "total": "Total",
+          "when": "When"
+        },
+        "terms": {
+          "deadlineHost": "The host answers when they can: there is no deadline.",
+          "deadlineShowcase": "The customer has a limited time to answer: then the request closes.",
+          "limit": "If you ask for more than the total once the job is done (by over 20 %), the customer has to confirm the amount before paying."
+        },
+        "title": "Send a quote",
+        "titleEdit": "Change the quote",
+        "total": "Total",
+        "update": "Update the quote",
+        "when": {
+          "day": "Day",
+          "hint": "The time is not held until the customer accepts.",
+          "keep": "Keep the time of the request",
+          "none": "The request has no time yet: you agree it with the customer afterwards.",
+          "propose": "Propose another time",
+          "same": "The time of the request stays: {{when}}.",
+          "start": "Start",
+          "title": "When"
+        },
+        "withdraw": {
+          "again": "You can accept the request, send another quote or decline it.",
+          "back": "Back",
+          "confirm": "Take the quote back",
+          "description": "The customer no longer sees it and the request goes back to «to answer».",
+          "silent": "The customer gets no message.",
+          "title": "Take the quote back?"
+        },
+        "withdrawnToast": "Quote taken back"
       },
       "reason": {
         "CancelledByCustomer": "The customer cancelled the request.",
         "NoResponse": "Nobody answered in time.",
-        "ProposalNotAnswered": "The customer did not answer the new time."
+        "ProposalNotAnswered": "The customer did not answer the new time.",
+        "QuoteNotAnswered": "The customer did not answer the quote in time."
       },
       "reject": {
         "cancel": "Cancel",
