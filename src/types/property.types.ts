@@ -1,3 +1,4 @@
+import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
 
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
@@ -61,6 +62,11 @@ export interface Property {
   pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
+  /**
+   * The change of rental mode that waits for its day (PM-02, AM-13b): in the list asked with `?view=overview`, for a property in either
+   * mode, and only while it is `Scheduled`; absent otherwise. The same object `GET /properties/:id/mode` gives as `scheduledChange`.
+   */
+  scheduledModeChange?: PropertyModeChange | null;
   /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
   cadastralSheet?: string | null;
   cadastralParcel?: string | null;
