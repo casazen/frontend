@@ -8,10 +8,10 @@ import type { PublicCheckInFormValues } from '../schemas/checkin.schema';
 
 export function ConsentForm() {
   const { t } = useTranslation();
-  const { setValue, formState: { errors } } = useFormContext<PublicCheckInFormValues>();
-  const marketingConsentEmail = useWatch<PublicCheckInFormValues>({ name: 'marketingConsentEmail' });
-  const marketingConsentWhatsApp = useWatch<PublicCheckInFormValues>({ name: 'marketingConsentWhatsApp' });
-  const marketingEmail = useWatch<PublicCheckInFormValues>({ name: 'marketingEmail' });
+  const { control, setValue, formState: { errors } } = useFormContext<PublicCheckInFormValues>();
+  const marketingConsentEmail = useWatch({ control, name: 'marketingConsentEmail' });
+  const marketingConsentWhatsApp = useWatch({ control, name: 'marketingConsentWhatsApp' });
+  const marketingEmail = useWatch({ control, name: 'marketingEmail' });
 
   const anyChannelTicked = marketingConsentEmail || marketingConsentWhatsApp;
 

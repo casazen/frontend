@@ -97,7 +97,7 @@ export function CheckInPage() {
     resolver: zodResolver(publicCheckInFormSchema),
     defaultValues: emptyForm(),
   });
-  const { control, handleSubmit, setValue, setError, getValues, trigger, reset, formState: { errors } } = form;
+  const { control, handleSubmit, setValue, setError, getValues, trigger, reset } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
 
   useEffect(() => {
