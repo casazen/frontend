@@ -4356,7 +4356,12 @@
     "confirmOther": "Scegli un altro contratto",
     "confirmWithoutPractice": "Stai caricando i documenti sul contratto «{{lease}}»: conferma che è quello giusto.",
     "confirmWithPractice": "Stai caricando i documenti della pratica {{practice}} sul contratto «{{lease}}»: conferma che è quello giusto.",
+    "fillAgain": "Compila di nuovo il modulo",
     "formReady": "Il modulo si apre in una pagina dedicata. Se lo interrompi, riprende solo dallo stesso dispositivo e browser.",
+    "hint": {
+      "AwaitingUser": "Per andare avanti serve una tua risposta: ti hanno scritto per e-mail per chiederti dati o documenti. Controlla la posta, anche lo spam.",
+      "Suspended": "La pratica è ferma, per esempio perché una richiesta ricevuta per e-mail è rimasta senza risposta. Controlla la posta (anche lo spam) e rispondi per farla ripartire."
+    },
     "lastChange": "Aggiornato il {{date}}",
     "lastCheck": "Ultimo controllo: {{time}}",
     "open": "Apri il modulo",

@@ -4356,7 +4356,12 @@
     "confirmOther": "Choose another contract",
     "confirmWithoutPractice": "You are uploading the documents to the contract “{{lease}}”: confirm it is the right one.",
     "confirmWithPractice": "You are uploading the documents of practice {{practice}} to the contract “{{lease}}”: confirm it is the right one.",
+    "fillAgain": "Fill in the form again",
     "formReady": "The form opens on a page of its own. If you stop halfway, it picks up again only on the same device and browser.",
+    "hint": {
+      "AwaitingUser": "Your reply is needed to go on: you were sent an e-mail asking for details or documents. Check your inbox, spam included.",
+      "Suspended": "The practice is on hold, for example because a request received by e-mail went unanswered. Check your inbox (spam included) and reply to get it moving again."
+    },
     "lastChange": "Updated {{date}}",
     "lastCheck": "Last check: {{time}}",
     "open": "Open the form",
