@@ -14,6 +14,7 @@ export * from './lease.types';
 export * from './lease-lifecycle.types';
 export * from './lease-draft.types';
 export * from './long-rent.types';
+export * from './long-rent-tenant.types';
 export * from './rent.types';
 export * from './admin.types';
 export * from './users.types';
