@@ -10,6 +10,7 @@ import { useRliAdvisory } from '@/queries/use-leases';
 import type { CedolareAdvisoryInput, LeaseDetail, LeaseStage } from '@/types';
 import { hasAttestation } from '../lib/lease-benefits';
 import { isPartnerDraft } from '../lib/lease-sheet';
+import { LeaseOperations } from '../operations/lease-operations';
 import { AdviceItem } from './advice-item';
 import type { GuideTool } from './advice-catalogue';
 import { buildGuideFacts, guideValues } from './guide-facts';
@@ -101,6 +102,8 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
       </PlainSection>
 
       {showTools ? <GuideTools lease={lease} advisory={hasRent ? advisory.data : undefined} showRent={showRent} onOpenTool={setTool} /> : null}
+
+      <LeaseOperations lease={lease} />
 
       <GuideToolDialog
         tool={tool}

@@ -50,6 +50,9 @@ export const LEASE_EVENT_TYPES = [
   'ConcordatoFacileLinkGenerated',
   // CF-BE: the privacy notice accepted for the lease before the guided form.
   'ConcordatoFacilePrivacyAccepted',
+  // LR-OPS-1: the withdrawal of the tenant recorded (the lease ends on the day its notice runs out), a letter marked as sent.
+  'WithdrawalRecorded',
+  'LetterSent',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
