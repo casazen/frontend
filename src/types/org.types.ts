@@ -75,6 +75,8 @@ export interface PublicOrgDto {
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
   publicThemeId?: string | null;
+  /** The font pair the host chose (see `src/lib/public-site-themes.ts`), or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   showPoweredBy?: boolean;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
@@ -95,6 +97,8 @@ export interface OrgBranding {
   primaryColor: string | null;
   /** Always one of the supported theme ids. */
   publicThemeId: string;
+  /** The font pair the host chose, or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   tagline: string | null;
   /** Public slug (preview link /book/{slug}), edited in the org settings. */
   slug: string;
@@ -106,6 +110,8 @@ export interface OrgBranding {
 export interface UpdateOrgBrandingRequest {
   primaryColor: string | null;
   publicThemeId: string;
+  /** The font pair (null = the font of the theme). Left out, the backend keeps the stored choice. */
+  publicFontId?: string | null;
   tagline: string | null;
 }
 

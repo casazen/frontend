@@ -11,7 +11,7 @@ import { Footer } from '@/features/public-site/components/Footer';
 import { BrandHeader } from '@/features/public-site/components/brand-header';
 import { SiteHeader } from '@/features/public-site/components/site-header';
 import { publicSiteColorVars } from '@/lib/public-site-colors';
-import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
+import { normalizeHexColor, resolvePublicSiteFont, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
 import '@/styles/public-brand.css';
 
@@ -71,6 +71,8 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   useOrgSeoMeta(org, location.pathname);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
+  // The font pair the host chose; null = the one its theme starts with (the theme block of the CSS sets it).
+  const fontId = resolvePublicSiteFont(org?.publicFontId);
   // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color. The text color on it and the
   // readable variant of it are derived so that any host color meets AA (BK-13).
   const colorVars = publicSiteColorVars(normalizeHexColor(org?.primaryColor ?? org?.themeColor), themeId);
@@ -133,6 +135,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     <div
       className="public-site-root flex min-h-screen flex-col"
       data-theme={themeId}
+      data-font={fontId ?? undefined}
       // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
       // the theme and color its host chose (public-brand.css).
       data-brand={isOrgMode ? undefined : 'casazen'}
@@ -152,6 +155,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
           basePath={basePath}
           showBookingCta={showBookingCta}
           themeId={themeId}
+          fontId={fontId}
           colorStyle={colorStyle ?? undefined}
         />
       ) : (

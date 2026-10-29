@@ -11167,17 +11167,36 @@
     "theme": {
       "label": "Theme",
       "options": {
+        "terra": {
+          "name": "Earth",
+          "description": "Warm: terracotta on cream."
+        },
         "mare": {
           "name": "Sea",
-          "description": "Bright and welcoming, for seaside homes and summer holidays."
+          "description": "Fresh: petrol blue on white."
         },
-        "montagna": {
-          "name": "Mountain",
-          "description": "Warm and natural, for cabins, chalets and farm stays."
+        "citta": {
+          "name": "City",
+          "description": "Essential: ink on stone."
+        }
+      }
+    },
+    "font": {
+      "label": "Fonts",
+      "usingTheme": "You are using the theme's fonts.",
+      "useTheme": "Use the theme's fonts",
+      "options": {
+        "editoriale": {
+          "name": "Editorial",
+          "description": "Serif headings, warm and literary."
         },
-        "urban": {
-          "name": "Urban",
-          "description": "Clean and modern, for city apartments."
+        "moderno": {
+          "name": "Modern",
+          "description": "All sans-serif, crisp and bold."
+        },
+        "classico": {
+          "name": "Classic",
+          "description": "Magazine elegance, high contrast."
         }
       }
     },
@@ -11210,6 +11229,7 @@
     "errors": {
       "colorInvalid": "The color is not valid: use a hex code, for example #1a6b8f.",
       "themeInvalid": "This theme is not available for the public site.",
+      "fontInvalid": "This font pair is not available for the public site.",
       "taglineTooLong": "The tagline cannot exceed {{maxLength}} characters.",
       "imageEmpty": "The selected file is empty.",
       "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
