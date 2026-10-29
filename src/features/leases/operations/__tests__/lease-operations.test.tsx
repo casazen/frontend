@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
@@ -69,6 +69,13 @@ function mockServer(operations: LeaseOperationsData = OPERATIONS) {
 
 function renderOperations(search: string) {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseOperations, { lease: LEASE }));
+}
+
+/** Lets the answer of the mocked server reach the screen: what must NOT be there is checked after this, not before the answer exists. */
+async function settled() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
 }
 
 describe('LeaseOperations', () => {
@@ -192,7 +199,8 @@ describe('LeaseOperations', () => {
       renewal: { ...OPERATIONS.renewal, available: false },
     });
     const { unmount } = renderOperations('');
-    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations'));
+    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations', expect.anything()));
+    await settled();
     expect(screen.queryByTestId('lease-operations')).not.toBeInTheDocument();
     unmount();
 
@@ -244,7 +252,8 @@ describe('LeaseOperations', () => {
       transitoryConfirmation: { applies: true, available: false, holder: 'Tenant', confirmBy: '2027-01-31' },
     });
     const { unmount } = renderOperations('?operazione=conferma-esigenza');
-    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations'));
+    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations', expect.anything()));
+    await settled();
     expect(screen.queryByTestId('lease-operations')).not.toBeInTheDocument();
     expect(screen.queryByTestId('need-confirmation-dialog')).not.toBeInTheDocument();
     unmount();
