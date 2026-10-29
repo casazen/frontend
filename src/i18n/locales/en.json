@@ -4910,7 +4910,7 @@
         "title": "Check the lease and confirm"
       },
       "DecideNotice": {
-        "action": "Open the lease",
+        "action": "Prepare the notice",
         "detail": "If nobody gives notice by the last day, the lease renews by itself.",
         "title": "Decide whether to give notice"
       },
@@ -5000,7 +5000,7 @@
         "why": "In the canone concordato the minimum term is {{termMonths}} months. At the first expiry, unless the parties agree otherwise, the contract is extended by right for {{renewalMonths}} months, except for the landlord's notice for one of the reasons set by law, in writing, stating the reason, at least {{noticeMonths}} months before. At the end of the extension each party can ask for a renewal on new terms or give it up."
       },
       "concordatoFirstExpiry": {
-        "action": "Record a notice",
+        "action": "Prepare the notice",
         "body": "Unless notice is given for a reason provided by law, the contract is extended by right for another {{renewalMonths}} months. Notice must be in writing, stating the reason, at least {{noticeMonths}} months before.",
         "title": "At the first expiry the contract is extended",
         "why": "In the canone concordato the extension is by right, except for the landlord's notice for the reasons set by law, given in writing with the reason stated and with the required notice period. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
@@ -5096,7 +5096,7 @@
         "why": "In the canone libero the first term is {{termMonths}} months. If nobody gives notice, the contract renews on the same terms. At the first expiry the landlord can refuse the renewal only for the reasons set by law: the communication must be in writing, with the reason stated or it is void, and with at least {{noticeMonths}} months' notice. Our model asks for registered mail with return receipt or PEC."
       },
       "liberoFirstExpiry": {
-        "action": "Record a notice",
+        "action": "Prepare the notice",
         "body": "If you do nothing, the contract renews by itself for another {{renewalMonths}} months. To say no you need a reason provided by law, written in the communication, with at least {{noticeMonths}} months' notice.",
         "title": "At the first expiry you decide whether to renew",
         "why": "The landlord can refuse the renewal at the first expiry only for the reasons set by law; the communication must be in writing and must state the reason or it is void. Registered mail or PEC is best, so you have proof of sending. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
@@ -5162,7 +5162,7 @@
         "why": "The receipt shows the registration number and date. Your accountant asks for it for the tax return and for the obligations of the following years."
       },
       "secondExpiry": {
-        "action": "Record a notice",
+        "action": "Prepare the notice",
         "body": "Each party can ask for a renewal on new terms or give it up, by registered mail or PEC at least {{noticeMonths}} months in advance. If nobody writes, the contract renews on the same terms.",
         "title": "At the second expiry the rules change",
         "why": "After the first period the reasons set by law are no longer needed: each party can start the procedure to renew on new terms or not to renew. How it ends if there is no agreement is written in your contract. CasaZen records the notice and reminds you of the dates."
@@ -5490,6 +5490,114 @@
     "term": "from {{from}} to {{to}}",
     "termToDefine": "Dates to be set",
     "rentToDefine": "Rent to be set"
+  },
+  "leaseOperations": {
+    "disdetta": {
+      "dialog": {
+        "description": "CasaZen writes the draft with the data of the contract. You sign it and send it: we don't write to the tenant.",
+        "ends": "The lease ends on {{date}}.",
+        "lastDay": "To be on time the letter has to be sent by {{date}}.",
+        "late": "The last day to be on time was {{date}}: you can still download the draft, but CasaZen cannot say whether the notice will count for this expiry.",
+        "laterPeriod": "This is not the first expiry: the letter gives notice that the lease will not renew and asks for no reason.",
+        "reasonHint": "At the first expiry the law allows only these reasons, and the letter has to state one.",
+        "reasonLabel": "Reason for the notice",
+        "reasonPlaceholder": "Choose the reason",
+        "recordAction": "Record the notice",
+        "recordHint": "To stop the lease from renewing, record the notice as well.",
+        "title": "Prepare the notice"
+      },
+      "open": "Prepare the notice",
+      "summary": "To stop the renewal, write by {{date}}.",
+      "summaryLate": "The last day to be on time was {{date}}: you can still prepare the letter, but it may not stop the renewal.",
+      "summaryRecorded": "The notice is recorded: the lease ends on {{date}}.",
+      "summarySent": "Letter marked as sent on {{date}} ({{means}}).",
+      "title": "Notice to the tenant"
+    },
+    "download": {
+      "failed": "We couldn't prepare the draft. Try again in a moment.",
+      "label": "Download the draft"
+    },
+    "draftNote": "The text is a draft that has not been approved yet: the PDF carries the word DRAFT (BOZZA). Have it reviewed before you send it.",
+    "means": {
+      "ByHand": "Delivered by hand",
+      "Other": "Another way",
+      "Pec": "PEC",
+      "RegisteredMail": "Registered mail"
+    },
+    "reasons": {
+      "DamagedBuilding": "Damaged building to be rebuilt or made safe",
+      "LegalEntityUse": "Use by a company or an entity, offering another home",
+      "OwnUse": "Own use or use by relatives",
+      "Renovation": "Renovation, demolition or adding a floor",
+      "Sale": "Sale of the home",
+      "TenantAbsent": "The tenant does not live in the home",
+      "TenantOtherHome": "The tenant has another suitable home in the same comune"
+    },
+    "sent": {
+      "again": "Mark it again",
+      "dateInvalid": "The day must be between the start of the lease and today.",
+      "dateLabel": "Day it was sent",
+      "done": "Marked as sent on {{date}} ({{means}}).",
+      "failed": "We couldn't mark it as sent. Try again.",
+      "hint": "Send the signed letter by registered mail with return receipt or by PEC and keep the receipt. Here you only note that you sent it: CasaZen doesn't send it and doesn't write to the tenant.",
+      "meansLabel": "How you sent it",
+      "saved": "Marked as sent.",
+      "submit": "Mark as sent",
+      "title": "After sending"
+    },
+    "title": "Operations",
+    "withdrawal": {
+      "dialog": {
+        "beyond": "With this notice the withdrawal would take effect on {{date}}, after the end of the current period ({{end}}). Record it once the lease has renewed.",
+        "confirm": "Record the withdrawal",
+        "consequences": {
+          "final": "The lease ends on the day the notice runs out and cannot be put back in force.",
+          "letter": "CasaZen doesn't write to the tenant: you send the acknowledgement.",
+          "rent": "The installments not yet paid after that day are cancelled."
+        },
+        "description": "The tenant wrote that they withdraw from the lease. Tell us when the letter arrived and why: we work out when it ends.",
+        "effect": "The lease will end on {{date}}.",
+        "effectPending": "Choose the day the letter arrived: we will tell you when the lease ends.",
+        "monthsHint": "The months of notice the contract states for this faculty.",
+        "monthsInvalid": "Write a whole number of months, from 1 to {{max}}.",
+        "monthsLabel": "Notice in the contract (months)",
+        "reasonLegend": "Why they withdraw",
+        "receivedHint": "The day you received the tenant's registered letter or PEC.",
+        "receivedInvalid": "The day must be between the start of the lease and today.",
+        "receivedLabel": "Day the letter arrived",
+        "title": "Record the tenant's withdrawal",
+        "word": "WITHDRAWAL"
+      },
+      "done": "Withdrawal recorded: the lease ends on {{date}}.",
+      "doneDialog": {
+        "description": "You received the withdrawal on {{received}}. The lease ends on {{date}}.",
+        "download": "Download the acknowledgement",
+        "steps": {
+          "communicate": "Tell the Agenzia delle Entrate that the lease has ended within {{days}} days (RLI form).",
+          "handover": "Agree the handover with the tenant: report, meter readings and keys. The deposit is returned after the home has been checked.",
+          "letter": "Send the acknowledgement to the tenant: the draft downloads below.",
+          "taxCedolare": "With the cedolare secca there is no tax, but the communication is still due.",
+          "taxOrdinary": "Without the cedolare secca the fixed registration tax is due."
+        },
+        "title": "Withdrawal recorded"
+      },
+      "failed": "We couldn't record the withdrawal. Try again.",
+      "open": "Record the withdrawal",
+      "openRecorded": "Acknowledgement and next steps",
+      "reasons": {
+        "ContractualFaculty": {
+          "description": "The contract allows it, with the notice it states.",
+          "title": "Faculty given by the contract"
+        },
+        "GraveMotivi": {
+          "description": "The law allows it at any time, with the notice of the rules.",
+          "title": "Serious reasons"
+        }
+      },
+      "summary": "If the tenant wrote that they are leaving before the end, record it: we work out when the lease ends.",
+      "summaryRecorded": "Withdrawal recorded: the lease ends on {{date}}.",
+      "title": "Tenant's withdrawal"
+    }
   },
   "leaseRound": {
     "activity": {
@@ -6841,7 +6949,9 @@
       "ConcordatoFacileAdminAccess": "Administrator access to the guided form",
       "ConcordatoFacileGiftConsumed": "Complimentary practice used",
       "ConcordatoFacileLinkGenerated": "Guided form opened",
-      "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted"
+      "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted",
+      "WithdrawalRecorded": "Tenant's withdrawal recorded",
+      "LetterSent": "Letter marked as sent"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",

@@ -4910,7 +4910,7 @@
         "title": "Controlla il contratto e conferma"
       },
       "DecideNotice": {
-        "action": "Apri il contratto",
+        "action": "Prepara la disdetta",
         "detail": "Se nessuno dà la disdetta entro l'ultimo giorno, il contratto si rinnova da solo.",
         "title": "Decidi se dare la disdetta"
       },
@@ -5000,7 +5000,7 @@
         "why": "Nel canone concordato la durata minima è di {{termMonths}} mesi. Alla prima scadenza, se le parti non si accordano diversamente, il contratto è prorogato di diritto per {{renewalMonths}} mesi, salvo la disdetta del locatore per uno dei motivi di legge, scritta, con il motivo indicato, almeno {{noticeMonths}} mesi prima. Alla fine della proroga ciascuna parte può chiedere il rinnovo a nuove condizioni o rinunciarvi."
       },
       "concordatoFirstExpiry": {
-        "action": "Registra una disdetta",
+        "action": "Prepara la disdetta",
         "body": "Se non c'è una disdetta per un motivo previsto dalla legge, il contratto si proroga di diritto per altri {{renewalMonths}} mesi. La disdetta va scritta, con il motivo, almeno {{noticeMonths}} mesi prima.",
         "title": "Alla prima scadenza il contratto si proroga",
         "why": "Nel canone concordato la proroga è di diritto, salvo la disdetta del locatore per i motivi di legge, comunicata per iscritto con il motivo indicato e con il preavviso previsto. CasaZen non giudica se una disdetta è valida: la registra e ti ricorda le date."
@@ -5096,7 +5096,7 @@
         "why": "Nel canone libero la prima durata è di {{termMonths}} mesi. Se nessuno dà la disdetta, il contratto si rinnova alle stesse condizioni. Il locatore può negare il rinnovo alla prima scadenza solo per i motivi indicati dalla legge: la comunicazione va fatta per iscritto, con il motivo scritto a pena di nullità e con almeno {{noticeMonths}} mesi di preavviso. Il nostro modello chiede raccomandata con ricevuta di ritorno o PEC."
       },
       "liberoFirstExpiry": {
-        "action": "Registra una disdetta",
+        "action": "Prepara la disdetta",
         "body": "Se non fai niente, il contratto si rinnova da solo per altri {{renewalMonths}} mesi. Per dire di no serve un motivo previsto dalla legge, scritto nella comunicazione, con almeno {{noticeMonths}} mesi di preavviso.",
         "title": "Alla prima scadenza decidi tu se rinnovare",
         "why": "Il locatore può negare il rinnovo alla prima scadenza solo per i motivi indicati dalla legge; la comunicazione va fatta per iscritto, indicando il motivo a pena di nullità. Conviene la raccomandata o la PEC, così hai la prova dell'invio. CasaZen non giudica se una disdetta è valida: la registra e ti ricorda le date."
@@ -5162,7 +5162,7 @@
         "why": "La ricevuta riporta numero e data di registrazione. Il commercialista la chiede per la dichiarazione dei redditi e per gli adempimenti degli anni successivi."
       },
       "secondExpiry": {
-        "action": "Registra una disdetta",
+        "action": "Prepara la disdetta",
         "body": "Ciascuna parte può chiedere il rinnovo a nuove condizioni o rinunciarvi, con raccomandata o PEC almeno {{noticeMonths}} mesi prima. Se nessuno scrive, il contratto si rinnova alle stesse condizioni.",
         "title": "Alla seconda scadenza cambiano le regole",
         "why": "Dopo il primo periodo non servono più i motivi di legge: ciascuna parte può attivare la procedura per rinnovare a nuove condizioni o per non rinnovare. Come si chiude se non c'è accordo è scritto nel tuo contratto. CasaZen registra la disdetta e ti ricorda le date."
@@ -5490,6 +5490,114 @@
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
     "rentToDefine": "Canone da definire"
+  },
+  "leaseOperations": {
+    "disdetta": {
+      "dialog": {
+        "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu: non scriviamo all'inquilino.",
+        "ends": "Il contratto finisce il {{date}}.",
+        "lastDay": "Per essere in tempo la lettera va spedita entro il {{date}}.",
+        "late": "L'ultimo giorno utile era il {{date}}: puoi scaricare la bozza lo stesso, ma CasaZen non può dire se la disdetta varrà per questa scadenza.",
+        "laterPeriod": "Non è la prima scadenza: la lettera comunica la rinuncia al rinnovo e non chiede un motivo.",
+        "reasonHint": "Alla prima scadenza la legge ammette solo questi motivi, e la lettera deve scriverne uno.",
+        "reasonLabel": "Motivo della disdetta",
+        "reasonPlaceholder": "Scegli il motivo",
+        "recordAction": "Registra la disdetta",
+        "recordHint": "Per fermare il rinnovo del contratto registra anche la disdetta.",
+        "title": "Prepara la disdetta"
+      },
+      "open": "Prepara la disdetta",
+      "summary": "Per fermare il rinnovo scrivi entro il {{date}}.",
+      "summaryLate": "L'ultimo giorno utile era il {{date}}: puoi preparare la lettera lo stesso, ma potrebbe non fermare il rinnovo.",
+      "summaryRecorded": "La disdetta è registrata: il contratto finisce il {{date}}.",
+      "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
+      "title": "Disdetta all'inquilino"
+    },
+    "download": {
+      "failed": "Non sono riuscito a preparare la bozza. Riprova tra un attimo.",
+      "label": "Scarica la bozza"
+    },
+    "draftNote": "Il testo è una bozza non ancora approvata: il PDF porta la scritta BOZZA. Fallo rivedere prima di mandarlo.",
+    "means": {
+      "ByHand": "Consegna a mano",
+      "Other": "Altro mezzo",
+      "Pec": "PEC",
+      "RegisteredMail": "Raccomandata"
+    },
+    "reasons": {
+      "DamagedBuilding": "Edificio danneggiato da ricostruire o mettere in sicurezza",
+      "LegalEntityUse": "Uso di un ente o di una società, offrendo un altro immobile",
+      "OwnUse": "Uso proprio o di familiari",
+      "Renovation": "Ristrutturazione, demolizione o sopraelevazione",
+      "Sale": "Vendita dell'immobile",
+      "TenantAbsent": "L'inquilino non abita la casa",
+      "TenantOtherHome": "L'inquilino ha un altro alloggio idoneo nello stesso comune"
+    },
+    "sent": {
+      "again": "Segna di nuovo",
+      "dateInvalid": "Il giorno deve essere tra l'inizio del contratto e oggi.",
+      "dateLabel": "Giorno dell'invio",
+      "done": "Segnata come inviata il {{date}} ({{means}}).",
+      "failed": "Non sono riuscito a segnarla come inviata. Riprova.",
+      "hint": "Spedisci la lettera firmata con raccomandata con ricevuta di ritorno o con PEC e tieni la ricevuta. Qui segni solo che l'hai mandata: CasaZen non la spedisce e non scrive all'inquilino.",
+      "meansLabel": "Come l'hai mandata",
+      "saved": "Segnata come inviata.",
+      "submit": "Segna come inviata",
+      "title": "Dopo l'invio"
+    },
+    "title": "Operazioni",
+    "withdrawal": {
+      "dialog": {
+        "beyond": "Con questo preavviso il recesso avrebbe effetto il {{date}}, dopo la fine del periodo in corso ({{end}}). Registralo quando il contratto si sarà rinnovato.",
+        "confirm": "Registra il recesso",
+        "consequences": {
+          "final": "Il contratto finisce nel giorno in cui scade il preavviso e non si può rimettere in vigore.",
+          "letter": "CasaZen non scrive all'inquilino: la presa d'atto la mandi tu.",
+          "rent": "Le rate non ancora pagate dopo quel giorno vengono annullate."
+        },
+        "description": "L'inquilino ti ha scritto che recede dal contratto. Dicci quando è arrivata la lettera e perché: calcoliamo noi quando finisce.",
+        "effect": "Il contratto finirà il {{date}}.",
+        "effectPending": "Scegli il giorno in cui è arrivata la lettera: ti diciamo quando finisce il contratto.",
+        "monthsHint": "I mesi di preavviso che il contratto scrive per questa facoltà.",
+        "monthsInvalid": "Scrivi un numero intero di mesi, da 1 a {{max}}.",
+        "monthsLabel": "Preavviso del contratto (mesi)",
+        "reasonLegend": "Perché recede",
+        "receivedHint": "Il giorno in cui hai ricevuto la raccomandata o la PEC dell'inquilino.",
+        "receivedInvalid": "Il giorno deve essere tra l'inizio del contratto e oggi.",
+        "receivedLabel": "Giorno in cui è arrivata la lettera",
+        "title": "Registra il recesso dell'inquilino",
+        "word": "RECESSO"
+      },
+      "done": "Recesso registrato: il contratto finisce il {{date}}.",
+      "doneDialog": {
+        "description": "Hai ricevuto il recesso il {{received}}. Il contratto finisce il {{date}}.",
+        "download": "Scarica la presa d'atto",
+        "steps": {
+          "communicate": "Comunica la fine del contratto all'Agenzia delle Entrate entro {{days}} giorni (modello RLI).",
+          "handover": "Concorda con l'inquilino la riconsegna: verbale, letture dei contatori e chiavi. Il deposito si restituisce dopo la verifica della casa.",
+          "letter": "Manda la presa d'atto all'inquilino: la bozza si scarica qui sotto.",
+          "taxCedolare": "Con la cedolare secca non c'è imposta, ma la comunicazione resta.",
+          "taxOrdinary": "Senza cedolare secca è dovuta l'imposta di registro fissa."
+        },
+        "title": "Recesso registrato"
+      },
+      "failed": "Non sono riuscito a registrare il recesso. Riprova.",
+      "open": "Registra il recesso",
+      "openRecorded": "Presa d'atto e prossimi passi",
+      "reasons": {
+        "ContractualFaculty": {
+          "description": "Il contratto lo permette, con il preavviso che scrive.",
+          "title": "Facoltà prevista dal contratto"
+        },
+        "GraveMotivi": {
+          "description": "La legge lo permette in qualsiasi momento, con il preavviso delle regole.",
+          "title": "Gravi motivi"
+        }
+      },
+      "summary": "Se l'inquilino ti ha scritto che se ne va prima della scadenza, registralo: calcoliamo noi quando finisce il contratto.",
+      "summaryRecorded": "Recesso registrato: il contratto finisce il {{date}}.",
+      "title": "Recesso dell'inquilino"
+    }
   },
   "leaseRound": {
     "activity": {
@@ -6841,7 +6949,9 @@
       "ConcordatoFacileAdminAccess": "Accesso amministratore al modulo guidato",
       "ConcordatoFacileGiftConsumed": "Pratica omaggio usata",
       "ConcordatoFacileLinkGenerated": "Modulo guidato aperto",
-      "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata"
+      "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata",
+      "WithdrawalRecorded": "Recesso dell'inquilino registrato",
+      "LetterSent": "Lettera segnata come inviata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
