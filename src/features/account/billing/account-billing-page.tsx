@@ -29,8 +29,8 @@ function AccountBillingBody() {
   const entitlementQuery = useEntitlement();
   const plansQuery = useBillingPlans();
   const { subscriptionQuery, checkoutReturn, timedOut } = useAccountSubscription();
-  // Stripe returns to a plan or billing page of the backend's list (the page of the account area is not on it yet): the page sends
-  // no `returnPath` of its own, and the plan pages of the rental areas hand the person back here.
+  // Stripe returns to a plan or billing page of the backend's list, and this page is on it (AM-08a-FU1): it names itself, so the portal
+  // (and the checkout of the plans) bring the person back here with the message of the outcome, also from the account area alone.
   const portalMutation = useOpenBillingPortal(toBillingReturnPath(pathname));
   const compareRef = useRef<HTMLDetailsElement>(null);
 
