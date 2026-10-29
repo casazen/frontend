@@ -13416,6 +13416,32 @@
     "seasonPlaceholder": "MM-GG"
   },
   "team": {
+    "access": {
+      "backToToday": "Torna al ruolo di oggi",
+      "canEnter": "Può entrare. Nel menu trova:",
+      "canTitle": "Cosa può fare",
+      "description": "{{role}}: così appare CasaZen a chi ha questo ruolo, queste aree e questi immobili.",
+      "make": "Rendi {{name}} {{role}}",
+      "menuTitle": "Aree e menu",
+      "more": "Anche in «Altro» ({{count}})",
+      "noAdminArea": "Il suo ruolo non comprende l'Amministrazione.",
+      "noAreasBody": "Può accedere ma non vede niente: scegli almeno un'area.",
+      "noAreasTitle": "Non ha nessuna area",
+      "noPages": "Nessuna pagina: con questo ruolo qui non si apre niente.",
+      "noPropertiesBody": "Con «Solo alcuni» vede soltanto gli immobili che scegli.",
+      "noPropertiesTitle": "Non ha nessun immobile",
+      "notGiven": "Non ha quest'area: non la trova nel menu delle aree.",
+      "openPeople": "Vai alle persone",
+      "pickAreas": "Scegli le aree",
+      "pickProperties": "Scegli gli immobili",
+      "propertiesTitle": "Immobili",
+      "title": "Cosa vede {{name}}",
+      "titleInvited": "Cosa vedrà {{name}}",
+      "tryLabel": "Prova un altro ruolo",
+      "tryRole": "E se fosse…",
+      "trying": "Stai provando: {{name}} come {{role}}",
+      "tryingBody": "È solo un'ipotesi: oggi {{name}} è {{current}} e non è cambiato niente."
+    },
     "actions": {
       "access": {
         "description": "Vede solo le aree e gli immobili che scegli.",
@@ -13571,6 +13597,7 @@
         "where": "Aree e immobili"
       },
       "role": {
+        "compare": "Confronta i ruoli in una tabella",
         "legend": "Ruolo",
         "loadError": "Non riusciamo a leggere i ruoli che puoi dare."
       },
@@ -13680,6 +13707,7 @@
       "cannot": "Non può",
       "cannotEnter": "{{area}}: non può entrare",
       "deactivated": "L'accesso è disattivato: non può entrare in nessuna area.",
+      "detail": "Vedi nel dettaglio",
       "noAreas": "Non ha nessuna area: entra ma non vede niente.",
       "read": "Può solo guardare",
       "title": "Cosa vede questo utente",
@@ -13694,6 +13722,34 @@
       "Collaborator": "Lavoro di ogni giorno sugli immobili assegnati: arrivi, ospiti, interventi. Vede i prezzi ma non li cambia; non vede gli incassi.",
       "Owner": "È il proprietario dell'account: può fare tutto e non si può togliere.",
       "PropertyManager": "Immobili, prenotazioni, contratti, incassi e fornitori. Niente piano e fatture."
+    },
+    "roles": {
+      "capability": "Cosa",
+      "description": "Cosa può fare ogni ruolo, area per area, in parole semplici.",
+      "groups": {
+        "both": "Fornitori e interventi"
+      },
+      "legend": {
+        "No": "non lo vede",
+        "Read": "lo vede ma non lo cambia",
+        "Yes": "lo vede e lo può cambiare"
+      },
+      "level": {
+        "No": "No",
+        "Read": "Sola lettura",
+        "Yes": "Sì"
+      },
+      "listTitle": "I ruoli",
+      "loadError": "Non riusciamo a leggere i ruoli.",
+      "matrixCaption": "Cosa può fare ogni ruolo, voce per voce",
+      "matrixTitle": "Chi può fare cosa",
+      "narrowing": "Aree e immobili scelti per ogni persona restringono ancora cosa vede. Per controllare il risultato apri «Cosa vede» dal suo nome.",
+      "notYetBody": "Ruoli personalizzati, permessi diversi per ogni immobile e il passaggio della titolarità non fanno parte di questa prima versione: per ora si lavora con questi cinque ruoli.",
+      "notYetTitle": "Cosa non c'è (ancora)",
+      "openPeople": "Vai alle persone",
+      "people_one": "{{count}} persona",
+      "people_other": "{{count}} persone",
+      "title": "Ruoli e permessi"
     },
     "title": "Persone"
   },
