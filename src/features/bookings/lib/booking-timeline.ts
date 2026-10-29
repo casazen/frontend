@@ -86,7 +86,7 @@ function descriptionOf({ kind, state, data }: BookingTimelineEvent, t: TFunction
       return state === 'Current' && data.deadlineAt ? t('booking.timeline.alloggiatiDeadline', { status, date: date(data.deadlineAt) }) : status;
     }
     case 'Cancelled': {
-      // A person's cancellation has no reason of the system; the note is what the host wrote, for the host only.
+      // The host's own cancellation has no reason; the guest's says so (`GuestRequested`). The note is what the host wrote, for the host only.
       const parts = [data.reason ? t(`booking.timeline.cancelReason.${data.reason}`) : '', data.note ? t('booking.timeline.cancelNote', { note: data.note }) : ''];
       return parts.filter(Boolean).join(' ') || undefined;
     }

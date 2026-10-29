@@ -1401,7 +1401,16 @@
       "leaseNotFound": "Contratto non trovato.",
       "leaseNotInForce": "Il contratto non è ancora in vigore: deve essere firmato da tutte le parti.",
       "leaseTermAlreadyEnded": "Il periodo del contratto è già finito: la disdetta non si può più togliere.",
-      "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta."
+      "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta.",
+      "refundChanged": "Il rimborso è cambiato: controlla l'importo e conferma di nuovo.",
+      "bookingPaymentInProgress": "Il pagamento di questa prenotazione è ancora in corso: riprova tra qualche minuto.",
+      "guestCancelStayStarted": "Il soggiorno è già iniziato: da qui non puoi più annullare. Scrivi all'host.",
+      "bookingNotCancellableByGuest": "Da qui questa prenotazione non si può annullare.",
+      "guestCancelConfirmationRequired": "Conferma l'annullamento per procedere.",
+      "refundAmountInvalid": "L'importo del rimborso non è valido. Ricarica la pagina e riprova.",
+      "guestCancelTokenInvalid": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
+      "guestCancelTokenExpired": "Questo link è scaduto. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
+      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni»."
     }
   },
   "appShell": {
@@ -2329,6 +2338,7 @@
         "CheckoutHoldExpired": "Il pagamento non è arrivato in tempo: le date sono di nuovo libere.",
         "DatesUnavailableAtPayment": "Le date non erano più libere quando l'ospite ha pagato.",
         "DeferredPaymentNotCompleted": "L'addebito alla scadenza non è andato a buon fine.",
+        "GuestRequested": "L'ospite ha annullato la prenotazione.",
         "OnSiteEmailNotConfirmed": "L'ospite non ha confermato l'email in tempo.",
         "OnSiteRequestDeclined": "Hai rifiutato la richiesta.",
         "OnSiteRequestExpired": "La richiesta è scaduta senza risposta."
@@ -4199,6 +4209,83 @@
     },
     "list": {
       "title": "Immobili"
+    }
+  },
+  "guestCancellation": {
+    "area": {
+      "intro": "Qui vedi quanto ti rimborsiamo se annulli adesso, secondo la politica di cancellazione dell'alloggio.",
+      "loadError": "Non riusciamo a mostrarti i dettagli dell'annullamento. Riprova tra poco.",
+      "loading": "Controllo cosa succede se annulli…",
+      "retry": "Riprova",
+      "title": "Cancellazione"
+    },
+    "button": {
+      "cancel": "Annulla la prenotazione",
+      "withdraw": "Ritira la richiesta"
+    },
+    "changed": "Il rimborso è cambiato mentre confermavi: prima {{from}}, ora {{to}}. Non abbiamo annullato nulla: controlla e conferma di nuovo.",
+    "dialog": {
+      "cancelTitle": "Annullare la prenotazione?",
+      "confirmCancel": "Sì, annulla",
+      "confirmWithdraw": "Sì, ritira",
+      "description": "{{property}}, dal {{checkIn}} al {{checkOut}}.",
+      "irreversible": "Le date tornano libere e la prenotazione non si può riattivare.",
+      "keepCancel": "Mantieni la prenotazione",
+      "keepWithdraw": "Mantieni la richiesta",
+      "withdrawIrreversible": "La richiesta viene ritirata e le date tornano libere.",
+      "withdrawTitle": "Ritirare la richiesta?"
+    },
+    "link": {
+      "backToSite": "Torna a {{name}}",
+      "invalid": "Questo link non funziona più: è scaduto o è già stato usato. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
+      "loadError": "Non riusciamo a caricare la prenotazione. Riprova tra poco.",
+      "loading": "Carico la prenotazione…",
+      "myBookings": "Le mie prenotazioni",
+      "pageTitle": "Annulla la prenotazione",
+      "retry": "Riprova",
+      "title": "Annulla la tua prenotazione"
+    },
+    "notCancellable": {
+      "generic": "Da qui questa prenotazione non si può più annullare.",
+      "paymentInProgress": "Il pagamento è ancora in corso. Potrai annullare appena si conclude.",
+      "stayStarted": "Il soggiorno è già iniziato, quindi da qui non puoi più annullare. Per qualsiasi cambio scrivi all'host.",
+      "writeToHost": "Scrivi all'host"
+    },
+    "offline": "Sei offline: ricollegati a internet per annullare.",
+    "outcome": {
+      "confirmed": "Rimborso di {{amount}} completato. Lo trovi sul metodo di pagamento che hai usato.",
+      "failed": "Il rimborso di {{amount}} non è andato a buon fine. Contatta l'host per sistemarlo.",
+      "none": "Non c'era nulla da rimborsare.",
+      "pending": "Ti stiamo rimborsando {{amount}}. Di solito l'accredito arriva entro 5–10 giorni.",
+      "title": "Prenotazione annullata"
+    },
+    "policy": {
+      "title": "Politica di cancellazione"
+    },
+    "problem": {
+      "generic": "Non siamo riusciti ad annullare la prenotazione e non è cambiato nulla. Riprova tra poco."
+    },
+    "summary": {
+      "alreadyRefunded": "Già rimborsati: {{amount}}",
+      "basis": "{{percent}}% del prezzo del soggiorno, più l'imposta di soggiorno per intero se l'hai pagata",
+      "cardNotCharged": "La carta che hai salvato non verrà addebitata.",
+      "ifToday": "Se annulli oggi ({{date}})",
+      "noCharge": "Non paghi nulla",
+      "noRefund": "Nessun rimborso",
+      "paid": "Hai pagato {{amount}}",
+      "refund": "Ti rimborsiamo {{amount}}",
+      "retained": "{{amount}} restano all'host, come prevede la politica «{{policy}}»",
+      "retainedNoPolicy": "{{amount}} restano all'host",
+      "timing": "Il rimborso arriva sul metodo di pagamento che hai usato, di solito entro 5–10 giorni.",
+      "withdraw": "Ritiri la richiesta e non paghi nulla"
+    },
+    "timeline": {
+      "full": "Rimborso totale fino al {{date}}",
+      "label": "Come cambia il rimborso con i giorni",
+      "none": "Dopo, nessun rimborso del soggiorno",
+      "noneOnly": "Per questo soggiorno non è previsto il rimborso del prezzo.",
+      "partial": "Rimborso del {{percent}}% fino al {{date}}",
+      "today": "Oggi"
     }
   },
   "guests": {

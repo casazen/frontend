@@ -389,14 +389,18 @@ export type BookingTimelineKind =
 /** `Done` happened; `Current` waits for the host, the guest or the bank. */
 export type BookingTimelineState = 'Done' | 'Current';
 
-/** Why the system cancelled a booking (or the host declined the request); null in the entry when a person cancelled it. */
+/**
+ * Why the system cancelled a booking (or the host declined the request), or that the guest cancelled it themselves (DB-08a);
+ * null in the entry when the host cancelled it.
+ */
 export type BookingCancellationReason =
   | 'CheckoutHoldExpired'
   | 'DatesUnavailableAtPayment'
   | 'OnSiteRequestDeclined'
   | 'OnSiteRequestExpired'
   | 'OnSiteEmailNotConfirmed'
-  | 'DeferredPaymentNotCompleted';
+  | 'DeferredPaymentNotCompleted'
+  | 'GuestRequested';
 
 /** Where the link of the online check-in stands. */
 export type BookingCheckInLinkState = 'Sent' | 'InProgress' | 'Expired' | 'Completed';

@@ -59,8 +59,9 @@ export interface DirectBookingPaymentOptions {
   /** Day (`YYYY-MM-DD`) the saved card is charged; null when the deferred payment is not available. */
   deferredChargeDate: string | null;
   /**
-   * Last day (`YYYY-MM-DD`) the guest can cancel for free by themselves; null while the guest has no self-service
-   * cancellation (today: only the host cancels). "Cancellazione gratuita fino a…" is shown only when set.
+   * Last day (`YYYY-MM-DD`) the guest can cancel for free by themselves, from the guest area or with the link of the host (DB-08a);
+   * null when the cancellation policy of the property does not refund in full for this stay. "Cancellazione gratuita fino a…" is
+   * shown only when set.
    */
   freeCancellationUntil: string | null;
 }
