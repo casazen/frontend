@@ -13416,6 +13416,32 @@
     "seasonPlaceholder": "MM-DD"
   },
   "team": {
+    "access": {
+      "backToToday": "Back to today's role",
+      "canEnter": "Can enter. The menu has:",
+      "canTitle": "What they can do",
+      "description": "{{role}}: this is how CasaZen looks to someone with this role, these areas and these properties.",
+      "make": "Make {{name}} {{role}}",
+      "menuTitle": "Areas and menu",
+      "more": "Also in “More” ({{count}})",
+      "noAdminArea": "Their role does not include the Administration.",
+      "noAreasBody": "They can sign in but see nothing: choose at least one area.",
+      "noAreasTitle": "No area",
+      "noPages": "No pages: with this role nothing opens here.",
+      "noPropertiesBody": "With “Only some” they see only the properties you choose.",
+      "noPropertiesTitle": "No properties",
+      "notGiven": "They do not have this area: it is not in their menu of areas.",
+      "openPeople": "Go to the people",
+      "pickAreas": "Choose the areas",
+      "pickProperties": "Choose the properties",
+      "propertiesTitle": "Properties",
+      "title": "What {{name}} sees",
+      "titleInvited": "What {{name}} will see",
+      "tryLabel": "Try another role",
+      "tryRole": "What if they were…",
+      "trying": "You are trying: {{name}} as {{role}}",
+      "tryingBody": "It is only a guess: today {{name}} is {{current}} and nothing has changed."
+    },
     "actions": {
       "access": {
         "description": "They only see the areas and properties you choose.",
@@ -13571,6 +13597,7 @@
         "where": "Areas and properties"
       },
       "role": {
+        "compare": "Compare the roles in a table",
         "legend": "Role",
         "loadError": "We cannot read the roles you can give."
       },
@@ -13680,6 +13707,7 @@
       "cannot": "Cannot",
       "cannotEnter": "{{area}}: cannot enter",
       "deactivated": "Access is switched off: they cannot enter any area.",
+      "detail": "See the details",
       "noAreas": "No area: they can sign in but see nothing.",
       "read": "Can only look at",
       "title": "What this person can see",
@@ -13694,6 +13722,34 @@
       "Collaborator": "Everyday work on the properties they are given: arrivals, guests, interventions. Sees the prices but cannot change them; does not see the income.",
       "Owner": "The owner of the account: can do everything and cannot be removed.",
       "PropertyManager": "Properties, bookings, leases, income and suppliers. No plan and no invoices."
+    },
+    "roles": {
+      "capability": "What",
+      "description": "What each role can do, area by area, in plain words.",
+      "groups": {
+        "both": "Suppliers and jobs"
+      },
+      "legend": {
+        "No": "they do not see it",
+        "Read": "they see it but cannot change it",
+        "Yes": "they see it and can change it"
+      },
+      "level": {
+        "No": "No",
+        "Read": "Read only",
+        "Yes": "Yes"
+      },
+      "listTitle": "The roles",
+      "loadError": "We could not read the roles.",
+      "matrixCaption": "What each role can do, item by item",
+      "matrixTitle": "Who can do what",
+      "narrowing": "The areas and properties chosen for each person narrow what they see even more. To check the result, open “What they see” from their name.",
+      "notYetBody": "Custom roles, different permissions for each property and handing over the ownership are not part of this first version: for now we work with these five roles.",
+      "notYetTitle": "What is not there (yet)",
+      "openPeople": "Go to the people",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "title": "Roles and permissions"
     },
     "title": "People"
   },
