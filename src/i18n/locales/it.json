@@ -171,6 +171,7 @@
     "descriptionNoOrg": "Tutti gli immobili dell'account, in affitto breve e lungo.",
     "drawer": {
       "address": "Indirizzo",
+      "advice": "Consigliato",
       "assign": "Assegna il responsabile",
       "complete": "Completa l'attivazione",
       "data": "Dati",
@@ -240,9 +241,14 @@
     },
     "loadError": "Impossibile caricare gli immobili",
     "missing": {
+      "activationNotConfirmed": "conferma dell'attivazione",
+      "baseData": "dati di base",
+      "calendar": "calendario",
       "cin": "CIN",
+      "documents": "documenti",
       "photos": "foto",
-      "price": "prezzo"
+      "price": "prezzo",
+      "safety": "sicurezza"
     },
     "mode": {
       "long": "Affitto lungo",
