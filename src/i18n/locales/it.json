@@ -2621,6 +2621,10 @@
     "updated": "Aggiornato {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "Questo codice è fornito dall'agenzia e può essere lo stesso per più soggiorni. CasaZen non crea né revoca i codici d'accesso.",
+      "code_title": "Ecco il codice d'accesso"
+    },
     "copyLink": "Copia link",
     "documentType": {
       "Passport": "Passaporto",
@@ -8297,6 +8301,7 @@
     "reviews": "Recensioni",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
+    "wireTransfers": "Bonifici proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -9598,6 +9603,17 @@
         "comuneRequired": "Scegli il comune dall'elenco.",
         "duplicate": "Esiste già un immobile con questo indirizzo."
       }
+    },
+    "qr": {
+      "download": "Scarica PNG",
+      "error": "Errore",
+      "errorDescription": "ID immobile mancante o non valido.",
+      "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
+      "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
+      "loading": "Generazione codice QR...",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
+      "print": "Stampa",
+      "title": "Codice QR per verifica ospiti"
     }
   },
   "propertyMode": {
@@ -14377,6 +14393,45 @@
       "recordSuccess": "Pagamento registrato con successo",
       "recordError": "Impossibile registrare il pagamento"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Conferma download",
+      "confirmDownloadError": "Impossibile confermare il download",
+      "confirmDownloadSuccess": "Download confermato con successo",
+      "confirmPaid": "Conferma pagamento",
+      "confirmPaidError": "Impossibile confermare il pagamento",
+      "confirmPaidSuccess": "Pagamento confermato con successo",
+      "create": "Crea batch bonifici",
+      "createAnother": "Crea un altro batch",
+      "createError": "Impossibile creare il batch",
+      "createSuccess": "Batch creato con successo",
+      "currency": "Valuta",
+      "details": "Dettagli batch",
+      "detailsDescription": "Informazioni sul batch di bonifici creato",
+      "download": "Scarica file",
+      "downloadError": "Impossibile scaricare il file",
+      "downloadSuccess": "File scaricato con successo",
+      "id": "ID batch",
+      "paidComplete": "Il batch è stato confermato come pagato",
+      "status": "Stato",
+      "totalAmount": "Importo totale",
+      "transferCount": "Numero bonifici"
+    },
+    "debitAccount": "Conto di addebito (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Genera file SEPA per pagare i proprietari.",
+    "loadError": "Impossibile caricare i dati",
+    "loading": "Caricamento bonifici...",
+    "noApprovedStatements": "Nessun estratto conto approvato",
+    "noApprovedStatementsDescription": "Approva gli estratti conto prima di creare un batch di bonifici.",
+    "selectStatements": "Seleziona estratti conto",
+    "status": {
+      "downloaded": "Scaricato",
+      "generated": "Generato",
+      "paid": "Pagato"
+    },
+    "title": "Bonifici proprietari"
   },
   "wizard": {
     "back": "Indietro",

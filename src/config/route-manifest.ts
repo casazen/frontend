@@ -902,6 +902,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
   {
+    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
+    // For org billing administrators who handle owner payments.
+    path: '/app/account/wire-transfers',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.wireTransfers',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 4.5,
+    icon: 'Send',
+    component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
