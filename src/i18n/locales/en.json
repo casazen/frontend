@@ -14523,8 +14523,54 @@
           "saved": "Saved at {{time}}",
           "saving": "Saving…"
         },
+        "sections": {
+          "always": "The services and the final buttons are always shown.",
+          "certs": {
+            "hint": "The ones you wrote yourself.",
+            "name": "Certifications"
+          },
+          "faq": {
+            "hint": "The answers you wrote yourself.",
+            "name": "Frequently asked questions"
+          },
+          "hint": "Choose which blocks of the page to show. A block with nothing in it is not shown anyway.",
+          "how": {
+            "hint": "The steps from the choice to the visit. Shown when the bookings are open.",
+            "name": "How it works"
+          },
+          "title": "Sections of the page",
+          "trust": {
+            "hint": "\"Verified\" and the jobs done, only when true.",
+            "name": "Trust"
+          },
+          "works": {
+            "hint": "The photos of your jobs.",
+            "name": "Jobs"
+          },
+          "zones": {
+            "hint": "The towns where you work.",
+            "name": "Areas"
+          }
+        },
+        "services": {
+          "fix": "Open",
+          "hint": "Choose which services to show and in what order. Only active services can be shown.",
+          "inactiveTitle": "Not in the showcase yet",
+          "keepOne": "At least one service has to stay in the showcase.",
+          "loadError": "I cannot read your services.",
+          "loading": "Reading your services…",
+          "moved": "{{name}}: position {{position}} of {{total}}",
+          "none": "You have no active services yet: activate one in \"Services and prices\" to show it here.",
+          "open": "Go to \"Services and prices\"",
+          "reason": {
+            "Draft": "Draft: finish filling it in to be able to show it.",
+            "Paused": "Paused: turn it back on to be able to show it."
+          },
+          "title": "Services in the showcase"
+        },
         "steps": {
           "publish": "Preview and publish",
+          "services": "Services and sections",
           "style": "Style and mark",
           "texts": "Texts"
         },

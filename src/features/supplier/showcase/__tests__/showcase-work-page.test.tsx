@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import type { ShowcaseContent } from '@/types/supplier-showcase';
-import { problem, renderRouted } from '../../services/__tests__/service-test-kit';
+import { listOf, makeService, problem, renderRouted } from '../../services/__tests__/service-test-kit';
 import { SupplierShowcaseHubPage } from '../showcase-hub-page';
 
 const api = vi.hoisted(() => ({
@@ -16,6 +16,12 @@ const api = vi.hoisted(() => ({
   saveDraft: vi.fn(),
 }));
 vi.mock('@/api/supplier-showcase.api', () => ({ supplierShowcaseApi: api }));
+
+const servicesApi = vi.hoisted(() => ({ fetchServices: vi.fn() }));
+vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/supplier-services.api')>()),
+  fetchSupplierServices: servicesApi.fetchServices,
+}));
 
 // The categories of the profile only decide which style is marked as the recommended one.
 vi.mock('@/queries/supplier/use-profile', () => ({ useSupplierProfile: () => ({ data: { categories: ['cleaning'] } }) }));
@@ -55,7 +61,7 @@ function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   };
 }
 
-function renderEditor(answer: ShowcaseContent, step: 'style' | 'texts' | 'publish') {
+function renderEditor(answer: ShowcaseContent, step: 'style' | 'texts' | 'services' | 'publish') {
   api.getContent.mockResolvedValue(answer);
   api.getStats.mockResolvedValue({ days: 30, requests: 0, pending: 0 });
   return renderRouted({ at: `${PATH}?step=${step}`, routes: [{ path: PATH, element: <SupplierShowcaseHubPage /> }] });
@@ -67,6 +73,7 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     for (const fn of Object.values(api)) fn.mockReset();
+    servicesApi.fetchServices.mockReset();
     await i18n.changeLanguage('it');
   });
   afterEach(cleanup);
@@ -133,6 +140,39 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     fireEvent.click(screen.getByTestId('supplier-showcase-step-texts'));
     fireEvent.change(await screen.findByLabelText(/Introduzione/), { target: { value: 'Da noi' } });
     await waitFor(() => expect(api.saveDraft).toHaveBeenNthCalledWith(2, 5, { intro: 'Da noi' }), { timeout: 3000 });
+  });
+
+  it('leaves a service out of the page by naming the others, and keeps the last one on', async () => {
+    servicesApi.fetchServices.mockResolvedValue(
+      listOf([
+        makeService({ id: 'svc-1', slug: 'cambio-ospiti', name: 'Cambio ospiti' }),
+        makeService({ id: 'svc-2', slug: 'biancheria', name: 'Biancheria', category: 'laundry' }),
+        makeService({ id: 'svc-3', slug: 'ripasso', name: 'Ripasso', status: 'Draft' }),
+      ]),
+    );
+    api.saveDraft.mockResolvedValue(content({ version: 4, draft: { serviceOrder: ['biancheria'] } }));
+    renderEditor(content(), 'services');
+
+    fireEvent.click(await screen.findByRole('switch', { name: /Cambio ospiti/ }));
+
+    await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { serviceOrder: ['biancheria'] }), { timeout: 3000 });
+    // The page cannot show none: the last one is not switched off.
+    expect(screen.getByRole('switch', { name: /Biancheria/ })).toBeDisabled();
+    // A draft is not offered: it says why and where it is finished.
+    expect(screen.getByTestId('supplier-showcase-service-ripasso')).toHaveTextContent('Bozza');
+  });
+
+  it('keeps all the sections of the home on unless one is switched off, and sends all of them', async () => {
+    servicesApi.fetchServices.mockResolvedValue(listOf([makeService()]));
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    renderEditor(content(), 'services');
+
+    fireEvent.click(await screen.findByRole('switch', { name: /Come funziona/ }));
+
+    await waitFor(
+      () => expect(api.saveDraft).toHaveBeenCalledWith(3, { sections: { trust: true, how: false, works: true, zones: true, certs: true, faq: true } }),
+      { timeout: 3000 },
+    );
   });
 
   it('does not offer to publish a question with no answer, and says where it is', async () => {

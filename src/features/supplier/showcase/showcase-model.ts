@@ -10,7 +10,7 @@ const SHOWCASE_PATH = '/app/supplier/showcase';
  * The steps of the editor a panel exists for, in the order they are taken (`?step=style|works|texts|services|publish`; the others come
  * with their panels). A target that names a step with no panel is not offered as a link: a link must lead somewhere.
  */
-export const EDITOR_STEPS = ['style', 'texts', 'publish'] as const;
+export const EDITOR_STEPS = ['style', 'texts', 'services', 'publish'] as const;
 export type EditorStep = (typeof EDITOR_STEPS)[number];
 
 /** The step an address asks for, or null (the overview) when it names none that exists. */

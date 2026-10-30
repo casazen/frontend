@@ -14523,8 +14523,54 @@
           "saved": "Salvato alle {{time}}",
           "saving": "Salvo…"
         },
+        "sections": {
+          "always": "I servizi e i pulsanti finali si vedono sempre.",
+          "certs": {
+            "hint": "Quelle che hai scritto tu.",
+            "name": "Certificazioni"
+          },
+          "faq": {
+            "hint": "Le risposte che hai scritto tu.",
+            "name": "Domande frequenti"
+          },
+          "hint": "Scegli quali blocchi della pagina mostrare. Un blocco senza contenuto non si vede comunque.",
+          "how": {
+            "hint": "I passi dalla scelta alla visita. Si vede quando le prenotazioni sono aperte.",
+            "name": "Come funziona"
+          },
+          "title": "Sezioni della pagina",
+          "trust": {
+            "hint": "«Verificato» e i lavori fatti, solo se veri.",
+            "name": "Fiducia"
+          },
+          "works": {
+            "hint": "Le foto dei tuoi lavori.",
+            "name": "I lavori"
+          },
+          "zones": {
+            "hint": "I comuni in cui lavori.",
+            "name": "Le zone"
+          }
+        },
+        "services": {
+          "fix": "Apri",
+          "hint": "Scegli quali servizi mostrare e in che ordine. Si possono mostrare solo i servizi attivi.",
+          "inactiveTitle": "Non ancora in vetrina",
+          "keepOne": "Deve restare almeno un servizio in vetrina.",
+          "loadError": "Non riesco a leggere i tuoi servizi.",
+          "loading": "Leggo i tuoi servizi…",
+          "moved": "{{name}}: posizione {{position}} di {{total}}",
+          "none": "Non hai ancora servizi attivi: attivane uno in «Servizi e prezzi» per mostrarlo qui.",
+          "open": "Vai a «Servizi e prezzi»",
+          "reason": {
+            "Draft": "Bozza: finisci di compilarla per poterla mostrare.",
+            "Paused": "In pausa: riattivala per poterla mostrare."
+          },
+          "title": "Servizi in vetrina"
+        },
         "steps": {
           "publish": "Anteprima e pubblica",
+          "services": "Servizi e sezioni",
           "style": "Stile e marchio",
           "texts": "Testi"
         },
