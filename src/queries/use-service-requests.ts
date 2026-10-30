@@ -19,14 +19,19 @@ import {
   fetchUsedSuppliers,
   markLongRentServiceRequestPaid,
   markServiceRequestPaid,
+  recordOfflineServiceRequestPayment,
   rejectLongRentProposal,
   rejectServiceRequest,
   remindLongRentServiceRequest,
+  requestServiceRequestPayment,
+  sendServiceRequestQuote,
   takeServiceRequest,
+  withdrawServiceRequestQuote,
 } from '@/api/service-requests.api';
 import type {
   CreateLongRentServiceRequestDto,
   CreateServiceRequestDto,
+  SendServiceRequestQuoteDto,
   ServiceRequest,
   ServiceRequestHostView,
   SupplierPickerSort,
@@ -42,6 +47,9 @@ const SUPPLIER_DASHBOARD_KEY = ['supplier', 'dashboard'];
 
 /** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
 const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
+
+/** 422 code of a reminder for the payment refused because one went out less than a day ago (SP-15a): a rule, not a failure. */
+const PAYMENT_REQUEST_TOO_SOON_CODE = 'service_payment_request_too_soon';
 
 /**
  * Toast of a failed supplier action. When the API says the supplier is not active (an admin suspended it while the page
@@ -184,9 +192,10 @@ export function useSuppliersByProperty(propertyId?: string, category?: string) {
 
 /**
  * The suppliers of the marketplace for a property (SR-09a): `q` and `sort` are answered by the server, which also sends each
- * supplier's services, "from" price, measured response time and «Verificato». While the words change the list that was there stays
- * (for the same property only: another property's suppliers are never shown as this one's). Read again when the page is opened and
- * the answer is older than the stale time: the suppliers of a comune change when one is activated or changes its prices.
+ * supplier's services, "from" price, measured response time and «Verificato». While the words or the order change the list that was
+ * there stays (for the same property and the same category only: another property's suppliers, or the whole list under the page of a
+ * category, are never shown as this one's). Read again when the page is opened and the answer is older than the stale time: the
+ * suppliers of a comune change when one is activated or changes its prices.
  */
 export function useMarketplaceSuppliers(params: {
   propertyId?: string;
@@ -200,7 +209,8 @@ export function useMarketplaceSuppliers(params: {
     queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
     enabled: !!propertyId,
     refetchOnMount: true,
-    placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2] === propertyId ? previous : undefined),
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === propertyId && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
   });
 }
 
@@ -309,6 +319,85 @@ export function useCancelServiceRequest() {
       toast.success(i18n.t('supplier.requests.cancel.done'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/** What a step of the supplier on a request reads again: the request and its lists, the home, the numbers. */
+function refreshSupplierRequests(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+  void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+  void queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
+}
+
+/**
+ * The supplier answers a new request with a quote (SP-04b), or replaces the one that waits. Nothing goes to the customer before this
+ * is called: the host or the customer of the showcase is told by the server when the quote is saved.
+ */
+export function useSendServiceRequestQuote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, quote }: { id: string; quote: SendServiceRequestQuoteDto }) => sendServiceRequestQuote(id, quote),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.quote.sentToast'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/** The supplier takes its quote back: the request is «da rispondere» again and nobody is told. */
+export function useWithdrawServiceRequestQuote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => withdrawServiceRequestQuote(id),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.quote.withdrawnToast'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/**
+ * The supplier asks the payer for the payment of a completed job, or reminds them (SP-15a, behind `SupplierOnlinePayments`): one e-mail
+ * with a new link, and only when this is called. «Once a day» is told as a notice, not as a failure.
+ */
+export function useRequestServiceRequestPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => requestServiceRequestPayment(id),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.payment.remindedToast'));
+    },
+    onError: (error) => {
+      // The payment may have moved meanwhile (paid from another tab, a reminder already sent): the panel shows it as it is now.
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      if (isAxiosError(error) && getProblemCode(error.response?.data) === PAYMENT_REQUEST_TOO_SOON_CODE) {
+        toast.info(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.requests.payment.tooSoon'));
+        return;
+      }
+      onSupplierActionError(queryClient, error);
+    },
+  });
+}
+
+/**
+ * The supplier records that the job was paid outside CasaZen (SP-15a, not behind the flag): the request becomes paid, with no commission,
+ * and the host is told. A request paid inside CasaZen needs the reason, which the server checks too.
+ */
+export function useRecordOfflineServiceRequestPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => recordOfflineServiceRequestPayment(id, reason),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.payment.recordedToast'));
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      onSupplierActionError(queryClient, error);
+    },
   });
 }
 

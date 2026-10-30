@@ -5,7 +5,7 @@
  */
 
 /** The letters CasaZen prepares (backend `LeaseLetterKind`). A name is never renamed. */
-export type LeaseLetterKind = 'Disdetta' | 'PresaAttoRecesso';
+export type LeaseLetterKind = 'Disdetta' | 'PresaAttoRecesso' | 'Rinnovo' | 'ConfermaEsigenza';
 
 /** How the person sent a letter (backend `LeaseLetterMeans`). */
 export const LEASE_LETTER_MEANS = ['RegisteredMail', 'Pec', 'ByHand', 'Other'] as const;
@@ -76,10 +76,56 @@ export interface LeaseWithdrawalOperation {
   recorded: LeaseWithdrawalRecord | null;
 }
 
+/** The other lease of the property that is in the way of a renewal: its id (never a person) and the first and last day it covers. */
+export interface LeaseRenewalConflict {
+  leaseId: string;
+  from: string;
+  to: string;
+}
+
+/** A renewal that was recorded: whether it was agreed on a day (otherwise the standard one) and the period it added. */
+export interface LeaseRenewalRecord {
+  agreed: boolean;
+  from: string;
+  to: string;
+}
+
+/**
+ * The renewal of the lease. `available`: it can be recorded now, from `opensOn` (the last day to give notice) to the end of the period;
+ * recording one moves the end forward and closes the window until the next period's. The standard renewal runs from `startsOn` to
+ * `standardEnd` (`standardMonths` months, the rules'); an extension the parties agreed on ends on any later day up to `latestAgreedEnd`.
+ * `conflict` is the lease that already covers days of the standard renewal (the server would refuse it with 409 `lease_period_overlaps`);
+ * `recorded` is the renewal of the period the lease is in now.
+ */
+export interface LeaseRenewalOperation {
+  available: boolean;
+  opensOn: string;
+  startsOn: string;
+  standardEnd: string;
+  standardMonths: number;
+  latestAgreedEnd: string;
+  conflict: LeaseRenewalConflict | null;
+  recorded: LeaseRenewalRecord | null;
+}
+
+/**
+ * The confirmation of the need of a transitory lease. `applies`: it is a transitory lease in force and the need is confirmed in writing
+ * before the end (`confirmBy`, its last day). `available`: the need is the landlord's, so CasaZen prepares the letter; `holder` says whose
+ * the need is, or `null` when the contract does not say.
+ */
+export interface LeaseTransitoryConfirmation {
+  applies: boolean;
+  available: boolean;
+  holder: 'Landlord' | 'Tenant' | null;
+  confirmBy: string;
+}
+
 export interface LeaseOperations {
   disdetta: LeaseDisdettaOperation;
   withdrawal: LeaseWithdrawalOperation;
   letters: LeaseLetterState[];
+  renewal: LeaseRenewalOperation;
+  transitoryConfirmation: LeaseTransitoryConfirmation;
 }
 
 /** `POST /leases/:id/letters/disdetta`: the reason of the law, required at the first expiry. */
@@ -93,6 +139,18 @@ export interface TenantWithdrawalInput {
   reason: TenantWithdrawalReason;
   /** Only when the contract gave the faculty (1 to `maxContractualNoticeMonths`); for serious reasons the rules' months apply whatever is sent. */
   noticeMonths?: number;
+}
+
+/** `POST /leases/:id/renewal`: without a day the standard renewal of the type, otherwise the last day of the extension the parties agreed on. */
+export interface RecordLeaseRenewalInput {
+  newEnd?: string;
+}
+
+/** `POST /leases/:id/letters/rinnovo`: the period the agreement adds (first and last day) and whether it is an extension agreed on a day. */
+export interface RenewalLetterInput {
+  startsOn: string;
+  endsOn: string;
+  agreed?: boolean;
 }
 
 /** `POST /leases/:id/letters/:kind/sent`. */

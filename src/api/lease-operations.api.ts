@@ -6,6 +6,7 @@ import type {
   LeaseLetterKind,
   LeaseOperations,
   MarkLetterSentInput,
+  RenewalLetterInput,
   TenantWithdrawalInput,
 } from '@/types';
 
@@ -17,11 +18,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   Disdetta: 'disdetta',
   PresaAttoRecesso: 'presa-atto-recesso',
+  Rinnovo: 'rinnovo',
+  ConfermaEsigenza: 'conferma-esigenza',
 };
 
 /** What the server answers for the operations: anything else (an HTML fallback, an envelope) is not an answer. */
 function expectOperations(data: unknown, url: string): LeaseOperations {
-  if (!isRecord(data) || !isRecord(data.disdetta) || !isRecord(data.withdrawal) || !Array.isArray(data.letters)) {
+  if (
+    !isRecord(data) ||
+    !isRecord(data.disdetta) ||
+    !isRecord(data.withdrawal) ||
+    !Array.isArray(data.letters) ||
+    !isRecord(data.renewal) ||
+    !isRecord(data.transitoryConfirmation)
+  ) {
     throw new UnexpectedApiResponseError(url);
   }
   return data as unknown as LeaseOperations;
@@ -48,6 +58,20 @@ export const leaseOperationsApi = {
   /** The draft of the acknowledgement of the tenant's withdrawal, as a PDF, for a withdrawal received on `receivedOn`. */
   downloadPresaAttoRecesso: async (id: string, input: TenantWithdrawalInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.PresaAttoRecesso}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * The draft of the agreement of the two parties to renew or extend the lease, as a PDF, for the period from `startsOn` to `endsOn`.
+   * 422 `lease_letter_not_applicable` (a type that does not renew), `lease_renewal_end_invalid`.
+   */
+  downloadRinnovo: async (id: string, input: RenewalLetterInput): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Rinnovo}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * The draft of the confirmation that the need of a transitory lease goes on, from the landlord to the tenant, as a PDF. 422
+   * `lease_letter_not_applicable` when the need is the tenant's or the lease is not a transitory one in force.
+   */
+  downloadConfermaEsigenza: async (id: string): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.ConfermaEsigenza}`, {}, { responseType: 'blob' })).data,
 
   /** Marks a letter as sent on a day, by a means: an event in the history and nothing else. The answer is the operations as they are now. */
   markSent: async (id: string, kind: LeaseLetterKind, input: MarkLetterSentInput): Promise<LeaseOperations> =>

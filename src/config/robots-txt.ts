@@ -36,6 +36,8 @@ export const DISALLOWED_PATHS = [
   '/login',
   '/book/*/my-bookings',
   '/book/*/booking/',
+  // The page of the link that lets a guest cancel (DB-08a): its address carries the secret of the link until the page takes it out.
+  '/book/*/bookings/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do

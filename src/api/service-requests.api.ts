@@ -6,6 +6,7 @@ import type {
   ServicePaymentSession,
   ServiceRequest,
   ServiceRequestHostView,
+  SendServiceRequestQuoteDto,
   ServiceRequestListResponse,
   SupplierListResponse,
   SupplierPicker,
@@ -57,6 +58,37 @@ export async function cancelServiceRequest(id: string, reason: string): Promise<
 export async function markServiceRequestPaid(id: string): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/mark-paid`);
   return data;
+}
+
+/**
+ * The supplier answers a new request with a quote (SP-04b): 1 to 20 lines, a note and, optionally, another time. The request stays new and
+ * waits for the customer; a new quote replaces the one that waits (and a proposed time), and holds no slot.
+ */
+export async function sendServiceRequestQuote(id: string, quote: SendServiceRequestQuoteDto): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/quote`, quote);
+  return data;
+}
+
+/** The supplier takes its quote back: the request is «da rispondere» again (422 `service_request_no_quote` when none waits). */
+export async function withdrawServiceRequestQuote(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/quote/withdraw`);
+  return data;
+}
+
+/**
+ * The supplier asks the payer for the payment of a completed job paid inside CasaZen, or reminds them (SP-15a): the payer gets a new link by
+ * e-mail, one a day at most. Behind the `SupplierOnlinePayments` flag of the server (404 while it is off).
+ */
+export async function requestServiceRequestPayment(id: string): Promise<void> {
+  await axios.post(`/supplier/requests/${id}/payment-request`);
+}
+
+/**
+ * The supplier records that the job was paid outside CasaZen (SP-15a): the request becomes paid, with no commission, and the host is told.
+ * A request paid inside CasaZen needs the `reason` (422 `service_payment_offline_reason_required`). Not behind the flag.
+ */
+export async function recordOfflineServiceRequestPayment(id: string, reason?: string): Promise<void> {
+  await axios.post(`/supplier/requests/${id}/payment/offline`, reason ? { reason } : {});
 }
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
