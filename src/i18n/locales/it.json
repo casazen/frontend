@@ -2714,6 +2714,10 @@
       },
       "guests": {
         "count": "Inserisci da 1 a 30 ospiti"
+      },
+      "marketingEmail": {
+        "required": "Inserisci l'indirizzo email per ricevere le comunicazioni",
+        "invalid": "Inserisci un indirizzo email valido (massimo 255 caratteri)"
       }
     },
     "loading": "Caricamento check-in...",
@@ -2838,6 +2842,18 @@
         "reject": "Non verificato",
         "rejectMessage": "La verifica biometrica non è riuscita. Riprova o il gestore della struttura verificherà manualmente."
       }
+    },
+    "consent": {
+      "title": "Consenso al marketing (facoltativo)",
+      "intro": "Vuoi ricevere aggiornamenti, offerte e novità dalla struttura? Scegli i canali che preferisci. Non è obbligatorio: puoi completare il check-in senza dare il consenso.",
+      "emailChannel": "Acconsento a ricevere comunicazioni promozionali via email",
+      "emailChannelDescription": "Riceverai offerte, novità e promozioni via email.",
+      "whatsappChannel": "Acconsento a ricevere comunicazioni promozionali via WhatsApp",
+      "whatsappChannelDescription": "Riceverai offerte, novità e promozioni via WhatsApp.",
+      "marketingEmail": "Il tuo indirizzo email *",
+      "marketingEmailPlaceholder": "esempio@email.com",
+      "marketingEmailHint": "Inserisci il tuo indirizzo email personale. Non usare l'email temporanea della prenotazione (es. Booking.com).",
+      "skipAllowed": "Puoi saltare questo passaggio: il check-in sarà completato comunque."
     },
     "documentIntro": "Documento d'identità dell'ospite singolo o del capofamiglia o capogruppo. Per familiari e membri del gruppo non serve.",
     "documentOf": "Documento di {{name}}",
@@ -3894,13 +3910,6 @@
     },
     "ical": {
       "channels": "Canali e calendari dell'immobile"
-    },
-    "intervention": {
-      "noTime": "Ancora senza orario: il lavoro è segnato nel giorno della partenza, {{date}}.",
-      "openBooking": "Apri la prenotazione",
-      "openRequests": "Vai alle richieste dell'immobile",
-      "supplier": "Fornitore",
-      "when": "Quando"
     }
   },
   "directBooking": {
@@ -4854,6 +4863,175 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
+  },
+  "interventions": {
+    "action": {
+      "acceptProposal": "Accetta l'orario",
+      "call": "Chiama il fornitore",
+      "cancel": "Annulla intervento",
+      "confirmAmount": "Conferma l'importo",
+      "contact": "Chiama il fornitore",
+      "markPaid": "Segna pagato",
+      "openPage": "Apri la scheda",
+      "openStay": "Apri il soggiorno",
+      "pay": "Paga",
+      "rejectProposal": "Rifiuta l'orario",
+      "remind": "Sollecita",
+      "remindInHours_one": "Puoi sollecitare tra {{count}} ora",
+      "remindInHours_other": "Puoi sollecitare tra {{count}} ore",
+      "remindInMinutes_one": "Puoi sollecitare tra {{count}} minuto",
+      "remindInMinutes_other": "Puoi sollecitare tra {{count}} minuti",
+      "requestAgain": "Richiedi di nuovo"
+    },
+    "cancel": {
+      "back": "Torna indietro",
+      "confirm": "Annulla intervento",
+      "consequences": {
+        "final": "L'intervento non si può riaprire: per riaverlo lo richiedi di nuovo.",
+        "free": "Annullare è sempre gratuito: non paghi nulla.",
+        "inProgress": "Il lavoro risulta già iniziato: se il fornitore ha già lavorato, mettetevi d'accordo direttamente.",
+        "label": "Cosa succede",
+        "told": "{{supplierStart}} riceve subito un avviso con il motivo che scrivi."
+      },
+      "description": "Il fornitore non farà più questo intervento.",
+      "reason": "Perché lo annulli?",
+      "reasonHint": "Il fornitore legge il motivo. Al massimo {{max}} caratteri.",
+      "title": "Annullare l'intervento?"
+    },
+    "description": "Le richieste che hai fatto ai fornitori: cosa, dove, quando, a che punto sono e cosa devi fare tu.",
+    "detail": {
+      "backToList": "Tutti gli interventi",
+      "email": "E-mail",
+      "fallbackTitle": "Intervento",
+      "loadError": "Impossibile caricare l'intervento.",
+      "loading": "Caricamento dell'intervento…",
+      "notFound": "Intervento non trovato",
+      "notFoundDescription": "Non è tra gli interventi dei tuoi immobili: controlla l'indirizzo o torna all'elenco.",
+      "phone": "Telefono",
+      "stay": "Soggiorno",
+      "stayDates": "dal {{from}} al {{to}}",
+      "supplierTitle": "Fornitore"
+    },
+    "drawer": {
+      "loadError": "Impossibile caricare l'intervento.",
+      "missing": "Questo intervento non c'è più, oppure non è tra quelli dei tuoi immobili."
+    },
+    "errors": {
+      "remindTooSoon": "Hai già sollecitato da poco: riprova più tardi.",
+      "stateChanged": "La richiesta è cambiata: ecco lo stato aggiornato."
+    },
+    "group": {
+      "role": {
+        "Backup": "riserva",
+        "Primary": "scelto da te",
+        "PromotedBackup": "riserva",
+        "ReplacedPrimary": "scelto da te"
+      },
+      "stage": {
+        "backupTookIt": "{{taker}}, una riserva, ha preso il lavoro perché {{supplier}} non ha risposto in tempo.",
+        "backupWindow": "{{supplier}} non ha risposto in tempo. Ora il primo dei fornitori contattati che accetta entro le {{time}} avrà il lavoro.",
+        "cancelled": "Hai annullato la richiesta: anche le riserve sono state avvisate.",
+        "nobody": "Nessuno dei fornitori contattati ha preso il lavoro in tempo: puoi chiedere di nuovo.",
+        "over": "Questa richiesta non è più in corso.",
+        "primaryTookIt": "{{taker}} ha accettato il lavoro. Le riserve sono state avvisate: non serve altro.",
+        "primaryWindow": "{{supplier}} ha tempo fino alle {{time}}. Se non accetta, il lavoro passa alla prima riserva che accetta."
+      },
+      "state": {
+        "accepted": "Ha accettato come riserva",
+        "cancelled": "Chiusa",
+        "cancelledByHost": "Chiusa: richiesta annullata",
+        "noResponse": "Non ha risposto in tempo",
+        "primaryTookIt": "Chiusa: il lavoro l’ha accettato il fornitore scelto",
+        "raceClosed": "Chiusa: un’altra riserva ha accettato prima",
+        "refused": "Ha rifiutato",
+        "slotUnavailable": "Non era più libero all’orario",
+        "takenByBackup": "Chiusa: il lavoro l’ha preso un altro fornitore",
+        "tookTheJob": "Ha il lavoro",
+        "unknown": "—",
+        "waiting": "In attesa"
+      },
+      "title": "Fornitori contattati",
+      "waitingNote": "La richiesta è andata anche a dei fornitori di riserva: subentrano solo se il fornitore scelto non risponde in tempo.",
+      "waitingNoteOpen": "Il fornitore scelto non ha risposto in tempo: ora il primo dei fornitori contattati che accetta avrà il lavoro."
+    },
+    "list": {
+      "chips": {
+        "active": "In corso",
+        "activeHint": "Presi in carico o già iniziati",
+        "all": "Tutti",
+        "done": "Conclusi",
+        "doneHint": "Pagati, rifiutati o annullati",
+        "pending": "In attesa",
+        "pendingHint": "Aspettano la risposta del fornitore",
+        "topay": "Da pagare",
+        "topayHint": "Lavori finiti: restano l'importo e il pagamento"
+      },
+      "columns": {
+        "price": "Prezzo",
+        "request": "Intervento e immobile",
+        "requested": "Richiesto il",
+        "state": "Stato",
+        "stay": "Soggiorno",
+        "supplier": "Fornitore",
+        "when": "Quando"
+      },
+      "count_one": "{{count}} intervento",
+      "count_other": "{{count}} interventi",
+      "emptyDescription": "Idraulico, elettricista, pulizie: chiedi un intervento e lo segui da qui, fino al pagamento.",
+      "emptyTitle": "Qui trovi gli interventi che richiedi ai fornitori",
+      "filters": {
+        "allCategories": "Tutti i tipi",
+        "allProperties": "Tutti gli immobili",
+        "allSuppliers": "Tutti i fornitori",
+        "category": "Tipo",
+        "date": "Giorno del lavoro",
+        "property": "Immobile",
+        "supplier": "Fornitore"
+      },
+      "forStay": "Stai vedendo solo gli interventi di un soggiorno.",
+      "loadError": "Impossibile caricare gli interventi.",
+      "noResultsDescription": "Prova con altre parole o togli qualche filtro.",
+      "noResultsTitle": "Nessun intervento trovato",
+      "noTime": "Da concordare",
+      "note": {
+        "amount": "Importo da confermare",
+        "proposal": "Nuovo orario proposto"
+      },
+      "priceTbd": "Da definire",
+      "searchLabel": "Cerca negli interventi",
+      "searchPlaceholder": "Cerca per tipo, immobile o fornitore",
+      "showAll": "Mostra tutti",
+      "urgency": {
+        "Emergency": "Emergenza",
+        "High": "Urgente"
+      }
+    },
+    "pay": {
+      "description": "Paghi {{amount}} a {{supplier}} con la carta, senza uscire da CasaZen.",
+      "descriptionNoSupplier": "Paghi {{amount}} con la carta, senza uscire da CasaZen.",
+      "failed": "Il pagamento non è andato a buon fine. Controlla la carta o prova con un'altra.",
+      "notice": "Il pagamento è elaborato da Stripe. L'intervento risulta pagato quando Stripe lo conferma a CasaZen.",
+      "processing": "Pagamento inviato: aspettiamo la conferma di Stripe. Questa pagina si aggiorna da sola.",
+      "sent": "Pagamento inviato: aspettiamo la conferma di Stripe",
+      "sessionError": "Impossibile avviare il pagamento.",
+      "title": "Paga l'intervento"
+    },
+    "photos": {
+      "alt": "Foto del lavoro: {{title}}",
+      "close": "Chiudi",
+      "open": "Apri la foto {{index}} di {{count}}",
+      "title": "Foto del lavoro",
+      "unavailable": "Foto non disponibile"
+    },
+    "request": "Richiedi un intervento",
+    "title": "Interventi",
+    "toast": {
+      "amountConfirmed": "Importo confermato: ora puoi pagare",
+      "cancelled": "Intervento annullato",
+      "proposalAccepted": "Orario accettato: l'intervento è confermato",
+      "proposalRejected": "Orario rifiutato: la richiesta resta in attesa",
+      "reminded": "Sollecito inviato al fornitore"
+    }
   },
   "invitation": {
     "accept": "Accetta e entra",
@@ -7686,6 +7864,7 @@
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "backToList": "Torna agli immobili",
+      "contractsEmpty": "Questo immobile non ha ancora contratti.",
       "contractsLoadError": "Non riesco a leggere i contratti di questo immobile.",
       "contractsTitle": "Contratti collegati",
       "description": "Descrizione",
@@ -7710,7 +7889,14 @@
           "kicker": "Contratto in corso"
         }
       },
-      "rooms": "Camere e bagni"
+      "rooms": "Camere e bagni",
+      "tabs": {
+        "contracts": "Contratti",
+        "data": "Dati",
+        "documents": "Documenti",
+        "requests": "Interventi"
+      },
+      "tabsLabel": "Sezioni dell’immobile"
     },
     "drawer": {
       "ape": "APE",
@@ -7934,122 +8120,6 @@
       "pendingDelta_one": "{{count}} canone non ancora scaduto",
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
-  },
-  "longRentTenants": {
-    "chips": {
-      "all": "Tutti",
-      "current": "Attuali",
-      "currentHint": "Chi ha almeno un contratto non ancora concluso",
-      "former": "Ex inquilini",
-      "formerHint": "Chi ha solo contratti conclusi"
-    },
-    "citizenship": {
-      "Eu": "Cittadino UE",
-      "NonEu": "Cittadino non UE"
-    },
-    "columns": {
-      "end": "Fine contratto",
-      "lease": "Contratto",
-      "punctuality": "Puntualità",
-      "tenant": "Inquilino"
-    },
-    "contacts": {
-      "citizenship": "Cittadinanza",
-      "email": "Email",
-      "title": "Contatti"
-    },
-    "count_one": "{{count}} inquilino",
-    "count_other": "{{count}} inquilini",
-    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
-    "detail": {
-      "backToList": "Vai agli inquilini",
-      "description": "Inquilino · {{citizenship}}",
-      "fallbackTitle": "Inquilino",
-      "loadError": "Non siamo riusciti a caricare questo inquilino.",
-      "loading": "Caricamento dell'inquilino",
-      "notFound": "Inquilino non trovato",
-      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
-    },
-    "empty": {
-      "action": "Crea contratto",
-      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
-      "title": "Qui trovi i tuoi inquilini"
-    },
-    "end": {
-      "former": "Finito il {{date}}",
-      "running": "Fino al {{date}}"
-    },
-    "leaseAndOthers_one": "{{property}} · e un altro contratto",
-    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
-    "leases": {
-      "title": "Contratti"
-    },
-    "loadError": "Non siamo riusciti a caricare gli inquilini.",
-    "newLease": "Crea contratto",
-    "noLease": "Nessun contratto",
-    "noResults": {
-      "description": "Controlla il nome o cambia scheda.",
-      "title": "Nessun inquilino trovato"
-    },
-    "now": {
-      "action": "Vedi i canoni in ritardo",
-      "body_one": "{{amount}} scaduti il {{date}}.",
-      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
-      "kicker": "Adesso",
-      "title": "Il canone di {{month}} non è arrivato",
-      "when_one": "In ritardo da {{count}} giorno",
-      "when_other": "In ritardo da {{count}} giorni",
-      "who": "Tocca a te"
-    },
-    "open": "Apri la scheda",
-    "payments": {
-      "all": "Vedi i canoni",
-      "item": "{{month}} · {{amount}}",
-      "paid": "Pagato",
-      "title": "Ultimi pagamenti"
-    },
-    "privacy": {
-      "erase": "Chiedi la cancellazione",
-      "erasure": {
-        "confirm": "Chiedi la cancellazione",
-        "consequences": {
-          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
-          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
-          "final": "L'anonimizzazione non si può annullare.",
-          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
-          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
-        },
-        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
-        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
-        "title": "Chiedere la cancellazione dei dati?"
-      },
-      "export": "Esporta i suoi dati",
-      "exportFailed": "Non è stato possibile preparare il file.",
-      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
-      "exported": "File scaricato.",
-      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
-      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
-      "result": {
-        "anonymized": "Dati anonimizzati.",
-        "description": "Ecco cosa è successo su ogni contratto.",
-        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
-        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
-        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
-        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
-        "title": "Richiesta registrata"
-      },
-      "summary": "Privacy"
-    },
-    "punctuality": {
-      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
-      "none": "Nessun canone ancora scaduto.",
-      "summary": "{{onTime}} su {{total}} canoni in orario"
-    },
-    "search": {
-      "label": "Cerca inquilini",
-      "placeholder": "Cerca per nome o immobile"
-    },
-    "title": "Inquilini"
   },
   "longRentRequests": {
     "cancel": {
@@ -8279,6 +8349,122 @@
       "reminded": "Sollecito inviato al fornitore"
     }
   },
+  "longRentTenants": {
+    "chips": {
+      "all": "Tutti",
+      "current": "Attuali",
+      "currentHint": "Chi ha almeno un contratto non ancora concluso",
+      "former": "Ex inquilini",
+      "formerHint": "Chi ha solo contratti conclusi"
+    },
+    "citizenship": {
+      "Eu": "Cittadino UE",
+      "NonEu": "Cittadino non UE"
+    },
+    "columns": {
+      "end": "Fine contratto",
+      "lease": "Contratto",
+      "punctuality": "Puntualità",
+      "tenant": "Inquilino"
+    },
+    "contacts": {
+      "citizenship": "Cittadinanza",
+      "email": "Email",
+      "title": "Contatti"
+    },
+    "count_one": "{{count}} inquilino",
+    "count_other": "{{count}} inquilini",
+    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
+    "detail": {
+      "backToList": "Vai agli inquilini",
+      "description": "Inquilino · {{citizenship}}",
+      "fallbackTitle": "Inquilino",
+      "loadError": "Non siamo riusciti a caricare questo inquilino.",
+      "loading": "Caricamento dell'inquilino",
+      "notFound": "Inquilino non trovato",
+      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
+    },
+    "empty": {
+      "action": "Crea contratto",
+      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
+      "title": "Qui trovi i tuoi inquilini"
+    },
+    "end": {
+      "former": "Finito il {{date}}",
+      "running": "Fino al {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · e un altro contratto",
+    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
+    "leases": {
+      "title": "Contratti"
+    },
+    "loadError": "Non siamo riusciti a caricare gli inquilini.",
+    "newLease": "Crea contratto",
+    "noLease": "Nessun contratto",
+    "noResults": {
+      "description": "Controlla il nome o cambia scheda.",
+      "title": "Nessun inquilino trovato"
+    },
+    "now": {
+      "action": "Vedi i canoni in ritardo",
+      "body_one": "{{amount}} scaduti il {{date}}.",
+      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
+      "kicker": "Adesso",
+      "title": "Il canone di {{month}} non è arrivato",
+      "when_one": "In ritardo da {{count}} giorno",
+      "when_other": "In ritardo da {{count}} giorni",
+      "who": "Tocca a te"
+    },
+    "open": "Apri la scheda",
+    "payments": {
+      "all": "Vedi i canoni",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Pagato",
+      "title": "Ultimi pagamenti"
+    },
+    "privacy": {
+      "erase": "Chiedi la cancellazione",
+      "erasure": {
+        "confirm": "Chiedi la cancellazione",
+        "consequences": {
+          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
+          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
+          "final": "L'anonimizzazione non si può annullare.",
+          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
+          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
+        },
+        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
+        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
+        "title": "Chiedere la cancellazione dei dati?"
+      },
+      "export": "Esporta i suoi dati",
+      "exportFailed": "Non è stato possibile preparare il file.",
+      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
+      "exported": "File scaricato.",
+      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
+      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
+      "result": {
+        "anonymized": "Dati anonimizzati.",
+        "description": "Ecco cosa è successo su ogni contratto.",
+        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
+        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
+        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
+        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
+        "title": "Richiesta registrata"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
+      "none": "Nessun canone ancora scaduto.",
+      "summary": "{{onTime}} su {{total}} canoni in orario"
+    },
+    "search": {
+      "label": "Cerca inquilini",
+      "placeholder": "Cerca per nome o immobile"
+    },
+    "title": "Inquilini"
+  },
   "ltrReferenceData": {
     "title": "Dati normativi LTR",
     "description": "Accordi territoriali del canone concordato e canali IMU dei Comuni: nessun deploy per aggiornare una PEC o una fascia.",
@@ -8492,6 +8678,7 @@
     "sort": {
       "name": "Nome",
       "price": "Prezzo",
+      "recommended": "Consigliati",
       "response": "Risposta più rapida"
     },
     "verifiedOnly": "Solo verificati",
@@ -8514,7 +8701,21 @@
     },
     "mine": {
       "title": "Le mie app",
-      "description": "Le richieste che hai mandato ai fornitori e a che punto sono."
+      "description": "I fornitori a cui hai già chiesto un intervento e le richieste che hai mandato.",
+      "suppliersTitle": "I miei fornitori",
+      "summary_one": "{{count}} richiesta · ultima il {{date}}",
+      "summary_other": "{{count}} richieste · ultima il {{date}}",
+      "open_one": "{{count}} aperta",
+      "open_other": "{{count}} aperte",
+      "requestAgain": "Richiedi di nuovo",
+      "openPage": "Apri la scheda",
+      "seeRequests": "Vedi le richieste",
+      "notAround": "Non lavora nella zona di questo immobile.",
+      "onlySupplier": "Solo le richieste di {{name}}",
+      "showAll": "Mostra tutte",
+      "emptyTitle": "Non hai ancora chiesto interventi",
+      "emptyHint": "Quando chiederai un intervento a un fornitore lo ritroverai qui, con le sue richieste.",
+      "discover": "Scopri i fornitori"
     },
     "supplier": {
       "title": "Fornitore",
@@ -8531,7 +8732,8 @@
     "goToBookings": "Vai alle prenotazioni",
     "goToProperties": "Vai alle proprietà",
     "propertiesTitle": "Le tue proprietà",
-    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
+    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione.",
+    "recommended": "Consigliato"
   },
   "messageThread": {
     "send": "Invia",
@@ -8571,6 +8773,7 @@
     "longRentDeadlines": "Scadenze",
     "longRentTenants": "Inquilini",
     "serviceRequests": "Interventi",
+    "interventions": "Interventi",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",
@@ -8688,7 +8891,11 @@
       "serviceRequestQuoteExpired": "Il preventivo è scaduto: il cliente non ha risposto in tempo.",
       "serviceRequestDayBefore": "Domani hai un lavoro.",
       "servicePaymentReceived": "Hai ricevuto un pagamento.",
-      "generic": "Hai una nuova notifica."
+      "generic": "Hai una nuova notifica.",
+      "serviceRequestBackupInvited": "Sei una riserva per una nuova richiesta di servizio.",
+      "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
+      "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
+      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa."
     }
   },
   "onboarding": {
@@ -8824,7 +9031,12 @@
       "contactEmailInvalid": "Inserisci un'email valida."
     },
     "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
-    "siteAppearanceLink": "Vai ad Aspetto sito"
+    "siteAppearanceLink": "Vai ad Aspetto sito",
+    "backups": {
+      "help": "Quando chiedi un intervento, la richiesta va al fornitore che scegli e anche ad altri fornitori della zona, dichiarati come riserve. Il fornitore scelto ha un’ora per accettare: se non lo fa, il lavoro passa alla prima riserva che accetta. Per ogni richiesta puoi scegliere diversamente.",
+      "label": "Invia le richieste anche a fornitori di riserva",
+      "title": "Richieste ai fornitori"
+    }
   },
   "ota": {
     "status": {
@@ -10296,6 +10508,89 @@
       "recommended": "{{photos}} di {{recommended}} foto consigliate (non obbligatorie): puoi aggiungerne anche più tardi.",
       "title": "Foto"
     },
+    "prices": {
+      "calendar": "Il prezzo base vale per ogni notte; nel Calendario vedi i prezzi che si applicano.",
+      "cleaning": {
+        "hint": "Si paga una volta a soggiorno.",
+        "label": "Costo della pulizia (€)"
+      },
+      "minNights": {
+        "hint": "Notti minime per ogni prenotazione dal tuo sito (1 = nessun minimo). Non vale per le prenotazioni che inserisci tu.",
+        "label": "Soggiorno minimo"
+      },
+      "rate": {
+        "hint": "Vale per ogni notte. Senza un prezzo l'immobile resta «Da completare»: non si può attivare.",
+        "label": "Prezzo base per notte (€)"
+      },
+      "touristTax": {
+        "found": "Imposta di soggiorno: per {{city}} abbiamo la tariffa. Non è nel prezzo: si aggiunge alla prenotazione.",
+        "notYet": "Imposta di soggiorno: la tariffa di {{city}} non è ancora disponibile. Non è nel prezzo: si aggiunge alla prenotazione quando c'è.",
+        "see": "Vedi la tariffa"
+      },
+      "weekend": {
+        "hint": "Si aggiunge al prezzo base delle notti che iniziano di venerdì o di sabato. Se per una data c'è già un prezzo suo, vale quello. Vuoto = nessun supplemento.",
+        "label": "Supplemento weekend (%)"
+      }
+    },
+    "rules": {
+      "extraGuest": {
+        "hint": "Quanto chiedi a notte per ogni ospite in più. Lascia vuoto se non accetti ospiti in più. Per ora gli ospiti lo leggono tra le regole: non viene aggiunto da solo al prezzo del soggiorno.",
+        "label": "Supplemento per ospite in più (€ a notte)"
+      },
+      "house": {
+        "parties": "Feste ed eventi",
+        "pets": "Animali",
+        "smoking": "Fumare",
+        "title": "In casa"
+      },
+      "onSite": "Se i pagamenti online sono attivi, gli ospiti possono anche chiedere di pagare in struttura: tu accetti o rifiuti ogni richiesta, e senza risposta la richiesta scade.",
+      "other": {
+        "hint": "Per esempio dove lasciare le scarpe o come funziona la raccolta differenziata.",
+        "label": "Altre regole"
+      },
+      "partiesOptions": {
+        "No": "Vietati",
+        "OnRequest": "Solo su richiesta"
+      },
+      "petsOptions": {
+        "No": "Non ammessi",
+        "OnRequest": "Su richiesta",
+        "Yes": "Benvenuti"
+      },
+      "policy": {
+        "days_one": "{{count}} giorno",
+        "days_other": "{{count}} giorni",
+        "hours_one": "{{count}} ora",
+        "hours_other": "{{count}} ore",
+        "intro": "Scegli una delle politiche di CasaZen: sotto ognuna c'è quanto rimborsi, contando i giorni prima dell'arrivo.",
+        "legend": "Politica di cancellazione",
+        "lineFullOnly": "Rimborso totale fino a {{full}} prima dell'arrivo; poi nessun rimborso.",
+        "lineNone": "Nessun rimborso.",
+        "linePartial": "Rimborso totale fino a {{full}} prima dell'arrivo; poi il {{percent}}% fino a {{partial}} prima; dopo, nessun rimborso.",
+        "linePartialToArrival": "Rimborso totale fino a {{full}} prima dell'arrivo; poi il {{percent}}% fino all'arrivo.",
+        "loadFailed": "Non riesco a leggere le politiche di cancellazione. Riprova tra poco.",
+        "loading": "Carico le politiche…",
+        "noneChosen": "Se non scegli una politica, il rimborso totale vale fino a 7 giorni prima dell'arrivo; dopo, decidi tu caso per caso.",
+        "title": "Se l'ospite cancella"
+      },
+      "quiet": {
+        "from": "Silenzio dalle",
+        "hint": "Facoltativi: se li scrivi, gli ospiti li leggono nelle regole della casa.",
+        "none": "Nessuno",
+        "title": "Orari di silenzio",
+        "to": "Silenzio fino alle"
+      },
+      "smokingOptions": {
+        "No": "Vietato",
+        "OutdoorsOnly": "Solo all'aperto",
+        "Yes": "Consentito"
+      },
+      "times": {
+        "checkIn": "Check-in dalle",
+        "checkOut": "Check-out entro le",
+        "title": "Arrivo e partenza"
+      }
+    },
     "steps": {
       "amenities": {
         "label": "Dotazioni",
@@ -10311,6 +10606,16 @@
         "label": "Foto",
         "purpose": "Consigliate, non obbligatorie: puoi saltare questo passo e aggiungerle dopo.",
         "title": "Mostra la casa con qualche foto"
+      },
+      "prices": {
+        "label": "Prezzi",
+        "purpose": "Un prezzo di base per ogni notte, più qualche regola. Nel Calendario vedi poi i prezzi che si applicano.",
+        "title": "Quanto costa una notte?"
+      },
+      "rules": {
+        "label": "Regole",
+        "purpose": "Orari, fumo, animali e cancellazione. Gli ospiti le leggono prima di prenotare.",
+        "title": "Quali regole valgono in casa?"
       }
     },
     "suggest": {
@@ -10343,22 +10648,30 @@
       "bathrooms": "I bagni sono da 1 a 50.",
       "bedrooms": "Le camere da letto sono da 0 a 100.",
       "beds": "I letti sono da 1 a 100.",
+      "cleaningFee": "Scrivi l'importo in euro, da 0 a 10.000, solo numeri: per esempio 50.",
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
       "description": "La descrizione può avere al massimo 600 caratteri.",
+      "extraGuestFee": "Scrivi l'importo in euro, da 0 a 1.000, solo numeri: per esempio 15. Lascia vuoto se non accetti ospiti in più.",
+      "houseRules": "Le altre regole possono avere al massimo 1000 caratteri.",
       "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
       "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
+      "minNights": "Il soggiorno minimo è da 1 a 30 notti.",
       "name": {
         "max": "Il nome può avere al massimo 100 caratteri.",
         "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
       },
+      "nightlyRate": "Scrivi il prezzo in euro, da 1 a 100.000, solo numeri: per esempio 135.",
       "postalCode": {
         "format": "Il CAP italiano ha 5 cifre."
       },
+      "quietHours": "Scrivi sia l'ora di inizio sia quella di fine del silenzio, o lasciale vuote tutte e due.",
+      "time": "Scegli un orario dall'elenco.",
       "unit": {
         "max": "Piano e interno possono avere al massimo 30 caratteri."
-      }
+      },
+      "weekendSurcharge": "Scrivi la percentuale da 0 a 100, per esempio 15."
     }
   },
   "publicBooking": {
@@ -10875,6 +11188,7 @@
       "propertyTitle": "{{name}} · {{city}} — {{org}}"
     },
     "loading": "Caricamento...",
+    "offline": "Sei offline: vedi l’ultima versione salvata. Per verificare le date e prenotare serve la connessione.",
     "loadingProperties": "Caricamento delle strutture...",
     "propertiesError": {
       "title": "Non riusciamo a mostrare le strutture",
@@ -11157,6 +11471,181 @@
       "financial": "Finanziario",
       "fiscal": "Fiscale",
       "operational": "Operativo"
+    }
+  },
+  "requestWizard": {
+    "done": {
+      "another": "Fai un'altra richiesta",
+      "answers": "Il fornitore decide: accetta, rifiuta oppure ti propone un altro orario.",
+      "cancel": "Puoi annullare quando vuoi, senza costi, finché il lavoro non è iniziato.",
+      "description": "La richiesta è partita: ecco cosa succede adesso.",
+      "respondBy": "Ha tempo per rispondere fino a {{when}}.",
+      "see": "Vedi la richiesta",
+      "title": "Richiesta inviata a {{supplier}}",
+      "titleGeneric": "Richiesta inviata",
+      "told": "Ti avvisiamo appena risponde. Da Interventi la segui fino al pagamento."
+    },
+    "errors": {
+      "categoryRequired": "Scegli che tipo di intervento ti serve.",
+      "commitmentConflict": "Il fornitore ha già un lavoro in quell'intervallo: scegli un altro orario.",
+      "dayPast": "Il giorno è già passato: scegline uno da oggi in poi.",
+      "dayRequired": "Scrivi il giorno del lavoro.",
+      "durationInvalid": "Scrivi quanto dura il lavoro, da 5 minuti a 24 ore.",
+      "notesTooLong": "Le note possono essere lunghe al massimo 1000 caratteri.",
+      "propertyRequired": "Scegli l'immobile.",
+      "sendFailed": "Non siamo riusciti a inviare la richiesta. Riprova tra poco: le tue risposte sono ancora qui.",
+      "serviceRequired": "Scegli un servizio, oppure «Altro lavoro».",
+      "serviceUnavailable": "Il fornitore non offre più questo servizio: scegline un altro.",
+      "slotRequired": "Scegli uno degli orari liberi.",
+      "slotTaken": "Questo orario è appena stato preso: scegline un altro.",
+      "stayMismatch": "Il soggiorno scelto non è di questo immobile: sceglilo di nuovo.",
+      "supplierInactive": "Questo fornitore al momento non è disponibile: scegline un altro.",
+      "supplierOutsideComune": "Questo fornitore non lavora nel comune dell'immobile: scegline un altro.",
+      "supplierRequired": "Scegli il fornitore.",
+      "timeInvalid": "L'orario scelto non è valido: scegline un altro.",
+      "timePast": "Quell'orario è già passato: scegline uno più tardi.",
+      "timeRequired": "Scrivi l'ora di inizio.",
+      "urgencyRequired": "Scegli quanto è urgente."
+    },
+    "finish": "Invia la richiesta",
+    "loading": "Preparo la richiesta…",
+    "noProperty": {
+      "action": "Aggiungi un immobile",
+      "text": "Per chiedere un intervento serve almeno un immobile.",
+      "title": "Prima serve un immobile"
+    },
+    "retry": "Riprova",
+    "review": {
+      "backups": {
+        "description": "Il fornitore che hai scelto ha un’ora per accettare. Se non risponde, il lavoro passa al primo fornitore di riserva che accetta: così non resti senza risposta.",
+        "legend": "Se il fornitore non risponde",
+        "title": "Invia anche a delle riserve"
+      },
+      "houseOnly": "Solo la casa, nessun soggiorno",
+      "notes": "Note",
+      "price": "Prezzo",
+      "priceEstimate": "Stima: {{price}}. A lavoro finito il fornitore indica l'importo definitivo.",
+      "priceFrom": "{{price}}. Il totale dipende dal lavoro e lo indica il fornitore.",
+      "priceQuote": "Su preventivo. Il fornitore ti manderà il preventivo.",
+      "priceTbd": "Da concordare con il fornitore.",
+      "sees": {
+        "after": {
+          "contact": "i tuoi contatti (e-mail e telefono)",
+          "notes": "le tue note",
+          "where": "il nome e l'indirizzo dell'immobile"
+        },
+        "afterTitle": "Quando accetta, vede anche",
+        "before": {
+          "what": "che tipo di intervento è e quanto è urgente",
+          "when": "il giorno e l'orario",
+          "where": "il comune e il CAP dell'immobile, non l'indirizzo",
+          "who": "il nome della tua organizzazione e il prezzo previsto"
+        },
+        "beforeTitle": "Prima che accetti, vede",
+        "never": "Non vede mai i dati dei tuoi ospiti: se colleghi un soggiorno, ne conosce solo le date.",
+        "title": "Cosa vede il fornitore"
+      },
+      "what": "Cosa serve",
+      "when": "Quando",
+      "where": "Dove",
+      "who": "Chi"
+    },
+    "steps": {
+      "review": {
+        "label": "Riepilogo",
+        "purpose": "La richiesta parte solo quando premi «Invia la richiesta».",
+        "title": "Controlla e invia"
+      },
+      "what": {
+        "label": "Cosa serve",
+        "purpose": "Scegli il tipo di lavoro e quanto è urgente.",
+        "title": "Di che intervento hai bisogno?"
+      },
+      "when": {
+        "label": "Dove e quando",
+        "purpose": "Scegli l'immobile e il giorno. Il soggiorno è facoltativo.",
+        "title": "Dove e quando serve?"
+      },
+      "who": {
+        "label": "Chi",
+        "purpose": "Scegli il fornitore, il servizio e l'orario tra quelli liberi.",
+        "title": "Chi se ne occupa?"
+      }
+    },
+    "title": "Richiedi un intervento",
+    "what": {
+      "category": "Tipo di intervento",
+      "categoryPlaceholder": "Scegli il tipo",
+      "notes": "Cosa deve fare il fornitore?",
+      "notesHint": "Descrivi il lavoro in poche righe. Non scrivere dati degli ospiti (nome, telefono, documenti): il fornitore legge queste note solo quando accetta.",
+      "urgencies": {
+        "Emergency": {
+          "text": "Serve subito: non può aspettare.",
+          "title": "Emergenza"
+        },
+        "High": {
+          "text": "Serve in tempi brevi.",
+          "title": "Alta"
+        },
+        "Normal": {
+          "text": "Si può programmare.",
+          "title": "Normale"
+        }
+      },
+      "urgency": "Quanto è urgente?"
+    },
+    "when": {
+      "day": "Giorno del lavoro",
+      "property": "Immobile",
+      "propertyPlaceholder": "Scegli l'immobile",
+      "stay": "Collega a un soggiorno",
+      "stayHint": "Facoltativo: senza, la richiesta riguarda solo la casa.",
+      "stayNone": "Nessun soggiorno: solo la casa",
+      "window": {
+        "both": "Quel giorno gli ospiti partono entro le {{from}} e i prossimi arrivano dalle {{to}}: per le pulizie conviene la fascia {{from}}–{{to}}.",
+        "defaults": "Orari predefiniti: partenza entro le {{checkOut}}, arrivo dalle {{checkIn}}.",
+        "open": "Quel giorno gli ospiti partono entro le {{from}} e nessuno arriva: le pulizie si possono fare dopo."
+      }
+    },
+    "who": {
+      "advised": {
+        "both": "Ti mostro gli orari tra le {{from}} e le {{to}}, la fascia consigliata per le pulizie.",
+        "none": "Nessun orario libero nella fascia consigliata: ecco gli altri.",
+        "open": "Ti mostro gli orari dalle {{from}}, dopo la partenza degli ospiti."
+      },
+      "catalogError": "Non riesco a leggere i servizi di questo fornitore.",
+      "custom": {
+        "help": "Scegli quando vuoi che inizi e quanto dura. Il fornitore può accettare, rifiutare o proporti un altro orario.",
+        "text": "Non è tra i servizi dell'elenco: scegli tu orario e durata.",
+        "title": "Altro lavoro"
+      },
+      "duration": "Durata",
+      "durationMinutes": "Minuti",
+      "durationOther": "Altro…",
+      "durationRange": "Da {{min}} a {{max}} minuti.",
+      "loadingServices": "Cerco i servizi…",
+      "loadingSlots": "Cerco gli orari liberi…",
+      "loadingSuppliers": "Cerco i fornitori…",
+      "lookAround": "Guarda il marketplace",
+      "nearbyDays": "Giorni vicini con orari liberi",
+      "noDuration": "Durata da concordare",
+      "noSlotsAtAll": "Nessun orario libero nei prossimi giorni. Scegli un altro servizio o un altro fornitore.",
+      "noSlotsDay": "Nessun orario libero {{day}}.",
+      "noSuppliers": "Nessun fornitore copre il comune di questo immobile per questo tipo di lavoro.",
+      "priceOnRequest": "Prezzo su preventivo",
+      "services": "Servizio",
+      "showEvery": "Mostra tutti gli orari",
+      "slot": "Dalle {{from}} alle {{to}}",
+      "slotsCount_one": "Un orario libero {{day}}",
+      "slotsCount_other": "{{count}} orari liberi {{day}}",
+      "slotsError": "Non riesco a leggere gli orari liberi.",
+      "slotsLabel": "Orari liberi {{day}}",
+      "slotsTitle": "Orari liberi {{day}}",
+      "startTime": "Ora di inizio",
+      "supplierUnavailable": "Il fornitore indicato non è tra quelli disponibili per questo immobile e questo tipo di lavoro (non è attivo o non copre il comune). Scegline un altro.",
+      "suppliers": "Fornitori per questo lavoro",
+      "suppliersError": "Non riesco a caricare i fornitori.",
+      "until": "fino alle {{to}}"
     }
   },
   "revenue": {
@@ -12066,6 +12555,39 @@
       "urlRequired": "Inserisci l'indirizzo del documento.",
       "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
     }
+  },
+  "siteMap": {
+    "approximateNote": "Posizioni indicative: l'indirizzo esatto arriva con la conferma.",
+    "cardClose": "Chiudi la scheda",
+    "cardOpen": "Vedi la casa",
+    "cardTitle": "Casa selezionata",
+    "cluster": "{{count}} case vicine: avvicina la mappa per vederle",
+    "controls": "Controlli della mappa",
+    "error": "Mappa non disponibile",
+    "fit": "Inquadra tutte le case",
+    "fitAnnounce": "Mappa inquadrata su tutte le case",
+    "keyboardHint": "Mappa: usa le frecce per spostarla, più e meno per ingrandire o rimpicciolire, 0 per inquadrare tutte le case.",
+    "loading": "Caricamento della mappa",
+    "local": {
+      "approximate": "Posizione approssimata: l'indirizzo esatto arriva con la conferma.",
+      "minutes": "{{minutes}} min",
+      "poiCar": "{{name}}, {{minutes}} minuti in auto",
+      "poiWalk": "{{name}}, {{minutes}} minuti a piedi",
+      "poisLabel": "Punti di interesse",
+      "scheme": "Schema della zona, non una mappa stradale.",
+      "unlocked": "Posizione approssimata: l'indirizzo esatto è nella tua prenotazione."
+    },
+    "mapLabel": "Mappa delle case",
+    "noPosition": "Posizione non disponibile",
+    "pinLabel": "{{name}}, {{label}}",
+    "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
+    "pinsLabel": "Case sulla mappa",
+    "rating": "Voto {{value}} su 5",
+    "retry": "Riprova",
+    "unavailable": "non libera",
+    "zoomAnnounce": "Mappa a {{km}} km di larghezza",
+    "zoomIn": "Più vicino",
+    "zoomOut": "Più lontano"
   },
   "siteReviews": {
     "count_one": "{{count}} recensione",
@@ -13202,6 +13724,7 @@
         "showcase": "Pubblica la tua vetrina"
       },
       "today": {
+        "acceptBackupAria": "Accetta come riserva: {{name}}",
         "completed": "Finito: aspetta il pagamento",
         "filterLabel": "Mostra per tipo",
         "inProgress": "In corso",
@@ -13233,6 +13756,7 @@
     },
     "requests": {
       "action": {
+        "acceptBackup": "Accetta come riserva",
         "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
@@ -13252,6 +13776,14 @@
         "you": "Tu"
       },
       "answerUrgent": "Rispondi alla più urgente",
+      "backup": {
+        "acceptedToast": "Fatto: se il fornitore scelto non accetta in tempo, il lavoro può passare a te.",
+        "primaryHint": {
+          "late": "Il tuo tempo è scaduto, ma puoi ancora accettare finché nessun altro ha preso il lavoro.",
+          "priority": "Il cliente ha chiesto anche ad altri fornitori come riserva: hai tempo fino alle {{time}} per accettare, poi il lavoro può passare a una riserva."
+        },
+        "primaryUntil": "Il fornitore scelto ha tempo fino alle {{time}}"
+      },
       "cancel": {
         "back": "Indietro",
         "confirm": "Annulla il lavoro",
@@ -13378,6 +13910,23 @@
       },
       "now": {
         "amountToConfirm": "In attesa che il cliente confermi l’importo.",
+        "backupAccepted": {
+          "client": "Vede che hai accettato come riserva.",
+          "title": "Hai accettato come riserva",
+          "you": "Sei l’unica riserva rimasta: le altre sono state chiuse appena hai accettato. Se il fornitore scelto non accetta entro le {{time}}, il lavoro è tuo e ti avvisiamo. Intanto il tuo orario è riservato in agenda; se accetta lui, torna libero e non c’è nessuna penalità."
+        },
+        "backupActive": {
+          "client": "Aspetta che qualcuno prenda il lavoro.",
+          "then": "Poi: dopo che accetti vedi indirizzo e contatti del cliente.",
+          "title": "Il lavoro è libero: accettalo se puoi",
+          "you": "Il fornitore scelto non ha accettato in tempo. Il primo che accetta entro le {{time}} ha il lavoro: accetta solo se puoi farlo."
+        },
+        "backupWaiting": {
+          "client": "Ha scelto un altro fornitore e sa che la richiesta è andata anche a delle riserve.",
+          "then": "Poi: se il lavoro passa a te ti avvisiamo, e solo allora vedi indirizzo e contatti del cliente.",
+          "title": "Sei una riserva per questa richiesta",
+          "you": "Il cliente ha scelto un altro fornitore, che ha tempo fino alle {{time}}. Il lavoro è tuo solo se non lo accetta. Puoi dire subito che lo prenderesti: la prima riserva che accetta chiude la gara (le altre non possono più accettare) e il suo orario viene riservato in agenda."
+        },
         "cancelled": {
           "client": "La richiesta è chiusa.",
           "title": "La richiesta è stata annullata",
@@ -13493,6 +14042,9 @@
         "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."
       },
       "phase": {
+        "backupAccepted": "Riserva accettata",
+        "backupActive": "Riserva: da accettare",
+        "backupWaiting": "Riserva",
         "proposalPending": "In attesa del cliente",
         "quotePending": "In attesa del cliente"
       },
@@ -13564,10 +14116,15 @@
         "withdrawnToast": "Preventivo ritirato"
       },
       "reason": {
+        "BackupRaceClosed": "Un altro fornitore di riserva ha accettato prima di te: la gara è chiusa. Non c’è nessuna penalità per te.",
+        "BackupSlotUnavailable": "Il tuo orario non era più libero quando il lavoro è passato a te.",
         "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
         "NoResponse": "Nessuno ha risposto in tempo.",
+        "PrimaryTookIt": "Il lavoro l’ha accettato il fornitore scelto dal cliente.",
         "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario.",
-        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo."
+        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo.",
+        "RequestCancelledByHost": "Il cliente ha annullato la richiesta.",
+        "TakenByBackup": "Il lavoro l’ha preso un altro fornitore."
       },
       "reject": {
         "cancel": "Annulla",
@@ -14441,6 +14998,48 @@
     "comuniTitle": "Dove opera",
     "servicesTitle": "Servizi",
     "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
+  },
+  "swiss": {
+    "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",
+    "otr": {
+      "description": "Rapporto pernottamenti per il periodo (OTR CSV).",
+      "download": "Scarica rapporto OTR",
+      "downloadFailed": "Impossibile scaricare il rapporto OTR.",
+      "downloading": "Download in corso...",
+      "fromDate": "Data inizio",
+      "title": "Rapporto OTR",
+      "toDate": "Data fine"
+    },
+    "police": {
+      "date": "Data notifica",
+      "description": "Notifica giornaliera alla polizia (XML Ticino).",
+      "download": "Scarica notifica polizia",
+      "downloadFailed": "Impossibile scaricare la notifica.",
+      "downloading": "Download in corso...",
+      "title": "Notifica polizia"
+    },
+    "propertyIdPlaceholder": "ID immobile",
+    "receipt": {
+      "date": "Data rapporto",
+      "description": "Carica la ricevuta dal portale cantonale.",
+      "file": "File ricevuta",
+      "reference": "Riferimento",
+      "referencePlaceholder": "Numero conferma o riferimento",
+      "title": "Carica ricevuta",
+      "type": "Tipo",
+      "typeOtr": "OTR",
+      "typePolice": "Polizia",
+      "upload": "Carica ricevuta",
+      "uploadFailed": "Impossibile caricare la ricevuta.",
+      "uploadSuccess": "Ricevuta caricata con successo.",
+      "uploading": "Caricamento in corso..."
+    },
+    "reminder": {
+      "description": "Riceverai notifiche 24 ore prima delle scadenze configurate.",
+      "title": "Promemoria scadenze"
+    },
+    "selectProperty": "Seleziona immobile",
+    "title": "Conformità Svizzera"
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",

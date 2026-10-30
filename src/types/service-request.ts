@@ -70,6 +70,120 @@ export interface ServiceRequest {
   lastRemindedAt?: string | null;
   /** `Online` (paid inside CasaZen, with the payment session) or `Manual` (paid outside, the host marks it). */
   paymentMode?: string;
+  /** The photos of the work, private files read through the authenticated address of each one (at most 6). */
+  workPhotos?: ServiceRequestWorkPhoto[];
+
+  // What the server adds for the host of the short-rent context (SR-08a). `null` for the supplier and in the long-rent context.
+  /** The city of the property, as the host wrote it. */
+  propertyCity?: string | null;
+  /** The stay the request is for; `null` when it is for the house alone. The guest is the host's: the supplier never gets it. */
+  stay?: ServiceRequestStay | null;
+  /** How to reach the supplier, from the moment it took the request; `null` before. */
+  supplierContact?: ServiceRequestSupplierContact | null;
+  /** The one thing the host is asked to do about the request, worked out by the server: the page has no state logic of its own. */
+  hostAction?: ServiceRequestHostAction | null;
+  /** Everything the host can do now, the `hostAction.kind` first. An open set (see {@link HostActionKind}). */
+  availableActions?: string[] | null;
+  /** Only in the answer of the creation: the host named no time and the request got the default one (10:00 of a day). */
+  scheduleDefaulted?: boolean | null;
+  /**
+   * The group of backup suppliers the request belongs to (SP-BKP), as its host sees it: the supplier it chose, the backups it was sent to
+   * with them and who took the job. `null`/absent for a request sent to one supplier only. The host never sees a backup as a request of
+   * its own: the group is inside the request it made, or inside the backup that took the job.
+   */
+  group?: ServiceRequestGroup | null;
+}
+
+/**
+ * Where the group of a request is (SP-BKP): `PrimaryWindow` (the chosen supplier has until `primaryDueAt`; the backups can only say they
+ * would take the job), `BackupWindow` (the chosen supplier did not take it or refused: every supplier still waiting can, until
+ * `backupDueAt`, and the first has it) or `Closed`. An open set: a word this version does not know is shown as a group that is over.
+ */
+export type ServiceRequestGroupPhase = 'PrimaryWindow' | 'BackupWindow' | 'Closed';
+
+export interface ServiceRequestGroup {
+  id: string;
+  phase: ServiceRequestGroupPhase | string;
+  primaryDueAt: string;
+  backupDueAt?: string | null;
+  createdAt: string;
+  closedAt?: string | null;
+  /** The request the host follows first (the chosen supplier, or the backup that replaced it), then the one it replaced, then the backups. */
+  members: ServiceRequestGroupMember[];
+}
+
+/**
+ * One request of a group (SP-BKP). `role`: `Primary` (the supplier the host chose), `Backup`, `ReplacedPrimary` (the chosen supplier that
+ * did not answer in time and was replaced) or `PromotedBackup` (the backup that took the job). `acceptedAt` is when a backup said it would
+ * take the job (the first backup that accepts closes the race for the others); `tookTheJob` marks the request that was taken;
+ * `cancellationReason` is the code of a request closed by CasaZen (`NoResponse`, `PrimaryTookIt`, `TakenByBackup`,
+ * `RequestCancelledByHost`, `BackupSlotUnavailable`, `BackupRaceClosed`).
+ */
+export interface ServiceRequestGroupMember {
+  requestId: string;
+  role: 'Primary' | 'Backup' | 'ReplacedPrimary' | 'PromotedBackup' | string;
+  supplierOrgId: string;
+  supplierName: string;
+  status: ServiceRequestStatus;
+  acceptedAt?: string | null;
+  tookTheJob: boolean;
+  cancellationReason?: string | null;
+}
+
+/**
+ * Where a request stands in its group of backup suppliers, for the supplier it was sent to (SP-BKP; `SupplierServiceRequest.backup`).
+ * `role`: `primary` (the host chose this supplier, which has until `primaryDueAt` for the priority) or `backup` (the job is its only if the
+ * primary does not take it). `state`, an open set: for a backup `waiting` (the primary has its window), `accepted` (it said it would take
+ * the job), `active` (the second window: it can take the job now, until `backupDueAt`, and the first to do so has it), `won` or `closed`;
+ * for the primary `priority` (within its window) or `late` (the window passed: still in the race without the priority).
+ */
+export interface SupplierBackup {
+  role: 'primary' | 'backup' | string;
+  state: string;
+  primaryDueAt: string;
+  backupDueAt?: string | null;
+  acceptedAt?: string | null;
+}
+
+/** `GET/PUT /orgs/me/service-request-settings` (SP-BKP): whether the org's requests also go to up to three backup suppliers. */
+export interface OrgServiceRequestSettings {
+  useBackupSuppliers: boolean;
+}
+
+/** A photo of the work: `url` is an authenticated address of the API (the files are in a private bucket). */
+export interface ServiceRequestWorkPhoto {
+  id: string;
+  url: string;
+  uploadedAt: string;
+}
+
+/** The stay of a short-rent request as its host reads it (SR-08a): the guest's name and the days. */
+export interface ServiceRequestStay {
+  bookingId: string;
+  guestName: string;
+  /** Arrival day, `YYYY-MM-DD`. */
+  checkIn: string;
+  /** Departure day, `YYYY-MM-DD`. */
+  checkOut: string;
+}
+
+/** The phone and the e-mail of the supplier of a request it took (SR-08a). */
+export interface ServiceRequestSupplierContact {
+  phone?: string | null;
+  email?: string | null;
+}
+
+/**
+ * What the host is asked to do about a request (SR-08a): `none` (the supplier is at work, or it is over), `remind`, `acceptProposal`,
+ * `confirmFinalAmount`, `pay` (paid inside CasaZen), `markPaid` (paid outside) or `requestAgain`. **An open set**: a word this version
+ * does not know is shown as nothing to do.
+ */
+export type HostActionKind = 'none' | 'remind' | 'acceptProposal' | 'confirmFinalAmount' | 'pay' | 'markPaid' | 'requestAgain';
+
+export interface ServiceRequestHostAction {
+  kind: HostActionKind | string;
+  /** With `none` on a request that waits for the supplier: from when the host can remind it again (UTC instant). */
+  remindAvailableAt?: string | null;
 }
 
 /** The price of a request as the host sees it, in cents of euro (SP-04): `amountCents` is the one to show. */
@@ -104,8 +218,8 @@ export interface ServicePaymentSession {
   paymentId: string;
   clientSecret: string;
   publishableKey: string;
-  /** The supplier's connected account: the payment goes to it. */
-  stripeAccountId: string;
+  /** The connected account the payment goes to (today the supplier's). Not presumed: without one the payment is on the platform's own account. */
+  stripeAccountId?: string | null;
   amountCents: number;
   currency: string;
 }
@@ -257,7 +371,11 @@ export interface SupplierServiceRequest {
   price?: SupplierRequestPrice;
   /** The quote sent and not answered yet (SP-04b), while `phase` is `quote_pending`; empty otherwise. */
   quote?: ServiceRequestQuote | null;
-  /** Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`, `QuoteNotAnswered`, `CancelledByCustomer`. */
+  /**
+   * Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`,
+   * `QuoteNotAnswered`, `CancelledByCustomer` or, for a backup request closed by CasaZen (SP-BKP), `PrimaryTookIt`, `TakenByBackup`,
+   * `RequestCancelledByHost`, `BackupSlotUnavailable`, `BackupRaceClosed` (another backup accepted first: no penalty).
+   */
   cancelledBy?: string | null;
   cancellationReason?: string | null;
   /** `Online` (paid inside CasaZen) or `Manual` (paid outside, the host marks it). */
@@ -274,6 +392,11 @@ export interface SupplierServiceRequest {
    */
   phase?: string;
   payment?: SupplierRequestPayment | null;
+  /**
+   * Where the request stands in its group of backup suppliers (SP-BKP); absent for a request sent to this supplier alone. A request that
+   * reaches the supplier **as a backup** (`role: 'backup'`) is declared as such: the job is its only if the primary does not take it.
+   */
+  backup?: SupplierBackup | null;
 }
 
 /** `Supplier` and `Host` take the steps; `Customer` (a private customer of the showcase) and `System` (nobody answered in time) end some. */
@@ -308,20 +431,70 @@ export interface ServiceRequestListResponse {
   pageSize: number;
 }
 
-/** Short-rent request (`POST /service-requests`, D2): for one stay of the property, `bookingId` required. */
+/**
+ * The chips of the host's list of interventions (SR-08a, `view` of `GET /service-requests`): `pending` waits for the supplier, `active`
+ * is taken or in progress, `topay` is finished, `done` is paid, refused or cancelled, `needsaction` asks something of the host.
+ */
+export type InterventionView = 'all' | 'pending' | 'active' | 'topay' | 'done' | 'needsaction';
+
+/** The order of the host's list (`sort` of `GET /service-requests`, with `:asc` or `:desc`). */
+export type InterventionSortKey = 'scheduled' | 'created' | 'status';
+
+/** What the page asks of `GET /service-requests` and `GET /service-requests/counts` (the counters take everything but `view`, `sort` and the page). */
+export interface InterventionFilterParams {
+  propertyId?: string;
+  bookingId?: string;
+  supplierOrgId?: string;
+  category?: string;
+  /** `YYYY-MM-DD`, Europe/Rome, both included: the day of the work (its scheduled time, else the day of the request). */
+  from?: string;
+  to?: string;
+  q?: string;
+}
+
+export interface InterventionListParams extends InterventionFilterParams {
+  view?: InterventionView;
+  /** `scheduled`, `created` or `status`, then `:asc` or `:desc`. */
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** How many requests are in each chip (`GET /service-requests/counts`); the first four add up to `all`, `needsAction` overlaps them. */
+export interface InterventionCounts {
+  all: number;
+  pending: number;
+  active: number;
+  toPay: number;
+  done: number;
+  needsAction: number;
+}
+
+/**
+ * Short-rent request (`POST /service-requests`): for the house, with the stay of the property it is about when the host names one
+ * (`bookingId` is optional since SR-08a: a request for the house alone is allowed, and without a time it gets the default one).
+ */
 export interface CreateServiceRequestDto {
   propertyId: string;
-  bookingId: string;
+  bookingId?: string;
   supplierOrgId: string;
   category: string;
   urgency?: ServiceRequestUrgency;
   notes?: string;
+  /**
+   * The service of the supplier's catalog the request is for (SR-08b): its name, estimated price and duration come with it. With a
+   * start and no `durationMinutes` the start has to be a free slot of the service (409 `supplier_slot_unavailable` otherwise).
+   */
+  serviceListingId?: string;
   /** Start of the work (UTC). With `durationMinutes` the supplier sees the interval. */
   scheduledStartUtc?: string;
   /** How long the work lasts, in minutes. */
   durationMinutes?: number;
-  /** The service of the supplier's catalog the request is for (`SupplierPickerService.id`): its name and price are kept with the request. Its category must be `category`. */
-  serviceListingId?: string;
+  /**
+   * SP-BKP: send the request also to up to three backup suppliers, declared as such. Left out, the org's choice decides (on by default);
+   * `false` sends it to the chosen supplier alone. Only matters while the backend flag `SupplierRequestBackups` is on.
+   */
+  useBackupSuppliers?: boolean;
 }
 
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */
@@ -347,8 +520,11 @@ export interface SupplierPickerService {
   requiresQuote: boolean;
 }
 
-/** The order of the marketplace list (`?sort=` of `GET /suppliers`). */
-export type SupplierPickerSort = 'name' | 'price' | 'response';
+/**
+ * The order of the list of suppliers (`?sort=` of `GET /suppliers`): `recommended` (the default, SP-REL: the best-ranked supplier first,
+ * by its load and its reliability), then `name`, `price` and `response`.
+ */
+export type SupplierPickerSort = 'recommended' | 'name' | 'price' | 'response';
 
 export interface SupplierPicker {
   orgId: string;
@@ -372,10 +548,38 @@ export interface SupplierPicker {
   verified?: boolean;
   /** The address of the public showcase (`/fornitori/{slug}`); `null` when it has none. */
   showcaseSlug?: string | null;
+  /**
+   * «Consigliato» (SP-REL): the best-ranked supplier of the list, strictly ahead of the next one, in the default order. Only that: the
+   * score behind it (load, reliability) is never sent. Absent from an API that does not rank yet.
+   */
+  recommended?: boolean;
 }
 
 export interface SupplierListResponse {
   items: SupplierPicker[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * A supplier the host already asked for a job (`GET /service-requests/suppliers`, MKT): what «Le mie app» of the marketplace says about
+ * it, from the short-rent requests of the org (in the scope of the caller). Its name and counts, never its contact.
+ */
+export interface UsedSupplier {
+  supplierOrgId: string;
+  supplierName: string;
+  requestsCount: number;
+  /** The requests that are not over: every one that is not refused, paid or cancelled. */
+  openCount: number;
+  /** When the latest request was made (ISO instant). */
+  lastRequestAt: string;
+  /** The category of the latest request: where «Richiedi di nuovo» starts from. */
+  lastCategory: string;
+}
+
+export interface UsedSuppliersResponse {
+  items: UsedSupplier[];
   totalCount: number;
   page: number;
   pageSize: number;

@@ -51,6 +51,11 @@ const KINDS: Record<string, NotificationKind> = {
   'service-request-quote-rejected': serviceRequest('notifications.types.serviceRequestQuoteRejected'),
   'service-request-quote-expired': serviceRequest('notifications.types.serviceRequestQuoteExpired'),
   'service-request-day-before': serviceRequest('notifications.types.serviceRequestDayBefore'),
+  // SP-BKP: the notices of a supplier that has a request as a backup.
+  'service-request-backup-invited': serviceRequest('notifications.types.serviceRequestBackupInvited'),
+  'service-request-backup-active': serviceRequest('notifications.types.serviceRequestBackupActive'),
+  'service-request-backup-won': serviceRequest('notifications.types.serviceRequestBackupWon'),
+  'service-request-backup-closed': serviceRequest('notifications.types.serviceRequestBackupClosed'),
   'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived'),
 };
 
