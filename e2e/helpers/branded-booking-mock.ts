@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
-import type { PublicOrgDto, PublicPropertyDto } from '../../src/types';
+import type { PublicCalendarDto, PublicOrgDto, PublicPropertyDto } from '../../src/types';
+import { addDays, todayInRome } from '../../src/lib/stay-dates';
 
 export const DEMO_ORG_SLUG = 'demo-casazen';
 
@@ -54,6 +55,25 @@ export const mockOrgProperties: PublicPropertyDto[] = [
   },
 ];
 
+/** The public calendar of a property (DB-03b): a year of free nights from today, every night at the rate of the home. */
+export function mockPublicCalendar(propertyId: string = mockOrgPropertyId, nightlyRate: number = 165): PublicCalendarDto {
+  const today = todayInRome();
+  return {
+    propertyId,
+    startDate: today,
+    endDate: addDays(today, 400),
+    today,
+    currency: 'EUR',
+    generatedAt: new Date().toISOString(),
+    days: Array.from({ length: 400 }, (_, offset) => ({
+      date: addDays(today, offset),
+      available: true,
+      nightlyPriceCents: nightlyRate * 100,
+      minNights: 1,
+    })),
+  };
+}
+
 export async function mockBrandedBookingApi(page: Page): Promise<void> {
   // Without it the demo server answers with index.html and the widget cannot read booked dates.
   await page.route('**/api/public/bookings/property/*/availability*', async (route) => {
@@ -73,6 +93,16 @@ export async function mockBrandedBookingApi(page: Page): Promise<void> {
     const method = route.request().method();
     if (method !== 'GET') {
       await route.fallback();
+      return;
+    }
+
+    // The calendar comes before the property: its address starts with the one of the property.
+    if (url.includes('/calendar')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockPublicCalendar()),
+      });
       return;
     }
 

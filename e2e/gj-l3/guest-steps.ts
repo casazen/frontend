@@ -21,12 +21,12 @@ const euro = (amount: number) => new RegExp(`${amount.toLocaleString('it-IT', { 
  * checkout and pays (card in the Stripe Payment Element) or asks to pay at the property. Returns the booking id.
  */
 export async function guestBooksStay(page: Page, stay: GuestStay): Promise<string> {
-  await page.goto(`/book/${stay.orgSlug}/property/${stay.propertySlug}`);
+  // The stay travels in the address (deep link); the booking card asks the quote of the server and, once the total is in, "Prenota"
+  // is a link to the checkout carrying the same stay.
+  await page.goto(`/book/${stay.orgSlug}/property/${stay.propertySlug}?checkin=${stay.checkIn}&checkout=${stay.checkOut}&guests=2`);
   await page.getByRole('button', { name: 'Accetta' }).click().catch(() => undefined); // cookie banner (essential only)
-  await page.locator('#check-in').fill(stay.checkIn);
-  await page.locator('#check-out').fill(stay.checkOut);
-  await page.locator('#guests').fill('2');
-  await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+  await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 30_000 });
+  await page.getByTestId('booking-cta').click();
 
   await expect(page).toHaveURL(new RegExp(`checkin=${stay.checkIn}&checkout=${stay.checkOut}`));
   await expect(page.getByTestId('checkout-stay-summary')).toContainText(`${stay.nights} notti`);

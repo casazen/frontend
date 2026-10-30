@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, Share2 } from 'lucide-react';
+import { useBooking } from '@/features/public-booking/booking/booking-context';
 
 type ShareState = 'idle' | 'copied' | 'failed';
 
@@ -60,15 +61,19 @@ function ShareButton({ title, url }: { title: string; url: string }) {
 }
 
 interface PropertyUtilBarProps {
-  /** Where «Tutte le case» goes (the landing of the site with the stay carried along); none for a site with a single home. */
-  backTo: string | null;
+  /** `/book/{slug}`: where «Tutte le case» goes, with the stay carried along. */
+  basePath: string;
+  /** The site has more than one home: only then there is a «Tutte le case» to go back to. */
+  hasOtherHomes: boolean;
   shareTitle: string;
   shareUrl: string;
 }
 
 /** The row above the gallery (DB-04a): the way back to the homes of the site, and «Condividi». */
-export function PropertyUtilBar({ backTo, shareTitle, shareUrl }: PropertyUtilBarProps) {
+export function PropertyUtilBar({ basePath, hasOtherHomes, shareTitle, shareUrl }: PropertyUtilBarProps) {
   const { t } = useTranslation();
+  const { linkTo } = useBooking();
+  const backTo = hasOtherHomes ? linkTo(basePath) : null;
 
   return (
     <div className="flex min-h-11 items-center justify-between gap-3" data-testid="property-util-bar">

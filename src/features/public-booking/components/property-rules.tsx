@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Baby, Cigarette, CigaretteOff, KeyRound, LogOut, Moon, PartyPopper, PawPrint, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { PolicyTimeline } from '@/features/public-site/components/PolicyTimeline';
+import { useBooking } from '@/features/public-booking/booking/booking-context';
+import { formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import { isItalianFallback, pickText, policyStages, shortTime, type PolicyWindow } from '@/features/public-booking/lib/property-profile';
 import type { PublicCancellationPolicy, PublicPropertyDetailDto } from '@/types';
@@ -22,7 +25,10 @@ function windowCount(window: PolicyWindow): { unit: 'Days' | 'Hours' | 'Start'; 
 
 /** What the policy gives back, as the stages of a short list. Nothing is promised that the numbers of the policy do not say. */
 function CancellationBlock({ policy, summary }: { policy: PublicCancellationPolicy | null | undefined; summary: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { quote, calendar, stay } = useBooking();
+  // With the dates chosen and a quote in, the days are the real ones (the server worked them out for this stay and keeps the promise).
+  const forStay = quote.status === 'ready' && quote.quote.cancellation?.selfServiceAvailable ? quote.quote.cancellation : null;
 
   if (!policy) {
     if (!summary) return null;
@@ -53,14 +59,31 @@ function CancellationBlock({ policy, summary }: { policy: PublicCancellationPoli
         {/* The name is the catalog's: once the host changed the windows it no longer describes them. */}
         {!policy.hostOverrideApplies && policy.name ? <span className="pp-cancel__badge">{policy.name}</span> : null}
       </h3>
-      <ul className="pp-cancel__stages" aria-label={t('publicProperty.rules.stagesLabel')}>
-        {stages.map((stage) => (
-          <li key={stage.share}>
-            <span className="pp-cancel__dot" data-share={stage.share} aria-hidden="true" />
-            <span>{stage.text}</span>
-          </li>
-        ))}
-      </ul>
+      {forStay ? (
+        <div className="mt-3.5 space-y-3" data-testid="property-cancellation-dates">
+          <p className="text-sm text-[var(--cz-public-muted)]">
+            {t('publicProperty.rules.forYourDates', { date: formatStayDate(stay.checkIn, i18n.language, { day: 'numeric', month: 'long' }) })}
+          </p>
+          <PolicyTimeline
+            fullRefundUntil={forStay.fullRefundUntil}
+            partialRefundPercent={forStay.partialRefundPercent}
+            partialRefundUntil={forStay.partialRefundUntil}
+            today={calendar.today}
+          />
+        </div>
+      ) : (
+        <>
+          <ul className="pp-cancel__stages" aria-label={t('publicProperty.rules.stagesLabel')}>
+            {stages.map((stage) => (
+              <li key={stage.share}>
+                <span className="pp-cancel__dot" data-share={stage.share} aria-hidden="true" />
+                <span>{stage.text}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-sm text-[var(--cz-public-muted)]">{t('publicProperty.rules.datesHint')}</p>
+        </>
+      )}
     </div>
   );
 }

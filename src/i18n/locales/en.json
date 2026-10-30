@@ -9929,6 +9929,115 @@
       "title": "Guest verification QR code"
     }
   },
+  "propertyBooking": {
+    "announce": {
+      "total_one": "Total for {{count}} night: {{total}}.",
+      "total_other": "Total for {{count}} nights: {{total}}."
+    },
+    "aside": "Book this home",
+    "ask": "Have a question?",
+    "availability": {
+      "eyebrow": "Availability",
+      "minNights_one": "Minimum stay of {{count}} night.",
+      "minNights_other": "Minimum stay of {{count}} nights.",
+      "prices": "Every free day shows the price of the night.",
+      "source": "Prices and free nights come from the host's calendar.",
+      "title": "When would you like to come?",
+      "weekend": "Friday and Saturday nights cost a little more."
+    },
+    "bar": {
+      "addDates": "Add dates",
+      "change": "Change",
+      "chooseDeparture": "Choose the departure",
+      "edit": "Edit",
+      "label": "Book {{name}}",
+      "offline": "Offline",
+      "problem": "Check dates and guests",
+      "total": "total"
+    },
+    "cta": {
+      "book": "Book",
+      "calculating": "Working out the total…",
+      "changeGuests": "Change the guests",
+      "chooseDates": "Choose dates",
+      "nothingYet": "You don't pay anything yet",
+      "offline": "You need a connection to book",
+      "otherDates": "Choose other dates",
+      "retry": "Try again"
+    },
+    "fields": {
+      "add": "Add",
+      "arrival": "Arrival",
+      "datesTitle": "Your dates",
+      "departure": "Departure",
+      "guests": "Guests",
+      "guestsTitle": "Who is coming"
+    },
+    "hint": {
+      "chooseDeparture": "Arrival on {{date}}: now choose the day of departure."
+    },
+    "lines": {
+      "discount": "Discount",
+      "nights_one": "{{count}} night × {{price}}",
+      "nights_other": "{{count}} nights × {{price}}",
+      "touristTax": "Tourist tax",
+      "touristTaxEstimateHelp": "Until you give the age of the children we work it out as if they were all 17: at payment, with their real ages, the total may go down.",
+      "touristTaxEstimated": "Tourist tax (estimate)",
+      "touristTaxHelp": "The tourist tax is set by the municipality and is paid per person per night, under its rules.",
+      "touristTaxWhat": "What is the tourist tax?",
+      "weekendNights_one": "{{count}} weekend night × {{price}}",
+      "weekendNights_other": "{{count}} weekend nights × {{price}}"
+    },
+    "mode": {
+      "instant": "Instant booking",
+      "request": "also on request"
+    },
+    "notBookable": {
+      "text": "This home can't be booked online yet.",
+      "write": "Write to {{host}}"
+    },
+    "offline": "You are offline: you can look at everything, booking needs a connection.",
+    "price": {
+      "average": "{{price}} a night on average",
+      "calculating": "Working out the total for your dates…",
+      "chooseDates": "Choose dates to see the total.",
+      "from": "from",
+      "night": "night",
+      "totalFor_one": "total for {{count}} night",
+      "totalFor_other": "total for {{count}} nights"
+    },
+    "problem": {
+      "clearDates": "Clear the dates and start again",
+      "datesUnavailable": "These dates are not free.",
+      "extend_one": "Stay {{count}} night",
+      "extend_other": "Stay {{count}} nights",
+      "firstFree": "First free dates: {{dates}}",
+      "invalidStay": "Check the dates: the departure must be after the arrival.",
+      "minNights_one": "The minimum stay is {{count}} night.",
+      "minNights_other": "The minimum stay is {{count}} nights.",
+      "notBookable": "This home can't be booked online yet.",
+      "past": "The arrival you chose has already passed.",
+      "reduceGuests_one": "Bring it down to {{count}} guest",
+      "reduceGuests_other": "Bring it down to {{count}} guests",
+      "tooManyGuests_one": "The home takes {{count}} person at most.",
+      "tooManyGuests_other": "The home takes {{count}} people at most."
+    },
+    "quote": {
+      "failed": "We could not work out the total. Try again in a moment."
+    },
+    "sheet": {
+      "dates": "Your dates",
+      "description": "Choose the dates and the guests: the total updates below.",
+      "guests": "Guests",
+      "title": "Book {{name}}"
+    },
+    "trust": {
+      "freeOver": "Free cancellation has already ended for these dates.",
+      "freeUntil": "Free cancellation until {{date}}",
+      "noHiddenCosts": "No hidden costs",
+      "stripe": "Secure payment with Stripe"
+    }
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Change to long-term rental",
@@ -10786,7 +10895,9 @@
       "cancellationTitle": "Cancellation",
       "childrenNo": "Not suited to children",
       "childrenYes": "Children welcome",
+      "datesHint": "Choose the dates of your stay: you will see here the exact days you can cancel by.",
       "departureBy": "Departure by {{time}}",
+      "forYourDates": "For your dates (arrival on {{date}})",
       "houseTitle": "House rules",
       "partiesNo": "No parties",
       "partiesOnRequest": "Parties on request",
@@ -10819,6 +10930,7 @@
     },
     "sections": {
       "amenities": "Amenities",
+      "availability": "Availability",
       "description": "Description",
       "know": "Good to know",
       "overview": "Overview",

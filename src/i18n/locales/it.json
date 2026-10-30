@@ -9929,6 +9929,115 @@
       "title": "Codice QR per verifica ospiti"
     }
   },
+  "propertyBooking": {
+    "announce": {
+      "total_one": "Totale per {{count}} notte: {{total}}.",
+      "total_other": "Totale per {{count}} notti: {{total}}."
+    },
+    "aside": "Prenota questa casa",
+    "ask": "Hai una domanda?",
+    "availability": {
+      "eyebrow": "Disponibilità",
+      "minNights_one": "Soggiorno minimo di {{count}} notte.",
+      "minNights_other": "Soggiorno minimo di {{count}} notti.",
+      "prices": "Su ogni giorno libero vedi il prezzo della notte.",
+      "source": "Prezzi e notti libere arrivano dal calendario dell'host.",
+      "title": "Quando vuoi venire?",
+      "weekend": "Il venerdì e il sabato costano un po' di più."
+    },
+    "bar": {
+      "addDates": "Aggiungi le date",
+      "change": "Cambia",
+      "chooseDeparture": "Scegli la partenza",
+      "edit": "Modifica",
+      "label": "Prenota {{name}}",
+      "offline": "Offline",
+      "problem": "Controlla date e ospiti",
+      "total": "totale"
+    },
+    "cta": {
+      "book": "Prenota",
+      "calculating": "Calcolo il totale…",
+      "changeGuests": "Cambia gli ospiti",
+      "chooseDates": "Scegli le date",
+      "nothingYet": "Non paghi ancora nulla",
+      "offline": "Serve la connessione per prenotare",
+      "otherDates": "Scegli altre date",
+      "retry": "Riprova"
+    },
+    "fields": {
+      "add": "Aggiungi",
+      "arrival": "Arrivo",
+      "datesTitle": "Le tue date",
+      "departure": "Partenza",
+      "guests": "Ospiti",
+      "guestsTitle": "Chi viene"
+    },
+    "hint": {
+      "chooseDeparture": "Arrivo il {{date}}: ora scegli il giorno di partenza."
+    },
+    "lines": {
+      "discount": "Sconto",
+      "nights_one": "{{count}} notte × {{price}}",
+      "nights_other": "{{count}} notti × {{price}}",
+      "touristTax": "Imposta di soggiorno",
+      "touristTaxEstimateHelp": "Finché non indichi l'età dei bambini la calcoliamo come se avessero tutti 17 anni: nel pagamento, con le età vere, il totale può scendere.",
+      "touristTaxEstimated": "Imposta di soggiorno (stimata)",
+      "touristTaxHelp": "L'imposta di soggiorno la stabilisce il Comune e si paga per persona e per notte, secondo le sue regole.",
+      "touristTaxWhat": "Cos'è l'imposta di soggiorno?",
+      "weekendNights_one": "{{count}} notte nel weekend × {{price}}",
+      "weekendNights_other": "{{count}} notti nel weekend × {{price}}"
+    },
+    "mode": {
+      "instant": "Prenotazione immediata",
+      "request": "anche su richiesta"
+    },
+    "notBookable": {
+      "text": "Questa casa non è ancora prenotabile online.",
+      "write": "Scrivi a {{host}}"
+    },
+    "offline": "Sei offline: puoi guardare tutto, per prenotare serve la connessione.",
+    "price": {
+      "average": "{{price}} a notte in media",
+      "calculating": "Calcolo il totale per le tue date…",
+      "chooseDates": "Scegli le date per vedere il totale.",
+      "from": "da",
+      "night": "notte",
+      "totalFor_one": "totale per {{count}} notte",
+      "totalFor_other": "totale per {{count}} notti"
+    },
+    "problem": {
+      "clearDates": "Cancella le date e ricomincia",
+      "datesUnavailable": "Queste date non sono libere.",
+      "extend_one": "Allunga fino a {{count}} notte",
+      "extend_other": "Allunga fino a {{count}} notti",
+      "firstFree": "Prime date libere: {{dates}}",
+      "invalidStay": "Controlla le date: la partenza deve essere dopo l'arrivo.",
+      "minNights_one": "Il soggiorno minimo è di {{count}} notte.",
+      "minNights_other": "Il soggiorno minimo è di {{count}} notti.",
+      "notBookable": "Questa casa non è ancora prenotabile online.",
+      "past": "L'arrivo scelto è già passato.",
+      "reduceGuests_one": "Riduci a {{count}} ospite",
+      "reduceGuests_other": "Riduci a {{count}} ospiti",
+      "tooManyGuests_one": "La casa ospita al massimo {{count}} persona.",
+      "tooManyGuests_other": "La casa ospita al massimo {{count}} persone."
+    },
+    "quote": {
+      "failed": "Non riusciamo a calcolare il totale. Riprova tra un momento."
+    },
+    "sheet": {
+      "dates": "Le tue date",
+      "description": "Scegli le date e gli ospiti: il totale si aggiorna qui sotto.",
+      "guests": "Ospiti",
+      "title": "Prenota {{name}}"
+    },
+    "trust": {
+      "freeOver": "Per queste date la cancellazione gratuita è già scaduta.",
+      "freeUntil": "Cancellazione gratuita fino al {{date}}",
+      "noHiddenCosts": "Nessun costo nascosto",
+      "stripe": "Pagamento sicuro con Stripe"
+    }
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Passaggio all'affitto lungo",
@@ -10786,7 +10895,9 @@
       "cancellationTitle": "Cancellazione",
       "childrenNo": "Non adatta ai bambini",
       "childrenYes": "Bambini benvenuti",
+      "datesHint": "Scegli le date del soggiorno: qui vedrai i giorni esatti entro cui puoi cancellare.",
       "departureBy": "Partenza entro le {{time}}",
+      "forYourDates": "Con le tue date (arrivo il {{date}})",
       "houseTitle": "Regole della casa",
       "partiesNo": "Niente feste",
       "partiesOnRequest": "Feste su richiesta",
@@ -10819,6 +10930,7 @@
     },
     "sections": {
       "amenities": "Servizi",
+      "availability": "Disponibilità",
       "description": "Descrizione",
       "know": "Da sapere",
       "overview": "Panoramica",

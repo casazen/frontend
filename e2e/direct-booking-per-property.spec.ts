@@ -5,7 +5,7 @@
  *       and a preview iframe on the right.
  * AC13: Property URL uses slug when available, falls back to ID.
  * AC14: Navigating to /book/:orgSlug/property/:slug resolves the property correctly, and the
- *       widget hands dates and guests over to the checkout (A3-01).
+ *       booking card hands dates and guests over to the checkout (A3-01).
  */
 import { test, expect } from './test';
 import {
@@ -177,7 +177,7 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
   });
 
-  test('widget checkout carries dates, guests and amount to the checkout (A3-01)', async ({ page }) => {
+  test('booking card carries dates, guests and amount to the checkout (A3-01)', async ({ page }) => {
     const { checkIn, checkOut } = futureStay(30, 3);
     let bookingPayload: CreateDirectBookingPayload | undefined;
     // The price comes from the quote endpoint (BK-03): 165 € a night, 55 € cleaning, 2 € of tourist tax per adult and night.
@@ -195,13 +195,12 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
       });
     });
 
-    await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`);
+    await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}?checkin=${checkIn}&checkout=${checkOut}&guests=3`);
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await page.locator('#check-in').fill(checkIn);
-    await page.locator('#check-out').fill(checkOut);
-    await page.locator('#guests').fill('3');
-    await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+    // The card shows the total of the quote and "Prenota" leads to the checkout with the stay.
+    await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 15_000 });
+    await page.getByTestId('booking-cta').click();
 
     // One "?" and the deep link parameters (checkin/checkout/guests), not "/checkout??checkIn=…".
     await expect(page).toHaveURL(
