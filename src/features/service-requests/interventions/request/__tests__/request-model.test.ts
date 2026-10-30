@@ -74,6 +74,14 @@ describe('the request the wizard sends (SR-08b)', () => {
     expect(toCreateRequest(values({ bookingId: PROPERTY_ID, notes: ' Citofono rotto ' }))).toMatchObject({ bookingId: PROPERTY_ID, notes: 'Citofono rotto' });
   });
 
+  it('toCreateRequest_BackupSuppliers_OnlyANoIsSent_AndTheWizardStartsWithYes', () => {
+    // SP-BKP: the org's choice decides unless the host unticks the box of the last step.
+    expect(toCreateRequest(values()).useBackupSuppliers).toBeUndefined();
+    expect(toCreateRequest(values({ useBackups: true })).useBackupSuppliers).toBeUndefined();
+    expect(toCreateRequest(values({ useBackups: false })).useBackupSuppliers).toBe(false);
+    expect(requestDefaults(new URLSearchParams(), undefined, '2026-11-03').values.useBackups).toBe(true);
+  });
+
   it('requestProblemOf_RefusalsThatSendTheHostBack_NameTheStepAndOtherAnswersAreTheServers', () => {
     expect(requestProblemOf(problem(409, 'supplier_slot_unavailable'))).toEqual({ kind: 'slotTaken', step: 'who' });
     expect(requestProblemOf(problem(409, 'supplier_commitment_conflict'))).toEqual({ kind: 'commitmentConflict', step: 'who' });

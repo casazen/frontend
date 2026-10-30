@@ -4885,6 +4885,40 @@
       "remindTooSoon": "Hai già sollecitato da poco: riprova più tardi.",
       "stateChanged": "La richiesta è cambiata: ecco lo stato aggiornato."
     },
+    "group": {
+      "role": {
+        "Backup": "riserva",
+        "Primary": "scelto da te",
+        "PromotedBackup": "riserva",
+        "ReplacedPrimary": "scelto da te"
+      },
+      "stage": {
+        "backupTookIt": "{{taker}}, una riserva, ha preso il lavoro perché {{supplier}} non ha risposto in tempo.",
+        "backupWindow": "{{supplier}} non ha risposto in tempo. Ora il primo dei fornitori contattati che accetta entro le {{time}} avrà il lavoro.",
+        "cancelled": "Hai annullato la richiesta: anche le riserve sono state avvisate.",
+        "nobody": "Nessuno dei fornitori contattati ha preso il lavoro in tempo: puoi chiedere di nuovo.",
+        "over": "Questa richiesta non è più in corso.",
+        "primaryTookIt": "{{taker}} ha accettato il lavoro. Le riserve sono state avvisate: non serve altro.",
+        "primaryWindow": "{{supplier}} ha tempo fino alle {{time}}. Se non accetta, il lavoro passa alla prima riserva che accetta."
+      },
+      "state": {
+        "accepted": "Ha accettato come riserva",
+        "cancelled": "Chiusa",
+        "cancelledByHost": "Chiusa: richiesta annullata",
+        "noResponse": "Non ha risposto in tempo",
+        "primaryTookIt": "Chiusa: il lavoro l’ha accettato il fornitore scelto",
+        "raceClosed": "Chiusa: un’altra riserva ha accettato prima",
+        "refused": "Ha rifiutato",
+        "slotUnavailable": "Non era più libero all’orario",
+        "takenByBackup": "Chiusa: il lavoro l’ha preso un altro fornitore",
+        "tookTheJob": "Ha il lavoro",
+        "unknown": "—",
+        "waiting": "In attesa"
+      },
+      "title": "Fornitori contattati",
+      "waitingNote": "La richiesta è andata anche a dei fornitori di riserva: subentrano solo se il fornitore scelto non risponde in tempo.",
+      "waitingNoteOpen": "Il fornitore scelto non ha risposto in tempo: ora il primo dei fornitori contattati che accetta avrà il lavoro."
+    },
     "list": {
       "chips": {
         "active": "In corso",
@@ -7795,6 +7829,7 @@
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "backToList": "Torna agli immobili",
+      "contractsEmpty": "Questo immobile non ha ancora contratti.",
       "contractsLoadError": "Non riesco a leggere i contratti di questo immobile.",
       "contractsTitle": "Contratti collegati",
       "description": "Descrizione",
@@ -7819,7 +7854,14 @@
           "kicker": "Contratto in corso"
         }
       },
-      "rooms": "Camere e bagni"
+      "rooms": "Camere e bagni",
+      "tabs": {
+        "contracts": "Contratti",
+        "data": "Dati",
+        "documents": "Documenti",
+        "requests": "Interventi"
+      },
+      "tabsLabel": "Sezioni dell’immobile"
     },
     "drawer": {
       "ape": "APE",
@@ -8601,6 +8643,7 @@
     "sort": {
       "name": "Nome",
       "price": "Prezzo",
+      "recommended": "Consigliati",
       "response": "Risposta più rapida"
     },
     "verifiedOnly": "Solo verificati",
@@ -8654,7 +8697,8 @@
     "goToBookings": "Vai alle prenotazioni",
     "goToProperties": "Vai alle proprietà",
     "propertiesTitle": "Le tue proprietà",
-    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
+    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione.",
+    "recommended": "Consigliato"
   },
   "messageThread": {
     "send": "Invia",
@@ -8812,7 +8856,11 @@
       "serviceRequestQuoteExpired": "Il preventivo è scaduto: il cliente non ha risposto in tempo.",
       "serviceRequestDayBefore": "Domani hai un lavoro.",
       "servicePaymentReceived": "Hai ricevuto un pagamento.",
-      "generic": "Hai una nuova notifica."
+      "generic": "Hai una nuova notifica.",
+      "serviceRequestBackupInvited": "Sei una riserva per una nuova richiesta di servizio.",
+      "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
+      "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
+      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa."
     }
   },
   "onboarding": {
@@ -8948,7 +8996,12 @@
       "contactEmailInvalid": "Inserisci un'email valida."
     },
     "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
-    "siteAppearanceLink": "Vai ad Aspetto sito"
+    "siteAppearanceLink": "Vai ad Aspetto sito",
+    "backups": {
+      "help": "Quando chiedi un intervento, la richiesta va al fornitore che scegli e anche ad altri fornitori della zona, dichiarati come riserve. Il fornitore scelto ha un’ora per accettare: se non lo fa, il lavoro passa alla prima riserva che accetta. Per ogni richiesta puoi scegliere diversamente.",
+      "label": "Invia le richieste anche a fornitori di riserva",
+      "title": "Richieste ai fornitori"
+    }
   },
   "ota": {
     "status": {
@@ -11429,6 +11482,11 @@
     },
     "retry": "Riprova",
     "review": {
+      "backups": {
+        "description": "Il fornitore che hai scelto ha un’ora per accettare. Se non risponde, il lavoro passa al primo fornitore di riserva che accetta: così non resti senza risposta.",
+        "legend": "Se il fornitore non risponde",
+        "title": "Invia anche a delle riserve"
+      },
       "houseOnly": "Solo la casa, nessun soggiorno",
       "notes": "Note",
       "price": "Prezzo",
@@ -13632,6 +13690,7 @@
         "showcase": "Pubblica la tua vetrina"
       },
       "today": {
+        "acceptBackupAria": "Accetta come riserva: {{name}}",
         "completed": "Finito: aspetta il pagamento",
         "filterLabel": "Mostra per tipo",
         "inProgress": "In corso",
@@ -13663,6 +13722,7 @@
     },
     "requests": {
       "action": {
+        "acceptBackup": "Accetta come riserva",
         "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
@@ -13682,6 +13742,14 @@
         "you": "Tu"
       },
       "answerUrgent": "Rispondi alla più urgente",
+      "backup": {
+        "acceptedToast": "Fatto: se il fornitore scelto non accetta in tempo, il lavoro può passare a te.",
+        "primaryHint": {
+          "late": "Il tuo tempo è scaduto, ma puoi ancora accettare finché nessun altro ha preso il lavoro.",
+          "priority": "Il cliente ha chiesto anche ad altri fornitori come riserva: hai tempo fino alle {{time}} per accettare, poi il lavoro può passare a una riserva."
+        },
+        "primaryUntil": "Il fornitore scelto ha tempo fino alle {{time}}"
+      },
       "cancel": {
         "back": "Indietro",
         "confirm": "Annulla il lavoro",
@@ -13808,6 +13876,23 @@
       },
       "now": {
         "amountToConfirm": "In attesa che il cliente confermi l’importo.",
+        "backupAccepted": {
+          "client": "Vede che hai accettato come riserva.",
+          "title": "Hai accettato come riserva",
+          "you": "Sei l’unica riserva rimasta: le altre sono state chiuse appena hai accettato. Se il fornitore scelto non accetta entro le {{time}}, il lavoro è tuo e ti avvisiamo. Intanto il tuo orario è riservato in agenda; se accetta lui, torna libero e non c’è nessuna penalità."
+        },
+        "backupActive": {
+          "client": "Aspetta che qualcuno prenda il lavoro.",
+          "then": "Poi: dopo che accetti vedi indirizzo e contatti del cliente.",
+          "title": "Il lavoro è libero: accettalo se puoi",
+          "you": "Il fornitore scelto non ha accettato in tempo. Il primo che accetta entro le {{time}} ha il lavoro: accetta solo se puoi farlo."
+        },
+        "backupWaiting": {
+          "client": "Ha scelto un altro fornitore e sa che la richiesta è andata anche a delle riserve.",
+          "then": "Poi: se il lavoro passa a te ti avvisiamo, e solo allora vedi indirizzo e contatti del cliente.",
+          "title": "Sei una riserva per questa richiesta",
+          "you": "Il cliente ha scelto un altro fornitore, che ha tempo fino alle {{time}}. Il lavoro è tuo solo se non lo accetta. Puoi dire subito che lo prenderesti: la prima riserva che accetta chiude la gara (le altre non possono più accettare) e il suo orario viene riservato in agenda."
+        },
         "cancelled": {
           "client": "La richiesta è chiusa.",
           "title": "La richiesta è stata annullata",
@@ -13923,6 +14008,9 @@
         "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."
       },
       "phase": {
+        "backupAccepted": "Riserva accettata",
+        "backupActive": "Riserva: da accettare",
+        "backupWaiting": "Riserva",
         "proposalPending": "In attesa del cliente",
         "quotePending": "In attesa del cliente"
       },
@@ -13994,10 +14082,15 @@
         "withdrawnToast": "Preventivo ritirato"
       },
       "reason": {
+        "BackupRaceClosed": "Un altro fornitore di riserva ha accettato prima di te: la gara è chiusa. Non c’è nessuna penalità per te.",
+        "BackupSlotUnavailable": "Il tuo orario non era più libero quando il lavoro è passato a te.",
         "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
         "NoResponse": "Nessuno ha risposto in tempo.",
+        "PrimaryTookIt": "Il lavoro l’ha accettato il fornitore scelto dal cliente.",
         "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario.",
-        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo."
+        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo.",
+        "RequestCancelledByHost": "Il cliente ha annullato la richiesta.",
+        "TakenByBackup": "Il lavoro l’ha preso un altro fornitore."
       },
       "reject": {
         "cancel": "Annulla",
