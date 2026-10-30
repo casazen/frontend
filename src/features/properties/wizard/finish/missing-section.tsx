@@ -23,8 +23,10 @@ interface MissingSectionProps {
 function goToSection(section: FinishSection): void {
   const id = section === 'cin' ? 'property-wizard-cin' : `property-wizard-section-${section}`;
   const target = document.getElementById(id);
+  // The calendars are a disclosure: it opens, and the focus goes to its title.
+  if (target instanceof HTMLDetailsElement) target.open = true;
   target?.scrollIntoView({ block: 'center' });
-  target?.focus();
+  (target instanceof HTMLDetailsElement ? target.querySelector('summary') : target)?.focus();
 }
 
 function FixButton({ stepId, property, label }: { stepId: string; property: MissingSectionProps['property']; label: string }) {
@@ -121,7 +123,13 @@ export function MissingSection({ steps, failed, onRetry, property, refused }: Mi
             {advice.map((step) => (
               <li key={step.id} className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm text-foreground/80">
                 <Info aria-hidden="true" className="size-4 shrink-0" />
-                <span className="min-w-0 flex-1 break-words">{step.id === 'ical' ? t('compliance.activation.stepHint.ical') : (step.message ?? texts.title(step.id))}</span>
+                <span className="min-w-0 flex-1 break-words">
+                  {step.id === 'ical'
+                    ? t('compliance.activation.stepHint.ical')
+                    : step.id === 'tourist-tax'
+                      ? t('propertyWizard.prices.touristTax.notYet', { city: step.touristTax?.city || property?.city || '' })
+                      : (step.message ?? texts.title(step.id))}
+                </span>
                 <FixButton stepId={step.id} property={property} label={fix} />
               </li>
             ))}

@@ -9908,6 +9908,10 @@
         "done": "Fatto",
         "later": "Finisci dopo"
       },
+      "calendars": {
+        "hint": "Consigliato: le date prenotate su Airbnb o Booking.com risultano occupate anche sul tuo sito.",
+        "title": "Collega i calendari"
+      },
       "cin": {
         "hint": "Il Codice Identificativo Nazionale serve per attivare l'immobile. Se non ce l'hai ancora puoi finire dopo e aggiungerlo quando arriva.",
         "label": "Codice CIN",

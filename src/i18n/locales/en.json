@@ -9908,6 +9908,10 @@
         "done": "Done",
         "later": "Finish later"
       },
+      "calendars": {
+        "hint": "Recommended: dates booked on Airbnb or Booking.com show as taken on your site too.",
+        "title": "Link your calendars"
+      },
       "cin": {
         "hint": "The National Identification Code is needed to activate the property. If you do not have it yet you can finish later and add it when it arrives.",
         "label": "CIN code",

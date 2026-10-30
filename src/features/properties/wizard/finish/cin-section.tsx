@@ -51,7 +51,7 @@ export function CinSection({ propertyId, storedCin, guidanceUrl }: CinSectionPro
       <h3 id="property-wizard-cin-title" className="text-base font-semibold">
         {t('propertyWizard.last.cin.title')}
       </h3>
-      <Field label={t('propertyWizard.last.cin.label')} optional hint={t('propertyWizard.last.cin.hint')} error={error} className="max-w-md">
+      <Field label={t('propertyWizard.last.cin.label')} hint={t('propertyWizard.last.cin.hint')} error={error} className="max-w-md">
         <Input
           id={CIN_INPUT_ID}
           autoComplete="off"

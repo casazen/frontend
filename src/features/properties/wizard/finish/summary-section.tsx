@@ -97,7 +97,10 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
         },
         {
           label: labels('house'),
-          value: [optionOf('smokingOptions', property.smokingPolicy), optionOf('petsOptions', property.petsPolicy), optionOf('partiesOptions', property.partiesPolicy)].join(' · '),
+          value:
+            property.smokingPolicy || property.petsPolicy || property.partiesPolicy
+              ? [optionOf('smokingOptions', property.smokingPolicy), optionOf('petsOptions', property.petsPolicy), optionOf('partiesOptions', property.partiesPolicy)].join(' · ')
+              : notSaid,
         },
         { label: labels('quiet'), value: quietFrom && quietTo ? t('propertyWizard.last.summary.range', { from: quietFrom, to: quietTo }) : notSaid },
         { label: labels('policy'), value: policyName ?? notSaid },
