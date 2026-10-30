@@ -23,14 +23,16 @@ import {
   type MapLabel,
 } from '@/features/site-maps';
 import { PUGLIA } from '@/features/site-maps/data/puglia';
+import { ComponentsSection } from './maps-components-section';
 import { HOUSES } from './maps-data';
 import { RegionSection } from './maps-region-section';
 import { HomePin, PoiDot, SvgBox } from './maps-shared';
 
-type Section = 'region' | 'local' | 'checks';
+type Section = 'region' | 'local' | 'components' | 'checks';
 const SECTIONS: { value: Section; label: string }[] = [
   { value: 'region', label: 'Mappe regionali' },
   { value: 'local', label: 'Mappe locali' },
+  { value: 'components', label: 'Componenti' },
   { value: 'checks', label: 'Dimensioni e controlli' },
 ];
 
@@ -274,7 +276,7 @@ function ChecksSection() {
   );
 }
 
-/** The schematic maps of the public site (DB-19a), to look at them and to approve them by image: `/dev/maps?s=region|local|checks`. */
+/** The schematic maps of the public site (DB-19a), to look at them and to approve them by image: `/dev/maps?s=region|local|components|checks`. */
 export default function MapsPage() {
   const [params, setParams] = useSearchParams();
   const section: Section = SECTIONS.find((s) => s.value === params.get('s'))?.value ?? 'region';
@@ -287,7 +289,7 @@ export default function MapsPage() {
         </p>
         <Segmented label="Sezione" options={SECTIONS} value={section} onValueChange={(value) => setParams({ s: value })} />
       </header>
-      {section === 'region' ? <RegionSection /> : section === 'local' ? <LocalSection /> : <ChecksSection />}
+      {section === 'region' ? <RegionSection /> : section === 'local' ? <LocalSection /> : section === 'components' ? <ComponentsSection /> : <ChecksSection />}
     </main>
   );
 }

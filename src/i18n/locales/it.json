@@ -12181,6 +12181,39 @@
       "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
     }
   },
+  "siteMap": {
+    "approximateNote": "Posizioni indicative: l'indirizzo esatto arriva con la conferma.",
+    "cardClose": "Chiudi la scheda",
+    "cardOpen": "Vedi la casa",
+    "cardTitle": "Casa selezionata",
+    "cluster": "{{count}} case vicine: avvicina la mappa per vederle",
+    "controls": "Controlli della mappa",
+    "error": "Mappa non disponibile",
+    "fit": "Inquadra tutte le case",
+    "fitAnnounce": "Mappa inquadrata su tutte le case",
+    "keyboardHint": "Mappa: usa le frecce per spostarla, più e meno per ingrandire o rimpicciolire, 0 per inquadrare tutte le case.",
+    "loading": "Caricamento della mappa",
+    "local": {
+      "approximate": "Posizione approssimata: l'indirizzo esatto arriva con la conferma.",
+      "minutes": "{{minutes}} min",
+      "poiCar": "{{name}}, {{minutes}} minuti in auto",
+      "poiWalk": "{{name}}, {{minutes}} minuti a piedi",
+      "poisLabel": "Punti di interesse",
+      "scheme": "Schema della zona, non una mappa stradale.",
+      "unlocked": "Posizione approssimata: l'indirizzo esatto è nella tua prenotazione."
+    },
+    "mapLabel": "Mappa delle case",
+    "noPosition": "Posizione non disponibile",
+    "pinLabel": "{{name}}, {{label}}",
+    "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
+    "pinsLabel": "Case sulla mappa",
+    "rating": "Voto {{value}} su 5",
+    "retry": "Riprova",
+    "unavailable": "non libera",
+    "zoomAnnounce": "Mappa a {{km}} km di larghezza",
+    "zoomIn": "Più vicino",
+    "zoomOut": "Più lontano"
+  },
   "siteReviews": {
     "count_one": "{{count}} recensione",
     "count_other": "{{count}} recensioni",

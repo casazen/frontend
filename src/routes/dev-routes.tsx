@@ -7,7 +7,7 @@ import type { RouteObject } from 'react-router-dom';
  * drawer, the timeline and the tabs between pages (UI-15); `/dev/calm-blocks` shows the calm blocks of the screens (UI-16) in
  * every variant; `/dev/stay-pickers` shows the pickers of the stay of the public site (DB-20: the range calendar with the
  * prices, the guests, the sheet and the search bar) on made-up nights; `/dev/maps` shows the schematic maps of the public
- * site (DB-19a) for the review by image. The build replaces `import.meta.env.DEV` with
+ * site (DB-19a, DB-19b) for the review by image. The build replaces `import.meta.env.DEV` with
  * `false`, so this list is empty there and the pages are not in the bundle (a test reads the list with the flag off; the
  * build log of the PR says what `dist/` holds).
  */
