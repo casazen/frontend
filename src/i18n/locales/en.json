@@ -14496,6 +14496,15 @@
           "title": "Mark"
         },
         "noAddress": "The preview shows up once the showcase has an address, that is after the profile is activated.",
+        "photos": {
+          "addToProfile": "Add photos to the profile",
+          "addToService": "Add photos to a service",
+          "loading": "Looking for your photos…",
+          "none": "You have no photos to choose from yet. Add them to the profile or to a service and you will find them here.",
+          "pickerHint": "Choose among the photos you already have on the profile and on the services.",
+          "profilePhoto": "Profile photo {{n}}",
+          "servicePhoto": "{{service}}: photo {{n}}"
+        },
         "preview": "Preview",
         "publish": {
           "cannot": "Fix the \"To do\" items to publish.",
@@ -14503,6 +14512,7 @@
           "checks": "Checks before publishing",
           "firstTime": "Everything: it is the first publication.",
           "halfFilled": "Some rows of the texts are half filled: complete them or remove them ({{rows}}).",
+          "halfFilledWorks": "Some jobs have no photo: choose one or remove them ({{rows}}).",
           "level": {
             "ok": "Done",
             "todo": "To do",
@@ -14572,7 +14582,8 @@
           "publish": "Preview and publish",
           "services": "Services and sections",
           "style": "Style and mark",
-          "texts": "Texts"
+          "texts": "Texts",
+          "works": "Photos and jobs"
         },
         "stepsLabel": "Showcase steps",
         "style": {
@@ -14640,6 +14651,32 @@
           "valueRemoved": "Point removed",
           "valuesHint": "Up to six, one line each.",
           "valuesTitle": "Strengths"
+        },
+        "works": {
+          "add": "Add a job",
+          "alt": "Description of the photo",
+          "altHint": "For people who cannot see it. If you leave it empty your name is used.",
+          "altHintWork": "For people who cannot see the photo. If you leave it empty the caption is used.",
+          "caption": "Caption",
+          "changeBefore": "Change the \"before\" photo",
+          "changePhoto": "Change the photo",
+          "chooseBefore": "Choose the \"before\" photo",
+          "choosePhoto": "Choose the photo",
+          "compare": "Show the before and after",
+          "compareHint": "The photo of the job is the \"after\".",
+          "count_one": "{{count}} job with a photo. With at least {{advised}} the page is more convincing.",
+          "count_other": "{{count}} jobs with a photo. With at least {{advised}} the page is more convincing.",
+          "coverHint": "The big photo at the top of the page. If you do not choose one, the page uses the first photo of the profile, or a neutral background.",
+          "coverTitle": "Cover",
+          "hint": "The jobs you have done: a photo, a line and the place.",
+          "noPhoto": "No photo",
+          "pickBefore": "\"Before\" photo of job {{n}}",
+          "pickPhoto": "Photo of job {{n}}",
+          "place": "Place",
+          "removePhoto": "Remove the photo",
+          "removed": "Job removed",
+          "title": "Jobs",
+          "work": "Job {{n}}"
         }
       },
       "focus": {

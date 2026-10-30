@@ -8,11 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { useSupplierServices } from '@/queries/use-supplier-services';
 import type { SupplierService } from '@/types/supplier-services';
+import { SERVICES_PATH } from '../showcase-model';
 import { planServices, SECTION_KEYS, sectionsOf, serviceOrderOf } from '../showcase-services';
 import type { PanelProps } from './panel-types';
-
-/** Where the services are made and priced ("Servizi e prezzi" of the menu). */
-const SERVICES_PATH = '/app/supplier/services';
 
 /**
  * "Servizi e sezioni" (SP-13d): which of the active services the page shows and in what order (an empty order is every active service in

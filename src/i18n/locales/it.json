@@ -14496,6 +14496,15 @@
           "title": "Marchio"
         },
         "noAddress": "L'anteprima c'è quando la vetrina ha un indirizzo, cioè dopo l'attivazione del profilo.",
+        "photos": {
+          "addToProfile": "Aggiungi foto al profilo",
+          "addToService": "Aggiungi foto a un servizio",
+          "loading": "Cerco le tue foto…",
+          "none": "Non hai ancora foto da scegliere. Aggiungile al profilo o a un servizio, poi le trovi qui.",
+          "pickerHint": "Scegli tra le foto che hai già nel profilo e nei servizi.",
+          "profilePhoto": "Foto {{n}} del profilo",
+          "servicePhoto": "{{service}}: foto {{n}}"
+        },
         "preview": "Anteprima",
         "publish": {
           "cannot": "Sistema le voci «Da fare» per pubblicare.",
@@ -14503,6 +14512,7 @@
           "checks": "Controlli prima di pubblicare",
           "firstTime": "Tutto: è la prima pubblicazione.",
           "halfFilled": "Alcune righe dei testi sono a metà: completale o toglile ({{rows}}).",
+          "halfFilledWorks": "Alcuni lavori non hanno la foto: scegline una o toglili ({{rows}}).",
           "level": {
             "ok": "Fatto",
             "todo": "Da fare",
@@ -14572,7 +14582,8 @@
           "publish": "Anteprima e pubblica",
           "services": "Servizi e sezioni",
           "style": "Stile e marchio",
-          "texts": "Testi"
+          "texts": "Testi",
+          "works": "Foto e lavori"
         },
         "stepsLabel": "Passi della vetrina",
         "style": {
@@ -14640,6 +14651,32 @@
           "valueRemoved": "Punto tolto",
           "valuesHint": "Fino a sei, una riga ciascuno.",
           "valuesTitle": "Punti di forza"
+        },
+        "works": {
+          "add": "Aggiungi un lavoro",
+          "alt": "Descrizione della foto",
+          "altHint": "Per chi non può vederla. Se la lasci vuota si usa il tuo nome.",
+          "altHintWork": "Per chi non può vedere la foto. Se la lasci vuota si usa la didascalia.",
+          "caption": "Didascalia",
+          "changeBefore": "Cambia la foto «prima»",
+          "changePhoto": "Cambia la foto",
+          "chooseBefore": "Scegli la foto «prima»",
+          "choosePhoto": "Scegli la foto",
+          "compare": "Mostra il confronto prima e dopo",
+          "compareHint": "La foto del lavoro è il «dopo».",
+          "count_one": "{{count}} lavoro con foto. Con almeno {{advised}} la pagina convince di più.",
+          "count_other": "{{count}} lavori con foto. Con almeno {{advised}} la pagina convince di più.",
+          "coverHint": "La foto grande in cima alla pagina. Se non ne scegli una, la pagina usa la prima foto del profilo, o uno sfondo neutro.",
+          "coverTitle": "Copertina",
+          "hint": "I lavori che hai fatto: una foto, una riga e il luogo.",
+          "noPhoto": "Nessuna foto",
+          "pickBefore": "Foto «prima» del lavoro {{n}}",
+          "pickPhoto": "Foto del lavoro {{n}}",
+          "place": "Luogo",
+          "removePhoto": "Togli la foto",
+          "removed": "Lavoro tolto",
+          "title": "Lavori",
+          "work": "Lavoro {{n}}"
         }
       },
       "focus": {

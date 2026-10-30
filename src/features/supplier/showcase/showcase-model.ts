@@ -3,6 +3,10 @@ import type { ShowcaseBlockedBy, ShowcaseContent, ShowcaseDocument, ShowcaseRead
 /** Where the supplier turns the payments on: the answers' tab of its settings has the payments account (SP-16c-b). */
 export const PAYMENTS_SETTINGS_PATH = '/app/supplier/settings?tab=pagamenti';
 
+/** Where the photos of the profile are added, and the catalog of services ("Servizi e prezzi") with the photos of each. */
+export const PROFILE_PATH = '/app/supplier/profile';
+export const SERVICES_PATH = '/app/supplier/services';
+
 /** The page of the editor in the console (the route of the menu "Vetrina"). */
 const SHOWCASE_PATH = '/app/supplier/showcase';
 
@@ -10,7 +14,7 @@ const SHOWCASE_PATH = '/app/supplier/showcase';
  * The steps of the editor a panel exists for, in the order they are taken (`?step=style|works|texts|services|publish`; the others come
  * with their panels). A target that names a step with no panel is not offered as a link: a link must lead somewhere.
  */
-export const EDITOR_STEPS = ['style', 'texts', 'services', 'publish'] as const;
+export const EDITOR_STEPS = ['style', 'works', 'texts', 'services', 'publish'] as const;
 export type EditorStep = (typeof EDITOR_STEPS)[number];
 
 /** The step an address asks for, or null (the overview) when it names none that exists. */
@@ -78,16 +82,22 @@ export function itemsToFix(content: ShowcaseContent): ShowcaseReadinessItem[] {
 
 /** A row of the texts the server would refuse at publication because it is half filled: which list and which row (the guarantee is one). */
 export interface HalfFilledRow {
-  section: 'team' | 'certs' | 'faq' | 'guarantee';
+  section: 'team' | 'certs' | 'faq' | 'guarantee' | 'gallery';
   index: number;
+}
+
+/** The step of the editor where a half-filled row is put right: the jobs have their own, the other lists are texts. */
+export function stepOfRow(row: HalfFilledRow): EditorStep {
+  return row.section === 'gallery' ? 'works' : 'texts';
 }
 
 const filled = (value: string | null | undefined) => (value ?? '').trim() !== '';
 
 /**
  * The rows the publication would refuse (`ShowcaseContentRules.ForPublication`, SP-13a): a person with a role and no name, a
- * certification with a detail and no name, a question without its answer or an answer without its question, a guarantee with only one of
- * title and text. An empty row is not one of them (it is dropped). The server judges again: this is to say it before, not instead.
+ * certification with a detail and no name, a question without its answer or an answer without its question, a job with a caption or a
+ * place but no photo, a guarantee with only one of title and text. An empty row is not one of them (it is dropped). The server judges
+ * again: this is to say it before, not instead.
  */
 export function halfFilledRows(doc: ShowcaseDocument): HalfFilledRow[] {
   const rows: HalfFilledRow[] = [];
@@ -101,6 +111,11 @@ export function halfFilledRows(doc: ShowcaseDocument): HalfFilledRow[] {
     if (filled(row.q) !== filled(row.a)) rows.push({ section: 'faq', index });
   });
   if (doc.guarantee && filled(doc.guarantee.title) !== filled(doc.guarantee.text)) rows.push({ section: 'guarantee', index: 0 });
+  (doc.gallery ?? []).forEach((work, index) => {
+    if (!filled(work.photoUrl) && (filled(work.beforeUrl) || filled(work.caption) || filled(work.place) || filled(work.alt))) {
+      rows.push({ section: 'gallery', index });
+    }
+  });
   return rows;
 }
 
