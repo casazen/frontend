@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { usePublicOrg } from '@/queries/use-public-org';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
+import { useSiteLanguage } from '@/features/public-site/hooks/use-site-language';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
@@ -69,6 +70,8 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const isOrgMode = mode === 'org' && !!orgSlug;
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   useOrgSeoMeta(org, location.pathname);
+  // The site of a host opens in the language of the guest: the address, else what they chose, else their browser (DB-02b).
+  useSiteLanguage(isOrgMode);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
   // The font pair the host chose; null = the one its theme starts with (the theme block of the CSS sets it).
