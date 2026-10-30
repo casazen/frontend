@@ -8324,14 +8324,54 @@
     }
   },
   "marketplace": {
-    "title": "Marketplace servizi",
-    "description": "Trova fornitori per la tua proprietà e gestisci le richieste di servizio.",
-    "allCategories": "Tutte le categorie",
-    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
+    "title": "Marketplace",
+    "description": "Trova i fornitori che lavorano vicino ai tuoi immobili e chiedi un intervento.",
+    "requestIntervention": "Richiedi un intervento",
+    "sections": {
+      "label": "Sezioni del Marketplace",
+      "discover": "Scopri",
+      "categories": "Categorie",
+      "mine": "Le mie app"
+    },
+    "search": {
+      "label": "Cerca nel Marketplace",
+      "placeholder": "Fornitore, servizio o categoria",
+      "title": "Cerca",
+      "description": "Per nome del fornitore, servizio o categoria."
+    },
     "casazenSuppliers": "Fornitori CasaZen",
+    "seeAll": "Vedi tutti",
+    "seeAllOf": "Vedi tutti: {{category}}",
+    "categories": {
+      "title": "Categorie",
+      "description": "Sfoglia i fornitori per tipo di servizio.",
+      "count_one": "{{count}} fornitore",
+      "count_other": "{{count}} fornitori",
+      "none": "Ancora nessun fornitore"
+    },
+    "category": {
+      "description": "I fornitori di questa categoria che lavorano nella zona dell'immobile.",
+      "notFound": "Categoria non trovata",
+      "notFoundHint": "Questa non è una categoria del Marketplace.",
+      "seeAll": "Vedi tutte le categorie"
+    },
+    "results": {
+      "count_one": "{{count}} fornitore",
+      "count_other": "{{count}} fornitori"
+    },
+    "filters": {
+      "open": "Filtri",
+      "title": "Filtri e ordine",
+      "description": "Scegli come ordinare i fornitori e se vedere solo quelli verificati.",
+      "done_one": "Mostra {{count}} fornitore",
+      "done_other": "Mostra {{count}} fornitori"
+    },
+    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "noNetwork": "In questo territorio non c'è ancora una rete CasaZen per questa categoria.",
     "noMatch": "Nessun fornitore corrisponde alla ricerca.",
-    "clearFilters": "Azzera la ricerca",
+    "noVerified": "Nessuno di questi fornitori è verificato.",
+    "clearFilters": "Azzera i filtri",
+    "clearSearch": "Azzera la ricerca",
     "loading": "Carico…",
     "propertiesLoadError": "Impossibile caricare gli immobili.",
     "propertyLabel": "Immobile",
@@ -8341,9 +8381,6 @@
     "addComune": "Aggiungi il comune per vedere i fornitori della tua zona",
     "addComuneHint": "I fornitori si cercano per comune: scegli il comune dall'elenco ufficiale nella scheda dell'immobile.",
     "editProperty": "Modifica immobile",
-    "searchLabel": "Cerca",
-    "searchPlaceholder": "Nome del fornitore",
-    "categoryLabel": "Categoria",
     "sortLabel": "Ordina per",
     "sort": {
       "name": "Nome",
@@ -8366,6 +8403,10 @@
       "loadError": "Impossibile caricare il fornitore.",
       "notFound": "Fornitore non trovato",
       "notFoundDescription": "Non è più tra i fornitori attivi della zona di questo immobile."
+    },
+    "mine": {
+      "title": "Le mie app",
+      "description": "Le richieste che hai mandato ai fornitori e a che punto sono."
     },
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",

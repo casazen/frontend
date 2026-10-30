@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
@@ -12,15 +11,16 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
-import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { formatWorkDuration } from '@/lib/work-duration';
 import { useMarketplaceSuppliers } from '@/queries/use-service-requests';
 import type { SupplierPicker } from '@/types/service-request';
 import { VerifiedBadge } from './components/verified-badge';
-import { MARKETPLACE_CATEGORY_PARAM, useMarketplaceProperty } from './lib/marketplace-property';
+import { MARKETPLACE_CATEGORIES_PATH } from './lib/marketplace-paths';
+import { useMarketplaceProperty } from './lib/marketplace-property';
 import { responseLabel, servicePriceLabel } from './lib/supplier-labels';
+import { useRequestIntervention } from './lib/use-request-intervention';
 
 /** What the address calls the drawer of a supplier of the marketplace: `?detail=marketplace-supplier:<orgId>`. */
 export const MARKETPLACE_SUPPLIER_DRAWER_KIND = 'marketplace-supplier';
@@ -73,13 +73,13 @@ function Photos({ supplier }: { supplier: SupplierPicker }) {
 
 function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; propertyId: string }) {
   const { t, i18n } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [requestOpen, setRequestOpen] = useState(false);
+  const { pathname } = useLocation();
+  const request = useRequestIntervention(propertyId);
 
   const services = supplier.services ?? [];
   const response = responseLabel(supplier, t);
-  // The category the list is narrowed to, when the supplier offers it; else the first one it offers.
-  const narrowedTo = searchParams.get(MARKETPLACE_CATEGORY_PARAM);
+  // The category of the page the drawer was opened from, when the supplier offers it; else the first one it offers.
+  const narrowedTo = matchPath(`${MARKETPLACE_CATEGORIES_PATH}/:category`, pathname)?.params.category;
   const requestCategory = narrowedTo && supplier.categories.includes(narrowedTo) ? narrowedTo : supplier.categories[0];
 
   return (
@@ -88,7 +88,11 @@ function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; p
 
       {/* The one thing to do here. No commission is shown to the host (D3). */}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => setRequestOpen(true)} data-testid="marketplace-request-service-btn">
+        <Button
+          type="button"
+          onClick={() => request.open({ supplierOrgId: supplier.orgId, category: requestCategory })}
+          data-testid="marketplace-request-service-btn"
+        >
           {t('serviceRequest.requestSupplier')}
         </Button>
         {supplier.showcaseSlug ? (
@@ -97,14 +101,7 @@ function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; p
           </Button>
         ) : null}
       </div>
-      <ServiceRequestForm
-        propertyId={propertyId}
-        supplierOrgId={supplier.orgId}
-        preselectedCategory={requestCategory}
-        open={requestOpen}
-        onOpenChange={setRequestOpen}
-        hideTrigger
-      />
+      {request.dialog}
 
       {supplier.verified ? (
         <div className="space-y-1" data-testid="marketplace-verified-note">
