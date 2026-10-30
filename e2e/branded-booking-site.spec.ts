@@ -6,6 +6,8 @@ import {
   mockOrgPropertyId,
   mockOrgPropertySlug,
   mockPublicOrg,
+  mockStayCards,
+  mockStaysResult,
 } from './helpers/branded-booking-mock';
 import { futureStay } from './helpers/direct-checkout-mock';
 
@@ -178,16 +180,16 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
   });
 
   test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
-    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
-      const url = route.request().url();
-      if (route.request().method() !== 'GET' || !url.endsWith('/properties')) {
+    // A site with one home: the search of the site (DB-07a) lists it alone and the home of the site opens that home's page.
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
+      if (route.request().method() !== 'GET') {
         await route.fallback();
         return;
       }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([mockOrgProperties[0]]),
+        body: JSON.stringify(mockStaysResult(mockStayCards([mockOrgProperties[0]]))),
       });
     });
 
