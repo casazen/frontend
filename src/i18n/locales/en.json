@@ -7582,6 +7582,16 @@
         "page": "Full page"
       },
       "add": "Add property",
+      "ape": {
+        "identified": "APE {{class}}",
+        "identifiedNoClass": "APE uploaded",
+        "missing": "APE missing",
+        "toConfirm": "APE to confirm"
+      },
+      "cadastral": {
+        "complete": "Complete",
+        "incomplete": "To complete"
+      },
       "chips": {
         "all": "All",
         "free": "Vacant",
@@ -7590,6 +7600,8 @@
         "rentedHint": "With a registered lease in force"
       },
       "columns": {
+        "ape": "APE",
+        "cadastral": "Cadastral data",
         "property": "Property",
         "rent": "Rent",
         "spaces": "Bedrooms and bathrooms",
@@ -7603,6 +7615,8 @@
       "emptyTitle": "No properties",
       "leasesUnavailable": "The leases could not be read, so for now you cannot see who lives in the properties.",
       "loadError": "The properties could not be loaded.",
+      "modeChangeToLong": "Changes to long-term on {{date}}",
+      "modeChangeToShort": "Changes to short-term on {{date}}",
       "noResults": {
         "description": "Change the search or the tab to see the other properties.",
         "title": "No property found"
@@ -7615,7 +7629,8 @@
       "tenantAnonymized": "Data removed",
       "tenantMissing": "Not added yet",
       "title": "Properties",
-      "until": "Until {{date}}"
+      "until": "Until {{date}}",
+      "untilThenFree": "Until {{date}}, then vacant"
     },
     "create": {
       "title": "New property",
@@ -7657,9 +7672,13 @@
       "rooms": "Bedrooms and bathrooms"
     },
     "drawer": {
+      "ape": "APE",
+      "cadastral": "Cadastral data",
+      "freeFrom": "Vacant from",
       "keyData": "Property details",
       "leaseSection": "Tenant and lease",
       "leaseStatus": "Lease",
+      "modeChange": "Change of mode",
       "notFound": "Property not found",
       "notFoundDescription": "The property you are looking for is gone, or it is not one of your long-term properties.",
       "rent": "Rent",
