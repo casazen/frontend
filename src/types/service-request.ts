@@ -70,6 +70,58 @@ export interface ServiceRequest {
   lastRemindedAt?: string | null;
   /** `Online` (paid inside CasaZen, with the payment session) or `Manual` (paid outside, the host marks it). */
   paymentMode?: string;
+  /** The photos of the work, private files read through the authenticated address of each one (at most 6). */
+  workPhotos?: ServiceRequestWorkPhoto[];
+
+  // What the server adds for the host of the short-rent context (SR-08a). `null` for the supplier and in the long-rent context.
+  /** The city of the property, as the host wrote it. */
+  propertyCity?: string | null;
+  /** The stay the request is for; `null` when it is for the house alone. The guest is the host's: the supplier never gets it. */
+  stay?: ServiceRequestStay | null;
+  /** How to reach the supplier, from the moment it took the request; `null` before. */
+  supplierContact?: ServiceRequestSupplierContact | null;
+  /** The one thing the host is asked to do about the request, worked out by the server: the page has no state logic of its own. */
+  hostAction?: ServiceRequestHostAction | null;
+  /** Everything the host can do now, the `hostAction.kind` first. An open set (see {@link HostActionKind}). */
+  availableActions?: string[] | null;
+  /** Only in the answer of the creation: the host named no time and the request got the default one (10:00 of a day). */
+  scheduleDefaulted?: boolean | null;
+}
+
+/** A photo of the work: `url` is an authenticated address of the API (the files are in a private bucket). */
+export interface ServiceRequestWorkPhoto {
+  id: string;
+  url: string;
+  uploadedAt: string;
+}
+
+/** The stay of a short-rent request as its host reads it (SR-08a): the guest's name and the days. */
+export interface ServiceRequestStay {
+  bookingId: string;
+  guestName: string;
+  /** Arrival day, `YYYY-MM-DD`. */
+  checkIn: string;
+  /** Departure day, `YYYY-MM-DD`. */
+  checkOut: string;
+}
+
+/** The phone and the e-mail of the supplier of a request it took (SR-08a). */
+export interface ServiceRequestSupplierContact {
+  phone?: string | null;
+  email?: string | null;
+}
+
+/**
+ * What the host is asked to do about a request (SR-08a): `none` (the supplier is at work, or it is over), `remind`, `acceptProposal`,
+ * `confirmFinalAmount`, `pay` (paid inside CasaZen), `markPaid` (paid outside) or `requestAgain`. **An open set**: a word this version
+ * does not know is shown as nothing to do.
+ */
+export type HostActionKind = 'none' | 'remind' | 'acceptProposal' | 'confirmFinalAmount' | 'pay' | 'markPaid' | 'requestAgain';
+
+export interface ServiceRequestHostAction {
+  kind: HostActionKind | string;
+  /** With `none` on a request that waits for the supplier: from when the host can remind it again (UTC instant). */
+  remindAvailableAt?: string | null;
 }
 
 /** The price of a request as the host sees it, in cents of euro (SP-04): `amountCents` is the one to show. */
@@ -104,8 +156,8 @@ export interface ServicePaymentSession {
   paymentId: string;
   clientSecret: string;
   publishableKey: string;
-  /** The supplier's connected account: the payment goes to it. */
-  stripeAccountId: string;
+  /** The connected account the payment goes to (today the supplier's). Not presumed: without one the payment is on the platform's own account. */
+  stripeAccountId?: string | null;
   amountCents: number;
   currency: string;
 }
@@ -241,10 +293,52 @@ export interface ServiceRequestListResponse {
   pageSize: number;
 }
 
-/** Short-rent request (`POST /service-requests`, D2): for one stay of the property, `bookingId` required. */
+/**
+ * The chips of the host's list of interventions (SR-08a, `view` of `GET /service-requests`): `pending` waits for the supplier, `active`
+ * is taken or in progress, `topay` is finished, `done` is paid, refused or cancelled, `needsaction` asks something of the host.
+ */
+export type InterventionView = 'all' | 'pending' | 'active' | 'topay' | 'done' | 'needsaction';
+
+/** The order of the host's list (`sort` of `GET /service-requests`, with `:asc` or `:desc`). */
+export type InterventionSortKey = 'scheduled' | 'created' | 'status';
+
+/** What the page asks of `GET /service-requests` and `GET /service-requests/counts` (the counters take everything but `view`, `sort` and the page). */
+export interface InterventionFilterParams {
+  propertyId?: string;
+  bookingId?: string;
+  supplierOrgId?: string;
+  category?: string;
+  /** `YYYY-MM-DD`, Europe/Rome, both included: the day of the work (its scheduled time, else the day of the request). */
+  from?: string;
+  to?: string;
+  q?: string;
+}
+
+export interface InterventionListParams extends InterventionFilterParams {
+  view?: InterventionView;
+  /** `scheduled`, `created` or `status`, then `:asc` or `:desc`. */
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** How many requests are in each chip (`GET /service-requests/counts`); the first four add up to `all`, `needsAction` overlaps them. */
+export interface InterventionCounts {
+  all: number;
+  pending: number;
+  active: number;
+  toPay: number;
+  done: number;
+  needsAction: number;
+}
+
+/**
+ * Short-rent request (`POST /service-requests`): for the house, with the stay of the property it is about when the host names one
+ * (`bookingId` is optional since SR-08a: a request for the house alone is allowed, and without a time it gets the default one).
+ */
 export interface CreateServiceRequestDto {
   propertyId: string;
-  bookingId: string;
+  bookingId?: string;
   supplierOrgId: string;
   category: string;
   urgency?: ServiceRequestUrgency;
