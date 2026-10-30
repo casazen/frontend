@@ -1,6 +1,7 @@
 import {
   memo,
   useCallback,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -68,6 +69,12 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 
 /** How a chosen day takes part in the stay. */
 type StayRole = 'start' | 'end' | 'in' | 'none';
+
+function stayRole(date: string, checkIn: string, checkOut: string): StayRole {
+  if (date === checkIn) return 'start';
+  if (date === checkOut) return 'end';
+  return checkIn && checkOut && date > checkIn && date < checkOut ? 'in' : 'none';
+}
 
 interface DayCellProps {
   date: string;
@@ -232,14 +239,6 @@ function CalendarMonth({
                   </div>
                 );
               }
-              const role: StayRole =
-                date === checkIn
-                  ? 'start'
-                  : date === checkOut
-                    ? 'end'
-                    : checkIn && checkOut && date > checkIn && date < checkOut
-                      ? 'in'
-                      : 'none';
               return (
                 <DayCell
                   key={date}
@@ -250,7 +249,7 @@ function CalendarMonth({
                   locale={locale}
                   showPrice={showPrices && !index.unverified}
                   isToday={date === index.today}
-                  role={role}
+                  role={stayRole(date, checkIn, checkOut)}
                   preview={Boolean(checkIn && !checkOut && hover && date > checkIn && date <= hover)}
                   tabStop={date === tabStop}
                   onChoose={onChoose}
@@ -369,14 +368,24 @@ export function StayCalendar({
     }
   };
 
+  // The stay as the last click left it. The parent writes it in the address and the router renders it a moment later: a second
+  // click that comes before then (a quick hand, a test) must build on the first one, not on the value that was there.
+  const latest = useRef<StayRange>(value);
+  useEffect(() => {
+    latest.current = { checkIn: value.checkIn, checkOut: value.checkOut };
+  }, [value.checkIn, value.checkOut]);
+
   const choose = useCallback(
     (date: string) => {
-      const result = selectDay(index, value, date);
+      const result = selectDay(index, latest.current, date);
       setProblem(result.problem);
       setFocusChoice(date);
-      if (!result.problem) onChange(result.value);
+      if (!result.problem) {
+        latest.current = result.value;
+        onChange(result.value);
+      }
     },
-    [index, value, onChange],
+    [index, onChange],
   );
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -397,6 +406,7 @@ export function StayCalendar({
   const move = (delta: number) => setPageChoice(clamp(page + delta, 0, maxPage));
   const clear = () => {
     setProblem(null);
+    latest.current = { checkIn: '', checkOut: '' };
     onChange({ checkIn: '', checkOut: '' });
   };
 

@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Qty } from '@/components/ui/qty';
 import { Switch } from '@/components/ui/switch';
@@ -40,8 +40,8 @@ export interface GuestsPickerProps {
  * without two elements sharing one.
  */
 export function GuestsPicker({
-  value,
-  onChange,
+  value: valueProp,
+  onChange: onChangeProp,
   maxGuests = DEFAULT_MAX_GUESTS,
   petsAllowed = false,
   childrenAges,
@@ -50,6 +50,22 @@ export function GuestsPicker({
 }: GuestsPickerProps) {
   const { t } = useTranslation();
   const uid = useId();
+
+  // The count a press leaves is shown at once, and the next press builds on it: the parent writes the address and the router
+  // renders it a moment later, and a second press before then (a quick finger, a test) must not start from the old number. When
+  // the parent gives a value that differs from the one it was given last, that value wins.
+  const [value, setValue] = useState(valueProp);
+  const key = `${valueProp.adults}|${valueProp.children}|${valueProp.pets}`;
+  const [syncedKey, setSyncedKey] = useState(key);
+  if (key !== syncedKey) {
+    setSyncedKey(key);
+    setValue(valueProp);
+  }
+  const onChange = (next: GuestsValue) => {
+    setValue(next);
+    onChangeProp(next);
+  };
+
   const total = value.adults + value.children;
   const full = total >= maxGuests;
 
@@ -97,6 +113,8 @@ export function GuestsPicker({
           </div>
           <span className="inline-flex h-11 items-center">
             <Switch
+              // An unchecked track of the muted text color (AA against the card): the pale track of the app is a hairline here.
+              className="data-[state=unchecked]:bg-[var(--cz-public-muted)]"
               id={`${uid}-pets`}
               checked={value.pets}
               onCheckedChange={(pets) => onChange({ ...value, pets })}

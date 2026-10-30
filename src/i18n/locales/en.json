@@ -12122,6 +12122,78 @@
       }
     }
   },
+  "stayPickers": {
+    "calendar": {
+      "arrivalChosen": "arrival chosen",
+      "busyNight": "night taken",
+      "checkedAtCheckout": "The dates will still be checked before the payment.",
+      "chooseArrival": "Choose the day of arrival, then the day of departure.",
+      "chooseDeparture_one": "Arrival on {{date}}. Now choose the day of departure.",
+      "chooseDeparture_other": "Arrival on {{date}}. Now choose the day of departure (at least {{count}} nights).",
+      "clear": "Clear the dates",
+      "departureChosen": "departure chosen",
+      "freeNight": "night available",
+      "legendBusy": "Taken",
+      "legendFree": "Available",
+      "legendMine": "Your dates",
+      "loadError": "We cannot read the available dates.",
+      "loading": "Loading the dates…",
+      "nextMonth": "Next month",
+      "offline": "You are offline: you see the last saved version of the dates. You need a connection to check them and to book.",
+      "past": "day gone by",
+      "perNight": "{{price}} a night",
+      "previousMonth": "Previous month",
+      "range_one": "Arrival {{checkIn}}, departure {{checkOut}}: {{count}} night.",
+      "range_other": "Arrival {{checkIn}}, departure {{checkOut}}: {{count}} nights.",
+      "rangeTotal_one": "Arrival {{checkIn}}, departure {{checkOut}}: {{count}} night, {{total}}.",
+      "rangeTotal_other": "Arrival {{checkIn}}, departure {{checkOut}}: {{count}} nights, {{total}}.",
+      "retry": "Try again",
+      "unknown": "not available yet"
+    },
+    "destination": {
+      "all": "All destinations",
+      "allSub": "Every home of the site",
+      "label": "Where do you want to go?"
+    },
+    "guests": {
+      "adults": "Adults",
+      "adultsHint": "Aged {{age}} and over",
+      "children": "Children",
+      "childrenHint": "Up to {{age}} years old",
+      "limit_one": "This home sleeps {{count}} person at most.",
+      "limit_other": "This home sleeps {{count}} people at most.",
+      "pets": "Pets",
+      "petsHint": "This home welcomes them",
+      "summary_one": "{{count}} guest",
+      "summary_other": "{{count}} guests",
+      "summaryWithPet": "{{people}} · with a pet"
+    },
+    "problem": {
+      "busyArrival": "{{date}} is already taken: choose another day of arrival.",
+      "busyBetween": "There are nights already taken between these dates: choose an earlier departure, or another arrival.",
+      "minNights_one": "The minimum stay is {{count}} night: choose a departure from {{date}} on.",
+      "minNights_other": "The minimum stay is {{count}} nights: choose a departure from {{date}} on.",
+      "past": "This day has already gone by: choose another day of arrival.",
+      "unknown": "We do not have the dates for this day yet: choose another day."
+    },
+    "search": {
+      "addDates": "Add the dates",
+      "datesTitle": "Choose the dates",
+      "go": "Search",
+      "goLong": "Search availability",
+      "guestsTitle": "Who is travelling?",
+      "label": "Search availability",
+      "needDates": "Choose the day of arrival and the day of departure to search.",
+      "sheetDescription": "Choose where, when and how many of you there are.",
+      "when": "When",
+      "whenPhone": "When do you arrive?",
+      "where": "Where",
+      "who": "Who"
+    },
+    "sheet": {
+      "done": "Done"
+    }
+  },
   "supplier": {
     "clients": {
       "chips": {

@@ -10,7 +10,8 @@ import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-p
 import { Footer } from '@/features/public-site/components/Footer';
 import { BrandHeader } from '@/features/public-site/components/brand-header';
 import { SiteHeader } from '@/features/public-site/components/site-header';
-import { SiteAppearanceProvider, type SiteAppearance } from '@/features/public-site/site-appearance';
+import { SiteAppearanceProvider } from '@/features/public-site/site-appearance';
+import type { SiteAppearance } from '@/features/public-site/site-appearance-context';
 import { publicSiteColorVars } from '@/lib/public-site-colors';
 import { normalizeHexColor, resolvePublicSiteFont, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
-import { usePortalRootProps } from '../site-appearance';
+import { usePortalRootProps } from '../site-appearance-context';
 import { DestinationPicker, type Destination } from './destination-picker';
 import { GuestsPicker } from './guests-picker';
 import { StayCalendar } from './stay-calendar';
