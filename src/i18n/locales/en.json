@@ -8285,6 +8285,7 @@
     "reviews": "Reviews",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
+    "wireTransfers": "Owner Wire Transfers",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -14530,6 +14531,45 @@
       "recordSuccess": "Payment recorded successfully",
       "recordError": "Could not record payment"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Confirm download",
+      "confirmDownloadError": "Could not confirm download",
+      "confirmDownloadSuccess": "Download confirmed successfully",
+      "confirmPaid": "Confirm payment",
+      "confirmPaidError": "Could not confirm payment",
+      "confirmPaidSuccess": "Payment confirmed successfully",
+      "create": "Create wire batch",
+      "createAnother": "Create another batch",
+      "createError": "Could not create batch",
+      "createSuccess": "Batch created successfully",
+      "currency": "Currency",
+      "details": "Batch details",
+      "detailsDescription": "Information about the created wire transfer batch",
+      "download": "Download file",
+      "downloadError": "Could not download file",
+      "downloadSuccess": "File downloaded successfully",
+      "id": "Batch ID",
+      "paidComplete": "The batch has been confirmed as paid",
+      "status": "Status",
+      "totalAmount": "Total amount",
+      "transferCount": "Transfer count"
+    },
+    "debitAccount": "Debit account (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Generate SEPA files to pay property owners.",
+    "loadError": "Could not load data",
+    "loading": "Loading wire transfers...",
+    "noApprovedStatements": "No approved statements",
+    "noApprovedStatementsDescription": "Approve statements before creating a wire transfer batch.",
+    "selectStatements": "Select statements",
+    "status": {
+      "downloaded": "Downloaded",
+      "generated": "Generated",
+      "paid": "Paid"
+    },
+    "title": "Owner Wire Transfers"
   },
   "wizard": {
     "back": "Back",
