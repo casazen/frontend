@@ -30,6 +30,9 @@ export function stepPath(step: EditorStep): string {
 /** The address of the overview. */
 export const OVERVIEW_PATH = SHOWCASE_PATH;
 
+/** The guided creation "Crea la tua vetrina" (SP-13e): style, presentation, services and the publication. */
+export const WIZARD_PATH = `${SHOWCASE_PATH}/publish`;
+
 /** The state as the person reads it: the label (a key), and the tone of its badge. */
 export interface StateView {
   labelKey: string;

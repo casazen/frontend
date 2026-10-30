@@ -34,6 +34,7 @@ import {
   PAYMENTS_SETTINGS_PATH,
   stateView,
   stepPath,
+  WIZARD_PATH,
 } from './showcase-model';
 import { ShowcaseWorkPage } from './showcase-work-page';
 import { useShowcasePublish } from './use-showcase-publish';
@@ -77,7 +78,8 @@ export function SupplierShowcaseHubPage() {
   const discard = useDiscardShowcaseChanges();
   const pause = usePauseShowcase();
   const resume = useResumeShowcase();
-  const [shareOpen, setShareOpen] = useState(false);
+  // "Condividi il link" of the confirmation of the wizard opens the overview with the sheet already up.
+  const [shareOpen, setShareOpen] = useState(() => params.get('condividi') === '1');
   const [discardOpen, setDiscardOpen] = useState(false);
 
   const header = <PageHeader title={t('supplier.showcase.title')} description={t('supplier.showcase.description')} crumbs="auto" />;
@@ -184,6 +186,16 @@ export function SupplierShowcaseHubPage() {
       when: data.publishedAt ? t('supplier.showcase.focus.publishedAt', { when: when(data.publishedAt) }) : undefined,
       primary: editAction,
       secondary: { label: t('supplier.showcase.focus.open'), onClick: openPublic },
+    };
+  } else if (data.version === 0 && data.readiness.canPublish) {
+    // Nothing was ever written and nothing is missing: the guided creation is the way in; the editor stays next to it.
+    focus = {
+      tone: 'neutral',
+      kicker: t('supplier.showcase.focus.now'),
+      title: t('supplier.showcase.focus.createTitle'),
+      body: t('supplier.showcase.focus.createBody'),
+      primary: { label: t('supplier.showcase.focus.create'), href: WIZARD_PATH },
+      secondary: editAction,
     };
   } else {
     focus = {

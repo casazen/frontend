@@ -15103,6 +15103,9 @@
       "focus": {
         "changesBody": "Cosa cambia: {{changes}}.",
         "changesTitle": "Hai modifiche da pubblicare",
+        "create": "Crea la tua vetrina",
+        "createBody": "Scegli lo stile, scrivi due righe e i servizi da mostrare: la pubblichi quando sei pronto.",
+        "createTitle": "Crea la tua vetrina in cinque minuti",
         "edit": "Modifica la vetrina",
         "fix": "Sistema: {{item}}",
         "missingBody": "Sistema le voci qui sotto: poi potrai pubblicare.",
@@ -15192,6 +15195,56 @@
         "published": "Vetrina pubblicata",
         "resumeFailed": "Impossibile riattivare la vetrina.",
         "resumed": "Vetrina riattivata"
+      },
+      "wizard": {
+        "description": "Quattro passi: lo stile, due righe di presentazione, i servizi e la pubblicazione. Puoi cambiare tutto anche dopo.",
+        "done": {
+          "bookingsOpen": "I clienti possono prenotare: le richieste arrivano nella tua area Richieste.",
+          "edit": "Puoi cambiare testi, foto e stile quando vuoi: i clienti vedono solo ciò che pubblichi.",
+          "lead": "I clienti la trovano al suo indirizzo e vedono ciò che hai pubblicato.",
+          "open": "Apri la vetrina",
+          "readOnly": "Per ora la vetrina si vede ma non si può prenotare.",
+          "respond": "Quando un cliente prenota hai {{deadline}} per rispondere: poi la richiesta si annulla da sola.",
+          "share": "Condividi il link",
+          "title": "La tua vetrina è online"
+        },
+        "errors": {
+          "services": "Scegli almeno un servizio.",
+          "tagline": "Scrivi almeno 12 caratteri.",
+          "tooLong": "Il testo è troppo lungo."
+        },
+        "failed": "Non riesco a pubblicare la vetrina. Riprova.",
+        "loadError": "Non riesco a preparare la procedura.",
+        "loading": "Preparo la procedura…",
+        "presentation": {
+          "introHint": "Una o due righe sotto il titolo.",
+          "prefilled": "Abbiamo scritto un testo di partenza adatto al tuo mestiere: leggilo e cambialo come vuoi. Non è pubblico finché non pubblichi.",
+          "taglineHint": "La frase grande in cima alla pagina: almeno 12 caratteri."
+        },
+        "publish": "Pubblica la vetrina",
+        "steps": {
+          "presentation": {
+            "label": "Presentazione",
+            "purpose": "Una frase in grande e due righe sotto: le vedono i clienti in cima alla pagina.",
+            "title": "Presenta la tua attività"
+          },
+          "services": {
+            "label": "Servizi",
+            "purpose": "Si mostrano solo i servizi attivi: scegline almeno uno.",
+            "title": "Scegli i servizi da mostrare"
+          },
+          "style": {
+            "label": "Stile",
+            "purpose": "Cambia i colori e l'aria della pagina. Lo puoi cambiare quando vuoi.",
+            "title": "Scegli lo stile della vetrina"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa vedranno i clienti. I controlli sono quelli che fa il sistema prima di pubblicare.",
+            "title": "Controlla e pubblica"
+          }
+        },
+        "title": "Crea la tua vetrina"
       }
     },
     "trusted": {
