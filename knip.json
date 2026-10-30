@@ -29,6 +29,9 @@
     "src/types/**": [
       "types"
     ],
+    "src/features/site-maps/index.ts": [
+      "types"
+    ],
     "src/queries/**": [
       "exports"
     ],
