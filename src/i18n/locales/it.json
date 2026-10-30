@@ -11741,7 +11741,7 @@
     "poweredBy": "Powered by CasaZen",
     "seoHub": "Guide per gli host",
     "preview": "Anteprima sito",
-    "explore": "Esplora",
+    "explore": "Cerca casa",
     "viewProperties": "Scopri le strutture",
     "ourProperties": "Le nostre strutture",
     "mobileBookingCta": "Verifica disponibilità",
@@ -12678,7 +12678,8 @@
       "about": "Chi siamo",
       "login": "Accedi",
       "switchLanguage": "English",
-      "switchLanguageLabel": "Passa all'inglese"
+      "switchLanguageLabel": "Passa all'inglese",
+      "search": "Cerca casa"
     },
     "footer": {
       "tagline": "Il gestionale per gli affitti brevi e lunghi in regola.",
@@ -12692,7 +12693,8 @@
       "subprocessors": "Sub-responsabili",
       "vatId": "P.IVA {{vatId}}",
       "contact": "Contatti",
-      "rights": "© {{year}} CasaZen"
+      "rights": "© {{year}} CasaZen",
+      "search": "Cerca una casa"
     },
     "home": {
       "hero": {
@@ -12813,6 +12815,18 @@
       "finalCta": {
         "title": "Vuoi provare CasaZen?",
         "text": "Per ora si entra solo su invito. Scrivici e ti ricontattiamo."
+      },
+      "search": {
+        "checkin": "Arrivo",
+        "checkout": "Partenza",
+        "guests": "Ospiti",
+        "guestsCount_one": "{{count}} ospite",
+        "guestsCount_other": "{{count}} ospiti",
+        "submit": "Cerca una casa",
+        "text": "Scegli dove e quando: vedi le case libere degli host di CasaZen, con il prezzo di tutto il soggiorno, e prenoti direttamente da loro.",
+        "title": "Cerchi una casa per le vacanze?",
+        "where": "Dove",
+        "wherePlaceholder": "Città o zona"
       }
     },
     "features": {

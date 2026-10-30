@@ -4,7 +4,7 @@ import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { LOCALE_STORAGE_KEY } from '@/i18n/locale-storage';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
-import { sitePageById, type SitePageId } from '../site-pages';
+import { SEARCH_PATH, sitePageById, type SitePageId } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
 
@@ -70,6 +70,12 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
                   {t('site.nav.guides')}
                 </a>
               </li>
+              {/* The search of homes is a page of the app (not prerendered): a plain link, like the guides. */}
+              <li>
+                <a href={SEARCH_PATH} className="border-b-2 border-transparent pb-1 text-ink-500 hover:text-ink-800">
+                  {t('site.nav.search')}
+                </a>
+              </li>
             </ul>
           </nav>
           <div className="ml-auto flex items-center gap-4 text-sm font-medium">
@@ -123,6 +129,11 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
               <li>
                 <a href={SEO_HUB_PATH} className={FOOTER_LINK}>
                   {t('site.footer.guides')}
+                </a>
+              </li>
+              <li>
+                <a href={SEARCH_PATH} className={FOOTER_LINK}>
+                  {t('site.footer.search')}
                 </a>
               </li>
             </ul>
