@@ -419,8 +419,6 @@ export interface CreateServiceRequestDto {
   scheduledStartUtc?: string;
   /** How long the work lasts, in minutes. */
   durationMinutes?: number;
-  /** The service of the supplier's catalog the request is for (`SupplierPickerService.id`): its name and price are kept with the request. Its category must be `category`. */
-  serviceListingId?: string;
 }
 
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */
