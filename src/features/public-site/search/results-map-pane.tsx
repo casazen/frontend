@@ -40,6 +40,7 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
           id: card.id,
           lat: card.latitude,
           lon: card.longitude,
+          place: card.comune,
           label: formatPrice(cents, currency, locale),
           name: card.name,
           href: cardLink(orgSlug ?? card.orgSlug ?? '', card, stay),

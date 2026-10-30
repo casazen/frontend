@@ -55,7 +55,10 @@ function PriceHead() {
           </>
         ) : null}
       </p>
-      <p className="pp-price__sub">{quote.status === 'loading' ? t('propertyBooking.price.calculating') : t('propertyBooking.price.chooseDates')}</p>
+      {/* «Scegli le date» only while there are none: with a problem (the dates are chosen, the stay cannot be had) the problem says what to do. */}
+      {quote.status === 'loading' || quote.status === 'none' ? (
+        <p className="pp-price__sub">{quote.status === 'loading' ? t('propertyBooking.price.calculating') : t('propertyBooking.price.chooseDates')}</p>
+      ) : null}
     </div>
   );
 }
@@ -255,13 +258,16 @@ function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void 
           {t('propertyBooking.cta.retry')}
         </button>
       );
-    case 'problem':
+    case 'problem': {
       if (quote.problem === 'notBookable') return null;
+      // The guests (their number or their pet) are what to change; every other problem is about the dates.
+      const aboutGuests = quote.problem === 'tooManyGuests' || quote.problem === 'petsNotAllowed';
       return (
-        <button type="button" className={base} onClick={() => onChoose(quote.problem === 'tooManyGuests' ? 'guests' : 'dates')} data-testid="booking-cta">
-          {quote.problem === 'tooManyGuests' ? t('propertyBooking.cta.changeGuests') : t('propertyBooking.cta.otherDates')}
+        <button type="button" className={base} onClick={() => onChoose(aboutGuests ? 'guests' : 'dates')} data-testid="booking-cta">
+          {aboutGuests ? t('propertyBooking.cta.changeGuests') : t('propertyBooking.cta.otherDates')}
         </button>
       );
+    }
     case 'none':
       return (
         <button type="button" className={base} onClick={() => onChoose('dates')} data-testid="booking-cta">

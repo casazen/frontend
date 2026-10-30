@@ -10389,10 +10389,12 @@
       "minNights_other": "Il soggiorno minimo è di {{count}} notti.",
       "notBookable": "Questa casa non è ancora prenotabile online.",
       "past": "L'arrivo scelto è già passato.",
+      "petsNotAllowed": "Questa casa non ammette animali.",
       "reduceGuests_one": "Riduci a {{count}} ospite",
       "reduceGuests_other": "Riduci a {{count}} ospiti",
       "tooManyGuests_one": "La casa ospita al massimo {{count}} persona.",
-      "tooManyGuests_other": "La casa ospita al massimo {{count}} persone."
+      "tooManyGuests_other": "La casa ospita al massimo {{count}} persone.",
+      "withoutPets": "Viaggio senza animali"
     },
     "quote": {
       "failed": "Non riusciamo a calcolare il totale. Riprova tra un momento."
@@ -14239,8 +14241,10 @@
       "childrenHint": "Fino a {{age}} anni",
       "limit_one": "Questa casa ospita al massimo {{count}} persona.",
       "limit_other": "Questa casa ospita al massimo {{count}} persone.",
-      "pets": "Animali domestici",
+      "pets": "Viaggi con animali?",
       "petsHint": "Questa casa li ammette",
+      "petsHintNo": "Questa casa non ammette animali",
+      "petsHintSite": "Ti diciamo quali case li ammettono",
       "summary_one": "{{count}} ospite",
       "summary_other": "{{count}} ospiti",
       "summaryWithPet": "{{people}} · con animale"

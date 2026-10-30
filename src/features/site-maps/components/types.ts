@@ -8,8 +8,14 @@ import type { View } from '../engine/view';
  */
 export interface MapPinData {
   id: string;
+  /**
+   * The position, two decimals at most. `0, 0` is how the data say that a house has none (its host never gave the coordinates): the
+   * pin is then put at `place`, and a pin that has neither is not drawn.
+   */
   lat: number;
   lon: number;
+  /** The comune of the house or zone: the town of that name on the map is where its pin goes when it has no position of its own. */
+  place?: string;
   /** What the pill says: the price of the stay, or the name of a zone. */
   label: string;
   /** The name of the house or zone: it is in the accessible name of the pin and in its card. */

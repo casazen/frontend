@@ -10,6 +10,11 @@ export function buildOrgBookingPath(orgSlug: string): string {
   return `/book/${orgSlug}`;
 }
 
+/** The checkout of a property, with no stay: the stay of the address (`useStayState().linkTo`) is added to it. */
+export function buildPropertyCheckoutPath(orgSlug: string, property: { id: string; slug?: string | null }): string {
+  return `${buildPropertyBookingPath(orgSlug, property)}/checkout`;
+}
+
 /** Mirrors the backend `PublicListing.IsPublished` (A2-05): a paused property is never publishable either. */
 export function isPropertyPublishable(property: { isActive: boolean; isPaused: boolean; complianceStatus?: string }): boolean {
   return property.isActive && !property.isPaused && property.complianceStatus === 'Active';
@@ -103,7 +108,7 @@ export function buildPropertyPageUrl(orgSlug: string, property: PropertyRef, par
 /** Checkout URL of a property carrying the selected stay. */
 export function buildPropertyCheckoutUrl(orgSlug: string, property: PropertyRef, params: BookingSearchParams): string {
   return createPath({
-    pathname: `${buildPropertyBookingPath(orgSlug, property)}/checkout`,
+    pathname: buildPropertyCheckoutPath(orgSlug, property),
     search: buildBookingQuery(params).toString(),
   });
 }

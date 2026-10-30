@@ -56,6 +56,10 @@ export function StayProblem({ problem }: { problem: ProblemView }) {
       exit = { label: t('propertyBooking.problem.reduceGuests', { count: max }), apply: () => setStay(fit) };
       break;
     }
+    case 'petsNotAllowed':
+      sentence = t('propertyBooking.problem.petsNotAllowed');
+      exit = { label: t('propertyBooking.problem.withoutPets'), apply: () => setStay({ pets: false }) };
+      break;
     case 'past':
       sentence = t('propertyBooking.problem.past');
       exit = startAgain;

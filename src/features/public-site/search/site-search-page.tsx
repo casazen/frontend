@@ -64,13 +64,14 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
   const placeAsked = address.get(WHERE_PARAM)?.trim() ?? '';
 
   // What the controls offer, whatever else is asked: every home of the site, or the facets of the place asked across all the sites.
+  // A guest with a pet is always asked, and the list says which homes take it (the server answers a home that does not with the reason `pets`).
   const everyHome = useOrgStays(platform ? undefined : slug, {}).data?.items;
   // (A page of one home: only its facets are wanted. The previous ones stay while the next place is asked, so the controls do not blink.)
   const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true }).data?.facets;
   const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome ?? [])), [platform, placeFacets, everyHome]);
   const destinations = useScopedDestinations(scope);
   const favorites = useFavorites(platform ? undefined : slug);
-  const state = useSearchState({ maxGuests: facets.maxGuests, petsAllowed: facets.petsAllowed });
+  const state = useSearchState({ maxGuests: facets.maxGuests });
   const { stay, search, setSearch, searchParams } = state;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const desktop = useMediaQuery(FROM_DESKTOP_QUERY);

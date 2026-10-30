@@ -13,7 +13,8 @@ import type { HomeZone } from './home-model';
  * schematic map (DB-19, nothing from a map provider). A zone is its name, how many homes it has, the lowest night among them and the
  * photo of the first: the host's own words about a zone are not in the data yet (DB-D10), so none is written here. The list and
  * the map are the same zones (the one lights the other), each leads to the results of that place, and the pins sit at the middle
- * of the rounded positions of the homes, never at an exact one. The section needs two zones to be worth a map.
+ * of the rounded positions of the homes, never at an exact one (a zone whose homes have no position is pinned at its comune). The
+ * section needs two zones to be worth a map.
  */
 export function ZonesSection({ zones, searchPath }: { zones: readonly HomeZone[]; searchPath: string }) {
   const { t, i18n } = useTranslation();
@@ -29,6 +30,7 @@ export function ZonesSection({ zones, searchPath }: { zones: readonly HomeZone[]
         id: zone.id,
         lat: zone.lat,
         lon: zone.lon,
+        place: zone.name,
         label: zone.name,
         name: t('siteHome.zones.pinName', { name: zone.name, count: zone.count }),
         tone: 'zone',

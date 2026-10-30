@@ -4,7 +4,7 @@
  */
 import { sampleCurve, type Pt } from '../geometry';
 import { clamp, rngOf, slug } from '../numeric';
-import { toKm } from '../view';
+import { roundCoord, toKm, type LatLon } from '../view';
 import { snapKm } from './land';
 import type { BaseTown, DetailPack, GeoBase, GeoLod, GeoName, PackAreaName, PackTown, RawItaly, RawLod, RawName, RawPack, RawShape, Shape } from './model';
 
@@ -137,6 +137,18 @@ export const hasPack = (id: string): boolean => packs.has(id);
 export const geoVersion = (): number => version;
 export const geoBase = (): GeoBase | null => base;
 export const geoPacks = (): DetailPack[] => [...packs.values()];
+
+/**
+ * Where a town of the loaded data is, by its name (case, accents and punctuation do not matter), rounded to the two decimals a map
+ * accepts. It is how a house without a position of its own is put on the map: at its comune. Null when the data have no such town,
+ * and while they have not been loaded. A detail pack knows its own towns best, so the packs are asked first.
+ */
+export function townPoint(name: string | null | undefined): LatLon | null {
+  const key = name ? slug(name) : '';
+  if (!key) return null;
+  const town = [...packs.values()].flatMap((pack) => pack.towns).find((t) => t.id === key) ?? base?.towns.find((t) => t.id === key);
+  return town ? { lat: roundCoord(town.lat), lon: roundCoord(town.lon) } : null;
+}
 
 /* ----- the world of the renderer: base and packs merged, in km ----- */
 

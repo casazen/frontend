@@ -3,6 +3,7 @@ import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
 import {
   EMPTY_DETAILS,
   EMPTY_DRAFT,
+  PETS_NOTE,
   SPECIAL_REQUESTS_MAX,
   arrivalSlots,
   buildBookingPayload,
@@ -79,6 +80,21 @@ describe('buildBookingPayload', () => {
     expect(payload.expectedArrivalTime).toBe('late');
     expect(payload.childrenAges).toEqual([6]);
     expect(buildBookingPayload({ ...stay, draft: { ...draft, details: { ...draft.details, phone: '   ' } } }).guest).not.toHaveProperty('phone');
+  });
+
+  it('buildBookingPayload_GuestsTravelWithAPet_TellsTheHostFirstInTheRequests', () => {
+    expect(buildBookingPayload({ ...stay, pets: true, draft }).specialRequests).toBe(PETS_NOTE);
+    expect(buildBookingPayload({ ...stay, pets: true, draft: { ...draft, requests: '  Arrivo tardi  ' } }).specialRequests).toBe(`${PETS_NOTE}\nArrivo tardi`);
+    // No pet, no note: the requests are only what the guest wrote.
+    expect(buildBookingPayload({ ...stay, pets: false, draft: { ...draft, requests: 'Arrivo tardi' } }).specialRequests).toBe('Arrivo tardi');
+    expect(buildBookingPayload({ ...stay, pets: false, draft })).not.toHaveProperty('specialRequests');
+  });
+
+  it('buildBookingPayload_PetAndVeryLongRequests_NeverCutsTheNoteAndStaysWithinTheLimit', () => {
+    const payload = buildBookingPayload({ ...stay, pets: true, draft: { ...draft, requests: 'x'.repeat(SPECIAL_REQUESTS_MAX + 50) } });
+
+    expect(payload.specialRequests).toHaveLength(SPECIAL_REQUESTS_MAX);
+    expect(payload.specialRequests?.startsWith(PETS_NOTE)).toBe(true);
   });
 });
 
