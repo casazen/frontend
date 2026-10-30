@@ -71,6 +71,12 @@ export interface PublicStayCard {
   availability: PublicStayAvailability;
   price: PublicStayPrice;
   cancellation?: PublicStayCancellation | null;
+  /** Only in the search across all the sites: the slug of the booking site of the home (`/book/{orgSlug}/property/{slug}`). */
+  orgSlug?: string | null;
+  /** Only in the search across all the sites: how the host is named on that site. */
+  hostName?: string | null;
+  /** ISO 3166-1 alpha-2 country of the home (`IT`, `CH`): its price is in the currency of the home (`price.currency`, `EUR` or `CHF`). */
+  country?: string | null;
 }
 
 /** A range of dates near the one asked, as long as the stay, with homes that are free. */
@@ -102,6 +108,25 @@ export interface PublicStaysResult {
   /** Filters asked and not applied (`amenities:…`, `rules:…`, `tags:…` of a value no home can have). */
   unsupportedFilters: string[];
   generatedAt: string;
+  /** Only in the search across all the sites: what the controls can offer for the place asked. */
+  facets?: PublicStaysFacets | null;
+}
+
+/**
+ * What the controls of the search across all the sites need to know about the homes of the place asked (before the other filters):
+ * how far the price and size sliders go, how many guests a home takes, whether any takes pets, the labels with their counts.
+ */
+export interface PublicStaysFacets {
+  /** The lowest and the highest base night among the homes, in cents. */
+  minNightCents?: number | null;
+  maxNightCents?: number | null;
+  maxGuests: number;
+  minAreaSqm?: number | null;
+  maxAreaSqm?: number | null;
+  petsAllowed: boolean;
+  tags: { tag: string; count: number }[];
+  /** The currency of the homes of the place when they share one (`CHF` in Ticino), else `EUR`: what the sliders are written in. */
+  currency?: string | null;
 }
 
 /** The sorts of the list (`PublicSiteSearch` of the backend). */

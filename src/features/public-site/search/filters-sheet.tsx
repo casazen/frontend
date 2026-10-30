@@ -17,9 +17,9 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { listAmenities } from '@/lib/public-amenities';
 import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
-import { useOrgStays } from '@/queries/use-public-stays';
-import type { PublicStayCard } from '@/types/public-stays.types';
-import { PRICE_STEP, AREA_STEP, areaBounds, dropUnsupported, isUnsupported, priceBounds } from './filters-model';
+import { PRICE_STEP, AREA_STEP, dropUnsupported, isUnsupported } from './filters-model';
+import type { SearchFacets } from './search-facets';
+import { useScopedStays, type SearchScope } from './search-scope';
 import {
   FILTER_AMENITIES,
   FILTER_RULES,
@@ -45,10 +45,11 @@ const RULE_ICONS: Record<FilterRule, LucideIcon> = {
 };
 
 interface FiltersSheetProps {
-  slug: string;
+  /** Where the homes are searched: a booking site, or all of them. */
+  scope: SearchScope;
   state: ReturnType<typeof useSearchState>;
-  /** Every home of the site: how far the sliders go comes from all of them. */
-  catalog: readonly PublicStayCard[];
+  /** How far the sliders go: from every home of the site, or from the server for the place asked. */
+  facets: SearchFacets;
 }
 
 /**
@@ -57,7 +58,7 @@ interface FiltersSheetProps {
  * choices as they are made (the server is asked after a short pause, so a slider is not a flood of calls, and the number is
  * announced to a screen reader). Nothing is applied until that button is pressed.
  */
-export function FiltersSheet({ slug, state, catalog }: FiltersSheetProps) {
+export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
   const { t } = useTranslation();
   const portal = usePortalRootProps();
   const [open, setOpen] = useState(false);
@@ -77,13 +78,13 @@ export function FiltersSheet({ slug, state, catalog }: FiltersSheetProps) {
         </button>
       </DialogTrigger>
       <DialogContent {...portal} className={cn(portal.className, 'sr-filters sm:max-w-2xl')}>
-        {open ? <FiltersForm slug={slug} state={state} catalog={catalog} onClose={() => setOpen(false)} /> : null}
+        {open ? <FiltersForm scope={scope} state={state} facets={facets} onClose={() => setOpen(false)} /> : null}
       </DialogContent>
     </Dialog>
   );
 }
 
-function FiltersForm({ slug, state, catalog, onClose }: FiltersSheetProps & { onClose: () => void }) {
+function FiltersForm({ scope, state, facets, onClose }: FiltersSheetProps & { onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
   const { stay, search, setSearch } = state;
@@ -92,7 +93,8 @@ function FiltersForm({ slug, state, catalog, onClose }: FiltersSheetProps & { on
 
   // How many homes the draft leaves: the same call as the list, with the draft in place of the filters.
   const settled = useDebouncedValue(draft, COUNT_DELAY_MS);
-  const preview = useOrgStays(slug, toStaysQuery(stay, { ...search, filters: settled }), { keepPrevious: true });
+  // Across all the sites it only needs the counts: a page of one home.
+  const preview = useScopedStays(scope, toStaysQuery(stay, { ...search, filters: settled }), { keepPrevious: true, pageSize: 1 });
   const unsupported = preview.data?.unsupportedFilters ?? [];
   const clean = dropUnsupported(draft, unsupported);
   const waiting = settled !== draft || preview.isFetching;
@@ -100,11 +102,11 @@ function FiltersForm({ slug, state, catalog, onClose }: FiltersSheetProps & { on
   const button =
     left === null ? t('siteSearch.filters.show') : left > 0 ? t('siteSearch.filters.showCount', { count: left }) : t('siteSearch.filters.showNone');
 
-  const prices = priceBounds(catalog);
-  const areas = areaBounds(catalog);
+  const { prices, areas } = facets;
   const update = (patch: Partial<SearchFilters>) => setDraft((current) => ({ ...current, ...patch }));
   const toggle = <T extends string>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  const euros = (value: number) => formatPrice(value * 100, 'EUR', locale);
+  // Written in the currency of the homes (francs in Switzerland).
+  const euros = (value: number) => formatPrice(value * 100, facets.currency, locale);
   // The icon and the words of each service are the catalog of the site (the same as on the page of a home).
   // What the server could not apply is not offered.
   const amenityOptions = FILTER_AMENITIES.flatMap((name) => {

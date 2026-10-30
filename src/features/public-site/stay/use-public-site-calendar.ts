@@ -13,17 +13,25 @@ const DEFAULT_MONTHS_AHEAD = 12;
  * The nights of the whole site, for the «Quando» field of the home and of the results (DB-07a, DB-20-FU1): each night is free when
  * some home that sleeps the party is, and it costs what the cheapest of those homes asks. Same shape as the calendar of a single
  * home, so it is the same `StayCalendar`. The party counts: a night is not free for twelve people if no home takes twelve.
+ *
+ * With `platform` it is the calendar of ALL the booking sites (the public `/search`), and `where` narrows it to the homes of the place
+ * chosen; `orgSlug` is then not used.
  */
 export function usePublicSiteCalendar(
   orgSlug: string | undefined,
   party: { adults: number; children: number },
+  platform?: { where: string },
 ): StayCalendarData {
   const { t } = useTranslation();
   const { adults, children } = party;
+  const where = platform?.where.trim() ?? '';
   const query = useQuery({
-    queryKey: ['public-site-calendar', orgSlug, adults, children] as const,
-    queryFn: () => publicSiteSearchApi.getSiteCalendar(orgSlug!, { adults, children }),
-    enabled: Boolean(orgSlug),
+    queryKey: ['public-site-calendar', platform ? `platform:${where}` : orgSlug, adults, children] as const,
+    queryFn: () =>
+      platform
+        ? publicSiteSearchApi.getPlatformCalendar({ adults, children, ...(where ? { where } : {}) })
+        : publicSiteSearchApi.getSiteCalendar(orgSlug!, { adults, children }),
+    enabled: Boolean(platform) || Boolean(orgSlug),
     staleTime: 30_000,
     refetchOnMount: true,
     // Changing the guests asks for the nights again: the calendar that is open keeps the ones it has until the new ones arrive.

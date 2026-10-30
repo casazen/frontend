@@ -23,10 +23,11 @@ describe('site pages (SEO-VETRINA)', () => {
     expect(sitePageByPath(path)).toBeNull();
   });
 
-  it('buildSiteSitemap_listsEveryPageOnThePublicOrigin', () => {
+  it('buildSiteSitemap_listsEveryPageOnThePublicOriginAndTheSearchOfHomes', () => {
     const sitemap = buildSiteSitemap('https://site.example.test');
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-    expect(locs).toEqual(SITE_PAGES.map((page) => sitePageUrl('https://site.example.test', page)));
+    // The search of homes (SEARCH-GLOBAL) is a page of the app, listed after the prerendered pages.
+    expect(locs).toEqual([...SITE_PAGES.map((page) => sitePageUrl('https://site.example.test', page)), 'https://site.example.test/search']);
     expect(locs[0]).toBe('https://site.example.test/');
     expect(sitemap).toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
   });

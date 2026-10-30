@@ -7,6 +7,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { regionMapSvg } from '../engine/region';
 import { snapToLand } from '../engine/snap';
 import { projectPoint, publicPoint, unprojectPoint, type LatLon, type View } from '../engine/view';
+import { isMappable } from '../load';
 import { MapCard, type MapCardData } from './map-card';
 import { MapCluster } from './map-cluster';
 import { MapControls } from './map-controls';
@@ -19,9 +20,6 @@ import { useElementSize } from './use-element-size';
 import { useMapData } from './use-map-data';
 import { useMapView } from './use-map-view';
 
-/** Italy, with a little margin: a position outside it is a mistake of the data, not a place to show. */
-const ITALY = { lat0: 35.3, lat1: 47.3, lon0: 6.4, lon1: 18.9 };
-const inItaly = (p: LatLon): boolean => p.lat >= ITALY.lat0 && p.lat <= ITALY.lat1 && p.lon >= ITALY.lon0 && p.lon <= ITALY.lon1;
 /** Touch screens and narrow ones: the card is a sheet and the pins are touched, not hovered. */
 const PHONE = '(hover: none), (width < 64rem)';
 
@@ -58,11 +56,11 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     onActiveChange?.(id);
   };
 
-  // positions: rounded to two decimals (an exact one is refused in development), inside Italy, pulled to land when the rounding put them in the sea
+  // positions: rounded to two decimals (an exact one is refused in development), in Italy or Switzerland, pulled to land when the rounding put them in the sea
   const placed = pins.flatMap((pin) => {
     if (!Number.isFinite(pin.lat) || !Number.isFinite(pin.lon)) return [];
     const p = publicPoint(pin);
-    return inItaly(p) ? [{ pin, p }] : [];
+    return isMappable(p) ? [{ pin, p }] : [];
   });
   const frameAspect = size.h > 0 ? size.w / size.h : (aspect ?? 4 / 3);
   const mv = useMapView(placed.map((q) => q.p), frameAspect, initial);
