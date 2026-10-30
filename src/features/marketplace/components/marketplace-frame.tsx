@@ -29,8 +29,11 @@ interface MarketplaceFrameProps {
   trail?: MarketplaceTrailStep[];
   /** Next to the property: what searches (Scopri, Cerca). */
   toolbar?: ReactNode;
-  /** The main action of the page. Default: «Richiedi un intervento»; `null` for none. */
-  primary?: PageHeaderAction | null;
+  /**
+   * The main action of the page. Default: «Richiedi un intervento»; `null` for none. A function is given how to start a request, for an
+   * action that starts one from what the page is about (a supplier: «Richiedi fornitore»).
+   */
+  primary?: PageHeaderAction | null | ((requestIntervention: (from?: InterventionRequestStart) => void) => PageHeaderAction);
   /**
    * The page looks for suppliers around the property, which is done by its comune (the one of the official list): without one the page
    * asks for it instead. A page about what was already asked (Le mie app) does not need it. Default: yes.
@@ -63,10 +66,11 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
   }));
 
   // The one action is there when there is something to ask a supplier for: a property, and for a page that looks for suppliers, its comune.
+  const asked = typeof primary === 'function' ? primary(request.open) : primary;
   const mainAction: PageHeaderAction | undefined =
-    primary === null || !property || (needsComune && !property.comuneIstatCode)
+    asked === null || !property || (needsComune && !property.comuneIstatCode)
       ? undefined
-      : (primary ?? {
+      : (asked ?? {
           label: t('marketplace.requestIntervention'),
           icon: Wrench,
           onClick: () => request.open(),
