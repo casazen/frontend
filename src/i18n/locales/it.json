@@ -10456,6 +10456,7 @@
       "propertyTitle": "{{name}} · {{city}} — {{org}}"
     },
     "loading": "Caricamento...",
+    "offline": "Sei offline: vedi l’ultima versione salvata. Per verificare le date e prenotare serve la connessione.",
     "loadingProperties": "Caricamento delle strutture...",
     "propertiesError": {
       "title": "Non riusciamo a mostrare le strutture",

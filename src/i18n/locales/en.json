@@ -10456,6 +10456,7 @@
       "propertyTitle": "{{name}} · {{city}} — {{org}}"
     },
     "loading": "Loading...",
+    "offline": "You are offline: this is the last saved version. To check dates and book, you need a connection.",
     "loadingProperties": "Loading properties...",
     "propertiesError": {
       "title": "We can't show the properties right now",
