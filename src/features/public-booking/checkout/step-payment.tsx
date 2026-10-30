@@ -71,7 +71,10 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   }, [draft.pay, ready, deferredDate, onDraft]);
 
   const outcomePath = (result: DirectBookingResponse) => buildCheckoutOutcomePath(orgSlug, result.bookingId, result.checkoutToken);
-  const goToOutcome = (result: DirectBookingResponse, state: CheckoutOutcomeLocationState) => navigate(outcomePath(result), { state });
+  // The page that follows greets the guest by their first name and says which address the confirmation went to. Both travel in the history
+  // state of this navigation, for that page only: never in the address, never stored.
+  const goToOutcome = (result: DirectBookingResponse, state: CheckoutOutcomeLocationState) =>
+    navigate(outcomePath(result), { state: { guestEmail: details.email.trim(), guestFirstName: details.firstName.trim(), ...state } });
 
   let blocked: string | null = null;
   if (!online) blocked = t('publicCheckout.offline');
@@ -109,7 +112,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
       });
       // "Pay at the property" is a request waiting for the email confirmation and the host (D5): nothing to pay here.
       if (result.paymentOption === 'OnSite') {
-        goToOutcome(result, { guestEmail: details.email.trim() });
+        goToOutcome(result, {});
         return;
       }
       onBooked(result);

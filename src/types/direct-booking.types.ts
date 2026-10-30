@@ -155,6 +155,8 @@ export interface OnSiteRequestConfirmation {
   status: string;
   state: 'AwaitingGuestEmail' | 'AwaitingHostApproval' | null;
   requestExpiresAt: string | null;
+  /** `XXXXX-XXXXX`: the code of the booking, once the backend sends it here (DB-06a); until then the page shows the reference as before. */
+  bookingCode?: string | null;
 }
 
 /** Body of "Le mie prenotazioni" (BK-11): the booking site, the booking code of the confirmation email, the guest's email. */

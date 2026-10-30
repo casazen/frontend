@@ -12304,6 +12304,144 @@
       "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
     }
   },
+  "siteConfirm": {
+    "action": {
+      "calendar": "Add to calendar",
+      "findBooking": "Find your booking",
+      "manage": "Manage the booking",
+      "notArrived": "Didn't get it? Write to the host",
+      "otherDates": "Choose other dates",
+      "writeHost": "Write to the host"
+    },
+    "calendar": {
+      "arriveFrom": "Arrival from {{time}}",
+      "code": "Booking code {{code}}",
+      "contact": "Contact: {{host}}, {{phone}}",
+      "description": "{{home}}, {{days}}: with the booking code.",
+      "eventTitle": "Stay · {{home}}",
+      "fileName": "stay-{{code}}.ics",
+      "google": "Google Calendar",
+      "ics": {
+        "text": "For Apple, Outlook and almost every calendar app",
+        "title": "Download the .ics file"
+      },
+      "leaveBy": "Departure by {{time}}",
+      "newTab": "Opens in a new tab",
+      "outlook": "Outlook.com",
+      "place": "The calendar gets the area, not the exact address.",
+      "saved": "File downloaded: open it to add the stay to your calendar.",
+      "title": "Add to calendar"
+    },
+    "chip": {
+      "cancelled": "Cancelled",
+      "confirmed": "Confirmed",
+      "declined": "Not accepted",
+      "emailPending": "Email to confirm",
+      "expired": "Expired",
+      "processing": "Payment processing",
+      "unavailable": "Dates taken",
+      "unpaid": "To pay",
+      "waiting": "Waiting for the host"
+    },
+    "error": {
+      "title": "We can't read this booking"
+    },
+    "hostFallback": "the host",
+    "invalid": {
+      "title": "Incomplete link"
+    },
+    "lead": {
+      "email": "We emailed {{email}}: open the link to confirm your address, otherwise {{host}} won't receive the request.",
+      "emailNoAddress": "We emailed you: open the link to confirm your address, otherwise {{host}} won't receive the request.",
+      "later": "You pay nothing today: on {{date}} we charge {{total}} to the saved card.",
+      "onSite": "You pay {{total}} at the property, on arrival.",
+      "paid": "The confirmation with your code is in your email.",
+      "paidEmail": "The confirmation with your code is in your email, {{email}}.",
+      "stay_one": "{{home}} is waiting for you: {{range}}.",
+      "stay_other": "{{home}} is waiting for you: {{range}}."
+    },
+    "mail": {
+      "subject": "My booking {{code}}"
+    },
+    "note": {
+      "later": "You pay on {{date}}",
+      "onSite": "You pay at the property, on arrival",
+      "paid": "Paid online",
+      "processing": "Payment being processed",
+      "request": "A request, not a booking yet",
+      "unpaid": "Still to pay"
+    },
+    "offline": "You are offline: the status updates again when you are back online.",
+    "offlineAction": "This needs a connection: try again when you are back online.",
+    "pageTitle": "Your booking · {{org}}",
+    "steps": {
+      "arrival": {
+        "text": "{{day}}, from {{time}}",
+        "title": "Arrival"
+      },
+      "charge": {
+        "text": "To the saved card: you don't need to do anything.",
+        "title": "Charge of {{total}}"
+      },
+      "confirmed": {
+        "later": "You have paid nothing today.",
+        "onSite": "You will pay at the property, on arrival.",
+        "paid": "The confirmation with your code is in your email.",
+        "title": "Booking confirmed"
+      },
+      "departure": {
+        "text": "{{day}}, by {{time}}",
+        "title": "Departure"
+      },
+      "email": {
+        "doneText": "{{host}} has received your request.",
+        "doneTitle": "Email confirmed",
+        "title": "Confirm your email"
+      },
+      "eyebrow": "What comes next",
+      "host": {
+        "title": "{{host}} answers"
+      },
+      "ifAccepted": {
+        "title": "If they accept"
+      },
+      "state": {
+        "current": "now",
+        "done": "done",
+        "todo": "to do"
+      },
+      "title": "What happens now",
+      "when": {
+        "done": "Done",
+        "later": "Later",
+        "now": "Now"
+      }
+    },
+    "stuck": "We can't confirm it from here: check your email or look the booking up.",
+    "ticket": {
+      "arrival": "Arrival",
+      "by": "by {{time}}",
+      "code": "Code",
+      "copied": "Copied",
+      "copiedAnnounce": "Code copied to the clipboard.",
+      "copiedLabel": "Code {{code}} copied",
+      "copy": "Copy",
+      "copyLabel": "Copy the code {{code}}",
+      "departure": "Departure",
+      "from": "from {{time}}",
+      "label": "Your booking: {{home}}",
+      "ofWhichChildren_one": "including {{count}} child",
+      "ofWhichChildren_other": "including {{count}} children",
+      "selectedAnnounce": "Code selected: copy it with your keyboard or from your phone's menu.",
+      "total": "Total"
+    },
+    "title": {
+      "confirmed": "Booking confirmed!",
+      "confirmedNamed": "Booking confirmed, {{name}}!",
+      "email": "Last step: confirm your email",
+      "wait": "Request sent to {{host}}"
+    }
+  },
   "siteDocuments": {
     "title": "Site documents",
     "description": "The privacy notice and booking terms of your site: guests read them before they book.",

@@ -1,0 +1,1092 @@
+/*
+ * The confirmation of a booking (DB-06b): one focal point above the fold (the state in a title, one action, the ticket of the stay
+ * beside it) and, below, the steps with their real days and the host. The look is the one of the redesign prototype
+ * (`redesign/assets/site-confirm.css`, prefix `cf-`, here `bc-`); colors, radii, shadows and the display font come from the tokens of the
+ * theme of the host (`--cz-public-*`), and only the text pairs the tokens test proves AA are used. A line is a `border` in a class (a
+ * utility `border-*` cannot beat the rule `* { border-color }`). Motion only with «no reduce motion».
+ */
+
+.bc {
+  --bc-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  padding-bottom: clamp(24px, 4vw, 56px);
+}
+
+.bc-wrap {
+  width: 100%;
+}
+
+.bc-k {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--cz-public-muted);
+}
+
+/* ------------------------------------------------------------------ Offline */
+.bc-offline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--cz-public-radius);
+  background: var(--cz-public-warn-soft);
+  color: var(--cz-public-warn);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.bc-offline svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------- Hero */
+.bc-hero {
+  padding-block: clamp(8px, 3vw, 36px) clamp(32px, 5vw, 72px);
+}
+
+.bc-hero__in {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+
+.bc-hero__copy {
+  display: flex;
+  min-width: 0;
+  max-width: 640px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.bc-hero h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2.1rem, 5.2vw, 3.7rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.bc-hero h1:focus {
+  outline: none;
+}
+
+.bc-hero h1:focus-visible {
+  outline: 2px solid var(--cz-public-primary-text);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+.bc-hero__lead {
+  max-width: 46ch;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.02rem, 1.35vw, 1.18rem);
+  line-height: 1.6;
+  color: var(--cz-public-muted);
+}
+
+.bc-hero__cta {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 28px;
+  margin-top: 6px;
+}
+
+.bc-hero__side {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .bc-hero__in {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+}
+
+/* The mark above the title: a ring and a tick that draw themselves once (a confirmed booking only), other states have an icon. */
+.bc-seal {
+  position: relative;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-primary);
+  box-shadow: var(--cz-public-shadow-widget);
+}
+
+.bc-seal svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.bc-seal__ring {
+  stroke: var(--cz-public-primary);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(-90deg);
+}
+
+.bc-seal__tick {
+  stroke: var(--cz-public-primary);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bc-seal--mail,
+.bc-seal--clock,
+.bc-seal--card,
+.bc-seal--cross {
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+  box-shadow: none;
+}
+
+.bc-seal--mail svg,
+.bc-seal--clock svg,
+.bc-seal--card svg,
+.bc-seal--cross svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bc-seal__ring {
+    stroke-dasharray: 183;
+    stroke-dashoffset: 183;
+    animation: bc-draw 0.9s var(--bc-ease) 0.2s forwards;
+  }
+
+  .bc-seal__tick {
+    stroke-dasharray: 38;
+    stroke-dashoffset: 38;
+    animation: bc-draw 0.5s var(--bc-ease) 0.95s forwards;
+  }
+
+  .bc-hero__copy > * {
+    animation: bc-rise 0.7s var(--bc-ease) both;
+  }
+
+  .bc-hero__copy > :nth-child(2) {
+    animation-delay: 0.06s;
+  }
+
+  .bc-hero__copy > :nth-child(3) {
+    animation-delay: 0.12s;
+  }
+
+  .bc-hero__copy > :nth-child(n + 4) {
+    animation-delay: 0.18s;
+  }
+
+  .bc-hero__side {
+    animation: bc-ticket-in 0.9s var(--bc-ease) 0.2s both;
+  }
+
+  .bc-spin {
+    animation: bc-turn 1s linear infinite;
+  }
+}
+
+@keyframes bc-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bc-ticket-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) rotate(2deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bc-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ----------------------------------------------------------------- Actions */
+.bc-cta {
+  display: inline-flex;
+  min-width: min(100%, 280px);
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 28px;
+  font-size: 1.05rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.bc-cta svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.bc-cta[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.bc-cta--quiet {
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: 0.95rem;
+}
+
+.bc-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--cz-public-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+  cursor: pointer;
+}
+
+.bc-link svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 150ms ease;
+}
+
+.bc-link:hover svg {
+  transform: translateX(4px);
+}
+
+.bc-status {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-status svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bc-pay {
+  display: flex;
+  width: 100%;
+  max-width: 480px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.bc-pay__error {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--cz-public-err);
+}
+
+.bc-pay__why {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-pay__why svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------ Ticket */
+/* Two halves with the notches (radial masks): the shadow follows the cut shape because it is a `drop-shadow` of the container. */
+.bc-ticket {
+  --notch: 14px;
+  position: relative;
+  width: min(100%, 432px);
+  color: var(--cz-public-text);
+  filter: drop-shadow(0 20px 30px color-mix(in srgb, var(--cz-public-text) 16%, transparent))
+    drop-shadow(0 2px 4px color-mix(in srgb, var(--cz-public-text) 8%, transparent));
+}
+
+.bc-ticket__top,
+.bc-ticket__bottom {
+  position: relative;
+  background: var(--cz-public-surface);
+}
+
+.bc-ticket__top {
+  padding: 10px 10px 18px;
+  border-radius: var(--cz-public-radius-lg) var(--cz-public-radius-lg) 0 0;
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at 0 100%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle var(--notch) at 100% 100%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle var(--notch) at 0 100%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle var(--notch) at 100% 100%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+}
+
+.bc-ticket__bottom {
+  padding: 22px 22px 20px;
+  border-radius: 0 0 var(--cz-public-radius-lg) var(--cz-public-radius-lg);
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at 0 0, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle var(--notch) at 100% 0, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle var(--notch) at 0 0, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle var(--notch) at 100% 0, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+}
+
+.bc-ticket__bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: calc(var(--notch) + 10px);
+  left: calc(var(--notch) + 10px);
+  border-top: 2px dashed var(--cz-public-line-strong);
+}
+
+.bc-ticket__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: calc(var(--cz-public-radius-lg) - 6px);
+  background: var(--cz-public-surface-2);
+}
+
+.bc-ticket__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bc-ticket__chip {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.bc-ticket__chipline {
+  padding: 8px 0 0 8px;
+}
+
+.bc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 9px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  background: var(--cz-public-surface-2);
+  color: var(--cz-public-text);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--cz-public-text) 14%, transparent);
+}
+
+.bc-chip svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.bc-chip--ok {
+  background: var(--cz-public-ok-soft);
+  color: var(--cz-public-ok);
+}
+
+.bc-chip--warn {
+  background: var(--cz-public-warn-soft);
+  color: var(--cz-public-warn);
+}
+
+.bc-chip--err {
+  background: var(--cz-public-err-soft);
+  color: var(--cz-public-err);
+}
+
+.bc-ticket__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 10px 0;
+}
+
+.bc-ticket__name {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.bc-ticket__zone {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-ticket__zone svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.bc-ticket__dates {
+  display: grid;
+  grid-template-columns: auto minmax(30px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.bc-ticket__d {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+}
+
+.bc-ticket__d:last-child {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.bc-ticket__day {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 4px;
+  font-family: var(--cz-public-font-display);
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: -0.02em;
+}
+
+.bc-ticket__day strong {
+  font-size: 2.6rem;
+  font-weight: inherit;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+}
+
+.bc-ticket__day span {
+  font-size: 1.1rem;
+}
+
+.bc-ticket__wd {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.bc-ticket__wd::first-letter {
+  text-transform: uppercase;
+}
+
+.bc-ticket__d small {
+  font-size: 0.84rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-ticket__n {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 18px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--cz-public-muted);
+}
+
+.bc-ticket__n i {
+  min-width: 6px;
+  flex: 1;
+  border-top: 1.5px dashed var(--cz-public-line-strong);
+}
+
+.bc-ticket__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--cz-public-border);
+  font-size: 0.92rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-ticket__facts > span {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bc-ticket__facts svg {
+  width: 16px;
+  height: 16px;
+  align-self: center;
+}
+
+.bc-ticket__facts small {
+  font-size: 0.82rem;
+}
+
+.bc-ticket__facts strong {
+  font-size: 1.12rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--cz-public-text);
+}
+
+.bc-ticket__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: var(--cz-public-text);
+}
+
+.bc-ticket__note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--cz-public-muted);
+}
+
+/* The code and «Copia» */
+.bc-code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--cz-public-radius);
+  background: var(--cz-public-surface-2);
+}
+
+.bc-code__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  margin: 0;
+}
+
+.bc-code__value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.08rem;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  color: var(--cz-public-text);
+  user-select: all;
+}
+
+.bc-copy {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  border: 1px solid var(--cz-public-line-strong);
+  border-radius: 999px;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.bc-copy svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bc-copy:hover {
+  border-color: var(--cz-public-text);
+}
+
+.bc-copy[data-done] {
+  border-color: transparent;
+  background: var(--cz-public-ok-soft);
+  color: var(--cz-public-ok);
+}
+
+/* The code on its own (the page of the email link of a request): a card with the same code line as the ticket. */
+.bc-codecard {
+  width: min(100%, 432px);
+  padding: 22px;
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  box-shadow: var(--cz-public-shadow-widget);
+}
+
+.bc-codecard .bc-code {
+  margin-top: 0;
+}
+
+.bc-codecard__ref {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  color: var(--cz-public-muted);
+}
+
+.bc-codecard__ref svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bc-codecard__ref > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bc-codecard__ref strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  color: var(--cz-public-text);
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------- Sections and steps */
+.bc-sec {
+  padding-block: clamp(28px, 4vw, 52px);
+  border-top: 1px solid var(--cz-public-border);
+}
+
+.bc-sec--end {
+  padding-bottom: 0;
+}
+
+.bc-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+
+.bc-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cz-public-muted);
+}
+
+.bc-head h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  line-height: 1.1;
+}
+
+.bc-steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bc-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-content: start;
+  gap: 16px;
+  padding-bottom: 26px;
+}
+
+.bc-step:last-child {
+  padding-bottom: 0;
+}
+
+.bc-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 50px;
+  bottom: 6px;
+  left: 21px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--cz-public-line-strong);
+}
+
+.bc-step.is-done:not(:last-child)::before {
+  background: var(--cz-public-primary);
+}
+
+.bc-step__dot {
+  position: relative;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 2px solid var(--cz-public-line-strong);
+  border-radius: 50%;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-muted);
+}
+
+.bc-step__dot svg {
+  width: 19px;
+  height: 19px;
+}
+
+.bc-step.is-done .bc-step__dot {
+  border-color: var(--cz-public-primary);
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+}
+
+.bc-step.is-current .bc-step__dot {
+  border-color: var(--cz-public-primary);
+  color: var(--cz-public-ink);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--cz-public-primary) 14%, transparent);
+}
+
+.bc-step__txt {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.bc-step__when {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cz-public-muted);
+}
+
+.bc-step.is-current .bc-step__when {
+  color: var(--cz-public-primary-text);
+}
+
+.bc-step__t {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.bc-step__t::first-letter {
+  text-transform: uppercase;
+}
+
+.bc-step__x {
+  max-width: 38ch;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+  color: var(--cz-public-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bc-step.is-current .bc-step__dot::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border: 2px solid var(--cz-public-primary);
+    border-radius: 50%;
+    opacity: 0;
+    animation: bc-ripple 2.8s ease-out 1s infinite;
+  }
+}
+
+@keyframes bc-ripple {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (min-width: 900px) {
+  .bc-steps {
+    grid-template-columns: repeat(var(--bc-n), minmax(0, 1fr));
+  }
+
+  .bc-step {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 24px 0 0;
+  }
+
+  .bc-step:not(:last-child)::before {
+    top: 21px;
+    right: 12px;
+    bottom: auto;
+    left: 56px;
+    width: auto;
+    height: 2px;
+  }
+}
+
+/* ---------------------------------------------------------- The calendar sheet */
+.bc-cal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bc-cal__opt {
+  display: grid;
+  width: 100%;
+  min-height: 66px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px 10px 12px;
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius);
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.bc-cal__opt:hover {
+  border-color: var(--cz-public-primary);
+  box-shadow: var(--cz-public-shadow-card);
+}
+
+.bc-cal__opt > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--cz-public-muted);
+}
+
+.bc-cal__i {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+}
+
+.bc-cal__i svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bc-cal__t {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.bc-cal__t small {
+  font-size: 0.84rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-cal__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cz-public-muted);
+}
+
+.bc-cal__note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bc-cal__saved {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cz-public-ok);
+}
+
+/* ---------------------------------------------------------------- Skeleton */
+.bc-skel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+  padding-block: clamp(8px, 3vw, 36px);
+}
+
+.bc-skel__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bc-skel__block {
+  display: block;
+  border-radius: var(--cz-public-radius-sm);
+  background: var(--cz-public-surface-2);
+}
+
+.bc-skel__seal {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+
+.bc-skel__title {
+  width: 80%;
+  height: 44px;
+}
+
+.bc-skel__line {
+  width: 60%;
+  height: 18px;
+}
+
+.bc-skel__btn {
+  width: min(100%, 260px);
+  height: 56px;
+  border-radius: var(--cz-public-btn-radius);
+}
+
+.bc-skel__ticket {
+  width: min(100%, 432px);
+  height: 440px;
+  justify-self: center;
+  border-radius: var(--cz-public-radius-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bc-skel__block {
+    animation: bc-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes bc-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (min-width: 900px) {
+  .bc-skel {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+}
+
+/* ------------------------------------------------------------------- Phone */
+@media (max-width: 599.98px) {
+  .bc-hero__copy {
+    gap: 16px;
+  }
+
+  .bc-seal {
+    width: 56px;
+    height: 56px;
+  }
+
+  .bc-hero__cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .bc-hero__cta .bc-cta {
+    width: 100%;
+  }
+
+  .bc-hero__cta .bc-link {
+    justify-content: center;
+  }
+
+  .bc-ticket__bottom {
+    padding: 20px 18px 18px;
+  }
+
+  .bc-ticket__day strong {
+    font-size: 2.3rem;
+  }
+}

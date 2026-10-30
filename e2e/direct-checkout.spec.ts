@@ -103,7 +103,9 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     // BK-07: the outcome page of the booking, confirmed only because the (mocked) backend says so.
     await expect(page).toHaveURL(/\/booking\/cccccccc-cccc-cccc-cccc-cccccccccccc\?token=tok_e2e_checkout$/);
     await expect(page.getByTestId('checkout-confirmation')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prenotazione confermata/i })).toBeVisible();
+    // One title for the state (the guest is greeted by name); the step «Prenotazione confermata» below is an h3.
+    await expect(page.getByRole('heading', { level: 1, name: /Prenotazione confermata, Mario/i })).toBeVisible();
+    await expect(page.getByTestId('checkout-outcome-booking-code')).toBeVisible();
   });
 
   test('A3-34: past dates are reported, a wrong email is explained and blocks the next step', async ({ page }) => {
