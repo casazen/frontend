@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -73,9 +73,21 @@ function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed
 export function PropertyWizardPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const navigationType = useNavigationType();
   const [createdHere, setCreatedHere] = useState<string | null>(null);
+  /** Counts the wizards started in this visit: a new one is a new element, with nothing left of the last. */
+  const [generation, setGeneration] = useState(0);
   const linkedPropertyId = searchParams.get(PROPERTY_ID_PARAM);
   const resumeId = linkedPropertyId && linkedPropertyId !== createdHere ? linkedPropertyId : null;
+
+  // «Aggiungi immobile» opened again from the end of a wizard (a link to the empty address, the one that ended had made a property): a
+  // new wizard, or its first «Avanti» would save over the property that has just been finished. Not the «back» of the browser, which
+  // goes back to the first step of the same wizard; and the browser's address is read as well as the router's, because right after the
+  // creation the router has not rendered the step that «Avanti» pushed yet.
+  if (createdHere && navigationType === 'PUSH' && searchParams.toString() === '' && window.location.search === '') {
+    setCreatedHere(null);
+    setGeneration((current) => current + 1);
+  }
 
   return (
     <AppShell>
@@ -84,7 +96,7 @@ export function PropertyWizardPage() {
         {resumeId ? (
           <ResumeWizard key={resumeId} propertyId={resumeId} stepNamed={searchParams.get('step') !== null} />
         ) : (
-          <PropertyWizard key="new" onCreated={setCreatedHere} />
+          <PropertyWizard key={`new-${generation}`} onCreated={setCreatedHere} />
         )}
       </div>
     </AppShell>

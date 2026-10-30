@@ -7757,7 +7757,8 @@
         "createLease": "Crea contratto",
         "edit": "Modifica",
         "openLease": "Apri contratto",
-        "page": "Scheda completa"
+        "page": "Scheda completa",
+        "request": "Richiedi intervento"
       },
       "add": "Aggiungi immobile",
       "ape": {
@@ -10402,8 +10403,21 @@
       }
     },
     "done": {
+      "active": "L'immobile è attivo.",
+      "another": "Aggiungi un altro immobile",
+      "calendar": "Apri il calendario",
       "complete": "Completa l'attivazione",
       "description": "L'immobile è in Immobili come «Da completare».",
+      "fix": {
+        "base-data": "Completa i dati",
+        "cin": "Aggiungi il CIN",
+        "documents": "Carica i documenti",
+        "safety": "Compila la scheda di sicurezza"
+      },
+      "fixLabel": "Cosa sistemare",
+      "hiddenDescription": "L'hai nascosto tu: gli ospiti non possono prenotarlo dal tuo sito finché non lo mostri.",
+      "hiddenHow": "Per mostrarlo sul sito usa l'interruttore dell'ultimo passo.",
+      "hiddenTitle": "«{{name}}» è pronto, ma non compare sul sito",
       "inList": "Lo trovi in Immobili, dove puoi riprendere quando vuoi.",
       "leadOpen": "Per attivarlo mancano ancora alcuni punti:",
       "leadReady": "I dati richiesti ci sono: manca solo la conferma finale.",
@@ -10413,7 +10427,10 @@
         "documents": "I documenti richiesti per la tua regione",
         "safety": "La scheda di sicurezza"
       },
+      "readyDescription": "Gli ospiti possono prenotare dal tuo sito.",
+      "readyTitle": "«{{name}}» è pronto",
       "readyToActivate": "Per attivarlo basta accettare i Termini.",
+      "show": "Mostralo sul sito",
       "title": "«{{name}}» è salvato",
       "toList": "Vai agli immobili"
     },
@@ -10424,7 +10441,84 @@
       "saveAndClose": "Salva e chiudi",
       "saved": "Salvato. Lo trovi in Immobili, da completare."
     },
-    "finish": "Salva e vedi cosa manca",
+    "last": {
+      "activation": {
+        "later": "Puoi finire adesso: l'immobile resta «Da completare» e lo attivi appena è tutto a posto.",
+        "title": "Attivazione"
+      },
+      "button": {
+        "activate": "Attiva l'immobile",
+        "done": "Fatto",
+        "later": "Finisci dopo"
+      },
+      "calendars": {
+        "hint": "Consigliato: le date prenotate su Airbnb o Booking.com risultano occupate anche sul tuo sito.",
+        "title": "Collega i calendari"
+      },
+      "cin": {
+        "hint": "Il Codice Identificativo Nazionale serve per attivare l'immobile. Se non ce l'hai ancora puoi finire dopo e aggiungerlo quando arriva.",
+        "label": "Codice CIN",
+        "save": "Salva il CIN",
+        "title": "Codice CIN"
+      },
+      "documents": {
+        "title": "Documenti richiesti"
+      },
+      "missing": {
+        "advice": "Consigliato",
+        "failed": "Non riesco a controllare cosa manca. Riprova.",
+        "fix": "Correggi",
+        "lead": "Per attivare l'immobile serve ancora:",
+        "loading": "Controllo cosa manca…",
+        "none": "Tutto a posto: manca solo la conferma finale.",
+        "refused": "Non si può ancora attivare: il servizio segnala questi punti",
+        "title": "Cosa manca"
+      },
+      "summary": {
+        "amenities": "Dotazioni e sicurezza",
+        "base": "Dati base",
+        "by": "entro le {{time}}",
+        "edit": "Modifica",
+        "from": "dalle {{time}}",
+        "labels": {
+          "amenities": "Scelte",
+          "cleaning": "Pulizia",
+          "headline": "Titolo",
+          "house": "Fumare · animali · feste",
+          "minNights": "Soggiorno minimo",
+          "name": "Nome",
+          "photos": "Foto",
+          "policy": "Cancellazione",
+          "quiet": "Silenzio",
+          "rate": "Prezzo base",
+          "safety": "Sicurezza",
+          "spaces": "Spazi",
+          "times": "Check-in / check-out",
+          "weekend": "Weekend",
+          "where": "Dove"
+        },
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "notSaid": "Non indicato",
+        "photos": "Foto e annuncio",
+        "photosCount_one": "{{count}} foto · la prima è la copertina",
+        "photosCount_other": "{{count}} foto · la prima è la copertina",
+        "photosNone": "Nessuna foto per ora (consigliate, non obbligatorie)",
+        "prices": "Prezzi",
+        "range": "dalle {{from}} alle {{to}}",
+        "rateMissing": "Manca il prezzo",
+        "rules": "Regole della casa",
+        "safetyDone": "Scheda di sicurezza completa",
+        "safetyOpen": "Scheda di sicurezza da completare",
+        "title": "Riepilogo"
+      },
+      "visibility": {
+        "blocked": "Si attiva quando hai sistemato i punti segnati sopra.",
+        "label": "Mostra la casa sul sito",
+        "off": "L'immobile sarà attivo ma non comparirà sul sito: lo potrai mostrare quando vuoi.",
+        "on": "Gli ospiti potranno prenotare dal tuo sito."
+      }
+    },
     "page": {
       "backToList": "Torna agli immobili",
       "description": "Un passo alla volta: l'immobile è salvato dal primo «Continua» e puoi riprendere quando vuoi.",
@@ -10560,6 +10654,11 @@
         "label": "Dati base",
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
+      },
+      "finish": {
+        "label": "Attivazione",
+        "purpose": "Collega i calendari, aggiungi il CIN e i documenti, poi attiva l'immobile.",
+        "title": "Calendari, CIN e attivazione"
       },
       "photos": {
         "label": "Foto",
