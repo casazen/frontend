@@ -11,10 +11,32 @@
 import { clipRect, crBezier, lineD, pip, polyD, smoothD, voronoiCells, type Poly, type Pt } from '../geometry';
 import { DEG, PI, clamp, esc, hash2, num, rngOf, slug } from '../numeric';
 import { FONT, HALO, INK, nextPrefix, textW } from '../style';
-import { sane, toKm, unprojectPoint, type View } from '../view';
+import { LAT_KM, LON_KM, ORIGIN_LAT, ORIGIN_LON, sane, toKm, unprojectPoint, type View } from '../view';
 import { hits, makePlacer, runsInBox, thinPts, type Box } from './lines';
 import type { GeoLod, GeoName, Shape } from './model';
 import { getWorld, type World, type WorldTown } from './registry';
+
+const TINT_CELL_KM = 34;
+
+/**
+ * Soft tints for the places that no detail pack covers: patches of plain, hill and grove on a grid fixed to the map, so that
+ * they do not move when the map does and a region without a hand-made tint is not a flat colour. Not drawn on the whole country.
+ */
+function proceduralTints(win: Box, packs: World['packs']): { k: Pt; rx: number; ry: number; g: 'g' | 'w' | 't' }[] {
+  const out: { k: Pt; rx: number; ry: number; g: 'g' | 'w' | 't' }[] = [];
+  for (let ci = Math.floor(win.x0 / TINT_CELL_KM) - 1; ci <= Math.ceil(win.x1 / TINT_CELL_KM); ci++) {
+    for (let cj = Math.floor(win.y0 / TINT_CELL_KM) - 1; cj <= Math.ceil(win.y1 / TINT_CELL_KM); cj++) {
+      if (hash2(ci, cj, 71) > 0.8) continue;
+      const k: Pt = [(ci + 0.2 + 0.6 * hash2(ci, cj, 72)) * TINT_CELL_KM, (cj + 0.2 + 0.6 * hash2(ci, cj, 73)) * TINT_CELL_KM];
+      const lat = ORIGIN_LAT + k[1] / LAT_KM;
+      const lon = ORIGIN_LON + k[0] / LON_KM;
+      if (packs.some((p) => lat >= p.box[0] && lat <= p.box[2] && lon >= p.box[1] && lon <= p.box[3])) continue;
+      const tone = hash2(ci, cj, 76);
+      out.push({ k, rx: TINT_CELL_KM * (0.7 + 0.7 * hash2(ci, cj, 74)), ry: TINT_CELL_KM * (0.5 + 0.5 * hash2(ci, cj, 75)), g: tone < 0.38 ? 'g' : tone < 0.7 ? 'w' : 't' });
+    }
+  }
+  return out;
+}
 
 export type LabelMode = 'auto' | 'major' | 'all' | 'none';
 export interface RegionMapOptions {
@@ -230,6 +252,16 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
       (ti.g === 'o' ? tintsO : tintsP).push(`<ellipse cx="${num(c[0])}" cy="${num(c[1])}" rx="${num(rx)}" ry="${num(ry)}" fill="url(#${id}g${ti.g})"/>`);
     }
   }
+  if (S <= 400 && hasLand) {
+    for (const ti of proceduralTints(winKm, world.packs)) {
+      const c = px(ti.k);
+      const rx = ti.rx * sx;
+      const ry = ti.ry * sx;
+      if (c[0] + rx < 0 || c[0] - rx > W || c[1] + ry < 0 || c[1] - ry > H) continue;
+      usedG.add(ti.g);
+      tintsP.push(`<ellipse cx="${num(c[0])}" cy="${num(c[1])}" rx="${num(rx)}" ry="${num(ry)}" fill="url(#${id}g${ti.g})"/>`);
+    }
+  }
   for (const g of usedG) {
     defs.push(`<radialGradient id="${id}g${g}"><stop offset="0" stop-color="${GRADS[g][0]}" stop-opacity="${GRADS[g][1]}"/><stop offset="1" stop-color="${GRADS[g][0]}" stop-opacity="0"/></radialGradient>`);
   }
@@ -289,9 +321,11 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   }
 
   /* --- footprints of the towns (when close) --- */
+  const tierMax = labels === 'major' ? 1 : labels === 'all' ? 3 : S <= 45 ? 3 : S <= 165 ? 2 : 1;
   if (S <= 130) {
     const foot: string[] = [];
     for (const tw of world.towns) {
+      if (!tw.detail && tw.tier > tierMax) continue; // a town of the base has its built-up area only when it has its name
       const rp = tw.foot * sx;
       if (rp < 5 || rp > 1200) continue;
       const c = px(tw.k);
@@ -347,7 +381,6 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   /* --- towns: dots and names (priority: emphasised, then level, then size) --- */
   const placer = makePlacer(W, H);
   const labelsOn = labels !== 'none';
-  const tierMax = labels === 'major' ? 1 : labels === 'all' ? 3 : S <= 45 ? 3 : S <= 165 ? 2 : 1;
   const cand: { tw: WorldTown; c: Pt; mine: boolean }[] = [];
   for (const tw of world.towns) {
     const mine = hl.has(tw.id);
@@ -412,11 +445,12 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     const names: { an: GeoName; kind: 'land' | 'sea' | 'out' }[] = [];
     for (const pack of world.packs) for (const an of pack.areaNames) names.push({ an, kind: an.kind });
     for (const an of base?.regions ?? []) names.push({ an, kind: 'land' });
-    for (const an of base?.countries ?? []) names.push({ an, kind: 'out' });
     for (const an of base?.seas ?? []) names.push({ an, kind: 'sea' });
+    for (const an of base?.countries ?? []) names.push({ an, kind: 'out' });
     for (const { an, kind } of names) {
       if (S < an.min || S > an.max) continue;
       if (kind === 'sea' && !seaOk) continue;
+      if (kind === 'sea' && areas.some((q) => q.an.text === an.text)) continue; // a sea has one name on the map, at the first place where it fits
       const c = px(toKm(an.lat, an.lon));
       const box = nameBox(an, c, kind === 'sea');
       if (!placer.free(box, 4)) continue;

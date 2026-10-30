@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string -- A page for developers and for the Playwright runs, not a screen of the product: it is not in the production build (see routes/dev-routes.tsx), so its words are not translated. */
 import { useLayoutEffect, useRef } from 'react';
 import { mountMapSvg } from '@/features/site-maps/mount-svg';
 

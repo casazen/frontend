@@ -1,10 +1,9 @@
 /**
  * Loading of the map data on demand (DB-19a). The code and the data of the maps are in chunks that only the pages with a map
- * load: the national base (`data/italy.json`) and, where the view touches them, the detail packs (Puglia for now). Nothing is
+ * load: the national base (`data/italy.ts`) and, where the view touches them, the detail packs (Puglia for now). Nothing is
  * fetched from a third party: the files are part of the build. Call this before drawing; drawing without the data gives a plain
  * sea, never an error.
  */
-import type { RawItaly } from './engine/region/model';
 import { hasBase, hasPack, installBase, installPack } from './engine/region/registry';
 import { sane, type View } from './engine/view';
 
@@ -31,7 +30,7 @@ export function regionsForView(view: Partial<View>): MapRegion[] {
 /** Loads the data of a region (once). */
 export async function loadRegionData(region: MapRegion): Promise<void> {
   if (region === 'italia') {
-    if (!hasBase()) installBase((await import('./data/italy.json')).default as unknown as RawItaly);
+    if (!hasBase()) installBase((await import('./data/italy')).ITALY);
     return;
   }
   if (!hasPack(region)) installPack((await import('./data/puglia')).PUGLIA);
