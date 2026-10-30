@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 /** The pages for the people who build the app, by their address: a new page adds its line here, and nothing else in this file. */
-const DEV_PAGES = ['/dev/primitives', '/dev/list-view', '/dev/detail-drawer', '/dev/calm-blocks', '/dev/maps'];
+const DEV_PAGES = ['/dev/primitives', '/dev/list-view', '/dev/detail-drawer', '/dev/calm-blocks', '/dev/stay-pickers', '/dev/maps'];
 
 describe('devRoutes (UI-07)', () => {
   afterEach(() => {

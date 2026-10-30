@@ -5464,11 +5464,19 @@
       "endedHint": "Arrivati alla data di fine, o con la registrazione rifiutata",
       "expiring": "In scadenza",
       "expiringHint": "Registrati, con meno di sei mesi alla fine",
+      "late": "Con un canone in ritardo",
+      "lateHint": "Contratti con almeno una rata scaduta e non pagata",
       "preparing": "In preparazione",
-      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare"
+      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare",
+      "signing": "In firma",
+      "signingHint": "Scaricati per la firma, oppure firmati e da registrare",
+      "todo": "Da fare",
+      "todoHint": "Contratti con un passo che tocca a te"
     },
     "columns": {
+      "next": "Prossimo passo",
       "parties": "Parti",
+      "progress": "Avanzamento",
       "regime": "Regime fiscale",
       "rent": "Canone",
       "status": "Stato",
@@ -5511,7 +5519,21 @@
     },
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
-    "rentToDefine": "Canone da definire"
+    "rentToDefine": "Canone da definire",
+    "filters": {
+      "end": "Scadenza",
+      "property": "Immobile",
+      "regime": "Regime fiscale",
+      "stage": "Stato",
+      "start": "Inizio",
+      "type": "Tipo di contratto"
+    },
+    "progress": {
+      "concluded": "Concluso",
+      "months": "Mese {{done}} di {{total}}",
+      "steps": "{{done}} di {{total}} passi",
+      "years": "Anno {{done}} di {{total}}"
+    }
   },
   "leaseOperations": {
     "disdetta": {
@@ -12327,6 +12349,78 @@
           "Invia la comunicazione dal portale della Questura"
         ]
       }
+    }
+  },
+  "stayPickers": {
+    "calendar": {
+      "arrivalChosen": "arrivo scelto",
+      "busyNight": "notte occupata",
+      "checkedAtCheckout": "Le date saranno comunque verificate prima del pagamento.",
+      "chooseArrival": "Scegli il giorno di arrivo e poi quello di partenza.",
+      "chooseDeparture_one": "Arrivo il {{date}}. Ora scegli il giorno di partenza.",
+      "chooseDeparture_other": "Arrivo il {{date}}. Ora scegli il giorno di partenza (almeno {{count}} notti).",
+      "clear": "Cancella le date",
+      "departureChosen": "partenza scelta",
+      "freeNight": "notte libera",
+      "legendBusy": "Occupata",
+      "legendFree": "Libera",
+      "legendMine": "Le tue date",
+      "loadError": "Non riusciamo a leggere le date libere.",
+      "loading": "Carico le date…",
+      "nextMonth": "Mese successivo",
+      "offline": "Sei offline: vedi l'ultima versione salvata delle date. Per verificarle e prenotare serve la connessione.",
+      "past": "giorno passato",
+      "perNight": "{{price}} a notte",
+      "previousMonth": "Mese precedente",
+      "range_one": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notte.",
+      "range_other": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notti.",
+      "rangeTotal_one": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notte, {{total}}.",
+      "rangeTotal_other": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notti, {{total}}.",
+      "retry": "Riprova",
+      "unknown": "non ancora disponibile"
+    },
+    "destination": {
+      "all": "Tutte le destinazioni",
+      "allSub": "Tutte le case del sito",
+      "label": "Dove vuoi andare?"
+    },
+    "guests": {
+      "adults": "Adulti",
+      "adultsHint": "Dai {{age}} anni",
+      "children": "Bambini",
+      "childrenHint": "Fino a {{age}} anni",
+      "limit_one": "Questa casa ospita al massimo {{count}} persona.",
+      "limit_other": "Questa casa ospita al massimo {{count}} persone.",
+      "pets": "Animali domestici",
+      "petsHint": "Questa casa li ammette",
+      "summary_one": "{{count}} ospite",
+      "summary_other": "{{count}} ospiti",
+      "summaryWithPet": "{{people}} · con animale"
+    },
+    "problem": {
+      "busyArrival": "Il {{date}} è già occupato: scegli un altro giorno di arrivo.",
+      "busyBetween": "Tra queste date ci sono notti già occupate: scegli una partenza prima, oppure un altro arrivo.",
+      "minNights_one": "Il soggiorno minimo è di {{count}} notte: scegli una partenza dal {{date}} in poi.",
+      "minNights_other": "Il soggiorno minimo è di {{count}} notti: scegli una partenza dal {{date}} in poi.",
+      "past": "Questo giorno è già passato: scegli un altro giorno di arrivo.",
+      "unknown": "Per questo giorno non abbiamo ancora le date: scegli un altro giorno."
+    },
+    "search": {
+      "addDates": "Aggiungi le date",
+      "datesTitle": "Scegli le date",
+      "go": "Cerca",
+      "goLong": "Cerca disponibilità",
+      "guestsTitle": "Chi viaggia?",
+      "label": "Cerca disponibilità",
+      "needDates": "Scegli il giorno di arrivo e quello di partenza per cercare.",
+      "sheetDescription": "Scegli dove, quando e quante persone siete.",
+      "when": "Quando",
+      "whenPhone": "Quando arrivi?",
+      "where": "Dove",
+      "who": "Chi"
+    },
+    "sheet": {
+      "done": "Fatto"
     }
   },
   "supplier": {
