@@ -164,7 +164,9 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
   test.beforeEach(async ({ page }) => {
     await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
-      localStorage.removeItem('casazen_cookie_consent');
+      // The cookie banner sits over the bottom of the page, where the button of the checkout step is: the choice is made, the banner
+      // has its own specs (branded-booking-site).
+      localStorage.setItem('casazen_cookie_consent', 'rejected');
       localStorage.setItem('casazen.locale', 'it');
     });
   });
@@ -173,7 +175,8 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`);
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole('heading', { name: mockPublicOrg.displayName })).not.toBeAttached();
+    // The page of a home is not the landing of the site: no title of the site at level 1 (the host card names the site at level 2).
+    await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).not.toBeAttached();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
   });
 

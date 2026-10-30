@@ -35,7 +35,9 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     await mockBrandedBookingApi(page);
     await mockDirectCheckoutApi(page);
     await page.addInitScript(() => {
-      localStorage.removeItem('casazen_cookie_consent');
+      // The cookie banner sits over the bottom of the page, where the button of each step is: the choice is made, the banner has its
+      // own specs (branded-booking-site).
+      localStorage.setItem('casazen_cookie_consent', 'rejected');
       localStorage.setItem('casazen.locale', 'it');
     });
   });
