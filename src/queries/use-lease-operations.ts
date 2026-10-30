@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { leaseOperationsApi } from '@/api/lease-operations.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseLetterKind, MarkLetterSentInput } from '@/types';
+import type { DepositReturnInput, IstatCalculationInput, LeaseLetterKind, MarkLetterSentInput } from '@/types';
 import { LEASES_KEY } from './use-leases';
 
 /** The operations of a lease hang from the lease (`['leases', id, …]`): whatever refreshes the lease refreshes them too. */
@@ -21,6 +21,53 @@ export function useLeaseOperations(leaseId: string, enabled = true) {
     enabled,
     refetchOnMount: 'always',
     retry: false,
+  });
+}
+
+/**
+ * The ISTAT update worked out by the server (`POST /leases/:id/istat/calculate`, LR-OPS-1c) for the percentages typed: a read that writes
+ * nothing, asked only when `input` is there (the percentages are valid numbers) and not retried (a refusal is told, not repeated). The
+ * answer carries the percentages it was worked out for, so a screen shows a figure only while it is the one of the percentages typed.
+ */
+export function useIstatCalculation(leaseId: string, input: IstatCalculationInput | null) {
+  return useQuery({
+    queryKey: [LEASES_KEY, leaseId, 'istat-calculation', input?.foiPercent ?? null, input?.sharePercent ?? null] as const,
+    queryFn: () => leaseOperationsApi.calculateIstat(leaseId, input as IstatCalculationInput),
+    enabled: input !== null,
+    retry: false,
+  });
+}
+
+/**
+ * The statement of the return of the deposit worked out by the server (`POST /leases/:id/deposit/calculate`, LR-OPS-1c) for the input given: a
+ * read that writes nothing, asked only when `input` is there (every year has its rate, the dates and the sums are valid) and not retried (a refusal
+ * is told, not repeated).
+ */
+export function useDepositCalculation(leaseId: string, input: DepositReturnInput | null) {
+  return useQuery({
+    queryKey: [LEASES_KEY, leaseId, 'deposit-calculation', input] as const,
+    queryFn: () => leaseOperationsApi.calculateDepositReturn(leaseId, input as DepositReturnInput),
+    enabled: input !== null,
+    retry: false,
+  });
+}
+
+/**
+ * «Registra la restituzione»: an event in the history of the lease with the sums of the statement and nothing else (no money moves, the deposit of
+ * the lease does not change). The answer is the operations as they are now, put in the cache at once; the lease is read again. A refusal is told by
+ * a toast.
+ */
+export function useRecordDepositReturn(leaseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: DepositReturnInput) => leaseOperationsApi.recordDepositReturn(leaseId, input),
+    onSuccess: (operations) => {
+      queryClient.setQueryData(leaseOperationsKey(leaseId), operations);
+      void queryClient.invalidateQueries({ queryKey: [LEASES_KEY, leaseId], exact: true });
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('leaseOperations.deposit.failed'));
+    },
   });
 }
 

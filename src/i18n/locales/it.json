@@ -5373,7 +5373,7 @@
         "why": "Non si può chiedere un deposito oltre {{depositMaxRents}} mensilità. CasaZen non cambia il deposito di un contratto già impostato: va sistemato con l'inquilino, con l'aiuto del tuo commercialista o di un legale."
       },
       "depositReturn": {
-        "action": "Apri i Documenti",
+        "action": "Prepara il prospetto",
         "body": "Dopo aver verificato la casa restituisci il deposito con gli interessi legali. Puoi trattenere solo ciò che documenti: canoni o spese non pagati e danni oltre il normale uso.",
         "title": "Restituisci il deposito dopo la riconsegna",
         "why": "Il deposito garantisce gli obblighi dell'inquilino e va restituito alla fine, dopo la verifica dello stato dell'immobile. Dalla somma puoi detrarre, indicandole per iscritto e con i documenti, le somme ancora dovute e i danni che vanno oltre il normale deterioramento. Il termine per restituirlo è scritto nel tuo contratto."
@@ -5391,7 +5391,7 @@
         "why": "Dopo la registrazione le vicende del contratto (proroga, cessione, risoluzione) si comunicano all'Agenzia delle Entrate, anche con la cedolare secca. CasaZen non le comunica per te e non conosce il termine esatto del tuo caso."
       },
       "endOrganize": {
-        "action": "Apri i Documenti",
+        "action": "Prepara il verbale",
         "body": "Fissa il giorno con l'inquilino, confronta lo stato con il verbale di consegna, leggi i contatori, ritira tutte le chiavi e firmate il verbale di riconsegna.",
         "title": "Prepara la riconsegna della casa",
         "why": "Al termine l'inquilino deve restituire la casa libera e nello stato in cui l'ha ricevuta, salvo il normale uso. Il verbale di riconsegna firmato da entrambi, con le letture dei contatori e le chiavi, ti protegge se ci sono contestazioni e ti serve per restituire il deposito."
@@ -5409,13 +5409,13 @@
         "why": "Il verbale fotografa lo stato dell'immobile alla consegna: a fine contratto ti serve per verificare i danni e per restituire il deposito. Nei nostri modelli le utenze sono dell'inquilino, che le intesta a sé."
       },
       "istatConcordato": {
-        "action": "Vai ai pagamenti",
+        "action": "Calcola l'aggiornamento",
         "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone, nella misura massima che prevede l'accordo del tuo comune. Vale dalla richiesta, non è retroattivo.",
         "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
         "why": "Nel canone concordato l'aggiornamento ISTAT è ammesso solo nei limiti dell'accordo del comune: in quello di Monza e Brianza è una parte della variazione dell'indice. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta. Con la cedolare secca non si può chiedere."
       },
       "istatLibero": {
-        "action": "Vai ai pagamenti",
+        "action": "Calcola l'aggiornamento",
         "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone alla variazione ISTAT, nella misura scritta nel contratto. Vale dalla richiesta, non è retroattivo.",
         "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
         "why": "Nel 4+4 la legge non fissa un tetto all'aggiornamento: la misura la scrivono le parti nel contratto. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta e non recupera gli anni passati. Se hai scelto la cedolare secca non si può chiedere."
@@ -5857,6 +5857,59 @@
     }
   },
   "leaseOperations": {
+    "cedolare": {
+      "dialog": {
+        "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu con raccomandata: non scriviamo all'inquilino.",
+        "effectiveHint": "Il primo giorno dell'annualità cui l'opzione si riferisce. Se non lo scrivi, la lettera lo lascia da completare.",
+        "effectiveInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "effectiveLabel": "L'opzione vale dal (facoltativo)",
+        "note": "Con la cedolare secca rinunci agli aggiornamenti del canone per tutta la durata dell'opzione. Se il tuo contratto lo scrive già, come il nostro modello, la lettera non serve.",
+        "title": "Comunica la cedolare secca"
+      },
+      "open": "Prepara la comunicazione",
+      "summary": "Con la cedolare secca il canone non si aggiorna. La scelta e la rinuncia si comunicano all'inquilino con raccomandata, se il contratto non lo dice già.",
+      "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
+      "title": "Opzione per la cedolare secca"
+    },
+    "deposit": {
+      "dialog": {
+        "addDeduction": "Aggiungi una trattenuta",
+        "amountInvalid": "Scrivi una somma in euro, per esempio 25,50.",
+        "amountLabel": "Importo (€)",
+        "confirmNo": "Annulla",
+        "confirmText": "Registri che hai restituito {{amount}} il {{date}}. Resta nella cronologia del contratto: CasaZen non muove denaro e non cambia il deposito.",
+        "confirmYes": "Sì, registra",
+        "datesInvalid": "Il deposito deve essere stato versato prima del giorno in cui lo restituisci, e la restituzione non può essere troppo lontana dalla fine del contratto.",
+        "deductionsHint": "Puoi trattenere solo ciò che documenti: canoni o spese non pagati, danni oltre il normale uso. Scrivi il motivo: l'inquilino lo legge nel prospetto.",
+        "deductionsTitle": "Trattenute (facoltative)",
+        "description": "Il deposito è di {{amount}}. CasaZen calcola gli interessi legali e prepara il prospetto da dare all'inquilino. Il denaro lo restituisci tu: noi non muoviamo nulla.",
+        "download": "Scarica il prospetto",
+        "interestPaidHint": "Gli interessi che hai già versato all'inquilino durante il contratto, se ne hai versati.",
+        "interestPaidLabel": "Interessi già pagati (€)",
+        "paidOnLabel": "Deposito versato il",
+        "rateHint": "Il tasso di interesse legale lo fissa ogni anno il Ministero dell'economia: scrivi quello di ciascun anno in cui hai tenuto il deposito. CasaZen non lo conosce.",
+        "rateInvalid": "Scrivi un tasso maggiore di zero, per esempio 2,5.",
+        "rateLabel": "Tasso legale {{year}} (%)",
+        "ratesTitle": "Interessi legali",
+        "reasonLabel": "Motivo",
+        "record": "Registra la restituzione",
+        "recordFuture": "Potrai registrarla dal giorno della restituzione.",
+        "removeDeduction": "Togli la trattenuta",
+        "result": "Da restituire {{returned}}: deposito {{deposit}} + interessi dovuti {{interest}} − trattenute {{deductions}}.",
+        "resultPending": "Scrivi il tasso di ogni anno: ti diciamo quanto restituire.",
+        "returnedOnLabel": "Restituito il",
+        "title": "Restituzione della cauzione",
+        "yearLine": "{{year}}: {{days}} giorni al {{rate}}% = {{interest}}"
+      },
+      "failed": "Non sono riuscito a registrare la restituzione. Riprova.",
+      "open": "Prepara il prospetto",
+      "openRecorded": "Rivedi il prospetto",
+      "recorded": "Restituzione registrata: {{amount}} il {{date}}.",
+      "summary": "Dopo la riconsegna restituisci il deposito di {{amount}} con gli interessi legali, meno ciò che puoi documentare: calcoliamo noi il prospetto.",
+      "summaryRecorded": "Cauzione restituita il {{date}}: {{amount}}.",
+      "summarySent": "Prospetto segnato come inviato il {{date}} ({{means}}).",
+      "title": "Restituzione della cauzione"
+    },
     "disdetta": {
       "dialog": {
         "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu: non scriviamo all'inquilino.",
@@ -5883,6 +5936,46 @@
       "label": "Scarica la bozza"
     },
     "draftNote": "Il testo è una bozza non ancora approvata: il PDF porta la scritta BOZZA. Fallo rivedere prima di mandarlo.",
+    "handover": {
+      "dialog": {
+        "dayHint": "Il giorno in cui vi vedete in casa. Se non lo sai ancora, lascialo vuoto: il verbale lo lascia da completare.",
+        "dayInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "dayLabel": "Giorno della riconsegna (facoltativo)",
+        "description": "CasaZen prepara il verbale con i dati del contratto. Lo compilate e lo firmate insieme il giorno della riconsegna: non scriviamo all'inquilino.",
+        "download": "Scarica il verbale",
+        "steps": {
+          "agree": "Concorda con l'inquilino il giorno e l'ora per vedervi in casa.",
+          "compare": "Confronta lo stato della casa con il verbale di consegna, leggete insieme i contatori e contate le chiavi.",
+          "deposit": "Scrivete sul verbale i danni e le somme che vuoi trattenere dal deposito, poi firmatelo in due."
+        },
+        "title": "Prepara il verbale di riconsegna"
+      },
+      "open": "Prepara il verbale",
+      "summary": "Il contratto finisce il {{date}}: concorda con l'inquilino il giorno della riconsegna e porta il verbale da compilare insieme.",
+      "title": "Riconsegna dell'immobile"
+    },
+    "istat": {
+      "dialog": {
+        "description": "CasaZen calcola il nuovo canone e scrive la bozza della richiesta. La firmi e la spedisci tu: non scriviamo all'inquilino.",
+        "effectiveHint": "Vale dalla richiesta, non recupera il passato.",
+        "effectiveInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "effectiveLabel": "Il nuovo canone vale dal",
+        "foiHint": "La variazione dei prezzi al consumo (indice FOI) che l'ISTAT pubblica per il periodo che dice il contratto. La scrivi tu: CasaZen non la cerca.",
+        "foiInvalid": "Scrivi una percentuale maggiore di zero, per esempio 3,2. Con una variazione nulla o negativa il canone non aumenta.",
+        "foiLabel": "Variazione dell'indice FOI (%)",
+        "note": "Chiedi l'aggiornamento solo se il contratto lo prevede, nella misura che scrive. CasaZen non cambia da sola il canone nel piano dei pagamenti: le rate già emesse restano come sono.",
+        "result": "Il canone passa da {{from}} a {{to}} al mese: {{increase}} in più, cioè il {{percent}}% (il {{share}}% della variazione).",
+        "resultPending": "Scrivi la variazione dell'indice: ti diciamo quanto diventa il canone.",
+        "shareHint": "La parte della variazione che il contratto riconosce. Il valore suggerito è quello di un accordo di riferimento: controlla il tuo contratto.",
+        "shareInvalid": "Scrivi una percentuale maggiore di zero e non oltre {{max}}.",
+        "shareLabel": "Quota riconosciuta dal contratto (%)",
+        "title": "Calcola l'aggiornamento ISTAT"
+      },
+      "open": "Calcola l'aggiornamento",
+      "summary": "Se il contratto lo prevede, puoi chiedere l'aggiornamento del canone: scrivi la variazione dell'indice e calcoliamo noi il nuovo importo.",
+      "summarySent": "Richiesta segnata come inviata il {{date}} ({{means}}).",
+      "title": "Aggiornamento ISTAT del canone"
+    },
     "means": {
       "ByHand": "Consegna a mano",
       "Other": "Altro mezzo",
@@ -7375,7 +7468,8 @@
       "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata",
       "WithdrawalRecorded": "Recesso dell'inquilino registrato",
       "LetterSent": "Lettera segnata come inviata",
-      "RenewalRecorded": "Rinnovo registrato"
+      "RenewalRecorded": "Rinnovo registrato",
+      "DepositReturnRecorded": "Cauzione restituita"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
