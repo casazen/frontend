@@ -10169,9 +10169,10 @@
         "unit": "es. Scala B, int. 5"
       },
       "bedroomsHint": "0 per un monolocale",
-      "cleaningFee": "Pulizie (€)",
-      "damageDeposit": "Deposito cauzionale (€)",
+      "cleaningFee": "Pulizie ({{currency}})",
+      "damageDeposit": "Deposito cauzionale ({{currency}})",
       "amountsInEuro": "Importi in euro.",
+      "amountsInFrancs": "Importi in franchi svizzeri (CHF).",
       "stayRules": {
         "title": "Regole del soggiorno",
         "description": "Regole della casa, fuso orario e policy di cancellazione dell'immobile"

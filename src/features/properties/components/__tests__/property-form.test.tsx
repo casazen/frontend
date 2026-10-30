@@ -120,8 +120,9 @@ function renderForm(props: Partial<Parameters<typeof PropertyForm>[0]> = {}) {
   return onSubmit;
 }
 
+/** The two fee labels carry the currency of the house (CHF-MONEY): `Pulizie (€)` for the euro, which is the house of PROPERTY. */
 function field(key: string): HTMLElement {
-  return screen.getByLabelText(i18n.t(key));
+  return screen.getByLabelText(i18n.t(key, { currency: '€' }));
 }
 
 function change(key: string, value: string | number) {
@@ -238,6 +239,16 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(field('property.currency')).toBeInTheDocument();
     expect(field('property.country')).toHaveValue('IT');
     expect(field('property.currency')).toHaveValue('EUR');
+  });
+
+  it('PropertyForm_HouseInSwitzerland_AsksTheFeesInFrancsNotInEuros', () => {
+    // CHF-MONEY: the fees of a house in Switzerland are in francs, and the form says so where it asks for them.
+    renderForm({ property: { ...PROPERTY, country: 'CH', currency: 'CHF' } });
+
+    expect(screen.getByLabelText(i18n.t('property.form.cleaningFee', { currency: 'CHF' }))).toHaveValue(60);
+    expect(screen.getByLabelText(i18n.t('property.form.damageDeposit', { currency: 'CHF' }))).toHaveValue(300);
+    expect(screen.getByText(i18n.t('property.form.amountsInFrancs'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('property.form.amountsInEuro'))).not.toBeInTheDocument();
   });
 
   it('PropertyForm_PoliciesFailToLoad_ShowsTheErrorAndKeepsTheCurrentPolicy', async () => {

@@ -70,7 +70,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
       return day ? t('property.list.pausedSince', { date: day }) : null;
     };
 
-    const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate) : null);
+    const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : null);
 
     /** The one thing to do about a property, by its state. */
     const primaryAction = (property: Property): ListRowAction | null => {

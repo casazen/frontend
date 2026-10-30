@@ -48,7 +48,7 @@ function SavedHome({
           {property.nightlyRate > 0 ? (
             <span className="block text-sm">
               <span className="text-[var(--cz-public-muted)]">{t('publicSite.card.from')} </span>
-              {money(property.nightlyRate)}
+              {money(property.nightlyRate, property.currency)}
               <span className="text-[var(--cz-public-muted)]"> {t('publicSite.card.perNight')}</span>
             </span>
           ) : null}

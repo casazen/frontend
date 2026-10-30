@@ -301,6 +301,8 @@ export interface PublicPropertyDto {
   maxGuests: number;
   nightlyRate: number;
   cleaningFee: number;
+  /** ISO 4217 code of the property (`EUR` or `CHF`): `nightlyRate` and `cleaningFee` are in it. Absent from an older backend: the euro. */
+  currency?: string;
   amenities: string[];
   photoUrls: string[];
   cinCode: string | null;

@@ -88,7 +88,7 @@ function KeyData({ property }: { property: Property }) {
         <dd className="break-words">
           {property.nightlyRate > 0 ? (
             <>
-              <strong>{formatCurrency(property.nightlyRate)}</strong> {t('property.list.perNight')}
+              <strong>{formatCurrency(property.nightlyRate, property.currency)}</strong> {t('property.list.perNight')}
             </>
           ) : (
             t('property.table.noRate')
