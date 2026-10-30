@@ -137,7 +137,7 @@ export function requestStepSchemas(clock: () => Date = () => new Date()): { what
     }),
     when: z.object({
       propertyId: z.string().min(1, 'requestWizard.errors.propertyRequired'),
-      bookingId: z.string(),
+      bookingId: z.string().optional(),
       day: z
         .string()
         .refine((day) => isStayDate(day), 'requestWizard.errors.dayRequired')

@@ -148,7 +148,7 @@ function useUpcomingStays(propertyId: string) {
     () => orderStaysForRequest(bookings.data ?? [], today).filter((stay) => stayDateOf(stay.checkOutDate) >= today),
     [bookings.data, today],
   );
-  return { stays, all: bookings.data, loading: bookings.isLoading };
+  return { stays, all: bookings.data };
 }
 
 /**
@@ -161,7 +161,7 @@ export function WhenStep() {
   const properties = useProperties({ mode: 'short' });
   const propertyList = Array.isArray(properties.data) ? properties.data : [];
   const [propertyId, day, category] = useWatch({ control, name: ['propertyId', 'day', 'category'] });
-  const { stays, all, loading } = useUpcomingStays(propertyId);
+  const { stays, all } = useUpcomingStays(propertyId);
   const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
   const propertyField = register('propertyId');
   const stayField = register('bookingId');
@@ -191,7 +191,6 @@ export function WhenStep() {
       <Field label={t('requestWizard.when.stay')} hint={t('requestWizard.when.stayHint')} optional error={formState.errors.bookingId}>
         <Select
           data-testid="request-stay"
-          disabled={propertyId === '' || loading}
           {...stayField}
           onChange={(event) => {
             void stayField.onChange(event);

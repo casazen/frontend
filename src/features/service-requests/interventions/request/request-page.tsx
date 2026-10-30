@@ -8,7 +8,9 @@ import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { PROPERTY_CREATE_PATH } from '@/features/properties/properties-paths';
+import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import { usePropertyBookings } from '@/queries/use-bookings';
 import { HOST_SUPPLIER_SLOTS_KEY } from '@/queries/use-host-supplier-catalog';
@@ -56,7 +58,9 @@ function RequestWizard() {
     if (bookingId) {
       const stay = stays.data?.find((candidate) => candidate.id === bookingId);
       if (stay) {
-        if (needsStays) day = dayForStay(stay.checkOutDate);
+        // Only the stays not over yet can be linked (the ones the step offers); the day of one that is over is today.
+        if (stayDateOf(stay.checkOutDate) < todayInRome()) bookingId = '';
+        else if (needsStays) day = dayForStay(stay.checkOutDate);
       } else if (!stays.isPending) {
         bookingId = '';
       }
