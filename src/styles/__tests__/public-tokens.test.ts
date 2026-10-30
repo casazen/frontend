@@ -227,10 +227,8 @@ const FIXED_PALETTE_COLOR = new RegExp(
 );
 
 const FIXED_COLOR_EXCEPTIONS: Record<string, { task: string; until: string }> = {
-  'src/features/public-booking/checkout-outcome-page.tsx': { task: 'DB-06b', until: '2027-01-31' },
   'src/features/public-booking/guest-bookings-page.tsx': { task: 'DB-06', until: '2027-01-31' },
   'src/features/public-booking/guest-messages-section.tsx': { task: 'DB-06', until: '2027-01-31' },
-  'src/features/public-booking/onsite-request-confirm-page.tsx': { task: 'DB-06b', until: '2027-01-31' },
 };
 
 function sourceFiles(directory: string): string[] {

@@ -12304,6 +12304,144 @@
       "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
     }
   },
+  "siteConfirm": {
+    "action": {
+      "calendar": "Aggiungi al calendario",
+      "findBooking": "Cerca la tua prenotazione",
+      "manage": "Gestisci la prenotazione",
+      "notArrived": "Non è arrivata? Scrivi all'host",
+      "otherDates": "Scegli altre date",
+      "writeHost": "Scrivi all'host"
+    },
+    "calendar": {
+      "arriveFrom": "Arrivo dalle {{time}}",
+      "code": "Codice prenotazione {{code}}",
+      "contact": "Contatti: {{host}}, {{phone}}",
+      "description": "{{home}}, {{days}}: con il codice della prenotazione.",
+      "eventTitle": "Soggiorno · {{home}}",
+      "fileName": "soggiorno-{{code}}.ics",
+      "google": "Google Calendar",
+      "ics": {
+        "text": "Per Apple, Outlook e quasi tutte le app di calendario",
+        "title": "Scarica il file .ics"
+      },
+      "leaveBy": "Partenza entro le {{time}}",
+      "newTab": "Si apre in una nuova scheda",
+      "outlook": "Outlook.com",
+      "place": "Nel calendario c'è la zona, non l'indirizzo esatto.",
+      "saved": "File scaricato: aprilo per aggiungere il soggiorno al tuo calendario.",
+      "title": "Aggiungi al calendario"
+    },
+    "chip": {
+      "cancelled": "Annullata",
+      "confirmed": "Confermata",
+      "declined": "Non accettata",
+      "emailPending": "Email da confermare",
+      "expired": "Scaduta",
+      "processing": "Pagamento in elaborazione",
+      "unavailable": "Date non libere",
+      "unpaid": "Da pagare",
+      "waiting": "In attesa dell'host"
+    },
+    "error": {
+      "title": "Non riusciamo a leggere la prenotazione"
+    },
+    "hostFallback": "l'host",
+    "invalid": {
+      "title": "Link incompleto"
+    },
+    "lead": {
+      "email": "Ti abbiamo scritto a {{email}}: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "emailNoAddress": "Ti abbiamo scritto: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "later": "Oggi non paghi nulla: il {{date}} addebitiamo {{total}} sulla carta salvata.",
+      "onSite": "Paghi {{total}} in struttura, all'arrivo.",
+      "paid": "La conferma con il codice è nella tua email.",
+      "paidEmail": "La conferma con il codice è nella tua email, {{email}}.",
+      "stay_one": "{{home}} ti aspetta: {{range}}.",
+      "stay_other": "{{home}} vi aspetta: {{range}}."
+    },
+    "mail": {
+      "subject": "La mia prenotazione {{code}}"
+    },
+    "note": {
+      "later": "Paghi il {{date}}",
+      "onSite": "Paghi in struttura, all'arrivo",
+      "paid": "Pagato online",
+      "processing": "Pagamento in elaborazione",
+      "request": "Richiesta, non ancora una prenotazione",
+      "unpaid": "Ancora da pagare"
+    },
+    "offline": "Sei offline: lo stato si aggiorna di nuovo quando torni online.",
+    "offlineAction": "Serve la connessione: riprova quando sei di nuovo online.",
+    "pageTitle": "La tua prenotazione · {{org}}",
+    "steps": {
+      "arrival": {
+        "text": "{{day}}, dalle {{time}}",
+        "title": "Arrivo"
+      },
+      "charge": {
+        "text": "Sulla carta salvata: non devi fare nulla.",
+        "title": "Addebito di {{total}}"
+      },
+      "confirmed": {
+        "later": "Oggi non hai pagato nulla.",
+        "onSite": "Pagherai in struttura, all'arrivo.",
+        "paid": "La conferma con il codice è nella tua email.",
+        "title": "Prenotazione confermata"
+      },
+      "departure": {
+        "text": "{{day}}, entro le {{time}}",
+        "title": "Partenza"
+      },
+      "email": {
+        "doneText": "{{host}} ha ricevuto la tua richiesta.",
+        "doneTitle": "Email confermata",
+        "title": "Conferma la tua email"
+      },
+      "eyebrow": "I prossimi passi",
+      "host": {
+        "title": "{{host}} risponde"
+      },
+      "ifAccepted": {
+        "title": "Se accetta"
+      },
+      "state": {
+        "current": "adesso",
+        "done": "fatto",
+        "todo": "da fare"
+      },
+      "title": "Cosa succede ora",
+      "when": {
+        "done": "Fatto",
+        "later": "Poi",
+        "now": "Adesso"
+      }
+    },
+    "stuck": "Non riusciamo a confermare: controlla la tua email o cerca la prenotazione.",
+    "ticket": {
+      "arrival": "Arrivo",
+      "by": "entro le {{time}}",
+      "code": "Codice",
+      "copied": "Copiato",
+      "copiedAnnounce": "Codice copiato negli appunti.",
+      "copiedLabel": "Codice {{code}} copiato",
+      "copy": "Copia",
+      "copyLabel": "Copia il codice {{code}}",
+      "departure": "Partenza",
+      "from": "dalle {{time}}",
+      "label": "La tua prenotazione: {{home}}",
+      "ofWhichChildren_one": "di cui {{count}} bambino",
+      "ofWhichChildren_other": "di cui {{count}} bambini",
+      "selectedAnnounce": "Codice selezionato: copialo con la tastiera o dal menu del telefono.",
+      "total": "Totale"
+    },
+    "title": {
+      "confirmed": "Prenotazione confermata!",
+      "confirmedNamed": "Prenotazione confermata, {{name}}!",
+      "email": "Ultimo passo: conferma la tua email",
+      "wait": "Richiesta inviata a {{host}}"
+    }
+  },
   "siteDocuments": {
     "title": "Documenti del sito",
     "description": "Informativa privacy e termini di prenotazione del tuo sito: gli ospiti li leggono prima di prenotare.",
