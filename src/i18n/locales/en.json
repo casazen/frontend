@@ -8308,14 +8308,54 @@
     }
   },
   "marketplace": {
-    "title": "Service Marketplace",
-    "description": "Find suppliers for your property and manage service requests.",
-    "allCategories": "All categories",
-    "suppliersLoadError": "Could not load the suppliers. Please try again later.",
+    "title": "Marketplace",
+    "description": "Find the suppliers that work near your properties and ask for an intervention.",
+    "requestIntervention": "Request an intervention",
+    "sections": {
+      "label": "Marketplace sections",
+      "discover": "Discover",
+      "categories": "Categories",
+      "mine": "My apps"
+    },
+    "search": {
+      "label": "Search the Marketplace",
+      "placeholder": "Supplier, service or category",
+      "title": "Search",
+      "description": "By supplier name, service or category."
+    },
     "casazenSuppliers": "CasaZen suppliers",
+    "seeAll": "See all",
+    "seeAllOf": "See all: {{category}}",
+    "categories": {
+      "title": "Categories",
+      "description": "Browse the suppliers by type of service.",
+      "count_one": "{{count}} supplier",
+      "count_other": "{{count}} suppliers",
+      "none": "No suppliers yet"
+    },
+    "category": {
+      "description": "The suppliers of this category that work in the area of the property.",
+      "notFound": "Category not found",
+      "notFoundHint": "This is not a category of the Marketplace.",
+      "seeAll": "See all categories"
+    },
+    "results": {
+      "count_one": "{{count}} supplier",
+      "count_other": "{{count}} suppliers"
+    },
+    "filters": {
+      "open": "Filters",
+      "title": "Filters and order",
+      "description": "Choose how to order the suppliers and whether to see only the verified ones.",
+      "done_one": "Show {{count}} supplier",
+      "done_other": "Show {{count}} suppliers"
+    },
+    "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "noNetwork": "There is no CasaZen network in this area yet for this category.",
     "noMatch": "No supplier matches the search.",
-    "clearFilters": "Clear the search",
+    "noVerified": "None of these suppliers is verified.",
+    "clearFilters": "Clear the filters",
+    "clearSearch": "Clear the search",
     "loading": "Loading…",
     "propertiesLoadError": "Could not load the properties.",
     "propertyLabel": "Property",
@@ -8325,9 +8365,6 @@
     "addComune": "Add the municipality to see the suppliers in your area",
     "addComuneHint": "Suppliers are searched by municipality: choose it from the official list in the property's page.",
     "editProperty": "Edit property",
-    "searchLabel": "Search",
-    "searchPlaceholder": "Supplier name",
-    "categoryLabel": "Category",
     "sortLabel": "Sort by",
     "sort": {
       "name": "Name",
@@ -8350,6 +8387,10 @@
       "loadError": "Could not load the supplier.",
       "notFound": "Supplier not found",
       "notFoundDescription": "It is no longer among the active suppliers of this property's area."
+    },
+    "mine": {
+      "title": "My apps",
+      "description": "The requests you sent to the suppliers and where they stand."
     },
     "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",

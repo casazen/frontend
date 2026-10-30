@@ -46,10 +46,10 @@ describe('notification model', () => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
   });
 
-  it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToTheMarketplaceForAHost', () => {
+  it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {
     expect(notificationRoute({ type: 'service-request-created', entityId: 'sr-1' }, 'supplier')).toBe('/app/supplier/inbox/sr-1');
-    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'short-rent')).toBe('/app/short-rent/marketplace');
-    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'long-rent')).toBe('/app/short-rent/marketplace');
+    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'short-rent')).toBe('/app/short-rent/marketplace/mine');
+    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'long-rent')).toBe('/app/short-rent/marketplace/mine');
   });
 
   it('notificationRoute_UnknownTypeOrNoEntity_GoesNowhere', () => {
