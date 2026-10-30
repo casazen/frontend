@@ -2,9 +2,10 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import {
   VIEW_ITALIA,
-  VIEW_PUGLIA,
   fitView,
+  getRegionForPoints,
   loadRegionData,
+  makeView,
   panView,
   projectPoint,
   regionMapSvg,
@@ -16,29 +17,34 @@ import {
   type LatLon,
   type View,
 } from '@/features/site-maps';
-import { HANDMADE_BORDER, HANDMADE_COAST } from '@/features/site-maps/data/puglia-handmade-coast';
-import { HOUSES, type House } from './maps-data';
+import { HOME_IDS, HOUSES, type House } from './maps-data';
 import { HomePin, SvgBox } from './maps-shared';
 
 const byId = (...ids: string[]): House[] => HOUSES.filter((h) => ids.includes(h.id));
 const PRESETS: { id: string; label: string; view: (aspect: number) => View }[] = [
+  { id: 'home', label: 'Lombardia e Svizzera', view: (aspect) => getRegionForPoints(byId(...HOME_IDS), { aspect }).view },
   { id: 'italia', label: 'Italia', view: (aspect) => ({ ...VIEW_ITALIA, aspect, spanKm: Math.max(VIEW_ITALIA.spanKm, 1280 * aspect) }) },
-  { id: 'puglia', label: 'Puglia', view: (aspect) => ({ ...VIEW_PUGLIA, aspect }) },
-  { id: 'trullo', label: 'Valle d’Itria', view: (aspect) => fitView(byId('trullo'), { aspect, minSpanKm: 14 }) },
-  { id: 'polignano', label: 'Polignano', view: (aspect) => fitView(byId('polignano'), { aspect, minSpanKm: 14 }) },
-  { id: 'lecce', label: 'Lecce', view: (aspect) => fitView(byId('lecce'), { aspect, minSpanKm: 14 }) },
-  { id: 'gargano', label: 'Gargano', view: (aspect) => fitView(byId('gargano'), { aspect, minSpanKm: 40 }) },
+  { id: 'lombardia', label: 'Lombardia', view: (aspect) => makeView({ lat: 45.55, lon: 9.9, spanKm: 230, aspect }) },
+  { id: 'svizzera', label: 'Svizzera', view: (aspect) => makeView({ lat: 46.8, lon: 8.2, spanKm: 330, aspect }) },
+  { id: 'como', label: 'Lago di Como', view: (aspect) => fitView(byId('bellagio', 'como'), { aspect, minSpanKm: 40 }) },
+  { id: 'maggiore', label: 'Lago Maggiore', view: (aspect) => makeView({ lat: 45.95, lon: 8.65, spanKm: 70, aspect }) },
+  { id: 'garda', label: 'Lago di Garda', view: (aspect) => fitView(byId('sirmione'), { aspect, minSpanKm: 70 }) },
+  { id: 'iseo', label: 'Lago d’Iseo', view: (aspect) => fitView(byId('iseo'), { aspect, minSpanKm: 30 }) },
+  { id: 'milano', label: 'Milano', view: (aspect) => fitView(byId('milano'), { aspect, minSpanKm: 50 }) },
+  { id: 'lugano', label: 'Lugano e Locarno', view: (aspect) => fitView(byId('lugano', 'locarno'), { aspect, minSpanKm: 40 }) },
+  { id: 'zurigo', label: 'Zurigo', view: (aspect) => fitView(byId('zurigo'), { aspect, minSpanKm: 60 }) },
+  { id: 'lemano', label: 'Lago Lemano', view: (aspect) => fitView(byId('ginevra', 'montreux'), { aspect, minSpanKm: 70 }) },
+  { id: 'lucerna', label: 'Lago dei Quattro Cantoni', view: (aspect) => fitView(byId('lucerna'), { aspect, minSpanKm: 50 }) },
+  { id: 'engadina', label: 'Engadina', view: (aspect) => fitView(byId('moritz'), { aspect, minSpanKm: 60 }) },
+  { id: 'zermatt', label: 'Zermatt', view: (aspect) => fitView(byId('zermatt'), { aspect, minSpanKm: 30 }) },
   { id: 'toscana', label: 'Toscana', view: (aspect) => fitView(byId('orcia', 'chianti'), { aspect, minSpanKm: 40, padPct: 0.4 }) },
   { id: 'liguria', label: 'Cinque Terre', view: (aspect) => fitView(byId('cinque'), { aspect, minSpanKm: 25 }) },
-  { id: 'como', label: 'Lago di Como', view: (aspect) => fitView(byId('como'), { aspect, minSpanKm: 40 }) },
   { id: 'cortina', label: 'Dolomiti', view: (aspect) => fitView(byId('cortina'), { aspect, minSpanKm: 60 }) },
   { id: 'venezia', label: 'Venezia', view: (aspect) => fitView(byId('venezia'), { aspect, minSpanKm: 40 }) },
   { id: 'amalfi', label: 'Costiera amalfitana', view: (aspect) => fitView(byId('amalfi'), { aspect, minSpanKm: 40 }) },
   { id: 'roma', label: 'Roma', view: (aspect) => fitView(byId('roma'), { aspect, minSpanKm: 60 }) },
   { id: 'sicilia', label: 'Sicilia', view: (aspect) => fitView(byId('taormina', 'trapani'), { aspect, minSpanKm: 40, padPct: 0.3 }) },
   { id: 'sardegna', label: 'Sardegna', view: (aspect) => fitView(byId('smeralda', 'alghero'), { aspect, minSpanKm: 40, padPct: 0.3 }) },
-  { id: 'calabria', label: 'Tropea', view: (aspect) => fitView(byId('tropea'), { aspect, minSpanKm: 40 }) },
-  { id: 'marche', label: 'Conero', view: (aspect) => fitView(byId('ancona'), { aspect, minSpanKm: 40 }) },
 ];
 const WIDTHS = [360, 700, 1000];
 const LABEL_MODES: LabelMode[] = ['auto', 'major', 'all', 'none'];
@@ -59,13 +65,12 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
 
 /** The regional maps with pins over them: presets, zoom and pan, the three levels of detail, the snapping of the pins to land. */
 export function RegionSection() {
-  const [view, setView] = useState<View>(() => PRESETS[1].view(ASPECT));
+  const [view, setView] = useState<View>(() => PRESETS[0].view(ASPECT));
   const [width, setWidth] = useState(1000);
   const [labels, setLabels] = useState<LabelMode>('auto');
   const [level, setLevel] = useState<number | 'auto'>('auto');
   const [pins, setPins] = useState(true);
   const [snap, setSnap] = useState(true);
-  const [handmade, setHandmade] = useState(false);
   const [error, setError] = useState('');
   // the data of a region are loaded the first time a view needs them
   const [loaded, setLoaded] = useState(0);
@@ -137,28 +142,10 @@ export function RegionSection() {
       <div className="flex flex-wrap items-center gap-4">
         <Toggle checked={pins} onChange={setPins}>pin delle case</Toggle>
         <Toggle checked={snap} onChange={setSnap}>pin riportati a terra</Toggle>
-        <Toggle checked={handmade} onChange={setHandmade}>costa disegnata a mano del prototipo (magenta)</Toggle>
       </div>
       <div className="rounded-2xl border bg-card p-3 shadow-sm" style={{ width: width + 26, maxWidth: '100%' }}>
         <div className="relative aspect-[4/3] cursor-zoom-in overflow-hidden rounded-xl bg-[#cfe3e6]" onClick={onMapClick} data-testid="region-map" data-loaded={loaded}>
           <SvgBox svg={svg} />
-          {handmade ? (
-            <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              {[...HANDMADE_COAST, HANDMADE_BORDER].map((line, i) => (
-                <polyline
-                  key={i}
-                  fill="none"
-                  stroke="#e3226e"
-                  strokeWidth="1.5"
-                  vectorEffect="non-scaling-stroke"
-                  points={line.map(([lat, lon]) => {
-                    const p = place({ lat, lon });
-                    return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-                  }).join(' ')}
-                />
-              ))}
-            </svg>
-          ) : null}
           {pins
             ? HOUSES.map((h) => {
                 const s = snap ? snapToLand(h) : h;

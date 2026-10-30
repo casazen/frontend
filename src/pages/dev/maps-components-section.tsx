@@ -1,18 +1,23 @@
 /* eslint-disable i18next/no-literal-string -- A page for developers and for the Playwright runs, not a screen of the product: it is not in the production build (see routes/dev-routes.tsx), so its words are not translated. */
 import { useState } from 'react';
-import { LocalMap, RegionMap, useMapLink, type LocalPoi, type MapPinData } from '@/features/site-maps';
+import { LocalMap, RegionMap, getRegionForPoints, useMapLink, type LocalPoi, type MapPinData } from '@/features/site-maps';
 
 /** Houses of the review: positions with two decimals, prices written by the page. */
 const HOUSES: MapPinData[] = [
-  { id: 'casa-bianca', name: 'Casa Bianca', lat: 41.0, lon: 17.23, label: '145 €', href: '/dev/maps?s=components&casa=casa-bianca', card: { zone: 'Polignano a Mare', rating: 4.9, priceLabel: '145 € a notte' } },
-  { id: 'trullo', name: 'Trullo tra gli ulivi', lat: 40.76, lon: 17.54, label: '120 €', href: '/dev/maps?s=components&casa=trullo', card: { zone: 'Ostuni', rating: 4.8, priceLabel: '120 € a notte' } },
-  { id: 'masseria', name: 'Masseria Ulivi', lat: 40.8, lon: 17.34, label: '210 €', href: '/dev/maps?s=components&casa=masseria', available: false, unavailableNote: 'Non libera dal 12 ottobre', card: { zone: 'Locorotondo', priceLabel: '210 € a notte' } },
-  { id: 'attico', name: 'Attico nel centro', lat: 40.35, lon: 18.17, label: '98 €', href: '/dev/maps?s=components&casa=attico', card: { zone: 'Lecce', rating: 4.7, priceLabel: '98 € a notte' } },
-  { id: 'faro', name: 'Villa del Faro', lat: 41.88, lon: 16.18, label: '260 €', href: '/dev/maps?s=components&casa=faro', card: { zone: 'Vieste', rating: 5, priceLabel: '260 € a notte' } },
+  { id: 'bellagio', name: 'Villa a Bellagio', lat: 45.99, lon: 9.26, label: '320 €', href: '/dev/maps?s=components&casa=bellagio', card: { zone: 'Bellagio', rating: 4.9, priceLabel: '320 € a notte' } },
+  { id: 'como', name: 'Attico a Como', lat: 45.81, lon: 9.08, label: '180 €', href: '/dev/maps?s=components&casa=como', card: { zone: 'Como', rating: 4.7, priceLabel: '180 € a notte' } },
+  { id: 'milano', name: 'Loft a Milano', lat: 45.47, lon: 9.19, label: '150 €', href: '/dev/maps?s=components&casa=milano', available: false, unavailableNote: 'Non libera dal 12 ottobre', card: { zone: 'Milano', priceLabel: '150 € a notte' } },
+  { id: 'sirmione', name: 'Casa a Sirmione', lat: 45.49, lon: 10.61, label: '210 €', href: '/dev/maps?s=components&casa=sirmione', card: { zone: 'Sirmione', rating: 4.8, priceLabel: '210 € a notte' } },
+  { id: 'lugano', name: 'Appartamento a Lugano', lat: 46.01, lon: 8.96, label: '240 CHF', href: '/dev/maps?s=components&casa=lugano', card: { zone: 'Lugano', rating: 4.8, priceLabel: '240 CHF a notte' } },
+  { id: 'locarno', name: 'Casa a Locarno', lat: 46.17, lon: 8.8, label: '195 CHF', href: '/dev/maps?s=components&casa=locarno', card: { zone: 'Locarno', priceLabel: '195 CHF a notte' } },
+  { id: 'zurigo', name: 'Loft a Zurigo', lat: 47.37, lon: 8.54, label: '260 CHF', href: '/dev/maps?s=components&casa=zurigo', card: { zone: 'Zurigo', rating: 4.6, priceLabel: '260 CHF a notte' } },
+  { id: 'ginevra', name: 'Casa a Ginevra', lat: 46.2, lon: 6.15, label: '280 CHF', href: '/dev/maps?s=components&casa=ginevra', card: { zone: 'Ginevra', rating: 5, priceLabel: '280 CHF a notte' } },
   // two houses in the same village: the pins must not hide each other
-  { id: 'vicolo-1', name: 'Casa del Vicolo', lat: 40.95, lon: 17.3, label: '110 €', href: '/dev/maps?s=components&casa=vicolo-1', card: { zone: 'Monopoli', priceLabel: '110 € a notte' } },
-  { id: 'vicolo-2', name: 'Casa della Torre', lat: 40.95, lon: 17.31, label: '135 €', href: '/dev/maps?s=components&casa=vicolo-2', card: { zone: 'Monopoli', rating: 4.6, priceLabel: '135 € a notte' } },
+  { id: 'vicolo-1', name: 'Casa del Vicolo', lat: 45.98, lon: 9.25, label: '110 €', href: '/dev/maps?s=components&casa=vicolo-1', card: { zone: 'Bellagio', priceLabel: '110 € a notte' } },
+  { id: 'vicolo-2', name: 'Casa della Torre', lat: 45.98, lon: 9.26, label: '135 €', href: '/dev/maps?s=components&casa=vicolo-2', card: { zone: 'Bellagio', rating: 4.6, priceLabel: '135 € a notte' } },
 ];
+/** The frame and the data for these houses: Lombardia and Svizzera together. A page passes it as `view` to `RegionMap`. */
+const CHOICE = getRegionForPoints(HOUSES, { aspect: 4 / 3 });
 const ABROAD: MapPinData[] = [{ id: 'abroad', name: 'Una casa fuori dall’Italia', lat: 48.85, lon: 2.35, label: '99 €' }];
 
 const POIS: LocalPoi[] = [
@@ -23,7 +28,7 @@ const POIS: LocalPoi[] = [
   { id: 'stazione', type: 'transport', name: 'Stazione', mode: 'car', minutes: 5, bearingDeg: 250, distM: 2600 },
   { id: 'farmacia', type: 'health', name: 'Farmacia', mode: 'walk', minutes: 6, bearingDeg: 45, distM: 450 },
   { id: 'parcheggio', type: 'parking', name: 'Parcheggio pubblico', mode: 'walk', minutes: 3, bearingDeg: 120, distM: 220 },
-  { id: 'aeroporto', type: 'transport', name: 'Aeroporto di Bari', mode: 'car', minutes: 40, bearingDeg: 300, distM: 45000 },
+  { id: 'aeroporto', type: 'transport', name: 'Aeroporto di Malpensa', mode: 'car', minutes: 40, bearingDeg: 300, distM: 45000 },
 ];
 
 function HouseList({ link, selected, onPick }: { link: ReturnType<typeof useMapLink>; selected: string | null; onPick: (id: string) => void }) {
@@ -66,10 +71,10 @@ export function ComponentsSection() {
       </div>
 
       <div className="grid gap-3">
-        <h3 className="font-semibold">Elenco e mappa insieme</h3>
+        <h3 className="font-semibold">Elenco e mappa insieme · cornice «{CHOICE.id}» · dati: {CHOICE.regions.join(', ')}</h3>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
           <HouseList link={link} selected={selected} onPick={(id) => setSelected((s) => (s === id ? null : id))} />
-          <RegionMap pins={HOUSES} aspect={4 / 3} selectedId={selected} onSelect={setSelected} activeId={link.activeId} onActiveChange={link.setActiveId} highlightTowns={['ostuni']} />
+          <RegionMap pins={HOUSES} aspect={4 / 3} view={CHOICE.view} selectedId={selected} onSelect={setSelected} activeId={link.activeId} onActiveChange={link.setActiveId} highlightTowns={['como']} />
         </div>
       </div>
 

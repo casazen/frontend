@@ -15,12 +15,13 @@ src/features/site-maps/
     snap.ts          snapToLand: a position rounded into the sea goes back to the shore
     local/           neighbourhood maps: generators (coast, historic centre, countryside), drawing, localMapSvg, localPlace
     region/          regional maps: the data model, the registry of what has been loaded, regionMapSvg
-  data/
-    italy.ts         the national base (generated, see below)
-    puglia.ts        detail of Puglia of the prototype: towns, roads, railways, built-up areas, tints
-    puglia-handmade-coast.ts   the old hand-made coast, only for the review page
+  data/              all generated (see below), none edited by hand
+    italy.ts         the national base: Italy and Switzerland
+    lombardia.ts     detail pack of Lombardia: borders of the provinces, towns, names of lakes
+    svizzera.ts      detail pack of Svizzera: borders of the cantons, towns, names of the country, the cantons and the lakes
+    regions.ts       boxes and coarse outlines of the two regions (always loaded: a few hundred bytes)
   components/        RegionMap, LocalMap and their parts (DB-19b): see below
-  load.ts            loads the data on demand (loadRegionData, regionsForView)
+  load.ts            the regions: loads the data on demand (loadRegionData, regionsForView) and tells where a set of positions is (getRegionForPoints)
   mount-svg.ts       puts the SVG text in a page element as real SVG nodes (parsed as XML, nothing can run)
   index.ts           the public API
 ```
@@ -49,7 +50,7 @@ always the coast of the base and nothing has to «match»:
 
 | level | tolerance | units | used when the frame is about | content |
 |---|---|---|---|---|
-| 0 | 2 km | 1/100° (≈ 1 km) | wide (the whole country) | land and neighbouring lands, outline of Italy, lakes ≥ 100 km², region borders |
+| 0 | 2 km | 1/100° (≈ 1 km) | wide (the whole country) | land and neighbouring lands, outline of Italy and Switzerland, lakes ≥ 100 km², region borders, border between the two countries |
 | 1 | 0.7 km | 1/100° (≈ 1 km) | a macro-region | islands ≥ 6 km², lakes ≥ 30 km² |
 | 2 | 0.25 km | 1/1000° (≈ 100 m) | a few tens of km | islands ≥ 0.8 km², lakes ≥ 4 km² |
 
@@ -59,21 +60,42 @@ and not two: with two, the coast would be made of steps of about 1 km, which at 
 80 to 20 px; the privacy of the houses has nothing to do with the coast, only the positions of the pins are rounded to two
 decimals.
 
-Sizes (production build, minified, gzip): engine **19.6 KB**; national base **30.5 KB** (levels 4.6 + 7.7 + 16.4 KB); detail pack of
-Puglia **3.1 KB**. The tool refuses to write a base over 80 KB. Everything is loaded with `import()` by `loadRegionData`, only by
-the pages that show a map. If one day a level outgrows its budget, the remedy is to split the file by macro-region (the loader
-already takes a region).
+Italy and Switzerland share their border vertex by vertex in Natural Earth, so the two outlines are merged into one area (no
+seam between them at any level of detail, whatever the simplification) and the edges they share are drawn as the border between
+the two countries. The land, the coast and the lakes of the base reach well north of Switzerland (48.5° N), so a position in
+Basel, Zürich or on the Bodensee is on land (or is pulled to the shore of its lake by `snapToLand`) like any other.
 
-**Detail packs** (`DetailPack` in `engine/region/model.ts`) add what the base does not have: towns of the second and third level,
-the size of the built-up areas, roads, railways, names of territories, tints. Puglia has one, taken from the approved prototype;
-its coast is **not** in it (the coast comes from the base): the old hand-made coast is kept in `puglia-handmade-coast.ts` and
-drawn in magenta by the review page, to see how far it was from the real one (median 0.95 km, 90 % within 2.9 km).
+Sizes (minified, gzip): national base **30.9 KB**; detail pack of Lombardia **1.6 KB**; of Svizzera **3.9 KB**; the index of the
+regions (`data/regions.ts`, the one data file that is always loaded) **0.7 KB**. The tool refuses to write a base over 80 KB and a
+pack over 40 KB. Everything but the index is loaded with `import()` by `loadRegionData`, only by the pages that show a map, and a
+pack only when the frame of the map touches its area. If one day a level outgrows its budget, the remedy is to split the file by
+macro-region (the loader already takes a region).
 
-### Regenerating the base
+**Detail packs** (`DetailPack` in `engine/region/model.ts`) add what the base does not have, where a page needs it:
+
+- the **borders inside the area** (the provinces of Lombardia, the cantons of Svizzera), dotted, from a frame of about 650 km down;
+- the **towns**: the 12 provincial capitals of Lombardia and the 12 main centres of Switzerland (Zürich, Bern, Basel, Geneva,
+  Lausanne, Lugano, Locarno, Bellinzona, Lucerne, St. Gallen, Chur, Sion) are named at every zoom, the cantonal capitals from a
+  frame of 165 km, the rest from 45 km. At the scale of the whole country only the big ones are named;
+- the **names**: the lakes, written along their length (`rot` and `len` come from the shape of the lake; a name is drawn only where
+  it fits in the lake and finds room between the names of the towns, sliding along the lake if needed), the cantons (up to a frame
+  of 330 km) and the name of the country from there up. A lake is found in Natural Earth by where it is, not by the name in the file
+  (which gives Lago Maggiore as «Lago di Como»);
+- the shape also has places for airports, stations, roads, railways, tints and hand-made lagoons, which the packs made from
+  Natural Earth leave empty: where a pack has no tints the grid of procedural tints of the base goes on.
+
+Built-up areas, railways and roads are clipped to the **dry land** (the land without the lakes) and the name of a town goes on dry
+land when there is room, so a town on a lake does not paint over the water.
+
+### Regenerating the data
 
 ```
 node tools/maps/build-italy.mjs <folder with the Natural Earth zips> [src/features/site-maps/data/italy.ts]
+node tools/maps/build-packs.mjs <folder with the Natural Earth zips> [src/features/site-maps/data]
 ```
+
+The first writes the base; the second the packs of Lombardia and Svizzera and the index of the regions. Both use `tools/maps/ne.mjs`
+(the reader of the files and the little geometry they need).
 
 A development tool: it is not run by the build nor by the CI, and the raw files are never committed. The folder holds the zip
 files (or the unzipped shapefiles) of Natural Earth 1:10m: `ne_10m_land`, `ne_10m_admin_0_countries`,
@@ -84,7 +106,14 @@ writes the module. The region borders are the edges that two provinces of differ
 region is written is the point of the region farthest from its edges. The version of every layer is read from its
 `VERSION.txt` and written in the `source` field of the file.
 
-The current file was made from: land, countries and states and provinces 5.1.1; populated places 5.1.2; lakes and lakes Europe
+The packs are made from the same files: the borders are the edges that two provinces (or two cantons) share, the towns are the
+places of Natural Earth inside the region. **Natural Earth keeps only 3 of the 12 provincial capitals of Lombardia** (Milano, Como,
+Bergamo) **and no Locarno**: the other ten towns are written by hand in `EXTRA_TOWNS` of `build-packs.mjs`, with the position to a
+hundredth of a degree (the precision of the maps) and the inhabitants roughly, and the build checks that each of them falls inside
+its province or canton. Nothing else is written by hand but the choice of what to name (`MAIN`, `LAKES`, the place of the name of
+Switzerland). Roads and railways would need two more Natural Earth layers (`ne_10m_roads`, `ne_10m_railroads`), not downloaded.
+
+The current files were made from: land, countries and states and provinces 5.1.1; populated places 5.1.2; lakes and lakes Europe
 5.0.0 (the files downloaded on 30 October 2026 from `naturalearth.s3.amazonaws.com`).
 
 ### Licence and credits
@@ -93,6 +122,25 @@ Natural Earth is in the **public domain** (no restriction on use, no attribution
 https://www.naturalearthdata.com/about/terms-of-use/). OpenStreetMap is not used (its licence, ODbL, would oblige us to
 attribute and share). Credit line, ready for the footer of the pages that show a map: **«Mappe schematiche: dati Natural Earth»**
 (see also `THIRD-PARTY.md`).
+
+## Which region a set of positions is in
+
+`getRegionForPoints(points, { aspect })` is the entry for the pages (the public search, the results of the site of a host): from the
+positions of the houses it tells where they are, with the frame a map starts from and the data it needs.
+
+```ts
+const choice = getRegionForPoints(houses, { aspect: 4 / 3 }); // houses: [{ lat, lon }, …], two decimals at most
+// choice.id       'lombardia' | 'svizzera' | 'lombardia-svizzera' | 'italia'
+// choice.view     the frame: «Lombardia e Svizzera» when every position is in Lombardia and/or Svizzera, otherwise fitted to the positions
+// choice.regions  the data the frame needs: ['italia', 'lombardia', 'svizzera'] (`loadRegionData` loads them; RegionMap does it by itself)
+<RegionMap pins={pins} view={choice.view} aspect={4 / 3} />
+```
+
+A position is in a region if it is inside its outline or at most 3 km from it (the positions are rounded to about 1 km); positions
+outside Italy and Switzerland are not on the maps and do not count; with no position the frame is the whole of Italy.
+`VIEW_LOMBARDIA_SVIZZERA` is the frame of the two regions together for a 4:3 box; `siteMap.region.<id>` has the names in IT and EN.
+`RegionMap` without a `view` keeps fitting the map to the pins, and the button «Inquadra tutte le case» always does.
+`regionsForView(view)` is the same choice of data for any frame (zoom and pan).
 
 ## Pins and privacy
 
@@ -147,7 +195,7 @@ selected house has a card, over the map on a computer (without taking the focus)
 outside or Esc closes it; the card is the link to the house). Pins that would sit on top of each other are shifted by a little
 (never more than the 1.5 km of the approximation) and, if that is not enough, grouped in a bubble with their number that brings
 the map closer; the selected pin, the lit one and the emphasised ones are never grouped. If loading fails the box says «Mappa non
-disponibile» with «Riprova»; positions outside Italy are not drawn («Posizione non disponibile»).
+disponibile» with «Riprova»; positions outside Italy and Switzerland are not drawn («Posizione non disponibile»).
 
 **`LocalMap`** (`kind`, `seed`, `spanM`, `seaBearingDeg`, `pois`, `activeId`, `onActiveChange`, `addressUnlocked`): the scheme of
 the zone, a dashed circle for the approximate zone, the house at the centre and the points of interest (`{ id, type, name, mode,
