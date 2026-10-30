@@ -32,7 +32,7 @@ export const CancellationOutcome = forwardRef<HTMLParagraphElement, Cancellation
 
   return (
     <div className="flex gap-3" role="status" data-testid="guest-cancellation-outcome">
-      <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[var(--color-success-foreground,#166534)]" aria-hidden="true" />
+      <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[var(--cz-public-ok)]" aria-hidden="true" />
       <div className="min-w-0 space-y-1">
         <p ref={titleRef} tabIndex={-1} className="font-semibold outline-none" data-testid="guest-cancellation-outcome-title">
           {t('guestCancellation.outcome.title')}

@@ -105,7 +105,7 @@ export function CancellationPanel({ preview, result, onCancel }: CancellationPan
         <>
           {changedFrom !== null && (
             <p
-              className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-inset ring-amber-200"
+              className="rounded-lg bg-[var(--cz-public-warn-soft)] p-3 text-sm text-[var(--cz-public-warn)]"
               role="status"
               data-testid="guest-cancellation-changed"
             >
