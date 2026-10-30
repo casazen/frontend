@@ -12749,11 +12749,6 @@
       "nights_other": "{{count}} nights",
       "noDates": "Prices are the lowest night of the next 30 days: choose your dates to see the total."
     },
-    "empty": {
-      "title": "No homes to show",
-      "text": "There is no home for this search. Try changing something.",
-      "back": "Back to the homes"
-    },
     "sort": {
       "label": "Sort the homes",
       "recommended": "Recommended",

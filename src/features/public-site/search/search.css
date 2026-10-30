@@ -317,6 +317,18 @@
   flex-shrink: 0;
 }
 
+/* On a phone the labels take a line of their own and the sort takes what the filters button leaves. */
+@media (max-width: 767.98px) {
+  .sr-cats {
+    flex: 1 1 100%;
+  }
+
+  .sr-sort {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sr-chip,
   .sr-alt,
