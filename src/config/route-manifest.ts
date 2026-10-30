@@ -1367,7 +1367,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // Preview of the public showcase and where it is published (SU-13, A4-16).
+    // "Il mio sito vetrina" (SP-13c): where the public showcase stands, publishing, pausing and sharing it (the preview of SU-13, A4-16
+    // became this overview).
     path: '/app/supplier/showcase',
     context: 'supplier',
     requiredPermissions: [],
@@ -1376,7 +1377,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 5,
     icon: 'Store',
-    component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
+    component: async () => ({ default: (await import('@/features/supplier/showcase/showcase-hub-page')).SupplierShowcaseHubPage }),
+  },
+  {
+    // "Crea la tua vetrina" (SP-13e): the guided creation of the showcase in four steps, on the same draft as the editor. No entry of the
+    // menu: the overview leads to it while there is nothing yet.
+    path: '/app/supplier/showcase/publish',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/showcase/publish-wizard-page')).SupplierShowcasePublishWizardPage,
+    }),
   },
   {
     // The customers of the supplier (SP-16b): the hosts of CasaZen and the private customers of the showcase, with their jobs. The sixth of

@@ -308,12 +308,142 @@ export interface PublicPropertyDto {
   timezone: string;
 }
 
+/**
+ * A text the host wrote for the page: Italian always and, if they wanted, English (DB-11a). Nothing is translated for them (DB-D8):
+ * the page shows the language of the visitor and falls back to the Italian text.
+ */
+export interface PublicLocalizedText {
+  it: string;
+  en?: string | null;
+}
+
+/**
+ * The cancellation policy of a property as a page can draw it (DB-03b): the catalog policy with what the host changed of it for a
+ * stay under `longStayNights` nights. A window the policy does not have is `null` (`fullRefundHours` null = never refunded in full).
+ * `description` is the catalog text, `null` once the host changed the windows (`hostOverrideApplies`). The dates of a stay are in
+ * the quote (`cancellation`), not here.
+ */
+export interface PublicCancellationPolicy {
+  slug: string;
+  name: string;
+  description: string | null;
+  /** Hours before the start of the check-in day up to which the refund is full; null = never in full. */
+  fullRefundHours: number | null;
+  /** Hours before the start of the check-in day up to which the partial refund holds; null = there is none. */
+  partialRefundHours: number | null;
+  /** The share refunded in the partial window (0-100); null = there is none. */
+  partialRefundPercent: number | null;
+  hostOverrideApplies: boolean;
+  longStayNights: number;
+}
+
+/** One of the (at most three) highlights of the page: an icon of a fixed list, a short title and an optional line (DB-11a). */
+export interface PublicHighlight {
+  icon: string;
+  title: PublicLocalizedText;
+  text?: PublicLocalizedText | null;
+}
+
+/** What a point of interest is, in the order the list shows them (DB-11a). */
+export const PUBLIC_POI_TYPES = ['beach', 'sight', 'food', 'shop', 'transport', 'health', 'parking'] as const;
+export type PublicPoiType = (typeof PUBLIC_POI_TYPES)[number];
+
+/**
+ * A place near the house with the time to get there (DB-11a). It has no coordinates: only the direction (compass bearing from the
+ * house, 0 = north) and the distance, so a page never learns where the house is.
+ */
+export interface PublicPointOfInterest {
+  id: string;
+  /** One of `PUBLIC_POI_TYPES`; anything else is listed under «other» by the page. */
+  type: string;
+  name: PublicLocalizedText | string;
+  mode: 'walk' | 'car';
+  minutes: number;
+  bearingDeg: number;
+  distanceM: number;
+}
+
+/** One level of the floor plan: the image the host uploaded and the area of the level (DB-11a). */
+export interface PublicFloorPlanLevel {
+  id: string;
+  name: PublicLocalizedText | string;
+  imageUrl: string;
+  /** Text alternative of the image, when the host wrote one. */
+  alt?: PublicLocalizedText | string | null;
+  areaSqm?: number | null;
+}
+
+export interface PublicFloorPlan {
+  levels: PublicFloorPlanLevel[];
+}
+
+/** The kind of place a house stands in (DB-11a): what the schematic map of the zone draws around it. */
+export type PublicAreaKind = 'Country' | 'Coast' | 'Historic';
+
+/**
+ * What the host chose to say about the house beyond the fields every property has (DB-11a, the wizard «Aggiungi immobile» of SR-07a
+ * and the site profile). Every member is optional: **the page shows a block only when its data is there**, never a placeholder, and
+ * never says what the host did not say (D24, D37). A member that an older backend does not send is simply absent.
+ */
+export interface PublicPropertyProfile {
+  /** Living area in square metres. */
+  areaSqm?: number | null;
+  beds?: number | null;
+  /** `0` = ground floor, negative = below it. */
+  floorLevel?: number | null;
+  renovatedYear?: number | null;
+  /** The class of the APE, `A4` to `G`. Never guessed by the system (DB-D18). */
+  energyClass?: string | null;
+  /** The global energy performance index, kWh/m² per year; only with a class. */
+  energyIndex?: number | null;
+  areaKind?: PublicAreaKind | null;
+  /** `true` = children are welcome, `false` = the house is not suited to them, absent = not said. */
+  childrenWelcome?: boolean | null;
+  /** Earliest and latest arrival and the departure time, `HH:mm`. */
+  checkInFrom?: string | null;
+  checkInTo?: string | null;
+  checkOutBy?: string | null;
+  smokingPolicy?: SmokingPolicy | null;
+  petsPolicy?: PetsPolicy | null;
+  partiesPolicy?: PartiesPolicy | null;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  /** A YouTube, Vimeo or Matterport embed address the backend already made canonical (DB-D17); loaded only after a click. */
+  videoUrl?: string | null;
+  tourUrl?: string | null;
+  /** «Campagna di Ostuni, Valle d'Itria» */
+  zone?: PublicLocalizedText | null;
+  /** «10 minuti da Ostuni, 20 dal mare» */
+  near?: PublicLocalizedText | null;
+  floorNote?: PublicLocalizedText | null;
+  outdoorNote?: PublicLocalizedText | null;
+  /** How check-in works: «In autonomia, con cassetta a codice». */
+  checkInMethod?: PublicLocalizedText | null;
+  rulesNote?: PublicLocalizedText | null;
+  highlights?: PublicHighlight[] | null;
+  safetyNotes?: PublicLocalizedText[] | null;
+  /** Ids of the labels of the site: `mare`, `centro`, `piscina`, `pet`, `campagna`, `terrazza`, `vista-mare`. */
+  tags?: string[] | null;
+  pointsOfInterest?: PublicPointOfInterest[] | null;
+  floorPlan?: PublicFloorPlan | null;
+}
+
 /** Public detail read-model for branded site / checkout (US-001 #212). */
-export interface PublicPropertyDetailDto extends PublicPropertyDto {
+export interface PublicPropertyDetailDto extends PublicPropertyDto, PublicPropertyProfile {
   houseRules: string;
   cancellationPolicySummary: string;
+  /** The policy in a form a page can draw (DB-03b); null when the property has none; absent on an older backend. */
+  cancellationPolicy?: PublicCancellationPolicy | null;
   minNights: number | null;
+  /** Percent added to the nightly rate on the Friday and Saturday nights (DB-03); 0 when the host charges none. The quote is the only authority on a total. */
+  weekendSurchargePercent?: number;
   currency: string;
+  /** A guest can book now: the org can take a payment (DB-03), the same value as `PublicOrgDto.acceptsBookings`. */
+  acceptsBookings?: boolean;
+  /** How the host is named on the site (DB-03), or null. */
+  hostName?: string | null;
+  /** The phone number the host chose to publish (DB-03), or null. */
+  publicPhone?: string | null;
   /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */

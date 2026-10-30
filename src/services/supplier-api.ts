@@ -18,7 +18,6 @@ import type {
   SupplierOverview,
   SupplierOverviewPeriod,
   SupplierProfile,
-  SupplierShowcasePreview,
   SupplierToday,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
@@ -318,11 +317,6 @@ export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: strin
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
-}
-
-/** The owner's preview of the public showcase and where it is (or will be) published (SU-13). */
-export async function fetchSupplierShowcasePreview(): Promise<SupplierShowcasePreview> {
-  return ApiClient.get<SupplierShowcasePreview>('/supplier/showcase');
 }
 
 /** Calendar events marked "Disponibile" that wait for the supplier's answer (they block their days meanwhile). */
