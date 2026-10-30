@@ -19,6 +19,12 @@ export function formatSlotLabel(startUtc: string, t: TFunction, locale: string):
   return t('supplierSite.slot.day', { day, time });
 }
 
+/** The time the supplier has to answer a booking (its setting), in words and exact: "45 minuti", "3 ore". */
+export function formatDeadline(minutes: number, t: TFunction): string {
+  if (minutes < 90) return t('supplierSite.deadline.minutes', { count: minutes });
+  return t('supplierSite.deadline.hours', { count: Math.round(minutes / 60) });
+}
+
 /** The typical time to answer in words: "circa 45 minuti", "circa 2 ore". Rounded, because it is a median, not a promise. */
 export function formatTypicalResponse(minutes: number, t: TFunction): string {
   if (minutes < 90) {

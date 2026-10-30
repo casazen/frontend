@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Outlet, useMatch, useParams } from 'react-router-dom';
+import { Outlet, useMatch, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -15,6 +15,8 @@ import { SupplierSiteContext, type SupplierSiteContextValue } from './site-conte
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
 import { OfflineBar, SiteLoadError, SiteNotFound, SitePaused, SiteSkeleton, StateFrame } from './site-states';
+import { StickyBookBar } from './sticky-book-bar';
+import { isFramedPreview, usePreviewDraft } from './use-preview-draft';
 
 /** The cache of the slots of the backend is 30 seconds: reading the page again sooner would tell nothing new. */
 const SHOWCASE_STALE_MS = 30_000;
@@ -39,19 +41,29 @@ export function SupplierSiteShell() {
     staleTime: SHOWCASE_STALE_MS,
   });
 
-  const model = useMemo(() => (data ? buildSiteModel(data) : null), [data]);
+  // The preview of the editor (`?anteprima=1&frame=1`, in a frame of the same origin): the page draws the draft the editor sends
+  // instead of the published content, shows the paused showcase as it will be, and does not ask about cookies.
+  const [search] = useSearchParams();
+  const preview = isFramedPreview(search);
+  const draft = usePreviewDraft(preview);
+  const showcase = useMemo<SupplierShowcaseDto | undefined>(
+    () => (data && preview ? { ...data, paused: false, content: draft ?? data.content } : data),
+    [data, preview, draft],
+  );
+
+  const model = useMemo(() => (showcase ? buildSiteModel(showcase) : null), [showcase]);
   const context = useMemo<SupplierSiteContextValue | null>(
-    () => (data && model ? { slug, showcase: data, model } : null),
-    [slug, data, model],
+    () => (showcase && model ? { slug, showcase, model } : null),
+    [slug, showcase, model],
   );
   const notFound = isError && isAxiosError(error) && error.response?.status === 404;
 
-  // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load. No canonical, no Open Graph, no
-  // structured data (decision D11).
+  // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, and for the preview of a draft.
+  // No canonical, no Open Graph, no structured data (decision D11).
   useSeoMeta({
     title: model ? t('supplierShowcase.pageTitle', { name: model.name }) : t('supplierShowcase.title'),
     description: model ? (model.intro ? truncateDescription(model.intro) : t('supplierShowcase.pageDescription', { name: model.name })) : undefined,
-    noindex: isError,
+    noindex: isError || preview,
   });
 
   if (!slug || isLoading) {
@@ -80,10 +92,17 @@ export function SupplierSiteShell() {
 
   // The header floats over a full-width cover on the home; everywhere else it is solid.
   const variant = onHome && model.hero === 'full' && !model.paused ? 'over' : 'solid';
+  // On a phone the one action stays at hand once the cover is out of sight: on the home, while the bookings are open.
+  const hasBar = onHome && model.bookingsOpen && !preview;
 
   return (
     <SupplierSiteContext.Provider value={context}>
-      <div className="vz" {...siteThemeProps(model.style, model.font, model.buttonColor)} data-testid="supplier-site">
+      <div
+        className="vz"
+        {...siteThemeProps(model.style, model.font, model.buttonColor)}
+        data-has-bar={hasBar ? '' : undefined}
+        data-testid="supplier-site"
+      >
         <a href="#vz-main" className="vz-skip">
           {t('publicSite.skipToContent')}
         </a>
@@ -93,7 +112,8 @@ export function SupplierSiteShell() {
           {model.paused ? <SitePaused model={model} /> : <Outlet />}
         </main>
         <SiteFooter model={model} />
-        <CookieConsentBanner />
+        {hasBar ? <StickyBookBar model={model} /> : null}
+        {preview ? null : <CookieConsentBanner />}
       </div>
     </SupplierSiteContext.Provider>
   );

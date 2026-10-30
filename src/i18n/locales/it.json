@@ -14456,6 +14456,16 @@
       "eyebrow": "Servizi",
       "title": "Di cosa ci occupiamo"
     },
+    "certs": {
+      "eyebrow": "Garanzie",
+      "title": "Garanzie e certificazioni"
+    },
+    "closing": {
+      "book": "Prenota online",
+      "eyebrow": "Prenota online",
+      "text": "Scegli il servizio e il giorno: vedi gli orari liberi prima di andare avanti.",
+      "title": "Pronto a prenotare?"
+    },
     "cta": {
       "book": "Prenota ora",
       "inquiry": "Richiesta su misura"
@@ -14463,6 +14473,17 @@
     "days": {
       "eyebrow": "Disponibilità",
       "title": "I prossimi giorni"
+    },
+    "deadline": {
+      "hours_one": "{{count}} ora",
+      "hours_other": "{{count}} ore",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minuti"
+    },
+    "faq": {
+      "ask": "Non trovi la risposta? Mandaci una richiesta su misura.",
+      "eyebrow": "Domande",
+      "title": "Domande frequenti"
     },
     "finder": {
       "comune": "Dove?",
@@ -14486,6 +14507,34 @@
       "closed": "Le prenotazioni online non sono aperte: qui puoi vedere i servizi e le zone.",
       "firstSlot": "Primo orario libero",
       "seeServices": "Guarda i servizi"
+    },
+    "how": {
+      "eyebrow": "Come funziona",
+      "pay": "Paghi online con CasaZen, in modo sicuro. Annullare è sempre gratuito.",
+      "steps": {
+        "choose": {
+          "text": "Vedi i primi orari davvero liberi e il prezzo di partenza.",
+          "title": "Scegli servizio e giorno"
+        },
+        "confirm": {
+          "text": "Il professionista accetta o rifiuta la richiesta.",
+          "textDeadline": "Ha tempo fino a {{deadline}} per accettare la richiesta.",
+          "title": "{{name}} conferma"
+        },
+        "details": {
+          "text": "Dove si fa il lavoro e come raggiungerti. Controlliamo la tua e-mail con un link.",
+          "title": "Lasci i tuoi dati"
+        },
+        "done": {
+          "text": "CasaZen trattiene il pagamento fino alla tua conferma.",
+          "title": "Lavoro finito"
+        },
+        "hold": {
+          "text": "Sulla carta l’importo resta solo bloccato: viene addebitato soltanto se il professionista accetta.",
+          "title": "Blocchiamo l’importo"
+        }
+      },
+      "title": "Prenoti in cinque passi"
     },
     "nav": {
       "about": "Chi siamo",
@@ -14539,6 +14588,20 @@
       "verified": "Verificato",
       "verifiedBy": "da CasaZen",
       "verifiedLine": "Verificato da CasaZen"
+    },
+    "works": {
+      "after": "Dopo",
+      "afterAlt": "{{caption}} (dopo)",
+      "before": "Prima",
+      "beforeAlt": "{{caption}} (prima)",
+      "compare": "Confronto prima e dopo: {{caption}}. Sposta il cursore per vedere la differenza",
+      "enlarge": "Ingrandisci: {{caption}}",
+      "eyebrow": "I nostri lavori",
+      "eyebrowPhotos": "Le foto",
+      "lead": "Sposta il cursore per vedere la differenza.",
+      "position": "Prima {{before}}%, dopo {{after}}%",
+      "title": "Lavori che abbiamo fatto",
+      "titlePhotos": "Qualche foto"
     },
     "zones": {
       "checkLabel": "Scrivi il tuo comune e te lo diciamo subito",

@@ -14456,6 +14456,16 @@
       "eyebrow": "Services",
       "title": "What we do"
     },
+    "certs": {
+      "eyebrow": "Guarantees",
+      "title": "Guarantees and certifications"
+    },
+    "closing": {
+      "book": "Book online",
+      "eyebrow": "Book online",
+      "text": "Choose the service and the day: you see the free times before going on.",
+      "title": "Ready to book?"
+    },
     "cta": {
       "book": "Book now",
       "inquiry": "Request on measure"
@@ -14463,6 +14473,17 @@
     "days": {
       "eyebrow": "Availability",
       "title": "The next days"
+    },
+    "deadline": {
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
+    },
+    "faq": {
+      "ask": "Can't find the answer? Send us a request on measure.",
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions"
     },
     "finder": {
       "comune": "Where?",
@@ -14486,6 +14507,34 @@
       "closed": "Online bookings are not open: here you can see the services and the areas.",
       "firstSlot": "First free time",
       "seeServices": "See the services"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "pay": "You pay online with CasaZen, safely. Cancelling is always free.",
+      "steps": {
+        "choose": {
+          "text": "You see the first times that are really free and the starting price.",
+          "title": "Choose the service and the day"
+        },
+        "confirm": {
+          "text": "The professional accepts or declines the request.",
+          "textDeadline": "They have up to {{deadline}} to accept the request.",
+          "title": "{{name}} confirms"
+        },
+        "details": {
+          "text": "Where the work is done and how to reach you. We check your e-mail with a link.",
+          "title": "You leave your details"
+        },
+        "done": {
+          "text": "CasaZen holds the payment until you confirm.",
+          "title": "Job done"
+        },
+        "hold": {
+          "text": "The amount is only held on your card: it is charged only if the professional accepts.",
+          "title": "We hold the amount"
+        }
+      },
+      "title": "Book in five steps"
     },
     "nav": {
       "about": "About us",
@@ -14539,6 +14588,20 @@
       "verified": "Verified",
       "verifiedBy": "by CasaZen",
       "verifiedLine": "Verified by CasaZen"
+    },
+    "works": {
+      "after": "After",
+      "afterAlt": "{{caption}} (after)",
+      "before": "Before",
+      "beforeAlt": "{{caption}} (before)",
+      "compare": "Before and after comparison: {{caption}}. Move the slider to see the difference",
+      "enlarge": "Enlarge: {{caption}}",
+      "eyebrow": "Our work",
+      "eyebrowPhotos": "Photos",
+      "lead": "Move the slider to see the difference.",
+      "position": "Before {{before}}%, after {{after}}%",
+      "title": "Jobs we have done",
+      "titlePhotos": "A few photos"
     },
     "zones": {
       "checkLabel": "Type your town and we tell you at once",
