@@ -1353,6 +1353,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/showcase/showcase-hub-page')).SupplierShowcaseHubPage }),
   },
   {
+    // "Crea la tua vetrina" (SP-13e): the guided creation of the showcase in four steps, on the same draft as the editor. No entry of the
+    // menu: the overview leads to it while there is nothing yet.
+    path: '/app/supplier/showcase/publish',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/showcase/publish-wizard-page')).SupplierShowcasePublishWizardPage,
+    }),
+  },
+  {
     // The customers of the supplier (SP-16b): the hosts of CasaZen and the private customers of the showcase, with their jobs. The sixth of
     // the seven entries of the menu (SP-D1); on the phone it is behind "Altro". No flag.
     path: '/app/supplier/clients',
