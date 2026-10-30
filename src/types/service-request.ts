@@ -86,6 +86,67 @@ export interface ServiceRequest {
   availableActions?: string[] | null;
   /** Only in the answer of the creation: the host named no time and the request got the default one (10:00 of a day). */
   scheduleDefaulted?: boolean | null;
+  /**
+   * The group of backup suppliers the request belongs to (SP-BKP), as its host sees it: the supplier it chose, the backups it was sent to
+   * with them and who took the job. `null`/absent for a request sent to one supplier only. The host never sees a backup as a request of
+   * its own: the group is inside the request it made, or inside the backup that took the job.
+   */
+  group?: ServiceRequestGroup | null;
+}
+
+/**
+ * Where the group of a request is (SP-BKP): `PrimaryWindow` (the chosen supplier has until `primaryDueAt`; the backups can only say they
+ * would take the job), `BackupWindow` (the chosen supplier did not take it or refused: every supplier still waiting can, until
+ * `backupDueAt`, and the first has it) or `Closed`. An open set: a word this version does not know is shown as a group that is over.
+ */
+export type ServiceRequestGroupPhase = 'PrimaryWindow' | 'BackupWindow' | 'Closed';
+
+export interface ServiceRequestGroup {
+  id: string;
+  phase: ServiceRequestGroupPhase | string;
+  primaryDueAt: string;
+  backupDueAt?: string | null;
+  createdAt: string;
+  closedAt?: string | null;
+  /** The request the host follows first (the chosen supplier, or the backup that replaced it), then the one it replaced, then the backups. */
+  members: ServiceRequestGroupMember[];
+}
+
+/**
+ * One request of a group (SP-BKP). `role`: `Primary` (the supplier the host chose), `Backup`, `ReplacedPrimary` (the chosen supplier that
+ * did not answer in time and was replaced) or `PromotedBackup` (the backup that took the job). `acceptedAt` is when a backup said it would
+ * take the job; `tookTheJob` marks the request that was taken; `cancellationReason` is the code of a request closed by CasaZen
+ * (`NoResponse`, `PrimaryTookIt`, `TakenByBackup`, `RequestCancelledByHost`, `BackupSlotUnavailable`).
+ */
+export interface ServiceRequestGroupMember {
+  requestId: string;
+  role: 'Primary' | 'Backup' | 'ReplacedPrimary' | 'PromotedBackup' | string;
+  supplierOrgId: string;
+  supplierName: string;
+  status: ServiceRequestStatus;
+  acceptedAt?: string | null;
+  tookTheJob: boolean;
+  cancellationReason?: string | null;
+}
+
+/**
+ * Where a request stands in its group of backup suppliers, for the supplier it was sent to (SP-BKP; `SupplierServiceRequest.backup`).
+ * `role`: `primary` (the host chose this supplier, which has until `primaryDueAt` for the priority) or `backup` (the job is its only if the
+ * primary does not take it). `state`, an open set: for a backup `waiting` (the primary has its window), `accepted` (it said it would take
+ * the job), `active` (the second window: it can take the job now, until `backupDueAt`, and the first to do so has it), `won` or `closed`;
+ * for the primary `priority` (within its window) or `late` (the window passed: still in the race without the priority).
+ */
+export interface SupplierBackup {
+  role: 'primary' | 'backup' | string;
+  state: string;
+  primaryDueAt: string;
+  backupDueAt?: string | null;
+  acceptedAt?: string | null;
+}
+
+/** `GET/PUT /orgs/me/service-request-settings` (SP-BKP): whether the org's requests also go to up to three backup suppliers. */
+export interface OrgServiceRequestSettings {
+  useBackupSuppliers: boolean;
 }
 
 /** A photo of the work: `url` is an authenticated address of the API (the files are in a private bucket). */
@@ -309,7 +370,11 @@ export interface SupplierServiceRequest {
   price?: SupplierRequestPrice;
   /** The quote sent and not answered yet (SP-04b), while `phase` is `quote_pending`; empty otherwise. */
   quote?: ServiceRequestQuote | null;
-  /** Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`, `QuoteNotAnswered`, `CancelledByCustomer`. */
+  /**
+   * Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`,
+   * `QuoteNotAnswered`, `CancelledByCustomer` or, for a backup request closed by CasaZen (SP-BKP), `PrimaryTookIt`, `TakenByBackup`,
+   * `RequestCancelledByHost`, `BackupSlotUnavailable`.
+   */
   cancelledBy?: string | null;
   cancellationReason?: string | null;
   /** `Online` (paid inside CasaZen) or `Manual` (paid outside, the host marks it). */
@@ -326,6 +391,11 @@ export interface SupplierServiceRequest {
    */
   phase?: string;
   payment?: SupplierRequestPayment | null;
+  /**
+   * Where the request stands in its group of backup suppliers (SP-BKP); absent for a request sent to this supplier alone. A request that
+   * reaches the supplier **as a backup** (`role: 'backup'`) is declared as such: the job is its only if the primary does not take it.
+   */
+  backup?: SupplierBackup | null;
 }
 
 /** `Supplier` and `Host` take the steps; `Customer` (a private customer of the showcase) and `System` (nobody answered in time) end some. */
@@ -419,6 +489,11 @@ export interface CreateServiceRequestDto {
   scheduledStartUtc?: string;
   /** How long the work lasts, in minutes. */
   durationMinutes?: number;
+  /**
+   * SP-BKP: send the request also to up to three backup suppliers, declared as such. Left out, the org's choice decides (on by default);
+   * `false` sends it to the chosen supplier alone. Only matters while the backend flag `SupplierRequestBackups` is on.
+   */
+  useBackupSuppliers?: boolean;
 }
 
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */

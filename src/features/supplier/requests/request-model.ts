@@ -1,6 +1,6 @@
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime, formatStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
-import type { ServiceRequestStatus, SupplierServiceRequest } from '@/types/service-request';
+import type { ServiceRequestStatus, SupplierBackup, SupplierServiceRequest } from '@/types/service-request';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -14,9 +14,16 @@ export const REQUEST_DRAWER_KIND = 'supplier-request';
 /**
  * Where a request is for the supplier, in the words the locale files use (`supplier.requests.now.<phase>`). The server works it out
  * (`phase`, SP-04e); a value this version does not know is read from the status, and a status it does not know is `unknown`.
+ *
+ * A request that reaches the supplier **as a backup** (SP-BKP, `backup.role` `backup`) is still `to_answer` for the server, but it is not
+ * the same thing for the supplier: `backupWaiting` (the primary supplier has its hour: the backup can say it would take the job),
+ * `backupAccepted` (it said so: nothing more to do) and `backupActive` (the second window: the job is free, the first to accept has it).
  */
 export type RequestPhase =
   | 'toAnswer'
+  | 'backupWaiting'
+  | 'backupAccepted'
+  | 'backupActive'
   | 'proposalPending'
   | 'quotePending'
   | 'scheduled'
@@ -49,18 +56,35 @@ const PHASE_OF_STATUS: Record<ServiceRequestStatus, RequestPhase> = {
   Annullato: 'cancelled',
 };
 
-export function phaseOf(request: Pick<SupplierServiceRequest, 'phase' | 'status'>): RequestPhase {
-  return (request.phase ? PHASE_OF_SERVER.get(request.phase) : undefined) ?? PHASE_OF_STATUS[request.status] ?? 'unknown';
+type PhaseSource = Pick<SupplierServiceRequest, 'phase' | 'status'> & Partial<Pick<SupplierServiceRequest, 'backup'>>;
+
+export function phaseOf(request: PhaseSource): RequestPhase {
+  const phase = (request.phase ? PHASE_OF_SERVER.get(request.phase) : undefined) ?? PHASE_OF_STATUS[request.status] ?? 'unknown';
+  return phase === 'toAnswer' && request.backup?.role === 'backup' ? backupPhaseOf(request.backup) : phase;
+}
+
+/** A backup's request while it waits for an answer, by the state the server gives; a state this version does not know is read as `waiting`. */
+function backupPhaseOf(backup: SupplierBackup): RequestPhase {
+  if (backup.state === 'accepted') return 'backupAccepted';
+  return backup.state === 'active' ? 'backupActive' : 'backupWaiting';
+}
+
+/** The request is one the supplier has as a backup and has not been given the job yet. */
+export function isBackup(request: PhaseSource): boolean {
+  const phase = phaseOf(request);
+  return phase === 'backupWaiting' || phase === 'backupAccepted' || phase === 'backupActive';
 }
 
 /**
  * What the supplier can do about a request. `take` and `reject` answer a new request; `quote` answers it with a quote (SP-04b), and while
  * the quote waits the supplier can change it (`editQuote`) or take it back (`withdrawQuote`); a taken job is completed (`complete`) or, until
  * it starts, cancelled (`cancel`, with a reason: the way out of a job accepted automatically, SP-04d); a completed job paid inside CasaZen
- * can be asked for again (`remindPayment`, SP-15a) and one that was paid outside CasaZen is recorded (`recordPayment`).
+ * can be asked for again (`remindPayment`, SP-15a) and one that was paid outside CasaZen is recorded (`recordPayment`). A backup says it
+ * would take the job if the primary does not (`acceptBackup`, SP-BKP): it holds nothing of the agenda.
  */
 export type RequestAction =
   | 'take'
+  | 'acceptBackup'
   | 'reject'
   | 'complete'
   | 'cancel'
@@ -90,7 +114,7 @@ export function hasNoPrice(request: Pick<SupplierServiceRequest, 'price'>): bool
  * only the server's (`payment.canRecordOffline`), also with online payments off.
  */
 export function actionsOf(
-  request: Pick<SupplierServiceRequest, 'phase' | 'status' | 'price' | 'payment'>,
+  request: Pick<SupplierServiceRequest, 'phase' | 'status' | 'price' | 'payment'> & Partial<Pick<SupplierServiceRequest, 'backup'>>,
   options: { onlinePayments?: boolean } = {},
 ): RequestPlan {
   switch (phaseOf(request)) {
@@ -98,6 +122,13 @@ export function actionsOf(
       return hasNoPrice(request)
         ? { primary: 'quote', secondary: 'take', more: ['reject'] }
         : { primary: 'take', secondary: 'reject', more: ['quote'] };
+    // A backup answers the request as it is: it can say it would take the job, or refuse; no quote, no other time (the host did not choose it).
+    case 'backupWaiting':
+      return { primary: 'acceptBackup', secondary: 'reject', more: [] };
+    case 'backupAccepted':
+      return { more: ['reject'] };
+    case 'backupActive':
+      return { primary: 'take', secondary: 'reject', more: [] };
     case 'quotePending':
       return { more: ['editQuote', 'withdrawQuote'] };
     case 'scheduled':
@@ -158,10 +189,42 @@ export function requestWhen(
   };
 }
 
-/** "Rispondi entro le 14:30" while a new request waits for the answer and its deadline has not passed; nothing otherwise. */
-export function respondByText(request: Pick<SupplierServiceRequest, 'respondBy' | 'phase' | 'status'>, locale: string, t: Translate): string | null {
-  const by = request.respondBy;
-  if (!by || phaseOf(request) !== 'toAnswer' || Date.parse(by) <= Date.now()) return null;
+/**
+ * The instant the window the request is in ends at (SP-BKP): the hour of the primary supplier for a backup that waits (and for the primary
+ * itself), the second window for a backup that can take the job now. Null for a request that is in no group.
+ */
+function groupDueOf(request: Pick<SupplierServiceRequest, 'backup'>): string | null {
+  const backup = request.backup;
+  if (!backup) return null;
+  return (backup.state === 'active' ? backup.backupDueAt : backup.primaryDueAt) ?? null;
+}
+
+/** "14:30", or "9 ott, 14:30" when it is not today: the hour a window of the group ends at, for the sentences that say «entro le …». */
+export function groupDueText(request: Pick<SupplierServiceRequest, 'backup'>, locale: string): string | null {
+  const due = groupDueOf(request);
+  if (!due) return null;
+  const time = formatRomeDateTime(due, locale, TIME);
+  return romeDateOf(due) === todayInRome() ? time : `${formatRomeDateTime(due, locale, { day: 'numeric', month: 'short' })}, ${time}`;
+}
+
+/**
+ * "Rispondi entro le 14:30" while a new request waits for the answer and its deadline has not passed; nothing otherwise. A backup that waits
+ * is not asked to answer by the clock: it is told until when the supplier the host chose has the job for itself (SP-BKP); one that can take
+ * the job now is told by when.
+ */
+export function respondByText(
+  request: Pick<SupplierServiceRequest, 'respondBy' | 'phase' | 'status'> & Partial<Pick<SupplierServiceRequest, 'backup'>>,
+  locale: string,
+  t: Translate,
+): string | null {
+  const phase = phaseOf(request);
+  if (phase === 'backupWaiting' || phase === 'backupAccepted') {
+    const until = groupDueOf(request);
+    return until && Date.parse(until) > Date.now() ? t('supplier.requests.backup.primaryUntil', { time: groupDueText(request, locale) }) : null;
+  }
+
+  const by = phase === 'backupActive' ? (groupDueOf(request) ?? request.respondBy) : request.respondBy;
+  if (!by || (phase !== 'toAnswer' && phase !== 'backupActive') || Date.parse(by) <= Date.now()) return null;
   const time = formatRomeDateTime(by, locale, TIME);
   if (romeDateOf(by) === todayInRome()) return t('supplier.requests.respondByToday', { time });
   return t('supplier.requests.respondByDay', { day: formatRomeDateTime(by, locale, { day: 'numeric', month: 'short' }), time });
@@ -172,6 +235,11 @@ const REASON_KEYS: Record<string, string> = {
   ProposalNotAnswered: 'supplier.requests.reason.ProposalNotAnswered',
   QuoteNotAnswered: 'supplier.requests.reason.QuoteNotAnswered',
   CancelledByCustomer: 'supplier.requests.reason.CancelledByCustomer',
+  // The request of a backup closed by CasaZen (SP-BKP): somebody else has the job, or there is no job any more.
+  PrimaryTookIt: 'supplier.requests.reason.PrimaryTookIt',
+  TakenByBackup: 'supplier.requests.reason.TakenByBackup',
+  RequestCancelledByHost: 'supplier.requests.reason.RequestCancelledByHost',
+  BackupSlotUnavailable: 'supplier.requests.reason.BackupSlotUnavailable',
 };
 
 /** A reason as a sentence: the text a person wrote as it is, a code of the server (`NoResponse`...) in words. */

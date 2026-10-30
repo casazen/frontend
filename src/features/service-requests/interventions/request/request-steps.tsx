@@ -16,11 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { isFeatureEnabled } from '@/config/feature-flags';
 import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { supplierFacts } from '@/features/marketplace/lib/supplier-labels';
 import { orderStaysForRequest, stayOptionLabel } from '@/features/service-requests/lib/stays';
 import { formatPrice } from '@/features/supplier/services/lib/service-labels';
 import { formatMoney } from '@/features/supplier/services/lib/service-money';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -588,6 +590,32 @@ function priceLine(values: RequestValues, t: TFunction, language: string): strin
   return t('requestWizard.review.priceTbd');
 }
 
+/**
+ * SP-BKP: «Se il fornitore non risponde» — the request also goes to up to three backup suppliers of the zone, declared as such: the one
+ * chosen keeps an hour to answer, then the first backup that accepts has the job. Offered while the server has the rule on; ticked unless
+ * the host unticks it (only a «no» is sent).
+ */
+function BackupChoice() {
+  const { t } = useTranslation();
+  const { flags } = useFeatureFlags();
+  const { register } = useFormContext<RequestValues>();
+  if (!isFeatureEnabled(flags, 'supplierRequestBackups')) return null;
+
+  return (
+    <div data-testid="request-backups">
+      <ChoiceGroup legend={t('requestWizard.review.backups.legend')} legendVisible minCardWidth={16}>
+        <ChoiceCard
+          type="checkbox"
+          title={t('requestWizard.review.backups.title')}
+          description={t('requestWizard.review.backups.description')}
+          data-testid="request-use-backups"
+          {...register('useBackups')}
+        />
+      </ChoiceGroup>
+    </div>
+  );
+}
+
 /** Step ④: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
 export function ReviewStep() {
   const { t, i18n } = useTranslation();
@@ -634,6 +662,8 @@ export function ReviewStep() {
   return (
     <div className="space-y-6">
       <WizardSummary items={items} />
+
+      <BackupChoice />
 
       <PlainSection title={t('requestWizard.review.sees.title')} data-testid="request-supplier-sees">
         <div className="space-y-4 text-sm">
