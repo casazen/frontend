@@ -5442,11 +5442,19 @@
       "endedHint": "Arrivati alla data di fine, o con la registrazione rifiutata",
       "expiring": "In scadenza",
       "expiringHint": "Registrati, con meno di sei mesi alla fine",
+      "late": "Con un canone in ritardo",
+      "lateHint": "Contratti con almeno una rata scaduta e non pagata",
       "preparing": "In preparazione",
-      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare"
+      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare",
+      "signing": "In firma",
+      "signingHint": "Scaricati per la firma, oppure firmati e da registrare",
+      "todo": "Da fare",
+      "todoHint": "Contratti con un passo che tocca a te"
     },
     "columns": {
+      "next": "Prossimo passo",
       "parties": "Parti",
+      "progress": "Avanzamento",
       "regime": "Regime fiscale",
       "rent": "Canone",
       "status": "Stato",
@@ -5489,7 +5497,21 @@
     },
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
-    "rentToDefine": "Canone da definire"
+    "rentToDefine": "Canone da definire",
+    "filters": {
+      "end": "Scadenza",
+      "property": "Immobile",
+      "regime": "Regime fiscale",
+      "stage": "Stato",
+      "start": "Inizio",
+      "type": "Tipo di contratto"
+    },
+    "progress": {
+      "concluded": "Concluso",
+      "months": "Mese {{done}} di {{total}}",
+      "steps": "{{done}} di {{total}} passi",
+      "years": "Anno {{done}} di {{total}}"
+    }
   },
   "leaseOperations": {
     "disdetta": {

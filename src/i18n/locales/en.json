@@ -5442,11 +5442,19 @@
       "endedHint": "Past their end date, or with a registration that was refused",
       "expiring": "Expiring",
       "expiringHint": "Registered, with less than six months to go",
+      "late": "Rent overdue",
+      "lateHint": "Leases with at least one installment past due and unpaid",
       "preparing": "In preparation",
-      "preparingHint": "Not registered yet: drafts, out for signing or waiting to be registered"
+      "preparingHint": "Not registered yet: drafts, out for signing or waiting to be registered",
+      "signing": "Out for signature",
+      "signingHint": "Downloaded to be signed, or signed and waiting for the registration",
+      "todo": "To do",
+      "todoHint": "Leases with a step that is yours"
     },
     "columns": {
+      "next": "Next step",
       "parties": "Parties",
+      "progress": "Progress",
       "regime": "Tax regime",
       "rent": "Rent",
       "status": "Status",
@@ -5489,7 +5497,21 @@
     },
     "term": "from {{from}} to {{to}}",
     "termToDefine": "Dates to be set",
-    "rentToDefine": "Rent to be set"
+    "rentToDefine": "Rent to be set",
+    "filters": {
+      "end": "Expiry",
+      "property": "Property",
+      "regime": "Tax regime",
+      "stage": "Stage",
+      "start": "Start",
+      "type": "Type of lease"
+    },
+    "progress": {
+      "concluded": "Concluded",
+      "months": "Month {{done}} of {{total}}",
+      "steps": "{{done}} of {{total}} steps",
+      "years": "Year {{done}} of {{total}}"
+    }
   },
   "leaseOperations": {
     "disdetta": {
