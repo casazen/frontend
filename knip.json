@@ -29,6 +29,9 @@
     "src/types/**": [
       "types"
     ],
+    "src/features/site-maps/index.ts": [
+      "types"
+    ],
     "src/queries/**": [
       "exports"
     ],
@@ -51,6 +54,9 @@
       "exports"
     ],
     "src/pages/PropertyQrCode.tsx": [
+      "exports"
+    ],
+    "src/pages/SwissCompliancePage.tsx": [
       "exports"
     ]
   },
