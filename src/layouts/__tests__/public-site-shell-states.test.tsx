@@ -9,7 +9,7 @@ import { contrastRatio } from '@/lib/public-site-colors';
 import type { PublicOrgDto } from '@/types';
 import { PublicSiteShell } from '../PublicSiteShell';
 
-vi.mock('@/queries/use-public-org', () => ({ usePublicOrg: vi.fn() }));
+vi.mock('@/queries/use-public-org', () => ({ usePublicOrg: vi.fn(), useOrgProperties: () => ({ data: undefined }) }));
 vi.mock('@/hooks/use-custom-host-redirect', () => ({ useCustomHostRedirect: vi.fn() }));
 vi.mock('@/components/shared/cookie-consent-banner', () => ({ CookieConsentBanner: () => null }));
 vi.mock('@/features/public-site/components/Footer', () => ({ Footer: () => null }));

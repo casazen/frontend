@@ -34,7 +34,8 @@ import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
-import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
+import { OrgHomePage } from '@/features/public-site/home/org-home-page';
+import { SiteSearchPage } from '@/features/public-site/search/site-search-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-document-page';
 import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
@@ -50,6 +51,10 @@ import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierAboutPage } from '@/pages/supplier-about';
+import { SupplierServicePage } from '@/pages/supplier-service';
+import { SupplierServicesPage } from '@/pages/supplier-services';
+import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
@@ -246,7 +251,9 @@ export const appRoutes: RouteObject[] = [
     // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
-      { index: true, element: <OrgLandingPage /> },
+      { index: true, element: <OrgHomePage /> },
+      // The results of the site for a stay and a search (DB-07c): in the address, so a search can be shared and Back finds it again.
+      { path: 'search', element: <SiteSearchPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
       { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },
@@ -282,8 +289,21 @@ export const appRoutes: RouteObject[] = [
       { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
       { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
       { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
-      // Public showcase of a supplier (SU-13, A4-16): in the public shell, `noindex` (see the page).
-      { path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`, element: <SupplierShowcasePage /> },
+    ],
+  },
+  {
+    // Public showcase of a supplier (SU-13, A4-16, SP-09-FE): the frame of its own, with the look the supplier chose, not the one of
+    // CasaZen's public pages. It keeps the marker: the redesign of the app (`data-ui="v2"`) never reaches it.
+    path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`,
+    element: <SupplierSiteShell />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+    children: [
+      { index: true, element: <SupplierShowcasePage /> },
+      // The services of the supplier and one of them with its estimate (they need the list of services, so, like it, the bookings flag);
+      // the story of the supplier.
+      { path: 'servizi', element: <SupplierServicesPage /> },
+      { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
+      { path: 'chi-siamo', element: <SupplierAboutPage /> },
     ],
   },
   {

@@ -25,9 +25,12 @@ export const publicBookingApi = {
   createDirectBooking: (payload: CreateDirectBookingPayload) =>
     ApiClient.post<DirectBookingResponse>('/public/bookings', payload, { public: true }),
 
-  /** Price of the stay computed by the backend, tourist tax included (BK-03): the amounts the booking records. */
-  quoteDirectBooking: (payload: DirectBookingQuotePayload) =>
-    ApiClient.post<DirectBookingQuote>('/public/bookings/quote', payload, { public: true }),
+  /**
+   * Price of the stay computed by the backend, tourist tax included (BK-03): the amounts the booking records. `signal` cancels the
+   * request when the stay changes before the answer: an old answer never takes the place of the new one.
+   */
+  quoteDirectBooking: (payload: DirectBookingQuotePayload, signal?: AbortSignal) =>
+    ApiClient.post<DirectBookingQuote>('/public/bookings/quote', payload, { public: true, signal }),
 
   /**
    * Nights already taken on the booking site (BK-05): bookings, checkout holds, "pay at the property" requests and iCal or

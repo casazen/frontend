@@ -21,24 +21,29 @@ const euro = (amount: number) => new RegExp(`${amount.toLocaleString('it-IT', { 
  * checkout and pays (card in the Stripe Payment Element) or asks to pay at the property. Returns the booking id.
  */
 export async function guestBooksStay(page: Page, stay: GuestStay): Promise<string> {
-  await page.goto(`/book/${stay.orgSlug}/property/${stay.propertySlug}`);
+  // The stay travels in the address (deep link); the booking card asks the quote of the server and, once the total is in, "Prenota"
+  // is a link to the checkout carrying the same stay.
+  await page.goto(`/book/${stay.orgSlug}/property/${stay.propertySlug}?checkin=${stay.checkIn}&checkout=${stay.checkOut}&guests=2`);
   await page.getByRole('button', { name: 'Accetta' }).click().catch(() => undefined); // cookie banner (essential only)
-  await page.locator('#check-in').fill(stay.checkIn);
-  await page.locator('#check-out').fill(stay.checkOut);
-  await page.locator('#guests').fill('2');
-  await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+  await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 30_000 });
+  await page.getByTestId('booking-cta').click();
 
   await expect(page).toHaveURL(new RegExp(`checkin=${stay.checkIn}&checkout=${stay.checkOut}`));
   await expect(page.getByTestId('checkout-stay-summary')).toContainText(`${stay.nights} notti`);
 
-  await page.getByRole('button', { name: stay.payment === 'card' ? 'Paga subito' : /Paga in struttura/ }).click();
+  // Step 1: how to book (the title of the card is the stable text of the choice); step 2: the guest; step 3: consent and the booking.
+  await page.getByText(stay.payment === 'card' ? 'Prenotazione immediata' : 'Su richiesta', { exact: true }).click();
+  await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 30_000 });
+  await page.getByTestId('checkout-next').click();
   await page.locator('#firstName').fill(stay.guest.firstName);
   await page.locator('#lastName').fill(stay.guest.lastName);
   await page.locator('#email').fill(stay.guest.email);
   await page.locator('#phone').fill(stay.guest.phone);
   await page.locator('#country').selectOption({ label: 'Italia' });
+  await page.getByTestId('checkout-next').click();
   await page.locator('#data-consent').click();
-  await page.getByRole('button', { name: 'Continua' }).click();
+  await expect(page.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled', 'true');
+  await page.getByTestId('checkout-submit').click();
 
   if (stay.payment === 'card') {
     // Stripe test card in the Payment Element (iframe served by js.stripe.com, the only external call of the suite).
@@ -50,13 +55,15 @@ export async function guestBooksStay(page: Page, stay: GuestStay): Promise<strin
     await page.getByRole('button', { name: 'Paga ora', exact: true }).click();
     // The page shows the backend's state: "confirmed" only after the webhook confirmed the booking.
     await expect(page).toHaveURL(new RegExp(`/book/${stay.orgSlug}/booking/`), { timeout: 60_000 });
-    await expect(page.getByText('Prenotazione confermata!')).toBeVisible({ timeout: 90_000 });
+    // Stable test ids, not the words of the title: the title greets the guest by name.
+    await expect(page.getByTestId('checkout-confirmation')).toBeVisible({ timeout: 90_000 });
   } else {
     await expect(page).toHaveURL(new RegExp(`/book/${stay.orgSlug}/booking/`), { timeout: 30_000 });
-    await expect(page.getByText("Richiesta inviata: in attesa di conferma dell'host")).toBeVisible();
+    await expect(page.getByTestId('checkout-onsite-request-sent')).toBeVisible();
   }
 
-  await expect(page.getByText(euro(stay.nights * stay.nightlyRate)).first()).toBeVisible();
+  await expect(page.getByTestId('checkout-outcome-booking-code')).toBeVisible();
+  await expect(page.getByTestId('checkout-outcome-total')).toHaveText(euro(stay.nights * stay.nightlyRate));
   const bookingId = new URL(page.url()).pathname.split('/').pop() ?? '';
   expect(bookingId).toMatch(/^[0-9a-f-]{36}$/);
   return bookingId;

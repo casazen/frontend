@@ -4,8 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Segmented } from '@/components/ui/segmented';
 import {
   LOCAL_KINDS,
-  VIEW_PUGLIA,
+  VIEW_LOMBARDIA_SVIZZERA,
   fitView,
+  getRegionForPoints,
   loadRegionData,
   localMapSvg,
   localPlace,
@@ -14,17 +15,20 @@ import {
   projectPoint,
   publicPoint,
   regionMapSvg,
+  regionsForView,
   resetMapIds,
   snapToLand,
   unprojectPoint,
   zoomView,
+  type LatLon,
   type LocalKind,
   type LocalSpec,
   type MapLabel,
 } from '@/features/site-maps';
-import { PUGLIA } from '@/features/site-maps/data/puglia';
+import { LOMBARDIA } from '@/features/site-maps/data/lombardia';
+import { SVIZZERA } from '@/features/site-maps/data/svizzera';
 import { ComponentsSection } from './maps-components-section';
-import { HOUSES } from './maps-data';
+import { HOUSES, type House } from './maps-data';
 import { RegionSection } from './maps-region-section';
 import { HomePin, PoiDot, SvgBox } from './maps-shared';
 
@@ -147,7 +151,7 @@ const near = (a: number, b: number, e = 1e-9): boolean => Math.abs(a - b) < e;
 function ChecksSection() {
   const [result, setResult] = useState<{ rows: Measure[]; checks: Check[] } | null>(null);
   const run = async () => {
-    await Promise.all([loadRegionData('italia'), loadRegionData('puglia')]);
+    await Promise.all([loadRegionData('italia'), loadRegionData('lombardia'), loadRegionData('svizzera')]);
     const rows: Measure[] = [];
     const time = (name: string, fn: () => string) => {
       const t0 = performance.now();
@@ -156,20 +160,20 @@ function ChecksSection() {
       return svg;
     };
     for (const span of [1050, 360, 150, 80, 40, 20, 10, 4]) {
-      time(`regione · larghezza ${span} km · 1000 px`, () => regionMapSvg(makeView({ lat: 40.9, lon: 17.3, spanKm: span }), { width: 1000 }));
+      time(`regione · larghezza ${span} km · 1000 px`, () => regionMapSvg(makeView({ lat: 46.0, lon: 9.0, spanKm: span }), { width: 1000 }));
     }
     time('regione · tutta l’Italia · 700 px', () => regionMapSvg({ lat: 41.5, lon: 12.5, spanKm: 1400, aspect: 0.8 }, { width: 700 }));
     for (const kind of LOCAL_KINDS) for (const seed of [1, 2, 3]) time(`locale ${kind} · seme ${seed} · 800 px`, () => localMapSvg({ kind, seed, width: 800 }));
 
     const checks: Check[] = [];
     const idless = (svg: string) => svg.replace(/sm[0-9]+/g, 'smX');
-    const v = VIEW_PUGLIA;
+    const v = VIEW_LOMBARDIA_SVIZZERA;
     const p0 = projectPoint(v.lat, v.lon, v);
     checks.push({ name: 'projectPoint del centro della vista = 50 %, 50 %', pass: near(p0.x, 50) && near(p0.y, 50), info: '' });
-    const pp = projectPoint(40.9, 17.1, v);
+    const pp = projectPoint(46.0, 9.1, v);
     const q = unprojectPoint(pp.x, pp.y, v);
-    checks.push({ name: 'unprojectPoint(projectPoint(p)) = p', pass: near(q.lat, 40.9) && near(q.lon, 17.1), info: '' });
-    const a = { lat: 40.8, lon: 17.3 };
+    checks.push({ name: 'unprojectPoint(projectPoint(p)) = p', pass: near(q.lat, 46.0) && near(q.lon, 9.1), info: '' });
+    const a = { lat: 46.1, lon: 8.9 };
     const z0 = projectPoint(a.lat, a.lon, v);
     const z1 = projectPoint(a.lat, a.lon, zoomView(v, 4, a));
     checks.push({ name: 'zoomView con ancora: il punto resta fermo', pass: near(z0.x, z1.x) && near(z0.y, z1.y), info: '' });
@@ -186,12 +190,12 @@ function ChecksSection() {
     });
     let refused = false;
     try {
-      publicPoint({ lat: 40.9965, lon: 17.2195 });
+      publicPoint({ lat: 46.9465, lon: 7.4474 });
     } catch {
       refused = true;
     }
     checks.push({ name: 'una posizione con più di due decimali è rifiutata (in sviluppo)', pass: refused, info: '' });
-    const view = makeView({ lat: 40.9, lon: 17.3, spanKm: 40 });
+    const view = makeView({ lat: 46.0, lon: 9.0, spanKm: 40 });
     checks.push({
       name: 'stessi input, stesso disegno (a meno del contatore degli id)',
       pass: idless(regionMapSvg(view)) === idless(regionMapSvg(view)) && LOCAL_KINDS.every((kind) => idless(localMapSvg({ kind, seed: 'x' })) === idless(localMapSvg({ kind, seed: 'x' }))),
@@ -201,8 +205,8 @@ function ChecksSection() {
     checks.push({ name: 'dopo resetMapIds il primo id è sm1', pass: localMapSvg({ kind: 'country', seed: 1 }).includes('id="sm1'), info: '' });
     let max = 0;
     for (const span of [1050, 360, 150, 60, 30, 12, 5, 3]) {
-      for (const [la, lo] of [[40.9, 17.3], [40.35, 18.17], [41.12, 16.87], [43.4, 11.2], [37.9, 14.0], [45.9, 9.3]]) {
-        max = Math.max(max, regionMapSvg(makeView({ lat: la, lon: lo, spanKm: span }), { width: 1000, highlight: ['ostuni', 'lecce'] }).length);
+      for (const [la, lo] of [[46.0, 9.0], [46.4, 6.6], [47.4, 8.5], [45.5, 9.2], [43.4, 11.2], [41.9, 12.5]]) {
+        max = Math.max(max, regionMapSvg(makeView({ lat: la, lon: lo, spanKm: span }), { width: 1000, highlight: ['como', 'lugano'] }).length);
       }
     }
     checks.push({ name: 'regione: massimo 60 kB a ogni zoom (48 combinazioni)', pass: max < 60 * 1024, info: `massimo ${(max / 1024).toFixed(1)} kB` });
@@ -219,18 +223,29 @@ function ChecksSection() {
       }
     }
     checks.push({ name: 'localPlace: sempre dentro il riquadro (1200 punti casuali, mare in ogni direzione)', pass: outside === 0, info: `${outside} fuori` });
-    // the detail of Puglia against the base: every town, airport and station of the pack must be on land (or at most 1.5 km from it)
-    const places = [...PUGLIA.towns, ...PUGLIA.airports, ...PUGLIA.stations];
+    // the packs against the base: every town of a pack, rounded to two decimals like a house, is on land or at most 1.5 km from it
+    const towns = [...LOMBARDIA.towns, ...SVIZZERA.towns];
     let moved = 0;
     let far = 0;
-    for (const place of places) {
-      const rounded = { lat: Math.round(place.lat * 100) / 100, lon: Math.round(place.lon * 100) / 100 };
+    for (const [, la, lo] of towns) {
+      const rounded = { lat: Math.round(la / 10) / 100, lon: Math.round(lo / 10) / 100 };
       const s = snapToLand(rounded);
-      const km = Math.hypot((s.lat - rounded.lat) * 111.19, (s.lon - rounded.lon) * 84.3);
+      const km = Math.hypot((s.lat - rounded.lat) * 111.19, (s.lon - rounded.lon) * 80);
       if (km > 0.01) moved++;
       if (km > far) far = km;
     }
-    checks.push({ name: 'il dettaglio della Puglia combacia con la base: luoghi (arrotondati a 2 decimali) in mare', pass: moved <= 3, info: `${moved} su ${places.length} spostati a terra, al massimo di ${far.toFixed(2)} km` });
+    checks.push({ name: 'i centri dei pacchetti (arrotondati a 2 decimali) cadono a terra o a meno di 1,5 km', pass: far <= 1.6, info: `${moved} su ${towns.length} spostati a terra, al massimo di ${far.toFixed(2)} km` });
+    // the region of a set of positions
+    const at = (...ids: string[]): House[] => HOUSES.filter((h) => ids.includes(h.id));
+    const idOf = (pts: LatLon[]) => getRegionForPoints(pts, { aspect: 4 / 3 }).id;
+    const ids = [idOf(at('milano', 'lugano')), idOf(at('como')), idOf(at('zurigo')), idOf(at('milano', 'roma')), idOf([]), idOf([{ lat: 45.07, lon: 7.69 }])];
+    checks.push({ name: 'getRegionForPoints: Milano e Lugano, Como, Zurigo, Milano e Roma, nessun punto, Torino', pass: ids.join() === 'lombardia-svizzera,lombardia,svizzera,italia,italia,italia', info: ids.join(' · ') });
+    const home = getRegionForPoints(at('milano', 'lugano', 'ginevra', 'bergamo'), { aspect: 4 / 3 });
+    const inside = at('milano', 'lugano', 'ginevra', 'bergamo').every((h) => {
+      const p = projectPoint(h.lat, h.lon, home.view);
+      return p.x > 0 && p.x < 100 && p.y > 0 && p.y < 100;
+    });
+    checks.push({ name: 'la cornice «Lombardia e Svizzera» contiene le case e chiede i due pacchetti', pass: inside && regionsForView(home.view).join() === 'italia,lombardia,svizzera', info: home.regions.join(', ') });
     setResult({ rows, checks });
   };
   return (

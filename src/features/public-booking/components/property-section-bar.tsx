@@ -24,9 +24,9 @@ function stickOffset(nav: HTMLElement): number {
 }
 
 /**
- * Row of links to the sections the page has, from tablet up: it stays at the top while the sections go by and marks the one
- * being read. The page decides which sections exist (a section without data is not in the page and not here), so there are
- * no dead links. On a phone the page is one short column and the bar is left out.
+ * Row of links to the sections the page has: it stays at the top while the sections go by and marks the one being read. The page
+ * decides which sections exist (a section without data is not in the page and not here), so there are no dead links. From a tablet
+ * up the links are tabs with an underline; on a phone they are chips that scroll sideways (DB-04a).
  */
 export function PropertySectionBar({ sections }: { sections: PropertySection[] }) {
   const { t } = useTranslation();
@@ -96,21 +96,22 @@ export function PropertySectionBar({ sections }: { sections: PropertySection[] }
     <nav
       ref={navRef}
       aria-label={t('publicProperty.sectionBar.label')}
-      className="sticky top-0 z-20 -mt-2 hidden bg-[var(--cz-public-bg)] md:block"
+      className="sticky top-0 z-20 -mx-3 -mt-2 bg-[var(--cz-public-bg)] px-3 md:mx-0 md:px-0"
       data-testid="property-section-bar"
     >
-      <ul className="flex gap-8 border-b">
+      <ul className="m-0 flex list-none gap-2 overflow-x-auto p-0 py-2 [scrollbar-width:none] md:gap-8 md:overflow-visible md:border-b md:py-0 [&::-webkit-scrollbar]:hidden">
         {sections.map((section) => (
-          <li key={section.id}>
+          <li key={section.id} className="shrink-0">
             <a
               href={`#${section.id}`}
               aria-current={active === section.id ? 'location' : undefined}
               onClick={(event) => go(event, section.id)}
               className={cn(
-                'relative block py-3 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-full motion-reduce:transition-none',
+                'relative flex min-h-11 items-center rounded-full px-4 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-full max-md:after:hidden motion-reduce:transition-none',
+                'md:block md:min-h-0 md:rounded-none md:px-0 md:py-3',
                 active === section.id
-                  ? 'text-[var(--cz-public-text)] after:bg-[var(--cz-public-primary)]'
-                  : 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text)]',
+                  ? 'bg-[var(--cz-public-text)] text-[var(--cz-public-bg)] md:bg-transparent md:text-[var(--cz-public-text)] md:after:bg-[var(--cz-public-primary)]'
+                  : 'text-[var(--cz-public-muted)] shadow-[inset_0_0_0_1px_var(--cz-public-line-strong)] hover:text-[var(--cz-public-text)] md:shadow-none',
               )}
             >
               {section.label}

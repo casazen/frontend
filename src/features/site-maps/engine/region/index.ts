@@ -19,8 +19,8 @@ import { getWorld, type World, type WorldTown } from './registry';
 const TINT_CELL_KM = 34;
 
 /**
- * Soft tints for the places that no detail pack covers: patches of plain, hill and grove on a grid fixed to the map, so that
- * they do not move when the map does and a region without a hand-made tint is not a flat colour. Not drawn on the whole country.
+ * Soft tints for the places that no detail pack tints by hand: patches of plain, hill and grove on a grid fixed to the map, so
+ * that they do not move when the map does and a region without a hand-made tint is not a flat colour. Not drawn on the whole country.
  */
 function proceduralTints(win: Box, packs: World['packs']): { k: Pt; rx: number; ry: number; g: 'g' | 'w' | 't' }[] {
   const out: { k: Pt; rx: number; ry: number; g: 'g' | 'w' | 't' }[] = [];
@@ -30,7 +30,7 @@ function proceduralTints(win: Box, packs: World['packs']): { k: Pt; rx: number; 
       const k: Pt = [(ci + 0.2 + 0.6 * hash2(ci, cj, 72)) * TINT_CELL_KM, (cj + 0.2 + 0.6 * hash2(ci, cj, 73)) * TINT_CELL_KM];
       const lat = ORIGIN_LAT + k[1] / LAT_KM;
       const lon = ORIGIN_LON + k[0] / LON_KM;
-      if (packs.some((p) => lat >= p.box[0] && lat <= p.box[2] && lon >= p.box[1] && lon <= p.box[3])) continue;
+      if (packs.some((p) => p.tints.length > 0 && lat >= p.box[0] && lat <= p.box[2] && lon >= p.box[1] && lon <= p.box[3])) continue;
       const tone = hash2(ci, cj, 76);
       out.push({ k, rx: TINT_CELL_KM * (0.7 + 0.7 * hash2(ci, cj, 74)), ry: TINT_CELL_KM * (0.5 + 0.5 * hash2(ci, cj, 75)), g: tone < 0.38 ? 'g' : tone < 0.7 ? 'w' : 't' });
     }
@@ -50,6 +50,9 @@ export interface RegionMapOptions {
 }
 
 const MARGIN = 36; // beyond the frame the detail is kept (px)
+const INNER_BORDERS_MAX_KM = 650; // widest frame in which the borders of provinces and cantons are drawn
+const NATIONAL_KM = 700; // from this width of the frame the towns of a detail pack are named only if they are big (radius of the built-up area in km, below)
+const NATIONAL_MIN_FOOT_KM = 4;
 const TERRA = '#a3431f';
 const TOWN_STYLE = {
   1: { fs: 13, fw: 700, r: 3.7 },
@@ -166,6 +169,25 @@ function nameBox(an: GeoName, c: Pt, kindSea: boolean): Box {
 }
 
 /**
+ * The room a name written along a lake takes: a chain of squares along its direction, so that a name that runs across the frame
+ * does not take the room of its whole bounding box (and its neighbours).
+ */
+function alongBoxes(an: GeoName, c: Pt): Box[] {
+  const wd = textW(an.text, an.size, an.ls, 0.52);
+  const h = an.size * 0.5;
+  const a = (an.rot ?? 0) * DEG;
+  const n = Math.max(1, Math.ceil(wd / (2 * h)));
+  const out: Box[] = [];
+  for (let i = 0; i < n; i++) {
+    const t = ((i + 0.5) / n - 0.5) * wd;
+    const x = c[0] + t * Math.cos(a);
+    const y = c[1] + t * Math.sin(a);
+    out.push({ x0: x - h, x1: x + h, y0: y - h, y1: y + h });
+  }
+  return out;
+}
+
+/**
  * The background of a regional map (sea, land, coast, lakes, borders, roads, towns with names; no pins).
  * labels: 'auto' (levels of detail + collisions) · 'major' (only the provincial capitals) · 'all' (every town) · 'none'.
  */
@@ -187,7 +209,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   const findTown = (key: string): WorldTown | undefined => world.byKey.get(String(key)) ?? world.byKey.get(slug(key));
   const hl = new Set((highlight ?? []).map((h) => findTown(h)?.id).filter((v): v is string => !!v));
   const base = world.base;
-  const lod: GeoLod = base ? (level != null ? base.lods[clamp(Math.round(level), 0, base.lods.length - 1)] : lodFor(base.lods, base.tol, S / W)) : { land: [], italy: [], lakes: [], borders: [] };
+  const lod: GeoLod = base ? (level != null ? base.lods[clamp(Math.round(level), 0, base.lods.length - 1)] : lodFor(base.lods, base.tol, S / W)) : { land: [], home: [], lakes: [], borders: [], nation: [] };
   const smoothKm = S / W < 0.25 ? clamp((3.5 * S) / W, 0.03, 0.4) : 0;
 
   /* --- land, Italy, coast, borders --- */
@@ -204,17 +226,24 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   };
   const land = shapePolys(lod.land);
   const landPolys = land.map((l) => l.clip);
-  const italyPolys = shapePolys(lod.italy).map((l) => l.clip);
+  const homePolys = shapePolys(lod.home).map((l) => l.clip);
   const coastRuns = land.flatMap((l) => runsInBox([...l.thin, l.thin[0]], win));
   const hasCoast = coastRuns.length > 0;
   const coastPts = coastRuns.flat();
-  const borderRuns: Pt[][] = [];
-  for (const b of lod.borders) {
-    if (!hits({ x0: b.box[0], y0: b.box[1], x1: b.box[2], y1: b.box[3] }, winKm)) continue;
-    borderRuns.push(...runsInBox(thinPts(b.k.map(px), isNear, 3, 60), win));
-  }
+  const lineRuns = (list: readonly Shape[]): Pt[][] => {
+    const runs: Pt[][] = [];
+    for (const b of list) {
+      if (!hits({ x0: b.box[0], y0: b.box[1], x1: b.box[2], y1: b.box[3] }, winKm)) continue;
+      runs.push(...runsInBox(thinPts(b.k.map(px), isNear, 3, 60), win));
+    }
+    return runs;
+  };
+  const borderRuns = lineRuns(lod.borders);
+  const nationRuns = lineRuns(lod.nation);
+  // provinces and cantons: dotted, from the scale of the two regions together down
+  const innerRuns = S <= INNER_BORDERS_MAX_KM ? world.packs.flatMap((pack) => lineRuns(pack.borders)) : [];
   const onLand = (x: number, y: number): boolean => landPolys.some((p) => pip(p, x, y));
-  const onItaly = (x: number, y: number): boolean => italyPolys.some((p) => pip(p, x, y));
+  const onHome = (x: number, y: number): boolean => homePolys.some((p) => pip(p, x, y));
   const hasLand = landPolys.length > 0;
 
   const defs: string[] = [];
@@ -223,7 +252,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   );
   const landD = landPolys.map((p) => polyD(p)).join('');
   if (hasLand) defs.push(`<path id="${id}L" d="${landD}"/><clipPath id="${id}kL"><use href="#${id}L"/></clipPath>`);
-  if (italyPolys.length) defs.push(`<clipPath id="${id}kP"><path d="${italyPolys.map((p) => polyD(p)).join('')}"/></clipPath>`);
+  if (homePolys.length) defs.push(`<clipPath id="${id}kP"><path d="${homePolys.map((p) => polyD(p)).join('')}"/></clipPath>`);
 
   const body: string[] = [];
   body.push(`<rect width="${num(W)}" height="${num(H)}" fill="url(#${id}s)"/>`);
@@ -235,7 +264,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   }
   if (hasLand) {
     body.push(`<use href="#${id}L" fill="#e9e1d0"/>`);
-    if (italyPolys.length) body.push(`<use href="#${id}L" fill="#f1e8d6" clip-path="url(#${id}kP)"/>`);
+    if (homePolys.length) body.push(`<use href="#${id}L" fill="#f1e8d6" clip-path="url(#${id}kP)"/>`);
   }
 
   /* --- tints of the territory and texture --- */
@@ -271,7 +300,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     );
     // fields, olive groves and vineyards: a mosaic of plots in soft tones (Voronoi on a noisy grid), only when close
     let quilt = '';
-    if (S <= 40 && italyPolys.length) {
+    if (S <= 40 && homePolys.length) {
       const CELL = clamp(S / 9, 1.3, 4.4);
       const hk = S / view.aspect;
       const kx0 = vkx - S / 2 - CELL;
@@ -299,12 +328,14 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
       const tone = { o: ['#d9e0b2', 0.45], w: ['#f6ebca', 0.55], v: ['#e5e3ba', 0.42], s: ['#ece0c8', 0.45] } as const;
       for (const k of ['o', 'w', 'v', 's'] as const) if (groups[k].length) quilt += `<path d="${groups[k].join('')}" fill="${tone[k][0]}" fill-opacity="${tone[k][1]}"/>`;
     }
-    const inItaly = italyPolys.length ? `<g clip-path="url(#${id}kP)">${tintsP.join('')}${quilt}<rect width="${num(W)}" height="${num(H)}" fill="url(#${id}d)"/></g>` : '';
-    body.push(`<g clip-path="url(#${id}kL)">${tintsO.join('')}${inItaly}`);
+    const innerBorders = innerRuns.length ? `<path d="${innerRuns.map((r) => lineD(r)).join('')}" fill="none" stroke="#c9ba97" stroke-width="1.1" stroke-dasharray="1.2 3.6" stroke-linecap="round"/>` : '';
+    const inHome = homePolys.length ? `<g clip-path="url(#${id}kP)">${tintsP.join('')}${quilt}<rect width="${num(W)}" height="${num(H)}" fill="url(#${id}d)"/>${innerBorders}</g>` : '';
+    body.push(`<g clip-path="url(#${id}kL)">${tintsO.join('')}${inHome}`);
     // inner shadow of the coast: it makes the shape stand out
     if (hasCoast) body.push(`<g fill="none" stroke="#c9b78c" stroke-linejoin="round"><use href="#${id}L" stroke-opacity=".2" stroke-width="16"/><use href="#${id}L" stroke-opacity=".28" stroke-width="6"/></g>`);
     // dashed borders between regions
     if (borderRuns.length) body.push(`<path d="${borderRuns.map((r) => lineD(r)).join('')}" fill="none" stroke="#cbbd9c" stroke-width="1.1" stroke-dasharray="5 3.5" stroke-linecap="round" opacity=".85"/>`);
+    if (nationRuns.length) body.push(`<path d="${nationRuns.map((r) => lineD(r)).join('')}" fill="none" stroke="#b3a27c" stroke-width="1.5" stroke-dasharray="8 3 1.6 3" stroke-linecap="round"/>`);
     body.push('</g>');
   }
 
@@ -315,10 +346,21 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     lakeShapes.push(lk.k.map(px));
   }
   for (const lk of world.lakes) lakeShapes.push(lk.map(px));
+  const lakeDs: string[] = [];
   for (const P of lakeShapes) {
     if (!P.some((p) => inFrame(p, 40))) continue;
-    body.push(`<path d="${polyD(thinPts(P, isNear, 2, 8))}" fill="#b4d7de" stroke="#e1f0f0" stroke-width="1.4" stroke-linejoin="round"/>`);
+    const d = polyD(thinPts(P, isNear, 2, 8));
+    lakeDs.push(d);
+    body.push(`<path d="${d}" fill="#b4d7de" stroke="#e1f0f0" stroke-width="1.4" stroke-linejoin="round"/>`);
   }
+  // the dry land: the land without the lakes (a built-up area, a railway or a road does not cross the water of a lake)
+  let dry = `${id}kL`;
+  if (lakeDs.length && hasLand) {
+    dry = `${id}kD`;
+    defs.push(`<clipPath id="${dry}"><path clip-rule="evenodd" d="${landD}${lakeDs.join('')}"/></clipPath>`);
+  }
+  const inLake = (x: number, y: number): boolean => lakeShapes.some((P) => pip(P, x, y));
+  const onDry = (x: number, y: number): boolean => onLand(x, y) && !inLake(x, y);
 
   /* --- footprints of the towns (when close) --- */
   const tierMax = labels === 'major' ? 1 : labels === 'all' ? 3 : S <= 45 ? 3 : S <= 165 ? 2 : 1;
@@ -334,7 +376,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     }
     if (foot.length && hasLand) {
       defs.push(`<pattern id="${id}u" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><rect width="6" height="6" fill="#ebdfc6"/><path d="M0 .3H6M.3 0V6" stroke="#fffaf0" stroke-opacity=".42" stroke-width=".8"/></pattern>`);
-      body.push(`<path clip-path="url(#${id}kL)" d="${foot.join('')}" fill="url(#${id}u)" stroke="#d9c8a4" stroke-width=".9"/>`);
+      body.push(`<path clip-path="url(#${dry})" d="${foot.join('')}" fill="url(#${id}u)" stroke="#d9c8a4" stroke-width=".9"/>`);
     }
   }
 
@@ -344,7 +386,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     for (const r of world.rails) for (const run of runsInBox(r.map(px), win)) railD.push(smoothD(run, false));
     if (railD.length) {
       defs.push(`<path id="${id}rl" d="${railD.join('')}"/>`);
-      body.push(`<g clip-path="url(#${id}kL)" fill="none" stroke="#c4b79d" stroke-linejoin="round"><use href="#${id}rl" stroke-width="1.2"/><use href="#${id}rl" stroke-width="4" stroke-dasharray="1 5"/></g>`);
+      body.push(`<g clip-path="url(#${dry})" fill="none" stroke="#c4b79d" stroke-linejoin="round"><use href="#${id}rl" stroke-width="1.2"/><use href="#${id}rl" stroke-width="4" stroke-dasharray="1 5"/></g>`);
     }
   }
 
@@ -376,7 +418,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     defs.push(`<path id="${id}r${c}" d="${roadParts[c].join('')}"/>`);
     roadBody.push(`<use href="#${id}r${c}" stroke="${cas}" stroke-width="${cw}"/><use href="#${id}r${c}" stroke="${fil}" stroke-width="${fw}"/>`);
   }
-  if (roadBody.length && hasLand) body.push(`<g clip-path="url(#${id}kL)" fill="none" stroke-linecap="round" stroke-linejoin="round">${roadBody.join('')}</g>`);
+  if (roadBody.length && hasLand) body.push(`<g clip-path="url(#${dry})" fill="none" stroke-linecap="round" stroke-linejoin="round">${roadBody.join('')}</g>`);
 
   /* --- towns: dots and names (priority: emphasised, then level, then size) --- */
   const placer = makePlacer(W, H);
@@ -385,6 +427,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
   for (const tw of world.towns) {
     const mine = hl.has(tw.id);
     if (!mine && tw.tier > tierMax) continue;
+    if (!mine && tw.detail && S > NATIONAL_KM && tw.foot < NATIONAL_MIN_FOOT_KM) continue; // the small towns of a pack are named when closer
     const c = px(tw.k);
     if (!inFrame(c, 2)) continue;
     cand.push({ tw, c, mine });
@@ -418,7 +461,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
         mk('end', c[0] - g * 0.7, c[1] - g * 0.65),
         mk('end', c[0] - g * 0.7, c[1] + g * 0.65 + fs * 0.7),
       ];
-      const ok = (q: (typeof cs)[number], needLand: boolean): boolean => placer.free(q.box) && (!needLand || onLand((q.box.x0 + q.box.x1) / 2, (q.box.y0 + q.box.y1) / 2));
+      const ok = (q: (typeof cs)[number], needLand: boolean): boolean => placer.free(q.box) && (!needLand || onDry((q.box.x0 + q.box.x1) / 2, (q.box.y0 + q.box.y1) / 2));
       spot = cs.find((q) => ok(q, true)) ?? cs.find((q) => ok(q, false)) ?? null;
       if (!spot && !mine) continue; // no free place for the name: no dot either (a map has no anonymous dots)
     }
@@ -437,13 +480,34 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     }
   }
 
+  /* --- names of the lakes, where the towns have left room (the biggest lake first) --- */
+  const areas: { an: GeoName; kind: 'land' | 'sea' | 'lake' | 'out'; c: Pt }[] = [];
+  if (labelsOn && labels !== 'major') {
+    const lakeNames = world.packs.flatMap((pack) => pack.areaNames.filter((an) => an.kind === 'lake')).sort((p, q) => (q.len ?? 0) - (p.len ?? 0));
+    for (const an of lakeNames) {
+      if (S < an.min || S > an.max || areas.some((q) => q.an.text === an.text)) continue;
+      if (textW(an.text, an.size, an.ls, 0.52) > 1.3 * (an.len ?? 0) * sx) continue; // the name does not fit in the lake
+      // it slides along the lake to find room
+      const c0 = px(toKm(an.lat, an.lon));
+      const rad = (an.rot ?? 0) * DEG;
+      for (const f of [0, 0.12, -0.12, 0.24, -0.24, 0.36, -0.36]) {
+        const d = f * (an.len ?? 0) * sx;
+        const c: Pt = [c0[0] + d * Math.cos(rad), c0[1] + d * Math.sin(rad)];
+        const boxes = alongBoxes(an, c);
+        if (!inLake(c[0], c[1]) || !boxes.every((b) => placer.free(b, 4))) continue;
+        for (const b of boxes) placer.add(b);
+        areas.push({ an, kind: 'lake', c });
+        break;
+      }
+    }
+  }
+
   /* --- names of seas, regions and territories --- */
-  const areas: { an: GeoName; kind: 'land' | 'sea' | 'out'; c: Pt }[] = [];
   const doNames = labelsOn && labels !== 'major';
   if (doNames) {
     const seaOk = S >= 120;
     const names: { an: GeoName; kind: 'land' | 'sea' | 'out' }[] = [];
-    for (const pack of world.packs) for (const an of pack.areaNames) names.push({ an, kind: an.kind });
+    for (const pack of world.packs) for (const an of pack.areaNames) if (an.kind !== 'lake') names.push({ an, kind: an.kind });
     for (const an of base?.regions ?? []) names.push({ an, kind: 'land' });
     for (const an of base?.seas ?? []) names.push({ an, kind: 'sea' });
     for (const an of base?.countries ?? []) names.push({ an, kind: 'out' });
@@ -456,8 +520,8 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
       if (!placer.free(box, 4)) continue;
       const here = onLand(c[0], c[1]);
       if (kind === 'sea' && here) continue;
-      if (kind === 'land' && !(here && onItaly(c[0], c[1]))) continue;
-      if (kind === 'out' && !(here && !onItaly(c[0], c[1]))) continue;
+      if (kind === 'land' && !(here && onHome(c[0], c[1]))) continue;
+      if (kind === 'out' && !(here && !onHome(c[0], c[1]))) continue;
       placer.add(box);
       areas.push({ an, kind, c });
     }
@@ -505,7 +569,7 @@ export function regionMapSvg(viewIn: Partial<View>, { width = 1000, labels = 'au
     .map(({ an, kind, c }) => {
       const rot = an.rot ? ` transform="rotate(${an.rot} ${num(c[0])} ${num(c[1])})"` : '';
       const common = `x="${num(c[0])}" y="${num(c[1])}" text-anchor="middle" font-size="${an.size}" letter-spacing="${an.ls}"${rot}`;
-      if (kind === 'sea') return `<text ${common} font-style="italic" font-weight="500" fill="#5f8d9b" stroke="none">${esc(an.text)}</text>`;
+      if (kind === 'sea' || kind === 'lake') return `<text ${common} font-style="italic" font-weight="500" fill="#5f8d9b" stroke="none">${esc(an.text)}</text>`;
       return `<text ${common} font-weight="${an.size > 14 ? 700 : 600}" fill="${kind === 'out' ? '#c2b79c' : '#b2a183'}">${esc(an.text)}</text>`;
     })
     .join('');

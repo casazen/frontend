@@ -24,8 +24,6 @@ const MAX_SPAN_KM = 1500;
 
 /** The whole of Italy, portrait. */
 export const VIEW_ITALIA: Readonly<View> = Object.freeze({ lat: 41.5, lon: 12.5, spanKm: 1050, aspect: 0.8 });
-/** Puglia with a little sea and the nearby lands: the view of the prototype. */
-export const VIEW_PUGLIA: Readonly<View> = Object.freeze({ lat: 40.88, lon: 16.75, spanKm: 360, aspect: 4 / 3 });
 
 /** A valid view: missing or non numeric fields fall back on the whole of Italy (never an exception). */
 export function sane(v: Partial<View> | null | undefined): View {

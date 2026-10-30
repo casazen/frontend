@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
@@ -69,6 +69,43 @@ describe('OnSiteRequestConfirmPage', () => {
     expect(done).toHaveTextContent('Email confermata');
     expect(done).toHaveTextContent('fino a: 2 ottobre alle ore 10:30 (ora italiana)');
     expect(done).toHaveTextContent("la prenotazione è valida solo se l'host la accetta");
+  });
+
+  it('OnSiteRequestConfirmPage_AnswerWithTheBookingCode_ShowsTheCodeWithCopyAndTheWayToTheGuestArea', async () => {
+    vi.mocked(publicBookingApi.confirmOnSiteRequestEmail).mockResolvedValue({
+      bookingId: BOOKING_ID,
+      status: 'Pending',
+      state: 'AwaitingHostApproval',
+      requestExpiresAt: '2026-10-02T08:30:00Z',
+      bookingCode: 'K7M4Q-9XP2H',
+    });
+
+    renderPage('?token=tok_123');
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma e invia la richiesta' }));
+
+    const done = await screen.findByTestId('onsite-confirm-done');
+    expect(within(done).getByRole('heading', { level: 1 })).toHaveTextContent('Email confermata');
+    expect(within(done).getByTestId('checkout-outcome-booking-code')).toHaveTextContent('K7M4Q-9XP2H');
+    expect(within(done).getByRole('button', { name: 'Copia il codice K7M4Q-9XP2H' })).toBeInTheDocument();
+    expect(within(done).getByTestId('onsite-confirm-manage')).toHaveAttribute('href', '/book/demo-casazen/my-bookings?code=K7M4Q-9XP2H');
+    // The code is what the guest keeps, not the id of the booking.
+    expect(done).not.toHaveTextContent(BOOKING_ID);
+  });
+
+  it('OnSiteRequestConfirmPage_AnswerWithoutTheBookingCode_FallsBackToTheReferenceAsBefore', async () => {
+    vi.mocked(publicBookingApi.confirmOnSiteRequestEmail).mockResolvedValue({
+      bookingId: BOOKING_ID,
+      status: 'Pending',
+      state: 'AwaitingHostApproval',
+      requestExpiresAt: null,
+    });
+
+    renderPage('?token=tok_123');
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma e invia la richiesta' }));
+
+    const done = await screen.findByTestId('onsite-confirm-done');
+    expect(done).toHaveTextContent(BOOKING_ID);
+    expect(within(done).queryByTestId('checkout-outcome-booking-code')).not.toBeInTheDocument();
   });
 
   it('OnSiteRequestConfirmPage_ExpiredRequest_ShowsTheReason', async () => {

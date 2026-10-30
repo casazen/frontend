@@ -7,6 +7,7 @@ import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import type { PublicPropertyDto } from '../src/types';
+import type { PublicStayCard, PublicStaysResult } from '../src/types/public-stays.types';
 
 /**
  * Cards of a row look the same: their sections (the title, the text, the list, the button...) start at the same height even when
@@ -140,6 +141,44 @@ test.describe('Aligned cards', () => {
       },
     ];
 
+    /** The same three homes as the search of the site lists them (the home of a host, DB-07b). */
+    function stayCards(): PublicStayCard[] {
+      return properties.map((property) => ({
+        id: property.id,
+        slug: null,
+        name: property.name,
+        comune: property.city,
+        latitude: 41.9,
+        longitude: 12.5,
+        photos: [],
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        maxGuests: property.maxGuests,
+        amenities: [],
+        tags: [],
+        availability: { available: true },
+        price: { currency: 'EUR', perNightCents: property.nightlyRate * 100 },
+      }));
+    }
+
+    function staysResult(): PublicStaysResult {
+      const items = stayCards();
+      return {
+        currency: 'EUR',
+        adults: 2,
+        children: 0,
+        pets: false,
+        totalCount: items.length,
+        availableCount: items.length,
+        page: 1,
+        pageSize: 50,
+        items,
+        alternatives: [],
+        unsupportedFilters: [],
+        generatedAt: new Date().toISOString(),
+      };
+    }
+
     async function mockOrgSite(page: Page): Promise<void> {
       await page.route('**/api/public/orgs/**', async (route) => {
         const url = route.request().url();
@@ -147,69 +186,49 @@ test.describe('Aligned cards', () => {
           await route.fallback();
           return;
         }
-        const body = url.endsWith('/properties')
-          ? properties
-          : { slug: 'demo-casazen', displayName: 'Demo Casazen Stays', logoUrl: null, themeColor: '#2563eb', contactEmail: 'prenotazioni@demo.example' };
+        const path = new URL(url).pathname;
+        const body = path.endsWith('/stays')
+          ? staysResult()
+          : path.endsWith('/destinations')
+            ? []
+            : path.endsWith('/calendar')
+              ? { from: '2027-01-01', to: '2027-02-01', today: '2027-01-01', currency: 'EUR', adults: 2, children: 0, days: [], generatedAt: '2027-01-01T00:00:00Z' }
+            : url.endsWith('/properties')
+              ? properties
+              : { slug: 'demo-casazen', displayName: 'Demo Casazen Stays', logoUrl: null, themeColor: '#2563eb', contactEmail: 'prenotazioni@demo.example' };
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-      });
-      await page.route('**/api/properties/search**', async (route) => {
-        if (route.request().method() !== 'GET') {
-          await route.fallback();
-          return;
-        }
-        const results = properties.map((property) => ({ ...property, orgSlug: 'demo-casazen', slug: `p-${property.id.slice(-1)}` }));
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(results) });
       });
     }
 
-    /** Where the parts of the three cards start: the name, the place, the CIN (two cards have it), the text, the facts and the price. */
-    async function expectCardsAligned(page: Page): Promise<void> {
-      const cards = page.getByTestId('public-property-card');
+    /** The cards of the home of a host are subgrids of it: the name, the place, the facts and the price start at the same height. */
+    async function expectHomeCardsAligned(page: Page): Promise<void> {
+      const cards = page.getByTestId('house-card');
       await expect(cards).toHaveCount(3);
       const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
 
-      // The name of the first card is on three lines or more, the second on one: without the rows that pushed down everything
-      // under the longer name, in its card only.
-      expect(await linesOf(cards.nth(0).locator('h3'))).toBeGreaterThanOrEqual(3);
-      expect(await linesOf(cards.nth(1).locator('h3'))).toBe(1);
+      // The first name is long and the second short, whatever the font of the machine: the one on more lines used to push down
+      // the facts and the price of its own card only.
+      await setText(cards.nth(0).locator('h3 a'), 'Attico panoramico con terrazza privata sul centro storico di Roma e sui Fori Imperiali');
+      await setText(cards.nth(1).locator('h3 a'), 'Loft Duomo');
+      expect(await linesOf(cards.nth(0).locator('h3'))).toBeGreaterThan(await linesOf(cards.nth(1).locator('h3')));
 
       await expectAligned(each('h3'), 'name');
-      await expectAligned(each('h3 + p'), 'place');
-      await expectAligned([cards.nth(0), cards.nth(2)].map((card) => card.getByTestId('public-cin')), 'CIN');
-      await expectAligned([cards.nth(0), cards.nth(1)].map((card) => card.locator('p.line-clamp-2')), 'description');
-      await expectAligned(each('[data-testid=public-property-card-facts]'), 'facts');
-      await expectAligned(each('[data-testid=public-property-card-price]'), 'price', 'bottom');
+      await expectAligned(each('.hcard__zone'), 'place');
+      await expectAligned(each('.hcard__facts'), 'facts');
+      await expectAligned(each('[data-testid=house-card-price]'), 'price', 'bottom');
       await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card', 'bottom');
     }
 
-    test('the landing page of a host lines the cards up row by row', async ({ page }) => {
+    test('the home of a host lines the cards up row by row', async ({ page }) => {
       await mockOrgSite(page);
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto('/book/demo-casazen');
 
-      await expectCardsAligned(page);
+      await expectHomeCardsAligned(page);
     });
 
-    test('the search results line the cards up row by row', async ({ page }) => {
-      await mockOrgSite(page);
-      await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl('/search', 'short-stay'));
-
-      await expectCardsAligned(page);
-    });
-
-    test('on a phone the cards are one column with no empty rows to fill', async ({ page }) => {
-      await mockOrgSite(page);
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto('/book/demo-casazen');
-
-      await expect(page.getByTestId('public-property-card')).toHaveCount(3);
-      // The rows that keep the cards of a row in step are empty ones; in a single column there is nothing to keep in step with.
-      const rowsShown = await page.evaluate(() =>
-        [...document.querySelectorAll('[data-testid=public-property-card] > div:empty')].filter((row) => getComputedStyle(row).display !== 'none').length,
-      );
-      expect(rowsShown).toBe(0);
-    });
+    // The public search (`/search`) lists the homes as rows of the results of a site (DB-07c), one under the other: there is no grid
+    // to line up, so it has no test here.
   });
 
   test.describe('Plans page (billing)', () => {
