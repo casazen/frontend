@@ -19,6 +19,9 @@ export const MARKETPLACE_VERIFIED_PARAM = 'verified';
 /** The page of a category: `/app/short-rent/marketplace/categories/cleaning`. */
 export const marketplaceCategoryPath = (category: string) => `${MARKETPLACE_CATEGORIES_PATH}/${encodeURIComponent(category)}`;
 
+/** The page of a supplier, which can be shared: `/app/short-rent/marketplace/suppliers/<orgId>`. */
+export const marketplaceSupplierPath = (orgId: string) => `${MARKETPLACE_PATH}/suppliers/${encodeURIComponent(orgId)}`;
+
 /**
  * `path` with the property the marketplace is about (and any other parameter given): every link of the marketplace carries the
  * property, so that going from Scopri to a category or to a supplier stays on the property that was chosen.

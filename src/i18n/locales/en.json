@@ -8377,6 +8377,7 @@
     "drawer": {
       "photoAlt": "{{name}}, photo {{index}}",
       "showcase": "See the showcase",
+      "openPage": "Open the page",
       "verifiedExplanation": "Active supplier on CasaZen with a verified profile: business details and VAT number.",
       "about": "About",
       "services": "Services",
@@ -8391,6 +8392,12 @@
     "mine": {
       "title": "My apps",
       "description": "The requests you sent to the suppliers and where they stand."
+    },
+    "supplier": {
+      "title": "Supplier",
+      "request": "Request",
+      "requestService": "Request: {{service}}",
+      "backToMarketplace": "Back to the Marketplace"
     },
     "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
@@ -11141,6 +11148,7 @@
     "selectedSupplier": "Selected supplier",
     "website": "Website",
     "category": "Category",
+    "forService": "For the service:",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
     "urgency": "Urgency",
