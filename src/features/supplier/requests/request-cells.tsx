@@ -2,7 +2,7 @@ import { Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import { formatMoney } from '../services/lib/service-money';
-import { requestWhen, respondByText } from './request-model';
+import { phaseOf, requestWhen, respondByText } from './request-model';
 
 /** The cells of the list of the requests (`supplier-requests-list`): each one is the little piece of the row it names. */
 
@@ -41,10 +41,10 @@ export function WhereCell({ request }: { request: SupplierServiceRequest }) {
   );
 }
 
-/** What the server says the job is worth, as it says it: nothing is worked out here. */
+/** What the server says the job is worth, as it says it: nothing is worked out here. While a quote waits, it is the total of the quote. */
 export function PriceCell({ request }: { request: SupplierServiceRequest }) {
   const { t, i18n } = useTranslation();
-  const price = request.price?.amountCents;
+  const price = phaseOf(request) === 'quotePending' && request.quote ? request.quote.totalCents : request.price?.amountCents;
   return price === null || price === undefined ? (
     <span className="text-foreground/70">{t('supplier.requests.facts.priceTbd')}</span>
   ) : (

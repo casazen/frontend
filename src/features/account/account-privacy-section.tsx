@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { supportConfig } from '@/config/support.config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
+import { settingsSectionId } from './settings-sections';
 
 /** The day in the name of the file (`2026-10-29`), in the time of the person who downloads. */
 function dayStamp(date: Date): string {
@@ -36,7 +37,7 @@ export function AccountPrivacySection() {
   });
 
   return (
-    <PlainSection title={t('accountSettings.privacy.title')} data-testid="account-settings-privacy">
+    <PlainSection id={settingsSectionId('privacy')} className="scroll-mt-4" title={t('accountSettings.privacy.title')} data-testid="account-settings-privacy">
       <p className="text-sm text-foreground/70">{t('accountSettings.privacy.body')}</p>
       <div className="flex flex-wrap items-center gap-3">
         <Button

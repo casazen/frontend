@@ -295,6 +295,9 @@
         "title": "Scegli il nome e l'indirizzo del tuo sito"
       }
     },
+    "jump": {
+      "label": "Vai a una sezione"
+    },
     "privacy": {
       "body": "Scarica subito un file con i dati fiscali dell'organizzazione, le persone del team e, se puoi leggerlo, il registro delle attività.",
       "done": "File scaricato",
@@ -1419,7 +1422,16 @@
       "leaseNotFound": "Contratto non trovato.",
       "leaseNotInForce": "Il contratto non è ancora in vigore: deve essere firmato da tutte le parti.",
       "leaseTermAlreadyEnded": "Il periodo del contratto è già finito: la disdetta non si può più togliere.",
-      "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta."
+      "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta.",
+      "refundChanged": "Il rimborso è cambiato: controlla l'importo e conferma di nuovo.",
+      "bookingPaymentInProgress": "Il pagamento di questa prenotazione è ancora in corso: riprova tra qualche minuto.",
+      "guestCancelStayStarted": "Il soggiorno è già iniziato: da qui non puoi più annullare. Scrivi all'host.",
+      "bookingNotCancellableByGuest": "Da qui questa prenotazione non si può annullare.",
+      "guestCancelConfirmationRequired": "Conferma l'annullamento per procedere.",
+      "refundAmountInvalid": "L'importo del rimborso non è valido. Ricarica la pagina e riprova.",
+      "guestCancelTokenInvalid": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
+      "guestCancelTokenExpired": "Questo link è scaduto. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
+      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni»."
     }
   },
   "appShell": {
@@ -2347,6 +2359,7 @@
         "CheckoutHoldExpired": "Il pagamento non è arrivato in tempo: le date sono di nuovo libere.",
         "DatesUnavailableAtPayment": "Le date non erano più libere quando l'ospite ha pagato.",
         "DeferredPaymentNotCompleted": "L'addebito alla scadenza non è andato a buon fine.",
+        "GuestRequested": "L'ospite ha annullato la prenotazione.",
         "OnSiteEmailNotConfirmed": "L'ospite non ha confermato l'email in tempo.",
         "OnSiteRequestDeclined": "Hai rifiutato la richiesta.",
         "OnSiteRequestExpired": "La richiesta è scaduta senza risposta."
@@ -2621,6 +2634,10 @@
     "updated": "Aggiornato {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "Questo codice è fornito dall'agenzia e può essere lo stesso per più soggiorni. CasaZen non crea né revoca i codici d'accesso.",
+      "code_title": "Ecco il codice d'accesso"
+    },
     "copyLink": "Copia link",
     "documentType": {
       "Passport": "Passaporto",
@@ -4219,6 +4236,83 @@
       "title": "Immobili"
     }
   },
+  "guestCancellation": {
+    "area": {
+      "intro": "Qui vedi quanto ti rimborsiamo se annulli adesso, secondo la politica di cancellazione dell'alloggio.",
+      "loadError": "Non riusciamo a mostrarti i dettagli dell'annullamento. Riprova tra poco.",
+      "loading": "Controllo cosa succede se annulli…",
+      "retry": "Riprova",
+      "title": "Cancellazione"
+    },
+    "button": {
+      "cancel": "Annulla la prenotazione",
+      "withdraw": "Ritira la richiesta"
+    },
+    "changed": "Il rimborso è cambiato mentre confermavi: prima {{from}}, ora {{to}}. Non abbiamo annullato nulla: controlla e conferma di nuovo.",
+    "dialog": {
+      "cancelTitle": "Annullare la prenotazione?",
+      "confirmCancel": "Sì, annulla",
+      "confirmWithdraw": "Sì, ritira",
+      "description": "{{property}}, dal {{checkIn}} al {{checkOut}}.",
+      "irreversible": "Le date tornano libere e la prenotazione non si può riattivare.",
+      "keepCancel": "Mantieni la prenotazione",
+      "keepWithdraw": "Mantieni la richiesta",
+      "withdrawIrreversible": "La richiesta viene ritirata e le date tornano libere.",
+      "withdrawTitle": "Ritirare la richiesta?"
+    },
+    "link": {
+      "backToSite": "Torna a {{name}}",
+      "invalid": "Questo link non funziona più: è scaduto o è già stato usato. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
+      "loadError": "Non riusciamo a caricare la prenotazione. Riprova tra poco.",
+      "loading": "Carico la prenotazione…",
+      "myBookings": "Le mie prenotazioni",
+      "pageTitle": "Annulla la prenotazione",
+      "retry": "Riprova",
+      "title": "Annulla la tua prenotazione"
+    },
+    "notCancellable": {
+      "generic": "Da qui questa prenotazione non si può più annullare.",
+      "paymentInProgress": "Il pagamento è ancora in corso. Potrai annullare appena si conclude.",
+      "stayStarted": "Il soggiorno è già iniziato, quindi da qui non puoi più annullare. Per qualsiasi cambio scrivi all'host.",
+      "writeToHost": "Scrivi all'host"
+    },
+    "offline": "Sei offline: ricollegati a internet per annullare.",
+    "outcome": {
+      "confirmed": "Rimborso di {{amount}} completato. Lo trovi sul metodo di pagamento che hai usato.",
+      "failed": "Il rimborso di {{amount}} non è andato a buon fine. Contatta l'host per sistemarlo.",
+      "none": "Non c'era nulla da rimborsare.",
+      "pending": "Ti stiamo rimborsando {{amount}}. Di solito l'accredito arriva entro 5–10 giorni.",
+      "title": "Prenotazione annullata"
+    },
+    "policy": {
+      "title": "Politica di cancellazione"
+    },
+    "problem": {
+      "generic": "Non siamo riusciti ad annullare la prenotazione e non è cambiato nulla. Riprova tra poco."
+    },
+    "summary": {
+      "alreadyRefunded": "Già rimborsati: {{amount}}",
+      "basis": "{{percent}}% del prezzo del soggiorno, più l'imposta di soggiorno per intero se l'hai pagata",
+      "cardNotCharged": "La carta che hai salvato non verrà addebitata.",
+      "ifToday": "Se annulli oggi ({{date}})",
+      "noCharge": "Non paghi nulla",
+      "noRefund": "Nessun rimborso",
+      "paid": "Hai pagato {{amount}}",
+      "refund": "Ti rimborsiamo {{amount}}",
+      "retained": "{{amount}} restano all'host, come prevede la politica «{{policy}}»",
+      "retainedNoPolicy": "{{amount}} restano all'host",
+      "timing": "Il rimborso arriva sul metodo di pagamento che hai usato, di solito entro 5–10 giorni.",
+      "withdraw": "Ritiri la richiesta e non paghi nulla"
+    },
+    "timeline": {
+      "full": "Rimborso totale fino al {{date}}",
+      "label": "Come cambia il rimborso con i giorni",
+      "none": "Dopo, nessun rimborso del soggiorno",
+      "noneOnly": "Per questo soggiorno non è previsto il rimborso del prezzo.",
+      "partial": "Rimborso del {{percent}}% fino al {{date}}",
+      "today": "Oggi"
+    }
+  },
   "guests": {
     "title": "Ospiti",
     "search": "Cerca per nome o email...",
@@ -5197,6 +5291,12 @@
         "title": "Se l'esigenza continua, confermala per iscritto",
         "why": "Il transitorio vale finché dura l'esigenza che lo giustifica. Se questa continua oltre la scadenza, la parte interessata la conferma per iscritto all'altra parte prima della fine del contratto; se non lo fa, o se l'esigenza viene meno, il contratto può essere trattato come un normale 4+4. Il termine esatto chiedilo al commercialista."
       },
+      "transitorioConfirmNeedLandlord": {
+        "action": "Prepara la conferma",
+        "body": "Il contratto finisce da solo. Se l'esigenza è tua e vuoi che continui, confermala all'inquilino prima della scadenza, con raccomandata o PEC. CasaZen prepara la bozza della lettera.",
+        "title": "Se l'esigenza continua, confermala per iscritto",
+        "why": "Il transitorio vale finché dura l'esigenza che lo giustifica. Se questa continua oltre la scadenza, la parte interessata la conferma per iscritto all'altra parte prima della fine del contratto; se non lo fa, o se l'esigenza viene meno, il contratto può essere trattato come un normale 4+4. Il termine esatto chiedilo al commercialista."
+      },
       "transitorioCosts": {
         "action": "Stima i costi",
         "body": "Nel modello ufficiale il bollo è a carico dell'inquilino e l'imposta di registro si divide a metà. Con la cedolare secca non si pagano.",
@@ -5460,11 +5560,19 @@
       "endedHint": "Arrivati alla data di fine, o con la registrazione rifiutata",
       "expiring": "In scadenza",
       "expiringHint": "Registrati, con meno di sei mesi alla fine",
+      "late": "Con un canone in ritardo",
+      "lateHint": "Contratti con almeno una rata scaduta e non pagata",
       "preparing": "In preparazione",
-      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare"
+      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare",
+      "signing": "In firma",
+      "signingHint": "Scaricati per la firma, oppure firmati e da registrare",
+      "todo": "Da fare",
+      "todoHint": "Contratti con un passo che tocca a te"
     },
     "columns": {
+      "next": "Prossimo passo",
       "parties": "Parti",
+      "progress": "Avanzamento",
       "regime": "Regime fiscale",
       "rent": "Canone",
       "status": "Stato",
@@ -5507,7 +5615,21 @@
     },
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
-    "rentToDefine": "Canone da definire"
+    "rentToDefine": "Canone da definire",
+    "filters": {
+      "end": "Scadenza",
+      "property": "Immobile",
+      "regime": "Regime fiscale",
+      "stage": "Stato",
+      "start": "Inizio",
+      "type": "Tipo di contratto"
+    },
+    "progress": {
+      "concluded": "Concluso",
+      "months": "Mese {{done}} di {{total}}",
+      "steps": "{{done}} di {{total}} passi",
+      "years": "Anno {{done}} di {{total}}"
+    }
   },
   "leaseOperations": {
     "disdetta": {
@@ -5542,6 +5664,18 @@
       "Pec": "PEC",
       "RegisteredMail": "Raccomandata"
     },
+    "needConfirmation": {
+      "dialog": {
+        "deadline": "Va spedita prima della scadenza del contratto, il {{date}}.",
+        "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu: non scriviamo all'inquilino.",
+        "effects": "Senza la conferma, o se l'esigenza viene meno, il contratto può essere trattato come un 4+4. Il termine esatto chiedilo al commercialista.",
+        "title": "Conferma l'esigenza"
+      },
+      "open": "Prepara la conferma",
+      "summary": "Se l'esigenza continua, confermala per iscritto all'inquilino prima del {{date}}.",
+      "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
+      "title": "Conferma dell'esigenza"
+    },
     "reasons": {
       "DamagedBuilding": "Edificio danneggiato da ricostruire o mettere in sicurezza",
       "LegalEntityUse": "Uso di un ente o di una società, offrendo un altro immobile",
@@ -5550,6 +5684,52 @@
       "Sale": "Vendita dell'immobile",
       "TenantAbsent": "L'inquilino non abita la casa",
       "TenantOtherHome": "L'inquilino ha un altro alloggio idoneo nello stesso comune"
+    },
+    "renewal": {
+      "dialog": {
+        "agreedHint": "Il giorno in cui finisce il contratto secondo l'accordo con l'inquilino.",
+        "agreedInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "agreedLabel": "Ultimo giorno del contratto",
+        "confirm": "Registra il rinnovo",
+        "consequences": {
+          "final": "Non si può annullare da qui: la fine del contratto si sposta davvero.",
+          "plan": "Il piano dei canoni si allunga fino a quel giorno con le rate nuove: quelle che esistono già non cambiano."
+        },
+        "description": "Il contratto continua per un altro periodo. CasaZen sposta la fine e allunga il piano dei canoni; non scrive all'inquilino.",
+        "effect": "Il contratto continuerà fino al {{date}}.",
+        "effectPending": "Scegli il giorno in cui finisce il contratto concordato.",
+        "mode": {
+          "agreed": {
+            "description": "Tu e l'inquilino avete concordato una durata diversa.",
+            "title": "Proroga a un giorno concordato"
+          },
+          "standard": {
+            "description": "Dal {{from}} al {{to}} ({{months}} mesi), alle stesse condizioni.",
+            "title": "Rinnovo standard"
+          }
+        },
+        "modeLegend": "Che rinnovo è",
+        "title": "Registra il rinnovo"
+      },
+      "done": "Rinnovo registrato: il contratto continua fino al {{date}}.",
+      "doneDialog": {
+        "description": "Il contratto continua dal {{from}} al {{to}}.",
+        "download": "Scarica l'accordo",
+        "steps": {
+          "agreement": "Se vuoi metterlo per iscritto, scarica l'accordo da far firmare alle due parti: la bozza è qui sotto e CasaZen non la manda a nessuno.",
+          "communicate": "Comunica il rinnovo all'Agenzia delle Entrate entro {{days}} giorni (modello RLI).",
+          "plan": "Il piano dei canoni è già esteso fino alla nuova fine: non devi cambiare niente.",
+          "taxCedolare": "Con la cedolare secca non c'è imposta di registro, ma la comunicazione resta.",
+          "taxOrdinary": "Senza cedolare secca si paga l'imposta di registro delle annualità che si aggiungono: chiedi al commercialista come e quando."
+        },
+        "title": "Rinnovo registrato"
+      },
+      "failed": "Non sono riuscito a registrare il rinnovo. Riprova.",
+      "open": "Registra il rinnovo",
+      "openRecorded": "Accordo e prossimi passi",
+      "summary": "Il periodo finisce il {{date}}. Se il contratto continua, registra il rinnovo: allunghiamo noi il piano dei canoni.",
+      "summaryRecorded": "Rinnovo registrato: il contratto continua fino al {{date}}.",
+      "title": "Rinnovo del contratto"
     },
     "sent": {
       "again": "Segna di nuovo",
@@ -6969,7 +7149,8 @@
       "ConcordatoFacileLinkGenerated": "Modulo guidato aperto",
       "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata",
       "WithdrawalRecorded": "Recesso dell'inquilino registrato",
-      "LetterSent": "Lettera segnata come inviata"
+      "LetterSent": "Lettera segnata come inviata",
+      "RenewalRecorded": "Rinnovo registrato"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -8301,6 +8482,7 @@
     "reviews": "Recensioni",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
+    "wireTransfers": "Bonifici proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -8349,6 +8531,12 @@
       "serviceRequestProposalAccepted": "L'orario proposto è stato accettato.",
       "serviceRequestProposalRejected": "L'orario proposto è stato rifiutato.",
       "serviceRequestRescheduled": "Una richiesta è stata spostata a un altro orario.",
+      "serviceRequestQuoteSent": "Hai ricevuto un preventivo.",
+      "serviceRequestQuoteAccepted": "Il preventivo è stato approvato.",
+      "serviceRequestQuoteRejected": "Il preventivo è stato rifiutato.",
+      "serviceRequestQuoteExpired": "Il preventivo è scaduto: il cliente non ha risposto in tempo.",
+      "serviceRequestDayBefore": "Domani hai un lavoro.",
+      "servicePaymentReceived": "Hai ricevuto un pagamento.",
       "generic": "Hai una nuova notifica."
     }
   },
@@ -9602,6 +9790,17 @@
         "comuneRequired": "Scegli il comune dall'elenco.",
         "duplicate": "Esiste già un immobile con questo indirizzo."
       }
+    },
+    "qr": {
+      "download": "Scarica PNG",
+      "error": "Errore",
+      "errorDescription": "ID immobile mancante o non valido.",
+      "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
+      "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
+      "loading": "Generazione codice QR...",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
+      "print": "Stampa",
+      "title": "Codice QR per verifica ospiti"
     }
   },
   "propertyMode": {
@@ -9794,6 +9993,160 @@
         "next": "Controlla la data",
         "purpose": "Il passaggio avviene all'inizio del giorno che scegli.",
         "title": "Da quando?"
+      }
+    }
+  },
+  "propertyWizard": {
+    "amenities": {
+      "count_one": "Hai scelto {{count}} dotazione.",
+      "count_other": "Hai scelto {{count}} dotazioni.",
+      "groups": {
+        "comfort": "Comfort",
+        "essentials": "Essenziali",
+        "other": "Altro",
+        "outdoor": "Esterni"
+      },
+      "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
+      "safety": {
+        "complete": "La scheda è completa.",
+        "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
+        "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
+        "dialogTitle": "Scheda di sicurezza",
+        "loadFailed": "Non riesco a leggere la scheda di sicurezza. Riprova tra poco.",
+        "loading": "Controllo la scheda…",
+        "open": "Compila la scheda",
+        "progress": "{{done}} di {{total}} voci a posto",
+        "progressLabel": "Avanzamento della scheda di sicurezza",
+        "review": "Rivedi la scheda",
+        "title": "Sicurezza"
+      }
+    },
+    "base": {
+      "address": {
+        "hint": "Via e numero civico, o «snc» se non c'è.",
+        "label": "Indirizzo",
+        "placeholder": "Via Roma 12"
+      },
+      "areaSqm": {
+        "hint": "In metri quadri, solo numeri: per esempio 70.",
+        "label": "Superficie"
+      },
+      "comune": {
+        "fallbackLabel": "Città",
+        "fallbackPlaceholder": "Es. Como",
+        "hint": "Scegli il comune dall'elenco ufficiale: da lui seguono le regole, i documenti richiesti e l'imposta di soggiorno.",
+        "label": "Comune"
+      },
+      "name": {
+        "hint": "Un nome facile da ricordare: lo ritrovi negli elenchi.",
+        "label": "Nome dell'immobile",
+        "placeholder": "Es. Trullo dei Mandorli"
+      },
+      "postalCode": {
+        "label": "CAP"
+      },
+      "spaces": {
+        "bathrooms": {
+          "hint": "Compresi quelli di servizio",
+          "label": "Bagni"
+        },
+        "bedrooms": {
+          "hint": "0 se è un monolocale",
+          "label": "Camere da letto"
+        },
+        "beds": {
+          "hint": "Conta ogni letto: il matrimoniale è 1",
+          "label": "Letti"
+        },
+        "maxGuests": {
+          "hint": "Quante persone possono dormire",
+          "label": "Ospiti massimi"
+        },
+        "title": "Spazi"
+      },
+      "type": {
+        "legend": "Che tipo di immobile è?",
+        "options": {
+          "Apartment": "Appartamento",
+          "HouseOrVilla": "Casa o villa",
+          "LoftOrPenthouse": "Loft o attico",
+          "RoomOrSuite": "Stanza o suite",
+          "TrulloOrMasseria": "Trullo o masseria"
+        }
+      },
+      "unit": {
+        "hint": "Se nello stesso edificio hai più appartamenti, scrivi l'interno o la scala: ognuno deve averne uno diverso.",
+        "label": "Piano e interno"
+      }
+    },
+    "done": {
+      "complete": "Completa l'attivazione",
+      "description": "L'immobile è in Immobili come «Da completare».",
+      "inList": "Lo trovi in Immobili, dove puoi riprendere quando vuoi.",
+      "leadOpen": "Per attivarlo mancano ancora alcuni punti:",
+      "leadReady": "I dati richiesti ci sono: manca solo la conferma finale.",
+      "open": {
+        "base-data": "Il prezzo per notte e i dati di base",
+        "cin": "Il codice CIN",
+        "documents": "I documenti richiesti per la tua regione",
+        "safety": "La scheda di sicurezza"
+      },
+      "readyToActivate": "Per attivarlo basta accettare i Termini.",
+      "title": "«{{name}}» è salvato",
+      "toList": "Vai agli immobili"
+    },
+    "errors": {
+      "saveFailed": "Non siamo riusciti a salvare l'immobile. Controlla i dati e riprova."
+    },
+    "exit": {
+      "saveAndClose": "Salva e chiudi",
+      "saved": "Salvato. Lo trovi in Immobili, da completare."
+    },
+    "finish": "Salva e vedi cosa manca",
+    "page": {
+      "backToList": "Torna agli immobili",
+      "description": "Un passo alla volta: l'immobile è salvato dal primo «Continua» e puoi riprendere quando vuoi.",
+      "loadFailed": "Non riesco a caricare l'immobile.",
+      "loading": "Carico l'immobile…",
+      "notFound": "Immobile non trovato.",
+      "retry": "Riprova",
+      "title": "Aggiungi immobile"
+    },
+    "steps": {
+      "amenities": {
+        "label": "Dotazioni",
+        "purpose": "Scegli solo quello che c'è davvero: gli ospiti lo leggono prima di prenotare.",
+        "title": "Cosa trovano gli ospiti?"
+      },
+      "base": {
+        "label": "Dati base",
+        "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
+        "title": "Che casa stai aggiungendo?"
+      }
+    },
+    "validation": {
+      "address": {
+        "civic": "Aggiungi il numero civico, o «snc» se non c'è: per esempio «Contrada Monte 12».",
+        "max": "L'indirizzo può avere al massimo 500 caratteri.",
+        "required": "Scrivi via e numero civico."
+      },
+      "areaSqm": "Scrivi i metri quadri in numeri interi, da 1 a 9999.",
+      "bathrooms": "I bagni sono da 1 a 50.",
+      "bedrooms": "Le camere da letto sono da 0 a 100.",
+      "beds": "I letti sono da 1 a 100.",
+      "comune": {
+        "required": "Scegli il comune dall'elenco."
+      },
+      "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
+      "name": {
+        "max": "Il nome può avere al massimo 100 caratteri.",
+        "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
+      },
+      "postalCode": {
+        "format": "Il CAP italiano ha 5 cifre."
+      },
+      "unit": {
+        "max": "Piano e interno possono avere al massimo 30 caratteri."
       }
     }
   },
@@ -11729,9 +12082,9 @@
         ],
         "supplier": {
           "label": "In attesa di pagamento",
-          "explain": "Hai finito il lavoro: ora il cliente deve pagarti e segnare la richiesta come pagata.",
+          "explain": "Hai finito il lavoro: ora aspetti il pagamento del cliente.",
           "need": [
-            "Il cliente segna la richiesta come pagata"
+            "Il cliente paga il lavoro"
           ]
         }
       },
@@ -11739,7 +12092,7 @@
         "label": "Pagato",
         "explain": "Intervento concluso e pagato.",
         "supplier": {
-          "explain": "Il cliente ha segnato il lavoro come pagato."
+          "explain": "Il lavoro risulta pagato."
         }
       },
       "Rifiutato": {
@@ -12144,6 +12497,78 @@
           "Invia la comunicazione dal portale della Questura"
         ]
       }
+    }
+  },
+  "stayPickers": {
+    "calendar": {
+      "arrivalChosen": "arrivo scelto",
+      "busyNight": "notte occupata",
+      "checkedAtCheckout": "Le date saranno comunque verificate prima del pagamento.",
+      "chooseArrival": "Scegli il giorno di arrivo e poi quello di partenza.",
+      "chooseDeparture_one": "Arrivo il {{date}}. Ora scegli il giorno di partenza.",
+      "chooseDeparture_other": "Arrivo il {{date}}. Ora scegli il giorno di partenza (almeno {{count}} notti).",
+      "clear": "Cancella le date",
+      "departureChosen": "partenza scelta",
+      "freeNight": "notte libera",
+      "legendBusy": "Occupata",
+      "legendFree": "Libera",
+      "legendMine": "Le tue date",
+      "loadError": "Non riusciamo a leggere le date libere.",
+      "loading": "Carico le date…",
+      "nextMonth": "Mese successivo",
+      "offline": "Sei offline: vedi l'ultima versione salvata delle date. Per verificarle e prenotare serve la connessione.",
+      "past": "giorno passato",
+      "perNight": "{{price}} a notte",
+      "previousMonth": "Mese precedente",
+      "range_one": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notte.",
+      "range_other": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notti.",
+      "rangeTotal_one": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notte, {{total}}.",
+      "rangeTotal_other": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notti, {{total}}.",
+      "retry": "Riprova",
+      "unknown": "non ancora disponibile"
+    },
+    "destination": {
+      "all": "Tutte le destinazioni",
+      "allSub": "Tutte le case del sito",
+      "label": "Dove vuoi andare?"
+    },
+    "guests": {
+      "adults": "Adulti",
+      "adultsHint": "Dai {{age}} anni",
+      "children": "Bambini",
+      "childrenHint": "Fino a {{age}} anni",
+      "limit_one": "Questa casa ospita al massimo {{count}} persona.",
+      "limit_other": "Questa casa ospita al massimo {{count}} persone.",
+      "pets": "Animali domestici",
+      "petsHint": "Questa casa li ammette",
+      "summary_one": "{{count}} ospite",
+      "summary_other": "{{count}} ospiti",
+      "summaryWithPet": "{{people}} · con animale"
+    },
+    "problem": {
+      "busyArrival": "Il {{date}} è già occupato: scegli un altro giorno di arrivo.",
+      "busyBetween": "Tra queste date ci sono notti già occupate: scegli una partenza prima, oppure un altro arrivo.",
+      "minNights_one": "Il soggiorno minimo è di {{count}} notte: scegli una partenza dal {{date}} in poi.",
+      "minNights_other": "Il soggiorno minimo è di {{count}} notti: scegli una partenza dal {{date}} in poi.",
+      "past": "Questo giorno è già passato: scegli un altro giorno di arrivo.",
+      "unknown": "Per questo giorno non abbiamo ancora le date: scegli un altro giorno."
+    },
+    "search": {
+      "addDates": "Aggiungi le date",
+      "datesTitle": "Scegli le date",
+      "go": "Cerca",
+      "goLong": "Cerca disponibilità",
+      "guestsTitle": "Chi viaggia?",
+      "label": "Cerca disponibilità",
+      "needDates": "Scegli il giorno di arrivo e quello di partenza per cercare.",
+      "sheetDescription": "Scegli dove, quando e quante persone siete.",
+      "when": "Quando",
+      "whenPhone": "Quando arrivi?",
+      "where": "Dove",
+      "who": "Chi"
+    },
+    "sheet": {
+      "done": "Fatto"
     }
   },
   "supplier": {
@@ -12584,9 +13009,15 @@
         "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
+        "editQuote": "Modifica il preventivo",
         "openPage": "Apri la scheda completa",
+        "quote": "Invia un preventivo",
+        "recordPayment": "Ho incassato fuori da CasaZen",
         "reject": "Rifiuta",
-        "take": "Accetta"
+        "remindPayment": "Ricorda il pagamento",
+        "take": "Accetta",
+        "takeWithoutQuote": "Accetta senza preventivo",
+        "withdrawQuote": "Ritira il preventivo"
       },
       "actor": {
         "client": "Il cliente",
@@ -12606,7 +13037,7 @@
         "archive": "Archivio",
         "archiveHint": "Pagate, rifiutate o annullate",
         "awaiting": "In attesa del cliente",
-        "awaitingHint": "Hai proposto un altro orario e aspetti il cliente",
+        "awaitingHint": "Hai proposto un altro orario o inviato un preventivo e aspetti il cliente",
         "scheduled": "Programmate",
         "scheduledHint": "Accettate e in agenda, o in corso",
         "toAnswer": "Da rispondere",
@@ -12647,6 +13078,7 @@
         "net": "Netto {{amount}} dopo la commissione",
         "price": "Prezzo",
         "priceTbd": "Da concordare",
+        "quoteWaiting": "Preventivo in attesa",
         "urgency": "Urgenza: {{level}}",
         "when": "Quando",
         "whenTbd": "Da concordare",
@@ -12671,6 +13103,11 @@
         "PresoInCarico": "Hai accettato la richiesta",
         "PresoInCaricoAuto": "Accettata in automatico",
         "PresoInCaricoAutoNote": "È un cliente abituale e hai attivato l’accettazione automatica. Puoi annullare il lavoro fino all’avvio.",
+        "quoteAccepted": "Il cliente ha approvato il preventivo",
+        "quoteExpired": "Il cliente non ha risposto al preventivo in tempo",
+        "quoteRejected": "Il cliente ha rifiutato il preventivo",
+        "quoteSent": "Hai inviato un preventivo",
+        "quoteWithdrawn": "Hai ritirato il preventivo",
         "Richiesto": "Richiesta ricevuta",
         "Rifiutato": "Hai rifiutato la richiesta",
         "sub": "Cosa è successo finora",
@@ -12747,6 +13184,11 @@
           "you": "Hai proposto un altro orario: non devi fare altro."
         },
         "quietTitle": "Stato della richiesta",
+        "quotePending": {
+          "client": "Vede le voci e il totale e può approvarlo o rifiutarlo.",
+          "title": "Aspetta la risposta del cliente",
+          "you": "Hai inviato un preventivo: non devi fare altro. Finché il cliente non risponde puoi modificarlo o ritirarlo."
+        },
         "reason": "Motivo: {{reason}}",
         "rejected": {
           "client": "Ha ricevuto il tuo motivo e può scegliere un altro fornitore.",
@@ -12769,7 +13211,8 @@
           "client": "Ha inviato la richiesta e aspetta la tua risposta.",
           "then": "Poi: dopo che accetti vedi indirizzo e contatti del cliente.",
           "title": "Rispondi alla richiesta",
-          "you": "Accetta se puoi fare il lavoro, altrimenti rifiutalo e spiega il motivo."
+          "you": "Accetta se puoi fare il lavoro, altrimenti rifiutalo e spiega il motivo.",
+          "youQuote": "Rispondi con un preventivo: se il cliente lo approva, il lavoro è accettato. Se non serve, accetta senza preventivo; se non puoi, rifiuta e spiega il motivo."
         },
         "unknown": {
           "client": "Vede la richiesta nel suo elenco.",
@@ -12778,11 +13221,35 @@
         }
       },
       "payment": {
+        "agreed": "Prezzo concordato",
         "amount": "Importo",
         "commission": "Commissione CasaZen",
+        "how": "Come si paga",
+        "inside": "Online, con CasaZen",
         "late": "Il cliente è in ritardo con il pagamento.",
+        "lines": "Voci del prezzo",
         "net": "Compenso netto",
+        "outside": "Fuori da CasaZen",
         "paidAt": "Pagato il",
+        "paidOutside": "Incassato fuori da CasaZen",
+        "record": {
+          "confirm": "Registra l’incasso",
+          "customerTold": "Il cliente riceve un avviso: il lavoro risulta pagato.",
+          "description": "Il lavoro risulterà pagato anche al cliente.",
+          "descriptionOnline": "Questo lavoro si paga in CasaZen. Se il cliente ti ha pagato in un altro modo, segnalalo qui e spiega il motivo.",
+          "noCommission": "CasaZen non trattiene nessuna commissione su questo incasso.",
+          "noUndo": "Non si può annullare.",
+          "reason": "Motivo",
+          "reasonHint": "Per esempio: bonifico o contanti.",
+          "reasonHintOnline": "Obbligatorio: spiega perché il cliente non ha pagato in CasaZen. Resta nella pratica del pagamento.",
+          "title": "Hai incassato fuori da CasaZen?"
+        },
+        "recordedToast": "Pagamento registrato",
+        "remindedToast": "Promemoria inviato al cliente",
+        "reminders": "Promemoria",
+        "remindersValue_one": "{{count}} inviato · l’ultimo il {{date}}",
+        "remindersValue_other": "{{count}} inviati · l’ultimo il {{date}}",
+        "remindHint": "Il cliente riceve un’email con un nuovo link. Puoi inviarne una al giorno.",
         "state": "Stato del pagamento",
         "status": {
           "Failed": "Pagamento non riuscito",
@@ -12795,15 +13262,85 @@
           "unknown": "In verifica"
         },
         "subNet": "Netto {{amount}}",
-        "title": "Pagamento e compenso"
+        "title": "Pagamento e compenso",
+        "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."
       },
       "phase": {
-        "proposalPending": "In attesa del cliente"
+        "proposalPending": "In attesa del cliente",
+        "quotePending": "In attesa del cliente"
+      },
+      "quote": {
+        "add": "Aggiungi una voce",
+        "amount": "Importo della voce {{number}}",
+        "amountPlaceholder": "80",
+        "cancel": "Annulla",
+        "errors": {
+          "amountInvalid": "Scrivi un importo valido, per esempio 80 o 80,50.",
+          "amountRange": "L’importo va da 0,01 € a 100.000 €.",
+          "amountRequired": "Scrivi l’importo.",
+          "labelRequired": "Scrivi che cosa comprende la voce.",
+          "timeInvalid": "A quell’ora non c’è un orario valido: scegline un altro.",
+          "timeRequired": "Scegli il giorno e l’ora.",
+          "totalRange": "Il totale può arrivare al massimo a 100.000 €."
+        },
+        "intro": "Il cliente vede le voci e il totale e li approva o li rifiuta. Il lavoro si accetta solo se li approva.",
+        "introEdit": "Il nuovo preventivo prende il posto di quello inviato: il cliente non ha ancora risposto.",
+        "line": "Descrizione della voce {{number}}",
+        "linePlaceholder": "Per esempio: manodopera",
+        "lines": "Voci",
+        "maxLines": "Al massimo {{max}} voci.",
+        "note": "Nota per il cliente",
+        "notePlaceholder": "Per esempio: il prezzo comprende i materiali.",
+        "remove": "Togli la voce {{number}}",
+        "send": "Invia il preventivo",
+        "sentToast": "Preventivo inviato al cliente",
+        "summary": {
+          "answer": "Risposta",
+          "answerBy": "Il cliente può rispondere entro il {{when}}",
+          "answerHost": "L’host risponde quando può: non c’è un termine",
+          "answerNoDate": "Il cliente può rispondere per un tempo limitato",
+          "lines": "Voci del preventivo",
+          "note": "Nota",
+          "otherTime": "{{when}}: un altro orario, non riservato finché il cliente non accetta",
+          "sameTime": "Quello della richiesta",
+          "sentAt": "Inviato",
+          "total": "Totale",
+          "when": "Quando"
+        },
+        "terms": {
+          "deadlineHost": "L’host risponde quando può: non c’è un termine.",
+          "deadlineShowcase": "Il cliente ha un tempo limitato per rispondere: poi la richiesta si chiude.",
+          "limit": "Se a lavoro finito chiedi più del totale (oltre il 20 %), il cliente deve confermare l’importo prima di pagare."
+        },
+        "title": "Invia un preventivo",
+        "titleEdit": "Modifica il preventivo",
+        "total": "Totale",
+        "update": "Aggiorna il preventivo",
+        "when": {
+          "day": "Giorno",
+          "hint": "L’orario non è riservato finché il cliente non accetta.",
+          "keep": "Tieni l’orario della richiesta",
+          "none": "La richiesta non ha ancora un orario: lo concordi dopo con il cliente.",
+          "propose": "Proponi un altro orario",
+          "same": "Resta l’orario della richiesta: {{when}}.",
+          "start": "Inizio",
+          "title": "Quando"
+        },
+        "withdraw": {
+          "again": "Potrai accettare la richiesta, inviare un altro preventivo o rifiutarla.",
+          "back": "Indietro",
+          "confirm": "Ritira il preventivo",
+          "description": "Il cliente non lo vede più e la richiesta torna «da rispondere».",
+          "silent": "Il cliente non riceve nessun messaggio.",
+          "title": "Ritirare il preventivo?"
+        },
+        "withdrawnToast": "Preventivo ritirato"
       },
       "reason": {
         "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
         "NoResponse": "Nessuno ha risposto in tempo.",
-        "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario."
+        "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario.",
+        "QuoteNotAnswered": "Il cliente non ha risposto al preventivo in tempo."
       },
       "reject": {
         "cancel": "Annulla",
@@ -14381,6 +14918,45 @@
       "recordSuccess": "Pagamento registrato con successo",
       "recordError": "Impossibile registrare il pagamento"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Conferma download",
+      "confirmDownloadError": "Impossibile confermare il download",
+      "confirmDownloadSuccess": "Download confermato con successo",
+      "confirmPaid": "Conferma pagamento",
+      "confirmPaidError": "Impossibile confermare il pagamento",
+      "confirmPaidSuccess": "Pagamento confermato con successo",
+      "create": "Crea batch bonifici",
+      "createAnother": "Crea un altro batch",
+      "createError": "Impossibile creare il batch",
+      "createSuccess": "Batch creato con successo",
+      "currency": "Valuta",
+      "details": "Dettagli batch",
+      "detailsDescription": "Informazioni sul batch di bonifici creato",
+      "download": "Scarica file",
+      "downloadError": "Impossibile scaricare il file",
+      "downloadSuccess": "File scaricato con successo",
+      "id": "ID batch",
+      "paidComplete": "Il batch è stato confermato come pagato",
+      "status": "Stato",
+      "totalAmount": "Importo totale",
+      "transferCount": "Numero bonifici"
+    },
+    "debitAccount": "Conto di addebito (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Genera file SEPA per pagare i proprietari.",
+    "loadError": "Impossibile caricare i dati",
+    "loading": "Caricamento bonifici...",
+    "noApprovedStatements": "Nessun estratto conto approvato",
+    "noApprovedStatementsDescription": "Approva gli estratti conto prima di creare un batch di bonifici.",
+    "selectStatements": "Seleziona estratti conto",
+    "status": {
+      "downloaded": "Scaricato",
+      "generated": "Generato",
+      "paid": "Pagato"
+    },
+    "title": "Bonifici proprietari"
   },
   "wizard": {
     "back": "Indietro",
