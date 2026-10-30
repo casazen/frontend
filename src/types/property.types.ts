@@ -41,6 +41,10 @@ export interface Property {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** Fewest nights the booking site accepts (DB-03); `null` = no minimum. */
+  minNights?: number | null;
+  /** Percent added to the rate on the nights that start on a Friday or a Saturday (DB-03); 0 = none. */
+  weekendSurchargePercent?: number;
   /** `Short` = short-rent section, `Long` = long-rent section. Set at creation, changed only by the scheduled mode change. */
   rentalMode?: RentalMode;
   cleaningFee: number;
@@ -169,6 +173,10 @@ export interface CreatePropertyDto {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** On an update `null` removes the minimum and leaving it out keeps it (DB-03). */
+  minNights?: number | null;
+  /** On an update `0` turns the surcharge off and leaving it out keeps it (DB-03). */
+  weekendSurchargePercent?: number;
   /** Sent on creation only (an update must carry the stored mode: 422 `property_rental_mode_change_not_allowed`). */
   rentalMode?: RentalMode;
   cleaningFee?: number;

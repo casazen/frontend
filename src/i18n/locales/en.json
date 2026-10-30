@@ -7630,122 +7630,6 @@
       "pendingDelta_other": "{{count}} rents not yet due"
     }
   },
-  "longRentTenants": {
-    "chips": {
-      "all": "All",
-      "current": "Current",
-      "currentHint": "Everyone with at least one lease that has not concluded",
-      "former": "Former tenants",
-      "formerHint": "Only people whose leases have all concluded"
-    },
-    "citizenship": {
-      "Eu": "EU citizen",
-      "NonEu": "Non-EU citizen"
-    },
-    "columns": {
-      "end": "Lease end",
-      "lease": "Lease",
-      "punctuality": "Punctuality",
-      "tenant": "Tenant"
-    },
-    "contacts": {
-      "citizenship": "Citizenship",
-      "email": "Email",
-      "title": "Contacts"
-    },
-    "count_one": "{{count}} tenant",
-    "count_other": "{{count}} tenants",
-    "description": "Who lives in your properties, since when, how much they pay and how punctually.",
-    "detail": {
-      "backToList": "Go to tenants",
-      "description": "Tenant · {{citizenship}}",
-      "fallbackTitle": "Tenant",
-      "loadError": "We could not load this tenant.",
-      "loading": "Loading the tenant",
-      "notFound": "Tenant not found",
-      "notFoundDescription": "They may have been anonymized or the link is not correct."
-    },
-    "empty": {
-      "action": "Create lease",
-      "description": "They are added by creating a lease: name, lease and payments in one place.",
-      "title": "Your tenants will be here"
-    },
-    "end": {
-      "former": "Ended on {{date}}",
-      "running": "Until {{date}}"
-    },
-    "leaseAndOthers_one": "{{property}} · and one more lease",
-    "leaseAndOthers_other": "{{property}} · and {{count}} more leases",
-    "leases": {
-      "title": "Leases"
-    },
-    "loadError": "We could not load the tenants.",
-    "newLease": "Create lease",
-    "noLease": "No lease",
-    "noResults": {
-      "description": "Check the name or change tab.",
-      "title": "No tenant found"
-    },
-    "now": {
-      "action": "See the late rents",
-      "body_one": "{{amount}} was due on {{date}}.",
-      "body_other": "{{count}} rents worth {{amount}} are overdue: the oldest was due on {{date}}.",
-      "kicker": "Now",
-      "title": "The rent of {{month}} has not arrived",
-      "when_one": "{{count}} day late",
-      "when_other": "{{count}} days late",
-      "who": "Your turn"
-    },
-    "open": "Open the sheet",
-    "payments": {
-      "all": "See the rents",
-      "item": "{{month}} · {{amount}}",
-      "paid": "Paid",
-      "title": "Latest payments"
-    },
-    "privacy": {
-      "erase": "Ask for erasure",
-      "erasure": {
-        "confirm": "Ask for erasure",
-        "consequences": {
-          "documents": "The signed contract and the receipts are not touched.",
-          "ended": "For the leases that have ended, the data of everyone on that lease is anonymized right away, unless they have another lease in force.",
-          "final": "Anonymization cannot be undone.",
-          "running_one": "The lease that has not concluded yet ({{properties}}) is not touched: the data stay until the day after it ends, then they are anonymized.",
-          "running_other": "The leases that have not concluded yet ({{properties}}) are not touched: the data stay until the day after they end, then they are anonymized."
-        },
-        "description": "You are recording the request to erase the data of {{name}} on all their leases.",
-        "failed": "The erasure request could not be recorded.",
-        "title": "Ask for the erasure of the data?"
-      },
-      "export": "Export their data",
-      "exportFailed": "The file could not be prepared.",
-      "exportHint": "A file with their personal data in clear: keep it safe.",
-      "exported": "File downloaded.",
-      "identityNote": "We recognise the same person by their fiscal code: if it is written differently in two leases, they show up as two people and here you find the data of one only.",
-      "intro": "Here you can download the data CasaZen holds about {{name}} in your leases, or ask to erase them.",
-      "result": {
-        "anonymized": "Data anonymized.",
-        "description": "Here is what happened on each lease.",
-        "partial_one": "Data anonymized, except for {{count}} person who has another lease in force: we anonymize it when that lease ends.",
-        "partial_other": "Data anonymized, except for {{count}} people who have another lease in force: we anonymize it when those leases end.",
-        "scheduled": "The lease has not ended yet: the data will be anonymized from {{date}}.",
-        "scheduledNoDate": "The lease has not ended yet: the data will be anonymized from the day after it ends.",
-        "title": "Request recorded"
-      },
-      "summary": "Privacy"
-    },
-    "punctuality": {
-      "detail": "{{onTime}} rents out of {{total}} paid on time, within {{days}} days of the due date.",
-      "none": "No rent has fallen due yet.",
-      "summary": "{{onTime}} of {{total}} rents on time"
-    },
-    "search": {
-      "label": "Search tenants",
-      "placeholder": "Search by name or property"
-    },
-    "title": "Tenants"
-  },
   "longRentRequests": {
     "cancel": {
       "back": "Go back",
@@ -7973,6 +7857,122 @@
       "proposalRejected": "Time declined: the request keeps waiting",
       "reminded": "Reminder sent to the supplier"
     }
+  },
+  "longRentTenants": {
+    "chips": {
+      "all": "All",
+      "current": "Current",
+      "currentHint": "Everyone with at least one lease that has not concluded",
+      "former": "Former tenants",
+      "formerHint": "Only people whose leases have all concluded"
+    },
+    "citizenship": {
+      "Eu": "EU citizen",
+      "NonEu": "Non-EU citizen"
+    },
+    "columns": {
+      "end": "Lease end",
+      "lease": "Lease",
+      "punctuality": "Punctuality",
+      "tenant": "Tenant"
+    },
+    "contacts": {
+      "citizenship": "Citizenship",
+      "email": "Email",
+      "title": "Contacts"
+    },
+    "count_one": "{{count}} tenant",
+    "count_other": "{{count}} tenants",
+    "description": "Who lives in your properties, since when, how much they pay and how punctually.",
+    "detail": {
+      "backToList": "Go to tenants",
+      "description": "Tenant · {{citizenship}}",
+      "fallbackTitle": "Tenant",
+      "loadError": "We could not load this tenant.",
+      "loading": "Loading the tenant",
+      "notFound": "Tenant not found",
+      "notFoundDescription": "They may have been anonymized or the link is not correct."
+    },
+    "empty": {
+      "action": "Create lease",
+      "description": "They are added by creating a lease: name, lease and payments in one place.",
+      "title": "Your tenants will be here"
+    },
+    "end": {
+      "former": "Ended on {{date}}",
+      "running": "Until {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · and one more lease",
+    "leaseAndOthers_other": "{{property}} · and {{count}} more leases",
+    "leases": {
+      "title": "Leases"
+    },
+    "loadError": "We could not load the tenants.",
+    "newLease": "Create lease",
+    "noLease": "No lease",
+    "noResults": {
+      "description": "Check the name or change tab.",
+      "title": "No tenant found"
+    },
+    "now": {
+      "action": "See the late rents",
+      "body_one": "{{amount}} was due on {{date}}.",
+      "body_other": "{{count}} rents worth {{amount}} are overdue: the oldest was due on {{date}}.",
+      "kicker": "Now",
+      "title": "The rent of {{month}} has not arrived",
+      "when_one": "{{count}} day late",
+      "when_other": "{{count}} days late",
+      "who": "Your turn"
+    },
+    "open": "Open the sheet",
+    "payments": {
+      "all": "See the rents",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Paid",
+      "title": "Latest payments"
+    },
+    "privacy": {
+      "erase": "Ask for erasure",
+      "erasure": {
+        "confirm": "Ask for erasure",
+        "consequences": {
+          "documents": "The signed contract and the receipts are not touched.",
+          "ended": "For the leases that have ended, the data of everyone on that lease is anonymized right away, unless they have another lease in force.",
+          "final": "Anonymization cannot be undone.",
+          "running_one": "The lease that has not concluded yet ({{properties}}) is not touched: the data stay until the day after it ends, then they are anonymized.",
+          "running_other": "The leases that have not concluded yet ({{properties}}) are not touched: the data stay until the day after they end, then they are anonymized."
+        },
+        "description": "You are recording the request to erase the data of {{name}} on all their leases.",
+        "failed": "The erasure request could not be recorded.",
+        "title": "Ask for the erasure of the data?"
+      },
+      "export": "Export their data",
+      "exportFailed": "The file could not be prepared.",
+      "exportHint": "A file with their personal data in clear: keep it safe.",
+      "exported": "File downloaded.",
+      "identityNote": "We recognise the same person by their fiscal code: if it is written differently in two leases, they show up as two people and here you find the data of one only.",
+      "intro": "Here you can download the data CasaZen holds about {{name}} in your leases, or ask to erase them.",
+      "result": {
+        "anonymized": "Data anonymized.",
+        "description": "Here is what happened on each lease.",
+        "partial_one": "Data anonymized, except for {{count}} person who has another lease in force: we anonymize it when that lease ends.",
+        "partial_other": "Data anonymized, except for {{count}} people who have another lease in force: we anonymize it when those leases end.",
+        "scheduled": "The lease has not ended yet: the data will be anonymized from {{date}}.",
+        "scheduledNoDate": "The lease has not ended yet: the data will be anonymized from the day after it ends.",
+        "title": "Request recorded"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} rents out of {{total}} paid on time, within {{days}} days of the due date.",
+      "none": "No rent has fallen due yet.",
+      "summary": "{{onTime}} of {{total}} rents on time"
+    },
+    "search": {
+      "label": "Search tenants",
+      "placeholder": "Search by name or property"
+    },
+    "title": "Tenants"
   },
   "ltrReferenceData": {
     "title": "LTR reference data",
@@ -9925,6 +9925,89 @@
       "recommended": "{{photos}} of {{recommended}} recommended photos (not required): you can add more later too.",
       "title": "Photos"
     },
+    "prices": {
+      "calendar": "The base price applies to every night; the Calendar shows the prices that apply.",
+      "cleaning": {
+        "hint": "Paid once per stay.",
+        "label": "Cleaning fee (€)"
+      },
+      "minNights": {
+        "hint": "Fewest nights per booking made on your site (1 = no minimum). It does not apply to the bookings you enter yourself.",
+        "label": "Minimum stay"
+      },
+      "rate": {
+        "hint": "It applies to every night. Without a price the property stays “To complete”: it cannot be activated.",
+        "label": "Base price per night (€)"
+      },
+      "touristTax": {
+        "found": "Tourist tax: we have the rate for {{city}}. It is not in the price: it is added to the booking.",
+        "notYet": "Tourist tax: the rate for {{city}} is not available yet. It is not in the price: it is added to the booking once it is.",
+        "see": "See the rate"
+      },
+      "weekend": {
+        "hint": "Added to the base price of the nights that start on a Friday or a Saturday. If a date already has its own price, that one applies. Empty = no surcharge.",
+        "label": "Weekend surcharge (%)"
+      }
+    },
+    "rules": {
+      "extraGuest": {
+        "hint": "What you ask per night for each extra guest. Leave it empty if you do not accept extra guests. For now guests read it among the rules: it is not added to the price of the stay by itself.",
+        "label": "Fee for each extra guest (€ per night)"
+      },
+      "house": {
+        "parties": "Parties and events",
+        "pets": "Pets",
+        "smoking": "Smoking",
+        "title": "In the home"
+      },
+      "onSite": "If online payments are on, guests can also ask to pay at the property: you accept or refuse each request, and a request with no answer expires.",
+      "other": {
+        "hint": "For example where to leave shoes or how recycling works.",
+        "label": "Other rules"
+      },
+      "partiesOptions": {
+        "No": "Not allowed",
+        "OnRequest": "On request only"
+      },
+      "petsOptions": {
+        "No": "Not allowed",
+        "OnRequest": "On request",
+        "Yes": "Welcome"
+      },
+      "policy": {
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "intro": "Choose one of the CasaZen policies: under each one is what you refund, counting the days before arrival.",
+        "legend": "Cancellation policy",
+        "lineFullOnly": "Full refund up to {{full}} before arrival; after that, no refund.",
+        "lineNone": "No refund.",
+        "linePartial": "Full refund up to {{full}} before arrival; then {{percent}}% up to {{partial}} before; after that, no refund.",
+        "linePartialToArrival": "Full refund up to {{full}} before arrival; then {{percent}}% until arrival.",
+        "loadFailed": "I cannot read the cancellation policies. Try again in a moment.",
+        "loading": "Loading the policies…",
+        "noneChosen": "If you do not choose a policy, the full refund applies up to 7 days before arrival; after that, you decide case by case.",
+        "title": "If the guest cancels"
+      },
+      "quiet": {
+        "from": "Quiet from",
+        "hint": "Optional: if you write them, guests read them in the house rules.",
+        "none": "None",
+        "title": "Quiet hours",
+        "to": "Quiet until"
+      },
+      "smokingOptions": {
+        "No": "Not allowed",
+        "OutdoorsOnly": "Outdoors only",
+        "Yes": "Allowed"
+      },
+      "times": {
+        "checkIn": "Check-in from",
+        "checkOut": "Check-out by",
+        "title": "Arrival and departure"
+      }
+    },
     "steps": {
       "amenities": {
         "label": "Amenities",
@@ -9940,6 +10023,16 @@
         "label": "Photos",
         "purpose": "Recommended, not required: you can skip this step and add them later.",
         "title": "Show the home with a few photos"
+      },
+      "prices": {
+        "label": "Prices",
+        "purpose": "A base price for every night, plus a few rules. The Calendar then shows the prices that apply.",
+        "title": "How much is a night?"
+      },
+      "rules": {
+        "label": "Rules",
+        "purpose": "Times, smoking, pets and cancellation. Guests read them before booking.",
+        "title": "What are the house rules?"
       }
     },
     "suggest": {
@@ -9972,22 +10065,30 @@
       "bathrooms": "Bathrooms are from 1 to 50.",
       "bedrooms": "Bedrooms are from 0 to 100.",
       "beds": "Beds are from 1 to 100.",
+      "cleaningFee": "Write the amount in euros, from 0 to 10,000, numbers only: for example 50.",
       "comune": {
         "required": "Choose the comune from the list."
       },
       "description": "The description can have at most 600 characters.",
+      "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
+      "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
       "maxGuests": "Maximum guests are from 1 to 100.",
+      "minNights": "The minimum stay is from 1 to 30 nights.",
       "name": {
         "max": "The name can have at most 100 characters.",
         "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
       },
+      "nightlyRate": "Write the price in euros, from 1 to 100,000, numbers only: for example 135.",
       "postalCode": {
         "format": "An Italian postal code has 5 digits."
       },
+      "quietHours": "Write both the start and the end of the quiet hours, or leave both empty.",
+      "time": "Choose a time from the list.",
       "unit": {
         "max": "Floor and unit can have at most 30 characters."
-      }
+      },
+      "weekendSurcharge": "Write the percentage from 0 to 100, for example 15."
     }
   },
   "publicBooking": {

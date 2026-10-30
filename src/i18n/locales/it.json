@@ -7630,122 +7630,6 @@
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
   },
-  "longRentTenants": {
-    "chips": {
-      "all": "Tutti",
-      "current": "Attuali",
-      "currentHint": "Chi ha almeno un contratto non ancora concluso",
-      "former": "Ex inquilini",
-      "formerHint": "Chi ha solo contratti conclusi"
-    },
-    "citizenship": {
-      "Eu": "Cittadino UE",
-      "NonEu": "Cittadino non UE"
-    },
-    "columns": {
-      "end": "Fine contratto",
-      "lease": "Contratto",
-      "punctuality": "Puntualità",
-      "tenant": "Inquilino"
-    },
-    "contacts": {
-      "citizenship": "Cittadinanza",
-      "email": "Email",
-      "title": "Contatti"
-    },
-    "count_one": "{{count}} inquilino",
-    "count_other": "{{count}} inquilini",
-    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
-    "detail": {
-      "backToList": "Vai agli inquilini",
-      "description": "Inquilino · {{citizenship}}",
-      "fallbackTitle": "Inquilino",
-      "loadError": "Non siamo riusciti a caricare questo inquilino.",
-      "loading": "Caricamento dell'inquilino",
-      "notFound": "Inquilino non trovato",
-      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
-    },
-    "empty": {
-      "action": "Crea contratto",
-      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
-      "title": "Qui trovi i tuoi inquilini"
-    },
-    "end": {
-      "former": "Finito il {{date}}",
-      "running": "Fino al {{date}}"
-    },
-    "leaseAndOthers_one": "{{property}} · e un altro contratto",
-    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
-    "leases": {
-      "title": "Contratti"
-    },
-    "loadError": "Non siamo riusciti a caricare gli inquilini.",
-    "newLease": "Crea contratto",
-    "noLease": "Nessun contratto",
-    "noResults": {
-      "description": "Controlla il nome o cambia scheda.",
-      "title": "Nessun inquilino trovato"
-    },
-    "now": {
-      "action": "Vedi i canoni in ritardo",
-      "body_one": "{{amount}} scaduti il {{date}}.",
-      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
-      "kicker": "Adesso",
-      "title": "Il canone di {{month}} non è arrivato",
-      "when_one": "In ritardo da {{count}} giorno",
-      "when_other": "In ritardo da {{count}} giorni",
-      "who": "Tocca a te"
-    },
-    "open": "Apri la scheda",
-    "payments": {
-      "all": "Vedi i canoni",
-      "item": "{{month}} · {{amount}}",
-      "paid": "Pagato",
-      "title": "Ultimi pagamenti"
-    },
-    "privacy": {
-      "erase": "Chiedi la cancellazione",
-      "erasure": {
-        "confirm": "Chiedi la cancellazione",
-        "consequences": {
-          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
-          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
-          "final": "L'anonimizzazione non si può annullare.",
-          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
-          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
-        },
-        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
-        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
-        "title": "Chiedere la cancellazione dei dati?"
-      },
-      "export": "Esporta i suoi dati",
-      "exportFailed": "Non è stato possibile preparare il file.",
-      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
-      "exported": "File scaricato.",
-      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
-      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
-      "result": {
-        "anonymized": "Dati anonimizzati.",
-        "description": "Ecco cosa è successo su ogni contratto.",
-        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
-        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
-        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
-        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
-        "title": "Richiesta registrata"
-      },
-      "summary": "Privacy"
-    },
-    "punctuality": {
-      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
-      "none": "Nessun canone ancora scaduto.",
-      "summary": "{{onTime}} su {{total}} canoni in orario"
-    },
-    "search": {
-      "label": "Cerca inquilini",
-      "placeholder": "Cerca per nome o immobile"
-    },
-    "title": "Inquilini"
-  },
   "longRentRequests": {
     "cancel": {
       "back": "Torna indietro",
@@ -7973,6 +7857,122 @@
       "proposalRejected": "Orario rifiutato: la richiesta resta in attesa",
       "reminded": "Sollecito inviato al fornitore"
     }
+  },
+  "longRentTenants": {
+    "chips": {
+      "all": "Tutti",
+      "current": "Attuali",
+      "currentHint": "Chi ha almeno un contratto non ancora concluso",
+      "former": "Ex inquilini",
+      "formerHint": "Chi ha solo contratti conclusi"
+    },
+    "citizenship": {
+      "Eu": "Cittadino UE",
+      "NonEu": "Cittadino non UE"
+    },
+    "columns": {
+      "end": "Fine contratto",
+      "lease": "Contratto",
+      "punctuality": "Puntualità",
+      "tenant": "Inquilino"
+    },
+    "contacts": {
+      "citizenship": "Cittadinanza",
+      "email": "Email",
+      "title": "Contatti"
+    },
+    "count_one": "{{count}} inquilino",
+    "count_other": "{{count}} inquilini",
+    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
+    "detail": {
+      "backToList": "Vai agli inquilini",
+      "description": "Inquilino · {{citizenship}}",
+      "fallbackTitle": "Inquilino",
+      "loadError": "Non siamo riusciti a caricare questo inquilino.",
+      "loading": "Caricamento dell'inquilino",
+      "notFound": "Inquilino non trovato",
+      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
+    },
+    "empty": {
+      "action": "Crea contratto",
+      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
+      "title": "Qui trovi i tuoi inquilini"
+    },
+    "end": {
+      "former": "Finito il {{date}}",
+      "running": "Fino al {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · e un altro contratto",
+    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
+    "leases": {
+      "title": "Contratti"
+    },
+    "loadError": "Non siamo riusciti a caricare gli inquilini.",
+    "newLease": "Crea contratto",
+    "noLease": "Nessun contratto",
+    "noResults": {
+      "description": "Controlla il nome o cambia scheda.",
+      "title": "Nessun inquilino trovato"
+    },
+    "now": {
+      "action": "Vedi i canoni in ritardo",
+      "body_one": "{{amount}} scaduti il {{date}}.",
+      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
+      "kicker": "Adesso",
+      "title": "Il canone di {{month}} non è arrivato",
+      "when_one": "In ritardo da {{count}} giorno",
+      "when_other": "In ritardo da {{count}} giorni",
+      "who": "Tocca a te"
+    },
+    "open": "Apri la scheda",
+    "payments": {
+      "all": "Vedi i canoni",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Pagato",
+      "title": "Ultimi pagamenti"
+    },
+    "privacy": {
+      "erase": "Chiedi la cancellazione",
+      "erasure": {
+        "confirm": "Chiedi la cancellazione",
+        "consequences": {
+          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
+          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
+          "final": "L'anonimizzazione non si può annullare.",
+          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
+          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
+        },
+        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
+        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
+        "title": "Chiedere la cancellazione dei dati?"
+      },
+      "export": "Esporta i suoi dati",
+      "exportFailed": "Non è stato possibile preparare il file.",
+      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
+      "exported": "File scaricato.",
+      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
+      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
+      "result": {
+        "anonymized": "Dati anonimizzati.",
+        "description": "Ecco cosa è successo su ogni contratto.",
+        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
+        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
+        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
+        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
+        "title": "Richiesta registrata"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
+      "none": "Nessun canone ancora scaduto.",
+      "summary": "{{onTime}} su {{total}} canoni in orario"
+    },
+    "search": {
+      "label": "Cerca inquilini",
+      "placeholder": "Cerca per nome o immobile"
+    },
+    "title": "Inquilini"
   },
   "ltrReferenceData": {
     "title": "Dati normativi LTR",
@@ -9925,6 +9925,89 @@
       "recommended": "{{photos}} di {{recommended}} foto consigliate (non obbligatorie): puoi aggiungerne anche più tardi.",
       "title": "Foto"
     },
+    "prices": {
+      "calendar": "Il prezzo base vale per ogni notte; nel Calendario vedi i prezzi che si applicano.",
+      "cleaning": {
+        "hint": "Si paga una volta a soggiorno.",
+        "label": "Costo della pulizia (€)"
+      },
+      "minNights": {
+        "hint": "Notti minime per ogni prenotazione dal tuo sito (1 = nessun minimo). Non vale per le prenotazioni che inserisci tu.",
+        "label": "Soggiorno minimo"
+      },
+      "rate": {
+        "hint": "Vale per ogni notte. Senza un prezzo l'immobile resta «Da completare»: non si può attivare.",
+        "label": "Prezzo base per notte (€)"
+      },
+      "touristTax": {
+        "found": "Imposta di soggiorno: per {{city}} abbiamo la tariffa. Non è nel prezzo: si aggiunge alla prenotazione.",
+        "notYet": "Imposta di soggiorno: la tariffa di {{city}} non è ancora disponibile. Non è nel prezzo: si aggiunge alla prenotazione quando c'è.",
+        "see": "Vedi la tariffa"
+      },
+      "weekend": {
+        "hint": "Si aggiunge al prezzo base delle notti che iniziano di venerdì o di sabato. Se per una data c'è già un prezzo suo, vale quello. Vuoto = nessun supplemento.",
+        "label": "Supplemento weekend (%)"
+      }
+    },
+    "rules": {
+      "extraGuest": {
+        "hint": "Quanto chiedi a notte per ogni ospite in più. Lascia vuoto se non accetti ospiti in più. Per ora gli ospiti lo leggono tra le regole: non viene aggiunto da solo al prezzo del soggiorno.",
+        "label": "Supplemento per ospite in più (€ a notte)"
+      },
+      "house": {
+        "parties": "Feste ed eventi",
+        "pets": "Animali",
+        "smoking": "Fumare",
+        "title": "In casa"
+      },
+      "onSite": "Se i pagamenti online sono attivi, gli ospiti possono anche chiedere di pagare in struttura: tu accetti o rifiuti ogni richiesta, e senza risposta la richiesta scade.",
+      "other": {
+        "hint": "Per esempio dove lasciare le scarpe o come funziona la raccolta differenziata.",
+        "label": "Altre regole"
+      },
+      "partiesOptions": {
+        "No": "Vietati",
+        "OnRequest": "Solo su richiesta"
+      },
+      "petsOptions": {
+        "No": "Non ammessi",
+        "OnRequest": "Su richiesta",
+        "Yes": "Benvenuti"
+      },
+      "policy": {
+        "days_one": "{{count}} giorno",
+        "days_other": "{{count}} giorni",
+        "hours_one": "{{count}} ora",
+        "hours_other": "{{count}} ore",
+        "intro": "Scegli una delle politiche di CasaZen: sotto ognuna c'è quanto rimborsi, contando i giorni prima dell'arrivo.",
+        "legend": "Politica di cancellazione",
+        "lineFullOnly": "Rimborso totale fino a {{full}} prima dell'arrivo; poi nessun rimborso.",
+        "lineNone": "Nessun rimborso.",
+        "linePartial": "Rimborso totale fino a {{full}} prima dell'arrivo; poi il {{percent}}% fino a {{partial}} prima; dopo, nessun rimborso.",
+        "linePartialToArrival": "Rimborso totale fino a {{full}} prima dell'arrivo; poi il {{percent}}% fino all'arrivo.",
+        "loadFailed": "Non riesco a leggere le politiche di cancellazione. Riprova tra poco.",
+        "loading": "Carico le politiche…",
+        "noneChosen": "Se non scegli una politica, il rimborso totale vale fino a 7 giorni prima dell'arrivo; dopo, decidi tu caso per caso.",
+        "title": "Se l'ospite cancella"
+      },
+      "quiet": {
+        "from": "Silenzio dalle",
+        "hint": "Facoltativi: se li scrivi, gli ospiti li leggono nelle regole della casa.",
+        "none": "Nessuno",
+        "title": "Orari di silenzio",
+        "to": "Silenzio fino alle"
+      },
+      "smokingOptions": {
+        "No": "Vietato",
+        "OutdoorsOnly": "Solo all'aperto",
+        "Yes": "Consentito"
+      },
+      "times": {
+        "checkIn": "Check-in dalle",
+        "checkOut": "Check-out entro le",
+        "title": "Arrivo e partenza"
+      }
+    },
     "steps": {
       "amenities": {
         "label": "Dotazioni",
@@ -9940,6 +10023,16 @@
         "label": "Foto",
         "purpose": "Consigliate, non obbligatorie: puoi saltare questo passo e aggiungerle dopo.",
         "title": "Mostra la casa con qualche foto"
+      },
+      "prices": {
+        "label": "Prezzi",
+        "purpose": "Un prezzo di base per ogni notte, più qualche regola. Nel Calendario vedi poi i prezzi che si applicano.",
+        "title": "Quanto costa una notte?"
+      },
+      "rules": {
+        "label": "Regole",
+        "purpose": "Orari, fumo, animali e cancellazione. Gli ospiti le leggono prima di prenotare.",
+        "title": "Quali regole valgono in casa?"
       }
     },
     "suggest": {
@@ -9972,22 +10065,30 @@
       "bathrooms": "I bagni sono da 1 a 50.",
       "bedrooms": "Le camere da letto sono da 0 a 100.",
       "beds": "I letti sono da 1 a 100.",
+      "cleaningFee": "Scrivi l'importo in euro, da 0 a 10.000, solo numeri: per esempio 50.",
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
       "description": "La descrizione può avere al massimo 600 caratteri.",
+      "extraGuestFee": "Scrivi l'importo in euro, da 0 a 1.000, solo numeri: per esempio 15. Lascia vuoto se non accetti ospiti in più.",
+      "houseRules": "Le altre regole possono avere al massimo 1000 caratteri.",
       "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
       "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
+      "minNights": "Il soggiorno minimo è da 1 a 30 notti.",
       "name": {
         "max": "Il nome può avere al massimo 100 caratteri.",
         "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
       },
+      "nightlyRate": "Scrivi il prezzo in euro, da 1 a 100.000, solo numeri: per esempio 135.",
       "postalCode": {
         "format": "Il CAP italiano ha 5 cifre."
       },
+      "quietHours": "Scrivi sia l'ora di inizio sia quella di fine del silenzio, o lasciale vuote tutte e due.",
+      "time": "Scegli un orario dall'elenco.",
       "unit": {
         "max": "Piano e interno possono avere al massimo 30 caratteri."
-      }
+      },
+      "weekendSurcharge": "Scrivi la percentuale da 0 a 100, per esempio 15."
     }
   },
   "publicBooking": {
