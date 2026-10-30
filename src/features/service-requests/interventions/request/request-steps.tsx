@@ -18,6 +18,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { stayDateOf } from '@/features/bookings/lib/booking-price';
+import { RecommendedBadge } from '@/features/marketplace/components/recommended-badge';
 import { supplierFacts } from '@/features/marketplace/lib/supplier-labels';
 import { orderStaysForRequest, stayOptionLabel } from '@/features/service-requests/lib/stays';
 import { formatPrice } from '@/features/supplier/services/lib/service-labels';
@@ -305,7 +306,16 @@ function SupplierChoices() {
               value={supplier.orgId}
               checked={chosen === supplier.orgId}
               onChange={() => choose(supplier)}
-              title={supplier.legalName}
+              title={
+                supplier.recommended ? (
+                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    {supplier.legalName}
+                    <RecommendedBadge />
+                  </span>
+                ) : (
+                  supplier.legalName
+                )
+              }
               description={supplierDescription(supplier, t, i18n.language)}
               data-testid={`request-supplier-${supplier.orgId}`}
             />

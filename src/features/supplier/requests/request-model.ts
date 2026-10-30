@@ -240,6 +240,8 @@ const REASON_KEYS: Record<string, string> = {
   TakenByBackup: 'supplier.requests.reason.TakenByBackup',
   RequestCancelledByHost: 'supplier.requests.reason.RequestCancelledByHost',
   BackupSlotUnavailable: 'supplier.requests.reason.BackupSlotUnavailable',
+  // Another backup accepted first and closed the race: the supplier loses nothing, and the text says so.
+  BackupRaceClosed: 'supplier.requests.reason.BackupRaceClosed',
 };
 
 /** A reason as a sentence: the text a person wrote as it is, a code of the server (`NoResponse`...) in words. */

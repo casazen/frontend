@@ -4901,6 +4901,7 @@
         "cancelledByHost": "Chiusa: richiesta annullata",
         "noResponse": "Non ha risposto in tempo",
         "primaryTookIt": "Chiusa: il lavoro l’ha accettato il fornitore scelto",
+        "raceClosed": "Chiusa: un’altra riserva ha accettato prima",
         "refused": "Ha rifiutato",
         "slotUnavailable": "Non era più libero all’orario",
         "takenByBackup": "Chiusa: il lavoro l’ha preso un altro fornitore",
@@ -8628,6 +8629,7 @@
     "sort": {
       "name": "Nome",
       "price": "Prezzo",
+      "recommended": "Consigliati",
       "response": "Risposta più rapida"
     },
     "verifiedOnly": "Solo verificati",
@@ -8681,7 +8683,8 @@
     "goToBookings": "Vai alle prenotazioni",
     "goToProperties": "Vai alle proprietà",
     "propertiesTitle": "Le tue proprietà",
-    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
+    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione.",
+    "recommended": "Consigliato"
   },
   "messageThread": {
     "send": "Invia",
@@ -13857,7 +13860,7 @@
         "backupAccepted": {
           "client": "Vede che hai accettato come riserva.",
           "title": "Hai accettato come riserva",
-          "you": "Se il fornitore scelto non accetta entro le {{time}}, il lavoro passa a chi ha accettato per primo. Se sei tu, ti avvisiamo. Finché non è tuo, la tua agenda resta libera."
+          "you": "Sei l’unica riserva rimasta: le altre sono state chiuse appena hai accettato. Se il fornitore scelto non accetta entro le {{time}}, il lavoro è tuo e ti avvisiamo. Intanto il tuo orario è riservato in agenda; se accetta lui, torna libero e non c’è nessuna penalità."
         },
         "backupActive": {
           "client": "Aspetta che qualcuno prenda il lavoro.",
@@ -13869,7 +13872,7 @@
           "client": "Ha scelto un altro fornitore e sa che la richiesta è andata anche a delle riserve.",
           "then": "Poi: se il lavoro passa a te ti avvisiamo, e solo allora vedi indirizzo e contatti del cliente.",
           "title": "Sei una riserva per questa richiesta",
-          "you": "Il cliente ha scelto un altro fornitore, che ha tempo fino alle {{time}}. Il lavoro è tuo solo se non lo accetta. Intanto puoi dire che lo prenderesti: non blocca nessun orario della tua agenda."
+          "you": "Il cliente ha scelto un altro fornitore, che ha tempo fino alle {{time}}. Il lavoro è tuo solo se non lo accetta. Puoi dire subito che lo prenderesti: la prima riserva che accetta chiude la gara (le altre non possono più accettare) e il suo orario viene riservato in agenda."
         },
         "cancelled": {
           "client": "La richiesta è chiusa.",
@@ -14060,6 +14063,7 @@
         "withdrawnToast": "Preventivo ritirato"
       },
       "reason": {
+        "BackupRaceClosed": "Un altro fornitore di riserva ha accettato prima di te: la gara è chiusa. Non c’è nessuna penalità per te.",
         "BackupSlotUnavailable": "Il tuo orario non era più libero quando il lavoro è passato a te.",
         "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
         "NoResponse": "Nessuno ha risposto in tempo.",

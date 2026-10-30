@@ -4901,6 +4901,7 @@
         "cancelledByHost": "Closed: request cancelled",
         "noResponse": "Did not answer in time",
         "primaryTookIt": "Closed: the chosen supplier accepted the job",
+        "raceClosed": "Closed: another backup accepted first",
         "refused": "Declined",
         "slotUnavailable": "Its time was no longer free",
         "takenByBackup": "Closed: another supplier took the job",
@@ -8628,6 +8629,7 @@
     "sort": {
       "name": "Name",
       "price": "Price",
+      "recommended": "Recommended",
       "response": "Fastest response"
     },
     "verifiedOnly": "Verified only",
@@ -8681,7 +8683,8 @@
     "goToBookings": "Go to bookings",
     "goToProperties": "Go to properties",
     "propertiesTitle": "Your properties",
-    "propertiesDescription": "Request services from a property or booking detail page."
+    "propertiesDescription": "Request services from a property or booking detail page.",
+    "recommended": "Recommended"
   },
   "messageThread": {
     "send": "Send",
@@ -13857,7 +13860,7 @@
         "backupAccepted": {
           "client": "Sees that you accepted as a backup.",
           "title": "You accepted as a backup",
-          "you": "If the chosen supplier does not accept by {{time}}, the job goes to whoever accepted first. If that is you, we tell you. Until it is yours, your calendar stays free."
+          "you": "You are the only backup left: the others were closed as soon as you accepted. If the chosen supplier does not accept by {{time}}, the job is yours and we will tell you. Meanwhile your time is set aside in your agenda; if they accept, it is free again and there is no penalty."
         },
         "backupActive": {
           "client": "Is waiting for someone to take the job.",
@@ -13869,7 +13872,7 @@
           "client": "Chose another supplier and knows the request also went to backups.",
           "then": "Next: if the job passes to you we tell you, and only then you see the customer’s address and contact details.",
           "title": "You are a backup for this request",
-          "you": "The customer chose another supplier, which has until {{time}}. The job is yours only if it does not accept. Meanwhile you can say you would take it: it blocks no time on your calendar."
+          "you": "The customer chose another supplier, who has until {{time}}. The job is yours only if they do not accept. You can say right away that you would take it: the first backup to accept closes the race (the others can no longer accept) and its time is set aside in its agenda."
         },
         "cancelled": {
           "client": "The request is closed.",
@@ -14060,6 +14063,7 @@
         "withdrawnToast": "Quote taken back"
       },
       "reason": {
+        "BackupRaceClosed": "Another backup supplier accepted before you: the race is over. There is no penalty for you.",
         "BackupSlotUnavailable": "Your time was no longer free when the job came to you.",
         "CancelledByCustomer": "The customer cancelled the request.",
         "NoResponse": "Nobody answered in time.",

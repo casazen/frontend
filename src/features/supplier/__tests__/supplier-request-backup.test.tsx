@@ -123,12 +123,18 @@ describe('a request the supplier has as a backup (SP-BKP): the model', () => {
 
   it('reasonText_TheCodesOfABackupRequestClosedByCasaZen_AreSentencesAndNotCodes', async () => {
     await i18n.changeLanguage('it');
-    for (const code of ['PrimaryTookIt', 'TakenByBackup', 'RequestCancelledByHost', 'BackupSlotUnavailable']) {
+    for (const code of ['PrimaryTookIt', 'TakenByBackup', 'RequestCancelledByHost', 'BackupSlotUnavailable', 'BackupRaceClosed']) {
       const sentence = reasonText(code, i18n.t.bind(i18n));
       expect(sentence).toBeTruthy();
       expect(sentence).not.toBe(code);
       expect(sentence).not.toContain('supplier.requests.reason');
     }
+
+    // The backup that found the race closed (another backup accepted first) is told plainly that it lost nothing, in both languages.
+    expect(reasonText('BackupRaceClosed', i18n.t.bind(i18n))).toContain('nessuna penalità');
+    await i18n.changeLanguage('en');
+    expect(reasonText('BackupRaceClosed', i18n.t.bind(i18n))).toContain('no penalty');
+    await i18n.changeLanguage('it');
   });
 });
 

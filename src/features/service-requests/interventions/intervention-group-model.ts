@@ -15,6 +15,7 @@ const CANCEL_STATES: Readonly<Record<string, MemberState>> = {
   TakenByBackup: 'takenByBackup',
   RequestCancelledByHost: 'cancelledByHost',
   BackupSlotUnavailable: 'slotUnavailable',
+  BackupRaceClosed: 'raceClosed',
 };
 
 /** What one supplier of the group is doing (`interventions.group.state.<state>`). */
@@ -28,6 +29,7 @@ export type MemberState =
   | 'takenByBackup'
   | 'cancelledByHost'
   | 'slotUnavailable'
+  | 'raceClosed'
   | 'cancelled'
   | 'unknown';
 

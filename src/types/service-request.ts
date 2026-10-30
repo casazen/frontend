@@ -115,8 +115,9 @@ export interface ServiceRequestGroup {
 /**
  * One request of a group (SP-BKP). `role`: `Primary` (the supplier the host chose), `Backup`, `ReplacedPrimary` (the chosen supplier that
  * did not answer in time and was replaced) or `PromotedBackup` (the backup that took the job). `acceptedAt` is when a backup said it would
- * take the job; `tookTheJob` marks the request that was taken; `cancellationReason` is the code of a request closed by CasaZen
- * (`NoResponse`, `PrimaryTookIt`, `TakenByBackup`, `RequestCancelledByHost`, `BackupSlotUnavailable`).
+ * take the job (the first backup that accepts closes the race for the others); `tookTheJob` marks the request that was taken;
+ * `cancellationReason` is the code of a request closed by CasaZen (`NoResponse`, `PrimaryTookIt`, `TakenByBackup`,
+ * `RequestCancelledByHost`, `BackupSlotUnavailable`, `BackupRaceClosed`).
  */
 export interface ServiceRequestGroupMember {
   requestId: string;
@@ -373,7 +374,7 @@ export interface SupplierServiceRequest {
   /**
    * Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`,
    * `QuoteNotAnswered`, `CancelledByCustomer` or, for a backup request closed by CasaZen (SP-BKP), `PrimaryTookIt`, `TakenByBackup`,
-   * `RequestCancelledByHost`, `BackupSlotUnavailable`.
+   * `RequestCancelledByHost`, `BackupSlotUnavailable`, `BackupRaceClosed` (another backup accepted first: no penalty).
    */
   cancelledBy?: string | null;
   cancellationReason?: string | null;
@@ -519,8 +520,11 @@ export interface SupplierPickerService {
   requiresQuote: boolean;
 }
 
-/** The order of the marketplace list (`?sort=` of `GET /suppliers`). */
-export type SupplierPickerSort = 'name' | 'price' | 'response';
+/**
+ * The order of the list of suppliers (`?sort=` of `GET /suppliers`): `recommended` (the default, SP-REL: the best-ranked supplier first,
+ * by its load and its reliability), then `name`, `price` and `response`.
+ */
+export type SupplierPickerSort = 'recommended' | 'name' | 'price' | 'response';
 
 export interface SupplierPicker {
   orgId: string;
@@ -544,6 +548,11 @@ export interface SupplierPicker {
   verified?: boolean;
   /** The address of the public showcase (`/fornitori/{slug}`); `null` when it has none. */
   showcaseSlug?: string | null;
+  /**
+   * «Consigliato» (SP-REL): the best-ranked supplier of the list, strictly ahead of the next one, in the default order. Only that: the
+   * score behind it (load, reliability) is never sent. Absent from an API that does not rank yet.
+   */
+  recommended?: boolean;
 }
 
 export interface SupplierListResponse {

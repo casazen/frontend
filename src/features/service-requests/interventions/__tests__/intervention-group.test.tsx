@@ -57,7 +57,29 @@ describe('the group of backup suppliers of a request, for its host (SP-BKP)', ()
     expect(memberStateOf(member({ status: 'Annullato', cancellationReason: 'PrimaryTookIt' }))).toBe('primaryTookIt');
     expect(memberStateOf(member({ status: 'Annullato', cancellationReason: 'TakenByBackup' }))).toBe('takenByBackup');
     expect(memberStateOf(member({ status: 'Annullato', cancellationReason: 'BackupSlotUnavailable' }))).toBe('slotUnavailable');
+    // The backups the race closed (another one accepted first) are told apart from the ones a take closed.
+    expect(memberStateOf(member({ status: 'Annullato', cancellationReason: 'BackupRaceClosed' }))).toBe('raceClosed');
     expect(memberStateOf(member({ status: 'Annullato', cancellationReason: 'Una frase scritta da una persona' }))).toBe('cancelled');
+  });
+
+  it('InterventionGroup_TheFirstBackupThatAcceptedClosedTheRace_TheHostSeesWhoIsInAndWhoWasLeftBehind', () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <InterventionGroup
+          group={group({
+            members: [
+              PRIMARY,
+              member({ ...ALFA, acceptedAt: '2026-10-30T10:40:00Z' }),
+              member({ ...BETA, status: 'Annullato', cancellationReason: 'BackupRaceClosed' }),
+            ],
+          })}
+        />
+      </I18nextProvider>,
+    );
+
+    const members = within(screen.getByTestId('intervention-group-members'));
+    expect(members.getByTestId('intervention-group-member-r-alfa')).toHaveTextContent('Ha accettato come riserva');
+    expect(members.getByTestId('intervention-group-member-r-beta')).toHaveTextContent('Chiusa: un’altra riserva ha accettato prima');
   });
 
   it('InterventionGroup_WhileTheChosenSupplierHasItsHour_SaysUntilWhenAndListsTheBackupsAsWaiting', () => {
