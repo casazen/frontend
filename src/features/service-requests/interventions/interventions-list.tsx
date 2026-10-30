@@ -11,6 +11,7 @@ import { formatRomeDateTime } from '@/lib/stay-dates';
 import type { ServiceRequest } from '@/types/service-request';
 import { priceText, whenText } from '../long-rent/long-rent-request-model';
 import {
+  againPathOf,
   canDo,
   DEFAULT_INTERVENTION_CHIP,
   hostActionKind,
@@ -114,7 +115,7 @@ export function useInterventionsList({ steps, busy, permissions, properties, sup
         case 'markPaid':
           return { id: 'markPaid', label: t('interventions.action.markPaid'), icon: BadgeCheck, disabled: busy, onSelect: () => steps.markPaid(request), testId: 'intervention-row-mark-paid' };
         case 'requestAgain':
-          return { id: 'again', label: t('interventions.action.requestAgain'), icon: RotateCcw, href: requestInterventionPath(request.propertyId), testId: 'intervention-row-again' };
+          return { id: 'again', label: t('interventions.action.requestAgain'), icon: RotateCcw, href: againPathOf(request), testId: 'intervention-row-again' };
         default:
           return null;
       }

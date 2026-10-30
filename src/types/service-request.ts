@@ -343,6 +343,11 @@ export interface CreateServiceRequestDto {
   category: string;
   urgency?: ServiceRequestUrgency;
   notes?: string;
+  /**
+   * The service of the supplier's catalog the request is for (SR-08b): its name, estimated price and duration come with it. With a
+   * start and no `durationMinutes` the start has to be a free slot of the service (409 `supplier_slot_unavailable` otherwise).
+   */
+  serviceListingId?: string;
   /** Start of the work (UTC). With `durationMinutes` the supplier sees the interval. */
   scheduledStartUtc?: string;
   /** How long the work lasts, in minutes. */

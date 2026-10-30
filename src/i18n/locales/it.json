@@ -10698,6 +10698,176 @@
       "operational": "Operativo"
     }
   },
+  "requestWizard": {
+    "done": {
+      "another": "Fai un'altra richiesta",
+      "answers": "Il fornitore decide: accetta, rifiuta oppure ti propone un altro orario.",
+      "cancel": "Puoi annullare quando vuoi, senza costi, finché il lavoro non è iniziato.",
+      "description": "La richiesta è partita: ecco cosa succede adesso.",
+      "respondBy": "Ha tempo per rispondere fino a {{when}}.",
+      "see": "Vedi la richiesta",
+      "title": "Richiesta inviata a {{supplier}}",
+      "titleGeneric": "Richiesta inviata",
+      "told": "Ti avvisiamo appena risponde. Da Interventi la segui fino al pagamento."
+    },
+    "errors": {
+      "categoryRequired": "Scegli che tipo di intervento ti serve.",
+      "commitmentConflict": "Il fornitore ha già un lavoro in quell'intervallo: scegli un altro orario.",
+      "dayPast": "Il giorno è già passato: scegline uno da oggi in poi.",
+      "dayRequired": "Scrivi il giorno del lavoro.",
+      "durationInvalid": "Scrivi quanto dura il lavoro, da 5 minuti a 24 ore.",
+      "notesTooLong": "Le note possono essere lunghe al massimo 1000 caratteri.",
+      "propertyRequired": "Scegli l'immobile.",
+      "sendFailed": "Non siamo riusciti a inviare la richiesta. Riprova tra poco: le tue risposte sono ancora qui.",
+      "serviceRequired": "Scegli un servizio, oppure «Altro lavoro».",
+      "serviceUnavailable": "Il fornitore non offre più questo servizio: scegline un altro.",
+      "slotRequired": "Scegli uno degli orari liberi.",
+      "slotTaken": "Questo orario è appena stato preso: scegline un altro.",
+      "stayMismatch": "Il soggiorno scelto non è di questo immobile: sceglilo di nuovo.",
+      "supplierInactive": "Questo fornitore al momento non è disponibile: scegline un altro.",
+      "supplierOutsideComune": "Questo fornitore non lavora nel comune dell'immobile: scegline un altro.",
+      "supplierRequired": "Scegli il fornitore.",
+      "timeInvalid": "L'orario scelto non è valido: scegline un altro.",
+      "timePast": "Quell'orario è già passato: scegline uno più tardi.",
+      "timeRequired": "Scrivi l'ora di inizio.",
+      "urgencyRequired": "Scegli quanto è urgente."
+    },
+    "finish": "Invia la richiesta",
+    "loading": "Preparo la richiesta…",
+    "noProperty": {
+      "action": "Aggiungi un immobile",
+      "text": "Per chiedere un intervento serve almeno un immobile.",
+      "title": "Prima serve un immobile"
+    },
+    "retry": "Riprova",
+    "review": {
+      "houseOnly": "Solo la casa, nessun soggiorno",
+      "notes": "Note",
+      "price": "Prezzo",
+      "priceEstimate": "Stima: {{price}}. A lavoro finito il fornitore indica l'importo definitivo.",
+      "priceFrom": "{{price}}. Il totale dipende dal lavoro e lo indica il fornitore.",
+      "priceQuote": "Su preventivo. Il fornitore ti manderà il preventivo.",
+      "priceTbd": "Da concordare con il fornitore.",
+      "sees": {
+        "after": {
+          "contact": "i tuoi contatti (e-mail e telefono)",
+          "notes": "le tue note",
+          "where": "il nome e l'indirizzo dell'immobile"
+        },
+        "afterTitle": "Quando accetta, vede anche",
+        "before": {
+          "what": "che tipo di intervento è e quanto è urgente",
+          "when": "il giorno e l'orario",
+          "where": "il comune e il CAP dell'immobile, non l'indirizzo",
+          "who": "il nome della tua organizzazione e il prezzo previsto"
+        },
+        "beforeTitle": "Prima che accetti, vede",
+        "never": "Non vede mai i dati dei tuoi ospiti: se colleghi un soggiorno, ne conosce solo le date.",
+        "title": "Cosa vede il fornitore"
+      },
+      "what": "Cosa serve",
+      "when": "Quando",
+      "where": "Dove",
+      "who": "Chi"
+    },
+    "steps": {
+      "review": {
+        "label": "Riepilogo",
+        "purpose": "La richiesta parte solo quando premi «Invia la richiesta».",
+        "title": "Controlla e invia"
+      },
+      "what": {
+        "label": "Cosa serve",
+        "purpose": "Scegli il tipo di lavoro e quanto è urgente.",
+        "title": "Di che intervento hai bisogno?"
+      },
+      "when": {
+        "label": "Dove e quando",
+        "purpose": "Scegli l'immobile e il giorno. Il soggiorno è facoltativo.",
+        "title": "Dove e quando serve?"
+      },
+      "who": {
+        "label": "Chi",
+        "purpose": "Scegli il fornitore, il servizio e l'orario tra quelli liberi.",
+        "title": "Chi se ne occupa?"
+      }
+    },
+    "title": "Richiedi un intervento",
+    "what": {
+      "category": "Tipo di intervento",
+      "categoryPlaceholder": "Scegli il tipo",
+      "notes": "Cosa deve fare il fornitore?",
+      "notesHint": "Descrivi il lavoro in poche righe. Non scrivere dati degli ospiti (nome, telefono, documenti): il fornitore legge queste note solo quando accetta.",
+      "urgencies": {
+        "Emergency": {
+          "text": "Serve subito: non può aspettare.",
+          "title": "Emergenza"
+        },
+        "High": {
+          "text": "Serve in tempi brevi.",
+          "title": "Alta"
+        },
+        "Normal": {
+          "text": "Si può programmare.",
+          "title": "Normale"
+        }
+      },
+      "urgency": "Quanto è urgente?"
+    },
+    "when": {
+      "day": "Giorno del lavoro",
+      "property": "Immobile",
+      "propertyPlaceholder": "Scegli l'immobile",
+      "stay": "Collega a un soggiorno",
+      "stayHint": "Facoltativo: senza, la richiesta riguarda solo la casa.",
+      "stayNone": "Nessun soggiorno: solo la casa",
+      "window": {
+        "both": "Quel giorno gli ospiti partono entro le {{from}} e i prossimi arrivano dalle {{to}}: per le pulizie conviene la fascia {{from}}–{{to}}.",
+        "defaults": "Orari predefiniti: partenza entro le {{checkOut}}, arrivo dalle {{checkIn}}.",
+        "open": "Quel giorno gli ospiti partono entro le {{from}} e nessuno arriva: le pulizie si possono fare dopo."
+      }
+    },
+    "who": {
+      "advised": {
+        "both": "Ti mostro gli orari tra le {{from}} e le {{to}}, la fascia consigliata per le pulizie.",
+        "none": "Nessun orario libero nella fascia consigliata: ecco gli altri.",
+        "open": "Ti mostro gli orari dalle {{from}}, dopo la partenza degli ospiti."
+      },
+      "catalogError": "Non riesco a leggere i servizi di questo fornitore.",
+      "custom": {
+        "help": "Scegli quando vuoi che inizi e quanto dura. Il fornitore può accettare, rifiutare o proporti un altro orario.",
+        "text": "Non è tra i servizi dell'elenco: scegli tu orario e durata.",
+        "title": "Altro lavoro"
+      },
+      "duration": "Durata",
+      "durationMinutes": "Minuti",
+      "durationOther": "Altro…",
+      "durationRange": "Da {{min}} a {{max}} minuti.",
+      "loadingServices": "Cerco i servizi…",
+      "loadingSlots": "Cerco gli orari liberi…",
+      "loadingSuppliers": "Cerco i fornitori…",
+      "lookAround": "Guarda il marketplace",
+      "nearbyDays": "Giorni vicini con orari liberi",
+      "noDuration": "Durata da concordare",
+      "noSlotsAtAll": "Nessun orario libero nei prossimi giorni. Scegli un altro servizio o un altro fornitore.",
+      "noSlotsDay": "Nessun orario libero {{day}}.",
+      "noSuppliers": "Nessun fornitore copre il comune di questo immobile per questo tipo di lavoro.",
+      "priceOnRequest": "Prezzo su preventivo",
+      "services": "Servizio",
+      "showEvery": "Mostra tutti gli orari",
+      "slot": "Dalle {{from}} alle {{to}}",
+      "slotsCount_one": "Un orario libero {{day}}",
+      "slotsCount_other": "{{count}} orari liberi {{day}}",
+      "slotsError": "Non riesco a leggere gli orari liberi.",
+      "slotsLabel": "Orari liberi {{day}}",
+      "slotsTitle": "Orari liberi {{day}}",
+      "startTime": "Ora di inizio",
+      "supplierUnavailable": "Il fornitore indicato non è tra quelli disponibili per questo immobile e questo tipo di lavoro (non è attivo o non copre il comune). Scegline un altro.",
+      "suppliers": "Fornitori per questo lavoro",
+      "suppliersError": "Non riesco a caricare i fornitori.",
+      "until": "fino alle {{to}}"
+    }
+  },
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",

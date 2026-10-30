@@ -9,6 +9,7 @@ import type {
   ServiceRequest,
   ServiceRequestStatus,
 } from '@/types/service-request';
+import { requestInterventionPath } from './paths';
 
 /**
  * What the host's page of the interventions (SR-08) knows about a request, worked out from what the API sends and nothing more.
@@ -164,6 +165,17 @@ export function supplierOptions(requests: readonly Pick<ServiceRequest, 'supplie
     if (name && request.supplierOrgId && !names.has(request.supplierOrgId)) names.set(request.supplierOrgId, name);
   }
   return [...names].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * Where «Richiedi di nuovo» leads: the guided request, for the same property and the same kind of work; after a refusal not for the same
+ * supplier (it said no), otherwise for it.
+ */
+export function againPathOf(request: Pick<ServiceRequest, 'propertyId' | 'category' | 'status' | 'supplierOrgId'>): string {
+  return requestInterventionPath(request.propertyId, {
+    type: request.category,
+    supplierOrgId: request.status === 'Rifiutato' ? undefined : request.supplierOrgId,
+  });
 }
 
 /** The phone number as a link that starts a call (`tel:`): digits and a leading plus only. */
