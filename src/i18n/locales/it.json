@@ -9929,6 +9929,115 @@
       "title": "Codice QR per verifica ospiti"
     }
   },
+  "propertyBooking": {
+    "announce": {
+      "total_one": "Totale per {{count}} notte: {{total}}.",
+      "total_other": "Totale per {{count}} notti: {{total}}."
+    },
+    "aside": "Prenota questa casa",
+    "ask": "Hai una domanda?",
+    "availability": {
+      "eyebrow": "Disponibilità",
+      "minNights_one": "Soggiorno minimo di {{count}} notte.",
+      "minNights_other": "Soggiorno minimo di {{count}} notti.",
+      "prices": "Su ogni giorno libero vedi il prezzo della notte.",
+      "source": "Prezzi e notti libere arrivano dal calendario dell'host.",
+      "title": "Quando vuoi venire?",
+      "weekend": "Il venerdì e il sabato costano un po' di più."
+    },
+    "bar": {
+      "addDates": "Aggiungi le date",
+      "change": "Cambia",
+      "chooseDeparture": "Scegli la partenza",
+      "edit": "Modifica",
+      "label": "Prenota {{name}}",
+      "offline": "Offline",
+      "problem": "Controlla date e ospiti",
+      "total": "totale"
+    },
+    "cta": {
+      "book": "Prenota",
+      "calculating": "Calcolo il totale…",
+      "changeGuests": "Cambia gli ospiti",
+      "chooseDates": "Scegli le date",
+      "nothingYet": "Non paghi ancora nulla",
+      "offline": "Serve la connessione per prenotare",
+      "otherDates": "Scegli altre date",
+      "retry": "Riprova"
+    },
+    "fields": {
+      "add": "Aggiungi",
+      "arrival": "Arrivo",
+      "datesTitle": "Le tue date",
+      "departure": "Partenza",
+      "guests": "Ospiti",
+      "guestsTitle": "Chi viene"
+    },
+    "hint": {
+      "chooseDeparture": "Arrivo il {{date}}: ora scegli il giorno di partenza."
+    },
+    "lines": {
+      "discount": "Sconto",
+      "nights_one": "{{count}} notte × {{price}}",
+      "nights_other": "{{count}} notti × {{price}}",
+      "touristTax": "Imposta di soggiorno",
+      "touristTaxEstimateHelp": "Finché non indichi l'età dei bambini la calcoliamo come se avessero tutti 17 anni: nel pagamento, con le età vere, il totale può scendere.",
+      "touristTaxEstimated": "Imposta di soggiorno (stimata)",
+      "touristTaxHelp": "L'imposta di soggiorno la stabilisce il Comune e si paga per persona e per notte, secondo le sue regole.",
+      "touristTaxWhat": "Cos'è l'imposta di soggiorno?",
+      "weekendNights_one": "{{count}} notte nel weekend × {{price}}",
+      "weekendNights_other": "{{count}} notti nel weekend × {{price}}"
+    },
+    "mode": {
+      "instant": "Prenotazione immediata",
+      "request": "anche su richiesta"
+    },
+    "notBookable": {
+      "text": "Questa casa non è ancora prenotabile online.",
+      "write": "Scrivi a {{host}}"
+    },
+    "offline": "Sei offline: puoi guardare tutto, per prenotare serve la connessione.",
+    "price": {
+      "average": "{{price}} a notte in media",
+      "calculating": "Calcolo il totale per le tue date…",
+      "chooseDates": "Scegli le date per vedere il totale.",
+      "from": "da",
+      "night": "notte",
+      "totalFor_one": "totale per {{count}} notte",
+      "totalFor_other": "totale per {{count}} notti"
+    },
+    "problem": {
+      "clearDates": "Cancella le date e ricomincia",
+      "datesUnavailable": "Queste date non sono libere.",
+      "extend_one": "Allunga fino a {{count}} notte",
+      "extend_other": "Allunga fino a {{count}} notti",
+      "firstFree": "Prime date libere: {{dates}}",
+      "invalidStay": "Controlla le date: la partenza deve essere dopo l'arrivo.",
+      "minNights_one": "Il soggiorno minimo è di {{count}} notte.",
+      "minNights_other": "Il soggiorno minimo è di {{count}} notti.",
+      "notBookable": "Questa casa non è ancora prenotabile online.",
+      "past": "L'arrivo scelto è già passato.",
+      "reduceGuests_one": "Riduci a {{count}} ospite",
+      "reduceGuests_other": "Riduci a {{count}} ospiti",
+      "tooManyGuests_one": "La casa ospita al massimo {{count}} persona.",
+      "tooManyGuests_other": "La casa ospita al massimo {{count}} persone."
+    },
+    "quote": {
+      "failed": "Non riusciamo a calcolare il totale. Riprova tra un momento."
+    },
+    "sheet": {
+      "dates": "Le tue date",
+      "description": "Scegli le date e gli ospiti: il totale si aggiorna qui sotto.",
+      "guests": "Ospiti",
+      "title": "Prenota {{name}}"
+    },
+    "trust": {
+      "freeOver": "Per queste date la cancellazione gratuita è già scaduta.",
+      "freeUntil": "Cancellazione gratuita fino al {{date}}",
+      "noHiddenCosts": "Nessun costo nascosto",
+      "stripe": "Pagamento sicuro con Stripe"
+    }
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Passaggio all'affitto lungo",
@@ -10632,6 +10741,135 @@
     "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento.",
     "termsNote": "Leggi anche i <terms>termini di prenotazione</terms> dell'operatore."
   },
+  "publicCheckout": {
+    "backToHome": "Torna alla casa",
+    "details": {
+      "arrivalHint": "Check-in dalle {{from}} alle {{to}}",
+      "arrivalLabel": "Orario di arrivo previsto",
+      "arrivalLate": "Dopo le {{time}}",
+      "arrivalTitle": "Il tuo arrivo",
+      "arrivalUnknown": "Non lo so ancora",
+      "back": "Torna al soggiorno",
+      "documentsNote": "I documenti di chi viaggia li chiediamo dopo, con il check-in online: lo prevede la legge.",
+      "emailDidYouMean": "Forse intendevi {{email}}?",
+      "emailHint": "Ti mandiamo qui la conferma e il link per il check-in online.",
+      "emailUse": "Usa {{email}}",
+      "next": "Continua: pagamento",
+      "offers": "Voglio ricevere le offerte di {{name}}.",
+      "offersHint": "Puoi cancellarti quando vuoi.",
+      "phoneHint": "Solo per organizzare l'arrivo.",
+      "whoTitle": "Chi prenota"
+    },
+    "leads": {
+      "step1": "Controlla date e ospiti e scegli come prenotare.",
+      "step2": "Servono solo per la conferma: non devi creare un account.",
+      "step3": "Ultimo passo: scegli come pagare. Per ogni modo ti diciamo cosa succede.",
+      "step3Request": "Oggi non paghi nulla: {{host}} deve accettare la richiesta."
+    },
+    "offline": "Sei offline: per prenotare serve la connessione. I tuoi dati restano qui.",
+    "optional": "(facoltativo)",
+    "pay": {
+      "addDetails": "Aggiungi i tuoi dati",
+      "afterLater": "Salviamo la carta in modo sicuro: oggi non addebitiamo nulla. Il {{date}} addebitiamo {{total}}.",
+      "afterNow": "Dopo questo passo inserisci i dati della carta: il pagamento è sicuro con Stripe.",
+      "afterRequest": "Oggi non paghi nulla: {{host}} accetta o rifiuta la richiesta.",
+      "back": "Torna ai tuoi dati",
+      "consentTitle": "Termini e privacy",
+      "ctaLater": "Prenota: addebito il {{date}}",
+      "ctaNow": "Prenota e paga {{total}}",
+      "ctaRequest": "Invia la richiesta a {{host}}",
+      "edit": "Modifica",
+      "fixStay": "Il soggiorno va sistemato: torna al primo passo.",
+      "hold": "Le date restano riservate per te per 30 minuti.",
+      "howTitle": "Come vuoi pagare?",
+      "laterText": "Salviamo la carta ora e la addebitiamo il {{date}}.",
+      "laterTitle": "Paga alla scadenza",
+      "laterUnavailable": "Non disponibile per queste date.",
+      "missingDetails": "Mancano i tuoi dati: nome ed email servono per la conferma.",
+      "needConsent": "Per prenotare serve il tuo consenso a termini e privacy: spunta la casella.",
+      "nextEmail": "Confermi la tua email",
+      "nextEmailText": "Ti mandiamo subito un link: la richiesta arriva all'host solo dopo la tua conferma.",
+      "nextHost": "{{host}} accetta o rifiuta",
+      "nextHostText": "Fino ad allora la prenotazione non è confermata.",
+      "nextPay": "Paghi in struttura",
+      "nextPayText": "Se {{host}} accetta, la prenotazione è confermata e paghi {{total}} in struttura.",
+      "nextTitle": "Cosa succede dopo",
+      "nowText": "Addebitiamo {{total}} adesso, con la carta.",
+      "nowTitle": "Paga ora",
+      "otherDates": "Cambia le date",
+      "trustCard": "{{name}} non vede e non conserva i dati della carta",
+      "trustNoHidden": "Nessun costo nascosto: il totale è {{total}}",
+      "trustRequest": "Nessun pagamento online: paghi in struttura, solo se {{host}} accetta.",
+      "trustStripe": "Pagamento protetto da Stripe, con connessione cifrata",
+      "trustTitle": "Perché puoi fidarti"
+    },
+    "payNothingYet": "Non paghi ancora nulla.",
+    "paymentsOff": {
+      "text": "{{host}} sta completando l'attivazione dei pagamenti online: per ora qui non si può prenotare. Puoi scrivere per chiedere le date.",
+      "title": "Le prenotazioni online sono in pausa",
+      "write": "Scrivi a {{host}}"
+    },
+    "secure": "Pagamento sicuro",
+    "stay": {
+      "by": "entro le {{time}}",
+      "chooseDates": "Scegli le date del soggiorno.",
+      "chooseDatesLabel": "Scegli le date",
+      "datesTitle": "Le date",
+      "edit": "Modifica",
+      "editDatesLabel": "Modifica le date: arrivo {{checkIn}}, partenza {{checkOut}}",
+      "fixStay": "Prima di continuare, sistemiamo il soggiorno.",
+      "from": "dalle {{time}}",
+      "guestsTitle": "Chi viaggia",
+      "instant": {
+        "text": "Confermata appena il pagamento, o il salvataggio della carta, va a buon fine.",
+        "title": "Prenotazione immediata"
+      },
+      "modeTitle": "Come vuoi prenotare?",
+      "next": "Continua: i tuoi dati",
+      "request": {
+        "text": "{{host}} accetta o rifiuta la richiesta; se accetta, paghi in struttura. Oggi non paghi nulla.",
+        "title": "Su richiesta"
+      },
+      "requestsHint": "{{host}} lo legge prima del tuo arrivo.",
+      "requestsLabel": "Richieste speciali",
+      "requestsPlaceholder": "Per esempio: arriviamo tardi, ci serve la culla, allergie…",
+      "requestsTitle": "Vuoi dire qualcosa a {{host}}?"
+    },
+    "steps": {
+      "done": "fatto",
+      "label": "Passi della prenotazione",
+      "phone": "Passo {{step}} di 3",
+      "step1": "Il soggiorno",
+      "step2": "I tuoi dati",
+      "step3": "Pagamento"
+    },
+    "summary": {
+      "confirmation": "Conferma",
+      "dates": "Date",
+      "description": "Casa, date, ospiti e prezzo della tua prenotazione.",
+      "details": "Dettagli",
+      "edit": "Cambia date o ospiti",
+      "guests": "Ospiti",
+      "instant": "Immediata",
+      "locked": "La prenotazione è fatta: date e ospiti non si cambiano più da qui.",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noDates": "Da scegliere",
+      "noPrice": "Il totale compare quando le date sono scelte.",
+      "onRequest": "Su richiesta",
+      "partialUntil": "Rimborso del {{percent}}% fino al {{date}}",
+      "title": "Riepilogo della prenotazione",
+      "total": "Totale",
+      "updated_one": "Totale aggiornato per {{count}} notte: {{total}}.",
+      "updated_other": "Totale aggiornato per {{count}} notti: {{total}}."
+    },
+    "titles": {
+      "step1": "Il tuo soggiorno",
+      "step2": "I tuoi dati",
+      "step3": "Conferma e paga",
+      "step3Request": "Invia la richiesta"
+    }
+  },
   "publicProperty": {
     "amenities": {
       "AirConditioning": "Aria condizionata",
@@ -10786,7 +11024,9 @@
       "cancellationTitle": "Cancellazione",
       "childrenNo": "Non adatta ai bambini",
       "childrenYes": "Bambini benvenuti",
+      "datesHint": "Scegli le date del soggiorno: qui vedrai i giorni esatti entro cui puoi cancellare.",
       "departureBy": "Partenza entro le {{time}}",
+      "forYourDates": "Con le tue date (arrivo il {{date}})",
       "houseTitle": "Regole della casa",
       "partiesNo": "Niente feste",
       "partiesOnRequest": "Feste su richiesta",
@@ -10819,6 +11059,7 @@
     },
     "sections": {
       "amenities": "Servizi",
+      "availability": "Disponibilità",
       "description": "Descrizione",
       "know": "Da sapere",
       "overview": "Panoramica",
@@ -12061,6 +12302,144 @@
       "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",
       "imageTooLarge": "L'immagine supera la dimensione massima di {{maxMb}} MB.",
       "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
+    }
+  },
+  "siteConfirm": {
+    "action": {
+      "calendar": "Aggiungi al calendario",
+      "findBooking": "Cerca la tua prenotazione",
+      "manage": "Gestisci la prenotazione",
+      "notArrived": "Non è arrivata? Scrivi all'host",
+      "otherDates": "Scegli altre date",
+      "writeHost": "Scrivi all'host"
+    },
+    "calendar": {
+      "arriveFrom": "Arrivo dalle {{time}}",
+      "code": "Codice prenotazione {{code}}",
+      "contact": "Contatti: {{host}}, {{phone}}",
+      "description": "{{home}}, {{days}}: con il codice della prenotazione.",
+      "eventTitle": "Soggiorno · {{home}}",
+      "fileName": "soggiorno-{{code}}.ics",
+      "google": "Google Calendar",
+      "ics": {
+        "text": "Per Apple, Outlook e quasi tutte le app di calendario",
+        "title": "Scarica il file .ics"
+      },
+      "leaveBy": "Partenza entro le {{time}}",
+      "newTab": "Si apre in una nuova scheda",
+      "outlook": "Outlook.com",
+      "place": "Nel calendario c'è la zona, non l'indirizzo esatto.",
+      "saved": "File scaricato: aprilo per aggiungere il soggiorno al tuo calendario.",
+      "title": "Aggiungi al calendario"
+    },
+    "chip": {
+      "cancelled": "Annullata",
+      "confirmed": "Confermata",
+      "declined": "Non accettata",
+      "emailPending": "Email da confermare",
+      "expired": "Scaduta",
+      "processing": "Pagamento in elaborazione",
+      "unavailable": "Date non libere",
+      "unpaid": "Da pagare",
+      "waiting": "In attesa dell'host"
+    },
+    "error": {
+      "title": "Non riusciamo a leggere la prenotazione"
+    },
+    "hostFallback": "l'host",
+    "invalid": {
+      "title": "Link incompleto"
+    },
+    "lead": {
+      "email": "Ti abbiamo scritto a {{email}}: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "emailNoAddress": "Ti abbiamo scritto: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "later": "Oggi non paghi nulla: il {{date}} addebitiamo {{total}} sulla carta salvata.",
+      "onSite": "Paghi {{total}} in struttura, all'arrivo.",
+      "paid": "La conferma con il codice è nella tua email.",
+      "paidEmail": "La conferma con il codice è nella tua email, {{email}}.",
+      "stay_one": "{{home}} ti aspetta: {{range}}.",
+      "stay_other": "{{home}} vi aspetta: {{range}}."
+    },
+    "mail": {
+      "subject": "La mia prenotazione {{code}}"
+    },
+    "note": {
+      "later": "Paghi il {{date}}",
+      "onSite": "Paghi in struttura, all'arrivo",
+      "paid": "Pagato online",
+      "processing": "Pagamento in elaborazione",
+      "request": "Richiesta, non ancora una prenotazione",
+      "unpaid": "Ancora da pagare"
+    },
+    "offline": "Sei offline: lo stato si aggiorna di nuovo quando torni online.",
+    "offlineAction": "Serve la connessione: riprova quando sei di nuovo online.",
+    "pageTitle": "La tua prenotazione · {{org}}",
+    "steps": {
+      "arrival": {
+        "text": "{{day}}, dalle {{time}}",
+        "title": "Arrivo"
+      },
+      "charge": {
+        "text": "Sulla carta salvata: non devi fare nulla.",
+        "title": "Addebito di {{total}}"
+      },
+      "confirmed": {
+        "later": "Oggi non hai pagato nulla.",
+        "onSite": "Pagherai in struttura, all'arrivo.",
+        "paid": "La conferma con il codice è nella tua email.",
+        "title": "Prenotazione confermata"
+      },
+      "departure": {
+        "text": "{{day}}, entro le {{time}}",
+        "title": "Partenza"
+      },
+      "email": {
+        "doneText": "{{host}} ha ricevuto la tua richiesta.",
+        "doneTitle": "Email confermata",
+        "title": "Conferma la tua email"
+      },
+      "eyebrow": "I prossimi passi",
+      "host": {
+        "title": "{{host}} risponde"
+      },
+      "ifAccepted": {
+        "title": "Se accetta"
+      },
+      "state": {
+        "current": "adesso",
+        "done": "fatto",
+        "todo": "da fare"
+      },
+      "title": "Cosa succede ora",
+      "when": {
+        "done": "Fatto",
+        "later": "Poi",
+        "now": "Adesso"
+      }
+    },
+    "stuck": "Non riusciamo a confermare: controlla la tua email o cerca la prenotazione.",
+    "ticket": {
+      "arrival": "Arrivo",
+      "by": "entro le {{time}}",
+      "code": "Codice",
+      "copied": "Copiato",
+      "copiedAnnounce": "Codice copiato negli appunti.",
+      "copiedLabel": "Codice {{code}} copiato",
+      "copy": "Copia",
+      "copyLabel": "Copia il codice {{code}}",
+      "departure": "Partenza",
+      "from": "dalle {{time}}",
+      "label": "La tua prenotazione: {{home}}",
+      "ofWhichChildren_one": "di cui {{count}} bambino",
+      "ofWhichChildren_other": "di cui {{count}} bambini",
+      "selectedAnnounce": "Codice selezionato: copialo con la tastiera o dal menu del telefono.",
+      "total": "Totale"
+    },
+    "title": {
+      "confirmed": "Prenotazione confermata!",
+      "confirmedNamed": "Prenotazione confermata, {{name}}!",
+      "email": "Ultimo passo: conferma la tua email",
+      "wait": "Richiesta inviata a {{host}}"
     }
   },
   "siteDocuments": {
