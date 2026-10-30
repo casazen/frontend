@@ -33,3 +33,4 @@ export * from './verification.types';
 export * from './statement.types';
 export * from './withholding.types';
 export * from './routine.types';
+export * from './wire-transfer.types';
