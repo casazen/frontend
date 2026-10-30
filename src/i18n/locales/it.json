@@ -12739,7 +12739,9 @@
       "homes": "Le nostre case",
       "free_one": "{{count}} casa libera",
       "free_other": "{{count}} case libere",
-      "noneFree": "Nessuna casa libera"
+      "noneFree": "Nessuna casa libera",
+      "count_one": "{{count}} casa",
+      "count_other": "{{count}} case"
     },
     "sub": {
       "dates": "{{range}} · {{nights}} · {{guests}}",
@@ -12751,6 +12753,50 @@
       "title": "Nessuna casa da mostrare",
       "text": "Con questa ricerca non c’è nessuna casa. Prova a cambiare qualcosa.",
       "back": "Torna alle case"
+    },
+    "sort": {
+      "label": "Ordina le case",
+      "recommended": "Consigliate",
+      "priceAsc": "Prezzo più basso",
+      "priceDesc": "Prezzo più alto",
+      "rating": "Valutazione più alta",
+      "largest": "Più grandi"
+    },
+    "categories": "Categorie",
+    "onlyFavorites": "Solo i preferiti",
+    "none": {
+      "capacity": {
+        "title": "Nessuna casa per {{guests}} ospiti",
+        "text": "Le case di questo sito ospitano fino a {{count}} persone. Scrivi a {{host}} per capire come fare."
+      },
+      "dates": {
+        "title": "Nessuna casa libera per queste date",
+        "text": "In queste date le case sono già prenotate. Prova altre date, anche vicine, oppure scrivi a {{host}}."
+      },
+      "filters": {
+        "title": "Nessuna casa con questi filtri",
+        "text": "Prova a togliere qualche filtro."
+      },
+      "favorites": {
+        "title": "Nessuna casa tra i preferiti",
+        "text": "Tocca il cuore su una casa per salvarla su questo dispositivo: la ritrovi qui."
+      },
+      "none": {
+        "title": "Nessuna casa da mostrare",
+        "text": "In questo momento nessuna casa è prenotabile online. Scrivi a {{host}} per sapere quando riapre."
+      },
+      "alternatives": "Date vicine con case libere",
+      "alternativeHomes_one": "{{count}} casa libera",
+      "alternativeHomes_other": "{{count}} case libere",
+      "clear": "Togli i filtri"
+    },
+    "unavailable": {
+      "title": "Non libere in queste date"
+    },
+    "note": {
+      "included": "I totali comprendono notti, pulizia e imposta di soggiorno.",
+      "estimated": "L’imposta di soggiorno è una stima finché non indichi le età dei bambini.",
+      "notIncluded": "Per alcune case il totale non comprende l’imposta di soggiorno."
     }
   },
   "statement": {

@@ -12739,7 +12739,9 @@
       "homes": "Our homes",
       "free_one": "{{count}} home available",
       "free_other": "{{count}} homes available",
-      "noneFree": "No homes available"
+      "noneFree": "No homes available",
+      "count_one": "{{count}} home",
+      "count_other": "{{count}} homes"
     },
     "sub": {
       "dates": "{{range}} · {{nights}} · {{guests}}",
@@ -12751,6 +12753,50 @@
       "title": "No homes to show",
       "text": "There is no home for this search. Try changing something.",
       "back": "Back to the homes"
+    },
+    "sort": {
+      "label": "Sort the homes",
+      "recommended": "Recommended",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price",
+      "rating": "Highest rated",
+      "largest": "Largest"
+    },
+    "categories": "Categories",
+    "onlyFavorites": "Favourites only",
+    "none": {
+      "capacity": {
+        "title": "No home for {{guests}} guests",
+        "text": "The homes of this site sleep up to {{count}} people. Write to {{host}} to see what can be done."
+      },
+      "dates": {
+        "title": "No homes available on these dates",
+        "text": "The homes are already booked on these dates. Try other dates, nearby ones too, or write to {{host}}."
+      },
+      "filters": {
+        "title": "No homes with these filters",
+        "text": "Try removing some filters."
+      },
+      "favorites": {
+        "title": "No homes among your favourites",
+        "text": "Tap the heart on a home to save it on this device: you will find it here."
+      },
+      "none": {
+        "title": "No homes to show",
+        "text": "No home can be booked online right now. Write to {{host}} to find out when bookings reopen."
+      },
+      "alternatives": "Nearby dates with homes available",
+      "alternativeHomes_one": "{{count}} home available",
+      "alternativeHomes_other": "{{count}} homes available",
+      "clear": "Clear filters"
+    },
+    "unavailable": {
+      "title": "Not available on these dates"
+    },
+    "note": {
+      "included": "Totals include nights, cleaning and tourist tax.",
+      "estimated": "The tourist tax is an estimate until you give the ages of the children.",
+      "notIncluded": "For some homes the total does not include the tourist tax."
     }
   },
   "statement": {

@@ -51,5 +51,5 @@ export function useStayState(limits: Partial<Pick<StayLimits, 'maxGuests' | 'pet
 
   const linkTo = useCallback((path: string) => stayHref(path, stay), [stay]);
 
-  return { stay, problems, guests: stay.adults + stay.children, setStay, clearDates, linkTo, where, setWhere };
+  return { stay, problems, guests: stay.adults + stay.children, setStay, clearDates, linkTo, where, setWhere, searchParams, writeQuery: write };
 }

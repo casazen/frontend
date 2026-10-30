@@ -1,15 +1,21 @@
-import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2, SearchX, TriangleAlert } from 'lucide-react';
+import { Loader2, Receipt, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HouseCard } from '@/features/public-site/cards/house-card';
+import { useFavorites } from '@/features/public-site/favorites/use-favorites';
+import { maxGuestsOf, petsAllowedOf } from '@/features/public-site/home/home-model';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
-import { useStayState } from '@/features/public-site/stay/use-stay-state';
-import { buildOrgBookingPath } from '@/lib/booking-url';
+import { writeStay } from '@/features/public-site/stay/stay-state';
 import { siteLocale } from '@/lib/site-language';
-import { useOrgStays } from '@/queries/use-public-stays';
+import { useOrgDestinations, useOrgStays } from '@/queries/use-public-stays';
 import type { PublicOrgDto } from '@/types';
-import { readSearch, toStaysQuery } from './search-state';
+import type { PublicStayAlternative } from '@/types/public-stays.types';
+import { NoResults, type NoResultsReason } from './no-results';
+import { NO_FILTERS, activeFilterCount } from './search-state';
+import { SearchToolbar } from './search-toolbar';
+import { UnavailableList } from './unavailable-list';
+import { useSearchState } from './use-search-state';
 import './search.css';
 
 interface PublicBookingContext {
@@ -18,8 +24,9 @@ interface PublicBookingContext {
 
 /**
  * The results of a booking site (DB-07c): the homes of the site for the stay and the search of the address, each with the total of
- * the quote for the nights chosen, the ones that are not free after the ones that are, with the reason. Read in one call (`stays`,
- * DB-07a); the page keeps the previous answer on screen while the next one is on its way.
+ * the quote for the nights chosen, the ones that are not free after the ones that are, with the reason; when nothing is free, the
+ * nearby dates that are. Read in one call (`stays`, DB-07a), and the page keeps the previous answer on screen while the next one is
+ * on its way. The price is the server's: the page does not add up anything.
  */
 export function SiteSearchPage() {
   const { t, i18n } = useTranslation();
@@ -27,13 +34,22 @@ export function SiteSearchPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const slug = org.slug ?? orgSlug;
   const locale = siteLocale(i18n.language);
-  const [searchParams] = useSearchParams();
-  const { stay } = useStayState();
-  const search = readSearch(searchParams);
+  const hostName = org.hostName?.trim() || org.displayName;
+
+  // Every home of the site, whatever is asked: the labels, the capacity and the pets of the bar come from all of them.
+  const catalog = useOrgStays(slug, {}).data?.items ?? [];
+  const destinations = useOrgDestinations(slug);
+  const favorites = useFavorites(slug);
+  const state = useSearchState({ maxGuests: maxGuestsOf(catalog), petsAllowed: petsAllowedOf(catalog) });
+  const { stay, search, setSearch, searchParams } = state;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
-  const stays = useOrgStays(slug, toStaysQuery(stay, search), { keepPrevious: true });
+
+  const stays = useOrgStays(slug, state.query, { keepPrevious: true });
   const result = stays.data;
-  const free = result?.items.filter((card) => card.availability.available) ?? [];
+  const items = (result?.items ?? []).filter((card) => !search.onlyFavorites || favorites.ids.includes(card.id));
+  const free = items.filter((card) => card.availability.available);
+  const notFree = items.filter((card) => !card.availability.available);
+  const hasFilters = activeFilterCount(search.filters) > 0 || search.filters.tags.length > 0;
 
   const title = !result
     ? t('siteSearch.title.homes')
@@ -41,7 +57,9 @@ export function SiteSearchPage() {
       ? free.length > 0
         ? t('siteSearch.title.free', { count: free.length })
         : t('siteSearch.title.noneFree')
-      : t('siteSearch.title.homes');
+      : hasFilters || search.onlyFavorites
+        ? t('siteSearch.title.count', { count: free.length })
+        : t('siteSearch.title.homes');
   const sub = hasDates
     ? t('siteSearch.sub.dates', {
         range: formatStayRange(stay.checkIn, stay.checkOut, locale),
@@ -50,62 +68,105 @@ export function SiteSearchPage() {
       })
     : t('siteSearch.sub.noDates');
 
+  const reasonOfNothing = (): NoResultsReason => {
+    if (search.onlyFavorites && (result?.items.length ?? 0) > 0 && items.length === 0) return 'favorites';
+    if ((result?.items.length ?? 0) === 0) return hasFilters ? 'filters' : 'none';
+    if (notFree.length > 0 && notFree.every((card) => card.availability.reason === 'guests')) return 'capacity';
+    return hasDates ? 'dates' : 'none';
+  };
+
+  const alternativeHref = (alternative: PublicStayAlternative) =>
+    `?${writeStay(new URLSearchParams(searchParams), { checkIn: alternative.checkIn, checkOut: alternative.checkOut }).toString()}`;
+  const clearFilters = () => setSearch({ filters: NO_FILTERS, onlyFavorites: false });
+  const goToResults = () => document.getElementById('page-title')?.focus();
+
+  // What the totals include, said as the server knows it: the tourist tax is exact, an estimate until the ages of the children are
+  // known, or not in the total when the comune has none on the list.
+  const taxStates = new Set(free.map((card) => card.price.includesTouristTax).filter(Boolean));
+  const notes: string[] = [];
+  if (hasDates && free.length > 0) {
+    if (taxStates.has('notIncluded')) notes.push('notIncluded');
+    if (taxStates.has('estimated')) notes.push('estimated');
+    if (notes.length === 0) notes.push('included');
+  }
+
   return (
     <div className="sr" data-testid="site-search">
-      <header className="sr-head">
-        <h1 id="page-title" tabIndex={-1}>
-          {title}
-        </h1>
-        <p className="sr-head__sub" aria-live="polite">
-          {sub}
-        </p>
-      </header>
+      <SearchToolbar
+        slug={slug}
+        state={state}
+        catalog={catalog}
+        destinations={destinations.data}
+        favoritesCount={favorites.ids.length}
+        onSearch={goToResults}
+      />
 
-      {stays.isPending ? (
-        <div role="status" aria-busy="true" data-testid="search-loading" className="sr-cards">
-          <span className="sr-only">{t('publicSite.loadingProperties')}</span>
-          {[0, 1, 2].map((key) => (
-            <div key={key} className="sr-skel" aria-hidden="true" />
-          ))}
-        </div>
-      ) : stays.isError || !result ? (
-        <div role="alert" className="sr-state" data-testid="search-error">
-          <TriangleAlert aria-hidden="true" />
-          <div>
-            <h2>{t('publicSite.propertiesError.title')}</h2>
-            <p>{t('publicSite.propertiesError.description')}</p>
+      <div className="sr-main" aria-busy={stays.isPlaceholderData || undefined} data-stale={stays.isPlaceholderData || undefined}>
+        <header className="sr-head" aria-live="polite">
+          <h1 id="page-title" tabIndex={-1}>
+            {title}
+          </h1>
+          <p className="sr-head__sub">{sub}</p>
+        </header>
+
+        {stays.isPending ? (
+          <div role="status" aria-busy="true" data-testid="search-loading" className="sr-cards">
+            <span className="sr-only">{t('publicSite.loadingProperties')}</span>
+            {[0, 1, 2].map((key) => (
+              <div key={key} className="sr-skel" aria-hidden="true" />
+            ))}
           </div>
-          <Button type="button" className="public-site-cta border-0" disabled={stays.isFetching} onClick={() => void stays.refetch()}>
-            {stays.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-            {t('shared.errorFallback.tryAgain')}
-          </Button>
-        </div>
-      ) : result.items.length === 0 ? (
-        <div className="sr-state" data-testid="search-empty">
-          <SearchX aria-hidden="true" />
-          <div>
-            <h2>{t('siteSearch.empty.title')}</h2>
-            <p>{t('siteSearch.empty.text')}</p>
+        ) : stays.isError && !result ? (
+          <div role="alert" className="sr-state" data-testid="search-error">
+            <TriangleAlert aria-hidden="true" />
+            <div>
+              <h2>{t('publicSite.propertiesError.title')}</h2>
+              <p>{t('publicSite.propertiesError.description')}</p>
+            </div>
+            <Button type="button" className="public-site-cta border-0" disabled={stays.isFetching} onClick={() => void stays.refetch()}>
+              {stays.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              {t('shared.errorFallback.tryAgain')}
+            </Button>
           </div>
-          <Link className="public-site-outline inline-flex h-11 items-center px-5 text-sm" to={buildOrgBookingPath(slug)}>
-            {t('siteSearch.empty.back')}
-          </Link>
-        </div>
-      ) : (
-        <div className="sr-cards" data-testid="search-results">
-          {result.items.map((card, index) => (
-            <HouseCard
-              key={card.id}
-              card={card}
-              orgSlug={slug}
-              variant="row"
-              nights={result.nights}
-              stay={hasDates ? stay : null}
-              eager={index < 2}
-            />
-          ))}
-        </div>
-      )}
+        ) : result ? (
+          <>
+            {free.length > 0 ? (
+              <div className="sr-cards" data-testid="search-results">
+                {free.map((card, index) => (
+                  <HouseCard
+                    key={card.id}
+                    card={card}
+                    orgSlug={slug}
+                    variant="row"
+                    nights={result.nights}
+                    stay={hasDates ? stay : null}
+                    eager={index < 2}
+                  />
+                ))}
+              </div>
+            ) : (
+              <NoResults
+                reason={reasonOfNothing()}
+                slug={slug}
+                hostName={hostName}
+                guests={stay.adults + stay.children}
+                maxGuests={maxGuestsOf(catalog)}
+                alternatives={search.onlyFavorites ? [] : result.alternatives}
+                alternativeHref={alternativeHref}
+                canClearFilters={hasFilters || search.onlyFavorites}
+                onClearFilters={clearFilters}
+              />
+            )}
+            <UnavailableList cards={notFree} orgSlug={slug} stay={stay} />
+            {notes.length > 0 ? (
+              <p className="sr-note" data-testid="search-note">
+                <Receipt aria-hidden="true" />
+                <span>{notes.map((key) => t(`siteSearch.note.${key}`)).join(' ')}</span>
+              </p>
+            ) : null}
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
