@@ -26,6 +26,7 @@
   width: 100vw;
   min-height: clamp(540px, 80svh, 780px);
   margin-top: -1.5rem;
+  margin-bottom: clamp(72px, 7vw, 96px);
   margin-left: calc(50% - 50vw);
   padding: 96px 0 clamp(96px, 10vw, 128px);
   color: #ffffff;
@@ -153,10 +154,6 @@
 }
 
 /* --------------------------------------------------------------------- Categories */
-.hm-cats {
-  padding-top: clamp(80px, 8vw, 104px);
-}
-
 .hm-cats ul {
   display: flex;
   gap: 12px;
@@ -374,10 +371,6 @@
   box-shadow: var(--cz-public-shadow-widget);
 }
 
-.hm-skeleton {
-  padding-top: clamp(80px, 8vw, 104px);
-}
-
 .hm-skel-card {
   display: flex;
   flex-direction: column;
@@ -408,11 +401,8 @@
 @media (max-width: 767.98px) {
   .hm-hero {
     min-height: clamp(480px, 76svh, 640px);
+    margin-bottom: 64px;
     padding-bottom: 88px;
-  }
-
-  .hm-cats {
-    padding-top: 60px;
   }
 
   .hm-cats ul {
