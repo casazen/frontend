@@ -119,7 +119,9 @@ describe('"Crea la tua vetrina": the guided creation (SP-13e)', () => {
     expect(await screen.findByLabelText(/Frase in grande/)).toHaveValue('Ciao');
     next();
 
-    expect(await screen.findByText('Scrivi almeno 12 caratteri.')).toBeInTheDocument();
+    // Said under the field (the field is described by it) and, like in every wizard, repeated in the summary of the step.
+    await waitFor(() => expect(screen.getByLabelText(/Frase in grande/)).toHaveAccessibleDescription(/Scrivi almeno 12 caratteri\./));
+    expect(screen.getByTestId('wizard-error-summary')).toHaveTextContent('Scrivi almeno 12 caratteri.');
     expect(screen.getByRole('heading', { name: 'Presenta la tua attività' })).toBeInTheDocument();
     expect(api.saveDraft).not.toHaveBeenCalled();
   });
