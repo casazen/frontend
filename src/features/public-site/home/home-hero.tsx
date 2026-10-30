@@ -12,7 +12,7 @@ import { displayableMediaUrls } from '@/lib/media-url';
 import { siteLocale } from '@/lib/site-language';
 import type { PublicOrgDto } from '@/types';
 import type { PublicDestination, PublicStayCard } from '@/types/public-stays.types';
-import { comuniOf, destinationOptions, listOfPlaces, maxGuestsOf, petsAllowedOf, siteRating } from './home-model';
+import { comuniOf, destinationOptions, listOfPlaces, maxGuestsOf, siteRating } from './home-model';
 
 /** What the host wrote under the slogan (DB-03 `Org.Subtitle`); the type of the shared DTO does not carry it yet. */
 type HomeOrg = PublicOrgDto & { subtitle?: string | null };
@@ -43,8 +43,7 @@ export function HomeHero({ org, slug, cards, destinations, searchPath, loading =
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const maxGuests = maxGuestsOf(cards);
-  const petsAllowed = petsAllowedOf(cards);
-  const { stay, setStay, where, setWhere } = useStayState({ maxGuests, petsAllowed });
+  const { stay, setStay, where, setWhere } = useStayState({ maxGuests });
   const calendar = usePublicSiteCalendar(slug, { adults: stay.adults, children: stay.children });
 
   const options = useMemo(
@@ -110,7 +109,6 @@ export function HomeHero({ org, slug, cards, destinations, searchPath, loading =
             onStayChange={setStay}
             calendar={calendar}
             maxGuests={maxGuests}
-            petsAllowed={petsAllowed}
             showDestination={options.length > 1}
             onSearch={search}
           />

@@ -9,7 +9,7 @@ import { problemOfCode, problemOfRange, type StayProblemKind } from '@/features/
 import type { BookingModel, QuoteView } from '@/features/public-booking/booking/booking-context';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
-import { buildPropertyCheckoutUrl } from '@/lib/booking-url';
+import { buildPropertyCheckoutPath } from '@/lib/booking-url';
 import { nightsBetween } from '@/lib/stay-dates';
 import { MINOR_MAX_AGE } from '@/lib/tourist-tax';
 import type { DirectBookingQuotePayload, PublicPropertyDetailDto } from '@/types';
@@ -50,13 +50,15 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   }, [calendar.status, calendar.days, calendar.today, calendar.end, nights, stay.checkIn, stay.checkOut]);
 
   const overCapacity = problems.includes('overCapacity');
+  // The guest said a pet comes and the home takes none: said at once, with the way out, and the home is not offered for booking.
+  const petsNotAllowed = problems.includes('petsNotAllowed');
   // Every child has an age: that is what the quote is asked with, and the tax is exact. Otherwise the oldest age of a minor.
   const knownAges = useMemo(() => {
     const given = (childrenAges ?? []).slice(0, stay.children);
     return stay.children > 0 && given.length === stay.children && given.every((age) => age !== null) ? (given as number[]) : null;
   }, [childrenAges, stay.children]);
   const payload = useMemo<DirectBookingQuotePayload | null>(() => {
-    if (nights <= 0 || calendarProblem || overCapacity) return null;
+    if (nights <= 0 || calendarProblem || overCapacity || petsNotAllowed) return null;
     return {
       propertyId: property.id,
       checkInDate: stay.checkIn,
@@ -65,11 +67,12 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
       numberOfChildren: stay.children,
       ...(stay.children > 0 ? { childrenAges: knownAges ?? Array.from({ length: stay.children }, () => MINOR_MAX_AGE) } : {}),
     };
-  }, [nights, calendarProblem, overCapacity, property.id, stay.checkIn, stay.checkOut, stay.adults, stay.children, knownAges]);
+  }, [nights, calendarProblem, overCapacity, petsNotAllowed, property.id, stay.checkIn, stay.checkOut, stay.adults, stay.children, knownAges]);
   const query = useDirectBookingQuote(payload);
 
   const quote = useMemo<QuoteView>(() => {
     if (overCapacity) return { status: 'problem', problem: 'tooManyGuests', maxGuests: property.maxGuests };
+    if (petsNotAllowed) return { status: 'problem', problem: 'petsNotAllowed' };
     if (nights <= 0) return { status: 'none' };
     if (calendarProblem) return { status: 'problem', ...calendarProblem };
     if (query.isError) {
@@ -88,7 +91,7 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
       return { status: 'ready', quote: query.data, estimatedTax: stay.children > 0 && !knownAges && query.data.touristTax.ageRulesApply };
     }
     return { status: 'loading', stale: query.data ?? null };
-  }, [overCapacity, nights, calendarProblem, query, property.maxGuests, property.minNights, stay.children, knownAges, t]);
+  }, [overCapacity, petsNotAllowed, nights, calendarProblem, query, property.maxGuests, property.minNights, stay.children, knownAges, t]);
 
   const fromPriceCents = useMemo(() => {
     if (calendar.status === 'ready') {
@@ -101,9 +104,8 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   }, [calendar.status, calendar.days, calendar.today, property.nightlyRate]);
 
   const canBook = quote.status === 'ready' && online && acceptsBookings;
-  const checkoutHref = canBook
-    ? buildPropertyCheckoutUrl(orgSlug, property, { checkIn: stay.checkIn, checkOut: stay.checkOut, guests, children: stay.children })
-    : null;
+  // The checkout is given the whole stay of the address, the pet included: what the guest said is not lost on the way to it.
+  const checkoutHref = canBook ? linkTo(buildPropertyCheckoutPath(orgSlug, property)) : null;
 
   return {
     property,

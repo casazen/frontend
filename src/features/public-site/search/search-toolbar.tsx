@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
 import { SITE_TAG_ICONS, countTags, type SiteTag } from '@/features/public-site/cards/site-tags';
-import { destinationOptions, maxGuestsOf, petsAllowedOf } from '@/features/public-site/home/home-model';
+import { destinationOptions, maxGuestsOf } from '@/features/public-site/home/home-model';
 import { SearchBar } from '@/features/public-site/stay/search-bar';
 import { usePublicSiteCalendar } from '@/features/public-site/stay/use-public-site-calendar';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,6 @@ export function SearchToolbar({ slug, state, catalog, destinations, favoritesCou
   const { t } = useTranslation();
   const { stay, setStay, where, setWhere, search, setSearch } = state;
   const maxGuests = maxGuestsOf(catalog);
-  const petsAllowed = petsAllowedOf(catalog);
   const calendar = usePublicSiteCalendar(slug, { adults: stay.adults, children: stay.children });
   const options = useMemo(
     () => destinationOptions(destinations, (count) => t('siteHome.hero.destinationHomes', { count })),
@@ -56,7 +55,6 @@ export function SearchToolbar({ slug, state, catalog, destinations, favoritesCou
           onStayChange={setStay}
           calendar={calendar}
           maxGuests={maxGuests}
-          petsAllowed={petsAllowed}
           showDestination={options.length > 1}
           onSearch={onSearch}
         />

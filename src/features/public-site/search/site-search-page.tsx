@@ -4,7 +4,7 @@ import { List, Loader2, Map as MapIcon, Receipt, TriangleAlert } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { HouseCard } from '@/features/public-site/cards/house-card';
 import { useFavorites } from '@/features/public-site/favorites/use-favorites';
-import { maxGuestsOf, petsAllowedOf } from '@/features/public-site/home/home-model';
+import { maxGuestsOf } from '@/features/public-site/home/home-model';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
 import { writeStay } from '@/features/public-site/stay/stay-state';
 import { useMapLink } from '@/features/site-maps';
@@ -43,11 +43,12 @@ export function SiteSearchPage() {
   const locale = siteLocale(i18n.language);
   const hostName = org.hostName?.trim() || org.displayName;
 
-  // Every home of the site, whatever is asked: the labels, the capacity and the pets of the bar come from all of them.
+  // Every home of the site, whatever is asked: the labels and the capacity of the bar come from all of them. A guest with a pet is
+  // always asked, and the list says which homes take it (the server answers a home that does not with the reason `pets`).
   const catalog = useOrgStays(slug, {}).data?.items ?? [];
   const destinations = useOrgDestinations(slug);
   const favorites = useFavorites(slug);
-  const state = useSearchState({ maxGuests: maxGuestsOf(catalog), petsAllowed: petsAllowedOf(catalog) });
+  const state = useSearchState({ maxGuests: maxGuestsOf(catalog) });
   const { stay, search, setSearch, searchParams } = state;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const desktop = useMediaQuery(FROM_DESKTOP_QUERY);
