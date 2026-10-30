@@ -6,11 +6,11 @@ import { sampleCurve, type Pt } from '../geometry';
 import { clamp, rngOf, slug } from '../numeric';
 import { toKm } from '../view';
 import { snapKm } from './land';
-import type { BaseTown, DetailPack, GeoBase, GeoLod, GeoName, RawItaly, RawLod, RawName, RawShape, Shape } from './model';
+import type { BaseTown, DetailPack, GeoBase, GeoLod, GeoName, PackAreaName, PackTown, RawItaly, RawLod, RawName, RawPack, RawShape, Shape } from './model';
 
 /* ----- decoding of the generated file ----- */
 
-function decodeShape(raw: RawShape, u: number): Shape {
+export function decodeShape(raw: RawShape, u: number): Shape {
   const k: Pt[] = [];
   let lat = raw[0];
   let lon = raw[1];
@@ -35,7 +35,7 @@ function decodeShape(raw: RawShape, u: number): Shape {
 
 function decodeLod(raw: RawLod): GeoLod {
   const dec = (list: RawShape[]): Shape[] => list.map((s) => decodeShape(s, raw.u));
-  return { land: dec(raw.land), italy: dec(raw.italy), lakes: dec(raw.lakes), borders: dec(raw.borders) };
+  return { land: dec(raw.land), home: dec(raw.home), lakes: dec(raw.lakes), borders: dec(raw.borders), nation: dec(raw.nation) };
 }
 
 function decodeNames(list: RawName[], d: { size: number; ls: number; min: number; max: number }): GeoName[] {
@@ -60,6 +60,48 @@ export function decodeItaly(raw: RawItaly): GeoBase {
     regions: decodeNames(raw.regions, { size: 10, ls: 4, min: 90, max: 2000 }),
     seas: decodeNames(raw.seas, { size: 12, ls: 2.2, min: 120, max: 2000 }),
     countries: decodeNames(raw.countries, { size: 9.5, ls: 4, min: 400, max: 2000 }),
+  };
+}
+
+/**
+ * A detail pack from its generated file (tools/maps/build-packs.mjs). The built-up area of a town comes from its inhabitants, as
+ * in the base; the roads, the railways and the hand-made tints of a pack are empty for the packs made from Natural Earth.
+ */
+export function decodePack(raw: RawPack): DetailPack {
+  const towns: PackTown[] = [];
+  const foot: Record<string, number> = {};
+  for (const [name, la, lo, tier, pop] of raw.towns) {
+    const id = slug(name);
+    towns.push({ id, name, lat: la / 1000, lon: lo / 1000, tier });
+    foot[id] = Math.round(clamp(0.011 * Math.sqrt(pop * 1000), 0.35, 12) * 10) / 10;
+  }
+  const areaNames = raw.names.map(
+    (n): PackAreaName => ({
+      text: n.n,
+      lat: n.a / 1000,
+      lon: n.o / 1000,
+      kind: n.k ?? 'land',
+      size: n.s ?? 9,
+      ls: n.l ?? 2,
+      min: n.m ?? 0,
+      max: n.x ?? 2000,
+      ...(n.r ? { rot: n.r } : {}),
+      ...(n.d ? { len: n.d } : {}),
+    }),
+  );
+  return {
+    id: raw.id,
+    box: raw.box,
+    towns,
+    airports: [],
+    stations: [],
+    foot,
+    roads: [],
+    rails: [],
+    areaNames,
+    tints: [],
+    lakes: [],
+    borders: raw.borders.map((s) => decodeShape(s, raw.u)),
   };
 }
 

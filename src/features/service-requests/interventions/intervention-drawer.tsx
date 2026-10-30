@@ -9,6 +9,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { requestTitle } from '@/features/supplier/requests/request-model';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useIntervention } from '@/queries/use-service-requests';
+import { InterventionGroup } from './intervention-group';
 import { canDo } from './intervention-model';
 import { InterventionNow } from './intervention-now';
 import { InterventionFacts, InterventionHistory, InterventionPhotos, InterventionSupplier } from './intervention-parts';
@@ -68,6 +69,15 @@ export function InterventionDrawerContent({ id }: DetailContentProps) {
       </div>
 
       <InterventionNow request={request} steps={actions.steps} busy={actions.busy} permissions={permissions} paymentSent={actions.paymentSent} />
+
+      {request.group ? (
+        <section aria-labelledby="intervention-drawer-group" className="space-y-3" data-testid="intervention-drawer-group">
+          <h3 id="intervention-drawer-group" className="text-sm font-semibold">
+            {t('interventions.group.title')}
+          </h3>
+          <InterventionGroup group={request.group} />
+        </section>
+      ) : null}
 
       <InterventionFacts request={request} compact />
 

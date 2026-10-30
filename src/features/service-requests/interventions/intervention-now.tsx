@@ -90,6 +90,12 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
         <>
           <span className="block">{t('longRentRequests.next.waiting.body')}</span>
           {by ? <span className="mt-1 block">{t('longRentRequests.next.waiting.respondBy', { when: by })}</span> : null}
+          {/* SP-BKP: the request went to backup suppliers too; the group below says who they are. */}
+          {request.group?.phase === 'PrimaryWindow' || request.group?.phase === 'BackupWindow' ? (
+            <span className="mt-1 block text-foreground/70" data-testid="intervention-next-step-backups">
+              {t(request.group.phase === 'PrimaryWindow' ? 'interventions.group.waitingNote' : 'interventions.group.waitingNoteOpen')}
+            </span>
+          ) : null}
           {reminded ? <span className="mt-1 block text-foreground/70">{t('longRentRequests.next.waiting.reminded', { when: reminded })}</span> : null}
         </>
       ),

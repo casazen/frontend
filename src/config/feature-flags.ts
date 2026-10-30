@@ -2,7 +2,14 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments' | 'concordatoFacile';
+export type FeatureFlagKey =
+  | 'otaPartnerApi'
+  | 'aiSupplierDiscovery'
+  | 'rliProvider'
+  | 'eSignProvider'
+  | 'supplierOnlinePayments'
+  | 'concordatoFacile'
+  | 'supplierRequestBackups';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -42,6 +49,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * button (`?practice=`) fall back to choosing the contract (the backend answers 404 to the lookup).
    */
   concordatoFacile: false,
+  /**
+   * SP-BKP: a host's request goes to the supplier it chose and, at the same moment, to up to three backup suppliers (backend
+   * `SupplierRequestBackups`): off until the product owner turns it on in the test environment. It only decides whether the host is offered
+   * the choice (the switch of «Interventi» in the settings and the one of the request); a group that exists is always shown, whatever the
+   * flag says, because the server follows it to its end.
+   */
+  supplierRequestBackups: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

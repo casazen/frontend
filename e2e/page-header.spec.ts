@@ -16,7 +16,8 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 const PROPERTY_ID = 'prop-lr-1';
 const PROPERTY_PATH = `/app/long-rent/properties/${PROPERTY_ID}`;
 
-async function openPilot(page: Page) {
+/** `search`: the tab of the page to open (`?tab=data` is where the cadastral data are, LR-07d). */
+async function openPilot(page: Page, search = '') {
   await mockLeasesApiEmpty(page);
   await mockPropertiesApi(page, [
     buildCreatedProperty({ id: PROPERTY_ID, name: 'Bilocale Monza', city: 'Monza', address: 'Via Italia 1', postalCode: '20900', description: '' }),
@@ -29,7 +30,7 @@ async function openPilot(page: Page) {
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
-  await page.goto(demoUrl(PROPERTY_PATH, 'long-term'), { waitUntil: 'domcontentloaded' });
+  await page.goto(demoUrl(`${PROPERTY_PATH}${search}`, 'long-term'), { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 1, name: 'Bilocale Monza' })).toBeVisible();
 }
 
@@ -167,7 +168,8 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
       });
 
       test('a toast comes up above the bottom bar, not behind it', async ({ page }) => {
-        await openPilot(page);
+        // The cadastral data are on the tab "Dati" of the page.
+        await openPilot(page, '?tab=data');
         // A save that fails shows the server's reason in a toast (the form of the cadastral data).
         await page.route(`**/api/properties/${PROPERTY_ID}/cadastral`, async (route) => {
           await route.fulfill({

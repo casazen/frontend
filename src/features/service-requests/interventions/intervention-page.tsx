@@ -18,6 +18,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useIntervention } from '@/queries/use-service-requests';
 import type { ServiceRequest } from '@/types/service-request';
 import { whenText } from '../long-rent/long-rent-request-model';
+import { InterventionGroup } from './intervention-group';
 import { canDo, phoneHref } from './intervention-model';
 import { InterventionNow } from './intervention-now';
 import { InterventionFacts, InterventionHistory, InterventionPhotos, InterventionSupplier } from './intervention-parts';
@@ -108,6 +109,12 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
       <InterventionNow request={request} steps={actions.steps} busy={actions.busy} permissions={permissions} paymentSent={paymentSent} />
 
       <div className="space-y-8">
+        {request.group ? (
+          <PlainSection title={t('interventions.group.title')} data-testid="intervention-group-section">
+            <InterventionGroup group={request.group} />
+          </PlainSection>
+        ) : null}
+
         <PlainSection title={t('longRentRequests.detail.detailsTitle')} data-testid="intervention-details">
           <InterventionFacts request={request} />
         </PlainSection>

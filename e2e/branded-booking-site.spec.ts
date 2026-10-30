@@ -6,8 +6,10 @@ import {
   mockOrgPropertyId,
   mockOrgPropertySlug,
   mockPublicOrg,
+  mockStayCards,
+  mockStaysResult,
 } from './helpers/branded-booking-mock';
-import { futureStay } from './helpers/direct-checkout-mock';
+import { futureStay, mockDirectBookingQuoteApi } from './helpers/direct-checkout-mock';
 
 test.describe('Branded booking site (#215)', () => {
   test.beforeEach(async ({ page }) => {
@@ -68,19 +70,20 @@ test.describe('Branded booking site (#215)', () => {
       });
     });
 
-    await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`);
+    await mockDirectBookingQuoteApi(page);
+    const { checkIn, checkOut } = futureStay(20, 3);
+    await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
 
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Regolamento')).toBeVisible();
+    await expect(page.getByTestId('property-house-rules')).toContainText('Check-in dalle 15:00.');
     expect(authHeader).toBeUndefined();
 
-    const { checkIn, checkOut } = futureStay(20, 3);
-    await page.locator('#check-in').fill(checkIn);
-    await page.locator('#check-out').fill(checkOut);
-    await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+    // The card asks the quote for the stay of the address; "Prenota" is a link once the total of the server is in.
+    await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 15_000 });
+    await page.getByTestId('booking-cta').click();
 
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
-    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 notti');
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -136,58 +139,59 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     });
   });
 
-  test('AC2: property detail shows breadcrumb org > property', async ({ page }) => {
+  test('AC2: property detail shows its title, the way back to the homes and the share button (DB-04a)', async ({ page }) => {
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`);
 
-    const breadcrumb = page.getByTestId('public-breadcrumb');
-    await expect(breadcrumb).toBeVisible({ timeout: 15_000 });
-    await expect(breadcrumb.getByText(mockPublicOrg.displayName)).toBeVisible();
-    await expect(breadcrumb.getByText('Trastevere Suite')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Trastevere Suite' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('property-util-bar')).toBeVisible();
+    await expect(page.getByTestId('property-share')).toBeVisible();
+    // The org has several homes in the mock: the way back to all of them is there.
+    await expect(page.getByTestId('property-back')).toHaveAttribute('href', new RegExp(`/book/${DEMO_ORG_SLUG}`));
   });
 
   test('AC3: legacy camelCase params persist on property detail and checkout in the deep link form', async ({ page }) => {
     const { checkIn, checkOut } = futureStay(40, 4);
+    await mockDirectBookingQuoteApi(page);
     await page.goto(
       `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}?checkIn=${checkIn}&checkOut=${checkOut}&guests=3`,
     );
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('#check-in')).toHaveValue(checkIn);
-    await expect(page.locator('#check-out')).toHaveValue(checkOut);
-    await expect(page.locator('#guests')).toHaveValue('3');
-
-    await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+    // The legacy names are read and the link of "Prenota" carries the stay in the deep link form.
+    const book = page.getByTestId('booking-cta');
+    await expect(book).toHaveAttribute('href', new RegExp(`checkin=${checkIn}&checkout=${checkOut}&guests=3`), { timeout: 15_000 });
+    await book.click();
     await expect(page).toHaveURL(new RegExp(`/checkout\\?checkin=${checkIn}&checkout=${checkOut}&guests=3$`));
-    await expect(page.getByTestId('public-breadcrumb')).toContainText('Checkout');
-    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
-    await expect(page.locator('#adults')).toHaveValue('3');
-    await expect(page.getByTestId('checkout-stay-summary')).toContainText('(4 notti)');
+    await expect(page.getByTestId('checkout-title')).toBeVisible();
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('4 notti');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 ospiti');
   });
 
-  test('AC15: itinerary deep link (checkin/checkout/guests) pre-fills the booking widget', async ({ page }) => {
+  test('AC15: itinerary deep link (checkin/checkout/guests) pre-fills the booking card', async ({ page }) => {
     const { checkIn, checkOut } = futureStay(60, 2);
+    await mockDirectBookingQuoteApi(page);
     await page.goto(
       `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}?checkin=${checkIn}&checkout=${checkOut}&guests=2`,
     );
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('#check-in')).toHaveValue(checkIn);
-    await expect(page.locator('#check-out')).toHaveValue(checkOut);
-    await expect(page.locator('#guests')).toHaveValue('2');
-    await expect(page.getByTestId('booking-widget')).toContainText('2 notti');
+    // The dates and guests of the address are in the card, and its total is the one of the quote (2 nights).
+    await expect(page.getByTestId('booking-card')).toContainText('2 notti', { timeout: 15_000 });
+    await expect(page.getByTestId('booking-guests')).toContainText('2 ospiti');
+    await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', new RegExp(`checkin=${checkIn}&checkout=${checkOut}&guests=2`));
   });
 
   test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
-    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
-      const url = route.request().url();
-      if (route.request().method() !== 'GET' || !url.endsWith('/properties')) {
+    // A site with one home: the search of the site (DB-07a) lists it alone and the home of the site opens that home's page.
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
+      if (route.request().method() !== 'GET') {
         await route.fallback();
         return;
       }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([mockOrgProperties[0]]),
+        body: JSON.stringify(mockStaysResult(mockStayCards([mockOrgProperties[0]]))),
       });
     });
 

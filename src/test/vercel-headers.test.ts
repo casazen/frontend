@@ -32,6 +32,8 @@ function directives(policy: string): Map<string, string[]> {
 
 const APP_PATHS = ['/', '/login', '/app/short-rent/bookings', '/checkin/some-token', '/p/tassa-soggiorno/milano', '/book'];
 const BOOKING_SITE_PATHS = ['/book/demo-org', '/book/demo-org/property/villa/checkout'];
+// The public site of a supplier: the editor of its showcase previews it in a same-origin iframe (SP-09-FE).
+const SUPPLIER_SITE_PATHS = ['/fornitori/pulizie-roma', '/fornitori/pulizie-roma/servizi/pulizia-standard'];
 
 describe('vercel.json security headers', () => {
   it.each(APP_PATHS)('headers_appPath_%s_cannotBeFramed', (path) => {
@@ -51,7 +53,15 @@ describe('vercel.json security headers', () => {
     expect(directives(headers['content-security-policy-report-only']).get('frame-ancestors')).toEqual(["'self'"]);
   });
 
-  it.each([...APP_PATHS, ...BOOKING_SITE_PATHS])('headers_%s_haveBaselineHeaders', (path) => {
+  it.each(SUPPLIER_SITE_PATHS)('headers_supplierSitePath_%s_framedOnlyBySameOriginPreview', (path) => {
+    const headers = headersFor(path);
+
+    expect(headers['x-frame-options']).toBe('SAMEORIGIN');
+    expect(headers['content-security-policy']).toBe("frame-ancestors 'self'");
+    expect(directives(headers['content-security-policy-report-only']).get('frame-ancestors')).toEqual(["'self'"]);
+  });
+
+  it.each([...APP_PATHS, ...BOOKING_SITE_PATHS, ...SUPPLIER_SITE_PATHS])('headers_%s_haveBaselineHeaders', (path) => {
     const headers = headersFor(path);
 
     expect(headers['x-content-type-options']).toBe('nosniff');
@@ -89,5 +99,14 @@ describe('vercel.json security headers', () => {
     app.delete('frame-ancestors');
     bookingSite.delete('frame-ancestors');
     expect(bookingSite).toEqual(app);
+  });
+
+  it('contentSecurityPolicy_supplierSite_differsOnlyInFrameAncestors', () => {
+    const app = directives(headersFor('/')['content-security-policy-report-only']);
+    const supplierSite = directives(headersFor('/fornitori/pulizie-roma')['content-security-policy-report-only']);
+
+    app.delete('frame-ancestors');
+    supplierSite.delete('frame-ancestors');
+    expect(supplierSite).toEqual(app);
   });
 });

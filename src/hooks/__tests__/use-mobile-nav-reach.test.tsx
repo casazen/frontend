@@ -23,8 +23,24 @@ vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: vi.fn() }));
  */
 const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
 
-const FLAGS_OFF: FeatureFlags = { otaPartnerApi: false, aiSupplierDiscovery: false, rliProvider: false, eSignProvider: false, supplierOnlinePayments: false, concordatoFacile: false };
-const FLAGS_ON: FeatureFlags = { otaPartnerApi: true, aiSupplierDiscovery: true, rliProvider: true, eSignProvider: true, supplierOnlinePayments: true, concordatoFacile: true };
+const FLAGS_OFF: FeatureFlags = {
+  otaPartnerApi: false,
+  aiSupplierDiscovery: false,
+  rliProvider: false,
+  eSignProvider: false,
+  supplierOnlinePayments: false,
+  concordatoFacile: false,
+  supplierRequestBackups: false,
+};
+const FLAGS_ON: FeatureFlags = {
+  otaPartnerApi: true,
+  aiSupplierDiscovery: true,
+  rliProvider: true,
+  eSignProvider: true,
+  supplierOnlinePayments: true,
+  concordatoFacile: true,
+  supplierRequestBackups: true,
+};
 
 function permissionsOf(context: AppContextKey): string[] {
   const permissions = new Set<string>(['org.billing.admin']);
