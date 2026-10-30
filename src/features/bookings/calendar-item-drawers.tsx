@@ -3,24 +3,21 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { DetailContentProps, DetailTitleProps } from '@/components/shared/detail-drawer/detail-registry';
 import { ErrorState } from '@/components/shared/error-state';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { WorkspaceContext } from '@/contexts/workspace-context';
-import { propertyServiceRequestPath, propertyTabPath } from '@/features/properties/properties-paths';
-import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
-import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { propertyTabPath } from '@/features/properties/properties-paths';
+import { todayInRome } from '@/lib/stay-dates';
 import { useHostCalendar } from '@/queries/use-host-calendar';
 import type {
   HostCalendarBlockItem,
   HostCalendarIcalItem,
   HostCalendarItem,
   HostCalendarProperty,
-  HostCalendarServiceItem,
 } from '@/types/host-calendar.types';
 import { BlockDetailsBody } from './components/block-details';
 import { blockSourceLabel, toHostCalendarBlockEvent } from './lib/host-calendar';
-import { parseTimelineZoom, resolveCalendarAnchor, serviceItemTitle, timelineQuery } from './lib/host-timeline';
+import { parseTimelineZoom, resolveCalendarAnchor, timelineQuery } from './lib/host-timeline';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 const LINK = 'h-auto min-h-11 whitespace-normal py-2';
@@ -74,7 +71,6 @@ function ItemDrawer<T extends HostCalendarItem>({ id, matches, children }: ItemD
 
 const isBlockItem = (item: HostCalendarItem): item is HostCalendarIcalItem | HostCalendarBlockItem => item.type === 'Ical' || item.type === 'Block';
 const isIcalItem = (item: HostCalendarItem): item is HostCalendarIcalItem => item.type === 'Ical';
-const isServiceItem = (item: HostCalendarItem): item is HostCalendarServiceItem => item.type === 'Service';
 
 /* --------------------------------------------------------------------------------------------- Portal and block */
 
@@ -133,77 +129,4 @@ export function BlockDrawerTitle({ id }: DetailTitleProps) {
   const block = toHostCalendarBlockEvent(item);
   const source = blockSourceLabel(block, t);
   return <>{block.manual ? t('booking.calendar.manualBlock.title', { reason: source }) : t('booking.calendar.block.title', { source })}</>;
-}
-
-/* --------------------------------------------------------------------------------------------------- Intervention */
-
-const STATUS_BADGES: Record<string, 'success' | 'warning' | 'secondary'> = {
-  Richiesto: 'secondary',
-  PresoInCarico: 'secondary',
-  InCorso: 'warning',
-  Completato: 'success',
-  Pagato: 'success',
-};
-
-function InterventionContent({ item, property }: { item: HostCalendarServiceItem; property?: HostCalendarProperty }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
-  const status = item.serviceStatus ?? '';
-  const day = (value: string) => formatStayDate(value, locale, { weekday: 'long', day: 'numeric', month: 'long' });
-  const clock = (instant: string | undefined) => (instant ? formatRomeDateTime(instant, locale, { hour: '2-digit', minute: '2-digit' }) : '');
-  const from = clock(item.startAt);
-  const to = clock(item.endAt);
-
-  return (
-    <div className="space-y-5 pb-2" data-testid="intervention-drawer">
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="min-w-0 break-words text-lg font-semibold">{serviceItemTitle(item, t)}</p>
-          {status ? <Badge variant={STATUS_BADGES[status] ?? 'secondary'}>{getServiceRequestStatusLabel(status, t)}</Badge> : null}
-        </div>
-        {property ? <p className="break-words text-sm text-foreground/70">{property.name}</p> : null}
-      </div>
-
-      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
-        {item.supplierName ? (
-          <>
-            <dt className="text-foreground/70">{t('detailDrawer.intervention.supplier')}</dt>
-            <dd className="break-words font-medium">{item.supplierName}</dd>
-          </>
-        ) : null}
-        <dt className="text-foreground/70">{t('detailDrawer.intervention.when')}</dt>
-        <dd className="break-words font-medium">
-          {from ? `${day(item.from)}, ${to ? `${from}–${to}` : from}` : t('detailDrawer.intervention.noTime', { date: day(item.from) })}
-        </dd>
-      </dl>
-
-      <div className="flex flex-col gap-2">
-        {item.bookingId ? (
-          <Button asChild variant="outline" className={LINK}>
-            <Link to={`${BOOKINGS_PATH}/${item.bookingId}`}>{t('detailDrawer.intervention.openBooking')}</Link>
-          </Button>
-        ) : null}
-        <Button asChild variant="outline" className={LINK}>
-          <Link to={propertyServiceRequestPath(item.propertyId)}>{t('detailDrawer.intervention.openRequests')}</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/** An intervention of a supplier: what, who, when and how it stands, with the way to the stay and to the requests of the property. */
-export function InterventionDrawerContent({ id }: DetailContentProps) {
-  return (
-    <ItemDrawer id={id} matches={isServiceItem}>
-      {(item, property) => <InterventionContent item={item} property={property} />}
-    </ItemDrawer>
-  );
-}
-
-/** The name of the drawer of an intervention: the service, or its category. */
-export function InterventionDrawerTitle({ id }: DetailTitleProps) {
-  const { t } = useTranslation();
-  const { item } = useCalendarItem(id);
-  if (!item || !isServiceItem(item)) return null;
-  return <>{serviceItemTitle(item, t)}</>;
 }

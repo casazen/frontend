@@ -2,6 +2,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import {
+  useAcceptServiceRequestAsBackup,
   useCancelServiceRequest,
   useCompleteServiceRequest,
   useRecordOfflineServiceRequestPayment,
@@ -24,10 +25,14 @@ export interface RequestActions {
   busy: boolean;
   /** Which request an action is going on for, to show the spinner on its button. */
   takingId: string | null;
+  /** The request a backup is saying it would take the job of (SP-BKP). */
+  acceptingBackupId: string | null;
   completingId: string | null;
   /** The request a reminder for the payment is going out for. */
   remindingId: string | null;
   take: (id: string) => void;
+  /** A backup says it would take the job if the primary supplier does not (SP-BKP): the request stays new and holds nothing of the agenda. */
+  acceptBackup: (id: string) => void;
   complete: (id: string) => void;
   /** Opens the dialog that asks why, then refuses the request. */
   askReject: (id: string) => void;
@@ -62,6 +67,7 @@ type Asking =
 export function useRequestActions(onChanged?: () => void): RequestActions {
   const { t } = useTranslation();
   const take = useTakeServiceRequest();
+  const acceptBackup = useAcceptServiceRequestAsBackup();
   const complete = useCompleteServiceRequest();
   const reject = useRejectServiceRequest();
   const cancel = useCancelServiceRequest();
@@ -74,9 +80,11 @@ export function useRequestActions(onChanged?: () => void): RequestActions {
   // `mutate` of TanStack Query keeps its identity: with a caller that does not change `onChanged`, the actions are the same
   // functions on every render, so a list definition that holds them is not built again for nothing.
   const { mutate: mutateTake } = take;
+  const { mutate: mutateAcceptBackup } = acceptBackup;
   const { mutate: mutateComplete } = complete;
   const { mutate: mutateRemind } = remind;
   const takeRequest = useCallback((id: string) => mutateTake(id, { onError: onChanged }), [mutateTake, onChanged]);
+  const acceptBackupRequest = useCallback((id: string) => mutateAcceptBackup(id, { onError: onChanged }), [mutateAcceptBackup, onChanged]);
   const completeRequest = useCallback((id: string) => mutateComplete({ id }, { onError: onChanged }), [mutateComplete, onChanged]);
   const remindPayment = useCallback((id: string) => mutateRemind(id, { onError: onChanged }), [mutateRemind, onChanged]);
   const askReject = useCallback((id: string) => setAsking({ kind: 'reject', id }), []);
@@ -156,6 +164,7 @@ export function useRequestActions(onChanged?: () => void): RequestActions {
     suspended,
     busy:
       take.isPending ||
+      acceptBackup.isPending ||
       complete.isPending ||
       reject.isPending ||
       cancel.isPending ||
@@ -164,9 +173,11 @@ export function useRequestActions(onChanged?: () => void): RequestActions {
       remind.isPending ||
       recordPayment.isPending,
     takingId: take.isPending ? (take.variables ?? null) : null,
+    acceptingBackupId: acceptBackup.isPending ? (acceptBackup.variables ?? null) : null,
     completingId: complete.isPending ? (complete.variables?.id ?? null) : null,
     remindingId: remind.isPending ? (remind.variables ?? null) : null,
     take: takeRequest,
+    acceptBackup: acceptBackupRequest,
     complete: completeRequest,
     askReject,
     askCancel,

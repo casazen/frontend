@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
+import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { PageHeader } from '@/components/layout/page-header';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ListView } from '@/components/shared/list-view/list-view';
@@ -104,6 +105,8 @@ export function PropertiesPage() {
         title={t('property.page.title')}
         description={t('property.page.description')}
         crumbs="auto"
+        // The pages that hang from this one are one press away: the interventions asked of the suppliers for these properties (SR-08).
+        action={<NavChildLinks parentPath="/app/short-rent/properties" />}
         primary={canWrite ? { label: t('property.page.addButton'), icon: Plus, to: PROPERTY_CREATE_PATH, testId: 'property-add' } : undefined}
       />
 

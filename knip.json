@@ -55,6 +55,9 @@
     ],
     "src/pages/PropertyQrCode.tsx": [
       "exports"
+    ],
+    "src/pages/SwissCompliancePage.tsx": [
+      "exports"
     ]
   },
   "compilers": {
