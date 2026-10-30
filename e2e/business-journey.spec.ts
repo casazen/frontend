@@ -2,7 +2,7 @@ import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
 import { completeOnboardingFromRentalChoice, fillHostBookingGuestContact } from './helpers/onboarding';
-import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
+import { createPropertyWithWizard, mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockCurrentUserWithOrg,
   mockEntitlement,
@@ -35,23 +35,18 @@ test.describe('Business Golden Path', () => {
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
     await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
-    await fillPropertyForm(page, {
+    const created = await createPropertyWithWizard(page, {
       name: 'Casa Business',
-      description: 'Golden path test property.',
       address: 'Via Garibaldi 42',
       comune: 'Milano',
       postalCode: '20100',
-      bedrooms: 3,
-      bathrooms: 2,
-      maxGuests: 6,
-      nightlyRate: 150,
     });
+    expect(created.status()).toBe(201);
 
-    const resp = page.waitForResponse(
-      (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),
-    );
-    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
-    expect((await resp).status()).toBe(201);
+    // The property exists from the first «Continua»: «Salva e chiudi» leaves the wizard, and the list has it («Da completare»).
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'amenities');
+    await page.getByTestId('property-wizard-save-close').click();
+    await expect(page).toHaveURL(/\/app\/short-rent\/properties(\?|$)/);
 
     // Navigate to detail: the name in the list opens the drawer of the property, which leads to its page
     await expect(page.getByRole('button', { name: 'Casa Business', exact: true })).toBeVisible();
