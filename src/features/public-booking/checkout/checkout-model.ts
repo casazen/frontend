@@ -66,6 +66,8 @@ export function parseStep(value: string | null | undefined): CheckoutStep {
 
 /** The hours of the check-in window as arrival options (`HH:00`), from the first hour to the last one that is whole. */
 export function arrivalSlots(from: string, to: string): string[] {
+  // An empty bound is no window: Number('') is 0, which would list the hours from midnight.
+  if (!from || !to) return [];
   const start = Number(from.slice(0, 2));
   const end = Number(to.slice(0, 2));
   if (!Number.isInteger(start) || !Number.isInteger(end) || end <= start) return [];
