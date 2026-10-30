@@ -189,6 +189,44 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16, 
     expect(card).toHaveTextContent('IVA inclusa');
     // A color white text cannot be read on is not put on the buttons.
     expect(screen.getByTestId('supplier-site').getAttribute('style') ?? '').not.toContain('--vz-cta');
+    // The payment is said (and the time to answer is the supplier's setting) only while the bookings are open.
+    expect(screen.getByTestId('supplier-site-how')).toBeInTheDocument();
+    expect(screen.getByTestId('supplier-site-closing')).toBeInTheDocument();
+    expect(screen.getByTestId('supplier-site-stickybar')).toBeInTheDocument();
+  });
+
+  it('shows what the supplier wrote, only that, and never a contact', async () => {
+    api.getShowcase.mockResolvedValue({
+      ...SHOWCASE,
+      content: {
+        gallery: [
+          {
+            photoUrl: 'https://cdn.example.test/dopo.jpg',
+            beforeUrl: 'https://cdn.example.test/prima.jpg',
+            caption: 'Cucina rimessa a nuovo',
+            place: 'Trastevere',
+          },
+          { photoUrl: 'javascript:alert(1)', caption: 'Non si vede' },
+        ],
+        guarantee: { title: 'Rifacciamo se non va', text: 'Entro sette giorni.' },
+        certs: [{ label: 'Abilitazione art. 3', detail: 'Rilasciata nel 2019' }, { label: '   ' }],
+        faq: [{ q: 'Portate i prodotti?', a: 'Sì, portiamo tutto.' }, { q: 'Senza risposta', a: '' }],
+      },
+    });
+    renderAt('/fornitori/pulizie-roma');
+
+    const works = await screen.findByTestId('supplier-site-works');
+    expect(within(works).getByRole('slider')).toBeInTheDocument();
+    expect(within(works).queryByText('Non si vede')).not.toBeInTheDocument();
+    const certs = screen.getByTestId('supplier-site-certs');
+    expect(certs).toHaveTextContent('Rifacciamo se non va');
+    expect(certs).toHaveTextContent('Abilitazione art. 3');
+    const faq = screen.getByTestId('supplier-site-faq');
+    expect(faq).toHaveTextContent('Portate i prodotti?');
+    expect(faq).not.toHaveTextContent('Senza risposta');
+    // No contact, no rating, no insurance: nothing of the kind is on the page (D11, D13, VT-D14).
+    const page = screen.getByTestId('supplier-site').textContent ?? '';
+    expect(page).not.toMatch(/tel:|mailto:|whatsapp|assicurat|recension|P\.?\s?IVA/i);
   });
 
   it('with the bookings closed has no finder and says so, and a service without the VAT declaration says nothing of it', async () => {

@@ -1,10 +1,15 @@
 import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock } from 'lucide-react';
+import { ClosingSection } from '@/components/supplier-site/closing-section';
+import { FaqSection } from '@/components/supplier-site/faq-section';
+import { GuaranteeSection } from '@/components/supplier-site/guarantee-section';
+import { AboutSection, CategoriesSection, DaysSection, ServicesSection } from '@/components/supplier-site/home-sections';
+import { HowSection } from '@/components/supplier-site/how-section';
 import { useSupplierSite } from '@/components/supplier-site/site-context';
 import { SiteHero } from '@/components/supplier-site/site-hero';
 import { TrustBar } from '@/components/supplier-site/trust-bar';
-import { AboutSection, CategoriesSection, DaysSection, ServicesSection } from '@/components/supplier-site/home-sections';
+import { WorksSection } from '@/components/supplier-site/works-section';
 import { ZonesSection } from '@/components/supplier-site/zones-section';
 import { supplierShowcasePath } from '@/features/supplier/lib/showcase-paths';
 
@@ -38,9 +43,14 @@ export function SupplierShowcasePage() {
           </section>
         </div>
       ) : null}
+      {blocks.how ? <HowSection model={model} /> : null}
       {blocks.about ? <AboutSection model={model} /> : null}
+      {blocks.works ? <WorksSection model={model} /> : null}
       {blocks.zones ? <ZonesSection model={model} /> : null}
+      {blocks.certs ? <GuaranteeSection model={model} /> : null}
+      {blocks.faq ? <FaqSection model={model} /> : null}
       {blocks.days ? <DaysSection model={model} /> : null}
+      {blocks.closing ? <ClosingSection model={model} /> : null}
     </div>
   );
 }

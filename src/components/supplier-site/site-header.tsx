@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -45,17 +45,33 @@ function Brand({ model }: { model: SiteModel }) {
   );
 }
 
-/** The entries of the menu: the blocks of the home that exist, as links to them. */
-function navItems(model: SiteModel): { id: string; label: string }[] {
-  const { blocks } = model;
-  const items: { id: string; label: string }[] = [];
-  if (blocks.services || blocks.categories) items.push({ id: 'servizi', label: 'services' });
-  if (blocks.how) items.push({ id: 'come', label: 'how' });
-  if (blocks.about) items.push({ id: 'chi-siamo', label: 'about' });
-  if (blocks.works) items.push({ id: 'lavori', label: 'works' });
-  if (blocks.zones) items.push({ id: 'zone', label: 'zones' });
-  if (blocks.faq) items.push({ id: 'domande', label: 'faq' });
-  return items.slice(0, 5);
+/** An entry of the menu: a page of the site, or (on the home only) a block of the home. */
+interface NavEntry {
+  key: string;
+  label: string;
+  /** A page of the site. */
+  to?: string;
+  /** The id of a block of the home. */
+  hash?: string;
+}
+
+/**
+ * The entries of the menu: the pages that exist (the services, the story) and, on the home, the blocks that exist. Nothing is offered
+ * that has nothing behind it.
+ */
+function navEntries(model: SiteModel, onHome: boolean): NavEntry[] {
+  const { blocks, slug } = model;
+  const entries: NavEntry[] = [];
+  if (blocks.services) entries.push({ key: 'services', label: 'services', to: supplierSitePaths.services(slug) });
+  else if (onHome && blocks.categories) entries.push({ key: 'services', label: 'services', hash: 'servizi' });
+  if (onHome) {
+    if (blocks.how) entries.push({ key: 'how', label: 'how', hash: 'come' });
+    if (blocks.works) entries.push({ key: 'works', label: 'works', hash: 'lavori' });
+    if (blocks.zones) entries.push({ key: 'zones', label: 'zones', hash: 'zone' });
+    if (blocks.faq) entries.push({ key: 'faq', label: 'faq', hash: 'domande' });
+  }
+  if (blocks.aboutPage) entries.push({ key: 'about', label: 'about', to: supplierSitePaths.about(slug) });
+  return entries.slice(0, 5);
 }
 
 interface SiteHeaderProps {
@@ -67,28 +83,35 @@ interface SiteHeaderProps {
 }
 
 /**
- * The header of a supplier's site: its name or logo, the menu to the blocks of the page and, when the bookings are open, the one
- * action "Prenota ora". No phone and no "write to us" button: the contacts are not part of the site (interview Q4/Q7).
+ * The header of a supplier's site: its name or logo, the menu to the pages and the blocks that exist and, when the bookings are open,
+ * the one action "Prenota ora". No phone and no "write to us" button: the contacts are not part of the site (interview Q4/Q7).
  */
 export function SiteHeader({ model, variant, onHome }: SiteHeaderProps) {
   const { t } = useTranslation();
   const scrolled = useScrolled();
   const [menuOpen, setMenuOpen] = useState(false);
   const theme = useSiteDialogTheme();
-  const items = onHome ? navItems(model) : [];
+  const entries = navEntries(model, onHome);
   const bookPath = buildBookingPath(model.slug);
+  const label = (entry: NavEntry) => t(`supplierSite.nav.${entry.label}`);
 
   return (
     <header className={cn('vz-header', variant === 'over' ? 'vz-header--over' : 'vz-header--solid', variant === 'over' && scrolled && 'is-scrolled')}>
       <div className="vz-container vz-header__in">
         <Brand model={model} />
-        {items.length > 0 ? (
+        {entries.length > 0 ? (
           <nav className="vz-nav" aria-label={t('supplierSite.nav.label')}>
-            {items.map((item) => (
-              <a key={item.id} href={`#${item.id}`}>
-                {t(`supplierSite.nav.${item.label}`)}
-              </a>
-            ))}
+            {entries.map((entry) =>
+              entry.to ? (
+                <NavLink key={entry.key} to={entry.to}>
+                  {label(entry)}
+                </NavLink>
+              ) : (
+                <a key={entry.key} href={`#${entry.hash}`}>
+                  {label(entry)}
+                </a>
+              ),
+            )}
           </nav>
         ) : null}
         <div className="vz-header__actions">
@@ -97,7 +120,7 @@ export function SiteHeader({ model, variant, onHome }: SiteHeaderProps) {
               {t('supplierSite.cta.book')}
             </Link>
           ) : null}
-          {items.length > 0 ? (
+          {entries.length > 0 ? (
             <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
               <button type="button" className="vz-burger" aria-haspopup="dialog" onClick={() => setMenuOpen(true)}>
                 <Menu aria-hidden="true" />
@@ -107,11 +130,17 @@ export function SiteHeader({ model, variant, onHome }: SiteHeaderProps) {
                 <DialogTitle className="vz-dialog__title">{model.name}</DialogTitle>
                 <nav aria-label={t('supplierSite.nav.label')}>
                   <ul className="vz-menu">
-                    {items.map((item) => (
-                      <li key={item.id}>
-                        <a href={`#${item.id}`} onClick={() => setMenuOpen(false)}>
-                          {t(`supplierSite.nav.${item.label}`)}
-                        </a>
+                    {entries.map((entry) => (
+                      <li key={entry.key}>
+                        {entry.to ? (
+                          <Link to={entry.to} onClick={() => setMenuOpen(false)}>
+                            {label(entry)}
+                          </Link>
+                        ) : (
+                          <a href={`#${entry.hash}`} onClick={() => setMenuOpen(false)}>
+                            {label(entry)}
+                          </a>
+                        )}
                       </li>
                     ))}
                   </ul>

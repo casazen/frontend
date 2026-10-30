@@ -55,6 +55,8 @@ export interface SiteBlocks {
   categories: boolean;
   how: boolean;
   about: boolean;
+  /** The page "Chi siamo" has something to say: the story, the people, the strengths, the guarantee or the certifications. */
+  aboutPage: boolean;
   works: boolean;
   zones: boolean;
   certs: boolean;
@@ -140,6 +142,22 @@ function firstSlotOf(services: PublicSupplierService[] | null): SiteFirstSlot | 
   return best;
 }
 
+/**
+ * The services in the order of a draft (`serviceOrder`, SP-13a): only the ones it names, in that order; with no order, or when none of
+ * its slugs is among the services the page has, all of them as they come. The published page gets this from the server; the preview of
+ * the editor applies the draft's own, to the services the page has.
+ */
+export function applyServiceOrder(services: PublicSupplierService[], order: readonly string[] | undefined): PublicSupplierService[] {
+  if (!order || order.length === 0) return services;
+  const bySlug = new Map(services.map((service) => [service.slug, service]));
+  const ordered: PublicSupplierService[] = [];
+  for (const slug of order) {
+    const service = bySlug.get(slug);
+    if (service && !ordered.includes(service)) ordered.push(service);
+  }
+  return ordered.length > 0 ? ordered : services;
+}
+
 function trustOf(dto: SupplierShowcaseDto): SiteTrustItem[] {
   const items: SiteTrustItem[] = [];
   if (dto.trust?.verified === true) items.push({ kind: 'verified' });
@@ -198,6 +216,10 @@ export function buildSiteModel(dto: SupplierShowcaseDto): SiteModel {
     return question && answer ? [{ question, answer }] : [];
   });
   const keptGuarantee = guarantee && (guarantee.title || guarantee.text) ? guarantee : null;
+  const team = (content?.team ?? []).flatMap((member) => {
+    const memberName = text(member.name);
+    return memberName ? [{ name: memberName, role: text(member.role) }] : [];
+  });
 
   return {
     slug: dto.slug ?? '',
@@ -230,10 +252,7 @@ export function buildSiteModel(dto: SupplierShowcaseDto): SiteModel {
     guarantee: keptGuarantee,
     certs,
     faq,
-    team: (content?.team ?? []).flatMap((member) => {
-      const memberName = text(member.name);
-      return memberName ? [{ name: memberName, role: text(member.role) }] : [];
-    }),
+    team,
     prep: texts(content?.prep),
     availability: dto.availability ?? [],
     blocks: {
@@ -242,6 +261,7 @@ export function buildSiteModel(dto: SupplierShowcaseDto): SiteModel {
       categories: services === null && categories.length > 0,
       how: sections.how && bookingsOpen,
       about: bio !== null || values.length > 0,
+      aboutPage: bio !== null || values.length > 0 || team.length > 0 || keptGuarantee !== null || certs.length > 0,
       works: sections.works && (works.length > 0 || profilePhotos.length > 0),
       zones: sections.zones && comuni.length > 0,
       certs: sections.certs && (keptGuarantee !== null || certs.length > 0),

@@ -139,16 +139,79 @@ export interface PublicQuoteRequestBody {
   urgent?: boolean;
 }
 
+/** One line of an estimate: `quantity × unitAmountCents = amountCents`. */
+export interface PublicQuoteLine {
+  /** `Base` (the price of the service), `Supplement` or `Urgent` (the surcharge of an urgent slot, once, last). */
+  kind: 'Base' | 'Supplement' | 'Urgent';
+  code?: string | null;
+  label: string;
+  per?: string | null;
+  quantity: number;
+  unitAmountCents: number;
+  amountCents: number;
+}
+
 export interface PublicQuoteResponse {
   service: string;
   serviceName: string;
   currency: string;
   pricesIncludeVat: boolean;
   outcome: PublicQuoteOutcome;
+  /** Why there is no total (`RequiresQuote`, `NoPrice`, `SurfaceOverLimit`, `AmountOverLimit`, `OutsideArea`); missing for an estimate. */
+  reason?: string | null;
+  /** True when there is a total, which is an estimate: the supplier confirms the price before starting the work. */
   isEstimate: boolean;
   requiresQuote: boolean;
   totalCents: number | null;
+  /** The base price and the supplements that add up to the total; empty when there is no total. */
+  lines: PublicQuoteLine[];
   coverage: PublicQuoteCoverage;
+}
+
+/** What a supplement is counted by: `sqm30` follows the surface of the estimate, it is not picked. */
+export type PublicSupplementUnit = 'flat' | 'bathroom' | 'sqm30' | 'set' | 'hour';
+
+export interface PublicSupplierSupplement {
+  /** Stable identifier inside the service: what an estimate refers to. */
+  code: string;
+  label: string;
+  /** The amount of one unit, in euro cents. */
+  amountCents: number;
+  per: PublicSupplementUnit;
+  /** Most units a customer can pick (for `sqm30`, the most 30 m² blocks the price covers); null for no limit. */
+  max?: number | null;
+  /** Only for `sqm30`: the surface the base price already covers, in m². */
+  includedSqm?: number | null;
+}
+
+/** One service with its description and the structured supplements the estimate is computed from. */
+export interface PublicSupplierServiceDetail extends PublicSupplierService {
+  description?: string | null;
+  supplements: PublicSupplierSupplement[];
+}
+
+export interface PublicSlot {
+  startUtc: string;
+  endUtc: string;
+  /** The same start on the clock of Rome, with its offset. */
+  startLocal: string;
+  endLocal: string;
+}
+
+/** One day of the window; no reason is given for a day that is not available. */
+export interface PublicSlotDay {
+  date: string;
+  available: boolean;
+  slots: PublicSlot[];
+}
+
+export interface PublicSlotsResponse {
+  service: string;
+  durationMinutes: number;
+  timeZone: string;
+  /** The last day that can be booked. */
+  bookableUntil: string;
+  days: PublicSlotDay[];
 }
 
 export const publicSupplierApi = {
@@ -157,6 +220,25 @@ export const publicSupplierApi = {
     ApiClient.get<SupplierShowcaseDto>(`/public/suppliers/${encodeURIComponent(slug)}`, undefined, {
       public: true,
     }),
+
+  /**
+   * One published service by its slug, with its description and the supplements the estimate is computed from. 404
+   * `supplier_service_not_found` for an unknown, draft, paused or deleted service and for one of another supplier: the same answer.
+   * Behind the bookings flag: while it is off the answer is a 404 like a route that does not exist.
+   */
+  getService: (slug: string, serviceSlug: string) =>
+    ApiClient.get<PublicSupplierServiceDetail>(
+      `/public/suppliers/${encodeURIComponent(slug)}/services/${encodeURIComponent(serviceSlug)}`,
+      undefined,
+      { public: true },
+    ),
+
+  /**
+   * The free slots of a service from `from` (a day in Rome, default today) for `days` days (1 to 62, default 14). A slot shown is
+   * not a promise: the booking checks it again. A paused showcase answers 422 `supplier_booking_offline`.
+   */
+  getSlots: (slug: string, params: { service: string; from?: string; days?: number }) =>
+    ApiClient.get<PublicSlotsResponse>(`/public/suppliers/${encodeURIComponent(slug)}/slots`, params, { public: true }),
 
   /**
    * The price estimate of a service for the options, the surface and the comune the customer chose (anonymous, 30 a minute
