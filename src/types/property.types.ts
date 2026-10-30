@@ -1,3 +1,4 @@
+import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
 
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
@@ -61,6 +62,11 @@ export interface Property {
   pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
+  /**
+   * The change of rental mode that waits for its day (PM-02, AM-13b): in the list asked with `?view=overview`, for a property in either
+   * mode, and only while it is `Scheduled`; absent otherwise. The same object `GET /properties/:id/mode` gives as `scheduledChange`.
+   */
+  scheduledModeChange?: PropertyModeChange | null;
   /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
   cadastralSheet?: string | null;
   cadastralParcel?: string | null;
@@ -74,8 +80,20 @@ export interface Property {
    */
   responsibleUserId?: string | null;
   orgId?: string;
+  /**
+   * What a short-term property still lacks, worked out by the server with the rules of its activation: only in the list asked with
+   * `?view=overview` (SR-07a), and only for a short-term property. The client reads it and never works it out again.
+   */
+  missing?: PropertyMissingItem[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** One thing a short-term property lacks (`GET /properties?view=overview`): a stable code, and whether it blocks the activation or is only advice. */
+export interface PropertyMissingItem {
+  /** `base_data`, `cin`, `documents`, `safety`, `activation_not_confirmed` (blocking) or `photos`, `calendar` (advice). */
+  code: string;
+  blocking: boolean;
 }
 
 /** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */

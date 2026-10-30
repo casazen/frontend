@@ -4,7 +4,7 @@ import type { BillingSubscriptionStatus } from "@/types/billing.types";
 import type { BookingStatus } from "@/types/booking.types";
 import type { CinStatus } from "@/types/cin.types";
 import type { PropertyComplianceStatus } from "@/types/compliance.types";
-import type { LeaseStatus } from "@/types/lease.types";
+import type { LeaseStage, LeaseStatus } from "@/types/lease.types";
 import type { PaymentStatus } from "@/types/payment.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
 import type { RentInstallmentStatus } from "@/types/rent.types";
@@ -143,6 +143,21 @@ export const STATUS_DICTIONARY = {
     SentToProvider: { tone: "info", icon: "send", next: "Registered", need: true },
     Registered: { tone: "success", icon: "check-circle" },
     Rejected: { tone: "danger", icon: "alert-circle", next: "Registered", need: true },
+  }),
+  /**
+   * Where a long-term lease stands on its path (LR-01b, LR-09): the stage the server decides and sends with the lease, from the draft to the
+   * end. Preparing is told by what the landlord still has to do; once the contract is signed the words follow the life of the lease. The
+   * stage `DataPending` is for the tenant's own data (phase 2) and is not sent yet, but it has its words.
+   */
+  leaseStage: defineKind<LeaseStage>({
+    Draft: { tone: "neutral", icon: "pencil", next: "InReview", need: true },
+    DataPending: { tone: "info", icon: "hourglass", next: "InReview", need: true },
+    InReview: { tone: "info", icon: "shield-check", next: "SentForSignature", need: true },
+    SentForSignature: { tone: "info", icon: "signature", next: "Signed", need: true },
+    Signed: { tone: "warning", icon: "landmark", next: "Active", need: true },
+    Active: { tone: "success", icon: "check-circle" },
+    Expiring: { tone: "warning", icon: "clock" },
+    Concluded: { tone: "neutral", icon: "check" },
   }),
   rent: defineKind<RentStatus>({
     Scheduled: { tone: "neutral", icon: "clock", next: "Paid", need: true },
