@@ -1422,7 +1422,16 @@
       "leaseNotFound": "Lease not found.",
       "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
       "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
-      "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed."
+      "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed.",
+      "refundChanged": "The refund changed: check the amount and confirm again.",
+      "bookingPaymentInProgress": "The payment for this booking is still being processed: try again in a few minutes.",
+      "guestCancelStayStarted": "The stay has already started: you can't cancel from here any more. Write to the host.",
+      "bookingNotCancellableByGuest": "This booking can't be cancelled from here.",
+      "guestCancelConfirmationRequired": "Confirm the cancellation to go ahead.",
+      "refundAmountInvalid": "The refund amount isn't valid. Reload the page and try again.",
+      "guestCancelTokenInvalid": "This link does not work: use the one in the email or cancel from \"My bookings\".",
+      "guestCancelTokenExpired": "This link has expired. You can cancel from \"My bookings\" with your booking code.",
+      "guestCancelTokenMissing": "This link does not work: use the one in the email or cancel from \"My bookings\"."
     }
   },
   "appShell": {
@@ -2350,6 +2359,7 @@
         "CheckoutHoldExpired": "The payment did not arrive in time: the dates are free again.",
         "DatesUnavailableAtPayment": "The dates were no longer free when the guest paid.",
         "DeferredPaymentNotCompleted": "The charge on the due date did not go through.",
+        "GuestRequested": "The guest cancelled the booking.",
         "OnSiteEmailNotConfirmed": "The guest did not confirm the email in time.",
         "OnSiteRequestDeclined": "You declined the request.",
         "OnSiteRequestExpired": "The request expired without an answer."
@@ -4224,6 +4234,83 @@
     },
     "list": {
       "title": "Properties"
+    }
+  },
+  "guestCancellation": {
+    "area": {
+      "intro": "Here you see what we refund if you cancel now, under the property's cancellation policy.",
+      "loadError": "We can't show you the cancellation details right now. Try again in a moment.",
+      "loading": "Checking what happens if you cancel…",
+      "retry": "Try again",
+      "title": "Cancellation"
+    },
+    "button": {
+      "cancel": "Cancel the booking",
+      "withdraw": "Withdraw the request"
+    },
+    "changed": "The refund changed while you were confirming: it was {{from}}, now {{to}}. Nothing was cancelled: check it and confirm again.",
+    "dialog": {
+      "cancelTitle": "Cancel the booking?",
+      "confirmCancel": "Yes, cancel",
+      "confirmWithdraw": "Yes, withdraw",
+      "description": "{{property}}, from {{checkIn}} to {{checkOut}}.",
+      "irreversible": "The dates become available again and the booking can't be reinstated.",
+      "keepCancel": "Keep the booking",
+      "keepWithdraw": "Keep the request",
+      "withdrawIrreversible": "The request is withdrawn and the dates become available again.",
+      "withdrawTitle": "Withdraw the request?"
+    },
+    "link": {
+      "backToSite": "Back to {{name}}",
+      "invalid": "This link no longer works: it has expired or was already used. You can cancel from \"My bookings\" with your booking code.",
+      "loadError": "We can't load the booking right now. Try again in a moment.",
+      "loading": "Loading the booking…",
+      "myBookings": "My bookings",
+      "pageTitle": "Cancel the booking",
+      "retry": "Try again",
+      "title": "Cancel your booking"
+    },
+    "notCancellable": {
+      "generic": "This booking can no longer be cancelled from here.",
+      "paymentInProgress": "The payment is still being processed. You'll be able to cancel as soon as it completes.",
+      "stayStarted": "The stay has already started, so you can't cancel from here any more. Write to the host for any change.",
+      "writeToHost": "Write to the host"
+    },
+    "offline": "You're offline: reconnect to the internet to cancel.",
+    "outcome": {
+      "confirmed": "Refund of {{amount}} completed. You'll find it on the payment method you used.",
+      "failed": "The refund of {{amount}} didn't go through. Contact the host to sort it out.",
+      "none": "There was nothing to refund.",
+      "pending": "We're refunding {{amount}}. It usually reaches you within 5–10 days.",
+      "title": "Booking cancelled"
+    },
+    "policy": {
+      "title": "Cancellation policy"
+    },
+    "problem": {
+      "generic": "We couldn't cancel the booking and nothing has changed. Try again in a moment."
+    },
+    "summary": {
+      "alreadyRefunded": "Already refunded: {{amount}}",
+      "basis": "{{percent}}% of the price of the stay, plus the tourist tax in full if you paid it",
+      "cardNotCharged": "The card you saved won't be charged.",
+      "ifToday": "If you cancel today ({{date}})",
+      "noCharge": "You don't pay anything",
+      "noRefund": "No refund",
+      "paid": "You paid {{amount}}",
+      "refund": "We refund {{amount}}",
+      "retained": "{{amount}} stays with the host, as the \"{{policy}}\" policy provides",
+      "retainedNoPolicy": "{{amount}} stays with the host",
+      "timing": "The refund goes back to the payment method you used, usually within 5–10 days.",
+      "withdraw": "You withdraw the request and pay nothing"
+    },
+    "timeline": {
+      "full": "Full refund until {{date}}",
+      "label": "How the refund changes with the days",
+      "none": "After that, no refund of the stay",
+      "noneOnly": "This stay has no refund of the price.",
+      "partial": "{{percent}}% refund until {{date}}",
+      "today": "Today"
     }
   },
   "guests": {
