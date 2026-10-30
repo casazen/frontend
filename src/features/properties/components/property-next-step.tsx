@@ -9,7 +9,7 @@ import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import type { PropertyStatus } from '@/lib/status-dictionary';
 import type { PropertyDetailDto } from '@/types';
 import { isActivationStep, nextStepOf, type PropertyNextStepKind } from '../lib/property-sheet';
-import { PROPERTIES_PATH, propertyActivationPath, propertyCalendarPath, propertyTabPath } from '../properties-paths';
+import { PROPERTIES_PATH, propertyWizardPath, propertyCalendarPath, propertyTabPath } from '../properties-paths';
 
 interface PropertyNextStepProps {
   property: PropertyDetailDto;
@@ -70,7 +70,7 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
 
   const toProperties: CalmAction = { label: t('property.next.toProperties'), href: PROPERTIES_PATH };
   const activate: CalmAction | null = canWrite
-    ? { label: t(kind === 'suspended' ? 'property.next.suspended.action' : 'property.next.pending.action'), href: propertyActivationPath(property.id), testId: 'property-next-activate' }
+    ? { label: t(kind === 'suspended' ? 'property.next.suspended.action' : 'property.next.pending.action'), href: propertyWizardPath(property.id), testId: 'property-next-activate' }
     : null;
 
   const viewOfStep = (): StepView => {
