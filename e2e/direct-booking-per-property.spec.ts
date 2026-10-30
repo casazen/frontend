@@ -15,6 +15,8 @@ import {
   mockOrgPropertyId,
   mockOrgPropertySlug,
   mockPublicOrg,
+  mockStayCards,
+  mockStaysResult,
 } from './helpers/branded-booking-mock';
 import { futureStay, mockDirectBookingQuoteApi, mockDirectBookingResponse } from './helpers/direct-checkout-mock';
 import { demoUrl } from './helpers/demo-profile';
@@ -122,12 +124,13 @@ test.describe('AC13: Property URL uses slug when available (#341)', () => {
   });
 
   test('org landing navigates to slug-based URL when property has a slug', async ({ page }) => {
-    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
+    // A site with one home: the search of the site lists it alone (DB-07b), and the home opens that home's page.
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
       if (route.request().method() !== 'GET') { await route.fallback(); return; }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([mockOrgProperties[0]]),
+        body: JSON.stringify(mockStaysResult(mockStayCards([mockOrgProperties[0]]))),
       });
     });
 
@@ -142,12 +145,12 @@ test.describe('AC13: Property URL uses slug when available (#341)', () => {
   test('org landing navigates to ID-based URL for property without slug', async ({ page }) => {
     const noSlugProperty = { ...mockOrgProperties[1], slug: null };
 
-    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
       if (route.request().method() !== 'GET') { await route.fallback(); return; }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([noSlugProperty]),
+        body: JSON.stringify(mockStaysResult(mockStayCards([noSlugProperty]))),
       });
     });
 

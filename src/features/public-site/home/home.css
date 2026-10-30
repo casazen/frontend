@@ -1,0 +1,433 @@
+/*
+ * The home of a booking site (DB-07b): the cover with the search over its lower edge, the categories, the homes and the states.
+ * Colors, radii and fonts come from the tokens of the theme (`--cz-public-*`): nothing here is a fixed color but the white of the
+ * words on the dark band of a photo (the band is what makes them readable on any photo). Targets are 44 px, motion stops under
+ * `prefers-reduced-motion`, and every box can shrink (`min-width: 0`) so that wide letters never push a phone sideways.
+ *
+ * The cover runs the full width of the window although the page is a column of 1200 px: it steps out of the column by half of
+ * the window (`100vw`), and the root of the site clips what the scrollbar would otherwise turn into a sideways scroll. The two
+ * negative margins on top cancel the padding of `main` (1.5rem, 2rem from `md`) so that the cover starts at the header.
+ */
+.public-site-root:has(.hm-hero) {
+  overflow-x: clip;
+}
+
+.hm {
+  min-width: 0;
+}
+
+/* ----------------------------------------------------------------------- Cover */
+.hm-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100vw;
+  min-height: clamp(540px, 80svh, 780px);
+  margin-top: -1.5rem;
+  margin-left: calc(50% - 50vw);
+  padding: 96px 0 clamp(96px, 10vw, 128px);
+  color: #ffffff;
+}
+
+.hm-hero--plain {
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+}
+
+.hm-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--cz-public-primary);
+}
+
+.hm-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgb(10 12 12 / 0.45) 0%, rgb(10 12 12 / 0) 24%),
+    linear-gradient(0deg, rgb(10 12 12 / 0.86) 0%, rgb(10 12 12 / 0.55) 36%, rgb(10 12 12 / 0) 68%),
+    linear-gradient(90deg, rgb(10 12 12 / 0.4) 0%, rgb(10 12 12 / 0) 58%);
+}
+
+.hm-hero__in {
+  width: min(1168px, 100% - 2rem);
+  margin-inline: auto;
+}
+
+.hm-hero__copy {
+  display: flex;
+  max-width: 780px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hm-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hm-hero__eyebrow::before {
+  content: '';
+  width: 36px;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.hm-hero__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  line-height: 1.04;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 40px rgb(0 0 0 / 0.28);
+}
+
+.hm-hero--plain .hm-hero__title {
+  text-shadow: none;
+}
+
+.hm-hero__lead {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.55;
+}
+
+.hm-hero__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.hm-hero__trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hm-hero__trust svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.hm-hero__star {
+  fill: #ffd477;
+  color: #ffd477;
+}
+
+/* The search sits on the lower edge of the cover: half on the photo, half on the page. */
+.hm-hero__search {
+  position: absolute;
+  z-index: 6;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  padding-inline: 1rem;
+  transform: translateY(50%);
+  color: var(--cz-public-text);
+}
+
+.hm-hero__search > * {
+  width: min(1080px, 100%);
+}
+
+/* --------------------------------------------------------------------- Categories */
+.hm-cats {
+  padding-top: clamp(80px, 8vw, 104px);
+}
+
+.hm-cats ul {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 4px 2px 12px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.hm-cats ul::-webkit-scrollbar {
+  display: none;
+}
+
+.hm-cats li {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.hm-cat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 9px 22px 9px 10px;
+  border: 1px solid var(--cz-public-border);
+  border-radius: 999px;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 250ms ease,
+    transform 250ms ease;
+}
+
+@media (hover: hover) {
+  .hm-cat:hover {
+    border-color: var(--cz-public-primary);
+    box-shadow: var(--cz-public-shadow-card);
+    transform: translateY(-2px);
+  }
+}
+
+.hm-cat__i {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+}
+
+.hm-cat__i svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hm-cat__t {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.hm-cat__t strong {
+  font-size: 0.98rem;
+  white-space: nowrap;
+}
+
+.hm-cat__t small {
+  color: var(--cz-public-muted);
+  font-size: 0.82rem;
+}
+
+/* ------------------------------------------------------------------------ Sections */
+.hm-section {
+  padding-block: var(--cz-public-section-y);
+}
+
+.hm-houses {
+  padding-top: clamp(32px, 4vw, 56px);
+}
+
+.hm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 32px;
+  margin-bottom: clamp(20px, 3vw, 36px);
+}
+
+.hm-head__text {
+  display: flex;
+  min-width: 0;
+  max-width: 680px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hm-head h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.hm-head__lead {
+  max-width: 56ch;
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: clamp(1rem, 1.3vw, 1.1rem);
+}
+
+.hm-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border-bottom: 1.5px solid var(--cz-public-text);
+  color: var(--cz-public-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hm-more svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 150ms ease;
+}
+
+@media (hover: hover) {
+  .hm-more:hover svg {
+    transform: translateX(4px);
+  }
+}
+
+.hm-grid {
+  display: grid;
+  gap: clamp(24px, 3vw, 40px) clamp(18px, 2.4vw, 32px);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+/* ------------------------------------------------------------------------- States */
+.hm-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: clamp(24px, 4vw, 48px);
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  box-shadow: var(--cz-public-shadow-card);
+}
+
+.hm-state > svg {
+  width: 32px;
+  height: 32px;
+  color: var(--cz-public-primary-text);
+}
+
+.hm-state--center {
+  align-items: center;
+  text-align: center;
+}
+
+.hm-state__text h2 {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+}
+
+.hm-state__text p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--cz-public-muted);
+}
+
+.hm-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* ---------------------------------------------------------------------- Skeleton */
+.hm-skel {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--cz-public-surface-2) 25%, var(--cz-public-surface-3) 50%, var(--cz-public-surface-2) 75%);
+  background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hm-skel {
+    animation: hm-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes hm-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.hm-hero__ghost {
+  height: 74px;
+  border-radius: var(--cz-public-radius-xl);
+  box-shadow: var(--cz-public-shadow-widget);
+}
+
+.hm-skeleton {
+  padding-top: clamp(80px, 8vw, 104px);
+}
+
+.hm-skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hm-skel-card__media {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--cz-public-radius-lg);
+}
+
+.hm-skel-card__line {
+  height: 18px;
+  width: 70%;
+}
+
+.hm-skel-card__line--short {
+  width: 40%;
+}
+
+/* ---------------------------------------------------------------------- A phone */
+@media (min-width: 768px) {
+  .hm-hero {
+    margin-top: -2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hm-hero {
+    min-height: clamp(480px, 76svh, 640px);
+    padding-bottom: 88px;
+  }
+
+  .hm-cats {
+    padding-top: 60px;
+  }
+
+  .hm-cats ul {
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-cat,
+  .hm-more svg {
+    transition: none;
+  }
+
+  .hm-cat:hover {
+    transform: none;
+  }
+}

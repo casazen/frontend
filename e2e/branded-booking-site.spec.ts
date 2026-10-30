@@ -24,8 +24,7 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
-    // Guests see the CIN code only, never a compliance badge ("CIN valido" / "CIN non valido")
-    await expect(page.getByTestId('public-cin').first()).toContainText('IT058091C27G5FFZDZ');
+    // The cards of the home do not carry a compliance badge ("CIN valido" / "CIN non valido"); the CIN is on the page of the home.
     await expect(page.getByText('CIN valido')).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/login/);
   });

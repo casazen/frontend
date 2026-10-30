@@ -12498,6 +12498,78 @@
       "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
     }
   },
+  "siteHome": {
+    "card": {
+      "previousPhoto": "Foto precedente",
+      "nextPhoto": "Foto successiva",
+      "photosOf": "Foto di {{name}}",
+      "guestFavourite": "Preferita dagli ospiti",
+      "guestFavouriteHint": "Valutazione {{average}} su 5 da {{count}} recensioni verificate.",
+      "ratingLabel_one": "{{average}} su 5, {{count}} recensione",
+      "ratingLabel_other": "{{average}} su 5, {{count}} recensioni",
+      "area": "{{count}} m²",
+      "mainAmenities": "Servizi principali",
+      "night": "notte",
+      "totalFor_one": "totale per {{count}} notte",
+      "totalFor_other": "totale per {{count}} notti",
+      "perNightAverage": "{{price}} a notte",
+      "tax": {
+        "exact": "imposta di soggiorno inclusa",
+        "estimated": "imposta di soggiorno stimata",
+        "notIncluded": "imposta di soggiorno non inclusa"
+      },
+      "taxHelpTitle": "Imposta di soggiorno",
+      "taxHelpLabel": "Perché l’imposta è stimata",
+      "taxHelp": "Per ora contiamo tutti i bambini come se la pagassero. L’importo esatto si conosce quando indichi le età, prima di pagare.",
+      "freeCancellation": "Cancellazione gratuita fino al {{date}}",
+      "freeFrom": "Libera dal {{date}}",
+      "busy": "Non libera in queste date",
+      "minNights_one": "Soggiorno minimo {{count}} notte",
+      "minNights_other": "Soggiorno minimo {{count}} notti",
+      "tooManyGuests_one": "Ospita al massimo {{count}} persona",
+      "tooManyGuests_other": "Ospita al massimo {{count}} persone",
+      "noPets": "Non accetta animali",
+      "notBookable": "Non prenotabile online"
+    },
+    "tags": {
+      "mare": "Mare",
+      "centro": "Centro storico",
+      "piscina": "Con piscina",
+      "pet": "Pet friendly",
+      "campagna": "Campagna",
+      "terrazza": "Con terrazza",
+      "vista-mare": "Vista mare"
+    },
+    "hero": {
+      "destinationHomes_one": "{{count}} casa",
+      "destinationHomes_other": "{{count}} case",
+      "reviews_one": "{{count}} recensione verificata",
+      "reviews_other": "{{count}} recensioni verificate",
+      "securePayment": "Pagamento sicuro con Stripe",
+      "homesIn_one": "{{count}} casa a {{places}}",
+      "homesIn_other": "{{count}} case a {{places}}",
+      "homes_one": "{{count}} casa",
+      "homes_other": "{{count}} case"
+    },
+    "categories": {
+      "label": "Cosa cerchi?",
+      "all": "Tutte le case",
+      "homes_one": "{{count}} casa",
+      "homes_other": "{{count}} case"
+    },
+    "houses": {
+      "title": "Le nostre case",
+      "leadNoDates": "Il prezzo è quello della notte più bassa dei prossimi 30 giorni. Scegli le date per vedere il totale.",
+      "leadDates_one": "Totali per {{range}}, {{count}} notte.",
+      "leadDates_other": "Totali per {{range}}, {{count}} notti.",
+      "seeAll": "Vedi tutte"
+    },
+    "empty": {
+      "title": "Stiamo preparando la prossima stagione",
+      "text": "In questo momento nessuna casa è prenotabile online. Scrivi a chi ti ospita: ti dice quando si riapre e quali date sono libere.",
+      "call": "Chiama"
+    }
+  },
   "siteMap": {
     "approximateNote": "Posizioni indicative: l'indirizzo esatto arriva con la conferma.",
     "cardClose": "Chiudi la scheda",
@@ -12580,6 +12652,25 @@
       "helpLabel": "Come verifichiamo le recensioni",
       "label": "Verificata",
       "title": "Come verifichiamo le recensioni"
+    }
+  },
+  "siteSearch": {
+    "title": {
+      "homes": "Le nostre case",
+      "free_one": "{{count}} casa libera",
+      "free_other": "{{count}} case libere",
+      "noneFree": "Nessuna casa libera"
+    },
+    "sub": {
+      "dates": "{{range}} · {{nights}} · {{guests}}",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noDates": "I prezzi sono quelli della notte più bassa dei prossimi 30 giorni: scegli le date per vedere il totale."
+    },
+    "empty": {
+      "title": "Nessuna casa da mostrare",
+      "text": "Con questa ricerca non c’è nessuna casa. Prova a cambiare qualcosa.",
+      "back": "Torna alle case"
     }
   },
   "statement": {

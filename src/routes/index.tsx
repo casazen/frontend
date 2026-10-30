@@ -34,7 +34,8 @@ import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
-import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
+import { OrgHomePage } from '@/features/public-site/home/org-home-page';
+import { SiteSearchPage } from '@/features/public-site/search/site-search-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-document-page';
 import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
@@ -246,7 +247,9 @@ export const appRoutes: RouteObject[] = [
     // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
-      { index: true, element: <OrgLandingPage /> },
+      { index: true, element: <OrgHomePage /> },
+      // The results of the site for a stay and a search (DB-07c): in the address, so a search can be shared and Back finds it again.
+      { path: 'search', element: <SiteSearchPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
       { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },

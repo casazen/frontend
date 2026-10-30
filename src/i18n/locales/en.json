@@ -12498,6 +12498,78 @@
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
+  "siteHome": {
+    "card": {
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "photosOf": "Photos of {{name}}",
+      "guestFavourite": "Guest favourite",
+      "guestFavouriteHint": "Rated {{average}} out of 5 by {{count}} verified reviews.",
+      "ratingLabel_one": "{{average}} out of 5, {{count}} review",
+      "ratingLabel_other": "{{average}} out of 5, {{count}} reviews",
+      "area": "{{count}} m²",
+      "mainAmenities": "Main amenities",
+      "night": "night",
+      "totalFor_one": "total for {{count}} night",
+      "totalFor_other": "total for {{count}} nights",
+      "perNightAverage": "{{price}} a night",
+      "tax": {
+        "exact": "tourist tax included",
+        "estimated": "tourist tax estimated",
+        "notIncluded": "tourist tax not included"
+      },
+      "taxHelpTitle": "Tourist tax",
+      "taxHelpLabel": "Why the tax is an estimate",
+      "taxHelp": "For now every child is counted as if they pay it. The exact amount is known once you give the ages, before you pay.",
+      "freeCancellation": "Free cancellation until {{date}}",
+      "freeFrom": "Free from {{date}}",
+      "busy": "Not available on these dates",
+      "minNights_one": "Minimum stay {{count}} night",
+      "minNights_other": "Minimum stay {{count}} nights",
+      "tooManyGuests_one": "Sleeps {{count}} person at most",
+      "tooManyGuests_other": "Sleeps {{count}} people at most",
+      "noPets": "Pets not allowed",
+      "notBookable": "Not bookable online"
+    },
+    "tags": {
+      "mare": "Seaside",
+      "centro": "Historic centre",
+      "piscina": "With a pool",
+      "pet": "Pet friendly",
+      "campagna": "Countryside",
+      "terrazza": "With a terrace",
+      "vista-mare": "Sea view"
+    },
+    "hero": {
+      "destinationHomes_one": "{{count}} home",
+      "destinationHomes_other": "{{count}} homes",
+      "reviews_one": "{{count}} verified review",
+      "reviews_other": "{{count}} verified reviews",
+      "securePayment": "Secure payment with Stripe",
+      "homesIn_one": "{{count}} home in {{places}}",
+      "homesIn_other": "{{count}} homes in {{places}}",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "categories": {
+      "label": "What are you looking for?",
+      "all": "All homes",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "houses": {
+      "title": "Our homes",
+      "leadNoDates": "The price is the lowest night of the next 30 days. Choose your dates to see the total.",
+      "leadDates_one": "Totals for {{range}}, {{count}} night.",
+      "leadDates_other": "Totals for {{range}}, {{count}} nights.",
+      "seeAll": "See all"
+    },
+    "empty": {
+      "title": "We are getting ready for the next season",
+      "text": "No home can be booked online right now. Write to your host: they will tell you when bookings reopen and which dates are free.",
+      "call": "Call"
+    }
+  },
   "siteMap": {
     "approximateNote": "Approximate positions: the exact address arrives with the confirmation.",
     "cardClose": "Close the card",
@@ -12580,6 +12652,25 @@
       "helpLabel": "How we verify reviews",
       "label": "Verified",
       "title": "How we verify reviews"
+    }
+  },
+  "siteSearch": {
+    "title": {
+      "homes": "Our homes",
+      "free_one": "{{count}} home available",
+      "free_other": "{{count}} homes available",
+      "noneFree": "No homes available"
+    },
+    "sub": {
+      "dates": "{{range}} · {{nights}} · {{guests}}",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noDates": "Prices are the lowest night of the next 30 days: choose your dates to see the total."
+    },
+    "empty": {
+      "title": "No homes to show",
+      "text": "There is no home for this search. Try changing something.",
+      "back": "Back to the homes"
     }
   },
   "statement": {
