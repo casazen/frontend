@@ -3,6 +3,9 @@ export const LONG_RENT_PROPERTIES_PATH = '/app/long-rent/properties';
 
 export const longRentPropertyPath = (id: string) => `${LONG_RENT_PROPERTIES_PATH}/${id}`;
 
+/** The page of a property on its tab "Dati" (the place and the cadastral identification): where the contract wizard sends a landlord to complete them. */
+export const longRentPropertyDataPath = (id: string) => `${LONG_RENT_PROPERTIES_PATH}/${id}?tab=data`;
+
 export const longRentPropertyEditPath = (id: string) => `${LONG_RENT_PROPERTIES_PATH}/${id}/edit`;
 
 export const LONG_RENT_PROPERTY_CREATE_PATH = `${LONG_RENT_PROPERTIES_PATH}/new`;

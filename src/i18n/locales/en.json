@@ -4920,6 +4920,40 @@
       "remindTooSoon": "You reminded them a moment ago: try again later.",
       "stateChanged": "The request has changed: here is its current state."
     },
+    "group": {
+      "role": {
+        "Backup": "backup",
+        "Primary": "chosen by you",
+        "PromotedBackup": "backup",
+        "ReplacedPrimary": "chosen by you"
+      },
+      "stage": {
+        "backupTookIt": "{{taker}}, a backup, took the job because {{supplier}} did not answer in time.",
+        "backupWindow": "{{supplier}} did not answer in time. Now the first of the suppliers contacted that accepts by {{time}} gets the job.",
+        "cancelled": "You cancelled the request: the backups were told too.",
+        "nobody": "None of the suppliers contacted took the job in time: you can ask again.",
+        "over": "This request is no longer in progress.",
+        "primaryTookIt": "{{taker}} accepted the job. The backups were told: nothing else to do.",
+        "primaryWindow": "{{supplier}} has until {{time}}. If it does not accept, the job goes to the first backup that accepts."
+      },
+      "state": {
+        "accepted": "Accepted as a backup",
+        "cancelled": "Closed",
+        "cancelledByHost": "Closed: request cancelled",
+        "noResponse": "Did not answer in time",
+        "primaryTookIt": "Closed: the chosen supplier accepted the job",
+        "raceClosed": "Closed: another backup accepted first",
+        "refused": "Declined",
+        "slotUnavailable": "Its time was no longer free",
+        "takenByBackup": "Closed: another supplier took the job",
+        "tookTheJob": "Has the job",
+        "unknown": "—",
+        "waiting": "Waiting"
+      },
+      "title": "Suppliers contacted",
+      "waitingNote": "The request also went to backup suppliers: they step in only if the chosen supplier does not answer in time.",
+      "waitingNoteOpen": "The chosen supplier did not answer in time: now the first of the suppliers contacted that accepts gets the job."
+    },
     "list": {
       "chips": {
         "active": "In progress",
@@ -7830,6 +7864,7 @@
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "backToList": "Back to properties",
+      "contractsEmpty": "This property has no contracts yet.",
       "contractsLoadError": "The leases of this property could not be read.",
       "contractsTitle": "Linked leases",
       "description": "Description",
@@ -7854,7 +7889,14 @@
           "kicker": "Lease in force"
         }
       },
-      "rooms": "Bedrooms and bathrooms"
+      "rooms": "Bedrooms and bathrooms",
+      "tabs": {
+        "contracts": "Contracts",
+        "data": "Details",
+        "documents": "Documents",
+        "requests": "Maintenance"
+      },
+      "tabsLabel": "Sections of the property"
     },
     "drawer": {
       "ape": "APE",
@@ -8636,6 +8678,7 @@
     "sort": {
       "name": "Name",
       "price": "Price",
+      "recommended": "Recommended",
       "response": "Fastest response"
     },
     "verifiedOnly": "Verified only",
@@ -8689,7 +8732,8 @@
     "goToBookings": "Go to bookings",
     "goToProperties": "Go to properties",
     "propertiesTitle": "Your properties",
-    "propertiesDescription": "Request services from a property or booking detail page."
+    "propertiesDescription": "Request services from a property or booking detail page.",
+    "recommended": "Recommended"
   },
   "messageThread": {
     "send": "Send",
@@ -8847,7 +8891,11 @@
       "serviceRequestQuoteExpired": "The quote expired: the customer did not answer in time.",
       "serviceRequestDayBefore": "You have a job tomorrow.",
       "servicePaymentReceived": "You received a payment.",
-      "generic": "You have a new notification."
+      "generic": "You have a new notification.",
+      "serviceRequestBackupInvited": "You are a backup for a new service request.",
+      "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
+      "serviceRequestBackupWon": "The job of a request has passed to you.",
+      "serviceRequestBackupClosed": "A request you were a backup for was closed."
     }
   },
   "onboarding": {
@@ -8983,7 +9031,12 @@
       "contactEmailInvalid": "Enter a valid email."
     },
     "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
-    "siteAppearanceLink": "Go to Site appearance"
+    "siteAppearanceLink": "Go to Site appearance",
+    "backups": {
+      "help": "When you ask for a job, the request goes to the supplier you choose and also to other suppliers in the area, declared as backups. The chosen supplier has an hour to accept: if it does not, the job goes to the first backup that accepts. You can choose differently for each request.",
+      "label": "Also send requests to backup suppliers",
+      "title": "Requests to suppliers"
+    }
   },
   "ota": {
     "status": {
@@ -11463,6 +11516,11 @@
     },
     "retry": "Try again",
     "review": {
+      "backups": {
+        "description": "The supplier you chose has an hour to accept. If it does not answer, the job goes to the first backup supplier that accepts: so you are not left without an answer.",
+        "legend": "If the supplier does not answer",
+        "title": "Also send to backups"
+      },
       "houseOnly": "The house only, no stay",
       "notes": "Notes",
       "price": "Price",
@@ -13923,6 +13981,7 @@
         "showcase": "Publish your showcase"
       },
       "today": {
+        "acceptBackupAria": "Accept as a backup: {{name}}",
         "completed": "Done: waiting for payment",
         "filterLabel": "Show by type",
         "inProgress": "In progress",
@@ -13954,6 +14013,7 @@
     },
     "requests": {
       "action": {
+        "acceptBackup": "Accept as a backup",
         "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
@@ -13973,6 +14033,14 @@
         "you": "You"
       },
       "answerUrgent": "Answer the most urgent",
+      "backup": {
+        "acceptedToast": "Done: if the chosen supplier does not accept in time, the job may pass to you.",
+        "primaryHint": {
+          "late": "Your time is up, but you can still accept as long as nobody else has taken the job.",
+          "priority": "The customer also asked other suppliers as backups: you have until {{time}} to accept, then the job may pass to a backup."
+        },
+        "primaryUntil": "The chosen supplier has until {{time}}"
+      },
       "cancel": {
         "back": "Go back",
         "confirm": "Cancel the job",
@@ -14099,6 +14167,23 @@
       },
       "now": {
         "amountToConfirm": "Waiting for the customer to confirm the amount.",
+        "backupAccepted": {
+          "client": "Sees that you accepted as a backup.",
+          "title": "You accepted as a backup",
+          "you": "You are the only backup left: the others were closed as soon as you accepted. If the chosen supplier does not accept by {{time}}, the job is yours and we will tell you. Meanwhile your time is set aside in your agenda; if they accept, it is free again and there is no penalty."
+        },
+        "backupActive": {
+          "client": "Is waiting for someone to take the job.",
+          "then": "Next: once you accept you see the customer’s address and contact details.",
+          "title": "The job is free: accept it if you can",
+          "you": "The chosen supplier did not accept in time. The first to accept by {{time}} gets the job: accept only if you can do it."
+        },
+        "backupWaiting": {
+          "client": "Chose another supplier and knows the request also went to backups.",
+          "then": "Next: if the job passes to you we tell you, and only then you see the customer’s address and contact details.",
+          "title": "You are a backup for this request",
+          "you": "The customer chose another supplier, who has until {{time}}. The job is yours only if they do not accept. You can say right away that you would take it: the first backup to accept closes the race (the others can no longer accept) and its time is set aside in its agenda."
+        },
         "cancelled": {
           "client": "The request is closed.",
           "title": "The request was cancelled",
@@ -14214,6 +14299,9 @@
         "tooSoon": "You sent a reminder a short while ago: you can try again tomorrow."
       },
       "phase": {
+        "backupAccepted": "Backup accepted",
+        "backupActive": "Backup: to accept",
+        "backupWaiting": "Backup",
         "proposalPending": "Waiting for the customer",
         "quotePending": "Waiting for the customer"
       },
@@ -14285,10 +14373,15 @@
         "withdrawnToast": "Quote taken back"
       },
       "reason": {
+        "BackupRaceClosed": "Another backup supplier accepted before you: the race is over. There is no penalty for you.",
+        "BackupSlotUnavailable": "Your time was no longer free when the job came to you.",
         "CancelledByCustomer": "The customer cancelled the request.",
         "NoResponse": "Nobody answered in time.",
+        "PrimaryTookIt": "The job was accepted by the supplier the customer chose.",
         "ProposalNotAnswered": "The customer did not answer the new time.",
-        "QuoteNotAnswered": "The customer did not answer the quote in time."
+        "QuoteNotAnswered": "The customer did not answer the quote in time.",
+        "RequestCancelledByHost": "The customer cancelled the request.",
+        "TakenByBackup": "The job was taken by another supplier."
       },
       "reject": {
         "cancel": "Cancel",
