@@ -1431,7 +1431,13 @@
       "refundAmountInvalid": "The refund amount isn't valid. Reload the page and try again.",
       "guestCancelTokenInvalid": "This link does not work: use the one in the email or cancel from \"My bookings\".",
       "guestCancelTokenExpired": "This link has expired. You can cancel from \"My bookings\" with your booking code.",
-      "guestCancelTokenMissing": "This link does not work: use the one in the email or cancel from \"My bookings\"."
+      "guestCancelTokenMissing": "This link does not work: use the one in the email or cancel from \"My bookings\".",
+      "showcaseContentInvalid": "A text is not valid or a row is half filled: check the fields and try again.",
+      "showcaseNotPublishable": "Something is still missing to publish: fix the \"To do\" items and try again.",
+      "showcaseNotPublished": "The showcase is not published yet: publish it first.",
+      "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
+      "showcaseUndoUnavailable": "The time to undo the publication has run out.",
+      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version."
     }
   },
   "appShell": {
@@ -11473,6 +11479,11 @@
     "payNow": "Pay {{amount}}",
     "stripeNotice": "The payment is handled by Stripe and goes directly to the landlord's account."
   },
+  "reorderable": {
+    "down": "Move down: {{item}}",
+    "remove": "Remove",
+    "up": "Move up: {{item}}"
+  },
   "reports": {
     "chips": {
       "all": "All",
@@ -15039,19 +15050,439 @@
     },
     "availabilityLoadError": "Could not load the availability.",
     "showcase": {
-      "title": "Public showcase",
-      "description": "Preview of the page anyone can open with your link: it is identical to the public one.",
-      "loading": "Loading the showcase…",
-      "loadError": "Could not load the showcase preview.",
-      "published": "The showcase is public: anyone with the link can see it.",
-      "notPublished": "The showcase is not public yet: it will be once you activate the profile. This is a preview of how it will look.",
-      "suspended": "The profile is suspended: the showcase is not visible to the public. Contact CasaZen support.",
-      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
-      "open": "Open the public page",
+      "address": {
+        "draftNote": "This will be the address once you publish.",
+        "title": "Address"
+      },
+      "before": {
+        "advised": "Advised",
+        "changes": "What changes when you publish: {{changes}}.",
+        "fix": "Fix",
+        "missing": "What is missing",
+        "required": "Required",
+        "title": "Before you publish"
+      },
+      "bookings": {
+        "bookings_off": "Everything is ready but the bookings are closed: open them with \"Open the bookings\".",
+        "goToPayments": "Go to payments",
+        "not_published": "The showcase is not published yet: the bookings open after the publication.",
+        "paused": "The showcase is paused: the bookings are closed.",
+        "payments_account_not_ready": "The payments account is not ready yet: until it is, the showcase can be seen but not booked.",
+        "payments_off": "Online payments are not active yet: the showcase can be seen but not booked.",
+        "title": "Bookings"
+      },
+      "changes": {
+        "bio": "About us",
+        "certs": "Certifications",
+        "color": "Button color",
+        "cover": "Cover",
+        "faq": "Frequently asked questions",
+        "font": "Typeface",
+        "gallery": "Work",
+        "guarantee": "Guarantee",
+        "intro": "Introduction",
+        "logo": "Logo",
+        "prep": "Before we arrive",
+        "sections": "Sections",
+        "serviceOrder": "Services shown",
+        "style": "Style",
+        "tagline": "Big sentence",
+        "team": "Team",
+        "values": "Strengths"
+      },
       "copyLink": "Copy the link",
+      "description": "Your public page: publish it, pause it and share the link.",
+      "discardDialog": {
+        "description": "The draft goes back to being the same as the published showcase.",
+        "kept": "The showcase customers see does not change.",
+        "lost": "The changes you have not published will be lost.",
+        "title": "Discard the changes?"
+      },
+      "editor": {
+        "charsLeft_one": "{{count}} character left",
+        "charsLeft_other": "{{count}} characters left",
+        "color": {
+          "hint": "Leave it empty to use the colour of the style. White text has to read well on it: the contrast must be at least 4.5.",
+          "label": "Colour (hex)",
+          "low": "White on this colour reads at {{ratio}}:1: at least {{min}}:1 is needed.",
+          "notAColor": "Write a colour such as #0B5FA5.",
+          "picker": "Pick a colour",
+          "refused": "This colour is not accepted: use the suggested one.",
+          "reset": "Use the colour of the style",
+          "title": "Button colour",
+          "useSuggested": "Use the suggested colour"
+        },
+        "conflict": {
+          "description": "Reload to see the latest version. The changes of this tab that were not saved will be lost.",
+          "reload": "Reload",
+          "title": "The showcase was changed elsewhere"
+        },
+        "description": "Write, pick the style and see at once how customers see it.",
+        "font": {
+          "classico": {
+            "description": "Magazine elegance, high contrast.",
+            "name": "Classic"
+          },
+          "editoriale": {
+            "description": "Warm, careful headings with serifs.",
+            "name": "Editorial"
+          },
+          "legend": "Heading typeface",
+          "moderno": {
+            "description": "All sans-serif, crisp and bold.",
+            "name": "Modern"
+          },
+          "title": "Typeface"
+        },
+        "invalidField": "This value is not right: check it.",
+        "logo": {
+          "legend": "How your name appears",
+          "mark": {
+            "description": "A square with your initials and the name next to it.",
+            "name": "Initials and name"
+          },
+          "text": {
+            "description": "The name in large type, with no mark.",
+            "name": "Name only"
+          },
+          "title": "Mark"
+        },
+        "noAddress": "The preview shows up once the showcase has an address, that is after the profile is activated.",
+        "photos": {
+          "addToProfile": "Add photos to the profile",
+          "addToService": "Add photos to a service",
+          "loading": "Looking for your photos…",
+          "none": "You have no photos to choose from yet. Add them to the profile or to a service and you will find them here.",
+          "pickerHint": "Choose among the photos you already have on the profile and on the services.",
+          "profilePhoto": "Profile photo {{n}}",
+          "servicePhoto": "{{service}}: photo {{n}}"
+        },
+        "preview": "Preview",
+        "publish": {
+          "cannot": "Fix the \"To do\" items to publish.",
+          "changes": "What changes when you publish",
+          "checks": "Checks before publishing",
+          "firstTime": "Everything: it is the first publication.",
+          "halfFilled": "Some rows of the texts are half filled: complete them or remove them ({{rows}}).",
+          "halfFilledWorks": "Some jobs have no photo: choose one or remove them ({{rows}}).",
+          "level": {
+            "ok": "Done",
+            "todo": "To do",
+            "warn": "Recommended"
+          },
+          "nothing": "Nothing: the showcase is already up to date.",
+          "paused": "The showcase is paused: you publish the content, but it stays paused until you turn it back on.",
+          "upToDate": "The published showcase is already the same as the draft."
+        },
+        "save": {
+          "conflict": "The showcase was changed elsewhere.",
+          "dirty": "Changes not saved yet…",
+          "error": "I cannot save: I will try again at the next change.",
+          "invalid": "A value is not valid: check the marked fields.",
+          "nothing": "No changes",
+          "offline": "You are offline: I save as soon as the network is back.",
+          "retry": "Try again",
+          "saved": "Saved at {{time}}",
+          "saving": "Saving…"
+        },
+        "sections": {
+          "always": "The services and the final buttons are always shown.",
+          "certs": {
+            "hint": "The ones you wrote yourself.",
+            "name": "Certifications"
+          },
+          "faq": {
+            "hint": "The answers you wrote yourself.",
+            "name": "Frequently asked questions"
+          },
+          "hint": "Choose which blocks of the page to show. A block with nothing in it is not shown anyway.",
+          "how": {
+            "hint": "The steps from the choice to the visit. Shown when the bookings are open.",
+            "name": "How it works"
+          },
+          "title": "Sections of the page",
+          "trust": {
+            "hint": "\"Verified\" and the jobs done, only when true.",
+            "name": "Trust"
+          },
+          "works": {
+            "hint": "The photos of your jobs.",
+            "name": "Jobs"
+          },
+          "zones": {
+            "hint": "The towns where you work.",
+            "name": "Areas"
+          }
+        },
+        "services": {
+          "fix": "Open",
+          "hint": "Choose which services to show and in what order. Only active services can be shown.",
+          "inactiveTitle": "Not in the showcase yet",
+          "keepOne": "At least one service has to stay in the showcase.",
+          "loadError": "I cannot read your services.",
+          "loading": "Reading your services…",
+          "moved": "{{name}}: position {{position}} of {{total}}",
+          "none": "You have no active services yet: activate one in \"Services and prices\" to show it here.",
+          "open": "Go to \"Services and prices\"",
+          "reason": {
+            "Draft": "Draft: finish filling it in to be able to show it.",
+            "Paused": "Paused: turn it back on to be able to show it."
+          },
+          "title": "Services in the showcase"
+        },
+        "starter": {
+          "applied": "Starting text added",
+          "hint": "Do not know what to write? Start from a text that fits your trade: it only fills the empty fields, you change it as you like and nobody sees it until you publish.",
+          "title": "A starting text",
+          "use": "Use the starting text"
+        },
+        "steps": {
+          "publish": "Preview and publish",
+          "services": "Services and sections",
+          "style": "Style and mark",
+          "texts": "Texts",
+          "works": "Photos and jobs"
+        },
+        "stepsLabel": "Showcase steps",
+        "style": {
+          "acqua": {
+            "description": "Strong blue, crisp shapes: for plumbers, boiler engineers and whoever answers emergencies.",
+            "name": "Quick response"
+          },
+          "fresco": {
+            "description": "Bright aqua green and soft shapes: for cleaning, laundry and sanitising.",
+            "name": "Clean home"
+          },
+          "legend": "Showcase style",
+          "naturale": {
+            "description": "Forest green on warm paper, elegant headings: for gardeners, pruners and olive grove care.",
+            "name": "Green and garden"
+          },
+          "recommended": "Recommended for your trade",
+          "scintilla": {
+            "description": "Graphite and yellow, precise corners: for electricians, aerial fitters and technicians.",
+            "name": "Systems"
+          },
+          "title": "Style"
+        },
+        "texts": {
+          "addCert": "Add a certification",
+          "addPerson": "Add a person",
+          "addPrep": "Add a tip",
+          "addQuestion": "Add a question",
+          "addValue": "Add a point",
+          "answerLabel": "Answer",
+          "bio": "About us",
+          "bioHint": "Your story, in a few lines.",
+          "cert": "Certification {{n}}",
+          "certDetail": "Detail",
+          "certLabel": "Name",
+          "certRemoved": "Certification removed",
+          "certsHint": "Only the ones you really have: CasaZen neither adds nor checks them.",
+          "certsTitle": "Certifications",
+          "faqHint": "The questions you get asked most often, with the answer.",
+          "faqTitle": "Frequently asked questions",
+          "guaranteeHint": "Write only what you really do, with a title and a text (or neither): you write the guarantee, CasaZen adds nothing.",
+          "guaranteeName": "Guarantee title",
+          "guaranteeText": "What you guarantee",
+          "guaranteeTitle": "Guarantee",
+          "intro": "Introduction",
+          "person": "Person {{n}}",
+          "personName": "Name",
+          "personRemoved": "Person removed",
+          "personRole": "Role",
+          "prepHint": "What the customer can get ready: one line each.",
+          "prepItem": "Tip {{n}}",
+          "prepLabel": "What to get ready",
+          "prepRemoved": "Tip removed",
+          "prepTitle": "Before we arrive",
+          "presentation": "The presentation",
+          "presentationHint": "A big sentence, a line below it and your story: three short texts, in your own words.",
+          "question": "Question {{n}}",
+          "questionLabel": "Question",
+          "questionRemoved": "Question removed",
+          "tagline": "Big sentence",
+          "teamHint": "Who works with you: name and role.",
+          "teamTitle": "The people",
+          "value": "Point {{n}}",
+          "valueLabel": "Strength",
+          "valueRemoved": "Point removed",
+          "valuesHint": "Up to six, one line each.",
+          "valuesTitle": "Strengths"
+        },
+        "works": {
+          "add": "Add a job",
+          "alt": "Description of the photo",
+          "altHint": "For people who cannot see it. If you leave it empty your name is used.",
+          "altHintWork": "For people who cannot see the photo. If you leave it empty the caption is used.",
+          "caption": "Caption",
+          "changeBefore": "Change the \"before\" photo",
+          "changePhoto": "Change the photo",
+          "chooseBefore": "Choose the \"before\" photo",
+          "choosePhoto": "Choose the photo",
+          "compare": "Show the before and after",
+          "compareHint": "The photo of the job is the \"after\".",
+          "count_one": "{{count}} job with a photo. With at least {{advised}} the page is more convincing.",
+          "count_other": "{{count}} jobs with a photo. With at least {{advised}} the page is more convincing.",
+          "coverHint": "The big photo at the top of the page. If you do not choose one, the page uses the first photo of the profile, or a neutral background.",
+          "coverTitle": "Cover",
+          "hint": "The jobs you have done: a photo, a line and the place.",
+          "noPhoto": "No photo",
+          "pickBefore": "\"Before\" photo of job {{n}}",
+          "pickPhoto": "Photo of job {{n}}",
+          "place": "Place",
+          "removePhoto": "Remove the photo",
+          "removed": "Job removed",
+          "title": "Jobs",
+          "work": "Job {{n}}"
+        }
+      },
+      "focus": {
+        "changesBody": "What changes: {{changes}}.",
+        "changesTitle": "You have changes to publish",
+        "create": "Create your showcase",
+        "createBody": "Choose the style, write two lines and pick the services to show: you publish when you are ready.",
+        "createTitle": "Create your showcase in five minutes",
+        "edit": "Edit the showcase",
+        "fix": "Fix: {{item}}",
+        "missingBody": "Fix the items below: then you can publish.",
+        "missingTitle": "Something is still missing to publish",
+        "now": "Now",
+        "onlineBookingsOpen": "Customers can see it and book.",
+        "onlineReadOnly": "Customers can see it. The bookings are not open yet.",
+        "onlineTitle": "Your showcase is online",
+        "open": "Open the showcase",
+        "pausedBody": "Customers see that you are not taking bookings for now. Turn it back on when you like.",
+        "pausedTitle": "The showcase is paused",
+        "publish": "Publish the showcase",
+        "publishBody": "What is needed is there: when you publish, customers see it at once.",
+        "publishChanges": "Publish the changes",
+        "publishTitle": "Publish your showcase",
+        "publishedAt": "Published on {{when}}",
+        "refresh": "Refresh",
+        "resume": "Turn the showcase back on"
+      },
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
-      "notIndexed": "The page does not appear in search engines: it is reached only through the link."
+      "loadError": "Could not load the showcase.",
+      "loading": "Loading the showcase…",
+      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
+      "open": "Open the public page",
+      "preview": {
+        "about": "About us",
+        "desktop": "Computer",
+        "deviceLabel": "Device",
+        "frameTitle": "Showcase preview",
+        "home": "Home",
+        "note": "The preview shows the draft: customers only see what you publish.",
+        "pageLabel": "Page",
+        "phone": "Phone",
+        "services": "Services",
+        "tablet": "Tablet"
+      },
+      "readiness": {
+        "color": "A readable button color",
+        "faq": "Three frequently asked questions with their answer",
+        "hours": "Your working hours",
+        "photos": "Three photos of your work",
+        "presentation": "A sentence and an \"about us\" written by you",
+        "services": "At least one active service with a price",
+        "verified": "The CasaZen \"Verified\" mark",
+        "zones": "At least one town where you work"
+      },
+      "savedAt": "Last saved: {{when}}",
+      "settings": {
+        "discard": "Discard the changes",
+        "discardHint": "You go back to the published version: the changes you have not published are lost.",
+        "openBookings": "Open the bookings",
+        "openBookingsHint": "The showcase is ready: open the bookings whenever you like.",
+        "pause": "Pause",
+        "pauseHint": "Customers see that you are not taking bookings and the bookings close. You turn it back on with one tap.",
+        "title": "Other settings"
+      },
+      "share": {
+        "description": "Copy the link or send the message: you send it, nothing leaves from here.",
+        "email": "E-mail",
+        "message": "Here is my showcase on CasaZen: services, prices and the areas where I work.\n{{url}}",
+        "messageBookable": "Here is my showcase on CasaZen: services, prices and the areas where I work. You can also book online.\n{{url}}",
+        "open": "Share",
+        "subject": "My showcase on CasaZen",
+        "title": "Share your showcase",
+        "whatsapp": "WhatsApp"
+      },
+      "state": {
+        "changes": "Changes to publish",
+        "draft": "Draft",
+        "online": "Online",
+        "paused": "Paused"
+      },
+      "stats": {
+        "label": "The showcase in numbers",
+        "pending": "Waiting for an answer",
+        "requests": "Requests in the last {{days}} days"
+      },
+      "title": "My showcase site",
+      "toast": {
+        "bookingsOpen": "The bookings are open.",
+        "discardFailed": "Could not discard the changes.",
+        "discarded": "Changes discarded",
+        "pauseFailed": "Could not pause the showcase.",
+        "paused": "Showcase paused",
+        "publishFailed": "Could not publish the showcase.",
+        "published": "Showcase published",
+        "resumeFailed": "Could not turn the showcase back on.",
+        "resumed": "Showcase turned back on"
+      },
+      "wizard": {
+        "description": "Four steps: the style, two lines of presentation, the services and the publication. You can change everything afterwards.",
+        "done": {
+          "bookingsOpen": "Customers can book: the requests arrive in your Requests area.",
+          "edit": "You can change texts, photos and style whenever you like: customers only see what you publish.",
+          "lead": "Customers find it at its address and see what you published.",
+          "open": "Open the showcase",
+          "readOnly": "For now the showcase can be seen but not booked.",
+          "respond": "When a customer books you have {{deadline}} to answer: after that the request cancels itself.",
+          "share": "Share the link",
+          "title": "Your showcase is online"
+        },
+        "errors": {
+          "services": "Choose at least one service.",
+          "tagline": "Write at least 12 characters.",
+          "tooLong": "The text is too long."
+        },
+        "failed": "I cannot publish the showcase. Try again.",
+        "loadError": "I cannot get the guided creation ready.",
+        "loading": "Getting it ready…",
+        "presentation": {
+          "introHint": "One or two lines under the title.",
+          "prefilled": "We wrote a starting text that fits your trade: read it and change it as you like. It is not public until you publish.",
+          "taglineHint": "The big sentence at the top of the page: at least 12 characters."
+        },
+        "publish": "Publish the showcase",
+        "steps": {
+          "presentation": {
+            "label": "Presentation",
+            "purpose": "A big sentence and two lines under it: customers see them at the top of the page.",
+            "title": "Introduce your business"
+          },
+          "services": {
+            "label": "Services",
+            "purpose": "Only active services are shown: choose at least one.",
+            "title": "Choose the services to show"
+          },
+          "style": {
+            "label": "Style",
+            "purpose": "Change the colors and the feel of the page. You can change it whenever you like.",
+            "title": "Choose the style of the showcase"
+          },
+          "summary": {
+            "label": "Summary",
+            "purpose": "Here is what customers will see. The checks are the ones the system makes before publishing.",
+            "title": "Check and publish"
+          }
+        },
+        "title": "Create your showcase"
+      }
     },
     "trusted": {
       "title": "Trusted suppliers",
@@ -15097,6 +15528,276 @@
     "comuniTitle": "Where they work",
     "servicesTitle": "Services",
     "noAvailability": "The supplier has not yet entered availability for the coming days."
+  },
+  "supplierSite": {
+    "about": {
+      "ctaTitle": "Ready to book?",
+      "emptyText": "You will find our story here soon.",
+      "emptyTitle": "We are getting this page ready",
+      "eyebrow": "The professional",
+      "more": "Read more",
+      "pageTitle": "We are {{name}}",
+      "peopleEyebrow": "The people",
+      "peopleTitle": "Who comes to you",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "title": "About us",
+      "values": "Our strengths",
+      "valuesEyebrow": "Strengths",
+      "where": "We work in {{places}}"
+    },
+    "categories": {
+      "eyebrow": "Services",
+      "title": "What we do"
+    },
+    "certs": {
+      "eyebrow": "Guarantees",
+      "title": "Guarantees and certifications"
+    },
+    "closing": {
+      "book": "Book online",
+      "eyebrow": "Book online",
+      "text": "Choose the service and the day: you see the free times before going on.",
+      "title": "Ready to book?"
+    },
+    "crumbs": {
+      "home": "Home",
+      "label": "Where you are"
+    },
+    "cta": {
+      "book": "Book now",
+      "inquiry": "Request on measure"
+    },
+    "days": {
+      "eyebrow": "Availability",
+      "title": "The next days"
+    },
+    "deadline": {
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
+    },
+    "faq": {
+      "ask": "Can't find the answer? Send us a request on measure.",
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions"
+    },
+    "finder": {
+      "comune": "Where?",
+      "comunePlaceholder": "Your town",
+      "day": "When?",
+      "inquiryLead": "Can't find what you need?",
+      "label": "Look for a service and a time",
+      "onQuote": "{{name}} (on quote)",
+      "service": "What service do you need?"
+    },
+    "footer": {
+      "info": "Information",
+      "poweredBy": "Showcase made with CasaZen",
+      "zones": "Where we work"
+    },
+    "header": {
+      "home": "{{name}}: go to the home page",
+      "openMenu": "Open the menu"
+    },
+    "hero": {
+      "closed": "Online bookings are not open: here you can see the services and the areas.",
+      "firstSlot": "First free time",
+      "seeServices": "See the services"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "pay": "You pay online with CasaZen, safely. Cancelling is always free.",
+      "steps": {
+        "choose": {
+          "text": "You see the first times that are really free and the starting price.",
+          "title": "Choose the service and the day"
+        },
+        "confirm": {
+          "text": "The professional accepts or declines the request.",
+          "textDeadline": "They have up to {{deadline}} to accept the request.",
+          "title": "{{name}} confirms"
+        },
+        "details": {
+          "text": "Where the work is done and how to reach you. We check your e-mail with a link.",
+          "title": "You leave your details"
+        },
+        "done": {
+          "text": "CasaZen holds the payment until you confirm.",
+          "title": "Job done"
+        },
+        "hold": {
+          "text": "The amount is only held on your card: it is charged only if the professional accepts.",
+          "title": "We hold the amount"
+        }
+      },
+      "title": "Book in five steps"
+    },
+    "list": {
+      "all": "All services",
+      "allCategories": "All",
+      "categories": "Categories",
+      "clear": "Clear the filters",
+      "countOf_one": "{{count}} service of {{total}}",
+      "countOf_other": "{{count}} services of {{total}}",
+      "count_one": "{{count}} service",
+      "count_other": "{{count}} services",
+      "label": "List of services",
+      "leadClosed": "Services and starting prices.",
+      "leadOpen": "Clear prices and first times that are really free. For a special job you can send a request on measure.",
+      "noMatchText": "Clear a filter to see all the services again.",
+      "noMatchTitle": "No service with these filters",
+      "price": {
+        "fixed": "Fixed price",
+        "hourly": "By the hour",
+        "quote": "On quote"
+      },
+      "priceAll": "All prices",
+      "priceLabel": "Price",
+      "quoteText": "Describe the job: the professional answers with a price, with no commitment.",
+      "quoteTitle": "Can't find what you are looking for?",
+      "sort": {
+        "duration": "Shortest duration",
+        "price": "Lowest price",
+        "recommended": "Recommended",
+        "slot": "First free time"
+      },
+      "sortLabel": "Sort by",
+      "title": "{{name}}: what we do and what it costs"
+    },
+    "meta": {
+      "about": "About us · {{name}}",
+      "aboutDescription": "The story, the people and the guarantees of {{name}}.",
+      "service": "{{service}} · {{name}}",
+      "serviceDescription": "{{service}}: what it includes, what it costs and when {{name}} is free.",
+      "services": "Services and prices · {{name}}",
+      "servicesDescription": "Services, starting prices and first free times of {{name}}."
+    },
+    "nav": {
+      "about": "About us",
+      "faq": "Questions",
+      "how": "How it works",
+      "label": "Site menu",
+      "services": "Services",
+      "works": "Work",
+      "zones": "Areas"
+    },
+    "offline": "You are offline: this is the last saved version. You need a connection to check the times and book.",
+    "paused": {
+      "text": "The showcase is paused: you cannot book for now. Come back later.",
+      "title": "{{name}} is not taking bookings for now"
+    },
+    "responseTime": {
+      "hours_one": "about {{count}} hour",
+      "hours_other": "about {{count}} hours",
+      "minutes_one": "about {{count}} minute",
+      "minutes_other": "about {{count}} minutes"
+    },
+    "service": {
+      "aboutTitle": "What it is",
+      "allPhotos": "All {{count}} photos",
+      "bookShort": "Book",
+      "bookThis": "Book this service",
+      "cancelFree": "Cancel for free, always",
+      "cardTitle": "Book {{name}}",
+      "confirmWithin": "The professional confirms within {{deadline}}",
+      "estimateError": "We cannot work out the total right now. Try again shortly.",
+      "estimateNote": "The total is an estimate: the professional confirms the price before starting.",
+      "estimating": "Working out the total…",
+      "excluded": "What is not included",
+      "faqTitle": "Questions",
+      "firstSlots": "First free times",
+      "hours": "Hours",
+      "included": "What is included",
+      "includedTitle": "What it includes",
+      "loadError": "Could not load the service.",
+      "missingText": "We cannot find this service among those of {{name}}: it may be paused or removed. See the others.",
+      "missingTitle": "This service is not available",
+      "noSlots": "No free time in the next days",
+      "onQuoteResult": "For this choice the professional decides the price: send a request on measure.",
+      "othersEyebrow": "Other services",
+      "othersTitle": "You may also need",
+      "outside": "This town is outside the usual area: the professional decides the price, with a request on measure.",
+      "paySafe": "You pay online with CasaZen, safely",
+      "photoOpen": "Enlarge photo {{index}} of {{total}}: {{name}}",
+      "prepTitle": "Before we arrive",
+      "priceTitle": "How the price is worked out",
+      "quoteFact": "Price on quote",
+      "quoteIntro": "Describe the job: the professional answers with the price. It is not a commitment.",
+      "sets": "Sets",
+      "squareMeters": "Square meters",
+      "surface": "How big is the home?",
+      "surfaceBetween": "from {{from}} to {{to}} m²",
+      "surfaceNote": "The base price covers up to {{sqm}} m²: above it a supplement is added every 30 m².",
+      "surfaceUpTo": "up to {{sqm}} m²",
+      "total": "Estimated total",
+      "urgentFact": "Also available as an urgent job",
+      "urgentLine": "Urgent job",
+      "where": "Where is the work done? (optional)"
+    },
+    "services": {
+      "all": "All services",
+      "emptyText": "There are no services to show at the moment. Try again shortly.",
+      "emptyTitle": "We are getting the services ready",
+      "eyebrow": "Services and prices",
+      "firstSlot": "First time: {{when}}",
+      "from": "from",
+      "leadClosed": "Services and starting prices.",
+      "leadOpen": "Clear prices and first times that are really free.",
+      "quoteHint": "The price is agreed with you",
+      "title": "What we can do for you",
+      "vatIncluded": "VAT included"
+    },
+    "slot": {
+      "day": "{{day}} at {{time}}",
+      "today": "today at {{time}}",
+      "tomorrow": "tomorrow at {{time}}"
+    },
+    "states": {
+      "discover": "Discover CasaZen",
+      "errorText": "Try again in a few seconds."
+    },
+    "trust": {
+      "jobs": "jobs done with CasaZen",
+      "jobsLine_one": "{{count}} job done with CasaZen",
+      "jobsLine_other": "{{count}} jobs done with CasaZen",
+      "label": "Why trust {{name}}",
+      "payments": "Secure payment",
+      "paymentsBy": "with CasaZen",
+      "response": "usually to answer",
+      "verified": "Verified",
+      "verifiedBy": "by CasaZen",
+      "verifiedLine": "Verified by CasaZen"
+    },
+    "works": {
+      "after": "After",
+      "afterAlt": "{{caption}} (after)",
+      "before": "Before",
+      "beforeAlt": "{{caption}} (before)",
+      "compare": "Before and after comparison: {{caption}}. Move the slider to see the difference",
+      "enlarge": "Enlarge: {{caption}}",
+      "eyebrow": "Our work",
+      "eyebrowPhotos": "Photos",
+      "lead": "Move the slider to see the difference.",
+      "position": "Before {{before}}%, after {{after}}%",
+      "title": "Jobs we have done",
+      "titlePhotos": "A few photos"
+    },
+    "zones": {
+      "checkLabel": "Type your town and we tell you at once",
+      "checking": "Checking the area…",
+      "covered": "Perfect: we work in {{place}}.",
+      "error": "We cannot check right now. Try again shortly.",
+      "eyebrow": "Where we work",
+      "lead": "We work in {{places}} and {{last}}.",
+      "leadOne": "We work in {{place}}.",
+      "listLabel": "Towns served",
+      "outside": "{{place}} is outside the usual area: you can still send a request on measure and the professional decides.",
+      "title": "Do we come to you?",
+      "tooMany": "Too many requests in a short time: try again in a minute.",
+      "unknown": "We cannot say for sure for {{place}}: send a request on measure."
+    }
   },
   "swiss": {
     "description": "Compliance files for Canton Ticino: daily police notification and OTR report.",
