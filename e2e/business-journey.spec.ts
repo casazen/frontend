@@ -44,7 +44,7 @@ test.describe('Business Golden Path', () => {
     expect(created.status()).toBe(201);
 
     // The property exists from the first «Continua»: «Salva e chiudi» leaves the wizard, and the list has it («Da completare»).
-    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'amenities');
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'photos');
     await page.getByTestId('property-wizard-save-close').click();
     await expect(page).toHaveURL(/\/app\/short-rent\/properties(\?|$)/);
 

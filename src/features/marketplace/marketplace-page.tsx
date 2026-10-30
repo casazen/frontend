@@ -1,88 +1,68 @@
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Loader2, MapPin } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
-import { EmptyState } from '@/components/shared/empty-state';
-import { ErrorState } from '@/components/shared/error-state';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { PROPERTY_CREATE_PATH, propertyEditPath } from '@/features/properties/properties-paths';
-import { RequestsSection } from './components/requests-section';
-import { SuppliersSection } from './components/suppliers-section';
-import { MARKETPLACE_PROPERTY_PARAM, useMarketplaceProperty } from './lib/marketplace-property';
+import { PlainSection } from '@/components/shared/calm';
+import { getServiceCategoryLabel } from '@/lib/i18n-labels';
+import { useMarketplaceSuppliers } from '@/queries/use-service-requests';
+import { useServiceCategories } from '@/queries/use-service-categories';
+import { CategoryRow } from './components/category-row';
+import { MarketplaceFrame } from './components/marketplace-frame';
+import { SupplierSearchBox } from './components/supplier-search-box';
+import { SuppliersError, SuppliersLoading } from './components/suppliers-state';
+import { categoryRows } from './lib/category-groups';
+import { MARKETPLACE_QUERY_PARAM, MARKETPLACE_SEARCH_PATH, marketplaceHref } from './lib/marketplace-paths';
+import { useMarketplaceProperty } from './lib/marketplace-property';
 
 /**
- * Marketplace dei servizi (SR-09a, spec #466): the one page where a host finds the suppliers that work in the comune of a
- * property and asks one of them for a job. The property is in the address (`?propertyId=`), the first active one by default.
- * «Fornitori CasaZen» is the section of the suppliers; the other sections of the marketplace go under it, and «Le tue richieste»
- * closes the page.
+ * Scopri (MKT, spec #466 and the design of the marketplace "like the App Store"): the suppliers that work in the comune of a property
+ * and the way to ask one of them for a job. The search is at the top (Enter leads to the page of the search); under it «Fornitori
+ * CasaZen» has a row for each category that has suppliers around the property, the one with the most suppliers first. Nothing that
+ * does not exist is shown: no ratings, no «Popolari», no «Novità».
  */
 export function MarketplacePage() {
   const { t } = useTranslation();
-  const [, setSearchParams] = useSearchParams();
-  const { properties, property, isLoading, isError, error, refetch } = useMarketplaceProperty();
-
-  const changeProperty = (id: string) =>
-    setSearchParams(
-      (previous) => {
-        const next = new URLSearchParams(previous);
-        next.set(MARKETPLACE_PROPERTY_PARAM, id);
-        return next;
-      },
-      { replace: true },
-    );
+  const navigate = useNavigate();
+  const { property } = useMarketplaceProperty();
 
   return (
-    <div className="min-w-0 space-y-6" data-testid="marketplace-page">
-      <PageHeader title={t('marketplace.title')} description={t('marketplace.description')} />
-
-      {isLoading ? (
-        <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-          <Loader2 aria-hidden="true" className="size-5 animate-spin" />
-          {t('marketplace.loading')}
-        </div>
-      ) : isError && !properties ? (
-        <ErrorState title={t('marketplace.propertiesLoadError')} error={error} onRetry={() => void refetch()} />
-      ) : !property || !properties ? (
-        <EmptyState
-          icon={Building2}
-          title={t('marketplace.noProperties')}
-          description={t('marketplace.noPropertiesHint')}
-          action={{ label: t('marketplace.addProperty'), href: PROPERTY_CREATE_PATH }}
+    <MarketplaceFrame
+      section="discover"
+      title={t('marketplace.title')}
+      description={t('marketplace.description')}
+      toolbar={
+        <SupplierSearchBox
+          onSearch={(words) => navigate(marketplaceHref(MARKETPLACE_SEARCH_PATH, property?.id, { [MARKETPLACE_QUERY_PARAM]: words.trim() }))}
         />
+      }
+    >
+      {({ property: current }) => <DiscoverSuppliers propertyId={current.id} />}
+    </MarketplaceFrame>
+  );
+}
+
+function DiscoverSuppliers({ propertyId }: { propertyId: string }) {
+  const { t, i18n } = useTranslation();
+  const suppliers = useMarketplaceSuppliers({ propertyId });
+  const catalog = useServiceCategories();
+
+  if (suppliers.isLoading || catalog.isLoading) return <SuppliersLoading />;
+  if (suppliers.isError && !suppliers.data) return <SuppliersError error={suppliers.error} onRetry={() => void suppliers.refetch()} />;
+  if (catalog.isError || !catalog.data) return <SuppliersError error={catalog.error} onRetry={() => void catalog.refetch()} />;
+
+  const rows = categoryRows(suppliers.data?.items ?? [], catalog.data, (category) => getServiceCategoryLabel(category, t), i18n.language);
+
+  return (
+    <PlainSection title={t('marketplace.casazenSuppliers')} data-testid="marketplace-suppliers-section">
+      {rows.length === 0 ? (
+        <p className="py-4 text-sm text-muted-foreground" role="status" data-testid="marketplace-no-network">
+          {t('marketplace.noNetwork')}
+        </p>
       ) : (
-        <>
-          <div className="max-w-md space-y-1.5">
-            <Label htmlFor="marketplace-property">{t('marketplace.propertyLabel')}</Label>
-            <Select
-              id="marketplace-property"
-              value={property.id}
-              onChange={(event) => changeProperty(event.target.value)}
-              data-testid="marketplace-property-select"
-            >
-              {properties.map((candidate) => (
-                <option key={candidate.id} value={candidate.id}>
-                  {candidate.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {property.comuneIstatCode ? (
-            <SuppliersSection propertyId={property.id} />
-          ) : (
-            <EmptyState
-              icon={MapPin}
-              title={t('marketplace.addComune')}
-              description={t('marketplace.addComuneHint')}
-              action={{ label: t('marketplace.editProperty'), href: propertyEditPath(property.id) }}
-              className="py-8"
-            />
-          )}
-
-          <RequestsSection propertyId={property.id} />
-        </>
+        <div className="space-y-8 pt-2">
+          {rows.map((row) => (
+            <CategoryRow key={row.category} category={row.category} suppliers={row.suppliers} propertyId={propertyId} />
+          ))}
+        </div>
       )}
-    </div>
+    </PlainSection>
   );
 }

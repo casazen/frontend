@@ -117,6 +117,35 @@ describe('ServiceRequestForm', () => {
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 
+  // The page of a supplier in the marketplace asks for one of its services (MKT): the request keeps that service, so a wrong id, category
+  // or duration would put another price and another slot on it.
+  it('ServiceRequestForm_ForAServiceOfTheSupplier_SendsItsIdWithItsCategoryAndItsOwnDuration', async () => {
+    api.getBookings.mockResolvedValue([stay('b-next', '2099-10-01', '2099-10-05')]);
+    renderForm({
+      supplierOrgId: 'sup-chosen',
+      service: { id: 'svc-1', name: 'Deep cleaning', category: 'cleaning', durationMinutes: 150 },
+    });
+
+    const staySelect = await screen.findByTestId('service-request-stay');
+    // The service fixes the category (it is not asked) and its duration, even an unusual one, is where the form starts.
+    expect(screen.getByTestId('service-request-service')).toHaveTextContent('Deep cleaning');
+    expect(screen.queryByLabelText(i18n.t('serviceRequest.category'))).not.toBeInTheDocument();
+    expect(screen.getByTestId('service-request-duration')).toHaveValue('150');
+
+    fireEvent.change(staySelect, { target: { value: 'b-next' } });
+    fireEvent.change(screen.getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+    await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('submit-service-request'));
+
+    await waitFor(() => expect(api.createServiceRequest).toHaveBeenCalledTimes(1));
+    expect(api.createServiceRequest.mock.calls[0][0]).toMatchObject({
+      supplierOrgId: 'sup-chosen',
+      category: 'cleaning',
+      serviceListingId: 'svc-1',
+      durationMinutes: 150,
+    });
+  });
+
   it('ServiceRequestForm_StaysOfTheProperty_OffersCurrentFirstAndNeverCancelled', async () => {
     api.getBookings.mockResolvedValue([
       stay('b-past', '2020-01-01', '2020-01-03'),

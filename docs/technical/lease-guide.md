@@ -78,13 +78,18 @@ ancora approvato» e la finestra lo dice in una frase.
 
 | File (`src/features/leases/operations/`) | Cosa fa |
 |---|---|
-| `lease-operations.tsx` | L'area: legge `GET /leases/:id/operations` (`useLeaseOperations`), mostra le righe disponibili e apre la finestra dall'indirizzo `?operazione=disdetta` o `?operazione=recesso`. Senza il permesso `lease.create`, senza nulla da fare o se la risposta fallisce non c'è nessuna sezione. |
+| `lease-operations.tsx` | L'area: legge `GET /leases/:id/operations` (`useLeaseOperations`), mostra le righe disponibili (disdetta, rinnovo, conferma dell'esigenza, recesso) e apre la finestra dall'indirizzo `?operazione=disdetta`, `rinnovo`, `conferma-esigenza` o `recesso`. Senza il permesso `lease.create`, senza nulla da fare o se la risposta fallisce non c'è nessuna sezione. |
 | `operation-ids.ts` | I nomi delle operazioni (`LEASE_OPERATIONS`) e il parametro dell'indirizzo; nessun import, perché il catalogo dei consigli e la tabella dei passi li nominano senza trascinarsi dietro le finestre. |
 | `disdetta-dialog.tsx` | «Prepara la disdetta»: quando finisce il contratto e entro quando la lettera è in tempo (dal server), il motivo di legge alla prima scadenza (l'unico campo) e «Scarica la bozza». Sotto, «Dopo l'invio»: «Segna come inviata» e il rimando a «Registra la disdetta» (l'azione che ferma il rinnovo). |
 | `withdrawal-dialog.tsx` | «Registra il recesso dell'inquilino»: giorno di ricezione, motivo, preavviso del contratto (solo per la facoltà); mostra dove finisce il contratto (anteprima di ciò che calcola il server) e non va avanti se il preavviso scade oltre il periodo in corso. Registrato, la riga offre «Presa d'atto e prossimi passi». |
+| `renewal-dialog.tsx` | «Registra il rinnovo» (1b): rinnovo standard (mesi e date dal server) o proroga a un giorno concordato, con l'avviso (stesso di LR-OVERLAP) se un altro contratto dell'immobile è in mezzo; sposta la fine e allunga il piano dei canoni. La finestra si apre solo nell'ultimo tratto prima della fine (`renewal.available`); registrato, la riga offre «Accordo e prossimi passi» (piano già esteso, comunicazione all'Agenzia delle Entrate, bozza dell'accordo da far firmare) finché non si apre la finestra del periodo dopo. |
+| `need-confirmation-dialog.tsx` | «Conferma l'esigenza» (1b): per un transitorio la cui esigenza è del locatore, entro quando va spedita la lettera (l'ultimo giorno del contratto: il termine esatto lo conferma il commercialista) e «Scarica la bozza»; sotto, «Segna come inviata». Se l'esigenza è del conduttore non c'è né riga né lettera. |
+| `use-sheet-operations.ts` | La query delle operazioni per chi sta sulla scheda (l'area e la guida, per il consiglio che ne dipende): una sola richiesta al server. |
 | `letter-sent-form.tsx` | «Segna come inviata»: giorno e mezzo, un evento nella cronologia e nient'altro. |
 
-Dal catalogo dei consigli e dalla tabella dei passi si arriva alle operazioni con `operation('disdetta')` (azione `kind: 'operation'`) e con il
+Dal catalogo dei consigli e dalla tabella dei passi si arriva alle operazioni con `operation('disdetta')` (azione `kind: 'operation'`; il consiglio
+`transitorioConfirmNeedLandlord` porta a `operation('conferma-esigenza')` solo quando l'esigenza è del locatore, fatto `landlordConfirmsNeed` che viene
+dalle operazioni) e con il
 bersaglio `{ kind: 'operation', operation: 'disdetta' }` di `lease-next-step.ts` (`operationPath`). Nessun mese e nessun giorno di legge è scritto qui: i
 mesi di preavviso e i giorni per comunicare la fine all'Agenzia delle Entrate vengono da `GET /long-rent/rules`; le date calcolate, dal server.
 

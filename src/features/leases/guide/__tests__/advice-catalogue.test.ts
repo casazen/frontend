@@ -106,6 +106,27 @@ describe('the catalogue of the advice of a lease', () => {
     expect(idsOf(factsOf({ contractType: 'Transitorio' }, 'Draft'))).not.toContain('transitorioConfirmNeed');
   });
 
+  it('selectAdvice_TheNeedOfATransitoryLease_LeadsToTheLetterOnlyWhenItIsTheLandlords_ARenewalRecordedCountsAsRenewed', () => {
+    const transitory = { contractType: 'Transitorio', status: 'Registered', registration: REGISTRATION, startDate: '2026-05-01T00:00:00Z', endDate: '2026-12-31T00:00:00Z' } as const;
+
+    // The need is the landlord's: the advice leads to the window that prepares the letter, and the plain one (which leads to the date) is not said too.
+    const landlords = idsOf(factsOf(transitory, 'Expiring', { landlordConfirmsNeed: true }));
+    expect(landlords).toContain('transitorioConfirmNeedLandlord');
+    expect(landlords).not.toContain('transitorioConfirmNeed');
+    // The need is the tenant's, or the operations of the lease have not arrived: the plain advice, never both.
+    for (const ids of [idsOf(factsOf(transitory, 'Expiring', { landlordConfirmsNeed: false })), idsOf(factsOf(transitory, 'Expiring'))]) {
+      expect(ids).toContain('transitorioConfirmNeed');
+      expect(ids).not.toContain('transitorioConfirmNeedLandlord');
+    }
+
+    // A renewal the landlord recorded is a renewal like the tacit one: from then on it is the second expiry that counts.
+    const libero = { status: 'Registered', registration: REGISTRATION, startDate: '2019-02-01T00:00:00Z', endDate: '2027-01-31T00:00:00Z' } as const;
+    const recorded = factsOf({ ...libero, events: [{ eventType: 'RenewalRecorded', occurredAt: '2026-09-01T00:00:00Z' }] }, 'Expiring');
+    expect(recorded.termRenewed).toBe(true);
+    expect(idsOf(recorded)).toContain('secondExpiry');
+    expect(idsOf(recorded)).not.toContain('liberoFirstExpiry');
+  });
+
   it('selectAdvice_ARegisteredConcordato_GetsTheBenefitsToClaimFirst_ALiberoDoesNot', () => {
     const concordato = idsOf(factsOf({ contractType: 'Concordato', status: 'Registered', registration: REGISTRATION }, 'Active'));
     const libero = idsOf(factsOf({ status: 'Registered', registration: REGISTRATION }, 'Active'));

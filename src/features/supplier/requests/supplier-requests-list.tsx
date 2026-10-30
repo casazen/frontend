@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Check, CheckCircle2, Inbox, XCircle } from 'lucide-react';
+import { Check, CheckCircle2, FileText, Inbox, Pencil, Undo2, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import { parseDateRange, type ListState } from '@/components/shared/list-view/list-state';
@@ -7,7 +7,7 @@ import type { ListRowAction } from '@/components/shared/list-view/list-types';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import type { SupplierInboxParams, SupplierInboxTab, SupplierInboxWhen } from '@/types/supplier';
 import { PriceCell, RequestWho, WhenCell, WhereCell } from './request-cells';
-import { actionsOf, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle } from './request-model';
+import { phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle } from './request-model';
 import { RequestStateBadge } from './request-parts';
 import type { RequestActions } from './use-request-actions';
 
@@ -45,15 +45,17 @@ export function inboxParamsOf(state: ListState, pageSize: number, clientId?: str
  */
 export function useSupplierRequestsList(actions: RequestActions) {
   const { t } = useTranslation();
-  const { suspended, busy, take, complete, askReject } = actions;
+  const { suspended, busy, take, complete, askReject, askQuote, askWithdrawQuote } = actions;
 
   return useMemo(() => {
+    // The button of a row is the quick answer: accept a new request, complete a taken one. The quote (SP-04b) is one tap further, in "⋯" of
+    // the row and as the first button of the request itself, where the words of the customer and the time are in front of the supplier.
     const primaryAction = (request: SupplierServiceRequest): ListRowAction | null => {
-      const { primary } = actionsOf(phaseOf(request));
-      if (primary === 'take') {
+      const phase = phaseOf(request);
+      if (phase === 'toAnswer') {
         return { id: 'take', label: t('supplier.requests.action.take'), icon: Check, onSelect: () => take(request.id), disabled: suspended || busy, testId: `take-${request.id}` };
       }
-      if (primary === 'complete') {
+      if (phase === 'scheduled' || phase === 'inProgress') {
         return { id: 'complete', label: t('supplier.requests.action.completeShort'), icon: CheckCircle2, onSelect: () => complete(request.id), disabled: suspended || busy, testId: `complete-${request.id}` };
       }
       return null;
@@ -113,15 +115,25 @@ export function useSupplierRequestsList(actions: RequestActions) {
         { id: 'week', label: t('supplier.requests.views.week'), state: { chip: 'programmate', filters: { when: 'settimana' } } },
       ],
       primaryAction,
-      menu: (request) => [
-        { id: 'open-page', label: t('supplier.requests.action.openPage'), href: requestPath(request.id), testId: `open-${request.id}` },
-        ...(actionsOf(phaseOf(request)).secondary === 'reject'
-          ? [
-              'separator' as const,
-              { id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` },
-            ]
-          : []),
-      ],
+      menu: (request) => {
+        const phase = phaseOf(request);
+        return [
+          { id: 'open-page', label: t('supplier.requests.action.openPage'), href: requestPath(request.id), testId: `open-${request.id}` },
+          ...(phase === 'toAnswer'
+            ? [
+                { id: 'quote', label: t('supplier.requests.action.quote'), icon: FileText, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `quote-${request.id}` },
+                'separator' as const,
+                { id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` },
+              ]
+            : []),
+          ...(phase === 'quotePending'
+            ? [
+                { id: 'edit-quote', label: t('supplier.requests.action.editQuote'), icon: Pencil, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `edit-quote-${request.id}` },
+                { id: 'withdraw-quote', label: t('supplier.requests.action.withdrawQuote'), icon: Undo2, onSelect: () => askWithdrawQuote(request.id), disabled: suspended || busy, testId: `withdraw-quote-${request.id}` },
+              ]
+            : []),
+        ];
+      },
       rowHref: (request) => requestPath(request.id),
       detail: { drawerKind: REQUEST_DRAWER_KIND },
       rowTone: (request) => {
@@ -142,5 +154,5 @@ export function useSupplierRequestsList(actions: RequestActions) {
       noResults: { title: t('supplier.requests.noResults.title'), description: t('supplier.requests.noResults.description') },
       countLabel: (count) => t('supplier.requests.list.count', { count }),
     });
-  }, [t, suspended, busy, take, complete, askReject]);
+  }, [t, suspended, busy, take, complete, askReject, askQuote, askWithdrawQuote]);
 }

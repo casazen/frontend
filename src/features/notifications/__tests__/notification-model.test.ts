@@ -27,6 +27,8 @@ describe('notification model', () => {
       'service-request-completed', 'service-request-rejected', 'service-request-paid', 'service-request-started',
       'service-request-cancelled', 'service-request-reminder', 'service-request-time-proposed',
       'service-request-proposal-accepted', 'service-request-proposal-rejected', 'service-request-rescheduled',
+      'service-request-quote-sent', 'service-request-quote-accepted', 'service-request-quote-rejected', 'service-request-quote-expired',
+      'service-request-day-before', 'service-payment-received',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -44,10 +46,10 @@ describe('notification model', () => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
   });
 
-  it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToTheMarketplaceForAHost', () => {
+  it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {
     expect(notificationRoute({ type: 'service-request-created', entityId: 'sr-1' }, 'supplier')).toBe('/app/supplier/inbox/sr-1');
-    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'short-rent')).toBe('/app/short-rent/marketplace');
-    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'long-rent')).toBe('/app/short-rent/marketplace');
+    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'short-rent')).toBe('/app/short-rent/marketplace/mine');
+    expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'long-rent')).toBe('/app/short-rent/marketplace/mine');
   });
 
   it('notificationRoute_UnknownTypeOrNoEntity_GoesNowhere', () => {
