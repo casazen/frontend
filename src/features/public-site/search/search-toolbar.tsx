@@ -41,7 +41,8 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
   const { t } = useTranslation();
   const { stay, setStay, where, setWhere, search, setSearch } = state;
   const platform = scope.kind === 'platform';
-  const { maxGuests, petsAllowed, tags } = facets;
+  // A guest with a pet is always asked (the bar is not told whether the homes take it): the list says which homes do.
+  const { maxGuests, tags } = facets;
   const calendar = usePublicSiteCalendar(
     platform ? undefined : scope.slug,
     { adults: stay.adults, children: stay.children },
@@ -70,7 +71,6 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
           onStayChange={setStay}
           calendar={calendar}
           maxGuests={maxGuests}
-          petsAllowed={petsAllowed}
           // A site with one place has no «Dove»; across all the sites it is the first field.
           showDestination={platform || options.length > 1}
           onSearch={onSearch}

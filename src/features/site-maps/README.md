@@ -183,9 +183,12 @@ components/
 ```
 
 **`RegionMap`** (`pins`, `selectedId`, `onSelect`, `activeId`, `onActiveChange`, `highlightIds`, `view`, `labels`, `aspect`):
-a pin is `{ id, lat, lon, label, name, href?, available?, unavailableNote?, tone?, card? }` with the position **already rounded**
-(see `publicPoint`); there is no field for an address or an interior, and nothing in the component computes a distance from
-coordinates. Each pin is a button with its own accessible name («Casa Bianca, 145 €», and «…, Non libera dal 12 ottobre» when it
+a pin is `{ id, lat, lon, place?, label, name, href?, available?, unavailableNote?, tone?, card? }` with the position **already
+rounded** (see `publicPoint`); there is no field for an address or an interior, and nothing in the component computes a distance
+from coordinates. **A house whose host never gave a position** is stored with `0, 0` (`isPositionSet` says so) and the public data
+carry it as it is: the pin then goes to `place`, the comune, at the town of that name in the data of the map (`townPoint`: the
+detail packs first, then the national base, case and accents ignored), and a pin that has neither is not drawn («Posizione non
+disponibile» when none is). Positions of comuni that the data do not name need the coordinates of the house. Each pin is a button with its own accessible name («Casa Bianca, 145 €», and «…, Non libera dal 12 ottobre» when it
 is not free: grey with stripes and an icon, never colour alone), in a list over the SVG, which is `aria-hidden`: the page has the
 same houses as a list. At least 44 px. Enter or Space select, Esc lets go, a second activation of the selected pin deselects.
 The map has the focus (arrows move it, `+` and `-` zoom, `0` fits) and the controls are buttons of 44 px with an announcement of

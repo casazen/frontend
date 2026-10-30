@@ -22,6 +22,7 @@ export type StayProblemKind =
   | 'datesUnavailable'
   | 'minNights'
   | 'tooManyGuests'
+  | 'petsNotAllowed'
   | 'invalidStay'
   | 'notBookable'
   | 'failed';

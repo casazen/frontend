@@ -33,11 +33,19 @@ describe('readStay', () => {
     expect(problems).toContain('checkOutNotAfterCheckIn');
   });
 
-  it('readStay_MorePeopleThanTheHomeTakesAndAPetItDoesNot_AreReported', () => {
+  it('readStay_MorePeopleThanTheHomeTakesAndAPetItDoesNot_AreReportedAndKept', () => {
     const { stay, problems } = readStay(search('guests=7&pets=true'), { today: TODAY, maxGuests: 4, petsAllowed: false });
 
-    expect(stay).toMatchObject({ adults: 7, pets: false });
+    // The pet is not dropped: a guest who said it travels with one must be told the home takes none, not booked in without it.
+    expect(stay).toMatchObject({ adults: 7, pets: true });
     expect(problems).toEqual(['overCapacity', 'petsNotAllowed']);
+  });
+
+  it('readStay_APetAndAHomeThatDoesNotSayIfItTakesThem_IsNotAProblem', () => {
+    const { stay, problems } = readStay(search('pets=1'), { today: TODAY });
+
+    expect(stay.pets).toBe(true);
+    expect(problems).toEqual([]);
   });
 });
 

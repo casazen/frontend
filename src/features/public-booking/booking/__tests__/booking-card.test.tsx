@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
@@ -78,12 +78,12 @@ const quote: DirectBookingQuote = {
   ],
 };
 
-function renderCard(search: string, ofProperty: PublicPropertyDetailDto = property) {
+function renderCard(search: string, home: PublicPropertyDetailDto = property) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[`/book/demo/property/villa-mare${search}`]}>
-        <BookingProvider property={ofProperty} orgSlug="demo" hostLabel="Giulia" contactEmail={null}>
+        <BookingProvider property={home} orgSlug="demo" hostLabel="Giulia" contactEmail={null}>
           <BookingCard />
         </BookingProvider>
       </MemoryRouter>
@@ -150,5 +150,38 @@ describe('BookingCard', () => {
 
     await waitFor(() => expect(screen.getByTestId('tourist-tax-line')).toHaveTextContent('stimata'));
     expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(expect.objectContaining({ numberOfChildren: 1, childrenAges: [17] }), expect.anything());
+  });
+
+  it('BookingCard_PetOnAHomeThatTakesPets_CarriesThePetToTheCheckout', async () => {
+    renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2&pets=1', { ...property, petsPolicy: 'Yes' });
+
+    await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
+    // What the guest said travels with the stay: the checkout reads it from the address and tells the host.
+    expect(screen.getByTestId('booking-cta')).toHaveAttribute('href', expect.stringContaining('pets=1'));
+    expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+  });
+
+  it('BookingCard_PetOnAHomeThatTakesNone_SaysSoOffersTheWayOutAndOffersNoCheckout', async () => {
+    renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2&pets=1', { ...property, petsPolicy: 'No' });
+
+    const problem = await screen.findByTestId('stay-problem');
+    expect(problem).toHaveAttribute('data-problem', 'petsNotAllowed');
+    expect(problem).toHaveTextContent('Questa casa non ammette animali');
+    // Not booked into a home without them as if the guest had not said it: no quote is asked and the button leads nowhere.
+    expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
+    expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+
+    // The way out: the guest travels without the pet, and the stay can be booked.
+    fireEvent.click(screen.getByTestId('stay-problem-exit'));
+    await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
+    expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href', expect.stringContaining('pets'));
+  });
+
+  it('BookingCard_NoPetAndAHomeThatTakesNone_IsNotAProblem', async () => {
+    renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, petsPolicy: 'No' });
+
+    await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
+    expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
   });
 });

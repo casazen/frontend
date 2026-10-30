@@ -43,6 +43,13 @@ export function makeView({ lat, lon, spanKm, aspect = 4 / 3 }: Partial<View> = {
 
 /** Rounds a coordinate to two decimals, about 1 km: the precision the server publishes. */
 export const roundCoord = (v: number): number => Math.round(v * 100) / 100;
+
+/**
+ * Whether a house has a position at all. The data say «not set» with `0, 0` together (a host who never gave the coordinates): that
+ * is a point in the Gulf of Guinea, not a place, and a map must never take it for one.
+ */
+export const isPositionSet = (lat: unknown, lon: unknown): lat is number =>
+  typeof lat === 'number' && typeof lon === 'number' && Number.isFinite(lat) && Number.isFinite(lon) && !(lat === 0 && lon === 0);
 const hasMoreThanTwoDecimals = (v: number): boolean => Math.abs(v * 100 - Math.round(v * 100)) > 1e-6;
 
 /**

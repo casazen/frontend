@@ -60,7 +60,7 @@ describe('facetsOfServer (SEARCH-GLOBAL): the controls of the search across all 
     const result = facetsOfServer({ minNightCents: 15_000, maxNightCents: 40_000, maxGuests: 6, petsAllowed: false, tags: [], currency: 'CHF' });
 
     expect(result.currency).toBe('CHF');
-    expect(result.petsAllowed).toBe(false);
+    expect(result.prices).toEqual({ min: 150, max: 400 });
   });
 
   it('FacetsOfServer_NoCurrencySaid_IsEuros', () => {
