@@ -12749,11 +12749,6 @@
       "nights_other": "{{count}} notti",
       "noDates": "I prezzi sono quelli della notte più bassa dei prossimi 30 giorni: scegli le date per vedere il totale."
     },
-    "empty": {
-      "title": "Nessuna casa da mostrare",
-      "text": "Con questa ricerca non c’è nessuna casa. Prova a cambiare qualcosa.",
-      "back": "Torna alle case"
-    },
     "sort": {
       "label": "Ordina le case",
       "recommended": "Consigliate",
