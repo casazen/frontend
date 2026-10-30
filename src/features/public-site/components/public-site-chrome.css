@@ -1,7 +1,8 @@
 /*
  * The small pieces of the frame of the booking site that need more than a few utility classes (DB-02b…): the switch of the
- * language. Colors, radii and borders come from the tokens of the theme (`--cz-public-*`); the line of a button is drawn with an
- * inset shadow, because the border color of every element is fixed by a rule of `globals.css` that the utilities cannot beat.
+ * language and the heart of the favourites. Colors, radii and borders come from the tokens of the theme (`--cz-public-*`); the
+ * line of a button is drawn with an inset shadow, because the border color of every element is fixed by a rule of `globals.css`
+ * that the utilities cannot beat.
  */
 /* No `display` here: this sheet is not in a layer, so it would beat the `hidden` / `lg:inline-flex` utilities that show it from a width up. */
 .public-lang {
@@ -43,4 +44,66 @@
 .public-lang button:focus-visible {
   outline: 2px solid var(--cz-public-primary-text);
   outline-offset: 2px;
+}
+
+/* The heart of a home: a round button on the photo of a card or next to a title. No `display`/`position` here (utilities place it). */
+.public-heart {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cz-public-surface) 94%, transparent);
+  color: var(--cz-public-text);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 0.22);
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.public-heart[aria-pressed='true'] {
+  color: var(--cz-public-primary-text);
+}
+
+.public-heart[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+
+.public-heart:focus-visible {
+  outline: 2px solid var(--cz-public-primary-text);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .public-heart:hover {
+    transform: scale(1.06);
+  }
+}
+
+.public-heart.is-pop svg {
+  animation: public-heart-pop 280ms ease;
+}
+
+@keyframes public-heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-heart,
+  .public-heart:hover {
+    transition: none;
+    transform: none;
+  }
+
+  .public-heart.is-pop svg {
+    animation: none;
+  }
 }

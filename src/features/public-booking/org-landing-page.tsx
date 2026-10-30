@@ -130,6 +130,7 @@ export function OrgLandingPage() {
                 property={property}
                 to={{ pathname: buildPropertyBookingPath(orgSlug ?? '', property), search }}
                 sections={cardSections}
+                favoriteSite={org.slug ?? orgSlug}
               />
             ))}
           </div>

@@ -4060,6 +4060,21 @@
     "failedDescription": "The link was already used, it expired, or the return page is not an allowed address. If the email is already confirmed, sign in. Otherwise ask for a new message from the sign-in screen.",
     "signIn": "Sign in"
   },
+  "favorites": {
+    "add": "Save {{name}} to favourites",
+    "description": "Saved on this device: no account needed.",
+    "descriptionEmpty": "The homes you save stay on this device: no account needed.",
+    "emptyHint": "Tap the heart on a home to save it here and compare at your leisure.",
+    "open_one": "Your favourites: {{count}} home saved",
+    "open_other": "Your favourites: {{count}} homes saved",
+    "openEmpty": "Your favourites",
+    "remove": "Remove {{name}} from favourites",
+    "saved": "Saved to favourites",
+    "savedHint": "You’ll find it under the heart at the top.",
+    "seeHomes": "See the homes",
+    "title": "Your favourites",
+    "undo": "Undo"
+  },
   "finance": {
     "payments": "Payments",
     "revenue": "Revenue",
