@@ -9,8 +9,8 @@ import {
   sectionsOfProperty,
   type PropertyCardSections,
 } from '@/features/public-site/lib/property-card-sections';
+import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import { displayableMediaUrls } from '@/lib/media-url';
-import { formatCurrency } from '@/lib/utils';
 import type { PublicPropertyDto } from '@/types';
 
 /** The width from which the grid of the cards has more than one column: `sm` on the landing page, `md` in the search. */
@@ -52,6 +52,7 @@ const ALIGNED: Record<AlignFrom, { card: string; empty: string }> = {
  */
 export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm' }: PublicPropertyCardProps) {
   const { t } = useTranslation();
+  const money = useSiteMoney();
   const [photo] = displayableMediaUrls(property.photoUrls);
   const bedrooms = positiveCount(property.bedrooms);
   const bathrooms = positiveCount(property.bathrooms);
@@ -151,7 +152,7 @@ export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm' }:
         {nightlyRate ? (
           <p data-testid="public-property-card-price">
             <span className="text-xs text-[var(--cz-public-muted)]">{t('publicSite.card.from')} </span>
-            <span className="public-display text-xl">{formatCurrency(nightlyRate)}</span>
+            <span className="public-display text-xl">{money(nightlyRate)}</span>
             <span className="text-sm text-[var(--cz-public-muted)]"> {t('publicSite.card.perNight')}</span>
           </p>
         ) : (

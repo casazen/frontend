@@ -434,7 +434,7 @@ describe('CheckoutPage', { timeout: 20_000 }, () => {
     expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ paymentOption: 'OnCancellationDeadline' }));
   });
 
-  it('CheckoutPage_GuestCannotCancelByThemselves_PromisesNoFreeCancellation', async () => {
+  it('CheckoutPage_BackendGivesNoFreeCancellationDay_PromisesNoFreeCancellation', async () => {
     renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
 
     expect(await screen.findByTestId('price-breakdown')).toBeInTheDocument();

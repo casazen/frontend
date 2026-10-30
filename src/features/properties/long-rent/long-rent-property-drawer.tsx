@@ -16,7 +16,7 @@ import { WorkspaceContext } from '@/contexts/workspace-context';
 import { getLeaseStatusLabel } from '@/lib/i18n-labels';
 import { formatCurrency } from '@/lib/utils';
 import { formatPropertyLocation } from '../property-location';
-import { leaseDay, leaseOfRow, tenantNameOf } from './long-rent-property-format';
+import { apeOfRow, cadastralOfRow, freeFromOf, leaseDay, leaseOfRow, modeChangeOfRow, tenantNameOf } from './long-rent-property-format';
 import { useLongRentPropertyRows, type LongRentPropertyRow } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTY_DRAWER_KIND, longRentLeasePath, longRentPropertyPath, newLeaseForPropertyPath } from './paths';
 
@@ -66,8 +66,12 @@ function LeaseSection({ row }: { row: LongRentPropertyRow }) {
 }
 
 function KeyData({ row }: { row: LongRentPropertyRow }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { property } = row;
+  const ape = apeOfRow(row, t);
+  const cadastral = cadastralOfRow(row, t);
+  const freeFrom = freeFromOf(row, i18n.language);
+  const modeChange = modeChangeOfRow(row, t, i18n.language);
 
   return (
     <PlainSection title={t('longRentProperties.drawer.keyData')}>
@@ -76,6 +80,30 @@ function KeyData({ row }: { row: LongRentPropertyRow }) {
         <dd className="break-words">{formatPropertyLocation(property)}</dd>
         <dt className="text-foreground/70">{t('longRentProperties.detail.rooms')}</dt>
         <dd className="break-words">{[t('property.table.bedroomsCount', { count: property.bedrooms }), t('property.table.bathroomsCount', { count: property.bathrooms })].join(' · ')}</dd>
+        {ape ? (
+          <>
+            <dt className="text-foreground/70">{t('longRentProperties.drawer.ape')}</dt>
+            <dd className="break-words">{ape.text}</dd>
+          </>
+        ) : null}
+        {cadastral ? (
+          <>
+            <dt className="text-foreground/70">{t('longRentProperties.drawer.cadastral')}</dt>
+            <dd className="break-words">{cadastral.text}</dd>
+          </>
+        ) : null}
+        {freeFrom ? (
+          <>
+            <dt className="text-foreground/70">{t('longRentProperties.drawer.freeFrom')}</dt>
+            <dd className="break-words">{freeFrom}</dd>
+          </>
+        ) : null}
+        {modeChange ? (
+          <>
+            <dt className="text-foreground/70">{t('longRentProperties.drawer.modeChange')}</dt>
+            <dd className="break-words">{modeChange}</dd>
+          </>
+        ) : null}
       </dl>
     </PlainSection>
   );

@@ -6,6 +6,7 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { orgDocumentPath } from '@/lib/org-document-paths';
 import { cn } from '@/lib/utils';
+import { useCookiePreferencesStore } from '@/store/cookie-preferences-store';
 import type { PublicOperator } from '@/types';
 
 interface FooterProps {
@@ -49,6 +50,8 @@ export function Footer({
 }: FooterProps) {
   const { t } = useTranslation();
   const infoTitleId = useId();
+  // "Cookie" opens the panel of the choices again, wherever the visitor is (DB-02b).
+  const openCookiePreferences = useCookiePreferencesStore((state) => state.openPreferences);
   // Only what the host entered (the backend sends null for the rest, never an empty string); no line, no block.
   const operatorName = operator?.legalName?.trim() || null;
   const operatorOffice = operator?.registeredOffice?.trim() || null;
@@ -83,6 +86,14 @@ export function Footer({
             <Link to={termsPath} className={linkClass} data-testid="footer-terms" {...newTab}>
               {t('publicSite.terms')}
             </Link>
+            <button
+              type="button"
+              className={cn(linkClass, 'cursor-pointer')}
+              data-testid="footer-cookies"
+              onClick={(event) => openCookiePreferences(event.currentTarget)}
+            >
+              {t('publicSite.footer.cookies')}
+            </button>
             <Link to={LEGAL_SUBPROCESSORS_PATH} className={linkClass} data-testid="footer-subprocessors">
               {t('publicSite.subprocessors')}
             </Link>
@@ -146,6 +157,16 @@ export function Footer({
               <Link to={termsPath} className={LINK_CLASS} data-testid="footer-terms" {...newTab}>
                 {operatorSite ? t('publicSite.operatorTerms') : t('publicSite.terms')}
               </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={cn(LINK_CLASS, 'cursor-pointer')}
+                data-testid="footer-cookies"
+                onClick={(event) => openCookiePreferences(event.currentTarget)}
+              >
+                {t('publicSite.footer.cookies')}
+              </button>
             </li>
           </ul>
         </nav>
