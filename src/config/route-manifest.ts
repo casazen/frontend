@@ -628,6 +628,25 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Inquilini (LR-09): who lives in the properties let long term, since when, for how much and how punctually, with the copy of a
+    // person's data and the request to erase them. In "Altro", before the deadlines: the main menu holds the four places of the bar of
+    // the phone. Reading it asks what the leases ask; the copy and the erasure ask `lease.create` too (the sheet hides them from who may not).
+    path: '/app/long-rent/tenants',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentTenants',
+    navPlacement: 'secondary',
+    navOrder: 18,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/leases/tenants/tenants-page')).TenantsPage }),
+  },
+  {
+    path: '/app/long-rent/tenants/:id',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    component: async () => ({ default: (await import('@/features/leases/tenants/tenant-detail-page')).TenantDetailPage }),
+  },
+  {
     path: '/app/long-rent/leases/new',
     context: 'long-rent',
     requiredPermissions: ['lease.create'],
