@@ -12,6 +12,7 @@
       "memberReactivated": "Accesso di {{member}} riattivato",
       "memberRemoved": "{{member}} rimosso dal team",
       "memberRoleChanged": "Ruolo di {{member}} cambiato: da {{from}} a {{to}}",
+      "orgSettingsChanged": "Dati dell'azienda modificati",
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "system": "Sistema"
@@ -170,6 +171,7 @@
     "descriptionNoOrg": "Tutti gli immobili dell'account, in affitto breve e lungo.",
     "drawer": {
       "address": "Indirizzo",
+      "advice": "Consigliato",
       "assign": "Assegna il responsabile",
       "complete": "Completa l'attivazione",
       "data": "Dati",
@@ -239,9 +241,14 @@
     },
     "loadError": "Impossibile caricare gli immobili",
     "missing": {
+      "activationNotConfirmed": "conferma dell'attivazione",
+      "baseData": "dati di base",
+      "calendar": "calendario",
       "cin": "CIN",
+      "documents": "documenti",
       "photos": "foto",
-      "price": "prezzo"
+      "price": "prezzo",
+      "safety": "sicurezza"
     },
     "mode": {
       "long": "Affitto lungo",
@@ -287,6 +294,16 @@
         "body": "Gli ospiti vedono il nome e l'indirizzo sul tuo sito di prenotazione: per ora sono ancora quelli provvisori.",
         "title": "Scegli il nome e l'indirizzo del tuo sito"
       }
+    },
+    "privacy": {
+      "body": "Scarica subito un file con i dati fiscali dell'organizzazione, le persone del team e, se puoi leggerlo, il registro delle attività.",
+      "done": "File scaricato",
+      "export": "Scarica i dati dell'organizzazione",
+      "failed": "Non riusciamo a preparare il file. Riprova tra poco.",
+      "fileName": "casazen-dati-organizzazione",
+      "hint": "Il file contiene dati personali: conservalo con cura.",
+      "support": "Per chiudere l'account o far cancellare i dati scrivi a",
+      "title": "Privacy e dati"
     }
   },
   "activation": {
@@ -8425,6 +8442,16 @@
     }
   },
   "orgSettings": {
+    "contactPhoneHelp": "Per essere raggiunti da CasaZen e dal tuo team. Non lo pubblichiamo mai.",
+    "contactPhoneLabel": "Telefono",
+    "currencyLabel": "Valuta",
+    "currencyValue": "Euro",
+    "languageEn": "English",
+    "languageHelp": "È la lingua delle email che mandi alla tua squadra, per esempio gli inviti. I tuoi ospiti scelgono la loro.",
+    "languageIt": "Italiano",
+    "languageLabel": "Lingua dell'account",
+    "timezoneLabel": "Fuso orario",
+    "timezoneValue": "Ora italiana (Roma)",
     "title": "Impostazioni organizzazione",
     "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
     "adminRequired": {

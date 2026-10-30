@@ -12,6 +12,7 @@
       "memberReactivated": "Access of {{member}} switched back on",
       "memberRemoved": "{{member}} removed from the team",
       "memberRoleChanged": "Role of {{member}} changed: from {{from}} to {{to}}",
+      "orgSettingsChanged": "Company data changed",
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
       "system": "System"
@@ -170,6 +171,7 @@
     "descriptionNoOrg": "All the properties of the account, short-term and long-term.",
     "drawer": {
       "address": "Address",
+      "advice": "Advised",
       "assign": "Assign the person in charge",
       "complete": "Complete the activation",
       "data": "Details",
@@ -239,9 +241,14 @@
     },
     "loadError": "Failed to load properties",
     "missing": {
+      "activationNotConfirmed": "confirmation of the activation",
+      "baseData": "basic details",
+      "calendar": "calendar",
       "cin": "CIN",
+      "documents": "documents",
       "photos": "photos",
-      "price": "price"
+      "price": "price",
+      "safety": "safety checks"
     },
     "mode": {
       "long": "Long-term rental",
@@ -287,6 +294,16 @@
         "body": "Guests see the name and the address on your booking site: for now they are still the temporary ones.",
         "title": "Choose the name and the address of your site"
       }
+    },
+    "privacy": {
+      "body": "Download right away a file with the fiscal data of the organization, the people of the team and, if you may read it, the activity log.",
+      "done": "File downloaded",
+      "export": "Download the organization data",
+      "failed": "We could not prepare the file. Please try again in a moment.",
+      "fileName": "casazen-organization-data",
+      "hint": "The file holds personal data: keep it safe.",
+      "support": "To close the account or have data erased, write to",
+      "title": "Privacy and data"
     }
   },
   "activation": {
@@ -8425,6 +8442,16 @@
     }
   },
   "orgSettings": {
+    "contactPhoneHelp": "So CasaZen and your team can reach you. We never publish it.",
+    "contactPhoneLabel": "Phone",
+    "currencyLabel": "Currency",
+    "currencyValue": "Euro",
+    "languageEn": "English",
+    "languageHelp": "The language of the emails you send to your team, such as invitations. Your guests choose theirs.",
+    "languageIt": "Italiano",
+    "languageLabel": "Account language",
+    "timezoneLabel": "Time zone",
+    "timezoneValue": "Italian time (Rome)",
     "title": "Organization settings",
     "description": "Your organization's name, public address and contact email.",
     "adminRequired": {
