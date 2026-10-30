@@ -10,14 +10,14 @@ import {
   resolveSiteStyle,
   SITE_FONT_FAMILIES,
   SITE_FONT_IDS,
-  SITE_STYLE_IDS,
   SITE_STYLES,
+  recommendedStyleFor,
   siteButtonColor,
-  styleForCategories,
   suggestReadableColor,
 } from '@/lib/supplier-site/style-config';
 import { normalizeHexColor } from '@/lib/public-site-themes';
 import { isRefused, type PanelProps } from './panel-types';
+import { StyleCards } from './style-cards';
 
 /** The two ways the name is drawn that need no image (the image comes with the upload, SP-13b). */
 const LOGO_MODES = ['mark', 'text'] as const;
@@ -34,7 +34,7 @@ interface StylePanelProps extends PanelProps {
  */
 export function StylePanel({ doc, change, invalid, categories }: StylePanelProps) {
   const { t, i18n } = useTranslation();
-  const recommended = styleForCategories(categories);
+  const recommended = recommendedStyleFor(categories);
   const style = resolveSiteStyle(doc.style, categories);
   const font = resolveSiteFont(doc.font, style);
   const logoMode = doc.logo?.mode === 'text' ? 'text' : 'mark';
@@ -76,32 +76,7 @@ export function StylePanel({ doc, change, invalid, categories }: StylePanelProps
     <div className="space-y-8" data-testid="supplier-showcase-panel-style">
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t('supplier.showcase.editor.style.title')}</h2>
-        <ChoiceGroup legend={t('supplier.showcase.editor.style.legend')} minCardWidth={13}>
-          {SITE_STYLE_IDS.map((id) => (
-            <ChoiceCard
-              key={id}
-              name="showcase-style"
-              value={id}
-              checked={style === id}
-              onChange={() => change({ style: id })}
-              data-testid={`supplier-showcase-style-${id}`}
-              title={
-                <span className="flex flex-wrap items-center gap-2">
-                  <span
-                    aria-hidden="true"
-                    className="inline-flex h-5 w-8 overflow-hidden rounded ring-1 ring-inset ring-black/15"
-                    style={{ background: SITE_STYLES[id].bg }}
-                  >
-                    <span className="m-auto h-2.5 w-5 rounded-sm" style={{ background: SITE_STYLES[id].cta }} />
-                  </span>
-                  {t(`supplier.showcase.editor.style.${id}.name`)}
-                  {id === recommended ? <span className="text-xs font-medium text-foreground/70">· {t('supplier.showcase.editor.style.recommended')}</span> : null}
-                </span>
-              }
-              description={t(`supplier.showcase.editor.style.${id}.description`)}
-            />
-          ))}
-        </ChoiceGroup>
+        <StyleCards name="showcase-style" value={style} recommended={recommended} onChange={(id) => change({ style: id })} />
       </section>
 
       <section className="space-y-3">

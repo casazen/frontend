@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
+import { starterContentFor } from '@/lib/supplier-site/starter-content';
 import type { ShowcaseContent } from '@/types/supplier-showcase';
 import { listOf, makeService, problem, renderRouted } from '../../services/__tests__/service-test-kit';
 import { SupplierShowcaseHubPage } from '../showcase-hub-page';
@@ -142,6 +143,24 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     fireEvent.click(screen.getByTestId('supplier-showcase-step-texts'));
     fireEvent.change(await screen.findByLabelText(/Introduzione/), { target: { value: 'Da noi' } });
     await waitFor(() => expect(api.saveDraft).toHaveBeenNthCalledWith(2, 5, { intro: 'Da noi' }), { timeout: 3000 });
+  });
+
+  it('offers a starting text for the trade, fills only the empty fields with it and takes it back with Annulla', async () => {
+    const starter = starterContentFor(['cleaning'])!;
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    renderEditor(content({ draft: { tagline: 'La mia frase' } }), 'texts');
+
+    fireEvent.click(await screen.findByTestId('supplier-showcase-starter'));
+
+    // What the supplier wrote stays; the empty members get the text.
+    await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { intro: starter.intro, prep: starter.prep }), { timeout: 3000 });
+    expect(screen.getByLabelText(/Frase in grande/)).toHaveValue('La mia frase');
+    expect(screen.getByLabelText(/Introduzione/)).toHaveValue(starter.intro);
+    const [message, options] = sonner.toast.success.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
+    expect(message).toBe('Testo di partenza inserito');
+    expect(options.action.label).toBe('Annulla');
+    // Nothing is offered once the three are filled.
+    expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
   });
 
   it('leaves a service out of the page by naming the others, and keeps the last one on', async () => {
