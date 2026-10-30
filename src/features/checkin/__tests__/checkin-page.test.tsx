@@ -193,6 +193,11 @@ describe('CheckInPage', () => {
     const checkboxes = within(marketing).getAllByRole('checkbox');
     expect(checkboxes[0]).not.toBeChecked();
     fireEvent.click(checkboxes[0]);
+
+    // Fill in the required marketing email after ticking the channel
+    const emailInput = await screen.findByLabelText(/email per il marketing/i);
+    fireEvent.change(emailInput, { target: { value: 'guest@example.com' } });
+
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));

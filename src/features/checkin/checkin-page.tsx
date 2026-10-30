@@ -67,7 +67,6 @@ function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
 
 /** Server error path → the form path that shows it, or null when the form has no such field. */
 function toFormPath(path: string, guestCount: number): FormPath | null {
-  if (path === 'marketingConsent') return 'marketingConsent';
   if (path === 'marketingConsentEmail') return 'marketingConsentEmail';
   if (path === 'marketingConsentWhatsApp') return 'marketingConsentWhatsApp';
   if (path === 'marketingEmail') return 'marketingEmail';
@@ -77,7 +76,6 @@ function toFormPath(path: string, guestCount: number): FormPath | null {
 function emptyForm(): PublicCheckInFormValues {
   return {
     guests: [stayGuestDefaults('SingleGuest')],
-    marketingConsent: false,
     marketingConsentEmail: false,
     marketingConsentWhatsApp: false,
     marketingEmail: '',
@@ -104,7 +102,6 @@ export function CheckInPage() {
     if (!context || context.completed) return;
     reset({
       guests: initialStayGuests(context.guests, context.declaredGuests),
-      marketingConsent: false,
       marketingConsentEmail: false,
       marketingConsentWhatsApp: false,
       marketingEmail: '',
@@ -135,7 +132,7 @@ export function CheckInPage() {
     const current = getValues('guests');
     if (currentStep === 1) return personalPaths(current);
     if (currentStep === 2) return documentPaths(current);
-    return ['marketingConsent', 'marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
+    return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
   };
 
   const goNext = async () => {

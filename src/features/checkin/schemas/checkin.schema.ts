@@ -222,8 +222,6 @@ export function guestFormPathOf(serverPath: string, guestCount: number): `guests
  */
 export const publicCheckInFormSchema = z.object({
   guests: stayGuestListSchema,
-  /** Legacy single consent (kept for compatibility); new screens leave it false. */
-  marketingConsent: z.boolean().optional(),
   /** Guest ticked the email marketing channel (NF-05). */
   marketingConsentEmail: z.boolean().optional(),
   /** Guest ticked the WhatsApp marketing channel (NF-05). */
@@ -344,7 +342,6 @@ export function toStayGuestSubmit(values: StayGuestFormValues): StayGuestSubmit 
 export function toPublicCheckInSubmitRequest(values: PublicCheckInFormValues): PublicCheckInSubmitRequest {
   return {
     guests: values.guests.map(toStayGuestSubmit),
-    marketingConsent: values.marketingConsent ?? false,
     marketingConsentEmail: values.marketingConsentEmail ?? false,
     marketingConsentWhatsApp: values.marketingConsentWhatsApp ?? false,
     marketingEmail: values.marketingEmail?.trim() || null,

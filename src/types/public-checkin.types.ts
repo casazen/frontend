@@ -107,8 +107,6 @@ export interface StayGuestSubmit {
  */
 export interface PublicCheckInSubmitRequest {
   guests: StayGuestSubmit[];
-  /** Legacy single consent box (kept for compatibility); new screens leave it false. */
-  marketingConsent: boolean;
   /** Guest ticked the email marketing channel (NF-05). */
   marketingConsentEmail: boolean;
   /** Guest ticked the WhatsApp marketing channel (NF-05). */
