@@ -16,6 +16,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
 import { useLeases } from '@/queries/use-leases';
+import { useLongRentPropertyAggregate } from '@/queries/use-long-rent-properties';
 import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
@@ -86,6 +87,8 @@ export function LongRentPropertyDetailPage() {
   const canCreateLease = hasPermission('long-rent', 'lease.create');
   // The leases of this property only: the server narrows them (LR-01). Read again when the page opens, a lease is made elsewhere.
   const leases = useLeases({ propertyId: id }, { enabled: canReadLeases && id !== '', refetchOnMount: 'always' });
+  // What the server says of the property that the two lists do not: the lease that holds it even when it renewed by itself (LR-07a).
+  const aggregate = useLongRentPropertyAggregate({ fresh: true });
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('long-rent', id);
 
@@ -119,7 +122,7 @@ export function LongRentPropertyDetailPage() {
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}`} replace />;
 
   // What the leases say of the property, with the rule of the list: let when a registered lease is in force, free otherwise.
-  const row = leases.data ? longRentPropertyRows([property], leases.data, todayInRome())[0] : null;
+  const row = leases.data ? longRentPropertyRows([property], leases.data, todayInRome(), aggregate.data)[0] : null;
   const leasesFailed = leases.isError && leases.data === undefined;
   const hasApe = documents.data?.some((doc) => doc.documentType === 'Ape') ?? false;
 
