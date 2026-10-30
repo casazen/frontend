@@ -4075,6 +4075,21 @@
     "failedDescription": "The link was already used, it expired, or the return page is not an allowed address. If the email is already confirmed, sign in. Otherwise ask for a new message from the sign-in screen.",
     "signIn": "Sign in"
   },
+  "favorites": {
+    "add": "Save {{name}} to favourites",
+    "description": "Saved on this device: no account needed.",
+    "descriptionEmpty": "The homes you save stay on this device: no account needed.",
+    "emptyHint": "Tap the heart on a home to save it here and compare at your leisure.",
+    "open_one": "Your favourites: {{count}} home saved",
+    "open_other": "Your favourites: {{count}} homes saved",
+    "openEmpty": "Your favourites",
+    "remove": "Remove {{name}} from favourites",
+    "saved": "Saved to favourites",
+    "savedHint": "You’ll find it under the heart at the top.",
+    "seeHomes": "See the homes",
+    "title": "Your favourites",
+    "undo": "Undo"
+  },
   "finance": {
     "payments": "Payments",
     "revenue": "Revenue",
@@ -4553,6 +4568,32 @@
     "label": "More information",
     "labelFor": "About: {{title}}",
     "learnMore": "Learn more"
+  },
+  "hostContact": {
+    "consent": "I agree that my message and my email are sent to {{host}}, to receive the answer.",
+    "description": "A question before you book? Your message goes to {{host}}, who will answer by email.",
+    "doneText": "{{host}} will answer by email to the address you wrote.",
+    "doneTitle": "Message sent",
+    "emailHint": "{{host}} will answer to this address.",
+    "emailLabel": "Your email",
+    "errors": {
+      "consent": "To write you have to agree that your message and your email are sent to the host.",
+      "email": "Write a valid email address: the host will answer to it.",
+      "failed": "We could not send the message. What you wrote stays here: try again in a moment.",
+      "message": "Write a message of at least 5 and at most 2000 characters.",
+      "name": "The name can be 100 characters at most.",
+      "tooMany": "You wrote several times in a row: try again in a little while."
+    },
+    "honeypot": "Leave this field empty",
+    "messageHint": "For example: “We are four and we come with a small dog: is that fine?”",
+    "messageLabel": "Your message",
+    "nameLabel": "Your name",
+    "offline": "You need a connection to write. What you wrote stays here: send it when it is back.",
+    "send": "Send the message",
+    "sending": "Sending…",
+    "theHost": "the host",
+    "title": "Write to {{host}}",
+    "trigger": "Write to {{host}}"
   },
   "hostInvite": {
     "loading": "Checking the invitation…",
@@ -7763,7 +7804,8 @@
         "createLease": "Create lease",
         "edit": "Edit",
         "openLease": "Open lease",
-        "page": "Full page"
+        "page": "Full page",
+        "request": "Request a job"
       },
       "add": "Add property",
       "ape": {
@@ -11235,10 +11277,14 @@
     "subprocessors": "Subprocessors",
     "legalDocuments": "Legal documents",
     "footer": {
+      "allHouses": "All homes",
       "contact": "Contact",
       "cookies": "Cookies",
+      "hostedBy": "Hosted by {{host}}",
+      "houses": "Homes",
       "info": "Information",
       "operator": "Operator",
+      "securePayments": "Secure payments with Stripe",
       "vatNumber": "VAT no. {{vat}}"
     },
     "seo": {

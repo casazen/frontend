@@ -5,6 +5,7 @@ import { Home, Loader2, TriangleAlert } from 'lucide-react';
 import { useOrgProperties } from '@/queries/use-public-org';
 import { Hero } from '@/features/public-site/components/Hero';
 import { PublicPropertyCard } from '@/features/public-site/components/PublicPropertyCard';
+import { ContactHostDialog } from '@/features/public-site/contact/contact-host-dialog';
 import { propertyCardSections } from '@/features/public-site/lib/property-card-sections';
 import { Button } from '@/components/ui/button';
 import type { PublicOrgDto } from '@/types';
@@ -121,6 +122,16 @@ export function OrgLandingPage() {
                 {t('publicSite.emptyProperties.contact', { email: org.contactEmail })}
               </a>
             ) : null}
+            {/* A visitor who finds no home can ask the host (DB-02b "Scrivi a {host}"). */}
+            <ContactHostDialog
+              site={org.slug ?? orgSlug ?? ''}
+              hostName={org.hostName?.trim() || org.displayName}
+              trigger={
+                <Button type="button" variant="outline" className="public-site-outline mt-2 h-11 px-5" data-testid="landing-empty-write">
+                  {t('hostContact.trigger', { host: org.hostName?.trim() || org.displayName })}
+                </Button>
+              }
+            />
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,6 +141,7 @@ export function OrgLandingPage() {
                 property={property}
                 to={{ pathname: buildPropertyBookingPath(orgSlug ?? '', property), search }}
                 sections={cardSections}
+                favoriteSite={org.slug ?? orgSlug}
               />
             ))}
           </div>

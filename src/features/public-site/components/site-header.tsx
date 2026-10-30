@@ -5,6 +5,7 @@ import { CalendarCheck, ChevronRight, Menu } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { FavoritesMenu } from '@/features/public-site/favorites/favorites-menu';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { PublicOrgDto } from '@/types';
 import { LanguageSwitch } from './language-switch';
@@ -72,6 +73,8 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
             ) : null}
             {/* From a desktop up; a phone finds it in the menu, a tablet at the foot of the page (and every size there). */}
             <LanguageSwitch className="hidden lg:inline-flex" />
+            {/* The homes the guest saved with the heart (DB-02b): only on a site with several homes. */}
+            {org.slug ? <FavoritesMenu site={org.slug} /> : null}
             {fromTablet ? (
               <Link
                 to={`${basePath}/my-bookings`}
