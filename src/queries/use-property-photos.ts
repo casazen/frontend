@@ -55,6 +55,32 @@ export function useUploadPropertyPhotos(propertyId: string) {
   });
 }
 
+/**
+ * Uploads one photo and says nothing: the queue of the wizard (SR-07b) sends the files one at a time and tells each one's own
+ * result where the person is looking, so a toast for every file would be noise. The gallery is replaced with the answer.
+ */
+export function useUploadOnePropertyPhoto(propertyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => propertyImagesApi.upload(propertyId, [file]),
+    onSuccess: (gallery) => applyGallery(queryClient, propertyId, gallery),
+    onError: (error) => refreshWhenOutdated(queryClient, propertyId, error),
+  });
+}
+
+/**
+ * Deletes a photo without a toast of its own: the undo toast of the wizard (SR-07b) has already told the person, and the one that
+ * would say «deleted» a few seconds later would only repeat it. A failure is told by whoever called.
+ */
+export function useRemovePropertyPhotoQuietly(propertyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (photoUrl: string) => propertyImagesApi.remove(propertyId, photoUrl),
+    onSuccess: (gallery) => applyGallery(queryClient, propertyId, gallery),
+    onError: (error) => refreshWhenOutdated(queryClient, propertyId, error),
+  });
+}
+
 /** Deletes a photo (the storage object goes with it). */
 export function useDeletePropertyPhoto(propertyId: string) {
   const queryClient = useQueryClient();
