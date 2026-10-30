@@ -431,3 +431,560 @@
     transform: none;
   }
 }
+
+/* ====================================================================== The sections under the homes (DB-07b, part b) */
+.hm-eyebrow {
+  margin: 0;
+  color: var(--cz-public-primary-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/*
+ * A band: its background runs the full width of the window while its content stays in the column. The shadow spreads the colour
+ * sideways and the clip keeps it from growing the page up and down.
+ */
+.hm-band {
+  --hm-band: color-mix(in srgb, var(--cz-public-surface-2) 55%, var(--cz-public-bg));
+  padding-block: var(--cz-public-section-y);
+  background: var(--hm-band);
+  box-shadow: 0 0 0 100vmax var(--hm-band);
+  clip-path: inset(0 -100vmax);
+}
+
+/* ------------------------------------------------------------- Why book directly */
+.hm-why__in {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: center;
+}
+
+.hm-why__in:not(:has(.hm-receipt)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.hm-why__text .hm-head {
+  margin-bottom: clamp(16px, 2.4vw, 28px);
+}
+
+.hm-why__list {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hm-why__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.hm-why__i {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: calc(var(--cz-public-radius-md) + 2px);
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--cz-public-primary) 32%, transparent);
+}
+
+.hm-why__i svg {
+  width: 26px;
+  height: 26px;
+}
+
+.hm-why__list h3 {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+}
+
+.hm-why__list p {
+  max-width: 48ch;
+  margin: 0;
+  color: var(--cz-public-muted);
+}
+
+/* The receipt: a sheet of paper with a torn lower edge, a little askew. */
+.hm-receipt {
+  --paper: var(--cz-public-surface);
+  position: relative;
+  justify-self: center;
+  width: min(100%, 420px);
+  padding: 32px 30px 36px;
+  border-radius: 6px 6px 0 0;
+  background: var(--paper);
+  color: var(--cz-public-text);
+  font-variant-numeric: tabular-nums;
+  filter: drop-shadow(0 18px 24px rgb(31 42 48 / 0.14));
+  transform: rotate(1.4deg);
+  transition: transform 400ms ease;
+}
+
+.hm-receipt::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -11px;
+  left: 0;
+  height: 12px;
+  background:
+    linear-gradient(135deg, var(--paper) 6px, transparent 0) 0 0 / 16px 12px repeat-x,
+    linear-gradient(225deg, var(--paper) 6px, transparent 0) 0 0 / 16px 12px repeat-x;
+}
+
+@media (hover: hover) {
+  .hm-receipt:hover {
+    transform: rotate(0deg) translateY(-4px);
+  }
+}
+
+.hm-receipt__k {
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hm-receipt__t {
+  margin: 8px 0 2px;
+  font-size: 1.6rem;
+}
+
+.hm-receipt__d {
+  margin: 0 0 18px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px dashed var(--cz-public-line-strong);
+  color: var(--cz-public-muted);
+  font-size: 0.92rem;
+}
+
+.hm-price {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+}
+
+.hm-price > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hm-price dt {
+  color: var(--cz-public-muted);
+}
+
+.hm-price dd {
+  margin: 0;
+}
+
+.hm-price__fee {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--cz-public-line-strong);
+}
+
+.hm-price__fee strong {
+  color: var(--cz-public-ok);
+}
+
+.hm-price__total {
+  padding-top: 10px;
+  border-top: 1.5px solid var(--cz-public-line-strong);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.hm-price__total dt {
+  color: var(--cz-public-text);
+}
+
+.hm-receipt__a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 18px;
+  color: var(--cz-public-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hm-receipt__a svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 150ms ease;
+}
+
+@media (hover: hover) {
+  .hm-receipt__a:hover svg {
+    transform: translateX(4px);
+  }
+}
+
+@media (max-width: 899.98px) {
+  .hm-why__in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hm-receipt {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------- Reviews */
+.hm-reviews__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+  margin-bottom: clamp(20px, 3vw, 40px);
+}
+
+.hm-reviews__head .hm-head__text {
+  order: -1;
+}
+
+.hm-score {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 24px;
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+}
+
+.hm-score__n {
+  font-family: var(--cz-public-font-display);
+  font-size: 3.4rem;
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: var(--cz-public-display-tracking);
+  line-height: 1;
+}
+
+.hm-score > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hm-score__t {
+  color: var(--cz-public-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.hm-reviews__list {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+.hm-reviews__list > li {
+  display: flex;
+  min-width: 0;
+}
+
+.hm-reviews__list > li > * {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------------- Zones */
+.hm-zones__in {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+
+.hm-zones__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hm-zone {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 18px 10px 10px;
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 250ms ease,
+    transform 250ms ease;
+}
+
+.hm-zone:hover,
+.hm-zone[data-map-active='true'] {
+  border-color: var(--cz-public-primary);
+  box-shadow: var(--cz-public-shadow-card);
+}
+
+@media (hover: hover) {
+  .hm-zone:hover {
+    transform: translateX(4px);
+  }
+}
+
+.hm-zone__pic {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: calc(var(--cz-public-radius-lg) - 6px);
+  background: var(--cz-public-surface-2);
+  color: var(--cz-public-muted);
+}
+
+.hm-zone__pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hm-zone__t {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hm-zone__t strong {
+  font-family: var(--cz-public-font-display);
+  font-size: 1.3rem;
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: var(--cz-public-display-tracking);
+  overflow-wrap: anywhere;
+}
+
+.hm-zone__t small {
+  color: var(--cz-public-ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.hm-zone__go {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cz-public-surface-2);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.hm-zone:hover .hm-zone__go {
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+}
+
+.hm-zone__go svg {
+  width: 20px;
+  height: 20px;
+}
+
+.hm-zones__map {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hm-zones__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: 0.8rem;
+}
+
+.hm-zones__note svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 899.98px) {
+  .hm-zones__in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hm-zones__map {
+    order: -1;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .hm-zone {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .hm-zone__go {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------- Questions */
+.hm-faq__in {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(28px, 6vw, 96px);
+  align-items: start;
+}
+
+.hm-faq__side {
+  position: sticky;
+  top: calc(var(--header-height, 4rem) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hm-faq__side h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.hm-faq__host {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.hm-faq__avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+  font-family: var(--cz-public-font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.hm-faq__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hm-faq__list {
+  border-top: 1px solid var(--cz-public-border);
+}
+
+.hm-faqitem {
+  border-bottom: 1px solid var(--cz-public-border);
+}
+
+.hm-faqitem summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+  padding: 14px 0;
+  font-family: var(--cz-public-font-display);
+  font-size: 1.2rem;
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: var(--cz-public-display-tracking);
+  cursor: pointer;
+  list-style: none;
+}
+
+.hm-faqitem summary::-webkit-details-marker {
+  display: none;
+}
+
+.hm-faqitem summary svg {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--cz-public-surface-2);
+  color: var(--cz-public-ink);
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease;
+}
+
+.hm-faqitem[open] summary svg {
+  transform: rotate(45deg);
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+}
+
+.hm-faqitem summary:focus-visible {
+  outline: 2px solid var(--cz-public-primary-text);
+  outline-offset: 2px;
+}
+
+.hm-faqitem__a {
+  padding: 0 0 20px;
+}
+
+.hm-faqitem__a p {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--cz-public-muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 899.98px) {
+  .hm-faq__in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hm-faq__side {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-receipt,
+  .hm-zone,
+  .hm-faqitem summary svg,
+  .hm-receipt__a svg {
+    transition: none;
+  }
+
+  .hm-receipt:hover,
+  .hm-zone:hover {
+    transform: none;
+  }
+}

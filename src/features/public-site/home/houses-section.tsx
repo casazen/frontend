@@ -35,7 +35,13 @@ export function HousesSection({
   const shown = result.items.slice(0, HOME_MAX_HOUSES);
 
   return (
-    <section id="property-grid" className="hm-section hm-houses" aria-labelledby="home-houses-title" data-testid="home-houses">
+    <section
+      id="property-grid"
+      className="hm-section hm-houses"
+      data-section="case"
+      aria-labelledby="home-houses-title"
+      data-testid="home-houses"
+    >
       <header className="hm-head">
         <div className="hm-head__text">
           <h2 id="home-houses-title">{t('siteHome.houses.title')}</h2>

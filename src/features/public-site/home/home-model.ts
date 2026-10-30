@@ -65,3 +65,50 @@ export function listOfPlaces(places: readonly string[], locale: string): string 
 export function destinationOptions(destinations: readonly PublicDestination[] | undefined, sub: (count: number) => string): Destination[] {
   return (destinations ?? []).map((destination) => ({ id: destination.id, label: destination.label, sub: sub(destination.count) }));
 }
+
+/** A zone of the home page: the comune, its homes, the lowest night among them and where to put the pin. */
+export interface HomeZone {
+  /** The id of the destination of the comune (the value of the `where` filter), as the server writes it. */
+  id: string;
+  name: string;
+  count: number;
+  /** The lowest night of its homes, in cents. */
+  fromPerNightCents: number;
+  currency: string;
+  /** The photo of the first home of the zone. */
+  photo?: string;
+  /** The middle of its homes, already rounded to two decimals (about a kilometre): a map never gets a more exact position. */
+  lat: number;
+  lon: number;
+}
+
+const roundCoordinate = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * The zones of the site: the comuni of the homes (the host's own descriptions of a zone are not in the data of the site yet, so a
+ * zone is a name, a count, a price and a photo). The pin is the middle of the rounded positions of its homes, rounded again: the
+ * map refuses a position that is more exact than a kilometre. The id is the one of the destination the server knows for the comune.
+ */
+export function zonesOf(cards: readonly PublicStayCard[], destinations: readonly PublicDestination[] | undefined): HomeZone[] {
+  const idOf = new Map((destinations ?? []).map((destination) => [destination.comune.trim().toLowerCase(), destination.id]));
+  const groups = new Map<string, PublicStayCard[]>();
+  for (const card of cards) {
+    const comune = card.comune?.trim();
+    if (!comune || !Number.isFinite(card.latitude) || !Number.isFinite(card.longitude)) continue;
+    groups.set(comune, [...(groups.get(comune) ?? []), card]);
+  }
+  return [...groups.entries()].map(([comune, homes]) => {
+    const lat = homes.reduce((sum, home) => sum + home.latitude, 0) / homes.length;
+    const lon = homes.reduce((sum, home) => sum + home.longitude, 0) / homes.length;
+    return {
+      id: idOf.get(comune.toLowerCase()) ?? comune,
+      name: comune,
+      count: homes.length,
+      fromPerNightCents: Math.min(...homes.map((home) => home.price.perNightCents)),
+      currency: homes[0].price.currency || 'EUR',
+      photo: homes.flatMap((home) => home.photos)[0],
+      lat: roundCoordinate(lat),
+      lon: roundCoordinate(lon),
+    };
+  });
+}

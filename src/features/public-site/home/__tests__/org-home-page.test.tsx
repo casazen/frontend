@@ -4,12 +4,17 @@ import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router-d
 import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from '@/i18n/config';
-import { useOrgDestinations, useOrgStays } from '@/queries/use-public-stays';
+import { useOrgDestinations, useOrgStays, usePublicReviewsPreview, usePublicStayQuote } from '@/queries/use-public-stays';
 import type { PublicOrgDto } from '@/types';
 import type { PublicStayCard, PublicStaysResult } from '@/types/public-stays.types';
 import { OrgHomePage } from '../org-home-page';
 
-vi.mock('@/queries/use-public-stays', () => ({ useOrgStays: vi.fn(), useOrgDestinations: vi.fn() }));
+vi.mock('@/queries/use-public-stays', () => ({
+  useOrgStays: vi.fn(),
+  useOrgDestinations: vi.fn(),
+  usePublicStayQuote: vi.fn(),
+  usePublicReviewsPreview: vi.fn(),
+}));
 vi.mock('@/features/public-site/stay/use-public-site-calendar', () => ({
   usePublicSiteCalendar: () => ({ status: 'ready', days: [], today: '2027-06-01', end: '2028-06-01', currency: 'EUR', onRetry: vi.fn() }),
 }));
@@ -72,6 +77,9 @@ function mockStays(state: Partial<StaysResult>) {
     ...state,
   } as unknown as StaysResult);
   vi.mocked(useOrgDestinations).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useOrgDestinations>);
+  // The example of «Perché prenotare» and the reviews are other calls: nothing from them in these tests.
+  vi.mocked(usePublicStayQuote).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof usePublicStayQuote>);
+  vi.mocked(usePublicReviewsPreview).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof usePublicReviewsPreview>);
 }
 
 function LocationProbe() {

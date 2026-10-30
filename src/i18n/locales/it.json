@@ -12568,6 +12568,86 @@
       "title": "Stiamo preparando la prossima stagione",
       "text": "In questo momento nessuna casa è prenotabile online. Scrivi a chi ti ospita: ti dice quando si riapre e quali date sono libere.",
       "call": "Chiama"
+    },
+    "nav": {
+      "label": "Menu del sito",
+      "homes": "Le case",
+      "why": "Perché prenotare qui",
+      "zones": "Zone",
+      "faq": "Domande frequenti"
+    },
+    "why": {
+      "eyebrow": "Prenota con chi ti ospita",
+      "title": "Perché prenotare direttamente",
+      "transparent": {
+        "title": "Prezzi trasparenti",
+        "text": "Il totale che vedi con le date comprende notti e pulizia e, dove il Comune la prevede, l’imposta di soggiorno: nessuna sorpresa al pagamento."
+      },
+      "noFees": {
+        "title": "Nessuna commissione",
+        "text": "Prenoti direttamente con chi ti ospita: nessun costo di servizio aggiunto da un portale. Il totale è solo notti, pulizia e imposta."
+      },
+      "direct": {
+        "title": "Assistenza diretta",
+        "text": "Parli con {{host}}, non con un call center: prima e durante il soggiorno."
+      },
+      "receipt": {
+        "label": "Esempio: {{name}}",
+        "kicker": "Un esempio vero, calcolato sui prezzi di oggi",
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "cleaning": "Pulizia finale",
+        "tax": "Imposta di soggiorno",
+        "fees": "Commissioni di servizio",
+        "total": "Totale",
+        "try": "Prova con le tue date"
+      }
+    },
+    "reviews": {
+      "eyebrow": "Dicono di noi",
+      "title": "Cosa dicono gli ospiti",
+      "lead": "Solo chi ha soggiornato può recensire.",
+      "all": "Tutte le recensioni di {{name}}"
+    },
+    "zones": {
+      "eyebrow": "Dove siamo",
+      "title": "Dove sono le case",
+      "lead": "Scegli la zona che ti somiglia: ogni pin porta alle case di quel posto.",
+      "pinName": "{{name}}: {{count}} case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth."
+    },
+    "faq": {
+      "eyebrow": "Domande",
+      "title": "Domande frequenti",
+      "lead": "Non trovi la risposta? Scrivi a chi ti ospita.",
+      "why": {
+        "q": "Perché conviene prenotare qui?",
+        "a": "Prenoti direttamente con {{host}}: nessun costo di servizio aggiunto da un portale, il totale con tutto quello che comprende lo vedi prima di pagare e per ogni domanda parli con chi ti ospita."
+      },
+      "payment": {
+        "q": "Il pagamento è sicuro?",
+        "a": "Paghi online con Stripe: i dati della carta vanno direttamente a Stripe e non passano da questo sito."
+      },
+      "cancel": {
+        "q": "Posso cancellare?",
+        "a": "Ogni casa ha la sua politica di cancellazione: la trovi nella scheda della casa e ti viene mostrata di nuovo prima di pagare."
+      },
+      "tax": {
+        "q": "Cos’è l’imposta di soggiorno?",
+        "a": "È un’imposta del Comune in cui si trova la casa, a carico di chi soggiorna. Dove il Comune la prevede, la trovi come riga a parte nel dettaglio del prezzo."
+      },
+      "checkin": {
+        "q": "Come funziona il check-in?",
+        "a": "Dopo la prenotazione ricevi per e-mail il link per registrare gli ospiti online, come richiede la legge."
+      },
+      "pets": {
+        "q": "Posso portare il mio animale?",
+        "a": "Alcune case li accettano: {{homes}}. Per le altre guarda le regole nella scheda della casa."
+      },
+      "where": {
+        "q": "Dove sono le case?",
+        "a": "Le case sono a {{places}}. L’indirizzo esatto arriva con la conferma della prenotazione."
+      }
     }
   },
   "siteMap": {
