@@ -36,6 +36,10 @@ export interface PropertyWizardValues {
   bathrooms: number;
   /** Optional, whole square metres; text because it is typed. */
   areaSqm: string;
+  // 2 · Foto e annuncio (the photos themselves are on the server, not in the form)
+  /** The headline of the listing; blank = the listing uses the name. */
+  listingTitle: string;
+  description: string;
   // 3 · Dotazioni (the ones the host chooses here; PetFriendly and SmokingAllowed follow the house rules)
   amenities: string[];
 }
@@ -67,6 +71,15 @@ export const baseStepSchema: StepSchema = z.object({
   areaSqm: z.string().trim().regex(/^(\d{1,4})?$/, 'propertyWizard.validation.areaSqm').refine((value) => value === '' || Number(value) >= 1, 'propertyWizard.validation.areaSqm'),
 });
 
+/**
+ * The headline and the description of the listing (step 2). The photos are optional, so is the text: blank is a valid answer. The
+ * description is a short pitch here (600); the API takes up to 2000 and the form of the property goes further than the wizard.
+ */
+export const photosStepSchema: StepSchema = z.object({
+  listingTitle: z.string().trim().max(60, 'propertyWizard.validation.listingTitle'),
+  description: z.string().trim().max(600, 'propertyWizard.validation.description'),
+});
+
 /** What a new property starts from (the defaults of the design): the host changes them, nothing is asked twice. */
 export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   accommodationType: 'Apartment',
@@ -81,6 +94,8 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   beds: 3,
   bathrooms: 1,
   areaSqm: '',
+  listingTitle: '',
+  description: '',
   amenities: [],
 };
 
@@ -121,6 +136,8 @@ export function wizardDefaults(property?: Property): PropertyWizardValues {
     beds: property.beds ?? Math.max(1, property.bedrooms),
     bathrooms: Math.max(1, property.bathrooms),
     areaSqm: property.areaSqm ? String(property.areaSqm) : '',
+    listingTitle: property.listingTitle ?? '',
+    description: property.description ?? '',
     amenities: property.amenities.filter((amenity) => CHOOSABLE_AMENITIES.has(amenity)),
   };
 }
@@ -157,6 +174,12 @@ export function createPayload(values: PropertyWizardValues): CreatePropertyDto {
 /** The first step saved again (PATCH: description, rate and everything else of the property are left as they are). */
 export function baseUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   return baseFields(values);
+}
+
+/** The headline and the description, saved by the photos step. A blank headline is cleared: the listing then uses the name. */
+export function photosUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
+  const listingTitle = values.listingTitle.trim();
+  return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim() };
 }
 
 /**

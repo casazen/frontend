@@ -20,6 +20,8 @@ import {
   baseStepSchema,
   baseUpdatePayload,
   createPayload,
+  photosStepSchema,
+  photosUpdatePayload,
   wizardDefaults,
   type PropertyWizardValues,
   type WizardStepId,
@@ -27,6 +29,7 @@ import {
 import { PropertyWizardDone } from './property-wizard-done';
 import { AmenitiesStep } from './steps/amenities-step';
 import { BaseStep } from './steps/base-step';
+import { PhotosStep } from './steps/photos-step';
 import { useWizardCreateProperty, useWizardSaveProperty } from './use-wizard-property';
 
 /** Name of the flow: the draft of the first step lives under it. */
@@ -158,6 +161,12 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
     }
   };
 
+  // The headline and the description; the photos themselves go to the server as they are chosen, not with the step.
+  const savePhotos = async (values: PropertyWizardValues) => {
+    if (!propertyId) return;
+    await saveProperty.mutateAsync({ id: propertyId, data: photosUpdatePayload(values) });
+  };
+
   // A property created in this visit has no amenity yet; one the wizard reopened on keeps the ones the house rules decide.
   const saveAmenities = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
@@ -183,6 +192,16 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
       ),
     },
     {
+      id: 'photos',
+      label: t('propertyWizard.steps.photos.label'),
+      title: t('propertyWizard.steps.photos.title'),
+      purpose: t('propertyWizard.steps.photos.purpose'),
+      optional: true,
+      schema: photosStepSchema,
+      beforeNext: savePhotos,
+      render: ({ form }) => (propertyId ? <PhotosStep form={form} propertyId={propertyId} /> : null),
+    },
+    {
       id: 'amenities',
       label: t('propertyWizard.steps.amenities.label'),
       title: t('propertyWizard.steps.amenities.title'),
@@ -192,7 +211,7 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
       render: ({ form }) => (propertyId ? <AmenitiesStep form={form} propertyId={propertyId} /> : null),
     },
   ];
-  const saveByStep: Record<string, (values: PropertyWizardValues) => Promise<void>> = { base: saveBase, amenities: saveAmenities };
+  const saveByStep: Record<string, (values: PropertyWizardValues) => Promise<void>> = { base: saveBase, photos: savePhotos, amenities: saveAmenities };
 
   return (
     <WizardShell<PropertyWizardValues, string | null>
