@@ -1,17 +1,20 @@
-import { useEffect, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { usePublicOrg } from '@/queries/use-public-org';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
+import { useSiteLanguage } from '@/features/public-site/hooks/use-site-language';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
 import { BrandHeader } from '@/features/public-site/components/brand-header';
 import { SiteHeader } from '@/features/public-site/components/site-header';
+import { SiteAppearanceProvider } from '@/features/public-site/site-appearance';
+import type { SiteAppearance } from '@/features/public-site/site-appearance-context';
 import { publicSiteColorVars } from '@/lib/public-site-colors';
-import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
+import { normalizeHexColor, resolvePublicSiteFont, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
 import '@/styles/public-brand.css';
 
@@ -69,8 +72,12 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const isOrgMode = mode === 'org' && !!orgSlug;
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   useOrgSeoMeta(org, location.pathname);
+  // The site of a host opens in the language of the guest: the address, else what they chose, else their browser (DB-02b).
+  useSiteLanguage(isOrgMode);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
+  // The font pair the host chose; null = the one its theme starts with (the theme block of the CSS sets it).
+  const fontId = resolvePublicSiteFont(org?.publicFontId);
   // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color. The text color on it and the
   // readable variant of it are derived so that any host color meets AA (BK-13).
   const colorVars = publicSiteColorVars(normalizeHexColor(org?.primaryColor ?? org?.themeColor), themeId);
@@ -83,6 +90,15 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
 
   // Also on <html> for the content rendered in portals (dialogs), outside .public-site-root.
   const colorVarsKey = colorVars ? JSON.stringify(colorVars) : '';
+  // What a portal needs to wear the look of the site (DB-20): the pickers and sheets read it, `usePortalRootProps`.
+  const appearance = useMemo<SiteAppearance>(
+    () => ({
+      themeId,
+      fontId,
+      colorStyle: colorVarsKey ? (JSON.parse(colorVarsKey) as CSSProperties) : undefined,
+    }),
+    [themeId, fontId, colorVarsKey],
+  );
   useEffect(() => {
     const root = document.documentElement;
     const vars: Record<string, string> = colorVarsKey ? JSON.parse(colorVarsKey) : {};
@@ -130,52 +146,56 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   else content = isOrgMode ? <Outlet context={{ org }} /> : <Outlet />;
 
   return (
-    <div
-      className="public-site-root flex min-h-screen flex-col"
-      data-theme={themeId}
-      // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
-      // the theme and color its host chose (public-brand.css).
-      data-brand={isOrgMode ? undefined : 'casazen'}
-      // On the root itself: the [data-theme] tokens are declared on this element and would override a value
-      // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
-      style={colorStyle ?? undefined}
-      data-testid="public-site-shell"
-    >
-      <a href="#main-content" className={SKIP_LINK_CLASS}>
-        {t('publicSite.skipToContent')}
-      </a>
+    <SiteAppearanceProvider value={appearance}>
+      <div
+        className="public-site-root flex min-h-screen flex-col"
+        data-theme={themeId}
+        data-font={fontId ?? undefined}
+        // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
+        // the theme and color its host chose (public-brand.css).
+        data-brand={isOrgMode ? undefined : 'casazen'}
+        // On the root itself: the [data-theme] tokens are declared on this element and would override a value
+        // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
+        style={colorStyle ?? undefined}
+        data-testid="public-site-shell"
+      >
+        <a href="#main-content" className={SKIP_LINK_CLASS}>
+          {t('publicSite.skipToContent')}
+        </a>
 
-      {isOrgMode ? (
-        <SiteHeader
-          org={org}
-          loading={state === 'loading'}
-          basePath={basePath}
-          showBookingCta={showBookingCta}
-          themeId={themeId}
-          colorStyle={colorStyle ?? undefined}
-        />
-      ) : (
-        <BrandHeader />
-      )}
-
-      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 outline-none md:px-4 md:py-8 md:pb-8">
-        {content}
-      </main>
-
-      {state === 'loading' ? null : (
-        <>
-          <Footer
-            displayName={isOrgMode ? (org?.displayName ?? 'CasaZen') : 'CasaZen'}
-            contactEmail={org?.contactEmail}
-            tagline={org?.tagline}
-            operator={org?.operator}
-            showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
-            showSeoHubLink={!isOrgMode}
-            orgSlug={isOrgMode && org ? (org.slug ?? orgSlug) : undefined}
+        {isOrgMode ? (
+          <SiteHeader
+            org={org}
+            loading={state === 'loading'}
+            basePath={basePath}
+            showBookingCta={showBookingCta}
+            themeId={themeId}
+            fontId={fontId}
+            colorStyle={colorStyle ?? undefined}
           />
-          <CookieConsentBanner />
-        </>
-      )}
-    </div>
+        ) : (
+          <BrandHeader />
+        )}
+
+        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 outline-none md:px-4 md:py-8 md:pb-8">
+          {content}
+        </main>
+
+        {state === 'loading' ? null : (
+          <>
+            <Footer
+              displayName={isOrgMode ? (org?.displayName ?? 'CasaZen') : 'CasaZen'}
+              contactEmail={org?.contactEmail}
+              tagline={org?.tagline}
+              operator={org?.operator}
+              showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
+              showSeoHubLink={!isOrgMode}
+              orgSlug={isOrgMode && org ? (org.slug ?? orgSlug) : undefined}
+            />
+            <CookieConsentBanner />
+          </>
+        )}
+      </div>
+    </SiteAppearanceProvider>
   );
 }

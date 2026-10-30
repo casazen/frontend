@@ -411,6 +411,39 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
   },
+  // The other pages of the marketplace (MKT): the tabs Categorie and Le mie app, a category, the search. They are in no menu: the entry
+  // above stays the highlighted one (the pages are under its address) and its tabs lead to them.
+  {
+    path: '/app/short-rent/marketplace/categories',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/categories-page')).MarketplaceCategoriesPage }),
+  },
+  {
+    path: '/app/short-rent/marketplace/categories/:category',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/category-page')).MarketplaceCategoryPage }),
+  },
+  {
+    path: '/app/short-rent/marketplace/search',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/search-page')).MarketplaceSearchPage }),
+  },
+  {
+    path: '/app/short-rent/marketplace/mine',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/mine-page')).MarketplaceMinePage }),
+  },
+  {
+    // The page of a supplier, which can be shared (MKT): the supplier is read for the property of the address.
+    path: '/app/short-rent/marketplace/suppliers/:orgId',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
+  },
   {
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
@@ -900,6 +933,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 4,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
+  },
+  {
+    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
+    // For org billing administrators who handle owner payments.
+    path: '/app/account/wire-transfers',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.wireTransfers',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 4.5,
+    icon: 'Send',
+    component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the

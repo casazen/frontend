@@ -1,3 +1,4 @@
+import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
 
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
@@ -110,6 +111,11 @@ export interface Property {
   pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
+  /**
+   * The change of rental mode that waits for its day (PM-02, AM-13b): in the list asked with `?view=overview`, for a property in either
+   * mode, and only while it is `Scheduled`; absent otherwise. The same object `GET /properties/:id/mode` gives as `scheduledChange`.
+   */
+  scheduledModeChange?: PropertyModeChange | null;
   /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
   cadastralSheet?: string | null;
   cadastralParcel?: string | null;
@@ -312,6 +318,32 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   canonicalUrl?: string | null;
   /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */
   ratingSummary?: RatingSummary;
+}
+
+/**
+ * The night that starts on `date` in the public calendar of a property (DB-03b, `GET api/public/properties/{id}/calendar`).
+ * Dates and amounts only: it never says who stays, nor tells a booking from a block of the host.
+ */
+export interface PublicCalendarDayDto {
+  date: string;
+  /** A stay can start this night. The day of a check-out is free for a new check-in, so it is available. */
+  available: boolean;
+  /** What the night costs in cents: the number the quote adds up for that night. Given for a taken night too. */
+  nightlyPriceCents: number;
+  /** The fewest nights of a stay that starts on this day: 1 when there is no minimum. */
+  minNights: number;
+}
+
+/** The public calendar of a property: a day for each day from `startDate` (included) to `endDate` (excluded). */
+export interface PublicCalendarDto {
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  /** Today in Europe/Rome: earlier days are not listed. */
+  today: string;
+  currency: string;
+  days: PublicCalendarDayDto[];
+  generatedAt: string;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;

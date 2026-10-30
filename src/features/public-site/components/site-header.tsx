@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { PublicOrgDto } from '@/types';
+import { LanguageSwitch } from './language-switch';
 
 /** The booking widget of the page (desktop) or the button that opens it (phone): where "Verifica disponibilità" leads. */
 function scrollToBookingWidget() {
@@ -31,8 +32,10 @@ interface SiteHeaderProps {
   basePath: string;
   /** The "Verifica disponibilità" call to action: only where there is something to check (landing, property page). */
   showBookingCta: boolean;
-  /** The theme and the color of the host, for the sheet of the phone menu, which is drawn outside the themed root. */
+  /** The theme, the font pair and the color of the host, for the sheet of the phone menu, which is drawn outside the themed root. */
   themeId: string;
+  /** The font pair the host chose; null or left out = the font of the theme. */
+  fontId?: string | null;
   colorStyle?: CSSProperties;
 }
 
@@ -42,7 +45,7 @@ interface SiteHeaderProps {
  * way to act: the call to action where there is something to check, and "Le mie prenotazioni", a link on a tablet or a
  * desktop and a sheet from the bottom on a phone.
  */
-export function SiteHeader({ org, loading = false, basePath, showBookingCta, themeId, colorStyle }: SiteHeaderProps) {
+export function SiteHeader({ org, loading = false, basePath, showBookingCta, themeId, fontId, colorStyle }: SiteHeaderProps) {
   const { t } = useTranslation();
   // One of the two exists at a time, so that the link to "Le mie prenotazioni" is in the page once.
   const fromTablet = useMediaQuery(FROM_TABLET_QUERY);
@@ -67,6 +70,8 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
                 {t('publicSite.mobileBookingCta')}
               </Button>
             ) : null}
+            {/* From a desktop up; a phone finds it in the menu, a tablet at the foot of the page (and every size there). */}
+            <LanguageSwitch className="hidden lg:inline-flex" />
             {fromTablet ? (
               <Link
                 to={`${basePath}/my-bookings`}
@@ -77,7 +82,13 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
                 {t('publicSite.navMyBookings')}
               </Link>
             ) : (
-              <PhoneMenu displayName={org.displayName} basePath={basePath} themeId={themeId} colorStyle={colorStyle} />
+              <PhoneMenu
+                displayName={org.displayName}
+                basePath={basePath}
+                themeId={themeId}
+                fontId={fontId}
+                colorStyle={colorStyle}
+              />
             )}
           </div>
         ) : null}
@@ -135,11 +146,13 @@ function PhoneMenu({
   displayName,
   basePath,
   themeId,
+  fontId,
   colorStyle,
 }: {
   displayName: string;
   basePath: string;
   themeId: string;
+  fontId?: string | null;
   colorStyle?: CSSProperties;
 }) {
   const { t } = useTranslation();
@@ -153,7 +166,14 @@ function PhoneMenu({
       >
         <Menu className="h-6 w-6" aria-hidden />
       </SheetTrigger>
-      <SheetContent side="bottom" className="public-site-root" data-theme={themeId} style={colorStyle} aria-describedby={undefined}>
+      <SheetContent
+        side="bottom"
+        className="public-site-root"
+        data-theme={themeId}
+        data-font={fontId ?? undefined}
+        style={colorStyle}
+        aria-describedby={undefined}
+      >
         <SheetHeader className="px-5 pb-2 pr-14 pt-0">
           <SheetTitle className="public-display truncate text-xl">{displayName}</SheetTitle>
         </SheetHeader>
@@ -168,6 +188,10 @@ function PhoneMenu({
             <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-[var(--cz-public-muted)]" aria-hidden />
           </Link>
         </nav>
+        <div className="flex items-center justify-between gap-3 px-6 pb-5 pt-1">
+          <span className="text-sm font-medium">{t('language.label')}</span>
+          <LanguageSwitch />
+        </div>
       </SheetContent>
     </Sheet>
   );
