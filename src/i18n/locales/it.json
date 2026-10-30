@@ -4539,6 +4539,32 @@
     "labelFor": "Cos'è: {{title}}",
     "learnMore": "Scopri di più"
   },
+  "hostContact": {
+    "consent": "Accetto che il messaggio e la mia email siano inviati a {{host}}, per ricevere la risposta.",
+    "description": "Una domanda prima di prenotare? Il messaggio arriva a {{host}}, che ti risponde per email.",
+    "doneText": "{{host}} ti risponderà per email all’indirizzo che hai scritto.",
+    "doneTitle": "Messaggio inviato",
+    "emailHint": "{{host}} ti risponde a questo indirizzo.",
+    "emailLabel": "La tua email",
+    "errors": {
+      "consent": "Per scrivere devi accettare che il messaggio e la tua email siano inviati all’host.",
+      "email": "Scrivi un indirizzo email valido: l’host risponderà a quello.",
+      "failed": "Non siamo riusciti a inviare il messaggio. Quello che hai scritto resta qui: riprova tra un momento.",
+      "message": "Scrivi un messaggio di almeno 5 e al massimo 2000 caratteri.",
+      "name": "Il nome può avere al massimo 100 caratteri.",
+      "tooMany": "Hai scritto più volte di seguito: riprova tra un po’."
+    },
+    "honeypot": "Lascia vuoto questo campo",
+    "messageHint": "Per esempio: «Siamo in quattro e arriviamo con un cane piccolo: si può?»",
+    "messageLabel": "Il tuo messaggio",
+    "nameLabel": "Il tuo nome",
+    "offline": "Serve la connessione per scrivere. Quello che hai scritto resta qui: appena torna, puoi inviarlo.",
+    "send": "Invia il messaggio",
+    "sending": "Invio in corso…",
+    "theHost": "l’host",
+    "title": "Scrivi a {{host}}",
+    "trigger": "Scrivi a {{host}}"
+  },
   "hostInvite": {
     "loading": "Verifica dell'invito…",
     "retry": "Riprova",
