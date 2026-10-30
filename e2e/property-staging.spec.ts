@@ -53,7 +53,11 @@ test.describe('Property flow on staging API (live)', () => {
   });
 
   test('creates a property via UI and opens its detail page', async ({ page }) => {
-    const uniqueName = `E2E Staging ${Date.now()}`;
+    const runId = Date.now();
+    const uniqueName = `E2E Staging ${runId}`;
+    // The staging org keeps every property the earlier runs created, and the API refuses a second active property at the same
+    // address and unit (409 duplicate_property_address): each run takes a street number of its own.
+    const uniqueAddress = `Via Milano ${(runId % 99_000) + 1}`;
 
     await page.getByTestId('property-add').click();
     await expect(page.getByRole('heading', { level: 1, name: /^(Add property|Aggiungi immobile)$/ })).toBeVisible();
@@ -69,7 +73,7 @@ test.describe('Property flow on staging API (live)', () => {
     } else {
       await fillPropertyWizard(page, {
         name: uniqueName,
-        address: 'Via Milano 5',
+        address: uniqueAddress,
         comune: 'Milano',
         postalCode: '20100',
       });
