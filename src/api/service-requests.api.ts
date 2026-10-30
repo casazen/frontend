@@ -187,7 +187,10 @@ export async function fetchMarketplaceSuppliers(params: {
   q?: string;
   sort?: SupplierPickerSort;
 }): Promise<SupplierListResponse> {
-  return ApiClient.get<SupplierListResponse>('/suppliers', params);
+  // The ranking (SP-REL) is the order the server uses when it is not asked for another: not sending it keeps the call valid for a server
+  // that does not rank yet (it would answer 400 to `sort=recommended`).
+  const { sort, ...rest } = params;
+  return ApiClient.get<SupplierListResponse>('/suppliers', sort && sort !== 'recommended' ? { ...rest, sort } : rest);
 }
 
 /**
