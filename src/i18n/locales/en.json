@@ -2714,6 +2714,10 @@
       },
       "guests": {
         "count": "Enter from 1 to 30 guests"
+      },
+      "marketingEmail": {
+        "required": "Enter the email address to receive communications",
+        "invalid": "Enter a valid email address (maximum 255 characters)"
       }
     },
     "loading": "Loading check-in...",
@@ -2838,6 +2842,18 @@
         "reject": "Not verified",
         "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
       }
+    },
+    "consent": {
+      "title": "Marketing consent (optional)",
+      "intro": "Would you like to receive updates, offers and news from the property? Choose your preferred channels. It's not mandatory: you can complete the check-in without giving consent.",
+      "emailChannel": "I consent to receive promotional communications via email",
+      "emailChannelDescription": "You will receive offers, news and promotions via email.",
+      "whatsappChannel": "I consent to receive promotional communications via WhatsApp",
+      "whatsappChannelDescription": "You will receive offers, news and promotions via WhatsApp.",
+      "marketingEmail": "Your email address *",
+      "marketingEmailPlaceholder": "example@email.com",
+      "marketingEmailHint": "Enter your personal email address. Do not use the temporary booking email (e.g. Booking.com).",
+      "skipAllowed": "You can skip this step: the check-in will be completed anyway."
     },
     "documentIntro": "Identity document of the single guest or of the head of family or group. Family and group members do not need one.",
     "documentOf": "Document of {{name}}",
@@ -7635,7 +7651,7 @@
     },
     "create": {
       "title": "New property",
-      "description": "Details of the property to let with a long-term lease. After saving you can upload the APE."
+      "description": "Four short steps: address, cadastral data, APE and summary. What you do not have at hand can be added later."
     },
     "edit": {
       "title": "Edit property",
@@ -7700,6 +7716,69 @@
       "save": "Save",
       "cancel": "Cancel",
       "notSet": "Not set"
+    },
+    "wizard": {
+      "cadastral": {
+        "hint": "Sheet, parcel and subaltern are on the cadastral survey (visura). The contract states them."
+      },
+      "done": {
+        "apeUploaded": "The APE is uploaded.",
+        "cadastralSaved": "The cadastral data are saved.",
+        "createLease": "Create the contract",
+        "inList": "“{{name}}” is in your list, vacant.",
+        "openProperty": "Open the property",
+        "title": "Property added",
+        "todo": {
+          "ape": "The APE: upload it from the property sheet or from the contract.",
+          "apeExpired": "An APE that is still valid: the one uploaded appears to be expired.",
+          "apeFailed": "The APE could not be uploaded. Try again from the property sheet.",
+          "apeFailedWhy": "The APE could not be uploaded ({{reason}}). Try again from the property sheet.",
+          "apeIdentification": "The code and class of the APE could not be read from the file: type them below.",
+          "cadastral": "The cadastral data: add them from the property sheet.",
+          "cadastralFailed": "The cadastral data could not be saved. Try again from the property sheet.",
+          "cadastralIncomplete": "Some cadastral data: the contract needs sheet, parcel, category and income. Complete them from the property sheet.",
+          "title": "To create the contract you still need"
+        }
+      },
+      "duplicate": "A property with this address and unit already exists. Go back to the first step and add the unit or staircase.",
+      "finish": "Add property",
+      "finishFailed": "We could not add the property. Check the data and try again: what you wrote is still here.",
+      "reading": "We are adding the property and reading the APE: it can take a minute. Please do not close the page.",
+      "review": {
+        "address": "Address",
+        "ape": "APE",
+        "apePages_one": "{{count}} photo, made into a PDF",
+        "apePages_other": "{{count}} photos, made into one PDF",
+        "cadastral": "Cadastral data",
+        "missingNote": "The cadastral data and the APE are not needed to add the property, but the contract cannot be created without them. You can add them later.",
+        "name": "Property"
+      },
+      "steps": {
+        "address": {
+          "label": "Address",
+          "purpose": "Only you see the name. The comune and the address go into the contract.",
+          "title": "Where is the property?"
+        },
+        "ape": {
+          "label": "APE",
+          "purpose": "The contract states the code and class of the APE: we read them from the file.",
+          "title": "Energy performance certificate (APE)"
+        },
+        "cadastral": {
+          "label": "Cadastral data",
+          "purpose": "The contract states them. If you do not have them at hand, skip: add them whenever you want.",
+          "title": "Cadastral data"
+        },
+        "review": {
+          "label": "Summary",
+          "purpose": "Check your answers: each can be corrected before the property is added.",
+          "title": "Check and add"
+        }
+      },
+      "validation": {
+        "apeNotConfirmed": "Confirm the order of the APE pages, or remove them.",
+        "income": "Write the income as an amount, for example 750.50."
+      }
     }
   },
   "longRentRents": {
@@ -8328,14 +8407,54 @@
     }
   },
   "marketplace": {
-    "title": "Service Marketplace",
-    "description": "Find suppliers for your property and manage service requests.",
-    "allCategories": "All categories",
-    "suppliersLoadError": "Could not load the suppliers. Please try again later.",
+    "title": "Marketplace",
+    "description": "Find the suppliers that work near your properties and ask for an intervention.",
+    "requestIntervention": "Request an intervention",
+    "sections": {
+      "label": "Marketplace sections",
+      "discover": "Discover",
+      "categories": "Categories",
+      "mine": "My apps"
+    },
+    "search": {
+      "label": "Search the Marketplace",
+      "placeholder": "Supplier, service or category",
+      "title": "Search",
+      "description": "By supplier name, service or category."
+    },
     "casazenSuppliers": "CasaZen suppliers",
+    "seeAll": "See all",
+    "seeAllOf": "See all: {{category}}",
+    "categories": {
+      "title": "Categories",
+      "description": "Browse the suppliers by type of service.",
+      "count_one": "{{count}} supplier",
+      "count_other": "{{count}} suppliers",
+      "none": "No suppliers yet"
+    },
+    "category": {
+      "description": "The suppliers of this category that work in the area of the property.",
+      "notFound": "Category not found",
+      "notFoundHint": "This is not a category of the Marketplace.",
+      "seeAll": "See all categories"
+    },
+    "results": {
+      "count_one": "{{count}} supplier",
+      "count_other": "{{count}} suppliers"
+    },
+    "filters": {
+      "open": "Filters",
+      "title": "Filters and order",
+      "description": "Choose how to order the suppliers and whether to see only the verified ones.",
+      "done_one": "Show {{count}} supplier",
+      "done_other": "Show {{count}} suppliers"
+    },
+    "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "noNetwork": "There is no CasaZen network in this area yet for this category.",
     "noMatch": "No supplier matches the search.",
-    "clearFilters": "Clear the search",
+    "noVerified": "None of these suppliers is verified.",
+    "clearFilters": "Clear the filters",
+    "clearSearch": "Clear the search",
     "loading": "Loading…",
     "propertiesLoadError": "Could not load the properties.",
     "propertyLabel": "Property",
@@ -8345,9 +8464,6 @@
     "addComune": "Add the municipality to see the suppliers in your area",
     "addComuneHint": "Suppliers are searched by municipality: choose it from the official list in the property's page.",
     "editProperty": "Edit property",
-    "searchLabel": "Search",
-    "searchPlaceholder": "Supplier name",
-    "categoryLabel": "Category",
     "sortLabel": "Sort by",
     "sort": {
       "name": "Name",
@@ -8360,6 +8476,7 @@
     "drawer": {
       "photoAlt": "{{name}}, photo {{index}}",
       "showcase": "See the showcase",
+      "openPage": "Open the page",
       "verifiedExplanation": "Active supplier on CasaZen with a verified profile: business details and VAT number.",
       "about": "About",
       "services": "Services",
@@ -8370,6 +8487,16 @@
       "loadError": "Could not load the supplier.",
       "notFound": "Supplier not found",
       "notFoundDescription": "It is no longer among the active suppliers of this property's area."
+    },
+    "mine": {
+      "title": "My apps",
+      "description": "The requests you sent to the suppliers and where they stand."
+    },
+    "supplier": {
+      "title": "Supplier",
+      "request": "Request",
+      "requestService": "Request: {{service}}",
+      "backToMarketplace": "Back to the Marketplace"
     },
     "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
@@ -10112,6 +10239,39 @@
       "retry": "Try again",
       "title": "Add property"
     },
+    "photos": {
+      "dropzone": {
+        "button": "Choose photos",
+        "title": "Drag your photos here"
+      },
+      "gallery": {
+        "moved": "Photo {{index}} moved to position {{position}} of {{total}}."
+      },
+      "listing": {
+        "description": "The headline and description guests read on your site. You can write them now or later.",
+        "headline": {
+          "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
+          "label": "Headline"
+        },
+        "suggest": "Suggest a text",
+        "suggested": "Text put together from the details you entered: review it and change it as you like.",
+        "text": {
+          "label": "Description"
+        },
+        "title": "Your listing",
+        "undo": "Undo"
+      },
+      "queue": {
+        "dismiss": "Remove",
+        "failedFile": "“{{name}}” was not uploaded. Try again.",
+        "label": "Photos being uploaded",
+        "retry": "Try again",
+        "uploading": "Uploading…",
+        "waiting": "Waiting"
+      },
+      "recommended": "{{photos}} of {{recommended}} recommended photos (not required): you can add more later too.",
+      "title": "Photos"
+    },
     "steps": {
       "amenities": {
         "label": "Amenities",
@@ -10122,7 +10282,32 @@
         "label": "Basics",
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
+      },
+      "photos": {
+        "label": "Photos",
+        "purpose": "Recommended, not required: you can skip this step and add them later.",
+        "title": "Show the home with a few photos"
       }
+    },
+    "suggest": {
+      "amenities": "Amenities include {{list}}.",
+      "and": "and",
+      "area": "Area: {{area}} m².",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "beds_one": "{{count}} bed",
+      "beds_other": "{{count}} beds",
+      "guests_one": "Sleeps {{count}} guest.",
+      "guests_other": "Sleeps up to {{count}} guests.",
+      "intro": "{{type}} “{{name}}” in {{city}}.",
+      "introNoName": "{{type}} in {{city}}.",
+      "studio": "studio",
+      "title": "{{type}} in {{city}}",
+      "titleGuests_one": "{{type}} in {{city}} · {{count}} guest",
+      "titleGuests_other": "{{type}} in {{city}} · {{count}} guests",
+      "typeFallback": "Place"
     },
     "validation": {
       "address": {
@@ -10137,6 +10322,8 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
+      "description": "The description can have at most 600 characters.",
+      "listingTitle": "The headline can have at most 60 characters.",
       "maxGuests": "Maximum guests are from 1 to 100.",
       "name": {
         "max": "The name can have at most 100 characters.",
@@ -10649,6 +10836,7 @@
     "legalDocuments": "Legal documents",
     "footer": {
       "contact": "Contact",
+      "cookies": "Cookies",
       "info": "Information",
       "operator": "Operator",
       "vatNumber": "VAT no. {{vat}}"
@@ -11120,6 +11308,7 @@
     "selectedSupplier": "Selected supplier",
     "website": "Website",
     "category": "Category",
+    "forService": "For the service:",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
     "urgency": "Urgency",
@@ -11268,10 +11457,20 @@
     },
     "cookieConsent": {
       "ariaLabel": "Cookie Consent",
-      "text": "We use essential cookies for the site to function and, only with your consent, analytics cookies. You can accept or reject non-essential cookies.",
+      "text": "We use the cookies needed to let you book and to remember your choices (the language, the homes you save). With your permission, also anonymous statistics to improve the site. No advertising cookies.",
       "title": "Your privacy",
       "reject": "Decline",
-      "accept": "Accept"
+      "accept": "Accept",
+      "choose": "Let me choose",
+      "preferencesTitle": "Your cookie choices",
+      "necessary": "Necessary",
+      "necessaryHint": "Needed to search, book and pay securely, and to remember on your device the language and the homes you save: always on.",
+      "statistics": "Anonymous statistics",
+      "statisticsHint": "They tell us which pages work best. No personal data.",
+      "onlyNecessary": "Only the necessary",
+      "save": "Save my choices",
+      "saved": "Preferences saved",
+      "savedHint": "You can change them from the “Cookies” link at the bottom of the page."
     },
     "demoBanner": {
       "message": "Demo Mode - No authentication required. All data is simulated."
