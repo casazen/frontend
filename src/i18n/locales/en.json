@@ -11274,6 +11274,176 @@
       "operational": "Operational"
     }
   },
+  "requestWizard": {
+    "done": {
+      "another": "Make another request",
+      "answers": "The supplier decides: it accepts, declines or proposes another time.",
+      "cancel": "You can cancel any time, at no cost, until the work has started.",
+      "description": "The request is on its way: here is what happens now.",
+      "respondBy": "It has until {{when}} to answer.",
+      "see": "See the request",
+      "title": "Request sent to {{supplier}}",
+      "titleGeneric": "Request sent",
+      "told": "We tell you as soon as it answers. From Jobs you follow it up to the payment."
+    },
+    "errors": {
+      "categoryRequired": "Choose the kind of job you need.",
+      "commitmentConflict": "The supplier already has a job in that interval: choose another time.",
+      "dayPast": "That day has passed: choose today or later.",
+      "dayRequired": "Enter the day of the work.",
+      "durationInvalid": "Enter how long the work lasts, from 5 minutes to 24 hours.",
+      "notesTooLong": "The notes can be 1000 characters long at most.",
+      "propertyRequired": "Choose the property.",
+      "sendFailed": "We could not send the request. Try again in a moment: your answers are still here.",
+      "serviceRequired": "Choose a service, or «Other job».",
+      "serviceUnavailable": "The supplier no longer offers this service: choose another one.",
+      "slotRequired": "Choose one of the free times.",
+      "slotTaken": "This time has just been taken: choose another one.",
+      "stayMismatch": "The stay you chose is not of this property: choose it again.",
+      "supplierInactive": "This supplier is not available right now: choose another one.",
+      "supplierOutsideComune": "This supplier does not work in the comune of the property: choose another one.",
+      "supplierRequired": "Choose the supplier.",
+      "timeInvalid": "The time you chose is not valid: choose another one.",
+      "timePast": "That time has already passed: choose a later one.",
+      "timeRequired": "Enter the start time.",
+      "urgencyRequired": "Choose how urgent it is."
+    },
+    "finish": "Send the request",
+    "loading": "Getting the request ready…",
+    "noProperty": {
+      "action": "Add a property",
+      "text": "To ask for a job you need at least one property.",
+      "title": "You need a property first"
+    },
+    "retry": "Try again",
+    "review": {
+      "houseOnly": "The house only, no stay",
+      "notes": "Notes",
+      "price": "Price",
+      "priceEstimate": "Estimate: {{price}}. When the work is done the supplier gives the final amount.",
+      "priceFrom": "{{price}}. The total depends on the work and the supplier gives it.",
+      "priceQuote": "On quote. The supplier will send you the quote.",
+      "priceTbd": "To be agreed with the supplier.",
+      "sees": {
+        "after": {
+          "contact": "your contact details (email and phone)",
+          "notes": "your notes",
+          "where": "the name and address of the property"
+        },
+        "afterTitle": "Once it accepts, it also sees",
+        "before": {
+          "what": "the kind of job it is and how urgent",
+          "when": "the day and the time",
+          "where": "the comune and postal code of the property, not the address",
+          "who": "the name of your organization and the expected price"
+        },
+        "beforeTitle": "Before it accepts, the supplier sees",
+        "never": "It never sees your guests’ data: if you link a stay, it only knows its dates.",
+        "title": "What the supplier sees"
+      },
+      "what": "What is needed",
+      "when": "When",
+      "where": "Where",
+      "who": "Who"
+    },
+    "steps": {
+      "review": {
+        "label": "Summary",
+        "purpose": "The request leaves only when you press «Send the request».",
+        "title": "Check and send"
+      },
+      "what": {
+        "label": "What is needed",
+        "purpose": "Choose the kind of work and how urgent it is.",
+        "title": "What job do you need?"
+      },
+      "when": {
+        "label": "Where and when",
+        "purpose": "Choose the property and the day. The stay is optional.",
+        "title": "Where and when?"
+      },
+      "who": {
+        "label": "Who",
+        "purpose": "Choose the supplier, the service and a free time.",
+        "title": "Who takes care of it?"
+      }
+    },
+    "title": "Request a job",
+    "what": {
+      "category": "Kind of job",
+      "categoryPlaceholder": "Choose the kind",
+      "notes": "What should the supplier do?",
+      "notesHint": "Describe the work in a few lines. Do not write guests’ data (name, phone, documents): the supplier reads these notes only when it accepts.",
+      "urgencies": {
+        "Emergency": {
+          "text": "Needed now: it cannot wait.",
+          "title": "Emergency"
+        },
+        "High": {
+          "text": "Needed soon.",
+          "title": "High"
+        },
+        "Normal": {
+          "text": "It can be scheduled.",
+          "title": "Normal"
+        }
+      },
+      "urgency": "How urgent is it?"
+    },
+    "when": {
+      "day": "Day of the work",
+      "property": "Property",
+      "propertyPlaceholder": "Choose the property",
+      "stay": "Link to a stay",
+      "stayHint": "Optional: without one, the request is about the house only.",
+      "stayNone": "No stay: the house only",
+      "window": {
+        "both": "That day the guests leave by {{from}} and the next ones arrive from {{to}}: for cleaning, {{from}}–{{to}} is the advised window.",
+        "defaults": "Default hours: check-out by {{checkOut}}, check-in from {{checkIn}}.",
+        "open": "That day the guests leave by {{from}} and nobody arrives: the cleaning can be done afterwards."
+      }
+    },
+    "who": {
+      "advised": {
+        "both": "Showing the times between {{from}} and {{to}}, the advised window for cleaning.",
+        "none": "No free time in the advised window: here are the others.",
+        "open": "Showing the times from {{from}}, after the guests leave."
+      },
+      "catalogError": "I cannot read the services of this supplier.",
+      "custom": {
+        "help": "Choose when you want it to start and how long it lasts. The supplier can accept, decline or propose another time.",
+        "text": "It is not among the services in the list: you choose the time and the length.",
+        "title": "Other job"
+      },
+      "duration": "Length",
+      "durationMinutes": "Minutes",
+      "durationOther": "Other…",
+      "durationRange": "From {{min}} to {{max}} minutes.",
+      "loadingServices": "Looking for the services…",
+      "loadingSlots": "Looking for free times…",
+      "loadingSuppliers": "Looking for suppliers…",
+      "lookAround": "Look at the marketplace",
+      "nearbyDays": "Nearby days with free times",
+      "noDuration": "Length to be agreed",
+      "noSlotsAtAll": "No free time in the coming days. Choose another service or another supplier.",
+      "noSlotsDay": "No free time {{day}}.",
+      "noSuppliers": "No supplier covers the comune of this property for this kind of job.",
+      "priceOnRequest": "Price on quote",
+      "services": "Service",
+      "showEvery": "Show all times",
+      "slot": "From {{from}} to {{to}}",
+      "slotsCount_one": "One free time {{day}}",
+      "slotsCount_other": "{{count}} free times {{day}}",
+      "slotsError": "I cannot read the free times.",
+      "slotsLabel": "Free times {{day}}",
+      "slotsTitle": "Free times {{day}}",
+      "startTime": "Start time",
+      "supplierUnavailable": "The supplier named is not among those available for this property and this kind of job (it is not active, or does not cover the comune). Choose another one.",
+      "suppliers": "Suppliers for this job",
+      "suppliersError": "I cannot load the suppliers.",
+      "until": "until {{to}}"
+    }
+  },
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",

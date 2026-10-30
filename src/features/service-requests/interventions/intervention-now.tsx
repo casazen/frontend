@@ -5,8 +5,8 @@ import { formatMoney } from '@/features/supplier/services/lib/service-money';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import type { ServiceRequest } from '@/types/service-request';
 import { cancellationReasonText, instantToCome, supplierRef, whenText } from '../long-rent/long-rent-request-model';
-import { hostActionKind, mayDo, phoneHref, remindWaitText, type HostPermissions } from './intervention-model';
-import { INTERVENTIONS_PATH, requestInterventionPath } from './paths';
+import { againPathOf, hostActionKind, mayDo, phoneHref, remindWaitText, type HostPermissions } from './intervention-model';
+import { INTERVENTIONS_PATH } from './paths';
 import type { InterventionSteps } from './use-intervention-actions';
 
 const DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -176,7 +176,7 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
 
     case 'requestAgain': {
       const again = (label: string): CalmAction =>
-        mayDo('requestAgain', permissions) ? { label, href: requestInterventionPath(request.propertyId) } : allRequests;
+        mayDo('requestAgain', permissions) ? { label, href: againPathOf(request) } : allRequests;
       if (request.status === 'Rifiutato') {
         const reason = request.rejectionReason?.trim();
         return block({
@@ -246,7 +246,7 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
         tone: 'success',
         title: t('longRentRequests.next.paid.title'),
         body: t('longRentRequests.next.paid.body'),
-        primary: ifAllowed('requestAgain', { label: t('longRentRequests.next.again'), href: requestInterventionPath(request.propertyId) }),
+        primary: ifAllowed('requestAgain', { label: t('longRentRequests.next.again'), href: againPathOf(request) }),
         turn: null,
       });
 

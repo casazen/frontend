@@ -166,6 +166,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/service-requests/interventions')).InterventionsPage }),
   },
   {
+    // «Richiedi un intervento» (SR-08b): the guided request in four steps. It asks what asking asks, `servicerequest.write` (the
+    // collaborator has it); it is a page of the interventions, so it is before `:id`.
+    path: '/app/short-rent/interventions/request',
+    context: 'short-rent',
+    requiredPermissions: ['servicerequest.write'],
+    component: async () => ({ default: (await import('@/features/service-requests/interventions')).RequestInterventionPage }),
+  },
+  {
     path: '/app/short-rent/interventions/:id',
     context: 'short-rent',
     requiredPermissions: ['property.read'],

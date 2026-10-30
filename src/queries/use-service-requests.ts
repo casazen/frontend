@@ -403,6 +403,23 @@ export function useCreateServiceRequest() {
   });
 }
 
+/**
+ * The request of the guided procedure «Richiedi un intervento» (SR-08b): the same `POST`, without the toasts, because the wizard
+ * tells the outcome in its own words (a slot just taken, a supplier that is no longer available) and keeps the answers. The lists
+ * of the interventions and the supplier's inbox are read again.
+ */
+export function useCreateIntervention() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateServiceRequestDto) => createServiceRequest(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      void queryClient.invalidateQueries({ queryKey: ['latest-interventions'] });
+    },
+  });
+}
+
 /** Long-rent request for a property (D2). */
 export function useCreateLongRentServiceRequest() {
   const queryClient = useQueryClient();
