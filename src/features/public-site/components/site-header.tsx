@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { PublicOrgDto } from '@/types';
+import { LanguageSwitch } from './language-switch';
 
 /** The booking widget of the page (desktop) or the button that opens it (phone): where "Verifica disponibilità" leads. */
 function scrollToBookingWidget() {
@@ -69,6 +70,8 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
                 {t('publicSite.mobileBookingCta')}
               </Button>
             ) : null}
+            {/* From a desktop up; a phone finds it in the menu, a tablet at the foot of the page (and every size there). */}
+            <LanguageSwitch className="hidden lg:inline-flex" />
             {fromTablet ? (
               <Link
                 to={`${basePath}/my-bookings`}
@@ -185,6 +188,10 @@ function PhoneMenu({
             <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-[var(--cz-public-muted)]" aria-hidden />
           </Link>
         </nav>
+        <div className="flex items-center justify-between gap-3 px-6 pb-5 pt-1">
+          <span className="text-sm font-medium">{t('language.label')}</span>
+          <LanguageSwitch />
+        </div>
       </SheetContent>
     </Sheet>
   );

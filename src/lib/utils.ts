@@ -10,10 +10,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format currency values
+ * Format currency values. Italian by default; the booking site passes the locale of the guest's language (`useSiteMoney`).
  */
-export function formatCurrency(amount: number, currency: string = 'EUR'): string {
-  return new Intl.NumberFormat('it-IT', {
+export function formatCurrency(amount: number, currency: string = 'EUR', locale: string = 'it-IT'): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
   }).format(amount);
