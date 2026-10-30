@@ -110,9 +110,9 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
       id: 'prices',
       title: t('propertyWizard.last.summary.prices'),
       rows: [
-        { label: labels('rate'), value: property.nightlyRate > 0 ? formatCurrency(property.nightlyRate) : t('propertyWizard.last.summary.rateMissing') },
+        { label: labels('rate'), value: property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : t('propertyWizard.last.summary.rateMissing') },
         { label: labels('weekend'), value: (property.weekendSurchargePercent ?? 0) > 0 ? `+${property.weekendSurchargePercent}%` : notSaid },
-        { label: labels('cleaning'), value: property.cleaningFee > 0 ? formatCurrency(property.cleaningFee) : notSaid },
+        { label: labels('cleaning'), value: property.cleaningFee > 0 ? formatCurrency(property.cleaningFee, property.currency) : notSaid },
         { label: labels('minNights'), value: t('propertyWizard.last.summary.nights', { count: property.minNights ?? 1 }) },
       ],
     },

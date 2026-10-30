@@ -168,7 +168,7 @@ export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm', f
         {nightlyRate ? (
           <p data-testid="public-property-card-price">
             <span className="text-xs text-[var(--cz-public-muted)]">{t('publicSite.card.from')} </span>
-            <span className="public-display text-xl">{money(nightlyRate)}</span>
+            <span className="public-display text-xl">{money(nightlyRate, property.currency)}</span>
             <span className="text-sm text-[var(--cz-public-muted)]"> {t('publicSite.card.perNight')}</span>
           </p>
         ) : (

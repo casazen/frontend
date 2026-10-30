@@ -10041,9 +10041,10 @@
         "unit": "e.g. Staircase B, unit 5"
       },
       "bedroomsHint": "0 for a studio",
-      "cleaningFee": "Cleaning fee (€)",
-      "damageDeposit": "Damage deposit (€)",
+      "cleaningFee": "Cleaning fee ({{currency}})",
+      "damageDeposit": "Damage deposit ({{currency}})",
       "amountsInEuro": "Amounts in euros.",
+      "amountsInFrancs": "Amounts in Swiss francs (CHF).",
       "stayRules": {
         "title": "Stay rules",
         "description": "House rules, time zone and cancellation policy of the property"

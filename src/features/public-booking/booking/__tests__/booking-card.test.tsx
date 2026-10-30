@@ -78,12 +78,12 @@ const quote: DirectBookingQuote = {
   ],
 };
 
-function renderCard(search: string) {
+function renderCard(search: string, ofProperty: PublicPropertyDetailDto = property) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[`/book/demo/property/villa-mare${search}`]}>
-        <BookingProvider property={property} orgSlug="demo" hostLabel="Giulia" contactEmail={null}>
+        <BookingProvider property={ofProperty} orgSlug="demo" hostLabel="Giulia" contactEmail={null}>
           <BookingCard />
         </BookingProvider>
       </MemoryRouter>
@@ -118,6 +118,19 @@ describe('BookingCard', () => {
       expect.objectContaining({ propertyId: PROPERTY_ID, checkInDate: '2026-10-16', checkOutDate: '2026-10-19', numberOfAdults: 2, numberOfChildren: 0 }),
       expect.anything(),
     );
+  });
+
+  it('BookingCard_HouseInSwissFrancs_WritesEveryAmountOfTheServerInFrancsNotInEuros', async () => {
+    // CHF-MONEY: the quote and the calendar say the currency of the house, and the card writes the amounts in it.
+    vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue({ ...calendar, currency: 'CHF' });
+    vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue({ ...quote, currency: 'CHF' });
+    renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, currency: 'CHF' });
+
+    await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
+    expect(screen.getByTestId('booking-price')).toHaveTextContent('CHF');
+    expect(screen.getByTestId('booking-price')).not.toHaveTextContent('€');
+    expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('CHF');
+    expect(screen.getByTestId('price-breakdown-total')).not.toHaveTextContent('€');
   });
 
   it('BookingCard_NoDates_AsksNoQuoteAndOffersNoCheckout', async () => {

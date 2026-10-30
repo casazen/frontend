@@ -99,9 +99,9 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
         actionTestId="property-manage-pricing"
       >
         <Facts>
-          <Fact label={t('property.info.nightlyRate')}>{formatCurrency(property.nightlyRate)}</Fact>
-          <Fact label={t('property.info.cleaning')}>{formatCurrency(property.cleaningFee)}</Fact>
-          <Fact label={t('property.info.deposit')}>{formatCurrency(property.damageDeposit)}</Fact>
+          <Fact label={t('property.info.nightlyRate')}>{formatCurrency(property.nightlyRate, property.currency)}</Fact>
+          <Fact label={t('property.info.cleaning')}>{formatCurrency(property.cleaningFee, property.currency)}</Fact>
+          <Fact label={t('property.info.deposit')}>{formatCurrency(property.damageDeposit, property.currency)}</Fact>
           <Fact label={t('property.pricing.title')}>{suggestions.isEnabled ? t('property.pricing.on') : t('property.pricing.off')}</Fact>
           {suggestions.isEnabled ? (
             <>

@@ -5,7 +5,9 @@ import { formatCurrency } from '@/lib/utils';
 
 /**
  * Writes an amount the way the guest's language does (DB-02b): `145,00 €` in Italian, `€145.00` in English. The function it
- * returns changes with the language, so a component that uses it is drawn again when the guest switches.
+ * returns changes with the language, so a component that uses it is drawn again when the guest switches. Pass the currency of the
+ * object the amount belongs to (the property, the quote, the booking: a house in Switzerland is in `CHF`); the euro is only what an
+ * object that does not say gets (CHF-MONEY).
  */
 export function useSiteMoney(): (amount: number, currency?: string) => string {
   const { i18n } = useTranslation();

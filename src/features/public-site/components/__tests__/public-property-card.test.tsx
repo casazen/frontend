@@ -63,6 +63,15 @@ describe('PublicPropertyCard', () => {
     expect(within(card).getByTestId('public-cin')).toBeInTheDocument();
   });
 
+  it('PublicPropertyCard_HouseInSwissFrancs_ShowsThePriceInFrancsNotInEuros', () => {
+    // CHF-MONEY: the price of a card is in the currency of its house (the euro when the backend does not say).
+    const swiss = renderCard({ currency: 'CHF' });
+
+    expect(within(swiss).getByTestId('public-property-card-price')).toHaveTextContent(/120,00/);
+    expect(within(swiss).getByTestId('public-property-card-price')).toHaveTextContent(/CHF/);
+    expect(within(swiss).getByTestId('public-property-card-price')).not.toHaveTextContent('€');
+  });
+
   it('PublicPropertyCard_EnglishUi_PluralizesTheFacts', async () => {
     await i18n.changeLanguage('en');
     const card = renderCard({ maxGuests: 1, bedrooms: 1 });
