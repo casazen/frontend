@@ -1,4 +1,5 @@
 import { ApiClient } from './client';
+import axios from '@/lib/axios';
 import type {
   TicinoNotificationRequest,
   OtrReportRequest,
@@ -17,26 +18,18 @@ export const swissComplianceApi = {
   generateOtrCsv: (propertyId: string, request: OtrReportRequest) =>
     ApiClient.post<SwissComplianceFileResponse>(`/properties/${propertyId}/swiss/otr-report`, request),
 
-  uploadReceipt: async (propertyId: string, form: UploadSwissReceiptForm) => {
+  uploadReceipt: async (propertyId: string, form: UploadSwissReceiptForm): Promise<SwissReceiptResponse> => {
     const formData = new FormData();
     formData.append('type', form.type);
     formData.append('reportDate', form.reportDate);
     formData.append('reference', form.reference);
     formData.append('file', form.file);
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/properties/${propertyId}/swiss/upload-receipt`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw error;
-    }
-
-    return response.json() as Promise<SwissReceiptResponse>;
+    const response = await axios.post<SwissReceiptResponse>(
+      `/properties/${propertyId}/swiss/upload-receipt`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data;
   },
 };

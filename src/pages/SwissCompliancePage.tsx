@@ -9,8 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { Select } from '@/components/ui/select';
-import { Download, Upload, Calendar, AlertCircle, Info } from 'lucide-react';
-import { format } from 'date-fns';
+import { Download, Upload, Info } from 'lucide-react';
 
 export function SwissCompliancePage() {
   const { t } = useTranslation();
