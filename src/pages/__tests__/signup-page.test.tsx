@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { PENDING_ATTRIBUTION_STORAGE_KEY, LANDING_TOUCH_STORAGE_KEY } from '@/lib/signup-attribution';
 import { trackSeoEvent } from '@/lib/seo-events';
 
@@ -57,6 +58,8 @@ describe('SignupPage (SE-03, A8-03)', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
+    // The visitor allowed statistics: without that nothing is kept (`cookie-consent.test.ts` proves it).
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     auth0.isLoading = false;
     auth0.isAuthenticated = false;
     auth0.loginWithRedirect.mockClear();
