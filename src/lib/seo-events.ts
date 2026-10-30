@@ -1,6 +1,7 @@
 import { analyticsConfig } from '@/config/analytics.config';
 import { env } from '@/config/env.config';
 import { PublicSeoApi } from '@/api/public-seo.api';
+import { hasConsent } from '@/lib/cookie-consent';
 import { readVisitMarketing, validComune } from '@/lib/signup-attribution';
 import type { SeoEventName, SeoEventPayload } from '@/types/seo.types';
 
@@ -63,6 +64,9 @@ function sendToPlausible(payload: SeoEventPayload): void {
  * Sends one event of the SEO funnel (#300 AC3, AC8). Fire and forget: analytics never delays or breaks the click, so a
  * failure (offline, blocked, refused by the rate limit) is not shown to the visitor; the call returns whether an event
  * was sent. `navigator.sendBeacon` first, a plain public request when the browser has none or refuses the beacon.
+ *
+ * It is a statistic: **nothing is sent, to CasaZen or to Plausible, until the visitor allows statistics** (DB-02b,
+ * `hasConsent('statistics')`); before that the call is a quiet no.
  */
 export function trackSeoEvent(
   event: SeoEventName,
@@ -70,6 +74,8 @@ export function trackSeoEvent(
   location?: Pick<Location, 'search' | 'origin'>,
   referrer?: string,
 ): boolean {
+  if (!hasConsent('statistics')) return false;
+
   const payload = buildSeoEventPayload(event, comune, location, referrer);
   if (!payload) return false;
 

@@ -18,6 +18,7 @@ export const REQUEST_DRAWER_KIND = 'supplier-request';
 export type RequestPhase =
   | 'toAnswer'
   | 'proposalPending'
+  | 'quotePending'
   | 'scheduled'
   | 'inProgress'
   | 'completed'
@@ -29,6 +30,7 @@ export type RequestPhase =
 const PHASE_OF_SERVER = new Map<string, RequestPhase>([
   ['to_answer', 'toAnswer'],
   ['proposal_pending', 'proposalPending'],
+  ['quote_pending', 'quotePending'],
   ['scheduled', 'scheduled'],
   ['in_progress', 'inProgress'],
   ['completed', 'completed'],
@@ -52,21 +54,65 @@ export function phaseOf(request: Pick<SupplierServiceRequest, 'phase' | 'status'
 }
 
 /**
- * What the supplier can do about a request in a phase: the one thing (`primary`) and, quieter, another (`secondary`). A job that is taken
- * and not started can be cancelled (`cancel`, with a reason): it is the way out of a job accepted automatically (SP-04d).
+ * What the supplier can do about a request. `take` and `reject` answer a new request; `quote` answers it with a quote (SP-04b), and while
+ * the quote waits the supplier can change it (`editQuote`) or take it back (`withdrawQuote`); a taken job is completed (`complete`) or, until
+ * it starts, cancelled (`cancel`, with a reason: the way out of a job accepted automatically, SP-04d); a completed job paid inside CasaZen
+ * can be asked for again (`remindPayment`, SP-15a) and one that was paid outside CasaZen is recorded (`recordPayment`).
  */
-export type RequestAction = 'take' | 'reject' | 'complete' | 'cancel';
+export type RequestAction =
+  | 'take'
+  | 'reject'
+  | 'complete'
+  | 'cancel'
+  | 'quote'
+  | 'editQuote'
+  | 'withdrawQuote'
+  | 'remindPayment'
+  | 'recordPayment';
 
-export function actionsOf(phase: RequestPhase): { primary?: RequestAction; secondary?: RequestAction } {
-  switch (phase) {
+/** The one thing to do (`primary`), quieter another (`secondary`), and the rest as quiet buttons (`more`): none of them takes the place of the block. */
+export interface RequestPlan {
+  primary?: RequestAction;
+  secondary?: RequestAction;
+  more: RequestAction[];
+}
+
+/** A request with no price (a service on quote, or no service): the answer that suits it is a quote, not a take at "da concordare". */
+export function hasNoPrice(request: Pick<SupplierServiceRequest, 'price'>): boolean {
+  return request.price?.amountCents === null || request.price?.amountCents === undefined;
+}
+
+/**
+ * What the supplier can do about a request now. A new request without a price puts the quote first and the take second ("Accetta senza
+ * preventivo"); one with a price keeps the take first and offers the quote as a quiet button. A quote that waits is a state to wait in: the
+ * supplier may change it or take it back, but there is nothing it has to do. The reminder needs `onlinePayments` (the flag of the
+ * server, `SupplierOnlinePayments`) and the server's own word (`payment.canRequest`); recording a payment received outside CasaZen needs
+ * only the server's (`payment.canRecordOffline`), also with online payments off.
+ */
+export function actionsOf(
+  request: Pick<SupplierServiceRequest, 'phase' | 'status' | 'price' | 'payment'>,
+  options: { onlinePayments?: boolean } = {},
+): RequestPlan {
+  switch (phaseOf(request)) {
     case 'toAnswer':
-      return { primary: 'take', secondary: 'reject' };
+      return hasNoPrice(request)
+        ? { primary: 'quote', secondary: 'take', more: ['reject'] }
+        : { primary: 'take', secondary: 'reject', more: ['quote'] };
+    case 'quotePending':
+      return { more: ['editQuote', 'withdrawQuote'] };
     case 'scheduled':
-      return { primary: 'complete', secondary: 'cancel' };
+      return { primary: 'complete', secondary: 'cancel', more: [] };
     case 'inProgress':
-      return { primary: 'complete' };
+      return { primary: 'complete', more: [] };
+    case 'completed':
+      return {
+        more: [
+          ...(options.onlinePayments && request.payment?.canRequest ? (['remindPayment'] as const) : []),
+          ...(request.payment?.canRecordOffline ? (['recordPayment'] as const) : []),
+        ],
+      };
     default:
-      return {};
+      return { more: [] };
   }
 }
 
@@ -124,6 +170,7 @@ export function respondByText(request: Pick<SupplierServiceRequest, 'respondBy' 
 const REASON_KEYS: Record<string, string> = {
   NoResponse: 'supplier.requests.reason.NoResponse',
   ProposalNotAnswered: 'supplier.requests.reason.ProposalNotAnswered',
+  QuoteNotAnswered: 'supplier.requests.reason.QuoteNotAnswered',
   CancelledByCustomer: 'supplier.requests.reason.CancelledByCustomer',
 };
 
