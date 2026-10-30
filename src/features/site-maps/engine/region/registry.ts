@@ -5,6 +5,7 @@
 import { sampleCurve, type Pt } from '../geometry';
 import { clamp, rngOf, slug } from '../numeric';
 import { toKm } from '../view';
+import { snapKm } from './land';
 import type { BaseTown, DetailPack, GeoBase, GeoLod, GeoName, RawItaly, RawLod, RawName, RawShape, Shape } from './model';
 
 /* ----- decoding of the generated file ----- */
@@ -107,6 +108,8 @@ export interface WorldTown {
   k: Pt;
   /** Radius in km of the built-up area. */
   foot: number;
+  /** From a detail pack: its built-up area is drawn at every close zoom, named or not. */
+  detail: boolean;
 }
 export interface World {
   base: GeoBase | null;
@@ -119,23 +122,28 @@ export interface World {
 }
 
 const TOWN_DEDUPE_KM = 4;
+const SNAP_KM = 1.5;
 let cache: { v: number; world: World } | null = null;
 
 /** The merged world, rebuilt only when something has been loaded since the last call. */
 export function getWorld(): World {
-  if (cache && cache.v === version) return cache.world;
+  if (cache && cache.v === geoVersion()) return cache.world;
   const list = geoPacks();
   const towns: WorldTown[] = [];
   for (const pack of list) {
-    for (const t of pack.towns) towns.push({ id: t.id, name: t.name, lat: t.lat, lon: t.lon, tier: t.tier, k: toKm(t.lat, t.lon), foot: pack.foot[t.id] ?? (t.tier === 3 ? 0.7 : 1) });
+    for (const t of pack.towns) towns.push({ id: t.id, name: t.name, lat: t.lat, lon: t.lon, tier: t.tier, k: toKm(t.lat, t.lon), foot: pack.foot[t.id] ?? (t.tier === 3 ? 0.7 : 1), detail: true });
   }
   const own = towns.length;
   for (const t of base?.towns ?? []) {
     const k = toKm(t.lat, t.lon);
     let dup = false;
     for (let i = 0; i < own && !dup; i++) dup = towns[i].id === t.id || Math.hypot(towns[i].k[0] - k[0], towns[i].k[1] - k[1]) < TOWN_DEDUPE_KM;
-    if (!dup) towns.push({ id: t.id, name: t.name, lat: t.lat, lon: t.lon, tier: t.tier, k, foot: clamp(0.011 * Math.sqrt(t.pop), 0.35, 12) });
+    if (!dup) towns.push({ id: t.id, name: t.name, lat: t.lat, lon: t.lon, tier: t.tier, k, foot: clamp(0.011 * Math.sqrt(t.pop), 0.35, 12), detail: false });
   }
+  // the base is generalised (1:10 000 000): a coastal town may fall in the sea by a kilometre, so it is pulled back to the shore
+  const fine = base ? base.lods[base.lods.length - 1] : null;
+  const landed = (p: Pt): Pt => (fine ? snapKm(fine, p, SNAP_KM) : p);
+  for (const t of towns) t.k = landed(t.k);
   const byKey = new Map<string, WorldTown>();
   for (const t of towns) {
     byKey.set(t.id, t);
@@ -146,7 +154,7 @@ export function getWorld(): World {
     const t = byKey.get(q);
     if (t) return t.k;
     const place = [...pack.stations, ...pack.airports].find((s) => s.id === q);
-    return place ? toKm(place.lat, place.lon) : [0, 0];
+    return place ? landed(toKm(place.lat, place.lon)) : [0, 0];
   };
   const roads: World['roads'] = [];
   const rails: Pt[][] = [];
@@ -189,6 +197,6 @@ export function getWorld(): World {
     for (const l of pack.lakes) lakes.push(sampleCurve(l.pts.map(([la, lo]) => toKm(la, lo)), true, 0.35));
   }
   const world: World = { base, towns, byKey, roads, rails, lakes, packs: list };
-  cache = { v: version, world };
+  cache = { v: geoVersion(), world };
   return world;
 }

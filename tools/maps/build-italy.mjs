@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Builds the national base of the schematic maps (DB-19a): src/features/site-maps/data/italy.json.
+ * Builds the national base of the schematic maps (DB-19a): src/features/site-maps/data/italy.ts.
  *
  * A development tool: it is not run by the build nor by the CI. The generated file is committed; the raw data are not.
  *
- *   node tools/maps/build-italy.mjs <folder> [output.json]
+ *   node tools/maps/build-italy.mjs <folder> [output.ts]
  *
  * <folder> holds the Natural Earth files (public domain, https://www.naturalearthdata.com), either as the .zip files of the
  * download page or already unzipped (.shp + .dbf): ne_10m_land, ne_10m_admin_0_countries, ne_10m_admin_1_states_provinces,
@@ -13,13 +13,14 @@
  * What it does: reads the shapefiles (a small reader of its own: no dependency), keeps what is near Italy, simplifies it at three
  * levels of detail with Douglas-Peucker (the tolerance of each level is written in the file), quantises the coordinates
  * (1/100 degree, about 1 km, for the two coarser levels; 1/1000 for the finest, see README.md), codes them as differences and
- * writes one JSON file. It prints the sizes and exits with an error if the file is over the budget of 80 KB gzipped.
+ * writes one TypeScript module. It prints the sizes and exits with an error if the data are over the budget of 80 KB gzipped.
  *
  * Region borders are the edges that two provinces of different regions share; the point where the name of a region is written is
  * the point of the region farthest from its edges.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
 
 const LAT0 = 40.8;
@@ -136,6 +137,12 @@ function readDbf(buf) {
     rows.push(row);
   }
   return rows;
+}
+
+/** The version of a Natural Earth layer, from the VERSION.txt that comes with it (the credits say which). */
+function readVersion(dir, name) {
+  const buf = readPart(dir, name, 'VERSION.txt');
+  return buf ? buf.toString('utf8').trim() : 'unknown';
 }
 
 /** Features of a Natural Earth layer: [{ attrs, shape }]. Returns [] (with a warning) if the layer is missing. */
@@ -421,7 +428,9 @@ function labelPoint(rings, edges) {
  * ========================================================================== */
 // [text, lat, lon, size, letter spacing, min width of the frame (km), max width (km), rotation]
 const SEAS = [
+  // a name may have several places: the first one where it fits is the one that is written
   ['Mare Adriatico', 43.7, 14.3, 12, 2.2, 150, 2000, 40],
+  ['Mare Adriatico', 42.8, 15.7, 12, 2.2, 150, 2000, 40],
   ['Mare Adriatico', 41.55, 17.55, 12.5, 2.2, 120, 400, -32],
   ['Mar Ionio', 39.9, 17.0, 12.5, 2.2, 120, 400, 0],
   ['Mar Ionio', 37.7, 17.3, 12, 2.2, 400, 2000, 0],
@@ -442,17 +451,35 @@ const COUNTRIES = [
 ];
 /** Names of the regions as they are written on the map (the file has the long forms with the second language). */
 const REGION_NAME = {
+  Apulia: 'Puglia',
+  Sicily: 'Sicilia',
   "Valle d'Aosta/Vallée d'Aoste": "Valle d'Aosta",
   'Trentino-Alto Adige/Südtirol': 'Trentino-Alto Adige',
   'Friuli-Venezia Giulia': 'Friuli-Venezia Giulia',
 };
+
+/** TypeScript source of a value: a row of numbers on one line, every other array and object one element per line. */
+function format(v, indent) {
+  if (Array.isArray(v)) {
+    if (v.every((x) => typeof x === 'number')) return `[${v.join(',')}]`;
+    if (!v.length) return '[]';
+    const inner = indent + '  ';
+    return `[\n${v.map((x) => inner + format(x, inner)).join(',\n')},\n${indent}]`;
+  }
+  if (v && typeof v === 'object') {
+    const inner = indent + '  ';
+    const key = (k) => (/^[A-Za-z_]\w*$/.test(k) ? k : JSON.stringify(k));
+    return `{\n${Object.entries(v).map(([k, x]) => `${inner}${key(k)}: ${format(x, inner)}`).join(',\n')},\n${indent}}`;
+  }
+  return JSON.stringify(v);
+}
 
 /* ========================================================================== *
  *  Main
  * ========================================================================== */
 function main() {
   const dir = process.argv[2];
-  const outFile = process.argv[3] ?? path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../../src/features/site-maps/data/italy.json');
+  const outFile = process.argv[3] ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '../../src/features/site-maps/data/italy.ts');
   if (!dir) {
     console.error('usage: node tools/maps/build-italy.mjs <folder with the Natural Earth files> [output.json]');
     process.exit(2);
@@ -511,9 +538,10 @@ function main() {
   const seas = SEAS.map(([n, la, lo, s, l, m, x, r]) => ({ n, a: Math.round(la * 1000), o: Math.round(lo * 1000), s, l, m, x, ...(r ? { r } : {}) }));
   const countryNames = COUNTRIES.map(([n, la, lo]) => ({ n, a: Math.round(la * 1000), o: Math.round(lo * 1000) }));
 
+  const versions = ['ne_10m_land', 'ne_10m_admin_0_countries', 'ne_10m_admin_1_states_provinces', 'ne_10m_populated_places', 'ne_10m_lakes', 'ne_10m_lakes_europe'].map((n) => `${n.replace('ne_10m_', '')} ${readVersion(dir, n)}`);
   const data = {
     v: 1,
-    source: 'Natural Earth 1:10m (public domain, naturalearthdata.com), simplified by tools/maps/build-italy.mjs',
+    source: `Natural Earth 1:10m, public domain (naturalearthdata.com): ${versions.join(', ')}; simplified by tools/maps/build-italy.mjs`,
     tol: LODS.map((l) => l.tol),
     lods,
     towns,
@@ -523,9 +551,16 @@ function main() {
   };
   const json = JSON.stringify(data);
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
-  fs.writeFileSync(outFile, json);
+  const header = [
+    '// Generated by tools/maps/build-italy.mjs from Natural Earth (public domain). Do not edit by hand: see src/features/site-maps/README.md.',
+    "import type { RawItaly } from '../engine/region/model';",
+    '',
+    'export const ITALY: RawItaly = ',
+  ].join('\n');
+  const source = `${header}${format(data, '')};\n`;
+  fs.writeFileSync(outFile, source);
   const gz = zlib.gzipSync(json, { level: 9 }).length;
-  console.log(`wrote ${outFile}`);
+  console.log(`wrote ${outFile} (${(source.length / 1024).toFixed(1)} KB of source)`);
   console.log(`  ${(json.length / 1024).toFixed(1)} KB, ${(gz / 1024).toFixed(1)} KB gzipped (budget ${BUDGET_GZ / 1024} KB)`);
   lods.forEach((l, i) => {
     const part = JSON.stringify(l);

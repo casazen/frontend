@@ -24,7 +24,8 @@ import {
 } from '@/features/site-maps';
 import { PUGLIA } from '@/features/site-maps/data/puglia';
 import { ComponentsSection } from './maps-components-section';
-import { HOUSES, RegionSection } from './maps-region-section';
+import { HOUSES } from './maps-data';
+import { RegionSection } from './maps-region-section';
 import { HomePin, PoiDot, SvgBox } from './maps-shared';
 
 type Section = 'region' | 'local' | 'components' | 'checks';
