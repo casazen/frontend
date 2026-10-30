@@ -14446,6 +14446,115 @@
     "servicesTitle": "Services",
     "noAvailability": "The supplier has not yet entered availability for the coming days."
   },
+  "supplierSite": {
+    "about": {
+      "eyebrow": "The professional",
+      "title": "About us",
+      "values": "Our strengths"
+    },
+    "categories": {
+      "eyebrow": "Services",
+      "title": "What we do"
+    },
+    "cta": {
+      "book": "Book now",
+      "inquiry": "Request on measure"
+    },
+    "days": {
+      "eyebrow": "Availability",
+      "title": "The next days"
+    },
+    "finder": {
+      "comune": "Where?",
+      "comunePlaceholder": "Your town",
+      "day": "When?",
+      "inquiryLead": "Can't find what you need?",
+      "label": "Look for a service and a time",
+      "onQuote": "{{name}} (on quote)",
+      "service": "What service do you need?"
+    },
+    "footer": {
+      "info": "Information",
+      "poweredBy": "Showcase made with CasaZen",
+      "zones": "Where we work"
+    },
+    "header": {
+      "home": "{{name}}: go to the home page",
+      "openMenu": "Open the menu"
+    },
+    "hero": {
+      "closed": "Online bookings are not open: here you can see the services and the areas.",
+      "firstSlot": "First free time",
+      "seeServices": "See the services"
+    },
+    "nav": {
+      "about": "About us",
+      "faq": "Questions",
+      "how": "How it works",
+      "label": "Site menu",
+      "services": "Services",
+      "works": "Work",
+      "zones": "Areas"
+    },
+    "offline": "You are offline: this is the last saved version. You need a connection to check the times and book.",
+    "paused": {
+      "text": "The showcase is paused: you cannot book for now. Come back later.",
+      "title": "{{name}} is not taking bookings for now"
+    },
+    "responseTime": {
+      "hours_one": "about {{count}} hour",
+      "hours_other": "about {{count}} hours",
+      "minutes_one": "about {{count}} minute",
+      "minutes_other": "about {{count}} minutes"
+    },
+    "services": {
+      "emptyText": "There are no services to show at the moment. Try again shortly.",
+      "emptyTitle": "We are getting the services ready",
+      "eyebrow": "Services and prices",
+      "firstSlot": "First time: {{when}}",
+      "from": "from",
+      "leadClosed": "Services and starting prices.",
+      "leadOpen": "Clear prices and first times that are really free.",
+      "quoteHint": "The price is agreed with you",
+      "title": "What we can do for you",
+      "vatIncluded": "VAT included"
+    },
+    "slot": {
+      "day": "{{day}} at {{time}}",
+      "today": "today at {{time}}",
+      "tomorrow": "tomorrow at {{time}}"
+    },
+    "states": {
+      "discover": "Discover CasaZen",
+      "errorText": "Try again in a few seconds."
+    },
+    "trust": {
+      "jobs": "jobs done with CasaZen",
+      "jobsLine_one": "{{count}} job done with CasaZen",
+      "jobsLine_other": "{{count}} jobs done with CasaZen",
+      "label": "Why trust {{name}}",
+      "payments": "Secure payment",
+      "paymentsBy": "with CasaZen",
+      "response": "usually to answer",
+      "verified": "Verified",
+      "verifiedBy": "by CasaZen",
+      "verifiedLine": "Verified by CasaZen"
+    },
+    "zones": {
+      "checkLabel": "Type your town and we tell you at once",
+      "checking": "Checking the area…",
+      "covered": "Perfect: we work in {{place}}.",
+      "error": "We cannot check right now. Try again shortly.",
+      "eyebrow": "Where we work",
+      "lead": "We work in {{places}} and {{last}}.",
+      "leadOne": "We work in {{place}}.",
+      "listLabel": "Towns served",
+      "outside": "{{place}} is outside the usual area: you can still send a request on measure and the professional decides.",
+      "title": "Do we come to you?",
+      "tooMany": "Too many requests in a short time: try again in a minute.",
+      "unknown": "We cannot say for sure for {{place}}: send a request on measure."
+    }
+  },
   "taxRates": {
     "title": "Tourist Tax Rates",
     "listTitle": "Rate list",

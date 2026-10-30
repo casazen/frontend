@@ -14446,6 +14446,115 @@
     "servicesTitle": "Servizi",
     "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
   },
+  "supplierSite": {
+    "about": {
+      "eyebrow": "Il professionista",
+      "title": "Chi siamo",
+      "values": "I nostri punti di forza"
+    },
+    "categories": {
+      "eyebrow": "Servizi",
+      "title": "Di cosa ci occupiamo"
+    },
+    "cta": {
+      "book": "Prenota ora",
+      "inquiry": "Richiesta su misura"
+    },
+    "days": {
+      "eyebrow": "Disponibilità",
+      "title": "I prossimi giorni"
+    },
+    "finder": {
+      "comune": "Dove?",
+      "comunePlaceholder": "Il tuo comune",
+      "day": "Quando?",
+      "inquiryLead": "Non trovi quello che cerchi?",
+      "label": "Cerca un servizio e un orario",
+      "onQuote": "{{name}} (su preventivo)",
+      "service": "Che servizio ti serve?"
+    },
+    "footer": {
+      "info": "Informazioni",
+      "poweredBy": "Vetrina creata con CasaZen",
+      "zones": "Dove lavoriamo"
+    },
+    "header": {
+      "home": "{{name}}: vai alla pagina iniziale",
+      "openMenu": "Apri il menu"
+    },
+    "hero": {
+      "closed": "Le prenotazioni online non sono aperte: qui puoi vedere i servizi e le zone.",
+      "firstSlot": "Primo orario libero",
+      "seeServices": "Guarda i servizi"
+    },
+    "nav": {
+      "about": "Chi siamo",
+      "faq": "Domande",
+      "how": "Come funziona",
+      "label": "Menu del sito",
+      "services": "Servizi",
+      "works": "Lavori",
+      "zones": "Zone"
+    },
+    "offline": "Sei offline: vedi l'ultima versione salvata. Per verificare gli orari e prenotare serve la connessione.",
+    "paused": {
+      "text": "La vetrina è in pausa: per ora non si può prenotare. Torna a trovarci più avanti.",
+      "title": "{{name}} non accetta prenotazioni per ora"
+    },
+    "responseTime": {
+      "hours_one": "circa {{count}} ora",
+      "hours_other": "circa {{count}} ore",
+      "minutes_one": "circa {{count}} minuto",
+      "minutes_other": "circa {{count}} minuti"
+    },
+    "services": {
+      "emptyText": "Al momento non ci sono servizi da mostrare. Riprova tra poco.",
+      "emptyTitle": "Stiamo preparando i servizi",
+      "eyebrow": "Servizi e prezzi",
+      "firstSlot": "Primo orario: {{when}}",
+      "from": "da",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi.",
+      "quoteHint": "Il prezzo si definisce con te",
+      "title": "Cosa possiamo fare per te",
+      "vatIncluded": "IVA inclusa"
+    },
+    "slot": {
+      "day": "{{day}} alle {{time}}",
+      "today": "oggi alle {{time}}",
+      "tomorrow": "domani alle {{time}}"
+    },
+    "states": {
+      "discover": "Scopri CasaZen",
+      "errorText": "Riprova tra qualche secondo."
+    },
+    "trust": {
+      "jobs": "interventi svolti con CasaZen",
+      "jobsLine_one": "{{count}} intervento svolto con CasaZen",
+      "jobsLine_other": "{{count}} interventi svolti con CasaZen",
+      "label": "Perché fidarsi di {{name}}",
+      "payments": "Pagamento sicuro",
+      "paymentsBy": "con CasaZen",
+      "response": "di solito per rispondere",
+      "verified": "Verificato",
+      "verifiedBy": "da CasaZen",
+      "verifiedLine": "Verificato da CasaZen"
+    },
+    "zones": {
+      "checkLabel": "Scrivi il tuo comune e te lo diciamo subito",
+      "checking": "Controllo la zona…",
+      "covered": "Perfetto: lavoriamo a {{place}}.",
+      "error": "Non riusciamo a controllare ora. Riprova tra poco.",
+      "eyebrow": "Dove lavoriamo",
+      "lead": "Lavoriamo a {{places}} e {{last}}.",
+      "leadOne": "Lavoriamo a {{place}}.",
+      "listLabel": "Comuni serviti",
+      "outside": "{{place}} è fuori dalla zona abituale: puoi comunque mandare una richiesta su misura e il professionista decide.",
+      "title": "Arriviamo da te?",
+      "tooMany": "Troppe richieste in poco tempo: riprova tra un minuto.",
+      "unknown": "Per {{place}} non possiamo dirlo con certezza: manda una richiesta su misura."
+    }
+  },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
     "listTitle": "Elenco aliquote",

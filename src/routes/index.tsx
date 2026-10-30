@@ -50,6 +50,7 @@ import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
@@ -282,9 +283,15 @@ export const appRoutes: RouteObject[] = [
       { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
       { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
       { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
-      // Public showcase of a supplier (SU-13, A4-16): in the public shell, `noindex` (see the page).
-      { path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`, element: <SupplierShowcasePage /> },
     ],
+  },
+  {
+    // Public showcase of a supplier (SU-13, A4-16, SP-09-FE): the frame of its own, with the look the supplier chose, not the one of
+    // CasaZen's public pages. It keeps the marker: the redesign of the app (`data-ui="v2"`) never reaches it.
+    path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`,
+    element: <SupplierSiteShell />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+    children: [{ index: true, element: <SupplierShowcasePage /> }],
   },
   {
     // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
