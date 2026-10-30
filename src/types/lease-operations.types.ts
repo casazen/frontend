@@ -12,7 +12,8 @@ export type LeaseLetterKind =
   | 'ConfermaEsigenza'
   | 'AggiornamentoIstat'
   | 'OpzioneCedolare'
-  | 'Riconsegna';
+  | 'Riconsegna'
+  | 'RestituzioneCauzione';
 
 /** How the person sent a letter (backend `LeaseLetterMeans`). */
 export const LEASE_LETTER_MEANS = ['RegisteredMail', 'Pec', 'ByHand', 'Other'] as const;
@@ -164,6 +165,61 @@ export interface LeaseHandoverOperation {
   suggestedOn: string;
 }
 
+/** A return of the deposit the landlord recorded: the day, the deposit, the interest that was due, the sums kept and what was returned (euros). */
+export interface LeaseDepositRecord {
+  returnedOn: string;
+  deposit: number;
+  interestDue: number;
+  deductions: number;
+  returned: number;
+}
+
+/**
+ * The return of the security deposit. `available`: the lease is ending and has a deposit, so the statement can be worked out. `amount` is the
+ * deposit; it is taken to have been paid on `paidOn` (the start of the lease) unless the landlord says another day from `minPaidOn`; the return can
+ * be dated up to `maxReturnOn` and the window suggests `suggestedReturnOn`; at most `maxDeductions` sums can be kept. `recorded` is the return the
+ * landlord recorded last, if any.
+ */
+export interface LeaseDepositOperation {
+  available: boolean;
+  amount: number;
+  paidOn: string;
+  minPaidOn: string;
+  suggestedReturnOn: string;
+  maxReturnOn: string;
+  maxDeductions: number;
+  recorded: LeaseDepositRecord | null;
+}
+
+/** The interest of one calendar year of the statement: the rate, the days the deposit was held in it, the days of the year and the interest. */
+export interface LeaseDepositYear {
+  year: number;
+  ratePercent: number;
+  days: number;
+  daysInYear: number;
+  interest: number;
+}
+
+/** A sum kept from the deposit and why. */
+export interface LeaseDepositDeduction {
+  reason: string;
+  amount: number;
+}
+
+/** The statement of the return of the deposit worked out by the server (euros to the cent). */
+export interface LeaseDepositCalculation {
+  deposit: number;
+  from: string;
+  to: string;
+  years: LeaseDepositYear[];
+  interest: number;
+  interestPaid: number;
+  interestDue: number;
+  deductions: LeaseDepositDeduction[];
+  deductionsTotal: number;
+  returned: number;
+}
+
 /** The ISTAT update worked out by the server: the rent, the percentages typed, what they make of the rent, the increase and the new rent (to the cent). */
 export interface LeaseIstatCalculation {
   currentRent: number;
@@ -183,6 +239,7 @@ export interface LeaseOperations {
   istat: LeaseIstatOperation;
   cedolareNotice: LeaseCedolareNotice;
   handover: LeaseHandoverOperation;
+  deposit: LeaseDepositOperation;
 }
 
 /** `POST /leases/:id/letters/disdetta`: the reason of the law, required at the first expiry. */
@@ -224,6 +281,24 @@ export interface IstatLetterInput extends IstatCalculationInput {
 /** `POST /leases/:id/letters/opzione-cedolare`: the first day the option applies from, when the person says it. */
 export interface OpzioneCedolareLetterInput {
   effectiveFrom?: string;
+}
+
+/** The legal interest rate, in percent per year, of one calendar year the deposit was held. */
+export interface DepositRate {
+  year: number;
+  ratePercent: number;
+}
+
+/**
+ * `POST /leases/:id/deposit/calculate`, `/letters/restituzione-cauzione` and `/deposit/return`: the day the deposit is returned, the day it was paid
+ * (the start of the lease when left out), the rate of every calendar year it was held, the interest already paid to the tenant and the sums kept.
+ */
+export interface DepositReturnInput {
+  returnedOn: string;
+  depositPaidOn?: string;
+  rates: DepositRate[];
+  interestPaid?: number;
+  deductions: LeaseDepositDeduction[];
 }
 
 /** `POST /leases/:id/letters/riconsegna`: the day of the handover, when the person says it. */

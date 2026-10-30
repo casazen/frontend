@@ -3,9 +3,12 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-libra
 import { createElement } from 'react';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { LeaseDetail, LeaseOperations as LeaseOperationsData } from '@/types';
 import { buildDetail, httpError, renderAt } from '../../__tests__/lease-test-utils';
+import { addMonths } from '../../wizard/wizard-model';
 import { LeaseOperations } from '../lease-operations';
+import { yearsHeld } from '../operations-model';
 
 // LR-OPS-1: the letters are drafts the person downloads, a withdrawal is recorded only when its notice runs out inside the period the lease
 // is in, a renewal only in its window and never over another lease of the property, the need of a transitory lease is confirmed only when it
@@ -30,6 +33,10 @@ const RULES = {
   transitoryBandFromInhabitants: 10_000,
 };
 
+/** The deposit was paid 14 months ago and is returned today (the component reads the clock, so these days follow it). */
+const TODAY = todayInRome();
+const PAID = addMonths(TODAY, -14);
+
 /** An ordinary-regime lease in force, in the last stretch of its first period: every operation is on except the ones of the other cases. */
 const OPERATIONS: LeaseOperationsData = {
   disdetta: { available: true, firstPeriod: true, periodEnd: '2027-01-31', lastDayToGiveNotice: '2026-07-31', late: false, reasons: ['OwnUse', 'Sale'] },
@@ -42,6 +49,7 @@ const OPERATIONS: LeaseOperationsData = {
     { kind: 'AggiornamentoIstat', approved: false, sent: null },
     { kind: 'OpzioneCedolare', approved: false, sent: null },
     { kind: 'Riconsegna', approved: false, sent: null },
+    { kind: 'RestituzioneCauzione', approved: false, sent: null },
   ],
   renewal: {
     available: true,
@@ -57,6 +65,16 @@ const OPERATIONS: LeaseOperationsData = {
   istat: { available: true, currentRent: 650, defaultSharePercent: 75, maxSharePercent: 100, minEffectiveOn: '2026-10-10', maxEffectiveOn: '2027-01-31' },
   cedolareNotice: { available: false, minEffectiveOn: '2025-11-01', maxEffectiveOn: '2027-01-31' },
   handover: { available: false, minOn: '2025-11-01', maxOn: '2028-01-31', suggestedOn: '2027-01-31' },
+  deposit: {
+    available: false,
+    amount: 1950,
+    paidOn: PAID,
+    minPaidOn: addMonths(PAID, -12),
+    suggestedReturnOn: TODAY,
+    maxReturnOn: addMonths(TODAY, 36),
+    maxDeductions: 20,
+    recorded: null,
+  },
 };
 
 /** Nothing to do: every operation is off, so the section is not drawn at all. */
@@ -343,6 +361,104 @@ describe('LeaseOperations', () => {
     fireEvent.change(dialog.getByTestId('handover-day'), { target: { value: '' } });
     fireEvent.click(dialog.getByTestId('handover-download'));
     await waitFor(() => expect(post).toHaveBeenLastCalledWith('/leases/lease-1/letters/riconsegna', {}, { responseType: 'blob' }));
+  });
+
+  it('deposit_TheRatesAreTypedYearByYear_TheServerWorksTheStatementOut_AndTheDraftAndTheRecordUseTheSameInput', async () => {
+    const years = yearsHeld(PAID, TODAY);
+    const ending = { ...OPERATIONS, deposit: { ...OPERATIONS.deposit, available: true } };
+    const statement = {
+      deposit: 1950,
+      from: PAID,
+      to: TODAY,
+      years: years.map((year) => ({ year, ratePercent: 2, days: 100, daysInYear: 365, interest: 10 })),
+      interest: 30.63,
+      interestPaid: 0,
+      interestDue: 30.63,
+      deductions: [{ reason: 'Pulizie straordinarie', amount: 120 }],
+      deductionsTotal: 120,
+      returned: 1860.63,
+    };
+    mockServer(ending);
+    post.mockImplementation((url: string) => {
+      if (url === '/leases/lease-1/deposit/calculate') return Promise.resolve({ data: statement });
+      if (url === '/leases/lease-1/deposit/return') {
+        return Promise.resolve({
+          data: { ...ending, deposit: { ...ending.deposit, recorded: { returnedOn: TODAY, deposit: 1950, interestDue: 30.63, deductions: 120, returned: 1860.63 } } },
+        });
+      }
+      return Promise.resolve({ data: new Blob(['%PDF']) });
+    });
+    renderOperations('?operazione=cauzione');
+
+    const dialog = within(await screen.findByTestId('deposit-dialog'));
+    expect(dialog.getByTestId('deposit-draft-note')).toBeInTheDocument();
+    // Nothing can be downloaded or recorded before the server has worked a statement out, and there is a rate to write for every year it was held.
+    expect(dialog.getByTestId('deposit-download')).toBeDisabled();
+    expect(dialog.getByTestId('deposit-record')).toBeDisabled();
+    for (const year of years) fireEvent.change(dialog.getByTestId(`deposit-rate-${year}`), { target: { value: '2' } });
+    fireEvent.click(dialog.getByTestId('deposit-add-deduction'));
+    fireEvent.change(dialog.getByTestId('deposit-deduction-reason-1'), { target: { value: 'Pulizie straordinarie' } });
+    fireEvent.change(dialog.getByTestId('deposit-deduction-amount-1'), { target: { value: '120,00' } });
+
+    // One request, with numbers and not texts, and the days as the person left them.
+    const sent = {
+      returnedOn: TODAY,
+      depositPaidOn: PAID,
+      rates: years.map((year) => ({ year, ratePercent: 2 })),
+      deductions: [{ reason: 'Pulizie straordinarie', amount: 120 }],
+    };
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/deposit/calculate', sent, undefined));
+    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent('1.860,63'));
+    expect(dialog.getByTestId('deposit-years').querySelectorAll('li')).toHaveLength(years.length);
+
+    // The draft and the record are asked for with the same input; the record asks first and writes nothing else than the statement.
+    fireEvent.click(dialog.getByTestId('deposit-download'));
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/letters/restituzione-cauzione', sent, { responseType: 'blob' }));
+    fireEvent.click(dialog.getByTestId('deposit-record'));
+    expect(post).not.toHaveBeenCalledWith('/leases/lease-1/deposit/return', expect.anything(), undefined);
+    fireEvent.click(await dialog.findByTestId('deposit-confirm-yes'));
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/deposit/return', sent, undefined));
+  });
+
+  it('deposit_AReturnThatHasNotHappened_CanBeWorkedOutButNotRecorded_AndAReturnedDepositShowsOnTheRow', async () => {
+    const ending = { ...OPERATIONS, deposit: { ...OPERATIONS.deposit, available: true } };
+    const tomorrow = addDays(TODAY, 1);
+    const years = yearsHeld(PAID, tomorrow);
+    mockServer(ending);
+    post.mockResolvedValue({
+      data: {
+        deposit: 1950,
+        from: PAID,
+        to: tomorrow,
+        years: [],
+        interest: 30.63,
+        interestPaid: 0,
+        interestDue: 30.63,
+        deductions: [],
+        deductionsTotal: 0,
+        returned: 1980.63,
+      },
+    });
+    const { unmount } = renderOperations('?operazione=cauzione');
+
+    const dialog = within(await screen.findByTestId('deposit-dialog'));
+    fireEvent.change(dialog.getByTestId('deposit-returned-on'), { target: { value: tomorrow } });
+    for (const year of years) fireEvent.change(dialog.getByTestId(`deposit-rate-${year}`), { target: { value: '2,5' } });
+    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent('1.980,63'));
+
+    // Tomorrow can be prepared (the statement is for the day), not recorded: what is recorded has already happened.
+    expect(dialog.getByTestId('deposit-download')).toBeEnabled();
+    expect(dialog.getByTestId('deposit-record')).toBeDisabled();
+    unmount();
+
+    // Once recorded, the row says how much came back and the window is the statement again.
+    mockServer({
+      ...ending,
+      deposit: { ...ending.deposit, recorded: { returnedOn: TODAY, deposit: 1950, interestDue: 30.63, deductions: 120, returned: 1860.63 } },
+    });
+    renderOperations('');
+    expect(await screen.findByTestId('lease-operation-cauzione-summary')).toHaveTextContent('Cauzione restituita');
+    expect(screen.getByTestId('lease-operation-cauzione-summary')).toHaveTextContent('1.860,63');
   });
 
   it('istat_UnderTheCedolareSecca_TheUpdateIsOffNoRowAndNoWindow_AndTheCommunicationOfTheOptionIsOn', async () => {

@@ -2,10 +2,12 @@ import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type {
+  DepositReturnInput,
   DisdettaLetterInput,
   HandoverLetterInput,
   IstatCalculationInput,
   IstatLetterInput,
+  LeaseDepositCalculation,
   LeaseIstatCalculation,
   LeaseLetterKind,
   LeaseOperations,
@@ -28,7 +30,27 @@ const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   AggiornamentoIstat: 'aggiornamento-istat',
   OpzioneCedolare: 'opzione-cedolare',
   Riconsegna: 'riconsegna',
+  RestituzioneCauzione: 'restituzione-cauzione',
 };
+
+/** What the server answers for a statement of the return of the deposit: numbers, lists of years and of sums, or it is not an answer. */
+function expectDepositCalculation(data: unknown, url: string): LeaseDepositCalculation {
+  if (!isRecord(data) || !Array.isArray(data.years) || !Array.isArray(data.deductions)) throw new UnexpectedApiResponseError(url);
+  const { deposit, interest, interestPaid, interestDue, deductionsTotal, returned, from, to } = data;
+  if (
+    typeof deposit !== 'number' ||
+    typeof interest !== 'number' ||
+    typeof interestPaid !== 'number' ||
+    typeof interestDue !== 'number' ||
+    typeof deductionsTotal !== 'number' ||
+    typeof returned !== 'number' ||
+    typeof from !== 'string' ||
+    typeof to !== 'string'
+  ) {
+    throw new UnexpectedApiResponseError(url);
+  }
+  return data as unknown as LeaseDepositCalculation;
+}
 
 /** What the server answers for a calculation of the ISTAT update: numbers, or it is not an answer. */
 function expectIstatCalculation(data: unknown, url: string): LeaseIstatCalculation {
@@ -58,7 +80,8 @@ function expectOperations(data: unknown, url: string): LeaseOperations {
     !isRecord(data.transitoryConfirmation) ||
     !isRecord(data.istat) ||
     !isRecord(data.cedolareNotice) ||
-    !isRecord(data.handover)
+    !isRecord(data.handover) ||
+    !isRecord(data.deposit)
   ) {
     throw new UnexpectedApiResponseError(url);
   }
@@ -130,6 +153,27 @@ export const leaseOperationsApi = {
    */
   downloadRiconsegna: async (id: string, input: HandoverLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Riconsegna}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * The statement of the return of the security deposit worked out by the server from the rate of each year the deposit was held (the person
+   * types them), the interest already paid and the sums kept. Nothing is written. 422 `lease_deposit_none`, `lease_letter_not_applicable`,
+   * `lease_deposit_dates_invalid`, `lease_deposit_rate_invalid`, `lease_deposit_rate_missing`, `lease_deposit_interest_paid_invalid`,
+   * `lease_deposit_deduction_invalid`, `lease_deposit_deductions_exceed`.
+   */
+  calculateDepositReturn: async (id: string, input: DepositReturnInput): Promise<LeaseDepositCalculation> =>
+    expectDepositCalculation(await ApiClient.post<unknown>(`/leases/${id}/deposit/calculate`, input), '/leases/:id/deposit/calculate'),
+
+  /** The draft of the statement of the return of the deposit, as a PDF, with the same numbers as the calculation of the same input. */
+  downloadRestituzioneCauzione: async (id: string, input: DepositReturnInput): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.RestituzioneCauzione}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * Records that the landlord returned the deposit on `returnedOn` (a day that has already happened) with the sums the same input gives: an event
+   * in the history and nothing else (CasaZen moves no money). The answer is the operations as they are now. 422 the codes of the calculation and
+   * `lease_deposit_return_date_invalid`.
+   */
+  recordDepositReturn: async (id: string, input: DepositReturnInput): Promise<LeaseOperations> =>
+    expectOperations(await ApiClient.post<unknown>(`/leases/${id}/deposit/return`, input), '/leases/:id/deposit/return'),
 
   /** Marks a letter as sent on a day, by a means: an event in the history and nothing else. The answer is the operations as they are now. */
   markSent: async (id: string, kind: LeaseLetterKind, input: MarkLetterSentInput): Promise<LeaseOperations> =>

@@ -5036,7 +5036,7 @@
         "why": "Non si può chiedere un deposito oltre {{depositMaxRents}} mensilità. CasaZen non cambia il deposito di un contratto già impostato: va sistemato con l'inquilino, con l'aiuto del tuo commercialista o di un legale."
       },
       "depositReturn": {
-        "action": "Apri i Documenti",
+        "action": "Prepara il prospetto",
         "body": "Dopo aver verificato la casa restituisci il deposito con gli interessi legali. Puoi trattenere solo ciò che documenti: canoni o spese non pagati e danni oltre il normale uso.",
         "title": "Restituisci il deposito dopo la riconsegna",
         "why": "Il deposito garantisce gli obblighi dell'inquilino e va restituito alla fine, dopo la verifica dello stato dell'immobile. Dalla somma puoi detrarre, indicandole per iscritto e con i documenti, le somme ancora dovute e i danni che vanno oltre il normale deterioramento. Il termine per restituirlo è scritto nel tuo contratto."
@@ -5511,6 +5511,45 @@
       "summary": "Con la cedolare secca il canone non si aggiorna. La scelta e la rinuncia si comunicano all'inquilino con raccomandata, se il contratto non lo dice già.",
       "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
       "title": "Opzione per la cedolare secca"
+    },
+    "deposit": {
+      "dialog": {
+        "addDeduction": "Aggiungi una trattenuta",
+        "amountInvalid": "Scrivi una somma in euro, per esempio 25,50.",
+        "amountLabel": "Importo (€)",
+        "confirmNo": "Annulla",
+        "confirmText": "Registri che hai restituito {{amount}} il {{date}}. Resta nella cronologia del contratto: CasaZen non muove denaro e non cambia il deposito.",
+        "confirmYes": "Sì, registra",
+        "datesInvalid": "Il deposito deve essere stato versato prima del giorno in cui lo restituisci, e la restituzione non può essere troppo lontana dalla fine del contratto.",
+        "deductionsHint": "Puoi trattenere solo ciò che documenti: canoni o spese non pagati, danni oltre il normale uso. Scrivi il motivo: l'inquilino lo legge nel prospetto.",
+        "deductionsTitle": "Trattenute (facoltative)",
+        "description": "Il deposito è di {{amount}}. CasaZen calcola gli interessi legali e prepara il prospetto da dare all'inquilino. Il denaro lo restituisci tu: noi non muoviamo nulla.",
+        "download": "Scarica il prospetto",
+        "interestPaidHint": "Gli interessi che hai già versato all'inquilino durante il contratto, se ne hai versati.",
+        "interestPaidLabel": "Interessi già pagati (€)",
+        "paidOnLabel": "Deposito versato il",
+        "rateHint": "Il tasso di interesse legale lo fissa ogni anno il Ministero dell'economia: scrivi quello di ciascun anno in cui hai tenuto il deposito. CasaZen non lo conosce.",
+        "rateInvalid": "Scrivi un tasso maggiore di zero, per esempio 2,5.",
+        "rateLabel": "Tasso legale {{year}} (%)",
+        "ratesTitle": "Interessi legali",
+        "reasonLabel": "Motivo",
+        "record": "Registra la restituzione",
+        "recordFuture": "Potrai registrarla dal giorno della restituzione.",
+        "removeDeduction": "Togli la trattenuta",
+        "result": "Da restituire {{returned}}: deposito {{deposit}} + interessi dovuti {{interest}} − trattenute {{deductions}}.",
+        "resultPending": "Scrivi il tasso di ogni anno: ti diciamo quanto restituire.",
+        "returnedOnLabel": "Restituito il",
+        "title": "Restituzione della cauzione",
+        "yearLine": "{{year}}: {{days}} giorni al {{rate}}% = {{interest}}"
+      },
+      "failed": "Non sono riuscito a registrare la restituzione. Riprova.",
+      "open": "Prepara il prospetto",
+      "openRecorded": "Rivedi il prospetto",
+      "recorded": "Restituzione registrata: {{amount}} il {{date}}.",
+      "summary": "Dopo la riconsegna restituisci il deposito di {{amount}} con gli interessi legali, meno ciò che puoi documentare: calcoliamo noi il prospetto.",
+      "summaryRecorded": "Cauzione restituita il {{date}}: {{amount}}.",
+      "summarySent": "Prospetto segnato come inviato il {{date}} ({{means}}).",
+      "title": "Restituzione della cauzione"
     },
     "disdetta": {
       "dialog": {

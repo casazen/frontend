@@ -1,10 +1,12 @@
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
+import { formatCurrency } from '@/lib/utils';
 import type { LeaseDetail, LeaseOperations as LeaseOperationsData } from '@/types';
 import { GuideButton } from '../guide/guide-button';
 import { leaseTermEnd, longDay } from '../lifecycle/lifecycle-format';
 import { CedolareDialog } from './cedolare-dialog';
+import { DepositDialog } from './deposit-dialog';
 import { DisdettaDialog } from './disdetta-dialog';
 import { HandoverDialog } from './handover-dialog';
 import { IstatDialog } from './istat-dialog';
@@ -171,6 +173,33 @@ function HandoverRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   );
 }
 
+/** The return of the security deposit: that the statement can be worked out once the lease is ending, that the draft was marked as sent, or how much was returned. */
+function DepositRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
+  const { t, i18n } = useTranslation();
+  const { deposit } = operations;
+  const recorded = deposit.recorded;
+  const sent = letterState(operations, 'RestituzioneCauzione')?.sent;
+
+  let summary: string;
+  if (recorded) {
+    summary = t('leaseOperations.deposit.summaryRecorded', { date: longDay(recorded.returnedOn, i18n.language), amount: formatCurrency(recorded.returned) });
+  } else if (sent) {
+    summary = t('leaseOperations.deposit.summarySent', { date: longDay(sent.on, i18n.language), means: t(`leaseOperations.means.${sent.means}`) });
+  } else {
+    summary = t('leaseOperations.deposit.summary', { amount: formatCurrency(deposit.amount) });
+  }
+
+  return (
+    <OperationRow
+      testId="lease-operation-cauzione"
+      title={t('leaseOperations.deposit.title')}
+      summary={summary}
+      openLabel={t(recorded ? 'leaseOperations.deposit.openRecorded' : 'leaseOperations.deposit.open')}
+      onOpen={onOpen}
+    />
+  );
+}
+
 /** The withdrawal of the tenant: to record, or recorded with the day the lease ends. */
 function WithdrawalRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
@@ -201,7 +230,8 @@ interface LeaseOperationsProps {
  * the confirmation of the need of a transitory lease («Conferma dell'esigenza») while it is the landlord's to confirm, the update of the rent by
  * the ISTAT variation («Aggiornamento ISTAT del canone») while the lease is not under the cedolare secca and the communication of the cedolare secca
  * («Opzione per la cedolare secca») while it is, the withdrawal of the tenant («Recesso dell'inquilino») while it can be recorded or once it was,
- * and the minutes of the handover of the property («Riconsegna dell'immobile») once the lease is ending. Each row says where the operation stands in a sentence and opens a
+ * the minutes of the handover of the property («Riconsegna dell'immobile») once the lease is ending and the statement of the return of the
+ * security deposit («Restituzione della cauzione») when it has one to return. Each row says where the operation stands in a sentence and opens a
  * window (`?operazione=disdetta`, `rinnovo`, `conferma-esigenza`, `recesso`: a link from the advice or the step of the sheet lands on it) with
  * the two or three fields it needs and, where there is one, the draft of the letter to download. What is computed (the last day a notice is on
  * time, the day a withdrawal ends the lease, where a renewal goes on to) comes from the server. Nothing is sent to the tenant. A person who may
@@ -243,6 +273,7 @@ export function LeaseOperations({ lease }: LeaseOperationsProps) {
           {available.cedolare ? <CedolareRow operations={data} onOpen={() => go('cedolare')} /> : null}
           {available.recesso ? <WithdrawalRow operations={data} onOpen={() => go('recesso')} /> : null}
           {available.riconsegna ? <HandoverRow operations={data} onOpen={() => go('riconsegna')} /> : null}
+          {available.cauzione ? <DepositRow operations={data} onOpen={() => go('cauzione')} /> : null}
         </ul>
       </PlainSection>
 
@@ -253,6 +284,7 @@ export function LeaseOperations({ lease }: LeaseOperationsProps) {
       <CedolareDialog open={open === 'cedolare'} lease={lease} operations={data} onClose={() => go(null)} />
       <WithdrawalDialog open={open === 'recesso'} lease={lease} operations={data} onClose={() => go(null)} />
       <HandoverDialog open={open === 'riconsegna'} lease={lease} operations={data} onClose={() => go(null)} />
+      <DepositDialog open={open === 'cauzione'} lease={lease} operations={data} onClose={() => go(null)} />
     </>
   );
 }

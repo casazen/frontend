@@ -5036,7 +5036,7 @@
         "why": "A deposit above {{depositMaxRents}} months cannot be asked for. CasaZen does not change the deposit of a contract that is already set up: it has to be fixed with the tenant, with the help of your accountant or of a lawyer."
       },
       "depositReturn": {
-        "action": "Open the Documents",
+        "action": "Prepare the statement",
         "body": "After checking the home, give the deposit back with the legal interest. You can keep only what you document: unpaid rent or expenses and damage beyond normal use.",
         "title": "Give the deposit back after the handover",
         "why": "The deposit secures the tenant's obligations and must be given back at the end, after checking the state of the property. From the sum you can deduct, listing them in writing and with documents, the amounts still owed and the damage beyond normal wear. The time limit to give it back is written in your contract."
@@ -5511,6 +5511,45 @@
       "summary": "With the cedolare secca the rent is not updated. The choice and the renunciation are communicated to the tenant by registered mail, if the contract does not already say it.",
       "summarySent": "Letter marked as sent on {{date}} ({{means}}).",
       "title": "Option for the cedolare secca"
+    },
+    "deposit": {
+      "dialog": {
+        "addDeduction": "Add a deduction",
+        "amountInvalid": "Write a sum in euros, for example 25.50.",
+        "amountLabel": "Amount (€)",
+        "confirmNo": "Cancel",
+        "confirmText": "You record that you returned {{amount}} on {{date}}. It stays in the history of the contract: CasaZen does not move money and does not change the deposit.",
+        "confirmYes": "Yes, record it",
+        "datesInvalid": "The deposit must have been paid before the day you return it, and the return cannot be too far from the end of the contract.",
+        "deductionsHint": "You can keep only what you can document: rent or expenses not paid, damage beyond normal use. Write the reason: the tenant reads it in the statement.",
+        "deductionsTitle": "Deductions (optional)",
+        "description": "The deposit is {{amount}}. CasaZen works out the legal interest and prepares the statement to give the tenant. You return the money: we don't move anything.",
+        "download": "Download the statement",
+        "interestPaidHint": "The interest you already paid the tenant during the contract, if you paid any.",
+        "interestPaidLabel": "Interest already paid (€)",
+        "paidOnLabel": "Deposit paid on",
+        "rateHint": "The legal interest rate is set every year by the Ministry of Economy: write the one of each year you held the deposit. CasaZen does not know it.",
+        "rateInvalid": "Write a rate above zero, for example 2.5.",
+        "rateLabel": "Legal rate {{year}} (%)",
+        "ratesTitle": "Legal interest",
+        "reasonLabel": "Reason",
+        "record": "Record the return",
+        "recordFuture": "You can record it from the day of the return.",
+        "removeDeduction": "Remove the deduction",
+        "result": "To return {{returned}}: deposit {{deposit}} + interest due {{interest}} − deductions {{deductions}}.",
+        "resultPending": "Write the rate of each year: we tell you how much to return.",
+        "returnedOnLabel": "Returned on",
+        "title": "Return of the security deposit",
+        "yearLine": "{{year}}: {{days}} days at {{rate}}% = {{interest}}"
+      },
+      "failed": "We couldn't record the return. Try again.",
+      "open": "Prepare the statement",
+      "openRecorded": "See the statement again",
+      "recorded": "Return recorded: {{amount}} on {{date}}.",
+      "summary": "After the handover you return the deposit of {{amount}} with the legal interest, less what you can document: we work out the statement.",
+      "summaryRecorded": "Deposit returned on {{date}}: {{amount}}.",
+      "summarySent": "Statement marked as sent on {{date}} ({{means}}).",
+      "title": "Return of the security deposit"
     },
     "disdetta": {
       "dialog": {

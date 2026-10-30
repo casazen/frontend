@@ -491,7 +491,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: ENDING,
     when: (f) => f.hasDeposit && isEnding(f),
     priority: 35,
-    action: tab('documenti'),
+    action: operation('cauzione'),
     sources: ['law392'],
   },
   {
