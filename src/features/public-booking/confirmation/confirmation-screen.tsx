@@ -18,8 +18,8 @@ import { ResumePayment } from '@/features/public-booking/confirmation/resume-pay
 import { StayTicket } from '@/features/public-booking/confirmation/stay-ticket';
 import type { ClientPaymentStatus, OutcomeView } from '@/features/public-booking/checkout-outcome';
 import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
-import { siteLocale } from '@/features/public-site/stay/stay-format';
 import { buildGuestBookingsPath, buildPropertyPageUrl } from '@/lib/booking-url';
+import { siteLocale } from '@/lib/site-language';
 import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import type { CheckoutOutcome, PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 import './confirmation.css';
