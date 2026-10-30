@@ -19,6 +19,8 @@ interface BookingModelInput {
   orgSlug: string;
   hostLabel: string;
   contactEmail: string | null;
+  /** The ages the guest gave (the checkout asks them); the quote uses them when every child has one, else the oldest age of a minor. */
+  childrenAges?: readonly (number | null)[];
 }
 
 /**
@@ -30,7 +32,7 @@ interface BookingModelInput {
  * The children's ages are asked at the checkout. Until then the quote is asked with the oldest age of a minor, so that the tourist
  * tax the server shows is the highest it can be and the total can only go down: that line is called an estimate.
  */
-export function useBookingModel({ property, orgSlug, hostLabel, contactEmail }: BookingModelInput): BookingModel {
+export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, childrenAges }: BookingModelInput): BookingModel {
   const { t } = useTranslation();
   const online = useOnlineStatus();
   const petsAllowed = property.petsPolicy ? property.petsPolicy !== 'No' : (property.amenities ?? []).includes('PetFriendly');
@@ -48,6 +50,11 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail }: 
   }, [calendar.status, calendar.days, calendar.today, calendar.end, nights, stay.checkIn, stay.checkOut]);
 
   const overCapacity = problems.includes('overCapacity');
+  // Every child has an age: that is what the quote is asked with, and the tax is exact. Otherwise the oldest age of a minor.
+  const knownAges = useMemo(() => {
+    const given = (childrenAges ?? []).slice(0, stay.children);
+    return stay.children > 0 && given.length === stay.children && given.every((age) => age !== null) ? (given as number[]) : null;
+  }, [childrenAges, stay.children]);
   const payload = useMemo<DirectBookingQuotePayload | null>(() => {
     if (nights <= 0 || calendarProblem || overCapacity) return null;
     return {
@@ -56,9 +63,9 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail }: 
       checkOutDate: stay.checkOut,
       numberOfAdults: stay.adults,
       numberOfChildren: stay.children,
-      ...(stay.children > 0 ? { childrenAges: Array.from({ length: stay.children }, () => MINOR_MAX_AGE) } : {}),
+      ...(stay.children > 0 ? { childrenAges: knownAges ?? Array.from({ length: stay.children }, () => MINOR_MAX_AGE) } : {}),
     };
-  }, [nights, calendarProblem, overCapacity, property.id, stay.checkIn, stay.checkOut, stay.adults, stay.children]);
+  }, [nights, calendarProblem, overCapacity, property.id, stay.checkIn, stay.checkOut, stay.adults, stay.children, knownAges]);
   const query = useDirectBookingQuote(payload);
 
   const quote = useMemo<QuoteView>(() => {
@@ -78,10 +85,10 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail }: 
       };
     }
     if (query.data && !query.isPlaceholderData) {
-      return { status: 'ready', quote: query.data, estimatedTax: stay.children > 0 && query.data.touristTax.ageRulesApply };
+      return { status: 'ready', quote: query.data, estimatedTax: stay.children > 0 && !knownAges && query.data.touristTax.ageRulesApply };
     }
     return { status: 'loading', stale: query.data ?? null };
-  }, [overCapacity, nights, calendarProblem, query, property.maxGuests, property.minNights, stay.children, t]);
+  }, [overCapacity, nights, calendarProblem, query, property.maxGuests, property.minNights, stay.children, knownAges, t]);
 
   const fromPriceCents = useMemo(() => {
     if (calendar.status === 'ready') {
