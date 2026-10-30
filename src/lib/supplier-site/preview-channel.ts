@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { PublicShowcaseContent } from '@/api/public-supplier.api';
+import type { ShowcaseDocument } from '@/types/supplier-showcase';
 
 /**
  * The channel between the editor of the showcase ("Il mio sito vetrina", SP-13c) and the page it shows in an iframe, `postMessage`
@@ -19,8 +19,12 @@ const text = z.string().max(4000).nullish();
 const url = z.string().max(2000).nullish();
 const items = <T extends z.ZodType>(item: T, max: number) => z.array(item).max(max).optional();
 
-/** The draft: the members of the contract of the content (schemaVersion 1), all optional, text only. Unknown members are dropped. */
+/**
+ * The draft: the members of the contract of the content (schemaVersion 1), all optional, text only, and the order of the services to
+ * show (slugs; the published page does not carry it, the preview applies it to the services it has). Unknown members are dropped.
+ */
 const contentSchema = z.object({
+  serviceOrder: items(z.string().max(120), 30),
   style: text,
   font: text,
   color: text,
@@ -55,7 +59,7 @@ const messageSchema = z.object({
 });
 
 /** The message the editor sends: what the page draws instead of the published content. */
-export function buildPreviewMessage(content: PublicShowcaseContent) {
+export function buildPreviewMessage(content: ShowcaseDocument) {
   return { type: PREVIEW_MESSAGE_TYPE, schemaVersion: PREVIEW_SCHEMA_VERSION, content };
 }
 
@@ -69,7 +73,7 @@ interface PreviewSelf {
  * The draft carried by a message, or null when the message is not for the page: another origin, another sender than the parent that
  * frames it, a different type or version, or a shape that is not the contract.
  */
-export function readPreviewMessage(event: Pick<MessageEvent, 'origin' | 'source' | 'data'>, self: PreviewSelf): PublicShowcaseContent | null {
+export function readPreviewMessage(event: Pick<MessageEvent, 'origin' | 'source' | 'data'>, self: PreviewSelf): ShowcaseDocument | null {
   if (event.origin !== self.origin) return null;
   if (event.source !== self.parent) return null;
   const parsed = messageSchema.safeParse(event.data);

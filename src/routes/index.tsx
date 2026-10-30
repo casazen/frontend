@@ -50,6 +50,9 @@ import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierAboutPage } from '@/pages/supplier-about';
+import { SupplierServicePage } from '@/pages/supplier-service';
+import { SupplierServicesPage } from '@/pages/supplier-services';
 import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
@@ -291,7 +294,14 @@ export const appRoutes: RouteObject[] = [
     path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`,
     element: <SupplierSiteShell />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
-    children: [{ index: true, element: <SupplierShowcasePage /> }],
+    children: [
+      { index: true, element: <SupplierShowcasePage /> },
+      // The services of the supplier and one of them with its estimate (they need the list of services, so, like it, the bookings flag);
+      // the story of the supplier.
+      { path: 'servizi', element: <SupplierServicesPage /> },
+      { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
+      { path: 'chi-siamo', element: <SupplierAboutPage /> },
+    ],
   },
   {
     // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.

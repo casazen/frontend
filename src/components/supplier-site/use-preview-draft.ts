@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { PublicShowcaseContent } from '@/api/public-supplier.api';
 import { buildPreviewReady, readPreviewMessage } from '@/lib/supplier-site/preview-channel';
+import type { ShowcaseDocument } from '@/types/supplier-showcase';
 
 /**
  * True when the page is the preview of the editor: asked for (`?anteprima=1&frame=1`) and really inside a frame. A page opened
@@ -14,8 +14,8 @@ export function isFramedPreview(search: URLSearchParams): boolean {
  * The draft the editor sends to the frame, or null before the first one. It listens only while `enabled` (the framed preview), tells
  * the parent it is ready, and believes only a message of its own origin from the window that frames it, in the contract's shape.
  */
-export function usePreviewDraft(enabled: boolean): PublicShowcaseContent | null {
-  const [draft, setDraft] = useState<PublicShowcaseContent | null>(null);
+export function usePreviewDraft(enabled: boolean): ShowcaseDocument | null {
+  const [draft, setDraft] = useState<ShowcaseDocument | null>(null);
 
   useEffect(() => {
     if (!enabled) return;

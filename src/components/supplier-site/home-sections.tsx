@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import type { SiteModel } from '@/lib/supplier-site/site-model';
+import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { formatStayDate } from '@/lib/stay-dates';
 import { CategoryIcon } from './category-icon';
 import { Reveal } from './reveal';
@@ -23,11 +25,17 @@ export function ServicesSection({ model }: { model: SiteModel }) {
           eyebrow={t('supplierSite.services.eyebrow')}
           title={t('supplierSite.services.title')}
           text={model.bookingsOpen ? t('supplierSite.services.leadOpen') : t('supplierSite.services.leadClosed')}
+          action={
+            <Link className="vz-more" to={supplierSitePaths.services(model.slug)}>
+              {t('supplierSite.services.all')}
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          }
         />
         <div className="vz-grid">
           {shown.map((service, index) => (
             <Reveal key={service.slug} index={index}>
-              <ServiceCard service={service} showSlot={model.bookingsOpen} />
+              <ServiceCard service={service} showSlot={model.bookingsOpen} href={supplierSitePaths.service(model.slug, service.slug)} />
             </Reveal>
           ))}
         </div>
@@ -64,7 +72,19 @@ export function AboutSection({ model }: { model: SiteModel }) {
   return (
     <section className="vz-section vz-section--tint" id="chi-siamo" aria-labelledby="vz-h-about" data-testid="supplier-site-about">
       <div className="vz-container vh-about__in">
-        <SectionHead id="vz-h-about" eyebrow={t('supplierSite.about.eyebrow')} title={t('supplierSite.about.title')} />
+        <SectionHead
+          id="vz-h-about"
+          eyebrow={t('supplierSite.about.eyebrow')}
+          title={t('supplierSite.about.title')}
+          action={
+            model.blocks.aboutPage ? (
+              <Link className="vz-more" to={supplierSitePaths.about(model.slug)}>
+                {t('supplierSite.about.more')}
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            ) : undefined
+          }
+        />
         <Reveal className="vh-about__text">
           {model.bio ? <p data-testid="supplier-site-bio">{model.bio}</p> : null}
           {model.values.length > 0 ? (

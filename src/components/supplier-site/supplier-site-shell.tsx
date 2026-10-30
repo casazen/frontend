@@ -8,7 +8,7 @@ import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useSeoMeta, truncateDescription } from '@/lib/seo-meta';
-import { buildSiteModel } from '@/lib/supplier-site/site-model';
+import { applyServiceOrder, buildSiteModel } from '@/lib/supplier-site/site-model';
 import { siteThemeProps } from '@/lib/supplier-site/style-config';
 import '@/styles/supplier-site.css';
 import { SupplierSiteContext, type SupplierSiteContextValue } from './site-context';
@@ -47,7 +47,16 @@ export function SupplierSiteShell() {
   const preview = isFramedPreview(search);
   const draft = usePreviewDraft(preview);
   const showcase = useMemo<SupplierShowcaseDto | undefined>(
-    () => (data && preview ? { ...data, paused: false, content: draft ?? data.content } : data),
+    () =>
+      data && preview
+        ? {
+            ...data,
+            paused: false,
+            content: draft ?? data.content,
+            // The order of the services the draft names (the published page gets its own from the server).
+            services: data.services && draft ? applyServiceOrder(data.services, draft.serviceOrder) : data.services,
+          }
+        : data,
     [data, preview, draft],
   );
 
@@ -58,13 +67,32 @@ export function SupplierSiteShell() {
   );
   const notFound = isError && isAxiosError(error) && error.response?.status === 404;
 
+  // The title and the description of the page it is on: the home, the list of services, one service, the story.
+  const onServices = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi`, end: true }) !== null;
+  const onService = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi/:serviceSlug`, end: true });
+  const onAbout = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/chi-siamo`, end: true }) !== null;
+  let title = t('supplierShowcase.title');
+  let description: string | undefined;
+  if (model) {
+    const name = model.name;
+    title = t('supplierShowcase.pageTitle', { name });
+    description = model.intro ? truncateDescription(model.intro) : t('supplierShowcase.pageDescription', { name });
+    const service = onService ? model.services?.find((candidate) => candidate.slug === onService.params.serviceSlug) : undefined;
+    if (onServices) {
+      title = t('supplierSite.meta.services', { name });
+      description = t('supplierSite.meta.servicesDescription', { name });
+    } else if (service) {
+      title = t('supplierSite.meta.service', { service: service.name, name });
+      description = service.summary ? truncateDescription(service.summary) : t('supplierSite.meta.serviceDescription', { service: service.name, name });
+    } else if (onAbout) {
+      title = t('supplierSite.meta.about', { name });
+      description = model.bio ? truncateDescription(model.bio) : t('supplierSite.meta.aboutDescription', { name });
+    }
+  }
+
   // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, and for the preview of a draft.
   // No canonical, no Open Graph, no structured data (decision D11).
-  useSeoMeta({
-    title: model ? t('supplierShowcase.pageTitle', { name: model.name }) : t('supplierShowcase.title'),
-    description: model ? (model.intro ? truncateDescription(model.intro) : t('supplierShowcase.pageDescription', { name: model.name })) : undefined,
-    noindex: isError || preview,
-  });
+  useSeoMeta({ title, description, noindex: isError || preview });
 
   if (!slug || isLoading) {
     return (
