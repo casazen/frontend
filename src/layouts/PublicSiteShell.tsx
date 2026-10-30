@@ -10,6 +10,7 @@ import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
 import { BrandHeader } from '@/features/public-site/components/brand-header';
+import { OfflineBar } from '@/features/public-site/components/offline-bar';
 import { SiteHeader } from '@/features/public-site/components/site-header';
 import { SiteAppearanceProvider } from '@/features/public-site/site-appearance';
 import type { SiteAppearance } from '@/features/public-site/site-appearance-context';
@@ -176,6 +177,8 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         ) : (
           <BrandHeader />
         )}
+
+        <OfflineBar />
 
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 outline-none md:px-4 md:py-8 md:pb-8">
           {content}
