@@ -3,6 +3,7 @@ import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { createPropertyWithWizard, mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
+import { NEW_PROPERTY_ID, buildCreatedProperty } from './fixtures/properties.fixtures';
 import type { ComplianceActivationResult, ComplianceStepStatus } from '../src/types/compliance.types';
 
 /**
@@ -115,6 +116,12 @@ test.describe('Add property wizard', () => {
     expect(state.completeCalls).toBe(1);
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è pronto/ })).toBeVisible();
     await expect(page.getByTestId('wizard-done-primary')).toContainText('Apri il calendario');
+
+    // «Aggiungi un altro immobile» is a new wizard: its first step is empty and its first «Continua» creates, it does not save over this one.
+    await page.getByTestId('wizard-done-secondary').click();
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'base');
+    await expect(page.getByLabel("Nome dell'immobile", { exact: true })).toHaveValue('');
+    await expect(page).not.toHaveURL(/propertyId=/);
   });
 
   test('«Finisci dopo» saves what there is and activates nothing: the property stays to be completed', async ({ page }) => {
@@ -128,6 +135,18 @@ test.describe('Add property wizard', () => {
     await page.getByTestId('property-wizard-done-fix-cin').click();
     await expect(page).toHaveURL(/step=finish/);
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'finish');
+  });
+
+  test('«Completa» reopens the wizard on the first thing that is missing, read from the server', async ({ page }) => {
+    // The property exists already (the list, the drawer and the page of the property lead here): the rate is there, the CIN is not.
+    await mockPropertiesApi(page, [buildCreatedProperty({ name: 'Casa Esistente', nightlyRate: 135 })]);
+    await mockActivation(page, state);
+
+    await page.goto(demoUrl(`/app/short-rent/properties/create?propertyId=${NEW_PROPERTY_ID}`, 'short-stay'));
+
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'finish');
+    await expect(page.getByTestId('property-wizard-missing-list').locator('li')).toHaveCount(1);
+    await expect(page.getByTestId('property-wizard-summary-base')).toContainText('Casa Esistente');
   });
 
   test('a refusal of the server to activate shows its blockers and keeps the host on the last step', async ({ page }) => {
