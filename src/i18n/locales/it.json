@@ -5464,11 +5464,19 @@
       "endedHint": "Arrivati alla data di fine, o con la registrazione rifiutata",
       "expiring": "In scadenza",
       "expiringHint": "Registrati, con meno di sei mesi alla fine",
+      "late": "Con un canone in ritardo",
+      "lateHint": "Contratti con almeno una rata scaduta e non pagata",
       "preparing": "In preparazione",
-      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare"
+      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare",
+      "signing": "In firma",
+      "signingHint": "Scaricati per la firma, oppure firmati e da registrare",
+      "todo": "Da fare",
+      "todoHint": "Contratti con un passo che tocca a te"
     },
     "columns": {
+      "next": "Prossimo passo",
       "parties": "Parti",
+      "progress": "Avanzamento",
       "regime": "Regime fiscale",
       "rent": "Canone",
       "status": "Stato",
@@ -5511,7 +5519,21 @@
     },
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
-    "rentToDefine": "Canone da definire"
+    "rentToDefine": "Canone da definire",
+    "filters": {
+      "end": "Scadenza",
+      "property": "Immobile",
+      "regime": "Regime fiscale",
+      "stage": "Stato",
+      "start": "Inizio",
+      "type": "Tipo di contratto"
+    },
+    "progress": {
+      "concluded": "Concluso",
+      "months": "Mese {{done}} di {{total}}",
+      "steps": "{{done}} di {{total}} passi",
+      "years": "Anno {{done}} di {{total}}"
+    }
   },
   "leaseOperations": {
     "disdetta": {
@@ -8285,6 +8307,7 @@
     "reviews": "Recensioni",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
+    "wireTransfers": "Bonifici proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -9789,6 +9812,160 @@
         "next": "Controlla la data",
         "purpose": "Il passaggio avviene all'inizio del giorno che scegli.",
         "title": "Da quando?"
+      }
+    }
+  },
+  "propertyWizard": {
+    "amenities": {
+      "count_one": "Hai scelto {{count}} dotazione.",
+      "count_other": "Hai scelto {{count}} dotazioni.",
+      "groups": {
+        "comfort": "Comfort",
+        "essentials": "Essenziali",
+        "other": "Altro",
+        "outdoor": "Esterni"
+      },
+      "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
+      "safety": {
+        "complete": "La scheda è completa.",
+        "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
+        "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
+        "dialogTitle": "Scheda di sicurezza",
+        "loadFailed": "Non riesco a leggere la scheda di sicurezza. Riprova tra poco.",
+        "loading": "Controllo la scheda…",
+        "open": "Compila la scheda",
+        "progress": "{{done}} di {{total}} voci a posto",
+        "progressLabel": "Avanzamento della scheda di sicurezza",
+        "review": "Rivedi la scheda",
+        "title": "Sicurezza"
+      }
+    },
+    "base": {
+      "address": {
+        "hint": "Via e numero civico, o «snc» se non c'è.",
+        "label": "Indirizzo",
+        "placeholder": "Via Roma 12"
+      },
+      "areaSqm": {
+        "hint": "In metri quadri, solo numeri: per esempio 70.",
+        "label": "Superficie"
+      },
+      "comune": {
+        "fallbackLabel": "Città",
+        "fallbackPlaceholder": "Es. Como",
+        "hint": "Scegli il comune dall'elenco ufficiale: da lui seguono le regole, i documenti richiesti e l'imposta di soggiorno.",
+        "label": "Comune"
+      },
+      "name": {
+        "hint": "Un nome facile da ricordare: lo ritrovi negli elenchi.",
+        "label": "Nome dell'immobile",
+        "placeholder": "Es. Trullo dei Mandorli"
+      },
+      "postalCode": {
+        "label": "CAP"
+      },
+      "spaces": {
+        "bathrooms": {
+          "hint": "Compresi quelli di servizio",
+          "label": "Bagni"
+        },
+        "bedrooms": {
+          "hint": "0 se è un monolocale",
+          "label": "Camere da letto"
+        },
+        "beds": {
+          "hint": "Conta ogni letto: il matrimoniale è 1",
+          "label": "Letti"
+        },
+        "maxGuests": {
+          "hint": "Quante persone possono dormire",
+          "label": "Ospiti massimi"
+        },
+        "title": "Spazi"
+      },
+      "type": {
+        "legend": "Che tipo di immobile è?",
+        "options": {
+          "Apartment": "Appartamento",
+          "HouseOrVilla": "Casa o villa",
+          "LoftOrPenthouse": "Loft o attico",
+          "RoomOrSuite": "Stanza o suite",
+          "TrulloOrMasseria": "Trullo o masseria"
+        }
+      },
+      "unit": {
+        "hint": "Se nello stesso edificio hai più appartamenti, scrivi l'interno o la scala: ognuno deve averne uno diverso.",
+        "label": "Piano e interno"
+      }
+    },
+    "done": {
+      "complete": "Completa l'attivazione",
+      "description": "L'immobile è in Immobili come «Da completare».",
+      "inList": "Lo trovi in Immobili, dove puoi riprendere quando vuoi.",
+      "leadOpen": "Per attivarlo mancano ancora alcuni punti:",
+      "leadReady": "I dati richiesti ci sono: manca solo la conferma finale.",
+      "open": {
+        "base-data": "Il prezzo per notte e i dati di base",
+        "cin": "Il codice CIN",
+        "documents": "I documenti richiesti per la tua regione",
+        "safety": "La scheda di sicurezza"
+      },
+      "readyToActivate": "Per attivarlo basta accettare i Termini.",
+      "title": "«{{name}}» è salvato",
+      "toList": "Vai agli immobili"
+    },
+    "errors": {
+      "saveFailed": "Non siamo riusciti a salvare l'immobile. Controlla i dati e riprova."
+    },
+    "exit": {
+      "saveAndClose": "Salva e chiudi",
+      "saved": "Salvato. Lo trovi in Immobili, da completare."
+    },
+    "finish": "Salva e vedi cosa manca",
+    "page": {
+      "backToList": "Torna agli immobili",
+      "description": "Un passo alla volta: l'immobile è salvato dal primo «Continua» e puoi riprendere quando vuoi.",
+      "loadFailed": "Non riesco a caricare l'immobile.",
+      "loading": "Carico l'immobile…",
+      "notFound": "Immobile non trovato.",
+      "retry": "Riprova",
+      "title": "Aggiungi immobile"
+    },
+    "steps": {
+      "amenities": {
+        "label": "Dotazioni",
+        "purpose": "Scegli solo quello che c'è davvero: gli ospiti lo leggono prima di prenotare.",
+        "title": "Cosa trovano gli ospiti?"
+      },
+      "base": {
+        "label": "Dati base",
+        "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
+        "title": "Che casa stai aggiungendo?"
+      }
+    },
+    "validation": {
+      "address": {
+        "civic": "Aggiungi il numero civico, o «snc» se non c'è: per esempio «Contrada Monte 12».",
+        "max": "L'indirizzo può avere al massimo 500 caratteri.",
+        "required": "Scrivi via e numero civico."
+      },
+      "areaSqm": "Scrivi i metri quadri in numeri interi, da 1 a 9999.",
+      "bathrooms": "I bagni sono da 1 a 50.",
+      "bedrooms": "Le camere da letto sono da 0 a 100.",
+      "beds": "I letti sono da 1 a 100.",
+      "comune": {
+        "required": "Scegli il comune dall'elenco."
+      },
+      "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
+      "name": {
+        "max": "Il nome può avere al massimo 100 caratteri.",
+        "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
+      },
+      "postalCode": {
+        "format": "Il CAP italiano ha 5 cifre."
+      },
+      "unit": {
+        "max": "Piano e interno possono avere al massimo 30 caratteri."
       }
     }
   },
@@ -14448,6 +14625,45 @@
       "recordSuccess": "Pagamento registrato con successo",
       "recordError": "Impossibile registrare il pagamento"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Conferma download",
+      "confirmDownloadError": "Impossibile confermare il download",
+      "confirmDownloadSuccess": "Download confermato con successo",
+      "confirmPaid": "Conferma pagamento",
+      "confirmPaidError": "Impossibile confermare il pagamento",
+      "confirmPaidSuccess": "Pagamento confermato con successo",
+      "create": "Crea batch bonifici",
+      "createAnother": "Crea un altro batch",
+      "createError": "Impossibile creare il batch",
+      "createSuccess": "Batch creato con successo",
+      "currency": "Valuta",
+      "details": "Dettagli batch",
+      "detailsDescription": "Informazioni sul batch di bonifici creato",
+      "download": "Scarica file",
+      "downloadError": "Impossibile scaricare il file",
+      "downloadSuccess": "File scaricato con successo",
+      "id": "ID batch",
+      "paidComplete": "Il batch è stato confermato come pagato",
+      "status": "Stato",
+      "totalAmount": "Importo totale",
+      "transferCount": "Numero bonifici"
+    },
+    "debitAccount": "Conto di addebito (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Genera file SEPA per pagare i proprietari.",
+    "loadError": "Impossibile caricare i dati",
+    "loading": "Caricamento bonifici...",
+    "noApprovedStatements": "Nessun estratto conto approvato",
+    "noApprovedStatementsDescription": "Approva gli estratti conto prima di creare un batch di bonifici.",
+    "selectStatements": "Seleziona estratti conto",
+    "status": {
+      "downloaded": "Scaricato",
+      "generated": "Generato",
+      "paid": "Pagato"
+    },
+    "title": "Bonifici proprietari"
   },
   "wizard": {
     "back": "Indietro",
