@@ -10,7 +10,7 @@ import { PublicPropertyPage } from '../public-property-page';
 import type { PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 
 vi.mock('@/api/public-org.api', () => ({
-  publicOrgApi: { getOrgProperty: vi.fn() },
+  publicOrgApi: { getOrgProperty: vi.fn(), getOrgProperties: vi.fn() },
 }));
 vi.mock('@/api/public-booking.api', () => ({
   publicBookingApi: { getPropertyAvailability: vi.fn() },
@@ -80,6 +80,7 @@ describe('PublicPropertyPage availability', () => {
     vi.setSystemTime(new Date('2026-10-05T10:00:00Z'));
     await i18n.changeLanguage('it');
     vi.mocked(publicOrgApi.getOrgProperty).mockResolvedValue(property);
+    vi.mocked(publicOrgApi.getOrgProperties).mockResolvedValue([]);
   });
 
   afterEach(() => {

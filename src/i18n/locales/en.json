@@ -10700,25 +10700,52 @@
       "safety": "Safety",
       "wellness": "Wellness"
     },
+    "back": "All homes",
     "description": {
       "less": "Show less",
       "more": "Read more",
       "title": "Description"
     },
+    "energy": {
+      "classOnly": "Energy class {{energyClass}}.",
+      "source": "From the energy performance certificate (APE) given by the host.",
+      "title": "Energy class",
+      "withIndex": "Energy class {{energyClass}}, {{index}} kWh/m² per year."
+    },
     "facts": {
+      "area": "area",
+      "areaValue": "{{value}} m²",
       "bathrooms_one": "bathroom",
       "bathrooms_other": "bathrooms",
       "bedrooms_one": "bedroom",
       "bedrooms_other": "bedrooms",
+      "beds_one": "bed",
+      "beds_other": "beds",
+      "elevator": "lift",
+      "floor": "floor",
+      "floorBelow": "Below ground",
+      "floorGround": "Ground",
+      "floorUpper": "{{n}}",
       "guests_one": "guest",
       "guests_other": "guests",
       "label": "The home at a glance",
       "minNights_one": "night minimum",
-      "minNights_other": "nights minimum"
+      "minNights_other": "nights minimum",
+      "yes": "Yes"
     },
     "gallery": {
       "empty": "The photos of this home are not available yet.",
       "showAll": "Show all {{total}} photos"
+    },
+    "header": {
+      "outOfFive": "out of 5"
+    },
+    "host": {
+      "call": "Call",
+      "callLabel": "Call {{host}}",
+      "eyebrow": "Your host",
+      "paySafely": "For your safety, always pay on this site: never by bank transfer or outside the payment page.",
+      "write": "Write to {{host}}"
     },
     "know": {
       "title": "Good to know"
@@ -10734,6 +10761,59 @@
       "text": "The link may be old or incomplete, or the home can no longer be booked online. Have a look at the other homes on this site.",
       "title": "This home is not available"
     },
+    "overview": {
+      "hostedBy": "Hosted by {{host}}",
+      "renovated": "Renovated in {{year}}"
+    },
+    "plan": {
+      "alt": "Floor plan of {{name}}: {{level}}",
+      "areaOfLevel": "of area on this level",
+      "eyebrow": "Floor plan",
+      "lead_one": "{{area}} m² on one level",
+      "lead_other": "{{area}} m² on {{count}} levels",
+      "level": "Level {{n}}",
+      "levels": "The home is on {{count}} levels.",
+      "levelsLabel": "Levels of the home",
+      "title": "How the home is laid out",
+      "zoom": "Enlarge",
+      "zoomDescription": "The floor plan of {{name}} at full size: scroll to see all of it."
+    },
+    "rules": {
+      "arrivalBetween": "Arrival from {{from}} to {{to}}",
+      "arrivalFrom": "Arrival from {{from}}",
+      "arrivalTitle": "Arrival and departure",
+      "arrivalUntil": "Arrival by {{to}}",
+      "cancellationTitle": "Cancellation",
+      "childrenNo": "Not suited to children",
+      "childrenYes": "Children welcome",
+      "departureBy": "Departure by {{time}}",
+      "houseTitle": "House rules",
+      "partiesNo": "No parties",
+      "partiesOnRequest": "Parties on request",
+      "petsNo": "No pets",
+      "petsOnRequest": "Pets on request",
+      "petsYes": "Pets allowed",
+      "quiet": "Quiet hours {{from}} to {{to}}",
+      "safetyTitle": "Safety",
+      "smokingNo": "No smoking",
+      "smokingOutdoors": "Smoking outdoors only",
+      "smokingYes": "Smoking allowed",
+      "stage": {
+        "fullDays_one": "Full refund up to {{count}} day before arrival",
+        "fullDays_other": "Full refund up to {{count}} days before arrival",
+        "fullHours_one": "Full refund up to {{count}} hour before arrival",
+        "fullHours_other": "Full refund up to {{count}} hours before arrival",
+        "fullStart": "Full refund up to the day before arrival",
+        "noneAfter": "After that, no refund of the price of the stay",
+        "noneAtAll": "No refund of the price of the stay",
+        "partialDays_one": "{{percent}}% of the price of the stay up to {{count}} day before arrival",
+        "partialDays_other": "{{percent}}% of the price of the stay up to {{count}} days before arrival",
+        "partialHours_one": "{{percent}}% of the price of the stay up to {{count}} hour before arrival",
+        "partialHours_other": "{{percent}}% of the price of the stay up to {{count}} hours before arrival",
+        "partialStart": "{{percent}}% of the price of the stay up to the day before arrival"
+      },
+      "stagesLabel": "What a cancellation gives back"
+    },
     "sectionBar": {
       "label": "Sections of this page"
     },
@@ -10741,7 +10821,17 @@
       "amenities": "Amenities",
       "description": "Description",
       "know": "Good to know",
-      "reviews": "Reviews"
+      "overview": "Overview",
+      "plan": "Floor plan",
+      "reviews": "Reviews",
+      "rules": "Rules",
+      "zone": "Area"
+    },
+    "share": {
+      "action": "Share",
+      "copied": "Link copied",
+      "copiedStatus": "The link to this home has been copied.",
+      "failed": "We could not copy the link: copy it from the address bar."
     },
     "viewer": {
       "hint": "Use the arrow keys to move between photos and Esc to close.",
@@ -10749,6 +10839,23 @@
       "position": "Photo {{index}} of {{total}}",
       "previous": "Previous photo",
       "title": "Photos of {{name}}"
+    },
+    "zone": {
+      "byCar": "{{minutes}} min by car",
+      "eyebrow": "Area",
+      "onFoot": "{{minutes}} min on foot",
+      "title": "Where it is",
+      "types": {
+        "beach": "Beach",
+        "food": "Restaurants",
+        "health": "Health",
+        "other": "Other",
+        "parking": "Parking",
+        "shop": "Shops",
+        "sight": "Sights",
+        "transport": "Transport"
+      },
+      "unnamed": "Place"
     }
   },
   "publicSeo": {

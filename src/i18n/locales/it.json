@@ -10700,25 +10700,52 @@
       "safety": "Sicurezza",
       "wellness": "Benessere"
     },
+    "back": "Tutte le case",
     "description": {
       "less": "Mostra meno",
       "more": "Leggi tutto",
       "title": "Descrizione"
     },
+    "energy": {
+      "classOnly": "Classe energetica {{energyClass}}.",
+      "source": "Dall'attestato di prestazione energetica (APE) indicato dall'host.",
+      "title": "Classe energetica",
+      "withIndex": "Classe energetica {{energyClass}}, {{index}} kWh/m² all'anno."
+    },
     "facts": {
+      "area": "superficie",
+      "areaValue": "{{value}} m²",
       "bathrooms_one": "bagno",
       "bathrooms_other": "bagni",
       "bedrooms_one": "camera",
       "bedrooms_other": "camere",
+      "beds_one": "letto",
+      "beds_other": "letti",
+      "elevator": "ascensore",
+      "floor": "piano",
+      "floorBelow": "Interrato",
+      "floorGround": "Terra",
+      "floorUpper": "{{n}}º",
       "guests_one": "ospite",
       "guests_other": "ospiti",
       "label": "La casa in breve",
       "minNights_one": "notte minima",
-      "minNights_other": "notti minime"
+      "minNights_other": "notti minime",
+      "yes": "Sì"
     },
     "gallery": {
       "empty": "Le foto di questa casa non sono ancora disponibili.",
       "showAll": "Mostra tutte le {{total}} foto"
+    },
+    "header": {
+      "outOfFive": "su 5"
+    },
+    "host": {
+      "call": "Chiama",
+      "callLabel": "Chiama {{host}}",
+      "eyebrow": "Chi ti ospita",
+      "paySafely": "Per la tua sicurezza paga sempre da questo sito: mai con bonifico o fuori dalla pagina di pagamento.",
+      "write": "Scrivi a {{host}}"
     },
     "know": {
       "title": "Da sapere"
@@ -10734,6 +10761,59 @@
       "text": "Il link potrebbe essere vecchio o incompleto, oppure la casa non è più prenotabile online. Guarda le altre case di questo sito.",
       "title": "Questa casa non è disponibile"
     },
+    "overview": {
+      "hostedBy": "Ti ospita {{host}}",
+      "renovated": "Ristrutturata nel {{year}}"
+    },
+    "plan": {
+      "alt": "Planimetria di {{name}}: {{level}}",
+      "areaOfLevel": "di superficie su questo livello",
+      "eyebrow": "Planimetria",
+      "lead_one": "{{area}} m² su un solo livello",
+      "lead_other": "{{area}} m² su {{count}} livelli",
+      "level": "Livello {{n}}",
+      "levels": "La casa è su {{count}} livelli.",
+      "levelsLabel": "Livelli della casa",
+      "title": "Com'è fatta la casa",
+      "zoom": "Ingrandisci",
+      "zoomDescription": "La planimetria di {{name}} a grandezza naturale: scorri per vederla tutta."
+    },
+    "rules": {
+      "arrivalBetween": "Arrivo dalle {{from}} alle {{to}}",
+      "arrivalFrom": "Arrivo dalle {{from}}",
+      "arrivalTitle": "Arrivo e partenza",
+      "arrivalUntil": "Arrivo entro le {{to}}",
+      "cancellationTitle": "Cancellazione",
+      "childrenNo": "Non adatta ai bambini",
+      "childrenYes": "Bambini benvenuti",
+      "departureBy": "Partenza entro le {{time}}",
+      "houseTitle": "Regole della casa",
+      "partiesNo": "Niente feste",
+      "partiesOnRequest": "Feste su richiesta",
+      "petsNo": "Niente animali",
+      "petsOnRequest": "Animali su richiesta",
+      "petsYes": "Animali ammessi",
+      "quiet": "Silenzio dalle {{from}} alle {{to}}",
+      "safetyTitle": "Sicurezza",
+      "smokingNo": "Vietato fumare",
+      "smokingOutdoors": "Si fuma solo all'aperto",
+      "smokingYes": "Si può fumare",
+      "stage": {
+        "fullDays_one": "Rimborso totale fino a {{count}} giorno prima dell'arrivo",
+        "fullDays_other": "Rimborso totale fino a {{count}} giorni prima dell'arrivo",
+        "fullHours_one": "Rimborso totale fino a {{count}} ora prima dell'arrivo",
+        "fullHours_other": "Rimborso totale fino a {{count}} ore prima dell'arrivo",
+        "fullStart": "Rimborso totale fino al giorno prima dell'arrivo",
+        "noneAfter": "Dopo, nessun rimborso del prezzo del soggiorno",
+        "noneAtAll": "Nessun rimborso del prezzo del soggiorno",
+        "partialDays_one": "{{percent}}% del prezzo del soggiorno fino a {{count}} giorno prima dell'arrivo",
+        "partialDays_other": "{{percent}}% del prezzo del soggiorno fino a {{count}} giorni prima dell'arrivo",
+        "partialHours_one": "{{percent}}% del prezzo del soggiorno fino a {{count}} ora prima dell'arrivo",
+        "partialHours_other": "{{percent}}% del prezzo del soggiorno fino a {{count}} ore prima dell'arrivo",
+        "partialStart": "{{percent}}% del prezzo del soggiorno fino al giorno prima dell'arrivo"
+      },
+      "stagesLabel": "Cosa restituisce la cancellazione"
+    },
     "sectionBar": {
       "label": "Sezioni della scheda"
     },
@@ -10741,7 +10821,17 @@
       "amenities": "Servizi",
       "description": "Descrizione",
       "know": "Da sapere",
-      "reviews": "Recensioni"
+      "overview": "Panoramica",
+      "plan": "Planimetria",
+      "reviews": "Recensioni",
+      "rules": "Regole",
+      "zone": "Zona"
+    },
+    "share": {
+      "action": "Condividi",
+      "copied": "Link copiato",
+      "copiedStatus": "Il link della casa è stato copiato.",
+      "failed": "Non riusciamo a copiare il link: copialo dalla barra degli indirizzi."
     },
     "viewer": {
       "hint": "Usa le frecce per scorrere le foto e Esc per chiudere.",
@@ -10749,6 +10839,23 @@
       "position": "Foto {{index}} di {{total}}",
       "previous": "Foto precedente",
       "title": "Foto di {{name}}"
+    },
+    "zone": {
+      "byCar": "{{minutes}} min in auto",
+      "eyebrow": "Zona",
+      "onFoot": "{{minutes}} min a piedi",
+      "title": "Dove si trova",
+      "types": {
+        "beach": "Spiaggia",
+        "food": "Ristoranti",
+        "health": "Salute",
+        "other": "Altro",
+        "parking": "Parcheggio",
+        "shop": "Negozi",
+        "sight": "Da vedere",
+        "transport": "Trasporti"
+      },
+      "unnamed": "Luogo"
     }
   },
   "publicSeo": {
