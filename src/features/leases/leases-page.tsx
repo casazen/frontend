@@ -4,13 +4,12 @@ import { Plus } from 'lucide-react';
 import { LONG_RENT_PROPERTIES_PATH, LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListView } from '@/components/shared/list-view/list-view';
-import { useListState } from '@/components/shared/list-view/use-list-state';
 import { Button } from '@/components/ui/button';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useLeases } from '@/queries/use-leases';
 import { LongRentGuide } from '@/features/onboarding/components/long-rent-guide';
 import type { LeaseSummary } from '@/types';
-import { leaseViewOfChip, useLeasesList } from './lease-list';
+import { useLeasesList } from './lease-list';
 
 const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
 
@@ -45,10 +44,10 @@ function LongRentStartGuide() {
 }
 
 /**
- * The long-term leases (LR-02) on the unified list: a search and the views of the server (Attivi, In preparazione, In
- * scadenza, Terminati) that stay in the address (`?chip=active&q=rossi`), the name of the tenant and the rent that is late,
- * the state in a badge, a drawer with the lease at a glance, and the CSV. The server narrows the list (`GET /leases?view=&q=`),
- * so the page asks it with what the address says; the list does not filter or sort on its own.
+ * The long-term leases (LR-02, LR-02b, LR-02c) on the unified list. The server sends the whole list once (it is not paginated) with, for
+ * each lease, its stage, how far along it is and the step it waits for; the list does the rest on the client: the quick filters
+ * (`?chip=todo`), the filters of the drawer, the search (`?q=rossi`) and the order, all in the address, with the most urgent step first.
+ * Each row has a drawer with the lease at a glance, the button that does its next step, and the CSV.
  *
  * The first visit, with no lease at all, keeps the guide of the first steps (`LongRentGuide` above, the three steps below).
  */
@@ -56,15 +55,11 @@ export function LeasesPage() {
   const { t } = useTranslation();
   const list = useLeasesList();
   const viewsScope = useListViewsScope();
-  const { state } = useListState(list);
 
-  const view = leaseViewOfChip(state.chip);
-  const search = state.q.trim();
   // The plain list has no parameter at all: it is the same request, and the same cache, as the guide above it makes.
-  const params = view || search ? { view, q: search || undefined } : undefined;
-  const { data, isLoading, isError, error, refetch, isPlaceholderData } = useLeases(params, { keepPrevious: true, refetchOnMount: true });
+  const { data, isLoading, isError, error, refetch } = useLeases(undefined, { refetchOnMount: true });
   const leases: readonly LeaseSummary[] = data ?? [];
-  const noLeasesAtAll = !isLoading && !isError && !isPlaceholderData && leases.length === 0 && params === undefined;
+  const noLeasesAtAll = !isLoading && !isError && leases.length === 0;
 
   return (
     <div className="min-w-0 space-y-6" data-testid="leases-page">
@@ -80,10 +75,8 @@ export function LeasesPage() {
 
       <ListView<LeaseSummary>
         list={list}
-        mode="server"
         rows={leases}
         isLoading={isLoading}
-        isRefreshing={isPlaceholderData}
         isError={isError && !isLoading}
         error={error}
         errorTitle={t('leases.loadError')}
