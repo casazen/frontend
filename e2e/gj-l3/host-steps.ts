@@ -37,28 +37,33 @@ export async function completeHostOnboarding(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 30_000 });
 }
 
-/** Creates the property from the form; returns its id (read from the answer of the creation). */
+/**
+ * Adds the property as the host does: the first step of «Aggiungi immobile» (SR-07b) creates it, then its page takes the rest
+ * (description, public address, CIN and rate) until the wizard asks them too. Returns its id (read from the answer of the creation).
+ */
 export async function createProperty(page: Page, slug: string): Promise<string> {
   await page.goto('/app/short-rent/properties/create');
-  await page.locator('#name').fill(PROPERTY.name);
-  await page.locator('#description').fill(PROPERTY.description);
-  await page.locator('#slug').fill(slug);
-  await page.locator('#cinCode').fill(PROPERTY.cin);
-  await page.locator('#address').fill(PROPERTY.address);
-  await pickComune(page, '#comune', PROPERTY.city); // gives the city, the ISTAT code and the region
-  await expect(page.locator('#city')).toHaveValue(PROPERTY.city);
-  await page.locator('#postalCode').fill(PROPERTY.postalCode);
-  await page.locator('#bedrooms').fill('2');
-  await page.locator('#bathrooms').fill('1');
-  await page.locator('#maxGuests').fill('4');
-  await page.locator('#nightlyRate').fill(String(PROPERTY.nightlyRate));
+  // The kind and the spaces keep the defaults of the design (an apartment for four, two bedrooms, one bathroom).
+  await page.getByLabel("Nome dell'immobile", { exact: true }).fill(PROPERTY.name);
+  await page.getByLabel('Indirizzo', { exact: true }).fill(PROPERTY.address);
+  await pickComune(page, '[data-testid="comune-picker-input"]', PROPERTY.city); // gives the city, the ISTAT code and the region
+  await expect(page.getByTestId('comune-picker-region')).toBeVisible();
+  await page.getByLabel('CAP', { exact: true }).fill(PROPERTY.postalCode);
   const created = page.waitForResponse(
     (response) => response.request().method() === 'POST' && /\/properties\/?$/.test(new URL(response.url()).pathname),
     { timeout: 30_000 },
   );
-  await page.getByRole('button', { name: 'Crea immobile' }).click();
+  await page.getByTestId('property-wizard-next').click();
   const id = ((await (await created).json()) as { id?: string }).id ?? '';
   expect(id, 'property id from the answer of the creation').toMatch(/^[0-9a-f-]{36}$/);
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'amenities', { timeout: 30_000 });
+
+  await page.goto(`/app/short-rent/properties/${id}/edit`);
+  await page.locator('#description').fill(PROPERTY.description);
+  await page.locator('#slug').fill(slug);
+  await page.locator('#cinCode').fill(PROPERTY.cin);
+  await page.locator('#nightlyRate').fill(String(PROPERTY.nightlyRate));
+  await page.getByRole('button', { name: 'Aggiorna immobile', exact: true }).click();
   await expect(page).toHaveURL(/\/app\/short-rent\/properties$/, { timeout: 30_000 });
   // The list shows it: its name is the button that opens the drawer of the property.
   await expect(page.getByRole('button', { name: PROPERTY.name }).first()).toBeVisible({ timeout: 15_000 });

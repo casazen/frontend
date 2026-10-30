@@ -96,8 +96,10 @@ export interface GuideFacts {
   shortTransitory: boolean;
   noticeRecorded: boolean;
   terminated: boolean;
-  /** The lease went through at least one tacit renewal. */
+  /** The lease went through at least one renewal: the tacit one, or one the landlord recorded (LR-OPS-1). */
   termRenewed: boolean;
+  /** The need of a transitory lease is the landlord's to confirm in writing (the letter can be prepared); `undefined` until the operations arrived. */
+  landlordConfirmsNeed: boolean | undefined;
   /** A canone concordato was calculated at creation and its rent is outside the range of the agreement. */
   rentOutOfRange: boolean;
   /** The comune is ad alta tensione abitativa as CasaZen knows it; known once the tax advisory arrived. */
@@ -120,6 +122,8 @@ export interface GuideInputs {
   ata: HighTensionAreaStatus | undefined;
   hasAttestation: boolean | undefined;
   imuApplicable: boolean | undefined;
+  /** The need of a transitory lease is the landlord's to confirm; known once the operations of the lease arrived. */
+  landlordConfirmsNeed?: boolean;
 }
 
 /** Days from `from` to `to` (both days as the API writes them): negative when `to` is before `from`, `null` when one is not a day. */
@@ -168,7 +172,8 @@ export function buildGuideFacts(inputs: GuideInputs): GuideFacts {
     shortTransitory: lease.contractType === 'Transitorio' && !!rules && termDays !== null && termDays <= rules.transitoryDocumentationAfterDays,
     noticeRecorded: !!lease.noticeOn,
     terminated: !!lease.terminatedOn,
-    termRenewed: has('TermRenewed'),
+    termRenewed: has('TermRenewed') || has('RenewalRecorded'),
+    landlordConfirmsNeed: inputs.landlordConfirmsNeed,
     rentOutOfRange: lease.concordatoAssessment?.rentWithinRange === false,
     ata: inputs.ata,
     hasAttestation: inputs.hasAttestation,
