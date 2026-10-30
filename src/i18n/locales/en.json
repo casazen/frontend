@@ -2621,6 +2621,10 @@
     "updated": "Updated {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "This code is provided by the agency and may be the same for multiple stays. CasaZen does not create or revoke access codes.",
+      "code_title": "Here is your access code"
+    },
     "copyLink": "Copy link",
     "documentType": {
       "Passport": "Passport",
@@ -9583,6 +9587,17 @@
         "comuneRequired": "Pick the comune from the list.",
         "duplicate": "A property with this address already exists."
       }
+    },
+    "qr": {
+      "download": "Download PNG",
+      "error": "Error",
+      "errorDescription": "Property ID missing or invalid.",
+      "hint": "Print or download this QR code and place it at the property entrance to facilitate guest check-in.",
+      "instructions": "Scan this QR code to start your stay verification",
+      "loading": "Generating QR code...",
+      "popupBlocked": "The browser blocked the print window. Check your browser settings.",
+      "print": "Print",
+      "title": "Guest verification QR code"
     }
   },
   "propertyMode": {
