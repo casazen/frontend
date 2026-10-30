@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { Property } from '@/types';
 import type { ServiceRequest } from '@/types/service-request';
-import { MarketplacePage } from '../marketplace-page';
+import { MarketplaceMinePage } from '../mine-page';
 
 const api = vi.hoisted(() => ({
   fetchServiceRequests: vi.fn(),
@@ -85,14 +85,14 @@ function renderPage() {
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <MemoryRouter>
-          <MarketplacePage />
+          <MarketplaceMinePage />
         </MemoryRouter>
       </QueryClientProvider>
     </I18nextProvider>,
   );
 }
 
-describe('MarketplacePage requests (SU-09, A4-28)', () => {
+describe('MarketplaceMinePage requests (SU-09, A4-28, MKT)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     workspace.permissions = new Set(['short-rent:property.read', 'short-rent:property.write']);
@@ -105,7 +105,7 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
     await i18n.changeLanguage('it');
   });
 
-  it('MarketplacePage_Requests_ShowTheRealTimelineWithTheRejectionReasonAndTheStayLink', async () => {
+  it('MarketplaceMinePage_Requests_ShowTheRealTimelineWithTheRejectionReasonAndTheStayLink', async () => {
     renderPage();
 
     const rejected = await screen.findByTestId('service-request-sr-rejected');
@@ -116,7 +116,7 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
     expect(within(screen.getByTestId('service-request-sr-completed')).getByTestId('mark-paid-sr-completed')).toBeInTheDocument();
   });
 
-  it('MarketplacePage_MarkPaid_AsksForConfirmationFirst', async () => {
+  it('MarketplaceMinePage_MarkPaid_AsksForConfirmationFirst', async () => {
     renderPage();
 
     fireEvent.click(await screen.findByTestId('mark-paid-sr-completed'));
@@ -126,7 +126,7 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
     await waitFor(() => expect(api.markServiceRequestPaid).toHaveBeenCalledWith('sr-completed'));
   });
 
-  it('MarketplacePage_WithoutPropertyWrite_ShowsTheRequestsButNoActions', async () => {
+  it('MarketplaceMinePage_WithoutPropertyWrite_ShowsTheRequestsButNoActions', async () => {
     workspace.permissions = new Set(['short-rent:property.read']);
 
     renderPage();
@@ -136,7 +136,7 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
     expect(screen.queryByTestId('request-other-supplier-sr-rejected')).not.toBeInTheDocument();
   });
 
-  it('MarketplacePage_RequestsLoadFails_ShowsAnErrorWithRetryNotAnEmptyList', async () => {
+  it('MarketplaceMinePage_RequestsLoadFails_ShowsAnErrorWithRetryNotAnEmptyList', async () => {
     api.fetchServiceRequests.mockRejectedValueOnce(new Error('boom')).mockResolvedValue({ items: [REJECTED], total: 1, page: 1, pageSize: 50 });
     renderPage();
 
@@ -148,7 +148,7 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
     expect(await screen.findByTestId('service-request-sr-rejected')).toBeInTheDocument();
   });
 
-  it('MarketplacePage_NoRequests_ShowsTheEmptyState', async () => {
+  it('MarketplaceMinePage_NoRequests_ShowsTheEmptyState', async () => {
     api.fetchServiceRequests.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
     renderPage();
 

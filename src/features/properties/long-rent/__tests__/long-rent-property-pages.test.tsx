@@ -6,6 +6,7 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { AppShellContext } from '@/components/layout/app-shell-context';
 import * as leaseQueries from '@/queries/use-leases';
+import * as aggregateQueries from '@/queries/use-long-rent-properties';
 import * as propertyQueries from '@/queries/use-properties';
 import type { LeaseSummary, Property, PropertyDocumentDto } from '@/types';
 import { LongRentPropertiesPage } from '../long-rent-properties-page';
@@ -15,6 +16,8 @@ import { LongRentPropertyDetailPage } from '../long-rent-property-detail-page';
 vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
 vi.mock('@/queries/use-properties');
 vi.mock('@/queries/use-leases');
+// What the server adds (the APE, the cadastral data, "then free"): its own endpoint, tested on the server; here the page works without it.
+vi.mock('@/queries/use-long-rent-properties');
 // The list asks who may write and read (the page is always inside the workspace) and whose saved views these are.
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true, activeContext: 'long-rent' }) }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
@@ -69,6 +72,9 @@ beforeEach(() => {
   void i18n.changeLanguage('it');
   vi.mocked(leaseQueries.useLeases).mockReturnValue(
     query({ data: [] as LeaseSummary[] }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
+  );
+  vi.mocked(aggregateQueries.useLongRentPropertyAggregate).mockReturnValue(
+    query({}) as unknown as ReturnType<typeof aggregateQueries.useLongRentPropertyAggregate>,
   );
   vi.mocked(propertyQueries.useUploadPropertyDocument).mockReturnValue({
     mutateAsync: vi.fn(),

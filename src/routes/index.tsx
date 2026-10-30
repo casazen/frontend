@@ -40,6 +40,7 @@ import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-docu
 import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { GuestCancelLinkPage } from '@/features/public-booking/guest-cancel-link-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
@@ -258,6 +259,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
       { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
+      // The link of the email that lets the guest cancel (DB-08a/b): what they get back today, and the cancellation, with the signed token.
+      { path: 'bookings/:bookingId/cancel', element: <GuestCancelLinkPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)

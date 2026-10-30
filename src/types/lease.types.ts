@@ -53,6 +53,8 @@ export const LEASE_EVENT_TYPES = [
   // LR-OPS-1: the withdrawal of the tenant recorded (the lease ends on the day its notice runs out), a letter marked as sent.
   'WithdrawalRecorded',
   'LetterSent',
+  // LR-OPS-1b: the renewal or extension recorded by the landlord (the tacit renewal is `TermRenewed`).
+  'RenewalRecorded',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
@@ -218,6 +220,25 @@ export interface LeaseSummary {
   stage?: LeaseStage;
   /** LR-01b: the one step the lease is waiting for; the interface turns its code into a sentence and a button (`lease-next-step`). */
   nextStep?: LeaseNextStep | null;
+  /** LR-02b: how far along the lease is, decided by the server (the steps of the path before it runs, the year or month of the period after). */
+  progress?: LeaseProgress | null;
+  /** LR-14: the last day of the period the lease is in now (`endDate` is the end of the first period the contract states). */
+  currentTermEndDate?: string;
+}
+
+/** What the progress of a lease measures (backend `LeaseProgressKind`, LR-02b): the steps of the path, the period it runs in, or the end. */
+export type LeaseProgressKind = 'Setup' | 'Term' | 'End';
+
+/** The unit of the progress (backend `LeaseProgressUnit`). */
+export type LeaseProgressUnit = 'Steps' | 'Months' | 'Years';
+
+/** `done` of `total` in `unit` (3 of 8 steps, year 4 of 8) and `percent` (0 to 100) for the bar. */
+export interface LeaseProgress {
+  kind: LeaseProgressKind;
+  unit: LeaseProgressUnit;
+  done: number;
+  total: number;
+  percent: number;
 }
 
 /** The eight stages of the path of a lease (backend `LeaseStage`, LR-01b). `DataPending` is for the tenant's own data and is never sent yet. */

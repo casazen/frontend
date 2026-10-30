@@ -10,6 +10,7 @@ import type {
   LeaseStage,
   LeaseSummary,
   RecordLeaseNoticeInput,
+  RecordLeaseRenewalInput,
   TenantWithdrawalInput,
   TerminateLeaseInput,
 } from '@/types';
@@ -129,6 +130,25 @@ export function useRecordTenantWithdrawal() {
     onError: (error, { leaseId }) => {
       refreshAfterChange(queryClient, leaseId);
       reportFailure(error, 'leaseOperations.withdrawal.failed');
+    },
+  });
+}
+
+/**
+ * The renewal of the lease recorded (`POST /leases/:id/renewal`, LR-OPS-1): the end of the period moves forward and the plan of the rent is
+ * extended. The answer is the lease as it is now; the operations are read again with the rest (the window is closed until the next period's).
+ */
+export function useRecordLeaseRenewal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ leaseId, input }: { leaseId: string; input: RecordLeaseRenewalInput }) => leaseLifecycleApi.recordRenewal(leaseId, input),
+    onSuccess: (detail, { leaseId }) => {
+      queryClient.setQueryData([LEASES_KEY, leaseId], detail);
+      refreshAfterChange(queryClient, leaseId);
+    },
+    onError: (error, { leaseId }) => {
+      refreshAfterChange(queryClient, leaseId);
+      reportFailure(error, 'leaseOperations.renewal.failed');
     },
   });
 }
