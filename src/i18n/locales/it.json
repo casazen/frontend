@@ -8209,7 +8209,21 @@
     },
     "mine": {
       "title": "Le mie app",
-      "description": "Le richieste che hai mandato ai fornitori e a che punto sono."
+      "description": "I fornitori a cui hai già chiesto un intervento e le richieste che hai mandato.",
+      "suppliersTitle": "I miei fornitori",
+      "summary_one": "{{count}} richiesta · ultima il {{date}}",
+      "summary_other": "{{count}} richieste · ultima il {{date}}",
+      "open_one": "{{count}} aperta",
+      "open_other": "{{count}} aperte",
+      "requestAgain": "Richiedi di nuovo",
+      "openPage": "Apri la scheda",
+      "seeRequests": "Vedi le richieste",
+      "notAround": "Non lavora nella zona di questo immobile.",
+      "onlySupplier": "Solo le richieste di {{name}}",
+      "showAll": "Mostra tutte",
+      "emptyTitle": "Non hai ancora chiesto interventi",
+      "emptyHint": "Quando chiederai un intervento a un fornitore lo ritroverai qui, con le sue richieste.",
+      "discover": "Scopri i fornitori"
     },
     "supplier": {
       "title": "Fornitore",

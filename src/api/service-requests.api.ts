@@ -10,6 +10,7 @@ import type {
   SupplierListResponse,
   SupplierPicker,
   SupplierPickerSort,
+  UsedSuppliersResponse,
 } from '@/types/service-request';
 
 /**
@@ -82,6 +83,14 @@ export async function fetchMarketplaceSuppliers(params: {
  */
 export async function fetchMarketplaceSupplier(params: { orgId: string; propertyId: string }): Promise<SupplierPicker> {
   return ApiClient.get<SupplierPicker>(`/suppliers/${encodeURIComponent(params.orgId)}`, { propertyId: params.propertyId });
+}
+
+/**
+ * The suppliers the host already asked for a job (MKT, SR-09c): one entry for each, the latest request first, from the short-rent
+ * requests of the org in the scope of the caller. Name and counts only: the contact is in the page of the supplier.
+ */
+export async function fetchUsedSuppliers(): Promise<UsedSuppliersResponse> {
+  return ApiClient.get<UsedSuppliersResponse>('/service-requests/suppliers');
 }
 
 // ─── Long-rent context (D2): requests for the property, `/long-rent/service-requests` ───

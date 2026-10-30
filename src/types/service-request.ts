@@ -313,3 +313,26 @@ export interface SupplierListResponse {
   page: number;
   pageSize: number;
 }
+
+/**
+ * A supplier the host already asked for a job (`GET /service-requests/suppliers`, MKT): what «Le mie app» of the marketplace says about
+ * it, from the short-rent requests of the org (in the scope of the caller). Its name and counts, never its contact.
+ */
+export interface UsedSupplier {
+  supplierOrgId: string;
+  supplierName: string;
+  requestsCount: number;
+  /** The requests that are not over: every one that is not refused, paid or cancelled. */
+  openCount: number;
+  /** When the latest request was made (ISO instant). */
+  lastRequestAt: string;
+  /** The category of the latest request: where «Richiedi di nuovo» starts from. */
+  lastCategory: string;
+}
+
+export interface UsedSuppliersResponse {
+  items: UsedSupplier[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}

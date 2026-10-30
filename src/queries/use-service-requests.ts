@@ -16,6 +16,7 @@ import {
   fetchMarketplaceSuppliers,
   fetchServiceRequests,
   fetchSuppliersByProperty,
+  fetchUsedSuppliers,
   markLongRentServiceRequestPaid,
   markServiceRequestPaid,
   rejectLongRentProposal,
@@ -213,6 +214,18 @@ export function useMarketplaceSupplier(propertyId: string | undefined, orgId: st
     queryFn: () => fetchMarketplaceSupplier({ orgId, propertyId: propertyId! }),
     enabled: !!propertyId && orgId !== '',
     refetchOnMount: true,
+  });
+}
+
+/**
+ * The suppliers the host already asked for a job (MKT, SR-09c), for «Le mie app» of the marketplace. A request made, cancelled or paid
+ * changes it, and the requests are changed from other screens, so it is read again whenever the page opens.
+ */
+export function useUsedSuppliers() {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'suppliers'],
+    queryFn: fetchUsedSuppliers,
+    refetchOnMount: 'always',
   });
 }
 
