@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, type Appearance, type StripeElementLocale } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { clientStatusFromIntent, type ClientPaymentStatus } from '@/features/public-booking/checkout-outcome';
@@ -73,6 +73,10 @@ interface StripeIntentPaymentProps extends StripeIntentFormProps {
   /** Connected account of the host: the checkout makes direct charges. Without one (a charge on the platform) Stripe.js uses the platform's own account. */
   stripeAccountId?: string | null;
   clientSecret: string;
+  /** How the element looks: the theme and color of the site (`stripeAppearance`). Left out, Stripe's own look. */
+  appearance?: Appearance;
+  /** The language of the element (`stripeLocale`). Left out, the one of the browser. */
+  locale?: StripeElementLocale;
 }
 
 /**
@@ -83,6 +87,8 @@ export function StripeIntentPayment({
   publishableKey,
   stripeAccountId,
   clientSecret,
+  appearance,
+  locale,
   ...formProps
 }: StripeIntentPaymentProps) {
   const stripePromise = useMemo(
@@ -91,7 +97,7 @@ export function StripeIntentPayment({
   );
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret }}>
+    <Elements stripe={stripePromise} options={{ clientSecret, appearance, locale }}>
       <StripeIntentForm {...formProps} />
     </Elements>
   );

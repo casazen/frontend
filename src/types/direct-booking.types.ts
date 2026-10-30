@@ -27,6 +27,10 @@ export interface CreateDirectBookingPayload {
   paymentOption?: PaymentOption;
   /** Age of each minor at check-in (0-17), sent when the tourist tax depends on it (BK-03). */
   childrenAges?: number[];
+  /** When the guest thinks they will arrive: `HH:mm` or `late`. Only a note for the host (DB-03b); left out when they do not say. */
+  expectedArrivalTime?: string;
+  /** The guest ticked the optional «send me offers» box. Only sent when the site has a version of its text (`marketingConsentVersion`). */
+  marketingConsent?: boolean;
 }
 
 /** Body of `POST /public/bookings/quote`: the stay to price before booking. */
@@ -66,6 +70,34 @@ export interface DirectBookingPaymentOptions {
   freeCancellationUntil: string | null;
 }
 
+/** What a line of the price breakdown of a quote is (DB-03). `Discount` is not sent yet; a page that meets a kind it does not know shows it plainly. */
+export type QuoteLineKind = 'Nights' | 'WeekendNights' | 'CleaningFee' | 'TouristTax' | 'Total' | 'Discount';
+
+/**
+ * One line of the price breakdown of a quote (DB-03), in cents of the currency of the quote, whole numbers. The lines before the
+ * total add up to it, to the cent: a page shows them as they come and adds nothing of its own.
+ */
+export interface QuoteLine {
+  kind: QuoteLineKind;
+  /** Nights of a night line, 1 for the cleaning fee; null for the tourist tax and the total. */
+  quantity: number | null;
+  /** Price of one night (night lines) or the fee; null for the tourist tax and the total. */
+  unitAmountCents: number | null;
+  amountCents: number;
+}
+
+/**
+ * What cancelling costs for this stay, in dates (DB-03b): the last whole days (`YYYY-MM-DD`, Europe/Rome, included) with the full
+ * and the partial refund. A window the policy does not have, or that is already over, is null. A page shows the dates only when
+ * `selfServiceAvailable` is true: the guest can then cancel by themselves and the system keeps the promise.
+ */
+export interface StayCancellation {
+  fullRefundUntil: string | null;
+  partialRefundPercent: number | null;
+  partialRefundUntil: string | null;
+  selfServiceAvailable: boolean;
+}
+
 /** Price computed by the backend: the same numbers the booking records and charges. */
 export interface DirectBookingQuote {
   propertyId: string;
@@ -81,6 +113,10 @@ export interface DirectBookingQuote {
   totalPrice: number;
   currency: string;
   paymentOptions: DirectBookingPaymentOptions;
+  /** The price breakdown in cents, in order, ending with the total (DB-03); absent from an older backend. */
+  lines?: QuoteLine[];
+  /** The dates of the cancellation policy for this stay (DB-03b); absent from an older backend or when the property has no policy. */
+  cancellation?: StayCancellation | null;
 }
 
 export interface ConnectedAccountPublishableContext {
@@ -119,6 +155,8 @@ export interface OnSiteRequestConfirmation {
   status: string;
   state: 'AwaitingGuestEmail' | 'AwaitingHostApproval' | null;
   requestExpiresAt: string | null;
+  /** `XXXXX-XXXXX`: the code of the booking, once the backend sends it here (DB-06a); until then the page shows the reference as before. */
+  bookingCode?: string | null;
 }
 
 /** Body of "Le mie prenotazioni" (BK-11): the booking site, the booking code of the confirmation email, the guest's email. */
