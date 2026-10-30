@@ -7634,7 +7634,7 @@
     },
     "create": {
       "title": "Nuovo immobile",
-      "description": "Dati dell'immobile da affittare con un contratto di lungo periodo. Dopo il salvataggio potrai caricare l'APE."
+      "description": "Quattro passi brevi: indirizzo, dati catastali, APE e riepilogo. Quello che non hai sottomano lo aggiungi dopo."
     },
     "edit": {
       "title": "Modifica immobile",
@@ -7699,6 +7699,69 @@
       "save": "Salva",
       "cancel": "Annulla",
       "notSet": "Non indicato"
+    },
+    "wizard": {
+      "cadastral": {
+        "hint": "Foglio, particella e subalterno sono sulla visura catastale. Il contratto li riporta."
+      },
+      "done": {
+        "apeUploaded": "L’APE è caricato.",
+        "cadastralSaved": "I dati catastali sono salvati.",
+        "createLease": "Crea il contratto",
+        "inList": "«{{name}}» è nella tua lista, libero.",
+        "openProperty": "Apri l’immobile",
+        "title": "Immobile aggiunto",
+        "todo": {
+          "ape": "L’APE: lo carichi dalla scheda dell’immobile o dal contratto.",
+          "apeExpired": "Un APE in corso di validità: quello caricato risulta scaduto.",
+          "apeFailed": "L’APE non si è caricato. Riprova dalla scheda dell’immobile.",
+          "apeFailedWhy": "L’APE non si è caricato ({{reason}}). Riprova dalla scheda dell’immobile.",
+          "apeIdentification": "Il codice e la classe dell’APE non si leggono dal file: scrivili qui sotto.",
+          "cadastral": "I dati catastali: li aggiungi dalla scheda dell’immobile.",
+          "cadastralFailed": "I dati catastali non si sono salvati. Riprova dalla scheda dell’immobile.",
+          "cadastralIncomplete": "Qualche dato catastale: servono foglio, particella, categoria e rendita. Li completi dalla scheda dell’immobile.",
+          "title": "Per creare il contratto manca ancora"
+        }
+      },
+      "duplicate": "Esiste già un immobile con questo indirizzo e questo interno. Torna al primo passo e indica l’interno o la scala.",
+      "finish": "Aggiungi immobile",
+      "finishFailed": "Non siamo riusciti ad aggiungere l’immobile. Controlla i dati e riprova: quello che hai scritto è ancora qui.",
+      "reading": "Stiamo aggiungendo l’immobile e leggendo l’APE: può volerci un minuto. Non chiudere la pagina.",
+      "review": {
+        "address": "Indirizzo",
+        "ape": "APE",
+        "apePages_one": "{{count}} foto, convertita in un PDF",
+        "apePages_other": "{{count}} foto, unite in un PDF",
+        "cadastral": "Dati catastali",
+        "missingNote": "Dati catastali e APE non servono per aggiungere l’immobile, ma senza di loro il contratto non si può creare. Puoi aggiungerli anche dopo.",
+        "name": "Immobile"
+      },
+      "steps": {
+        "address": {
+          "label": "Indirizzo",
+          "purpose": "Il nome lo vedi solo tu. Il comune e l’indirizzo vanno nel contratto.",
+          "title": "Dove si trova l’immobile?"
+        },
+        "ape": {
+          "label": "APE",
+          "purpose": "Il contratto riporta il codice e la classe dell’APE: li leggiamo noi dal file.",
+          "title": "Attestato di prestazione energetica"
+        },
+        "cadastral": {
+          "label": "Dati catastali",
+          "purpose": "Il contratto li riporta. Se non li hai sottomano, salta: li aggiungi quando vuoi.",
+          "title": "Dati catastali"
+        },
+        "review": {
+          "label": "Riepilogo",
+          "purpose": "Controlla le risposte: ognuna si può correggere prima di aggiungere l’immobile.",
+          "title": "Controlla e aggiungi"
+        }
+      },
+      "validation": {
+        "apeNotConfirmed": "Conferma l’ordine delle pagine dell’APE, oppure toglile.",
+        "income": "Scrivi la rendita come importo, ad esempio 750,50."
+      }
     }
   },
   "longRentRents": {

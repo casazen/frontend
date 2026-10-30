@@ -7634,7 +7634,7 @@
     },
     "create": {
       "title": "New property",
-      "description": "Details of the property to let with a long-term lease. After saving you can upload the APE."
+      "description": "Four short steps: address, cadastral data, APE and summary. What you do not have at hand can be added later."
     },
     "edit": {
       "title": "Edit property",
@@ -7699,6 +7699,69 @@
       "save": "Save",
       "cancel": "Cancel",
       "notSet": "Not set"
+    },
+    "wizard": {
+      "cadastral": {
+        "hint": "Sheet, parcel and subaltern are on the cadastral survey (visura). The contract states them."
+      },
+      "done": {
+        "apeUploaded": "The APE is uploaded.",
+        "cadastralSaved": "The cadastral data are saved.",
+        "createLease": "Create the contract",
+        "inList": "“{{name}}” is in your list, vacant.",
+        "openProperty": "Open the property",
+        "title": "Property added",
+        "todo": {
+          "ape": "The APE: upload it from the property sheet or from the contract.",
+          "apeExpired": "An APE that is still valid: the one uploaded appears to be expired.",
+          "apeFailed": "The APE could not be uploaded. Try again from the property sheet.",
+          "apeFailedWhy": "The APE could not be uploaded ({{reason}}). Try again from the property sheet.",
+          "apeIdentification": "The code and class of the APE could not be read from the file: type them below.",
+          "cadastral": "The cadastral data: add them from the property sheet.",
+          "cadastralFailed": "The cadastral data could not be saved. Try again from the property sheet.",
+          "cadastralIncomplete": "Some cadastral data: the contract needs sheet, parcel, category and income. Complete them from the property sheet.",
+          "title": "To create the contract you still need"
+        }
+      },
+      "duplicate": "A property with this address and unit already exists. Go back to the first step and add the unit or staircase.",
+      "finish": "Add property",
+      "finishFailed": "We could not add the property. Check the data and try again: what you wrote is still here.",
+      "reading": "We are adding the property and reading the APE: it can take a minute. Please do not close the page.",
+      "review": {
+        "address": "Address",
+        "ape": "APE",
+        "apePages_one": "{{count}} photo, made into a PDF",
+        "apePages_other": "{{count}} photos, made into one PDF",
+        "cadastral": "Cadastral data",
+        "missingNote": "The cadastral data and the APE are not needed to add the property, but the contract cannot be created without them. You can add them later.",
+        "name": "Property"
+      },
+      "steps": {
+        "address": {
+          "label": "Address",
+          "purpose": "Only you see the name. The comune and the address go into the contract.",
+          "title": "Where is the property?"
+        },
+        "ape": {
+          "label": "APE",
+          "purpose": "The contract states the code and class of the APE: we read them from the file.",
+          "title": "Energy performance certificate (APE)"
+        },
+        "cadastral": {
+          "label": "Cadastral data",
+          "purpose": "The contract states them. If you do not have them at hand, skip: add them whenever you want.",
+          "title": "Cadastral data"
+        },
+        "review": {
+          "label": "Summary",
+          "purpose": "Check your answers: each can be corrected before the property is added.",
+          "title": "Check and add"
+        }
+      },
+      "validation": {
+        "apeNotConfirmed": "Confirm the order of the APE pages, or remove them.",
+        "income": "Write the income as an amount, for example 750.50."
+      }
     }
   },
   "longRentRents": {
