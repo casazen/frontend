@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from './test';
 import {
   DEMO_ORG_SLUG,
@@ -9,7 +10,27 @@ import { futureStay, mockDirectCheckoutApi } from './helpers/direct-checkout-moc
 const { checkIn, checkOut } = futureStay(30, 3);
 const checkoutUrl = `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}/checkout?checkin=${checkIn}&checkout=${checkOut}&guests=2`;
 
-test.describe('Direct checkout (#226)', () => {
+/** Step 1 done: the stay is the one of the address, booked at once; the guest goes on to their details. */
+async function passTheStay(page: Page): Promise<void> {
+  await expect(page.getByTestId('checkout-step-stay')).toBeVisible({ timeout: 15_000 });
+  // The button waits for the quote of this stay (the total of the server) and then leads to the second step.
+  await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
+  await page.getByTestId('checkout-next').click();
+  await expect(page.getByTestId('checkout-step-details')).toBeVisible();
+}
+
+/** Step 2 done: the guest who books, then the payment step. */
+async function passTheDetails(page: Page): Promise<void> {
+  await page.locator('#firstName').fill('Mario');
+  await page.locator('#lastName').fill('Rossi');
+  await page.locator('#email').fill('mario.rossi@example.com');
+  await page.locator('#phone').fill('+393331234567');
+  await page.locator('#country').selectOption('DE');
+  await page.getByTestId('checkout-next').click();
+  await expect(page.getByTestId('checkout-step-payment')).toBeVisible();
+}
+
+test.describe('Direct checkout (#226, DB-05)', () => {
   test.beforeEach(async ({ page }) => {
     await mockBrandedBookingApi(page);
     await mockDirectCheckoutApi(page);
@@ -19,21 +40,20 @@ test.describe('Direct checkout (#226)', () => {
     });
   });
 
-  test('AC10/AC13: guest step shows consent, price breakdown, and Italian labels', async ({ page }) => {
+  test('AC10/AC13: the first step shows the summary with the total of the quote, in Italian', async ({ page }) => {
     await page.goto(checkoutUrl);
 
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('price-breakdown')).toBeVisible();
-    await expect(page.getByTestId('gdpr-consent')).toBeVisible();
-    // A calculated tax is part of the total (BK-03); the page says so.
-    await expect(
-      page.getByTestId('price-breakdown').getByText('Tassa di soggiorno (inclusa nel totale)', { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByTestId('price-breakdown')).toContainText(/546,00/);
-    await expect(page.getByText('Acconsento al trattamento')).toBeVisible();
+    await expect(page.getByTestId('checkout-title')).toHaveText('Il tuo soggiorno');
+    const summary = page.getByTestId('checkout-summary');
+    await expect(summary.getByTestId('price-breakdown')).toBeVisible();
+    // A calculated tax is a line of the quote and part of the total (BK-03); the total is the one of the server.
+    await expect(summary.getByTestId('tourist-tax-line')).toContainText('Imposta di soggiorno');
+    await expect(summary.getByTestId('price-breakdown-total')).toContainText('546');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 notti');
   });
 
-  test('AC11/AC12: createDirectBooking without auth and demo payment confirmation', async ({ page }) => {
+  test('AC11/AC12: three steps, a booking without auth, the payment step and the confirmation', async ({ page }) => {
     let bookingAuthHeader: string | undefined;
 
     await page.route('**/api/public/bookings', async (route) => {
@@ -64,19 +84,19 @@ test.describe('Direct checkout (#226)', () => {
     });
 
     await page.goto(checkoutUrl);
+    await passTheStay(page);
+    await passTheDetails(page);
 
-    await expect(page.getByTestId('checkout-guest-step')).toBeVisible({ timeout: 15_000 });
+    // The personal data never reach the address; the step does.
+    expect(page.url()).toContain('step=3');
+    expect(page.url()).not.toContain('mario');
 
-    await page.getByRole('button', { name: 'Paga subito' }).click();
-    await page.locator('#firstName').fill('Mario');
-    await page.locator('#lastName').fill('Rossi');
-    await page.locator('#email').fill('mario.rossi@example.com');
-    await page.locator('#phone').fill('+393331234567');
-    await page.locator('#country').selectOption('DE');
-    await page.getByRole('checkbox').click();
-    await page.getByRole('button', { name: 'Continua' }).click();
+    await page.locator('#data-consent').click();
+    await page.getByTestId('checkout-submit').click();
 
+    // Only now the booking exists: the hold of the dates is promised and the payment is asked.
     await expect(page.getByTestId('checkout-payment-step')).toBeVisible();
+    await expect(page.getByTestId('checkout-payment')).toContainText('30 minuti');
     expect(bookingAuthHeader).toBeUndefined();
 
     await page.getByRole('button', { name: 'Paga ora' }).click();
@@ -86,30 +106,32 @@ test.describe('Direct checkout (#226)', () => {
     await expect(page.getByRole('heading', { name: /Prenotazione confermata/i })).toBeVisible();
   });
 
-  test('A3-34: invalid email and past dates are reported and block Continue', async ({ page }) => {
+  test('A3-34: past dates are reported, a wrong email is explained and blocks the next step', async ({ page }) => {
     const past = futureStay(-3, 2);
     await page.goto(
       `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}/checkout?checkin=${past.checkIn}&checkout=${past.checkOut}&guests=2`,
     );
 
-    await expect(page.getByTestId('checkout-guest-step')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('La data di check-in non può essere nel passato')).toBeVisible();
+    await expect(page.getByTestId('checkout-step-stay')).toBeVisible({ timeout: 15_000 });
+    // No stay to price: the button waits and says why.
+    await expect(page.getByTestId('checkout-next')).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByText('Scegli le date del soggiorno.')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Paga subito' }).click();
+    await page.goto(`${checkoutUrl}&step=2`);
+    await expect(page.getByTestId('checkout-step-details')).toBeVisible({ timeout: 15_000 });
     await page.locator('#firstName').fill('Mario');
     await page.locator('#lastName').fill('Rossi');
     await page.locator('#email').fill('mario.rossi@');
     await page.locator('#email').blur();
     await expect(page.getByText('Inserisci un indirizzo email valido')).toBeVisible();
-    await page.locator('#country').selectOption('IT');
-    await page.getByRole('checkbox').click();
-    await expect(page.getByRole('button', { name: 'Continua' })).toBeDisabled();
+    await page.getByTestId('checkout-next').click();
+    await expect(page.getByTestId('checkout-step-details')).toBeVisible();
 
-    await page.locator('#email').fill('mario.rossi@example.com');
-    await page.locator('#checkout-check-in').fill(checkIn);
-    await page.locator('#checkout-check-out').fill(checkOut);
-    await expect(page.getByRole('button', { name: 'Continua' })).toBeEnabled();
-    await expect(page).toHaveURL(new RegExp(`checkin=${checkIn}&checkout=${checkOut}`));
+    // A typo of a popular domain is met with a suggestion that one tap applies.
+    await page.locator('#email').fill('mario.rossi@gmial.com');
+    await expect(page.getByTestId('checkout-email-suggestion')).toContainText('mario.rossi@gmail.com');
+    await page.getByTestId('checkout-email-suggestion').getByRole('button').click();
+    await expect(page.locator('#email')).toHaveValue('mario.rossi@gmail.com');
   });
 
   test('A3-34/A3-15: unavailable dates show the message of their code instead of the generic error', async ({ page }) => {
@@ -126,14 +148,10 @@ test.describe('Direct checkout (#226)', () => {
     });
 
     await page.goto(checkoutUrl);
-    await expect(page.getByTestId('checkout-guest-step')).toBeVisible({ timeout: 15_000 });
-    await page.getByRole('button', { name: 'Paga subito' }).click();
-    await page.locator('#firstName').fill('Mario');
-    await page.locator('#lastName').fill('Rossi');
-    await page.locator('#email').fill('mario.rossi@example.com');
-    await page.locator('#country').selectOption('IT');
-    await page.getByRole('checkbox').click();
-    await page.getByRole('button', { name: 'Continua' }).click();
+    await passTheStay(page);
+    await passTheDetails(page);
+    await page.locator('#data-consent').click();
+    await page.getByTestId('checkout-submit').click();
 
     await expect(page.getByTestId('checkout-error')).toHaveText(
       "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",

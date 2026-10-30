@@ -82,7 +82,7 @@ test.describe('Branded booking site (#215)', () => {
     await page.getByTestId('booking-cta').click();
 
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
-    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 notti');
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -161,10 +161,9 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     await expect(book).toHaveAttribute('href', new RegExp(`checkin=${checkIn}&checkout=${checkOut}&guests=3`), { timeout: 15_000 });
     await book.click();
     await expect(page).toHaveURL(new RegExp(`/checkout\\?checkin=${checkIn}&checkout=${checkOut}&guests=3$`));
-    await expect(page.getByTestId('public-breadcrumb')).toContainText('Checkout');
-    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
-    await expect(page.locator('#adults')).toHaveValue('3');
-    await expect(page.getByTestId('checkout-stay-summary')).toContainText('(4 notti)');
+    await expect(page.getByTestId('checkout-title')).toBeVisible();
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('4 notti');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 ospiti');
   });
 
   test('AC15: itinerary deep link (checkin/checkout/guests) pre-fills the booking card', async ({ page }) => {

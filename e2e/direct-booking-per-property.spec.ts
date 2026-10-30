@@ -209,27 +209,27 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     expect(page.url()).not.toContain('??');
 
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
-    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
-    await expect(page.locator('#checkout-check-out')).toHaveValue(checkOut);
-    await expect(page.locator('#adults')).toHaveValue('3');
-    await expect(page.locator('#children')).toHaveValue('0');
-    await expect(page.getByTestId('checkout-stay-summary')).toContainText('(3 notti)');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 notti');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 ospiti');
     await expect(page.getByText(/Invalid Date/)).toHaveCount(0);
 
-    // 3 nights × 165 € + 55 € cleaning + 2 € × 3 adults × 3 nights of tourist tax = 568 €.
-    const breakdown = page.getByTestId('price-breakdown');
-    await expect(breakdown).toContainText('3 notti x 165,00 €');
-    await expect(breakdown).toContainText('495,00 €');
-    await expect(breakdown).toContainText('55,00 €');
-    await expect(breakdown).toContainText('568,00 €');
+    // 3 nights × 165 € + 55 € cleaning + 2 € × 3 adults × 3 nights of tourist tax = 568 €, the lines and the total of the quote.
+    const breakdown = page.getByTestId('checkout-summary').getByTestId('price-breakdown');
+    await expect(breakdown).toContainText('3 notti × 165 €');
+    await expect(breakdown).toContainText('495 €');
+    await expect(breakdown).toContainText('55 €');
+    await expect(breakdown).toContainText('568 €');
 
-    await page.getByRole('button', { name: 'Paga subito' }).click();
+    // Step 1 (stay and how to book), step 2 (the guest), step 3 (consent and the booking).
+    await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
+    await page.getByTestId('checkout-next').click();
     await page.locator('#firstName').fill('Mario');
     await page.locator('#lastName').fill('Rossi');
     await page.locator('#email').fill('mario.rossi@example.com');
     await page.locator('#country').selectOption('IT');
-    await page.getByRole('checkbox').click();
-    await page.getByRole('button', { name: 'Continua' }).click();
+    await page.getByTestId('checkout-next').click();
+    await page.locator('#data-consent').click();
+    await page.getByTestId('checkout-submit').click();
 
     await expect(page.getByTestId('checkout-payment-step')).toBeVisible();
     expect(bookingPayload).toMatchObject({

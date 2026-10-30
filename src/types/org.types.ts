@@ -78,6 +78,11 @@ export interface PublicOrgDto {
   /** The font pair the host chose (see `src/lib/public-site-themes.ts`), or null for the font of the theme; absent on an older backend. */
   publicFontId?: string | null;
   showPoweredBy?: boolean;
+  /**
+   * Version of the text of the optional «send me offers» consent (DB-03, `Gdpr:MarketingConsentVersion`), or null while the text has no
+   * version: the checkout then shows no box and the API refuses a `marketingConsent: true`. Absent on an older backend.
+   */
+  marketingConsentVersion?: string | null;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */

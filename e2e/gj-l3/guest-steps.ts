@@ -31,14 +31,19 @@ export async function guestBooksStay(page: Page, stay: GuestStay): Promise<strin
   await expect(page).toHaveURL(new RegExp(`checkin=${stay.checkIn}&checkout=${stay.checkOut}`));
   await expect(page.getByTestId('checkout-stay-summary')).toContainText(`${stay.nights} notti`);
 
-  await page.getByRole('button', { name: stay.payment === 'card' ? 'Paga subito' : /Paga in struttura/ }).click();
+  // Step 1: how to book (the title of the card is the stable text of the choice); step 2: the guest; step 3: consent and the booking.
+  await page.getByText(stay.payment === 'card' ? 'Prenotazione immediata' : 'Su richiesta', { exact: true }).click();
+  await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 30_000 });
+  await page.getByTestId('checkout-next').click();
   await page.locator('#firstName').fill(stay.guest.firstName);
   await page.locator('#lastName').fill(stay.guest.lastName);
   await page.locator('#email').fill(stay.guest.email);
   await page.locator('#phone').fill(stay.guest.phone);
   await page.locator('#country').selectOption({ label: 'Italia' });
+  await page.getByTestId('checkout-next').click();
   await page.locator('#data-consent').click();
-  await page.getByRole('button', { name: 'Continua' }).click();
+  await expect(page.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled', 'true');
+  await page.getByTestId('checkout-submit').click();
 
   if (stay.payment === 'card') {
     // Stripe test card in the Payment Element (iframe served by js.stripe.com, the only external call of the suite).
