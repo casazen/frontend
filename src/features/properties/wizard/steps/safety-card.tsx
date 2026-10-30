@@ -20,9 +20,10 @@ export function SafetyCard({ propertyId }: { propertyId: string }) {
   const checklist = useSafetyChecklist(propertyId);
 
   const total = SAFETY_ITEM_CODES.length;
-  const done = checklist.data
-    ? checklist.data.items.filter((item) => item.status === 'Present' || item.status === 'NotApplicable').length
-    : 0;
+  // An answer that is not a sheet (no list of items) is as good as no answer: the card says it cannot read it, it does not break the step.
+  const items = Array.isArray(checklist.data?.items) ? checklist.data.items : null;
+  const unreadable = checklist.isError || (checklist.isSuccess && items === null);
+  const done = items ? items.filter((item) => item.status === 'Present' || item.status === 'NotApplicable').length : 0;
   const complete = checklist.data?.isComplete === true;
 
   return (
@@ -37,7 +38,7 @@ export function SafetyCard({ propertyId }: { propertyId: string }) {
         </div>
       </div>
 
-      {checklist.isError ? (
+      {unreadable ? (
         <p role="alert" className="text-sm text-danger-foreground">
           {t('propertyWizard.amenities.safety.loadFailed')}
         </p>
@@ -51,7 +52,7 @@ export function SafetyCard({ propertyId }: { propertyId: string }) {
                 : t('propertyWizard.amenities.safety.progress', { done, total })}
           </p>
           <Progress
-            value={checklist.data ? (done / total) * 100 : 0}
+            value={items ? (done / total) * 100 : 0}
             tone={complete ? 'success' : 'default'}
             size="sm"
             label={t('propertyWizard.amenities.safety.progressLabel')}

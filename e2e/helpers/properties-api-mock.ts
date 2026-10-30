@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import type { Property } from '../../src/types';
+import { mockCompliancePendingForAnyProperty } from './compliance-mock';
 import {
   buildCreatedProperty,
   buildPropertyDetailFromProperty,
@@ -13,6 +14,7 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
   const store = { properties: [...initial] };
   await mockComuniApi(page);
   await mockPropertyIcalApi(page);
+  await mockCompliancePendingForAnyProperty(page);
 
   const isCollectionPath = (url: string) => {
     const path = new URL(url).pathname.replace(/\/$/, '');

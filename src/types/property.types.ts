@@ -19,15 +19,6 @@ export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | '
 export type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
 
 /**
- * One thing a property still lacks (SR-07a), told by the server with a stable `code`: `base_data`, `cin`, `documents`, `safety`
- * and `activation_not_confirmed` block the activation; `photos` and `calendar` are advice.
- */
-export interface PropertyMissingItem {
-  code: string;
-  blocking: boolean;
-}
-
-/**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
  * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
  */
@@ -81,7 +72,6 @@ export interface Property {
    * occupancy of the last 30 days (percent, active properties only), the photos and where the property stands on the site.
    */
   lifecycleStatus?: PropertyLifecycleStatus;
-  missing?: PropertyMissingItem[];
   occupancy30?: number;
   photoCount?: number;
   coverPhotoUrl?: string;
@@ -129,8 +119,20 @@ export interface Property {
    */
   responsibleUserId?: string | null;
   orgId?: string;
+  /**
+   * What a short-term property still lacks, worked out by the server with the rules of its activation: only in the list asked with
+   * `?view=overview` (SR-07a), and only for a short-term property. The client reads it and never works it out again.
+   */
+  missing?: PropertyMissingItem[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** One thing a short-term property lacks (`GET /properties?view=overview`): a stable code, and whether it blocks the activation or is only advice. */
+export interface PropertyMissingItem {
+  /** `base_data`, `cin`, `documents`, `safety`, `activation_not_confirmed` (blocking) or `photos`, `calendar` (advice). */
+  code: string;
+  blocking: boolean;
 }
 
 /** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */

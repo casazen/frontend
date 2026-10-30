@@ -130,18 +130,17 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
   const entitlement = useEntitlement();
   const blockedByPlan = !propertyId && (planLimitHit || planUsage.data?.canAdd === false || entitlement.data?.canAddProperty === false);
 
-  // The property is in the address from the moment it exists (the reload and the links need it), whichever way the step changed: a
-  // navigation made with an older copy of the address cannot drop it, because this runs after it and looks at the address as it is.
+  // The property is in the address from the moment it exists (the reload and the links need it), whichever way the step changed.
+  // The address is read from the browser, not from this render: «Avanti» changes the step right after the creation, and the router
+  // has not rendered that yet when this runs — the copy of the address that `setSearchParams((previous) => …)` hands over is the
+  // old one, and writing the property into it would put the old step back and keep the wizard on the first step. It runs again at
+  // every address the router renders (`searchParams`), so a later step change that leaves the property out is mended too.
   useEffect(() => {
-    if (!propertyId || searchParams.get(PROPERTY_ID_PARAM) === propertyId) return;
-    setSearchParams(
-      (previous) => {
-        const next = new URLSearchParams(previous);
-        next.set(PROPERTY_ID_PARAM, propertyId);
-        return next;
-      },
-      { replace: true },
-    );
+    if (!propertyId) return;
+    const current = new URLSearchParams(window.location.search);
+    if (current.get(PROPERTY_ID_PARAM) === propertyId) return;
+    current.set(PROPERTY_ID_PARAM, propertyId);
+    setSearchParams(current, { replace: true });
   }, [propertyId, searchParams, setSearchParams]);
 
   const saveBase = async (values: PropertyWizardValues) => {
