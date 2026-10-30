@@ -63,6 +63,8 @@ export interface PropertyWizardValues {
   cleaningFee: string;
   /** 1 = no minimum. */
   minNights: number;
+  // 6 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
+  publishedOnSite: boolean;
 }
 
 type StepSchema = ZodType<unknown, FieldValues>;
@@ -190,6 +192,7 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   weekendSurcharge: '',
   cleaningFee: '',
   minNights: 1,
+  publishedOnSite: true,
 };
 
 /**
@@ -247,6 +250,7 @@ export function wizardDefaults(property?: Property): PropertyWizardValues {
     weekendSurcharge: (property.weekendSurchargePercent ?? 0) > 0 ? String(property.weekendSurchargePercent) : '',
     cleaningFee: property.cleaningFee > 0 ? String(property.cleaningFee) : '',
     minNights: property.minNights ?? 1,
+    publishedOnSite: property.publishedOnSite ?? true,
   };
 }
 
@@ -330,6 +334,11 @@ export function pricesUpdatePayload(values: PropertyWizardValues): UpdatePropert
   };
 }
 
+/** «Mostra la casa sul sito», written on its own (and before the activation, so that a «no» is in place when the property goes live). */
+export function visibilityUpdatePayload(showOnSite: boolean): UpdatePropertyDto {
+  return { publishedOnSite: showOnSite };
+}
+
 /**
  * The amenities saved by the step: the ones chosen here plus, untouched, the ones the house rules decide that the property already
  * has (the list of the API is replaced as a whole).
@@ -342,6 +351,14 @@ export function amenitiesUpdatePayload(values: PropertyWizardValues, stored: Pic
 /** True when the property has what the first step asks for — a name, an address, a city and guests — as the server counts it. */
 function baseFieldsAreSet(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'>): boolean {
   return property.name.trim() !== '' && property.address.trim() !== '' && property.city.trim() !== '' && property.maxGuests > 0;
+}
+
+/**
+ * Where the open `base-data` blocker is fixed: the first step when the name, the address, the city or the guests are missing, the
+ * prices when only the rate is. Used by the reopening of the wizard and by the «Correggi» of the last step.
+ */
+export function baseDataStepFor(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'>): 'base' | 'prices' {
+  return baseFieldsAreSet(property) ? 'prices' : 'base';
 }
 
 /**
@@ -358,7 +375,7 @@ export function resumeStepFor(
 ): WizardStepId {
   const open = new Set(activationSteps.filter(isOpenBlocker).map((step) => step.id));
   const candidates: WizardStepId[] = [];
-  if (open.has('base-data')) candidates.push(baseFieldsAreSet(property) ? 'prices' : 'base');
+  if (open.has('base-data')) candidates.push(baseDataStepFor(property));
   if (open.has('safety')) candidates.push('amenities');
   if (open.has('cin') || open.has('documents')) candidates.push('finish');
   if (candidates.length === 0) return 'finish';
