@@ -29,6 +29,7 @@ describe('notification model', () => {
       'service-request-proposal-accepted', 'service-request-proposal-rejected', 'service-request-rescheduled',
       'service-request-quote-sent', 'service-request-quote-accepted', 'service-request-quote-rejected', 'service-request-quote-expired',
       'service-request-day-before', 'service-payment-received',
+      'service-request-backup-invited', 'service-request-backup-active', 'service-request-backup-won', 'service-request-backup-closed',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });

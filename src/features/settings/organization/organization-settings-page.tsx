@@ -20,6 +20,7 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
 import type { OrgLanguage, OrgSettings } from '@/types';
 import { ORG_NAME_FIELD_ID } from './org-profile';
+import { ServiceRequestBackupsSetting } from './service-request-backups-setting';
 import { Badge } from '@/components/ui/badge';
 import {
   SLUG_CHECK_DEBOUNCE_MS,
@@ -256,6 +257,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   };
 
   return (
+    <>
     <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
       {org?.planTier ? (
         <div className="flex items-center gap-2" data-testid="org-tier-badge">
@@ -417,5 +419,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
         </p>
       ) : null}
     </form>
+    <ServiceRequestBackupsSetting />
+    </>
   );
 }

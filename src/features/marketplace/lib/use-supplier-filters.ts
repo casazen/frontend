@@ -3,8 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import type { SupplierPickerSort } from '@/types/service-request';
 import { MARKETPLACE_SORT_PARAM, MARKETPLACE_VERIFIED_PARAM } from './marketplace-paths';
 
-/** The orders of a list of suppliers, as the API takes them (`?sort=`): the first is the one a list starts from. */
-export const SUPPLIER_SORTS: readonly SupplierPickerSort[] = ['name', 'price', 'response'];
+/** The orders of a list of suppliers, as the API takes them (`?sort=`): the first is the one a list starts from (the ranking, SP-REL). */
+export const SUPPLIER_SORTS: readonly SupplierPickerSort[] = ['recommended', 'name', 'price', 'response'];
 
 export interface SupplierFilters {
   sort: SupplierPickerSort;

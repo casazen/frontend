@@ -1,16 +1,14 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, CheckCircle2, FilePlus2, Pencil } from 'lucide-react';
+import { Building2, FilePlus2, Pencil } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
-import { PlainSection } from '@/components/shared/calm';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Skeleton, SkeletonLine } from '@/components/ui/skeleton';
-import { Fact, Facts } from '@/features/bookings/components/booking-facts';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { LongRentServiceRequests } from '@/features/service-requests/components/long-rent-service-requests';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -18,14 +16,13 @@ import { todayInRome } from '@/lib/stay-dates';
 import { useLeases } from '@/queries/use-leases';
 import { useLongRentPropertyAggregate } from '@/queries/use-long-rent-properties';
 import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
-import { PropertyCadastralCard } from '../components/property-cadastral-card';
-import { PropertyDocumentsSection } from '../components/property-documents-section';
 import { ScheduledChangeNotice } from '../mode/components/scheduled-change-notice';
 import { useModeChangeMenuItems } from '../mode/use-mode-entry';
 import { formatPropertyLocation } from '../property-location';
 import { leaseOfRow } from './long-rent-property-format';
-import { LongRentPropertyLeases } from './long-rent-property-leases';
 import { LongRentPropertyNextStep } from './long-rent-property-next-step';
+import { ContractsPanel, DataPanel, DocumentsPanel } from './long-rent-property-panels';
+import { longRentPropertyPanelOf, longRentPropertyPanels, type LongRentPropertyPanel } from './long-rent-property-sheet';
 import { longRentPropertyRows } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
 
@@ -50,36 +47,18 @@ function PropertyDetailSkeleton({ label }: { label: string }) {
   );
 }
 
-/** Whether the APE is on file, in a line when it is and in a notice when it is not (the lease cannot be made without it). */
-function ApeStatus({ hasApe }: { hasApe: boolean }) {
-  const { t } = useTranslation();
-
-  if (!hasApe) {
-    return (
-      <Alert variant="warning" data-testid="long-rent-ape-status">
-        {t('longRentProperties.detail.apeMissing')}
-      </Alert>
-    );
-  }
-
-  return (
-    <p role="status" data-testid="long-rent-ape-status" className="flex items-start gap-2 text-sm text-foreground/70">
-      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success-foreground" />
-      <span className="min-w-0 break-words">{t('longRentProperties.detail.apePresent')}</span>
-    </p>
-  );
-}
-
 /**
  * `/app/long-rent/properties/:id`: one long-term property (LR-07d). The header says what it is and where, with its state and the
  * menu "⋯" of the other actions; under it the one highlighted block, read from its leases (who lives there, for how much and until
- * when, or the lease to make), then its leases, its data with the cadastral ones, its documents (the APE the lease needs) and its
- * supplier requests, each a section without a box. The leases are asked of who may read them; without them the page works and says
- * nothing about who lives there.
+ * when, or the lease to make), and then the tabs Contratti, Documenti (the APE the lease needs), Interventi (the requests to
+ * suppliers) and Dati (the place and the cadastral ones), each made of sections without a box. The tab is in the address
+ * (`?tab=`). The leases are asked of who may read them; without them the page works, has no tab of contracts and says nothing about
+ * who lives there.
  */
 export function LongRentPropertyDetailPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { hasPermission } = useWorkspace();
   const { data: property, isLoading, isError, error, refetch } = useProperty(id);
   const documents = usePropertyDocuments(id);
@@ -124,7 +103,6 @@ export function LongRentPropertyDetailPage() {
   // What the leases say of the property, with the rule of the list: let when a registered lease is in force, free otherwise.
   const row = leases.data ? longRentPropertyRows([property], leases.data, todayInRome(), aggregate.data)[0] : null;
   const leasesFailed = leases.isError && leases.data === undefined;
-  const hasApe = documents.data?.some((doc) => doc.documentType === 'Ape') ?? false;
 
   // A free property without a lease has its "Crea contratto" in the highlighted block; any other has it here, for another tenant.
   const blockCreatesLease = row?.status === 'Free' && !leaseOfRow(row);
@@ -135,6 +113,14 @@ export function LongRentPropertyDetailPage() {
       : []),
     ...(modeChangeItems.length > 0 ? [{ separator: true as const }, ...modeChangeItems] : []),
   ];
+
+  const panels = longRentPropertyPanels(canReadLeases);
+  const panel = longRentPropertyPanelOf(searchParams.get('tab'), panels);
+  const tabs: TabItem<LongRentPropertyPanel>[] = panels.map((value) => ({
+    value,
+    label: t(`longRentProperties.detail.tabs.${value}`),
+    testId: `long-rent-property-tab-${value}`,
+  }));
 
   return (
     <div className="min-w-0 space-y-6" data-testid="long-rent-property-page">
@@ -166,40 +152,13 @@ export function LongRentPropertyDetailPage() {
         <LongRentPropertyNextStep row={row} canCreateLease={canCreateLease} />
       ) : null}
 
-      <div className="space-y-8">
-        {leases.data ? <LongRentPropertyLeases leases={leases.data} /> : null}
-
-        <PlainSection title={t('longRentProperties.detail.infoTitle')}>
-          <div className="space-y-6">
-            <Facts>
-              <Fact label={t('longRentProperties.detail.address')}>{formatPropertyLocation(property)}</Fact>
-              <Fact label={t('longRentProperties.detail.rooms')}>
-                {[t('property.table.bedroomsCount', { count: property.bedrooms }), t('property.table.bathroomsCount', { count: property.bathrooms })].join(' · ')}
-              </Fact>
-              {property.description ? <Fact label={t('longRentProperties.detail.description')}>{property.description}</Fact> : null}
-            </Facts>
-            <PropertyCadastralCard key={property.updatedAt} property={property} />
-          </div>
-        </PlainSection>
-
-        {documents.isLoading ? (
-          <SkeletonLine lines={3} label={t('longRentProperties.detail.documentsLoading')} />
-        ) : documents.isError || !documents.data ? (
-          <ErrorState
-            testId="long-rent-documents-load-error"
-            title={t('longRentProperties.detail.documentsLoadError')}
-            error={documents.error}
-            onRetry={() => void documents.refetch()}
-          />
-        ) : (
-          <div className="space-y-3">
-            <ApeStatus hasApe={hasApe} />
-            <PropertyDocumentsSection propertyId={property.id} documents={documents.data} defaultUploadType="Ape" />
-          </div>
-        )}
-
-        <LongRentServiceRequests propertyId={property.id} />
-      </div>
+      {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
+      <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
+        {panel === 'contracts' && <ContractsPanel leases={leases.data} />}
+        {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}
+        {panel === 'requests' && <LongRentServiceRequests propertyId={property.id} />}
+        {panel === 'data' && <DataPanel property={property} />}
+      </Tabs>
     </div>
   );
 }
