@@ -19,6 +19,7 @@ src/features/site-maps/
     italy.ts         the national base (generated, see below)
     puglia.ts        detail of Puglia of the prototype: towns, roads, railways, built-up areas, tints
     puglia-handmade-coast.ts   the old hand-made coast, only for the review page
+  components/        RegionMap, LocalMap and their parts (DB-19b): see below
   load.ts            loads the data on demand (loadRegionData, regionsForView)
   mount-svg.ts       puts the SVG text in a page element as real SVG nodes (parsed as XML, nothing can run)
   index.ts           the public API
@@ -119,6 +120,46 @@ house, so that a house on the Tyrrhenian does not see the sea on the east. With 
 of the prototype (`redesign/assets/site-maps.js`).
 
 The SVG is `aria-hidden` and `focusable="false"`; the only text in it is the labels the caller passes (escaped).
+
+## Components (DB-19b)
+
+```
+components/
+  region-map.tsx / region-map-canvas.tsx   RegionMap: the shell (box, skeleton, error) and the map itself, loaded on demand
+  local-map.tsx / local-map-canvas.tsx     LocalMap, the same for the map of the zone
+  map-pin.tsx, map-cluster.tsx             a price pill; a bubble that stands for several houses that would overlap
+  map-controls.tsx, map-card.tsx           zoom, zoom out and «fit»; the card of the selected house (sheet on a phone)
+  map-skeleton.tsx                         the box that stands in while the code and the data load
+  use-map-view.ts, use-map-link.ts         the view (fitted to the pins until the person moves it); the list ↔ map link
+  place-pins.ts                            minimal shifts and grouping of pins that would overlap
+```
+
+**`RegionMap`** (`pins`, `selectedId`, `onSelect`, `activeId`, `onActiveChange`, `highlightIds`, `view`, `labels`, `aspect`):
+a pin is `{ id, lat, lon, label, name, href?, available?, unavailableNote?, tone?, card? }` with the position **already rounded**
+(see `publicPoint`); there is no field for an address or an interior, and nothing in the component computes a distance from
+coordinates. Each pin is a button with its own accessible name («Casa Bianca, 145 €», and «…, Non libera dal 12 ottobre» when it
+is not free: grey with stripes and an icon, never colour alone), in a list over the SVG, which is `aria-hidden`: the page has the
+same houses as a list. At least 44 px. Enter or Space select, Esc lets go, a second activation of the selected pin deselects.
+The map has the focus (arrows move it, `+` and `-` zoom, `0` fits) and the controls are buttons of 44 px with an announcement of
+the new width; dragging works with mouse and pen, and with touch only when the map fills its parent (a map inside a page keeps
+the scrolling of the page); the wheel zooms only with Ctrl or Cmd. The zoom stays between the whole of Italy and 8 km. The
+selected house has a card, over the map on a computer (without taking the focus), a sheet from the bottom on a phone (a touch
+outside or Esc closes it; the card is the link to the house). Pins that would sit on top of each other are shifted by a little
+(never more than the 1.5 km of the approximation) and, if that is not enough, grouped in a bubble with their number that brings
+the map closer; the selected pin, the lit one and the emphasised ones are never grouped. If loading fails the box says «Mappa non
+disponibile» with «Riprova»; positions outside Italy are not drawn («Posizione non disponibile»).
+
+**`LocalMap`** (`kind`, `seed`, `spanM`, `seaBearingDeg`, `pois`, `activeId`, `onActiveChange`, `addressUnlocked`): the scheme of
+the zone, a dashed circle for the approximate zone, the house at the centre and the points of interest (`{ id, type, name, mode,
+minutes, bearingDeg, distM }`, without coordinates) as buttons lit together with the rows of the list. Distances are compressed
+inside the drawing (the direction is true) and points farther than 20 km stay in the list. The note says the address arrives with
+the confirmation; after the unlock it says the address is in the booking. The address is never on the map.
+
+**`useMapLink()`** gives `activeId`, `setActiveId` and `bind(id)`: spread `bind(id)` on the cards or rows of the list and pass
+`activeId` / `onActiveChange` to the map; style the active row with `data-[map-active=true]:…`.
+
+Colours come from the tokens of the public site (`--cz-public-*`) with a neutral fallback, so the maps follow the theme of the host.
+The texts are in `siteMap.*` (IT and EN); `/dev/maps?s=components` shows everything on made-up houses.
 
 ## Rules
 
