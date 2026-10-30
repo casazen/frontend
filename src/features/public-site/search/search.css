@@ -342,3 +342,308 @@
     transform: none;
   }
 }
+
+/* ---------------------------------------------------------------- List and map side by side (DB-07c) */
+.sr-body {
+  min-width: 0;
+}
+
+.sr-main {
+  min-width: 0;
+}
+
+.sr-side {
+  min-width: 0;
+}
+
+.sr-map {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.sr-map__box {
+  flex: 1;
+  min-height: 380px;
+}
+
+.sr-map__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: 0.8rem;
+}
+
+.sr-map__note svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* On a phone the map is the page when the person asks for it: as tall as the screen allows. */
+.sr-body--map .sr-side {
+  height: min(72dvh, 640px);
+  min-height: 420px;
+}
+
+@media (min-width: 1024px) {
+  .sr-body--map {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 40%);
+    gap: clamp(20px, 2.4vw, 36px);
+    align-items: start;
+  }
+
+  .sr-body--map .sr-side {
+    position: sticky;
+    top: calc(var(--header-height, 4rem) + 12px);
+    height: calc(100dvh - var(--header-height, 4rem) - 24px);
+    min-height: 460px;
+  }
+}
+
+/* The button that changes between the list and the map, for a phone and a tablet. */
+.sr-toggle {
+  position: fixed;
+  z-index: 45;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--cz-public-text);
+  color: var(--cz-public-bg);
+  font: inherit;
+  font-weight: 700;
+  box-shadow: var(--cz-public-shadow-widget);
+  transform: translateX(-50%);
+  cursor: pointer;
+  transition: transform 150ms ease;
+}
+
+.sr-toggle:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
+.sr-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sr-toggle:focus-visible {
+  outline: 3px solid var(--cz-public-primary-text);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------------ Filters (DB-07c) */
+.sr-filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--cz-public-line-strong);
+  border-radius: 999px;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sr-filter:hover {
+  border-color: var(--cz-public-text);
+}
+
+.sr-filter svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sr-filter__n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+  font-size: 0.75rem;
+}
+
+.sr-active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-x {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sr-x:hover {
+  background: color-mix(in srgb, var(--cz-public-primary) 22%, var(--cz-public-surface));
+}
+
+.sr-x svg {
+  width: 15px;
+  height: 15px;
+}
+
+.sr-filters {
+  display: flex;
+  flex-direction: column;
+}
+
+.sr-ff {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: min(62dvh, 640px);
+  padding: 4px 2px 8px;
+  overflow-y: auto;
+}
+
+.sr-ff__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.sr-fs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 22px;
+  border: 0;
+  border-bottom: 1px solid var(--cz-public-border);
+}
+
+.sr-fs:last-child,
+.sr-ff__row .sr-fs {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sr-fs__t {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 0;
+  font-family: var(--cz-public-font-display);
+  font-size: 1.1rem;
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: var(--cz-public-display-tracking);
+}
+
+.sr-fs__o {
+  color: var(--cz-public-ink);
+  font-family: var(--cz-public-font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sr-range {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sr-range label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sr-range output {
+  color: var(--cz-public-muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-range input[type='range'] {
+  width: 100%;
+  min-height: 36px;
+  accent-color: var(--cz-public-primary);
+}
+
+.sr-ff__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sr-chipf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--cz-public-line-strong);
+  border-radius: 999px;
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sr-chipf svg {
+  width: 17px;
+  height: 17px;
+  color: var(--cz-public-ink);
+}
+
+.sr-chipf:has(input:checked) {
+  border-color: var(--cz-public-primary);
+  background: var(--cz-public-soft);
+  color: var(--cz-public-ink);
+}
+
+.sr-chipf:has(input:focus-visible) {
+  outline: 2px solid var(--cz-public-primary-text);
+  outline-offset: 2px;
+}
+
+.sr-filters__foot {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-toggle {
+    transition: none;
+  }
+}
