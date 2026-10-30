@@ -15,7 +15,7 @@ import { isGuestSessionRefused, useGuestBooking, useGuestSession } from '@/queri
 import { getProblemCode, getProblemMessage, getRetryAfterSeconds, isTransientRequestError } from '@/lib/api-errors';
 import { formatBookingCode, isValidBookingCode } from '@/lib/booking-code';
 import { formatRomeDateTime, formatStayDate, nightsBetween } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
+import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import type { GuestBookingDetails, GuestBookingLookupPayload, GuestBookingStatus, PublicOrgDto } from '@/types';
 import { GuestAreaSlot } from './guest-area-slot';
 
@@ -471,10 +471,12 @@ function AmountRow({
   currency: string;
   strong?: boolean;
 }) {
+  const money = useSiteMoney();
+
   return (
     <div className={`flex justify-between gap-4 ${strong ? 'font-semibold' : ''}`}>
       <dt>{label}</dt>
-      <dd>{formatCurrency(amount, currency)}</dd>
+      <dd>{money(amount, currency)}</dd>
     </div>
   );
 }

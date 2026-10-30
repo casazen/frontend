@@ -10238,6 +10238,39 @@
       "retry": "Riprova",
       "title": "Aggiungi immobile"
     },
+    "photos": {
+      "dropzone": {
+        "button": "Scegli le foto",
+        "title": "Trascina qui le foto"
+      },
+      "gallery": {
+        "moved": "Foto {{index}} spostata in posizione {{position}} di {{total}}."
+      },
+      "listing": {
+        "description": "Il titolo e la descrizione che gli ospiti leggono sul tuo sito. Puoi scriverli adesso o più tardi.",
+        "headline": {
+          "hint": "Breve e concreto, fino a 60 caratteri. Se lo lasci vuoto si usa il nome dell'immobile.",
+          "label": "Titolo"
+        },
+        "suggest": "Suggerisci un testo",
+        "suggested": "Testo composto con i dati che hai inserito: rivedilo e cambialo come vuoi.",
+        "text": {
+          "label": "Descrizione"
+        },
+        "title": "Il tuo annuncio",
+        "undo": "Annulla"
+      },
+      "queue": {
+        "dismiss": "Togli",
+        "failedFile": "«{{name}}» non è stata caricata. Riprova.",
+        "label": "Foto in caricamento",
+        "retry": "Riprova",
+        "uploading": "Carico…",
+        "waiting": "In attesa"
+      },
+      "recommended": "{{photos}} di {{recommended}} foto consigliate (non obbligatorie): puoi aggiungerne anche più tardi.",
+      "title": "Foto"
+    },
     "steps": {
       "amenities": {
         "label": "Dotazioni",
@@ -10248,7 +10281,32 @@
         "label": "Dati base",
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
+      },
+      "photos": {
+        "label": "Foto",
+        "purpose": "Consigliate, non obbligatorie: puoi saltare questo passo e aggiungerle dopo.",
+        "title": "Mostra la casa con qualche foto"
       }
+    },
+    "suggest": {
+      "amenities": "Tra le dotazioni: {{list}}.",
+      "and": "e",
+      "area": "Superficie: {{area}} m².",
+      "bathrooms_one": "{{count}} bagno",
+      "bathrooms_other": "{{count}} bagni",
+      "bedrooms_one": "{{count}} camera da letto",
+      "bedrooms_other": "{{count}} camere da letto",
+      "beds_one": "{{count}} letto",
+      "beds_other": "{{count}} letti",
+      "guests_one": "Ospita {{count}} persona.",
+      "guests_other": "Ospita fino a {{count}} persone.",
+      "intro": "{{type}} «{{name}}» a {{city}}.",
+      "introNoName": "{{type}} a {{city}}.",
+      "studio": "monolocale",
+      "title": "{{type}} a {{city}}",
+      "titleGuests_one": "{{type}} a {{city}} · {{count}} ospite",
+      "titleGuests_other": "{{type}} a {{city}} · {{count}} ospiti",
+      "typeFallback": "Alloggio"
     },
     "validation": {
       "address": {
@@ -10263,6 +10321,8 @@
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
+      "description": "La descrizione può avere al massimo 600 caratteri.",
+      "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
       "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
       "name": {
         "max": "Il nome può avere al massimo 100 caratteri.",
