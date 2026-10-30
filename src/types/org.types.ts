@@ -90,6 +90,27 @@ export interface PublicOrgDto {
   acceptsBookings?: boolean;
 }
 
+/**
+ * Body of `POST /api/public/orgs/{slug}/contact` (DB-03b, "Scrivi a {host}"): who writes, what, and the consent to send both to the
+ * host. It goes in the body, never in the address. The answer is a 202 with no body, the same whatever the site publishes.
+ */
+export interface HostContactPayload {
+  /** The address the host answers to (a plain address, at most 254 characters). */
+  email: string;
+  /** 5 to 2000 characters once trimmed. */
+  message: string;
+  /** At most 100 characters; left out when the visitor gave none. */
+  name?: string;
+  /** The home the visitor was looking at: counts only if it is a published home of the site. */
+  propertyId?: string;
+  /** The language of the site the visitor was reading, so that the host answers in it. */
+  lang?: 'it' | 'en';
+  /** The visitor agrees that the message and their address go to the host: always `true` (the backend refuses anything else). */
+  consent: true;
+  /** The honeypot: a field no person fills. Sent as it was found. */
+  website?: string;
+}
+
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */
 export type BrandingImageKind = 'logo' | 'hero';
 

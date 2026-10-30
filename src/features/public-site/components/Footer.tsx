@@ -1,8 +1,9 @@
 import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Lock, Phone } from 'lucide-react';
+import { Lock, Mail, Phone } from 'lucide-react';
 import { CasaZenLogo, CasaZenMark } from '@/components/brand/casazen-mark';
+import { ContactHostDialog } from '@/features/public-site/contact/contact-host-dialog';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { buildOrgBookingPath, buildPropertyBookingPath } from '@/lib/booking-url';
@@ -145,7 +146,9 @@ export function Footer({
   const housesShown = orgSlug ? (properties ?? []).slice(0, MAX_HOUSES) : [];
   const hostLabel = hostName?.trim() || null;
   const phoneNumber = phone?.trim() || null;
-  const hasContacts = Boolean(contactEmail || phoneNumber || acceptsBookings);
+  // "Scrivi a {host}" is always there on a host's site: the message goes to the address the host keeps, published or not.
+  const contactName = hostLabel || displayName || t('hostContact.theHost');
+  const hasContacts = Boolean(contactEmail || phoneNumber || acceptsBookings || operatorSite);
 
   return (
     <footer className="border-t bg-[var(--cz-public-surface)] text-sm" data-testid="public-site-footer">
@@ -250,6 +253,24 @@ export function Footer({
                     <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden />
                     {phoneNumber}
                   </a>
+                </li>
+              ) : null}
+              {operatorSite ? (
+                <li>
+                  <ContactHostDialog
+                    site={operatorSite}
+                    hostName={contactName}
+                    trigger={
+                      <button
+                        type="button"
+                        className={cn(LINK_CLASS, 'cursor-pointer gap-1.5 font-medium')}
+                        data-testid="footer-contact-host"
+                      >
+                        <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        {t('hostContact.trigger', { host: contactName })}
+                      </button>
+                    }
+                  />
                 </li>
               ) : null}
             </ul>
