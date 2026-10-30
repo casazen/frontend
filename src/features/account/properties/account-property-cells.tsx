@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Home, Sun } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status/status-badge';
+import { useDayLabel } from '@/features/properties/mode/use-mode-labels';
 import { missingText, type AccountPropertyRow } from './account-properties-model';
 
 /** The mark of a cell whose answer is not there: nothing is claimed, and a screen reader is told why it is empty. */
@@ -14,14 +15,34 @@ export function Unknown() {
   );
 }
 
-/** How the property is let, with the icon of its area: an icon and a word, never the icon alone. */
+/**
+ * The change of mode that waits for its day, in words: «Passaggio all'affitto lungo il 1 dicembre 2026» (AM-13b). Nothing when none does:
+ * the list asks for it with the overview, so every row says it without a request of its own.
+ */
+export function ScheduledChange({ row, className }: { row: Pick<AccountPropertyRow, 'property'>; className?: string }) {
+  const { t } = useTranslation();
+  const dayLabel = useDayLabel();
+  const change = row.property.scheduledModeChange;
+  if (!change || change.status !== 'Scheduled') return null;
+
+  return (
+    <span className={className ?? 'break-words text-sm font-normal text-foreground/70'} data-testid="account-property-scheduled-change">
+      {t(change.toMode === 'Long' ? 'propertyMode.notice.toLong' : 'propertyMode.notice.toShort', { date: dayLabel(change.effectiveDate) })}
+    </span>
+  );
+}
+
+/** How the property is let, with the icon of its area: an icon and a word, never the icon alone; under it the change that waits for its day. */
 export function ModeTag({ row }: { row: AccountPropertyRow }) {
   const { t } = useTranslation();
   const Icon = row.mode === 'Long' ? Home : Sun;
   return (
-    <span className="inline-flex max-w-full items-center gap-1.5">
-      <Icon aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
-      <span className="min-w-0 break-words">{t(row.mode === 'Long' ? 'accountProperties.mode.long' : 'accountProperties.mode.short')}</span>
+    <span className="flex min-w-0 max-w-full flex-col items-start gap-0.5">
+      <span className="inline-flex max-w-full items-center gap-1.5">
+        <Icon aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+        <span className="min-w-0 break-words">{t(row.mode === 'Long' ? 'accountProperties.mode.long' : 'accountProperties.mode.short')}</span>
+      </span>
+      <ScheduledChange row={row} />
     </span>
   );
 }

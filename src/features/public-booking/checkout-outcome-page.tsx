@@ -13,7 +13,7 @@ import {
 } from '@/lib/booking-url';
 import { clearPendingCheckout } from '@/lib/pending-checkout';
 import { formatRomeDateTime, formatStayDate, nightsBetween } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
+import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import { StripeIntentPayment } from '@/features/public-booking/components/stripe-intent-payment';
 import {
   MAX_POLL_ATTEMPTS,
@@ -530,6 +530,7 @@ function InfoCard({ label, children }: { label: string; children: ReactNode }) {
 
 function StaySummary({ outcome }: { outcome: CheckoutOutcome }) {
   const { t, i18n } = useTranslation();
+  const money = useSiteMoney();
   const nights = nightsBetween(outcome.checkInDate, outcome.checkOutDate);
   return (
     <div className="bg-card rounded-lg p-4 space-y-1 text-left" data-testid="checkout-outcome-summary">
@@ -542,7 +543,7 @@ function StaySummary({ outcome }: { outcome: CheckoutOutcome }) {
         })}
       </p>
       <p className="text-sm">
-        {t('publicBooking.totale')}: {formatCurrency(outcome.totalPrice, outcome.currency)}
+        {t('publicBooking.totale')}: {money(outcome.totalPrice, outcome.currency)}
       </p>
     </div>
   );

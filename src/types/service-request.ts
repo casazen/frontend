@@ -127,13 +127,62 @@ export interface SupplierHostContact {
 }
 
 /**
+ * One line of the price of a request in cents of euro: `base` (the agreed price), `quote` (a line of the quote the customer accepted,
+ * SP-04b: the lines add up to the agreed price) or `extra`. An open set: a line of a kind this version does not know is shown as it comes.
+ */
+export interface ServiceRequestPriceLine {
+  kind: string;
+  label: string;
+  amountCents: number;
+}
+
+/**
  * The price of a request in cents of euro (SP-04): `amountCents` is the one to show (the final amount, else the quote, else the
  * estimate; empty is "da concordare").
  */
 export interface SupplierRequestPrice {
   amountCents?: number | null;
+  /** The price agreed when the request was taken (the total of the quote the customer accepted): the reference of the +20 % rule (D7). */
+  quotedAmountCents?: number | null;
+  /** The total the supplier declared when it completed the work. */
+  finalAmountCents?: number | null;
+  /** Which amount `amountCents` is: `final`, `quoted` or `estimated`. */
+  basis?: string | null;
   /** The final amount is more than 20 % above the quote: the customer has to confirm it (decision D7). */
   needsCustomerConfirmation?: boolean;
+  /** What the final price is made of: the agreed price (the lines of an accepted quote) and the extras. */
+  lines?: ServiceRequestPriceLine[];
+}
+
+/** One line of a quote (SP-04b): what it is for and how much, in cents of euro. */
+export interface ServiceRequestQuoteLine {
+  label: string;
+  amountCents: number;
+}
+
+/**
+ * The quote the supplier sent and the customer (the host, or the private customer of the showcase) has not answered (SP-04b): the
+ * request stays new with `phase` `quote_pending`. `sentAt` is the version of the quote. The request keeps its own time until the customer
+ * accepts: `scheduledStart` and `scheduledEnd` are another time the quote offers, if it does; it holds no slot.
+ */
+export interface ServiceRequestQuote {
+  sentAt: string;
+  lines: ServiceRequestQuoteLine[];
+  /** What the lines add up to: the price agreed if the quote is accepted. */
+  totalCents: number;
+  note?: string | null;
+  scheduledStart?: string | null;
+  scheduledEnd?: string | null;
+  /** Until when the customer of a showcase request can answer; empty for a host, who has no deadline. */
+  answerBy?: string | null;
+}
+
+/** `POST service-requests/{id}/quote` (SP-04b): 1 to 20 lines, a note, and optionally another time instead of the one the request has. */
+export interface SendServiceRequestQuoteDto {
+  lines: ServiceRequestQuoteLine[];
+  note?: string;
+  scheduledStartUtc?: string;
+  scheduledEndUtc?: string;
 }
 
 /**
@@ -148,9 +197,18 @@ export interface SupplierRequestPayment {
   commissionCents?: number | null;
   netCents?: number | null;
   paidAt?: string | null;
+  /** `Stripe` or `Offline`; empty until it is paid. */
+  paidVia?: string | null;
+  /** When the payer was last sent a link, and how many e-mails (the request and its reminders) were sent: one a day at most. */
+  lastSentAt?: string | null;
+  sentCount?: number;
   /** The payer was asked for the payment and is late. */
   late?: boolean;
   needsAmountConfirmation?: boolean;
+  /** The server would accept a request for the payment, or a reminder, now (false while `SupplierOnlinePayments` is off). */
+  canRequest?: boolean;
+  /** The server would accept «Ho incassato fuori da CasaZen» now (also with online payments off); a reason is mandatory for a request paid in CasaZen. */
+  canRecordOffline?: boolean;
 }
 
 /**
@@ -197,7 +255,9 @@ export interface SupplierServiceRequest {
   respondBy?: string | null;
   startedAt?: string | null;
   price?: SupplierRequestPrice;
-  /** Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`, `CancelledByCustomer`. */
+  /** The quote sent and not answered yet (SP-04b), while `phase` is `quote_pending`; empty otherwise. */
+  quote?: ServiceRequestQuote | null;
+  /** Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`, `QuoteNotAnswered`, `CancelledByCustomer`. */
   cancelledBy?: string | null;
   cancellationReason?: string | null;
   /** `Online` (paid inside CasaZen) or `Manual` (paid outside, the host marks it). */
@@ -208,8 +268,9 @@ export interface SupplierServiceRequest {
    */
   autoAccepted?: boolean;
   /**
-   * Where the request is for the console, worked out once by the server (SP-04e): `to_answer`, `proposal_pending`, `scheduled`,
-   * `in_progress`, `completed`, `paid`, `rejected`, `cancelled`. An open set: a value this version does not know is read from `status`.
+   * Where the request is for the console, worked out once by the server (SP-04e): `to_answer`, `proposal_pending`, `quote_pending`
+   * (SP-04b), `scheduled`, `in_progress`, `completed`, `paid`, `rejected`, `cancelled`. An open set: a value this version does not know
+   * is read from `status`.
    */
   phase?: string;
   payment?: SupplierRequestPayment | null;
@@ -227,6 +288,12 @@ export interface ServiceRequestHistoryEntry {
   actorName?: string | null;
   /** Rejection or cancellation reason, on the `Rifiutato` and `Annullato` steps: a text, or a code (see `cancellationReason`). */
   reason?: string | null;
+  /**
+   * What the step says beyond its status (SP-04b; the supplier's console only): `quote_sent`, `quote_rejected`, `quote_withdrawn` (steps of
+   * `Richiesto`), `quote_accepted` (the `PresoInCarico` step that took the request on a quote) or `quote_expired` (the `Annullato` step of a
+   * quote nobody answered). An open set: a step with an event this version does not know is shown by its status.
+   */
+  event?: string | null;
 }
 
 /** `GET /supplier/inbox/{id}`: the request and its history (SU-08). */
@@ -253,6 +320,8 @@ export interface CreateServiceRequestDto {
   scheduledStartUtc?: string;
   /** How long the work lasts, in minutes. */
   durationMinutes?: number;
+  /** The service of the supplier's catalog the request is for (`SupplierPickerService.id`): its name and price are kept with the request. Its category must be `category`. */
+  serviceListingId?: string;
 }
 
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */

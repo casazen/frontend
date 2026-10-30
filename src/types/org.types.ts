@@ -75,6 +75,8 @@ export interface PublicOrgDto {
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
   publicThemeId?: string | null;
+  /** The font pair the host chose (see `src/lib/public-site-themes.ts`), or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   showPoweredBy?: boolean;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
@@ -95,6 +97,8 @@ export interface OrgBranding {
   primaryColor: string | null;
   /** Always one of the supported theme ids. */
   publicThemeId: string;
+  /** The font pair the host chose, or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   tagline: string | null;
   /** Public slug (preview link /book/{slug}), edited in the org settings. */
   slug: string;
@@ -106,6 +110,8 @@ export interface OrgBranding {
 export interface UpdateOrgBrandingRequest {
   primaryColor: string | null;
   publicThemeId: string;
+  /** The font pair (null = the font of the theme). Left out, the backend keeps the stored choice. */
+  publicFontId?: string | null;
   tagline: string | null;
 }
 
@@ -121,7 +127,14 @@ export interface OrgSettings {
   legalName?: string | null;
   /** Registered office ("sede legale") of the operator, one line, shown in the same footer (DB-03b-a). */
   registeredOffice?: string | null;
+  /** Phone number of the account (AM-08b-b), never published; null while not entered, absent on an older backend. */
+  contactPhone?: string | null;
+  /** Language of the account (AM-08b-b): the language of the emails to the team when nobody chooses another; absent on an older backend. */
+  defaultLanguage?: OrgLanguage;
 }
+
+/** The languages of an account: Italian (the default) or English. */
+export type OrgLanguage = 'it' | 'en';
 
 export interface UpdateOrgSettingsRequest {
   name: string;
@@ -131,6 +144,9 @@ export interface UpdateOrgSettingsRequest {
   /** Operator data (DB-03b-a): left out = unchanged on the server, an empty string clears it. */
   legalName?: string;
   registeredOffice?: string;
+  /** Phone and language of the account (AM-08b-b), same rule: left out = unchanged, an empty phone clears it, an empty language is Italian. */
+  contactPhone?: string;
+  defaultLanguage?: OrgLanguage;
 }
 
 /** GET /api/orgs/me/settings/slug-availability (A1-23). */

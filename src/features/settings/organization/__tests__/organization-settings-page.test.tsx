@@ -189,9 +189,11 @@ describe('OrganizationSettingsPage', () => {
         slug: 'new-slug',
         contactEmail: 'new@example.com',
         contactEmailPublic: true,
-        // The operator data (DB-03b-a) always travel with the form: empty = not entered.
+        // The operator data (DB-03b-a) and the phone and language of the account (AM-08b-b) always travel with the form: empty = not entered.
         legalName: '',
         registeredOffice: '',
+        contactPhone: '',
+        defaultLanguage: 'it',
       }),
     );
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('orgSettings.saved')));

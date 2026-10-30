@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { CONNECT_STATUS_KEY, useConnectStatus, useStartConnectOnboarding } from '@/queries/use-connect';
+import { CONNECT_STATUS_KEY, useConnectStatus, useOpenStripeDashboard, useStartConnectOnboarding } from '@/queries/use-connect';
 import { resolveConnectUiStatus } from '@/types/connect.types';
 
 /**
@@ -16,6 +16,7 @@ export function useConnectPayments(enabled = true) {
 
   const query = useConnectStatus(stripeReturn, enabled);
   const startOnboarding = useStartConnectOnboarding();
+  const openDashboard = useOpenStripeDashboard();
 
   useEffect(() => {
     if (!stripeReturn) return;
@@ -33,6 +34,7 @@ export function useConnectPayments(enabled = true) {
     isFetching: query.isFetching,
     refetch: query.refetch,
     startOnboarding,
+    openDashboard,
   };
 }
 

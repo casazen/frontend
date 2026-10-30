@@ -109,7 +109,7 @@ describe('PublicSiteShell states and colors (BK-13)', () => {
     expect(style.getPropertyValue('--cz-public-primary')).toBe('#f4d03f');
     expect(contrastRatio(onPrimary, '#f4d03f')).toBeGreaterThanOrEqual(4.5);
     // The variant of the primary used as text/focus ring must be readable on the mare background and cards.
-    expect(contrastRatio(primaryText, '#f6f1e7')).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(primaryText, '#f3f7f6')).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(primaryText, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
@@ -128,11 +128,11 @@ describe('PublicSiteShell states and colors (BK-13)', () => {
   });
 
   it('PublicSiteShell_NoHostColor_LeavesTheThemeTokensUntouched', () => {
-    mockOrg({ data: { ...org, publicThemeId: 'urban' } });
+    mockOrg({ data: { ...org, publicThemeId: 'citta' } });
     renderShell();
 
     const shell = screen.getByTestId('public-site-shell');
-    expect(shell).toHaveAttribute('data-theme', 'urban');
+    expect(shell).toHaveAttribute('data-theme', 'citta');
     expect(shell.style.getPropertyValue('--cz-public-on-primary')).toBe('');
     expect(shell.style.getPropertyValue('--cz-public-primary-text')).toBe('');
   });
