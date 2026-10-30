@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { leaseOperationsApi } from '@/api/lease-operations.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseLetterKind, MarkLetterSentInput } from '@/types';
+import type { IstatCalculationInput, LeaseLetterKind, MarkLetterSentInput } from '@/types';
 import { LEASES_KEY } from './use-leases';
 
 /** The operations of a lease hang from the lease (`['leases', id, …]`): whatever refreshes the lease refreshes them too. */
@@ -20,6 +20,20 @@ export function useLeaseOperations(leaseId: string, enabled = true) {
     queryFn: () => leaseOperationsApi.get(leaseId),
     enabled,
     refetchOnMount: 'always',
+    retry: false,
+  });
+}
+
+/**
+ * The ISTAT update worked out by the server (`POST /leases/:id/istat/calculate`, LR-OPS-1c) for the percentages typed: a read that writes
+ * nothing, asked only when `input` is there (the percentages are valid numbers) and not retried (a refusal is told, not repeated). The
+ * answer carries the percentages it was worked out for, so a screen shows a figure only while it is the one of the percentages typed.
+ */
+export function useIstatCalculation(leaseId: string, input: IstatCalculationInput | null) {
+  return useQuery({
+    queryKey: [LEASES_KEY, leaseId, 'istat-calculation', input?.foiPercent ?? null, input?.sharePercent ?? null] as const,
+    queryFn: () => leaseOperationsApi.calculateIstat(leaseId, input as IstatCalculationInput),
+    enabled: input !== null,
     retry: false,
   });
 }

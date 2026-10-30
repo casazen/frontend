@@ -5072,13 +5072,13 @@
         "why": "The report records the state of the property at the handover: at the end of the lease you need it to check for damage and to give the deposit back. In our models the utilities are the tenant's, who puts them in their own name."
       },
       "istatConcordato": {
-        "action": "Go to payments",
+        "action": "Calculate the update",
         "body": "From the second year you can ask in writing for the rent to be adjusted, up to the maximum set by the agreement of your municipality. It applies from the request, not retroactively.",
         "title": "You can ask for the ISTAT update of the rent",
         "why": "In the canone concordato the ISTAT update is allowed only within the limits of the agreement of the municipality: in the Monza e Brianza one it is a share of the change in the index. In our model the update starts from the first instalment after the written request. With the cedolare secca it cannot be asked for."
       },
       "istatLibero": {
-        "action": "Go to payments",
+        "action": "Calculate the update",
         "body": "From the second year you can ask in writing for the rent to be adjusted to the ISTAT change, by the share written in the contract. It applies from the request, not retroactively.",
         "title": "You can ask for the ISTAT update of the rent",
         "why": "In the 4+4 the law sets no cap on the update: the parties write the share in the contract. In our model the update starts from the first instalment after the written request and does not recover past years. If you chose the cedolare secca it cannot be asked for."
@@ -5498,6 +5498,20 @@
     "rentToDefine": "Rent to be set"
   },
   "leaseOperations": {
+    "cedolare": {
+      "dialog": {
+        "description": "CasaZen writes the draft with the data of the contract. You sign it and send it by registered mail: we don't write to the tenant.",
+        "effectiveHint": "The first day of the year the option refers to. If you leave it out, the letter leaves it to complete.",
+        "effectiveInvalid": "Choose a day between {{from}} and {{to}}.",
+        "effectiveLabel": "The option applies from (optional)",
+        "note": "With the cedolare secca you give up the updates of the rent for as long as the option lasts. If your contract already says so, like our model does, the letter isn't needed.",
+        "title": "Tell the tenant about the cedolare secca"
+      },
+      "open": "Prepare the communication",
+      "summary": "With the cedolare secca the rent is not updated. The choice and the renunciation are communicated to the tenant by registered mail, if the contract does not already say it.",
+      "summarySent": "Letter marked as sent on {{date}} ({{means}}).",
+      "title": "Option for the cedolare secca"
+    },
     "disdetta": {
       "dialog": {
         "description": "CasaZen writes the draft with the data of the contract. You sign it and send it: we don't write to the tenant.",
@@ -5524,6 +5538,28 @@
       "label": "Download the draft"
     },
     "draftNote": "The text is a draft that has not been approved yet: the PDF carries the word DRAFT (BOZZA). Have it reviewed before you send it.",
+    "istat": {
+      "dialog": {
+        "description": "CasaZen works out the new rent and writes the draft of the request. You sign it and send it: we don't write to the tenant.",
+        "effectiveHint": "It applies from the request, it does not recover the past.",
+        "effectiveInvalid": "Choose a day between {{from}} and {{to}}.",
+        "effectiveLabel": "The new rent applies from",
+        "foiHint": "The change in consumer prices (FOI index) that ISTAT publishes for the period the contract names. You write it: CasaZen does not look it up.",
+        "foiInvalid": "Write a percentage above zero, for example 3.2. With a zero or negative variation the rent does not go up.",
+        "foiLabel": "Variation of the FOI index (%)",
+        "note": "Ask for the update only if the contract provides for it, to the extent it states. CasaZen does not change the rent in the payment plan by itself: the installments already issued stay as they are.",
+        "result": "The rent goes from {{from}} to {{to}} a month: {{increase}} more, that is {{percent}}% ({{share}}% of the variation).",
+        "resultPending": "Write the variation of the index: we tell you what the rent becomes.",
+        "shareHint": "The part of the variation the contract recognizes. The suggested value is the one of a reference agreement: check your contract.",
+        "shareInvalid": "Write a percentage above zero and not above {{max}}.",
+        "shareLabel": "Share recognized by the contract (%)",
+        "title": "Calculate the ISTAT update"
+      },
+      "open": "Calculate the update",
+      "summary": "If the contract provides for it, you can ask for the rent to be updated: write the variation of the index and we work out the new amount.",
+      "summarySent": "Request marked as sent on {{date}} ({{means}}).",
+      "title": "ISTAT update of the rent"
+    },
     "means": {
       "ByHand": "Delivered by hand",
       "Other": "Another way",

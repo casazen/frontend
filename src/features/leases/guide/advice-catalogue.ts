@@ -244,7 +244,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: IN_FORCE,
     when: (f) => f.taxRegime === 'Ordinario',
     priority: 44,
-    action: tab('pagamenti'),
+    action: operation('istat'),
     sources: ['law431'],
   },
   {
@@ -253,7 +253,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: IN_FORCE,
     when: (f) => f.taxRegime === 'Ordinario',
     priority: 44,
-    action: tab('pagamenti'),
+    action: operation('istat'),
     sources: ['dm2017'],
   },
   {

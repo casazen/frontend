@@ -3,9 +3,13 @@ import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type {
   DisdettaLetterInput,
+  IstatCalculationInput,
+  IstatLetterInput,
+  LeaseIstatCalculation,
   LeaseLetterKind,
   LeaseOperations,
   MarkLetterSentInput,
+  OpzioneCedolareLetterInput,
   RenewalLetterInput,
   TenantWithdrawalInput,
 } from '@/types';
@@ -20,7 +24,26 @@ const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   PresaAttoRecesso: 'presa-atto-recesso',
   Rinnovo: 'rinnovo',
   ConfermaEsigenza: 'conferma-esigenza',
+  AggiornamentoIstat: 'aggiornamento-istat',
+  OpzioneCedolare: 'opzione-cedolare',
 };
+
+/** What the server answers for a calculation of the ISTAT update: numbers, or it is not an answer. */
+function expectIstatCalculation(data: unknown, url: string): LeaseIstatCalculation {
+  if (!isRecord(data)) throw new UnexpectedApiResponseError(url);
+  const { currentRent, foiPercent, sharePercent, appliedPercent, increase, newRent } = data;
+  if (
+    typeof currentRent !== 'number' ||
+    typeof foiPercent !== 'number' ||
+    typeof sharePercent !== 'number' ||
+    typeof appliedPercent !== 'number' ||
+    typeof increase !== 'number' ||
+    typeof newRent !== 'number'
+  ) {
+    throw new UnexpectedApiResponseError(url);
+  }
+  return { currentRent, foiPercent, sharePercent, appliedPercent, increase, newRent };
+}
 
 /** What the server answers for the operations: anything else (an HTML fallback, an envelope) is not an answer. */
 function expectOperations(data: unknown, url: string): LeaseOperations {
@@ -30,7 +53,9 @@ function expectOperations(data: unknown, url: string): LeaseOperations {
     !isRecord(data.withdrawal) ||
     !Array.isArray(data.letters) ||
     !isRecord(data.renewal) ||
-    !isRecord(data.transitoryConfirmation)
+    !isRecord(data.transitoryConfirmation) ||
+    !isRecord(data.istat) ||
+    !isRecord(data.cedolareNotice)
   ) {
     throw new UnexpectedApiResponseError(url);
   }
@@ -72,6 +97,28 @@ export const leaseOperationsApi = {
    */
   downloadConfermaEsigenza: async (id: string): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.ConfermaEsigenza}`, {}, { responseType: 'blob' })).data,
+
+  /**
+   * The ISTAT update of the rent worked out by the server from the variation of the FOI index and the share the person typed. Nothing is
+   * written and no external service is called. 422 `lease_istat_waived` (cedolare secca), `lease_istat_no_rent`, `lease_istat_percent_invalid`,
+   * `lease_istat_no_increase`; 409 `lease_not_in_force`, `lease_already_terminated`.
+   */
+  calculateIstat: async (id: string, input: IstatCalculationInput): Promise<LeaseIstatCalculation> =>
+    expectIstatCalculation(await ApiClient.post<unknown>(`/leases/${id}/istat/calculate`, input), '/leases/:id/istat/calculate'),
+
+  /**
+   * The draft of the request to update the rent, as a PDF, with the numbers of the calculation, from `effectiveFrom` (never in the past, not
+   * after the period: 422 `lease_letter_effect_date_invalid`).
+   */
+  downloadAggiornamentoIstat: async (id: string, input: IstatLetterInput): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.AggiornamentoIstat}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * The draft of the communication to the tenant that the landlord has chosen the cedolare secca, with the renunciation of the updates of the
+   * rent, as a PDF. 422 `lease_letter_not_applicable` when the lease is not under the cedolare secca.
+   */
+  downloadOpzioneCedolare: async (id: string, input: OpzioneCedolareLetterInput): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.OpzioneCedolare}`, input, { responseType: 'blob' })).data,
 
   /** Marks a letter as sent on a day, by a means: an event in the history and nothing else. The answer is the operations as they are now. */
   markSent: async (id: string, kind: LeaseLetterKind, input: MarkLetterSentInput): Promise<LeaseOperations> =>

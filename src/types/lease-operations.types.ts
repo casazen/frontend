@@ -5,7 +5,7 @@
  */
 
 /** The letters CasaZen prepares (backend `LeaseLetterKind`). A name is never renamed. */
-export type LeaseLetterKind = 'Disdetta' | 'PresaAttoRecesso' | 'Rinnovo' | 'ConfermaEsigenza';
+export type LeaseLetterKind = 'Disdetta' | 'PresaAttoRecesso' | 'Rinnovo' | 'ConfermaEsigenza' | 'AggiornamentoIstat' | 'OpzioneCedolare';
 
 /** How the person sent a letter (backend `LeaseLetterMeans`). */
 export const LEASE_LETTER_MEANS = ['RegisteredMail', 'Pec', 'ByHand', 'Other'] as const;
@@ -120,12 +120,49 @@ export interface LeaseTransitoryConfirmation {
   confirmBy: string;
 }
 
+/**
+ * The ISTAT update of the rent. `available`: the lease is in force, has a rent and is not under the cedolare secca (which suspends every update),
+ * so a calculation and a letter make sense. `currentRent` is the monthly rent today; `defaultSharePercent` the share the window suggests (the
+ * contract states the real one) and `maxSharePercent` the most a share can be; the update can start from a day between `minEffectiveOn` (never
+ * in the past) and `maxEffectiveOn` (the end of the period).
+ */
+export interface LeaseIstatOperation {
+  available: boolean;
+  currentRent: number;
+  defaultSharePercent: number;
+  maxSharePercent: number;
+  minEffectiveOn: string;
+  maxEffectiveOn: string;
+}
+
+/**
+ * The communication of the cedolare secca to the tenant. `available`: the lease is in force and under the cedolare secca; the option can be
+ * said to apply from a day between `minEffectiveOn` and `maxEffectiveOn`.
+ */
+export interface LeaseCedolareNotice {
+  available: boolean;
+  minEffectiveOn: string;
+  maxEffectiveOn: string;
+}
+
+/** The ISTAT update worked out by the server: the rent, the percentages typed, what they make of the rent, the increase and the new rent (to the cent). */
+export interface LeaseIstatCalculation {
+  currentRent: number;
+  foiPercent: number;
+  sharePercent: number;
+  appliedPercent: number;
+  increase: number;
+  newRent: number;
+}
+
 export interface LeaseOperations {
   disdetta: LeaseDisdettaOperation;
   withdrawal: LeaseWithdrawalOperation;
   letters: LeaseLetterState[];
   renewal: LeaseRenewalOperation;
   transitoryConfirmation: LeaseTransitoryConfirmation;
+  istat: LeaseIstatOperation;
+  cedolareNotice: LeaseCedolareNotice;
 }
 
 /** `POST /leases/:id/letters/disdetta`: the reason of the law, required at the first expiry. */
@@ -151,6 +188,22 @@ export interface RenewalLetterInput {
   startsOn: string;
   endsOn: string;
   agreed?: boolean;
+}
+
+/** `POST /leases/:id/istat/calculate`: the variation of the FOI index (percent) and the share of it the contract recognizes (percent). */
+export interface IstatCalculationInput {
+  foiPercent: number;
+  sharePercent: number;
+}
+
+/** `POST /leases/:id/letters/aggiornamento-istat`: the same percentages and the day the new rent applies from. */
+export interface IstatLetterInput extends IstatCalculationInput {
+  effectiveFrom: string;
+}
+
+/** `POST /leases/:id/letters/opzione-cedolare`: the first day the option applies from, when the person says it. */
+export interface OpzioneCedolareLetterInput {
+  effectiveFrom?: string;
 }
 
 /** `POST /leases/:id/letters/:kind/sent`. */

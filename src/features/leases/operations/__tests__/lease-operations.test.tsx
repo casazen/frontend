@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
@@ -8,8 +8,9 @@ import { buildDetail, httpError, renderAt } from '../../__tests__/lease-test-uti
 import { LeaseOperations } from '../lease-operations';
 
 // LR-OPS-1: the letters are drafts the person downloads, a withdrawal is recorded only when its notice runs out inside the period the lease
-// is in, a renewal only in its window and never over another lease of the property, and the need of a transitory lease is confirmed only
-// when it is the landlord's. The real client and queries run; the server is the mock of the HTTP client.
+// is in, a renewal only in its window and never over another lease of the property, the need of a transitory lease is confirmed only when it
+// is the landlord's, and the rent is updated by the ISTAT variation with the numbers the server works out (never under the cedolare secca).
+// The real client and queries run; the server is the mock of the HTTP client.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 
@@ -29,6 +30,7 @@ const RULES = {
   transitoryBandFromInhabitants: 10_000,
 };
 
+/** An ordinary-regime lease in force, in the last stretch of its first period: every operation is on except the ones of the other cases. */
 const OPERATIONS: LeaseOperationsData = {
   disdetta: { available: true, firstPeriod: true, periodEnd: '2027-01-31', lastDayToGiveNotice: '2026-07-31', late: false, reasons: ['OwnUse', 'Sale'] },
   withdrawal: { available: true, minReceivedOn: '2025-11-01', maxReceivedOn: '2026-10-29', maxContractualNoticeMonths: 12, recorded: null },
@@ -37,6 +39,8 @@ const OPERATIONS: LeaseOperationsData = {
     { kind: 'PresaAttoRecesso', approved: false, sent: null },
     { kind: 'Rinnovo', approved: false, sent: null },
     { kind: 'ConfermaEsigenza', approved: false, sent: null },
+    { kind: 'AggiornamentoIstat', approved: false, sent: null },
+    { kind: 'OpzioneCedolare', approved: false, sent: null },
   ],
   renewal: {
     available: true,
@@ -49,6 +53,17 @@ const OPERATIONS: LeaseOperationsData = {
     recorded: null,
   },
   transitoryConfirmation: { applies: false, available: false, holder: null, confirmBy: '2027-01-31' },
+  istat: { available: true, currentRent: 650, defaultSharePercent: 75, maxSharePercent: 100, minEffectiveOn: '2026-10-10', maxEffectiveOn: '2027-01-31' },
+  cedolareNotice: { available: false, minEffectiveOn: '2025-11-01', maxEffectiveOn: '2027-01-31' },
+};
+
+/** Nothing to do: every operation is off, so the section is not drawn at all. */
+const NOTHING_TO_DO: LeaseOperationsData = {
+  ...OPERATIONS,
+  disdetta: { ...OPERATIONS.disdetta, available: false },
+  withdrawal: { ...OPERATIONS.withdrawal, available: false },
+  renewal: { ...OPERATIONS.renewal, available: false },
+  istat: { ...OPERATIONS.istat, available: false },
 };
 
 /** A lease that began on 1 November 2025 and whose period ends on 31 January 2027. */
@@ -58,6 +73,8 @@ const LEASE: LeaseDetail = buildDetail({
   endDate: '2027-01-31T00:00:00Z',
   currentTermEndDate: '2027-01-31T00:00:00Z',
 });
+
+const CALCULATION = { currentRent: 650, foiPercent: 3.2, sharePercent: 75, appliedPercent: 2.4, increase: 15.6, newRent: 665.6 };
 
 function mockServer(operations: LeaseOperationsData = OPERATIONS) {
   get.mockImplementation((url: string) => {
@@ -69,6 +86,13 @@ function mockServer(operations: LeaseOperationsData = OPERATIONS) {
 
 function renderOperations(search: string) {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseOperations, { lease: LEASE }));
+}
+
+/** Lets the answer of the mocked server reach the screen: what must NOT be there is checked after this, not before the answer exists. */
+async function settled() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
 }
 
 describe('LeaseOperations', () => {
@@ -185,24 +209,15 @@ describe('LeaseOperations', () => {
 
   it('renewal_TheRowFollowsTheWindow_AndOnceRecordedOffersTheNextStepsWithTheAgreement', async () => {
     // Window closed and nothing recorded: no row at all.
-    mockServer({
-      ...OPERATIONS,
-      disdetta: { ...OPERATIONS.disdetta, available: false },
-      withdrawal: { ...OPERATIONS.withdrawal, available: false },
-      renewal: { ...OPERATIONS.renewal, available: false },
-    });
+    mockServer(NOTHING_TO_DO);
     const { unmount } = renderOperations('');
-    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations'));
+    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations', expect.anything()));
+    await settled();
     expect(screen.queryByTestId('lease-operations')).not.toBeInTheDocument();
     unmount();
 
     // Window closed and recorded: the row says where the contract goes on to, and the window offers the next steps and the agreement.
-    mockServer({
-      ...OPERATIONS,
-      disdetta: { ...OPERATIONS.disdetta, available: false },
-      withdrawal: { ...OPERATIONS.withdrawal, available: false },
-      renewal: { ...OPERATIONS.renewal, available: false, recorded: { agreed: false, from: '2027-02-01', to: '2031-01-31' } },
-    });
+    mockServer({ ...NOTHING_TO_DO, renewal: { ...OPERATIONS.renewal, available: false, recorded: { agreed: false, from: '2027-02-01', to: '2031-01-31' } } });
     post.mockResolvedValue({ data: new Blob(['%PDF']) });
     renderOperations('?operazione=rinnovo');
 
@@ -236,25 +251,15 @@ describe('LeaseOperations', () => {
 
   it('needConfirmation_OnlyWhenTheNeedIsTheLandlords_ThePersonDownloadsTheDraftOfTheLetter', async () => {
     // The need is the tenant's: there is no letter to prepare, so there is no row and the address opens nothing.
-    mockServer({
-      ...OPERATIONS,
-      disdetta: { ...OPERATIONS.disdetta, available: false },
-      withdrawal: { ...OPERATIONS.withdrawal, available: false },
-      renewal: { ...OPERATIONS.renewal, available: false },
-      transitoryConfirmation: { applies: true, available: false, holder: 'Tenant', confirmBy: '2027-01-31' },
-    });
+    mockServer({ ...NOTHING_TO_DO, transitoryConfirmation: { applies: true, available: false, holder: 'Tenant', confirmBy: '2027-01-31' } });
     const { unmount } = renderOperations('?operazione=conferma-esigenza');
-    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations'));
+    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/operations', expect.anything()));
+    await settled();
     expect(screen.queryByTestId('lease-operations')).not.toBeInTheDocument();
     expect(screen.queryByTestId('need-confirmation-dialog')).not.toBeInTheDocument();
     unmount();
 
-    mockServer({
-      ...OPERATIONS,
-      disdetta: { ...OPERATIONS.disdetta, available: false },
-      renewal: { ...OPERATIONS.renewal, available: false },
-      transitoryConfirmation: { applies: true, available: true, holder: 'Landlord', confirmBy: '2027-01-31' },
-    });
+    mockServer({ ...NOTHING_TO_DO, transitoryConfirmation: { applies: true, available: true, holder: 'Landlord', confirmBy: '2027-01-31' } });
     post.mockResolvedValue({ data: new Blob(['%PDF']) });
     renderOperations('?operazione=conferma-esigenza');
 
@@ -264,5 +269,85 @@ describe('LeaseOperations', () => {
     fireEvent.click(within(dialog).getByTestId('need-confirmation-download'));
 
     await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/letters/conferma-esigenza', {}, { responseType: 'blob' }));
+  });
+
+  it('istat_TheServerWorksOutTheNewRent_AndTheLetterIsAskedForWithThoseNumbers', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/leases/lease-1/istat/calculate' ? Promise.resolve({ data: CALCULATION }) : Promise.resolve({ data: new Blob(['%PDF']) }),
+    );
+    renderOperations('?operazione=istat');
+
+    const dialog = within(await screen.findByTestId('istat-dialog'));
+    const download = dialog.getByTestId('istat-download');
+    // Nothing to download before the server has worked a figure out, and the share suggested by the server is already there.
+    expect(download).toBeDisabled();
+    expect(dialog.getByTestId('istat-share')).toHaveValue('75');
+    expect(dialog.getByTestId('istat-draft-note')).toBeInTheDocument();
+
+    // The person writes the variation of the index as she reads it ("3,2"): the server is asked once she stops, with numbers and not texts.
+    fireEvent.change(dialog.getByTestId('istat-foi'), { target: { value: '3,2' } });
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/istat/calculate', { foiPercent: 3.2, sharePercent: 75 }, undefined));
+    await waitFor(() => expect(dialog.getByTestId('istat-result')).toHaveTextContent('665,60'));
+    expect(download).toBeEnabled();
+    fireEvent.click(download);
+
+    // The letter is asked for with the percentages the server worked out and the first day of next month, the day the update starts from.
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith(
+        '/leases/lease-1/letters/aggiornamento-istat',
+        { foiPercent: 3.2, sharePercent: 75, effectiveFrom: '2026-11-01' },
+        { responseType: 'blob' },
+      ),
+    );
+  });
+
+  it('istat_ARefusalOfTheServer_IsToldInPlaceOfTheFigure_AndNothingCanBeDownloaded', async () => {
+    post.mockRejectedValue(httpError(422, { code: 'lease_istat_no_increase', detail: 'Con una variazione nulla o negativa il canone non aumenta.' }));
+    renderOperations('?operazione=istat');
+
+    const dialog = within(await screen.findByTestId('istat-dialog'));
+    fireEvent.change(dialog.getByTestId('istat-foi'), { target: { value: '0,001' } });
+
+    await waitFor(() => expect(dialog.getByTestId('istat-result')).toHaveTextContent('il canone non aumenta'));
+    expect(dialog.getByTestId('istat-download')).toBeDisabled();
+
+    // A text that is not a percentage above zero is not even sent: the field says so.
+    fireEvent.change(dialog.getByTestId('istat-foi'), { target: { value: '-1' } });
+    expect(await dialog.findByText(/Scrivi una percentuale maggiore di zero/)).toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  it('istat_UnderTheCedolareSecca_TheUpdateIsOffNoRowAndNoWindow_AndTheCommunicationOfTheOptionIsOn', async () => {
+    // An ordinary lease: the update is offered, the communication of the cedolare secca is not.
+    const { unmount } = renderOperations('');
+    expect(await screen.findByTestId('lease-operation-istat')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-operation-cedolare')).not.toBeInTheDocument();
+    unmount();
+
+    // Under the cedolare secca it is the other way round, and the address of the update opens nothing.
+    mockServer({
+      ...NOTHING_TO_DO,
+      cedolareNotice: { available: true, minEffectiveOn: '2025-11-01', maxEffectiveOn: '2027-01-31' },
+    });
+    post.mockResolvedValue({ data: new Blob(['%PDF']) });
+    renderOperations('?operazione=istat');
+    expect(await screen.findByTestId('lease-operation-cedolare')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-operation-istat')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('istat-dialog')).not.toBeInTheDocument();
+    cleanup();
+
+    renderOperations('?operazione=cedolare');
+    const dialog = within(await screen.findByTestId('cedolare-dialog'));
+    expect(dialog.getByTestId('cedolare-draft-note')).toBeInTheDocument();
+
+    // The day is optional: without it the letter is asked for with nothing, with it the letter carries the day.
+    fireEvent.click(dialog.getByTestId('cedolare-download'));
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/letters/opzione-cedolare', {}, { responseType: 'blob' }));
+    await waitFor(() => expect(dialog.getByTestId('cedolare-download')).toBeEnabled()); // one download at a time: the first has to be over
+    fireEvent.change(dialog.getByTestId('cedolare-effective'), { target: { value: '2026-11-01' } });
+    fireEvent.click(dialog.getByTestId('cedolare-download'));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/leases/lease-1/letters/opzione-cedolare', { effectiveFrom: '2026-11-01' }, { responseType: 'blob' }),
+    );
   });
 });

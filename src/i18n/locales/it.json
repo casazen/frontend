@@ -5072,13 +5072,13 @@
         "why": "Il verbale fotografa lo stato dell'immobile alla consegna: a fine contratto ti serve per verificare i danni e per restituire il deposito. Nei nostri modelli le utenze sono dell'inquilino, che le intesta a sé."
       },
       "istatConcordato": {
-        "action": "Vai ai pagamenti",
+        "action": "Calcola l'aggiornamento",
         "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone, nella misura massima che prevede l'accordo del tuo comune. Vale dalla richiesta, non è retroattivo.",
         "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
         "why": "Nel canone concordato l'aggiornamento ISTAT è ammesso solo nei limiti dell'accordo del comune: in quello di Monza e Brianza è una parte della variazione dell'indice. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta. Con la cedolare secca non si può chiedere."
       },
       "istatLibero": {
-        "action": "Vai ai pagamenti",
+        "action": "Calcola l'aggiornamento",
         "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone alla variazione ISTAT, nella misura scritta nel contratto. Vale dalla richiesta, non è retroattivo.",
         "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
         "why": "Nel 4+4 la legge non fissa un tetto all'aggiornamento: la misura la scrivono le parti nel contratto. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta e non recupera gli anni passati. Se hai scelto la cedolare secca non si può chiedere."
@@ -5498,6 +5498,20 @@
     "rentToDefine": "Canone da definire"
   },
   "leaseOperations": {
+    "cedolare": {
+      "dialog": {
+        "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu con raccomandata: non scriviamo all'inquilino.",
+        "effectiveHint": "Il primo giorno dell'annualità cui l'opzione si riferisce. Se non lo scrivi, la lettera lo lascia da completare.",
+        "effectiveInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "effectiveLabel": "L'opzione vale dal (facoltativo)",
+        "note": "Con la cedolare secca rinunci agli aggiornamenti del canone per tutta la durata dell'opzione. Se il tuo contratto lo scrive già, come il nostro modello, la lettera non serve.",
+        "title": "Comunica la cedolare secca"
+      },
+      "open": "Prepara la comunicazione",
+      "summary": "Con la cedolare secca il canone non si aggiorna. La scelta e la rinuncia si comunicano all'inquilino con raccomandata, se il contratto non lo dice già.",
+      "summarySent": "Lettera segnata come inviata il {{date}} ({{means}}).",
+      "title": "Opzione per la cedolare secca"
+    },
     "disdetta": {
       "dialog": {
         "description": "CasaZen scrive la bozza con i dati del contratto. La firmi e la spedisci tu: non scriviamo all'inquilino.",
@@ -5524,6 +5538,28 @@
       "label": "Scarica la bozza"
     },
     "draftNote": "Il testo è una bozza non ancora approvata: il PDF porta la scritta BOZZA. Fallo rivedere prima di mandarlo.",
+    "istat": {
+      "dialog": {
+        "description": "CasaZen calcola il nuovo canone e scrive la bozza della richiesta. La firmi e la spedisci tu: non scriviamo all'inquilino.",
+        "effectiveHint": "Vale dalla richiesta, non recupera il passato.",
+        "effectiveInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "effectiveLabel": "Il nuovo canone vale dal",
+        "foiHint": "La variazione dei prezzi al consumo (indice FOI) che l'ISTAT pubblica per il periodo che dice il contratto. La scrivi tu: CasaZen non la cerca.",
+        "foiInvalid": "Scrivi una percentuale maggiore di zero, per esempio 3,2. Con una variazione nulla o negativa il canone non aumenta.",
+        "foiLabel": "Variazione dell'indice FOI (%)",
+        "note": "Chiedi l'aggiornamento solo se il contratto lo prevede, nella misura che scrive. CasaZen non cambia da sola il canone nel piano dei pagamenti: le rate già emesse restano come sono.",
+        "result": "Il canone passa da {{from}} a {{to}} al mese: {{increase}} in più, cioè il {{percent}}% (il {{share}}% della variazione).",
+        "resultPending": "Scrivi la variazione dell'indice: ti diciamo quanto diventa il canone.",
+        "shareHint": "La parte della variazione che il contratto riconosce. Il valore suggerito è quello di un accordo di riferimento: controlla il tuo contratto.",
+        "shareInvalid": "Scrivi una percentuale maggiore di zero e non oltre {{max}}.",
+        "shareLabel": "Quota riconosciuta dal contratto (%)",
+        "title": "Calcola l'aggiornamento ISTAT"
+      },
+      "open": "Calcola l'aggiornamento",
+      "summary": "Se il contratto lo prevede, puoi chiedere l'aggiornamento del canone: scrivi la variazione dell'indice e calcoliamo noi il nuovo importo.",
+      "summarySent": "Richiesta segnata come inviata il {{date}} ({{means}}).",
+      "title": "Aggiornamento ISTAT del canone"
+    },
     "means": {
       "ByHand": "Consegna a mano",
       "Other": "Altro mezzo",
