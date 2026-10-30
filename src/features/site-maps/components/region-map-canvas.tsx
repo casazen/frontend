@@ -89,6 +89,8 @@ export default function RegionMapCanvas(props: RegionMapProps) {
   const groups = new Map<number, number[]>();
   group.forEach((rep, i) => groups.set(rep, [...(groups.get(rep) ?? []), i]));
 
+  // pins in the order of the map, from the top to the bottom and from the left to the right: the order of the Tab key
+  const order = at.map((_, i) => i).sort((a, b) => at[a].y - at[b].y || at[a].x - at[b].x);
   const selectedPin = at.find((a) => a.pin.id === selectedId)?.pin;
   const card: MapCardData | null =
     selectedPin && selectedPin.tone !== 'zone'
@@ -206,10 +208,31 @@ export default function RegionMapCanvas(props: RegionMapProps) {
         <MapSkeleton />
       ) : (
         <>
+          <div data-map-ui className="absolute right-3 top-3 z-40">
+            <MapControls
+              canZoomIn={mv.canZoomIn}
+              canZoomOut={mv.canZoomOut}
+              onZoomIn={() => zoomBy(2)}
+              onZoomOut={() => zoomBy(0.5)}
+              onFit={() => {
+                mv.fit();
+                setAnnounce(t('siteMap.fitAnnounce'));
+              }}
+              announcement={announce}
+            />
+          </div>
+          <p
+            data-map-ui
+            className="absolute left-3 top-3 z-40 flex max-w-[calc(100%-5rem)] items-center gap-1.5 rounded-full bg-[var(--cz-public-surface,#fff)]/90 px-3 py-1.5 text-xs text-[var(--cz-public-muted,#555)] shadow-sm"
+          >
+            <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {noPosition ? t('siteMap.noPosition') : t('siteMap.approximateNote')}
+          </p>
           <div ref={stage} className="absolute inset-0 will-change-transform">
             <SvgHost svg={svg} />
             <ul aria-label={t('siteMap.pinsLabel')} className="absolute inset-0 m-0 list-none p-0">
-              {at.map(({ pin, x, y }, i) => {
+              {order.map((i) => {
+                const { pin, x, y } = at[i];
                 if (x < -4 || x > 104 || y < -6 || y > 106 || group[i] !== i) return null;
                 const members = groups.get(i) ?? [i];
                 if (members.length > 1) {
@@ -246,26 +269,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
               })}
             </ul>
           </div>
-          <div data-map-ui className="absolute right-3 top-3 z-40">
-            <MapControls
-              canZoomIn={mv.canZoomIn}
-              canZoomOut={mv.canZoomOut}
-              onZoomIn={() => zoomBy(2)}
-              onZoomOut={() => zoomBy(0.5)}
-              onFit={() => {
-                mv.fit();
-                setAnnounce(t('siteMap.fitAnnounce'));
-              }}
-              announcement={announce}
-            />
-          </div>
-          <p
-            data-map-ui
-            className="absolute left-3 top-3 z-40 flex max-w-[calc(100%-5rem)] items-center gap-1.5 rounded-full bg-[var(--cz-public-surface,#fff)]/90 px-3 py-1.5 text-xs text-[var(--cz-public-muted,#555)] shadow-sm"
-          >
-            <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {noPosition ? t('siteMap.noPosition') : t('siteMap.approximateNote')}
-          </p>
           <div data-map-ui>
             <MapCard data={card} phone={phone} onClose={() => select(null)} />
           </div>

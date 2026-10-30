@@ -55,7 +55,7 @@ export function MapPin({ id, label, accessibleName, x, y, dx = 0, dy = 0, select
         onBlur={() => onActiveChange?.(null)}
         style={available ? undefined : lit ? undefined : STRIPES}
         className={cn(
-          'inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border-2 px-3.5 text-sm font-bold leading-none shadow-md transition-transform',
+          'inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border-2 px-3.5 text-sm font-bold leading-none shadow-md motion-safe:transition-transform',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cz-public-primary-text,#1d4ed8)] focus-visible:ring-offset-2',
           lit
             ? 'scale-110 border-[var(--cz-public-primary,#111)] bg-[var(--cz-public-primary,#111)] text-[var(--cz-public-on-primary,#fff)]'
