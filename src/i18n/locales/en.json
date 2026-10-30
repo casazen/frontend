@@ -14861,6 +14861,48 @@
     "servicesTitle": "Services",
     "noAvailability": "The supplier has not yet entered availability for the coming days."
   },
+  "swiss": {
+    "description": "Compliance files for Canton Ticino: daily police notification and OTR report.",
+    "otr": {
+      "description": "Overnight stays report for the period (OTR CSV).",
+      "download": "Download OTR report",
+      "downloadFailed": "Unable to download OTR report.",
+      "downloading": "Downloading...",
+      "fromDate": "From date",
+      "title": "OTR Report",
+      "toDate": "To date"
+    },
+    "police": {
+      "date": "Notification date",
+      "description": "Daily police notification (Ticino XML).",
+      "download": "Download police notification",
+      "downloadFailed": "Unable to download notification.",
+      "downloading": "Downloading...",
+      "title": "Police Notification"
+    },
+    "propertyIdPlaceholder": "Property ID",
+    "receipt": {
+      "date": "Report date",
+      "description": "Upload receipt from cantonal portal.",
+      "file": "Receipt file",
+      "reference": "Reference",
+      "referencePlaceholder": "Confirmation number or reference",
+      "title": "Upload Receipt",
+      "type": "Type",
+      "typeOtr": "OTR",
+      "typePolice": "Police",
+      "upload": "Upload receipt",
+      "uploadFailed": "Unable to upload receipt.",
+      "uploadSuccess": "Receipt uploaded successfully.",
+      "uploading": "Uploading..."
+    },
+    "reminder": {
+      "description": "You will receive notifications 24 hours before configured deadlines.",
+      "title": "Deadline Reminders"
+    },
+    "selectProperty": "Select property",
+    "title": "Swiss Compliance"
+  },
   "taxRates": {
     "title": "Tourist Tax Rates",
     "listTitle": "Rate list",
