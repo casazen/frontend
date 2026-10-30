@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supplierShowcaseApi } from '@/api/supplier-showcase.api';
 import type { ShowcaseContent } from '@/types/supplier-showcase';
@@ -8,6 +9,12 @@ const STATS_KEY = ['supplier', 'showcase', 'stats'] as const;
 /** The content of the showcase: the draft, what is published, the state, the readiness. Read again at every visit. */
 export function useShowcaseContent() {
   return useQuery({ queryKey: CONTENT_KEY, queryFn: supplierShowcaseApi.getContent, staleTime: 0 });
+}
+
+/** Puts a document the server just sent (after a save) in the cache, so every part of the page reads the same one. */
+export function useStoreShowcaseContent() {
+  const client = useQueryClient();
+  return useCallback((content: ShowcaseContent) => client.setQueryData(CONTENT_KEY, content), [client]);
 }
 
 /** The two true numbers: the requests that came from the showcase in the last 30 days and how many still wait. */

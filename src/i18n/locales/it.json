@@ -1431,7 +1431,13 @@
       "refundAmountInvalid": "L'importo del rimborso non è valido. Ricarica la pagina e riprova.",
       "guestCancelTokenInvalid": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
       "guestCancelTokenExpired": "Questo link è scaduto. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
-      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni»."
+      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
+      "showcaseContentInvalid": "Un testo non è valido o una riga è a metà: controlla i campi e riprova.",
+      "showcaseNotPublishable": "Manca ancora qualcosa per pubblicare: sistema le voci «Da fare» e riprova.",
+      "showcaseNotPublished": "La vetrina non è ancora pubblicata: pubblicala prima.",
+      "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
+      "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
+      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione."
     }
   },
   "appShell": {
@@ -11276,6 +11282,11 @@
     "payNow": "Paga {{amount}}",
     "stripeNotice": "Il pagamento è gestito da Stripe e va direttamente sul conto del locatore."
   },
+  "reorderable": {
+    "down": "Sposta giù: {{item}}",
+    "remove": "Rimuovi",
+    "up": "Sposta su: {{item}}"
+  },
   "reports": {
     "chips": {
       "all": "Tutti",
@@ -14815,7 +14826,7 @@
         "title": "Prima di pubblicare"
       },
       "bookings": {
-        "bookings_off": "Tutto è pronto ma le prenotazioni sono chiuse: aprile con «Apri le prenotazioni».",
+        "bookings_off": "Tutto è pronto ma le prenotazioni sono chiuse: puoi aprirle con «Apri le prenotazioni».",
         "goToPayments": "Vai ai pagamenti",
         "not_published": "La vetrina non è ancora pubblicata: le prenotazioni si aprono dopo la pubblicazione.",
         "paused": "La vetrina è in pausa: le prenotazioni sono chiuse.",
@@ -14850,9 +14861,252 @@
         "lost": "Le modifiche non pubblicate andranno perse.",
         "title": "Annullare le modifiche?"
       },
+      "editor": {
+        "charsLeft_one": "{{count}} carattere rimasto",
+        "charsLeft_other": "{{count}} caratteri rimasti",
+        "color": {
+          "hint": "Lascialo vuoto per il colore dello stile. Il testo bianco deve leggersi bene: serve un contrasto di almeno 4,5.",
+          "label": "Colore (esadecimale)",
+          "low": "Il bianco su questo colore si legge a {{ratio}}:1: servono almeno {{min}}:1.",
+          "notAColor": "Scrivi un colore come #0B5FA5.",
+          "picker": "Scegli un colore",
+          "refused": "Questo colore non è accettato: usa quello consigliato.",
+          "reset": "Usa il colore dello stile",
+          "title": "Colore dei pulsanti",
+          "useSuggested": "Usa il colore consigliato"
+        },
+        "conflict": {
+          "description": "Ricarica per vedere l'ultima versione. Le modifiche non salvate di questa scheda andranno perse.",
+          "reload": "Ricarica",
+          "title": "La vetrina è stata modificata altrove"
+        },
+        "description": "Scrivi, scegli lo stile e guarda subito come la vedono i clienti.",
+        "font": {
+          "classico": {
+            "description": "Eleganza da rivista, contrasto alto.",
+            "name": "Classico"
+          },
+          "editoriale": {
+            "description": "Titoli con le grazie, caldi e curati.",
+            "name": "Editoriale"
+          },
+          "legend": "Caratteri dei titoli",
+          "moderno": {
+            "description": "Tutto senza grazie, nitido e deciso.",
+            "name": "Moderno"
+          },
+          "title": "Caratteri"
+        },
+        "invalidField": "Questo valore non va bene: controllalo.",
+        "logo": {
+          "legend": "Come appare il tuo nome",
+          "mark": {
+            "description": "Un quadrato con le tue iniziali e il nome accanto.",
+            "name": "Sigla e nome"
+          },
+          "text": {
+            "description": "Il nome in grande, senza segno.",
+            "name": "Solo il nome"
+          },
+          "title": "Marchio"
+        },
+        "noAddress": "L'anteprima c'è quando la vetrina ha un indirizzo, cioè dopo l'attivazione del profilo.",
+        "photos": {
+          "addToProfile": "Aggiungi foto al profilo",
+          "addToService": "Aggiungi foto a un servizio",
+          "loading": "Cerco le tue foto…",
+          "none": "Non hai ancora foto da scegliere. Aggiungile al profilo o a un servizio, poi le trovi qui.",
+          "pickerHint": "Scegli tra le foto che hai già nel profilo e nei servizi.",
+          "profilePhoto": "Foto {{n}} del profilo",
+          "servicePhoto": "{{service}}: foto {{n}}"
+        },
+        "preview": "Anteprima",
+        "publish": {
+          "cannot": "Sistema le voci «Da fare» per pubblicare.",
+          "changes": "Cosa cambia pubblicando",
+          "checks": "Controlli prima di pubblicare",
+          "firstTime": "Tutto: è la prima pubblicazione.",
+          "halfFilled": "Alcune righe dei testi sono a metà: completale o toglile ({{rows}}).",
+          "halfFilledWorks": "Alcuni lavori non hanno la foto: scegline una o toglili ({{rows}}).",
+          "level": {
+            "ok": "Fatto",
+            "todo": "Da fare",
+            "warn": "Consigliato"
+          },
+          "nothing": "Niente: la vetrina è già aggiornata.",
+          "paused": "La vetrina è in pausa: pubblichi il contenuto, ma resta in pausa finché non la riattivi.",
+          "upToDate": "La vetrina pubblicata è già uguale alla bozza."
+        },
+        "save": {
+          "conflict": "La vetrina è stata modificata altrove.",
+          "dirty": "Modifiche non ancora salvate…",
+          "error": "Non riesco a salvare: riprovo alla prossima modifica.",
+          "invalid": "Un valore non è valido: controlla i campi segnati.",
+          "nothing": "Nessuna modifica",
+          "offline": "Sei offline: salvo appena torna la rete.",
+          "retry": "Riprova",
+          "saved": "Salvato alle {{time}}",
+          "saving": "Salvo…"
+        },
+        "sections": {
+          "always": "I servizi e i pulsanti finali si vedono sempre.",
+          "certs": {
+            "hint": "Quelle che hai scritto tu.",
+            "name": "Certificazioni"
+          },
+          "faq": {
+            "hint": "Le risposte che hai scritto tu.",
+            "name": "Domande frequenti"
+          },
+          "hint": "Scegli quali blocchi della pagina mostrare. Un blocco senza contenuto non si vede comunque.",
+          "how": {
+            "hint": "I passi dalla scelta alla visita. Si vede quando le prenotazioni sono aperte.",
+            "name": "Come funziona"
+          },
+          "title": "Sezioni della pagina",
+          "trust": {
+            "hint": "«Verificato» e i lavori fatti, solo se veri.",
+            "name": "Fiducia"
+          },
+          "works": {
+            "hint": "Le foto dei tuoi lavori.",
+            "name": "I lavori"
+          },
+          "zones": {
+            "hint": "I comuni in cui lavori.",
+            "name": "Le zone"
+          }
+        },
+        "services": {
+          "fix": "Apri",
+          "hint": "Scegli quali servizi mostrare e in che ordine. Si possono mostrare solo i servizi attivi.",
+          "inactiveTitle": "Non ancora in vetrina",
+          "keepOne": "Deve restare almeno un servizio in vetrina.",
+          "loadError": "Non riesco a leggere i tuoi servizi.",
+          "loading": "Leggo i tuoi servizi…",
+          "moved": "{{name}}: posizione {{position}} di {{total}}",
+          "none": "Non hai ancora servizi attivi: attivane uno in «Servizi e prezzi» per mostrarlo qui.",
+          "open": "Vai a «Servizi e prezzi»",
+          "reason": {
+            "Draft": "Bozza: finisci di compilarla per poterla mostrare.",
+            "Paused": "In pausa: riattivala per poterla mostrare."
+          },
+          "title": "Servizi in vetrina"
+        },
+        "starter": {
+          "applied": "Testo di partenza inserito",
+          "hint": "Non sai cosa scrivere? Parti da un testo adatto al tuo mestiere: riempie solo i campi vuoti, lo cambi come vuoi e nessuno lo vede finché non pubblichi.",
+          "title": "Un testo di partenza",
+          "use": "Usa il testo di partenza"
+        },
+        "steps": {
+          "publish": "Anteprima e pubblica",
+          "services": "Servizi e sezioni",
+          "style": "Stile e marchio",
+          "texts": "Testi",
+          "works": "Foto e lavori"
+        },
+        "stepsLabel": "Passi della vetrina",
+        "style": {
+          "acqua": {
+            "description": "Blu deciso, forme nette: per idraulici, caldaisti e chi risponde alle emergenze.",
+            "name": "Pronto intervento"
+          },
+          "fresco": {
+            "description": "Verde acqua luminoso e forme morbide: per pulizie, lavanderia e sanificazione.",
+            "name": "Casa pulita"
+          },
+          "legend": "Stile della vetrina",
+          "naturale": {
+            "description": "Verde bosco su carta calda, titoli eleganti: per giardinieri, potatori e cura degli uliveti.",
+            "name": "Verde e giardino"
+          },
+          "recommended": "Consigliato per il tuo mestiere",
+          "scintilla": {
+            "description": "Grafite e giallo, angoli precisi: per elettricisti, antennisti e tecnici.",
+            "name": "Impianti"
+          },
+          "title": "Stile"
+        },
+        "texts": {
+          "addCert": "Aggiungi una certificazione",
+          "addPerson": "Aggiungi una persona",
+          "addPrep": "Aggiungi un consiglio",
+          "addQuestion": "Aggiungi una domanda",
+          "addValue": "Aggiungi un punto",
+          "answerLabel": "Risposta",
+          "bio": "Chi siamo",
+          "bioHint": "La tua storia, in poche righe.",
+          "cert": "Certificazione {{n}}",
+          "certDetail": "Dettaglio",
+          "certLabel": "Nome",
+          "certRemoved": "Certificazione tolta",
+          "certsHint": "Solo quelle che hai davvero: CasaZen non ne aggiunge né ne controlla.",
+          "certsTitle": "Certificazioni",
+          "faqHint": "Le domande che ti fanno più spesso, con la risposta.",
+          "faqTitle": "Domande frequenti",
+          "guaranteeHint": "Scrivi solo ciò che fai davvero, con titolo e testo (o nessuno dei due): la garanzia la scrivi tu, CasaZen non ne aggiunge.",
+          "guaranteeName": "Titolo della garanzia",
+          "guaranteeText": "Cosa garantisci",
+          "guaranteeTitle": "Garanzia",
+          "intro": "Introduzione",
+          "person": "Persona {{n}}",
+          "personName": "Nome",
+          "personRemoved": "Persona tolta",
+          "personRole": "Ruolo",
+          "prepHint": "Cosa può preparare il cliente: una riga ciascuna.",
+          "prepItem": "Consiglio {{n}}",
+          "prepLabel": "Cosa preparare",
+          "prepRemoved": "Consiglio tolto",
+          "prepTitle": "Prima che arriviamo",
+          "presentation": "La presentazione",
+          "presentationHint": "Una frase in grande, una riga sotto e la tua storia: tre testi brevi, in parole tue.",
+          "question": "Domanda {{n}}",
+          "questionLabel": "Domanda",
+          "questionRemoved": "Domanda tolta",
+          "tagline": "Frase in grande",
+          "teamHint": "Chi lavora con te: nome e ruolo.",
+          "teamTitle": "Le persone",
+          "value": "Punto {{n}}",
+          "valueLabel": "Punto di forza",
+          "valueRemoved": "Punto tolto",
+          "valuesHint": "Fino a sei, una riga ciascuno.",
+          "valuesTitle": "Punti di forza"
+        },
+        "works": {
+          "add": "Aggiungi un lavoro",
+          "alt": "Descrizione della foto",
+          "altHint": "Per chi non può vederla. Se la lasci vuota si usa il tuo nome.",
+          "altHintWork": "Per chi non può vedere la foto. Se la lasci vuota si usa la didascalia.",
+          "caption": "Didascalia",
+          "changeBefore": "Cambia la foto «prima»",
+          "changePhoto": "Cambia la foto",
+          "chooseBefore": "Scegli la foto «prima»",
+          "choosePhoto": "Scegli la foto",
+          "compare": "Mostra il confronto prima e dopo",
+          "compareHint": "La foto del lavoro è il «dopo».",
+          "count_one": "{{count}} lavoro con foto. Con almeno {{advised}} la pagina convince di più.",
+          "count_other": "{{count}} lavori con foto. Con almeno {{advised}} la pagina convince di più.",
+          "coverHint": "La foto grande in cima alla pagina. Se non ne scegli una, la pagina usa la prima foto del profilo, o uno sfondo neutro.",
+          "coverTitle": "Copertina",
+          "hint": "I lavori che hai fatto: una foto, una riga e il luogo.",
+          "noPhoto": "Nessuna foto",
+          "pickBefore": "Foto «prima» del lavoro {{n}}",
+          "pickPhoto": "Foto del lavoro {{n}}",
+          "place": "Luogo",
+          "removePhoto": "Togli la foto",
+          "removed": "Lavoro tolto",
+          "title": "Lavori",
+          "work": "Lavoro {{n}}"
+        }
+      },
       "focus": {
         "changesBody": "Cosa cambia: {{changes}}.",
         "changesTitle": "Hai modifiche da pubblicare",
+        "create": "Crea la tua vetrina",
+        "createBody": "Scegli lo stile, scrivi due righe e i servizi da mostrare: la pubblichi quando sei pronto.",
+        "createTitle": "Crea la tua vetrina in cinque minuti",
+        "edit": "Modifica la vetrina",
         "fix": "Sistema: {{item}}",
         "missingBody": "Sistema le voci qui sotto: poi potrai pubblicare.",
         "missingTitle": "Manca ancora qualcosa per pubblicare",
@@ -14877,6 +15131,18 @@
       "loading": "Caricamento della vetrina…",
       "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
       "open": "Apri la pagina pubblica",
+      "preview": {
+        "about": "Chi siamo",
+        "desktop": "Computer",
+        "deviceLabel": "Dispositivo",
+        "frameTitle": "Anteprima della vetrina",
+        "home": "Home",
+        "note": "L'anteprima mostra la bozza: i clienti vedono solo ciò che pubblichi.",
+        "pageLabel": "Pagina",
+        "phone": "Telefono",
+        "services": "Servizi",
+        "tablet": "Tablet"
+      },
       "readiness": {
         "color": "Un colore dei pulsanti leggibile",
         "faq": "Tre domande frequenti con la risposta",
@@ -14929,6 +15195,56 @@
         "published": "Vetrina pubblicata",
         "resumeFailed": "Impossibile riattivare la vetrina.",
         "resumed": "Vetrina riattivata"
+      },
+      "wizard": {
+        "description": "Quattro passi: lo stile, due righe di presentazione, i servizi e la pubblicazione. Puoi cambiare tutto anche dopo.",
+        "done": {
+          "bookingsOpen": "I clienti possono prenotare: le richieste arrivano nella tua area Richieste.",
+          "edit": "Puoi cambiare testi, foto e stile quando vuoi: i clienti vedono solo ciò che pubblichi.",
+          "lead": "I clienti la trovano al suo indirizzo e vedono ciò che hai pubblicato.",
+          "open": "Apri la vetrina",
+          "readOnly": "Per ora la vetrina si vede ma non si può prenotare.",
+          "respond": "Quando un cliente prenota hai {{deadline}} per rispondere: poi la richiesta si annulla da sola.",
+          "share": "Condividi il link",
+          "title": "La tua vetrina è online"
+        },
+        "errors": {
+          "services": "Scegli almeno un servizio.",
+          "tagline": "Scrivi almeno 12 caratteri.",
+          "tooLong": "Il testo è troppo lungo."
+        },
+        "failed": "Non riesco a pubblicare la vetrina. Riprova.",
+        "loadError": "Non riesco a preparare la procedura.",
+        "loading": "Preparo la procedura…",
+        "presentation": {
+          "introHint": "Una o due righe sotto il titolo.",
+          "prefilled": "Abbiamo scritto un testo di partenza adatto al tuo mestiere: leggilo e cambialo come vuoi. Non è pubblico finché non pubblichi.",
+          "taglineHint": "La frase grande in cima alla pagina: almeno 12 caratteri."
+        },
+        "publish": "Pubblica la vetrina",
+        "steps": {
+          "presentation": {
+            "label": "Presentazione",
+            "purpose": "Una frase in grande e due righe sotto: le vedono i clienti in cima alla pagina.",
+            "title": "Presenta la tua attività"
+          },
+          "services": {
+            "label": "Servizi",
+            "purpose": "Si mostrano solo i servizi attivi: scegline almeno uno.",
+            "title": "Scegli i servizi da mostrare"
+          },
+          "style": {
+            "label": "Stile",
+            "purpose": "Cambia i colori e l'aria della pagina. Lo puoi cambiare quando vuoi.",
+            "title": "Scegli lo stile della vetrina"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa vedranno i clienti. I controlli sono quelli che fa il sistema prima di pubblicare.",
+            "title": "Controlla e pubblica"
+          }
+        },
+        "title": "Crea la tua vetrina"
       }
     },
     "trusted": {

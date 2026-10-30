@@ -1,5 +1,5 @@
 import { useState, type ComponentProps } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Copy, ExternalLink, PauseCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,15 +17,27 @@ import { cn } from '@/lib/utils';
 import {
   useDiscardShowcaseChanges,
   usePauseShowcase,
-  usePublishShowcase,
   useResumeShowcase,
   useShowcaseContent,
   useShowcaseStats,
-  useUndoPublishShowcase,
 } from '@/queries/supplier/use-showcase';
 import type { ShowcaseContent } from '@/types/supplier-showcase';
 import { ShareDialog } from './share-dialog';
-import { bookingsReasonKey, changeLabelKey, firstFixable, fixPathOf, itemsToFix, PAYMENTS_SETTINGS_PATH, stateView } from './showcase-model';
+import {
+  bookingsReasonKey,
+  changeLabelKey,
+  editorStepOf,
+  EDITOR_STEPS,
+  firstFixable,
+  fixPathOf,
+  itemsToFix,
+  PAYMENTS_SETTINGS_PATH,
+  stateView,
+  stepPath,
+  WIZARD_PATH,
+} from './showcase-model';
+import { ShowcaseWorkPage } from './showcase-work-page';
+import { useShowcasePublish } from './use-showcase-publish';
 
 /** The badge of the state: a word and an icon, never a color alone. */
 const BADGE_TONE = {
@@ -59,14 +71,15 @@ function StateBadge({ content }: { content: ShowcaseContent }) {
  */
 export function SupplierShowcaseHubPage() {
   const { t, i18n } = useTranslation();
+  const [params] = useSearchParams();
   const content = useShowcaseContent();
   const stats = useShowcaseStats();
-  const publish = usePublishShowcase();
-  const undoPublish = useUndoPublishShowcase();
+  const publish = useShowcasePublish();
   const discard = useDiscardShowcaseChanges();
   const pause = usePauseShowcase();
   const resume = useResumeShowcase();
-  const [shareOpen, setShareOpen] = useState(false);
+  // "Condividi il link" of the confirmation of the wizard opens the overview with the sheet already up.
+  const [shareOpen, setShareOpen] = useState(() => params.get('condividi') === '1');
   const [discardOpen, setDiscardOpen] = useState(false);
 
   const header = <PageHeader title={t('supplier.showcase.title')} description={t('supplier.showcase.description')} crumbs="auto" />;
@@ -81,6 +94,10 @@ export function SupplierShowcaseHubPage() {
   }
   if (content.isLoading || !content.data) return <LoadingScreen message={t('supplier.showcase.loading')} className="h-auto flex-1" />;
 
+  // `?step=` opens the work view: the panels with the live preview beside them.
+  const step = editorStepOf(params.get('step'));
+  if (step) return <ShowcaseWorkPage content={content.data} step={step} />;
+
   const data = content.data;
   const busy = publish.isPending || pause.isPending || resume.isPending || discard.isPending;
   const toFix = itemsToFix(data);
@@ -90,20 +107,7 @@ export function SupplierShowcaseHubPage() {
 
   const fail = (error: unknown, fallbackKey: string) => toast.error(getProblemMessage(error, t) ?? t(fallbackKey));
 
-  const runPublish = () =>
-    publish.mutate(data.version, {
-      onSuccess: (updated) => {
-        const reasonKey = bookingsReasonKey(updated.bookings.blockedBy);
-        toastUndo(t('supplier.showcase.toast.published'), {
-          description: updated.bookings.open ? t('supplier.showcase.toast.bookingsOpen') : reasonKey ? t(reasonKey) : undefined,
-          // The server keeps the version published before for a few minutes: this really puts it back.
-          undo: async () => {
-            await undoPublish.mutateAsync();
-          },
-        });
-      },
-      onError: (error) => fail(error, 'supplier.showcase.toast.publishFailed'),
-    });
+  const runPublish = () => publish.run(data.version);
 
   const runPause = () =>
     pause.mutate(undefined, {
@@ -147,6 +151,7 @@ export function SupplierShowcaseHubPage() {
     ? { label: t('supplier.showcase.focus.fix', { item: t(`supplier.showcase.readiness.${fixable.item.code}`) }), href: fixable.path }
     : { label: t('supplier.showcase.focus.refresh'), onClick: () => void content.refetch() };
   const publishAction = (label: string): CalmAction => ({ label, onClick: runPublish, loading: publish.isPending });
+  const editAction: CalmAction = { label: t('supplier.showcase.focus.edit'), href: stepPath(EDITOR_STEPS[0]) };
   const changesList = data.changes
     .map((member) => {
       const key = changeLabelKey(member);
@@ -162,6 +167,7 @@ export function SupplierShowcaseHubPage() {
       title: t('supplier.showcase.focus.pausedTitle'),
       body: t('supplier.showcase.focus.pausedBody'),
       primary: { label: t('supplier.showcase.focus.resume'), onClick: runResume, loading: resume.isPending },
+      secondary: editAction,
     };
   } else if (data.state === 'ChangesReady') {
     focus = {
@@ -170,6 +176,7 @@ export function SupplierShowcaseHubPage() {
       title: t('supplier.showcase.focus.changesTitle'),
       body: t('supplier.showcase.focus.changesBody', { changes: changesList }),
       primary: data.readiness.canPublish ? publishAction(t('supplier.showcase.focus.publishChanges')) : fixAction,
+      secondary: editAction,
     };
   } else if (data.state === 'Online') {
     focus = {
@@ -177,7 +184,18 @@ export function SupplierShowcaseHubPage() {
       title: t('supplier.showcase.focus.onlineTitle'),
       body: data.bookings.open ? t('supplier.showcase.focus.onlineBookingsOpen') : t('supplier.showcase.focus.onlineReadOnly'),
       when: data.publishedAt ? t('supplier.showcase.focus.publishedAt', { when: when(data.publishedAt) }) : undefined,
-      primary: { label: t('supplier.showcase.focus.open'), onClick: openPublic },
+      primary: editAction,
+      secondary: { label: t('supplier.showcase.focus.open'), onClick: openPublic },
+    };
+  } else if (data.version === 0 && data.readiness.canPublish) {
+    // Nothing was ever written and nothing is missing: the guided creation is the way in; the editor stays next to it.
+    focus = {
+      tone: 'neutral',
+      kicker: t('supplier.showcase.focus.now'),
+      title: t('supplier.showcase.focus.createTitle'),
+      body: t('supplier.showcase.focus.createBody'),
+      primary: { label: t('supplier.showcase.focus.create'), href: WIZARD_PATH },
+      secondary: editAction,
     };
   } else {
     focus = {
@@ -186,6 +204,7 @@ export function SupplierShowcaseHubPage() {
       title: data.readiness.canPublish ? t('supplier.showcase.focus.publishTitle') : t('supplier.showcase.focus.missingTitle'),
       body: data.readiness.canPublish ? t('supplier.showcase.focus.publishBody') : t('supplier.showcase.focus.missingBody'),
       primary: data.readiness.canPublish ? publishAction(t('supplier.showcase.focus.publish')) : fixAction,
+      secondary: editAction,
     };
   }
 

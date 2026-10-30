@@ -1431,7 +1431,13 @@
       "refundAmountInvalid": "The refund amount isn't valid. Reload the page and try again.",
       "guestCancelTokenInvalid": "This link does not work: use the one in the email or cancel from \"My bookings\".",
       "guestCancelTokenExpired": "This link has expired. You can cancel from \"My bookings\" with your booking code.",
-      "guestCancelTokenMissing": "This link does not work: use the one in the email or cancel from \"My bookings\"."
+      "guestCancelTokenMissing": "This link does not work: use the one in the email or cancel from \"My bookings\".",
+      "showcaseContentInvalid": "A text is not valid or a row is half filled: check the fields and try again.",
+      "showcaseNotPublishable": "Something is still missing to publish: fix the \"To do\" items and try again.",
+      "showcaseNotPublished": "The showcase is not published yet: publish it first.",
+      "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
+      "showcaseUndoUnavailable": "The time to undo the publication has run out.",
+      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version."
     }
   },
   "appShell": {
@@ -11276,6 +11282,11 @@
     "payNow": "Pay {{amount}}",
     "stripeNotice": "The payment is handled by Stripe and goes directly to the landlord's account."
   },
+  "reorderable": {
+    "down": "Move down: {{item}}",
+    "remove": "Remove",
+    "up": "Move up: {{item}}"
+  },
   "reports": {
     "chips": {
       "all": "All",
@@ -14850,9 +14861,252 @@
         "lost": "The changes you have not published will be lost.",
         "title": "Discard the changes?"
       },
+      "editor": {
+        "charsLeft_one": "{{count}} character left",
+        "charsLeft_other": "{{count}} characters left",
+        "color": {
+          "hint": "Leave it empty to use the colour of the style. White text has to read well on it: the contrast must be at least 4.5.",
+          "label": "Colour (hex)",
+          "low": "White on this colour reads at {{ratio}}:1: at least {{min}}:1 is needed.",
+          "notAColor": "Write a colour such as #0B5FA5.",
+          "picker": "Pick a colour",
+          "refused": "This colour is not accepted: use the suggested one.",
+          "reset": "Use the colour of the style",
+          "title": "Button colour",
+          "useSuggested": "Use the suggested colour"
+        },
+        "conflict": {
+          "description": "Reload to see the latest version. The changes of this tab that were not saved will be lost.",
+          "reload": "Reload",
+          "title": "The showcase was changed elsewhere"
+        },
+        "description": "Write, pick the style and see at once how customers see it.",
+        "font": {
+          "classico": {
+            "description": "Magazine elegance, high contrast.",
+            "name": "Classic"
+          },
+          "editoriale": {
+            "description": "Warm, careful headings with serifs.",
+            "name": "Editorial"
+          },
+          "legend": "Heading typeface",
+          "moderno": {
+            "description": "All sans-serif, crisp and bold.",
+            "name": "Modern"
+          },
+          "title": "Typeface"
+        },
+        "invalidField": "This value is not right: check it.",
+        "logo": {
+          "legend": "How your name appears",
+          "mark": {
+            "description": "A square with your initials and the name next to it.",
+            "name": "Initials and name"
+          },
+          "text": {
+            "description": "The name in large type, with no mark.",
+            "name": "Name only"
+          },
+          "title": "Mark"
+        },
+        "noAddress": "The preview shows up once the showcase has an address, that is after the profile is activated.",
+        "photos": {
+          "addToProfile": "Add photos to the profile",
+          "addToService": "Add photos to a service",
+          "loading": "Looking for your photos…",
+          "none": "You have no photos to choose from yet. Add them to the profile or to a service and you will find them here.",
+          "pickerHint": "Choose among the photos you already have on the profile and on the services.",
+          "profilePhoto": "Profile photo {{n}}",
+          "servicePhoto": "{{service}}: photo {{n}}"
+        },
+        "preview": "Preview",
+        "publish": {
+          "cannot": "Fix the \"To do\" items to publish.",
+          "changes": "What changes when you publish",
+          "checks": "Checks before publishing",
+          "firstTime": "Everything: it is the first publication.",
+          "halfFilled": "Some rows of the texts are half filled: complete them or remove them ({{rows}}).",
+          "halfFilledWorks": "Some jobs have no photo: choose one or remove them ({{rows}}).",
+          "level": {
+            "ok": "Done",
+            "todo": "To do",
+            "warn": "Recommended"
+          },
+          "nothing": "Nothing: the showcase is already up to date.",
+          "paused": "The showcase is paused: you publish the content, but it stays paused until you turn it back on.",
+          "upToDate": "The published showcase is already the same as the draft."
+        },
+        "save": {
+          "conflict": "The showcase was changed elsewhere.",
+          "dirty": "Changes not saved yet…",
+          "error": "I cannot save: I will try again at the next change.",
+          "invalid": "A value is not valid: check the marked fields.",
+          "nothing": "No changes",
+          "offline": "You are offline: I save as soon as the network is back.",
+          "retry": "Try again",
+          "saved": "Saved at {{time}}",
+          "saving": "Saving…"
+        },
+        "sections": {
+          "always": "The services and the final buttons are always shown.",
+          "certs": {
+            "hint": "The ones you wrote yourself.",
+            "name": "Certifications"
+          },
+          "faq": {
+            "hint": "The answers you wrote yourself.",
+            "name": "Frequently asked questions"
+          },
+          "hint": "Choose which blocks of the page to show. A block with nothing in it is not shown anyway.",
+          "how": {
+            "hint": "The steps from the choice to the visit. Shown when the bookings are open.",
+            "name": "How it works"
+          },
+          "title": "Sections of the page",
+          "trust": {
+            "hint": "\"Verified\" and the jobs done, only when true.",
+            "name": "Trust"
+          },
+          "works": {
+            "hint": "The photos of your jobs.",
+            "name": "Jobs"
+          },
+          "zones": {
+            "hint": "The towns where you work.",
+            "name": "Areas"
+          }
+        },
+        "services": {
+          "fix": "Open",
+          "hint": "Choose which services to show and in what order. Only active services can be shown.",
+          "inactiveTitle": "Not in the showcase yet",
+          "keepOne": "At least one service has to stay in the showcase.",
+          "loadError": "I cannot read your services.",
+          "loading": "Reading your services…",
+          "moved": "{{name}}: position {{position}} of {{total}}",
+          "none": "You have no active services yet: activate one in \"Services and prices\" to show it here.",
+          "open": "Go to \"Services and prices\"",
+          "reason": {
+            "Draft": "Draft: finish filling it in to be able to show it.",
+            "Paused": "Paused: turn it back on to be able to show it."
+          },
+          "title": "Services in the showcase"
+        },
+        "starter": {
+          "applied": "Starting text added",
+          "hint": "Do not know what to write? Start from a text that fits your trade: it only fills the empty fields, you change it as you like and nobody sees it until you publish.",
+          "title": "A starting text",
+          "use": "Use the starting text"
+        },
+        "steps": {
+          "publish": "Preview and publish",
+          "services": "Services and sections",
+          "style": "Style and mark",
+          "texts": "Texts",
+          "works": "Photos and jobs"
+        },
+        "stepsLabel": "Showcase steps",
+        "style": {
+          "acqua": {
+            "description": "Strong blue, crisp shapes: for plumbers, boiler engineers and whoever answers emergencies.",
+            "name": "Quick response"
+          },
+          "fresco": {
+            "description": "Bright aqua green and soft shapes: for cleaning, laundry and sanitising.",
+            "name": "Clean home"
+          },
+          "legend": "Showcase style",
+          "naturale": {
+            "description": "Forest green on warm paper, elegant headings: for gardeners, pruners and olive grove care.",
+            "name": "Green and garden"
+          },
+          "recommended": "Recommended for your trade",
+          "scintilla": {
+            "description": "Graphite and yellow, precise corners: for electricians, aerial fitters and technicians.",
+            "name": "Systems"
+          },
+          "title": "Style"
+        },
+        "texts": {
+          "addCert": "Add a certification",
+          "addPerson": "Add a person",
+          "addPrep": "Add a tip",
+          "addQuestion": "Add a question",
+          "addValue": "Add a point",
+          "answerLabel": "Answer",
+          "bio": "About us",
+          "bioHint": "Your story, in a few lines.",
+          "cert": "Certification {{n}}",
+          "certDetail": "Detail",
+          "certLabel": "Name",
+          "certRemoved": "Certification removed",
+          "certsHint": "Only the ones you really have: CasaZen neither adds nor checks them.",
+          "certsTitle": "Certifications",
+          "faqHint": "The questions you get asked most often, with the answer.",
+          "faqTitle": "Frequently asked questions",
+          "guaranteeHint": "Write only what you really do, with a title and a text (or neither): you write the guarantee, CasaZen adds nothing.",
+          "guaranteeName": "Guarantee title",
+          "guaranteeText": "What you guarantee",
+          "guaranteeTitle": "Guarantee",
+          "intro": "Introduction",
+          "person": "Person {{n}}",
+          "personName": "Name",
+          "personRemoved": "Person removed",
+          "personRole": "Role",
+          "prepHint": "What the customer can get ready: one line each.",
+          "prepItem": "Tip {{n}}",
+          "prepLabel": "What to get ready",
+          "prepRemoved": "Tip removed",
+          "prepTitle": "Before we arrive",
+          "presentation": "The presentation",
+          "presentationHint": "A big sentence, a line below it and your story: three short texts, in your own words.",
+          "question": "Question {{n}}",
+          "questionLabel": "Question",
+          "questionRemoved": "Question removed",
+          "tagline": "Big sentence",
+          "teamHint": "Who works with you: name and role.",
+          "teamTitle": "The people",
+          "value": "Point {{n}}",
+          "valueLabel": "Strength",
+          "valueRemoved": "Point removed",
+          "valuesHint": "Up to six, one line each.",
+          "valuesTitle": "Strengths"
+        },
+        "works": {
+          "add": "Add a job",
+          "alt": "Description of the photo",
+          "altHint": "For people who cannot see it. If you leave it empty your name is used.",
+          "altHintWork": "For people who cannot see the photo. If you leave it empty the caption is used.",
+          "caption": "Caption",
+          "changeBefore": "Change the \"before\" photo",
+          "changePhoto": "Change the photo",
+          "chooseBefore": "Choose the \"before\" photo",
+          "choosePhoto": "Choose the photo",
+          "compare": "Show the before and after",
+          "compareHint": "The photo of the job is the \"after\".",
+          "count_one": "{{count}} job with a photo. With at least {{advised}} the page is more convincing.",
+          "count_other": "{{count}} jobs with a photo. With at least {{advised}} the page is more convincing.",
+          "coverHint": "The big photo at the top of the page. If you do not choose one, the page uses the first photo of the profile, or a neutral background.",
+          "coverTitle": "Cover",
+          "hint": "The jobs you have done: a photo, a line and the place.",
+          "noPhoto": "No photo",
+          "pickBefore": "\"Before\" photo of job {{n}}",
+          "pickPhoto": "Photo of job {{n}}",
+          "place": "Place",
+          "removePhoto": "Remove the photo",
+          "removed": "Job removed",
+          "title": "Jobs",
+          "work": "Job {{n}}"
+        }
+      },
       "focus": {
         "changesBody": "What changes: {{changes}}.",
         "changesTitle": "You have changes to publish",
+        "create": "Create your showcase",
+        "createBody": "Choose the style, write two lines and pick the services to show: you publish when you are ready.",
+        "createTitle": "Create your showcase in five minutes",
+        "edit": "Edit the showcase",
         "fix": "Fix: {{item}}",
         "missingBody": "Fix the items below: then you can publish.",
         "missingTitle": "Something is still missing to publish",
@@ -14877,6 +15131,18 @@
       "loading": "Loading the showcase…",
       "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
       "open": "Open the public page",
+      "preview": {
+        "about": "About us",
+        "desktop": "Computer",
+        "deviceLabel": "Device",
+        "frameTitle": "Showcase preview",
+        "home": "Home",
+        "note": "The preview shows the draft: customers only see what you publish.",
+        "pageLabel": "Page",
+        "phone": "Phone",
+        "services": "Services",
+        "tablet": "Tablet"
+      },
       "readiness": {
         "color": "A readable button color",
         "faq": "Three frequently asked questions with their answer",
@@ -14929,6 +15195,56 @@
         "published": "Showcase published",
         "resumeFailed": "Could not turn the showcase back on.",
         "resumed": "Showcase turned back on"
+      },
+      "wizard": {
+        "description": "Four steps: the style, two lines of presentation, the services and the publication. You can change everything afterwards.",
+        "done": {
+          "bookingsOpen": "Customers can book: the requests arrive in your Requests area.",
+          "edit": "You can change texts, photos and style whenever you like: customers only see what you publish.",
+          "lead": "Customers find it at its address and see what you published.",
+          "open": "Open the showcase",
+          "readOnly": "For now the showcase can be seen but not booked.",
+          "respond": "When a customer books you have {{deadline}} to answer: after that the request cancels itself.",
+          "share": "Share the link",
+          "title": "Your showcase is online"
+        },
+        "errors": {
+          "services": "Choose at least one service.",
+          "tagline": "Write at least 12 characters.",
+          "tooLong": "The text is too long."
+        },
+        "failed": "I cannot publish the showcase. Try again.",
+        "loadError": "I cannot get the guided creation ready.",
+        "loading": "Getting it ready…",
+        "presentation": {
+          "introHint": "One or two lines under the title.",
+          "prefilled": "We wrote a starting text that fits your trade: read it and change it as you like. It is not public until you publish.",
+          "taglineHint": "The big sentence at the top of the page: at least 12 characters."
+        },
+        "publish": "Publish the showcase",
+        "steps": {
+          "presentation": {
+            "label": "Presentation",
+            "purpose": "A big sentence and two lines under it: customers see them at the top of the page.",
+            "title": "Introduce your business"
+          },
+          "services": {
+            "label": "Services",
+            "purpose": "Only active services are shown: choose at least one.",
+            "title": "Choose the services to show"
+          },
+          "style": {
+            "label": "Style",
+            "purpose": "Change the colors and the feel of the page. You can change it whenever you like.",
+            "title": "Choose the style of the showcase"
+          },
+          "summary": {
+            "label": "Summary",
+            "purpose": "Here is what customers will see. The checks are the ones the system makes before publishing.",
+            "title": "Check and publish"
+          }
+        },
+        "title": "Create your showcase"
       }
     },
     "trusted": {

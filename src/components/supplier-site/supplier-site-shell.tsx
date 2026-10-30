@@ -8,7 +8,7 @@ import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useSeoMeta, truncateDescription } from '@/lib/seo-meta';
-import { buildSiteModel } from '@/lib/supplier-site/site-model';
+import { applyServiceOrder, buildSiteModel } from '@/lib/supplier-site/site-model';
 import { siteThemeProps } from '@/lib/supplier-site/style-config';
 import '@/styles/supplier-site.css';
 import { SupplierSiteContext, type SupplierSiteContextValue } from './site-context';
@@ -47,7 +47,16 @@ export function SupplierSiteShell() {
   const preview = isFramedPreview(search);
   const draft = usePreviewDraft(preview);
   const showcase = useMemo<SupplierShowcaseDto | undefined>(
-    () => (data && preview ? { ...data, paused: false, content: draft ?? data.content } : data),
+    () =>
+      data && preview
+        ? {
+            ...data,
+            paused: false,
+            content: draft ?? data.content,
+            // The order of the services the draft names (the published page gets its own from the server).
+            services: data.services && draft ? applyServiceOrder(data.services, draft.serviceOrder) : data.services,
+          }
+        : data,
     [data, preview, draft],
   );
 
