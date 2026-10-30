@@ -171,6 +171,7 @@
     "descriptionNoOrg": "All the properties of the account, short-term and long-term.",
     "drawer": {
       "address": "Address",
+      "advice": "Advised",
       "assign": "Assign the person in charge",
       "complete": "Complete the activation",
       "data": "Details",
@@ -240,9 +241,14 @@
     },
     "loadError": "Failed to load properties",
     "missing": {
+      "activationNotConfirmed": "confirmation of the activation",
+      "baseData": "basic details",
+      "calendar": "calendar",
       "cin": "CIN",
+      "documents": "documents",
       "photos": "photos",
-      "price": "price"
+      "price": "price",
+      "safety": "safety checks"
     },
     "mode": {
       "long": "Long-term rental",

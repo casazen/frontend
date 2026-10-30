@@ -80,8 +80,20 @@ export interface Property {
    */
   responsibleUserId?: string | null;
   orgId?: string;
+  /**
+   * What a short-term property still lacks, worked out by the server with the rules of its activation: only in the list asked with
+   * `?view=overview` (SR-07a), and only for a short-term property. The client reads it and never works it out again.
+   */
+  missing?: PropertyMissingItem[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** One thing a short-term property lacks (`GET /properties?view=overview`): a stable code, and whether it blocks the activation or is only advice. */
+export interface PropertyMissingItem {
+  /** `base_data`, `cin`, `documents`, `safety`, `activation_not_confirmed` (blocking) or `photos`, `calendar` (advice). */
+  code: string;
+  blocking: boolean;
 }
 
 /** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */
