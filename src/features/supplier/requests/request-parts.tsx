@@ -21,7 +21,18 @@ import type {
 } from '@/types/service-request';
 import { formatMoney } from '../services/lib/service-money';
 import { QuoteSummary } from './quote-summary';
-import { actionsOf, phaseOf, reasonText, requestTitle, requestWhen, respondByText, type RequestAction } from './request-model';
+import {
+  actionsOf,
+  groupDueText,
+  isBackup,
+  phaseOf,
+  reasonText,
+  requestTitle,
+  requestWhen,
+  respondByText,
+  type RequestAction,
+  type RequestPhase,
+} from './request-model';
 import type { RequestActions } from './use-request-actions';
 
 const URGENCY_KEYS: Record<ServiceRequestUrgency, string> = {
@@ -30,21 +41,36 @@ const URGENCY_KEYS: Record<ServiceRequestUrgency, string> = {
   Emergency: 'serviceRequest.urgencyEmergency',
 };
 
+/** The phases that are a state of their own and not a status of the API, by the `data-status` they carry. */
+const PHASE_STATUS: Partial<Record<RequestPhase, string>> = {
+  proposalPending: 'ProposalPending',
+  quotePending: 'QuotePending',
+  backupWaiting: 'BackupWaiting',
+  backupAccepted: 'BackupAccepted',
+  backupActive: 'BackupActive',
+};
+
 /**
  * The state of a request in the words of the supplier. A time proposed, or a quote sent, and not answered yet is a phase, not a status of
- * the API: the request is still new, and the supplier waits for the customer.
+ * the API: the request is still new, and the supplier waits for the customer. So is the request a supplier has as a backup (SP-BKP): it
+ * says «Riserva» until the job is the supplier's.
  */
 export function RequestStateBadge({ request, size }: { request: SupplierServiceRequest; size?: 'default' | 'lg' }) {
   const { t } = useTranslation();
   const phase = phaseOf(request);
-  if (phase !== 'proposalPending' && phase !== 'quotePending') return <StatusBadge kind="request" status={request.status} perspective="supplier" size={size} />;
+  const status = PHASE_STATUS[phase];
+  if (!status) return <StatusBadge kind="request" status={request.status} perspective="supplier" size={size} />;
 
   const Icon = STATUS_ICONS.hourglass;
   return (
     <span
       data-status-kind="request"
-      data-status={phase === 'quotePending' ? 'QuotePending' : 'ProposalPending'}
-      className={cn('inline-flex max-w-full items-center gap-1 rounded-full font-semibold ring-1 ring-inset', size === 'lg' ? 'px-3 py-1 text-sm' : 'px-2.5 py-0.5 text-xs', STATUS_TONE_CLASSES.info)}
+      data-status={status}
+      className={cn(
+        'inline-flex max-w-full items-center gap-1 rounded-full font-semibold ring-1 ring-inset',
+        size === 'lg' ? 'px-3 py-1 text-sm' : 'px-2.5 py-0.5 text-xs',
+        phase === 'backupActive' ? STATUS_TONE_CLASSES.warning : STATUS_TONE_CLASSES.info,
+      )}
     >
       <Icon aria-hidden="true" className={cn('shrink-0', size === 'lg' ? 'size-4' : 'size-3.5')} />
       <span className="min-w-0 break-words">{t(`supplier.requests.phase.${phase}`)}</span>
@@ -76,6 +102,10 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
   const quoteFirst = plan.primary === 'quote';
   const toConfirm = phase === 'completed' && Boolean(request.payment?.needsAmountConfirmation || request.price?.needsCustomerConfirmation);
   const reason = reasonText(phase === 'rejected' ? request.rejectionReason : request.cancellationReason, t);
+  // SP-BKP: until when the window of the group lasts, for the sentences of a backup, and what the supplier the host chose is told.
+  const until = groupDueText(request, i18n.language) ?? '';
+  const primaryHintKey = phase === 'toAnswer' && request.backup?.role === 'primary' ? `supplier.requests.backup.primaryHint.${request.backup.state}` : null;
+  const primaryHint = primaryHintKey && i18n.exists(primaryHintKey) ? t(primaryHintKey, { time: until }) : null;
 
   const act = (kind: RequestAction): RunAction => {
     const id = request.id;
@@ -88,6 +118,14 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
           loading: actions.takingId === id,
           disabled: actions.suspended || (actions.busy && actions.takingId !== id),
           testId: 'supplier-request-take',
+        };
+      case 'acceptBackup':
+        return {
+          label: t('supplier.requests.action.acceptBackup'),
+          onClick: () => actions.acceptBackup(id),
+          loading: actions.acceptingBackupId === id,
+          disabled: actions.suspended || (actions.busy && actions.acceptingBackupId !== id),
+          testId: 'supplier-request-accept-backup',
         };
       case 'reject':
         return { label: t('supplier.requests.action.reject'), onClick: () => actions.askReject(id), disabled: blocked, testId: 'supplier-request-reject' };
@@ -124,10 +162,15 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
     <>
       <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-[auto_1fr]">
         <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.you')}</dt>
-        <dd className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`)}</dd>
+        <dd className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`, { time: until })}</dd>
         <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.client')}</dt>
         <dd className="min-w-0 break-words">{t(`${base}.client`)}</dd>
       </dl>
+      {primaryHint ? (
+        <p className="mt-2 break-words text-foreground/80" data-testid="supplier-request-backup-hint">
+          {primaryHint}
+        </p>
+      ) : null}
       {reason ? <p className="mt-2 break-words text-foreground/80">{t('supplier.requests.now.reason', { reason })}</p> : null}
       {toConfirm ? <p className="mt-2 break-words font-medium">{t('supplier.requests.now.amountToConfirm')}</p> : null}
     </>
@@ -504,7 +547,7 @@ export function RequestDetails({ request }: { request: SupplierServiceRequestDet
   const phase = phaseOf(request);
   return (
     <div className="divide-y overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-border" data-testid="supplier-request-details">
-      <JobGroup request={request} open={phase === 'toAnswer'} />
+      <JobGroup request={request} open={phase === 'toAnswer' || isBackup(request)} />
       <ContactGroup request={request} open={phase === 'scheduled' || phase === 'inProgress'} />
       <PaymentGroup request={request} />
       <MoreGroup testId="supplier-request-history-group" title={t('supplier.requests.history.title')} sub={t('supplier.requests.history.sub')}>

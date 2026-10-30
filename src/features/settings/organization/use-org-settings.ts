@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { OrgsApi } from '@/api/orgs.api';
 import type { UpdateOrgSettingsRequest } from '@/types';
+import type { OrgServiceRequestSettings } from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -40,6 +41,31 @@ export function useOrgSlugAvailability(slug: string, enabled: boolean) {
     enabled: enabled && slug.length > 0,
     retry: false,
     staleTime: 30_000,
+  });
+}
+
+const SERVICE_REQUEST_SETTINGS_QUERY_KEY = ['org-settings', 'service-requests'] as const;
+
+/** SP-BKP: whether the org's requests also go to backup suppliers. Org billing admin only (403 otherwise), hence `enabled`. */
+export function useOrgServiceRequestSettings(enabled = true) {
+  return useQuery({
+    queryKey: SERVICE_REQUEST_SETTINGS_QUERY_KEY,
+    queryFn: () => OrgsApi.getServiceRequestSettings(),
+    enabled,
+    retry: false,
+  });
+}
+
+export function useUpdateOrgServiceRequestSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: OrgServiceRequestSettings) => OrgsApi.updateServiceRequestSettings(payload),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(SERVICE_REQUEST_SETTINGS_QUERY_KEY, settings);
+      toast.success(i18n.t('orgSettings.saved'));
+    },
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('orgSettings.saveFailed')),
   });
 }
 

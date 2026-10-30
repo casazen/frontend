@@ -4,6 +4,7 @@ import { AlignedCard } from '@/components/ui/card';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import type { SupplierPicker } from '@/types/service-request';
 import { supplierCardRowCount, supplierFacts, type SupplierCardRows } from '../lib/supplier-labels';
+import { RecommendedBadge } from './recommended-badge';
 import { VerifiedBadge } from './verified-badge';
 
 interface SupplierCardProps {
@@ -15,8 +16,8 @@ interface SupplierCardProps {
 }
 
 /**
- * A supplier of the list: its name, the «Verificato» badge, the categories, the "from" price and, only if it is measured, how
- * fast it answers. The whole card opens the supplier in the drawer (with the keyboard too); no commission is shown (D3). The cards
+ * A supplier of the list: its name, the «Consigliato» (SP-REL, only on the best-ranked one) and «Verificato» badges, the categories,
+ * the "from" price and, only if it is measured, how fast it answers. The whole card opens the supplier in the drawer (with the keyboard too); no commission is shown (D3). The cards
  * of a row line up section by section (`AlignedCard`): a section that this supplier lacks is an empty `<div />`.
  */
 export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
@@ -40,7 +41,12 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
     >
       <div className="flex items-start justify-between gap-x-3">
         <span className="min-w-0 break-words font-medium">{supplier.legalName}</span>
-        {supplier.verified ? <VerifiedBadge /> : null}
+        {supplier.recommended || supplier.verified ? (
+          <span className="flex shrink-0 flex-wrap justify-end gap-1">
+            {supplier.recommended ? <RecommendedBadge /> : null}
+            {supplier.verified ? <VerifiedBadge /> : null}
+          </span>
+        ) : null}
       </div>
       <div className="mt-1 flex flex-wrap content-start gap-1">
         {supplier.categories.map((category) => (

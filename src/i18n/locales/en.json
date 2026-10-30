@@ -3910,13 +3910,6 @@
     },
     "ical": {
       "channels": "Channels and calendars of the property"
-    },
-    "intervention": {
-      "noTime": "No time yet: the job is set on the day the guest leaves, {{date}}.",
-      "openBooking": "Open the booking",
-      "openRequests": "Go to the requests of the property",
-      "supplier": "Supplier",
-      "when": "When"
     }
   },
   "directBooking": {
@@ -4829,6 +4822,175 @@
     "currentOrigin": "You are using <code>{{origin}}</code>, which is not a secure origin for Web Crypto.",
     "lanHint": "For LAN development start Vite with HTTPS and open:",
     "publicSites": "Public booking sites (<code>{{path}}</code>) do not use Auth0 and also work over HTTP."
+  },
+  "interventions": {
+    "action": {
+      "acceptProposal": "Accept the time",
+      "call": "Call the supplier",
+      "cancel": "Cancel the job",
+      "confirmAmount": "Confirm the amount",
+      "contact": "Call the supplier",
+      "markPaid": "Mark as paid",
+      "openPage": "Open the page",
+      "openStay": "Open the stay",
+      "pay": "Pay",
+      "rejectProposal": "Turn the time down",
+      "remind": "Remind",
+      "remindInHours_one": "You can remind in {{count}} hour",
+      "remindInHours_other": "You can remind in {{count}} hours",
+      "remindInMinutes_one": "You can remind in {{count}} minute",
+      "remindInMinutes_other": "You can remind in {{count}} minutes",
+      "requestAgain": "Request again"
+    },
+    "cancel": {
+      "back": "Go back",
+      "confirm": "Cancel the job",
+      "consequences": {
+        "final": "The job cannot be reopened: to get it back, request it again.",
+        "free": "Cancelling is always free: you pay nothing.",
+        "inProgress": "The work is already marked as started: if the supplier has already worked, settle it with them directly.",
+        "label": "What happens",
+        "told": "{{supplierStart}} is told at once, with the reason you write."
+      },
+      "description": "The supplier will no longer do this job.",
+      "reason": "Why are you cancelling it?",
+      "reasonHint": "The supplier reads the reason. {{max}} characters at most.",
+      "title": "Cancel the job?"
+    },
+    "description": "The requests you made to suppliers: what, where, when, how far they are and what is up to you.",
+    "detail": {
+      "backToList": "All jobs",
+      "email": "Email",
+      "fallbackTitle": "Job",
+      "loadError": "Could not load the job.",
+      "loading": "Loading the job…",
+      "notFound": "Job not found",
+      "notFoundDescription": "It is not among the jobs of your properties: check the address or go back to the list.",
+      "phone": "Phone",
+      "stay": "Stay",
+      "stayDates": "from {{from}} to {{to}}",
+      "supplierTitle": "Supplier"
+    },
+    "drawer": {
+      "loadError": "Could not load the job.",
+      "missing": "This job is gone, or it is not among the jobs of your properties."
+    },
+    "errors": {
+      "remindTooSoon": "You reminded them a moment ago: try again later.",
+      "stateChanged": "The request has changed: here is its current state."
+    },
+    "group": {
+      "role": {
+        "Backup": "backup",
+        "Primary": "chosen by you",
+        "PromotedBackup": "backup",
+        "ReplacedPrimary": "chosen by you"
+      },
+      "stage": {
+        "backupTookIt": "{{taker}}, a backup, took the job because {{supplier}} did not answer in time.",
+        "backupWindow": "{{supplier}} did not answer in time. Now the first of the suppliers contacted that accepts by {{time}} gets the job.",
+        "cancelled": "You cancelled the request: the backups were told too.",
+        "nobody": "None of the suppliers contacted took the job in time: you can ask again.",
+        "over": "This request is no longer in progress.",
+        "primaryTookIt": "{{taker}} accepted the job. The backups were told: nothing else to do.",
+        "primaryWindow": "{{supplier}} has until {{time}}. If it does not accept, the job goes to the first backup that accepts."
+      },
+      "state": {
+        "accepted": "Accepted as a backup",
+        "cancelled": "Closed",
+        "cancelledByHost": "Closed: request cancelled",
+        "noResponse": "Did not answer in time",
+        "primaryTookIt": "Closed: the chosen supplier accepted the job",
+        "raceClosed": "Closed: another backup accepted first",
+        "refused": "Declined",
+        "slotUnavailable": "Its time was no longer free",
+        "takenByBackup": "Closed: another supplier took the job",
+        "tookTheJob": "Has the job",
+        "unknown": "—",
+        "waiting": "Waiting"
+      },
+      "title": "Suppliers contacted",
+      "waitingNote": "The request also went to backup suppliers: they step in only if the chosen supplier does not answer in time.",
+      "waitingNoteOpen": "The chosen supplier did not answer in time: now the first of the suppliers contacted that accepts gets the job."
+    },
+    "list": {
+      "chips": {
+        "active": "In progress",
+        "activeHint": "Taken or already started",
+        "all": "All",
+        "done": "Done",
+        "doneHint": "Paid, declined or cancelled",
+        "pending": "Waiting",
+        "pendingHint": "Waiting for the supplier to answer",
+        "topay": "To pay",
+        "topayHint": "Finished jobs: the amount and the payment are left"
+      },
+      "columns": {
+        "price": "Price",
+        "request": "Job and property",
+        "requested": "Requested on",
+        "state": "State",
+        "stay": "Stay",
+        "supplier": "Supplier",
+        "when": "When"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "emptyDescription": "Plumber, electrician, cleaning: request a job and follow it from here, up to the payment.",
+      "emptyTitle": "Here you find the jobs you request from suppliers",
+      "filters": {
+        "allCategories": "All types",
+        "allProperties": "All properties",
+        "allSuppliers": "All suppliers",
+        "category": "Type",
+        "date": "Day of the work",
+        "property": "Property",
+        "supplier": "Supplier"
+      },
+      "forStay": "You are only seeing the jobs of one stay.",
+      "loadError": "Could not load the jobs.",
+      "noResultsDescription": "Try other words or remove some filter.",
+      "noResultsTitle": "No jobs found",
+      "noTime": "To be agreed",
+      "note": {
+        "amount": "Amount to confirm",
+        "proposal": "New time proposed"
+      },
+      "priceTbd": "To be agreed",
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search by type, property or supplier",
+      "showAll": "Show all",
+      "urgency": {
+        "Emergency": "Emergency",
+        "High": "Urgent"
+      }
+    },
+    "pay": {
+      "description": "You pay {{amount}} to {{supplier}} by card, without leaving CasaZen.",
+      "descriptionNoSupplier": "You pay {{amount}} by card, without leaving CasaZen.",
+      "failed": "The payment did not go through. Check the card or try another one.",
+      "notice": "The payment is processed by Stripe. The job shows as paid when Stripe confirms it to CasaZen.",
+      "processing": "Payment sent: we are waiting for Stripe to confirm it. This page updates by itself.",
+      "sent": "Payment sent: we are waiting for Stripe to confirm it",
+      "sessionError": "Could not start the payment.",
+      "title": "Pay the job"
+    },
+    "photos": {
+      "alt": "Photo of the work: {{title}}",
+      "close": "Close",
+      "open": "Open photo {{index}} of {{count}}",
+      "title": "Photos of the work",
+      "unavailable": "Photo not available"
+    },
+    "request": "Request a job",
+    "title": "Jobs",
+    "toast": {
+      "amountConfirmed": "Amount confirmed: you can pay now",
+      "cancelled": "Job cancelled",
+      "proposalAccepted": "Time accepted: the job is confirmed",
+      "proposalRejected": "Time turned down: the request keeps waiting",
+      "reminded": "Reminder sent to the supplier"
+    }
   },
   "invitation": {
     "accept": "Accept and enter",
@@ -7662,6 +7824,7 @@
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "backToList": "Back to properties",
+      "contractsEmpty": "This property has no contracts yet.",
       "contractsLoadError": "The leases of this property could not be read.",
       "contractsTitle": "Linked leases",
       "description": "Description",
@@ -7686,7 +7849,14 @@
           "kicker": "Lease in force"
         }
       },
-      "rooms": "Bedrooms and bathrooms"
+      "rooms": "Bedrooms and bathrooms",
+      "tabs": {
+        "contracts": "Contracts",
+        "data": "Details",
+        "documents": "Documents",
+        "requests": "Maintenance"
+      },
+      "tabsLabel": "Sections of the property"
     },
     "drawer": {
       "ape": "APE",
@@ -7910,122 +8080,6 @@
       "pendingDelta_one": "{{count}} rent not yet due",
       "pendingDelta_other": "{{count}} rents not yet due"
     }
-  },
-  "longRentTenants": {
-    "chips": {
-      "all": "All",
-      "current": "Current",
-      "currentHint": "Everyone with at least one lease that has not concluded",
-      "former": "Former tenants",
-      "formerHint": "Only people whose leases have all concluded"
-    },
-    "citizenship": {
-      "Eu": "EU citizen",
-      "NonEu": "Non-EU citizen"
-    },
-    "columns": {
-      "end": "Lease end",
-      "lease": "Lease",
-      "punctuality": "Punctuality",
-      "tenant": "Tenant"
-    },
-    "contacts": {
-      "citizenship": "Citizenship",
-      "email": "Email",
-      "title": "Contacts"
-    },
-    "count_one": "{{count}} tenant",
-    "count_other": "{{count}} tenants",
-    "description": "Who lives in your properties, since when, how much they pay and how punctually.",
-    "detail": {
-      "backToList": "Go to tenants",
-      "description": "Tenant · {{citizenship}}",
-      "fallbackTitle": "Tenant",
-      "loadError": "We could not load this tenant.",
-      "loading": "Loading the tenant",
-      "notFound": "Tenant not found",
-      "notFoundDescription": "They may have been anonymized or the link is not correct."
-    },
-    "empty": {
-      "action": "Create lease",
-      "description": "They are added by creating a lease: name, lease and payments in one place.",
-      "title": "Your tenants will be here"
-    },
-    "end": {
-      "former": "Ended on {{date}}",
-      "running": "Until {{date}}"
-    },
-    "leaseAndOthers_one": "{{property}} · and one more lease",
-    "leaseAndOthers_other": "{{property}} · and {{count}} more leases",
-    "leases": {
-      "title": "Leases"
-    },
-    "loadError": "We could not load the tenants.",
-    "newLease": "Create lease",
-    "noLease": "No lease",
-    "noResults": {
-      "description": "Check the name or change tab.",
-      "title": "No tenant found"
-    },
-    "now": {
-      "action": "See the late rents",
-      "body_one": "{{amount}} was due on {{date}}.",
-      "body_other": "{{count}} rents worth {{amount}} are overdue: the oldest was due on {{date}}.",
-      "kicker": "Now",
-      "title": "The rent of {{month}} has not arrived",
-      "when_one": "{{count}} day late",
-      "when_other": "{{count}} days late",
-      "who": "Your turn"
-    },
-    "open": "Open the sheet",
-    "payments": {
-      "all": "See the rents",
-      "item": "{{month}} · {{amount}}",
-      "paid": "Paid",
-      "title": "Latest payments"
-    },
-    "privacy": {
-      "erase": "Ask for erasure",
-      "erasure": {
-        "confirm": "Ask for erasure",
-        "consequences": {
-          "documents": "The signed contract and the receipts are not touched.",
-          "ended": "For the leases that have ended, the data of everyone on that lease is anonymized right away, unless they have another lease in force.",
-          "final": "Anonymization cannot be undone.",
-          "running_one": "The lease that has not concluded yet ({{properties}}) is not touched: the data stay until the day after it ends, then they are anonymized.",
-          "running_other": "The leases that have not concluded yet ({{properties}}) are not touched: the data stay until the day after they end, then they are anonymized."
-        },
-        "description": "You are recording the request to erase the data of {{name}} on all their leases.",
-        "failed": "The erasure request could not be recorded.",
-        "title": "Ask for the erasure of the data?"
-      },
-      "export": "Export their data",
-      "exportFailed": "The file could not be prepared.",
-      "exportHint": "A file with their personal data in clear: keep it safe.",
-      "exported": "File downloaded.",
-      "identityNote": "We recognise the same person by their fiscal code: if it is written differently in two leases, they show up as two people and here you find the data of one only.",
-      "intro": "Here you can download the data CasaZen holds about {{name}} in your leases, or ask to erase them.",
-      "result": {
-        "anonymized": "Data anonymized.",
-        "description": "Here is what happened on each lease.",
-        "partial_one": "Data anonymized, except for {{count}} person who has another lease in force: we anonymize it when that lease ends.",
-        "partial_other": "Data anonymized, except for {{count}} people who have another lease in force: we anonymize it when those leases end.",
-        "scheduled": "The lease has not ended yet: the data will be anonymized from {{date}}.",
-        "scheduledNoDate": "The lease has not ended yet: the data will be anonymized from the day after it ends.",
-        "title": "Request recorded"
-      },
-      "summary": "Privacy"
-    },
-    "punctuality": {
-      "detail": "{{onTime}} rents out of {{total}} paid on time, within {{days}} days of the due date.",
-      "none": "No rent has fallen due yet.",
-      "summary": "{{onTime}} of {{total}} rents on time"
-    },
-    "search": {
-      "label": "Search tenants",
-      "placeholder": "Search by name or property"
-    },
-    "title": "Tenants"
   },
   "longRentRequests": {
     "cancel": {
@@ -8255,6 +8309,122 @@
       "reminded": "Reminder sent to the supplier"
     }
   },
+  "longRentTenants": {
+    "chips": {
+      "all": "All",
+      "current": "Current",
+      "currentHint": "Everyone with at least one lease that has not concluded",
+      "former": "Former tenants",
+      "formerHint": "Only people whose leases have all concluded"
+    },
+    "citizenship": {
+      "Eu": "EU citizen",
+      "NonEu": "Non-EU citizen"
+    },
+    "columns": {
+      "end": "Lease end",
+      "lease": "Lease",
+      "punctuality": "Punctuality",
+      "tenant": "Tenant"
+    },
+    "contacts": {
+      "citizenship": "Citizenship",
+      "email": "Email",
+      "title": "Contacts"
+    },
+    "count_one": "{{count}} tenant",
+    "count_other": "{{count}} tenants",
+    "description": "Who lives in your properties, since when, how much they pay and how punctually.",
+    "detail": {
+      "backToList": "Go to tenants",
+      "description": "Tenant · {{citizenship}}",
+      "fallbackTitle": "Tenant",
+      "loadError": "We could not load this tenant.",
+      "loading": "Loading the tenant",
+      "notFound": "Tenant not found",
+      "notFoundDescription": "They may have been anonymized or the link is not correct."
+    },
+    "empty": {
+      "action": "Create lease",
+      "description": "They are added by creating a lease: name, lease and payments in one place.",
+      "title": "Your tenants will be here"
+    },
+    "end": {
+      "former": "Ended on {{date}}",
+      "running": "Until {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · and one more lease",
+    "leaseAndOthers_other": "{{property}} · and {{count}} more leases",
+    "leases": {
+      "title": "Leases"
+    },
+    "loadError": "We could not load the tenants.",
+    "newLease": "Create lease",
+    "noLease": "No lease",
+    "noResults": {
+      "description": "Check the name or change tab.",
+      "title": "No tenant found"
+    },
+    "now": {
+      "action": "See the late rents",
+      "body_one": "{{amount}} was due on {{date}}.",
+      "body_other": "{{count}} rents worth {{amount}} are overdue: the oldest was due on {{date}}.",
+      "kicker": "Now",
+      "title": "The rent of {{month}} has not arrived",
+      "when_one": "{{count}} day late",
+      "when_other": "{{count}} days late",
+      "who": "Your turn"
+    },
+    "open": "Open the sheet",
+    "payments": {
+      "all": "See the rents",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Paid",
+      "title": "Latest payments"
+    },
+    "privacy": {
+      "erase": "Ask for erasure",
+      "erasure": {
+        "confirm": "Ask for erasure",
+        "consequences": {
+          "documents": "The signed contract and the receipts are not touched.",
+          "ended": "For the leases that have ended, the data of everyone on that lease is anonymized right away, unless they have another lease in force.",
+          "final": "Anonymization cannot be undone.",
+          "running_one": "The lease that has not concluded yet ({{properties}}) is not touched: the data stay until the day after it ends, then they are anonymized.",
+          "running_other": "The leases that have not concluded yet ({{properties}}) are not touched: the data stay until the day after they end, then they are anonymized."
+        },
+        "description": "You are recording the request to erase the data of {{name}} on all their leases.",
+        "failed": "The erasure request could not be recorded.",
+        "title": "Ask for the erasure of the data?"
+      },
+      "export": "Export their data",
+      "exportFailed": "The file could not be prepared.",
+      "exportHint": "A file with their personal data in clear: keep it safe.",
+      "exported": "File downloaded.",
+      "identityNote": "We recognise the same person by their fiscal code: if it is written differently in two leases, they show up as two people and here you find the data of one only.",
+      "intro": "Here you can download the data CasaZen holds about {{name}} in your leases, or ask to erase them.",
+      "result": {
+        "anonymized": "Data anonymized.",
+        "description": "Here is what happened on each lease.",
+        "partial_one": "Data anonymized, except for {{count}} person who has another lease in force: we anonymize it when that lease ends.",
+        "partial_other": "Data anonymized, except for {{count}} people who have another lease in force: we anonymize it when those leases end.",
+        "scheduled": "The lease has not ended yet: the data will be anonymized from {{date}}.",
+        "scheduledNoDate": "The lease has not ended yet: the data will be anonymized from the day after it ends.",
+        "title": "Request recorded"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} rents out of {{total}} paid on time, within {{days}} days of the due date.",
+      "none": "No rent has fallen due yet.",
+      "summary": "{{onTime}} of {{total}} rents on time"
+    },
+    "search": {
+      "label": "Search tenants",
+      "placeholder": "Search by name or property"
+    },
+    "title": "Tenants"
+  },
   "ltrReferenceData": {
     "title": "LTR reference data",
     "description": "Territorial rent agreements and comune IMU channels: no deploy needed to update a PEC or a band.",
@@ -8468,6 +8638,7 @@
     "sort": {
       "name": "Name",
       "price": "Price",
+      "recommended": "Recommended",
       "response": "Fastest response"
     },
     "verifiedOnly": "Verified only",
@@ -8490,7 +8661,21 @@
     },
     "mine": {
       "title": "My apps",
-      "description": "The requests you sent to the suppliers and where they stand."
+      "description": "The suppliers you already asked for an intervention and the requests you sent.",
+      "suppliersTitle": "My suppliers",
+      "summary_one": "{{count}} request · last on {{date}}",
+      "summary_other": "{{count}} requests · last on {{date}}",
+      "open_one": "{{count}} open",
+      "open_other": "{{count}} open",
+      "requestAgain": "Request again",
+      "openPage": "View the page",
+      "seeRequests": "See the requests",
+      "notAround": "It does not work in the area of this property.",
+      "onlySupplier": "Only the requests of {{name}}",
+      "showAll": "Show all",
+      "emptyTitle": "You have not asked for any intervention yet",
+      "emptyHint": "When you ask a supplier for an intervention you will find it here, with its requests.",
+      "discover": "Discover the suppliers"
     },
     "supplier": {
       "title": "Supplier",
@@ -8507,7 +8692,8 @@
     "goToBookings": "Go to bookings",
     "goToProperties": "Go to properties",
     "propertiesTitle": "Your properties",
-    "propertiesDescription": "Request services from a property or booking detail page."
+    "propertiesDescription": "Request services from a property or booking detail page.",
+    "recommended": "Recommended"
   },
   "messageThread": {
     "send": "Send",
@@ -8547,6 +8733,7 @@
     "longRentDeadlines": "Deadlines",
     "longRentTenants": "Tenants",
     "serviceRequests": "Maintenance",
+    "interventions": "Jobs",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",
@@ -8664,7 +8851,11 @@
       "serviceRequestQuoteExpired": "The quote expired: the customer did not answer in time.",
       "serviceRequestDayBefore": "You have a job tomorrow.",
       "servicePaymentReceived": "You received a payment.",
-      "generic": "You have a new notification."
+      "generic": "You have a new notification.",
+      "serviceRequestBackupInvited": "You are a backup for a new service request.",
+      "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
+      "serviceRequestBackupWon": "The job of a request has passed to you.",
+      "serviceRequestBackupClosed": "A request you were a backup for was closed."
     }
   },
   "onboarding": {
@@ -8800,7 +8991,12 @@
       "contactEmailInvalid": "Enter a valid email."
     },
     "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
-    "siteAppearanceLink": "Go to Site appearance"
+    "siteAppearanceLink": "Go to Site appearance",
+    "backups": {
+      "help": "When you ask for a job, the request goes to the supplier you choose and also to other suppliers in the area, declared as backups. The chosen supplier has an hour to accept: if it does not, the job goes to the first backup that accepts. You can choose differently for each request.",
+      "label": "Also send requests to backup suppliers",
+      "title": "Requests to suppliers"
+    }
   },
   "ota": {
     "status": {
@@ -10272,6 +10468,89 @@
       "recommended": "{{photos}} of {{recommended}} recommended photos (not required): you can add more later too.",
       "title": "Photos"
     },
+    "prices": {
+      "calendar": "The base price applies to every night; the Calendar shows the prices that apply.",
+      "cleaning": {
+        "hint": "Paid once per stay.",
+        "label": "Cleaning fee (€)"
+      },
+      "minNights": {
+        "hint": "Fewest nights per booking made on your site (1 = no minimum). It does not apply to the bookings you enter yourself.",
+        "label": "Minimum stay"
+      },
+      "rate": {
+        "hint": "It applies to every night. Without a price the property stays “To complete”: it cannot be activated.",
+        "label": "Base price per night (€)"
+      },
+      "touristTax": {
+        "found": "Tourist tax: we have the rate for {{city}}. It is not in the price: it is added to the booking.",
+        "notYet": "Tourist tax: the rate for {{city}} is not available yet. It is not in the price: it is added to the booking once it is.",
+        "see": "See the rate"
+      },
+      "weekend": {
+        "hint": "Added to the base price of the nights that start on a Friday or a Saturday. If a date already has its own price, that one applies. Empty = no surcharge.",
+        "label": "Weekend surcharge (%)"
+      }
+    },
+    "rules": {
+      "extraGuest": {
+        "hint": "What you ask per night for each extra guest. Leave it empty if you do not accept extra guests. For now guests read it among the rules: it is not added to the price of the stay by itself.",
+        "label": "Fee for each extra guest (€ per night)"
+      },
+      "house": {
+        "parties": "Parties and events",
+        "pets": "Pets",
+        "smoking": "Smoking",
+        "title": "In the home"
+      },
+      "onSite": "If online payments are on, guests can also ask to pay at the property: you accept or refuse each request, and a request with no answer expires.",
+      "other": {
+        "hint": "For example where to leave shoes or how recycling works.",
+        "label": "Other rules"
+      },
+      "partiesOptions": {
+        "No": "Not allowed",
+        "OnRequest": "On request only"
+      },
+      "petsOptions": {
+        "No": "Not allowed",
+        "OnRequest": "On request",
+        "Yes": "Welcome"
+      },
+      "policy": {
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "intro": "Choose one of the CasaZen policies: under each one is what you refund, counting the days before arrival.",
+        "legend": "Cancellation policy",
+        "lineFullOnly": "Full refund up to {{full}} before arrival; after that, no refund.",
+        "lineNone": "No refund.",
+        "linePartial": "Full refund up to {{full}} before arrival; then {{percent}}% up to {{partial}} before; after that, no refund.",
+        "linePartialToArrival": "Full refund up to {{full}} before arrival; then {{percent}}% until arrival.",
+        "loadFailed": "I cannot read the cancellation policies. Try again in a moment.",
+        "loading": "Loading the policies…",
+        "noneChosen": "If you do not choose a policy, the full refund applies up to 7 days before arrival; after that, you decide case by case.",
+        "title": "If the guest cancels"
+      },
+      "quiet": {
+        "from": "Quiet from",
+        "hint": "Optional: if you write them, guests read them in the house rules.",
+        "none": "None",
+        "title": "Quiet hours",
+        "to": "Quiet until"
+      },
+      "smokingOptions": {
+        "No": "Not allowed",
+        "OutdoorsOnly": "Outdoors only",
+        "Yes": "Allowed"
+      },
+      "times": {
+        "checkIn": "Check-in from",
+        "checkOut": "Check-out by",
+        "title": "Arrival and departure"
+      }
+    },
     "steps": {
       "amenities": {
         "label": "Amenities",
@@ -10287,6 +10566,16 @@
         "label": "Photos",
         "purpose": "Recommended, not required: you can skip this step and add them later.",
         "title": "Show the home with a few photos"
+      },
+      "prices": {
+        "label": "Prices",
+        "purpose": "A base price for every night, plus a few rules. The Calendar then shows the prices that apply.",
+        "title": "How much is a night?"
+      },
+      "rules": {
+        "label": "Rules",
+        "purpose": "Times, smoking, pets and cancellation. Guests read them before booking.",
+        "title": "What are the house rules?"
       }
     },
     "suggest": {
@@ -10319,22 +10608,30 @@
       "bathrooms": "Bathrooms are from 1 to 50.",
       "bedrooms": "Bedrooms are from 0 to 100.",
       "beds": "Beds are from 1 to 100.",
+      "cleaningFee": "Write the amount in euros, from 0 to 10,000, numbers only: for example 50.",
       "comune": {
         "required": "Choose the comune from the list."
       },
       "description": "The description can have at most 600 characters.",
+      "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
+      "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
       "maxGuests": "Maximum guests are from 1 to 100.",
+      "minNights": "The minimum stay is from 1 to 30 nights.",
       "name": {
         "max": "The name can have at most 100 characters.",
         "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
       },
+      "nightlyRate": "Write the price in euros, from 1 to 100,000, numbers only: for example 135.",
       "postalCode": {
         "format": "An Italian postal code has 5 digits."
       },
+      "quietHours": "Write both the start and the end of the quiet hours, or leave both empty.",
+      "time": "Choose a time from the list.",
       "unit": {
         "max": "Floor and unit can have at most 30 characters."
-      }
+      },
+      "weekendSurcharge": "Write the percentage from 0 to 100, for example 15."
     }
   },
   "publicBooking": {
@@ -10847,6 +11144,7 @@
       "propertyTitle": "{{name}} · {{city}} — {{org}}"
     },
     "loading": "Loading...",
+    "offline": "You are offline: this is the last saved version. To check dates and book, you need a connection.",
     "loadingProperties": "Loading properties...",
     "propertiesError": {
       "title": "We can't show the properties right now",
@@ -11129,6 +11427,181 @@
       "financial": "Financial",
       "fiscal": "Fiscal",
       "operational": "Operational"
+    }
+  },
+  "requestWizard": {
+    "done": {
+      "another": "Make another request",
+      "answers": "The supplier decides: it accepts, declines or proposes another time.",
+      "cancel": "You can cancel any time, at no cost, until the work has started.",
+      "description": "The request is on its way: here is what happens now.",
+      "respondBy": "It has until {{when}} to answer.",
+      "see": "See the request",
+      "title": "Request sent to {{supplier}}",
+      "titleGeneric": "Request sent",
+      "told": "We tell you as soon as it answers. From Jobs you follow it up to the payment."
+    },
+    "errors": {
+      "categoryRequired": "Choose the kind of job you need.",
+      "commitmentConflict": "The supplier already has a job in that interval: choose another time.",
+      "dayPast": "That day has passed: choose today or later.",
+      "dayRequired": "Enter the day of the work.",
+      "durationInvalid": "Enter how long the work lasts, from 5 minutes to 24 hours.",
+      "notesTooLong": "The notes can be 1000 characters long at most.",
+      "propertyRequired": "Choose the property.",
+      "sendFailed": "We could not send the request. Try again in a moment: your answers are still here.",
+      "serviceRequired": "Choose a service, or «Other job».",
+      "serviceUnavailable": "The supplier no longer offers this service: choose another one.",
+      "slotRequired": "Choose one of the free times.",
+      "slotTaken": "This time has just been taken: choose another one.",
+      "stayMismatch": "The stay you chose is not of this property: choose it again.",
+      "supplierInactive": "This supplier is not available right now: choose another one.",
+      "supplierOutsideComune": "This supplier does not work in the comune of the property: choose another one.",
+      "supplierRequired": "Choose the supplier.",
+      "timeInvalid": "The time you chose is not valid: choose another one.",
+      "timePast": "That time has already passed: choose a later one.",
+      "timeRequired": "Enter the start time.",
+      "urgencyRequired": "Choose how urgent it is."
+    },
+    "finish": "Send the request",
+    "loading": "Getting the request ready…",
+    "noProperty": {
+      "action": "Add a property",
+      "text": "To ask for a job you need at least one property.",
+      "title": "You need a property first"
+    },
+    "retry": "Try again",
+    "review": {
+      "backups": {
+        "description": "The supplier you chose has an hour to accept. If it does not answer, the job goes to the first backup supplier that accepts: so you are not left without an answer.",
+        "legend": "If the supplier does not answer",
+        "title": "Also send to backups"
+      },
+      "houseOnly": "The house only, no stay",
+      "notes": "Notes",
+      "price": "Price",
+      "priceEstimate": "Estimate: {{price}}. When the work is done the supplier gives the final amount.",
+      "priceFrom": "{{price}}. The total depends on the work and the supplier gives it.",
+      "priceQuote": "On quote. The supplier will send you the quote.",
+      "priceTbd": "To be agreed with the supplier.",
+      "sees": {
+        "after": {
+          "contact": "your contact details (email and phone)",
+          "notes": "your notes",
+          "where": "the name and address of the property"
+        },
+        "afterTitle": "Once it accepts, it also sees",
+        "before": {
+          "what": "the kind of job it is and how urgent",
+          "when": "the day and the time",
+          "where": "the comune and postal code of the property, not the address",
+          "who": "the name of your organization and the expected price"
+        },
+        "beforeTitle": "Before it accepts, the supplier sees",
+        "never": "It never sees your guests’ data: if you link a stay, it only knows its dates.",
+        "title": "What the supplier sees"
+      },
+      "what": "What is needed",
+      "when": "When",
+      "where": "Where",
+      "who": "Who"
+    },
+    "steps": {
+      "review": {
+        "label": "Summary",
+        "purpose": "The request leaves only when you press «Send the request».",
+        "title": "Check and send"
+      },
+      "what": {
+        "label": "What is needed",
+        "purpose": "Choose the kind of work and how urgent it is.",
+        "title": "What job do you need?"
+      },
+      "when": {
+        "label": "Where and when",
+        "purpose": "Choose the property and the day. The stay is optional.",
+        "title": "Where and when?"
+      },
+      "who": {
+        "label": "Who",
+        "purpose": "Choose the supplier, the service and a free time.",
+        "title": "Who takes care of it?"
+      }
+    },
+    "title": "Request a job",
+    "what": {
+      "category": "Kind of job",
+      "categoryPlaceholder": "Choose the kind",
+      "notes": "What should the supplier do?",
+      "notesHint": "Describe the work in a few lines. Do not write guests’ data (name, phone, documents): the supplier reads these notes only when it accepts.",
+      "urgencies": {
+        "Emergency": {
+          "text": "Needed now: it cannot wait.",
+          "title": "Emergency"
+        },
+        "High": {
+          "text": "Needed soon.",
+          "title": "High"
+        },
+        "Normal": {
+          "text": "It can be scheduled.",
+          "title": "Normal"
+        }
+      },
+      "urgency": "How urgent is it?"
+    },
+    "when": {
+      "day": "Day of the work",
+      "property": "Property",
+      "propertyPlaceholder": "Choose the property",
+      "stay": "Link to a stay",
+      "stayHint": "Optional: without one, the request is about the house only.",
+      "stayNone": "No stay: the house only",
+      "window": {
+        "both": "That day the guests leave by {{from}} and the next ones arrive from {{to}}: for cleaning, {{from}}–{{to}} is the advised window.",
+        "defaults": "Default hours: check-out by {{checkOut}}, check-in from {{checkIn}}.",
+        "open": "That day the guests leave by {{from}} and nobody arrives: the cleaning can be done afterwards."
+      }
+    },
+    "who": {
+      "advised": {
+        "both": "Showing the times between {{from}} and {{to}}, the advised window for cleaning.",
+        "none": "No free time in the advised window: here are the others.",
+        "open": "Showing the times from {{from}}, after the guests leave."
+      },
+      "catalogError": "I cannot read the services of this supplier.",
+      "custom": {
+        "help": "Choose when you want it to start and how long it lasts. The supplier can accept, decline or propose another time.",
+        "text": "It is not among the services in the list: you choose the time and the length.",
+        "title": "Other job"
+      },
+      "duration": "Length",
+      "durationMinutes": "Minutes",
+      "durationOther": "Other…",
+      "durationRange": "From {{min}} to {{max}} minutes.",
+      "loadingServices": "Looking for the services…",
+      "loadingSlots": "Looking for free times…",
+      "loadingSuppliers": "Looking for suppliers…",
+      "lookAround": "Look at the marketplace",
+      "nearbyDays": "Nearby days with free times",
+      "noDuration": "Length to be agreed",
+      "noSlotsAtAll": "No free time in the coming days. Choose another service or another supplier.",
+      "noSlotsDay": "No free time {{day}}.",
+      "noSuppliers": "No supplier covers the comune of this property for this kind of job.",
+      "priceOnRequest": "Price on quote",
+      "services": "Service",
+      "showEvery": "Show all times",
+      "slot": "From {{from}} to {{to}}",
+      "slotsCount_one": "One free time {{day}}",
+      "slotsCount_other": "{{count}} free times {{day}}",
+      "slotsError": "I cannot read the free times.",
+      "slotsLabel": "Free times {{day}}",
+      "slotsTitle": "Free times {{day}}",
+      "startTime": "Start time",
+      "supplierUnavailable": "The supplier named is not among those available for this property and this kind of job (it is not active, or does not cover the comune). Choose another one.",
+      "suppliers": "Suppliers for this job",
+      "suppliersError": "I cannot load the suppliers.",
+      "until": "until {{to}}"
     }
   },
   "revenue": {
@@ -12038,6 +12511,39 @@
       "urlRequired": "Enter the address of the document.",
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
+  },
+  "siteMap": {
+    "approximateNote": "Approximate positions: the exact address arrives with the confirmation.",
+    "cardClose": "Close the card",
+    "cardOpen": "See the house",
+    "cardTitle": "Selected house",
+    "cluster": "{{count}} houses close together: zoom in to see them",
+    "controls": "Map controls",
+    "error": "Map not available",
+    "fit": "Fit all the houses",
+    "fitAnnounce": "Map fitted to all the houses",
+    "keyboardHint": "Map: use the arrow keys to move it, plus and minus to zoom, 0 to fit all the houses.",
+    "loading": "Loading the map",
+    "local": {
+      "approximate": "Approximate position: the exact address arrives with the confirmation.",
+      "minutes": "{{minutes}} min",
+      "poiCar": "{{name}}, {{minutes}} minutes by car",
+      "poiWalk": "{{name}}, {{minutes}} minutes on foot",
+      "poisLabel": "Points of interest",
+      "scheme": "A scheme of the area, not a street map.",
+      "unlocked": "Approximate position: the exact address is in your booking."
+    },
+    "mapLabel": "Map of the houses",
+    "noPosition": "Position not available",
+    "pinLabel": "{{name}}, {{label}}",
+    "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
+    "pinsLabel": "Houses on the map",
+    "rating": "Rated {{value}} out of 5",
+    "retry": "Try again",
+    "unavailable": "not available",
+    "zoomAnnounce": "Map {{km}} km wide",
+    "zoomIn": "Closer",
+    "zoomOut": "Farther"
   },
   "siteReviews": {
     "count_one": "{{count}} review",
@@ -13174,6 +13680,7 @@
         "showcase": "Publish your showcase"
       },
       "today": {
+        "acceptBackupAria": "Accept as a backup: {{name}}",
         "completed": "Done: waiting for payment",
         "filterLabel": "Show by type",
         "inProgress": "In progress",
@@ -13205,6 +13712,7 @@
     },
     "requests": {
       "action": {
+        "acceptBackup": "Accept as a backup",
         "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
@@ -13224,6 +13732,14 @@
         "you": "You"
       },
       "answerUrgent": "Answer the most urgent",
+      "backup": {
+        "acceptedToast": "Done: if the chosen supplier does not accept in time, the job may pass to you.",
+        "primaryHint": {
+          "late": "Your time is up, but you can still accept as long as nobody else has taken the job.",
+          "priority": "The customer also asked other suppliers as backups: you have until {{time}} to accept, then the job may pass to a backup."
+        },
+        "primaryUntil": "The chosen supplier has until {{time}}"
+      },
       "cancel": {
         "back": "Go back",
         "confirm": "Cancel the job",
@@ -13350,6 +13866,23 @@
       },
       "now": {
         "amountToConfirm": "Waiting for the customer to confirm the amount.",
+        "backupAccepted": {
+          "client": "Sees that you accepted as a backup.",
+          "title": "You accepted as a backup",
+          "you": "You are the only backup left: the others were closed as soon as you accepted. If the chosen supplier does not accept by {{time}}, the job is yours and we will tell you. Meanwhile your time is set aside in your agenda; if they accept, it is free again and there is no penalty."
+        },
+        "backupActive": {
+          "client": "Is waiting for someone to take the job.",
+          "then": "Next: once you accept you see the customer’s address and contact details.",
+          "title": "The job is free: accept it if you can",
+          "you": "The chosen supplier did not accept in time. The first to accept by {{time}} gets the job: accept only if you can do it."
+        },
+        "backupWaiting": {
+          "client": "Chose another supplier and knows the request also went to backups.",
+          "then": "Next: if the job passes to you we tell you, and only then you see the customer’s address and contact details.",
+          "title": "You are a backup for this request",
+          "you": "The customer chose another supplier, who has until {{time}}. The job is yours only if they do not accept. You can say right away that you would take it: the first backup to accept closes the race (the others can no longer accept) and its time is set aside in its agenda."
+        },
         "cancelled": {
           "client": "The request is closed.",
           "title": "The request was cancelled",
@@ -13465,6 +13998,9 @@
         "tooSoon": "You sent a reminder a short while ago: you can try again tomorrow."
       },
       "phase": {
+        "backupAccepted": "Backup accepted",
+        "backupActive": "Backup: to accept",
+        "backupWaiting": "Backup",
         "proposalPending": "Waiting for the customer",
         "quotePending": "Waiting for the customer"
       },
@@ -13536,10 +14072,15 @@
         "withdrawnToast": "Quote taken back"
       },
       "reason": {
+        "BackupRaceClosed": "Another backup supplier accepted before you: the race is over. There is no penalty for you.",
+        "BackupSlotUnavailable": "Your time was no longer free when the job came to you.",
         "CancelledByCustomer": "The customer cancelled the request.",
         "NoResponse": "Nobody answered in time.",
+        "PrimaryTookIt": "The job was accepted by the supplier the customer chose.",
         "ProposalNotAnswered": "The customer did not answer the new time.",
-        "QuoteNotAnswered": "The customer did not answer the quote in time."
+        "QuoteNotAnswered": "The customer did not answer the quote in time.",
+        "RequestCancelledByHost": "The customer cancelled the request.",
+        "TakenByBackup": "The job was taken by another supplier."
       },
       "reject": {
         "cancel": "Cancel",
@@ -14413,6 +14954,48 @@
     "comuniTitle": "Where they work",
     "servicesTitle": "Services",
     "noAvailability": "The supplier has not yet entered availability for the coming days."
+  },
+  "swiss": {
+    "description": "Compliance files for Canton Ticino: daily police notification and OTR report.",
+    "otr": {
+      "description": "Overnight stays report for the period (OTR CSV).",
+      "download": "Download OTR report",
+      "downloadFailed": "Unable to download OTR report.",
+      "downloading": "Downloading...",
+      "fromDate": "From date",
+      "title": "OTR Report",
+      "toDate": "To date"
+    },
+    "police": {
+      "date": "Notification date",
+      "description": "Daily police notification (Ticino XML).",
+      "download": "Download police notification",
+      "downloadFailed": "Unable to download notification.",
+      "downloading": "Downloading...",
+      "title": "Police Notification"
+    },
+    "propertyIdPlaceholder": "Property ID",
+    "receipt": {
+      "date": "Report date",
+      "description": "Upload receipt from cantonal portal.",
+      "file": "Receipt file",
+      "reference": "Reference",
+      "referencePlaceholder": "Confirmation number or reference",
+      "title": "Upload Receipt",
+      "type": "Type",
+      "typeOtr": "OTR",
+      "typePolice": "Police",
+      "upload": "Upload receipt",
+      "uploadFailed": "Unable to upload receipt.",
+      "uploadSuccess": "Receipt uploaded successfully.",
+      "uploading": "Uploading..."
+    },
+    "reminder": {
+      "description": "You will receive notifications 24 hours before configured deadlines.",
+      "title": "Deadline Reminders"
+    },
+    "selectProperty": "Select property",
+    "title": "Swiss Compliance"
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
