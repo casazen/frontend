@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRightLeft, BedDouble, Building2, Euro, Expand, FileSignature, FileText, Pencil, User } from 'lucide-react';
+import { ArrowRightLeft, BedDouble, Building2, Euro, Expand, FileSignature, FileText, Pencil, User, Wrench } from 'lucide-react';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListCardContent, ListMenuEntry, ListRowAction, ListSwipeAction } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -34,6 +34,11 @@ export interface LongRentPropertiesListOptions {
   canReadLease: boolean;
   /** The leases are known. Without them nothing is said of who lives where, so there are no quick filters on it. */
   leasesKnown: boolean;
+  /**
+   * "Richiedi intervento" (LR-07b): asks the page to open the request to a supplier for this property. The request is for who may
+   * write the property (`canWrite`), as everywhere else; without this the entry is not in the menu.
+   */
+  onRequest?: (propertyId: string) => void;
 }
 
 /**
@@ -45,7 +50,7 @@ export interface LongRentPropertiesListOptions {
  * way with its stage and the change of mode programmed come from the server (LR-07a). The design also has the type and the size of the property
  * and the rent asked for a free property: the model does not have them (LR-D30), so they are not here and not made up.
  */
-export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLease, leasesKnown }: LongRentPropertiesListOptions) {
+export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLease, leasesKnown, onRequest }: LongRentPropertiesListOptions) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -200,6 +205,10 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
           canCreateLease && leaseOfRow(row)
             ? { id: 'new-lease', label: t('longRentProperties.list.actions.createLease'), icon: FileSignature, href: newLeaseForPropertyPath(row.property.id), testId: 'long-rent-property-new-lease' }
             : null,
+          // A job for a supplier (LR-08b): the window of the request opens on this property, without leaving the list.
+          canWrite && onRequest
+            ? { id: 'request', label: t('longRentProperties.list.actions.request'), icon: Wrench, onSelect: () => onRequest(row.property.id), testId: 'long-rent-property-request' }
+            : null,
           // The same entry as the menu of the page of the property: the wizard that moves it to Affitti brevi.
           canWrite ? 'separator' : null,
           canWrite
@@ -240,5 +249,5 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
       noResults: { title: t('longRentProperties.list.noResults.title'), description: t('longRentProperties.list.noResults.description') },
       countLabel: (count) => t('longRentProperties.list.count', { count }),
     });
-  }, [t, language, canWrite, canCreateLease, canReadLease, leasesKnown]);
+  }, [t, language, canWrite, canCreateLease, canReadLease, leasesKnown, onRequest]);
 }
