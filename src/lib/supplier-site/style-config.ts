@@ -51,13 +51,18 @@ const isStyleId = (value: unknown): value is SiteStyleId =>
 const isFontId = (value: unknown): value is SiteFontId =>
   typeof value === 'string' && (SITE_FONT_IDS as readonly string[]).includes(value);
 
-/** The style recommended for the first of the supplier's categories that has one. */
-export function styleForCategories(categories: readonly string[]): SiteStyleId {
+/** The style recommended for the first of the supplier's categories that has one; null when none has (events, rental, excursions). */
+export function recommendedStyleFor(categories: readonly string[]): SiteStyleId | null {
   for (const category of categories) {
     const found = SITE_STYLE_IDS.find((id) => SITE_STYLES[id].categories.includes(category));
     if (found) return found;
   }
-  return DEFAULT_STYLE;
+  return null;
+}
+
+/** The style recommended for the trade, or the default one when the trade has none of its own. */
+export function styleForCategories(categories: readonly string[]): SiteStyleId {
+  return recommendedStyleFor(categories) ?? DEFAULT_STYLE;
 }
 
 /** The style the supplier chose, or the one recommended for its trade when it chose none (or sent a name nobody knows). */

@@ -142,6 +142,22 @@ function firstSlotOf(services: PublicSupplierService[] | null): SiteFirstSlot | 
   return best;
 }
 
+/**
+ * The services in the order of a draft (`serviceOrder`, SP-13a): only the ones it names, in that order; with no order, or when none of
+ * its slugs is among the services the page has, all of them as they come. The published page gets this from the server; the preview of
+ * the editor applies the draft's own, to the services the page has.
+ */
+export function applyServiceOrder(services: PublicSupplierService[], order: readonly string[] | undefined): PublicSupplierService[] {
+  if (!order || order.length === 0) return services;
+  const bySlug = new Map(services.map((service) => [service.slug, service]));
+  const ordered: PublicSupplierService[] = [];
+  for (const slug of order) {
+    const service = bySlug.get(slug);
+    if (service && !ordered.includes(service)) ordered.push(service);
+  }
+  return ordered.length > 0 ? ordered : services;
+}
+
 function trustOf(dto: SupplierShowcaseDto): SiteTrustItem[] {
   const items: SiteTrustItem[] = [];
   if (dto.trust?.verified === true) items.push({ kind: 'verified' });
