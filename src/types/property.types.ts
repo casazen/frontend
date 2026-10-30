@@ -4,6 +4,21 @@ import type { RatingSummary } from './review.types';
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
 export type RentalMode = 'Short' | 'Long';
 
+/** The kind of accommodation (SR-07a): the five choices of the first step of «Aggiungi immobile». */
+export const ACCOMMODATION_TYPES = ['Apartment', 'HouseOrVilla', 'TrulloOrMasseria', 'LoftOrPenthouse', 'RoomOrSuite'] as const;
+export type AccommodationType = (typeof ACCOMMODATION_TYPES)[number];
+
+/** What the house rules say about smoking, pets and parties (SR-07a). */
+export type SmokingPolicy = 'No' | 'OutdoorsOnly' | 'Yes';
+export type PetsPolicy = 'No' | 'OnRequest' | 'Yes';
+export type PartiesPolicy = 'No' | 'OnRequest';
+
+/** The one state of a short-stay property in the host's list (SR-07a): derived by the server, never worked out here. */
+export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
+
+/** Where a short-stay property stands on the booking site: on it, ready but kept off (paused or switched off), or not ready. */
+export type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
+
 /**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
  * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
@@ -34,6 +49,36 @@ export interface Property {
   amenities: string[];
   photoUrls: string[];
   houseRules: string;
+  /** The fields of the wizard «Aggiungi immobile» (SR-07a): `null` = the host never said. */
+  accommodationType?: AccommodationType | null;
+  beds?: number | null;
+  /** Living area in square metres. */
+  areaSqm?: number | null;
+  /** The headline of the listing, at most 60 characters; `null` = the listing uses the name. */
+  listingTitle?: string | null;
+  /** «Mostra la casa sul sito»: `false` = the host keeps the property off the booking site (it never publishes by itself). */
+  publishedOnSite?: boolean;
+  /** `HH:mm:ss` on the property's clock. */
+  checkInFrom?: string | null;
+  checkOutBy?: string | null;
+  smokingPolicy?: SmokingPolicy | null;
+  petsPolicy?: PetsPolicy | null;
+  partiesPolicy?: PartiesPolicy | null;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  /** What the host asks per night for each extra guest, in euros; `null` = extra guests are not accepted. */
+  extraGuestFeePerNight?: number | null;
+  /**
+   * Only in the rows of `GET /properties?view=overview` (SR-07a), told by the server: the one state, what is missing, the
+   * occupancy of the last 30 days (percent, active properties only), the photos and where the property stands on the site.
+   */
+  lifecycleStatus?: PropertyLifecycleStatus;
+  occupancy30?: number;
+  photoCount?: number;
+  coverPhotoUrl?: string;
+  siteVisibility?: PropertySiteVisibility;
+  /** With `lifecycleStatus` `Suspended`: the blocker codes that suspended the property. */
+  suspensionReasons?: string[];
   cinCode: string | null;
   /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: 'IT' | 'CH';
@@ -136,6 +181,20 @@ export interface CreatePropertyDto {
   damageDeposit?: number;
   amenities?: string[];
   houseRules?: string;
+  /** The fields of the wizard «Aggiungi immobile» (SR-07a); on an update `null` clears them and leaving one out keeps it. */
+  accommodationType?: AccommodationType | null;
+  beds?: number | null;
+  areaSqm?: number | null;
+  listingTitle?: string | null;
+  publishedOnSite?: boolean;
+  checkInFrom?: string | null;
+  checkOutBy?: string | null;
+  smokingPolicy?: SmokingPolicy | null;
+  petsPolicy?: PetsPolicy | null;
+  partiesPolicy?: PartiesPolicy | null;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  extraGuestFeePerNight?: number | null;
   cinCode?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
@@ -178,6 +237,20 @@ export interface CancellationPolicyOption {
   fullRefundHours: number;
   partialRefundPercent: number;
   partialRefundHours: number;
+  /** Stable identifier of the catalog (SR-07a): the name and the description may be reworded, the slug never. */
+  slug?: string;
+}
+
+/**
+ * How many properties the org has of how many its plan allows (`GET /properties/plan-usage`, SR-07a): readable by whoever may
+ * read properties, and deliberately without the name of the plan or the billing.
+ */
+export interface PlanUsage {
+  used: number;
+  /** `null` when the plan has no limit. */
+  max: number | null;
+  unlimited: boolean;
+  canAdd: boolean;
 }
 
 export type PropertyDocumentType =

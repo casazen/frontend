@@ -8348,6 +8348,7 @@
     "reviews": "Reviews",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
+    "wireTransfers": "Owner Wire Transfers",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -9852,6 +9853,160 @@
         "next": "Check the date",
         "purpose": "The change happens at the start of the day you choose.",
         "title": "From when?"
+      }
+    }
+  },
+  "propertyWizard": {
+    "amenities": {
+      "count_one": "You chose {{count}} amenity.",
+      "count_other": "You chose {{count}} amenities.",
+      "groups": {
+        "comfort": "Comfort",
+        "essentials": "Essentials",
+        "other": "Other",
+        "outdoor": "Outdoors"
+      },
+      "none": "You have not chosen anything yet: you can also skip this and add them later.",
+      "safety": {
+        "complete": "The sheet is complete.",
+        "description": "The property's safety sheet: you fill it in once and it is needed to activate the property.",
+        "dialogDescription": "Fill in the items and save: the property is activated only with a complete, confirmed sheet.",
+        "dialogTitle": "Safety sheet",
+        "loadFailed": "I cannot read the safety sheet. Try again in a moment.",
+        "loading": "Checking the sheet…",
+        "open": "Fill in the sheet",
+        "progress": "{{done}} of {{total}} items in order",
+        "progressLabel": "Progress of the safety sheet",
+        "review": "Review the sheet",
+        "title": "Safety"
+      }
+    },
+    "base": {
+      "address": {
+        "hint": "Street and house number, or “snc” if there is none.",
+        "label": "Address",
+        "placeholder": "Via Roma 12"
+      },
+      "areaSqm": {
+        "hint": "In square metres, numbers only: for example 70.",
+        "label": "Area"
+      },
+      "comune": {
+        "fallbackLabel": "City",
+        "fallbackPlaceholder": "E.g. Como",
+        "hint": "Choose the comune from the official list: the rules, the required documents and the tourist tax follow from it.",
+        "label": "Comune"
+      },
+      "name": {
+        "hint": "An easy name to remember: you will find it in the lists.",
+        "label": "Name of the property",
+        "placeholder": "E.g. Trullo dei Mandorli"
+      },
+      "postalCode": {
+        "label": "Postal code"
+      },
+      "spaces": {
+        "bathrooms": {
+          "hint": "Including service bathrooms",
+          "label": "Bathrooms"
+        },
+        "bedrooms": {
+          "hint": "0 for a studio flat",
+          "label": "Bedrooms"
+        },
+        "beds": {
+          "hint": "Count every bed: a double bed is 1",
+          "label": "Beds"
+        },
+        "maxGuests": {
+          "hint": "How many people can sleep here",
+          "label": "Maximum guests"
+        },
+        "title": "Spaces"
+      },
+      "type": {
+        "legend": "What kind of property is it?",
+        "options": {
+          "Apartment": "Apartment",
+          "HouseOrVilla": "House or villa",
+          "LoftOrPenthouse": "Loft or penthouse",
+          "RoomOrSuite": "Room or suite",
+          "TrulloOrMasseria": "Trullo or masseria"
+        }
+      },
+      "unit": {
+        "hint": "If you have several apartments in the same building, write the unit or staircase: each one needs a different one.",
+        "label": "Floor and unit"
+      }
+    },
+    "done": {
+      "complete": "Complete the activation",
+      "description": "The property is in Properties as “To complete”.",
+      "inList": "You will find it in Properties, where you can pick up whenever you like.",
+      "leadOpen": "A few points are still missing before it can be activated:",
+      "leadReady": "The required data is there: only the final confirmation is missing.",
+      "open": {
+        "base-data": "The nightly rate and the basic data",
+        "cin": "The CIN code",
+        "documents": "The documents required in your region",
+        "safety": "The safety sheet"
+      },
+      "readyToActivate": "To activate it, just accept the Terms.",
+      "title": "“{{name}}” is saved",
+      "toList": "Go to properties"
+    },
+    "errors": {
+      "saveFailed": "We could not save the property. Check the data and try again."
+    },
+    "exit": {
+      "saveAndClose": "Save and close",
+      "saved": "Saved. You will find it in Properties, to complete."
+    },
+    "finish": "Save and see what is missing",
+    "page": {
+      "backToList": "Back to properties",
+      "description": "One step at a time: the property is saved from the first “Continue” and you can pick up whenever you like.",
+      "loadFailed": "I cannot load the property.",
+      "loading": "Loading the property…",
+      "notFound": "Property not found.",
+      "retry": "Try again",
+      "title": "Add property"
+    },
+    "steps": {
+      "amenities": {
+        "label": "Amenities",
+        "purpose": "Choose only what is really there: guests read it before booking.",
+        "title": "What do guests find?"
+      },
+      "base": {
+        "label": "Basics",
+        "purpose": "Type, name, address and spaces: two minutes are enough.",
+        "title": "What property are you adding?"
+      }
+    },
+    "validation": {
+      "address": {
+        "civic": "Add the house number, or “snc” if there is none: for example “Contrada Monte 12”.",
+        "max": "The address can have at most 500 characters.",
+        "required": "Write the street and the house number."
+      },
+      "areaSqm": "Write the square metres as whole numbers, from 1 to 9999.",
+      "bathrooms": "Bathrooms are from 1 to 50.",
+      "bedrooms": "Bedrooms are from 0 to 100.",
+      "beds": "Beds are from 1 to 100.",
+      "comune": {
+        "required": "Choose the comune from the list."
+      },
+      "maxGuests": "Maximum guests are from 1 to 100.",
+      "name": {
+        "max": "The name can have at most 100 characters.",
+        "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
+      },
+      "postalCode": {
+        "format": "An Italian postal code has 5 digits."
+      },
+      "unit": {
+        "max": "Floor and unit can have at most 30 characters."
       }
     }
   },
@@ -14439,6 +14594,45 @@
       "recordSuccess": "Payment recorded successfully",
       "recordError": "Could not record payment"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Confirm download",
+      "confirmDownloadError": "Could not confirm download",
+      "confirmDownloadSuccess": "Download confirmed successfully",
+      "confirmPaid": "Confirm payment",
+      "confirmPaidError": "Could not confirm payment",
+      "confirmPaidSuccess": "Payment confirmed successfully",
+      "create": "Create wire batch",
+      "createAnother": "Create another batch",
+      "createError": "Could not create batch",
+      "createSuccess": "Batch created successfully",
+      "currency": "Currency",
+      "details": "Batch details",
+      "detailsDescription": "Information about the created wire transfer batch",
+      "download": "Download file",
+      "downloadError": "Could not download file",
+      "downloadSuccess": "File downloaded successfully",
+      "id": "Batch ID",
+      "paidComplete": "The batch has been confirmed as paid",
+      "status": "Status",
+      "totalAmount": "Total amount",
+      "transferCount": "Transfer count"
+    },
+    "debitAccount": "Debit account (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Generate SEPA files to pay property owners.",
+    "loadError": "Could not load data",
+    "loading": "Loading wire transfers...",
+    "noApprovedStatements": "No approved statements",
+    "noApprovedStatementsDescription": "Approve statements before creating a wire transfer batch.",
+    "selectStatements": "Select statements",
+    "status": {
+      "downloaded": "Downloaded",
+      "generated": "Generated",
+      "paid": "Paid"
+    },
+    "title": "Owner Wire Transfers"
   },
   "wizard": {
     "back": "Back",
