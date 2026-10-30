@@ -14,9 +14,9 @@ const BOOKINGS = '/app/short-rent/bookings';
 const bookingRoute = (id: string) => `${BOOKINGS}/${encodeURIComponent(id)}`;
 const bookingTab = (tab: string) => (id: string) => `${bookingRoute(id)}?tab=${tab}`;
 
-/** A service request: the supplier opens it in the inbox; the host finds it in «Le tue richieste» of the marketplace. */
+/** A service request: the supplier opens it in the inbox; the host finds it in «Le tue richieste» of «Le mie app» of the marketplace. */
 const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
-  context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace';
+  context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace/mine';
 
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
 

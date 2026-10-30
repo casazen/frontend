@@ -2714,6 +2714,10 @@
       },
       "guests": {
         "count": "Inserisci da 1 a 30 ospiti"
+      },
+      "marketingEmail": {
+        "required": "Inserisci l'indirizzo email per ricevere le comunicazioni",
+        "invalid": "Inserisci un indirizzo email valido (massimo 255 caratteri)"
       }
     },
     "loading": "Caricamento check-in...",
@@ -2838,6 +2842,18 @@
         "reject": "Non verificato",
         "rejectMessage": "La verifica biometrica non è riuscita. Riprova o il gestore della struttura verificherà manualmente."
       }
+    },
+    "consent": {
+      "title": "Consenso al marketing (facoltativo)",
+      "intro": "Vuoi ricevere aggiornamenti, offerte e novità dalla struttura? Scegli i canali che preferisci. Non è obbligatorio: puoi completare il check-in senza dare il consenso.",
+      "emailChannel": "Acconsento a ricevere comunicazioni promozionali via email",
+      "emailChannelDescription": "Riceverai offerte, novità e promozioni via email.",
+      "whatsappChannel": "Acconsento a ricevere comunicazioni promozionali via WhatsApp",
+      "whatsappChannelDescription": "Riceverai offerte, novità e promozioni via WhatsApp.",
+      "marketingEmail": "Il tuo indirizzo email *",
+      "marketingEmailPlaceholder": "esempio@email.com",
+      "marketingEmailHint": "Inserisci il tuo indirizzo email personale. Non usare l'email temporanea della prenotazione (es. Booking.com).",
+      "skipAllowed": "Puoi saltare questo passaggio: il check-in sarà completato comunque."
     },
     "documentIntro": "Documento d'identità dell'ospite singolo o del capofamiglia o capogruppo. Per familiari e membri del gruppo non serve.",
     "documentOf": "Documento di {{name}}",
@@ -7634,7 +7650,7 @@
     },
     "create": {
       "title": "Nuovo immobile",
-      "description": "Dati dell'immobile da affittare con un contratto di lungo periodo. Dopo il salvataggio potrai caricare l'APE."
+      "description": "Quattro passi brevi: indirizzo, dati catastali, APE e riepilogo. Quello che non hai sottomano lo aggiungi dopo."
     },
     "edit": {
       "title": "Modifica immobile",
@@ -7707,6 +7723,69 @@
       "save": "Salva",
       "cancel": "Annulla",
       "notSet": "Non indicato"
+    },
+    "wizard": {
+      "cadastral": {
+        "hint": "Foglio, particella e subalterno sono sulla visura catastale. Il contratto li riporta."
+      },
+      "done": {
+        "apeUploaded": "L’APE è caricato.",
+        "cadastralSaved": "I dati catastali sono salvati.",
+        "createLease": "Crea il contratto",
+        "inList": "«{{name}}» è nella tua lista, libero.",
+        "openProperty": "Apri l’immobile",
+        "title": "Immobile aggiunto",
+        "todo": {
+          "ape": "L’APE: lo carichi dalla scheda dell’immobile o dal contratto.",
+          "apeExpired": "Un APE in corso di validità: quello caricato risulta scaduto.",
+          "apeFailed": "L’APE non si è caricato. Riprova dalla scheda dell’immobile.",
+          "apeFailedWhy": "L’APE non si è caricato ({{reason}}). Riprova dalla scheda dell’immobile.",
+          "apeIdentification": "Il codice e la classe dell’APE non si leggono dal file: scrivili qui sotto.",
+          "cadastral": "I dati catastali: li aggiungi dalla scheda dell’immobile.",
+          "cadastralFailed": "I dati catastali non si sono salvati. Riprova dalla scheda dell’immobile.",
+          "cadastralIncomplete": "Qualche dato catastale: servono foglio, particella, categoria e rendita. Li completi dalla scheda dell’immobile.",
+          "title": "Per creare il contratto manca ancora"
+        }
+      },
+      "duplicate": "Esiste già un immobile con questo indirizzo e questo interno. Torna al primo passo e indica l’interno o la scala.",
+      "finish": "Aggiungi immobile",
+      "finishFailed": "Non siamo riusciti ad aggiungere l’immobile. Controlla i dati e riprova: quello che hai scritto è ancora qui.",
+      "reading": "Stiamo aggiungendo l’immobile e leggendo l’APE: può volerci un minuto. Non chiudere la pagina.",
+      "review": {
+        "address": "Indirizzo",
+        "ape": "APE",
+        "apePages_one": "{{count}} foto, convertita in un PDF",
+        "apePages_other": "{{count}} foto, unite in un PDF",
+        "cadastral": "Dati catastali",
+        "missingNote": "Dati catastali e APE non servono per aggiungere l’immobile, ma senza di loro il contratto non si può creare. Puoi aggiungerli anche dopo.",
+        "name": "Immobile"
+      },
+      "steps": {
+        "address": {
+          "label": "Indirizzo",
+          "purpose": "Il nome lo vedi solo tu. Il comune e l’indirizzo vanno nel contratto.",
+          "title": "Dove si trova l’immobile?"
+        },
+        "ape": {
+          "label": "APE",
+          "purpose": "Il contratto riporta il codice e la classe dell’APE: li leggiamo noi dal file.",
+          "title": "Attestato di prestazione energetica"
+        },
+        "cadastral": {
+          "label": "Dati catastali",
+          "purpose": "Il contratto li riporta. Se non li hai sottomano, salta: li aggiungi quando vuoi.",
+          "title": "Dati catastali"
+        },
+        "review": {
+          "label": "Riepilogo",
+          "purpose": "Controlla le risposte: ognuna si può correggere prima di aggiungere l’immobile.",
+          "title": "Controlla e aggiungi"
+        }
+      },
+      "validation": {
+        "apeNotConfirmed": "Conferma l’ordine delle pagine dell’APE, oppure toglile.",
+        "income": "Scrivi la rendita come importo, ad esempio 750,50."
+      }
     }
   },
   "longRentRents": {
@@ -8335,14 +8414,54 @@
     }
   },
   "marketplace": {
-    "title": "Marketplace servizi",
-    "description": "Trova fornitori per la tua proprietà e gestisci le richieste di servizio.",
-    "allCategories": "Tutte le categorie",
-    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
+    "title": "Marketplace",
+    "description": "Trova i fornitori che lavorano vicino ai tuoi immobili e chiedi un intervento.",
+    "requestIntervention": "Richiedi un intervento",
+    "sections": {
+      "label": "Sezioni del Marketplace",
+      "discover": "Scopri",
+      "categories": "Categorie",
+      "mine": "Le mie app"
+    },
+    "search": {
+      "label": "Cerca nel Marketplace",
+      "placeholder": "Fornitore, servizio o categoria",
+      "title": "Cerca",
+      "description": "Per nome del fornitore, servizio o categoria."
+    },
     "casazenSuppliers": "Fornitori CasaZen",
+    "seeAll": "Vedi tutti",
+    "seeAllOf": "Vedi tutti: {{category}}",
+    "categories": {
+      "title": "Categorie",
+      "description": "Sfoglia i fornitori per tipo di servizio.",
+      "count_one": "{{count}} fornitore",
+      "count_other": "{{count}} fornitori",
+      "none": "Ancora nessun fornitore"
+    },
+    "category": {
+      "description": "I fornitori di questa categoria che lavorano nella zona dell'immobile.",
+      "notFound": "Categoria non trovata",
+      "notFoundHint": "Questa non è una categoria del Marketplace.",
+      "seeAll": "Vedi tutte le categorie"
+    },
+    "results": {
+      "count_one": "{{count}} fornitore",
+      "count_other": "{{count}} fornitori"
+    },
+    "filters": {
+      "open": "Filtri",
+      "title": "Filtri e ordine",
+      "description": "Scegli come ordinare i fornitori e se vedere solo quelli verificati.",
+      "done_one": "Mostra {{count}} fornitore",
+      "done_other": "Mostra {{count}} fornitori"
+    },
+    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "noNetwork": "In questo territorio non c'è ancora una rete CasaZen per questa categoria.",
     "noMatch": "Nessun fornitore corrisponde alla ricerca.",
-    "clearFilters": "Azzera la ricerca",
+    "noVerified": "Nessuno di questi fornitori è verificato.",
+    "clearFilters": "Azzera i filtri",
+    "clearSearch": "Azzera la ricerca",
     "loading": "Carico…",
     "propertiesLoadError": "Impossibile caricare gli immobili.",
     "propertyLabel": "Immobile",
@@ -8352,9 +8471,6 @@
     "addComune": "Aggiungi il comune per vedere i fornitori della tua zona",
     "addComuneHint": "I fornitori si cercano per comune: scegli il comune dall'elenco ufficiale nella scheda dell'immobile.",
     "editProperty": "Modifica immobile",
-    "searchLabel": "Cerca",
-    "searchPlaceholder": "Nome del fornitore",
-    "categoryLabel": "Categoria",
     "sortLabel": "Ordina per",
     "sort": {
       "name": "Nome",
@@ -8367,6 +8483,7 @@
     "drawer": {
       "photoAlt": "{{name}}, foto {{index}}",
       "showcase": "Vedi la vetrina",
+      "openPage": "Apri la pagina",
       "verifiedExplanation": "Fornitore attivo su CasaZen, con il profilo verificato: dati dell'attività e partita IVA.",
       "about": "Chi è",
       "services": "Servizi",
@@ -8377,6 +8494,16 @@
       "loadError": "Impossibile caricare il fornitore.",
       "notFound": "Fornitore non trovato",
       "notFoundDescription": "Non è più tra i fornitori attivi della zona di questo immobile."
+    },
+    "mine": {
+      "title": "Le mie app",
+      "description": "Le richieste che hai mandato ai fornitori e a che punto sono."
+    },
+    "supplier": {
+      "title": "Fornitore",
+      "request": "Richiedi",
+      "requestService": "Richiedi: {{service}}",
+      "backToMarketplace": "Torna al Marketplace"
     },
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
@@ -10119,6 +10246,39 @@
       "retry": "Riprova",
       "title": "Aggiungi immobile"
     },
+    "photos": {
+      "dropzone": {
+        "button": "Scegli le foto",
+        "title": "Trascina qui le foto"
+      },
+      "gallery": {
+        "moved": "Foto {{index}} spostata in posizione {{position}} di {{total}}."
+      },
+      "listing": {
+        "description": "Il titolo e la descrizione che gli ospiti leggono sul tuo sito. Puoi scriverli adesso o più tardi.",
+        "headline": {
+          "hint": "Breve e concreto, fino a 60 caratteri. Se lo lasci vuoto si usa il nome dell'immobile.",
+          "label": "Titolo"
+        },
+        "suggest": "Suggerisci un testo",
+        "suggested": "Testo composto con i dati che hai inserito: rivedilo e cambialo come vuoi.",
+        "text": {
+          "label": "Descrizione"
+        },
+        "title": "Il tuo annuncio",
+        "undo": "Annulla"
+      },
+      "queue": {
+        "dismiss": "Togli",
+        "failedFile": "«{{name}}» non è stata caricata. Riprova.",
+        "label": "Foto in caricamento",
+        "retry": "Riprova",
+        "uploading": "Carico…",
+        "waiting": "In attesa"
+      },
+      "recommended": "{{photos}} di {{recommended}} foto consigliate (non obbligatorie): puoi aggiungerne anche più tardi.",
+      "title": "Foto"
+    },
     "steps": {
       "amenities": {
         "label": "Dotazioni",
@@ -10129,7 +10289,32 @@
         "label": "Dati base",
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
+      },
+      "photos": {
+        "label": "Foto",
+        "purpose": "Consigliate, non obbligatorie: puoi saltare questo passo e aggiungerle dopo.",
+        "title": "Mostra la casa con qualche foto"
       }
+    },
+    "suggest": {
+      "amenities": "Tra le dotazioni: {{list}}.",
+      "and": "e",
+      "area": "Superficie: {{area}} m².",
+      "bathrooms_one": "{{count}} bagno",
+      "bathrooms_other": "{{count}} bagni",
+      "bedrooms_one": "{{count}} camera da letto",
+      "bedrooms_other": "{{count}} camere da letto",
+      "beds_one": "{{count}} letto",
+      "beds_other": "{{count}} letti",
+      "guests_one": "Ospita {{count}} persona.",
+      "guests_other": "Ospita fino a {{count}} persone.",
+      "intro": "{{type}} «{{name}}» a {{city}}.",
+      "introNoName": "{{type}} a {{city}}.",
+      "studio": "monolocale",
+      "title": "{{type}} a {{city}}",
+      "titleGuests_one": "{{type}} a {{city}} · {{count}} ospite",
+      "titleGuests_other": "{{type}} a {{city}} · {{count}} ospiti",
+      "typeFallback": "Alloggio"
     },
     "validation": {
       "address": {
@@ -10144,6 +10329,8 @@
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
+      "description": "La descrizione può avere al massimo 600 caratteri.",
+      "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
       "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
       "name": {
         "max": "Il nome può avere al massimo 100 caratteri.",
@@ -10656,6 +10843,7 @@
     "legalDocuments": "Documenti legali",
     "footer": {
       "contact": "Contatti",
+      "cookies": "Cookie",
       "info": "Informazioni",
       "operator": "Operatore",
       "vatNumber": "P.IVA {{vat}}"
@@ -11127,6 +11315,7 @@
     "selectedSupplier": "Fornitore selezionato",
     "website": "Sito web",
     "category": "Categoria",
+    "forService": "Per il servizio:",
     "supplier": "Fornitore",
     "selectSupplier": "Seleziona fornitore",
     "urgency": "Urgenza",
@@ -11275,10 +11464,20 @@
     },
     "cookieConsent": {
       "ariaLabel": "Consenso cookie",
-      "text": "Utilizziamo cookie essenziali per il funzionamento del sito e, solo con il tuo consenso, cookie analitici. Puoi accettare o rifiutare i cookie non essenziali.",
+      "text": "Usiamo i cookie necessari per farti prenotare e per ricordare le tue scelte (la lingua, le case che salvi). Con il tuo permesso, anche statistiche anonime per migliorare il sito. Nessun cookie pubblicitario.",
       "title": "La tua privacy",
       "reject": "Rifiuta",
-      "accept": "Accetta"
+      "accept": "Accetta",
+      "choose": "Scegli tu",
+      "preferencesTitle": "Le tue scelte sui cookie",
+      "necessary": "Necessari",
+      "necessaryHint": "Servono per cercare, prenotare e pagare in sicurezza, e per ricordare sul tuo dispositivo la lingua e le case che salvi: sempre attivi.",
+      "statistics": "Statistiche anonime",
+      "statisticsHint": "Ci dicono quali pagine funzionano meglio. Nessun dato personale.",
+      "onlyNecessary": "Solo i necessari",
+      "save": "Salva le mie scelte",
+      "saved": "Preferenze salvate",
+      "savedHint": "Puoi cambiarle dal link «Cookie» in fondo alla pagina."
     },
     "demoBanner": {
       "message": "Modalita' demo - Nessuna autenticazione richiesta. Tutti i dati sono simulati."

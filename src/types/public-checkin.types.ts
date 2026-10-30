@@ -103,10 +103,16 @@ export interface StayGuestSubmit {
 /**
  * Body of `POST /public/checkin/{token}` (API DTO `PublicCheckInSubmitRequest`). No consent for the Alloggiati
  * registration (legal obligation, CO-15): only the optional marketing consent, offered when the context has its version.
+ * NF-05 adds per-channel consent with a separate marketing email.
  */
 export interface PublicCheckInSubmitRequest {
   guests: StayGuestSubmit[];
-  marketingConsent: boolean;
+  /** Guest ticked the email marketing channel (NF-05). */
+  marketingConsentEmail: boolean;
+  /** Guest ticked the WhatsApp marketing channel (NF-05). */
+  marketingConsentWhatsApp: boolean;
+  /** Marketing email address (required when any channel is ticked, NF-05). */
+  marketingEmail?: string | null;
 }
 
 /** One entry of an official Alloggiati table. */

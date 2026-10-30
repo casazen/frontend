@@ -5,10 +5,10 @@ import { AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/utils';
 import { buildPropertyCheckoutUrl } from '@/lib/booking-url';
 import { addDays, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
+import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import { AvailabilityCalendar, type AvailabilityStatus } from '@/features/public-site/components/AvailabilityCalendar';
 import type { PublicPropertyDetailDto } from '@/types';
 
@@ -46,6 +46,7 @@ function WidgetForm({
   onCheckout,
 }: BookingWidgetProps & { compact?: boolean; onCheckout?: () => void }) {
   const { t } = useTranslation();
+  const money = useSiteMoney();
   const navigate = useNavigate();
   const { params, setParams } = useBookingSearchParams();
   const [today] = useState(() => todayInRome());
@@ -141,13 +142,13 @@ function WidgetForm({
           <p>
             {t('publicBooking.nightsTimesRateTotal', {
               count: nights,
-              rate: formatCurrency(property.nightlyRate),
-              total: formatCurrency(lodgingTotal),
+              rate: money(property.nightlyRate),
+              total: money(lodgingTotal),
             })}
           </p>
-          <p>{t('publicBooking.pulizia')}: {formatCurrency(property.cleaningFee)}</p>
+          <p>{t('publicBooking.pulizia')}: {money(property.cleaningFee)}</p>
           <p className="text-[var(--cz-public-muted)]">{t('publicBooking.tassaSoggiornoCalculated')}</p>
-          <p className="text-base font-semibold">{t('publicBooking.totaleStimato', { amount: formatCurrency(estimatedTotal) })}</p>
+          <p className="text-base font-semibold">{t('publicBooking.totaleStimato', { amount: money(estimatedTotal) })}</p>
         </div>
       ) : null}
 

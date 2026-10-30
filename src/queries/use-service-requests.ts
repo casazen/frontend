@@ -12,6 +12,7 @@ import {
   fetchLongRentServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
+  fetchMarketplaceSupplier,
   fetchMarketplaceSuppliers,
   fetchServiceRequests,
   fetchSuppliersByProperty,
@@ -190,9 +191,10 @@ export function useSuppliersByProperty(propertyId?: string, category?: string) {
 
 /**
  * The suppliers of the marketplace for a property (SR-09a): `q` and `sort` are answered by the server, which also sends each
- * supplier's services, "from" price, measured response time and «Verificato». While the words change the list that was there stays
- * (for the same property only: another property's suppliers are never shown as this one's). Read again when the page is opened and
- * the answer is older than the stale time: the suppliers of a comune change when one is activated or changes its prices.
+ * supplier's services, "from" price, measured response time and «Verificato». While the words or the order change the list that was
+ * there stays (for the same property and the same category only: another property's suppliers, or the whole list under the page of a
+ * category, are never shown as this one's). Read again when the page is opened and the answer is older than the stale time: the
+ * suppliers of a comune change when one is activated or changes its prices.
  */
 export function useMarketplaceSuppliers(params: {
   propertyId?: string;
@@ -206,7 +208,21 @@ export function useMarketplaceSuppliers(params: {
     queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
     enabled: !!propertyId,
     refetchOnMount: true,
-    placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2] === propertyId ? previous : undefined),
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === propertyId && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
+  });
+}
+
+/**
+ * One supplier of the area of a property, for its page in the marketplace (MKT): every published service, the "from" price, the
+ * measured response time and «Verificato». Read again when the page is opened (a supplier changes its services and prices).
+ */
+export function useMarketplaceSupplier(propertyId: string | undefined, orgId: string) {
+  return useQuery({
+    queryKey: ['suppliers', 'marketplace-supplier', propertyId, orgId],
+    queryFn: () => fetchMarketplaceSupplier({ orgId, propertyId: propertyId! }),
+    enabled: !!propertyId && orgId !== '',
+    refetchOnMount: true,
   });
 }
 
