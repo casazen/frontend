@@ -320,6 +320,32 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   ratingSummary?: RatingSummary;
 }
 
+/**
+ * The night that starts on `date` in the public calendar of a property (DB-03b, `GET api/public/properties/{id}/calendar`).
+ * Dates and amounts only: it never says who stays, nor tells a booking from a block of the host.
+ */
+export interface PublicCalendarDayDto {
+  date: string;
+  /** A stay can start this night. The day of a check-out is free for a new check-in, so it is available. */
+  available: boolean;
+  /** What the night costs in cents: the number the quote adds up for that night. Given for a taken night too. */
+  nightlyPriceCents: number;
+  /** The fewest nights of a stay that starts on this day: 1 when there is no minimum. */
+  minNights: number;
+}
+
+/** The public calendar of a property: a day for each day from `startDate` (included) to `endDate` (excluded). */
+export interface PublicCalendarDto {
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  /** Today in Europe/Rome: earlier days are not listed. */
+  today: string;
+  currency: string;
+  days: PublicCalendarDayDto[];
+  generatedAt: string;
+}
+
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
 
 export interface PropertyDocumentDto {
