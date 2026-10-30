@@ -609,6 +609,25 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Inquilini (LR-09): who lives in the properties let long term, since when, for how much and how punctually, with the copy of a
+    // person's data and the request to erase them. In "Altro", before the deadlines: the main menu holds the four places of the bar of
+    // the phone. Reading it asks what the leases ask; the copy and the erasure ask `lease.create` too (the sheet hides them from who may not).
+    path: '/app/long-rent/tenants',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentTenants',
+    navPlacement: 'secondary',
+    navOrder: 18,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/leases/tenants/tenants-page')).TenantsPage }),
+  },
+  {
+    path: '/app/long-rent/tenants/:id',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    component: async () => ({ default: (await import('@/features/leases/tenants/tenant-detail-page')).TenantDetailPage }),
+  },
+  {
     path: '/app/long-rent/leases/new',
     context: 'long-rent',
     requiredPermissions: ['lease.create'],
@@ -881,6 +900,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 4,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
+  },
+  {
+    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
+    // For org billing administrators who handle owner payments.
+    path: '/app/account/wire-transfers',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.wireTransfers',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 4.5,
+    icon: 'Send',
+    component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
