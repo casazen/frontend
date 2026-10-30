@@ -35,6 +35,8 @@ export const DISALLOWED_PATHS = [
   '/invite/',
   '/login',
   '/book/*/my-bookings',
+  // The results of a booking site for a stay (DB-07c): every search is its own address, none is worth a place in the index.
+  '/book/*/search',
   '/book/*/booking/',
   // The page of the link that lets a guest cancel (DB-08a): its address carries the secret of the link until the page takes it out.
   '/book/*/bookings/',

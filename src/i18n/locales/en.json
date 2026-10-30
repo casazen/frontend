@@ -13152,6 +13152,158 @@
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
+  "siteHome": {
+    "card": {
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "photosOf": "Photos of {{name}}",
+      "guestFavourite": "Guest favourite",
+      "guestFavouriteHint": "Rated {{average}} out of 5 by {{count}} verified reviews.",
+      "ratingLabel_one": "{{average}} out of 5, {{count}} review",
+      "ratingLabel_other": "{{average}} out of 5, {{count}} reviews",
+      "area": "{{count}} m²",
+      "mainAmenities": "Main amenities",
+      "night": "night",
+      "totalFor_one": "total for {{count}} night",
+      "totalFor_other": "total for {{count}} nights",
+      "perNightAverage": "{{price}} a night",
+      "tax": {
+        "exact": "tourist tax included",
+        "estimated": "tourist tax estimated",
+        "notIncluded": "tourist tax not included"
+      },
+      "taxHelpTitle": "Tourist tax",
+      "taxHelpLabel": "Why the tax is an estimate",
+      "taxHelp": "For now every child is counted as if they pay it. The exact amount is known once you give the ages, before you pay.",
+      "freeCancellation": "Free cancellation until {{date}}",
+      "freeFrom": "Free from {{date}}",
+      "busy": "Not available on these dates",
+      "minNights_one": "Minimum stay {{count}} night",
+      "minNights_other": "Minimum stay {{count}} nights",
+      "tooManyGuests_one": "Sleeps {{count}} person at most",
+      "tooManyGuests_other": "Sleeps {{count}} people at most",
+      "noPets": "Pets not allowed",
+      "notBookable": "Not bookable online"
+    },
+    "tags": {
+      "mare": "Seaside",
+      "centro": "Historic centre",
+      "piscina": "With a pool",
+      "pet": "Pet friendly",
+      "campagna": "Countryside",
+      "terrazza": "With a terrace",
+      "vista-mare": "Sea view"
+    },
+    "hero": {
+      "destinationHomes_one": "{{count}} home",
+      "destinationHomes_other": "{{count}} homes",
+      "reviews_one": "{{count}} verified review",
+      "reviews_other": "{{count}} verified reviews",
+      "securePayment": "Secure payment with Stripe",
+      "homesIn_one": "{{count}} home in {{places}}",
+      "homesIn_other": "{{count}} homes in {{places}}",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "categories": {
+      "label": "What are you looking for?",
+      "all": "All homes",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "houses": {
+      "title": "Our homes",
+      "leadNoDates": "The price is the lowest night of the next 30 days. Choose your dates to see the total.",
+      "leadDates_one": "Totals for {{range}}, {{count}} night.",
+      "leadDates_other": "Totals for {{range}}, {{count}} nights.",
+      "seeAll": "See all"
+    },
+    "empty": {
+      "title": "We are getting ready for the next season",
+      "text": "No home can be booked online right now. Write to your host: they will tell you when bookings reopen and which dates are free.",
+      "call": "Call"
+    },
+    "nav": {
+      "label": "Site menu",
+      "homes": "Homes",
+      "why": "Why book here",
+      "zones": "Areas",
+      "faq": "Questions"
+    },
+    "why": {
+      "eyebrow": "Book with your host",
+      "title": "Why book directly",
+      "transparent": {
+        "title": "Transparent prices",
+        "text": "The total you see with your dates covers nights and cleaning and, where the town charges it, the tourist tax: no surprises at payment."
+      },
+      "noFees": {
+        "title": "No commission",
+        "text": "You book directly with your host: no service fee added by a portal. The total is just nights, cleaning and tax."
+      },
+      "direct": {
+        "title": "Direct support",
+        "text": "You talk to {{host}}, not a call centre: before and during your stay."
+      },
+      "receipt": {
+        "label": "Example: {{name}}",
+        "kicker": "A real example, calculated on today’s prices",
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "cleaning": "Final cleaning",
+        "tax": "Tourist tax",
+        "fees": "Service fees",
+        "total": "Total",
+        "try": "Try your own dates"
+      }
+    },
+    "reviews": {
+      "eyebrow": "They say about us",
+      "title": "What guests say",
+      "lead": "Only people who stayed can leave a review.",
+      "all": "All reviews of {{name}}"
+    },
+    "zones": {
+      "eyebrow": "Where we are",
+      "title": "Where the homes are",
+      "lead": "Pick the area that suits you: every pin leads to the homes there.",
+      "pinName": "{{name}}: {{count}} homes",
+      "note": "Approximate locations: the exact address arrives with your confirmation. Schematic maps: Natural Earth data."
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions",
+      "lead": "Can’t find the answer? Write to your host.",
+      "why": {
+        "q": "Why book here?",
+        "a": "You book directly with {{host}}: no service fee added by a portal, you see the total and what it includes before you pay, and for any question you talk to your host."
+      },
+      "payment": {
+        "q": "Is payment secure?",
+        "a": "You pay online with Stripe: your card details go straight to Stripe and never pass through this site."
+      },
+      "cancel": {
+        "q": "Can I cancel?",
+        "a": "Each home has its own cancellation policy: you find it on the page of the home and it is shown again before you pay."
+      },
+      "tax": {
+        "q": "What is the tourist tax?",
+        "a": "It is a tax of the town where the home is, paid by whoever stays. Where the town charges it, it is a line of its own in the price breakdown."
+      },
+      "checkin": {
+        "q": "How does check-in work?",
+        "a": "After booking you receive by email the link to register the guests online, as the law requires."
+      },
+      "pets": {
+        "q": "Can I bring my pet?",
+        "a": "Some homes accept them: {{homes}}. For the others, see the rules on the page of the home."
+      },
+      "where": {
+        "q": "Where are the homes?",
+        "a": "The homes are in {{places}}. The exact address arrives with your booking confirmation."
+      }
+    }
+  },
   "siteMap": {
     "approximateNote": "Approximate positions: the exact address arrives with the confirmation.",
     "cardClose": "Close the card",
@@ -13234,6 +13386,111 @@
       "helpLabel": "How we verify reviews",
       "label": "Verified",
       "title": "How we verify reviews"
+    }
+  },
+  "siteSearch": {
+    "title": {
+      "homes": "Our homes",
+      "free_one": "{{count}} home available",
+      "free_other": "{{count}} homes available",
+      "noneFree": "No homes available",
+      "count_one": "{{count}} home",
+      "count_other": "{{count}} homes"
+    },
+    "sub": {
+      "dates": "{{range}} · {{nights}} · {{guests}}",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noDates": "Prices are the lowest night of the next 30 days: choose your dates to see the total."
+    },
+    "sort": {
+      "label": "Sort the homes",
+      "recommended": "Recommended",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price",
+      "rating": "Highest rated",
+      "largest": "Largest"
+    },
+    "categories": "Categories",
+    "onlyFavorites": "Favourites only",
+    "none": {
+      "capacity": {
+        "title": "No home for {{guests}} guests",
+        "text": "The homes of this site sleep up to {{count}} people. Write to {{host}} to see what can be done."
+      },
+      "dates": {
+        "title": "No homes available on these dates",
+        "text": "The homes are already booked on these dates. Try other dates, nearby ones too, or write to {{host}}."
+      },
+      "filters": {
+        "title": "No homes with these filters",
+        "text": "Try removing some filters."
+      },
+      "favorites": {
+        "title": "No homes among your favourites",
+        "text": "Tap the heart on a home to save it on this device: you will find it here."
+      },
+      "none": {
+        "title": "No homes to show",
+        "text": "No home can be booked online right now. Write to {{host}} to find out when bookings reopen."
+      },
+      "alternatives": "Nearby dates with homes available",
+      "alternativeHomes_one": "{{count}} home available",
+      "alternativeHomes_other": "{{count}} homes available",
+      "clear": "Clear filters"
+    },
+    "unavailable": {
+      "title": "Not available on these dates"
+    },
+    "note": {
+      "included": "Totals include nights, cleaning and tourist tax.",
+      "estimated": "The tourist tax is an estimate until you give the ages of the children.",
+      "notIncluded": "For some homes the total does not include the tourist tax."
+    },
+    "filters": {
+      "open": "Filters",
+      "active_one": "{{count}} active filter",
+      "active_other": "{{count}} active filters",
+      "activeLabel": "Active filters",
+      "remove": "Remove “{{name}}”",
+      "title": "Filters",
+      "description": "Choose price, bedrooms, floor area, amenities and rules: the button at the bottom says how many homes are left.",
+      "show": "Show the homes",
+      "showCount_one": "Show {{count}} home",
+      "showCount_other": "Show {{count}} homes",
+      "showNone": "No homes with these filters",
+      "clear": "Clear all",
+      "any": "Any",
+      "orMore": "{{n}} or more",
+      "price": "Price per night",
+      "priceMin": "From",
+      "priceMax": "To",
+      "noMin": "no minimum",
+      "noMax": "no maximum",
+      "priceBetween": "from {{from}} to {{to}}",
+      "priceFrom": "from {{price}}",
+      "priceUpTo": "up to {{price}}",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "bedroomsChip": "{{n}}+ bedrooms",
+      "bathroomsChip": "{{n}}+ bathrooms",
+      "area": "Floor area",
+      "areaAtLeast": "at least {{n}} m²",
+      "amenities": "Amenities",
+      "rules": "House rules",
+      "rule": {
+        "pets": "Pets allowed",
+        "children": "Child friendly",
+        "selfCheckin": "Self check-in",
+        "smoking": "Smoking allowed",
+        "parties": "Parties allowed"
+      }
+    },
+    "map": {
+      "label": "Map of the homes",
+      "note": "Approximate locations: the exact address arrives with your confirmation. Schematic maps: Natural Earth data.",
+      "showMap": "Map",
+      "showList": "List"
     }
   },
   "statement": {
