@@ -58,13 +58,32 @@ export function SupplierSiteShell() {
   );
   const notFound = isError && isAxiosError(error) && error.response?.status === 404;
 
+  // The title and the description of the page it is on: the home, the list of services, one service, the story.
+  const onServices = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi`, end: true }) !== null;
+  const onService = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi/:serviceSlug`, end: true });
+  const onAbout = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/chi-siamo`, end: true }) !== null;
+  let title = t('supplierShowcase.title');
+  let description: string | undefined;
+  if (model) {
+    const name = model.name;
+    title = t('supplierShowcase.pageTitle', { name });
+    description = model.intro ? truncateDescription(model.intro) : t('supplierShowcase.pageDescription', { name });
+    const service = onService ? model.services?.find((candidate) => candidate.slug === onService.params.serviceSlug) : undefined;
+    if (onServices) {
+      title = t('supplierSite.meta.services', { name });
+      description = t('supplierSite.meta.servicesDescription', { name });
+    } else if (service) {
+      title = t('supplierSite.meta.service', { service: service.name, name });
+      description = service.summary ? truncateDescription(service.summary) : t('supplierSite.meta.serviceDescription', { service: service.name, name });
+    } else if (onAbout) {
+      title = t('supplierSite.meta.about', { name });
+      description = model.bio ? truncateDescription(model.bio) : t('supplierSite.meta.aboutDescription', { name });
+    }
+  }
+
   // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, and for the preview of a draft.
   // No canonical, no Open Graph, no structured data (decision D11).
-  useSeoMeta({
-    title: model ? t('supplierShowcase.pageTitle', { name: model.name }) : t('supplierShowcase.title'),
-    description: model ? (model.intro ? truncateDescription(model.intro) : t('supplierShowcase.pageDescription', { name: model.name })) : undefined,
-    noindex: isError || preview,
-  });
+  useSeoMeta({ title, description, noindex: isError || preview });
 
   if (!slug || isLoading) {
     return (

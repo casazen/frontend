@@ -14448,9 +14448,20 @@
   },
   "supplierSite": {
     "about": {
+      "ctaTitle": "Ready to book?",
+      "emptyText": "You will find our story here soon.",
+      "emptyTitle": "We are getting this page ready",
       "eyebrow": "The professional",
+      "more": "Read more",
+      "pageTitle": "We are {{name}}",
+      "peopleEyebrow": "The people",
+      "peopleTitle": "Who comes to you",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
       "title": "About us",
-      "values": "Our strengths"
+      "values": "Our strengths",
+      "valuesEyebrow": "Strengths",
+      "where": "We work in {{places}}"
     },
     "categories": {
       "eyebrow": "Services",
@@ -14465,6 +14476,10 @@
       "eyebrow": "Book online",
       "text": "Choose the service and the day: you see the free times before going on.",
       "title": "Ready to book?"
+    },
+    "crumbs": {
+      "home": "Home",
+      "label": "Where you are"
     },
     "cta": {
       "book": "Book now",
@@ -14536,6 +14551,46 @@
       },
       "title": "Book in five steps"
     },
+    "list": {
+      "all": "All services",
+      "allCategories": "All",
+      "categories": "Categories",
+      "clear": "Clear the filters",
+      "countOf_one": "{{count}} service of {{total}}",
+      "countOf_other": "{{count}} services of {{total}}",
+      "count_one": "{{count}} service",
+      "count_other": "{{count}} services",
+      "label": "List of services",
+      "leadClosed": "Services and starting prices.",
+      "leadOpen": "Clear prices and first times that are really free. For a special job you can send a request on measure.",
+      "noMatchText": "Clear a filter to see all the services again.",
+      "noMatchTitle": "No service with these filters",
+      "price": {
+        "fixed": "Fixed price",
+        "hourly": "By the hour",
+        "quote": "On quote"
+      },
+      "priceAll": "All prices",
+      "priceLabel": "Price",
+      "quoteText": "Describe the job: the professional answers with a price, with no commitment.",
+      "quoteTitle": "Can't find what you are looking for?",
+      "sort": {
+        "duration": "Shortest duration",
+        "price": "Lowest price",
+        "recommended": "Recommended",
+        "slot": "First free time"
+      },
+      "sortLabel": "Sort by",
+      "title": "{{name}}: what we do and what it costs"
+    },
+    "meta": {
+      "about": "About us · {{name}}",
+      "aboutDescription": "The story, the people and the guarantees of {{name}}.",
+      "service": "{{service}} · {{name}}",
+      "serviceDescription": "{{service}}: what it includes, what it costs and when {{name}} is free.",
+      "services": "Services and prices · {{name}}",
+      "servicesDescription": "Services, starting prices and first free times of {{name}}."
+    },
     "nav": {
       "about": "About us",
       "faq": "Questions",
@@ -14556,7 +14611,50 @@
       "minutes_one": "about {{count}} minute",
       "minutes_other": "about {{count}} minutes"
     },
+    "service": {
+      "aboutTitle": "What it is",
+      "allPhotos": "All {{count}} photos",
+      "bookShort": "Book",
+      "bookThis": "Book this service",
+      "cancelFree": "Cancel for free, always",
+      "cardTitle": "Book {{name}}",
+      "confirmWithin": "The professional confirms within {{deadline}}",
+      "estimateError": "We cannot work out the total right now. Try again shortly.",
+      "estimateNote": "The total is an estimate: the professional confirms the price before starting.",
+      "estimating": "Working out the total…",
+      "excluded": "What is not included",
+      "faqTitle": "Questions",
+      "firstSlots": "First free times",
+      "hours": "Hours",
+      "included": "What is included",
+      "includedTitle": "What it includes",
+      "loadError": "Could not load the service.",
+      "missingText": "We cannot find this service among those of {{name}}: it may be paused or removed. See the others.",
+      "missingTitle": "This service is not available",
+      "noSlots": "No free time in the next days",
+      "onQuoteResult": "For this choice the professional decides the price: send a request on measure.",
+      "othersEyebrow": "Other services",
+      "othersTitle": "You may also need",
+      "outside": "This town is outside the usual area: the professional decides the price, with a request on measure.",
+      "paySafe": "You pay online with CasaZen, safely",
+      "photoOpen": "Enlarge photo {{index}} of {{total}}: {{name}}",
+      "prepTitle": "Before we arrive",
+      "priceTitle": "How the price is worked out",
+      "quoteFact": "Price on quote",
+      "quoteIntro": "Describe the job: the professional answers with the price. It is not a commitment.",
+      "sets": "Sets",
+      "squareMeters": "Square meters",
+      "surface": "How big is the home?",
+      "surfaceBetween": "from {{from}} to {{to}} m²",
+      "surfaceNote": "The base price covers up to {{sqm}} m²: above it a supplement is added every 30 m².",
+      "surfaceUpTo": "up to {{sqm}} m²",
+      "total": "Estimated total",
+      "urgentFact": "Also available as an urgent job",
+      "urgentLine": "Urgent job",
+      "where": "Where is the work done? (optional)"
+    },
     "services": {
+      "all": "All services",
       "emptyText": "There are no services to show at the moment. Try again shortly.",
       "emptyTitle": "We are getting the services ready",
       "eyebrow": "Services and prices",

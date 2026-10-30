@@ -14448,9 +14448,20 @@
   },
   "supplierSite": {
     "about": {
+      "ctaTitle": "Pronto a prenotare?",
+      "emptyText": "Qui troverai presto la nostra storia.",
+      "emptyTitle": "Stiamo preparando questa pagina",
       "eyebrow": "Il professionista",
+      "more": "Leggi di più",
+      "pageTitle": "Siamo {{name}}",
+      "peopleEyebrow": "Le persone",
+      "peopleTitle": "Chi viene da te",
+      "people_one": "{{count}} persona",
+      "people_other": "{{count}} persone",
       "title": "Chi siamo",
-      "values": "I nostri punti di forza"
+      "values": "I nostri punti di forza",
+      "valuesEyebrow": "Punti di forza",
+      "where": "Lavoriamo a {{places}}"
     },
     "categories": {
       "eyebrow": "Servizi",
@@ -14465,6 +14476,10 @@
       "eyebrow": "Prenota online",
       "text": "Scegli il servizio e il giorno: vedi gli orari liberi prima di andare avanti.",
       "title": "Pronto a prenotare?"
+    },
+    "crumbs": {
+      "home": "Home",
+      "label": "Dove sei"
     },
     "cta": {
       "book": "Prenota ora",
@@ -14536,6 +14551,46 @@
       },
       "title": "Prenoti in cinque passi"
     },
+    "list": {
+      "all": "Tutti i servizi",
+      "allCategories": "Tutti",
+      "categories": "Categorie",
+      "clear": "Togli i filtri",
+      "countOf_one": "{{count}} servizio su {{total}}",
+      "countOf_other": "{{count}} servizi su {{total}}",
+      "count_one": "{{count}} servizio",
+      "count_other": "{{count}} servizi",
+      "label": "Elenco dei servizi",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi. Per un lavoro particolare puoi mandare una richiesta su misura.",
+      "noMatchText": "Togli un filtro per vedere di nuovo tutti i servizi.",
+      "noMatchTitle": "Nessun servizio con questi filtri",
+      "price": {
+        "fixed": "Prezzo fisso",
+        "hourly": "A ore",
+        "quote": "Su preventivo"
+      },
+      "priceAll": "Tutti i prezzi",
+      "priceLabel": "Prezzo",
+      "quoteText": "Descrivi il lavoro: il professionista ti risponde con un prezzo, senza impegno.",
+      "quoteTitle": "Non trovi quello che cerchi?",
+      "sort": {
+        "duration": "Durata più breve",
+        "price": "Prezzo più basso",
+        "recommended": "Consigliati",
+        "slot": "Primo orario libero"
+      },
+      "sortLabel": "Ordina per",
+      "title": "{{name}}: cosa facciamo e quanto costa"
+    },
+    "meta": {
+      "about": "Chi siamo · {{name}}",
+      "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
+      "service": "{{service}} · {{name}}",
+      "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
+      "services": "Servizi e prezzi · {{name}}",
+      "servicesDescription": "Servizi, prezzi di partenza e primi orari liberi di {{name}}."
+    },
     "nav": {
       "about": "Chi siamo",
       "faq": "Domande",
@@ -14556,7 +14611,50 @@
       "minutes_one": "circa {{count}} minuto",
       "minutes_other": "circa {{count}} minuti"
     },
+    "service": {
+      "aboutTitle": "Di cosa si tratta",
+      "allPhotos": "Tutte le {{count}} foto",
+      "bookShort": "Prenota",
+      "bookThis": "Prenota questo servizio",
+      "cancelFree": "Annulli gratis, sempre",
+      "cardTitle": "Prenota {{name}}",
+      "confirmWithin": "Il professionista conferma entro {{deadline}}",
+      "estimateError": "Non riusciamo a calcolare il totale ora. Riprova tra poco.",
+      "estimateNote": "Il totale è una stima: il professionista conferma il prezzo prima di iniziare.",
+      "estimating": "Calcolo il totale…",
+      "excluded": "Cosa non è incluso",
+      "faqTitle": "Domande",
+      "firstSlots": "Primi orari liberi",
+      "hours": "Ore",
+      "included": "Cosa è incluso",
+      "includedTitle": "Cosa comprende",
+      "loadError": "Impossibile caricare il servizio.",
+      "missingText": "Non troviamo questo servizio tra quelli di {{name}}: forse è in pausa o è stato tolto. Guarda gli altri.",
+      "missingTitle": "Questo servizio non è disponibile",
+      "noSlots": "Nessun orario libero nei prossimi giorni",
+      "onQuoteResult": "Per questa scelta il prezzo lo decide il professionista: manda una richiesta su misura.",
+      "othersEyebrow": "Altri servizi",
+      "othersTitle": "Potrebbe servirti anche",
+      "outside": "Questo comune è fuori dalla zona abituale: il prezzo lo decide il professionista, con una richiesta su misura.",
+      "paySafe": "Paghi online con CasaZen, in modo sicuro",
+      "photoOpen": "Ingrandisci la foto {{index}} di {{total}}: {{name}}",
+      "prepTitle": "Prima che arriviamo",
+      "priceTitle": "Come si calcola il prezzo",
+      "quoteFact": "Prezzo su preventivo",
+      "quoteIntro": "Descrivi il lavoro: il professionista ti risponde con il prezzo. Non è un impegno.",
+      "sets": "Set",
+      "squareMeters": "Metri quadri",
+      "surface": "Quanto è grande la casa?",
+      "surfaceBetween": "da {{from}} a {{to}} m²",
+      "surfaceNote": "Il prezzo base copre fino a {{sqm}} m²: oltre si aggiunge un supplemento ogni 30 m².",
+      "surfaceUpTo": "fino a {{sqm}} m²",
+      "total": "Totale stimato",
+      "urgentFact": "Disponibile anche con urgenza",
+      "urgentLine": "Intervento urgente",
+      "where": "Dove si fa il lavoro? (facoltativo)"
+    },
     "services": {
+      "all": "Tutti i servizi",
       "emptyText": "Al momento non ci sono servizi da mostrare. Riprova tra poco.",
       "emptyTitle": "Stiamo preparando i servizi",
       "eyebrow": "Servizi e prezzi",
