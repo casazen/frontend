@@ -12797,6 +12797,51 @@
       "included": "Totals include nights, cleaning and tourist tax.",
       "estimated": "The tourist tax is an estimate until you give the ages of the children.",
       "notIncluded": "For some homes the total does not include the tourist tax."
+    },
+    "filters": {
+      "open": "Filters",
+      "active_one": "{{count}} active filter",
+      "active_other": "{{count}} active filters",
+      "activeLabel": "Active filters",
+      "remove": "Remove “{{name}}”",
+      "title": "Filters",
+      "description": "Choose price, bedrooms, floor area, amenities and rules: the button at the bottom says how many homes are left.",
+      "show": "Show the homes",
+      "showCount_one": "Show {{count}} home",
+      "showCount_other": "Show {{count}} homes",
+      "showNone": "No homes with these filters",
+      "clear": "Clear all",
+      "any": "Any",
+      "orMore": "{{n}} or more",
+      "price": "Price per night",
+      "priceMin": "From",
+      "priceMax": "To",
+      "noMin": "no minimum",
+      "noMax": "no maximum",
+      "priceBetween": "from {{from}} to {{to}}",
+      "priceFrom": "from {{price}}",
+      "priceUpTo": "up to {{price}}",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "bedroomsChip": "{{n}}+ bedrooms",
+      "bathroomsChip": "{{n}}+ bathrooms",
+      "area": "Floor area",
+      "areaAtLeast": "at least {{n}} m²",
+      "amenities": "Amenities",
+      "rules": "House rules",
+      "rule": {
+        "pets": "Pets allowed",
+        "children": "Child friendly",
+        "selfCheckin": "Self check-in",
+        "smoking": "Smoking allowed",
+        "parties": "Parties allowed"
+      }
+    },
+    "map": {
+      "label": "Map of the homes",
+      "note": "Approximate locations: the exact address arrives with your confirmation. Schematic maps: Natural Earth data.",
+      "showMap": "Map",
+      "showList": "List"
     }
   },
   "statement": {

@@ -12797,6 +12797,51 @@
       "included": "I totali comprendono notti, pulizia e imposta di soggiorno.",
       "estimated": "L’imposta di soggiorno è una stima finché non indichi le età dei bambini.",
       "notIncluded": "Per alcune case il totale non comprende l’imposta di soggiorno."
+    },
+    "filters": {
+      "open": "Filtri",
+      "active_one": "{{count}} filtro attivo",
+      "active_other": "{{count}} filtri attivi",
+      "activeLabel": "Filtri attivi",
+      "remove": "Togli «{{name}}»",
+      "title": "Filtri",
+      "description": "Scegli prezzo, camere, metri quadri, servizi e regole: il pulsante in fondo dice quante case restano.",
+      "show": "Mostra le case",
+      "showCount_one": "Mostra {{count}} casa",
+      "showCount_other": "Mostra {{count}} case",
+      "showNone": "Nessuna casa con questi filtri",
+      "clear": "Cancella tutto",
+      "any": "Qualsiasi",
+      "orMore": "{{n}} o più",
+      "price": "Prezzo a notte",
+      "priceMin": "Da",
+      "priceMax": "A",
+      "noMin": "nessun minimo",
+      "noMax": "nessun massimo",
+      "priceBetween": "da {{from}} a {{to}}",
+      "priceFrom": "da {{price}}",
+      "priceUpTo": "fino a {{price}}",
+      "bedrooms": "Camere",
+      "bathrooms": "Bagni",
+      "bedroomsChip": "{{n}} o più camere",
+      "bathroomsChip": "{{n}} o più bagni",
+      "area": "Superficie",
+      "areaAtLeast": "almeno {{n}} m²",
+      "amenities": "Servizi",
+      "rules": "Regole della casa",
+      "rule": {
+        "pets": "Animali ammessi",
+        "children": "Adatta ai bambini",
+        "selfCheckin": "Check-in autonomo",
+        "smoking": "Si può fumare",
+        "parties": "Feste ammesse"
+      }
+    },
+    "map": {
+      "label": "Mappa delle case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth.",
+      "showMap": "Mappa",
+      "showList": "Elenco"
     }
   },
   "statement": {

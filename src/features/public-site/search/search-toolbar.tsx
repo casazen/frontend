@@ -8,6 +8,7 @@ import { usePublicSiteCalendar } from '@/features/public-site/stay/use-public-si
 import { cn } from '@/lib/utils';
 import type { PublicDestination, PublicStayCard, PublicStaysSort } from '@/types/public-stays.types';
 import { SORTS } from './search-state';
+import { FiltersSheet } from './filters-sheet';
 import type { useSearchState } from './use-search-state';
 
 interface SearchToolbarProps {
@@ -61,6 +62,7 @@ export function SearchToolbar({ slug, state, catalog, destinations, favoritesCou
         />
       </div>
       <div className="sr-bar__tools">
+        <FiltersSheet slug={slug} state={state} catalog={catalog} />
         <label className="sr-only" htmlFor="sr-sort">
           {t('siteSearch.sort.label')}
         </label>
