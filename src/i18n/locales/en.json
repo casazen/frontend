@@ -10403,8 +10403,21 @@
       }
     },
     "done": {
+      "active": "The property is active.",
+      "another": "Add another property",
+      "calendar": "Open the calendar",
       "complete": "Complete the activation",
       "description": "The property is in Properties as “To complete”.",
+      "fix": {
+        "base-data": "Complete the details",
+        "cin": "Add the CIN",
+        "documents": "Upload the documents",
+        "safety": "Fill in the safety sheet"
+      },
+      "fixLabel": "What to fix",
+      "hiddenDescription": "You hid it yourself: guests cannot book it from your site until you show it.",
+      "hiddenHow": "To show it on the site, use the switch of the last step.",
+      "hiddenTitle": "“{{name}}” is ready, but it does not appear on the site",
       "inList": "You will find it in Properties, where you can pick up whenever you like.",
       "leadOpen": "A few points are still missing before it can be activated:",
       "leadReady": "The required data is there: only the final confirmation is missing.",
@@ -10414,7 +10427,10 @@
         "documents": "The documents required in your region",
         "safety": "The safety sheet"
       },
+      "readyDescription": "Guests can book from your site.",
+      "readyTitle": "“{{name}}” is ready",
       "readyToActivate": "To activate it, just accept the Terms.",
+      "show": "Show it on the site",
       "title": "“{{name}}” is saved",
       "toList": "Go to properties"
     },
@@ -10425,7 +10441,84 @@
       "saveAndClose": "Save and close",
       "saved": "Saved. You will find it in Properties, to complete."
     },
-    "finish": "Save and see what is missing",
+    "last": {
+      "activation": {
+        "later": "You can finish now: the property stays “To complete” and you activate it as soon as everything is in order.",
+        "title": "Activation"
+      },
+      "button": {
+        "activate": "Activate the property",
+        "done": "Done",
+        "later": "Finish later"
+      },
+      "calendars": {
+        "hint": "Recommended: dates booked on Airbnb or Booking.com show as taken on your site too.",
+        "title": "Link your calendars"
+      },
+      "cin": {
+        "hint": "The National Identification Code is needed to activate the property. If you do not have it yet you can finish later and add it when it arrives.",
+        "label": "CIN code",
+        "save": "Save the CIN",
+        "title": "CIN code"
+      },
+      "documents": {
+        "title": "Required documents"
+      },
+      "missing": {
+        "advice": "Recommended",
+        "failed": "I cannot check what is missing. Try again.",
+        "fix": "Fix",
+        "lead": "To activate the property you still need:",
+        "loading": "Checking what is missing…",
+        "none": "All in order: only the final confirmation is missing.",
+        "refused": "It cannot be activated yet: the service reports these points",
+        "title": "What is missing"
+      },
+      "summary": {
+        "amenities": "Amenities and safety",
+        "base": "Basics",
+        "by": "by {{time}}",
+        "edit": "Edit",
+        "from": "from {{time}}",
+        "labels": {
+          "amenities": "Chosen",
+          "cleaning": "Cleaning",
+          "headline": "Headline",
+          "house": "Smoking · pets · parties",
+          "minNights": "Minimum stay",
+          "name": "Name",
+          "photos": "Photos",
+          "policy": "Cancellation",
+          "quiet": "Quiet hours",
+          "rate": "Base price",
+          "safety": "Safety",
+          "spaces": "Spaces",
+          "times": "Check-in / check-out",
+          "weekend": "Weekend",
+          "where": "Where"
+        },
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "notSaid": "Not stated",
+        "photos": "Photos and listing",
+        "photosCount_one": "{{count}} photo · the first is the cover",
+        "photosCount_other": "{{count}} photos · the first is the cover",
+        "photosNone": "No photos for now (recommended, not required)",
+        "prices": "Prices",
+        "range": "from {{from}} to {{to}}",
+        "rateMissing": "The price is missing",
+        "rules": "House rules",
+        "safetyDone": "Safety sheet complete",
+        "safetyOpen": "Safety sheet to complete",
+        "title": "Summary"
+      },
+      "visibility": {
+        "blocked": "It turns on when you have fixed the points marked above.",
+        "label": "Show the home on the site",
+        "off": "The property will be active but will not appear on the site: you can show it whenever you like.",
+        "on": "Guests will be able to book from your site."
+      }
+    },
     "page": {
       "backToList": "Back to properties",
       "description": "One step at a time: the property is saved from the first “Continue” and you can pick up whenever you like.",
@@ -10561,6 +10654,11 @@
         "label": "Basics",
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
+      },
+      "finish": {
+        "label": "Activation",
+        "purpose": "Link the calendars, add the CIN and the documents, then activate the property.",
+        "title": "Calendars, CIN and activation"
       },
       "photos": {
         "label": "Photos",
