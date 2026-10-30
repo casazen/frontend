@@ -7757,7 +7757,8 @@
         "createLease": "Crea contratto",
         "edit": "Modifica",
         "openLease": "Apri contratto",
-        "page": "Scheda completa"
+        "page": "Scheda completa",
+        "request": "Richiedi intervento"
       },
       "add": "Aggiungi immobile",
       "ape": {
