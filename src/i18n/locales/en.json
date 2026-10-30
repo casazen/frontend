@@ -14578,6 +14578,12 @@
           },
           "title": "Services in the showcase"
         },
+        "starter": {
+          "applied": "Starting text added",
+          "hint": "Do not know what to write? Start from a text that fits your trade: it only fills the empty fields, you change it as you like and nobody sees it until you publish.",
+          "title": "A starting text",
+          "use": "Use the starting text"
+        },
         "steps": {
           "publish": "Preview and publish",
           "services": "Services and sections",

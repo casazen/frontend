@@ -14578,6 +14578,12 @@
           },
           "title": "Servizi in vetrina"
         },
+        "starter": {
+          "applied": "Testo di partenza inserito",
+          "hint": "Non sai cosa scrivere? Parti da un testo adatto al tuo mestiere: riempie solo i campi vuoti, lo cambi come vuoi e nessuno lo vede finché non pubblichi.",
+          "title": "Un testo di partenza",
+          "use": "Usa il testo di partenza"
+        },
         "steps": {
           "publish": "Anteprima e pubblica",
           "services": "Servizi e sezioni",
