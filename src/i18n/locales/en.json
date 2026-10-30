@@ -295,6 +295,9 @@
         "title": "Choose the name and the address of your site"
       }
     },
+    "jump": {
+      "label": "Jump to a section"
+    },
     "privacy": {
       "body": "Download right away a file with the fiscal data of the organization, the people of the team and, if you may read it, the activity log.",
       "done": "File downloaded",

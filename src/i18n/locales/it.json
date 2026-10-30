@@ -295,6 +295,9 @@
         "title": "Scegli il nome e l'indirizzo del tuo sito"
       }
     },
+    "jump": {
+      "label": "Vai a una sezione"
+    },
     "privacy": {
       "body": "Scarica subito un file con i dati fiscali dell'organizzazione, le persone del team e, se puoi leggerlo, il registro delle attività.",
       "done": "File scaricato",
