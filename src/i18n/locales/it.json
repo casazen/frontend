@@ -1149,6 +1149,7 @@
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
@@ -11001,6 +11002,9 @@
     }
   },
   "settings": {
+    "manageOnStripe": "Gestisci su Stripe",
+    "manageOnStripeFailed": "Non riusciamo ad aprire Stripe. Riprova tra poco.",
+    "manageOnStripeHint": "Saldo, bonifici ricevuti e dati bancari li vedi direttamente su Stripe.",
     "planTitle": "Il tuo piano",
     "planOrgDescription": "Organizzazione: {{orgName}}. Scegli il piano più adatto al tuo portfolio.",
     "planDefaultDescription": "Gestisci il piano della tua organizzazione.",
@@ -11465,17 +11469,36 @@
     "theme": {
       "label": "Tema",
       "options": {
+        "terra": {
+          "name": "Terra",
+          "description": "Calda: terracotta su crema."
+        },
         "mare": {
           "name": "Mare",
-          "description": "Luminoso e accogliente, per case al mare e vacanze estive."
+          "description": "Fresca: blu petrolio su bianco."
         },
-        "montagna": {
-          "name": "Montagna",
-          "description": "Caldo e naturale, per baite, chalet e agriturismi."
+        "citta": {
+          "name": "Città",
+          "description": "Essenziale: inchiostro su pietra."
+        }
+      }
+    },
+    "font": {
+      "label": "Caratteri",
+      "usingTheme": "Stai usando i caratteri del tema.",
+      "useTheme": "Usa i caratteri del tema",
+      "options": {
+        "editoriale": {
+          "name": "Editoriale",
+          "description": "Titoli con le grazie, caldi e letterari."
         },
-        "urban": {
-          "name": "Urban",
-          "description": "Essenziale e moderno, per appartamenti in città."
+        "moderno": {
+          "name": "Moderno",
+          "description": "Tutto senza grazie, nitido e deciso."
+        },
+        "classico": {
+          "name": "Classico",
+          "description": "Eleganza da rivista, contrasto alto."
         }
       }
     },
@@ -11508,6 +11531,7 @@
     "errors": {
       "colorInvalid": "Il colore non è valido: usa un codice esadecimale, per esempio #1a6b8f.",
       "themeInvalid": "Questo tema non è disponibile per il sito pubblico.",
+      "fontInvalid": "Questa coppia di caratteri non è disponibile per il sito pubblico.",
       "taglineTooLong": "Lo slogan non può superare i {{maxLength}} caratteri.",
       "imageEmpty": "Il file selezionato è vuoto.",
       "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",

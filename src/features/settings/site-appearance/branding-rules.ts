@@ -55,6 +55,7 @@ export function checkBrandingImageFile(kind: BrandingImageKind, file: File): str
 const BRANDING_CODE_KEYS: Record<string, string> = {
   org_branding_color_invalid: 'siteAppearance.errors.colorInvalid',
   org_branding_theme_invalid: 'siteAppearance.errors.themeInvalid',
+  org_branding_font_invalid: 'siteAppearance.errors.fontInvalid',
   org_branding_tagline_too_long: 'siteAppearance.errors.taglineTooLong',
   org_branding_image_empty: 'siteAppearance.errors.imageEmpty',
   org_branding_image_too_large: 'siteAppearance.errors.imageTooLarge',
