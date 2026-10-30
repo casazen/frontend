@@ -70,6 +70,9 @@ const NO_SERVICE: Partial<RequestValues> = {
   startTime: '',
 };
 
+/** Nothing of step ③ chosen: the supplier and its services depend on the property and on the kind of job, so a change of either one starts it again. */
+const NO_SUPPLIER: Partial<RequestValues> = { ...NO_SERVICE, supplierOrgId: '', supplierName: '' };
+
 function assign(setValue: SetValue, values: Partial<RequestValues>) {
   (Object.keys(values) as (keyof RequestValues)[]).forEach((name) => {
     setValue(name, values[name] as never, { shouldDirty: true });
@@ -81,14 +84,22 @@ function assign(setValue: SetValue, values: Partial<RequestValues>) {
 /** Step ①: what is needed (a category of the catalog), how pressing it is and what the supplier should know. No guests' data. */
 export function WhatStep() {
   const { t } = useTranslation();
-  const { register, control, formState } = useFormContext<RequestValues>();
+  const { register, control, setValue, formState } = useFormContext<RequestValues>();
   const categories = useServiceCategories();
   const notes = useWatch({ control, name: 'notes' });
+  const categoryField = register('category');
 
   return (
     <div className="space-y-6">
       <Field label={t('requestWizard.what.category')} error={formState.errors.category}>
-        <Select data-testid="request-category" {...register('category')}>
+        <Select
+          data-testid="request-category"
+          {...categoryField}
+          onChange={(event) => {
+            void categoryField.onChange(event);
+            assign(setValue, NO_SUPPLIER);
+          }}
+        >
           <option value="">{t('requestWizard.what.categoryPlaceholder')}</option>
           {(categories.data ?? []).map((code) => (
             <option key={code} value={code}>
@@ -163,8 +174,9 @@ export function WhenStep() {
           {...propertyField}
           onChange={(event) => {
             void propertyField.onChange(event);
-            // The stay belongs to the property: another property has other stays.
+            // The stay belongs to the property: another property has other stays, and other suppliers cover it.
             setValue('bookingId', '', { shouldDirty: true });
+            assign(setValue, NO_SUPPLIER);
           }}
         >
           <option value="">{t('requestWizard.when.propertyPlaceholder')}</option>
