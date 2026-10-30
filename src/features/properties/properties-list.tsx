@@ -15,7 +15,7 @@ import { formatPropertyLocation } from './property-location';
 import {
   PROPERTY_CREATE_PATH,
   PROPERTY_DRAWER_KIND,
-  propertyActivationPath,
+  propertyWizardPath,
   propertyCalendarPath,
   propertyEditPath,
   propertyPath,
@@ -81,7 +81,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
               id: 'complete',
               label: t('property.list.actions.complete'),
               icon: CircleCheck,
-              href: propertyActivationPath(property.id),
+              href: propertyWizardPath(property.id),
               variant: 'default',
               testId: 'property-complete',
             }
