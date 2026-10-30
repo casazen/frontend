@@ -7398,7 +7398,8 @@
         "createLease": "Create lease",
         "edit": "Edit",
         "openLease": "Open lease",
-        "page": "Full page"
+        "page": "Full page",
+        "request": "Request a job"
       },
       "add": "Add property",
       "ape": {
