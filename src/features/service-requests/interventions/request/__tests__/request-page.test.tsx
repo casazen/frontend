@@ -151,9 +151,10 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     fireEvent.click(screen.getByTestId('request-finish'));
 
     expect(await screen.findByTestId('request-finish-error', undefined, WAIT)).toHaveTextContent('Questo orario è appena stato preso');
-    expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'who');
+    // The router moves with a transition, a moment after the message: the step is the one of the slots.
+    await waitFor(() => expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'who'), WAIT);
     // The supplier and the service are still chosen: only the time has to be chosen again.
-    expect(screen.getByTestId(`request-supplier-${SUPPLIER_ID}`)).toBeChecked();
+    expect(await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT)).toBeChecked();
     expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();
   });
 });
