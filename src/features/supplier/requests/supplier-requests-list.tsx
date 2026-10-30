@@ -7,7 +7,7 @@ import type { ListRowAction } from '@/components/shared/list-view/list-types';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import type { SupplierInboxParams, SupplierInboxTab, SupplierInboxWhen } from '@/types/supplier';
 import { PriceCell, RequestWho, WhenCell, WhereCell } from './request-cells';
-import { phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle } from './request-model';
+import { isBackup, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle } from './request-model';
 import { RequestStateBadge } from './request-parts';
 import type { RequestActions } from './use-request-actions';
 
@@ -41,19 +41,31 @@ export function inboxParamsOf(state: ListState, pageSize: number, clientId?: str
  * The list of the requests of the supplier (UI-14, `server` mode): the server picks the requests of a tab, searches and pages them,
  * so the list has no column to sort by. The one thing to do about a row is by phase (accept a new one, complete a taken one) and the
  * rest is in "⋯"; the row itself opens the drawer (UI-15), whose page is one link away. The names of the actions keep the
- * `data-testid`s of the old inbox (`take-<id>`, `complete-<id>`, `reject-<id>`, `open-<id>`).
+ * `data-testid`s of the old inbox (`take-<id>`, `complete-<id>`, `reject-<id>`, `open-<id>`). A request the supplier has as a backup
+ * (SP-BKP) says «Accetta come riserva» (`accept-backup-<id>`) while the primary supplier has its hour, and the usual «Accetta» when the job
+ * is free; a backup that said yes has nothing to do but wait.
  */
 export function useSupplierRequestsList(actions: RequestActions) {
   const { t } = useTranslation();
-  const { suspended, busy, take, complete, askReject, askQuote, askWithdrawQuote } = actions;
+  const { suspended, busy, take, acceptBackup, complete, askReject, askQuote, askWithdrawQuote } = actions;
 
   return useMemo(() => {
     // The button of a row is the quick answer: accept a new request, complete a taken one. The quote (SP-04b) is one tap further, in "⋯" of
     // the row and as the first button of the request itself, where the words of the customer and the time are in front of the supplier.
     const primaryAction = (request: SupplierServiceRequest): ListRowAction | null => {
       const phase = phaseOf(request);
-      if (phase === 'toAnswer') {
+      if (phase === 'toAnswer' || phase === 'backupActive') {
         return { id: 'take', label: t('supplier.requests.action.take'), icon: Check, onSelect: () => take(request.id), disabled: suspended || busy, testId: `take-${request.id}` };
+      }
+      if (phase === 'backupWaiting') {
+        return {
+          id: 'accept-backup',
+          label: t('supplier.requests.action.acceptBackup'),
+          icon: Check,
+          onSelect: () => acceptBackup(request.id),
+          disabled: suspended || busy,
+          testId: `accept-backup-${request.id}`,
+        };
       }
       if (phase === 'scheduled' || phase === 'inProgress') {
         return { id: 'complete', label: t('supplier.requests.action.completeShort'), icon: CheckCircle2, onSelect: () => complete(request.id), disabled: suspended || busy, testId: `complete-${request.id}` };
@@ -126,6 +138,10 @@ export function useSupplierRequestsList(actions: RequestActions) {
                 { id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` },
               ]
             : []),
+          // A backup answers the request as it is: it can refuse, it cannot quote (the host did not choose it).
+          ...(isBackup(request)
+            ? [{ id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` }]
+            : []),
           ...(phase === 'quotePending'
             ? [
                 { id: 'edit-quote', label: t('supplier.requests.action.editQuote'), icon: Pencil, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `edit-quote-${request.id}` },
@@ -138,7 +154,7 @@ export function useSupplierRequestsList(actions: RequestActions) {
       detail: { drawerKind: REQUEST_DRAWER_KIND },
       rowTone: (request) => {
         const phase = phaseOf(request);
-        if (phase === 'toAnswer') return 'urgent';
+        if (phase === 'toAnswer' || phase === 'backupActive') return 'urgent';
         return phase === 'paid' || phase === 'rejected' || phase === 'cancelled' ? 'done' : undefined;
       },
       csv: false,
@@ -154,5 +170,5 @@ export function useSupplierRequestsList(actions: RequestActions) {
       noResults: { title: t('supplier.requests.noResults.title'), description: t('supplier.requests.noResults.description') },
       countLabel: (count) => t('supplier.requests.list.count', { count }),
     });
-  }, [t, suspended, busy, take, complete, askReject, askQuote, askWithdrawQuote]);
+  }, [t, suspended, busy, take, acceptBackup, complete, askReject, askQuote, askWithdrawQuote]);
 }

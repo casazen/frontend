@@ -1,29 +1,40 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
   acceptLongRentProposal,
+  acceptServiceRequestAsBackup,
+  acceptServiceRequestProposal,
   cancelLongRentServiceRequest,
   cancelServiceRequest,
   completeServiceRequest,
   confirmLongRentFinalAmount,
+  confirmServiceRequestFinalAmount,
   createLongRentPaymentSession,
   createLongRentServiceRequest,
   createServiceRequest,
+  createServiceRequestPaymentSession,
   fetchAllLongRentServiceRequests,
+  fetchIntervention,
+  fetchInterventionCounts,
+  fetchInterventions,
   fetchLongRentServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
   fetchMarketplaceSupplier,
   fetchMarketplaceSuppliers,
+  fetchServiceRequestPhoto,
   fetchServiceRequests,
   fetchSuppliersByProperty,
+  fetchUsedSuppliers,
   markLongRentServiceRequestPaid,
   markServiceRequestPaid,
   recordOfflineServiceRequestPayment,
   rejectLongRentProposal,
   rejectServiceRequest,
+  rejectServiceRequestProposal,
   remindLongRentServiceRequest,
   requestServiceRequestPayment,
   sendServiceRequestQuote,
+  remindServiceRequest,
   takeServiceRequest,
   withdrawServiceRequestQuote,
 } from '@/api/service-requests.api';
@@ -31,6 +42,8 @@ import type {
   CreateLongRentServiceRequestDto,
   CreateServiceRequestDto,
   SendServiceRequestQuoteDto,
+  InterventionFilterParams,
+  InterventionListParams,
   ServiceRequest,
   ServiceRequestHostView,
   SupplierPickerSort,
@@ -172,6 +185,146 @@ export function useCreateLongRentPaymentSession() {
   });
 }
 
+// ─── The host's interventions (SR-08a): the list with its chips, one request, and what the host does on it ───
+
+/** 422 code of a reminder asked before the interval has passed; the request is read again and says from when (`hostAction.remindAvailableAt`). */
+const REMIND_TOO_SOON_CODE = 'service_request_remind_too_soon';
+/** 409 code of an action on a request that changed meanwhile (the supplier answered, another tab acted): the xmin of the request. */
+const STATE_CHANGED_CODE = 'service_request_state_changed';
+
+/**
+ * The host's list of interventions for the state of the list (chip, filters, order, page), which the server answers. The rows that were
+ * there stay, a little dimmed, while the next ones come. Read again when the page opens: the requests change on other screens.
+ */
+export function useInterventions(params: InterventionListParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'host', 'list', params],
+    queryFn: () => fetchInterventions(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+    enabled: options.enabled ?? true,
+  });
+}
+
+/** The numbers on the chips: the same filters, whatever the chip. They follow the list (any action invalidates both). */
+export function useInterventionCounts(params: InterventionFilterParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'host', 'counts', params],
+    queryFn: () => fetchInterventionCounts(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * The latest hundred interventions of the host (the largest page the API gives): the suppliers among them are the choices of the filter
+ * of the list. Kept apart from the list, so that a step on a request does not read them again.
+ */
+export function useLatestInterventions() {
+  return useQuery({
+    queryKey: ['latest-interventions'],
+    queryFn: () => fetchInterventions({ view: 'all', sort: 'created:desc', page: 1, pageSize: 100 }),
+    select: (response) => response.items,
+    staleTime: 60_000,
+    refetchOnMount: true,
+  });
+}
+
+/**
+ * One request as its host reads it (drawer and page). `poll`: read again every few seconds until it is paid, for a payment sent to Stripe
+ * that Stripe confirms to the backend a little later.
+ */
+export function useIntervention(id: string, options: { poll?: boolean } = {}) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'host', 'detail', id],
+    queryFn: () => fetchIntervention(id),
+    enabled: id !== '',
+    refetchOnMount: 'always',
+    refetchInterval: (query) => (options.poll && query.state.data?.status !== 'Pagato' ? PAYMENT_POLL_MS : false),
+  });
+}
+
+/**
+ * A photo of the work, as an address an image can show (`data:`). Its key is not under the one of the requests: a step on a request
+ * reads the request again, not its photos, which do not change.
+ */
+export function useWorkPhoto(url: string) {
+  return useQuery({
+    queryKey: ['service-request-photo', url],
+    queryFn: () => fetchServiceRequestPhoto(url),
+    staleTime: Infinity,
+    gcTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * A step the host takes on one request (remind, answer a proposed time, confirm the final amount, cancel). The answer is the request as it
+ * is now: the drawer and the page show it at once and the lists read it again. A step that is refused (the supplier answered meanwhile,
+ * another tab acted: 409) says so in the words of the page and reads the request again, so the person sees the state as it is.
+ */
+function useInterventionAction<Variables>({ run, doneKey }: { run: (variables: Variables) => Promise<ServiceRequest>; doneKey: string }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: (request) => {
+      queryClient.setQueryData([SERVICE_REQUESTS_KEY, 'host', 'detail', request.id], request);
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.success(i18n.t(doneKey));
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
+      if (code === STATE_CHANGED_CODE) {
+        toast.error(i18n.t('interventions.errors.stateChanged'));
+        return;
+      }
+      // A reminder that came too soon: the server says how often it can be done, and the row shows from when.
+      toast.error(
+        getProblemMessage(error, i18n.t) ?? i18n.t(code === REMIND_TOO_SOON_CODE ? 'interventions.errors.remindTooSoon' : 'serviceRequest.actionFailed'),
+      );
+    },
+  });
+}
+
+/** The host cancels a request up to the work in progress, with the reason the supplier reads. Always free. */
+export function useCancelIntervention() {
+  return useInterventionAction({
+    run: ({ id, reason }: { id: string; reason: string }) => cancelServiceRequest(id, reason),
+    doneKey: 'interventions.toast.cancelled',
+  });
+}
+
+/** The host reminds the supplier to answer: an e-mail to the supplier, only when this is called. */
+export function useRemindIntervention() {
+  return useInterventionAction({ run: (id: string) => remindServiceRequest(id), doneKey: 'interventions.toast.reminded' });
+}
+
+export function useAcceptInterventionProposal() {
+  return useInterventionAction({ run: (id: string) => acceptServiceRequestProposal(id), doneKey: 'interventions.toast.proposalAccepted' });
+}
+
+export function useRejectInterventionProposal() {
+  return useInterventionAction({ run: (id: string) => rejectServiceRequestProposal(id), doneKey: 'interventions.toast.proposalRejected' });
+}
+
+export function useConfirmInterventionAmount() {
+  return useInterventionAction({ run: (id: string) => confirmServiceRequestFinalAmount(id), doneKey: 'interventions.toast.amountConfirmed' });
+}
+
+/** The host marks a finished request paid (outside CasaZen): irreversible, so the page asks first; the answer is the request as it is. */
+export function useMarkInterventionPaid() {
+  return useInterventionAction({ run: (id: string) => markServiceRequestPaid(id), doneKey: 'serviceRequest.markedPaid' });
+}
+
+/** The session to pay a request inside CasaZen: asked when the host presses «Paga» and used at once by the Payment Element. */
+export function useCreateInterventionPaymentSession() {
+  return useMutation({
+    mutationFn: (id: string) => createServiceRequestPaymentSession(id),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('interventions.pay.sessionError')),
+  });
+}
+
 /** Active suppliers for a property, searched in the long-rent context. */
 export function useLongRentSuppliers(propertyId?: string, category?: string) {
   return useQuery({
@@ -226,6 +379,18 @@ export function useMarketplaceSupplier(propertyId: string | undefined, orgId: st
   });
 }
 
+/**
+ * The suppliers the host already asked for a job (MKT, SR-09c), for «Le mie app» of the marketplace. A request made, cancelled or paid
+ * changes it, and the requests are changed from other screens, so it is read again whenever the page opens.
+ */
+export function useUsedSuppliers() {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'suppliers'],
+    queryFn: fetchUsedSuppliers,
+    refetchOnMount: 'always',
+  });
+}
+
 export function useCreateServiceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -236,6 +401,23 @@ export function useCreateServiceRequest() {
       toast.success(i18n.t('serviceRequest.created'));
     },
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.createFailed')),
+  });
+}
+
+/**
+ * The request of the guided procedure «Richiedi un intervento» (SR-08b): the same `POST`, without the toasts, because the wizard
+ * tells the outcome in its own words (a slot just taken, a supplier that is no longer available) and keeps the answers. The lists
+ * of the interventions and the supplier's inbox are read again.
+ */
+export function useCreateIntervention() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateServiceRequestDto) => createServiceRequest(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      void queryClient.invalidateQueries({ queryKey: ['latest-interventions'] });
+    },
   });
 }
 
@@ -261,6 +443,22 @@ export function useTakeServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/**
+ * A backup supplier says it would take the job if the primary supplier does not (SP-BKP): the request stays new and holds nothing of the
+ * agenda. If the group closed meanwhile (the primary took the job) the server says so (409) and the lists are read again.
+ */
+export function useAcceptServiceRequestAsBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => acceptServiceRequestAsBackup(id),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.backup.acceptedToast'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
   });

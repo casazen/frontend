@@ -12,6 +12,7 @@ const api = vi.hoisted(() => ({
   fetchServiceRequests: vi.fn(),
   fetchSuppliersByProperty: vi.fn(),
   fetchMarketplaceSuppliers: vi.fn(),
+  fetchUsedSuppliers: vi.fn(),
   markServiceRequestPaid: vi.fn(),
   fetchServiceCategories: vi.fn(),
   getProperties: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: api.fetchServiceRequests,
   fetchSuppliersByProperty: api.fetchSuppliersByProperty,
   fetchMarketplaceSuppliers: api.fetchMarketplaceSuppliers,
+  fetchUsedSuppliers: api.fetchUsedSuppliers,
   markServiceRequestPaid: api.markServiceRequestPaid,
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: api.getProperties } }));
@@ -79,6 +81,16 @@ const COMPLETED: ServiceRequest = {
   ],
 };
 
+// The suppliers the host already asked, as the API answers them (MKT, SR-09c): the one the requests above were sent to.
+const USED = {
+  supplierOrgId: 'sup-1',
+  supplierName: 'Pulizie Express Srl',
+  requestsCount: 2,
+  openCount: 1,
+  lastRequestAt: '2026-09-26T10:15:00Z',
+  lastCategory: 'cleaning',
+};
+
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -99,6 +111,7 @@ describe('MarketplaceMinePage requests (SU-09, A4-28, MKT)', () => {
     api.getProperties.mockResolvedValue([PROPERTY]);
     api.fetchSuppliersByProperty.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
     api.fetchMarketplaceSuppliers.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
+    api.fetchUsedSuppliers.mockResolvedValue({ items: [USED], totalCount: 1, page: 1, pageSize: 1 });
     api.fetchServiceCategories.mockResolvedValue(['cleaning']);
     api.fetchServiceRequests.mockResolvedValue({ items: [REJECTED, COMPLETED], total: 2, page: 1, pageSize: 50 });
     api.markServiceRequestPaid.mockResolvedValue({ ...COMPLETED, status: 'Pagato' });

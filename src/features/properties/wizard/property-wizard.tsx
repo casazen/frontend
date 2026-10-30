@@ -22,6 +22,10 @@ import {
   createPayload,
   photosStepSchema,
   photosUpdatePayload,
+  pricesStepSchema,
+  pricesUpdatePayload,
+  rulesStepSchema,
+  rulesUpdatePayload,
   wizardDefaults,
   type PropertyWizardValues,
   type WizardStepId,
@@ -30,6 +34,8 @@ import { PropertyWizardDone } from './property-wizard-done';
 import { AmenitiesStep } from './steps/amenities-step';
 import { BaseStep } from './steps/base-step';
 import { PhotosStep } from './steps/photos-step';
+import { PricesStep } from './steps/prices-step';
+import { RulesStep } from './steps/rules-step';
 import { useWizardCreateProperty, useWizardSaveProperty } from './use-wizard-property';
 
 /** Name of the flow: the draft of the first step lives under it. */
@@ -166,6 +172,16 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
     await saveProperty.mutateAsync({ id: propertyId, data: photosUpdatePayload(values) });
   };
 
+  const saveRules = async (values: PropertyWizardValues) => {
+    if (!propertyId) return;
+    await saveProperty.mutateAsync({ id: propertyId, data: rulesUpdatePayload(values) });
+  };
+
+  const savePrices = async (values: PropertyWizardValues) => {
+    if (!propertyId) return;
+    await saveProperty.mutateAsync({ id: propertyId, data: pricesUpdatePayload(values) });
+  };
+
   // A property created in this visit has no amenity yet; one the wizard reopened on keeps the ones the house rules decide.
   const saveAmenities = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
@@ -209,8 +225,33 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
       beforeNext: saveAmenities,
       render: ({ form }) => (propertyId ? <AmenitiesStep form={form} propertyId={propertyId} /> : null),
     },
+    {
+      id: 'rules',
+      label: t('propertyWizard.steps.rules.label'),
+      title: t('propertyWizard.steps.rules.title'),
+      purpose: t('propertyWizard.steps.rules.purpose'),
+      optional: true,
+      schema: rulesStepSchema,
+      beforeNext: saveRules,
+      render: ({ form }) => (propertyId ? <RulesStep form={form} /> : null),
+    },
+    {
+      id: 'prices',
+      label: t('propertyWizard.steps.prices.label'),
+      title: t('propertyWizard.steps.prices.title'),
+      purpose: t('propertyWizard.steps.prices.purpose'),
+      schema: pricesStepSchema,
+      beforeNext: savePrices,
+      render: ({ form }) => (propertyId ? <PricesStep form={form} propertyId={propertyId} /> : null),
+    },
   ];
-  const saveByStep: Record<string, (values: PropertyWizardValues) => Promise<void>> = { base: saveBase, photos: savePhotos, amenities: saveAmenities };
+  const saveByStep: Record<string, (values: PropertyWizardValues) => Promise<void>> = {
+    base: saveBase,
+    photos: savePhotos,
+    amenities: saveAmenities,
+    rules: saveRules,
+    prices: savePrices,
+  };
 
   return (
     <WizardShell<PropertyWizardValues, string | null>

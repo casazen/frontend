@@ -41,5 +41,7 @@
       "documentIssuePlaceCode": null
     }
   ],
-  "marketingConsent": false
+  "marketingConsentEmail": false,
+  "marketingConsentWhatsApp": false,
+  "marketingEmail": null
 }

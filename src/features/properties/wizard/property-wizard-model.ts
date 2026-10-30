@@ -2,7 +2,7 @@ import { z, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
 import { isOpenBlocker } from '@/features/compliance/activation-wizard-model';
 import { ACCOMMODATION_TYPES } from '@/types';
-import type { AccommodationType, CreatePropertyDto, Property, UpdatePropertyDto } from '@/types';
+import type { AccommodationType, CreatePropertyDto, PartiesPolicy, PetsPolicy, Property, SmokingPolicy, UpdatePropertyDto } from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
 import { DEFAULT_PROPERTY_TIMEZONE } from '../schemas/property.schema';
 
@@ -42,6 +42,27 @@ export interface PropertyWizardValues {
   description: string;
   // 3 · Dotazioni (the ones the host chooses here; PetFriendly and SmokingAllowed follow the house rules)
   amenities: string[];
+  // 4 · Regole. Times are `HH:mm`; blank = the host did not say.
+  checkInFrom: string;
+  checkOutBy: string;
+  smokingPolicy: SmokingPolicy | '';
+  petsPolicy: PetsPolicy | '';
+  partiesPolicy: PartiesPolicy | '';
+  /** Quiet hours come as a pair: both or none. */
+  quietHoursFrom: string;
+  quietHoursTo: string;
+  /** Euros a night for each extra guest, as typed; blank = extra guests are not accepted. */
+  extraGuestFee: string;
+  /** One of the catalog; blank = none chosen (the refund then follows the default rule of the booking site). */
+  cancellationPolicyId: string;
+  houseRules: string;
+  // 5 · Prezzi. The amounts are typed, so they are text here and numbers in what is sent.
+  nightlyRate: string;
+  /** Percent on the nights that start on a Friday or a Saturday; blank = none. */
+  weekendSurcharge: string;
+  cleaningFee: string;
+  /** 1 = no minimum. */
+  minNights: number;
 }
 
 type StepSchema = ZodType<unknown, FieldValues>;
@@ -80,6 +101,64 @@ export const photosStepSchema: StepSchema = z.object({
   description: z.string().trim().max(600, 'propertyWizard.validation.description'),
 });
 
+/** An amount in euros as typed (a comma or a point for the cents): the number, or `null` when it is not one. */
+export function parseAmount(text: string): number | null {
+  const value = text.trim();
+  return /^\d{1,6}([.,]\d{1,2})?$/.test(value) ? Number(value.replace(',', '.')) : null;
+}
+
+const amount = (min: number, max: number, message: string) =>
+  z.string().refine((text) => {
+    if (text.trim() === '') return true;
+    const value = parseAmount(text);
+    return value !== null && value >= min && value <= max;
+  }, message);
+
+const time = z.string().regex(/^(\d{2}:\d{2})?$/, 'propertyWizard.validation.time');
+
+/**
+ * The house rules (step 4). Everything is optional — a rule the host leaves blank is a rule nobody states — but the quiet hours are a
+ * pair: the server refuses one without the other (422 `property_quiet_hours_incomplete`), so it is said here, on the field.
+ */
+export const rulesStepSchema: StepSchema = z
+  .object({
+    checkInFrom: time,
+    checkOutBy: time,
+    smokingPolicy: z.enum(['No', 'OutdoorsOnly', 'Yes']).or(z.literal('')),
+    petsPolicy: z.enum(['No', 'OnRequest', 'Yes']).or(z.literal('')),
+    partiesPolicy: z.enum(['No', 'OnRequest']).or(z.literal('')),
+    quietHoursFrom: time,
+    quietHoursTo: time,
+    extraGuestFee: amount(0, 1000, 'propertyWizard.validation.extraGuestFee'),
+    cancellationPolicyId: z.string(),
+    houseRules: z.string().trim().max(1000, 'propertyWizard.validation.houseRules'),
+  })
+  .superRefine((value, context) => {
+    if ((value.quietHoursFrom === '') !== (value.quietHoursTo === '')) {
+      context.addIssue({
+        code: 'custom',
+        path: [value.quietHoursFrom === '' ? 'quietHoursFrom' : 'quietHoursTo'],
+        message: 'propertyWizard.validation.quietHours',
+      });
+    }
+  });
+
+/**
+ * The prices (step 5), with the limits of the API: the rate and the cleaning in euros (a rate of 0 is no rate, so one is asked for from
+ * 1), the weekend surcharge from 0 to 100 percent, the minimum stay from 1 to 30 nights. Blank is allowed: a property without a rate is
+ * saved and stays «Da completare» — the activation says so.
+ */
+export const pricesStepSchema: StepSchema = z.object({
+  nightlyRate: amount(1, 100000, 'propertyWizard.validation.nightlyRate'),
+  weekendSurcharge: amount(0, 100, 'propertyWizard.validation.weekendSurcharge'),
+  cleaningFee: amount(0, 10000, 'propertyWizard.validation.cleaningFee'),
+  minNights: z
+    .number({ error: 'propertyWizard.validation.minNights' })
+    .int()
+    .min(1, 'propertyWizard.validation.minNights')
+    .max(30, 'propertyWizard.validation.minNights'),
+});
+
 /** What a new property starts from (the defaults of the design): the host changes them, nothing is asked twice. */
 export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   accommodationType: 'Apartment',
@@ -97,6 +176,20 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   listingTitle: '',
   description: '',
   amenities: [],
+  checkInFrom: '15:00',
+  checkOutBy: '10:00',
+  smokingPolicy: 'No',
+  petsPolicy: 'No',
+  partiesPolicy: 'No',
+  quietHoursFrom: '',
+  quietHoursTo: '',
+  extraGuestFee: '',
+  cancellationPolicyId: '',
+  houseRules: '',
+  nightlyRate: '',
+  weekendSurcharge: '',
+  cleaningFee: '',
+  minNights: 1,
 };
 
 /**
@@ -139,7 +232,27 @@ export function wizardDefaults(property?: Property): PropertyWizardValues {
     listingTitle: property.listingTitle ?? '',
     description: property.description ?? '',
     amenities: property.amenities.filter((amenity) => CHOOSABLE_AMENITIES.has(amenity)),
+    checkInFrom: toHourMinute(property.checkInFrom) || NEW_PROPERTY_DEFAULTS.checkInFrom,
+    checkOutBy: toHourMinute(property.checkOutBy) || NEW_PROPERTY_DEFAULTS.checkOutBy,
+    // A property that never stated a rule starts from what its amenities already say (an old one may list PetFriendly): shown, never hidden.
+    smokingPolicy: property.smokingPolicy ?? (property.amenities.includes('SmokingAllowed') ? 'Yes' : NEW_PROPERTY_DEFAULTS.smokingPolicy),
+    petsPolicy: property.petsPolicy ?? (property.amenities.includes('PetFriendly') ? 'Yes' : NEW_PROPERTY_DEFAULTS.petsPolicy),
+    partiesPolicy: property.partiesPolicy ?? NEW_PROPERTY_DEFAULTS.partiesPolicy,
+    quietHoursFrom: toHourMinute(property.quietHoursFrom),
+    quietHoursTo: toHourMinute(property.quietHoursTo),
+    extraGuestFee: property.extraGuestFeePerNight != null ? String(property.extraGuestFeePerNight) : '',
+    cancellationPolicyId: property.cancellationPolicyId ?? '',
+    houseRules: property.houseRules ?? '',
+    nightlyRate: property.nightlyRate > 0 ? String(property.nightlyRate) : '',
+    weekendSurcharge: (property.weekendSurchargePercent ?? 0) > 0 ? String(property.weekendSurchargePercent) : '',
+    cleaningFee: property.cleaningFee > 0 ? String(property.cleaningFee) : '',
+    minNights: property.minNights ?? 1,
   };
+}
+
+/** `15:00:00` as the API serves a time, or `15:00`, as `15:00`; blank when the property has none. */
+function toHourMinute(time: string | null | undefined): string {
+  return time ? time.slice(0, 5) : '';
 }
 
 const toAreaSqm = (value: string): number | null => (value.trim() === '' ? null : Number(value));
@@ -180,6 +293,41 @@ export function baseUpdatePayload(values: PropertyWizardValues): UpdatePropertyD
 export function photosUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const listingTitle = values.listingTitle.trim();
   return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim() };
+}
+
+/**
+ * The house rules saved by step 4. A blank time or rule is left out (PATCH: the stored value stays), a blank fee is `null` (extra
+ * guests are not accepted, and a fee set before is taken off), a blank policy is left out — the wizard cannot un-choose one.
+ */
+export function rulesUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
+  const payload: UpdatePropertyDto = {
+    extraGuestFeePerNight: parseAmount(values.extraGuestFee),
+    houseRules: values.houseRules.trim(),
+    // The pair is kept whole: both go, or both are cleared.
+    quietHoursFrom: values.quietHoursFrom || null,
+    quietHoursTo: values.quietHoursTo || null,
+  };
+  if (values.checkInFrom) payload.checkInFrom = values.checkInFrom;
+  if (values.checkOutBy) payload.checkOutBy = values.checkOutBy;
+  if (values.smokingPolicy) payload.smokingPolicy = values.smokingPolicy;
+  if (values.petsPolicy) payload.petsPolicy = values.petsPolicy;
+  if (values.partiesPolicy) payload.partiesPolicy = values.partiesPolicy;
+  if (values.cancellationPolicyId) payload.cancellationPolicyId = values.cancellationPolicyId;
+  return payload;
+}
+
+/**
+ * The prices saved by step 5. A blank rate is left out (the stored one stays); a blank surcharge or cleaning is 0 (the API turns the
+ * surcharge off with 0 and leaving it out keeps it); one night as a minimum is no minimum, which the API calls `null`.
+ */
+export function pricesUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
+  const nightlyRate = parseAmount(values.nightlyRate);
+  return {
+    ...(nightlyRate !== null ? { nightlyRate } : {}),
+    weekendSurchargePercent: parseAmount(values.weekendSurcharge) ?? 0,
+    cleaningFee: parseAmount(values.cleaningFee) ?? 0,
+    minNights: values.minNights > 1 ? values.minNights : null,
+  };
 }
 
 /**

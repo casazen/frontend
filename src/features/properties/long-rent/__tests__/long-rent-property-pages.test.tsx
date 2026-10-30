@@ -19,7 +19,13 @@ vi.mock('@/queries/use-leases');
 // What the server adds (the APE, the cadastral data, "then free"): its own endpoint, tested on the server; here the page works without it.
 vi.mock('@/queries/use-long-rent-properties');
 // The list asks who may write and read (the page is always inside the workspace) and whose saved views these are.
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true, activeContext: 'long-rent' }) }));
+const access = vi.hoisted(() => ({ readLeases: true }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({
+    hasPermission: (_area: string, permission: string) => permission !== 'lease.read' || access.readLeases,
+    activeContext: 'long-rent',
+  }),
+}));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
 // The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
 vi.mock('@/features/properties/mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
@@ -70,6 +76,7 @@ function renderAt(path: string) {
 
 beforeEach(() => {
   void i18n.changeLanguage('it');
+  access.readLeases = true;
   vi.mocked(leaseQueries.useLeases).mockReturnValue(
     query({ data: [] as LeaseSummary[] }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
   );
@@ -171,17 +178,62 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
   it('LongRentPropertyDetailPage_WithoutApe_SaysItIsNeededAndOffersTheUpload', () => {
     mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
 
-    renderAt('/app/long-rent/properties/prop-1');
+    renderAt('/app/long-rent/properties/prop-1?tab=documents');
 
     expect(screen.getByTestId('long-rent-ape-status')).toHaveTextContent(i18n.t('longRentProperties.detail.apeMissing'));
     expect(screen.getByRole('button', { name: i18n.t('shared.documentUpload.uploadDocument') })).toBeInTheDocument();
-    // A free property: the highlighted block offers the lease to make.
+    // A free property: the highlighted block offers the lease to make, whatever the tab.
     expect(screen.getByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveAttribute(
       'href',
       '/app/long-rent/leases/new?propertyId=prop-1',
     );
+  });
+
+  it('LongRentPropertyDetailPage_Tabs_OpenOnTheContractsAndKeepTheOtherSectionsOneClickAway', () => {
+    mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
+
+    const view = renderAt('/app/long-rent/properties/prop-1');
+
+    // The first tab is the contracts: nothing of the others is on the page until its tab is opened.
+    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
+    expect(tabs).toEqual([
+      i18n.t('longRentProperties.detail.tabs.contracts'),
+      i18n.t('longRentProperties.detail.tabs.documents'),
+      i18n.t('longRentProperties.detail.tabs.requests'),
+      i18n.t('longRentProperties.detail.tabs.data'),
+    ]);
+    expect(screen.getByTestId('long-rent-property-leases-empty')).toBeInTheDocument();
+    expect(screen.queryByTestId('long-rent-ape-status')).not.toBeInTheDocument();
+    view.unmount();
+
     // Its supplier requests are for the property (SU-07, D2).
+    renderAt('/app/long-rent/properties/prop-1?tab=requests');
     expect(screen.getByTestId('long-rent-requests-prop-1')).toBeInTheDocument();
+  });
+
+  it('LongRentPropertyDetailPage_DataTab_HasTheCadastralDataTheContractNeeds', () => {
+    mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
+
+    renderAt('/app/long-rent/properties/prop-1?tab=data');
+
+    expect(screen.getByTestId('property-cadastral')).toBeInTheDocument();
+    expect(screen.getByTestId('property-cadastral-missing')).toBeInTheDocument();
+  });
+
+  it('LongRentPropertyDetailPage_WithoutThePermissionToReadLeases_HasNoTabOfContractsAndOpensOnTheDocuments', () => {
+    access.readLeases = false;
+    vi.mocked(leaseQueries.useLeases).mockReturnValue(
+      query({ data: undefined }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
+    );
+    mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
+
+    // Not even by the address: a `?tab=contracts` opens the first tab that is there.
+    renderAt('/app/long-rent/properties/prop-1?tab=contracts');
+
+    expect(screen.queryByTestId('long-rent-property-tab-contracts')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('long-rent-property-leases-empty')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('tab')[0]).toHaveTextContent(i18n.t('longRentProperties.detail.tabs.documents'));
+    expect(screen.getByTestId('long-rent-ape-status')).toBeInTheDocument();
   });
 
   it('LongRentPropertyDetailPage_WithApe_ListsItWithItsType', () => {
@@ -200,7 +252,7 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
       }),
     );
 
-    renderAt('/app/long-rent/properties/prop-1');
+    renderAt('/app/long-rent/properties/prop-1?tab=documents');
 
     expect(screen.getByTestId('long-rent-ape-status')).toHaveTextContent(i18n.t('longRentProperties.detail.apePresent'));
     expect(screen.getByText('ape-2026.pdf')).toBeInTheDocument();
@@ -271,7 +323,7 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
   it('LongRentPropertyDetailPage_DocumentsForbidden_ShowsTheError', () => {
     mockDetail(query<PropertyDocumentDto[]>({ isError: true, error: forbidden() }));
 
-    renderAt('/app/long-rent/properties/prop-1');
+    renderAt('/app/long-rent/properties/prop-1?tab=documents');
 
     expect(screen.getByTestId('long-rent-documents-load-error')).toHaveTextContent(i18n.t('apiErrors.forbidden'));
     expect(screen.queryByTestId('long-rent-ape-status')).not.toBeInTheDocument();
