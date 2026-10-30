@@ -16,6 +16,8 @@ export interface SiteAppearance {
   fontId: PublicSiteFontId | null;
   /** The variables of the host's own primary color (`publicSiteColorVars`), undefined for the theme's own. */
   colorStyle?: CSSProperties;
+  /** `casazen` on CasaZen's own public pages (the search across all the sites): the look of the brand, not of a host. */
+  brand?: 'casazen';
 }
 
 const DEFAULT_APPEARANCE: SiteAppearance = { themeId: DEFAULT_PUBLIC_SITE_THEME, fontId: null };
@@ -35,16 +37,19 @@ export function usePortalRootProps(): {
   className: string;
   'data-theme': PublicSiteThemeId;
   'data-font'?: PublicSiteFontId;
+  'data-brand'?: 'casazen';
   style?: CSSProperties;
 } {
-  const { themeId, fontId, colorStyle } = useSiteAppearance();
+  const { themeId, fontId, colorStyle, brand } = useSiteAppearance();
   return useMemo(
     () => ({
       className: 'public-site-root',
       'data-theme': themeId,
       'data-font': fontId ?? undefined,
+      // The tokens of the brand are scoped by this attribute (`public-brand.css`): a popover of CasaZen's own pages wears them too.
+      'data-brand': brand,
       style: colorStyle,
     }),
-    [themeId, fontId, colorStyle],
+    [themeId, fontId, colorStyle, brand],
   );
 }

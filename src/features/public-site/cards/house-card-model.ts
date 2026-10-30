@@ -21,9 +21,20 @@ export function localizedText(value: string | PublicLocalizedText | null | undef
   return english || value.it?.trim() || '';
 }
 
-/** Where the home is: the zone the host wrote, else the comune. */
-export function placeOfCard(card: Pick<PublicStayCard, 'zone' | 'comune'>, language: string | undefined): string {
-  return localizedText(card.zone, language) || card.comune?.trim() || '';
+/** The name of a country in the language of the page (`CH` is «Svizzera»), or nothing when it cannot be said. */
+function countryName(code: string, language: string | undefined): string {
+  try {
+    return new Intl.DisplayNames([language?.toLowerCase().startsWith('en') ? 'en' : 'it'], { type: 'region' }).of(code.toUpperCase()) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** Where the home is: the zone the host wrote, else the comune; a home outside Italy says its country («Lugano, Svizzera»). */
+export function placeOfCard(card: Pick<PublicStayCard, 'zone' | 'comune' | 'country'>, language: string | undefined): string {
+  const place = localizedText(card.zone, language) || card.comune?.trim() || '';
+  const country = card.country && card.country.toUpperCase() !== 'IT' ? countryName(card.country, language) : '';
+  return place && country ? `${place}, ${country}` : place;
 }
 
 /** A «Preferita dagli ospiti» needs a high mark given by enough guests: a mark from one or two of them says nothing. */
