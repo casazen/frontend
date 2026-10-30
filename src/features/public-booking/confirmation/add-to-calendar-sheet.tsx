@@ -43,7 +43,8 @@ export function AddToCalendarSheet({ open, onOpenChange, stay, fileName, home, d
   const outlook = outlookCalendarUrl(stay);
 
   const download = () => {
-    const file = buildIcs(stay, new Date());
+    // The `UID` ends with the site the guest booked on: the one of this page, never a domain written in the code.
+    const file = buildIcs({ ...stay, uidHost: window.location.hostname }, new Date());
     if (!file) return;
     saveTextFile(fileName, file);
     setSaved(true);

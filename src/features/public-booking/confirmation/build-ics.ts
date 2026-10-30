@@ -22,11 +22,14 @@ export interface CalendarStay {
   checkIn: string;
   /** `YYYY-MM-DD`: the day the guest leaves. */
   checkOut: string;
+  /** The host name of the site the file comes from, which ends the `UID`; no CasaZen domain is written in the frontend (D3). */
+  uidHost?: string;
 }
 
 const STAY_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const MAX_LINE_OCTETS = 75;
-const UID_DOMAIN = 'casazen.app';
+/** Without a site to name, the reserved top-level domain keeps the `UID` well formed (RFC 2606). */
+const UID_FALLBACK_HOST = 'booking.invalid';
 
 /** `20261024` of `2026-10-24`, or null when the text is not a stay date. */
 function compactDate(date: string): string | null {
@@ -81,7 +84,7 @@ function utcStamp(instant: Date): string {
 /** The `UID` of the event: the same for the same booking, whatever the day it is downloaded. */
 function eventUid(stay: CalendarStay, days: { start: string; end: string }): string {
   const code = stay.code.replace(/[^A-Za-z0-9]/g, '').toLowerCase();
-  return `${code || `${days.start}-${days.end}`}@${UID_DOMAIN}`;
+  return `${code || `${days.start}-${days.end}`}@${stay.uidHost?.trim() || UID_FALLBACK_HOST}`;
 }
 
 /**

@@ -77,8 +77,10 @@ describe('buildIcs', () => {
     const first = unfold(buildIcs(stay, STAMP)).find((line) => line.startsWith('UID:'));
     const second = unfold(buildIcs(stay, new Date('2026-10-02T18:00:00Z'))).find((line) => line.startsWith('UID:'));
 
-    expect(first).toBe('UID:k7m4q9xp2h@casazen.app');
+    expect(first).toBe('UID:k7m4q9xp2h@booking.invalid');
     expect(second).toBe(first);
+    // With the site named, the UID ends with it.
+    expect(unfold(buildIcs({ ...stay, uidHost: 'ville.example.org' }, STAMP))).toContain('UID:k7m4q9xp2h@ville.example.org');
   });
 
   it('buildIcs_Notes_AreOneEscapedDescriptionAndNoStreetIsEverAdded', () => {
