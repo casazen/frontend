@@ -96,6 +96,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           checkOut: stay.checkOut,
           adults: stay.adults,
           children: stay.children,
+          pets: stay.pets,
           // The ages go only when the tax depends on them and every child has one.
           childrenAges: ready.quote.touristTax.ageRulesApply ? completeChildrenAges(ages) : undefined,
           draft: { ...draft, pay },

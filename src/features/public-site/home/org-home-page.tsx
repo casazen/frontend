@@ -36,13 +36,19 @@ export function OrgHomePage() {
   const location = useLocation();
   const slug = org.slug ?? orgSlug;
   const { stay } = useStayState();
-  const stays = useOrgStays(slug, {
-    checkIn: stay.checkIn,
-    checkOut: stay.checkOut,
-    adults: stay.adults,
-    children: stay.children,
-    pets: stay.pets,
-  });
+  // The stay is chosen on this very page: the answer for the previous one stays until the next arrives, so that the page (and the
+  // search bar with its calendar open) is not swapped for the skeleton at every date or guest the person picks.
+  const stays = useOrgStays(
+    slug,
+    {
+      checkIn: stay.checkIn,
+      checkOut: stay.checkOut,
+      adults: stay.adults,
+      children: stay.children,
+      pets: stay.pets,
+    },
+    { keepPrevious: true },
+  );
   const destinations = useOrgDestinations(slug);
   const searchPath = `${buildOrgBookingPath(slug)}/search`;
 

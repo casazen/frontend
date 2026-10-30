@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { regionMapSvg } from '../engine/region';
+import { townPoint } from '../engine/region/registry';
 import { snapToLand } from '../engine/snap';
-import { projectPoint, publicPoint, unprojectPoint, type LatLon, type View } from '../engine/view';
+import { isPositionSet, projectPoint, publicPoint, unprojectPoint, type LatLon, type View } from '../engine/view';
 import { isMappable } from '../load';
 import { MapCard, type MapCardData } from './map-card';
 import { MapCluster } from './map-cluster';
@@ -56,11 +57,12 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     onActiveChange?.(id);
   };
 
-  // positions: rounded to two decimals (an exact one is refused in development), in Italy or Switzerland, pulled to land when the rounding put them in the sea
+  // positions: rounded to two decimals (an exact one is refused in development), in Italy or Switzerland, pulled to land when the rounding put them in the sea.
+  // A house whose host never gave a position (`0, 0`) is put at its comune, the town of that name in the data of the map (the data are in once the map draws).
   const placed = pins.flatMap((pin) => {
-    if (!Number.isFinite(pin.lat) || !Number.isFinite(pin.lon)) return [];
-    const p = publicPoint(pin);
-    return isMappable(p) ? [{ pin, p }] : [];
+    const own = isPositionSet(pin.lat, pin.lon) ? publicPoint(pin) : null;
+    const p = own && isMappable(own) ? own : townPoint(pin.place);
+    return p ? [{ pin, p }] : [];
   });
   const frameAspect = size.h > 0 ? size.w / size.h : (aspect ?? 4 / 3);
   const mv = useMapView(placed.map((q) => q.p), frameAspect, initial);

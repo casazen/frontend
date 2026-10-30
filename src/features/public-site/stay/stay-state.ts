@@ -28,7 +28,7 @@ export interface StayLimits {
   today: string;
   /** Most people the home takes, adults and children together. */
   maxGuests?: number;
-  /** False when the home takes no pets. */
+  /** False when the home takes no pets; left out when it is not known (a site with many homes: the search says which take them). */
   petsAllowed?: boolean;
 }
 
@@ -47,13 +47,14 @@ export function readRawStay(search: URLSearchParams): StayState {
 
 /**
  * The stay of an address, made sound: dates in the past are dropped (with the departure that depended on them), a departure
- * that is not after the arrival is dropped, a pet that the home does not take is dropped. More people than the home takes is
- * reported and left as it is, so that the page can say it (the picker stops at the limit when someone changes it).
+ * that is not after the arrival is dropped. More people than the home takes, and a pet that the home does not take, are reported
+ * and left as they are, so that the page can say it (the picker stops at the limit when someone changes the guests): a guest who
+ * said they travel with a pet is never booked into a home without them as if they had not said it.
  */
 export function readStay(search: URLSearchParams, limits: StayLimits): { stay: StayState; problems: StayProblem[] } {
   const raw = readRawStay(search);
   const problems: StayProblem[] = [];
-  let { checkIn, checkOut, pets } = raw;
+  let { checkIn, checkOut } = raw;
 
   if (checkIn && checkIn < limits.today) {
     problems.push('checkInPast');
@@ -66,12 +67,9 @@ export function readStay(search: URLSearchParams, limits: StayLimits): { stay: S
   }
   if (!checkIn) checkOut = '';
   if (limits.maxGuests !== undefined && raw.adults + raw.children > limits.maxGuests) problems.push('overCapacity');
-  if (pets && limits.petsAllowed === false) {
-    problems.push('petsNotAllowed');
-    pets = false;
-  }
+  if (raw.pets && limits.petsAllowed === false) problems.push('petsNotAllowed');
 
-  return { stay: { ...raw, checkIn, checkOut, pets }, problems };
+  return { stay: { ...raw, checkIn, checkOut }, problems };
 }
 
 /**
