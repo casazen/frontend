@@ -1149,6 +1149,7 @@
       "noOrgContext": "Your account is not linked to any organization.",
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
@@ -2620,6 +2621,10 @@
     "updated": "Updated {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "This code is provided by the agency and may be the same for multiple stays. CasaZen does not create or revoke access codes.",
+      "code_title": "Here is your access code"
+    },
     "copyLink": "Copy link",
     "documentType": {
       "Passport": "Passport",
@@ -8302,6 +8307,7 @@
     "reviews": "Reviews",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
+    "wireTransfers": "Owner Wire Transfers",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -9603,6 +9609,17 @@
         "comuneRequired": "Pick the comune from the list.",
         "duplicate": "A property with this address already exists."
       }
+    },
+    "qr": {
+      "download": "Download PNG",
+      "error": "Error",
+      "errorDescription": "Property ID missing or invalid.",
+      "hint": "Print or download this QR code and place it at the property entrance to facilitate guest check-in.",
+      "instructions": "Scan this QR code to start your stay verification",
+      "loading": "Generating QR code...",
+      "popupBlocked": "The browser blocked the print window. Check your browser settings.",
+      "print": "Print",
+      "title": "Guest verification QR code"
     }
   },
   "propertyMode": {
@@ -9795,6 +9812,160 @@
         "next": "Check the date",
         "purpose": "The change happens at the start of the day you choose.",
         "title": "From when?"
+      }
+    }
+  },
+  "propertyWizard": {
+    "amenities": {
+      "count_one": "You chose {{count}} amenity.",
+      "count_other": "You chose {{count}} amenities.",
+      "groups": {
+        "comfort": "Comfort",
+        "essentials": "Essentials",
+        "other": "Other",
+        "outdoor": "Outdoors"
+      },
+      "none": "You have not chosen anything yet: you can also skip this and add them later.",
+      "safety": {
+        "complete": "The sheet is complete.",
+        "description": "The property's safety sheet: you fill it in once and it is needed to activate the property.",
+        "dialogDescription": "Fill in the items and save: the property is activated only with a complete, confirmed sheet.",
+        "dialogTitle": "Safety sheet",
+        "loadFailed": "I cannot read the safety sheet. Try again in a moment.",
+        "loading": "Checking the sheet…",
+        "open": "Fill in the sheet",
+        "progress": "{{done}} of {{total}} items in order",
+        "progressLabel": "Progress of the safety sheet",
+        "review": "Review the sheet",
+        "title": "Safety"
+      }
+    },
+    "base": {
+      "address": {
+        "hint": "Street and house number, or “snc” if there is none.",
+        "label": "Address",
+        "placeholder": "Via Roma 12"
+      },
+      "areaSqm": {
+        "hint": "In square metres, numbers only: for example 70.",
+        "label": "Area"
+      },
+      "comune": {
+        "fallbackLabel": "City",
+        "fallbackPlaceholder": "E.g. Como",
+        "hint": "Choose the comune from the official list: the rules, the required documents and the tourist tax follow from it.",
+        "label": "Comune"
+      },
+      "name": {
+        "hint": "An easy name to remember: you will find it in the lists.",
+        "label": "Name of the property",
+        "placeholder": "E.g. Trullo dei Mandorli"
+      },
+      "postalCode": {
+        "label": "Postal code"
+      },
+      "spaces": {
+        "bathrooms": {
+          "hint": "Including service bathrooms",
+          "label": "Bathrooms"
+        },
+        "bedrooms": {
+          "hint": "0 for a studio flat",
+          "label": "Bedrooms"
+        },
+        "beds": {
+          "hint": "Count every bed: a double bed is 1",
+          "label": "Beds"
+        },
+        "maxGuests": {
+          "hint": "How many people can sleep here",
+          "label": "Maximum guests"
+        },
+        "title": "Spaces"
+      },
+      "type": {
+        "legend": "What kind of property is it?",
+        "options": {
+          "Apartment": "Apartment",
+          "HouseOrVilla": "House or villa",
+          "LoftOrPenthouse": "Loft or penthouse",
+          "RoomOrSuite": "Room or suite",
+          "TrulloOrMasseria": "Trullo or masseria"
+        }
+      },
+      "unit": {
+        "hint": "If you have several apartments in the same building, write the unit or staircase: each one needs a different one.",
+        "label": "Floor and unit"
+      }
+    },
+    "done": {
+      "complete": "Complete the activation",
+      "description": "The property is in Properties as “To complete”.",
+      "inList": "You will find it in Properties, where you can pick up whenever you like.",
+      "leadOpen": "A few points are still missing before it can be activated:",
+      "leadReady": "The required data is there: only the final confirmation is missing.",
+      "open": {
+        "base-data": "The nightly rate and the basic data",
+        "cin": "The CIN code",
+        "documents": "The documents required in your region",
+        "safety": "The safety sheet"
+      },
+      "readyToActivate": "To activate it, just accept the Terms.",
+      "title": "“{{name}}” is saved",
+      "toList": "Go to properties"
+    },
+    "errors": {
+      "saveFailed": "We could not save the property. Check the data and try again."
+    },
+    "exit": {
+      "saveAndClose": "Save and close",
+      "saved": "Saved. You will find it in Properties, to complete."
+    },
+    "finish": "Save and see what is missing",
+    "page": {
+      "backToList": "Back to properties",
+      "description": "One step at a time: the property is saved from the first “Continue” and you can pick up whenever you like.",
+      "loadFailed": "I cannot load the property.",
+      "loading": "Loading the property…",
+      "notFound": "Property not found.",
+      "retry": "Try again",
+      "title": "Add property"
+    },
+    "steps": {
+      "amenities": {
+        "label": "Amenities",
+        "purpose": "Choose only what is really there: guests read it before booking.",
+        "title": "What do guests find?"
+      },
+      "base": {
+        "label": "Basics",
+        "purpose": "Type, name, address and spaces: two minutes are enough.",
+        "title": "What property are you adding?"
+      }
+    },
+    "validation": {
+      "address": {
+        "civic": "Add the house number, or “snc” if there is none: for example “Contrada Monte 12”.",
+        "max": "The address can have at most 500 characters.",
+        "required": "Write the street and the house number."
+      },
+      "areaSqm": "Write the square metres as whole numbers, from 1 to 9999.",
+      "bathrooms": "Bathrooms are from 1 to 50.",
+      "bedrooms": "Bedrooms are from 0 to 100.",
+      "beds": "Beds are from 1 to 100.",
+      "comune": {
+        "required": "Choose the comune from the list."
+      },
+      "maxGuests": "Maximum guests are from 1 to 100.",
+      "name": {
+        "max": "The name can have at most 100 characters.",
+        "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
+      },
+      "postalCode": {
+        "format": "An Italian postal code has 5 digits."
+      },
+      "unit": {
+        "max": "Floor and unit can have at most 30 characters."
       }
     }
   },
@@ -10869,6 +11040,9 @@
     }
   },
   "settings": {
+    "manageOnStripe": "Manage on Stripe",
+    "manageOnStripeFailed": "We could not open Stripe. Please try again in a moment.",
+    "manageOnStripeHint": "You see your balance, payouts and bank details on Stripe itself.",
     "planTitle": "Your plan",
     "planOrgDescription": "Organization: {{orgName}}. Choose the plan that best fits your portfolio.",
     "planDefaultDescription": "Manage your organization's plan.",
@@ -11333,17 +11507,36 @@
     "theme": {
       "label": "Theme",
       "options": {
+        "terra": {
+          "name": "Earth",
+          "description": "Warm: terracotta on cream."
+        },
         "mare": {
           "name": "Sea",
-          "description": "Bright and welcoming, for seaside homes and summer holidays."
+          "description": "Fresh: petrol blue on white."
         },
-        "montagna": {
-          "name": "Mountain",
-          "description": "Warm and natural, for cabins, chalets and farm stays."
+        "citta": {
+          "name": "City",
+          "description": "Essential: ink on stone."
+        }
+      }
+    },
+    "font": {
+      "label": "Fonts",
+      "usingTheme": "You are using the theme's fonts.",
+      "useTheme": "Use the theme's fonts",
+      "options": {
+        "editoriale": {
+          "name": "Editorial",
+          "description": "Serif headings, warm and literary."
         },
-        "urban": {
-          "name": "Urban",
-          "description": "Clean and modern, for city apartments."
+        "moderno": {
+          "name": "Modern",
+          "description": "All sans-serif, crisp and bold."
+        },
+        "classico": {
+          "name": "Classic",
+          "description": "Magazine elegance, high contrast."
         }
       }
     },
@@ -11376,6 +11569,7 @@
     "errors": {
       "colorInvalid": "The color is not valid: use a hex code, for example #1a6b8f.",
       "themeInvalid": "This theme is not available for the public site.",
+      "fontInvalid": "This font pair is not available for the public site.",
       "taglineTooLong": "The tagline cannot exceed {{maxLength}} characters.",
       "imageEmpty": "The selected file is empty.",
       "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
@@ -14359,6 +14553,45 @@
       "recordSuccess": "Payment recorded successfully",
       "recordError": "Could not record payment"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Confirm download",
+      "confirmDownloadError": "Could not confirm download",
+      "confirmDownloadSuccess": "Download confirmed successfully",
+      "confirmPaid": "Confirm payment",
+      "confirmPaidError": "Could not confirm payment",
+      "confirmPaidSuccess": "Payment confirmed successfully",
+      "create": "Create wire batch",
+      "createAnother": "Create another batch",
+      "createError": "Could not create batch",
+      "createSuccess": "Batch created successfully",
+      "currency": "Currency",
+      "details": "Batch details",
+      "detailsDescription": "Information about the created wire transfer batch",
+      "download": "Download file",
+      "downloadError": "Could not download file",
+      "downloadSuccess": "File downloaded successfully",
+      "id": "Batch ID",
+      "paidComplete": "The batch has been confirmed as paid",
+      "status": "Status",
+      "totalAmount": "Total amount",
+      "transferCount": "Transfer count"
+    },
+    "debitAccount": "Debit account (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Generate SEPA files to pay property owners.",
+    "loadError": "Could not load data",
+    "loading": "Loading wire transfers...",
+    "noApprovedStatements": "No approved statements",
+    "noApprovedStatementsDescription": "Approve statements before creating a wire transfer batch.",
+    "selectStatements": "Select statements",
+    "status": {
+      "downloaded": "Downloaded",
+      "generated": "Generated",
+      "paid": "Paid"
+    },
+    "title": "Owner Wire Transfers"
   },
   "wizard": {
     "back": "Back",
