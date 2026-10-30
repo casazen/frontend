@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { publicSiteSearchApi } from '@/api/public-site-search.api';
 import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
@@ -26,6 +26,8 @@ export function usePublicSiteCalendar(
     enabled: Boolean(orgSlug),
     staleTime: 30_000,
     refetchOnMount: true,
+    // Changing the guests asks for the nights again: the calendar that is open keeps the ones it has until the new ones arrive.
+    placeholderData: keepPreviousData,
     retry: (failureCount, error) => isTransientRequestError(error) && failureCount < 2,
   });
   const { data, isError, error, refetch } = query;
