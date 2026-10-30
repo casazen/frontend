@@ -1431,7 +1431,13 @@
       "refundAmountInvalid": "L'importo del rimborso non è valido. Ricarica la pagina e riprova.",
       "guestCancelTokenInvalid": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
       "guestCancelTokenExpired": "Questo link è scaduto. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
-      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni»."
+      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
+      "showcaseContentInvalid": "Un testo non è valido o una riga è a metà: controlla i campi e riprova.",
+      "showcaseNotPublishable": "Manca ancora qualcosa per pubblicare: sistema le voci «Da fare» e riprova.",
+      "showcaseNotPublished": "La vetrina non è ancora pubblicata: pubblicala prima.",
+      "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
+      "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
+      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione."
     }
   },
   "appShell": {
@@ -4069,6 +4075,21 @@
     "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
     "signIn": "Accedi"
   },
+  "favorites": {
+    "add": "Salva {{name}} nei preferiti",
+    "description": "Salvati su questo dispositivo: non serve un account.",
+    "descriptionEmpty": "Le case che salvi restano su questo dispositivo: non serve un account.",
+    "emptyHint": "Tocca il cuore su una casa per salvarla qui e confrontarla con calma.",
+    "open_one": "I tuoi preferiti: {{count}} casa salvata",
+    "open_other": "I tuoi preferiti: {{count}} case salvate",
+    "openEmpty": "I tuoi preferiti",
+    "remove": "Togli {{name}} dai preferiti",
+    "saved": "Salvata nei preferiti",
+    "savedHint": "La ritrovi dal cuore in alto.",
+    "seeHomes": "Guarda le case",
+    "title": "I tuoi preferiti",
+    "undo": "Annulla"
+  },
   "finance": {
     "payments": "Pagamenti",
     "revenue": "Fatturato",
@@ -4547,6 +4568,32 @@
     "label": "Maggiori informazioni",
     "labelFor": "Cos'è: {{title}}",
     "learnMore": "Scopri di più"
+  },
+  "hostContact": {
+    "consent": "Accetto che il messaggio e la mia email siano inviati a {{host}}, per ricevere la risposta.",
+    "description": "Una domanda prima di prenotare? Il messaggio arriva a {{host}}, che ti risponde per email.",
+    "doneText": "{{host}} ti risponderà per email all’indirizzo che hai scritto.",
+    "doneTitle": "Messaggio inviato",
+    "emailHint": "{{host}} ti risponde a questo indirizzo.",
+    "emailLabel": "La tua email",
+    "errors": {
+      "consent": "Per scrivere devi accettare che il messaggio e la tua email siano inviati all’host.",
+      "email": "Scrivi un indirizzo email valido: l’host risponderà a quello.",
+      "failed": "Non siamo riusciti a inviare il messaggio. Quello che hai scritto resta qui: riprova tra un momento.",
+      "message": "Scrivi un messaggio di almeno 5 e al massimo 2000 caratteri.",
+      "name": "Il nome può avere al massimo 100 caratteri.",
+      "tooMany": "Hai scritto più volte di seguito: riprova tra un po’."
+    },
+    "honeypot": "Lascia vuoto questo campo",
+    "messageHint": "Per esempio: «Siamo in quattro e arriviamo con un cane piccolo: si può?»",
+    "messageLabel": "Il tuo messaggio",
+    "nameLabel": "Il tuo nome",
+    "offline": "Serve la connessione per scrivere. Quello che hai scritto resta qui: appena torna, puoi inviarlo.",
+    "send": "Invia il messaggio",
+    "sending": "Invio in corso…",
+    "theHost": "l’host",
+    "title": "Scrivi a {{host}}",
+    "trigger": "Scrivi a {{host}}"
   },
   "hostInvite": {
     "loading": "Verifica dell'invito…",
@@ -11578,10 +11625,14 @@
     "subprocessors": "Sub-responsabili",
     "legalDocuments": "Documenti legali",
     "footer": {
+      "allHouses": "Tutte le case",
       "contact": "Contatti",
       "cookies": "Cookie",
+      "hostedBy": "Ti ospita {{host}}",
+      "houses": "Le case",
       "info": "Informazioni",
       "operator": "Operatore",
+      "securePayments": "Pagamenti sicuri con Stripe",
       "vatNumber": "P.IVA {{vat}}"
     },
     "seo": {
@@ -11775,6 +11826,11 @@
     "sessionError": "Impossibile avviare il pagamento. Riprova.",
     "payNow": "Paga {{amount}}",
     "stripeNotice": "Il pagamento è gestito da Stripe e va direttamente sul conto del locatore."
+  },
+  "reorderable": {
+    "down": "Sposta giù: {{item}}",
+    "remove": "Rimuovi",
+    "up": "Sposta su: {{item}}"
   },
   "reports": {
     "chips": {
@@ -15480,19 +15536,439 @@
     },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
-      "title": "Vetrina pubblica",
-      "description": "Anteprima della pagina che chiunque può aprire con il tuo link: è identica a quella pubblica.",
-      "loading": "Caricamento della vetrina…",
-      "loadError": "Impossibile caricare l'anteprima della vetrina.",
-      "published": "La vetrina è pubblica: chi ha il link può vederla.",
-      "notPublished": "La vetrina non è ancora pubblica: lo sarà quando attivi il profilo. Questa è l'anteprima di come apparirà.",
-      "suspended": "Il profilo è sospeso: la vetrina non è visibile al pubblico. Contatta il supporto CasaZen.",
-      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
-      "open": "Apri la pagina pubblica",
+      "address": {
+        "draftNote": "Sarà questo l'indirizzo quando pubblichi.",
+        "title": "Indirizzo"
+      },
+      "before": {
+        "advised": "Consigliato",
+        "changes": "Cosa cambia pubblicando: {{changes}}.",
+        "fix": "Sistema",
+        "missing": "Cosa manca",
+        "required": "Necessario",
+        "title": "Prima di pubblicare"
+      },
+      "bookings": {
+        "bookings_off": "Tutto è pronto ma le prenotazioni sono chiuse: puoi aprirle con «Apri le prenotazioni».",
+        "goToPayments": "Vai ai pagamenti",
+        "not_published": "La vetrina non è ancora pubblicata: le prenotazioni si aprono dopo la pubblicazione.",
+        "paused": "La vetrina è in pausa: le prenotazioni sono chiuse.",
+        "payments_account_not_ready": "Il conto per i pagamenti non è ancora pronto: finché non lo è, la vetrina si vede ma non si può prenotare.",
+        "payments_off": "I pagamenti online non sono ancora attivi: la vetrina si vede ma non si può prenotare.",
+        "title": "Prenotazioni"
+      },
+      "changes": {
+        "bio": "Chi siamo",
+        "certs": "Certificazioni",
+        "color": "Colore dei pulsanti",
+        "cover": "Copertina",
+        "faq": "Domande frequenti",
+        "font": "Caratteri",
+        "gallery": "Lavori",
+        "guarantee": "Garanzia",
+        "intro": "Introduzione",
+        "logo": "Logo",
+        "prep": "Prima che arriviamo",
+        "sections": "Sezioni",
+        "serviceOrder": "Servizi mostrati",
+        "style": "Stile",
+        "tagline": "Frase in grande",
+        "team": "Squadra",
+        "values": "Punti di forza"
+      },
       "copyLink": "Copia il link",
+      "description": "La tua pagina pubblica: pubblicala, mettila in pausa e condividi il link.",
+      "discardDialog": {
+        "description": "La bozza torna uguale alla vetrina pubblicata.",
+        "kept": "La vetrina che i clienti vedono non cambia.",
+        "lost": "Le modifiche non pubblicate andranno perse.",
+        "title": "Annullare le modifiche?"
+      },
+      "editor": {
+        "charsLeft_one": "{{count}} carattere rimasto",
+        "charsLeft_other": "{{count}} caratteri rimasti",
+        "color": {
+          "hint": "Lascialo vuoto per il colore dello stile. Il testo bianco deve leggersi bene: serve un contrasto di almeno 4,5.",
+          "label": "Colore (esadecimale)",
+          "low": "Il bianco su questo colore si legge a {{ratio}}:1: servono almeno {{min}}:1.",
+          "notAColor": "Scrivi un colore come #0B5FA5.",
+          "picker": "Scegli un colore",
+          "refused": "Questo colore non è accettato: usa quello consigliato.",
+          "reset": "Usa il colore dello stile",
+          "title": "Colore dei pulsanti",
+          "useSuggested": "Usa il colore consigliato"
+        },
+        "conflict": {
+          "description": "Ricarica per vedere l'ultima versione. Le modifiche non salvate di questa scheda andranno perse.",
+          "reload": "Ricarica",
+          "title": "La vetrina è stata modificata altrove"
+        },
+        "description": "Scrivi, scegli lo stile e guarda subito come la vedono i clienti.",
+        "font": {
+          "classico": {
+            "description": "Eleganza da rivista, contrasto alto.",
+            "name": "Classico"
+          },
+          "editoriale": {
+            "description": "Titoli con le grazie, caldi e curati.",
+            "name": "Editoriale"
+          },
+          "legend": "Caratteri dei titoli",
+          "moderno": {
+            "description": "Tutto senza grazie, nitido e deciso.",
+            "name": "Moderno"
+          },
+          "title": "Caratteri"
+        },
+        "invalidField": "Questo valore non va bene: controllalo.",
+        "logo": {
+          "legend": "Come appare il tuo nome",
+          "mark": {
+            "description": "Un quadrato con le tue iniziali e il nome accanto.",
+            "name": "Sigla e nome"
+          },
+          "text": {
+            "description": "Il nome in grande, senza segno.",
+            "name": "Solo il nome"
+          },
+          "title": "Marchio"
+        },
+        "noAddress": "L'anteprima c'è quando la vetrina ha un indirizzo, cioè dopo l'attivazione del profilo.",
+        "photos": {
+          "addToProfile": "Aggiungi foto al profilo",
+          "addToService": "Aggiungi foto a un servizio",
+          "loading": "Cerco le tue foto…",
+          "none": "Non hai ancora foto da scegliere. Aggiungile al profilo o a un servizio, poi le trovi qui.",
+          "pickerHint": "Scegli tra le foto che hai già nel profilo e nei servizi.",
+          "profilePhoto": "Foto {{n}} del profilo",
+          "servicePhoto": "{{service}}: foto {{n}}"
+        },
+        "preview": "Anteprima",
+        "publish": {
+          "cannot": "Sistema le voci «Da fare» per pubblicare.",
+          "changes": "Cosa cambia pubblicando",
+          "checks": "Controlli prima di pubblicare",
+          "firstTime": "Tutto: è la prima pubblicazione.",
+          "halfFilled": "Alcune righe dei testi sono a metà: completale o toglile ({{rows}}).",
+          "halfFilledWorks": "Alcuni lavori non hanno la foto: scegline una o toglili ({{rows}}).",
+          "level": {
+            "ok": "Fatto",
+            "todo": "Da fare",
+            "warn": "Consigliato"
+          },
+          "nothing": "Niente: la vetrina è già aggiornata.",
+          "paused": "La vetrina è in pausa: pubblichi il contenuto, ma resta in pausa finché non la riattivi.",
+          "upToDate": "La vetrina pubblicata è già uguale alla bozza."
+        },
+        "save": {
+          "conflict": "La vetrina è stata modificata altrove.",
+          "dirty": "Modifiche non ancora salvate…",
+          "error": "Non riesco a salvare: riprovo alla prossima modifica.",
+          "invalid": "Un valore non è valido: controlla i campi segnati.",
+          "nothing": "Nessuna modifica",
+          "offline": "Sei offline: salvo appena torna la rete.",
+          "retry": "Riprova",
+          "saved": "Salvato alle {{time}}",
+          "saving": "Salvo…"
+        },
+        "sections": {
+          "always": "I servizi e i pulsanti finali si vedono sempre.",
+          "certs": {
+            "hint": "Quelle che hai scritto tu.",
+            "name": "Certificazioni"
+          },
+          "faq": {
+            "hint": "Le risposte che hai scritto tu.",
+            "name": "Domande frequenti"
+          },
+          "hint": "Scegli quali blocchi della pagina mostrare. Un blocco senza contenuto non si vede comunque.",
+          "how": {
+            "hint": "I passi dalla scelta alla visita. Si vede quando le prenotazioni sono aperte.",
+            "name": "Come funziona"
+          },
+          "title": "Sezioni della pagina",
+          "trust": {
+            "hint": "«Verificato» e i lavori fatti, solo se veri.",
+            "name": "Fiducia"
+          },
+          "works": {
+            "hint": "Le foto dei tuoi lavori.",
+            "name": "I lavori"
+          },
+          "zones": {
+            "hint": "I comuni in cui lavori.",
+            "name": "Le zone"
+          }
+        },
+        "services": {
+          "fix": "Apri",
+          "hint": "Scegli quali servizi mostrare e in che ordine. Si possono mostrare solo i servizi attivi.",
+          "inactiveTitle": "Non ancora in vetrina",
+          "keepOne": "Deve restare almeno un servizio in vetrina.",
+          "loadError": "Non riesco a leggere i tuoi servizi.",
+          "loading": "Leggo i tuoi servizi…",
+          "moved": "{{name}}: posizione {{position}} di {{total}}",
+          "none": "Non hai ancora servizi attivi: attivane uno in «Servizi e prezzi» per mostrarlo qui.",
+          "open": "Vai a «Servizi e prezzi»",
+          "reason": {
+            "Draft": "Bozza: finisci di compilarla per poterla mostrare.",
+            "Paused": "In pausa: riattivala per poterla mostrare."
+          },
+          "title": "Servizi in vetrina"
+        },
+        "starter": {
+          "applied": "Testo di partenza inserito",
+          "hint": "Non sai cosa scrivere? Parti da un testo adatto al tuo mestiere: riempie solo i campi vuoti, lo cambi come vuoi e nessuno lo vede finché non pubblichi.",
+          "title": "Un testo di partenza",
+          "use": "Usa il testo di partenza"
+        },
+        "steps": {
+          "publish": "Anteprima e pubblica",
+          "services": "Servizi e sezioni",
+          "style": "Stile e marchio",
+          "texts": "Testi",
+          "works": "Foto e lavori"
+        },
+        "stepsLabel": "Passi della vetrina",
+        "style": {
+          "acqua": {
+            "description": "Blu deciso, forme nette: per idraulici, caldaisti e chi risponde alle emergenze.",
+            "name": "Pronto intervento"
+          },
+          "fresco": {
+            "description": "Verde acqua luminoso e forme morbide: per pulizie, lavanderia e sanificazione.",
+            "name": "Casa pulita"
+          },
+          "legend": "Stile della vetrina",
+          "naturale": {
+            "description": "Verde bosco su carta calda, titoli eleganti: per giardinieri, potatori e cura degli uliveti.",
+            "name": "Verde e giardino"
+          },
+          "recommended": "Consigliato per il tuo mestiere",
+          "scintilla": {
+            "description": "Grafite e giallo, angoli precisi: per elettricisti, antennisti e tecnici.",
+            "name": "Impianti"
+          },
+          "title": "Stile"
+        },
+        "texts": {
+          "addCert": "Aggiungi una certificazione",
+          "addPerson": "Aggiungi una persona",
+          "addPrep": "Aggiungi un consiglio",
+          "addQuestion": "Aggiungi una domanda",
+          "addValue": "Aggiungi un punto",
+          "answerLabel": "Risposta",
+          "bio": "Chi siamo",
+          "bioHint": "La tua storia, in poche righe.",
+          "cert": "Certificazione {{n}}",
+          "certDetail": "Dettaglio",
+          "certLabel": "Nome",
+          "certRemoved": "Certificazione tolta",
+          "certsHint": "Solo quelle che hai davvero: CasaZen non ne aggiunge né ne controlla.",
+          "certsTitle": "Certificazioni",
+          "faqHint": "Le domande che ti fanno più spesso, con la risposta.",
+          "faqTitle": "Domande frequenti",
+          "guaranteeHint": "Scrivi solo ciò che fai davvero, con titolo e testo (o nessuno dei due): la garanzia la scrivi tu, CasaZen non ne aggiunge.",
+          "guaranteeName": "Titolo della garanzia",
+          "guaranteeText": "Cosa garantisci",
+          "guaranteeTitle": "Garanzia",
+          "intro": "Introduzione",
+          "person": "Persona {{n}}",
+          "personName": "Nome",
+          "personRemoved": "Persona tolta",
+          "personRole": "Ruolo",
+          "prepHint": "Cosa può preparare il cliente: una riga ciascuna.",
+          "prepItem": "Consiglio {{n}}",
+          "prepLabel": "Cosa preparare",
+          "prepRemoved": "Consiglio tolto",
+          "prepTitle": "Prima che arriviamo",
+          "presentation": "La presentazione",
+          "presentationHint": "Una frase in grande, una riga sotto e la tua storia: tre testi brevi, in parole tue.",
+          "question": "Domanda {{n}}",
+          "questionLabel": "Domanda",
+          "questionRemoved": "Domanda tolta",
+          "tagline": "Frase in grande",
+          "teamHint": "Chi lavora con te: nome e ruolo.",
+          "teamTitle": "Le persone",
+          "value": "Punto {{n}}",
+          "valueLabel": "Punto di forza",
+          "valueRemoved": "Punto tolto",
+          "valuesHint": "Fino a sei, una riga ciascuno.",
+          "valuesTitle": "Punti di forza"
+        },
+        "works": {
+          "add": "Aggiungi un lavoro",
+          "alt": "Descrizione della foto",
+          "altHint": "Per chi non può vederla. Se la lasci vuota si usa il tuo nome.",
+          "altHintWork": "Per chi non può vedere la foto. Se la lasci vuota si usa la didascalia.",
+          "caption": "Didascalia",
+          "changeBefore": "Cambia la foto «prima»",
+          "changePhoto": "Cambia la foto",
+          "chooseBefore": "Scegli la foto «prima»",
+          "choosePhoto": "Scegli la foto",
+          "compare": "Mostra il confronto prima e dopo",
+          "compareHint": "La foto del lavoro è il «dopo».",
+          "count_one": "{{count}} lavoro con foto. Con almeno {{advised}} la pagina convince di più.",
+          "count_other": "{{count}} lavori con foto. Con almeno {{advised}} la pagina convince di più.",
+          "coverHint": "La foto grande in cima alla pagina. Se non ne scegli una, la pagina usa la prima foto del profilo, o uno sfondo neutro.",
+          "coverTitle": "Copertina",
+          "hint": "I lavori che hai fatto: una foto, una riga e il luogo.",
+          "noPhoto": "Nessuna foto",
+          "pickBefore": "Foto «prima» del lavoro {{n}}",
+          "pickPhoto": "Foto del lavoro {{n}}",
+          "place": "Luogo",
+          "removePhoto": "Togli la foto",
+          "removed": "Lavoro tolto",
+          "title": "Lavori",
+          "work": "Lavoro {{n}}"
+        }
+      },
+      "focus": {
+        "changesBody": "Cosa cambia: {{changes}}.",
+        "changesTitle": "Hai modifiche da pubblicare",
+        "create": "Crea la tua vetrina",
+        "createBody": "Scegli lo stile, scrivi due righe e i servizi da mostrare: la pubblichi quando sei pronto.",
+        "createTitle": "Crea la tua vetrina in cinque minuti",
+        "edit": "Modifica la vetrina",
+        "fix": "Sistema: {{item}}",
+        "missingBody": "Sistema le voci qui sotto: poi potrai pubblicare.",
+        "missingTitle": "Manca ancora qualcosa per pubblicare",
+        "now": "Adesso",
+        "onlineBookingsOpen": "I clienti la vedono e possono prenotare.",
+        "onlineReadOnly": "I clienti la vedono. Le prenotazioni non sono ancora aperte.",
+        "onlineTitle": "La tua vetrina è online",
+        "open": "Apri la vetrina",
+        "pausedBody": "I clienti vedono che per ora non accetti prenotazioni. Riattivala quando vuoi.",
+        "pausedTitle": "La vetrina è in pausa",
+        "publish": "Pubblica la vetrina",
+        "publishBody": "Il necessario c'è: quando pubblichi, i clienti la vedono subito.",
+        "publishChanges": "Pubblica le modifiche",
+        "publishTitle": "Pubblica la tua vetrina",
+        "publishedAt": "Pubblicata il {{when}}",
+        "refresh": "Aggiorna",
+        "resume": "Riattiva la vetrina"
+      },
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
+      "loadError": "Impossibile caricare la vetrina.",
+      "loading": "Caricamento della vetrina…",
+      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
+      "open": "Apri la pagina pubblica",
+      "preview": {
+        "about": "Chi siamo",
+        "desktop": "Computer",
+        "deviceLabel": "Dispositivo",
+        "frameTitle": "Anteprima della vetrina",
+        "home": "Home",
+        "note": "L'anteprima mostra la bozza: i clienti vedono solo ciò che pubblichi.",
+        "pageLabel": "Pagina",
+        "phone": "Telefono",
+        "services": "Servizi",
+        "tablet": "Tablet"
+      },
+      "readiness": {
+        "color": "Un colore dei pulsanti leggibile",
+        "faq": "Tre domande frequenti con la risposta",
+        "hours": "Gli orari di lavoro",
+        "photos": "Tre foto dei tuoi lavori",
+        "presentation": "Una frase e un «chi siamo» scritti da te",
+        "services": "Almeno un servizio attivo con un prezzo",
+        "verified": "Il «Verificato» di CasaZen",
+        "zones": "Almeno un comune dove lavori"
+      },
+      "savedAt": "Ultimo salvataggio: {{when}}",
+      "settings": {
+        "discard": "Annulla le modifiche",
+        "discardHint": "Torni alla versione pubblicata: le modifiche non pubblicate vanno perse.",
+        "openBookings": "Apri le prenotazioni",
+        "openBookingsHint": "La vetrina è pronta: apri le prenotazioni quando vuoi.",
+        "pause": "Metti in pausa",
+        "pauseHint": "I clienti vedono che non accetti prenotazioni e le prenotazioni si chiudono. La riattivi con un tocco.",
+        "title": "Altre impostazioni"
+      },
+      "share": {
+        "description": "Copia il link o manda il messaggio: lo invii tu, da qui non parte nulla.",
+        "email": "E-mail",
+        "message": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro.\n{{url}}",
+        "messageBookable": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro. Puoi anche prenotare online.\n{{url}}",
+        "open": "Condividi",
+        "subject": "La mia vetrina su CasaZen",
+        "title": "Condividi la tua vetrina",
+        "whatsapp": "WhatsApp"
+      },
+      "state": {
+        "changes": "Modifiche da pubblicare",
+        "draft": "Bozza",
+        "online": "Online",
+        "paused": "In pausa"
+      },
+      "stats": {
+        "label": "La vetrina in numeri",
+        "pending": "In attesa di risposta",
+        "requests": "Richieste negli ultimi {{days}} giorni"
+      },
+      "title": "Il mio sito vetrina",
+      "toast": {
+        "bookingsOpen": "Le prenotazioni sono aperte.",
+        "discardFailed": "Impossibile annullare le modifiche.",
+        "discarded": "Modifiche annullate",
+        "pauseFailed": "Impossibile mettere in pausa la vetrina.",
+        "paused": "Vetrina in pausa",
+        "publishFailed": "Impossibile pubblicare la vetrina.",
+        "published": "Vetrina pubblicata",
+        "resumeFailed": "Impossibile riattivare la vetrina.",
+        "resumed": "Vetrina riattivata"
+      },
+      "wizard": {
+        "description": "Quattro passi: lo stile, due righe di presentazione, i servizi e la pubblicazione. Puoi cambiare tutto anche dopo.",
+        "done": {
+          "bookingsOpen": "I clienti possono prenotare: le richieste arrivano nella tua area Richieste.",
+          "edit": "Puoi cambiare testi, foto e stile quando vuoi: i clienti vedono solo ciò che pubblichi.",
+          "lead": "I clienti la trovano al suo indirizzo e vedono ciò che hai pubblicato.",
+          "open": "Apri la vetrina",
+          "readOnly": "Per ora la vetrina si vede ma non si può prenotare.",
+          "respond": "Quando un cliente prenota hai {{deadline}} per rispondere: poi la richiesta si annulla da sola.",
+          "share": "Condividi il link",
+          "title": "La tua vetrina è online"
+        },
+        "errors": {
+          "services": "Scegli almeno un servizio.",
+          "tagline": "Scrivi almeno 12 caratteri.",
+          "tooLong": "Il testo è troppo lungo."
+        },
+        "failed": "Non riesco a pubblicare la vetrina. Riprova.",
+        "loadError": "Non riesco a preparare la procedura.",
+        "loading": "Preparo la procedura…",
+        "presentation": {
+          "introHint": "Una o due righe sotto il titolo.",
+          "prefilled": "Abbiamo scritto un testo di partenza adatto al tuo mestiere: leggilo e cambialo come vuoi. Non è pubblico finché non pubblichi.",
+          "taglineHint": "La frase grande in cima alla pagina: almeno 12 caratteri."
+        },
+        "publish": "Pubblica la vetrina",
+        "steps": {
+          "presentation": {
+            "label": "Presentazione",
+            "purpose": "Una frase in grande e due righe sotto: le vedono i clienti in cima alla pagina.",
+            "title": "Presenta la tua attività"
+          },
+          "services": {
+            "label": "Servizi",
+            "purpose": "Si mostrano solo i servizi attivi: scegline almeno uno.",
+            "title": "Scegli i servizi da mostrare"
+          },
+          "style": {
+            "label": "Stile",
+            "purpose": "Cambia i colori e l'aria della pagina. Lo puoi cambiare quando vuoi.",
+            "title": "Scegli lo stile della vetrina"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa vedranno i clienti. I controlli sono quelli che fa il sistema prima di pubblicare.",
+            "title": "Controlla e pubblica"
+          }
+        },
+        "title": "Crea la tua vetrina"
+      }
     },
     "trusted": {
       "title": "Fornitori di fiducia",
@@ -15538,6 +16014,276 @@
     "comuniTitle": "Dove opera",
     "servicesTitle": "Servizi",
     "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
+  },
+  "supplierSite": {
+    "about": {
+      "ctaTitle": "Pronto a prenotare?",
+      "emptyText": "Qui troverai presto la nostra storia.",
+      "emptyTitle": "Stiamo preparando questa pagina",
+      "eyebrow": "Il professionista",
+      "more": "Leggi di più",
+      "pageTitle": "Siamo {{name}}",
+      "peopleEyebrow": "Le persone",
+      "peopleTitle": "Chi viene da te",
+      "people_one": "{{count}} persona",
+      "people_other": "{{count}} persone",
+      "title": "Chi siamo",
+      "values": "I nostri punti di forza",
+      "valuesEyebrow": "Punti di forza",
+      "where": "Lavoriamo a {{places}}"
+    },
+    "categories": {
+      "eyebrow": "Servizi",
+      "title": "Di cosa ci occupiamo"
+    },
+    "certs": {
+      "eyebrow": "Garanzie",
+      "title": "Garanzie e certificazioni"
+    },
+    "closing": {
+      "book": "Prenota online",
+      "eyebrow": "Prenota online",
+      "text": "Scegli il servizio e il giorno: vedi gli orari liberi prima di andare avanti.",
+      "title": "Pronto a prenotare?"
+    },
+    "crumbs": {
+      "home": "Home",
+      "label": "Dove sei"
+    },
+    "cta": {
+      "book": "Prenota ora",
+      "inquiry": "Richiesta su misura"
+    },
+    "days": {
+      "eyebrow": "Disponibilità",
+      "title": "I prossimi giorni"
+    },
+    "deadline": {
+      "hours_one": "{{count}} ora",
+      "hours_other": "{{count}} ore",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minuti"
+    },
+    "faq": {
+      "ask": "Non trovi la risposta? Mandaci una richiesta su misura.",
+      "eyebrow": "Domande",
+      "title": "Domande frequenti"
+    },
+    "finder": {
+      "comune": "Dove?",
+      "comunePlaceholder": "Il tuo comune",
+      "day": "Quando?",
+      "inquiryLead": "Non trovi quello che cerchi?",
+      "label": "Cerca un servizio e un orario",
+      "onQuote": "{{name}} (su preventivo)",
+      "service": "Che servizio ti serve?"
+    },
+    "footer": {
+      "info": "Informazioni",
+      "poweredBy": "Vetrina creata con CasaZen",
+      "zones": "Dove lavoriamo"
+    },
+    "header": {
+      "home": "{{name}}: vai alla pagina iniziale",
+      "openMenu": "Apri il menu"
+    },
+    "hero": {
+      "closed": "Le prenotazioni online non sono aperte: qui puoi vedere i servizi e le zone.",
+      "firstSlot": "Primo orario libero",
+      "seeServices": "Guarda i servizi"
+    },
+    "how": {
+      "eyebrow": "Come funziona",
+      "pay": "Paghi online con CasaZen, in modo sicuro. Annullare è sempre gratuito.",
+      "steps": {
+        "choose": {
+          "text": "Vedi i primi orari davvero liberi e il prezzo di partenza.",
+          "title": "Scegli servizio e giorno"
+        },
+        "confirm": {
+          "text": "Il professionista accetta o rifiuta la richiesta.",
+          "textDeadline": "Ha tempo fino a {{deadline}} per accettare la richiesta.",
+          "title": "{{name}} conferma"
+        },
+        "details": {
+          "text": "Dove si fa il lavoro e come raggiungerti. Controlliamo la tua e-mail con un link.",
+          "title": "Lasci i tuoi dati"
+        },
+        "done": {
+          "text": "CasaZen trattiene il pagamento fino alla tua conferma.",
+          "title": "Lavoro finito"
+        },
+        "hold": {
+          "text": "Sulla carta l’importo resta solo bloccato: viene addebitato soltanto se il professionista accetta.",
+          "title": "Blocchiamo l’importo"
+        }
+      },
+      "title": "Prenoti in cinque passi"
+    },
+    "list": {
+      "all": "Tutti i servizi",
+      "allCategories": "Tutti",
+      "categories": "Categorie",
+      "clear": "Togli i filtri",
+      "countOf_one": "{{count}} servizio su {{total}}",
+      "countOf_other": "{{count}} servizi su {{total}}",
+      "count_one": "{{count}} servizio",
+      "count_other": "{{count}} servizi",
+      "label": "Elenco dei servizi",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi. Per un lavoro particolare puoi mandare una richiesta su misura.",
+      "noMatchText": "Togli un filtro per vedere di nuovo tutti i servizi.",
+      "noMatchTitle": "Nessun servizio con questi filtri",
+      "price": {
+        "fixed": "Prezzo fisso",
+        "hourly": "A ore",
+        "quote": "Su preventivo"
+      },
+      "priceAll": "Tutti i prezzi",
+      "priceLabel": "Prezzo",
+      "quoteText": "Descrivi il lavoro: il professionista ti risponde con un prezzo, senza impegno.",
+      "quoteTitle": "Non trovi quello che cerchi?",
+      "sort": {
+        "duration": "Durata più breve",
+        "price": "Prezzo più basso",
+        "recommended": "Consigliati",
+        "slot": "Primo orario libero"
+      },
+      "sortLabel": "Ordina per",
+      "title": "{{name}}: cosa facciamo e quanto costa"
+    },
+    "meta": {
+      "about": "Chi siamo · {{name}}",
+      "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
+      "service": "{{service}} · {{name}}",
+      "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
+      "services": "Servizi e prezzi · {{name}}",
+      "servicesDescription": "Servizi, prezzi di partenza e primi orari liberi di {{name}}."
+    },
+    "nav": {
+      "about": "Chi siamo",
+      "faq": "Domande",
+      "how": "Come funziona",
+      "label": "Menu del sito",
+      "services": "Servizi",
+      "works": "Lavori",
+      "zones": "Zone"
+    },
+    "offline": "Sei offline: vedi l'ultima versione salvata. Per verificare gli orari e prenotare serve la connessione.",
+    "paused": {
+      "text": "La vetrina è in pausa: per ora non si può prenotare. Torna a trovarci più avanti.",
+      "title": "{{name}} non accetta prenotazioni per ora"
+    },
+    "responseTime": {
+      "hours_one": "circa {{count}} ora",
+      "hours_other": "circa {{count}} ore",
+      "minutes_one": "circa {{count}} minuto",
+      "minutes_other": "circa {{count}} minuti"
+    },
+    "service": {
+      "aboutTitle": "Di cosa si tratta",
+      "allPhotos": "Tutte le {{count}} foto",
+      "bookShort": "Prenota",
+      "bookThis": "Prenota questo servizio",
+      "cancelFree": "Annulli gratis, sempre",
+      "cardTitle": "Prenota {{name}}",
+      "confirmWithin": "Il professionista conferma entro {{deadline}}",
+      "estimateError": "Non riusciamo a calcolare il totale ora. Riprova tra poco.",
+      "estimateNote": "Il totale è una stima: il professionista conferma il prezzo prima di iniziare.",
+      "estimating": "Calcolo il totale…",
+      "excluded": "Cosa non è incluso",
+      "faqTitle": "Domande",
+      "firstSlots": "Primi orari liberi",
+      "hours": "Ore",
+      "included": "Cosa è incluso",
+      "includedTitle": "Cosa comprende",
+      "loadError": "Impossibile caricare il servizio.",
+      "missingText": "Non troviamo questo servizio tra quelli di {{name}}: forse è in pausa o è stato tolto. Guarda gli altri.",
+      "missingTitle": "Questo servizio non è disponibile",
+      "noSlots": "Nessun orario libero nei prossimi giorni",
+      "onQuoteResult": "Per questa scelta il prezzo lo decide il professionista: manda una richiesta su misura.",
+      "othersEyebrow": "Altri servizi",
+      "othersTitle": "Potrebbe servirti anche",
+      "outside": "Questo comune è fuori dalla zona abituale: il prezzo lo decide il professionista, con una richiesta su misura.",
+      "paySafe": "Paghi online con CasaZen, in modo sicuro",
+      "photoOpen": "Ingrandisci la foto {{index}} di {{total}}: {{name}}",
+      "prepTitle": "Prima che arriviamo",
+      "priceTitle": "Come si calcola il prezzo",
+      "quoteFact": "Prezzo su preventivo",
+      "quoteIntro": "Descrivi il lavoro: il professionista ti risponde con il prezzo. Non è un impegno.",
+      "sets": "Set",
+      "squareMeters": "Metri quadri",
+      "surface": "Quanto è grande la casa?",
+      "surfaceBetween": "da {{from}} a {{to}} m²",
+      "surfaceNote": "Il prezzo base copre fino a {{sqm}} m²: oltre si aggiunge un supplemento ogni 30 m².",
+      "surfaceUpTo": "fino a {{sqm}} m²",
+      "total": "Totale stimato",
+      "urgentFact": "Disponibile anche con urgenza",
+      "urgentLine": "Intervento urgente",
+      "where": "Dove si fa il lavoro? (facoltativo)"
+    },
+    "services": {
+      "all": "Tutti i servizi",
+      "emptyText": "Al momento non ci sono servizi da mostrare. Riprova tra poco.",
+      "emptyTitle": "Stiamo preparando i servizi",
+      "eyebrow": "Servizi e prezzi",
+      "firstSlot": "Primo orario: {{when}}",
+      "from": "da",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi.",
+      "quoteHint": "Il prezzo si definisce con te",
+      "title": "Cosa possiamo fare per te",
+      "vatIncluded": "IVA inclusa"
+    },
+    "slot": {
+      "day": "{{day}} alle {{time}}",
+      "today": "oggi alle {{time}}",
+      "tomorrow": "domani alle {{time}}"
+    },
+    "states": {
+      "discover": "Scopri CasaZen",
+      "errorText": "Riprova tra qualche secondo."
+    },
+    "trust": {
+      "jobs": "interventi svolti con CasaZen",
+      "jobsLine_one": "{{count}} intervento svolto con CasaZen",
+      "jobsLine_other": "{{count}} interventi svolti con CasaZen",
+      "label": "Perché fidarsi di {{name}}",
+      "payments": "Pagamento sicuro",
+      "paymentsBy": "con CasaZen",
+      "response": "di solito per rispondere",
+      "verified": "Verificato",
+      "verifiedBy": "da CasaZen",
+      "verifiedLine": "Verificato da CasaZen"
+    },
+    "works": {
+      "after": "Dopo",
+      "afterAlt": "{{caption}} (dopo)",
+      "before": "Prima",
+      "beforeAlt": "{{caption}} (prima)",
+      "compare": "Confronto prima e dopo: {{caption}}. Sposta il cursore per vedere la differenza",
+      "enlarge": "Ingrandisci: {{caption}}",
+      "eyebrow": "I nostri lavori",
+      "eyebrowPhotos": "Le foto",
+      "lead": "Sposta il cursore per vedere la differenza.",
+      "position": "Prima {{before}}%, dopo {{after}}%",
+      "title": "Lavori che abbiamo fatto",
+      "titlePhotos": "Qualche foto"
+    },
+    "zones": {
+      "checkLabel": "Scrivi il tuo comune e te lo diciamo subito",
+      "checking": "Controllo la zona…",
+      "covered": "Perfetto: lavoriamo a {{place}}.",
+      "error": "Non riusciamo a controllare ora. Riprova tra poco.",
+      "eyebrow": "Dove lavoriamo",
+      "lead": "Lavoriamo a {{places}} e {{last}}.",
+      "leadOne": "Lavoriamo a {{place}}.",
+      "listLabel": "Comuni serviti",
+      "outside": "{{place}} è fuori dalla zona abituale: puoi comunque mandare una richiesta su misura e il professionista decide.",
+      "title": "Arriviamo da te?",
+      "tooMany": "Troppe richieste in poco tempo: riprova tra un minuto.",
+      "unknown": "Per {{place}} non possiamo dirlo con certezza: manda una richiesta su misura."
+    }
   },
   "swiss": {
     "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",

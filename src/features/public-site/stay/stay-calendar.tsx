@@ -17,6 +17,7 @@ import { AlertCircle, ChevronLeft, ChevronRight, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useOnlineStatus } from '@/hooks/use-online-status';
+import { siteLocale } from '@/lib/site-language';
 import { addDays, nightsBetween, startOfMonth } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import {
@@ -43,7 +44,6 @@ import {
   formatDayMonth,
   formatMonthYear,
   formatPrice,
-  siteLocale,
   weekdayInitials,
   weekdayName,
 } from './stay-format';

@@ -2,7 +2,7 @@ import { useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { usePublicOrg } from '@/queries/use-public-org';
+import { useOrgProperties, usePublicOrg } from '@/queries/use-public-org';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { useSiteLanguage } from '@/features/public-site/hooks/use-site-language';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
@@ -73,7 +73,9 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const isOrgMode = mode === 'org' && !!orgSlug;
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   useOrgSeoMeta(org, location.pathname);
-  // The site of a host opens in the language of the guest: the address, else what they chose, else their browser (DB-02b).
+  // The homes of the site, for the column "Le case" of the footer (the same request as the landing page: one for both).
+  const { data: properties } = useOrgProperties(isOrgMode && org ? orgSlug : undefined);
+  // The site of a host opens in the language of the guest: the address, else what they chose, else Italian (DB-02b).
   useSiteLanguage(isOrgMode);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
@@ -194,6 +196,10 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
               showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
               showSeoHubLink={!isOrgMode}
               orgSlug={isOrgMode && org ? (org.slug ?? orgSlug) : undefined}
+              hostName={org?.hostName}
+              phone={org?.publicPhone}
+              acceptsBookings={org?.acceptsBookings}
+              properties={isOrgMode ? properties : undefined}
             />
             <CookieConsentBanner />
           </>

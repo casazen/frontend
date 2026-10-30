@@ -360,18 +360,3 @@ export interface SupplierChecklist {
   /** `null` means "not available yet", not "no": the step is not counted. */
   paymentsActive?: boolean | null;
 }
-
-/** `GET /supplier/showcase` (SU-13): the same content as the public page, from the caller's own profile. */
-export interface SupplierShowcasePreview {
-  showcase: import('@/api/public-supplier.api').SupplierShowcaseDto;
-  status: 'Pending' | 'Active' | 'Suspended';
-  /** True only for an active supplier with a slug: the public page opens for anyone. */
-  published: boolean;
-  slug: string | null;
-  /** Path of the page in the web app (`/fornitori/:slug`). */
-  publicPath: string | null;
-  /** Absolute URL on the configured public base URL; null while there is no slug or no public URL configured. */
-  publicUrl: string | null;
-  /** Always false in v0: the page is `noindex`. */
-  indexable: boolean;
-}
