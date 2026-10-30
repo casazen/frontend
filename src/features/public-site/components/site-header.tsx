@@ -9,6 +9,8 @@ import { FavoritesMenu } from '@/features/public-site/favorites/favorites-menu';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { PublicOrgDto } from '@/types';
 import { LanguageSwitch } from './language-switch';
+import { SiteNav } from './site-nav';
+import { useSiteNavItems, type SiteNavItem } from './use-site-nav-items';
 
 /** The booking widget of the page (desktop) or the button that opens it (phone): where "Verifica disponibilità" leads. */
 function scrollToBookingWidget() {
@@ -50,6 +52,8 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
   const { t } = useTranslation();
   // One of the two exists at a time, so that the link to "Le mie prenotazioni" is in the page once.
   const fromTablet = useMediaQuery(FROM_TABLET_QUERY);
+  // The menu of a site with several homes (DB-07b): the results and the sections of the home.
+  const navItems = useSiteNavItems(org?.slug, basePath);
 
   return (
     <header
@@ -58,6 +62,7 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
     >
       <div className="mx-auto flex min-h-[var(--header-height)] max-w-[1200px] items-center gap-3 px-3 md:gap-4 md:px-4">
         <SiteBrand org={org} loading={loading} basePath={basePath} />
+        {org ? <SiteNav items={navItems} label={t('siteHome.nav.label')} /> : null}
         {org ? (
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {showBookingCta ? (
@@ -88,6 +93,7 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
               <PhoneMenu
                 displayName={org.displayName}
                 basePath={basePath}
+                navItems={navItems}
                 themeId={themeId}
                 fontId={fontId}
                 colorStyle={colorStyle}
@@ -148,12 +154,14 @@ function SiteBrand({ org, loading, basePath }: { org?: PublicOrgDto; loading: bo
 function PhoneMenu({
   displayName,
   basePath,
+  navItems,
   themeId,
   fontId,
   colorStyle,
 }: {
   displayName: string;
   basePath: string;
+  navItems: readonly SiteNavItem[];
   themeId: string;
   fontId?: string | null;
   colorStyle?: CSSProperties;
@@ -181,6 +189,16 @@ function PhoneMenu({
           <SheetTitle className="public-display truncate text-xl">{displayName}</SheetTitle>
         </SheetHeader>
         <nav aria-label={t('publicSite.menuLabel')} className="px-3 pb-4" onClick={() => setOpen(false)}>
+          {navItems.map((item) => (
+            <Link
+              key={item.id}
+              to={item.to}
+              className="flex min-h-12 items-center gap-3 rounded-[var(--cz-public-radius)] px-3 text-base font-medium hover:bg-black/5"
+            >
+              {item.label}
+              <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-[var(--cz-public-muted)]" aria-hidden />
+            </Link>
+          ))}
           <Link
             to={`${basePath}/my-bookings`}
             className="flex min-h-12 items-center gap-3 rounded-[var(--cz-public-radius)] px-3 text-base font-medium hover:bg-black/5"

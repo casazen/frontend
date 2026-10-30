@@ -35,6 +35,7 @@ export type LeaseEventActor = 'casazen' | 'you';
 const EVENT_ACTORS: Readonly<Record<string, LeaseEventActor>> = {
   Created: 'you',
   DeadlineReminderSent: 'casazen',
+  DepositReturnRecorded: 'you',
   ErasureRequested: 'you',
   Imported: 'you',
   ImuNotificationExported: 'you',

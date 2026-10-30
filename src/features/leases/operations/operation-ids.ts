@@ -6,7 +6,7 @@
  */
 export const LEASE_OPERATION_PARAM = 'operazione';
 
-export const LEASE_OPERATIONS = ['disdetta', 'recesso', 'rinnovo', 'conferma-esigenza'] as const;
+export const LEASE_OPERATIONS = ['disdetta', 'recesso', 'rinnovo', 'conferma-esigenza', 'istat', 'cedolare', 'riconsegna', 'cauzione'] as const;
 export type LeaseOperationId = (typeof LEASE_OPERATIONS)[number];
 
 /** The operation an address asks for, or `null` for none and for a name this version does not know. */

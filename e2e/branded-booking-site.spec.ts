@@ -6,6 +6,8 @@ import {
   mockOrgPropertyId,
   mockOrgPropertySlug,
   mockPublicOrg,
+  mockStayCards,
+  mockStaysResult,
 } from './helpers/branded-booking-mock';
 import { futureStay, mockDirectBookingQuoteApi } from './helpers/direct-checkout-mock';
 
@@ -24,8 +26,7 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
-    // Guests see the CIN code only, never a compliance badge ("CIN valido" / "CIN non valido")
-    await expect(page.getByTestId('public-cin').first()).toContainText('IT058091C27G5FFZDZ');
+    // The cards of the home do not carry a compliance badge ("CIN valido" / "CIN non valido"); the CIN is on the page of the home.
     await expect(page.getByText('CIN valido')).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/login/);
   });
@@ -181,16 +182,16 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
   });
 
   test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
-    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
-      const url = route.request().url();
-      if (route.request().method() !== 'GET' || !url.endsWith('/properties')) {
+    // A site with one home: the search of the site (DB-07a) lists it alone and the home of the site opens that home's page.
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
+      if (route.request().method() !== 'GET') {
         await route.fallback();
         return;
       }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([mockOrgProperties[0]]),
+        body: JSON.stringify(mockStaysResult(mockStayCards([mockOrgProperties[0]]))),
       });
     });
 

@@ -5373,7 +5373,7 @@
         "why": "A deposit above {{depositMaxRents}} months cannot be asked for. CasaZen does not change the deposit of a contract that is already set up: it has to be fixed with the tenant, with the help of your accountant or of a lawyer."
       },
       "depositReturn": {
-        "action": "Open the Documents",
+        "action": "Prepare the statement",
         "body": "After checking the home, give the deposit back with the legal interest. You can keep only what you document: unpaid rent or expenses and damage beyond normal use.",
         "title": "Give the deposit back after the handover",
         "why": "The deposit secures the tenant's obligations and must be given back at the end, after checking the state of the property. From the sum you can deduct, listing them in writing and with documents, the amounts still owed and the damage beyond normal wear. The time limit to give it back is written in your contract."
@@ -5391,7 +5391,7 @@
         "why": "After registration the events of the contract (extension, assignment, termination) are communicated to the Agenzia delle Entrate, also with the cedolare secca. CasaZen does not communicate them for you and does not know the exact deadline in your case."
       },
       "endOrganize": {
-        "action": "Open the Documents",
+        "action": "Prepare the minutes",
         "body": "Set the day with the tenant, compare the state with the delivery report, read the meters, collect all the keys and both sign the handover report.",
         "title": "Plan the handover of the home",
         "why": "At the end the tenant must give the home back empty and in the state in which they received it, apart from normal wear. The handover report signed by both, with the meter readings and the keys, protects you if there are disputes and you need it to give the deposit back."
@@ -5409,13 +5409,13 @@
         "why": "The report records the state of the property at the handover: at the end of the lease you need it to check for damage and to give the deposit back. In our models the utilities are the tenant's, who puts them in their own name."
       },
       "istatConcordato": {
-        "action": "Go to payments",
+        "action": "Calculate the update",
         "body": "From the second year you can ask in writing for the rent to be adjusted, up to the maximum set by the agreement of your municipality. It applies from the request, not retroactively.",
         "title": "You can ask for the ISTAT update of the rent",
         "why": "In the canone concordato the ISTAT update is allowed only within the limits of the agreement of the municipality: in the Monza e Brianza one it is a share of the change in the index. In our model the update starts from the first instalment after the written request. With the cedolare secca it cannot be asked for."
       },
       "istatLibero": {
-        "action": "Go to payments",
+        "action": "Calculate the update",
         "body": "From the second year you can ask in writing for the rent to be adjusted to the ISTAT change, by the share written in the contract. It applies from the request, not retroactively.",
         "title": "You can ask for the ISTAT update of the rent",
         "why": "In the 4+4 the law sets no cap on the update: the parties write the share in the contract. In our model the update starts from the first instalment after the written request and does not recover past years. If you chose the cedolare secca it cannot be asked for."
@@ -5857,6 +5857,59 @@
     }
   },
   "leaseOperations": {
+    "cedolare": {
+      "dialog": {
+        "description": "CasaZen writes the draft with the data of the contract. You sign it and send it by registered mail: we don't write to the tenant.",
+        "effectiveHint": "The first day of the year the option refers to. If you leave it out, the letter leaves it to complete.",
+        "effectiveInvalid": "Choose a day between {{from}} and {{to}}.",
+        "effectiveLabel": "The option applies from (optional)",
+        "note": "With the cedolare secca you give up the updates of the rent for as long as the option lasts. If your contract already says so, like our model does, the letter isn't needed.",
+        "title": "Tell the tenant about the cedolare secca"
+      },
+      "open": "Prepare the communication",
+      "summary": "With the cedolare secca the rent is not updated. The choice and the renunciation are communicated to the tenant by registered mail, if the contract does not already say it.",
+      "summarySent": "Letter marked as sent on {{date}} ({{means}}).",
+      "title": "Option for the cedolare secca"
+    },
+    "deposit": {
+      "dialog": {
+        "addDeduction": "Add a deduction",
+        "amountInvalid": "Write a sum in euros, for example 25.50.",
+        "amountLabel": "Amount (€)",
+        "confirmNo": "Cancel",
+        "confirmText": "You record that you returned {{amount}} on {{date}}. It stays in the history of the contract: CasaZen does not move money and does not change the deposit.",
+        "confirmYes": "Yes, record it",
+        "datesInvalid": "The deposit must have been paid before the day you return it, and the return cannot be too far from the end of the contract.",
+        "deductionsHint": "You can keep only what you can document: rent or expenses not paid, damage beyond normal use. Write the reason: the tenant reads it in the statement.",
+        "deductionsTitle": "Deductions (optional)",
+        "description": "The deposit is {{amount}}. CasaZen works out the legal interest and prepares the statement to give the tenant. You return the money: we don't move anything.",
+        "download": "Download the statement",
+        "interestPaidHint": "The interest you already paid the tenant during the contract, if you paid any.",
+        "interestPaidLabel": "Interest already paid (€)",
+        "paidOnLabel": "Deposit paid on",
+        "rateHint": "The legal interest rate is set every year by the Ministry of Economy: write the one of each year you held the deposit. CasaZen does not know it.",
+        "rateInvalid": "Write a rate above zero, for example 2.5.",
+        "rateLabel": "Legal rate {{year}} (%)",
+        "ratesTitle": "Legal interest",
+        "reasonLabel": "Reason",
+        "record": "Record the return",
+        "recordFuture": "You can record it from the day of the return.",
+        "removeDeduction": "Remove the deduction",
+        "result": "To return {{returned}}: deposit {{deposit}} + interest due {{interest}} − deductions {{deductions}}.",
+        "resultPending": "Write the rate of each year: we tell you how much to return.",
+        "returnedOnLabel": "Returned on",
+        "title": "Return of the security deposit",
+        "yearLine": "{{year}}: {{days}} days at {{rate}}% = {{interest}}"
+      },
+      "failed": "We couldn't record the return. Try again.",
+      "open": "Prepare the statement",
+      "openRecorded": "See the statement again",
+      "recorded": "Return recorded: {{amount}} on {{date}}.",
+      "summary": "After the handover you return the deposit of {{amount}} with the legal interest, less what you can document: we work out the statement.",
+      "summaryRecorded": "Deposit returned on {{date}}: {{amount}}.",
+      "summarySent": "Statement marked as sent on {{date}} ({{means}}).",
+      "title": "Return of the security deposit"
+    },
     "disdetta": {
       "dialog": {
         "description": "CasaZen writes the draft with the data of the contract. You sign it and send it: we don't write to the tenant.",
@@ -5883,6 +5936,46 @@
       "label": "Download the draft"
     },
     "draftNote": "The text is a draft that has not been approved yet: the PDF carries the word DRAFT (BOZZA). Have it reviewed before you send it.",
+    "handover": {
+      "dialog": {
+        "dayHint": "The day you meet at the home. If you don't know yet, leave it empty: the minutes leave it to complete.",
+        "dayInvalid": "Choose a day between {{from}} and {{to}}.",
+        "dayLabel": "Day of the handover (optional)",
+        "description": "CasaZen prepares the minutes with the data of the contract. You fill them in and sign them together on the day of the handover: we don't write to the tenant.",
+        "download": "Download the minutes",
+        "steps": {
+          "agree": "Agree with the tenant on the day and the time to meet at the home.",
+          "compare": "Compare the state of the home with the minutes of the delivery, read the meters together and count the keys.",
+          "deposit": "Write on the minutes the damage and the sums you want to keep from the deposit, then both sign it."
+        },
+        "title": "Prepare the minutes of the handover"
+      },
+      "open": "Prepare the minutes",
+      "summary": "The contract ends on {{date}}: agree with the tenant on the day of the handover and bring the minutes to fill in together.",
+      "title": "Handover of the property"
+    },
+    "istat": {
+      "dialog": {
+        "description": "CasaZen works out the new rent and writes the draft of the request. You sign it and send it: we don't write to the tenant.",
+        "effectiveHint": "It applies from the request, it does not recover the past.",
+        "effectiveInvalid": "Choose a day between {{from}} and {{to}}.",
+        "effectiveLabel": "The new rent applies from",
+        "foiHint": "The change in consumer prices (FOI index) that ISTAT publishes for the period the contract names. You write it: CasaZen does not look it up.",
+        "foiInvalid": "Write a percentage above zero, for example 3.2. With a zero or negative variation the rent does not go up.",
+        "foiLabel": "Variation of the FOI index (%)",
+        "note": "Ask for the update only if the contract provides for it, to the extent it states. CasaZen does not change the rent in the payment plan by itself: the installments already issued stay as they are.",
+        "result": "The rent goes from {{from}} to {{to}} a month: {{increase}} more, that is {{percent}}% ({{share}}% of the variation).",
+        "resultPending": "Write the variation of the index: we tell you what the rent becomes.",
+        "shareHint": "The part of the variation the contract recognizes. The suggested value is the one of a reference agreement: check your contract.",
+        "shareInvalid": "Write a percentage above zero and not above {{max}}.",
+        "shareLabel": "Share recognized by the contract (%)",
+        "title": "Calculate the ISTAT update"
+      },
+      "open": "Calculate the update",
+      "summary": "If the contract provides for it, you can ask for the rent to be updated: write the variation of the index and we work out the new amount.",
+      "summarySent": "Request marked as sent on {{date}} ({{means}}).",
+      "title": "ISTAT update of the rent"
+    },
     "means": {
       "ByHand": "Delivered by hand",
       "Other": "Another way",
@@ -7375,7 +7468,8 @@
       "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted",
       "WithdrawalRecorded": "Tenant's withdrawal recorded",
       "LetterSent": "Letter marked as sent",
-      "RenewalRecorded": "Renewal recorded"
+      "RenewalRecorded": "Renewal recorded",
+      "DepositReturnRecorded": "Deposit returned"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -13153,6 +13247,158 @@
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
+  "siteHome": {
+    "card": {
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "photosOf": "Photos of {{name}}",
+      "guestFavourite": "Guest favourite",
+      "guestFavouriteHint": "Rated {{average}} out of 5 by {{count}} verified reviews.",
+      "ratingLabel_one": "{{average}} out of 5, {{count}} review",
+      "ratingLabel_other": "{{average}} out of 5, {{count}} reviews",
+      "area": "{{count}} m²",
+      "mainAmenities": "Main amenities",
+      "night": "night",
+      "totalFor_one": "total for {{count}} night",
+      "totalFor_other": "total for {{count}} nights",
+      "perNightAverage": "{{price}} a night",
+      "tax": {
+        "exact": "tourist tax included",
+        "estimated": "tourist tax estimated",
+        "notIncluded": "tourist tax not included"
+      },
+      "taxHelpTitle": "Tourist tax",
+      "taxHelpLabel": "Why the tax is an estimate",
+      "taxHelp": "For now every child is counted as if they pay it. The exact amount is known once you give the ages, before you pay.",
+      "freeCancellation": "Free cancellation until {{date}}",
+      "freeFrom": "Free from {{date}}",
+      "busy": "Not available on these dates",
+      "minNights_one": "Minimum stay {{count}} night",
+      "minNights_other": "Minimum stay {{count}} nights",
+      "tooManyGuests_one": "Sleeps {{count}} person at most",
+      "tooManyGuests_other": "Sleeps {{count}} people at most",
+      "noPets": "Pets not allowed",
+      "notBookable": "Not bookable online"
+    },
+    "tags": {
+      "mare": "Seaside",
+      "centro": "Historic centre",
+      "piscina": "With a pool",
+      "pet": "Pet friendly",
+      "campagna": "Countryside",
+      "terrazza": "With a terrace",
+      "vista-mare": "Sea view"
+    },
+    "hero": {
+      "destinationHomes_one": "{{count}} home",
+      "destinationHomes_other": "{{count}} homes",
+      "reviews_one": "{{count}} verified review",
+      "reviews_other": "{{count}} verified reviews",
+      "securePayment": "Secure payment with Stripe",
+      "homesIn_one": "{{count}} home in {{places}}",
+      "homesIn_other": "{{count}} homes in {{places}}",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "categories": {
+      "label": "What are you looking for?",
+      "all": "All homes",
+      "homes_one": "{{count}} home",
+      "homes_other": "{{count}} homes"
+    },
+    "houses": {
+      "title": "Our homes",
+      "leadNoDates": "The price is the lowest night of the next 30 days. Choose your dates to see the total.",
+      "leadDates_one": "Totals for {{range}}, {{count}} night.",
+      "leadDates_other": "Totals for {{range}}, {{count}} nights.",
+      "seeAll": "See all"
+    },
+    "empty": {
+      "title": "We are getting ready for the next season",
+      "text": "No home can be booked online right now. Write to your host: they will tell you when bookings reopen and which dates are free.",
+      "call": "Call"
+    },
+    "nav": {
+      "label": "Site menu",
+      "homes": "Homes",
+      "why": "Why book here",
+      "zones": "Areas",
+      "faq": "Questions"
+    },
+    "why": {
+      "eyebrow": "Book with your host",
+      "title": "Why book directly",
+      "transparent": {
+        "title": "Transparent prices",
+        "text": "The total you see with your dates covers nights and cleaning and, where the town charges it, the tourist tax: no surprises at payment."
+      },
+      "noFees": {
+        "title": "No commission",
+        "text": "You book directly with your host: no service fee added by a portal. The total is just nights, cleaning and tax."
+      },
+      "direct": {
+        "title": "Direct support",
+        "text": "You talk to {{host}}, not a call centre: before and during your stay."
+      },
+      "receipt": {
+        "label": "Example: {{name}}",
+        "kicker": "A real example, calculated on today’s prices",
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "cleaning": "Final cleaning",
+        "tax": "Tourist tax",
+        "fees": "Service fees",
+        "total": "Total",
+        "try": "Try your own dates"
+      }
+    },
+    "reviews": {
+      "eyebrow": "They say about us",
+      "title": "What guests say",
+      "lead": "Only people who stayed can leave a review.",
+      "all": "All reviews of {{name}}"
+    },
+    "zones": {
+      "eyebrow": "Where we are",
+      "title": "Where the homes are",
+      "lead": "Pick the area that suits you: every pin leads to the homes there.",
+      "pinName": "{{name}}: {{count}} homes",
+      "note": "Approximate locations: the exact address arrives with your confirmation. Schematic maps: Natural Earth data."
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions",
+      "lead": "Can’t find the answer? Write to your host.",
+      "why": {
+        "q": "Why book here?",
+        "a": "You book directly with {{host}}: no service fee added by a portal, you see the total and what it includes before you pay, and for any question you talk to your host."
+      },
+      "payment": {
+        "q": "Is payment secure?",
+        "a": "You pay online with Stripe: your card details go straight to Stripe and never pass through this site."
+      },
+      "cancel": {
+        "q": "Can I cancel?",
+        "a": "Each home has its own cancellation policy: you find it on the page of the home and it is shown again before you pay."
+      },
+      "tax": {
+        "q": "What is the tourist tax?",
+        "a": "It is a tax of the town where the home is, paid by whoever stays. Where the town charges it, it is a line of its own in the price breakdown."
+      },
+      "checkin": {
+        "q": "How does check-in work?",
+        "a": "After booking you receive by email the link to register the guests online, as the law requires."
+      },
+      "pets": {
+        "q": "Can I bring my pet?",
+        "a": "Some homes accept them: {{homes}}. For the others, see the rules on the page of the home."
+      },
+      "where": {
+        "q": "Where are the homes?",
+        "a": "The homes are in {{places}}. The exact address arrives with your booking confirmation."
+      }
+    }
+  },
   "siteMap": {
     "approximateNote": "Approximate positions: the exact address arrives with the confirmation.",
     "cardClose": "Close the card",
@@ -13235,6 +13481,111 @@
       "helpLabel": "How we verify reviews",
       "label": "Verified",
       "title": "How we verify reviews"
+    }
+  },
+  "siteSearch": {
+    "title": {
+      "homes": "Our homes",
+      "free_one": "{{count}} home available",
+      "free_other": "{{count}} homes available",
+      "noneFree": "No homes available",
+      "count_one": "{{count}} home",
+      "count_other": "{{count}} homes"
+    },
+    "sub": {
+      "dates": "{{range}} · {{nights}} · {{guests}}",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noDates": "Prices are the lowest night of the next 30 days: choose your dates to see the total."
+    },
+    "sort": {
+      "label": "Sort the homes",
+      "recommended": "Recommended",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price",
+      "rating": "Highest rated",
+      "largest": "Largest"
+    },
+    "categories": "Categories",
+    "onlyFavorites": "Favourites only",
+    "none": {
+      "capacity": {
+        "title": "No home for {{guests}} guests",
+        "text": "The homes of this site sleep up to {{count}} people. Write to {{host}} to see what can be done."
+      },
+      "dates": {
+        "title": "No homes available on these dates",
+        "text": "The homes are already booked on these dates. Try other dates, nearby ones too, or write to {{host}}."
+      },
+      "filters": {
+        "title": "No homes with these filters",
+        "text": "Try removing some filters."
+      },
+      "favorites": {
+        "title": "No homes among your favourites",
+        "text": "Tap the heart on a home to save it on this device: you will find it here."
+      },
+      "none": {
+        "title": "No homes to show",
+        "text": "No home can be booked online right now. Write to {{host}} to find out when bookings reopen."
+      },
+      "alternatives": "Nearby dates with homes available",
+      "alternativeHomes_one": "{{count}} home available",
+      "alternativeHomes_other": "{{count}} homes available",
+      "clear": "Clear filters"
+    },
+    "unavailable": {
+      "title": "Not available on these dates"
+    },
+    "note": {
+      "included": "Totals include nights, cleaning and tourist tax.",
+      "estimated": "The tourist tax is an estimate until you give the ages of the children.",
+      "notIncluded": "For some homes the total does not include the tourist tax."
+    },
+    "filters": {
+      "open": "Filters",
+      "active_one": "{{count}} active filter",
+      "active_other": "{{count}} active filters",
+      "activeLabel": "Active filters",
+      "remove": "Remove “{{name}}”",
+      "title": "Filters",
+      "description": "Choose price, bedrooms, floor area, amenities and rules: the button at the bottom says how many homes are left.",
+      "show": "Show the homes",
+      "showCount_one": "Show {{count}} home",
+      "showCount_other": "Show {{count}} homes",
+      "showNone": "No homes with these filters",
+      "clear": "Clear all",
+      "any": "Any",
+      "orMore": "{{n}} or more",
+      "price": "Price per night",
+      "priceMin": "From",
+      "priceMax": "To",
+      "noMin": "no minimum",
+      "noMax": "no maximum",
+      "priceBetween": "from {{from}} to {{to}}",
+      "priceFrom": "from {{price}}",
+      "priceUpTo": "up to {{price}}",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "bedroomsChip": "{{n}}+ bedrooms",
+      "bathroomsChip": "{{n}}+ bathrooms",
+      "area": "Floor area",
+      "areaAtLeast": "at least {{n}} m²",
+      "amenities": "Amenities",
+      "rules": "House rules",
+      "rule": {
+        "pets": "Pets allowed",
+        "children": "Child friendly",
+        "selfCheckin": "Self check-in",
+        "smoking": "Smoking allowed",
+        "parties": "Parties allowed"
+      }
+    },
+    "map": {
+      "label": "Map of the homes",
+      "note": "Approximate locations: the exact address arrives with your confirmation. Schematic maps: Natural Earth data.",
+      "showMap": "Map",
+      "showList": "List"
     }
   },
   "statement": {
