@@ -7464,6 +7464,7 @@
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "backToList": "Torna agli immobili",
+      "contractsEmpty": "Questo immobile non ha ancora contratti.",
       "contractsLoadError": "Non riesco a leggere i contratti di questo immobile.",
       "contractsTitle": "Contratti collegati",
       "description": "Descrizione",
@@ -7488,7 +7489,14 @@
           "kicker": "Contratto in corso"
         }
       },
-      "rooms": "Camere e bagni"
+      "rooms": "Camere e bagni",
+      "tabs": {
+        "contracts": "Contratti",
+        "data": "Dati",
+        "documents": "Documenti",
+        "requests": "Interventi"
+      },
+      "tabsLabel": "Sezioni dell’immobile"
     },
     "drawer": {
       "ape": "APE",

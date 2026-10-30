@@ -7464,6 +7464,7 @@
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "backToList": "Back to properties",
+      "contractsEmpty": "This property has no contracts yet.",
       "contractsLoadError": "The leases of this property could not be read.",
       "contractsTitle": "Linked leases",
       "description": "Description",
@@ -7488,7 +7489,14 @@
           "kicker": "Lease in force"
         }
       },
-      "rooms": "Bedrooms and bathrooms"
+      "rooms": "Bedrooms and bathrooms",
+      "tabs": {
+        "contracts": "Contracts",
+        "data": "Details",
+        "documents": "Documents",
+        "requests": "Maintenance"
+      },
+      "tabsLabel": "Sections of the property"
     },
     "drawer": {
       "ape": "APE",
