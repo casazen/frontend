@@ -4060,6 +4060,21 @@
     "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
     "signIn": "Accedi"
   },
+  "favorites": {
+    "add": "Salva {{name}} nei preferiti",
+    "description": "Salvati su questo dispositivo: non serve un account.",
+    "descriptionEmpty": "Le case che salvi restano su questo dispositivo: non serve un account.",
+    "emptyHint": "Tocca il cuore su una casa per salvarla qui e confrontarla con calma.",
+    "open_one": "I tuoi preferiti: {{count}} casa salvata",
+    "open_other": "I tuoi preferiti: {{count}} case salvate",
+    "openEmpty": "I tuoi preferiti",
+    "remove": "Togli {{name}} dai preferiti",
+    "saved": "Salvata nei preferiti",
+    "savedHint": "La ritrovi dal cuore in alto.",
+    "seeHomes": "Guarda le case",
+    "title": "I tuoi preferiti",
+    "undo": "Annulla"
+  },
   "finance": {
     "payments": "Pagamenti",
     "revenue": "Fatturato",
