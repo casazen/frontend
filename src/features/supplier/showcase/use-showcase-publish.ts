@@ -27,7 +27,10 @@ export function useShowcasePublish(onContent?: (content: ShowcaseContent) => voi
           description: updated.bookings.open ? t('supplier.showcase.toast.bookingsOpen') : reasonKey ? t(reasonKey) : undefined,
           // The server keeps the version published before for a few minutes: this really puts it back.
           undo: async () => {
-            onContent?.(await undo.mutateAsync());
+            // Awaited first: `onContent?.(await ...)` does not evaluate its argument when nobody listens (the overview), and the
+            // Annulla would then say it undid the publication without asking the server.
+            const restored = await undo.mutateAsync();
+            onContent?.(restored);
           },
         });
       },
