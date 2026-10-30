@@ -408,7 +408,8 @@ describe('LeaseOperations', () => {
       deductions: [{ reason: 'Pulizie straordinarie', amount: 120 }],
     };
     await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/deposit/calculate', sent, undefined));
-    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent('1.860,63'));
+    // ICU 77 (CLDR 47) writes 1860,63 for Italian; older ICU writes 1.860,63: the test accepts both.
+    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent(/1\.?860,63/));
     expect(dialog.getByTestId('deposit-years').querySelectorAll('li')).toHaveLength(years.length);
 
     // The draft and the record are asked for with the same input; the record asks first and writes nothing else than the statement.
@@ -444,7 +445,7 @@ describe('LeaseOperations', () => {
     const dialog = within(await screen.findByTestId('deposit-dialog'));
     fireEvent.change(dialog.getByTestId('deposit-returned-on'), { target: { value: tomorrow } });
     for (const year of years) fireEvent.change(dialog.getByTestId(`deposit-rate-${year}`), { target: { value: '2,5' } });
-    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent('1.980,63'));
+    await waitFor(() => expect(dialog.getByTestId('deposit-result')).toHaveTextContent(/1\.?980,63/));
 
     // Tomorrow can be prepared (the statement is for the day), not recorded: what is recorded has already happened.
     expect(dialog.getByTestId('deposit-download')).toBeEnabled();
@@ -458,7 +459,7 @@ describe('LeaseOperations', () => {
     });
     renderOperations('');
     expect(await screen.findByTestId('lease-operation-cauzione-summary')).toHaveTextContent('Cauzione restituita');
-    expect(screen.getByTestId('lease-operation-cauzione-summary')).toHaveTextContent('1.860,63');
+    expect(screen.getByTestId('lease-operation-cauzione-summary')).toHaveTextContent(/1\.?860,63/);
   });
 
   it('istat_UnderTheCedolareSecca_TheUpdateIsOffNoRowAndNoWindow_AndTheCommunicationOfTheOptionIsOn', async () => {
