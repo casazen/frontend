@@ -14387,19 +14387,134 @@
     },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
-      "title": "Vetrina pubblica",
-      "description": "Anteprima della pagina che chiunque può aprire con il tuo link: è identica a quella pubblica.",
-      "loading": "Caricamento della vetrina…",
-      "loadError": "Impossibile caricare l'anteprima della vetrina.",
-      "published": "La vetrina è pubblica: chi ha il link può vederla.",
-      "notPublished": "La vetrina non è ancora pubblica: lo sarà quando attivi il profilo. Questa è l'anteprima di come apparirà.",
-      "suspended": "Il profilo è sospeso: la vetrina non è visibile al pubblico. Contatta il supporto CasaZen.",
-      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
-      "open": "Apri la pagina pubblica",
+      "address": {
+        "draftNote": "Sarà questo l'indirizzo quando pubblichi.",
+        "title": "Indirizzo"
+      },
+      "before": {
+        "advised": "Consigliato",
+        "changes": "Cosa cambia pubblicando: {{changes}}.",
+        "fix": "Sistema",
+        "missing": "Cosa manca",
+        "required": "Necessario",
+        "title": "Prima di pubblicare"
+      },
+      "bookings": {
+        "bookings_off": "Tutto è pronto ma le prenotazioni sono chiuse: aprile con «Apri le prenotazioni».",
+        "goToPayments": "Vai ai pagamenti",
+        "not_published": "La vetrina non è ancora pubblicata: le prenotazioni si aprono dopo la pubblicazione.",
+        "paused": "La vetrina è in pausa: le prenotazioni sono chiuse.",
+        "payments_account_not_ready": "Il conto per i pagamenti non è ancora pronto: finché non lo è, la vetrina si vede ma non si può prenotare.",
+        "payments_off": "I pagamenti online non sono ancora attivi: la vetrina si vede ma non si può prenotare.",
+        "title": "Prenotazioni"
+      },
+      "changes": {
+        "bio": "Chi siamo",
+        "certs": "Certificazioni",
+        "color": "Colore dei pulsanti",
+        "cover": "Copertina",
+        "faq": "Domande frequenti",
+        "font": "Caratteri",
+        "gallery": "Lavori",
+        "guarantee": "Garanzia",
+        "intro": "Introduzione",
+        "logo": "Logo",
+        "prep": "Prima che arriviamo",
+        "sections": "Sezioni",
+        "serviceOrder": "Servizi mostrati",
+        "style": "Stile",
+        "tagline": "Frase in grande",
+        "team": "Squadra",
+        "values": "Punti di forza"
+      },
       "copyLink": "Copia il link",
+      "description": "La tua pagina pubblica: pubblicala, mettila in pausa e condividi il link.",
+      "discardDialog": {
+        "description": "La bozza torna uguale alla vetrina pubblicata.",
+        "kept": "La vetrina che i clienti vedono non cambia.",
+        "lost": "Le modifiche non pubblicate andranno perse.",
+        "title": "Annullare le modifiche?"
+      },
+      "focus": {
+        "changesBody": "Cosa cambia: {{changes}}.",
+        "changesTitle": "Hai modifiche da pubblicare",
+        "fix": "Sistema: {{item}}",
+        "missingBody": "Sistema le voci qui sotto: poi potrai pubblicare.",
+        "missingTitle": "Manca ancora qualcosa per pubblicare",
+        "now": "Adesso",
+        "onlineBookingsOpen": "I clienti la vedono e possono prenotare.",
+        "onlineReadOnly": "I clienti la vedono. Le prenotazioni non sono ancora aperte.",
+        "onlineTitle": "La tua vetrina è online",
+        "open": "Apri la vetrina",
+        "pausedBody": "I clienti vedono che per ora non accetti prenotazioni. Riattivala quando vuoi.",
+        "pausedTitle": "La vetrina è in pausa",
+        "publish": "Pubblica la vetrina",
+        "publishBody": "Il necessario c'è: quando pubblichi, i clienti la vedono subito.",
+        "publishChanges": "Pubblica le modifiche",
+        "publishTitle": "Pubblica la tua vetrina",
+        "publishedAt": "Pubblicata il {{when}}",
+        "refresh": "Aggiorna",
+        "resume": "Riattiva la vetrina"
+      },
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
+      "loadError": "Impossibile caricare la vetrina.",
+      "loading": "Caricamento della vetrina…",
+      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
+      "open": "Apri la pagina pubblica",
+      "readiness": {
+        "color": "Un colore dei pulsanti leggibile",
+        "faq": "Tre domande frequenti con la risposta",
+        "hours": "Gli orari di lavoro",
+        "photos": "Tre foto dei tuoi lavori",
+        "presentation": "Una frase e un «chi siamo» scritti da te",
+        "services": "Almeno un servizio attivo con un prezzo",
+        "verified": "Il «Verificato» di CasaZen",
+        "zones": "Almeno un comune dove lavori"
+      },
+      "savedAt": "Ultimo salvataggio: {{when}}",
+      "settings": {
+        "discard": "Annulla le modifiche",
+        "discardHint": "Torni alla versione pubblicata: le modifiche non pubblicate vanno perse.",
+        "openBookings": "Apri le prenotazioni",
+        "openBookingsHint": "La vetrina è pronta: apri le prenotazioni quando vuoi.",
+        "pause": "Metti in pausa",
+        "pauseHint": "I clienti vedono che non accetti prenotazioni e le prenotazioni si chiudono. La riattivi con un tocco.",
+        "title": "Altre impostazioni"
+      },
+      "share": {
+        "description": "Copia il link o manda il messaggio: lo invii tu, da qui non parte nulla.",
+        "email": "E-mail",
+        "message": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro.\n{{url}}",
+        "messageBookable": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro. Puoi anche prenotare online.\n{{url}}",
+        "open": "Condividi",
+        "subject": "La mia vetrina su CasaZen",
+        "title": "Condividi la tua vetrina",
+        "whatsapp": "WhatsApp"
+      },
+      "state": {
+        "changes": "Modifiche da pubblicare",
+        "draft": "Bozza",
+        "online": "Online",
+        "paused": "In pausa"
+      },
+      "stats": {
+        "label": "La vetrina in numeri",
+        "pending": "In attesa di risposta",
+        "requests": "Richieste negli ultimi {{days}} giorni"
+      },
+      "title": "Il mio sito vetrina",
+      "toast": {
+        "bookingsOpen": "Le prenotazioni sono aperte.",
+        "discardFailed": "Impossibile annullare le modifiche.",
+        "discarded": "Modifiche annullate",
+        "pauseFailed": "Impossibile mettere in pausa la vetrina.",
+        "paused": "Vetrina in pausa",
+        "publishFailed": "Impossibile pubblicare la vetrina.",
+        "published": "Vetrina pubblicata",
+        "resumeFailed": "Impossibile riattivare la vetrina.",
+        "resumed": "Vetrina riattivata"
+      }
     },
     "trusted": {
       "title": "Fornitori di fiducia",

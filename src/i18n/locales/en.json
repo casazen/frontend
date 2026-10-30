@@ -14387,19 +14387,134 @@
     },
     "availabilityLoadError": "Could not load the availability.",
     "showcase": {
-      "title": "Public showcase",
-      "description": "Preview of the page anyone can open with your link: it is identical to the public one.",
-      "loading": "Loading the showcase…",
-      "loadError": "Could not load the showcase preview.",
-      "published": "The showcase is public: anyone with the link can see it.",
-      "notPublished": "The showcase is not public yet: it will be once you activate the profile. This is a preview of how it will look.",
-      "suspended": "The profile is suspended: the showcase is not visible to the public. Contact CasaZen support.",
-      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
-      "open": "Open the public page",
+      "address": {
+        "draftNote": "This will be the address once you publish.",
+        "title": "Address"
+      },
+      "before": {
+        "advised": "Advised",
+        "changes": "What changes when you publish: {{changes}}.",
+        "fix": "Fix",
+        "missing": "What is missing",
+        "required": "Required",
+        "title": "Before you publish"
+      },
+      "bookings": {
+        "bookings_off": "Everything is ready but the bookings are closed: open them with \"Open the bookings\".",
+        "goToPayments": "Go to payments",
+        "not_published": "The showcase is not published yet: the bookings open after the publication.",
+        "paused": "The showcase is paused: the bookings are closed.",
+        "payments_account_not_ready": "The payments account is not ready yet: until it is, the showcase can be seen but not booked.",
+        "payments_off": "Online payments are not active yet: the showcase can be seen but not booked.",
+        "title": "Bookings"
+      },
+      "changes": {
+        "bio": "About us",
+        "certs": "Certifications",
+        "color": "Button color",
+        "cover": "Cover",
+        "faq": "Frequently asked questions",
+        "font": "Typeface",
+        "gallery": "Work",
+        "guarantee": "Guarantee",
+        "intro": "Introduction",
+        "logo": "Logo",
+        "prep": "Before we arrive",
+        "sections": "Sections",
+        "serviceOrder": "Services shown",
+        "style": "Style",
+        "tagline": "Big sentence",
+        "team": "Team",
+        "values": "Strengths"
+      },
       "copyLink": "Copy the link",
+      "description": "Your public page: publish it, pause it and share the link.",
+      "discardDialog": {
+        "description": "The draft goes back to being the same as the published showcase.",
+        "kept": "The showcase customers see does not change.",
+        "lost": "The changes you have not published will be lost.",
+        "title": "Discard the changes?"
+      },
+      "focus": {
+        "changesBody": "What changes: {{changes}}.",
+        "changesTitle": "You have changes to publish",
+        "fix": "Fix: {{item}}",
+        "missingBody": "Fix the items below: then you can publish.",
+        "missingTitle": "Something is still missing to publish",
+        "now": "Now",
+        "onlineBookingsOpen": "Customers can see it and book.",
+        "onlineReadOnly": "Customers can see it. The bookings are not open yet.",
+        "onlineTitle": "Your showcase is online",
+        "open": "Open the showcase",
+        "pausedBody": "Customers see that you are not taking bookings for now. Turn it back on when you like.",
+        "pausedTitle": "The showcase is paused",
+        "publish": "Publish the showcase",
+        "publishBody": "What is needed is there: when you publish, customers see it at once.",
+        "publishChanges": "Publish the changes",
+        "publishTitle": "Publish your showcase",
+        "publishedAt": "Published on {{when}}",
+        "refresh": "Refresh",
+        "resume": "Turn the showcase back on"
+      },
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
-      "notIndexed": "The page does not appear in search engines: it is reached only through the link."
+      "loadError": "Could not load the showcase.",
+      "loading": "Loading the showcase…",
+      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
+      "open": "Open the public page",
+      "readiness": {
+        "color": "A readable button color",
+        "faq": "Three frequently asked questions with their answer",
+        "hours": "Your working hours",
+        "photos": "Three photos of your work",
+        "presentation": "A sentence and an \"about us\" written by you",
+        "services": "At least one active service with a price",
+        "verified": "The CasaZen \"Verified\" mark",
+        "zones": "At least one town where you work"
+      },
+      "savedAt": "Last saved: {{when}}",
+      "settings": {
+        "discard": "Discard the changes",
+        "discardHint": "You go back to the published version: the changes you have not published are lost.",
+        "openBookings": "Open the bookings",
+        "openBookingsHint": "The showcase is ready: open the bookings whenever you like.",
+        "pause": "Pause",
+        "pauseHint": "Customers see that you are not taking bookings and the bookings close. You turn it back on with one tap.",
+        "title": "Other settings"
+      },
+      "share": {
+        "description": "Copy the link or send the message: you send it, nothing leaves from here.",
+        "email": "E-mail",
+        "message": "Here is my showcase on CasaZen: services, prices and the areas where I work.\n{{url}}",
+        "messageBookable": "Here is my showcase on CasaZen: services, prices and the areas where I work. You can also book online.\n{{url}}",
+        "open": "Share",
+        "subject": "My showcase on CasaZen",
+        "title": "Share your showcase",
+        "whatsapp": "WhatsApp"
+      },
+      "state": {
+        "changes": "Changes to publish",
+        "draft": "Draft",
+        "online": "Online",
+        "paused": "Paused"
+      },
+      "stats": {
+        "label": "The showcase in numbers",
+        "pending": "Waiting for an answer",
+        "requests": "Requests in the last {{days}} days"
+      },
+      "title": "My showcase site",
+      "toast": {
+        "bookingsOpen": "The bookings are open.",
+        "discardFailed": "Could not discard the changes.",
+        "discarded": "Changes discarded",
+        "pauseFailed": "Could not pause the showcase.",
+        "paused": "Showcase paused",
+        "publishFailed": "Could not publish the showcase.",
+        "published": "Showcase published",
+        "resumeFailed": "Could not turn the showcase back on.",
+        "resumed": "Showcase turned back on"
+      }
     },
     "trusted": {
       "title": "Trusted suppliers",
