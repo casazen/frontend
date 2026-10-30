@@ -2621,6 +2621,10 @@
     "updated": "Aggiornato {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "Questo codice è fornito dall'agenzia e può essere lo stesso per più soggiorni. CasaZen non crea né revoca i codici d'accesso.",
+      "code_title": "Ecco il codice d'accesso"
+    },
     "copyLink": "Copia link",
     "documentType": {
       "Passport": "Passaporto",
@@ -9582,6 +9586,17 @@
         "comuneRequired": "Scegli il comune dall'elenco.",
         "duplicate": "Esiste già un immobile con questo indirizzo."
       }
+    },
+    "qr": {
+      "download": "Scarica PNG",
+      "error": "Errore",
+      "errorDescription": "ID immobile mancante o non valido.",
+      "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
+      "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
+      "loading": "Generazione codice QR...",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
+      "print": "Stampa",
+      "title": "Codice QR per verifica ospiti"
     }
   },
   "propertyMode": {

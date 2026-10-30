@@ -49,6 +49,9 @@
     ],
     "src/pages/SegmentsPage.tsx": [
       "exports"
+    ],
+    "src/pages/PropertyQrCode.tsx": [
+      "exports"
     ]
   },
   "compilers": {
