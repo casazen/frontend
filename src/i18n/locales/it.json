@@ -14413,6 +14413,48 @@
     "servicesTitle": "Servizi",
     "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
   },
+  "swiss": {
+    "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",
+    "otr": {
+      "description": "Rapporto pernottamenti per il periodo (OTR CSV).",
+      "download": "Scarica rapporto OTR",
+      "downloadFailed": "Impossibile scaricare il rapporto OTR.",
+      "downloading": "Download in corso...",
+      "fromDate": "Data inizio",
+      "title": "Rapporto OTR",
+      "toDate": "Data fine"
+    },
+    "police": {
+      "date": "Data notifica",
+      "description": "Notifica giornaliera alla polizia (XML Ticino).",
+      "download": "Scarica notifica polizia",
+      "downloadFailed": "Impossibile scaricare la notifica.",
+      "downloading": "Download in corso...",
+      "title": "Notifica polizia"
+    },
+    "propertyIdPlaceholder": "ID immobile",
+    "receipt": {
+      "date": "Data rapporto",
+      "description": "Carica la ricevuta dal portale cantonale.",
+      "file": "File ricevuta",
+      "reference": "Riferimento",
+      "referencePlaceholder": "Numero conferma o riferimento",
+      "title": "Carica ricevuta",
+      "type": "Tipo",
+      "typeOtr": "OTR",
+      "typePolice": "Polizia",
+      "upload": "Carica ricevuta",
+      "uploadFailed": "Impossibile caricare la ricevuta.",
+      "uploadSuccess": "Ricevuta caricata con successo.",
+      "uploading": "Caricamento in corso..."
+    },
+    "reminder": {
+      "description": "Riceverai notifiche 24 ore prima delle scadenze configurate.",
+      "title": "Promemoria scadenze"
+    },
+    "selectProperty": "Seleziona immobile",
+    "title": "Conformità Svizzera"
+  },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
     "listTitle": "Elenco aliquote",
