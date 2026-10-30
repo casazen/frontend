@@ -1431,7 +1431,13 @@
       "refundAmountInvalid": "L'importo del rimborso non è valido. Ricarica la pagina e riprova.",
       "guestCancelTokenInvalid": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
       "guestCancelTokenExpired": "Questo link è scaduto. Puoi annullare da «Le mie prenotazioni» con il codice della prenotazione.",
-      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni»."
+      "guestCancelTokenMissing": "Questo link non funziona: usa quello dell'email oppure annulla da «Le mie prenotazioni».",
+      "showcaseContentInvalid": "Un testo non è valido o una riga è a metà: controlla i campi e riprova.",
+      "showcaseNotPublishable": "Manca ancora qualcosa per pubblicare: sistema le voci «Da fare» e riprova.",
+      "showcaseNotPublished": "La vetrina non è ancora pubblicata: pubblicala prima.",
+      "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
+      "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
+      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione."
     }
   },
   "appShell": {
@@ -4069,6 +4075,21 @@
     "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
     "signIn": "Accedi"
   },
+  "favorites": {
+    "add": "Salva {{name}} nei preferiti",
+    "description": "Salvati su questo dispositivo: non serve un account.",
+    "descriptionEmpty": "Le case che salvi restano su questo dispositivo: non serve un account.",
+    "emptyHint": "Tocca il cuore su una casa per salvarla qui e confrontarla con calma.",
+    "open_one": "I tuoi preferiti: {{count}} casa salvata",
+    "open_other": "I tuoi preferiti: {{count}} case salvate",
+    "openEmpty": "I tuoi preferiti",
+    "remove": "Togli {{name}} dai preferiti",
+    "saved": "Salvata nei preferiti",
+    "savedHint": "La ritrovi dal cuore in alto.",
+    "seeHomes": "Guarda le case",
+    "title": "I tuoi preferiti",
+    "undo": "Annulla"
+  },
   "finance": {
     "payments": "Pagamenti",
     "revenue": "Fatturato",
@@ -4547,6 +4568,32 @@
     "label": "Maggiori informazioni",
     "labelFor": "Cos'è: {{title}}",
     "learnMore": "Scopri di più"
+  },
+  "hostContact": {
+    "consent": "Accetto che il messaggio e la mia email siano inviati a {{host}}, per ricevere la risposta.",
+    "description": "Una domanda prima di prenotare? Il messaggio arriva a {{host}}, che ti risponde per email.",
+    "doneText": "{{host}} ti risponderà per email all’indirizzo che hai scritto.",
+    "doneTitle": "Messaggio inviato",
+    "emailHint": "{{host}} ti risponde a questo indirizzo.",
+    "emailLabel": "La tua email",
+    "errors": {
+      "consent": "Per scrivere devi accettare che il messaggio e la tua email siano inviati all’host.",
+      "email": "Scrivi un indirizzo email valido: l’host risponderà a quello.",
+      "failed": "Non siamo riusciti a inviare il messaggio. Quello che hai scritto resta qui: riprova tra un momento.",
+      "message": "Scrivi un messaggio di almeno 5 e al massimo 2000 caratteri.",
+      "name": "Il nome può avere al massimo 100 caratteri.",
+      "tooMany": "Hai scritto più volte di seguito: riprova tra un po’."
+    },
+    "honeypot": "Lascia vuoto questo campo",
+    "messageHint": "Per esempio: «Siamo in quattro e arriviamo con un cane piccolo: si può?»",
+    "messageLabel": "Il tuo messaggio",
+    "nameLabel": "Il tuo nome",
+    "offline": "Serve la connessione per scrivere. Quello che hai scritto resta qui: appena torna, puoi inviarlo.",
+    "send": "Invia il messaggio",
+    "sending": "Invio in corso…",
+    "theHost": "l’host",
+    "title": "Scrivi a {{host}}",
+    "trigger": "Scrivi a {{host}}"
   },
   "hostInvite": {
     "loading": "Verifica dell'invito…",
@@ -7851,7 +7898,8 @@
         "createLease": "Crea contratto",
         "edit": "Modifica",
         "openLease": "Apri contratto",
-        "page": "Scheda completa"
+        "page": "Scheda completa",
+        "request": "Richiedi intervento"
       },
       "add": "Aggiungi immobile",
       "ape": {
@@ -10219,6 +10267,115 @@
       "title": "Codice QR per verifica ospiti"
     }
   },
+  "propertyBooking": {
+    "announce": {
+      "total_one": "Totale per {{count}} notte: {{total}}.",
+      "total_other": "Totale per {{count}} notti: {{total}}."
+    },
+    "aside": "Prenota questa casa",
+    "ask": "Hai una domanda?",
+    "availability": {
+      "eyebrow": "Disponibilità",
+      "minNights_one": "Soggiorno minimo di {{count}} notte.",
+      "minNights_other": "Soggiorno minimo di {{count}} notti.",
+      "prices": "Su ogni giorno libero vedi il prezzo della notte.",
+      "source": "Prezzi e notti libere arrivano dal calendario dell'host.",
+      "title": "Quando vuoi venire?",
+      "weekend": "Il venerdì e il sabato costano un po' di più."
+    },
+    "bar": {
+      "addDates": "Aggiungi le date",
+      "change": "Cambia",
+      "chooseDeparture": "Scegli la partenza",
+      "edit": "Modifica",
+      "label": "Prenota {{name}}",
+      "offline": "Offline",
+      "problem": "Controlla date e ospiti",
+      "total": "totale"
+    },
+    "cta": {
+      "book": "Prenota",
+      "calculating": "Calcolo il totale…",
+      "changeGuests": "Cambia gli ospiti",
+      "chooseDates": "Scegli le date",
+      "nothingYet": "Non paghi ancora nulla",
+      "offline": "Serve la connessione per prenotare",
+      "otherDates": "Scegli altre date",
+      "retry": "Riprova"
+    },
+    "fields": {
+      "add": "Aggiungi",
+      "arrival": "Arrivo",
+      "datesTitle": "Le tue date",
+      "departure": "Partenza",
+      "guests": "Ospiti",
+      "guestsTitle": "Chi viene"
+    },
+    "hint": {
+      "chooseDeparture": "Arrivo il {{date}}: ora scegli il giorno di partenza."
+    },
+    "lines": {
+      "discount": "Sconto",
+      "nights_one": "{{count}} notte × {{price}}",
+      "nights_other": "{{count}} notti × {{price}}",
+      "touristTax": "Imposta di soggiorno",
+      "touristTaxEstimateHelp": "Finché non indichi l'età dei bambini la calcoliamo come se avessero tutti 17 anni: nel pagamento, con le età vere, il totale può scendere.",
+      "touristTaxEstimated": "Imposta di soggiorno (stimata)",
+      "touristTaxHelp": "L'imposta di soggiorno la stabilisce il Comune e si paga per persona e per notte, secondo le sue regole.",
+      "touristTaxWhat": "Cos'è l'imposta di soggiorno?",
+      "weekendNights_one": "{{count}} notte nel weekend × {{price}}",
+      "weekendNights_other": "{{count}} notti nel weekend × {{price}}"
+    },
+    "mode": {
+      "instant": "Prenotazione immediata",
+      "request": "anche su richiesta"
+    },
+    "notBookable": {
+      "text": "Questa casa non è ancora prenotabile online.",
+      "write": "Scrivi a {{host}}"
+    },
+    "offline": "Sei offline: puoi guardare tutto, per prenotare serve la connessione.",
+    "price": {
+      "average": "{{price}} a notte in media",
+      "calculating": "Calcolo il totale per le tue date…",
+      "chooseDates": "Scegli le date per vedere il totale.",
+      "from": "da",
+      "night": "notte",
+      "totalFor_one": "totale per {{count}} notte",
+      "totalFor_other": "totale per {{count}} notti"
+    },
+    "problem": {
+      "clearDates": "Cancella le date e ricomincia",
+      "datesUnavailable": "Queste date non sono libere.",
+      "extend_one": "Allunga fino a {{count}} notte",
+      "extend_other": "Allunga fino a {{count}} notti",
+      "firstFree": "Prime date libere: {{dates}}",
+      "invalidStay": "Controlla le date: la partenza deve essere dopo l'arrivo.",
+      "minNights_one": "Il soggiorno minimo è di {{count}} notte.",
+      "minNights_other": "Il soggiorno minimo è di {{count}} notti.",
+      "notBookable": "Questa casa non è ancora prenotabile online.",
+      "past": "L'arrivo scelto è già passato.",
+      "reduceGuests_one": "Riduci a {{count}} ospite",
+      "reduceGuests_other": "Riduci a {{count}} ospiti",
+      "tooManyGuests_one": "La casa ospita al massimo {{count}} persona.",
+      "tooManyGuests_other": "La casa ospita al massimo {{count}} persone."
+    },
+    "quote": {
+      "failed": "Non riusciamo a calcolare il totale. Riprova tra un momento."
+    },
+    "sheet": {
+      "dates": "Le tue date",
+      "description": "Scegli le date e gli ospiti: il totale si aggiorna qui sotto.",
+      "guests": "Ospiti",
+      "title": "Prenota {{name}}"
+    },
+    "trust": {
+      "freeOver": "Per queste date la cancellazione gratuita è già scaduta.",
+      "freeUntil": "Cancellazione gratuita fino al {{date}}",
+      "noHiddenCosts": "Nessun costo nascosto",
+      "stripe": "Pagamento sicuro con Stripe"
+    }
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Passaggio all'affitto lungo",
@@ -10496,8 +10653,21 @@
       }
     },
     "done": {
+      "active": "L'immobile è attivo.",
+      "another": "Aggiungi un altro immobile",
+      "calendar": "Apri il calendario",
       "complete": "Completa l'attivazione",
       "description": "L'immobile è in Immobili come «Da completare».",
+      "fix": {
+        "base-data": "Completa i dati",
+        "cin": "Aggiungi il CIN",
+        "documents": "Carica i documenti",
+        "safety": "Compila la scheda di sicurezza"
+      },
+      "fixLabel": "Cosa sistemare",
+      "hiddenDescription": "L'hai nascosto tu: gli ospiti non possono prenotarlo dal tuo sito finché non lo mostri.",
+      "hiddenHow": "Per mostrarlo sul sito usa l'interruttore dell'ultimo passo.",
+      "hiddenTitle": "«{{name}}» è pronto, ma non compare sul sito",
       "inList": "Lo trovi in Immobili, dove puoi riprendere quando vuoi.",
       "leadOpen": "Per attivarlo mancano ancora alcuni punti:",
       "leadReady": "I dati richiesti ci sono: manca solo la conferma finale.",
@@ -10507,7 +10677,10 @@
         "documents": "I documenti richiesti per la tua regione",
         "safety": "La scheda di sicurezza"
       },
+      "readyDescription": "Gli ospiti possono prenotare dal tuo sito.",
+      "readyTitle": "«{{name}}» è pronto",
       "readyToActivate": "Per attivarlo basta accettare i Termini.",
+      "show": "Mostralo sul sito",
       "title": "«{{name}}» è salvato",
       "toList": "Vai agli immobili"
     },
@@ -10518,7 +10691,84 @@
       "saveAndClose": "Salva e chiudi",
       "saved": "Salvato. Lo trovi in Immobili, da completare."
     },
-    "finish": "Salva e vedi cosa manca",
+    "last": {
+      "activation": {
+        "later": "Puoi finire adesso: l'immobile resta «Da completare» e lo attivi appena è tutto a posto.",
+        "title": "Attivazione"
+      },
+      "button": {
+        "activate": "Attiva l'immobile",
+        "done": "Fatto",
+        "later": "Finisci dopo"
+      },
+      "calendars": {
+        "hint": "Consigliato: le date prenotate su Airbnb o Booking.com risultano occupate anche sul tuo sito.",
+        "title": "Collega i calendari"
+      },
+      "cin": {
+        "hint": "Il Codice Identificativo Nazionale serve per attivare l'immobile. Se non ce l'hai ancora puoi finire dopo e aggiungerlo quando arriva.",
+        "label": "Codice CIN",
+        "save": "Salva il CIN",
+        "title": "Codice CIN"
+      },
+      "documents": {
+        "title": "Documenti richiesti"
+      },
+      "missing": {
+        "advice": "Consigliato",
+        "failed": "Non riesco a controllare cosa manca. Riprova.",
+        "fix": "Correggi",
+        "lead": "Per attivare l'immobile serve ancora:",
+        "loading": "Controllo cosa manca…",
+        "none": "Tutto a posto: manca solo la conferma finale.",
+        "refused": "Non si può ancora attivare: il servizio segnala questi punti",
+        "title": "Cosa manca"
+      },
+      "summary": {
+        "amenities": "Dotazioni e sicurezza",
+        "base": "Dati base",
+        "by": "entro le {{time}}",
+        "edit": "Modifica",
+        "from": "dalle {{time}}",
+        "labels": {
+          "amenities": "Scelte",
+          "cleaning": "Pulizia",
+          "headline": "Titolo",
+          "house": "Fumare · animali · feste",
+          "minNights": "Soggiorno minimo",
+          "name": "Nome",
+          "photos": "Foto",
+          "policy": "Cancellazione",
+          "quiet": "Silenzio",
+          "rate": "Prezzo base",
+          "safety": "Sicurezza",
+          "spaces": "Spazi",
+          "times": "Check-in / check-out",
+          "weekend": "Weekend",
+          "where": "Dove"
+        },
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "notSaid": "Non indicato",
+        "photos": "Foto e annuncio",
+        "photosCount_one": "{{count}} foto · la prima è la copertina",
+        "photosCount_other": "{{count}} foto · la prima è la copertina",
+        "photosNone": "Nessuna foto per ora (consigliate, non obbligatorie)",
+        "prices": "Prezzi",
+        "range": "dalle {{from}} alle {{to}}",
+        "rateMissing": "Manca il prezzo",
+        "rules": "Regole della casa",
+        "safetyDone": "Scheda di sicurezza completa",
+        "safetyOpen": "Scheda di sicurezza da completare",
+        "title": "Riepilogo"
+      },
+      "visibility": {
+        "blocked": "Si attiva quando hai sistemato i punti segnati sopra.",
+        "label": "Mostra la casa sul sito",
+        "off": "L'immobile sarà attivo ma non comparirà sul sito: lo potrai mostrare quando vuoi.",
+        "on": "Gli ospiti potranno prenotare dal tuo sito."
+      }
+    },
     "page": {
       "backToList": "Torna agli immobili",
       "description": "Un passo alla volta: l'immobile è salvato dal primo «Continua» e puoi riprendere quando vuoi.",
@@ -10654,6 +10904,11 @@
         "label": "Dati base",
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
+      },
+      "finish": {
+        "label": "Attivazione",
+        "purpose": "Collega i calendari, aggiungi il CIN e i documenti, poi attiva l'immobile.",
+        "title": "Calendari, CIN e attivazione"
       },
       "photos": {
         "label": "Foto",
@@ -11023,6 +11278,135 @@
     "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento.",
     "termsNote": "Leggi anche i <terms>termini di prenotazione</terms> dell'operatore."
   },
+  "publicCheckout": {
+    "backToHome": "Torna alla casa",
+    "details": {
+      "arrivalHint": "Check-in dalle {{from}} alle {{to}}",
+      "arrivalLabel": "Orario di arrivo previsto",
+      "arrivalLate": "Dopo le {{time}}",
+      "arrivalTitle": "Il tuo arrivo",
+      "arrivalUnknown": "Non lo so ancora",
+      "back": "Torna al soggiorno",
+      "documentsNote": "I documenti di chi viaggia li chiediamo dopo, con il check-in online: lo prevede la legge.",
+      "emailDidYouMean": "Forse intendevi {{email}}?",
+      "emailHint": "Ti mandiamo qui la conferma e il link per il check-in online.",
+      "emailUse": "Usa {{email}}",
+      "next": "Continua: pagamento",
+      "offers": "Voglio ricevere le offerte di {{name}}.",
+      "offersHint": "Puoi cancellarti quando vuoi.",
+      "phoneHint": "Solo per organizzare l'arrivo.",
+      "whoTitle": "Chi prenota"
+    },
+    "leads": {
+      "step1": "Controlla date e ospiti e scegli come prenotare.",
+      "step2": "Servono solo per la conferma: non devi creare un account.",
+      "step3": "Ultimo passo: scegli come pagare. Per ogni modo ti diciamo cosa succede.",
+      "step3Request": "Oggi non paghi nulla: {{host}} deve accettare la richiesta."
+    },
+    "offline": "Sei offline: per prenotare serve la connessione. I tuoi dati restano qui.",
+    "optional": "(facoltativo)",
+    "pay": {
+      "addDetails": "Aggiungi i tuoi dati",
+      "afterLater": "Salviamo la carta in modo sicuro: oggi non addebitiamo nulla. Il {{date}} addebitiamo {{total}}.",
+      "afterNow": "Dopo questo passo inserisci i dati della carta: il pagamento è sicuro con Stripe.",
+      "afterRequest": "Oggi non paghi nulla: {{host}} accetta o rifiuta la richiesta.",
+      "back": "Torna ai tuoi dati",
+      "consentTitle": "Termini e privacy",
+      "ctaLater": "Prenota: addebito il {{date}}",
+      "ctaNow": "Prenota e paga {{total}}",
+      "ctaRequest": "Invia la richiesta a {{host}}",
+      "edit": "Modifica",
+      "fixStay": "Il soggiorno va sistemato: torna al primo passo.",
+      "hold": "Le date restano riservate per te per 30 minuti.",
+      "howTitle": "Come vuoi pagare?",
+      "laterText": "Salviamo la carta ora e la addebitiamo il {{date}}.",
+      "laterTitle": "Paga alla scadenza",
+      "laterUnavailable": "Non disponibile per queste date.",
+      "missingDetails": "Mancano i tuoi dati: nome ed email servono per la conferma.",
+      "needConsent": "Per prenotare serve il tuo consenso a termini e privacy: spunta la casella.",
+      "nextEmail": "Confermi la tua email",
+      "nextEmailText": "Ti mandiamo subito un link: la richiesta arriva all'host solo dopo la tua conferma.",
+      "nextHost": "{{host}} accetta o rifiuta",
+      "nextHostText": "Fino ad allora la prenotazione non è confermata.",
+      "nextPay": "Paghi in struttura",
+      "nextPayText": "Se {{host}} accetta, la prenotazione è confermata e paghi {{total}} in struttura.",
+      "nextTitle": "Cosa succede dopo",
+      "nowText": "Addebitiamo {{total}} adesso, con la carta.",
+      "nowTitle": "Paga ora",
+      "otherDates": "Cambia le date",
+      "trustCard": "{{name}} non vede e non conserva i dati della carta",
+      "trustNoHidden": "Nessun costo nascosto: il totale è {{total}}",
+      "trustRequest": "Nessun pagamento online: paghi in struttura, solo se {{host}} accetta.",
+      "trustStripe": "Pagamento protetto da Stripe, con connessione cifrata",
+      "trustTitle": "Perché puoi fidarti"
+    },
+    "payNothingYet": "Non paghi ancora nulla.",
+    "paymentsOff": {
+      "text": "{{host}} sta completando l'attivazione dei pagamenti online: per ora qui non si può prenotare. Puoi scrivere per chiedere le date.",
+      "title": "Le prenotazioni online sono in pausa",
+      "write": "Scrivi a {{host}}"
+    },
+    "secure": "Pagamento sicuro",
+    "stay": {
+      "by": "entro le {{time}}",
+      "chooseDates": "Scegli le date del soggiorno.",
+      "chooseDatesLabel": "Scegli le date",
+      "datesTitle": "Le date",
+      "edit": "Modifica",
+      "editDatesLabel": "Modifica le date: arrivo {{checkIn}}, partenza {{checkOut}}",
+      "fixStay": "Prima di continuare, sistemiamo il soggiorno.",
+      "from": "dalle {{time}}",
+      "guestsTitle": "Chi viaggia",
+      "instant": {
+        "text": "Confermata appena il pagamento, o il salvataggio della carta, va a buon fine.",
+        "title": "Prenotazione immediata"
+      },
+      "modeTitle": "Come vuoi prenotare?",
+      "next": "Continua: i tuoi dati",
+      "request": {
+        "text": "{{host}} accetta o rifiuta la richiesta; se accetta, paghi in struttura. Oggi non paghi nulla.",
+        "title": "Su richiesta"
+      },
+      "requestsHint": "{{host}} lo legge prima del tuo arrivo.",
+      "requestsLabel": "Richieste speciali",
+      "requestsPlaceholder": "Per esempio: arriviamo tardi, ci serve la culla, allergie…",
+      "requestsTitle": "Vuoi dire qualcosa a {{host}}?"
+    },
+    "steps": {
+      "done": "fatto",
+      "label": "Passi della prenotazione",
+      "phone": "Passo {{step}} di 3",
+      "step1": "Il soggiorno",
+      "step2": "I tuoi dati",
+      "step3": "Pagamento"
+    },
+    "summary": {
+      "confirmation": "Conferma",
+      "dates": "Date",
+      "description": "Casa, date, ospiti e prezzo della tua prenotazione.",
+      "details": "Dettagli",
+      "edit": "Cambia date o ospiti",
+      "guests": "Ospiti",
+      "instant": "Immediata",
+      "locked": "La prenotazione è fatta: date e ospiti non si cambiano più da qui.",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noDates": "Da scegliere",
+      "noPrice": "Il totale compare quando le date sono scelte.",
+      "onRequest": "Su richiesta",
+      "partialUntil": "Rimborso del {{percent}}% fino al {{date}}",
+      "title": "Riepilogo della prenotazione",
+      "total": "Totale",
+      "updated_one": "Totale aggiornato per {{count}} notte: {{total}}.",
+      "updated_other": "Totale aggiornato per {{count}} notti: {{total}}."
+    },
+    "titles": {
+      "step1": "Il tuo soggiorno",
+      "step2": "I tuoi dati",
+      "step3": "Conferma e paga",
+      "step3Request": "Invia la richiesta"
+    }
+  },
   "publicProperty": {
     "amenities": {
       "AirConditioning": "Aria condizionata",
@@ -11091,25 +11475,52 @@
       "safety": "Sicurezza",
       "wellness": "Benessere"
     },
+    "back": "Tutte le case",
     "description": {
       "less": "Mostra meno",
       "more": "Leggi tutto",
       "title": "Descrizione"
     },
+    "energy": {
+      "classOnly": "Classe energetica {{energyClass}}.",
+      "source": "Dall'attestato di prestazione energetica (APE) indicato dall'host.",
+      "title": "Classe energetica",
+      "withIndex": "Classe energetica {{energyClass}}, {{index}} kWh/m² all'anno."
+    },
     "facts": {
+      "area": "superficie",
+      "areaValue": "{{value}} m²",
       "bathrooms_one": "bagno",
       "bathrooms_other": "bagni",
       "bedrooms_one": "camera",
       "bedrooms_other": "camere",
+      "beds_one": "letto",
+      "beds_other": "letti",
+      "elevator": "ascensore",
+      "floor": "piano",
+      "floorBelow": "Interrato",
+      "floorGround": "Terra",
+      "floorUpper": "{{n}}º",
       "guests_one": "ospite",
       "guests_other": "ospiti",
       "label": "La casa in breve",
       "minNights_one": "notte minima",
-      "minNights_other": "notti minime"
+      "minNights_other": "notti minime",
+      "yes": "Sì"
     },
     "gallery": {
       "empty": "Le foto di questa casa non sono ancora disponibili.",
       "showAll": "Mostra tutte le {{total}} foto"
+    },
+    "header": {
+      "outOfFive": "su 5"
+    },
+    "host": {
+      "call": "Chiama",
+      "callLabel": "Chiama {{host}}",
+      "eyebrow": "Chi ti ospita",
+      "paySafely": "Per la tua sicurezza paga sempre da questo sito: mai con bonifico o fuori dalla pagina di pagamento.",
+      "write": "Scrivi a {{host}}"
     },
     "know": {
       "title": "Da sapere"
@@ -11125,14 +11536,80 @@
       "text": "Il link potrebbe essere vecchio o incompleto, oppure la casa non è più prenotabile online. Guarda le altre case di questo sito.",
       "title": "Questa casa non è disponibile"
     },
+    "overview": {
+      "hostedBy": "Ti ospita {{host}}",
+      "renovated": "Ristrutturata nel {{year}}"
+    },
+    "plan": {
+      "alt": "Planimetria di {{name}}: {{level}}",
+      "areaOfLevel": "di superficie su questo livello",
+      "eyebrow": "Planimetria",
+      "lead_one": "{{area}} m² su un solo livello",
+      "lead_other": "{{area}} m² su {{count}} livelli",
+      "level": "Livello {{n}}",
+      "levels": "La casa è su {{count}} livelli.",
+      "levelsLabel": "Livelli della casa",
+      "title": "Com'è fatta la casa",
+      "zoom": "Ingrandisci",
+      "zoomDescription": "La planimetria di {{name}} a grandezza naturale: scorri per vederla tutta."
+    },
+    "rules": {
+      "arrivalBetween": "Arrivo dalle {{from}} alle {{to}}",
+      "arrivalFrom": "Arrivo dalle {{from}}",
+      "arrivalTitle": "Arrivo e partenza",
+      "arrivalUntil": "Arrivo entro le {{to}}",
+      "cancellationTitle": "Cancellazione",
+      "childrenNo": "Non adatta ai bambini",
+      "childrenYes": "Bambini benvenuti",
+      "datesHint": "Scegli le date del soggiorno: qui vedrai i giorni esatti entro cui puoi cancellare.",
+      "departureBy": "Partenza entro le {{time}}",
+      "forYourDates": "Con le tue date (arrivo il {{date}})",
+      "houseTitle": "Regole della casa",
+      "partiesNo": "Niente feste",
+      "partiesOnRequest": "Feste su richiesta",
+      "petsNo": "Niente animali",
+      "petsOnRequest": "Animali su richiesta",
+      "petsYes": "Animali ammessi",
+      "quiet": "Silenzio dalle {{from}} alle {{to}}",
+      "safetyTitle": "Sicurezza",
+      "smokingNo": "Vietato fumare",
+      "smokingOutdoors": "Si fuma solo all'aperto",
+      "smokingYes": "Si può fumare",
+      "stage": {
+        "fullDays_one": "Rimborso totale fino a {{count}} giorno prima dell'arrivo",
+        "fullDays_other": "Rimborso totale fino a {{count}} giorni prima dell'arrivo",
+        "fullHours_one": "Rimborso totale fino a {{count}} ora prima dell'arrivo",
+        "fullHours_other": "Rimborso totale fino a {{count}} ore prima dell'arrivo",
+        "fullStart": "Rimborso totale fino al giorno prima dell'arrivo",
+        "noneAfter": "Dopo, nessun rimborso del prezzo del soggiorno",
+        "noneAtAll": "Nessun rimborso del prezzo del soggiorno",
+        "partialDays_one": "{{percent}}% del prezzo del soggiorno fino a {{count}} giorno prima dell'arrivo",
+        "partialDays_other": "{{percent}}% del prezzo del soggiorno fino a {{count}} giorni prima dell'arrivo",
+        "partialHours_one": "{{percent}}% del prezzo del soggiorno fino a {{count}} ora prima dell'arrivo",
+        "partialHours_other": "{{percent}}% del prezzo del soggiorno fino a {{count}} ore prima dell'arrivo",
+        "partialStart": "{{percent}}% del prezzo del soggiorno fino al giorno prima dell'arrivo"
+      },
+      "stagesLabel": "Cosa restituisce la cancellazione"
+    },
     "sectionBar": {
       "label": "Sezioni della scheda"
     },
     "sections": {
       "amenities": "Servizi",
+      "availability": "Disponibilità",
       "description": "Descrizione",
       "know": "Da sapere",
-      "reviews": "Recensioni"
+      "overview": "Panoramica",
+      "plan": "Planimetria",
+      "reviews": "Recensioni",
+      "rules": "Regole",
+      "zone": "Zona"
+    },
+    "share": {
+      "action": "Condividi",
+      "copied": "Link copiato",
+      "copiedStatus": "Il link della casa è stato copiato.",
+      "failed": "Non riusciamo a copiare il link: copialo dalla barra degli indirizzi."
     },
     "viewer": {
       "hint": "Usa le frecce per scorrere le foto e Esc per chiudere.",
@@ -11140,6 +11617,23 @@
       "position": "Foto {{index}} di {{total}}",
       "previous": "Foto precedente",
       "title": "Foto di {{name}}"
+    },
+    "zone": {
+      "byCar": "{{minutes}} min in auto",
+      "eyebrow": "Zona",
+      "onFoot": "{{minutes}} min a piedi",
+      "title": "Dove si trova",
+      "types": {
+        "beach": "Spiaggia",
+        "food": "Ristoranti",
+        "health": "Salute",
+        "other": "Altro",
+        "parking": "Parcheggio",
+        "shop": "Negozi",
+        "sight": "Da vedere",
+        "transport": "Trasporti"
+      },
+      "unnamed": "Luogo"
     }
   },
   "publicSeo": {
@@ -11225,10 +11719,14 @@
     "subprocessors": "Sub-responsabili",
     "legalDocuments": "Documenti legali",
     "footer": {
+      "allHouses": "Tutte le case",
       "contact": "Contatti",
       "cookies": "Cookie",
+      "hostedBy": "Ti ospita {{host}}",
+      "houses": "Le case",
       "info": "Informazioni",
       "operator": "Operatore",
+      "securePayments": "Pagamenti sicuri con Stripe",
       "vatNumber": "P.IVA {{vat}}"
     },
     "seo": {
@@ -11422,6 +11920,11 @@
     "sessionError": "Impossibile avviare il pagamento. Riprova.",
     "payNow": "Paga {{amount}}",
     "stripeNotice": "Il pagamento è gestito da Stripe e va direttamente sul conto del locatore."
+  },
+  "reorderable": {
+    "down": "Sposta giù: {{item}}",
+    "remove": "Rimuovi",
+    "up": "Sposta su: {{item}}"
   },
   "reports": {
     "chips": {
@@ -12523,6 +13026,144 @@
       "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
     }
   },
+  "siteConfirm": {
+    "action": {
+      "calendar": "Aggiungi al calendario",
+      "findBooking": "Cerca la tua prenotazione",
+      "manage": "Gestisci la prenotazione",
+      "notArrived": "Non è arrivata? Scrivi all'host",
+      "otherDates": "Scegli altre date",
+      "writeHost": "Scrivi all'host"
+    },
+    "calendar": {
+      "arriveFrom": "Arrivo dalle {{time}}",
+      "code": "Codice prenotazione {{code}}",
+      "contact": "Contatti: {{host}}, {{phone}}",
+      "description": "{{home}}, {{days}}: con il codice della prenotazione.",
+      "eventTitle": "Soggiorno · {{home}}",
+      "fileName": "soggiorno-{{code}}.ics",
+      "google": "Google Calendar",
+      "ics": {
+        "text": "Per Apple, Outlook e quasi tutte le app di calendario",
+        "title": "Scarica il file .ics"
+      },
+      "leaveBy": "Partenza entro le {{time}}",
+      "newTab": "Si apre in una nuova scheda",
+      "outlook": "Outlook.com",
+      "place": "Nel calendario c'è la zona, non l'indirizzo esatto.",
+      "saved": "File scaricato: aprilo per aggiungere il soggiorno al tuo calendario.",
+      "title": "Aggiungi al calendario"
+    },
+    "chip": {
+      "cancelled": "Annullata",
+      "confirmed": "Confermata",
+      "declined": "Non accettata",
+      "emailPending": "Email da confermare",
+      "expired": "Scaduta",
+      "processing": "Pagamento in elaborazione",
+      "unavailable": "Date non libere",
+      "unpaid": "Da pagare",
+      "waiting": "In attesa dell'host"
+    },
+    "error": {
+      "title": "Non riusciamo a leggere la prenotazione"
+    },
+    "hostFallback": "l'host",
+    "invalid": {
+      "title": "Link incompleto"
+    },
+    "lead": {
+      "email": "Ti abbiamo scritto a {{email}}: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "emailNoAddress": "Ti abbiamo scritto: apri il link per confermare il tuo indirizzo, altrimenti {{host}} non riceve la richiesta.",
+      "later": "Oggi non paghi nulla: il {{date}} addebitiamo {{total}} sulla carta salvata.",
+      "onSite": "Paghi {{total}} in struttura, all'arrivo.",
+      "paid": "La conferma con il codice è nella tua email.",
+      "paidEmail": "La conferma con il codice è nella tua email, {{email}}.",
+      "stay_one": "{{home}} ti aspetta: {{range}}.",
+      "stay_other": "{{home}} vi aspetta: {{range}}."
+    },
+    "mail": {
+      "subject": "La mia prenotazione {{code}}"
+    },
+    "note": {
+      "later": "Paghi il {{date}}",
+      "onSite": "Paghi in struttura, all'arrivo",
+      "paid": "Pagato online",
+      "processing": "Pagamento in elaborazione",
+      "request": "Richiesta, non ancora una prenotazione",
+      "unpaid": "Ancora da pagare"
+    },
+    "offline": "Sei offline: lo stato si aggiorna di nuovo quando torni online.",
+    "offlineAction": "Serve la connessione: riprova quando sei di nuovo online.",
+    "pageTitle": "La tua prenotazione · {{org}}",
+    "steps": {
+      "arrival": {
+        "text": "{{day}}, dalle {{time}}",
+        "title": "Arrivo"
+      },
+      "charge": {
+        "text": "Sulla carta salvata: non devi fare nulla.",
+        "title": "Addebito di {{total}}"
+      },
+      "confirmed": {
+        "later": "Oggi non hai pagato nulla.",
+        "onSite": "Pagherai in struttura, all'arrivo.",
+        "paid": "La conferma con il codice è nella tua email.",
+        "title": "Prenotazione confermata"
+      },
+      "departure": {
+        "text": "{{day}}, entro le {{time}}",
+        "title": "Partenza"
+      },
+      "email": {
+        "doneText": "{{host}} ha ricevuto la tua richiesta.",
+        "doneTitle": "Email confermata",
+        "title": "Conferma la tua email"
+      },
+      "eyebrow": "I prossimi passi",
+      "host": {
+        "title": "{{host}} risponde"
+      },
+      "ifAccepted": {
+        "title": "Se accetta"
+      },
+      "state": {
+        "current": "adesso",
+        "done": "fatto",
+        "todo": "da fare"
+      },
+      "title": "Cosa succede ora",
+      "when": {
+        "done": "Fatto",
+        "later": "Poi",
+        "now": "Adesso"
+      }
+    },
+    "stuck": "Non riusciamo a confermare: controlla la tua email o cerca la prenotazione.",
+    "ticket": {
+      "arrival": "Arrivo",
+      "by": "entro le {{time}}",
+      "code": "Codice",
+      "copied": "Copiato",
+      "copiedAnnounce": "Codice copiato negli appunti.",
+      "copiedLabel": "Codice {{code}} copiato",
+      "copy": "Copia",
+      "copyLabel": "Copia il codice {{code}}",
+      "departure": "Partenza",
+      "from": "dalle {{time}}",
+      "label": "La tua prenotazione: {{home}}",
+      "ofWhichChildren_one": "di cui {{count}} bambino",
+      "ofWhichChildren_other": "di cui {{count}} bambini",
+      "selectedAnnounce": "Codice selezionato: copialo con la tastiera o dal menu del telefono.",
+      "total": "Totale"
+    },
+    "title": {
+      "confirmed": "Prenotazione confermata!",
+      "confirmedNamed": "Prenotazione confermata, {{name}}!",
+      "email": "Ultimo passo: conferma la tua email",
+      "wait": "Richiesta inviata a {{host}}"
+    }
+  },
   "siteDocuments": {
     "title": "Documenti del sito",
     "description": "Informativa privacy e termini di prenotazione del tuo sito: gli ospiti li leggono prima di prenotare.",
@@ -12603,6 +13244,158 @@
       "linkInvalid": "Un link non è valido: deve iniziare con https://, http:// o mailto:.",
       "urlRequired": "Inserisci l'indirizzo del documento.",
       "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
+    }
+  },
+  "siteHome": {
+    "card": {
+      "previousPhoto": "Foto precedente",
+      "nextPhoto": "Foto successiva",
+      "photosOf": "Foto di {{name}}",
+      "guestFavourite": "Preferita dagli ospiti",
+      "guestFavouriteHint": "Valutazione {{average}} su 5 da {{count}} recensioni verificate.",
+      "ratingLabel_one": "{{average}} su 5, {{count}} recensione",
+      "ratingLabel_other": "{{average}} su 5, {{count}} recensioni",
+      "area": "{{count}} m²",
+      "mainAmenities": "Servizi principali",
+      "night": "notte",
+      "totalFor_one": "totale per {{count}} notte",
+      "totalFor_other": "totale per {{count}} notti",
+      "perNightAverage": "{{price}} a notte",
+      "tax": {
+        "exact": "imposta di soggiorno inclusa",
+        "estimated": "imposta di soggiorno stimata",
+        "notIncluded": "imposta di soggiorno non inclusa"
+      },
+      "taxHelpTitle": "Imposta di soggiorno",
+      "taxHelpLabel": "Perché l’imposta è stimata",
+      "taxHelp": "Per ora contiamo tutti i bambini come se la pagassero. L’importo esatto si conosce quando indichi le età, prima di pagare.",
+      "freeCancellation": "Cancellazione gratuita fino al {{date}}",
+      "freeFrom": "Libera dal {{date}}",
+      "busy": "Non libera in queste date",
+      "minNights_one": "Soggiorno minimo {{count}} notte",
+      "minNights_other": "Soggiorno minimo {{count}} notti",
+      "tooManyGuests_one": "Ospita al massimo {{count}} persona",
+      "tooManyGuests_other": "Ospita al massimo {{count}} persone",
+      "noPets": "Non accetta animali",
+      "notBookable": "Non prenotabile online"
+    },
+    "tags": {
+      "mare": "Mare",
+      "centro": "Centro storico",
+      "piscina": "Con piscina",
+      "pet": "Pet friendly",
+      "campagna": "Campagna",
+      "terrazza": "Con terrazza",
+      "vista-mare": "Vista mare"
+    },
+    "hero": {
+      "destinationHomes_one": "{{count}} casa",
+      "destinationHomes_other": "{{count}} case",
+      "reviews_one": "{{count}} recensione verificata",
+      "reviews_other": "{{count}} recensioni verificate",
+      "securePayment": "Pagamento sicuro con Stripe",
+      "homesIn_one": "{{count}} casa a {{places}}",
+      "homesIn_other": "{{count}} case a {{places}}",
+      "homes_one": "{{count}} casa",
+      "homes_other": "{{count}} case"
+    },
+    "categories": {
+      "label": "Cosa cerchi?",
+      "all": "Tutte le case",
+      "homes_one": "{{count}} casa",
+      "homes_other": "{{count}} case"
+    },
+    "houses": {
+      "title": "Le nostre case",
+      "leadNoDates": "Il prezzo è quello della notte più bassa dei prossimi 30 giorni. Scegli le date per vedere il totale.",
+      "leadDates_one": "Totali per {{range}}, {{count}} notte.",
+      "leadDates_other": "Totali per {{range}}, {{count}} notti.",
+      "seeAll": "Vedi tutte"
+    },
+    "empty": {
+      "title": "Stiamo preparando la prossima stagione",
+      "text": "In questo momento nessuna casa è prenotabile online. Scrivi a chi ti ospita: ti dice quando si riapre e quali date sono libere.",
+      "call": "Chiama"
+    },
+    "nav": {
+      "label": "Menu del sito",
+      "homes": "Le case",
+      "why": "Perché prenotare qui",
+      "zones": "Zone",
+      "faq": "Domande frequenti"
+    },
+    "why": {
+      "eyebrow": "Prenota con chi ti ospita",
+      "title": "Perché prenotare direttamente",
+      "transparent": {
+        "title": "Prezzi trasparenti",
+        "text": "Il totale che vedi con le date comprende notti e pulizia e, dove il Comune la prevede, l’imposta di soggiorno: nessuna sorpresa al pagamento."
+      },
+      "noFees": {
+        "title": "Nessuna commissione",
+        "text": "Prenoti direttamente con chi ti ospita: nessun costo di servizio aggiunto da un portale. Il totale è solo notti, pulizia e imposta."
+      },
+      "direct": {
+        "title": "Assistenza diretta",
+        "text": "Parli con {{host}}, non con un call center: prima e durante il soggiorno."
+      },
+      "receipt": {
+        "label": "Esempio: {{name}}",
+        "kicker": "Un esempio vero, calcolato sui prezzi di oggi",
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "cleaning": "Pulizia finale",
+        "tax": "Imposta di soggiorno",
+        "fees": "Commissioni di servizio",
+        "total": "Totale",
+        "try": "Prova con le tue date"
+      }
+    },
+    "reviews": {
+      "eyebrow": "Dicono di noi",
+      "title": "Cosa dicono gli ospiti",
+      "lead": "Solo chi ha soggiornato può recensire.",
+      "all": "Tutte le recensioni di {{name}}"
+    },
+    "zones": {
+      "eyebrow": "Dove siamo",
+      "title": "Dove sono le case",
+      "lead": "Scegli la zona che ti somiglia: ogni pin porta alle case di quel posto.",
+      "pinName": "{{name}}: {{count}} case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth."
+    },
+    "faq": {
+      "eyebrow": "Domande",
+      "title": "Domande frequenti",
+      "lead": "Non trovi la risposta? Scrivi a chi ti ospita.",
+      "why": {
+        "q": "Perché conviene prenotare qui?",
+        "a": "Prenoti direttamente con {{host}}: nessun costo di servizio aggiunto da un portale, il totale con tutto quello che comprende lo vedi prima di pagare e per ogni domanda parli con chi ti ospita."
+      },
+      "payment": {
+        "q": "Il pagamento è sicuro?",
+        "a": "Paghi online con Stripe: i dati della carta vanno direttamente a Stripe e non passano da questo sito."
+      },
+      "cancel": {
+        "q": "Posso cancellare?",
+        "a": "Ogni casa ha la sua politica di cancellazione: la trovi nella scheda della casa e ti viene mostrata di nuovo prima di pagare."
+      },
+      "tax": {
+        "q": "Cos’è l’imposta di soggiorno?",
+        "a": "È un’imposta del Comune in cui si trova la casa, a carico di chi soggiorna. Dove il Comune la prevede, la trovi come riga a parte nel dettaglio del prezzo."
+      },
+      "checkin": {
+        "q": "Come funziona il check-in?",
+        "a": "Dopo la prenotazione ricevi per e-mail il link per registrare gli ospiti online, come richiede la legge."
+      },
+      "pets": {
+        "q": "Posso portare il mio animale?",
+        "a": "Alcune case li accettano: {{homes}}. Per le altre guarda le regole nella scheda della casa."
+      },
+      "where": {
+        "q": "Dove sono le case?",
+        "a": "Le case sono a {{places}}. L’indirizzo esatto arriva con la conferma della prenotazione."
+      }
     }
   },
   "siteMap": {
@@ -12687,6 +13480,111 @@
       "helpLabel": "Come verifichiamo le recensioni",
       "label": "Verificata",
       "title": "Come verifichiamo le recensioni"
+    }
+  },
+  "siteSearch": {
+    "title": {
+      "homes": "Le nostre case",
+      "free_one": "{{count}} casa libera",
+      "free_other": "{{count}} case libere",
+      "noneFree": "Nessuna casa libera",
+      "count_one": "{{count}} casa",
+      "count_other": "{{count}} case"
+    },
+    "sub": {
+      "dates": "{{range}} · {{nights}} · {{guests}}",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noDates": "I prezzi sono quelli della notte più bassa dei prossimi 30 giorni: scegli le date per vedere il totale."
+    },
+    "sort": {
+      "label": "Ordina le case",
+      "recommended": "Consigliate",
+      "priceAsc": "Prezzo più basso",
+      "priceDesc": "Prezzo più alto",
+      "rating": "Valutazione più alta",
+      "largest": "Più grandi"
+    },
+    "categories": "Categorie",
+    "onlyFavorites": "Solo i preferiti",
+    "none": {
+      "capacity": {
+        "title": "Nessuna casa per {{guests}} ospiti",
+        "text": "Le case di questo sito ospitano fino a {{count}} persone. Scrivi a {{host}} per capire come fare."
+      },
+      "dates": {
+        "title": "Nessuna casa libera per queste date",
+        "text": "In queste date le case sono già prenotate. Prova altre date, anche vicine, oppure scrivi a {{host}}."
+      },
+      "filters": {
+        "title": "Nessuna casa con questi filtri",
+        "text": "Prova a togliere qualche filtro."
+      },
+      "favorites": {
+        "title": "Nessuna casa tra i preferiti",
+        "text": "Tocca il cuore su una casa per salvarla su questo dispositivo: la ritrovi qui."
+      },
+      "none": {
+        "title": "Nessuna casa da mostrare",
+        "text": "In questo momento nessuna casa è prenotabile online. Scrivi a {{host}} per sapere quando riapre."
+      },
+      "alternatives": "Date vicine con case libere",
+      "alternativeHomes_one": "{{count}} casa libera",
+      "alternativeHomes_other": "{{count}} case libere",
+      "clear": "Togli i filtri"
+    },
+    "unavailable": {
+      "title": "Non libere in queste date"
+    },
+    "note": {
+      "included": "I totali comprendono notti, pulizia e imposta di soggiorno.",
+      "estimated": "L’imposta di soggiorno è una stima finché non indichi le età dei bambini.",
+      "notIncluded": "Per alcune case il totale non comprende l’imposta di soggiorno."
+    },
+    "filters": {
+      "open": "Filtri",
+      "active_one": "{{count}} filtro attivo",
+      "active_other": "{{count}} filtri attivi",
+      "activeLabel": "Filtri attivi",
+      "remove": "Togli «{{name}}»",
+      "title": "Filtri",
+      "description": "Scegli prezzo, camere, metri quadri, servizi e regole: il pulsante in fondo dice quante case restano.",
+      "show": "Mostra le case",
+      "showCount_one": "Mostra {{count}} casa",
+      "showCount_other": "Mostra {{count}} case",
+      "showNone": "Nessuna casa con questi filtri",
+      "clear": "Cancella tutto",
+      "any": "Qualsiasi",
+      "orMore": "{{n}} o più",
+      "price": "Prezzo a notte",
+      "priceMin": "Da",
+      "priceMax": "A",
+      "noMin": "nessun minimo",
+      "noMax": "nessun massimo",
+      "priceBetween": "da {{from}} a {{to}}",
+      "priceFrom": "da {{price}}",
+      "priceUpTo": "fino a {{price}}",
+      "bedrooms": "Camere",
+      "bathrooms": "Bagni",
+      "bedroomsChip": "{{n}} o più camere",
+      "bathroomsChip": "{{n}} o più bagni",
+      "area": "Superficie",
+      "areaAtLeast": "almeno {{n}} m²",
+      "amenities": "Servizi",
+      "rules": "Regole della casa",
+      "rule": {
+        "pets": "Animali ammessi",
+        "children": "Adatta ai bambini",
+        "selfCheckin": "Check-in autonomo",
+        "smoking": "Si può fumare",
+        "parties": "Feste ammesse"
+      }
+    },
+    "map": {
+      "label": "Mappa delle case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth.",
+      "showMap": "Mappa",
+      "showList": "Elenco"
     }
   },
   "statement": {
@@ -14989,19 +15887,439 @@
     },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
-      "title": "Vetrina pubblica",
-      "description": "Anteprima della pagina che chiunque può aprire con il tuo link: è identica a quella pubblica.",
-      "loading": "Caricamento della vetrina…",
-      "loadError": "Impossibile caricare l'anteprima della vetrina.",
-      "published": "La vetrina è pubblica: chi ha il link può vederla.",
-      "notPublished": "La vetrina non è ancora pubblica: lo sarà quando attivi il profilo. Questa è l'anteprima di come apparirà.",
-      "suspended": "Il profilo è sospeso: la vetrina non è visibile al pubblico. Contatta il supporto CasaZen.",
-      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
-      "open": "Apri la pagina pubblica",
+      "address": {
+        "draftNote": "Sarà questo l'indirizzo quando pubblichi.",
+        "title": "Indirizzo"
+      },
+      "before": {
+        "advised": "Consigliato",
+        "changes": "Cosa cambia pubblicando: {{changes}}.",
+        "fix": "Sistema",
+        "missing": "Cosa manca",
+        "required": "Necessario",
+        "title": "Prima di pubblicare"
+      },
+      "bookings": {
+        "bookings_off": "Tutto è pronto ma le prenotazioni sono chiuse: puoi aprirle con «Apri le prenotazioni».",
+        "goToPayments": "Vai ai pagamenti",
+        "not_published": "La vetrina non è ancora pubblicata: le prenotazioni si aprono dopo la pubblicazione.",
+        "paused": "La vetrina è in pausa: le prenotazioni sono chiuse.",
+        "payments_account_not_ready": "Il conto per i pagamenti non è ancora pronto: finché non lo è, la vetrina si vede ma non si può prenotare.",
+        "payments_off": "I pagamenti online non sono ancora attivi: la vetrina si vede ma non si può prenotare.",
+        "title": "Prenotazioni"
+      },
+      "changes": {
+        "bio": "Chi siamo",
+        "certs": "Certificazioni",
+        "color": "Colore dei pulsanti",
+        "cover": "Copertina",
+        "faq": "Domande frequenti",
+        "font": "Caratteri",
+        "gallery": "Lavori",
+        "guarantee": "Garanzia",
+        "intro": "Introduzione",
+        "logo": "Logo",
+        "prep": "Prima che arriviamo",
+        "sections": "Sezioni",
+        "serviceOrder": "Servizi mostrati",
+        "style": "Stile",
+        "tagline": "Frase in grande",
+        "team": "Squadra",
+        "values": "Punti di forza"
+      },
       "copyLink": "Copia il link",
+      "description": "La tua pagina pubblica: pubblicala, mettila in pausa e condividi il link.",
+      "discardDialog": {
+        "description": "La bozza torna uguale alla vetrina pubblicata.",
+        "kept": "La vetrina che i clienti vedono non cambia.",
+        "lost": "Le modifiche non pubblicate andranno perse.",
+        "title": "Annullare le modifiche?"
+      },
+      "editor": {
+        "charsLeft_one": "{{count}} carattere rimasto",
+        "charsLeft_other": "{{count}} caratteri rimasti",
+        "color": {
+          "hint": "Lascialo vuoto per il colore dello stile. Il testo bianco deve leggersi bene: serve un contrasto di almeno 4,5.",
+          "label": "Colore (esadecimale)",
+          "low": "Il bianco su questo colore si legge a {{ratio}}:1: servono almeno {{min}}:1.",
+          "notAColor": "Scrivi un colore come #0B5FA5.",
+          "picker": "Scegli un colore",
+          "refused": "Questo colore non è accettato: usa quello consigliato.",
+          "reset": "Usa il colore dello stile",
+          "title": "Colore dei pulsanti",
+          "useSuggested": "Usa il colore consigliato"
+        },
+        "conflict": {
+          "description": "Ricarica per vedere l'ultima versione. Le modifiche non salvate di questa scheda andranno perse.",
+          "reload": "Ricarica",
+          "title": "La vetrina è stata modificata altrove"
+        },
+        "description": "Scrivi, scegli lo stile e guarda subito come la vedono i clienti.",
+        "font": {
+          "classico": {
+            "description": "Eleganza da rivista, contrasto alto.",
+            "name": "Classico"
+          },
+          "editoriale": {
+            "description": "Titoli con le grazie, caldi e curati.",
+            "name": "Editoriale"
+          },
+          "legend": "Caratteri dei titoli",
+          "moderno": {
+            "description": "Tutto senza grazie, nitido e deciso.",
+            "name": "Moderno"
+          },
+          "title": "Caratteri"
+        },
+        "invalidField": "Questo valore non va bene: controllalo.",
+        "logo": {
+          "legend": "Come appare il tuo nome",
+          "mark": {
+            "description": "Un quadrato con le tue iniziali e il nome accanto.",
+            "name": "Sigla e nome"
+          },
+          "text": {
+            "description": "Il nome in grande, senza segno.",
+            "name": "Solo il nome"
+          },
+          "title": "Marchio"
+        },
+        "noAddress": "L'anteprima c'è quando la vetrina ha un indirizzo, cioè dopo l'attivazione del profilo.",
+        "photos": {
+          "addToProfile": "Aggiungi foto al profilo",
+          "addToService": "Aggiungi foto a un servizio",
+          "loading": "Cerco le tue foto…",
+          "none": "Non hai ancora foto da scegliere. Aggiungile al profilo o a un servizio, poi le trovi qui.",
+          "pickerHint": "Scegli tra le foto che hai già nel profilo e nei servizi.",
+          "profilePhoto": "Foto {{n}} del profilo",
+          "servicePhoto": "{{service}}: foto {{n}}"
+        },
+        "preview": "Anteprima",
+        "publish": {
+          "cannot": "Sistema le voci «Da fare» per pubblicare.",
+          "changes": "Cosa cambia pubblicando",
+          "checks": "Controlli prima di pubblicare",
+          "firstTime": "Tutto: è la prima pubblicazione.",
+          "halfFilled": "Alcune righe dei testi sono a metà: completale o toglile ({{rows}}).",
+          "halfFilledWorks": "Alcuni lavori non hanno la foto: scegline una o toglili ({{rows}}).",
+          "level": {
+            "ok": "Fatto",
+            "todo": "Da fare",
+            "warn": "Consigliato"
+          },
+          "nothing": "Niente: la vetrina è già aggiornata.",
+          "paused": "La vetrina è in pausa: pubblichi il contenuto, ma resta in pausa finché non la riattivi.",
+          "upToDate": "La vetrina pubblicata è già uguale alla bozza."
+        },
+        "save": {
+          "conflict": "La vetrina è stata modificata altrove.",
+          "dirty": "Modifiche non ancora salvate…",
+          "error": "Non riesco a salvare: riprovo alla prossima modifica.",
+          "invalid": "Un valore non è valido: controlla i campi segnati.",
+          "nothing": "Nessuna modifica",
+          "offline": "Sei offline: salvo appena torna la rete.",
+          "retry": "Riprova",
+          "saved": "Salvato alle {{time}}",
+          "saving": "Salvo…"
+        },
+        "sections": {
+          "always": "I servizi e i pulsanti finali si vedono sempre.",
+          "certs": {
+            "hint": "Quelle che hai scritto tu.",
+            "name": "Certificazioni"
+          },
+          "faq": {
+            "hint": "Le risposte che hai scritto tu.",
+            "name": "Domande frequenti"
+          },
+          "hint": "Scegli quali blocchi della pagina mostrare. Un blocco senza contenuto non si vede comunque.",
+          "how": {
+            "hint": "I passi dalla scelta alla visita. Si vede quando le prenotazioni sono aperte.",
+            "name": "Come funziona"
+          },
+          "title": "Sezioni della pagina",
+          "trust": {
+            "hint": "«Verificato» e i lavori fatti, solo se veri.",
+            "name": "Fiducia"
+          },
+          "works": {
+            "hint": "Le foto dei tuoi lavori.",
+            "name": "I lavori"
+          },
+          "zones": {
+            "hint": "I comuni in cui lavori.",
+            "name": "Le zone"
+          }
+        },
+        "services": {
+          "fix": "Apri",
+          "hint": "Scegli quali servizi mostrare e in che ordine. Si possono mostrare solo i servizi attivi.",
+          "inactiveTitle": "Non ancora in vetrina",
+          "keepOne": "Deve restare almeno un servizio in vetrina.",
+          "loadError": "Non riesco a leggere i tuoi servizi.",
+          "loading": "Leggo i tuoi servizi…",
+          "moved": "{{name}}: posizione {{position}} di {{total}}",
+          "none": "Non hai ancora servizi attivi: attivane uno in «Servizi e prezzi» per mostrarlo qui.",
+          "open": "Vai a «Servizi e prezzi»",
+          "reason": {
+            "Draft": "Bozza: finisci di compilarla per poterla mostrare.",
+            "Paused": "In pausa: riattivala per poterla mostrare."
+          },
+          "title": "Servizi in vetrina"
+        },
+        "starter": {
+          "applied": "Testo di partenza inserito",
+          "hint": "Non sai cosa scrivere? Parti da un testo adatto al tuo mestiere: riempie solo i campi vuoti, lo cambi come vuoi e nessuno lo vede finché non pubblichi.",
+          "title": "Un testo di partenza",
+          "use": "Usa il testo di partenza"
+        },
+        "steps": {
+          "publish": "Anteprima e pubblica",
+          "services": "Servizi e sezioni",
+          "style": "Stile e marchio",
+          "texts": "Testi",
+          "works": "Foto e lavori"
+        },
+        "stepsLabel": "Passi della vetrina",
+        "style": {
+          "acqua": {
+            "description": "Blu deciso, forme nette: per idraulici, caldaisti e chi risponde alle emergenze.",
+            "name": "Pronto intervento"
+          },
+          "fresco": {
+            "description": "Verde acqua luminoso e forme morbide: per pulizie, lavanderia e sanificazione.",
+            "name": "Casa pulita"
+          },
+          "legend": "Stile della vetrina",
+          "naturale": {
+            "description": "Verde bosco su carta calda, titoli eleganti: per giardinieri, potatori e cura degli uliveti.",
+            "name": "Verde e giardino"
+          },
+          "recommended": "Consigliato per il tuo mestiere",
+          "scintilla": {
+            "description": "Grafite e giallo, angoli precisi: per elettricisti, antennisti e tecnici.",
+            "name": "Impianti"
+          },
+          "title": "Stile"
+        },
+        "texts": {
+          "addCert": "Aggiungi una certificazione",
+          "addPerson": "Aggiungi una persona",
+          "addPrep": "Aggiungi un consiglio",
+          "addQuestion": "Aggiungi una domanda",
+          "addValue": "Aggiungi un punto",
+          "answerLabel": "Risposta",
+          "bio": "Chi siamo",
+          "bioHint": "La tua storia, in poche righe.",
+          "cert": "Certificazione {{n}}",
+          "certDetail": "Dettaglio",
+          "certLabel": "Nome",
+          "certRemoved": "Certificazione tolta",
+          "certsHint": "Solo quelle che hai davvero: CasaZen non ne aggiunge né ne controlla.",
+          "certsTitle": "Certificazioni",
+          "faqHint": "Le domande che ti fanno più spesso, con la risposta.",
+          "faqTitle": "Domande frequenti",
+          "guaranteeHint": "Scrivi solo ciò che fai davvero, con titolo e testo (o nessuno dei due): la garanzia la scrivi tu, CasaZen non ne aggiunge.",
+          "guaranteeName": "Titolo della garanzia",
+          "guaranteeText": "Cosa garantisci",
+          "guaranteeTitle": "Garanzia",
+          "intro": "Introduzione",
+          "person": "Persona {{n}}",
+          "personName": "Nome",
+          "personRemoved": "Persona tolta",
+          "personRole": "Ruolo",
+          "prepHint": "Cosa può preparare il cliente: una riga ciascuna.",
+          "prepItem": "Consiglio {{n}}",
+          "prepLabel": "Cosa preparare",
+          "prepRemoved": "Consiglio tolto",
+          "prepTitle": "Prima che arriviamo",
+          "presentation": "La presentazione",
+          "presentationHint": "Una frase in grande, una riga sotto e la tua storia: tre testi brevi, in parole tue.",
+          "question": "Domanda {{n}}",
+          "questionLabel": "Domanda",
+          "questionRemoved": "Domanda tolta",
+          "tagline": "Frase in grande",
+          "teamHint": "Chi lavora con te: nome e ruolo.",
+          "teamTitle": "Le persone",
+          "value": "Punto {{n}}",
+          "valueLabel": "Punto di forza",
+          "valueRemoved": "Punto tolto",
+          "valuesHint": "Fino a sei, una riga ciascuno.",
+          "valuesTitle": "Punti di forza"
+        },
+        "works": {
+          "add": "Aggiungi un lavoro",
+          "alt": "Descrizione della foto",
+          "altHint": "Per chi non può vederla. Se la lasci vuota si usa il tuo nome.",
+          "altHintWork": "Per chi non può vedere la foto. Se la lasci vuota si usa la didascalia.",
+          "caption": "Didascalia",
+          "changeBefore": "Cambia la foto «prima»",
+          "changePhoto": "Cambia la foto",
+          "chooseBefore": "Scegli la foto «prima»",
+          "choosePhoto": "Scegli la foto",
+          "compare": "Mostra il confronto prima e dopo",
+          "compareHint": "La foto del lavoro è il «dopo».",
+          "count_one": "{{count}} lavoro con foto. Con almeno {{advised}} la pagina convince di più.",
+          "count_other": "{{count}} lavori con foto. Con almeno {{advised}} la pagina convince di più.",
+          "coverHint": "La foto grande in cima alla pagina. Se non ne scegli una, la pagina usa la prima foto del profilo, o uno sfondo neutro.",
+          "coverTitle": "Copertina",
+          "hint": "I lavori che hai fatto: una foto, una riga e il luogo.",
+          "noPhoto": "Nessuna foto",
+          "pickBefore": "Foto «prima» del lavoro {{n}}",
+          "pickPhoto": "Foto del lavoro {{n}}",
+          "place": "Luogo",
+          "removePhoto": "Togli la foto",
+          "removed": "Lavoro tolto",
+          "title": "Lavori",
+          "work": "Lavoro {{n}}"
+        }
+      },
+      "focus": {
+        "changesBody": "Cosa cambia: {{changes}}.",
+        "changesTitle": "Hai modifiche da pubblicare",
+        "create": "Crea la tua vetrina",
+        "createBody": "Scegli lo stile, scrivi due righe e i servizi da mostrare: la pubblichi quando sei pronto.",
+        "createTitle": "Crea la tua vetrina in cinque minuti",
+        "edit": "Modifica la vetrina",
+        "fix": "Sistema: {{item}}",
+        "missingBody": "Sistema le voci qui sotto: poi potrai pubblicare.",
+        "missingTitle": "Manca ancora qualcosa per pubblicare",
+        "now": "Adesso",
+        "onlineBookingsOpen": "I clienti la vedono e possono prenotare.",
+        "onlineReadOnly": "I clienti la vedono. Le prenotazioni non sono ancora aperte.",
+        "onlineTitle": "La tua vetrina è online",
+        "open": "Apri la vetrina",
+        "pausedBody": "I clienti vedono che per ora non accetti prenotazioni. Riattivala quando vuoi.",
+        "pausedTitle": "La vetrina è in pausa",
+        "publish": "Pubblica la vetrina",
+        "publishBody": "Il necessario c'è: quando pubblichi, i clienti la vedono subito.",
+        "publishChanges": "Pubblica le modifiche",
+        "publishTitle": "Pubblica la tua vetrina",
+        "publishedAt": "Pubblicata il {{when}}",
+        "refresh": "Aggiorna",
+        "resume": "Riattiva la vetrina"
+      },
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
+      "loadError": "Impossibile caricare la vetrina.",
+      "loading": "Caricamento della vetrina…",
+      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
+      "open": "Apri la pagina pubblica",
+      "preview": {
+        "about": "Chi siamo",
+        "desktop": "Computer",
+        "deviceLabel": "Dispositivo",
+        "frameTitle": "Anteprima della vetrina",
+        "home": "Home",
+        "note": "L'anteprima mostra la bozza: i clienti vedono solo ciò che pubblichi.",
+        "pageLabel": "Pagina",
+        "phone": "Telefono",
+        "services": "Servizi",
+        "tablet": "Tablet"
+      },
+      "readiness": {
+        "color": "Un colore dei pulsanti leggibile",
+        "faq": "Tre domande frequenti con la risposta",
+        "hours": "Gli orari di lavoro",
+        "photos": "Tre foto dei tuoi lavori",
+        "presentation": "Una frase e un «chi siamo» scritti da te",
+        "services": "Almeno un servizio attivo con un prezzo",
+        "verified": "Il «Verificato» di CasaZen",
+        "zones": "Almeno un comune dove lavori"
+      },
+      "savedAt": "Ultimo salvataggio: {{when}}",
+      "settings": {
+        "discard": "Annulla le modifiche",
+        "discardHint": "Torni alla versione pubblicata: le modifiche non pubblicate vanno perse.",
+        "openBookings": "Apri le prenotazioni",
+        "openBookingsHint": "La vetrina è pronta: apri le prenotazioni quando vuoi.",
+        "pause": "Metti in pausa",
+        "pauseHint": "I clienti vedono che non accetti prenotazioni e le prenotazioni si chiudono. La riattivi con un tocco.",
+        "title": "Altre impostazioni"
+      },
+      "share": {
+        "description": "Copia il link o manda il messaggio: lo invii tu, da qui non parte nulla.",
+        "email": "E-mail",
+        "message": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro.\n{{url}}",
+        "messageBookable": "Ecco la mia vetrina su CasaZen: servizi, prezzi e zone in cui lavoro. Puoi anche prenotare online.\n{{url}}",
+        "open": "Condividi",
+        "subject": "La mia vetrina su CasaZen",
+        "title": "Condividi la tua vetrina",
+        "whatsapp": "WhatsApp"
+      },
+      "state": {
+        "changes": "Modifiche da pubblicare",
+        "draft": "Bozza",
+        "online": "Online",
+        "paused": "In pausa"
+      },
+      "stats": {
+        "label": "La vetrina in numeri",
+        "pending": "In attesa di risposta",
+        "requests": "Richieste negli ultimi {{days}} giorni"
+      },
+      "title": "Il mio sito vetrina",
+      "toast": {
+        "bookingsOpen": "Le prenotazioni sono aperte.",
+        "discardFailed": "Impossibile annullare le modifiche.",
+        "discarded": "Modifiche annullate",
+        "pauseFailed": "Impossibile mettere in pausa la vetrina.",
+        "paused": "Vetrina in pausa",
+        "publishFailed": "Impossibile pubblicare la vetrina.",
+        "published": "Vetrina pubblicata",
+        "resumeFailed": "Impossibile riattivare la vetrina.",
+        "resumed": "Vetrina riattivata"
+      },
+      "wizard": {
+        "description": "Quattro passi: lo stile, due righe di presentazione, i servizi e la pubblicazione. Puoi cambiare tutto anche dopo.",
+        "done": {
+          "bookingsOpen": "I clienti possono prenotare: le richieste arrivano nella tua area Richieste.",
+          "edit": "Puoi cambiare testi, foto e stile quando vuoi: i clienti vedono solo ciò che pubblichi.",
+          "lead": "I clienti la trovano al suo indirizzo e vedono ciò che hai pubblicato.",
+          "open": "Apri la vetrina",
+          "readOnly": "Per ora la vetrina si vede ma non si può prenotare.",
+          "respond": "Quando un cliente prenota hai {{deadline}} per rispondere: poi la richiesta si annulla da sola.",
+          "share": "Condividi il link",
+          "title": "La tua vetrina è online"
+        },
+        "errors": {
+          "services": "Scegli almeno un servizio.",
+          "tagline": "Scrivi almeno 12 caratteri.",
+          "tooLong": "Il testo è troppo lungo."
+        },
+        "failed": "Non riesco a pubblicare la vetrina. Riprova.",
+        "loadError": "Non riesco a preparare la procedura.",
+        "loading": "Preparo la procedura…",
+        "presentation": {
+          "introHint": "Una o due righe sotto il titolo.",
+          "prefilled": "Abbiamo scritto un testo di partenza adatto al tuo mestiere: leggilo e cambialo come vuoi. Non è pubblico finché non pubblichi.",
+          "taglineHint": "La frase grande in cima alla pagina: almeno 12 caratteri."
+        },
+        "publish": "Pubblica la vetrina",
+        "steps": {
+          "presentation": {
+            "label": "Presentazione",
+            "purpose": "Una frase in grande e due righe sotto: le vedono i clienti in cima alla pagina.",
+            "title": "Presenta la tua attività"
+          },
+          "services": {
+            "label": "Servizi",
+            "purpose": "Si mostrano solo i servizi attivi: scegline almeno uno.",
+            "title": "Scegli i servizi da mostrare"
+          },
+          "style": {
+            "label": "Stile",
+            "purpose": "Cambia i colori e l'aria della pagina. Lo puoi cambiare quando vuoi.",
+            "title": "Scegli lo stile della vetrina"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa vedranno i clienti. I controlli sono quelli che fa il sistema prima di pubblicare.",
+            "title": "Controlla e pubblica"
+          }
+        },
+        "title": "Crea la tua vetrina"
+      }
     },
     "trusted": {
       "title": "Fornitori di fiducia",
@@ -15047,6 +16365,276 @@
     "comuniTitle": "Dove opera",
     "servicesTitle": "Servizi",
     "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
+  },
+  "supplierSite": {
+    "about": {
+      "ctaTitle": "Pronto a prenotare?",
+      "emptyText": "Qui troverai presto la nostra storia.",
+      "emptyTitle": "Stiamo preparando questa pagina",
+      "eyebrow": "Il professionista",
+      "more": "Leggi di più",
+      "pageTitle": "Siamo {{name}}",
+      "peopleEyebrow": "Le persone",
+      "peopleTitle": "Chi viene da te",
+      "people_one": "{{count}} persona",
+      "people_other": "{{count}} persone",
+      "title": "Chi siamo",
+      "values": "I nostri punti di forza",
+      "valuesEyebrow": "Punti di forza",
+      "where": "Lavoriamo a {{places}}"
+    },
+    "categories": {
+      "eyebrow": "Servizi",
+      "title": "Di cosa ci occupiamo"
+    },
+    "certs": {
+      "eyebrow": "Garanzie",
+      "title": "Garanzie e certificazioni"
+    },
+    "closing": {
+      "book": "Prenota online",
+      "eyebrow": "Prenota online",
+      "text": "Scegli il servizio e il giorno: vedi gli orari liberi prima di andare avanti.",
+      "title": "Pronto a prenotare?"
+    },
+    "crumbs": {
+      "home": "Home",
+      "label": "Dove sei"
+    },
+    "cta": {
+      "book": "Prenota ora",
+      "inquiry": "Richiesta su misura"
+    },
+    "days": {
+      "eyebrow": "Disponibilità",
+      "title": "I prossimi giorni"
+    },
+    "deadline": {
+      "hours_one": "{{count}} ora",
+      "hours_other": "{{count}} ore",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minuti"
+    },
+    "faq": {
+      "ask": "Non trovi la risposta? Mandaci una richiesta su misura.",
+      "eyebrow": "Domande",
+      "title": "Domande frequenti"
+    },
+    "finder": {
+      "comune": "Dove?",
+      "comunePlaceholder": "Il tuo comune",
+      "day": "Quando?",
+      "inquiryLead": "Non trovi quello che cerchi?",
+      "label": "Cerca un servizio e un orario",
+      "onQuote": "{{name}} (su preventivo)",
+      "service": "Che servizio ti serve?"
+    },
+    "footer": {
+      "info": "Informazioni",
+      "poweredBy": "Vetrina creata con CasaZen",
+      "zones": "Dove lavoriamo"
+    },
+    "header": {
+      "home": "{{name}}: vai alla pagina iniziale",
+      "openMenu": "Apri il menu"
+    },
+    "hero": {
+      "closed": "Le prenotazioni online non sono aperte: qui puoi vedere i servizi e le zone.",
+      "firstSlot": "Primo orario libero",
+      "seeServices": "Guarda i servizi"
+    },
+    "how": {
+      "eyebrow": "Come funziona",
+      "pay": "Paghi online con CasaZen, in modo sicuro. Annullare è sempre gratuito.",
+      "steps": {
+        "choose": {
+          "text": "Vedi i primi orari davvero liberi e il prezzo di partenza.",
+          "title": "Scegli servizio e giorno"
+        },
+        "confirm": {
+          "text": "Il professionista accetta o rifiuta la richiesta.",
+          "textDeadline": "Ha tempo fino a {{deadline}} per accettare la richiesta.",
+          "title": "{{name}} conferma"
+        },
+        "details": {
+          "text": "Dove si fa il lavoro e come raggiungerti. Controlliamo la tua e-mail con un link.",
+          "title": "Lasci i tuoi dati"
+        },
+        "done": {
+          "text": "CasaZen trattiene il pagamento fino alla tua conferma.",
+          "title": "Lavoro finito"
+        },
+        "hold": {
+          "text": "Sulla carta l’importo resta solo bloccato: viene addebitato soltanto se il professionista accetta.",
+          "title": "Blocchiamo l’importo"
+        }
+      },
+      "title": "Prenoti in cinque passi"
+    },
+    "list": {
+      "all": "Tutti i servizi",
+      "allCategories": "Tutti",
+      "categories": "Categorie",
+      "clear": "Togli i filtri",
+      "countOf_one": "{{count}} servizio su {{total}}",
+      "countOf_other": "{{count}} servizi su {{total}}",
+      "count_one": "{{count}} servizio",
+      "count_other": "{{count}} servizi",
+      "label": "Elenco dei servizi",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi. Per un lavoro particolare puoi mandare una richiesta su misura.",
+      "noMatchText": "Togli un filtro per vedere di nuovo tutti i servizi.",
+      "noMatchTitle": "Nessun servizio con questi filtri",
+      "price": {
+        "fixed": "Prezzo fisso",
+        "hourly": "A ore",
+        "quote": "Su preventivo"
+      },
+      "priceAll": "Tutti i prezzi",
+      "priceLabel": "Prezzo",
+      "quoteText": "Descrivi il lavoro: il professionista ti risponde con un prezzo, senza impegno.",
+      "quoteTitle": "Non trovi quello che cerchi?",
+      "sort": {
+        "duration": "Durata più breve",
+        "price": "Prezzo più basso",
+        "recommended": "Consigliati",
+        "slot": "Primo orario libero"
+      },
+      "sortLabel": "Ordina per",
+      "title": "{{name}}: cosa facciamo e quanto costa"
+    },
+    "meta": {
+      "about": "Chi siamo · {{name}}",
+      "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
+      "service": "{{service}} · {{name}}",
+      "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
+      "services": "Servizi e prezzi · {{name}}",
+      "servicesDescription": "Servizi, prezzi di partenza e primi orari liberi di {{name}}."
+    },
+    "nav": {
+      "about": "Chi siamo",
+      "faq": "Domande",
+      "how": "Come funziona",
+      "label": "Menu del sito",
+      "services": "Servizi",
+      "works": "Lavori",
+      "zones": "Zone"
+    },
+    "offline": "Sei offline: vedi l'ultima versione salvata. Per verificare gli orari e prenotare serve la connessione.",
+    "paused": {
+      "text": "La vetrina è in pausa: per ora non si può prenotare. Torna a trovarci più avanti.",
+      "title": "{{name}} non accetta prenotazioni per ora"
+    },
+    "responseTime": {
+      "hours_one": "circa {{count}} ora",
+      "hours_other": "circa {{count}} ore",
+      "minutes_one": "circa {{count}} minuto",
+      "minutes_other": "circa {{count}} minuti"
+    },
+    "service": {
+      "aboutTitle": "Di cosa si tratta",
+      "allPhotos": "Tutte le {{count}} foto",
+      "bookShort": "Prenota",
+      "bookThis": "Prenota questo servizio",
+      "cancelFree": "Annulli gratis, sempre",
+      "cardTitle": "Prenota {{name}}",
+      "confirmWithin": "Il professionista conferma entro {{deadline}}",
+      "estimateError": "Non riusciamo a calcolare il totale ora. Riprova tra poco.",
+      "estimateNote": "Il totale è una stima: il professionista conferma il prezzo prima di iniziare.",
+      "estimating": "Calcolo il totale…",
+      "excluded": "Cosa non è incluso",
+      "faqTitle": "Domande",
+      "firstSlots": "Primi orari liberi",
+      "hours": "Ore",
+      "included": "Cosa è incluso",
+      "includedTitle": "Cosa comprende",
+      "loadError": "Impossibile caricare il servizio.",
+      "missingText": "Non troviamo questo servizio tra quelli di {{name}}: forse è in pausa o è stato tolto. Guarda gli altri.",
+      "missingTitle": "Questo servizio non è disponibile",
+      "noSlots": "Nessun orario libero nei prossimi giorni",
+      "onQuoteResult": "Per questa scelta il prezzo lo decide il professionista: manda una richiesta su misura.",
+      "othersEyebrow": "Altri servizi",
+      "othersTitle": "Potrebbe servirti anche",
+      "outside": "Questo comune è fuori dalla zona abituale: il prezzo lo decide il professionista, con una richiesta su misura.",
+      "paySafe": "Paghi online con CasaZen, in modo sicuro",
+      "photoOpen": "Ingrandisci la foto {{index}} di {{total}}: {{name}}",
+      "prepTitle": "Prima che arriviamo",
+      "priceTitle": "Come si calcola il prezzo",
+      "quoteFact": "Prezzo su preventivo",
+      "quoteIntro": "Descrivi il lavoro: il professionista ti risponde con il prezzo. Non è un impegno.",
+      "sets": "Set",
+      "squareMeters": "Metri quadri",
+      "surface": "Quanto è grande la casa?",
+      "surfaceBetween": "da {{from}} a {{to}} m²",
+      "surfaceNote": "Il prezzo base copre fino a {{sqm}} m²: oltre si aggiunge un supplemento ogni 30 m².",
+      "surfaceUpTo": "fino a {{sqm}} m²",
+      "total": "Totale stimato",
+      "urgentFact": "Disponibile anche con urgenza",
+      "urgentLine": "Intervento urgente",
+      "where": "Dove si fa il lavoro? (facoltativo)"
+    },
+    "services": {
+      "all": "Tutti i servizi",
+      "emptyText": "Al momento non ci sono servizi da mostrare. Riprova tra poco.",
+      "emptyTitle": "Stiamo preparando i servizi",
+      "eyebrow": "Servizi e prezzi",
+      "firstSlot": "Primo orario: {{when}}",
+      "from": "da",
+      "leadClosed": "Servizi e prezzi di partenza.",
+      "leadOpen": "Prezzi chiari e primi orari davvero liberi.",
+      "quoteHint": "Il prezzo si definisce con te",
+      "title": "Cosa possiamo fare per te",
+      "vatIncluded": "IVA inclusa"
+    },
+    "slot": {
+      "day": "{{day}} alle {{time}}",
+      "today": "oggi alle {{time}}",
+      "tomorrow": "domani alle {{time}}"
+    },
+    "states": {
+      "discover": "Scopri CasaZen",
+      "errorText": "Riprova tra qualche secondo."
+    },
+    "trust": {
+      "jobs": "interventi svolti con CasaZen",
+      "jobsLine_one": "{{count}} intervento svolto con CasaZen",
+      "jobsLine_other": "{{count}} interventi svolti con CasaZen",
+      "label": "Perché fidarsi di {{name}}",
+      "payments": "Pagamento sicuro",
+      "paymentsBy": "con CasaZen",
+      "response": "di solito per rispondere",
+      "verified": "Verificato",
+      "verifiedBy": "da CasaZen",
+      "verifiedLine": "Verificato da CasaZen"
+    },
+    "works": {
+      "after": "Dopo",
+      "afterAlt": "{{caption}} (dopo)",
+      "before": "Prima",
+      "beforeAlt": "{{caption}} (prima)",
+      "compare": "Confronto prima e dopo: {{caption}}. Sposta il cursore per vedere la differenza",
+      "enlarge": "Ingrandisci: {{caption}}",
+      "eyebrow": "I nostri lavori",
+      "eyebrowPhotos": "Le foto",
+      "lead": "Sposta il cursore per vedere la differenza.",
+      "position": "Prima {{before}}%, dopo {{after}}%",
+      "title": "Lavori che abbiamo fatto",
+      "titlePhotos": "Qualche foto"
+    },
+    "zones": {
+      "checkLabel": "Scrivi il tuo comune e te lo diciamo subito",
+      "checking": "Controllo la zona…",
+      "covered": "Perfetto: lavoriamo a {{place}}.",
+      "error": "Non riusciamo a controllare ora. Riprova tra poco.",
+      "eyebrow": "Dove lavoriamo",
+      "lead": "Lavoriamo a {{places}} e {{last}}.",
+      "leadOne": "Lavoriamo a {{place}}.",
+      "listLabel": "Comuni serviti",
+      "outside": "{{place}} è fuori dalla zona abituale: puoi comunque mandare una richiesta su misura e il professionista decide.",
+      "title": "Arriviamo da te?",
+      "tooMany": "Troppe richieste in poco tempo: riprova tra un minuto.",
+      "unknown": "Per {{place}} non possiamo dirlo con certezza: manda una richiesta su misura."
+    }
   },
   "swiss": {
     "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",

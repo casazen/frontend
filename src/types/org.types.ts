@@ -78,10 +78,42 @@ export interface PublicOrgDto {
   /** The font pair the host chose (see `src/lib/public-site-themes.ts`), or null for the font of the theme; absent on an older backend. */
   publicFontId?: string | null;
   showPoweredBy?: boolean;
+  /**
+   * Version of the text of the optional «send me offers» consent (DB-03, `Gdpr:MarketingConsentVersion`), or null while the text has no
+   * version: the checkout then shows no box and the API refuses a `marketingConsent: true`. Absent on an older backend.
+   */
+  marketingConsentVersion?: string | null;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
   operator?: PublicOperator | null;
+  /** How the host is named on the site ("Scrivi a Giulia", "Ti ospita Giulia"), or null: the site shows `displayName` only (DB-03). */
+  hostName?: string | null;
+  /** The phone number the host chose to publish (`+` or digits only), or null: the footer has no phone (DB-03). */
+  publicPhone?: string | null;
+  /** A guest can book on this site now: the org can take a payment (DB-03). Absent on an older backend. */
+  acceptsBookings?: boolean;
+}
+
+/**
+ * Body of `POST /api/public/orgs/{slug}/contact` (DB-03b, "Scrivi a {host}"): who writes, what, and the consent to send both to the
+ * host. It goes in the body, never in the address. The answer is a 202 with no body, the same whatever the site publishes.
+ */
+export interface HostContactPayload {
+  /** The address the host answers to (a plain address, at most 254 characters). */
+  email: string;
+  /** 5 to 2000 characters once trimmed. */
+  message: string;
+  /** At most 100 characters; left out when the visitor gave none. */
+  name?: string;
+  /** The home the visitor was looking at: counts only if it is a published home of the site. */
+  propertyId?: string;
+  /** The language of the site the visitor was reading, so that the host answers in it. */
+  lang?: 'it' | 'en';
+  /** The visitor agrees that the message and their address go to the host: always `true` (the backend refuses anything else). */
+  consent: true;
+  /** The honeypot: a field no person fills. Sent as it was found. */
+  website?: string;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */

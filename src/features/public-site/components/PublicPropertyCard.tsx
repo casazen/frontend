@@ -9,6 +9,7 @@ import {
   sectionsOfProperty,
   type PropertyCardSections,
 } from '@/features/public-site/lib/property-card-sections';
+import { FavoriteButton } from '@/features/public-site/favorites/favorite-button';
 import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import { displayableMediaUrls } from '@/lib/media-url';
 import type { PublicPropertyDto } from '@/types';
@@ -32,6 +33,11 @@ interface PublicPropertyCardProps {
   sections?: PropertyCardSections;
   /** The width from which the grid has more than one column (default `sm`): the cards line up from there. */
   alignFrom?: AlignFrom;
+  /**
+   * The slug of the booking site whose favourites the heart on the photo saves the home in (DB-02b). Absent, as on the pages of
+   * CasaZen (search, guides), there is no heart: the list belongs to a host's site.
+   */
+  favoriteSite?: string;
 }
 
 // Spelled out, so that Tailwind finds the classes. Below `alignFrom` there is one column, the cards do not have to line up with
@@ -50,7 +56,7 @@ const ALIGNED: Record<AlignFrom, { card: string; empty: string }> = {
  * not push down only the facts and the price of its own card. The rows have no gap: the space between them is the top margin of
  * each part, and the side padding is on each part too (the image runs edge to edge).
  */
-export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm' }: PublicPropertyCardProps) {
+export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm', favoriteSite }: PublicPropertyCardProps) {
   const { t } = useTranslation();
   const money = useSiteMoney();
   const [photo] = displayableMediaUrls(property.photoUrls);
@@ -94,6 +100,16 @@ export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm' }:
           </div>
         )}
       </div>
+
+      {/* Above the stretched link of the title (z-10), out of the rows of the card (absolute). */}
+      {favoriteSite ? (
+        <FavoriteButton
+          site={favoriteSite}
+          propertyId={property.id}
+          propertyName={property.name}
+          className="absolute right-3 top-3 z-10"
+        />
+      ) : null}
 
       <h3 className="public-display px-4 pt-4 text-lg leading-snug">
         {to ? (

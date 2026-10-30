@@ -4,13 +4,9 @@ import { isStayDate } from '@/lib/stay-dates';
 /**
  * How the stay is written on the public site (DB-20): dates, the range of a stay, the price of a night and the guests, in the
  * language of the page. Dates are stay dates (`YYYY-MM-DD`), shown as written (never moved by a time zone). The formatters are
- * kept: a calendar writes hundreds of dates at every render and an `Intl.DateTimeFormat` is slow to make.
+ * kept: a calendar writes hundreds of dates at every render and an `Intl.DateTimeFormat` is slow to make. The locale of the
+ * language of the page is `siteLocale` of `lib/site-language.ts`.
  */
-
-/** The locale of the language of the page: Italian writes `145 €`, English `€145`. */
-export function siteLocale(language: string | undefined): string {
-  return language?.toLowerCase().startsWith('en') ? 'en-GB' : 'it-IT';
-}
 
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
 
