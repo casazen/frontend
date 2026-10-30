@@ -31,6 +31,22 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
+    // The photos step of the wizard reads the gallery of the property it has just created: none yet.
+    if (method === 'GET' && /\/properties\/[^/]+\/images\/?$/.test(path)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          photoUrls: [],
+          maxPhotos: 20,
+          maxFilesPerRequest: 10,
+          maxFileSizeBytes: 10 * 1024 * 1024,
+          allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        }),
+      });
+      return;
+    }
+
     if (path.includes('/detail') || path.includes('/documents') || path.includes('/images')) {
       await route.fallback();
       return;

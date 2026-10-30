@@ -10236,6 +10236,39 @@
       "retry": "Try again",
       "title": "Add property"
     },
+    "photos": {
+      "dropzone": {
+        "button": "Choose photos",
+        "title": "Drag your photos here"
+      },
+      "gallery": {
+        "moved": "Photo {{index}} moved to position {{position}} of {{total}}."
+      },
+      "listing": {
+        "description": "The headline and description guests read on your site. You can write them now or later.",
+        "headline": {
+          "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
+          "label": "Headline"
+        },
+        "suggest": "Suggest a text",
+        "suggested": "Text put together from the details you entered: review it and change it as you like.",
+        "text": {
+          "label": "Description"
+        },
+        "title": "Your listing",
+        "undo": "Undo"
+      },
+      "queue": {
+        "dismiss": "Remove",
+        "failedFile": "“{{name}}” was not uploaded. Try again.",
+        "label": "Photos being uploaded",
+        "retry": "Try again",
+        "uploading": "Uploading…",
+        "waiting": "Waiting"
+      },
+      "recommended": "{{photos}} of {{recommended}} recommended photos (not required): you can add more later too.",
+      "title": "Photos"
+    },
     "steps": {
       "amenities": {
         "label": "Amenities",
@@ -10246,7 +10279,32 @@
         "label": "Basics",
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
+      },
+      "photos": {
+        "label": "Photos",
+        "purpose": "Recommended, not required: you can skip this step and add them later.",
+        "title": "Show the home with a few photos"
       }
+    },
+    "suggest": {
+      "amenities": "Amenities include {{list}}.",
+      "and": "and",
+      "area": "Area: {{area}} m².",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "beds_one": "{{count}} bed",
+      "beds_other": "{{count}} beds",
+      "guests_one": "Sleeps {{count}} guest.",
+      "guests_other": "Sleeps up to {{count}} guests.",
+      "intro": "{{type}} “{{name}}” in {{city}}.",
+      "introNoName": "{{type}} in {{city}}.",
+      "studio": "studio",
+      "title": "{{type}} in {{city}}",
+      "titleGuests_one": "{{type}} in {{city}} · {{count}} guest",
+      "titleGuests_other": "{{type}} in {{city}} · {{count}} guests",
+      "typeFallback": "Place"
     },
     "validation": {
       "address": {
@@ -10261,6 +10319,8 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
+      "description": "The description can have at most 600 characters.",
+      "listingTitle": "The headline can have at most 60 characters.",
       "maxGuests": "Maximum guests are from 1 to 100.",
       "name": {
         "max": "The name can have at most 100 characters.",
@@ -10773,6 +10833,7 @@
     "legalDocuments": "Legal documents",
     "footer": {
       "contact": "Contact",
+      "cookies": "Cookies",
       "info": "Information",
       "operator": "Operator",
       "vatNumber": "VAT no. {{vat}}"
@@ -11393,10 +11454,20 @@
     },
     "cookieConsent": {
       "ariaLabel": "Cookie Consent",
-      "text": "We use essential cookies for the site to function and, only with your consent, analytics cookies. You can accept or reject non-essential cookies.",
+      "text": "We use the cookies needed to let you book and to remember your choices (the language, the homes you save). With your permission, also anonymous statistics to improve the site. No advertising cookies.",
       "title": "Your privacy",
       "reject": "Decline",
-      "accept": "Accept"
+      "accept": "Accept",
+      "choose": "Let me choose",
+      "preferencesTitle": "Your cookie choices",
+      "necessary": "Necessary",
+      "necessaryHint": "Needed to search, book and pay securely, and to remember on your device the language and the homes you save: always on.",
+      "statistics": "Anonymous statistics",
+      "statisticsHint": "They tell us which pages work best. No personal data.",
+      "onlyNecessary": "Only the necessary",
+      "save": "Save my choices",
+      "saved": "Preferences saved",
+      "savedHint": "You can change them from the “Cookies” link at the bottom of the page."
     },
     "demoBanner": {
       "message": "Demo Mode - No authentication required. All data is simulated."

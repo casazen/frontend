@@ -56,7 +56,7 @@ export async function createProperty(page: Page, slug: string): Promise<string> 
   await page.getByTestId('property-wizard-next').click();
   const id = ((await (await created).json()) as { id?: string }).id ?? '';
   expect(id, 'property id from the answer of the creation').toMatch(/^[0-9a-f-]{36}$/);
-  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'amenities', { timeout: 30_000 });
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'photos', { timeout: 30_000 });
 
   await page.goto(`/app/short-rent/properties/${id}/edit`);
   await page.locator('#description').fill(PROPERTY.description);
