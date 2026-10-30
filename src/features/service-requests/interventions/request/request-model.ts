@@ -74,6 +74,12 @@ export interface RequestValues {
   durationChoice: string;
   /** The minutes of «altro». */
   durationOther: string;
+  // ④ Riepilogo
+  /**
+   * SP-BKP: also send the request to up to three backup suppliers, declared as such (the choice of the last step, offered while the server
+   * has the rule on). On unless it says `false`; only a «no» is sent, so a request made without the choice follows the org's.
+   */
+  useBackups?: boolean;
 }
 
 /** The fields of step ③ and the ones that only describe them: never written to the draft (they change, and the slots are the supplier's). */
@@ -90,6 +96,7 @@ export const REQUEST_DRAFT_EXCLUDE: readonly string[] = [
   'startTime',
   'durationChoice',
   'durationOther',
+  'useBackups',
 ];
 
 export const URGENCIES: readonly ServiceRequestUrgency[] = ['Normal', 'High', 'Emergency'];
@@ -204,6 +211,7 @@ export function requestDefaults(search: URLSearchParams, categories: readonly st
     startTime: '',
     durationChoice: String(DEFAULT_DURATION),
     durationOther: '',
+    useBackups: true,
   };
   const prefilled = ['propertyId', 'bookingId', 'type', 'date', 'supplierOrgId'].some((name) => search.has(name));
   return { values, prefilled };
@@ -312,6 +320,8 @@ export function toCreateRequest(values: RequestValues): CreateServiceRequestDto 
   };
   if (isCatalogService(values.serviceId)) request.serviceListingId = values.serviceId;
   if (timedByHost(values)) request.durationMinutes = typedDuration(values) ?? undefined;
+  // SP-BKP: only a «no» is sent; without it the org's choice decides (and the server ignores it while the rule is off).
+  if (values.useBackups === false) request.useBackupSuppliers = false;
   return request;
 }
 

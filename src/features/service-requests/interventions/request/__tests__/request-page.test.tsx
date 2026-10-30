@@ -143,6 +143,25 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
   });
 
+  it('RequestInterventionPage_TheBestRankedSupplier_IsMarkedRecommended_AndOnlyThatOne', async () => {
+    const other = { ...supplier, orgId: 'b1b2c3d4-0000-4000-8000-000000000002', legalName: 'Pulizie Bianchi' } as SupplierPicker;
+    vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ ...supplier, recommended: true }, other], totalCount: 2, page: 1, pageSize: 20 });
+    renderPage();
+
+    await screen.findByTestId('request-category', undefined, WAIT);
+    next();
+    await screen.findByTestId('request-day', undefined, WAIT);
+    next();
+    const first = await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT);
+
+    // The server decides it from the load and the reliability of the supplier and sends a word: only that card carries it.
+    const badge = await screen.findByTestId('supplier-recommended-badge', undefined, WAIT);
+    expect(screen.getAllByTestId('supplier-recommended-badge')).toHaveLength(1);
+    expect(badge).toHaveTextContent('Consigliato');
+    expect(first.closest('label')).toContainElement(badge);
+    expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).not.toContainElement(badge);
+  });
+
   it('RequestInterventionPage_SlotTakenMeanwhile_BringsTheHostBackToTheSlotsWithTheAnswersKept', async () => {
     vi.mocked(createServiceRequest).mockRejectedValue(refusal(409, 'supplier_slot_unavailable'));
     renderPage();

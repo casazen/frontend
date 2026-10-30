@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
   acceptLongRentProposal,
+  acceptServiceRequestAsBackup,
   acceptServiceRequestProposal,
   cancelLongRentServiceRequest,
   cancelServiceRequest,
@@ -442,6 +443,22 @@ export function useTakeServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/**
+ * A backup supplier says it would take the job if the primary supplier does not (SP-BKP): the request stays new and holds nothing of the
+ * agenda. If the group closed meanwhile (the primary took the job) the server says so (409) and the lists are read again.
+ */
+export function useAcceptServiceRequestAsBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => acceptServiceRequestAsBackup(id),
+    onSuccess: () => {
+      refreshSupplierRequests(queryClient);
+      toast.success(i18n.t('supplier.requests.backup.acceptedToast'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
   });

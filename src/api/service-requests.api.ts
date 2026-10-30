@@ -109,6 +109,17 @@ export async function takeServiceRequest(id: string): Promise<ServiceRequest> {
   return data;
 }
 
+/**
+ * A backup supplier says it would take the job if the primary supplier does not (SP-BKP, the pre-approval): the request stays new and holds
+ * no slot of the agenda; saying it twice is not an error. 422 `service_request_not_a_waiting_backup` for a request that is not a backup
+ * waiting for the primary, 422 `service_request_backup_already_active` in the second window (take the job instead), 409
+ * `service_request_state_changed` when the group closed meanwhile.
+ */
+export async function acceptServiceRequestAsBackup(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/accept-as-backup`);
+  return data;
+}
+
 export async function completeServiceRequest(id: string, notes?: string): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/complete`, { notes });
   return data;
@@ -176,7 +187,10 @@ export async function fetchMarketplaceSuppliers(params: {
   q?: string;
   sort?: SupplierPickerSort;
 }): Promise<SupplierListResponse> {
-  return ApiClient.get<SupplierListResponse>('/suppliers', params);
+  // The ranking (SP-REL) is the order the server uses when it is not asked for another: not sending it keeps the call valid for a server
+  // that does not rank yet (it would answer 400 to `sort=recommended`).
+  const { sort, ...rest } = params;
+  return ApiClient.get<SupplierListResponse>('/suppliers', sort && sort !== 'recommended' ? { ...rest, sort } : rest);
 }
 
 /**
