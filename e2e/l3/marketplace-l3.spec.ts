@@ -89,8 +89,8 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     );
     const { propertyId, stayId, supplierOrgId } = candidate!;
 
-    await page.goto(`/app/short-rent/marketplace?propertyId=${propertyId}`);
-    await page.getByTestId('marketplace-category-filter').selectOption('cleaning');
+    // The suppliers of the category have a page of their own (MKT): the category in the address, the property chosen.
+    await page.goto(`/app/short-rent/marketplace/categories/cleaning?propertyId=${propertyId}`);
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
