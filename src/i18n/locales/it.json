@@ -12,6 +12,7 @@
       "memberReactivated": "Accesso di {{member}} riattivato",
       "memberRemoved": "{{member}} rimosso dal team",
       "memberRoleChanged": "Ruolo di {{member}} cambiato: da {{from}} a {{to}}",
+      "orgSettingsChanged": "Dati dell'azienda modificati",
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "system": "Sistema"
@@ -170,6 +171,7 @@
     "descriptionNoOrg": "Tutti gli immobili dell'account, in affitto breve e lungo.",
     "drawer": {
       "address": "Indirizzo",
+      "advice": "Consigliato",
       "assign": "Assegna il responsabile",
       "complete": "Completa l'attivazione",
       "data": "Dati",
@@ -239,9 +241,14 @@
     },
     "loadError": "Impossibile caricare gli immobili",
     "missing": {
+      "activationNotConfirmed": "conferma dell'attivazione",
+      "baseData": "dati di base",
+      "calendar": "calendario",
       "cin": "CIN",
+      "documents": "documenti",
       "photos": "foto",
-      "price": "prezzo"
+      "price": "prezzo",
+      "safety": "sicurezza"
     },
     "mode": {
       "long": "Affitto lungo",
@@ -287,6 +294,16 @@
         "body": "Gli ospiti vedono il nome e l'indirizzo sul tuo sito di prenotazione: per ora sono ancora quelli provvisori.",
         "title": "Scegli il nome e l'indirizzo del tuo sito"
       }
+    },
+    "privacy": {
+      "body": "Scarica subito un file con i dati fiscali dell'organizzazione, le persone del team e, se puoi leggerlo, il registro delle attività.",
+      "done": "File scaricato",
+      "export": "Scarica i dati dell'organizzazione",
+      "failed": "Non riusciamo a preparare il file. Riprova tra poco.",
+      "fileName": "casazen-dati-organizzazione",
+      "hint": "Il file contiene dati personali: conservalo con cura.",
+      "support": "Per chiudere l'account o far cancellare i dati scrivi a",
+      "title": "Privacy e dati"
     }
   },
   "activation": {
@@ -1132,6 +1149,7 @@
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
@@ -2603,6 +2621,10 @@
     "updated": "Aggiornato {{when}}"
   },
   "checkin": {
+    "access": {
+      "code_disclosure": "Questo codice è fornito dall'agenzia e può essere lo stesso per più soggiorni. CasaZen non crea né revoca i codici d'accesso.",
+      "code_title": "Ecco il codice d'accesso"
+    },
     "copyLink": "Copia link",
     "documentType": {
       "Passport": "Passaporto",
@@ -7613,6 +7635,122 @@
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
   },
+  "longRentTenants": {
+    "chips": {
+      "all": "Tutti",
+      "current": "Attuali",
+      "currentHint": "Chi ha almeno un contratto non ancora concluso",
+      "former": "Ex inquilini",
+      "formerHint": "Chi ha solo contratti conclusi"
+    },
+    "citizenship": {
+      "Eu": "Cittadino UE",
+      "NonEu": "Cittadino non UE"
+    },
+    "columns": {
+      "end": "Fine contratto",
+      "lease": "Contratto",
+      "punctuality": "Puntualità",
+      "tenant": "Inquilino"
+    },
+    "contacts": {
+      "citizenship": "Cittadinanza",
+      "email": "Email",
+      "title": "Contatti"
+    },
+    "count_one": "{{count}} inquilino",
+    "count_other": "{{count}} inquilini",
+    "description": "Chi abita nei tuoi immobili, da quando, quanto paga e con che puntualità.",
+    "detail": {
+      "backToList": "Vai agli inquilini",
+      "description": "Inquilino · {{citizenship}}",
+      "fallbackTitle": "Inquilino",
+      "loadError": "Non siamo riusciti a caricare questo inquilino.",
+      "loading": "Caricamento dell'inquilino",
+      "notFound": "Inquilino non trovato",
+      "notFoundDescription": "Potrebbe essere stato reso anonimo o il link non è corretto."
+    },
+    "empty": {
+      "action": "Crea contratto",
+      "description": "Si aggiungono creando un contratto: nome, contratto e pagamenti in un posto solo.",
+      "title": "Qui trovi i tuoi inquilini"
+    },
+    "end": {
+      "former": "Finito il {{date}}",
+      "running": "Fino al {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · e un altro contratto",
+    "leaseAndOthers_other": "{{property}} · e altri {{count}} contratti",
+    "leases": {
+      "title": "Contratti"
+    },
+    "loadError": "Non siamo riusciti a caricare gli inquilini.",
+    "newLease": "Crea contratto",
+    "noLease": "Nessun contratto",
+    "noResults": {
+      "description": "Controlla il nome o cambia scheda.",
+      "title": "Nessun inquilino trovato"
+    },
+    "now": {
+      "action": "Vedi i canoni in ritardo",
+      "body_one": "{{amount}} scaduti il {{date}}.",
+      "body_other": "{{count}} canoni per {{amount}} sono scaduti: il più vecchio il {{date}}.",
+      "kicker": "Adesso",
+      "title": "Il canone di {{month}} non è arrivato",
+      "when_one": "In ritardo da {{count}} giorno",
+      "when_other": "In ritardo da {{count}} giorni",
+      "who": "Tocca a te"
+    },
+    "open": "Apri la scheda",
+    "payments": {
+      "all": "Vedi i canoni",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Pagato",
+      "title": "Ultimi pagamenti"
+    },
+    "privacy": {
+      "erase": "Chiedi la cancellazione",
+      "erasure": {
+        "confirm": "Chiedi la cancellazione",
+        "consequences": {
+          "documents": "Il contratto firmato e le ricevute non vengono toccati.",
+          "ended": "Per i contratti finiti, i dati di tutte le persone di quel contratto vengono anonimizzati subito, a meno che abbiano un altro contratto in corso.",
+          "final": "L'anonimizzazione non si può annullare.",
+          "running_one": "Il contratto non ancora concluso ({{properties}}) non viene toccato: i dati restano fino al giorno dopo la sua fine, poi vengono anonimizzati.",
+          "running_other": "I contratti non ancora conclusi ({{properties}}) non vengono toccati: i dati restano fino al giorno dopo la loro fine, poi vengono anonimizzati."
+        },
+        "description": "Registri la richiesta di cancellazione dei dati di {{name}} su tutti i suoi contratti.",
+        "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
+        "title": "Chiedere la cancellazione dei dati?"
+      },
+      "export": "Esporta i suoi dati",
+      "exportFailed": "Non è stato possibile preparare il file.",
+      "exportHint": "Un file con i suoi dati personali, in chiaro: conservalo con cura.",
+      "exported": "File scaricato.",
+      "identityNote": "Riconosciamo la stessa persona dal codice fiscale: se è scritto in modo diverso in due contratti, risultano due persone e qui trovi i dati di una sola.",
+      "intro": "Qui puoi scaricare i dati che CasaZen tiene su {{name}} nei tuoi contratti, o chiedere di cancellarli.",
+      "result": {
+        "anonymized": "Dati anonimizzati.",
+        "description": "Ecco cosa è successo su ogni contratto.",
+        "partial_one": "Dati anonimizzati, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
+        "partial_other": "Dati anonimizzati, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
+        "scheduled": "Il contratto non è ancora finito: i dati saranno anonimizzati dal {{date}}.",
+        "scheduledNoDate": "Il contratto non è ancora finito: i dati saranno anonimizzati dal giorno dopo la sua fine.",
+        "title": "Richiesta registrata"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} canoni su {{total}} pagati in orario, entro {{days}} giorni dalla scadenza.",
+      "none": "Nessun canone ancora scaduto.",
+      "summary": "{{onTime}} su {{total}} canoni in orario"
+    },
+    "search": {
+      "label": "Cerca inquilini",
+      "placeholder": "Cerca per nome o immobile"
+    },
+    "title": "Inquilini"
+  },
   "longRentRequests": {
     "cancel": {
       "back": "Torna indietro",
@@ -8083,6 +8221,7 @@
     "rents": "Canoni",
     "longRentOverview": "Panoramica",
     "longRentDeadlines": "Scadenze",
+    "longRentTenants": "Inquilini",
     "serviceRequests": "Interventi",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
@@ -8146,6 +8285,7 @@
     "reviews": "Recensioni",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
+    "wireTransfers": "Bonifici proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -8286,6 +8426,16 @@
     }
   },
   "orgSettings": {
+    "contactPhoneHelp": "Per essere raggiunti da CasaZen e dal tuo team. Non lo pubblichiamo mai.",
+    "contactPhoneLabel": "Telefono",
+    "currencyLabel": "Valuta",
+    "currencyValue": "Euro",
+    "languageEn": "English",
+    "languageHelp": "È la lingua delle email che mandi alla tua squadra, per esempio gli inviti. I tuoi ospiti scelgono la loro.",
+    "languageIt": "Italiano",
+    "languageLabel": "Lingua dell'account",
+    "timezoneLabel": "Fuso orario",
+    "timezoneValue": "Ora italiana (Roma)",
     "title": "Impostazioni organizzazione",
     "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
     "adminRequired": {
@@ -9437,6 +9587,17 @@
         "comuneRequired": "Scegli il comune dall'elenco.",
         "duplicate": "Esiste già un immobile con questo indirizzo."
       }
+    },
+    "qr": {
+      "download": "Scarica PNG",
+      "error": "Errore",
+      "errorDescription": "ID immobile mancante o non valido.",
+      "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
+      "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
+      "loading": "Generazione codice QR...",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
+      "print": "Stampa",
+      "title": "Codice QR per verifica ospiti"
     }
   },
   "propertyMode": {
@@ -9629,6 +9790,160 @@
         "next": "Controlla la data",
         "purpose": "Il passaggio avviene all'inizio del giorno che scegli.",
         "title": "Da quando?"
+      }
+    }
+  },
+  "propertyWizard": {
+    "amenities": {
+      "count_one": "Hai scelto {{count}} dotazione.",
+      "count_other": "Hai scelto {{count}} dotazioni.",
+      "groups": {
+        "comfort": "Comfort",
+        "essentials": "Essenziali",
+        "other": "Altro",
+        "outdoor": "Esterni"
+      },
+      "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
+      "safety": {
+        "complete": "La scheda è completa.",
+        "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
+        "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
+        "dialogTitle": "Scheda di sicurezza",
+        "loadFailed": "Non riesco a leggere la scheda di sicurezza. Riprova tra poco.",
+        "loading": "Controllo la scheda…",
+        "open": "Compila la scheda",
+        "progress": "{{done}} di {{total}} voci a posto",
+        "progressLabel": "Avanzamento della scheda di sicurezza",
+        "review": "Rivedi la scheda",
+        "title": "Sicurezza"
+      }
+    },
+    "base": {
+      "address": {
+        "hint": "Via e numero civico, o «snc» se non c'è.",
+        "label": "Indirizzo",
+        "placeholder": "Via Roma 12"
+      },
+      "areaSqm": {
+        "hint": "In metri quadri, solo numeri: per esempio 70.",
+        "label": "Superficie"
+      },
+      "comune": {
+        "fallbackLabel": "Città",
+        "fallbackPlaceholder": "Es. Como",
+        "hint": "Scegli il comune dall'elenco ufficiale: da lui seguono le regole, i documenti richiesti e l'imposta di soggiorno.",
+        "label": "Comune"
+      },
+      "name": {
+        "hint": "Un nome facile da ricordare: lo ritrovi negli elenchi.",
+        "label": "Nome dell'immobile",
+        "placeholder": "Es. Trullo dei Mandorli"
+      },
+      "postalCode": {
+        "label": "CAP"
+      },
+      "spaces": {
+        "bathrooms": {
+          "hint": "Compresi quelli di servizio",
+          "label": "Bagni"
+        },
+        "bedrooms": {
+          "hint": "0 se è un monolocale",
+          "label": "Camere da letto"
+        },
+        "beds": {
+          "hint": "Conta ogni letto: il matrimoniale è 1",
+          "label": "Letti"
+        },
+        "maxGuests": {
+          "hint": "Quante persone possono dormire",
+          "label": "Ospiti massimi"
+        },
+        "title": "Spazi"
+      },
+      "type": {
+        "legend": "Che tipo di immobile è?",
+        "options": {
+          "Apartment": "Appartamento",
+          "HouseOrVilla": "Casa o villa",
+          "LoftOrPenthouse": "Loft o attico",
+          "RoomOrSuite": "Stanza o suite",
+          "TrulloOrMasseria": "Trullo o masseria"
+        }
+      },
+      "unit": {
+        "hint": "Se nello stesso edificio hai più appartamenti, scrivi l'interno o la scala: ognuno deve averne uno diverso.",
+        "label": "Piano e interno"
+      }
+    },
+    "done": {
+      "complete": "Completa l'attivazione",
+      "description": "L'immobile è in Immobili come «Da completare».",
+      "inList": "Lo trovi in Immobili, dove puoi riprendere quando vuoi.",
+      "leadOpen": "Per attivarlo mancano ancora alcuni punti:",
+      "leadReady": "I dati richiesti ci sono: manca solo la conferma finale.",
+      "open": {
+        "base-data": "Il prezzo per notte e i dati di base",
+        "cin": "Il codice CIN",
+        "documents": "I documenti richiesti per la tua regione",
+        "safety": "La scheda di sicurezza"
+      },
+      "readyToActivate": "Per attivarlo basta accettare i Termini.",
+      "title": "«{{name}}» è salvato",
+      "toList": "Vai agli immobili"
+    },
+    "errors": {
+      "saveFailed": "Non siamo riusciti a salvare l'immobile. Controlla i dati e riprova."
+    },
+    "exit": {
+      "saveAndClose": "Salva e chiudi",
+      "saved": "Salvato. Lo trovi in Immobili, da completare."
+    },
+    "finish": "Salva e vedi cosa manca",
+    "page": {
+      "backToList": "Torna agli immobili",
+      "description": "Un passo alla volta: l'immobile è salvato dal primo «Continua» e puoi riprendere quando vuoi.",
+      "loadFailed": "Non riesco a caricare l'immobile.",
+      "loading": "Carico l'immobile…",
+      "notFound": "Immobile non trovato.",
+      "retry": "Riprova",
+      "title": "Aggiungi immobile"
+    },
+    "steps": {
+      "amenities": {
+        "label": "Dotazioni",
+        "purpose": "Scegli solo quello che c'è davvero: gli ospiti lo leggono prima di prenotare.",
+        "title": "Cosa trovano gli ospiti?"
+      },
+      "base": {
+        "label": "Dati base",
+        "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
+        "title": "Che casa stai aggiungendo?"
+      }
+    },
+    "validation": {
+      "address": {
+        "civic": "Aggiungi il numero civico, o «snc» se non c'è: per esempio «Contrada Monte 12».",
+        "max": "L'indirizzo può avere al massimo 500 caratteri.",
+        "required": "Scrivi via e numero civico."
+      },
+      "areaSqm": "Scrivi i metri quadri in numeri interi, da 1 a 9999.",
+      "bathrooms": "I bagni sono da 1 a 50.",
+      "bedrooms": "Le camere da letto sono da 0 a 100.",
+      "beds": "I letti sono da 1 a 100.",
+      "comune": {
+        "required": "Scegli il comune dall'elenco."
+      },
+      "maxGuests": "Gli ospiti massimi sono da 1 a 100.",
+      "name": {
+        "max": "Il nome può avere al massimo 100 caratteri.",
+        "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
+      },
+      "postalCode": {
+        "format": "Il CAP italiano ha 5 cifre."
+      },
+      "unit": {
+        "max": "Piano e interno possono avere al massimo 30 caratteri."
       }
     }
   },
@@ -10703,6 +11018,9 @@
     }
   },
   "settings": {
+    "manageOnStripe": "Gestisci su Stripe",
+    "manageOnStripeFailed": "Non riusciamo ad aprire Stripe. Riprova tra poco.",
+    "manageOnStripeHint": "Saldo, bonifici ricevuti e dati bancari li vedi direttamente su Stripe.",
     "planTitle": "Il tuo piano",
     "planOrgDescription": "Organizzazione: {{orgName}}. Scegli il piano più adatto al tuo portfolio.",
     "planDefaultDescription": "Gestisci il piano della tua organizzazione.",
@@ -11167,17 +11485,36 @@
     "theme": {
       "label": "Tema",
       "options": {
+        "terra": {
+          "name": "Terra",
+          "description": "Calda: terracotta su crema."
+        },
         "mare": {
           "name": "Mare",
-          "description": "Luminoso e accogliente, per case al mare e vacanze estive."
+          "description": "Fresca: blu petrolio su bianco."
         },
-        "montagna": {
-          "name": "Montagna",
-          "description": "Caldo e naturale, per baite, chalet e agriturismi."
+        "citta": {
+          "name": "Città",
+          "description": "Essenziale: inchiostro su pietra."
+        }
+      }
+    },
+    "font": {
+      "label": "Caratteri",
+      "usingTheme": "Stai usando i caratteri del tema.",
+      "useTheme": "Usa i caratteri del tema",
+      "options": {
+        "editoriale": {
+          "name": "Editoriale",
+          "description": "Titoli con le grazie, caldi e letterari."
         },
-        "urban": {
-          "name": "Urban",
-          "description": "Essenziale e moderno, per appartamenti in città."
+        "moderno": {
+          "name": "Moderno",
+          "description": "Tutto senza grazie, nitido e deciso."
+        },
+        "classico": {
+          "name": "Classico",
+          "description": "Eleganza da rivista, contrasto alto."
         }
       }
     },
@@ -11210,6 +11547,7 @@
     "errors": {
       "colorInvalid": "Il colore non è valido: usa un codice esadecimale, per esempio #1a6b8f.",
       "themeInvalid": "Questo tema non è disponibile per il sito pubblico.",
+      "fontInvalid": "Questa coppia di caratteri non è disponibile per il sito pubblico.",
       "taglineTooLong": "Lo slogan non può superare i {{maxLength}} caratteri.",
       "imageEmpty": "Il file selezionato è vuoto.",
       "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",
@@ -11699,6 +12037,57 @@
           "Controlla il motivo indicato",
           "Correggi i dati e riprova"
         ]
+      }
+    },
+    "leaseStage": {
+      "Draft": {
+        "label": "Bozza",
+        "explain": "Il contratto è in preparazione: manca ancora qualcosa nei primi passi.",
+        "need": [
+          "Immobile e parti del contratto",
+          "Canone, durata e tipo di contratto"
+        ]
+      },
+      "DataPending": {
+        "label": "Dati da completare",
+        "explain": "Aspettiamo i dati del conduttore.",
+        "need": [
+          "I dati del conduttore"
+        ]
+      },
+      "InReview": {
+        "label": "In revisione",
+        "explain": "I dati ci sono tutti: controlla l'anteprima e conferma.",
+        "need": [
+          "Controllare l'anteprima del contratto",
+          "Confermare la revisione"
+        ]
+      },
+      "SentForSignature": {
+        "label": "In firma",
+        "explain": "Il contratto è stato scaricato per la firma su carta: aspettiamo la copia firmata.",
+        "need": [
+          "La copia firmata da tutte le parti"
+        ]
+      },
+      "Signed": {
+        "label": "Firmato",
+        "explain": "Il contratto è firmato da tutti: resta da dichiarare la registrazione.",
+        "need": [
+          "La registrazione all'Agenzia delle Entrate"
+        ]
+      },
+      "Active": {
+        "label": "In corso",
+        "explain": "Il contratto è registrato e in vigore."
+      },
+      "Expiring": {
+        "label": "In scadenza",
+        "explain": "Il periodo in corso finisce entro sei mesi, oppure è stata registrata una disdetta."
+      },
+      "Concluded": {
+        "label": "Concluso",
+        "explain": "Il contratto è finito: i documenti e i pagamenti restano consultabili."
       }
     },
     "rent": {
@@ -14142,6 +14531,45 @@
       "recordSuccess": "Pagamento registrato con successo",
       "recordError": "Impossibile registrare il pagamento"
     }
+  },
+  "wire": {
+    "batch": {
+      "confirmDownload": "Conferma download",
+      "confirmDownloadError": "Impossibile confermare il download",
+      "confirmDownloadSuccess": "Download confermato con successo",
+      "confirmPaid": "Conferma pagamento",
+      "confirmPaidError": "Impossibile confermare il pagamento",
+      "confirmPaidSuccess": "Pagamento confermato con successo",
+      "create": "Crea batch bonifici",
+      "createAnother": "Crea un altro batch",
+      "createError": "Impossibile creare il batch",
+      "createSuccess": "Batch creato con successo",
+      "currency": "Valuta",
+      "details": "Dettagli batch",
+      "detailsDescription": "Informazioni sul batch di bonifici creato",
+      "download": "Scarica file",
+      "downloadError": "Impossibile scaricare il file",
+      "downloadSuccess": "File scaricato con successo",
+      "id": "ID batch",
+      "paidComplete": "Il batch è stato confermato come pagato",
+      "status": "Stato",
+      "totalAmount": "Importo totale",
+      "transferCount": "Numero bonifici"
+    },
+    "debitAccount": "Conto di addebito (IBAN)",
+    "debitAccountPlaceholder": "IT00X0000000000000000000000",
+    "description": "Genera file SEPA per pagare i proprietari.",
+    "loadError": "Impossibile caricare i dati",
+    "loading": "Caricamento bonifici...",
+    "noApprovedStatements": "Nessun estratto conto approvato",
+    "noApprovedStatementsDescription": "Approva gli estratti conto prima di creare un batch di bonifici.",
+    "selectStatements": "Seleziona estratti conto",
+    "status": {
+      "downloaded": "Scaricato",
+      "generated": "Generato",
+      "paid": "Pagato"
+    },
+    "title": "Bonifici proprietari"
   },
   "wizard": {
     "back": "Indietro",
