@@ -2714,6 +2714,10 @@
       },
       "guests": {
         "count": "Inserisci da 1 a 30 ospiti"
+      },
+      "marketingEmail": {
+        "required": "Inserisci l'indirizzo email per ricevere le comunicazioni",
+        "invalid": "Inserisci un indirizzo email valido (massimo 255 caratteri)"
       }
     },
     "loading": "Caricamento check-in...",
@@ -2838,6 +2842,18 @@
         "reject": "Non verificato",
         "rejectMessage": "La verifica biometrica non è riuscita. Riprova o il gestore della struttura verificherà manualmente."
       }
+    },
+    "consent": {
+      "title": "Consenso al marketing (facoltativo)",
+      "intro": "Vuoi ricevere aggiornamenti, offerte e novità dalla struttura? Scegli i canali che preferisci. Non è obbligatorio: puoi completare il check-in senza dare il consenso.",
+      "emailChannel": "Acconsento a ricevere comunicazioni promozionali via email",
+      "emailChannelDescription": "Riceverai offerte, novità e promozioni via email.",
+      "whatsappChannel": "Acconsento a ricevere comunicazioni promozionali via WhatsApp",
+      "whatsappChannelDescription": "Riceverai offerte, novità e promozioni via WhatsApp.",
+      "marketingEmail": "Il tuo indirizzo email *",
+      "marketingEmailPlaceholder": "esempio@email.com",
+      "marketingEmailHint": "Inserisci il tuo indirizzo email personale. Non usare l'email temporanea della prenotazione (es. Booking.com).",
+      "skipAllowed": "Puoi saltare questo passaggio: il check-in sarà completato comunque."
     },
     "documentIntro": "Documento d'identità dell'ospite singolo o del capofamiglia o capogruppo. Per familiari e membri del gruppo non serve.",
     "documentOf": "Documento di {{name}}",
