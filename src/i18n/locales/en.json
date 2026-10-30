@@ -10818,10 +10818,14 @@
     "subprocessors": "Subprocessors",
     "legalDocuments": "Legal documents",
     "footer": {
+      "allHouses": "All homes",
       "contact": "Contact",
       "cookies": "Cookies",
+      "hostedBy": "Hosted by {{host}}",
+      "houses": "Homes",
       "info": "Information",
       "operator": "Operator",
+      "securePayments": "Secure payments with Stripe",
       "vatNumber": "VAT no. {{vat}}"
     },
     "seo": {

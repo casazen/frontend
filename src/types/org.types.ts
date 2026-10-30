@@ -82,6 +82,12 @@ export interface PublicOrgDto {
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
   operator?: PublicOperator | null;
+  /** How the host is named on the site ("Scrivi a Giulia", "Ti ospita Giulia"), or null: the site shows `displayName` only (DB-03). */
+  hostName?: string | null;
+  /** The phone number the host chose to publish (`+` or digits only), or null: the footer has no phone (DB-03). */
+  publicPhone?: string | null;
+  /** A guest can book on this site now: the org can take a payment (DB-03). Absent on an older backend. */
+  acceptsBookings?: boolean;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */

@@ -10818,10 +10818,14 @@
     "subprocessors": "Sub-responsabili",
     "legalDocuments": "Documenti legali",
     "footer": {
+      "allHouses": "Tutte le case",
       "contact": "Contatti",
       "cookies": "Cookie",
+      "hostedBy": "Ti ospita {{host}}",
+      "houses": "Le case",
       "info": "Informazioni",
       "operator": "Operatore",
+      "securePayments": "Pagamenti sicuri con Stripe",
       "vatNumber": "P.IVA {{vat}}"
     },
     "seo": {
