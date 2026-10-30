@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Segmented } from '@/components/ui/segmented';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -17,7 +18,7 @@ import { needsOrgSetup } from '@/lib/onboarding';
 import { translateErrorCode } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
-import type { OrgSettings } from '@/types';
+import type { OrgLanguage, OrgSettings } from '@/types';
 import { ORG_NAME_FIELD_ID } from './org-profile';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,10 +29,15 @@ import {
   useUpdateOrgSettings,
 } from './use-org-settings';
 
-/** What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) are text boxes: empty means "not entered". */
+/**
+ * What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) and the phone (AM-08b-b) are text boxes: empty means
+ * "not entered". The language of the account (AM-08b-b) is Italian until it is changed.
+ */
 type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'> & {
   legalName: string;
   registeredOffice: string;
+  contactPhone: string;
+  defaultLanguage: OrgLanguage;
 };
 type FieldErrors = Partial<Record<'name' | 'slug' | 'contactEmail', string>>;
 
@@ -44,6 +50,9 @@ const PUBLIC_PATH_PREFIX = '/book/';
 /** Longest legal name and registered office the backend accepts (`OrgOperatorRules`); the server checks again. */
 const LEGAL_NAME_MAX_LENGTH = 200;
 const REGISTERED_OFFICE_MAX_LENGTH = 300;
+
+/** Longest phone the backend takes before it drops the separators (`UpdateOrgSettingsDto.ContactPhone`); the server checks again. */
+const CONTACT_PHONE_MAX_LENGTH = 40;
 
 /** Same shape the backend accepts ([EmailAddress]): one `@` with text on both sides; the server validates again. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
@@ -155,6 +164,8 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
     contactEmailPublic: false,
     legalName: '',
     registeredOffice: '',
+    contactPhone: '',
+    defaultLanguage: 'it',
   });
   const [submitted, setSubmitted] = useState(false);
   // Sync the form from the server settings whenever they (re)load (adjusting state during render).
@@ -162,8 +173,17 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   if (settingsQuery.data !== synced) {
     setSynced(settingsQuery.data);
     if (settingsQuery.data) {
-      const { name, slug, contactEmail, contactEmailPublic, legalName, registeredOffice } = settingsQuery.data;
-      setForm({ name, slug, contactEmail, contactEmailPublic, legalName: legalName ?? '', registeredOffice: registeredOffice ?? '' });
+      const { name, slug, contactEmail, contactEmailPublic, legalName, registeredOffice, contactPhone, defaultLanguage } = settingsQuery.data;
+      setForm({
+        name,
+        slug,
+        contactEmail,
+        contactEmailPublic,
+        legalName: legalName ?? '',
+        registeredOffice: registeredOffice ?? '',
+        contactPhone: contactPhone ?? '',
+        defaultLanguage: defaultLanguage ?? 'it',
+      });
       setSubmitted(false);
     }
   }
@@ -230,6 +250,8 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
       contactEmailPublic: form.contactEmailPublic,
       legalName: form.legalName.trim(),
       registeredOffice: form.registeredOffice.trim(),
+      contactPhone: form.contactPhone.trim(),
+      defaultLanguage: form.defaultLanguage,
     });
   };
 
@@ -313,6 +335,20 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
         />
       </div>
 
+      {/* The phone of the account (AM-08b-b): to be reached by CasaZen and the team; unlike the email it has no switch because it is never published. */}
+      <Field label={t('orgSettings.contactPhoneLabel')} hint={t('orgSettings.contactPhoneHelp')}>
+        <Input
+          id="org-contact-phone"
+          data-testid="org-contact-phone-input"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          value={form.contactPhone}
+          maxLength={CONTACT_PHONE_MAX_LENGTH}
+          onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))}
+        />
+      </Field>
+
       {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
       <div className="space-y-4" data-testid="org-operator-section">
         <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
@@ -340,6 +376,29 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
             onChange={(event) => setForm((current) => ({ ...current, registeredOffice: event.target.value }))}
           />
         </Field>
+      </div>
+
+      {/* Language and currency (AM-08b-b): the language is the account's choice; the currency and the time zone are the product's, shown and not asked. */}
+      <div className="space-y-3" data-testid="org-language-section">
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium leading-snug">{t('orgSettings.languageLabel')}</p>
+          <Segmented<OrgLanguage>
+            label={t('orgSettings.languageLabel')}
+            value={form.defaultLanguage}
+            onValueChange={(language) => setForm((current) => ({ ...current, defaultLanguage: language }))}
+            options={[
+              { value: 'it', label: t('orgSettings.languageIt'), testId: 'org-language-it' },
+              { value: 'en', label: t('orgSettings.languageEn'), testId: 'org-language-en' },
+            ]}
+          />
+          <p className="break-words text-sm text-foreground/70">{t('orgSettings.languageHelp')}</p>
+        </div>
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm" data-testid="org-regional-info">
+          <dt className="text-foreground/70">{t('orgSettings.currencyLabel')}</dt>
+          <dd>{t('orgSettings.currencyValue')}</dd>
+          <dt className="text-foreground/70">{t('orgSettings.timezoneLabel')}</dt>
+          <dd>{t('orgSettings.timezoneValue')}</dd>
+        </dl>
       </div>
 
       <div>
