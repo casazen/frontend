@@ -12538,6 +12538,12 @@
     "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
     "pinsLabel": "Houses on the map",
     "rating": "Rated {{value}} out of 5",
+    "region": {
+      "italia": "Italy",
+      "lombardia": "Lombardy",
+      "lombardia-svizzera": "Lombardy and Switzerland",
+      "svizzera": "Switzerland"
+    },
     "retry": "Try again",
     "unavailable": "not available",
     "zoomAnnounce": "Map {{km}} km wide",

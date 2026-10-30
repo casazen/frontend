@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { fitView, panView, zoomView, type LatLon, type View } from '../engine/view';
+import { FIT } from '../load';
 
 /** The smallest frame (km): the positions are rounded to about 1 km, so closer than this the map would only show the rounding. */
 const MIN_SPAN_KM = 8;
 const MAX_SPAN_KM = 1500;
-/** Margin around the pins (fraction per side) and the smallest frame when the view is fitted to them. */
-const FIT = { padPct: 0.42, minSpanKm: 40 };
 
 export interface MapViewControl {
   view: View;

@@ -12538,6 +12538,12 @@
     "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
     "pinsLabel": "Case sulla mappa",
     "rating": "Voto {{value}} su 5",
+    "region": {
+      "italia": "Italia",
+      "lombardia": "Lombardia",
+      "lombardia-svizzera": "Lombardia e Svizzera",
+      "svizzera": "Svizzera"
+    },
     "retry": "Riprova",
     "unavailable": "non libera",
     "zoomAnnounce": "Mappa a {{km}} km di larghezza",
