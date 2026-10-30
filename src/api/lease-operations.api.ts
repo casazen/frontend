@@ -3,6 +3,7 @@ import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type {
   DisdettaLetterInput,
+  HandoverLetterInput,
   IstatCalculationInput,
   IstatLetterInput,
   LeaseIstatCalculation,
@@ -26,6 +27,7 @@ const LETTER_SLUGS: Readonly<Record<LeaseLetterKind, string>> = {
   ConfermaEsigenza: 'conferma-esigenza',
   AggiornamentoIstat: 'aggiornamento-istat',
   OpzioneCedolare: 'opzione-cedolare',
+  Riconsegna: 'riconsegna',
 };
 
 /** What the server answers for a calculation of the ISTAT update: numbers, or it is not an answer. */
@@ -55,7 +57,8 @@ function expectOperations(data: unknown, url: string): LeaseOperations {
     !isRecord(data.renewal) ||
     !isRecord(data.transitoryConfirmation) ||
     !isRecord(data.istat) ||
-    !isRecord(data.cedolareNotice)
+    !isRecord(data.cedolareNotice) ||
+    !isRecord(data.handover)
   ) {
     throw new UnexpectedApiResponseError(url);
   }
@@ -119,6 +122,14 @@ export const leaseOperationsApi = {
    */
   downloadOpzioneCedolare: async (id: string, input: OpzioneCedolareLetterInput): Promise<Blob> =>
     (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.OpzioneCedolare}`, input, { responseType: 'blob' })).data,
+
+  /**
+   * The draft of the minutes of the handover of the property at the end of the lease, as a PDF, dated `handoverOn` when given. The state, the
+   * meters and the keys are lines the parties fill in by hand. 422 `lease_letter_not_applicable` when the lease is not ending,
+   * `lease_letter_effect_date_invalid`.
+   */
+  downloadRiconsegna: async (id: string, input: HandoverLetterInput): Promise<Blob> =>
+    (await axios.post(`/leases/${id}/letters/${LETTER_SLUGS.Riconsegna}`, input, { responseType: 'blob' })).data,
 
   /** Marks a letter as sent on a day, by a means: an event in the history and nothing else. The answer is the operations as they are now. */
   markSent: async (id: string, kind: LeaseLetterKind, input: MarkLetterSentInput): Promise<LeaseOperations> =>

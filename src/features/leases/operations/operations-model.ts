@@ -10,7 +10,7 @@ export function letterState(operations: LeaseOperations, kind: LeaseLetterKind):
  * Which operations the sheet offers now: the notice while a letter makes sense, the withdrawal while it can be recorded or once it was, the
  * renewal in the last stretch of the period and once it was recorded (the next steps), the confirmation of a transitory need while it is the
  * landlord's to confirm, the ISTAT update of the rent while the lease is not under the cedolare secca (which suspends every update), the
- * communication of the cedolare secca while it is.
+ * communication of the cedolare secca while it is, the minutes of the handover once the lease is ending.
  */
 export function availableOperations(operations: LeaseOperations): Readonly<Record<LeaseOperationId, boolean>> {
   return {
@@ -20,6 +20,7 @@ export function availableOperations(operations: LeaseOperations): Readonly<Recor
     'conferma-esigenza': operations.transitoryConfirmation.applies && operations.transitoryConfirmation.available,
     istat: operations.istat.available,
     cedolare: operations.cedolareNotice.available,
+    riconsegna: operations.handover.available,
   };
 }
 

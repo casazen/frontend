@@ -482,7 +482,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: ENDING,
     when: isEnding,
     priority: 33,
-    action: tab('documenti'),
+    action: operation('riconsegna'),
     sources: [],
   },
   {

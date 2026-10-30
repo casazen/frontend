@@ -41,6 +41,7 @@ const OPERATIONS: LeaseOperationsData = {
     { kind: 'ConfermaEsigenza', approved: false, sent: null },
     { kind: 'AggiornamentoIstat', approved: false, sent: null },
     { kind: 'OpzioneCedolare', approved: false, sent: null },
+    { kind: 'Riconsegna', approved: false, sent: null },
   ],
   renewal: {
     available: true,
@@ -55,6 +56,7 @@ const OPERATIONS: LeaseOperationsData = {
   transitoryConfirmation: { applies: false, available: false, holder: null, confirmBy: '2027-01-31' },
   istat: { available: true, currentRent: 650, defaultSharePercent: 75, maxSharePercent: 100, minEffectiveOn: '2026-10-10', maxEffectiveOn: '2027-01-31' },
   cedolareNotice: { available: false, minEffectiveOn: '2025-11-01', maxEffectiveOn: '2027-01-31' },
+  handover: { available: false, minOn: '2025-11-01', maxOn: '2028-01-31', suggestedOn: '2027-01-31' },
 };
 
 /** Nothing to do: every operation is off, so the section is not drawn at all. */
@@ -315,6 +317,32 @@ describe('LeaseOperations', () => {
     fireEvent.change(dialog.getByTestId('istat-foi'), { target: { value: '-1' } });
     expect(await dialog.findByText(/Scrivi una percentuale maggiore di zero/)).toBeInTheDocument();
     expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  it('handover_OnlyOnceTheLeaseIsEnding_TheMinutesAreDownloadedWithTheDayOfTheLease', async () => {
+    // A lease that runs on has no row, and the address opens nothing.
+    const { unmount } = renderOperations('?operazione=riconsegna');
+    expect(await screen.findByTestId('lease-operation-disdetta')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-operation-riconsegna')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('handover-dialog')).not.toBeInTheDocument();
+    unmount();
+
+    // A lease that is ending: the window suggests the last day of the lease, and the minutes carry the day.
+    mockServer({ ...OPERATIONS, handover: { ...OPERATIONS.handover, available: true } });
+    post.mockResolvedValue({ data: new Blob(['%PDF']) });
+    renderOperations('?operazione=riconsegna');
+
+    const dialog = within(await screen.findByTestId('handover-dialog'));
+    expect(dialog.getByTestId('handover-day')).toHaveValue('2027-01-31');
+    expect(dialog.getByTestId('handover-draft-note')).toBeInTheDocument();
+    fireEvent.click(dialog.getByTestId('handover-download'));
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/leases/lease-1/letters/riconsegna', { handoverOn: '2027-01-31' }, { responseType: 'blob' }));
+    await waitFor(() => expect(dialog.getByTestId('handover-download')).toBeEnabled()); // one download at a time: the first has to be over
+
+    // The day can be left out: the minutes then leave it to complete.
+    fireEvent.change(dialog.getByTestId('handover-day'), { target: { value: '' } });
+    fireEvent.click(dialog.getByTestId('handover-download'));
+    await waitFor(() => expect(post).toHaveBeenLastCalledWith('/leases/lease-1/letters/riconsegna', {}, { responseType: 'blob' }));
   });
 
   it('istat_UnderTheCedolareSecca_TheUpdateIsOffNoRowAndNoWindow_AndTheCommunicationOfTheOptionIsOn', async () => {

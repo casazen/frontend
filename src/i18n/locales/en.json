@@ -5054,7 +5054,7 @@
         "why": "After registration the events of the contract (extension, assignment, termination) are communicated to the Agenzia delle Entrate, also with the cedolare secca. CasaZen does not communicate them for you and does not know the exact deadline in your case."
       },
       "endOrganize": {
-        "action": "Open the Documents",
+        "action": "Prepare the minutes",
         "body": "Set the day with the tenant, compare the state with the delivery report, read the meters, collect all the keys and both sign the handover report.",
         "title": "Plan the handover of the home",
         "why": "At the end the tenant must give the home back empty and in the state in which they received it, apart from normal wear. The handover report signed by both, with the meter readings and the keys, protects you if there are disputes and you need it to give the deposit back."
@@ -5538,6 +5538,24 @@
       "label": "Download the draft"
     },
     "draftNote": "The text is a draft that has not been approved yet: the PDF carries the word DRAFT (BOZZA). Have it reviewed before you send it.",
+    "handover": {
+      "dialog": {
+        "dayHint": "The day you meet at the home. If you don't know yet, leave it empty: the minutes leave it to complete.",
+        "dayInvalid": "Choose a day between {{from}} and {{to}}.",
+        "dayLabel": "Day of the handover (optional)",
+        "description": "CasaZen prepares the minutes with the data of the contract. You fill them in and sign them together on the day of the handover: we don't write to the tenant.",
+        "download": "Download the minutes",
+        "steps": {
+          "agree": "Agree with the tenant on the day and the time to meet at the home.",
+          "compare": "Compare the state of the home with the minutes of the delivery, read the meters together and count the keys.",
+          "deposit": "Write on the minutes the damage and the sums you want to keep from the deposit, then both sign it."
+        },
+        "title": "Prepare the minutes of the handover"
+      },
+      "open": "Prepare the minutes",
+      "summary": "The contract ends on {{date}}: agree with the tenant on the day of the handover and bring the minutes to fill in together.",
+      "title": "Handover of the property"
+    },
     "istat": {
       "dialog": {
         "description": "CasaZen works out the new rent and writes the draft of the request. You sign it and send it: we don't write to the tenant.",

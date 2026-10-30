@@ -5,7 +5,14 @@
  */
 
 /** The letters CasaZen prepares (backend `LeaseLetterKind`). A name is never renamed. */
-export type LeaseLetterKind = 'Disdetta' | 'PresaAttoRecesso' | 'Rinnovo' | 'ConfermaEsigenza' | 'AggiornamentoIstat' | 'OpzioneCedolare';
+export type LeaseLetterKind =
+  | 'Disdetta'
+  | 'PresaAttoRecesso'
+  | 'Rinnovo'
+  | 'ConfermaEsigenza'
+  | 'AggiornamentoIstat'
+  | 'OpzioneCedolare'
+  | 'Riconsegna';
 
 /** How the person sent a letter (backend `LeaseLetterMeans`). */
 export const LEASE_LETTER_MEANS = ['RegisteredMail', 'Pec', 'ByHand', 'Other'] as const;
@@ -145,6 +152,18 @@ export interface LeaseCedolareNotice {
   maxEffectiveOn: string;
 }
 
+/**
+ * The handover of the property at the end of the lease. `available`: the lease is ending (a notice is recorded, it was ended early, or it is of
+ * a type that ends by itself), so the minutes can be prepared; they can be dated from `minOn` to `maxOn`, and the window suggests
+ * `suggestedOn`, the last day of the lease.
+ */
+export interface LeaseHandoverOperation {
+  available: boolean;
+  minOn: string;
+  maxOn: string;
+  suggestedOn: string;
+}
+
 /** The ISTAT update worked out by the server: the rent, the percentages typed, what they make of the rent, the increase and the new rent (to the cent). */
 export interface LeaseIstatCalculation {
   currentRent: number;
@@ -163,6 +182,7 @@ export interface LeaseOperations {
   transitoryConfirmation: LeaseTransitoryConfirmation;
   istat: LeaseIstatOperation;
   cedolareNotice: LeaseCedolareNotice;
+  handover: LeaseHandoverOperation;
 }
 
 /** `POST /leases/:id/letters/disdetta`: the reason of the law, required at the first expiry. */
@@ -204,6 +224,11 @@ export interface IstatLetterInput extends IstatCalculationInput {
 /** `POST /leases/:id/letters/opzione-cedolare`: the first day the option applies from, when the person says it. */
 export interface OpzioneCedolareLetterInput {
   effectiveFrom?: string;
+}
+
+/** `POST /leases/:id/letters/riconsegna`: the day of the handover, when the person says it. */
+export interface HandoverLetterInput {
+  handoverOn?: string;
 }
 
 /** `POST /leases/:id/letters/:kind/sent`. */

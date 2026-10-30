@@ -6,6 +6,7 @@ import { GuideButton } from '../guide/guide-button';
 import { leaseTermEnd, longDay } from '../lifecycle/lifecycle-format';
 import { CedolareDialog } from './cedolare-dialog';
 import { DisdettaDialog } from './disdetta-dialog';
+import { HandoverDialog } from './handover-dialog';
 import { IstatDialog } from './istat-dialog';
 import { NeedConfirmationDialog } from './need-confirmation-dialog';
 import { LEASE_OPERATION_PARAM, LEASE_OPERATIONS, leaseOperationOf, type LeaseOperationId } from './operation-ids';
@@ -155,6 +156,21 @@ function CedolareRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   );
 }
 
+/** The minutes of the handover of the property: the lease is ending, so the day it ends and what to prepare. */
+function HandoverRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
+  const { t, i18n } = useTranslation();
+
+  return (
+    <OperationRow
+      testId="lease-operation-riconsegna"
+      title={t('leaseOperations.handover.title')}
+      summary={t('leaseOperations.handover.summary', { date: longDay(operations.handover.suggestedOn, i18n.language) })}
+      openLabel={t('leaseOperations.handover.open')}
+      onOpen={onOpen}
+    />
+  );
+}
+
 /** The withdrawal of the tenant: to record, or recorded with the day the lease ends. */
 function WithdrawalRow({ operations, onOpen }: Omit<RowProps, 'lease'>) {
   const { t, i18n } = useTranslation();
@@ -184,7 +200,8 @@ interface LeaseOperationsProps {
  * non-renewal («Disdetta all'inquilino») while a letter makes sense, the renewal («Rinnovo del contratto») in the last stretch of the period,
  * the confirmation of the need of a transitory lease («Conferma dell'esigenza») while it is the landlord's to confirm, the update of the rent by
  * the ISTAT variation («Aggiornamento ISTAT del canone») while the lease is not under the cedolare secca and the communication of the cedolare secca
- * («Opzione per la cedolare secca») while it is, and the withdrawal of the tenant («Recesso dell'inquilino») while it can be recorded or once it was. Each row says where the operation stands in a sentence and opens a
+ * («Opzione per la cedolare secca») while it is, the withdrawal of the tenant («Recesso dell'inquilino») while it can be recorded or once it was,
+ * and the minutes of the handover of the property («Riconsegna dell'immobile») once the lease is ending. Each row says where the operation stands in a sentence and opens a
  * window (`?operazione=disdetta`, `rinnovo`, `conferma-esigenza`, `recesso`: a link from the advice or the step of the sheet lands on it) with
  * the two or three fields it needs and, where there is one, the draft of the letter to download. What is computed (the last day a notice is on
  * time, the day a withdrawal ends the lease, where a renewal goes on to) comes from the server. Nothing is sent to the tenant. A person who may
@@ -225,6 +242,7 @@ export function LeaseOperations({ lease }: LeaseOperationsProps) {
           {available.istat ? <IstatRow operations={data} onOpen={() => go('istat')} /> : null}
           {available.cedolare ? <CedolareRow operations={data} onOpen={() => go('cedolare')} /> : null}
           {available.recesso ? <WithdrawalRow operations={data} onOpen={() => go('recesso')} /> : null}
+          {available.riconsegna ? <HandoverRow operations={data} onOpen={() => go('riconsegna')} /> : null}
         </ul>
       </PlainSection>
 
@@ -234,6 +252,7 @@ export function LeaseOperations({ lease }: LeaseOperationsProps) {
       <IstatDialog open={open === 'istat'} lease={lease} operations={data} onClose={() => go(null)} />
       <CedolareDialog open={open === 'cedolare'} lease={lease} operations={data} onClose={() => go(null)} />
       <WithdrawalDialog open={open === 'recesso'} lease={lease} operations={data} onClose={() => go(null)} />
+      <HandoverDialog open={open === 'riconsegna'} lease={lease} operations={data} onClose={() => go(null)} />
     </>
   );
 }

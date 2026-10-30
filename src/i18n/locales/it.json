@@ -5054,7 +5054,7 @@
         "why": "Dopo la registrazione le vicende del contratto (proroga, cessione, risoluzione) si comunicano all'Agenzia delle Entrate, anche con la cedolare secca. CasaZen non le comunica per te e non conosce il termine esatto del tuo caso."
       },
       "endOrganize": {
-        "action": "Apri i Documenti",
+        "action": "Prepara il verbale",
         "body": "Fissa il giorno con l'inquilino, confronta lo stato con il verbale di consegna, leggi i contatori, ritira tutte le chiavi e firmate il verbale di riconsegna.",
         "title": "Prepara la riconsegna della casa",
         "why": "Al termine l'inquilino deve restituire la casa libera e nello stato in cui l'ha ricevuta, salvo il normale uso. Il verbale di riconsegna firmato da entrambi, con le letture dei contatori e le chiavi, ti protegge se ci sono contestazioni e ti serve per restituire il deposito."
@@ -5538,6 +5538,24 @@
       "label": "Scarica la bozza"
     },
     "draftNote": "Il testo è una bozza non ancora approvata: il PDF porta la scritta BOZZA. Fallo rivedere prima di mandarlo.",
+    "handover": {
+      "dialog": {
+        "dayHint": "Il giorno in cui vi vedete in casa. Se non lo sai ancora, lascialo vuoto: il verbale lo lascia da completare.",
+        "dayInvalid": "Scegli un giorno tra il {{from}} e il {{to}}.",
+        "dayLabel": "Giorno della riconsegna (facoltativo)",
+        "description": "CasaZen prepara il verbale con i dati del contratto. Lo compilate e lo firmate insieme il giorno della riconsegna: non scriviamo all'inquilino.",
+        "download": "Scarica il verbale",
+        "steps": {
+          "agree": "Concorda con l'inquilino il giorno e l'ora per vedervi in casa.",
+          "compare": "Confronta lo stato della casa con il verbale di consegna, leggete insieme i contatori e contate le chiavi.",
+          "deposit": "Scrivete sul verbale i danni e le somme che vuoi trattenere dal deposito, poi firmatelo in due."
+        },
+        "title": "Prepara il verbale di riconsegna"
+      },
+      "open": "Prepara il verbale",
+      "summary": "Il contratto finisce il {{date}}: concorda con l'inquilino il giorno della riconsegna e porta il verbale da compilare insieme.",
+      "title": "Riconsegna dell'immobile"
+    },
     "istat": {
       "dialog": {
         "description": "CasaZen calcola il nuovo canone e scrive la bozza della richiesta. La firmi e la spedisci tu: non scriviamo all'inquilino.",
