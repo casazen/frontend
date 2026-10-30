@@ -63,3 +63,14 @@ export const num = (v: number, d = 1): string => {
 /** Escapes text for an SVG text node or attribute. */
 export const esc = (s: unknown): string =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const COMBINING = new RegExp(`[${String.fromCharCode(0x300)}-${String.fromCharCode(0x36f)}]`, 'g');
+
+/** Lower-case ASCII id with hyphens: «Monte Sant'Angelo» becomes «monte-sant-angelo». */
+export const slug = (s: unknown): string =>
+  String(s)
+    .normalize('NFD')
+    .replace(COMBINING, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
