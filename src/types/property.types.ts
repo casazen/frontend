@@ -19,15 +19,6 @@ export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | '
 export type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
 
 /**
- * One thing a property still lacks (SR-07a), told by the server with a stable `code`: `base_data`, `cin`, `documents`, `safety`
- * and `activation_not_confirmed` block the activation; `photos` and `calendar` are advice.
- */
-export interface PropertyMissingItem {
-  code: string;
-  blocking: boolean;
-}
-
-/**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
  * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
  */
@@ -81,7 +72,6 @@ export interface Property {
    * occupancy of the last 30 days (percent, active properties only), the photos and where the property stands on the site.
    */
   lifecycleStatus?: PropertyLifecycleStatus;
-  missing?: PropertyMissingItem[];
   occupancy30?: number;
   photoCount?: number;
   coverPhotoUrl?: string;
