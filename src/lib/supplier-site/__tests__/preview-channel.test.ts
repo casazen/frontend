@@ -15,6 +15,13 @@ describe('preview channel: the draft the editor sends to the frame', () => {
     expect(readPreviewMessage(fromParent(buildPreviewMessage(draft), 'https://evil.example'), self)).toBeNull();
   });
 
+  it('readPreviewMessage_OrderOfTheServices_PassesAsLongAsItIsWithinTheContract', () => {
+    const withOrder = { ...draft, serviceOrder: ['pulizie', 'bucato'] };
+    expect(readPreviewMessage(fromParent(buildPreviewMessage(withOrder)), self)).toEqual(withOrder);
+    const tooMany = { ...draft, serviceOrder: Array.from({ length: 31 }, (_, index) => `servizio-${index}`) };
+    expect(readPreviewMessage(fromParent(buildPreviewMessage(tooMany)), self)).toBeNull();
+  });
+
   it('readPreviewMessage_NotFromTheParentThatFramesThePage_IsDropped', () => {
     expect(readPreviewMessage(fromParent(buildPreviewMessage(draft), self.origin, {}), self)).toBeNull();
     expect(readPreviewMessage(fromParent(buildPreviewMessage(draft), self.origin, null), self)).toBeNull();

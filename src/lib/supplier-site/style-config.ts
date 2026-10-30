@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { contrastRatio, AA_TEXT_CONTRAST } from '@/lib/public-site-colors';
+import { contrastRatio, mixHex, AA_TEXT_CONTRAST } from '@/lib/public-site-colors';
 import { normalizeHexColor } from '@/lib/public-site-themes';
 
 /**
@@ -22,15 +22,24 @@ interface SiteStyleDefinition {
   font: SiteFontId;
   /** The color of its buttons (the same as `--vz-cta` in the CSS): white text on it is at least 4.5:1. */
   cta: string;
+  /** The color of its page (the same as `--vz-bg`): what the editor draws a sample of the style on. */
+  bg: string;
   /** The service categories (codes of the backend catalog) the style is recommended for. */
   categories: readonly string[];
 }
 
 export const SITE_STYLES: Record<SiteStyleId, SiteStyleDefinition> = {
-  acqua: { hero: 'full', font: 'moderno', cta: '#0b5fa5', categories: ['plumbing', 'maintenance'] },
-  scintilla: { hero: 'full', font: 'moderno', cta: '#1f2933', categories: ['electrical', 'check-in'] },
-  fresco: { hero: 'split', font: 'editoriale', cta: '#0f766e', categories: ['cleaning', 'laundry', 'linen'] },
-  naturale: { hero: 'split', font: 'classico', cta: '#2f6b3a', categories: ['gardening'] },
+  acqua: { hero: 'full', font: 'moderno', cta: '#0b5fa5', bg: '#f4f7fa', categories: ['plumbing', 'maintenance'] },
+  scintilla: { hero: 'full', font: 'moderno', cta: '#1f2933', bg: '#f6f5f1', categories: ['electrical', 'check-in'] },
+  fresco: { hero: 'split', font: 'editoriale', cta: '#0f766e', bg: '#f2f9f6', categories: ['cleaning', 'laundry', 'linen'] },
+  naturale: { hero: 'split', font: 'classico', cta: '#2f6b3a', bg: '#f5f2ea', categories: ['gardening'] },
+};
+
+/** The family each typeface is drawn with (the same as in the CSS), to show a sample of it in the editor. */
+export const SITE_FONT_FAMILIES: Record<SiteFontId, string> = {
+  moderno: "'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif",
+  editoriale: "'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, serif",
+  classico: "'Playfair Display Variable', 'Playfair Display', Didot, 'Bodoni MT', Georgia, serif",
 };
 
 /** Where nothing says otherwise (a trade with no style of its own: events, rental, excursions). */
@@ -42,13 +51,18 @@ const isStyleId = (value: unknown): value is SiteStyleId =>
 const isFontId = (value: unknown): value is SiteFontId =>
   typeof value === 'string' && (SITE_FONT_IDS as readonly string[]).includes(value);
 
-/** The style recommended for the first of the supplier's categories that has one. */
-export function styleForCategories(categories: readonly string[]): SiteStyleId {
+/** The style recommended for the first of the supplier's categories that has one; null when none has (events, rental, excursions). */
+export function recommendedStyleFor(categories: readonly string[]): SiteStyleId | null {
   for (const category of categories) {
     const found = SITE_STYLE_IDS.find((id) => SITE_STYLES[id].categories.includes(category));
     if (found) return found;
   }
-  return DEFAULT_STYLE;
+  return null;
+}
+
+/** The style recommended for the trade, or the default one when the trade has none of its own. */
+export function styleForCategories(categories: readonly string[]): SiteStyleId {
+  return recommendedStyleFor(categories) ?? DEFAULT_STYLE;
 }
 
 /** The style the supplier chose, or the one recommended for its trade when it chose none (or sent a name nobody knows). */
@@ -70,6 +84,22 @@ export function siteButtonColor(chosen: string | null | undefined): string | nul
   const color = normalizeHexColor(chosen);
   if (!color) return null;
   return contrastRatio(color, '#ffffff') >= AA_TEXT_CONTRAST ? color : null;
+}
+
+/**
+ * The color the editor offers when the one typed cannot hold white text at 4.5:1: the same hue, darker, in steps of 2 %, the first that
+ * reads (the prototype's `fixColor`); the server gives its own in `suggestedColor` when it refuses one, this is the same idea asked
+ * before sending. A value that is not a color gets the style's own.
+ */
+export function suggestReadableColor(chosen: string, fallback = SITE_STYLES.fresco.cta): string {
+  const color = normalizeHexColor(chosen);
+  if (!color) return fallback;
+  if (contrastRatio(color, '#ffffff') >= AA_TEXT_CONTRAST) return color;
+  for (let step = 1; step <= 45; step += 1) {
+    const candidate = mixHex(color, '#000000', step * 0.02);
+    if (contrastRatio(candidate, '#ffffff') >= AA_TEXT_CONTRAST) return candidate;
+  }
+  return fallback;
 }
 
 /**
