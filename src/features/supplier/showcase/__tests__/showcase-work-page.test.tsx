@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
+import { starterContentFor } from '@/lib/supplier-site/starter-content';
 import type { ShowcaseContent } from '@/types/supplier-showcase';
 import { listOf, makeService, problem, renderRouted } from '../../services/__tests__/service-test-kit';
 import { SupplierShowcaseHubPage } from '../showcase-hub-page';
@@ -24,7 +25,9 @@ vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
 }));
 
 // The categories of the profile only decide which style is marked as the recommended one.
-vi.mock('@/queries/supplier/use-profile', () => ({ useSupplierProfile: () => ({ data: { categories: ['cleaning'] } }) }));
+vi.mock('@/queries/supplier/use-profile', () => ({
+  useSupplierProfile: () => ({ isLoading: false, data: { categories: ['cleaning'], photoUrls: ['https://cdn.example/profile-1.jpg'] } }),
+}));
 
 const sonner = vi.hoisted(() => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), dismiss: vi.fn() }),
@@ -61,7 +64,7 @@ function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   };
 }
 
-function renderEditor(answer: ShowcaseContent, step: 'style' | 'texts' | 'services' | 'publish') {
+function renderEditor(answer: ShowcaseContent, step: 'style' | 'works' | 'texts' | 'services' | 'publish') {
   api.getContent.mockResolvedValue(answer);
   api.getStats.mockResolvedValue({ days: 30, requests: 0, pending: 0 });
   return renderRouted({ at: `${PATH}?step=${step}`, routes: [{ path: PATH, element: <SupplierShowcaseHubPage /> }] });
@@ -142,6 +145,24 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     await waitFor(() => expect(api.saveDraft).toHaveBeenNthCalledWith(2, 5, { intro: 'Da noi' }), { timeout: 3000 });
   });
 
+  it('offers a starting text for the trade, fills only the empty fields with it and takes it back with Annulla', async () => {
+    const starter = starterContentFor(['cleaning'])!;
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    renderEditor(content({ draft: { tagline: 'La mia frase' } }), 'texts');
+
+    fireEvent.click(await screen.findByTestId('supplier-showcase-starter'));
+
+    // What the supplier wrote stays; the empty members get the text.
+    await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { intro: starter.intro, prep: starter.prep }), { timeout: 3000 });
+    expect(screen.getByLabelText(/Frase in grande/)).toHaveValue('La mia frase');
+    expect(screen.getByLabelText(/Introduzione/)).toHaveValue(starter.intro);
+    const [message, options] = sonner.toast.success.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
+    expect(message).toBe('Testo di partenza inserito');
+    expect(options.action.label).toBe('Annulla');
+    // Nothing is offered once the three are filled.
+    expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
+  });
+
   it('leaves a service out of the page by naming the others, and keeps the last one on', async () => {
     servicesApi.fetchServices.mockResolvedValue(
       listOf([
@@ -175,10 +196,51 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     );
   });
 
+  it('picks the photo of a job among the ones the supplier already has, and sends the gallery with it', async () => {
+    servicesApi.fetchServices.mockResolvedValue(listOf([makeService({ photoUrls: ['https://cdn.example/servizio-1.jpg'] })]));
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    renderEditor(content({ draft: { gallery: [{ photoUrl: '', caption: 'Bagno rifatto' }] } }), 'works');
+
+    fireEvent.click(await screen.findByTestId('supplier-showcase-work-0-pick'));
+    const picker = await screen.findByTestId('supplier-showcase-photo-picker');
+    // The photos of the profile come first, then the ones of each service.
+    await waitFor(() => expect(picker.querySelectorAll('button[aria-pressed]')).toHaveLength(2));
+    fireEvent.click(within(picker).getByRole('button', { name: 'Foto 1 del profilo' }));
+
+    await waitFor(
+      () => expect(api.saveDraft).toHaveBeenCalledWith(3, { gallery: [{ photoUrl: 'https://cdn.example/profile-1.jpg', caption: 'Bagno rifatto' }] }),
+      { timeout: 3000 },
+    );
+    expect(screen.queryByTestId('supplier-showcase-photo-picker')).not.toBeInTheDocument();
+  });
+
+  it('turns the before and after on with no photo yet, and off again by clearing it', async () => {
+    servicesApi.fetchServices.mockResolvedValue(listOf([]));
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    renderEditor(content({ draft: { gallery: [{ photoUrl: 'https://cdn.example/profile-1.jpg', caption: 'Bagno' }] } }), 'works');
+
+    fireEvent.click(await screen.findByRole('switch', { name: 'Mostra il confronto prima e dopo' }));
+
+    await waitFor(
+      () => expect(api.saveDraft).toHaveBeenCalledWith(3, { gallery: [{ photoUrl: 'https://cdn.example/profile-1.jpg', caption: 'Bagno', beforeUrl: '' }] }),
+      { timeout: 3000 },
+    );
+    expect(await screen.findByTestId('supplier-showcase-work-0-pick-before')).toBeInTheDocument();
+  });
+
+  it('does not offer to publish a job with no photo, and sends the person to the jobs', async () => {
+    renderEditor(content({ draft: { gallery: [{ photoUrl: '', caption: 'Senza foto' }] } }), 'publish');
+
+    const check = await screen.findByTestId('supplier-showcase-check-half-filled-works');
+    expect(check).toHaveTextContent('Lavoro 1');
+    expect(within(check).getByRole('link', { name: /Sistema/ })).toHaveAttribute('href', `${PATH}?step=works`);
+    expect(screen.getByTestId('supplier-showcase-publish-button')).toBeDisabled();
+  });
+
   it('does not offer to publish a question with no answer, and says where it is', async () => {
     renderEditor(content({ draft: { faq: [{ q: 'Quanto costa?', a: '' }] } }), 'publish');
 
-    const check = await screen.findByTestId('supplier-showcase-check-half-filled');
+    const check = await screen.findByTestId('supplier-showcase-check-half-filled-texts');
     expect(check).toHaveTextContent('Domanda 1');
     expect(within(check).getByRole('link', { name: /Sistema/ })).toHaveAttribute('href', `${PATH}?step=texts`);
     expect(screen.getByTestId('supplier-showcase-publish-button')).toBeDisabled();

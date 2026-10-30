@@ -16,6 +16,7 @@ import { PublishPanel } from './panels/publish-panel';
 import { ServicesPanel } from './panels/services-panel';
 import { StylePanel } from './panels/style-panel';
 import { TextsPanel } from './panels/texts-panel';
+import { WorksPanel } from './panels/works-panel';
 import { EDITOR_STEPS, OVERVIEW_PATH, stepPath, type EditorStep } from './showcase-model';
 import { ShowcasePreview } from './showcase-preview';
 import { useShowcaseDraft, type SaveStatus } from './use-showcase-draft';
@@ -84,7 +85,8 @@ export function ShowcaseWorkPage({ content, step }: ShowcaseWorkPageProps) {
 
   let panel: ReactNode;
   if (step === 'style') panel = <StylePanel doc={draft.doc} change={draft.change} invalid={draft.invalid} categories={categories} />;
-  else if (step === 'texts') panel = <TextsPanel doc={draft.doc} change={draft.change} invalid={draft.invalid} />;
+  else if (step === 'works') panel = <WorksPanel doc={draft.doc} change={draft.change} invalid={draft.invalid} />;
+  else if (step === 'texts') panel = <TextsPanel doc={draft.doc} change={draft.change} invalid={draft.invalid} categories={categories} />;
   else if (step === 'services') panel = <ServicesPanel doc={draft.doc} change={draft.change} invalid={draft.invalid} />;
   else panel = <PublishPanel content={live} doc={draft.doc} onPublish={() => void publishNow()} busy={publish.isPending} />;
 

@@ -8,11 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { useSupplierServices } from '@/queries/use-supplier-services';
 import type { SupplierService } from '@/types/supplier-services';
+import { SERVICES_PATH } from '../showcase-model';
 import { planServices, SECTION_KEYS, sectionsOf, serviceOrderOf } from '../showcase-services';
+import { InactiveServices } from './inactive-services';
 import type { PanelProps } from './panel-types';
-
-/** Where the services are made and priced ("Servizi e prezzi" of the menu). */
-const SERVICES_PATH = '/app/supplier/services';
 
 /**
  * "Servizi e sezioni" (SP-13d): which of the active services the page shows and in what order (an empty order is every active service in
@@ -154,25 +153,7 @@ export function ServicesPanel({ doc, change }: PanelProps) {
           {announcement}
         </p>
 
-        {plan.inactive.length > 0 ? (
-          <div className="space-y-2 pt-2">
-            <h3 className="text-base font-semibold">{t('supplier.showcase.editor.services.inactiveTitle')}</h3>
-            <ul className="space-y-2">
-              {plan.inactive.map((service) => (
-                <li key={service.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-dashed p-3 text-sm" data-testid={`supplier-showcase-service-${service.slug}`}>
-                  <span className="min-w-0 flex-1 basis-40 break-words">
-                    <span className="font-medium">{service.name}</span>
-                    <span className="block text-foreground/70">{t(`supplier.showcase.editor.services.reason.${service.status}`)}</span>
-                  </span>
-                  <Link className="inline-flex min-h-11 items-center font-medium underline underline-offset-4" to={`${SERVICES_PATH}/${service.id}`}>
-                    {t('supplier.showcase.editor.services.fix')}
-                    <span className="sr-only"> {service.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+        <InactiveServices services={plan.inactive} />
       </section>
 
       <section className="space-y-3">

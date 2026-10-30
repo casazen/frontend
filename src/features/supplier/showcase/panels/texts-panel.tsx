@@ -2,7 +2,11 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ReorderableList } from '@/components/shared/reorderable-list';
 import type { PublicShowcaseCertification, PublicShowcaseFaq, PublicShowcaseTeamMember } from '@/api/public-supplier.api';
+import { Button } from '@/components/ui/button';
+import { starterContentFor } from '@/lib/supplier-site/starter-content';
+import { toastUndo } from '@/lib/toast-undo';
 import { SHOWCASE_LIMITS } from '../showcase-limits';
+import { starterFill } from '../showcase-starter';
 import { CountedField } from './counted-field';
 import { isRefused, type PanelProps } from './panel-types';
 
@@ -29,8 +33,16 @@ function Block({ title, hint, children }: { title: string; hint?: string; childr
  * strengths, the certifications and the questions **the supplier writes** — CasaZen precompiles none of them and never adds an
  * insurance or a certification: what is not written is not on the page. Lists are edited row by row (move, remove with an "Annulla").
  */
-export function TextsPanel({ doc, change, invalid }: PanelProps) {
+export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { categories: string[] }) {
   const { t } = useTranslation();
+  // A starting text for the trade, offered (never filled in by itself) while the sentence, the introduction or the tips are empty.
+  const starter = starterContentFor(categories);
+  const fill = starter ? starterFill(doc, starter) : null;
+  const applyStarter = () => {
+    if (!fill) return;
+    change(fill.patch);
+    toastUndo(t('supplier.showcase.editor.starter.applied'), { undo: () => change(fill.inverse) });
+  };
   const team = doc.team ?? [];
   const values = doc.values ?? [];
   const certs = doc.certs ?? [];
@@ -46,6 +58,16 @@ export function TextsPanel({ doc, change, invalid }: PanelProps) {
 
   return (
     <div className="space-y-8" data-testid="supplier-showcase-panel-texts">
+      {fill ? (
+        <Block title={t('supplier.showcase.editor.starter.title')} hint={t('supplier.showcase.editor.starter.hint')}>
+          <div>
+            <Button type="button" variant="outline" onClick={applyStarter} data-testid="supplier-showcase-starter">
+              {t('supplier.showcase.editor.starter.use')}
+            </Button>
+          </div>
+        </Block>
+      ) : null}
+
       <Block title={t('supplier.showcase.editor.texts.presentation')} hint={t('supplier.showcase.editor.texts.presentationHint')}>
         <CountedField
           label={t('supplier.showcase.editor.texts.tagline')}
