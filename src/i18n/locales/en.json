@@ -171,6 +171,7 @@
     "descriptionNoOrg": "All the properties of the account, short-term and long-term.",
     "drawer": {
       "address": "Address",
+      "advice": "Advised",
       "assign": "Assign the person in charge",
       "complete": "Complete the activation",
       "data": "Details",
@@ -240,9 +241,14 @@
     },
     "loadError": "Failed to load properties",
     "missing": {
+      "activationNotConfirmed": "confirmation of the activation",
+      "baseData": "basic details",
+      "calendar": "calendar",
       "cin": "CIN",
+      "documents": "documents",
       "photos": "photos",
-      "price": "price"
+      "price": "price",
+      "safety": "safety checks"
     },
     "mode": {
       "long": "Long-term rental",
@@ -7628,6 +7634,122 @@
       "pendingDelta_other": "{{count}} rents not yet due"
     }
   },
+  "longRentTenants": {
+    "chips": {
+      "all": "All",
+      "current": "Current",
+      "currentHint": "Everyone with at least one lease that has not concluded",
+      "former": "Former tenants",
+      "formerHint": "Only people whose leases have all concluded"
+    },
+    "citizenship": {
+      "Eu": "EU citizen",
+      "NonEu": "Non-EU citizen"
+    },
+    "columns": {
+      "end": "Lease end",
+      "lease": "Lease",
+      "punctuality": "Punctuality",
+      "tenant": "Tenant"
+    },
+    "contacts": {
+      "citizenship": "Citizenship",
+      "email": "Email",
+      "title": "Contacts"
+    },
+    "count_one": "{{count}} tenant",
+    "count_other": "{{count}} tenants",
+    "description": "Who lives in your properties, since when, how much they pay and how punctually.",
+    "detail": {
+      "backToList": "Go to tenants",
+      "description": "Tenant · {{citizenship}}",
+      "fallbackTitle": "Tenant",
+      "loadError": "We could not load this tenant.",
+      "loading": "Loading the tenant",
+      "notFound": "Tenant not found",
+      "notFoundDescription": "They may have been anonymized or the link is not correct."
+    },
+    "empty": {
+      "action": "Create lease",
+      "description": "They are added by creating a lease: name, lease and payments in one place.",
+      "title": "Your tenants will be here"
+    },
+    "end": {
+      "former": "Ended on {{date}}",
+      "running": "Until {{date}}"
+    },
+    "leaseAndOthers_one": "{{property}} · and one more lease",
+    "leaseAndOthers_other": "{{property}} · and {{count}} more leases",
+    "leases": {
+      "title": "Leases"
+    },
+    "loadError": "We could not load the tenants.",
+    "newLease": "Create lease",
+    "noLease": "No lease",
+    "noResults": {
+      "description": "Check the name or change tab.",
+      "title": "No tenant found"
+    },
+    "now": {
+      "action": "See the late rents",
+      "body_one": "{{amount}} was due on {{date}}.",
+      "body_other": "{{count}} rents worth {{amount}} are overdue: the oldest was due on {{date}}.",
+      "kicker": "Now",
+      "title": "The rent of {{month}} has not arrived",
+      "when_one": "{{count}} day late",
+      "when_other": "{{count}} days late",
+      "who": "Your turn"
+    },
+    "open": "Open the sheet",
+    "payments": {
+      "all": "See the rents",
+      "item": "{{month}} · {{amount}}",
+      "paid": "Paid",
+      "title": "Latest payments"
+    },
+    "privacy": {
+      "erase": "Ask for erasure",
+      "erasure": {
+        "confirm": "Ask for erasure",
+        "consequences": {
+          "documents": "The signed contract and the receipts are not touched.",
+          "ended": "For the leases that have ended, the data of everyone on that lease is anonymized right away, unless they have another lease in force.",
+          "final": "Anonymization cannot be undone.",
+          "running_one": "The lease that has not concluded yet ({{properties}}) is not touched: the data stay until the day after it ends, then they are anonymized.",
+          "running_other": "The leases that have not concluded yet ({{properties}}) are not touched: the data stay until the day after they end, then they are anonymized."
+        },
+        "description": "You are recording the request to erase the data of {{name}} on all their leases.",
+        "failed": "The erasure request could not be recorded.",
+        "title": "Ask for the erasure of the data?"
+      },
+      "export": "Export their data",
+      "exportFailed": "The file could not be prepared.",
+      "exportHint": "A file with their personal data in clear: keep it safe.",
+      "exported": "File downloaded.",
+      "identityNote": "We recognise the same person by their fiscal code: if it is written differently in two leases, they show up as two people and here you find the data of one only.",
+      "intro": "Here you can download the data CasaZen holds about {{name}} in your leases, or ask to erase them.",
+      "result": {
+        "anonymized": "Data anonymized.",
+        "description": "Here is what happened on each lease.",
+        "partial_one": "Data anonymized, except for {{count}} person who has another lease in force: we anonymize it when that lease ends.",
+        "partial_other": "Data anonymized, except for {{count}} people who have another lease in force: we anonymize it when those leases end.",
+        "scheduled": "The lease has not ended yet: the data will be anonymized from {{date}}.",
+        "scheduledNoDate": "The lease has not ended yet: the data will be anonymized from the day after it ends.",
+        "title": "Request recorded"
+      },
+      "summary": "Privacy"
+    },
+    "punctuality": {
+      "detail": "{{onTime}} rents out of {{total}} paid on time, within {{days}} days of the due date.",
+      "none": "No rent has fallen due yet.",
+      "summary": "{{onTime}} of {{total}} rents on time"
+    },
+    "search": {
+      "label": "Search tenants",
+      "placeholder": "Search by name or property"
+    },
+    "title": "Tenants"
+  },
   "longRentRequests": {
     "cancel": {
       "back": "Go back",
@@ -8098,6 +8220,7 @@
     "rents": "Rents",
     "longRentOverview": "Overview",
     "longRentDeadlines": "Deadlines",
+    "longRentTenants": "Tenants",
     "serviceRequests": "Maintenance",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
@@ -11735,6 +11858,57 @@
           "Check the reason given",
           "Fix the details and try again"
         ]
+      }
+    },
+    "leaseStage": {
+      "Draft": {
+        "label": "Draft",
+        "explain": "The lease is being prepared: something is still missing in the first steps.",
+        "need": [
+          "Property and parties of the lease",
+          "Rent, term and type of lease"
+        ]
+      },
+      "DataPending": {
+        "label": "Data to complete",
+        "explain": "We are waiting for the tenant's data.",
+        "need": [
+          "The tenant's data"
+        ]
+      },
+      "InReview": {
+        "label": "In review",
+        "explain": "All the data is there: check the preview and confirm.",
+        "need": [
+          "Check the preview of the lease",
+          "Confirm the review"
+        ]
+      },
+      "SentForSignature": {
+        "label": "Out for signature",
+        "explain": "The lease was downloaded to be signed on paper: we are waiting for the signed copy.",
+        "need": [
+          "The copy signed by every party"
+        ]
+      },
+      "Signed": {
+        "label": "Signed",
+        "explain": "The lease is signed by everyone: the registration is still to be declared.",
+        "need": [
+          "The registration with the Agenzia delle Entrate"
+        ]
+      },
+      "Active": {
+        "label": "In force",
+        "explain": "The lease is registered and in force."
+      },
+      "Expiring": {
+        "label": "Ending soon",
+        "explain": "The current period ends within six months, or a notice has been recorded."
+      },
+      "Concluded": {
+        "label": "Concluded",
+        "explain": "The lease is over: documents and payments stay available."
       }
     },
     "rent": {
