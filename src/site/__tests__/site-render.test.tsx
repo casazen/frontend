@@ -108,12 +108,22 @@ describe('public site render (SEO-VETRINA)', () => {
     container.innerHTML = render(page);
     document.body.appendChild(container);
 
+    // `act` needs the environment to say it supports it, or React logs it as an error as soon as something re-renders inside it: the
+    // search of the home reads today's date after hydration (useSyncExternalStore), which is exactly such a re-render.
+    const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    const previousActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
+
     const recoverable = vi.fn();
-    await act(async () => {
-      hydrateRoot(container, <SiteApp page={page} i18n={createSiteI18n('it')} legal={LEGAL} year={2026} />, {
-        onRecoverableError: recoverable,
+    try {
+      await act(async () => {
+        hydrateRoot(container, <SiteApp page={page} i18n={createSiteI18n('it')} legal={LEGAL} year={2026} />, {
+          onRecoverableError: recoverable,
+        });
       });
-    });
+    } finally {
+      actEnvironment.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
 
     expect(recoverable).not.toHaveBeenCalled();
     expect(errors).not.toHaveBeenCalled();
