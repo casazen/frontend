@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { Select } from '@/components/ui/select';
 import { Download, Upload, Info } from 'lucide-react';
+import { saveBlobAs } from '@/lib/file-download';
 
 export function SwissCompliancePage() {
   const { t } = useTranslation();
@@ -30,17 +31,8 @@ export function SwissCompliancePage() {
     if (!propertyId || !policeDate) return;
 
     const result = await generatePoliceXml.mutateAsync({ reportDate: policeDate });
-
-    // Download the file
     const blob = new Blob([result.content], { type: result.contentType });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = result.fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    saveBlobAs(blob, result.fileName);
   };
 
   const handleDownloadOtrCsv = async () => {
@@ -50,17 +42,8 @@ export function SwissCompliancePage() {
       fromDate: otrFromDate,
       toDate: otrToDate,
     });
-
-    // Download the file
     const blob = new Blob([result.content], { type: result.contentType });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = result.fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    saveBlobAs(blob, result.fileName);
   };
 
   const handleUploadReceipt = async (e: React.FormEvent) => {
