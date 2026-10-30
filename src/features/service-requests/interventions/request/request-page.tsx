@@ -18,6 +18,7 @@ import { useCreateIntervention } from '@/queries/use-service-requests';
 import { INTERVENTIONS_PATH } from '../paths';
 import { RequestDone, type RequestSent } from './request-done';
 import {
+  dayForStay,
   REQUEST_DRAFT_EXCLUDE,
   REQUEST_WIZARD_ID,
   requestDefaults,
@@ -26,7 +27,7 @@ import {
   toCreateRequest,
   type RequestValues,
 } from './request-model';
-import { dayForStay, ReviewStep, WhatStep, WhenStep, WhoStep } from './request-steps';
+import { ReviewStep, WhatStep, WhenStep, WhoStep } from './request-steps';
 
 function RequestWizard() {
   const { t } = useTranslation();

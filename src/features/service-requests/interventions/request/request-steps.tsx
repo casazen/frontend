@@ -35,6 +35,7 @@ import type { SupplierPicker } from '@/types/service-request';
 import { marketplaceForPropertyPath } from '../paths';
 import {
   CUSTOM_SERVICE,
+  dayForStay,
   DEFAULT_CHECK_IN_FROM,
   DEFAULT_CHECK_OUT_BY,
   DURATION_OTHER,
@@ -73,12 +74,6 @@ function assign(setValue: SetValue, values: Partial<RequestValues>) {
   (Object.keys(values) as (keyof RequestValues)[]).forEach((name) => {
     setValue(name, values[name] as never, { shouldDirty: true });
   });
-}
-
-/** The first day the work can be on for a stay: its check-out day, never one that has passed. */
-export function dayForStay(checkOutDate: string, today: string = todayInRome()): string {
-  const checkOut = stayDateOf(checkOutDate);
-  return checkOut >= today ? checkOut : today;
 }
 
 /* ------------------------------------------------------------------------------------------------ ① Cosa serve */

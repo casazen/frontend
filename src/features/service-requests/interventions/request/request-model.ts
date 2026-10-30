@@ -209,6 +209,12 @@ export function requestDefaults(search: URLSearchParams, categories: readonly st
   return { values, prefilled };
 }
 
+/** The first day the work can be on for a stay: its check-out day, never one that has passed. */
+export function dayForStay(checkOutDate: string, today: string = todayInRome()): string {
+  const checkOut = stayDateOf(checkOutDate);
+  return checkOut >= today ? checkOut : today;
+}
+
 // ─── The turnover: advised hours, and the slots of a day ───
 
 const pad = (value: number) => String(value).padStart(2, '0');
