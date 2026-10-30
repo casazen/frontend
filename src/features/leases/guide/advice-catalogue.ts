@@ -457,11 +457,23 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['law431'],
   },
   {
+    // The need is the tenant's, or the operations have not arrived: the date the confirmation is due by is on the sheet.
     id: 'transitorioConfirmNeed',
     types: ['Transitorio'],
     phases: IN_FORCE,
+    when: (f) => f.landlordConfirmsNeed !== true,
     priority: byPhase({ expiring: 20 }, 70),
     action: tab('dati'),
+    sources: ['dm2017'],
+  },
+  {
+    // The need is the landlord's: CasaZen prepares the letter (the window of the operations, LR-OPS-1b).
+    id: 'transitorioConfirmNeedLandlord',
+    types: ['Transitorio'],
+    phases: IN_FORCE,
+    when: (f) => f.landlordConfirmsNeed === true,
+    priority: byPhase({ expiring: 20 }, 70),
+    action: operation('conferma-esigenza'),
     sources: ['dm2017'],
   },
   {

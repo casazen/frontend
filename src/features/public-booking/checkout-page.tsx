@@ -181,7 +181,8 @@ function CheckoutFlow({
   const quoteReady =
     !!quoteData && !quote.isFetching && !quote.isError && quoteData.touristTax.status !== 'ChildAgesRequired';
   // A3-16: the backend says which options apply to this stay. "Paga alla scadenza" only when its charge day is ahead
-  // (not for 10 nights from tomorrow); "Cancellazione gratuita" only if the guest can really cancel (today they cannot).
+  // (not for 10 nights from tomorrow); "Cancellazione gratuita" only if the guest can really cancel for free: the backend gives the
+  // day only when the policy of the property refunds in full (DB-08a).
   const paymentOptions = quoteData?.paymentOptions;
   const deferredChargeDate =
     paymentOptions?.deferredPaymentAvailable === true ? paymentOptions.deferredChargeDate : null;
