@@ -65,7 +65,8 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
 
   // What the controls offer, whatever else is asked: every home of the site, or the facets of the place asked across all the sites.
   const everyHome = useOrgStays(platform ? undefined : slug, {}).data?.items;
-  const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1 }).data?.facets;
+  // (A page of one home: only its facets are wanted. The previous ones stay while the next place is asked, so the controls do not blink.)
+  const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true }).data?.facets;
   const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome ?? [])), [platform, placeFacets, everyHome]);
   const destinations = useScopedDestinations(scope);
   const favorites = useFavorites(platform ? undefined : slug);
