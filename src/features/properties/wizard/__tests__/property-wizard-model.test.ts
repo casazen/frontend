@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type { Property } from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
-import { NEW_PROPERTY_DEFAULTS, amenitiesUpdatePayload, baseUpdatePayload, resumeStepFor, wizardDefaults } from '../property-wizard-model';
+import {
+  NEW_PROPERTY_DEFAULTS,
+  amenitiesUpdatePayload,
+  baseUpdatePayload,
+  pricesStepSchema,
+  pricesUpdatePayload,
+  resumeStepFor,
+  rulesStepSchema,
+  rulesUpdatePayload,
+  wizardDefaults,
+} from '../property-wizard-model';
 
 const step = (id: string, open: boolean, blocker = true): ComplianceWizardStep => ({
   id,
@@ -55,5 +65,63 @@ describe('what the steps save', () => {
     ]);
     const reopened = wizardDefaults({ ...stored, name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1 } as Property);
     expect(reopened.amenities).toEqual(['WiFi', 'Garden']);
+  });
+});
+
+describe('what the rules and prices steps save', () => {
+  it('rulesUpdatePayload_BlankAnswers_ClearWhatTheApiClearsAndLeaveTheRestAlone', () => {
+    const payload = rulesUpdatePayload({
+      ...NEW_PROPERTY_DEFAULTS,
+      checkInFrom: '',
+      smokingPolicy: '',
+      extraGuestFee: '',
+      quietHoursFrom: '',
+      quietHoursTo: '',
+      cancellationPolicyId: '',
+    });
+
+    // PATCH: a blank fee or quiet hours is null (taken off); a blank time, rule or policy is left out (the stored one stays).
+    expect(payload).toMatchObject({ extraGuestFeePerNight: null, quietHoursFrom: null, quietHoursTo: null });
+    expect(payload).not.toHaveProperty('checkInFrom');
+    expect(payload).not.toHaveProperty('smokingPolicy');
+    expect(payload).not.toHaveProperty('cancellationPolicyId');
+    // The policy the host chose, the fee written with a comma and the times are sent as they are meant.
+    expect(
+      rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, extraGuestFee: '12,50', quietHoursFrom: '22:00', quietHoursTo: '08:00', cancellationPolicyId: 'p1' }),
+    ).toMatchObject({ extraGuestFeePerNight: 12.5, quietHoursFrom: '22:00', quietHoursTo: '08:00', cancellationPolicyId: 'p1', checkInFrom: '15:00' });
+  });
+
+  it('rulesStepSchema_OneQuietHourWithoutTheOther_IsRefusedOnThatField', () => {
+    const answers = { ...NEW_PROPERTY_DEFAULTS };
+
+    expect(rulesStepSchema.safeParse({ ...answers, quietHoursFrom: '22:00', quietHoursTo: '' }).error?.issues[0]?.path).toEqual(['quietHoursTo']);
+    expect(rulesStepSchema.safeParse({ ...answers, quietHoursFrom: '', quietHoursTo: '08:00' }).error?.issues[0]?.path).toEqual(['quietHoursFrom']);
+    expect(rulesStepSchema.safeParse({ ...answers, quietHoursFrom: '22:00', quietHoursTo: '08:00' }).success).toBe(true);
+    expect(rulesStepSchema.safeParse(answers).success).toBe(true);
+  });
+
+  it('pricesUpdatePayload_BlankAnswers_TurnOffWhatTheApiTurnsOffAndKeepTheRate', () => {
+    // A blank surcharge is 0 (leaving it out would keep an old one), one night is no minimum (null), a blank rate is left out.
+    const blank = pricesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS });
+    expect(blank).toEqual({ weekendSurchargePercent: 0, cleaningFee: 0, minNights: null });
+
+    expect(pricesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, nightlyRate: '135,5', weekendSurcharge: '15', cleaningFee: '50', minNights: 3 })).toEqual({
+      nightlyRate: 135.5,
+      weekendSurchargePercent: 15,
+      cleaningFee: 50,
+      minNights: 3,
+    });
+  });
+
+  it('pricesStepSchema_AmountsOutsideTheLimitsOfTheApi_AreRefused', () => {
+    const answers = { ...NEW_PROPERTY_DEFAULTS };
+
+    expect(pricesStepSchema.safeParse(answers).success).toBe(true);
+    expect(pricesStepSchema.safeParse({ ...answers, nightlyRate: '0' }).success).toBe(false);
+    expect(pricesStepSchema.safeParse({ ...answers, nightlyRate: '100001' }).success).toBe(false);
+    expect(pricesStepSchema.safeParse({ ...answers, weekendSurcharge: '101' }).success).toBe(false);
+    expect(pricesStepSchema.safeParse({ ...answers, cleaningFee: '10001' }).success).toBe(false);
+    expect(pricesStepSchema.safeParse({ ...answers, minNights: 31 }).success).toBe(false);
+    expect(pricesStepSchema.safeParse({ ...answers, nightlyRate: '135,50', weekendSurcharge: '12.5', cleaningFee: '50', minNights: 30 }).success).toBe(true);
   });
 });
