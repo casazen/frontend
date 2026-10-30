@@ -5,6 +5,7 @@ import type {
   LeaseErasureResult,
   LeaseErasureStatus,
   RecordLeaseNoticeInput,
+  RecordLeaseRenewalInput,
   TenantWithdrawalInput,
   TerminateLeaseInput,
 } from '@/types';
@@ -71,6 +72,15 @@ export const leaseLifecycleApi = {
    */
   recordWithdrawal: async (id: string, input: TenantWithdrawalInput): Promise<LeaseDetail> =>
     expectLease(await ApiClient.post<unknown>(`/leases/${id}/withdrawal`, input), '/leases/:id/withdrawal'),
+
+  /**
+   * Records the renewal of the lease before the end of its period (LR-OPS-1): the standard one of the type or, with `newEnd`, an extension to
+   * the day the parties agreed on; the rent plan is extended and nothing is written to the tenant. 409 `lease_period_overlaps`,
+   * `lease_renewal_blocked_by_notice`, `lease_renewal_period_over`, `lease_not_in_force`, `lease_already_terminated`, `lease_busy`; 422
+   * `lease_renewal_not_yet`, `lease_renewal_end_invalid`, `lease_type_has_no_renewal`.
+   */
+  recordRenewal: async (id: string, input: RecordLeaseRenewalInput): Promise<LeaseDetail> =>
+    expectLease(await ApiClient.post<unknown>(`/leases/${id}/renewal`, input), '/leases/:id/renewal'),
 
   /** Records the erasure request of the parties (art. 17 GDPR). Idempotent: asking again answers where the first request stands. */
   requestErasure: async (id: string): Promise<LeaseErasureResult> => {

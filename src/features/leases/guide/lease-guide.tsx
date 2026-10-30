@@ -11,6 +11,7 @@ import type { CedolareAdvisoryInput, LeaseDetail, LeaseStage } from '@/types';
 import { hasAttestation } from '../lib/lease-benefits';
 import { isPartnerDraft } from '../lib/lease-sheet';
 import { LeaseOperations } from '../operations/lease-operations';
+import { useSheetOperations } from '../operations/use-sheet-operations';
 import { AdviceItem } from './advice-item';
 import type { GuideTool } from './advice-catalogue';
 import { buildGuideFacts, guideValues } from './guide-facts';
@@ -49,6 +50,7 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const advisory = useRliAdvisory(lease.id, advisoryInput, { enabled: hasRent });
   const documents = useLeaseDocuments(lease.id, concordato);
   const imu = useImuNotificationStatus(lease.id, concordato && registered);
+  const operations = useSheetOperations(lease.id);
   const [tool, setTool] = useState<GuideTool | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -58,10 +60,13 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   // The attestation is a document of its own, or the contract file that holds it (CF-DOCS-REAL).
   const attested = documents.data ? hasAttestation(documents.data) : undefined;
   const rulesData = rules.data;
+  // The need of a transitory lease is the landlord's to confirm: the advice then leads to the window that prepares the letter (LR-OPS-1b).
+  const confirmation = operations.data?.transitoryConfirmation;
+  const landlordConfirmsNeed = confirmation ? confirmation.applies && confirmation.available : undefined;
 
   const facts = useMemo(
-    () => buildGuideFacts({ lease, stage, stepCode, today, rules: rulesData, ata, hasAttestation: attested, imuApplicable }),
-    [lease, stage, stepCode, today, rulesData, ata, attested, imuApplicable],
+    () => buildGuideFacts({ lease, stage, stepCode, today, rules: rulesData, ata, hasAttestation: attested, imuApplicable, landlordConfirmsNeed }),
+    [lease, stage, stepCode, today, rulesData, ata, attested, imuApplicable, landlordConfirmsNeed],
   );
   const advice = useMemo(() => selectAdvice(facts), [facts]);
   const values = useMemo(() => guideValues(facts, i18n.language), [facts, i18n.language]);

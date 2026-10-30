@@ -5201,6 +5201,12 @@
         "title": "If the need continues, confirm it in writing",
         "why": "The transitory contract lasts as long as the need that justifies it. If the need goes on beyond the expiry, the party concerned confirms it in writing to the other party before the contract ends; if they do not, or if the need ceases, the contract can be treated as an ordinary 4+4. Ask your accountant for the exact deadline."
       },
+      "transitorioConfirmNeedLandlord": {
+        "action": "Prepare the confirmation",
+        "body": "The contract ends by itself. If the need is yours and you want it to go on, confirm it to the tenant before the expiry, by registered mail or PEC. CasaZen prepares the draft of the letter.",
+        "title": "If the need continues, confirm it in writing",
+        "why": "The transitory contract lasts as long as the need that justifies it. If the need goes on beyond the expiry, the party concerned confirms it in writing to the other party before the contract ends; if they do not, or if the need ceases, the contract can be treated as an ordinary 4+4. Ask your accountant for the exact deadline."
+      },
       "transitorioCosts": {
         "action": "Estimate the costs",
         "body": "In the official model the stamp duty is paid by the tenant and the registration tax is split in half. With the cedolare secca neither is paid.",
@@ -5568,6 +5574,18 @@
       "Pec": "PEC",
       "RegisteredMail": "Registered mail"
     },
+    "needConfirmation": {
+      "dialog": {
+        "deadline": "It has to be sent before the contract ends, on {{date}}.",
+        "description": "CasaZen writes the draft with the data of the contract. You sign it and send it: we don't write to the tenant.",
+        "effects": "Without the confirmation, or if the need ceases, the contract can be treated as an ordinary 4+4. Ask your accountant for the exact deadline.",
+        "title": "Confirm the need"
+      },
+      "open": "Prepare the confirmation",
+      "summary": "If the need goes on, confirm it in writing to the tenant before {{date}}.",
+      "summarySent": "Letter marked as sent on {{date}} ({{means}}).",
+      "title": "Confirmation of the need"
+    },
     "reasons": {
       "DamagedBuilding": "Damaged building to be rebuilt or made safe",
       "LegalEntityUse": "Use by a company or an entity, offering another home",
@@ -5576,6 +5594,52 @@
       "Sale": "Sale of the home",
       "TenantAbsent": "The tenant does not live in the home",
       "TenantOtherHome": "The tenant has another suitable home in the same comune"
+    },
+    "renewal": {
+      "dialog": {
+        "agreedHint": "The day the contract ends under the agreement with the tenant.",
+        "agreedInvalid": "Choose a day between {{from}} and {{to}}.",
+        "agreedLabel": "Last day of the contract",
+        "confirm": "Record the renewal",
+        "consequences": {
+          "final": "It cannot be undone from here: the end of the contract really moves.",
+          "plan": "The rent plan is extended to that day with the new installments: the ones that already exist do not change."
+        },
+        "description": "The contract goes on for another period. CasaZen moves the end and extends the rent plan; it doesn't write to the tenant.",
+        "effect": "The contract will go on until {{date}}.",
+        "effectPending": "Choose the day the agreed contract ends.",
+        "mode": {
+          "agreed": {
+            "description": "You and the tenant agreed on a different length.",
+            "title": "Extension to an agreed day"
+          },
+          "standard": {
+            "description": "From {{from}} to {{to}} ({{months}} months), on the same terms.",
+            "title": "Standard renewal"
+          }
+        },
+        "modeLegend": "Which renewal it is",
+        "title": "Record the renewal"
+      },
+      "done": "Renewal recorded: the contract goes on until {{date}}.",
+      "doneDialog": {
+        "description": "The contract goes on from {{from}} to {{to}}.",
+        "download": "Download the agreement",
+        "steps": {
+          "agreement": "If you want it in writing, download the agreement for both parties to sign: the draft is below and CasaZen doesn't send it to anyone.",
+          "communicate": "Tell the Agenzia delle Entrate about the renewal within {{days}} days (RLI form).",
+          "plan": "The rent plan is already extended to the new end: there is nothing to change.",
+          "taxCedolare": "With the cedolare secca there is no registration tax, but the communication is still due.",
+          "taxOrdinary": "Without the cedolare secca you pay the registration tax of the years that are added: ask your accountant how and when."
+        },
+        "title": "Renewal recorded"
+      },
+      "failed": "We couldn't record the renewal. Try again.",
+      "open": "Record the renewal",
+      "openRecorded": "Agreement and next steps",
+      "summary": "The period ends on {{date}}. If the contract goes on, record the renewal: we extend the rent plan for you.",
+      "summaryRecorded": "Renewal recorded: the contract goes on until {{date}}.",
+      "title": "Renewal of the contract"
     },
     "sent": {
       "again": "Mark it again",
@@ -6995,7 +7059,8 @@
       "ConcordatoFacileLinkGenerated": "Guided form opened",
       "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted",
       "WithdrawalRecorded": "Tenant's withdrawal recorded",
-      "LetterSent": "Letter marked as sent"
+      "LetterSent": "Letter marked as sent",
+      "RenewalRecorded": "Renewal recorded"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
