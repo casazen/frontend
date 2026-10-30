@@ -11299,6 +11299,37 @@
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
+  "siteMap": {
+    "approximateNote": "Approximate positions: the exact address arrives with the confirmation.",
+    "cardClose": "Close the card",
+    "cardOpen": "See the house",
+    "cardTitle": "Selected house",
+    "controls": "Map controls",
+    "error": "Map not available",
+    "fit": "Fit all the houses",
+    "fitAnnounce": "Map fitted to all the houses",
+    "keyboardHint": "Map: use the arrow keys to move it, plus and minus to zoom, 0 to fit all the houses.",
+    "loading": "Loading the map",
+    "local": {
+      "approximate": "Approximate position: the exact address arrives with the confirmation.",
+      "poiCar": "{{name}}, {{minutes}} minutes by car",
+      "poiWalk": "{{name}}, {{minutes}} minutes on foot",
+      "poisLabel": "Points of interest",
+      "scheme": "A scheme of the area, not a street map.",
+      "unlocked": "Approximate position: the exact address is in your booking."
+    },
+    "mapLabel": "Map of the houses",
+    "noPosition": "Position not available",
+    "pinLabel": "{{name}}, {{label}}",
+    "pinLabelUnavailable": "{{name}}, {{label}}, {{note}}",
+    "pinsLabel": "Houses on the map",
+    "rating": "Rated {{value}} out of 5",
+    "retry": "Try again",
+    "unavailable": "not available",
+    "zoomAnnounce": "Map {{km}} km wide",
+    "zoomIn": "Closer",
+    "zoomOut": "Farther"
+  },
   "siteReviews": {
     "count_one": "{{count}} review",
     "count_other": "{{count}} reviews",

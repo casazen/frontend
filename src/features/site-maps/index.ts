@@ -18,4 +18,5 @@ export {
   type LatLon,
   type View,
 } from './engine/view';
+export { LocalMap, RegionMap, useMapLink, type LocalMapProps, type LocalPoi, type MapLink, type MapPinData, type RegionMapProps } from './components';
 export { loadRegionData, regionsForView, type MapRegion } from './load';

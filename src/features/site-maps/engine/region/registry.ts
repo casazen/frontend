@@ -67,14 +67,27 @@ export function decodeItaly(raw: RawItaly): GeoBase {
 let base: GeoBase | null = null;
 const packs = new Map<string, DetailPack>();
 let version = 0;
+const listeners = new Set<() => void>();
+
+const changed = (): void => {
+  version++;
+  for (const cb of listeners) cb();
+};
 
 export function installBase(raw: RawItaly): void {
   base = decodeItaly(raw);
-  version++;
+  changed();
 }
 export function installPack(pack: DetailPack): void {
   packs.set(pack.id, pack);
-  version++;
+  changed();
+}
+/** To be told when something has been loaded (a page redraws its map). */
+export function subscribeGeo(cb: () => void): () => void {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
 }
 export const hasBase = (): boolean => base !== null;
 export const hasPack = (id: string): boolean => packs.has(id);
