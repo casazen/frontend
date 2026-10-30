@@ -46,6 +46,21 @@ describe('public site render (SEO-VETRINA)', () => {
     expect(html).toContain('© 2026 CasaZen');
   });
 
+  it('render_home_offersTheSearchOfHomesAsANativeFormAndLinksItInHeaderAndFooter', () => {
+    for (const lng of ['it', 'en'] as const) {
+      const html = render('home', LEGAL, lng);
+      // A form of the browser, with no script needed: GET /search with the fields the search of the app reads.
+      expect(html, lng).toMatch(/<form[^>]*action="\/search"[^>]*method="get"|<form[^>]*method="get"[^>]*action="\/search"/);
+      for (const name of ['where', 'checkin', 'checkout', 'guests']) expect(html, `${lng} ${name}`).toContain(`name="${name}"`);
+      // The link of the header and the one of the footer (the form goes there with `action`, not `href`).
+      expect(html.match(/href="\/search"/g), lng).toHaveLength(2);
+    }
+  });
+
+  it.each(SITE_PAGES.filter((page) => page.id !== 'home').map((page) => page.id))('render_%s_linksTheSearchOfHomesInHeaderAndFooter', (page) => {
+    expect(render(page).match(/href="\/search"/g)).toHaveLength(2);
+  });
+
   it('render_home_linksTheGuidesTheLoginAndAnInvitationRequestByEmail', () => {
     const html = render('home');
     expect(html).toContain('href="/p/affitti-brevi"');

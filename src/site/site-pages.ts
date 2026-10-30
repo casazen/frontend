@@ -48,9 +48,18 @@ export function sitePageUrl(origin: string, page: SitePage): string {
   return page.path === '/' ? `${origin}/` : `${origin}${page.path}`;
 }
 
-/** The sitemap of the public site: one `<loc>` per page on the public origin. */
+/**
+ * The public search of homes, a page of the app (not prerendered, so not one of `SITE_PAGES`): the pages of the site link to it and its
+ * sitemap lists it. The page without a search is for the crawlers; the address of a search is `noindex,follow` (see the page).
+ */
+export const SEARCH_PATH = '/search';
+
+/** The sitemap of the public site: one `<loc>` per page on the public origin, then the public pages of the app that belong to it. */
 export function buildSiteSitemap(origin: string): string {
-  const urls = SITE_PAGES.map((page) => `  <url><loc>${sitePageUrl(origin, page)}</loc></url>`);
+  const urls = [
+    ...SITE_PAGES.map((page) => `  <url><loc>${sitePageUrl(origin, page)}</loc></url>`),
+    `  <url><loc>${origin}${SEARCH_PATH}</loc></url>`,
+  ];
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

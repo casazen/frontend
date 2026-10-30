@@ -11215,7 +11215,7 @@
     "poweredBy": "Powered by CasaZen",
     "seoHub": "Guides for hosts",
     "preview": "Preview site",
-    "explore": "Explore",
+    "explore": "Find a home",
     "viewProperties": "View properties",
     "ourProperties": "Our properties",
     "mobileBookingCta": "Check availability",
@@ -12179,7 +12179,8 @@
       "about": "About us",
       "login": "Log in",
       "switchLanguage": "Italiano",
-      "switchLanguageLabel": "Switch to Italian"
+      "switchLanguageLabel": "Switch to Italian",
+      "search": "Find a home"
     },
     "footer": {
       "tagline": "The management app for short- and long-term rentals, by the rules.",
@@ -12193,7 +12194,8 @@
       "subprocessors": "Sub-processors",
       "vatId": "VAT no. {{vatId}}",
       "contact": "Contact",
-      "rights": "© {{year}} CasaZen"
+      "rights": "© {{year}} CasaZen",
+      "search": "Find a home"
     },
     "home": {
       "hero": {
@@ -12314,6 +12316,18 @@
       "finalCta": {
         "title": "Want to try CasaZen?",
         "text": "For now you can only join by invitation. Write to us and we will get back to you."
+      },
+      "search": {
+        "checkin": "Check-in",
+        "checkout": "Check-out",
+        "guests": "Guests",
+        "guestsCount_one": "{{count}} guest",
+        "guestsCount_other": "{{count}} guests",
+        "submit": "Search homes",
+        "text": "Choose where and when: see the free homes of CasaZen's hosts with the price of the whole stay, and book directly with them.",
+        "title": "Looking for a home for your holiday?",
+        "where": "Where",
+        "wherePlaceholder": "City or area"
       }
     },
     "features": {

@@ -26,6 +26,7 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
+import { HomeSearch } from './home-search';
 import { HeroArt, ThemeSwatches } from './site-art';
 import {
   BulletList,
@@ -125,6 +126,8 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
           label: t(`site.home.facts.item${n}Label`),
         }))}
       />
+
+      <HomeSearch />
 
       <Section title={t('site.home.contrast.title')} intro={t('site.home.contrast.intro')} tone="cream">
         <Compare
