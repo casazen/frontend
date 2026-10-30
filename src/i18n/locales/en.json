@@ -11304,6 +11304,7 @@
     "cardClose": "Close the card",
     "cardOpen": "See the house",
     "cardTitle": "Selected house",
+    "cluster": "{{count}} houses close together: zoom in to see them",
     "controls": "Map controls",
     "error": "Map not available",
     "fit": "Fit all the houses",
@@ -11312,6 +11313,7 @@
     "loading": "Loading the map",
     "local": {
       "approximate": "Approximate position: the exact address arrives with the confirmation.",
+      "minutes": "{{minutes}} min",
       "poiCar": "{{name}}, {{minutes}} minutes by car",
       "poiWalk": "{{name}}, {{minutes}} minutes on foot",
       "poisLabel": "Points of interest",

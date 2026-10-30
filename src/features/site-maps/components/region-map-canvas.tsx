@@ -8,6 +8,7 @@ import { regionMapSvg } from '../engine/region';
 import { snapToLand } from '../engine/snap';
 import { projectPoint, publicPoint, unprojectPoint, type LatLon, type View } from '../engine/view';
 import { MapCard, type MapCardData } from './map-card';
+import { MapCluster } from './map-cluster';
 import { MapControls } from './map-controls';
 import { MapPin } from './map-pin';
 import { MapSkeleton } from './map-skeleton';
@@ -79,10 +80,14 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     const xy = projectPoint(s.lat, s.lon, mv.view);
     return { pin, x: xy.x, y: xy.y };
   });
-  const shifts = placePins(
-    at.map((a) => ({ x: (a.x / 100) * size.w, y: (a.y / 100) * size.h, ...pillSize(a.pin.label) })),
+  const { shifts, group } = placePins(
+    at.map((a) => ({ x: (a.x / 100) * size.w, y: (a.y / 100) * size.h, ...pillSize(a.pin.label), keep: a.pin.id === selectedId || a.pin.id === activeId || (highlightIds?.includes(a.pin.id) ?? false) })),
     { spanKm, widthPx: size.w },
   );
+  const said = (v: View) => setAnnounce(t('siteMap.zoomAnnounce', { km: Math.round(v.spanKm) }));
+  // pins that would sit on top of each other at this zoom are grouped in one bubble
+  const groups = new Map<number, number[]>();
+  group.forEach((rep, i) => groups.set(rep, [...(groups.get(rep) ?? []), i]));
 
   const selectedPin = at.find((a) => a.pin.id === selectedId)?.pin;
   const card: MapCardData | null =
@@ -99,7 +104,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
         }
       : null;
 
-  const said = (v: View) => setAnnounce(t('siteMap.zoomAnnounce', { km: Math.round(v.spanKm) }));
   const zoomBy = (f: number, anchor?: LatLon) => {
     const next = mv.zoom(f, anchor);
     if (next) said(next);
@@ -206,7 +210,21 @@ export default function RegionMapCanvas(props: RegionMapProps) {
             <SvgHost svg={svg} />
             <ul aria-label={t('siteMap.pinsLabel')} className="absolute inset-0 m-0 list-none p-0">
               {at.map(({ pin, x, y }, i) => {
-                if (x < -4 || x > 104 || y < -6 || y > 106) return null;
+                if (x < -4 || x > 104 || y < -6 || y > 106 || group[i] !== i) return null;
+                const members = groups.get(i) ?? [i];
+                if (members.length > 1) {
+                  return (
+                    <MapCluster
+                      key={`cluster-${pin.id}`}
+                      count={members.length}
+                      x={x}
+                      y={y}
+                      dx={shifts[i].dx}
+                      dy={shifts[i].dy}
+                      onZoom={() => said(mv.focus(members.map((m) => at[m].pin)))}
+                    />
+                  );
+                }
                 return (
                   <MapPin
                     key={pin.id}

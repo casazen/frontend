@@ -11304,6 +11304,7 @@
     "cardClose": "Chiudi la scheda",
     "cardOpen": "Vedi la casa",
     "cardTitle": "Casa selezionata",
+    "cluster": "{{count}} case vicine: avvicina la mappa per vederle",
     "controls": "Controlli della mappa",
     "error": "Mappa non disponibile",
     "fit": "Inquadra tutte le case",
@@ -11312,6 +11313,7 @@
     "loading": "Caricamento della mappa",
     "local": {
       "approximate": "Posizione approssimata: l'indirizzo esatto arriva con la conferma.",
+      "minutes": "{{minutes}} min",
       "poiCar": "{{name}}, {{minutes}} minuti in auto",
       "poiWalk": "{{name}}, {{minutes}} minuti a piedi",
       "poisLabel": "Punti di interesse",

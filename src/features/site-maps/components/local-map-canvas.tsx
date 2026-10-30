@@ -78,7 +78,7 @@ export default function LocalMapCanvas({ kind, seed, spanM = 1500, seaBearingDeg
                   <span className="pointer-events-none absolute top-full mt-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[var(--cz-public-surface,#fff)] px-2.5 py-1 text-xs font-bold text-[var(--cz-public-text,#111)] shadow-md" aria-hidden="true">
                     {poi.name}
                     <ModeIcon className="h-3 w-3" />
-                    {poi.minutes}′
+                    {t('siteMap.local.minutes', { minutes: poi.minutes })}
                   </span>
                 ) : null}
               </button>

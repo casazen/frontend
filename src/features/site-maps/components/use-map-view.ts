@@ -18,6 +18,8 @@ export interface MapViewControl {
   /** Moves the frame by a fraction of its size: positive goes east and south. */
   pan: (dxFrac: number, dyFrac: number) => void;
   fit: () => void;
+  /** Brings the frame to a few positions (the houses of a group of pins) and returns the new view. */
+  focus: (points: readonly LatLon[]) => View;
 }
 
 /**
@@ -43,5 +45,10 @@ export function useMapView(pins: readonly LatLon[], aspect: number, initial?: Vi
     },
     pan: (dxFrac, dyFrac) => setManual(panView(view, dxFrac, dyFrac)),
     fit: () => setManual(null),
+    focus: (points) => {
+      const next = fitView(points, { aspect, padPct: 0.5, minSpanKm: MIN_SPAN_KM });
+      setManual(next);
+      return next;
+    },
   };
 }
