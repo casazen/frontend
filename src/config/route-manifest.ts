@@ -438,6 +438,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/marketplace/mine-page')).MarketplaceMinePage }),
   },
   {
+    // The page of a supplier, which can be shared (MKT): the supplier is read for the property of the address.
+    path: '/app/short-rent/marketplace/suppliers/:orgId',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
+  },
+  {
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
     requiredPermissions: ['property.read'],

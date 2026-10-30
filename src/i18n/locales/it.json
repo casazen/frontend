@@ -8195,6 +8195,7 @@
     "drawer": {
       "photoAlt": "{{name}}, foto {{index}}",
       "showcase": "Vedi la vetrina",
+      "openPage": "Apri la pagina",
       "verifiedExplanation": "Fornitore attivo su CasaZen, con il profilo verificato: dati dell'attività e partita IVA.",
       "about": "Chi è",
       "services": "Servizi",
@@ -8209,6 +8210,12 @@
     "mine": {
       "title": "Le mie app",
       "description": "Le richieste che hai mandato ai fornitori e a che punto sono."
+    },
+    "supplier": {
+      "title": "Fornitore",
+      "request": "Richiedi",
+      "requestService": "Richiedi: {{service}}",
+      "backToMarketplace": "Torna al Marketplace"
     },
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
@@ -10787,6 +10794,7 @@
     "selectedSupplier": "Fornitore selezionato",
     "website": "Sito web",
     "category": "Categoria",
+    "forService": "Per il servizio:",
     "supplier": "Fornitore",
     "selectSupplier": "Seleziona fornitore",
     "urgency": "Urgenza",

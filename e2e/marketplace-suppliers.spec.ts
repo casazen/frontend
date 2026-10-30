@@ -8,6 +8,7 @@ import type { Page } from '@playwright/test';
 
 const PROPERTY_ID = 'prop-marketplace-e2e';
 const SUPPLIER_ORG_ID = 'sup-org-marketplace-e2e';
+const SERVICE_ID = 'svc-marketplace-e2e';
 const STAY_ID = 'booking-marketplace-e2e';
 
 /** A future stay of the property: short-rent requests are for a stay (SU-07, D2). */
@@ -41,6 +42,9 @@ const sampleSuppliers = {
       comuni: ['H501'],
       bio: 'Pulizie professionali per affitti brevi.',
       photoUrls: [],
+      services: [
+        { id: SERVICE_ID, name: 'Pulizia profonda', category: 'cleaning', durationMinutes: 150, priceFromCents: 9000, priceUnit: 'PerJob', requiresQuote: false },
+      ],
     },
   ],
   totalCount: 1,
@@ -60,6 +64,15 @@ async function mockMarketplaceApis(page: Page) {
       return;
     }
     const url = new URL(route.request().url());
+    // The page of one supplier (MKT): the same entry, every service.
+    if (url.pathname === `/api/suppliers/${SUPPLIER_ORG_ID}` && url.searchParams.get('propertyId') === PROPERTY_ID) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(sampleSuppliers.items[0]),
+      });
+      return;
+    }
     if (url.searchParams.get('propertyId') === PROPERTY_ID) {
       await route.fulfill({
         status: 200,
@@ -185,5 +198,12 @@ test.describe('Marketplace suppliers (#340)', () => {
     );
     await page.getByTestId('submit-service-request').click();
     expect((await createResp).status()).toBe(201);
+
+    // The page of the supplier (MKT), which can be shared: every service has its own «Richiedi», and the request is for that service.
+    await page.goto(demoUrl(`/app/short-rent/marketplace/suppliers/${SUPPLIER_ORG_ID}?propertyId=${PROPERTY_ID}`, 'short-stay'));
+    await expect(page.getByTestId('marketplace-supplier-page')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId(`marketplace-request-service-${SERVICE_ID}`).click();
+    await expect(page.getByTestId('service-request-service')).toContainText('Pulizia profonda');
+    await expect(page.getByTestId('service-request-duration')).toHaveValue('150');
   });
 });

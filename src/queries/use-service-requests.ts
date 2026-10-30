@@ -12,6 +12,7 @@ import {
   fetchLongRentServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
+  fetchMarketplaceSupplier,
   fetchMarketplaceSuppliers,
   fetchServiceRequests,
   fetchSuppliersByProperty,
@@ -199,6 +200,19 @@ export function useMarketplaceSuppliers(params: {
     enabled: !!propertyId,
     refetchOnMount: true,
     placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2] === propertyId ? previous : undefined),
+  });
+}
+
+/**
+ * One supplier of the area of a property, for its page in the marketplace (MKT): every published service, the "from" price, the
+ * measured response time and «Verificato». Read again when the page is opened (a supplier changes its services and prices).
+ */
+export function useMarketplaceSupplier(propertyId: string | undefined, orgId: string) {
+  return useQuery({
+    queryKey: ['suppliers', 'marketplace-supplier', propertyId, orgId],
+    queryFn: () => fetchMarketplaceSupplier({ orgId, propertyId: propertyId! }),
+    enabled: !!propertyId && orgId !== '',
+    refetchOnMount: true,
   });
 }
 
