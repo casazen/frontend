@@ -7,8 +7,15 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useServiceRequests } from '@/queries/use-service-requests';
 
+/** The requests of one supplier only (MKT: «Vedi le richieste» of a supplier of «Le mie app»), and the way back to all of them. */
+export interface RequestsOfSupplier {
+  orgId: string;
+  name: string;
+  onShowAll: () => void;
+}
+
 /** «Le tue richieste»: the requests the host sent for the property, with what happened to each (SU-09). */
-export function RequestsSection({ propertyId }: { propertyId: string }) {
+export function RequestsSection({ propertyId, onlySupplier }: { propertyId: string; onlySupplier?: RequestsOfSupplier }) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const {
@@ -18,6 +25,7 @@ export function RequestsSection({ propertyId }: { propertyId: string }) {
     error: requestsLoadError,
     refetch: refetchRequests,
   } = useServiceRequests({ propertyId });
+  const items = (requests?.items ?? []).filter((request) => !onlySupplier || request.supplierOrgId === onlySupplier.orgId);
 
   return (
     <Card>
@@ -28,6 +36,14 @@ export function RequestsSection({ propertyId }: { propertyId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {onlySupplier ? (
+          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1" data-testid="marketplace-requests-of-supplier">
+            <p className="min-w-0 break-words text-sm font-medium">{t('marketplace.mine.onlySupplier', { name: onlySupplier.name })}</p>
+            <Button type="button" size="sm" variant="ghost" className="min-h-11 px-2" onClick={onlySupplier.onShowAll}>
+              {t('marketplace.mine.showAll')}
+            </Button>
+          </div>
+        ) : null}
         {requestsLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -43,16 +59,16 @@ export function RequestsSection({ propertyId }: { propertyId: string }) {
             </Button>
           </div>
         )}
-        {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) === 0 && (
+        {!requestsLoading && !requestsError && items.length === 0 && (
           <div className="text-center py-8 space-y-2">
             <p className="text-muted-foreground">{t('marketplace.noRequests')}</p>
             <p className="text-sm text-muted-foreground">{t('marketplace.noRequestsHint')}</p>
           </div>
         )}
-        {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) > 0 && (
+        {!requestsLoading && !requestsError && items.length > 0 && (
           <div data-testid="marketplace-requests-list">
             <ServiceRequestTimeline
-              requests={requests!.items}
+              requests={items}
               showStay
               showProperty
               canManage={hasPermission('short-rent', 'property.write')}

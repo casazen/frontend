@@ -8617,7 +8617,21 @@
     },
     "mine": {
       "title": "My apps",
-      "description": "The requests you sent to the suppliers and where they stand."
+      "description": "The suppliers you already asked for an intervention and the requests you sent.",
+      "suppliersTitle": "My suppliers",
+      "summary_one": "{{count}} request · last on {{date}}",
+      "summary_other": "{{count}} requests · last on {{date}}",
+      "open_one": "{{count}} open",
+      "open_other": "{{count}} open",
+      "requestAgain": "Request again",
+      "openPage": "View the page",
+      "seeRequests": "See the requests",
+      "notAround": "It does not work in the area of this property.",
+      "onlySupplier": "Only the requests of {{name}}",
+      "showAll": "Show all",
+      "emptyTitle": "You have not asked for any intervention yet",
+      "emptyHint": "When you ask a supplier for an intervention you will find it here, with its requests.",
+      "discover": "Discover the suppliers"
     },
     "supplier": {
       "title": "Supplier",
