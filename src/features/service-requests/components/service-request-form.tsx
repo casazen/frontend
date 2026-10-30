@@ -35,6 +35,17 @@ const DURATIONS = [30, 60, 90, 120, 180, 240, 360];
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
+/**
+ * A service of the supplier's catalog the request is for (the page of a supplier in the marketplace, MKT): the request keeps it, so the
+ * supplier sees which service was asked and its price. The category is the service's own, and its duration is where the form starts.
+ */
+export interface RequestedService {
+  id: string;
+  name: string;
+  category: string;
+  durationMinutes: number | null;
+}
+
 interface ServiceRequestFormProps {
   propertyId: string;
   /**
@@ -52,6 +63,8 @@ interface ServiceRequestFormProps {
   /** Supplier already chosen (marketplace). Without it the form lists the property's suppliers for the category. */
   supplierOrgId?: string;
   preselectedCategory?: string;
+  /** Short-rent only: the service of the supplier the request is for. It fixes the category, so the form does not ask for it. */
+  service?: RequestedService;
   /** Notes the form starts with (re-requesting after a rejection starts from the notes of the rejected request). */
   initialNotes?: string;
   /**
@@ -81,6 +94,7 @@ export function ServiceRequestForm({
   jobDate,
   supplierOrgId,
   preselectedCategory,
+  service,
   initialNotes,
   excludeSupplierOrgIds,
   mode = 'new',
@@ -105,14 +119,14 @@ export function ServiceRequestForm({
   // Codes come from the backend catalog (SU-03): a preselection that is not a code (e.g. an old
   // supplier label) falls back to the first category instead of being sent and rejected.
   const { data: categoryCodes } = useServiceCategories();
-  const [category, setCategory] = useState<string>(preselectedCategory ?? '');
+  const [category, setCategory] = useState<string>(service?.category ?? preselectedCategory ?? '');
   const selectedCategory = categoryCodes?.includes(category) ? category : (categoryCodes?.[0] ?? '');
   const [urgency, setUrgency] = useState<ServiceRequestUrgency>('Normal');
   const [notes, setNotes] = useState(initialNotes ?? '');
   const [pickedStay, setPickedStay] = useState('');
   const [pickedSupplier, setPickedSupplier] = useState('');
   const [startTime, setStartTime] = useState('');
-  const [durationMinutes, setDurationMinutes] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState(service?.durationMinutes ? String(service.durationMinutes) : '');
   const [pickedDate, setPickedDate] = useState('');
 
   const isShortRent = context === 'short-rent';
@@ -145,7 +159,10 @@ export function ServiceRequestForm({
   const stayForDay = stayOptions.find((b) => b.id === effectiveStay);
   const day = isShortRent ? jobDate || (stayForDay ? stayDateOf(stayForDay.checkOutDate) : '') : pickedDate;
   const duration = Number(durationMinutes);
-  const scheduleReady = !!day && /^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) && DURATIONS.includes(duration);
+  // The duration of the service asked for is one of the choices even when it is not one of the usual ones (45 minutes, 2 hours and a half).
+  const serviceMinutes = service?.durationMinutes ?? null;
+  const durations = serviceMinutes && !DURATIONS.includes(serviceMinutes) ? [...DURATIONS, serviceMinutes].sort((a, b) => a - b) : DURATIONS;
+  const scheduleReady = !!day && /^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) && durations.includes(duration);
 
   const createStayRequest = useCreateServiceRequest();
   const createLongRentRequest = useCreateLongRentServiceRequest();
@@ -175,7 +192,7 @@ export function ServiceRequestForm({
       durationMinutes: duration,
     };
     if (isShortRent) {
-      createStayRequest.mutate({ ...common, bookingId: effectiveStay }, afterCreate);
+      createStayRequest.mutate({ ...common, bookingId: effectiveStay, serviceListingId: service?.id }, afterCreate);
     } else {
       createLongRentRequest.mutate(common, afterCreate);
     }
@@ -238,10 +255,18 @@ export function ServiceRequestForm({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="sr-category">{t('serviceRequest.category')}</Label>
-            <ServiceCategorySelect id="sr-category" value={selectedCategory} onChange={setCategory} />
-          </div>
+          {service ? (
+            // The service fixes the category: the supplier is asked for this very service.
+            <p className="text-sm" data-testid="service-request-service">
+              <span className="text-muted-foreground">{t('serviceRequest.forService')} </span>
+              <span className="break-words font-medium">{service.name}</span>
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="sr-category">{t('serviceRequest.category')}</Label>
+              <ServiceCategorySelect id="sr-category" value={selectedCategory} onChange={setCategory} />
+            </div>
+          )}
 
           {asksSupplier && (
             <div className="space-y-2">
@@ -317,7 +342,7 @@ export function ServiceRequestForm({
               data-testid="service-request-duration"
             >
               <option value="">{t('serviceRequest.durationPlaceholder')}</option>
-              {DURATIONS.map((minutes) => (
+              {durations.map((minutes) => (
                 <option key={minutes} value={minutes}>
                   {formatWorkDuration(minutes, t)}
                 </option>

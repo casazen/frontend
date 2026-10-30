@@ -11,7 +11,7 @@ import type { ConnectStatus } from '@/types/connect.types';
 import { ConnectPaymentsPage } from '../payments-page';
 
 vi.mock('@/api/connect.api', () => ({
-  ConnectApi: { getStatus: vi.fn(), createAccount: vi.fn(), createOnboardingLink: vi.fn() },
+  ConnectApi: { getStatus: vi.fn(), createAccount: vi.fn(), createOnboardingLink: vi.fn(), createDashboardLink: vi.fn() },
 }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: ReactNode }) => createElement('div', null, children),
@@ -160,6 +160,30 @@ describe('ConnectPaymentsPage (BK-09)', () => {
     const alert = await screen.findByTestId('connect-onboarding-error');
     expect(alert).toHaveTextContent(i18n.t('apiErrors.forbidden'));
     expect(screen.queryByRole('button', { name: i18n.t('settings.connectRetry') })).not.toBeInTheDocument();
+  });
+
+  it('openDashboard_ActiveAccount_FollowsTheSingleUseLinkAtOnceAndKeepsNothing', async () => {
+    // AM-08b-d: the login link of the Express Dashboard is a credential: followed at once, written nowhere the page keeps.
+    vi.mocked(ConnectApi.getStatus).mockResolvedValue(activeStatus);
+    vi.mocked(ConnectApi.createDashboardLink).mockResolvedValue({ url: 'https://connect.stripe.com/express/single-use-token' });
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('connect-manage-on-stripe'));
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://connect.stripe.com/express/single-use-token'));
+    expect(ConnectApi.createDashboardLink).toHaveBeenCalledWith();
+    expect(JSON.stringify([localStorage, sessionStorage].map((storage) => Object.entries(storage)))).not.toContain('single-use-token');
+  });
+
+  it('openDashboard_StripeRefusesTheLink_ShowsTheMessageWithoutRetryAndDoesNotLeave', async () => {
+    vi.mocked(ConnectApi.getStatus).mockResolvedValue(activeStatus);
+    vi.mocked(ConnectApi.createDashboardLink).mockRejectedValue(problemError(422, 'stripe_connect_dashboard_not_ready'));
+    renderPage();
+    fireEvent.click(await screen.findByTestId('connect-manage-on-stripe'));
+
+    expect(await screen.findByTestId('connect-dashboard-error')).toHaveTextContent(i18n.t('apiErrors.codes.stripeConnectDashboardNotReady'));
+    expect(screen.queryByRole('button', { name: i18n.t('settings.connectRetry') })).not.toBeInTheDocument();
+    expect(assign).not.toHaveBeenCalled();
   });
 
   it('statusQuery_Loaded_WithoutChargesShowsGateBanner', async () => {

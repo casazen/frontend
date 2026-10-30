@@ -14,13 +14,18 @@ import type {
   PropertyCadastralData,
   ApeIdentification,
   PropertyPauseStatus,
+  PlanUsage,
 } from '@/types';
 
 export const propertiesApi = {
+  /** `view: 'overview'` (SR-07a) adds to each short-stay row the state, what is missing, the nights, the cover and the site. */
   getAll: (params?: Record<string, string | number | boolean | undefined>) =>
     ApiClient.get<Property[]>('/properties', params),
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
+
+  /** How many properties the org has of how many its plan allows (SR-07a): readable by whoever may read properties. */
+  getPlanUsage: () => ApiClient.get<PlanUsage>('/properties/plan-usage'),
 
   getCancellationPolicies: () =>
     ApiClient.get<CancellationPolicyOption[]>('/properties/cancellation-policies'),

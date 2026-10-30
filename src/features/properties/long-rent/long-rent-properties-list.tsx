@@ -5,13 +5,13 @@ import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListCardContent, ListMenuEntry, ListRowAction, ListSwipeAction } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import type { LongRentPropertyStatus } from '@/lib/status-dictionary';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { PropertyThumb } from '../components/property-thumb';
 import { propertyModePath } from '../mode/paths';
 import { formatPropertyLocation } from '../property-location';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import './long-rent-property-drawer';
-import { leaseOfRow, tenantOfRow } from './long-rent-property-format';
+import { apeOfRow, cadastralOfRow, leaseOfRow, modeChangeOfRow, tenantOfRow } from './long-rent-property-format';
 import type { LongRentPropertyRow } from './long-rent-property-rows';
 import {
   LONG_RENT_PROPERTY_CREATE_PATH,
@@ -41,9 +41,9 @@ export interface LongRentPropertiesListOptions {
  * property (let or free), who lives there until when, and the rent. All the rows are in the page (`GET /properties?mode=long`
  * with `GET /leases`), so the list searches, filters and sorts them itself.
  *
- * The design also has the type and the size of the property, the class of its APE, "then free" (a notice given) and the rent
- * asked for a free property. The property records do not carry them (type, size and indicative rent are not in the model, the APE
- * is a document, the notice is a feature of the lease that does not exist yet), so they are not here and not made up.
+ * The APE (its class under the place, or what is missing), "then free" (under the end of the lease, when it does not go on), the lease on its
+ * way with its stage and the change of mode programmed come from the server (LR-07a). The design also has the type and the size of the property
+ * and the rent asked for a free property: the model does not have them (LR-D30), so they are not here and not made up.
  */
 export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLease, leasesKnown }: LongRentPropertiesListOptions) {
   const { t, i18n } = useTranslation();
@@ -89,22 +89,36 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
           default: true,
           rowHeader: true,
           sort: (row) => row.property.name,
-          render: (row, cell) => (
-            <div className="flex min-w-0 items-center gap-3">
-              <PropertyThumb photoUrls={row.property.photoUrls} />
-              <div className="min-w-0">
-                {cell.open(row.property.name)}
-                <span className="block break-words text-sm font-normal text-foreground/70">{formatPropertyLocation(row.property)}</span>
+          render: (row, cell) => {
+            const ape = apeOfRow(row, t);
+            return (
+              <div className="flex min-w-0 items-center gap-3">
+                <PropertyThumb photoUrls={row.property.photoUrls} />
+                <div className="min-w-0">
+                  {cell.open(row.property.name)}
+                  <span className="block break-words text-sm font-normal text-foreground/70">{formatPropertyLocation(row.property)}</span>
+                  {ape ? <span className={cn('block break-words text-sm font-normal', ape.warn ? 'text-warning-foreground' : 'text-foreground/70')}>{ape.text}</span> : null}
+                </div>
               </div>
-            </div>
-          ),
+            );
+          },
         },
         {
           id: 'status',
           label: t('longRentProperties.list.columns.status'),
           default: true,
           sort: (row) => (row.status ? STATUS_RANK[row.status] : null),
-          render: (row) => (row.status ? <StatusBadge kind="longRentProperty" status={row.status} /> : <span className="text-foreground/70">—</span>),
+          render: (row) => {
+            const change = modeChangeOfRow(row, t, language);
+            return row.status ? (
+              <div className="flex min-w-0 flex-col items-start gap-1">
+                <StatusBadge kind="longRentProperty" status={row.status} />
+                {change ? <span className="break-words text-sm font-normal text-foreground/70">{change}</span> : null}
+              </div>
+            ) : (
+              <span className="text-foreground/70">—</span>
+            );
+          },
         },
         {
           id: 'tenant',
@@ -137,6 +151,23 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
             ) : (
               <span className="text-foreground/70">—</span>
             ),
+        },
+        {
+          id: 'ape',
+          label: t('longRentProperties.list.columns.ape'),
+          sort: (row) => row.aggregate?.apeClass ?? null,
+          render: (row) => {
+            const ape = apeOfRow(row, t);
+            return ape ? <span className={cn(ape.warn && 'text-warning-foreground')}>{ape.text}</span> : <span className="text-foreground/70">—</span>;
+          },
+        },
+        {
+          id: 'cadastral',
+          label: t('longRentProperties.list.columns.cadastral'),
+          render: (row) => {
+            const cadastral = cadastralOfRow(row, t);
+            return cadastral ? <span className={cn(cadastral.warn && 'text-warning-foreground')}>{cadastral.text}</span> : <span className="text-foreground/70">—</span>;
+          },
         },
         { id: 'spaces', label: t('longRentProperties.list.columns.spaces'), render: spacesOf },
       ],

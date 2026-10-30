@@ -547,7 +547,7 @@ test.describe('Aligned cards', () => {
     test('the badges of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
       await mockMarketplace(page);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
+      await page.goto(demoUrl(`/app/short-rent/marketplace/categories/cleaning?propertyId=${PROPERTY_ID}`, 'short-stay'));
 
       const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
       await expect(cards).toHaveCount(2);

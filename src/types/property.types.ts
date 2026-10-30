@@ -1,7 +1,23 @@
+import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
 
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
 export type RentalMode = 'Short' | 'Long';
+
+/** The kind of accommodation (SR-07a): the five choices of the first step of «Aggiungi immobile». */
+export const ACCOMMODATION_TYPES = ['Apartment', 'HouseOrVilla', 'TrulloOrMasseria', 'LoftOrPenthouse', 'RoomOrSuite'] as const;
+export type AccommodationType = (typeof ACCOMMODATION_TYPES)[number];
+
+/** What the house rules say about smoking, pets and parties (SR-07a). */
+export type SmokingPolicy = 'No' | 'OutdoorsOnly' | 'Yes';
+export type PetsPolicy = 'No' | 'OnRequest' | 'Yes';
+export type PartiesPolicy = 'No' | 'OnRequest';
+
+/** The one state of a short-stay property in the host's list (SR-07a): derived by the server, never worked out here. */
+export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
+
+/** Where a short-stay property stands on the booking site: on it, ready but kept off (paused or switched off), or not ready. */
+export type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
 
 /**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
@@ -33,6 +49,36 @@ export interface Property {
   amenities: string[];
   photoUrls: string[];
   houseRules: string;
+  /** The fields of the wizard «Aggiungi immobile» (SR-07a): `null` = the host never said. */
+  accommodationType?: AccommodationType | null;
+  beds?: number | null;
+  /** Living area in square metres. */
+  areaSqm?: number | null;
+  /** The headline of the listing, at most 60 characters; `null` = the listing uses the name. */
+  listingTitle?: string | null;
+  /** «Mostra la casa sul sito»: `false` = the host keeps the property off the booking site (it never publishes by itself). */
+  publishedOnSite?: boolean;
+  /** `HH:mm:ss` on the property's clock. */
+  checkInFrom?: string | null;
+  checkOutBy?: string | null;
+  smokingPolicy?: SmokingPolicy | null;
+  petsPolicy?: PetsPolicy | null;
+  partiesPolicy?: PartiesPolicy | null;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  /** What the host asks per night for each extra guest, in euros; `null` = extra guests are not accepted. */
+  extraGuestFeePerNight?: number | null;
+  /**
+   * Only in the rows of `GET /properties?view=overview` (SR-07a), told by the server: the one state, what is missing, the
+   * occupancy of the last 30 days (percent, active properties only), the photos and where the property stands on the site.
+   */
+  lifecycleStatus?: PropertyLifecycleStatus;
+  occupancy30?: number;
+  photoCount?: number;
+  coverPhotoUrl?: string;
+  siteVisibility?: PropertySiteVisibility;
+  /** With `lifecycleStatus` `Suspended`: the blocker codes that suspended the property. */
+  suspensionReasons?: string[];
   cinCode: string | null;
   /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: 'IT' | 'CH';
@@ -61,6 +107,11 @@ export interface Property {
   pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
+  /**
+   * The change of rental mode that waits for its day (PM-02, AM-13b): in the list asked with `?view=overview`, for a property in either
+   * mode, and only while it is `Scheduled`; absent otherwise. The same object `GET /properties/:id/mode` gives as `scheduledChange`.
+   */
+  scheduledModeChange?: PropertyModeChange | null;
   /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
   cadastralSheet?: string | null;
   cadastralParcel?: string | null;
@@ -74,8 +125,20 @@ export interface Property {
    */
   responsibleUserId?: string | null;
   orgId?: string;
+  /**
+   * What a short-term property still lacks, worked out by the server with the rules of its activation: only in the list asked with
+   * `?view=overview` (SR-07a), and only for a short-term property. The client reads it and never works it out again.
+   */
+  missing?: PropertyMissingItem[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** One thing a short-term property lacks (`GET /properties?view=overview`): a stable code, and whether it blocks the activation or is only advice. */
+export interface PropertyMissingItem {
+  /** `base_data`, `cin`, `documents`, `safety`, `activation_not_confirmed` (blocking) or `photos`, `calendar` (advice). */
+  code: string;
+  blocking: boolean;
 }
 
 /** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */
@@ -118,6 +181,20 @@ export interface CreatePropertyDto {
   damageDeposit?: number;
   amenities?: string[];
   houseRules?: string;
+  /** The fields of the wizard «Aggiungi immobile» (SR-07a); on an update `null` clears them and leaving one out keeps it. */
+  accommodationType?: AccommodationType | null;
+  beds?: number | null;
+  areaSqm?: number | null;
+  listingTitle?: string | null;
+  publishedOnSite?: boolean;
+  checkInFrom?: string | null;
+  checkOutBy?: string | null;
+  smokingPolicy?: SmokingPolicy | null;
+  petsPolicy?: PetsPolicy | null;
+  partiesPolicy?: PartiesPolicy | null;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  extraGuestFeePerNight?: number | null;
   cinCode?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
@@ -160,6 +237,20 @@ export interface CancellationPolicyOption {
   fullRefundHours: number;
   partialRefundPercent: number;
   partialRefundHours: number;
+  /** Stable identifier of the catalog (SR-07a): the name and the description may be reworded, the slug never. */
+  slug?: string;
+}
+
+/**
+ * How many properties the org has of how many its plan allows (`GET /properties/plan-usage`, SR-07a): readable by whoever may
+ * read properties, and deliberately without the name of the plan or the billing.
+ */
+export interface PlanUsage {
+  used: number;
+  /** `null` when the plan has no limit. */
+  max: number | null;
+  unlimited: boolean;
+  canAdd: boolean;
 }
 
 export type PropertyDocumentType =
@@ -219,6 +310,32 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   canonicalUrl?: string | null;
   /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */
   ratingSummary?: RatingSummary;
+}
+
+/**
+ * The night that starts on `date` in the public calendar of a property (DB-03b, `GET api/public/properties/{id}/calendar`).
+ * Dates and amounts only: it never says who stays, nor tells a booking from a block of the host.
+ */
+export interface PublicCalendarDayDto {
+  date: string;
+  /** A stay can start this night. The day of a check-out is free for a new check-in, so it is available. */
+  available: boolean;
+  /** What the night costs in cents: the number the quote adds up for that night. Given for a taken night too. */
+  nightlyPriceCents: number;
+  /** The fewest nights of a stay that starts on this day: 1 when there is no minimum. */
+  minNights: number;
+}
+
+/** The public calendar of a property: a day for each day from `startDate` (included) to `endDate` (excluded). */
+export interface PublicCalendarDto {
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  /** Today in Europe/Rome: earlier days are not listed. */
+  today: string;
+  currency: string;
+  days: PublicCalendarDayDto[];
+  generatedAt: string;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
