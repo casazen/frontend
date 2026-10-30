@@ -11327,17 +11327,36 @@
     "theme": {
       "label": "Tema",
       "options": {
+        "terra": {
+          "name": "Terra",
+          "description": "Calda: terracotta su crema."
+        },
         "mare": {
           "name": "Mare",
-          "description": "Luminoso e accogliente, per case al mare e vacanze estive."
+          "description": "Fresca: blu petrolio su bianco."
         },
-        "montagna": {
-          "name": "Montagna",
-          "description": "Caldo e naturale, per baite, chalet e agriturismi."
+        "citta": {
+          "name": "Città",
+          "description": "Essenziale: inchiostro su pietra."
+        }
+      }
+    },
+    "font": {
+      "label": "Caratteri",
+      "usingTheme": "Stai usando i caratteri del tema.",
+      "useTheme": "Usa i caratteri del tema",
+      "options": {
+        "editoriale": {
+          "name": "Editoriale",
+          "description": "Titoli con le grazie, caldi e letterari."
         },
-        "urban": {
-          "name": "Urban",
-          "description": "Essenziale e moderno, per appartamenti in città."
+        "moderno": {
+          "name": "Moderno",
+          "description": "Tutto senza grazie, nitido e deciso."
+        },
+        "classico": {
+          "name": "Classico",
+          "description": "Eleganza da rivista, contrasto alto."
         }
       }
     },
@@ -11370,6 +11389,7 @@
     "errors": {
       "colorInvalid": "Il colore non è valido: usa un codice esadecimale, per esempio #1a6b8f.",
       "themeInvalid": "Questo tema non è disponibile per il sito pubblico.",
+      "fontInvalid": "Questa coppia di caratteri non è disponibile per il sito pubblico.",
       "taglineTooLong": "Lo slogan non può superare i {{maxLength}} caratteri.",
       "imageEmpty": "Il file selezionato è vuoto.",
       "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",

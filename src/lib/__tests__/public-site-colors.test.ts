@@ -103,7 +103,7 @@ describe('analyzePrimaryColor', () => {
   });
 
   it('analyzePrimaryColor_DarkColor_KeepsItAsTextAndUsesWhiteOnIt', () => {
-    const analysis = analyzePrimaryColor('#1A6B8F', 'montagna');
+    const analysis = analyzePrimaryColor('#1A6B8F', 'terra');
 
     expect(analysis).toMatchObject({
       primary: '#1a6b8f',
@@ -122,12 +122,27 @@ describe('analyzePrimaryColor', () => {
     expect(analysis!.primaryTextAdjusted).toBe(true);
     expect(analysis!.primaryText).not.toBe('#f4d03f');
   });
+
+  it('analyzePrimaryColor_AnyColorOfTheRgbGrid_HoverInkAndSoftKeepTheirPairsAtAA', () => {
+    for (const themeId of PUBLIC_SITE_THEMES) {
+      const { bg, surface } = PUBLIC_SITE_THEME_PALETTES[themeId];
+      for (const color of GRID_COLORS) {
+        const { onPrimary, hover, soft, ink } = analyzePrimaryColor(color, themeId)!;
+        const label = `${color} on ${themeId}`;
+        // The ink is the text on the tint of the color, on the page and on the cards; the text on the fill holds under the pointer.
+        expect(contrastRatio(ink, soft), `${label}: ink ${ink} on soft ${soft}`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+        expect(contrastRatio(ink, bg), `${label}: ink ${ink} on bg`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+        expect(contrastRatio(ink, surface), `${label}: ink ${ink} on card`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+        expect(contrastRatio(onPrimary, hover), `${label}: ${onPrimary} on hover ${hover}`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+      }
+    }
+  });
 });
 
 describe('publicSiteColorVars', () => {
   it('publicSiteColorVars_NoColor_IsNullSoTheThemeColorsApply', () => {
     expect(publicSiteColorVars(null, 'mare')).toBeNull();
-    expect(publicSiteColorVars(undefined, 'urban')).toBeNull();
+    expect(publicSiteColorVars(undefined, 'citta')).toBeNull();
     expect(publicSiteColorStyle(null, 'mare')).toBeUndefined();
   });
 
@@ -140,6 +155,9 @@ describe('publicSiteColorVars', () => {
       '--cz-public-primary': '#e07a5f',
       '--cz-public-on-primary': expect.stringMatching(/^#[0-9a-f]{6}$/),
       '--cz-public-primary-text': expect.stringMatching(/^#[0-9a-f]{6}$/),
+      '--cz-public-hover': expect.stringMatching(/^#[0-9a-f]{6}$/),
+      '--cz-public-ink': expect.stringMatching(/^#[0-9a-f]{6}$/),
+      '--cz-public-soft': expect.stringMatching(/^#[0-9a-f]{6}$/),
     });
   });
 });
