@@ -90,13 +90,18 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     );
     const { propertyId, stayId, supplierOrgId } = candidate!;
 
+    // The environment is long-lived and the request of a regular host is accepted at once: the job an earlier run left would overlap
+    // this one (409 supplier_commitment_conflict). So each run asks for an hour of its own (12:00 to 19:00, two hours long) and cancels
+    // its request at the end.
+    const startTime = `${String(12 + (Date.now() % 8)).padStart(2, '0')}:00`;
+
     // The suppliers of the category have a page of their own (MKT): the category in the address, the property chosen.
     await page.goto(`/app/short-rent/marketplace/categories/cleaning?propertyId=${propertyId}`);
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
     await page.getByTestId('service-request-stay').selectOption(stayId);
-    await page.getByTestId('service-request-start-time').fill('10:00');
+    await page.getByTestId('service-request-start-time').fill(startTime);
     await page.getByTestId('service-request-duration').selectOption('120');
 
     const created = page.waitForResponse(
@@ -106,17 +111,29 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     const response = await created;
     expect(response.status()).toBe(201);
     const body = (await response.json()) as { id: string; bookingId: string; rentalContext: string };
-    expect(body.bookingId).toBe(stayId);
-    expect(body.rentalContext).toBe('ShortRent');
 
-    // Web: the booking detail lists the stay's requests.
-    await page.goto(`/app/short-rent/bookings/${stayId}`);
-    await expect(page.getByTestId(`service-request-${body.id}`)).toBeVisible({ timeout: 30_000 });
+    try {
+      expect(body.bookingId).toBe(stayId);
+      expect(body.rentalContext).toBe('ShortRent');
 
-    // App: the booking screen asks the same list by stay.
-    const appList = await request.get(`${API}/service-requests?bookingId=${stayId}&pageSize=50`, { headers: auth });
-    expect(appList.status()).toBe(200);
-    const items = ((await appList.json()) as { items: { id: string; bookingId: string }[] }).items;
-    expect(items.find((i) => i.id === body.id)?.bookingId).toBe(stayId);
+      // Web: the booking detail lists the stay's requests.
+      await page.goto(`/app/short-rent/bookings/${stayId}`);
+      await expect(page.getByTestId(`service-request-${body.id}`)).toBeVisible({ timeout: 30_000 });
+
+      // App: the booking screen asks the same list by stay.
+      const appList = await request.get(`${API}/service-requests?bookingId=${stayId}&pageSize=50`, { headers: auth });
+      expect(appList.status()).toBe(200);
+      const items = ((await appList.json()) as { items: { id: string; bookingId: string }[] }).items;
+      expect(items.find((i) => i.id === body.id)?.bookingId).toBe(stayId);
+    } finally {
+      // The supplier's agenda goes back as it was, also when an assertion above failed: the next run asks for the same stay.
+      const cancelled = await request.post(`${API}/service-requests/${body.id}/cancel`, {
+        headers: auth,
+        data: { reason: 'E2E cleanup' },
+      });
+      if (!cancelled.ok()) {
+        test.info().annotations.push({ type: 'cleanup-failed', description: `cancelling ${body.id} answered ${cancelled.status()}` });
+      }
+    }
   });
 });
