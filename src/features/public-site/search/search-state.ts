@@ -58,6 +58,17 @@ export interface SearchState {
   onlyFavorites: boolean;
 }
 
+export const NO_FILTERS: SearchFilters = {
+  minPrice: null,
+  maxPrice: null,
+  bedrooms: null,
+  bathrooms: null,
+  minSqm: null,
+  amenities: [],
+  rules: [],
+  tags: [],
+};
+
 function readInt(params: URLSearchParams, key: string, min: number, max: number): number | null {
   const text = params.get(key)?.trim() ?? '';
   if (!/^\d{1,6}$/.test(text)) return null;
@@ -97,6 +108,48 @@ export function readSearch(params: URLSearchParams): SearchState {
     view: params.get(SEARCH_PARAMS.view) === 'map' ? 'map' : 'list',
     onlyFavorites: params.get(SEARCH_PARAMS.favorites) === '1',
   };
+}
+
+function setOrDelete(params: URLSearchParams, key: string, value: string | null): void {
+  if (value) params.set(key, value);
+  else params.delete(key);
+}
+
+/**
+ * `params` with the changes of `patch` written; the stay and anything else in the address stay as they are. A value that is the
+ * default (no filter, the recommended sort, the list view) is not written, so the address of an untouched search is short.
+ */
+export function writeSearch(params: URLSearchParams, patch: Partial<Omit<SearchState, 'filters'>> & { filters?: Partial<SearchFilters> }): URLSearchParams {
+  const current = readSearch(params);
+  const next = new URLSearchParams(params);
+  const filters = { ...current.filters, ...patch.filters };
+  if (patch.where !== undefined) setOrDelete(next, SEARCH_PARAMS.where, patch.where);
+  if (patch.filters) {
+    setOrDelete(next, SEARCH_PARAMS.minPrice, filters.minPrice ? String(filters.minPrice) : null);
+    setOrDelete(next, SEARCH_PARAMS.maxPrice, filters.maxPrice ? String(filters.maxPrice) : null);
+    setOrDelete(next, SEARCH_PARAMS.bedrooms, filters.bedrooms ? String(filters.bedrooms) : null);
+    setOrDelete(next, SEARCH_PARAMS.bathrooms, filters.bathrooms ? String(filters.bathrooms) : null);
+    setOrDelete(next, SEARCH_PARAMS.minSqm, filters.minSqm ? String(filters.minSqm) : null);
+    setOrDelete(next, SEARCH_PARAMS.amenities, filters.amenities.length ? filters.amenities.join(',') : null);
+    setOrDelete(next, SEARCH_PARAMS.rules, filters.rules.length ? filters.rules.join(',') : null);
+    setOrDelete(next, SEARCH_PARAMS.tags, filters.tags.length ? filters.tags.join(',') : null);
+  }
+  if (patch.sort !== undefined) setOrDelete(next, SEARCH_PARAMS.sort, patch.sort === 'recommended' ? null : patch.sort);
+  if (patch.view !== undefined) setOrDelete(next, SEARCH_PARAMS.view, patch.view === 'map' ? 'map' : null);
+  if (patch.onlyFavorites !== undefined) setOrDelete(next, SEARCH_PARAMS.favorites, patch.onlyFavorites ? '1' : null);
+  return next;
+}
+
+/** How many filters are on: the number on the «Filtri» button. The place, the sort and the hearts are not filters of the sheet. */
+export function activeFilterCount(filters: SearchFilters): number {
+  return (
+    (filters.minPrice || filters.maxPrice ? 1 : 0) +
+    (filters.bedrooms ? 1 : 0) +
+    (filters.bathrooms ? 1 : 0) +
+    (filters.minSqm ? 1 : 0) +
+    filters.amenities.length +
+    filters.rules.length
+  );
 }
 
 /** The call to the server for this stay and this search: the filters travel as the API names them. */
