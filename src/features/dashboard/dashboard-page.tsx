@@ -10,6 +10,7 @@ import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useHostThreads } from '@/queries/use-booking-messages';
@@ -46,6 +47,7 @@ export function DashboardPage() {
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
   const canWrite = hasPermission('short-rent', 'booking.write');
   const canWriteProperty = hasPermission('short-rent', 'property.write');
+  const canRequestService = hasPermission('short-rent', 'servicerequest.write');
 
   const properties = useProperties({ mode: 'short' });
   const propertyList = useMemo(() => (Array.isArray(properties.data) ? properties.data : []), [properties.data]);
@@ -105,7 +107,10 @@ export function DashboardPage() {
           primary={canWrite ? { label: t('dashboard.actions.createBooking'), icon: Plus, to: '/app/short-rent/bookings/create', testId: 'home-create-booking' } : undefined}
           secondary={[
             ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
-            { label: t('dashboard.actions.requestService'), icon: Wrench, to: '/app/short-rent/marketplace' },
+            // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
+            ...(canRequestService
+              ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
+              : []),
           ]}
           mobilePrimary="fab"
         />

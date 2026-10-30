@@ -70,8 +70,8 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeInten
 
 interface StripeIntentPaymentProps extends StripeIntentFormProps {
   publishableKey: string;
-  /** Connected account of the host: the checkout makes direct charges. */
-  stripeAccountId: string;
+  /** Connected account of the host: the checkout makes direct charges. Without one (a charge on the platform) Stripe.js uses the platform's own account. */
+  stripeAccountId?: string | null;
   clientSecret: string;
 }
 
@@ -86,7 +86,7 @@ export function StripeIntentPayment({
   ...formProps
 }: StripeIntentPaymentProps) {
   const stripePromise = useMemo(
-    () => loadStripe(publishableKey, { stripeAccount: stripeAccountId }),
+    () => loadStripe(publishableKey, stripeAccountId ? { stripeAccount: stripeAccountId } : undefined),
     [publishableKey, stripeAccountId],
   );
 

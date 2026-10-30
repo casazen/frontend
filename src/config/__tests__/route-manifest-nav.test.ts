@@ -239,6 +239,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
   it('lists the pages that hang from the entries of the old menus', () => {
     expect(hanging.map((entry) => [entry.path, entry.navParent])).toEqual([
+      ['/app/short-rent/interventions', '/app/short-rent/properties'],
       ['/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
       ['/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
       ['/app/short-rent/alloggiati', '/app/short-rent/compliance'],
