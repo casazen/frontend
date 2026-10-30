@@ -67,7 +67,8 @@ export function useAccountPropertyRows({ fresh = false }: { fresh?: boolean } = 
   const workspace = useContext(WorkspaceContext);
   const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
 
-  const properties = useProperties(undefined, { fresh });
+  // `view=overview` (SR-07a) adds to each short-term row what it still lacks, worked out by the server: the list never works it out again.
+  const properties = useProperties({ view: 'overview' }, { fresh });
   // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const loaded = Array.isArray(properties.data) ? properties.data : undefined;
   const hasLongTerm = loaded?.some((property) => modeOf(property) === 'Long') ?? false;
