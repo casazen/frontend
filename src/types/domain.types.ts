@@ -86,6 +86,7 @@ export interface ResolveHostResponse {
     logoUrl?: string | null;
     primaryColor?: string | null;
     publicThemeId?: string | null;
+    publicFontId?: string | null;
     heroImageUrl?: string | null;
     tagline?: string | null;
     displayName: string;
