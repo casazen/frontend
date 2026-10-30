@@ -35,14 +35,17 @@ interface PhotosStepProps {
 export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const { t } = useTranslation();
   const gallery = usePropertyPhotos(propertyId);
-  const rules = gallery.data ?? FALLBACK_PHOTO_RULES;
+  // An answer that is not a gallery (no list of photos) is as good as none: the step says it cannot read it, it does not break.
+  const loaded = gallery.data && Array.isArray(gallery.data.photoUrls) ? gallery.data : undefined;
+  const unreadable = gallery.isError || (gallery.isSuccess && !loaded);
+  const rules = loaded ?? FALLBACK_PHOTO_RULES;
   const reorder = useReorderPropertyPhotos(propertyId);
   const setCover = useSetPropertyCoverPhoto(propertyId);
   const { held, remove, flush } = useDelayedPhotoDelete(propertyId);
   const [announcement, setAnnouncement] = useState('');
 
   // A photo with its delete on hold is already gone for the person, and the server still has it until the delete leaves.
-  const photos = (gallery.data?.photoUrls ?? []).filter((url) => !held.includes(url));
+  const photos = (loaded?.photoUrls ?? []).filter((url) => !held.includes(url));
   const queue = usePhotoUploadQueue(propertyId, photos.length, rules);
   const full = photos.length + queue.items.filter((item) => item.status !== 'failed').length >= rules.maxPhotos;
   const busy = reorder.isPending || setCover.isPending;
@@ -145,7 +148,7 @@ export function PhotosStep({ form, propertyId }: PhotosStepProps) {
               <Skeleton key={slot} className="aspect-[4/3] w-full" />
             ))}
           </div>
-        ) : gallery.isError ? (
+        ) : unreadable ? (
           <Alert
             variant="danger"
             data-testid="property-wizard-photos-error"

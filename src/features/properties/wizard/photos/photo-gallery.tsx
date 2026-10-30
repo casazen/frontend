@@ -82,43 +82,45 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
               ) : null}
               <GripVertical aria-hidden="true" className="absolute right-1 top-1 size-5 rounded bg-background/80 text-foreground/70 max-sm:hidden" />
             </div>
-            <div className="flex flex-wrap items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => onMove(index, index - 1)}
-                disabled={busy || index === 0}
-                aria-label={t('property.photos.moveEarlier', { index: position })}
-              >
-                <ArrowLeft aria-hidden="true" className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => onMove(index, index + 1)}
-                disabled={busy || index === photos.length - 1}
-                aria-label={t('property.photos.moveLater', { index: position })}
-              >
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </Button>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onMove(index, index - 1)}
+                  disabled={busy || index === 0}
+                  aria-label={t('property.photos.moveEarlier', { index: position })}
+                >
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onMove(index, index + 1)}
+                  disabled={busy || index === photos.length - 1}
+                  aria-label={t('property.photos.moveLater', { index: position })}
+                >
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto"
+                  onClick={() => onDelete(url)}
+                  disabled={busy}
+                  aria-label={t('property.photos.delete', { index: position })}
+                >
+                  <Trash2 aria-hidden="true" className="size-4 text-destructive" />
+                </Button>
+              </div>
               {displayable && index > 0 ? (
-                <Button type="button" variant="outline" size="sm" onClick={() => onSetCover(url)} disabled={busy}>
+                <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => onSetCover(url)} disabled={busy}>
                   {t('property.photos.setCover')}
                 </Button>
               ) : null}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="ml-auto"
-                onClick={() => onDelete(url)}
-                disabled={busy}
-                aria-label={t('property.photos.delete', { index: position })}
-              >
-                <Trash2 aria-hidden="true" className="size-4 text-destructive" />
-              </Button>
             </div>
           </li>
         );
