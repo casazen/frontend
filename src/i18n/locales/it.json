@@ -12568,6 +12568,86 @@
       "title": "Stiamo preparando la prossima stagione",
       "text": "In questo momento nessuna casa è prenotabile online. Scrivi a chi ti ospita: ti dice quando si riapre e quali date sono libere.",
       "call": "Chiama"
+    },
+    "nav": {
+      "label": "Menu del sito",
+      "homes": "Le case",
+      "why": "Perché prenotare qui",
+      "zones": "Zone",
+      "faq": "Domande frequenti"
+    },
+    "why": {
+      "eyebrow": "Prenota con chi ti ospita",
+      "title": "Perché prenotare direttamente",
+      "transparent": {
+        "title": "Prezzi trasparenti",
+        "text": "Il totale che vedi con le date comprende notti e pulizia e, dove il Comune la prevede, l’imposta di soggiorno: nessuna sorpresa al pagamento."
+      },
+      "noFees": {
+        "title": "Nessuna commissione",
+        "text": "Prenoti direttamente con chi ti ospita: nessun costo di servizio aggiunto da un portale. Il totale è solo notti, pulizia e imposta."
+      },
+      "direct": {
+        "title": "Assistenza diretta",
+        "text": "Parli con {{host}}, non con un call center: prima e durante il soggiorno."
+      },
+      "receipt": {
+        "label": "Esempio: {{name}}",
+        "kicker": "Un esempio vero, calcolato sui prezzi di oggi",
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "cleaning": "Pulizia finale",
+        "tax": "Imposta di soggiorno",
+        "fees": "Commissioni di servizio",
+        "total": "Totale",
+        "try": "Prova con le tue date"
+      }
+    },
+    "reviews": {
+      "eyebrow": "Dicono di noi",
+      "title": "Cosa dicono gli ospiti",
+      "lead": "Solo chi ha soggiornato può recensire.",
+      "all": "Tutte le recensioni di {{name}}"
+    },
+    "zones": {
+      "eyebrow": "Dove siamo",
+      "title": "Dove sono le case",
+      "lead": "Scegli la zona che ti somiglia: ogni pin porta alle case di quel posto.",
+      "pinName": "{{name}}: {{count}} case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth."
+    },
+    "faq": {
+      "eyebrow": "Domande",
+      "title": "Domande frequenti",
+      "lead": "Non trovi la risposta? Scrivi a chi ti ospita.",
+      "why": {
+        "q": "Perché conviene prenotare qui?",
+        "a": "Prenoti direttamente con {{host}}: nessun costo di servizio aggiunto da un portale, il totale con tutto quello che comprende lo vedi prima di pagare e per ogni domanda parli con chi ti ospita."
+      },
+      "payment": {
+        "q": "Il pagamento è sicuro?",
+        "a": "Paghi online con Stripe: i dati della carta vanno direttamente a Stripe e non passano da questo sito."
+      },
+      "cancel": {
+        "q": "Posso cancellare?",
+        "a": "Ogni casa ha la sua politica di cancellazione: la trovi nella scheda della casa e ti viene mostrata di nuovo prima di pagare."
+      },
+      "tax": {
+        "q": "Cos’è l’imposta di soggiorno?",
+        "a": "È un’imposta del Comune in cui si trova la casa, a carico di chi soggiorna. Dove il Comune la prevede, la trovi come riga a parte nel dettaglio del prezzo."
+      },
+      "checkin": {
+        "q": "Come funziona il check-in?",
+        "a": "Dopo la prenotazione ricevi per e-mail il link per registrare gli ospiti online, come richiede la legge."
+      },
+      "pets": {
+        "q": "Posso portare il mio animale?",
+        "a": "Alcune case li accettano: {{homes}}. Per le altre guarda le regole nella scheda della casa."
+      },
+      "where": {
+        "q": "Dove sono le case?",
+        "a": "Le case sono a {{places}}. L’indirizzo esatto arriva con la conferma della prenotazione."
+      }
     }
   },
   "siteMap": {
@@ -12659,7 +12739,9 @@
       "homes": "Le nostre case",
       "free_one": "{{count}} casa libera",
       "free_other": "{{count}} case libere",
-      "noneFree": "Nessuna casa libera"
+      "noneFree": "Nessuna casa libera",
+      "count_one": "{{count}} casa",
+      "count_other": "{{count}} case"
     },
     "sub": {
       "dates": "{{range}} · {{nights}} · {{guests}}",
@@ -12667,10 +12749,94 @@
       "nights_other": "{{count}} notti",
       "noDates": "I prezzi sono quelli della notte più bassa dei prossimi 30 giorni: scegli le date per vedere il totale."
     },
-    "empty": {
-      "title": "Nessuna casa da mostrare",
-      "text": "Con questa ricerca non c’è nessuna casa. Prova a cambiare qualcosa.",
-      "back": "Torna alle case"
+    "sort": {
+      "label": "Ordina le case",
+      "recommended": "Consigliate",
+      "priceAsc": "Prezzo più basso",
+      "priceDesc": "Prezzo più alto",
+      "rating": "Valutazione più alta",
+      "largest": "Più grandi"
+    },
+    "categories": "Categorie",
+    "onlyFavorites": "Solo i preferiti",
+    "none": {
+      "capacity": {
+        "title": "Nessuna casa per {{guests}} ospiti",
+        "text": "Le case di questo sito ospitano fino a {{count}} persone. Scrivi a {{host}} per capire come fare."
+      },
+      "dates": {
+        "title": "Nessuna casa libera per queste date",
+        "text": "In queste date le case sono già prenotate. Prova altre date, anche vicine, oppure scrivi a {{host}}."
+      },
+      "filters": {
+        "title": "Nessuna casa con questi filtri",
+        "text": "Prova a togliere qualche filtro."
+      },
+      "favorites": {
+        "title": "Nessuna casa tra i preferiti",
+        "text": "Tocca il cuore su una casa per salvarla su questo dispositivo: la ritrovi qui."
+      },
+      "none": {
+        "title": "Nessuna casa da mostrare",
+        "text": "In questo momento nessuna casa è prenotabile online. Scrivi a {{host}} per sapere quando riapre."
+      },
+      "alternatives": "Date vicine con case libere",
+      "alternativeHomes_one": "{{count}} casa libera",
+      "alternativeHomes_other": "{{count}} case libere",
+      "clear": "Togli i filtri"
+    },
+    "unavailable": {
+      "title": "Non libere in queste date"
+    },
+    "note": {
+      "included": "I totali comprendono notti, pulizia e imposta di soggiorno.",
+      "estimated": "L’imposta di soggiorno è una stima finché non indichi le età dei bambini.",
+      "notIncluded": "Per alcune case il totale non comprende l’imposta di soggiorno."
+    },
+    "filters": {
+      "open": "Filtri",
+      "active_one": "{{count}} filtro attivo",
+      "active_other": "{{count}} filtri attivi",
+      "activeLabel": "Filtri attivi",
+      "remove": "Togli «{{name}}»",
+      "title": "Filtri",
+      "description": "Scegli prezzo, camere, metri quadri, servizi e regole: il pulsante in fondo dice quante case restano.",
+      "show": "Mostra le case",
+      "showCount_one": "Mostra {{count}} casa",
+      "showCount_other": "Mostra {{count}} case",
+      "showNone": "Nessuna casa con questi filtri",
+      "clear": "Cancella tutto",
+      "any": "Qualsiasi",
+      "orMore": "{{n}} o più",
+      "price": "Prezzo a notte",
+      "priceMin": "Da",
+      "priceMax": "A",
+      "noMin": "nessun minimo",
+      "noMax": "nessun massimo",
+      "priceBetween": "da {{from}} a {{to}}",
+      "priceFrom": "da {{price}}",
+      "priceUpTo": "fino a {{price}}",
+      "bedrooms": "Camere",
+      "bathrooms": "Bagni",
+      "bedroomsChip": "{{n}} o più camere",
+      "bathroomsChip": "{{n}} o più bagni",
+      "area": "Superficie",
+      "areaAtLeast": "almeno {{n}} m²",
+      "amenities": "Servizi",
+      "rules": "Regole della casa",
+      "rule": {
+        "pets": "Animali ammessi",
+        "children": "Adatta ai bambini",
+        "selfCheckin": "Check-in autonomo",
+        "smoking": "Si può fumare",
+        "parties": "Feste ammesse"
+      }
+    },
+    "map": {
+      "label": "Mappa delle case",
+      "note": "Posizioni indicative: l’indirizzo esatto arriva con la conferma. Mappe schematiche: dati Natural Earth.",
+      "showMap": "Mappa",
+      "showList": "Elenco"
     }
   },
   "statement": {

@@ -82,6 +82,14 @@ export function cardLink(orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slu
 }
 
 
+/** The home that costs least per night, for the examples that need one (the receipt of the home, the zones). */
+export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: readonly T[]): T | undefined {
+  return cards.reduce<T | undefined>(
+    (best, card) => (best === undefined || card.price.perNightCents < best.price.perNightCents ? card : best),
+    undefined,
+  );
+}
+
 /**
  * Why a home is not free for the stay, in a sentence that also says what to do about it («Libera dal 12 novembre», «Soggiorno minimo
  * 3 notti»); `null` for a home that is free. The server gives the reason, the first free day and the minimum stay; nothing is guessed.

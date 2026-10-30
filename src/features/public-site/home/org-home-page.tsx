@@ -1,12 +1,19 @@
-import { Navigate, useLocation, useOutletContext, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, useLocation, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { buildOrgBookingPath, buildPropertyBookingPath } from '@/lib/booking-url';
 import { useStayState } from '@/features/public-site/stay/use-stay-state';
 import { useOrgDestinations, useOrgStays } from '@/queries/use-public-stays';
 import type { PublicOrgDto } from '@/types';
 import { CategoryChips } from './category-chips';
+import { FaqSection } from './faq-section';
 import { HomeHero } from './home-hero';
+import { siteRating, zonesOf } from './home-model';
+import { HomeReviews } from './home-reviews';
+import { isHomeSectionId, publishHomeSections, type HomeSectionId } from './home-sections';
 import { HomeEmpty, HomeError, HomeSkeleton } from './home-states';
 import { HousesSection } from './houses-section';
+import { WhyDirect } from './why-direct';
+import { ZonesSection } from './zones-section';
 import './home.css';
 
 interface PublicBookingContext {
@@ -39,6 +46,27 @@ export function OrgHomePage() {
   const destinations = useOrgDestinations(slug);
   const searchPath = `${buildOrgBookingPath(slug)}/search`;
 
+  const cards = stays.data?.items ?? [];
+  const isHome = stays.isSuccess && cards.length > 1;
+  const rating = siteRating(cards);
+  const zones = zonesOf(cards, destinations.data);
+  const hasZones = zones.length >= 2;
+
+  // The header links the sections that are on the page, no others; and the address `?sezione=…` scrolls to one.
+  const sections: HomeSectionId[] = isHome ? ['case', 'perche', ...(hasZones ? (['zone'] as const) : []), 'domande'] : [];
+  const sectionsKey = sections.join(',');
+  useEffect(() => {
+    publishHomeSections(sectionsKey ? (sectionsKey.split(',') as HomeSectionId[]) : []);
+    return () => publishHomeSections([]);
+  }, [sectionsKey]);
+  const [searchParams] = useSearchParams();
+  const wanted = searchParams.get('sezione');
+  useEffect(() => {
+    if (!isHome || !isHomeSectionId(wanted)) return undefined;
+    const frame = window.requestAnimationFrame(() => document.querySelector(`[data-section="${wanted}"]`)?.scrollIntoView({ block: 'start' }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [isHome, wanted]);
+
   if (stays.isPending) {
     return (
       <div className="hm">
@@ -58,7 +86,6 @@ export function OrgHomePage() {
   }
 
   const result = stays.data;
-  const cards = result.items;
 
   if (cards.length === 1) {
     return <Navigate replace to={{ pathname: buildPropertyBookingPath(slug, cards[0]), search: location.search }} />;
@@ -78,6 +105,10 @@ export function OrgHomePage() {
       <HomeHero org={org} slug={slug} cards={cards} destinations={destinations.data} searchPath={searchPath} />
       <CategoryChips cards={cards} searchPath={searchPath} />
       <HousesSection orgSlug={slug} result={result} stay={stay} searchPath={searchPath} />
+      <WhyDirect org={org} slug={slug} cards={cards} searchPath={searchPath} />
+      {rating ? <HomeReviews slug={slug} cards={cards} rating={rating} /> : null}
+      {hasZones ? <ZonesSection zones={zones} searchPath={searchPath} /> : null}
+      <FaqSection org={org} slug={slug} cards={cards} />
     </div>
   );
 }
