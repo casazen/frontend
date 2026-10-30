@@ -23,6 +23,11 @@ function boundsOf(values: readonly number[], step: number): Bounds | null {
   return max > min ? { min, max } : null;
 }
 
+/** The same reach from a lowest and a highest value that the server already worked out (the facets of the search across all the sites). */
+export function boundsFromRange(low: number | null | undefined, high: number | null | undefined, step: number): Bounds | null {
+  return boundsOf([low ?? 0, high ?? 0], step);
+}
+
 /** The lowest and the highest night price among the homes, in euros, rounded outwards; `null` when they do not differ (a slider with nothing to choose). */
 export function priceBounds(cards: readonly Pick<PublicStayCard, 'price'>[]): Bounds | null {
   return boundsOf(cards.map((card) => card.price.perNightCents / 100), PRICE_STEP);

@@ -167,6 +167,13 @@
   font-size: 0.9rem;
 }
 
+/* The host of the home, in the search across all the sites: one quiet line, the booking is made on the site of that host. */
+.hcard__host {
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: 0.85rem;
+}
+
 .hcard__foot {
   display: flex;
   flex-direction: column;

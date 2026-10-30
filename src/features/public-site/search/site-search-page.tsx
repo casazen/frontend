@@ -1,21 +1,24 @@
-import { useOutletContext, useParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { List, Loader2, Map as MapIcon, Receipt, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HouseCard } from '@/features/public-site/cards/house-card';
 import { useFavorites } from '@/features/public-site/favorites/use-favorites';
-import { maxGuestsOf, petsAllowedOf } from '@/features/public-site/home/home-model';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
 import { writeStay } from '@/features/public-site/stay/stay-state';
+import { WHERE_PARAM } from '@/features/public-site/stay/use-stay-state';
 import { useMapLink } from '@/features/site-maps';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { siteLocale } from '@/lib/site-language';
-import { useOrgDestinations, useOrgStays } from '@/queries/use-public-stays';
+import { useOrgStays, usePlatformStays } from '@/queries/use-public-stays';
 import type { PublicOrgDto } from '@/types';
 import type { PublicStayAlternative } from '@/types/public-stays.types';
 import { ActiveFilterChips } from './active-filter-chips';
 import { NoResults, type NoResultsReason } from './no-results';
 import { ResultsMapPane } from './results-map-pane';
+import { facetsOfCards, facetsOfServer } from './search-facets';
+import { PLATFORM_SCOPE, useScopedDestinations, useScopedStays, type SearchScope } from './search-scope';
 import { NO_FILTERS, activeFilterCount } from './search-state';
 import { SearchToolbar } from './search-toolbar';
 import { UnavailableList } from './unavailable-list';
@@ -36,26 +39,48 @@ interface PublicBookingContext {
  * on its way. The price is the server's: the page does not add up anything.
  */
 export function SiteSearchPage() {
-  const { t, i18n } = useTranslation();
   const { orgSlug = '' } = useParams<{ orgSlug: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
-  const slug = org.slug ?? orgSlug;
-  const locale = siteLocale(i18n.language);
-  const hostName = org.hostName?.trim() || org.displayName;
+  const scope = useMemo<SearchScope>(
+    () => ({ kind: 'org', slug: org.slug ?? orgSlug, hostName: org.hostName?.trim() || org.displayName }),
+    [org.slug, org.hostName, org.displayName, orgSlug],
+  );
+  return <SearchResultsPage scope={scope} />;
+}
 
-  // Every home of the site, whatever is asked: the labels, the capacity and the pets of the bar come from all of them.
-  const catalog = useOrgStays(slug, {}).data?.items ?? [];
-  const destinations = useOrgDestinations(slug);
-  const favorites = useFavorites(slug);
-  const state = useSearchState({ maxGuests: maxGuestsOf(catalog), petsAllowed: petsAllowedOf(catalog) });
+/**
+ * The results page of both searches (DB-07c, SEARCH-GLOBAL): the one of a booking site and the public `/search` of CasaZen, which
+ * searches the homes of ALL the sites. The bar, the sheet of filters, the chips, the cards, the nearby dates and the map are the
+ * same components; the scope decides where the data come from. Across all the sites only the free homes are listed (a page at a
+ * time, «Mostra altre case»), each card names its host and leads to the home on that host's site with the dates chosen, and there
+ * are no hearts and no one host to write to.
+ */
+export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchScope }) {
+  const { t, i18n } = useTranslation();
+  const platform = scope.kind === 'platform';
+  const slug = scope.kind === 'org' ? scope.slug : '';
+  const locale = siteLocale(i18n.language);
+  const [address] = useSearchParams();
+  const placeAsked = address.get(WHERE_PARAM)?.trim() ?? '';
+
+  // What the controls offer, whatever else is asked: every home of the site, or the facets of the place asked across all the sites.
+  const everyHome = useOrgStays(platform ? undefined : slug, {}).data?.items;
+  const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1 }).data?.facets;
+  const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome ?? [])), [platform, placeFacets, everyHome]);
+  const destinations = useScopedDestinations(scope);
+  const favorites = useFavorites(platform ? undefined : slug);
+  const state = useSearchState({ maxGuests: facets.maxGuests, petsAllowed: facets.petsAllowed });
   const { stay, search, setSearch, searchParams } = state;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const desktop = useMediaQuery(FROM_DESKTOP_QUERY);
   const link = useMapLink();
 
-  const stays = useOrgStays(slug, state.query, { keepPrevious: true });
+  const stays = useScopedStays(scope, state.query, { keepPrevious: true });
   const result = stays.data;
-  const items = (result?.items ?? []).filter((card) => !search.onlyFavorites || favorites.ids.includes(card.id));
+  // The hearts belong to a site: across all of them there are none, and an address that asks for them (`favorites=1`) is not heard.
+  const onlyFavorites = !platform && search.onlyFavorites;
+  const items = (result?.items ?? []).filter((card) => !onlyFavorites || favorites.ids.includes(card.id));
+  // Across all the sites the server lists only the free homes; on a site the others follow, with the reason.
   const free = items.filter((card) => card.availability.available);
   const notFree = items.filter((card) => !card.availability.available);
   const hasFilters = activeFilterCount(search.filters) > 0 || search.filters.tags.length > 0;
@@ -63,15 +88,17 @@ export function SiteSearchPage() {
   const showMap = items.length > 0 && (desktop || search.view === 'map');
   const showList = desktop || search.view !== 'map' || items.length === 0;
 
+  // How many homes the title counts: a site has them all in the list; across all the sites the list is a page and the server counts.
+  const freeCount = platform ? (result?.availableCount ?? 0) : free.length;
   const title = !result
-    ? t('siteSearch.title.homes')
+    ? t(platform ? 'platformSearch.title.homes' : 'siteSearch.title.homes')
     : hasDates
-      ? free.length > 0
-        ? t('siteSearch.title.free', { count: free.length })
+      ? freeCount > 0
+        ? t('siteSearch.title.free', { count: freeCount })
         : t('siteSearch.title.noneFree')
-      : hasFilters || search.onlyFavorites
-        ? t('siteSearch.title.count', { count: free.length })
-        : t('siteSearch.title.homes');
+      : hasFilters || onlyFavorites || (platform && placeAsked)
+        ? t('siteSearch.title.count', { count: freeCount })
+        : t(platform ? 'platformSearch.title.homes' : 'siteSearch.title.homes');
   const sub = hasDates
     ? t('siteSearch.sub.dates', {
         range: formatStayRange(stay.checkIn, stay.checkOut, locale),
@@ -81,7 +108,12 @@ export function SiteSearchPage() {
     : t('siteSearch.sub.noDates');
 
   const reasonOfNothing = (): NoResultsReason => {
-    if (search.onlyFavorites && (result?.items.length ?? 0) > 0 && items.length === 0) return 'favorites';
+    if (onlyFavorites && (result?.items.length ?? 0) > 0 && items.length === 0) return 'favorites';
+    if (platform) {
+      if ((result?.totalCount ?? 0) === 0) return hasFilters || placeAsked ? 'filters' : 'none';
+      if (facets.maxGuests !== undefined && stay.adults + stay.children > facets.maxGuests) return 'capacity';
+      return hasDates ? 'dates' : 'none';
+    }
     if ((result?.items.length ?? 0) === 0) return hasFilters ? 'filters' : 'none';
     if (notFree.length > 0 && notFree.every((card) => card.availability.reason === 'guests')) return 'capacity';
     return hasDates ? 'dates' : 'none';
@@ -89,7 +121,8 @@ export function SiteSearchPage() {
 
   const alternativeHref = (alternative: PublicStayAlternative) =>
     `?${writeStay(new URLSearchParams(searchParams), { checkIn: alternative.checkIn, checkOut: alternative.checkOut }).toString()}`;
-  const clearFilters = () => setSearch({ filters: NO_FILTERS, onlyFavorites: false });
+  // Across all the sites the place is one of the things that can be taken off.
+  const clearFilters = () => setSearch({ filters: NO_FILTERS, onlyFavorites: false, ...(platform ? { where: '' } : {}) });
   const goToResults = () => document.getElementById('page-title')?.focus();
 
   // What the totals include, said as the server knows it: the tourist tax is exact, an estimate until the ages of the children are
@@ -103,12 +136,12 @@ export function SiteSearchPage() {
   }
 
   return (
-    <div className="sr" data-testid="site-search">
+    <div className="sr" data-testid={platform ? 'platform-search' : 'site-search'}>
       <SearchToolbar
-        slug={slug}
+        scope={scope}
         state={state}
-        catalog={catalog}
-        destinations={destinations.data}
+        facets={facets}
+        destinations={destinations}
         favoritesCount={favorites.ids.length}
         onSearch={goToResults}
       />
@@ -122,7 +155,7 @@ export function SiteSearchPage() {
               </h1>
               <p className="sr-head__sub">{sub}</p>
             </header>
-            <ActiveFilterChips filters={search.filters} onChange={(filters) => setSearch({ filters })} />
+            <ActiveFilterChips filters={search.filters} currency={facets.currency} onChange={(filters) => setSearch({ filters })} />
 
             {stays.isPending ? (
               <div role="status" aria-busy="true" data-testid="search-loading" className="sr-cards">
@@ -151,7 +184,7 @@ export function SiteSearchPage() {
                       <HouseCard
                         key={card.id}
                         card={card}
-                        orgSlug={slug}
+                        orgSlug={platform ? undefined : slug}
                         variant="row"
                         nights={result.nights}
                         stay={hasDates ? stay : null}
@@ -163,17 +196,32 @@ export function SiteSearchPage() {
                 ) : (
                   <NoResults
                     reason={reasonOfNothing()}
-                    slug={slug}
-                    hostName={hostName}
+                    scope={scope}
                     guests={stay.adults + stay.children}
-                    maxGuests={maxGuestsOf(catalog)}
-                    alternatives={search.onlyFavorites ? [] : result.alternatives}
+                    maxGuests={facets.maxGuests}
+                    alternatives={onlyFavorites ? [] : result.alternatives}
                     alternativeHref={alternativeHref}
-                    canClearFilters={hasFilters || search.onlyFavorites}
+                    canClearFilters={hasFilters || onlyFavorites || (platform && Boolean(placeAsked))}
                     onClearFilters={clearFilters}
                   />
                 )}
-                <UnavailableList cards={notFree} orgSlug={slug} stay={stay} />
+                {platform && stays.hasNextPage ? (
+                  <div className="sr-more" data-testid="search-more">
+                    <p role="status">{t('platformSearch.more.shown', { shown: free.length, total: result.availableCount })}</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="public-site-outline h-11 px-5"
+                      disabled={stays.isFetchingNextPage}
+                      onClick={() => void stays.fetchNextPage()}
+                      data-testid="search-more-button"
+                    >
+                      {stays.isFetchingNextPage ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                      {t('platformSearch.more.button')}
+                    </Button>
+                  </div>
+                ) : null}
+                {platform ? null : <UnavailableList cards={notFree} orgSlug={slug} stay={stay} />}
                 {notes.length > 0 ? (
                   <p className="sr-note" data-testid="search-note">
                     <Receipt aria-hidden="true" />
@@ -186,7 +234,13 @@ export function SiteSearchPage() {
         ) : null}
         {showMap ? (
           <aside className="sr-side" aria-label={t('siteSearch.map.label')}>
-            <ResultsMapPane cards={items} orgSlug={slug} nights={result?.nights ?? null} stay={hasDates ? stay : null} link={link} />
+            <ResultsMapPane
+              cards={items}
+              orgSlug={platform ? undefined : slug}
+              nights={result?.nights ?? null}
+              stay={hasDates ? stay : null}
+              link={link}
+            />
           </aside>
         ) : null}
       </div>

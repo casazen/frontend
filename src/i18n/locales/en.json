@@ -9404,6 +9404,40 @@
     "upToProperties_one": "Up to {{count}} property",
     "upToProperties_other": "Up to {{count}} properties"
   },
+  "platformSearch": {
+    "card": {
+      "host": "Book with {{host}}"
+    },
+    "more": {
+      "button": "Show more homes",
+      "shown": "Showing {{shown}} of {{total}} homes"
+    },
+    "none": {
+      "capacity": {
+        "text": "The homes of this search sleep up to {{count}} people: try fewer guests or take off a filter.",
+        "title": "No home for {{guests}} guests"
+      },
+      "dates": {
+        "text": "The homes are already booked on these dates. Try other dates, even close ones, or take off a filter.",
+        "title": "No home free on these dates"
+      },
+      "filters": {
+        "text": "Try another place or take off a filter.",
+        "title": "No home with these filters"
+      },
+      "none": {
+        "text": "No home can be booked online right now. Please try again later.",
+        "title": "No home to show"
+      }
+    },
+    "seo": {
+      "description": "Choose where, when and how many: see the free homes of CasaZen's hosts with the price of the whole stay and book directly with them.",
+      "title": "Find a home for your holiday | CasaZen"
+    },
+    "title": {
+      "homes": "Find a home for your holiday"
+    }
+  },
   "pricing": {
     "dashboard": {
       "title": "Seasonal suggestions",
@@ -11717,42 +11751,6 @@
     "updateError": "Cannot update routine",
     "updateSuccess": "Routine updated",
     "waitDays": "Days to wait"
-  },
-  "search": {
-    "page": {
-      "title": "Search properties",
-      "description": "Find your perfect vacation rental",
-      "searching": "Searching...",
-      "results_one": "{{count}} property found",
-      "results_other": "{{count}} properties found"
-    },
-    "filters": {
-      "title": "Search filters",
-      "city": "City",
-      "cityPlaceholder": "e.g., Rome, Milan, Florence...",
-      "minPrice": "Min price (€ per night)",
-      "maxPrice": "Max price (€ per night)",
-      "minBedrooms": "Min bedrooms",
-      "minBathrooms": "Min bathrooms",
-      "guests": "Guests",
-      "search": "Search",
-      "reset": "Reset"
-    },
-    "results": {
-      "noProperties": "No properties found",
-      "noPropertiesDesc": "Try adjusting your search filters to find more properties.",
-      "errorTitle": "We can't run the search right now",
-      "errorDescription": "This is not an empty list: the search failed. Please try again in a moment."
-    },
-    "errors": {
-      "invalidNumber": "Enter a valid number.",
-      "negative": "The value cannot be negative.",
-      "tooHigh": "The value is too high.",
-      "wholeNumber": "Enter a whole number.",
-      "guestsMin": "Guests must be at least 1.",
-      "priceRange": "The maximum price must be at least the minimum.",
-      "cityTooLong": "The city name is too long."
-    }
   },
   "serviceCategories": {
     "loading": "Loading categories…",

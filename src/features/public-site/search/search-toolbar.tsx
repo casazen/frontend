@@ -1,26 +1,35 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
-import { SITE_TAG_ICONS, countTags, type SiteTag } from '@/features/public-site/cards/site-tags';
-import { destinationOptions, maxGuestsOf, petsAllowedOf } from '@/features/public-site/home/home-model';
+import { SITE_TAG_ICONS, type SiteTag } from '@/features/public-site/cards/site-tags';
+import { destinationOptions } from '@/features/public-site/home/home-model';
 import { SearchBar } from '@/features/public-site/stay/search-bar';
 import { usePublicSiteCalendar } from '@/features/public-site/stay/use-public-site-calendar';
 import { cn } from '@/lib/utils';
-import type { PublicDestination, PublicStayCard, PublicStaysSort } from '@/types/public-stays.types';
+import type { PublicDestination, PublicStaysSort } from '@/types/public-stays.types';
 import { SORTS } from './search-state';
 import { FiltersSheet } from './filters-sheet';
+import type { SearchFacets } from './search-facets';
+import type { SearchScope } from './search-scope';
 import type { useSearchState } from './use-search-state';
 
 interface SearchToolbarProps {
-  slug: string;
+  /** Where the homes are searched: one booking site, or all of them. */
+  scope: SearchScope;
   state: ReturnType<typeof useSearchState>;
-  /** Every home of the site, whatever is asked (the labels and the capacity come from all of them, not from the ones left by a filter). */
-  catalog: readonly PublicStayCard[];
+  /** What the controls offer (the labels, the capacity, the sliders): from every home of the site, whatever is asked, or from the server for the place. */
+  facets: SearchFacets;
   destinations: readonly PublicDestination[] | undefined;
-  /** How many homes the guest saved on this device. */
+  /** How many homes the guest saved on this device (a site only). */
   favoritesCount: number;
   /** The guest pressed «Cerca» (or the Enter of the bar): the page moves the reader to the results. */
   onSearch: () => void;
+}
+
+/** A place typed in a form or a link, as the field says it: `lago-di-como` is «Lago di como». */
+function typedPlaceLabel(text: string): string {
+  const spaced = text.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : text;
 }
 
 /**
@@ -28,17 +37,22 @@ interface SearchToolbarProps {
  * homes as chips to press, and the hearts. Everything it changes is the address: the list under it follows. The stay and the place
  * are the `SearchBar` of DB-20, which on a phone is one field that opens a sheet.
  */
-export function SearchToolbar({ slug, state, catalog, destinations, favoritesCount, onSearch }: SearchToolbarProps) {
+export function SearchToolbar({ scope, state, facets, destinations, favoritesCount, onSearch }: SearchToolbarProps) {
   const { t } = useTranslation();
   const { stay, setStay, where, setWhere, search, setSearch } = state;
-  const maxGuests = maxGuestsOf(catalog);
-  const petsAllowed = petsAllowedOf(catalog);
-  const calendar = usePublicSiteCalendar(slug, { adults: stay.adults, children: stay.children });
-  const options = useMemo(
-    () => destinationOptions(destinations, (count) => t('siteHome.hero.destinationHomes', { count })),
-    [destinations, t],
+  const platform = scope.kind === 'platform';
+  const { maxGuests, petsAllowed, tags } = facets;
+  const calendar = usePublicSiteCalendar(
+    platform ? undefined : scope.slug,
+    { adults: stay.adults, children: stay.children },
+    platform ? { where } : undefined,
   );
-  const tags = countTags(catalog);
+  const options = useMemo(() => {
+    const list = destinationOptions(destinations, (count) => t('siteHome.hero.destinationHomes', { count }));
+    // A place typed in the form of the home (or in a shared link) is not always one of the list: it is still the place chosen, so it shows.
+    if (platform && where && !list.some((option) => option.id === where)) list.unshift({ id: where, label: typedPlaceLabel(where) });
+    return list;
+  }, [destinations, platform, where, t]);
 
   const toggleTag = (tag: SiteTag) => {
     const on = search.filters.tags.includes(tag);
@@ -57,12 +71,13 @@ export function SearchToolbar({ slug, state, catalog, destinations, favoritesCou
           calendar={calendar}
           maxGuests={maxGuests}
           petsAllowed={petsAllowed}
-          showDestination={options.length > 1}
+          // A site with one place has no «Dove»; across all the sites it is the first field.
+          showDestination={platform || options.length > 1}
           onSearch={onSearch}
         />
       </div>
       <div className="sr-bar__tools">
-        <FiltersSheet slug={slug} state={state} catalog={catalog} />
+        <FiltersSheet scope={scope} state={state} facets={facets} />
         <label className="sr-only" htmlFor="sr-sort">
           {t('siteSearch.sort.label')}
         </label>
@@ -80,7 +95,7 @@ export function SearchToolbar({ slug, state, catalog, destinations, favoritesCou
           ))}
         </select>
         <ul className="sr-cats" aria-label={t('siteSearch.categories')}>
-          {favoritesCount > 0 || search.onlyFavorites ? (
+          {!platform && (favoritesCount > 0 || search.onlyFavorites) ? (
             <li>
               <button
                 type="button"

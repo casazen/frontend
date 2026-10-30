@@ -10,10 +10,19 @@ import type { SearchFilters } from './search-state';
  * service and each rule. The category chips of the bar are their own toggles and are not repeated here. The address changes and
  * the list follows; the chip says in its name what it removes («Togli «Piscina»»).
  */
-export function ActiveFilterChips({ filters, onChange }: { filters: SearchFilters; onChange: (patch: Partial<SearchFilters>) => void }) {
+export function ActiveFilterChips({
+  filters,
+  currency = 'EUR',
+  onChange,
+}: {
+  filters: SearchFilters;
+  /** What the price of the chip is written in: the currency of the homes (francs in Switzerland). */
+  currency?: string;
+  onChange: (patch: Partial<SearchFilters>) => void;
+}) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
-  const euros = (value: number) => formatPrice(value * 100, 'EUR', locale);
+  const euros = (value: number) => formatPrice(value * 100, currency, locale);
 
   const chips: { id: string; label: string; remove: () => void }[] = [];
   if (filters.minPrice || filters.maxPrice) {

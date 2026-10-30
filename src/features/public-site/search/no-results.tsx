@@ -6,13 +6,14 @@ import { ContactHostDialog } from '@/features/public-site/contact/contact-host-d
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
 import { siteLocale } from '@/lib/site-language';
 import type { PublicStayAlternative } from '@/types/public-stays.types';
+import type { SearchScope } from './search-scope';
 
 export type NoResultsReason = 'capacity' | 'dates' | 'filters' | 'favorites' | 'none';
 
 interface NoResultsProps {
   reason: NoResultsReason;
-  slug: string;
-  hostName: string;
+  /** A site can be written to (its host); across all the sites there is no one host, so the words and the button are other. */
+  scope: SearchScope;
   /** The party asked and the most guests any home of the site takes, for the sentence when the party is too big. */
   guests: number;
   maxGuests?: number;
@@ -30,16 +31,17 @@ interface NoResultsProps {
  * these filters, no heart saved), up to three nearby dates with homes that are free, a way to remove the filters in one press and
  * a way to ask the host. Never an empty page: every case has something to do next.
  */
-export function NoResults({ reason, slug, hostName, guests, maxGuests, alternatives, alternativeHref, canClearFilters, onClearFilters }: NoResultsProps) {
+export function NoResults({ reason, scope, guests, maxGuests, alternatives, alternativeHref, canClearFilters, onClearFilters }: NoResultsProps) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
+  const words = scope.kind === 'org' ? 'siteSearch.none' : 'platformSearch.none';
 
   return (
     <div className="sr-state" data-testid="search-no-results" data-reason={reason}>
       <CalendarX aria-hidden="true" />
       <div>
-        <h2>{t(`siteSearch.none.${reason}.title`, { guests })}</h2>
-        <p>{t(`siteSearch.none.${reason}.text`, { count: maxGuests ?? guests, host: hostName })}</p>
+        <h2>{t(`${words}.${reason}.title`, { guests })}</h2>
+        <p>{t(`${words}.${reason}.text`, { count: maxGuests ?? guests, host: scope.kind === 'org' ? scope.hostName : '' })}</p>
       </div>
       {alternatives.length > 0 ? (
         <ul className="sr-alts" aria-label={t('siteSearch.none.alternatives')}>
@@ -59,16 +61,18 @@ export function NoResults({ reason, slug, hostName, guests, maxGuests, alternati
             {t('siteSearch.none.clear')}
           </Button>
         ) : null}
-        <ContactHostDialog
-          site={slug}
-          hostName={hostName}
-          trigger={
-            <Button type="button" variant="ghost" className="h-11 px-5" data-testid="search-write">
-              <MessageCircle className="mr-2 h-4 w-4" aria-hidden="true" />
-              {t('hostContact.trigger', { host: hostName })}
-            </Button>
-          }
-        />
+        {scope.kind === 'org' ? (
+          <ContactHostDialog
+            site={scope.slug}
+            hostName={scope.hostName}
+            trigger={
+              <Button type="button" variant="ghost" className="h-11 px-5" data-testid="search-write">
+                <MessageCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('hostContact.trigger', { host: scope.hostName })}
+              </Button>
+            }
+          />
+        ) : null}
       </div>
     </div>
   );

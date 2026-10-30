@@ -317,6 +317,20 @@
   flex-shrink: 0;
 }
 
+/* «Mostra altre case»: the search across all the sites lists a page at a time, and says how far it is. */
+.sr-more {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.sr-more p {
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-size: 0.9rem;
+}
+
 /* On a phone the labels take a line of their own and the sort takes what the filters button leaves. */
 @media (max-width: 767.98px) {
   .sr-cats {

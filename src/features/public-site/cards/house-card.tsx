@@ -31,8 +31,11 @@ const ROW_TAGS = 3;
 
 export interface HouseCardProps {
   card: PublicStayCard;
-  /** The slug of the booking site: the page of the home and the list of hearts belong to it. */
-  orgSlug: string;
+  /**
+   * The slug of the booking site: the page of the home and the list of hearts belong to it. In the search across all the sites it is
+   * left out: each home brings its own (`card.orgSlug`), there is no list of hearts and the host is named on the card.
+   */
+  orgSlug?: string;
   /** `grid` for the home, `row` for the results: more facts, the amenities, the labels and the cancellation. */
   variant?: 'grid' | 'row';
   /** The nights of the stay chosen (`result.nights`): with them the card gives the total, without them the night price. */
@@ -56,7 +59,11 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const locale = siteLocale(i18n.language);
-  const to = cardLink(orgSlug, card, stay);
+  // Across all the sites the home brings the slug of its own site; on a site it is the site's.
+  const site = orgSlug ?? card.orgSlug ?? '';
+  const ofAllSites = orgSlug === undefined;
+  const host = ofAllSites ? card.hostName?.trim() : '';
+  const to = cardLink(site, card, stay);
   const facts = cardFacts(card);
   const price = cardPrice(card, nights);
   const currency = card.price.currency || 'EUR';
@@ -96,7 +103,7 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
             </span>
           </div>
         ) : null}
-        <FavoriteButton site={orgSlug} propertyId={card.id} propertyName={card.name} className="hcard__heart" />
+        {ofAllSites ? null : <FavoriteButton site={site} propertyId={card.id} propertyName={card.name} className="hcard__heart" />}
       </div>
 
       <div className="hcard__body">
@@ -129,6 +136,11 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
           <p className="hcard__facts">{factLine.join(' · ')}</p>
         ) : variant === 'grid' ? (
           <p className="hcard__facts" aria-hidden="true" />
+        ) : null}
+        {host ? (
+          <p className="hcard__host" data-testid="house-card-host">
+            {t('platformSearch.card.host', { host })}
+          </p>
         ) : null}
 
         {variant === 'row' ? (

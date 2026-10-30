@@ -11,7 +11,8 @@ import type { PublicStayCard } from '@/types/public-stays.types';
 
 interface ResultsMapPaneProps {
   cards: readonly PublicStayCard[];
-  orgSlug: string;
+  /** The slug of the booking site; left out in the search across all the sites, where each home brings its own. */
+  orgSlug?: string;
   /** The nights of the stay chosen: with them a pin says the total, without them the night. */
   nights: number | null;
   stay: StayState | null;
@@ -41,7 +42,7 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
           lon: card.longitude,
           label: formatPrice(cents, currency, locale),
           name: card.name,
-          href: cardLink(orgSlug, card, stay),
+          href: cardLink(orgSlug ?? card.orgSlug ?? '', card, stay),
           available: card.availability.available,
           unavailableNote: availabilityNote(card, t, locale) ?? undefined,
           card: {

@@ -9404,6 +9404,40 @@
     "upToProperties_one": "Fino a {{count}} proprietà",
     "upToProperties_other": "Fino a {{count}} proprietà"
   },
+  "platformSearch": {
+    "card": {
+      "host": "Prenoti con {{host}}"
+    },
+    "more": {
+      "button": "Mostra altre case",
+      "shown": "Stai vedendo {{shown}} case su {{total}}"
+    },
+    "none": {
+      "capacity": {
+        "text": "Le case di questa ricerca ospitano fino a {{count}} persone: prova con meno ospiti o togli qualche filtro.",
+        "title": "Nessuna casa per {{guests}} ospiti"
+      },
+      "dates": {
+        "text": "In queste date le case sono già prenotate. Prova altre date, anche vicine, oppure togli qualche filtro.",
+        "title": "Nessuna casa libera per queste date"
+      },
+      "filters": {
+        "text": "Prova a cambiare luogo o a togliere qualche filtro.",
+        "title": "Nessuna casa con questi filtri"
+      },
+      "none": {
+        "text": "In questo momento nessuna casa è prenotabile online. Riprova più tardi.",
+        "title": "Nessuna casa da mostrare"
+      }
+    },
+    "seo": {
+      "description": "Scegli dove, quando e in quanti: vedi le case libere degli host di CasaZen con il prezzo di tutto il soggiorno e prenoti direttamente da loro.",
+      "title": "Cerca una casa per le vacanze | CasaZen"
+    },
+    "title": {
+      "homes": "Trova una casa per le tue vacanze"
+    }
+  },
   "pricing": {
     "dashboard": {
       "title": "Suggerimenti stagionali",
@@ -11717,42 +11751,6 @@
     "updateError": "Impossibile aggiornare la routine",
     "updateSuccess": "Routine aggiornata",
     "waitDays": "Giorni di attesa"
-  },
-  "search": {
-    "page": {
-      "title": "Cerca strutture",
-      "description": "Trova la casa vacanza perfetta",
-      "searching": "Ricerca in corso...",
-      "results_one": "{{count}} struttura trovata",
-      "results_other": "{{count}} strutture trovate"
-    },
-    "filters": {
-      "title": "Filtri di ricerca",
-      "city": "Città",
-      "cityPlaceholder": "es. Roma, Milano, Firenze...",
-      "minPrice": "Prezzo min (€ a notte)",
-      "maxPrice": "Prezzo max (€ a notte)",
-      "minBedrooms": "Camere min",
-      "minBathrooms": "Bagni min",
-      "guests": "Ospiti",
-      "search": "Cerca",
-      "reset": "Azzera"
-    },
-    "results": {
-      "noProperties": "Nessuna struttura trovata",
-      "noPropertiesDesc": "Prova a modificare i filtri di ricerca per trovare più strutture.",
-      "errorTitle": "Non riusciamo a eseguire la ricerca",
-      "errorDescription": "Non è un elenco vuoto: la ricerca non è andata a buon fine. Riprova tra un momento."
-    },
-    "errors": {
-      "invalidNumber": "Inserisci un numero valido.",
-      "negative": "Il valore non può essere negativo.",
-      "tooHigh": "Il valore è troppo alto.",
-      "wholeNumber": "Inserisci un numero intero.",
-      "guestsMin": "Gli ospiti devono essere almeno 1.",
-      "priceRange": "Il prezzo massimo deve essere almeno uguale al minimo.",
-      "cityTooLong": "Il nome della città è troppo lungo."
-    }
   },
   "serviceCategories": {
     "loading": "Caricamento categorie…",

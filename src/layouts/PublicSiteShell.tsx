@@ -99,8 +99,10 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
       themeId,
       fontId,
       colorStyle: colorVarsKey ? (JSON.parse(colorVarsKey) as CSSProperties) : undefined,
+      // CasaZen's own pages (the search across all the sites) wear the brand in their popovers and sheets too.
+      brand: isOrgMode ? undefined : 'casazen',
     }),
-    [themeId, fontId, colorVarsKey],
+    [themeId, fontId, colorVarsKey, isOrgMode],
   );
   useEffect(() => {
     const root = document.documentElement;

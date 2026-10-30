@@ -28,4 +28,18 @@ export const publicSiteSearchApi = {
   /** The places for the «Dove» field: the comuni of the published homes with how many each has. */
   getDestinations: (slug: string) =>
     ApiClient.get<PublicDestination[]>(`${base(slug)}/destinations`, undefined, { public: true }),
+
+  /**
+   * The same search across ALL the booking sites (the public `/search` of CasaZen): the free homes of every host that can take a
+   * booking, a page at a time, each with the slug of its own site and the facets of the place asked. `where` is what the person typed.
+   */
+  getPlatformStays: (query: PublicStaysQuery = {}) =>
+    ApiClient.get<PublicStaysResult>('/public/stays', query, { public: true }),
+
+  /** The nights of all the sites for the «Quando» field; with `where` only the homes of that place count. */
+  getPlatformCalendar: (query: { where?: string; from?: string; to?: string; adults?: number; children?: number } = {}) =>
+    ApiClient.get<PublicSiteCalendar>('/public/stays/calendar', query, { public: true }),
+
+  /** The places of all the sites for the «Dove» field, the most homes first. */
+  getPlatformDestinations: () => ApiClient.get<PublicDestination[]>('/public/stays/destinations', undefined, { public: true }),
 };
