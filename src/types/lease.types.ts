@@ -55,6 +55,8 @@ export const LEASE_EVENT_TYPES = [
   'LetterSent',
   // LR-OPS-1b: the renewal or extension recorded by the landlord (the tacit renewal is `TermRenewed`).
   'RenewalRecorded',
+  // LR-OPS-1c: the landlord recorded that he returned the security deposit (the sums, no money moved).
+  'DepositReturnRecorded',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];

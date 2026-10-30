@@ -7109,7 +7109,8 @@
       "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata",
       "WithdrawalRecorded": "Recesso dell'inquilino registrato",
       "LetterSent": "Lettera segnata come inviata",
-      "RenewalRecorded": "Rinnovo registrato"
+      "RenewalRecorded": "Rinnovo registrato",
+      "DepositReturnRecorded": "Cauzione restituita"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",

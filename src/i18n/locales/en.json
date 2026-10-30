@@ -7109,7 +7109,8 @@
       "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted",
       "WithdrawalRecorded": "Tenant's withdrawal recorded",
       "LetterSent": "Letter marked as sent",
-      "RenewalRecorded": "Renewal recorded"
+      "RenewalRecorded": "Renewal recorded",
+      "DepositReturnRecorded": "Deposit returned"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
