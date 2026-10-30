@@ -3910,13 +3910,6 @@
     },
     "ical": {
       "channels": "Canali e calendari dell'immobile"
-    },
-    "intervention": {
-      "noTime": "Ancora senza orario: il lavoro è segnato nel giorno della partenza, {{date}}.",
-      "openBooking": "Apri la prenotazione",
-      "openRequests": "Vai alle richieste dell'immobile",
-      "supplier": "Fornitore",
-      "when": "Quando"
     }
   },
   "directBooking": {
@@ -4829,6 +4822,141 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
+  },
+  "interventions": {
+    "action": {
+      "acceptProposal": "Accetta l'orario",
+      "call": "Chiama il fornitore",
+      "cancel": "Annulla intervento",
+      "confirmAmount": "Conferma l'importo",
+      "contact": "Chiama il fornitore",
+      "markPaid": "Segna pagato",
+      "openPage": "Apri la scheda",
+      "openStay": "Apri il soggiorno",
+      "pay": "Paga",
+      "rejectProposal": "Rifiuta l'orario",
+      "remind": "Sollecita",
+      "remindInHours_one": "Puoi sollecitare tra {{count}} ora",
+      "remindInHours_other": "Puoi sollecitare tra {{count}} ore",
+      "remindInMinutes_one": "Puoi sollecitare tra {{count}} minuto",
+      "remindInMinutes_other": "Puoi sollecitare tra {{count}} minuti",
+      "requestAgain": "Richiedi di nuovo"
+    },
+    "cancel": {
+      "back": "Torna indietro",
+      "confirm": "Annulla intervento",
+      "consequences": {
+        "final": "L'intervento non si può riaprire: per riaverlo lo richiedi di nuovo.",
+        "free": "Annullare è sempre gratuito: non paghi nulla.",
+        "inProgress": "Il lavoro risulta già iniziato: se il fornitore ha già lavorato, mettetevi d'accordo direttamente.",
+        "label": "Cosa succede",
+        "told": "{{supplierStart}} riceve subito un avviso con il motivo che scrivi."
+      },
+      "description": "Il fornitore non farà più questo intervento.",
+      "reason": "Perché lo annulli?",
+      "reasonHint": "Il fornitore legge il motivo. Al massimo {{max}} caratteri.",
+      "title": "Annullare l'intervento?"
+    },
+    "description": "Le richieste che hai fatto ai fornitori: cosa, dove, quando, a che punto sono e cosa devi fare tu.",
+    "detail": {
+      "backToList": "Tutti gli interventi",
+      "email": "E-mail",
+      "fallbackTitle": "Intervento",
+      "loadError": "Impossibile caricare l'intervento.",
+      "loading": "Caricamento dell'intervento…",
+      "notFound": "Intervento non trovato",
+      "notFoundDescription": "Non è tra gli interventi dei tuoi immobili: controlla l'indirizzo o torna all'elenco.",
+      "phone": "Telefono",
+      "stay": "Soggiorno",
+      "stayDates": "dal {{from}} al {{to}}",
+      "supplierTitle": "Fornitore"
+    },
+    "drawer": {
+      "loadError": "Impossibile caricare l'intervento.",
+      "missing": "Questo intervento non c'è più, oppure non è tra quelli dei tuoi immobili."
+    },
+    "errors": {
+      "remindTooSoon": "Hai già sollecitato da poco: riprova più tardi.",
+      "stateChanged": "La richiesta è cambiata: ecco lo stato aggiornato."
+    },
+    "list": {
+      "chips": {
+        "active": "In corso",
+        "activeHint": "Presi in carico o già iniziati",
+        "all": "Tutti",
+        "done": "Conclusi",
+        "doneHint": "Pagati, rifiutati o annullati",
+        "pending": "In attesa",
+        "pendingHint": "Aspettano la risposta del fornitore",
+        "topay": "Da pagare",
+        "topayHint": "Lavori finiti: restano l'importo e il pagamento"
+      },
+      "columns": {
+        "price": "Prezzo",
+        "request": "Intervento e immobile",
+        "requested": "Richiesto il",
+        "state": "Stato",
+        "stay": "Soggiorno",
+        "supplier": "Fornitore",
+        "when": "Quando"
+      },
+      "count_one": "{{count}} intervento",
+      "count_other": "{{count}} interventi",
+      "emptyDescription": "Idraulico, elettricista, pulizie: chiedi un intervento e lo segui da qui, fino al pagamento.",
+      "emptyTitle": "Qui trovi gli interventi che richiedi ai fornitori",
+      "filters": {
+        "allCategories": "Tutti i tipi",
+        "allProperties": "Tutti gli immobili",
+        "allSuppliers": "Tutti i fornitori",
+        "category": "Tipo",
+        "date": "Giorno del lavoro",
+        "property": "Immobile",
+        "supplier": "Fornitore"
+      },
+      "forStay": "Stai vedendo solo gli interventi di un soggiorno.",
+      "loadError": "Impossibile caricare gli interventi.",
+      "noResultsDescription": "Prova con altre parole o togli qualche filtro.",
+      "noResultsTitle": "Nessun intervento trovato",
+      "noTime": "Da concordare",
+      "note": {
+        "amount": "Importo da confermare",
+        "proposal": "Nuovo orario proposto"
+      },
+      "priceTbd": "Da definire",
+      "searchLabel": "Cerca negli interventi",
+      "searchPlaceholder": "Cerca per tipo, immobile o fornitore",
+      "showAll": "Mostra tutti",
+      "urgency": {
+        "Emergency": "Emergenza",
+        "High": "Urgente"
+      }
+    },
+    "pay": {
+      "description": "Paghi {{amount}} a {{supplier}} con la carta, senza uscire da CasaZen.",
+      "descriptionNoSupplier": "Paghi {{amount}} con la carta, senza uscire da CasaZen.",
+      "failed": "Il pagamento non è andato a buon fine. Controlla la carta o prova con un'altra.",
+      "notice": "Il pagamento è elaborato da Stripe. L'intervento risulta pagato quando Stripe lo conferma a CasaZen.",
+      "processing": "Pagamento inviato: aspettiamo la conferma di Stripe. Questa pagina si aggiorna da sola.",
+      "sent": "Pagamento inviato: aspettiamo la conferma di Stripe",
+      "sessionError": "Impossibile avviare il pagamento.",
+      "title": "Paga l'intervento"
+    },
+    "photos": {
+      "alt": "Foto del lavoro: {{title}}",
+      "close": "Chiudi",
+      "open": "Apri la foto {{index}} di {{count}}",
+      "title": "Foto del lavoro",
+      "unavailable": "Foto non disponibile"
+    },
+    "request": "Richiedi un intervento",
+    "title": "Interventi",
+    "toast": {
+      "amountConfirmed": "Importo confermato: ora puoi pagare",
+      "cancelled": "Intervento annullato",
+      "proposalAccepted": "Orario accettato: l'intervento è confermato",
+      "proposalRejected": "Orario rifiutato: la richiesta resta in attesa",
+      "reminded": "Sollecito inviato al fornitore"
+    }
   },
   "invitation": {
     "accept": "Accetta e entra",
@@ -8546,6 +8674,7 @@
     "longRentDeadlines": "Scadenze",
     "longRentTenants": "Inquilini",
     "serviceRequests": "Interventi",
+    "interventions": "Interventi",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",

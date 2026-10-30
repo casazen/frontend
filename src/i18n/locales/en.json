@@ -3910,13 +3910,6 @@
     },
     "ical": {
       "channels": "Channels and calendars of the property"
-    },
-    "intervention": {
-      "noTime": "No time yet: the job is set on the day the guest leaves, {{date}}.",
-      "openBooking": "Open the booking",
-      "openRequests": "Go to the requests of the property",
-      "supplier": "Supplier",
-      "when": "When"
     }
   },
   "directBooking": {
@@ -4829,6 +4822,141 @@
     "currentOrigin": "You are using <code>{{origin}}</code>, which is not a secure origin for Web Crypto.",
     "lanHint": "For LAN development start Vite with HTTPS and open:",
     "publicSites": "Public booking sites (<code>{{path}}</code>) do not use Auth0 and also work over HTTP."
+  },
+  "interventions": {
+    "action": {
+      "acceptProposal": "Accept the time",
+      "call": "Call the supplier",
+      "cancel": "Cancel the job",
+      "confirmAmount": "Confirm the amount",
+      "contact": "Call the supplier",
+      "markPaid": "Mark as paid",
+      "openPage": "Open the page",
+      "openStay": "Open the stay",
+      "pay": "Pay",
+      "rejectProposal": "Turn the time down",
+      "remind": "Remind",
+      "remindInHours_one": "You can remind in {{count}} hour",
+      "remindInHours_other": "You can remind in {{count}} hours",
+      "remindInMinutes_one": "You can remind in {{count}} minute",
+      "remindInMinutes_other": "You can remind in {{count}} minutes",
+      "requestAgain": "Request again"
+    },
+    "cancel": {
+      "back": "Go back",
+      "confirm": "Cancel the job",
+      "consequences": {
+        "final": "The job cannot be reopened: to get it back, request it again.",
+        "free": "Cancelling is always free: you pay nothing.",
+        "inProgress": "The work is already marked as started: if the supplier has already worked, settle it with them directly.",
+        "label": "What happens",
+        "told": "{{supplierStart}} is told at once, with the reason you write."
+      },
+      "description": "The supplier will no longer do this job.",
+      "reason": "Why are you cancelling it?",
+      "reasonHint": "The supplier reads the reason. {{max}} characters at most.",
+      "title": "Cancel the job?"
+    },
+    "description": "The requests you made to suppliers: what, where, when, how far they are and what is up to you.",
+    "detail": {
+      "backToList": "All jobs",
+      "email": "Email",
+      "fallbackTitle": "Job",
+      "loadError": "Could not load the job.",
+      "loading": "Loading the job…",
+      "notFound": "Job not found",
+      "notFoundDescription": "It is not among the jobs of your properties: check the address or go back to the list.",
+      "phone": "Phone",
+      "stay": "Stay",
+      "stayDates": "from {{from}} to {{to}}",
+      "supplierTitle": "Supplier"
+    },
+    "drawer": {
+      "loadError": "Could not load the job.",
+      "missing": "This job is gone, or it is not among the jobs of your properties."
+    },
+    "errors": {
+      "remindTooSoon": "You reminded them a moment ago: try again later.",
+      "stateChanged": "The request has changed: here is its current state."
+    },
+    "list": {
+      "chips": {
+        "active": "In progress",
+        "activeHint": "Taken or already started",
+        "all": "All",
+        "done": "Done",
+        "doneHint": "Paid, declined or cancelled",
+        "pending": "Waiting",
+        "pendingHint": "Waiting for the supplier to answer",
+        "topay": "To pay",
+        "topayHint": "Finished jobs: the amount and the payment are left"
+      },
+      "columns": {
+        "price": "Price",
+        "request": "Job and property",
+        "requested": "Requested on",
+        "state": "State",
+        "stay": "Stay",
+        "supplier": "Supplier",
+        "when": "When"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "emptyDescription": "Plumber, electrician, cleaning: request a job and follow it from here, up to the payment.",
+      "emptyTitle": "Here you find the jobs you request from suppliers",
+      "filters": {
+        "allCategories": "All types",
+        "allProperties": "All properties",
+        "allSuppliers": "All suppliers",
+        "category": "Type",
+        "date": "Day of the work",
+        "property": "Property",
+        "supplier": "Supplier"
+      },
+      "forStay": "You are only seeing the jobs of one stay.",
+      "loadError": "Could not load the jobs.",
+      "noResultsDescription": "Try other words or remove some filter.",
+      "noResultsTitle": "No jobs found",
+      "noTime": "To be agreed",
+      "note": {
+        "amount": "Amount to confirm",
+        "proposal": "New time proposed"
+      },
+      "priceTbd": "To be agreed",
+      "searchLabel": "Search the jobs",
+      "searchPlaceholder": "Search by type, property or supplier",
+      "showAll": "Show all",
+      "urgency": {
+        "Emergency": "Emergency",
+        "High": "Urgent"
+      }
+    },
+    "pay": {
+      "description": "You pay {{amount}} to {{supplier}} by card, without leaving CasaZen.",
+      "descriptionNoSupplier": "You pay {{amount}} by card, without leaving CasaZen.",
+      "failed": "The payment did not go through. Check the card or try another one.",
+      "notice": "The payment is processed by Stripe. The job shows as paid when Stripe confirms it to CasaZen.",
+      "processing": "Payment sent: we are waiting for Stripe to confirm it. This page updates by itself.",
+      "sent": "Payment sent: we are waiting for Stripe to confirm it",
+      "sessionError": "Could not start the payment.",
+      "title": "Pay the job"
+    },
+    "photos": {
+      "alt": "Photo of the work: {{title}}",
+      "close": "Close",
+      "open": "Open photo {{index}} of {{count}}",
+      "title": "Photos of the work",
+      "unavailable": "Photo not available"
+    },
+    "request": "Request a job",
+    "title": "Jobs",
+    "toast": {
+      "amountConfirmed": "Amount confirmed: you can pay now",
+      "cancelled": "Job cancelled",
+      "proposalAccepted": "Time accepted: the job is confirmed",
+      "proposalRejected": "Time turned down: the request keeps waiting",
+      "reminded": "Reminder sent to the supplier"
+    }
   },
   "invitation": {
     "accept": "Accept and enter",
@@ -8546,6 +8674,7 @@
     "longRentDeadlines": "Deadlines",
     "longRentTenants": "Tenants",
     "serviceRequests": "Maintenance",
+    "interventions": "Jobs",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",

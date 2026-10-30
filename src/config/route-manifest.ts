@@ -153,6 +153,25 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/pricing'],
   },
   {
+    // Interventi (SR-08): what the host asked of the suppliers, from the request to the payment. A page of the section Immobili: it hangs
+    // from that entry (the page of Immobili links to it, `NavChildLinks`). Reading it asks what reading the properties asks; the steps on a request ask
+    // `property.write` or `servicerequest.write`, and the page hides the buttons from who may not.
+    path: '/app/short-rent/interventions',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.interventions',
+    navParent: '/app/short-rent/properties',
+    navOrder: 1,
+    icon: 'Wrench',
+    component: async () => ({ default: (await import('@/features/service-requests/interventions')).InterventionsPage }),
+  },
+  {
+    path: '/app/short-rent/interventions/:id',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({ default: (await import('@/features/service-requests/interventions')).InterventionDetailPage }),
+  },
+  {
     // What the host still has to do (CIN, check-ins, Alloggiati, cleanings); the Alloggiati dashboard and the CIN page hang from it.
     path: '/app/short-rent/compliance',
     context: 'short-rent',
