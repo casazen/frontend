@@ -10446,6 +10446,7 @@
     "legalDocuments": "Documenti legali",
     "footer": {
       "contact": "Contatti",
+      "cookies": "Cookie",
       "info": "Informazioni",
       "operator": "Operatore",
       "vatNumber": "P.IVA {{vat}}"
@@ -11065,10 +11066,20 @@
     },
     "cookieConsent": {
       "ariaLabel": "Consenso cookie",
-      "text": "Utilizziamo cookie essenziali per il funzionamento del sito e, solo con il tuo consenso, cookie analitici. Puoi accettare o rifiutare i cookie non essenziali.",
+      "text": "Usiamo i cookie necessari per farti prenotare e per ricordare le tue scelte (la lingua, le case che salvi). Con il tuo permesso, anche statistiche anonime per migliorare il sito. Nessun cookie pubblicitario.",
       "title": "La tua privacy",
       "reject": "Rifiuta",
-      "accept": "Accetta"
+      "accept": "Accetta",
+      "choose": "Scegli tu",
+      "preferencesTitle": "Le tue scelte sui cookie",
+      "necessary": "Necessari",
+      "necessaryHint": "Servono per cercare, prenotare e pagare in sicurezza, e per ricordare sul tuo dispositivo la lingua e le case che salvi: sempre attivi.",
+      "statistics": "Statistiche anonime",
+      "statisticsHint": "Ci dicono quali pagine funzionano meglio. Nessun dato personale.",
+      "onlyNecessary": "Solo i necessari",
+      "save": "Salva le mie scelte",
+      "saved": "Preferenze salvate",
+      "savedHint": "Puoi cambiarle dal link «Cookie» in fondo alla pagina."
     },
     "demoBanner": {
       "message": "Modalita' demo - Nessuna autenticazione richiesta. Tutti i dati sono simulati."

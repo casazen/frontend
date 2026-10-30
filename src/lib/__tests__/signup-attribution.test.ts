@@ -6,6 +6,7 @@ vi.mock('@/api/users.api', () => ({
 }));
 
 import { UsersApi } from '@/api/users.api';
+import { CONSENT_STORAGE_KEY } from '../cookie-consent';
 import {
   LANDING_TOUCH_STORAGE_KEY,
   PENDING_ATTRIBUTION_STORAGE_KEY,
@@ -35,6 +36,8 @@ describe('signup attribution (SE-03)', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
+    // The visitor allowed statistics: without that nothing is kept or sent (`cookie-consent.test.ts` proves it).
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     vi.mocked(UsersApi.recordSignupAttribution).mockReset();
   });
 
