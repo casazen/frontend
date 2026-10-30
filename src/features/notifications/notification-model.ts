@@ -50,6 +50,8 @@ const KINDS: Record<string, NotificationKind> = {
   'service-request-quote-accepted': serviceRequest('notifications.types.serviceRequestQuoteAccepted'),
   'service-request-quote-rejected': serviceRequest('notifications.types.serviceRequestQuoteRejected'),
   'service-request-quote-expired': serviceRequest('notifications.types.serviceRequestQuoteExpired'),
+  'service-request-day-before': serviceRequest('notifications.types.serviceRequestDayBefore'),
+  'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived'),
 };
 
 const GENERIC_KIND = { icon: Bell, textKey: 'notifications.types.generic' } as const;

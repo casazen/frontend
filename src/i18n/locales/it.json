@@ -8198,6 +8198,8 @@
       "serviceRequestQuoteAccepted": "Il preventivo è stato approvato.",
       "serviceRequestQuoteRejected": "Il preventivo è stato rifiutato.",
       "serviceRequestQuoteExpired": "Il preventivo è scaduto: il cliente non ha risposto in tempo.",
+      "serviceRequestDayBefore": "Domani hai un lavoro.",
+      "servicePaymentReceived": "Hai ricevuto un pagamento.",
       "generic": "Hai una nuova notifica."
     }
   },

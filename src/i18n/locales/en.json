@@ -8198,6 +8198,8 @@
       "serviceRequestQuoteAccepted": "The quote was approved.",
       "serviceRequestQuoteRejected": "The quote was declined.",
       "serviceRequestQuoteExpired": "The quote expired: the customer did not answer in time.",
+      "serviceRequestDayBefore": "You have a job tomorrow.",
+      "servicePaymentReceived": "You received a payment.",
       "generic": "You have a new notification."
     }
   },
