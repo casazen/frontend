@@ -47,7 +47,7 @@ export function HeroArt() {
 }
 
 /**
- * The three looks of the booking site (`mare`, `montagna`, `urban`: the themes a host can choose), drawn with their own
+ * The three looks of the booking site (`terra`, `mare`, `citta`: the themes a host can choose), drawn with their own
  * colors as three small pages.
  */
 export function ThemeSwatches() {
