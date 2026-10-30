@@ -8,6 +8,7 @@ export { resetMapIds } from './engine/style';
 export {
   VIEW_ITALIA,
   fitView,
+  isPositionSet,
   makeView,
   panView,
   projectPoint,

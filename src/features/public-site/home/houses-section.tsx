@@ -31,6 +31,9 @@ export function HousesSection({
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const locale = siteLocale(i18n.language);
+  // The prices and the line above them are what the server answered for ITS dates: while the answer for the stay just chosen is on
+  // its way the previous one stays on the page and keeps saying its own dates, never a mix. The links carry the stay chosen now.
+  const answered = result.checkIn && result.checkOut ? { checkIn: result.checkIn, checkOut: result.checkOut } : null;
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const shown = result.items.slice(0, HOME_MAX_HOUSES);
 
@@ -46,9 +49,9 @@ export function HousesSection({
         <div className="hm-head__text">
           <h2 id="home-houses-title">{t('siteHome.houses.title')}</h2>
           <p className="hm-head__lead">
-            {hasDates
+            {answered
               ? t('siteHome.houses.leadDates', {
-                  range: formatStayRange(stay.checkIn, stay.checkOut, locale),
+                  range: formatStayRange(answered.checkIn, answered.checkOut, locale),
                   count: result.nights ?? 0,
                 })
               : t('siteHome.houses.leadNoDates')}

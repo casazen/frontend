@@ -9,12 +9,20 @@ import type { PublicStaysQuery } from '@/types/public-stays.types';
 /** The server keeps an answer of the search for a few seconds: asking the same again before then costs nothing. */
 const STAYS_STALE_MS = 30_000;
 
-/** The query without the parts left empty, so that the same search is always the same key (and the same address of the call). */
+/**
+ * The query without the parts left empty, so that the same search is always the same key (and the same address of the call).
+ * The server refuses a stay with only one of its two dates (422 `public_stays_dates_invalid`), and a guest who has chosen the
+ * arrival has not chosen the departure yet: until both are there the homes are asked for without dates, never with half of them.
+ */
 export function cleanStaysQuery(query: PublicStaysQuery): PublicStaysQuery {
   const clean: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null || value === '' || value === false) continue;
     clean[key] = value;
+  }
+  if (!clean.checkIn || !clean.checkOut) {
+    delete clean.checkIn;
+    delete clean.checkOut;
   }
   return clean as PublicStaysQuery;
 }

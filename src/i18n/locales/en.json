@@ -10355,10 +10355,12 @@
       "minNights_other": "The minimum stay is {{count}} nights.",
       "notBookable": "This home can't be booked online yet.",
       "past": "The arrival you chose has already passed.",
+      "petsNotAllowed": "This home does not take pets.",
       "reduceGuests_one": "Bring it down to {{count}} guest",
       "reduceGuests_other": "Bring it down to {{count}} guests",
       "tooManyGuests_one": "The home takes {{count}} person at most.",
-      "tooManyGuests_other": "The home takes {{count}} people at most."
+      "tooManyGuests_other": "The home takes {{count}} people at most.",
+      "withoutPets": "I'm travelling without a pet"
     },
     "quote": {
       "failed": "We could not work out the total. Try again in a moment."
@@ -14241,8 +14243,10 @@
       "childrenHint": "Up to {{age}} years old",
       "limit_one": "This home sleeps {{count}} person at most.",
       "limit_other": "This home sleeps {{count}} people at most.",
-      "pets": "Pets",
+      "pets": "Travelling with a pet?",
       "petsHint": "This home welcomes them",
+      "petsHintNo": "This home does not take pets",
+      "petsHintSite": "We'll show which homes take them",
       "summary_one": "{{count}} guest",
       "summary_other": "{{count}} guests",
       "summaryWithPet": "{{people}} · with a pet"

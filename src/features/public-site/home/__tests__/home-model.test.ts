@@ -58,10 +58,27 @@ describe('zonesOf (DB-07b): the position of a zone is never more exact than the 
     expect(zones[1]).toMatchObject({ id: 'Lecce', count: 1 });
   });
 
-  it('ZonesOf_HomeWithoutAPosition_IsInNoZone', () => {
-    const zones = zonesOf([card({ id: 'a', latitude: Number.NaN })], []);
+  it('ZonesOf_HomesWithoutAPosition_KeepTheirZoneWithZeroZeroNotInTheMiddle', () => {
+    // The data say «no position» with 0, 0 (the host never gave one): such a home is in its comune all the same, the map puts its pin
+    // there, and its 0, 0 must not be averaged with the position of a home that has one (it would drag the pin into the Gulf of Guinea).
+    const zones = zonesOf(
+      [
+        card({ id: 'a', comune: 'Como', latitude: 0, longitude: 0 }),
+        card({ id: 'b', comune: 'Como', latitude: 45.81, longitude: 9.08 }),
+        card({ id: 'c', comune: 'Roma', latitude: 0, longitude: 0 }),
+        card({ id: 'd', comune: 'Milano', latitude: Number.NaN, longitude: Number.NaN }),
+      ],
+      [],
+    );
 
-    expect(zones).toHaveLength(0);
+    expect(zones.map((zone) => zone.name)).toEqual(['Como', 'Roma', 'Milano']);
+    expect(zones[0]).toMatchObject({ count: 2, lat: 45.81, lon: 9.08 });
+    expect(zones[1]).toMatchObject({ count: 1, lat: 0, lon: 0 });
+    expect(zones[2]).toMatchObject({ count: 1, lat: 0, lon: 0 });
+  });
+
+  it('ZonesOf_HomeWithoutAComune_IsInNoZone', () => {
+    expect(zonesOf([card({ id: 'a', comune: '  ' })], [])).toHaveLength(0);
   });
 });
 

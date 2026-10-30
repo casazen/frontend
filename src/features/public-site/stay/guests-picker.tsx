@@ -22,7 +22,10 @@ export interface GuestsPickerProps {
   onChange: (next: GuestsValue) => void;
   /** Most people the home takes, adults and children together. */
   maxGuests?: number;
-  /** The home takes pets: only then the switch is there. */
+  /**
+   * Whether the home takes pets: `true` and `false` change what the line under the question says; left out when it is not known
+   * (the site has many homes) it says that the results tell which ones do. The question is always asked.
+   */
   petsAllowed?: boolean;
   /**
    * The age of each child (null until chosen), asked only when the page needs it (the tourist tax of some comuni depends on it,
@@ -34,16 +37,16 @@ export interface GuestsPickerProps {
 }
 
 /**
- * The guests of a stay (DB-20): adults (at least one), children, and a pet when the home takes them, with the buttons of `Qty`
- * of 44 px. The two counts share the room of the home: when it is full the buttons that would go past it stop and a sentence says
- * how many people the home takes. The ids come from `useId`, so the same picker can be on the page twice (the card and the sheet)
- * without two elements sharing one.
+ * The guests of a stay (DB-20): adults (at least one), children, and whether a pet comes (always asked: a guest with a dog wants to
+ * know whether the home takes it before choosing it), with the buttons of `Qty` of 44 px. The two counts share the room of the
+ * home: when it is full the buttons that would go past it stop and a sentence says how many people the home takes. The ids come
+ * from `useId`, so the same picker can be on the page twice (the card and the sheet) without two elements sharing one.
  */
 export function GuestsPicker({
   value: valueProp,
   onChange: onChangeProp,
   maxGuests = DEFAULT_MAX_GUESTS,
-  petsAllowed = false,
+  petsAllowed,
   childrenAges,
   onChildrenAgesChange,
   className,
@@ -101,29 +104,27 @@ export function GuestsPicker({
         />
       </div>
 
-      {petsAllowed ? (
-        <div className="stay-guests__row">
-          <div className="stay-guests__text">
-            <label htmlFor={`${uid}-pets`} className="stay-guests__name">
-              {t('stayPickers.guests.pets')}
-            </label>
-            <span id={`${uid}-pets-hint`} className="stay-guests__hint">
-              {t('stayPickers.guests.petsHint')}
-            </span>
-          </div>
-          <span className="inline-flex h-11 items-center">
-            <Switch
-              // An unchecked track of the muted text color (AA against the card): the pale track of the app is a hairline here.
-              className="data-[state=unchecked]:bg-[var(--cz-public-muted)]"
-              id={`${uid}-pets`}
-              checked={value.pets}
-              onCheckedChange={(pets) => onChange({ ...value, pets })}
-              aria-describedby={`${uid}-pets-hint`}
-              data-testid="guests-pets"
-            />
+      <div className="stay-guests__row">
+        <div className="stay-guests__text">
+          <label htmlFor={`${uid}-pets`} className="stay-guests__name">
+            {t('stayPickers.guests.pets')}
+          </label>
+          <span id={`${uid}-pets-hint`} className="stay-guests__hint" data-testid="guests-pets-hint">
+            {petsAllowed === undefined ? t('stayPickers.guests.petsHintSite') : petsAllowed ? t('stayPickers.guests.petsHint') : t('stayPickers.guests.petsHintNo')}
           </span>
         </div>
-      ) : null}
+        <span className="inline-flex h-11 items-center">
+          <Switch
+            // An unchecked track of the muted text color (AA against the card): the pale track of the app is a hairline here.
+            className="data-[state=unchecked]:bg-[var(--cz-public-muted)]"
+            id={`${uid}-pets`}
+            checked={value.pets}
+            onCheckedChange={(pets) => onChange({ ...value, pets })}
+            aria-describedby={`${uid}-pets-hint`}
+            data-testid="guests-pets"
+          />
+        </span>
+      </div>
 
       {childrenAges && onChildrenAgesChange && value.children > 0 ? (
         <div className="pb-2 pt-1">

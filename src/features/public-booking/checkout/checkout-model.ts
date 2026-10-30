@@ -116,12 +116,21 @@ export function suggestEmail(email: string): string | null {
   return best ? `${local}@${best.domain}` : null;
 }
 
+/**
+ * What the host reads first in the requests of a booking whose guests travel with a pet. The booking has no field for the pet yet,
+ * and the host has to know before the guests arrive, so the switch of the stay is written here, in the language of the host's
+ * notes (the guest's own words follow it).
+ */
+export const PETS_NOTE = 'Viaggia con animali domestici.';
+
 interface BookingPayloadInput {
   propertyId: string;
   checkIn: string;
   checkOut: string;
   adults: number;
   children: number;
+  /** A pet comes (the switch of the guests): the host is told in the requests. */
+  pets?: boolean;
   /** The ages when every child has one and the tax asks for them; else nothing. */
   childrenAges?: number[];
   draft: CheckoutDraft;
@@ -140,13 +149,14 @@ export function buildBookingPayload({
   checkOut,
   adults,
   children,
+  pets = false,
   childrenAges,
   draft,
   marketingConsentVersion,
 }: BookingPayloadInput): CreateDirectBookingPayload {
   const { details } = draft;
   const phone = details.phone.trim();
-  const requests = draft.requests.trim();
+  const requests = [pets ? PETS_NOTE : '', draft.requests.trim()].filter(Boolean).join('\n');
   return {
     propertyId,
     checkInDate: checkIn,
