@@ -1307,7 +1307,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 2,
     navBottom: 2,
-    // Requests waiting for the supplier's answer (`awaitingAcceptance` of the KPIs of the dashboard).
+    // Requests waiting for the supplier's answer (`toAnswer` of `GET /supplier/inbox/counts`: not those that wait for the customer, SP-08b).
     navCount: 'supplierRequests',
     icon: 'Inbox',
     component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),

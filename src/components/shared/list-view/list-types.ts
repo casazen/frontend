@@ -125,7 +125,12 @@ export interface ListChip<Row> {
   test?: (row: Row) => boolean;
   /** A counter on the chip, for what needs attention only: the number of rows that pass `test` (when there are any). */
   urgent?: boolean;
-  /** Another way to count, for the counter of an `urgent` chip. */
+  /**
+   * A quiet counter on the chip, for a tab that only has a size (SP-08b): the number the page gives in `chipCounts` (`server` mode)
+   * or of the rows that pass `test` (`client` mode), when there are any. It is not an alarm: an `urgent` chip keeps its own look.
+   */
+  counted?: boolean;
+  /** Another way to count, for the counter of an `urgent` or `counted` chip. */
   count?: (rows: readonly Row[]) => number;
 }
 
@@ -137,6 +142,8 @@ export interface ListRowAction {
   icon?: LucideIcon;
   /** An address of the app (`/app/…`) goes through the router, anything else is a link. */
   href?: string;
+  /** The `href` leads out of the app (a map): it opens in another tab and does not take the app along. */
+  external?: boolean;
   onSelect?: () => void;
   variant?: 'default' | 'secondary' | 'soft' | 'outline';
   danger?: boolean;
@@ -146,12 +153,22 @@ export interface ListRowAction {
 
 export type ListMenuEntry = ListRowAction | 'separator';
 
+/**
+ * What a bulk action says when it is done, when the default line ("Accetta: 3 righe") is not what happened: some rows went through and
+ * some did not (SP-08b). `tone` `warning` is a toast that is not a success; the rows that failed are the page's to show.
+ */
+export interface ListBulkOutcome {
+  title: string;
+  description?: string;
+  tone?: 'success' | 'warning';
+}
+
 export interface ListBulkAction<Row> {
   id: string;
   label: string;
   icon?: LucideIcon;
-  /** What it does to the selected rows. A rejection tells the person it failed. */
-  run: (rows: Row[]) => void | Promise<void>;
+  /** What it does to the selected rows. A rejection tells the person it failed; an outcome replaces the default line of the toast. */
+  run: (rows: Row[]) => void | ListBulkOutcome | Promise<void | ListBulkOutcome>;
   /** For what cannot be taken back: a dialog asks first. */
   confirm?: {
     title: string | ((count: number) => string);
@@ -290,6 +307,11 @@ export interface ListDefinition<Row> {
   chips?: readonly ListChip<Row>[];
   /** Default: the first chip. */
   defaultChip?: string;
+  /**
+   * The chip that stands for "everything" (SP-08b): the list is narrowed down when another one is on, and "Azzera i filtri" goes back to it.
+   * Default: the first chip. A list that shows "everything" last, like the tabs of the requests of a supplier, says it here.
+   */
+  allChip?: string;
   filters?: readonly ListFilter<Row>[];
   /** `lastStay:desc` */
   defaultSort?: string;

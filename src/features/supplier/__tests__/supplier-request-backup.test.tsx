@@ -12,10 +12,16 @@ import { SupplierInboxPage } from '../supplier-inbox-page';
 
 const api = vi.hoisted(() => ({ fetchSupplierInbox: vi.fn(), fetchSupplierInboxCounts: vi.fn(), fetchSupplierProfile: vi.fn() }));
 const requestsApi = vi.hoisted(() => ({ takeServiceRequest: vi.fn(), acceptServiceRequestAsBackup: vi.fn() }));
+const servicesApi = vi.hoisted(() => ({ fetchSupplierServices: vi.fn() }));
 
 vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
   ...api,
+}));
+// The list also reads the catalog of the supplier, for the choices of its filter by service.
+vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/supplier-services.api')>()),
+  ...servicesApi,
 }));
 vi.mock('@/api/service-requests.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/service-requests.api')>()),
@@ -146,6 +152,7 @@ describe('a request the supplier has as a backup (SP-BKP): the list', () => {
     api.fetchSupplierInbox.mockResolvedValue(page([WAITING, ACCEPTED, ACTIVE, PRIMARY]));
     api.fetchSupplierInboxCounts.mockResolvedValue(COUNTS);
     api.fetchSupplierProfile.mockResolvedValue({ status: 'Active' });
+    servicesApi.fetchSupplierServices.mockResolvedValue({ items: [], total: 0, limit: 30 });
     requestsApi.acceptServiceRequestAsBackup.mockResolvedValue({});
     requestsApi.takeServiceRequest.mockResolvedValue({});
     await i18n.changeLanguage('it');
