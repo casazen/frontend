@@ -81,8 +81,8 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 }
 
 /**
- * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
- * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
+ * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then six tabs
+ * (Guida, Dati, Documenti, Pagamenti, Scadenze, Interventi: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
  * The tab `interventi` (LR-03c) lists the jobs asked of the suppliers for this contract and asks for a new one, ready with the property and
