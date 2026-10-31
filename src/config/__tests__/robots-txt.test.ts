@@ -30,6 +30,8 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /fornitori/*/prenota',
       'Disallow: /fornitori/*/conferma',
       'Disallow: /fornitori/*/richiesta',
+      'Disallow: /fornitori/*/preventivo',
+      'Disallow: /service/pay/',
       'Disallow: /my-bookings',
       'Disallow: /booking/',
       'Disallow: /requests/',
@@ -91,6 +93,9 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/fornitori/pulizie-roma/prenota',
       '/fornitori/pulizie-roma/conferma',
       '/fornitori/pulizie-roma/richiesta',
+      '/fornitori/pulizie-roma/preventivo',
+      // The payment page of a service.
+      '/service/pay/0f6c1c2e-7a4b-4d52-9d3e-2b1f6a8c9d10',
       '/my-bookings',
       '/booking/0f6c',
       '/requests/0f6c/confirm',

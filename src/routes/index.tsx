@@ -47,6 +47,7 @@ import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
+import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
@@ -54,6 +55,8 @@ import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/su
 import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
+import { SupplierInquiryPage } from '@/pages/supplier-inquiry';
+import { SupplierRequestPage } from '@/pages/supplier-request';
 import { SupplierServicePage } from '@/pages/supplier-service';
 import { SupplierServicesPage } from '@/pages/supplier-services';
 import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
@@ -306,10 +309,13 @@ export const appRoutes: RouteObject[] = [
       { path: 'servizi', element: <SupplierServicesPage /> },
       { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
       { path: 'chi-siamo', element: <SupplierAboutPage /> },
-      // The booking from the site (SP-12b): the five steps and the page the link of the verification e-mail opens. Both behind the
-      // booking flag (with it off their addresses lead back to the home), and never indexed.
+      // The booking from the site (SP-12b): the steps, the page the link of the verification e-mail opens and the customer's own request
+      // (the link of the other e-mails). All behind the booking flag (with it off their addresses lead back to the home), never indexed.
       { path: 'prenota', element: <SupplierBookingPage /> },
       { path: 'conferma', element: <SupplierBookingConfirmPage /> },
+      { path: 'richiesta', element: <SupplierRequestPage /> },
+      // The request on measure (SP-12c), for what the price list does not say: the form; its check, its conversation and its offer are the pages above.
+      { path: 'preventivo', element: <SupplierInquiryPage /> },
     ],
   },
   {
@@ -328,6 +334,13 @@ export const appRoutes: RouteObject[] = [
     // A tenant's page, not the landlord's console: it keeps its look until it is redesigned.
     path: '/rent/pay/:installmentId',
     element: <RentPaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // Link of the payment request of a service a supplier completed (SP-15c-d): the host pays from the e-mail, no sign-in. A payer's page,
+    // not the console: it keeps its look until it is redesigned (like the rent payment).
+    path: '/service/pay/:paymentId',
+    element: <ServicePaymentPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {

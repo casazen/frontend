@@ -22,6 +22,7 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(isPublicUnauthenticatedPath('/p/affitti-brevi/lazio/roma')).toBe(true);
     expect(isPublicUnauthenticatedPath('/checkin/token')).toBe(true);
     expect(isPublicUnauthenticatedPath('/rent/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/service/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(isPublicUnauthenticatedPath('/guided-form')).toBe(true);
   });
 

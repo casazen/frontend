@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, CircleAlert, Send } from 'lucide-react';
 import type { PublicQuoteRequestBody } from '@/api/public-supplier.api';
 import type { PublicBookingHold } from '@/api/public-supplier-booking.api';
+import { clientStatusFromRedirect } from '@/features/public-booking/checkout-outcome';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import {
@@ -23,6 +24,7 @@ import {
 import { readBookingFailure, type BookingFailure } from '@/lib/supplier-site/booking-errors';
 import { parseBookingParams } from '@/lib/supplier-site/booking-params';
 import { toQuoteBody } from '@/lib/supplier-site/service-options';
+import { SITE_STYLES } from '@/lib/supplier-site/style-config';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { useComune } from '@/queries/use-comuni';
 import { useBookingSlots, useCreateBookingHold } from '@/queries/use-public-supplier-booking';
@@ -33,17 +35,12 @@ import { isFramedPreview } from '../use-preview-draft';
 import { BookingSteps } from './booking-steps';
 import { BookingSummary } from './booking-summary';
 import { CheckEmail } from './check-email';
+import { PaymentStep } from './payment-step';
 import { StepDetails } from './step-details';
 import { StepService } from './step-service';
 import { StepWhen } from './step-when';
 import { StepWhere, type ZoneState } from './step-where';
 import { useBookingDraft } from './use-booking-draft';
-
-/**
- * The card of a booking paid inside CasaZen is asked for in a fifth step that is built in the next piece (SP-15c-d): until it exists, a
- * booking that would need it is not sent from here (the hold would block a card nobody can confirm).
- */
-const PAYMENT_STEP_READY = false;
 
 /** The steps of the form, in order; the payment step is not among them until it exists. */
 const FORM_STEPS: readonly BookingStep[] = BOOKING_STEPS.filter((step) => step !== 'payment');
@@ -68,7 +65,7 @@ function stepOfSearch(search: URLSearchParams): BookingStep | null {
   return FORM_STEPS.find((step) => String(FORM_STEPS.indexOf(step) + 1) === value) ?? null;
 }
 
-type Notice = BookingFailure | { kind: 'unavailable' } | { kind: 'paymentSoon' } | { kind: 'preview' };
+type Notice = BookingFailure | { kind: 'unavailable' } | { kind: 'paymentFailed' } | { kind: 'preview' };
 
 /** A problem the server (or the page) found while sending, said at the step where it can be fixed. */
 function NoticeBox({ notice }: { notice: Notice }) {
@@ -116,9 +113,22 @@ export function BookingWizard() {
   const [consent, setConsent] = useState(false);
   const [trap, setTrap] = useState('');
   const [triedStep, setTriedStep] = useState<BookingStep | null>(null);
-  const [notice, setNotice] = useState<{ step: BookingStep; value: Notice } | null>(null);
+  // Back from the bank after a payment that did not go through: said at the first step, where the booking starts again.
+  const returned = clientStatusFromRedirect(search.get('redirect_status'));
+  const [notice, setNotice] = useState<{ step: BookingStep; value: Notice } | null>(() =>
+    returned === 'failed' ? { step: 'service', value: { kind: 'paymentFailed' } } : null,
+  );
   const [serverProblems, setServerProblems] = useState<DetailsProblems>({});
   const [sent, setSent] = useState<{ hold: PublicBookingHold; email: string } | null>(null);
+  // The card was blocked in this page (Stripe says so; the server makes the request when the e-mail is checked too).
+  const [cardBlocked, setCardBlocked] = useState(false);
+  // The block of the card, while it still has to be confirmed in this page.
+  const cardBlock = sent?.hold.payment;
+  const cardToAsk =
+    sent && cardBlock && !cardBlock.authorized && !cardBlocked && cardBlock.clientSecret && cardBlock.publishableKey
+      ? { ...cardBlock, clientSecret: cardBlock.clientSecret, publishableKey: cardBlock.publishableKey }
+      : null;
+  const askingCard = cardToAsk !== null;
   const attempt = useRef<{ id: string; fingerprint: string } | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -195,6 +205,11 @@ export function BookingWizard() {
     shownStep.current = step;
   }, [step]);
 
+  // The step of the card, when it shows, takes the focus on its heading too.
+  useEffect(() => {
+    if (askingCard) headingRef.current?.focus();
+  }, [askingCard]);
+
   // After a failed try on the last step, the first field at fault takes the focus.
   useEffect(() => {
     if (step === 'details' && triedStep === 'details') formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
@@ -225,7 +240,6 @@ export function BookingWizard() {
     if (preview) return saySomething({ kind: 'preview' }, 'details');
     const version = showcase.privacyNoticeVersion?.trim();
     if (!version) return saySomething({ kind: 'unavailable' }, 'details');
-    if (showcase.acceptsOnlinePayments === true && !PAYMENT_STEP_READY) return saySomething({ kind: 'paymentSoon' }, 'details');
 
     const body = toBookingBody({ draft, service: detail, selection, comune, locale: i18n.language, privacyNoticeVersion: version, clientRequestId: '', trap });
     // The same request again (a retry after a lost answer) keeps its id and so takes no second slot; any change is a new attempt.
@@ -234,6 +248,13 @@ export function BookingWizard() {
     attempt.current = thisAttempt;
     try {
       const hold = await createHold.mutateAsync({ ...body, clientRequestId: thisAttempt.id });
+      const block = hold.payment;
+      if (block && !block.authorized && (!block.clientSecret || !block.publishableKey)) {
+        // The card cannot be asked for this block: a new attempt, not the same hold again.
+        attempt.current = null;
+        saySomething({ kind: 'payment' }, 'details');
+        return;
+      }
       discard();
       setSent({ hold, email: draft.email.trim() });
     } catch (error) {
@@ -273,10 +294,11 @@ export function BookingWizard() {
     goTo(FORM_STEPS[stepIndex + 1]);
   };
 
-  if (sent) {
+  // Back from the bank with the card blocked: the e-mail is what is left (the request is born when it is checked too).
+  if (!sent && (returned === 'succeeded' || returned === 'processing')) {
     return (
       <div className="vz-container vb" data-testid="supplier-booking-sent">
-        <CheckEmail slug={slug} supplierName={model.name} email={sent.email} expiresAt={sent.hold.expiresAt} />
+        <CheckEmail slug={slug} supplierName={model.name} />
       </div>
     );
   }
@@ -295,8 +317,17 @@ export function BookingWizard() {
       }}
     />
   );
+  if (sent && !cardToAsk) {
+    return (
+      <div className="vz-container vb" data-testid="supplier-booking-sent">
+        <CheckEmail slug={slug} supplierName={model.name} email={sent.email} expiresAt={sent.hold.expiresAt} />
+      </div>
+    );
+  }
   const backTo = chosen ? supplierSitePaths.service(slug, chosen.slug) : supplierSitePaths.services(slug);
   const lastStep = step === 'details';
+  // The payment step exists only for a site that takes the money inside CasaZen.
+  const stepsShown: BookingStep[] = showcase.acceptsOnlinePayments === true ? [...BOOKING_STEPS] : [...FORM_STEPS];
   const submitDisabled =
     createHold.isPending || resolving || (step === 'service' && detailQuery.isLoading) || (step === 'where' && zone === 'checking') || (lastStep && !online);
 
@@ -382,7 +413,7 @@ export function BookingWizard() {
         <h1 id="vz-title">{chosen ? t('supplierSite.booking.titleFor', { service: chosen.name }) : t('supplierSite.booking.title')}</h1>
       </header>
 
-      <BookingSteps steps={[...FORM_STEPS]} current={step} onGo={goTo} />
+      <BookingSteps steps={stepsShown} current={cardToAsk ? 'payment' : step} onGo={goTo} interactive={!cardToAsk} />
 
       <details className="vb-sum-m">
         <summary>{t('supplierSite.booking.summary.toggle')}</summary>
@@ -390,40 +421,59 @@ export function BookingWizard() {
       </details>
 
       <div className="vb-cols">
-        <form ref={formRef} className="vb-panel" onSubmit={onSubmit} noValidate aria-labelledby="vb-step-title" data-testid="supplier-booking-form">
-          <div className="vb-panel__head">
-            <h2 id="vb-step-title" tabIndex={-1} ref={headingRef}>
-              {t(`supplierSite.booking.stepInfo.${step}.title`)}
-            </h2>
-            <p>{t(`supplierSite.booking.stepInfo.${step}.purpose`)}</p>
-          </div>
+        {cardToAsk && sent ? (
+          <section className="vb-panel" aria-labelledby="vb-step-title" data-testid="supplier-booking-card-panel">
+            <div className="vb-panel__head">
+              <h2 id="vb-step-title" tabIndex={-1} ref={headingRef}>
+                {t('supplierSite.booking.stepInfo.payment.title')}
+              </h2>
+              <p>{t('supplierSite.booking.stepInfo.payment.purpose')}</p>
+            </div>
+            <PaymentStep
+              slug={slug}
+              supplierName={model.name}
+              block={cardToAsk}
+              expiresAt={sent.hold.expiresAt}
+              buttonColor={model.buttonColor ?? SITE_STYLES[model.style].cta}
+              onAuthorized={() => setCardBlocked(true)}
+            />
+          </section>
+        ) : (
+          <form ref={formRef} className="vb-panel" onSubmit={onSubmit} noValidate aria-labelledby="vb-step-title" data-testid="supplier-booking-form">
+            <div className="vb-panel__head">
+              <h2 id="vb-step-title" tabIndex={-1} ref={headingRef}>
+                {t(`supplierSite.booking.stepInfo.${step}.title`)}
+              </h2>
+              <p>{t(`supplierSite.booking.stepInfo.${step}.purpose`)}</p>
+            </div>
 
-          {stepNotice ? <NoticeBox notice={stepNotice} /> : null}
-          {preview && lastStep ? <NoticeBox notice={{ kind: 'preview' }} /> : null}
-          {lastStep && !online ? (
-            <p className="vb-note vb-note--warn" role="status">
-              {t('supplierSite.booking.actions.offline')}
-            </p>
-          ) : null}
+            {stepNotice ? <NoticeBox notice={stepNotice} /> : null}
+            {preview && lastStep ? <NoticeBox notice={{ kind: 'preview' }} /> : null}
+            {lastStep && !online ? (
+              <p className="vb-note vb-note--warn" role="status">
+                {t('supplierSite.booking.actions.offline')}
+              </p>
+            ) : null}
 
-          <div className="vb-fields">{content}</div>
+            <div className="vb-fields">{content}</div>
 
-          <div className="vb-actions">
-            {stepIndex > 0 ? (
-              <button type="button" className="vz-btn vz-btn--secondary" onClick={() => goTo(FORM_STEPS[stepIndex - 1])}>
-                <ArrowLeft aria-hidden="true" />
-                <span>{t('supplierSite.booking.actions.back')}</span>
+            <div className="vb-actions">
+              {stepIndex > 0 ? (
+                <button type="button" className="vz-btn vz-btn--secondary" onClick={() => goTo(FORM_STEPS[stepIndex - 1])}>
+                  <ArrowLeft aria-hidden="true" />
+                  <span>{t('supplierSite.booking.actions.back')}</span>
+                </button>
+              ) : (
+                <span />
+              )}
+              <button type="submit" className="vz-btn vz-btn--primary vz-btn--lg" disabled={submitDisabled} data-testid="supplier-booking-next">
+                {lastStep ? <Send aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
+                <span>{createHold.isPending ? t('supplierSite.booking.actions.sending') : lastStep ? t('supplierSite.booking.actions.send') : t('supplierSite.booking.actions.next')}</span>
               </button>
-            ) : (
-              <span />
-            )}
-            <button type="submit" className="vz-btn vz-btn--primary vz-btn--lg" disabled={submitDisabled} data-testid="supplier-booking-next">
-              {lastStep ? <Send aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
-              <span>{createHold.isPending ? t('supplierSite.booking.actions.sending') : lastStep ? t('supplierSite.booking.actions.send') : t('supplierSite.booking.actions.next')}</span>
-            </button>
-          </div>
-          {lastStep ? <p className="vb-after">{t('supplierSite.booking.actions.after')}</p> : null}
-        </form>
+            </div>
+            {lastStep ? <p className="vb-after">{t('supplierSite.booking.actions.after')}</p> : null}
+          </form>
+        )}
 
         <aside className="vb-aside" aria-label={t('supplierSite.booking.summary.title')}>
           {summary}

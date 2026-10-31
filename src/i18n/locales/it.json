@@ -1437,7 +1437,11 @@
       "showcaseNotPublished": "La vetrina non è ancora pubblicata: pubblicala prima.",
       "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
       "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
-      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione."
+      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione.",
+      "servicePaymentInFlight": "C’è già un pagamento in corso per questo importo: aspetta qualche istante.",
+      "servicePaymentLinkInvalid": "Questo link di pagamento non è valido o è scaduto.",
+      "servicePaymentNotPayable": "Questo pagamento non si può più pagare: potrebbe essere già saldato o ritirato.",
+      "servicePaymentSupplierNotReady": "Il professionista non può ricevere il pagamento in questo momento. Riprova più tardi."
     }
   },
   "appShell": {
@@ -12421,6 +12425,27 @@
     "empty": "Nessuna categoria di servizio disponibile.",
     "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
   },
+  "servicePayment": {
+    "amount": "Importo",
+    "completed": "Lavoro finito il",
+    "failed": "L’ultimo tentativo di pagamento non è andato a buon fine. Puoi riprovare.",
+    "invalidLink": "Questo link di pagamento non è valido o è stato sostituito da uno più recente. Se hai ricevuto una richiesta più recente, usa quella.",
+    "loadError": "Non riusciamo a caricare il pagamento adesso.",
+    "loading": "Carico il pagamento…",
+    "notice": "Paghi online con CasaZen, in modo sicuro.",
+    "paid": "Pagamento ricevuto. Grazie!",
+    "payNow": "Paga {{amount}}",
+    "processing": "Stiamo confermando il pagamento: ci vuole qualche istante.",
+    "property": "Immobile",
+    "retry": "Riprova",
+    "service": "Servizio",
+    "sessionError": "Non riusciamo ad aprire il pagamento adesso. Riprova tra poco.",
+    "supplier": "Professionista",
+    "title": "Pagamento di un servizio",
+    "total": "Totale",
+    "unavailable": "Questo pagamento non è più disponibile: potrebbe essere già stato saldato in altro modo o ritirato.",
+    "validUntil": "Il link vale fino al {{date}}."
+  },
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
@@ -16681,6 +16706,7 @@
       "checkEmail": {
         "back": "Torna a {{name}}",
         "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
+        "leadNoAddress": "Ti abbiamo scritto un’email. Apri il link per inviare la richiesta a {{name}}.",
         "nothingYet": "Finché non apri il link, {{name}} non riceve nulla.",
         "spam": "Non la trovi? Guarda anche nella cartella dello spam.",
         "title": "Controlla la tua email",
@@ -16766,7 +16792,7 @@
         "other": "Non siamo riusciti a inviare la richiesta. Controlla la connessione e riprova.",
         "outsideZone": "Questo comune è fuori dalla zona del professionista. Puoi mandare una richiesta su misura.",
         "payment": "Il servizio di pagamento non risponde adesso. Riprova tra poco.",
-        "paymentSoon": "Il pagamento con carta di questo sito arriva con il prossimo aggiornamento: per ora da qui non si può prenotare.",
+        "paymentFailed": "Il pagamento non è andato a buon fine. Puoi riprovare da capo.",
         "preview": "Questa è l’anteprima: la richiesta non si invia.",
         "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
         "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
@@ -16776,6 +16802,15 @@
         "unavailable": "La prenotazione non è disponibile in questo momento. Riprova più tardi."
       },
       "optional": "facoltativo",
+      "payment": {
+        "blocked": "Importo bloccato sulla carta: {{amount}}.",
+        "chargeIfAccepted": "Lo addebitiamo soltanto se {{name}} accetta. Se rifiuta, non risponde in tempo o annulli prima, il blocco viene rilasciato e non paghi nulla.",
+        "failed": "La carta non è stata accettata. Controlla i dati o prova con un’altra carta.",
+        "held": "CasaZen trattiene l’importo finché non confermi che è tutto a posto o finché non finisce il tempo per segnalare un problema: dopo il lavoro ti diciamo fino a quando.",
+        "submit": "Blocca {{amount}} e continua",
+        "until": "Confermalo entro le {{time}}: dopo, l’orario torna libero e il blocco viene rilasciato.",
+        "working": "Un momento…"
+      },
       "problems": {
         "accessNotes": {
           "tooLong": "Il testo è troppo lungo: scrivi l’essenziale."
@@ -16825,12 +16860,17 @@
         "onQuoteItem": "{{name}}: manda una richiesta su misura",
         "onQuoteLead": "Per questi servizi il prezzo lo decide il professionista:",
         "optionsError": "Non riusciamo a caricare le opzioni di questo servizio.",
-        "optionsTitle": "Per darti il prezzo giusto"
+        "optionsTitle": "Per darti il prezzo giusto",
+        "variation": "Serve una variazione?"
       },
       "stepInfo": {
         "details": {
           "purpose": "Ultimo passo: ti mandiamo un link per confermare l’email.",
           "title": "I tuoi dati"
+        },
+        "payment": {
+          "purpose": "L’importo viene solo bloccato, non addebitato.",
+          "title": "Blocchiamo l’importo sulla carta"
         },
         "service": {
           "purpose": "Scegli il servizio. Il prezzo si aggiorna mentre scegli.",
@@ -16849,6 +16889,7 @@
         "back": "Torna al passo: {{step}}",
         "details": "I tuoi dati",
         "label": "Passi della prenotazione",
+        "payment": "Pagamento",
         "progress": "Passo {{current}} di {{total}}",
         "service": "Servizio",
         "when": "Quando",
@@ -16987,6 +17028,235 @@
       },
       "title": "Prenoti in cinque passi"
     },
+    "inquiry": {
+      "actions": {
+        "after": "Ti mandiamo un’email con un link: finché non lo apri, {{name}} non riceve nulla.",
+        "offline": "Sei offline: collegati per inviare la richiesta.",
+        "send": "Invia la richiesta",
+        "sending": "Invio…"
+      },
+      "again": "Fai una nuova richiesta",
+      "alternatives": {
+        "lead": "Lavorano nel tuo comune e prendono richieste online.",
+        "none": "Per ora non abbiamo altri professionisti da proporti per questa richiesta.",
+        "title": "Altri professionisti per te",
+        "typical": "Di solito risponde in {{typical}}"
+      },
+      "back": "Torna a {{name}}",
+      "cancel": {
+        "confirm": "Sì, chiudi la richiesta",
+        "text": "Chiudere la richiesta non costa nulla. {{name}} riceve un avviso.",
+        "title": "Vuoi chiudere la richiesta?"
+      },
+      "chat": {
+        "closed": "La conversazione è chiusa: puoi leggere i messaggi, ma non scriverne altri.",
+        "composerLabel": "Scrivi a {{name}}",
+        "contacts": "I messaggi restano dentro CasaZen: non scrivere numeri di telefono né indirizzi email.",
+        "empty": "Non ci sono ancora messaggi.",
+        "logLabel": "Messaggi con {{name}}",
+        "offline": "Sei offline: collegati per scrivere.",
+        "placeholder": "Scrivi un messaggio…",
+        "sendError": "Non siamo riusciti a inviare il messaggio. Controlla la connessione e riprova.",
+        "system": "CasaZen",
+        "title": "La conversazione",
+        "typical": "Di solito {{name}} risponde in {{typical}}.",
+        "unavailable": "{{name}} non è disponibile in questo momento: puoi leggere i messaggi, ma non scriverne altri.",
+        "you": "Tu"
+      },
+      "checkEmail": {
+        "back": "Torna a {{name}}",
+        "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
+        "leadNoAddress": "Ti abbiamo scritto un’email. Apri il link per inviare la richiesta a {{name}}.",
+        "nothingYet": "Finché non apri il link, {{name}} non riceve nulla.",
+        "spam": "Non la trovi? Guarda anche nella cartella dello spam.",
+        "title": "Controlla la tua email",
+        "until": "Il link vale fino alle {{time}}: dopo, devi rifare la richiesta."
+      },
+      "confirm": {
+        "again": "Fai una nuova richiesta",
+        "already": {
+          "lead": "La richiesta era già stata inviata: la trovi in «La mia richiesta» con il codice qui accanto.",
+          "title": "Hai già controllato la tua email"
+        },
+        "done": {
+          "lead": "{{name}} ha ricevuto la tua richiesta e ha tempo fino a {{when}} per risponderti. La conversazione è nella tua pagina «La mia richiesta».",
+          "leadNoDeadline": "{{name}} ha ricevuto la tua richiesta. La conversazione è nella tua pagina «La mia richiesta».",
+          "title": "Richiesta inviata"
+        },
+        "expired": {
+          "text": "Il tempo per controllare l’email è finito e la richiesta non è stata inviata. Puoi ricominciare.",
+          "title": "Il link è scaduto"
+        },
+        "invalid": {
+          "text": "Il link potrebbe essere incompleto o già usato. Se hai già controllato l’email, trovi la richiesta in «La mia richiesta» con il codice che ti abbiamo scritto; altrimenti puoi ricominciare.",
+          "title": "Questo link non è valido"
+        },
+        "kind": "Richiesta su misura",
+        "myRequest": "La mia richiesta",
+        "next": {
+          "close": "Chiudere non costa nulla",
+          "closeText": "Dalla pagina «La mia richiesta» puoi chiudere la richiesta quando vuoi, senza costi.",
+          "mail": "Ti avvisiamo per email",
+          "mailText": "Quando il professionista ti risponde ti scriviamo, senza il testo del messaggio: le parole restano nella tua pagina.",
+          "talk": "Scrivi con {{name}}",
+          "talkText": "Ha tempo fino a {{when}} per risponderti. Se non lo fa, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti.",
+          "talkTextNoDeadline": "Ti risponde nella tua pagina «La mia richiesta». Se non lo fa in tempo, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti."
+        },
+        "unavailable": "La richiesta non può essere inviata in questo momento. Riprova più tardi."
+      },
+      "form": {
+        "comune": "In quale comune?",
+        "consent": "Ho letto l’<privacy>informativa sulla privacy</privacy> e acconsento al trattamento dei miei dati per questa richiesta.",
+        "counter": "{{used}} / {{max}} caratteri",
+        "email": "Email",
+        "emailFix": "Sì, correggi",
+        "emailHint": "Ti mandiamo qui il link per inviare la richiesta.",
+        "emailSuggest": "Forse intendevi {{email}}?",
+        "fullName": "Nome e cognome",
+        "message": "Descrivi cosa ti serve",
+        "messageHint": "Dove, quanto è grande, quando ti serve: più dettagli dai, più preciso sarà il professionista. Non scrivere numeri di telefono né indirizzi email: la conversazione resta dentro CasaZen.",
+        "messagePlaceholder": "Per esempio: pulizia dopo la ristrutturazione di un bilocale, con vetri e balcone.",
+        "phone": "Telefono",
+        "phoneHint": "Lo vede il professionista solo quando prende in carico la richiesta.",
+        "privacy": "Nome, email e telefono arrivano al professionista solo quando prende in carico la richiesta.",
+        "service": "Su quale servizio?",
+        "serviceHint": "Se c’è, scegli quello più vicino a ciò che cerchi.",
+        "serviceOther": "Altro, una cosa diversa",
+        "whatTitle": "Di cosa hai bisogno",
+        "whoTitle": "I tuoi dati"
+      },
+      "how": {
+        "check": "Controlla la tua email",
+        "checkText": "Ti mandiamo un link: finché non lo apri, {{name}} non riceve nulla.",
+        "describe": "Racconta cosa ti serve",
+        "describeText": "Qualche riga sul lavoro e il comune dove si fa.",
+        "talk": "Scrivi con {{name}}",
+        "talkText": "La conversazione resta dentro CasaZen. Se serve, il professionista ti manda un’offerta con il prezzo e l’orario.",
+        "title": "Come funziona"
+      },
+      "lead": "Raccontaci cosa ti serve: {{name}} ti risponde qui, in una conversazione dentro CasaZen, e se serve ti manda un’offerta con il prezzo e l’orario.",
+      "manage": {
+        "cancel": "Chiudi la richiesta",
+        "lead": "Chiudere non costa nulla.",
+        "title": "Chiudi la richiesta"
+      },
+      "notice": {
+        "consent": "Per continuare serve il tuo consenso al trattamento dei dati.",
+        "consentOutdated": "Il testo dell’informativa è cambiato mentre scrivevi: rileggilo e conferma di nuovo.",
+        "invalid": "Alcuni dati non sono validi: controlla i campi segnati.",
+        "offline": "{{name}} non riceve richieste in questo momento.",
+        "other": "Non siamo riusciti a inviare la richiesta. Controlla la connessione e riprova.",
+        "outsideZone": "{{comune}} è fuori dalla zona in cui lavora {{name}}: da lì non può ricevere richieste. Scegli un altro comune.",
+        "preview": "Questa è l’anteprima: la richiesta non si invia.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "serviceGone": "Questo servizio non è più disponibile. Scegline un altro, oppure lascia «Altro».",
+        "siteGone": "Questa pagina non è più disponibile.",
+        "unavailable": "La richiesta non è disponibile in questo momento. Riprova più tardi."
+      },
+      "offer": {
+        "accept": "Accetta l’offerta",
+        "acceptPay": "Accetta e paga {{total}}",
+        "decline": "Non mi interessa",
+        "label": "Offerta",
+        "line": "{{quantity}} × {{label}}",
+        "notReserved": "L’orario non è riservato finché non accetti: se nel frattempo non fosse più libero, te lo diciamo e puoi continuare a scrivere.",
+        "validUntil": "L’offerta vale fino a {{when}}.",
+        "write": "Scrivi a {{name}}"
+      },
+      "payment": {
+        "chargeIfFree": "Se l’orario è ancora libero, l’importo viene addebitato e la richiesta passa in carico a {{name}}. Se non lo è, il blocco viene tolto e non paghi nulla.",
+        "continue": "Continua con il pagamento",
+        "status": {
+          "authorized": {
+            "text": "Sulla tua carta sono bloccati {{amount}}. Stiamo controllando che l’orario sia ancora libero: se lo è, l’importo viene addebitato e la richiesta passa in carico a {{name}}; se non lo è, il blocco viene tolto.",
+            "title": "Importo bloccato sulla carta"
+          },
+          "awaiting_card": {
+            "text": "Per accettare l’offerta serve confermare la carta: non ti abbiamo addebitato nulla.",
+            "title": "In attesa della carta"
+          }
+        },
+        "taking": "Carta confermata. Stiamo prendendo in carico la richiesta con {{name}}: puoi lasciare aperta questa pagina, appena è fatto lo vedi qui e ti scriviamo.",
+        "title": "Conferma il pagamento"
+      },
+      "phases": {
+        "card": {
+          "lead": "Manca solo la carta: blocchiamo {{total}} e, se l’orario è ancora libero, la richiesta passa in carico a {{name}}.",
+          "title": "Conferma il pagamento"
+        },
+        "closedByCustomer": {
+          "lead": "Chiudere non costa nulla. Puoi fare una nuova richiesta quando vuoi.",
+          "title": "Hai chiuso la richiesta"
+        },
+        "closedBySupplier": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "{{name}} ha chiuso la richiesta"
+        },
+        "closedBySystem": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "La richiesta è stata chiusa"
+        },
+        "declined": {
+          "lead": "Hai rifiutato l’offerta. Puoi continuare a scrivere: {{name}} può mandartene un’altra.",
+          "title": "Offerta rifiutata"
+        },
+        "expired": {
+          "lead": "Non hai risposto all’offerta in tempo, quindi la richiesta si è chiusa. Puoi fare una nuova richiesta quando vuoi.",
+          "title": "L’offerta è scaduta"
+        },
+        "lapsed": {
+          "lead": "Non puoi più rispondere a questa offerta. La richiesta si chiude da sola; puoi farne una nuova quando vuoi.",
+          "title": "L’offerta non è più valida"
+        },
+        "offer": {
+          "lead": "Totale {{total}}, {{when}}. L’orario non è riservato finché non accetti.",
+          "leadPay": "Totale {{total}}, {{when}}. Se accetti, blocchiamo l’importo sulla tua carta: la richiesta passa in carico quando il blocco è confermato.",
+          "title": "{{name}} ti ha mandato un’offerta"
+        },
+        "refused": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "{{name}} non può occuparsene"
+        },
+        "silent": {
+          "lead": "La richiesta si è chiusa. Se ci sono altri professionisti nel tuo comune, li trovi qui sotto.",
+          "title": "{{name}} non ha risposto in tempo"
+        },
+        "talking": {
+          "lead": "Scrivi qui sotto: la conversazione resta dentro CasaZen.",
+          "title": "Stai scrivendo con {{name}}"
+        },
+        "waiting": {
+          "ifSilent": "Se non risponde in tempo, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti.",
+          "lead": "{{name}} ha tempo fino a {{when}} per risponderti. La conversazione è qui sotto.",
+          "leadNoDeadline": "{{name}} deve ancora risponderti. La conversazione è qui sotto.",
+          "title": "Richiesta inviata a {{name}}"
+        }
+      },
+      "problems": {
+        "email": {
+          "invalid": "Controlla l’email: manca qualcosa (per esempio la @ o il dominio).",
+          "required": "Scrivi la tua email: ti mandiamo lì il link.",
+          "tooLong": "L’email è troppo lunga."
+        },
+        "fullName": {
+          "invalid": "Scrivi il tuo nome per intero.",
+          "required": "Scrivi nome e cognome.",
+          "tooLong": "Il nome è troppo lungo."
+        },
+        "message": {
+          "required": "Scrivi cosa ti serve.",
+          "tooLong": "Il testo è troppo lungo: massimo {{max}} caratteri.",
+          "tooShort": "Scrivi qualche parola in più: servono almeno {{min}} caratteri."
+        },
+        "phone": {
+          "invalid": "Il numero sembra incompleto: controlla le cifre.",
+          "required": "Scrivi un numero di telefono."
+        }
+      },
+      "title": "Richiesta su misura",
+      "titleFor": "Richiesta su misura: {{service}}"
+    },
     "list": {
       "all": "Tutti i servizi",
       "allCategories": "Tutti",
@@ -17024,6 +17294,7 @@
       "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
       "booking": "Prenota · {{name}}",
       "confirm": "La tua richiesta · {{name}}",
+      "inquiry": "Richiesta su misura · {{name}}",
       "request": "La mia richiesta · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
@@ -17043,6 +17314,266 @@
     "paused": {
       "text": "La vetrina è in pausa: per ora non si può prenotare. Torna a trovarci più avanti.",
       "title": "{{name}} non accetta prenotazioni per ora"
+    },
+    "request": {
+      "again": "Prenota di nuovo",
+      "calendar": {
+        "add": "Aggiungi al calendario",
+        "description": "Codice della richiesta: {{code}}.",
+        "summary": "{{service}} · {{name}}"
+      },
+      "cancel": {
+        "back": "No, la tengo",
+        "confirm": "Sì, annulla la richiesta",
+        "reason": "Vuoi dirci il motivo?",
+        "reasonHint": "Lo legge {{name}}.",
+        "reasonTooLong": "Il testo è troppo lungo: scrivi l’essenziale.",
+        "text": "Annullare non costa nulla. {{name}} riceve un avviso e l’orario torna libero.",
+        "title": "Vuoi annullare la richiesta?"
+      },
+      "confirmOk": {
+        "back": "Non ancora",
+        "confirm": "Sì, è tutto a posto",
+        "open": "Tutto a posto",
+        "text": "Se confermi, {{name}} riceve subito il pagamento e non potrai più segnalare un problema su questo lavoro.",
+        "title": "È tutto a posto?"
+      },
+      "countdown": {
+        "customer": "Hai ancora {{time}} per rispondere.",
+        "over": "Il tempo per rispondere è finito.",
+        "supplier": "{{name}} ha ancora {{time}} per rispondere."
+      },
+      "dispute": {
+        "openedByCasaZen": "Il lavoro non risulta fatto: la segnalazione l’ha aperta CasaZen",
+        "reasons": {
+          "incomplete": "Il lavoro è incompleto",
+          "not_as_described": "Non corrisponde a quanto descritto",
+          "not_done": "Il lavoro non è stato fatto",
+          "other": "Altro",
+          "poor_quality": "Il lavoro è fatto male"
+        },
+        "refundDone": "Rimborsato: {{amount}}.",
+        "refundPending": "Rimborso in corso: {{amount}}.",
+        "status": {
+          "AwaitingDecision": "La stiamo valutando. Il pagamento a {{name}} è fermo finché non decidiamo.",
+          "AwaitingSupplier": "Abbiamo avvisato {{name}}: ha tempo fino a {{when}} per rispondere. Poi la valutiamo noi. Intanto il pagamento è fermo.",
+          "ResolvedForCustomer": "Dopo la verifica abbiamo dato ragione a te.",
+          "ResolvedForSupplier": "Dopo la verifica, l’importo è andato a {{name}}.",
+          "Withdrawn": "Hai ritirato la segnalazione: il pagamento a {{name}} riprende."
+        },
+        "supplierReplied": "{{name}} ha risposto.",
+        "title": "La tua segnalazione",
+        "withdraw": "Ritira la segnalazione"
+      },
+      "errors": {
+        "authorizationExpired": "Il blocco sulla carta è scaduto: la richiesta non si può accettare così. Non ti abbiamo addebitato nulla.",
+        "cannotCancel": "Questa richiesta non si può più annullare da qui.",
+        "cannotReschedule": "Questa richiesta non si può più spostare.",
+        "captureFailed": "Non siamo riusciti ad addebitare l’importo sulla tua carta: la richiesta resta com’è e non ti abbiamo addebitato nulla.",
+        "changed": "Nel frattempo la richiesta è cambiata: ti mostro com’è adesso.",
+        "inFlight": "C’è un pagamento di un tentativo precedente ancora in verifica: riprova tra poco.",
+        "invalid": "Qualcosa non va: controlla e riprova.",
+        "messageInvalid": "Il messaggio non è valido: serve del testo semplice, fino a 1000 caratteri.",
+        "noOffer": "Non c’è nessuna offerta da accettare.",
+        "noProposal": "Non c’è nessun orario da accettare.",
+        "noQuote": "Non c’è nessun preventivo da accettare.",
+        "notConfirmable": "Non c’è niente da confermare adesso: il pagamento potrebbe essere già stato rilasciato o essere fermo.",
+        "notReportable": "Per questa richiesta non si può segnalare un problema da qui.",
+        "offerExpired": "Il tempo per rispondere all’offerta è finito.",
+        "other": "Non siamo riusciti a completare l’operazione. Controlla la connessione e riprova.",
+        "proposalExpired": "Il tempo per rispondere alla proposta è finito.",
+        "providerError": "Il servizio di pagamento non risponde adesso. Non è stato addebitato nulla: riprova tra poco.",
+        "quoteExpired": "Il tempo per rispondere al preventivo è finito.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "slotGone": "Quell’orario non è più libero. Non è cambiato nulla e non ti abbiamo addebitato nulla: scrivi al professionista per concordarne un altro, oppure rifiuta l’offerta.",
+        "slotTaken": "Questo orario non è più libero: scegline un altro.",
+        "supplierUnavailable": "Il professionista non è disponibile in questo momento.",
+        "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi.",
+        "threadFull": "La conversazione ha raggiunto il numero massimo di messaggi: non se ne possono scrivere altri.",
+        "tooEarly": "Potrai segnalare un problema quando il lavoro sarà finito.",
+        "windowClosed": "Il tempo per segnalare un problema è finito."
+      },
+      "gate": {
+        "code": "Codice della richiesta",
+        "codeHint": "Lo trovi nell’email: cinque caratteri, un trattino, altri cinque.",
+        "codeInvalid": "Il codice ha dieci caratteri, per esempio 7K2XM-9QD4T.",
+        "email": "Email",
+        "emailHint": "Quella con cui hai prenotato.",
+        "emailInvalid": "Controlla l’email: manca qualcosa (per esempio la @ o il dominio).",
+        "error": "Non riusciamo a cercare la richiesta adesso. Controlla la connessione e riprova.",
+        "lead": "Scrivi il codice e l’email che hai usato per prenotare.",
+        "notFound": "Non troviamo una richiesta con questo codice e questa email. Controlla di averli scritti come nell’email di conferma.",
+        "privacy": "Non salviamo l’email in questo browser.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "searching": "Cerco…",
+        "submit": "Cerca la mia richiesta",
+        "title": "La mia richiesta"
+      },
+      "manage": {
+        "cancel": "Annulla la richiesta",
+        "lead": "Annullare non costa nulla.",
+        "reschedule": "Sposta l’orario",
+        "title": "Modifica o annulla"
+      },
+      "payment": {
+        "status": {
+          "authorized": {
+            "text": "Sulla tua carta sono bloccati {{amount}}: non ti abbiamo addebitato nulla. Lo faremo soltanto se {{name}} accetta; se rifiuta, non risponde in tempo o annulli prima, il blocco viene rilasciato.",
+            "title": "Importo bloccato sulla carta"
+          },
+          "canceled": {
+            "text": "Il blocco sulla carta è stato rilasciato: non è stato addebitato nulla.",
+            "title": "Nessun addebito"
+          },
+          "held": {
+            "text": "{{amount}} sono incassati e li trattiene CasaZen. {{name}} li riceve quando confermi che è tutto a posto o quando finisce il tempo per segnalare un problema.",
+            "title": "Importo incassato e trattenuto da CasaZen"
+          },
+          "refunded": {
+            "text": "Ti abbiamo rimborsato {{refunded}}. Quando compare sul tuo estratto conto dipende dalla tua banca.",
+            "title": "Importo rimborsato"
+          },
+          "released": {
+            "text": "L’importo è stato rilasciato a {{name}}.",
+            "title": "Pagamento completato"
+          },
+          "review": {
+            "text": "Stiamo controllando il pagamento di questa richiesta.",
+            "title": "Pagamento in verifica"
+          }
+        },
+        "title": "Il pagamento",
+        "window": "Puoi segnalare un problema fino a {{when}}."
+      },
+      "phases": {
+        "cancelledByCustomer": {
+          "lead": "Annullare non costa nulla. L’orario è tornato libero.",
+          "title": "Hai annullato la richiesta"
+        },
+        "cancelledBySupplier": {
+          "lead": "Puoi prenotare di nuovo, anche per un altro orario.",
+          "leadReason": "Motivo: {{reason}}",
+          "title": "{{name}} ha annullato la richiesta"
+        },
+        "cancelledBySystem": {
+          "lead": "Il tempo per rispondere è finito. Puoi prenotare di nuovo quando vuoi.",
+          "title": "La richiesta è stata annullata"
+        },
+        "done": {
+          "lead": "{{name}} ha segnato il lavoro come finito.",
+          "leadHeld": "{{name}} ha segnato il lavoro come finito. Se è tutto a posto, confermalo: {{name}} riceve subito il pagamento. Se qualcosa non va, segnalalo.",
+          "title": "Lavoro finito"
+        },
+        "inProgress": {
+          "lead": "{{name}} è al lavoro.",
+          "title": "Il lavoro è in corso"
+        },
+        "lapsed": {
+          "lead": "La richiesta sta per essere annullata perché non c’è stata una risposta in tempo. Puoi prenotare di nuovo quando vuoi.",
+          "title": "Il tempo per rispondere è finito"
+        },
+        "paid": {
+          "lead": "Il lavoro è concluso. Grazie!",
+          "title": "Tutto fatto"
+        },
+        "proposal": {
+          "lead": "Propone {{when}}. Se accetti, la richiesta è confermata a quell’orario. Hai tempo fino a {{answerBy}}.",
+          "leadNoDeadline": "Propone {{when}}. Se accetti, la richiesta è confermata a quell’orario.",
+          "title": "{{name}} ti propone un altro orario"
+        },
+        "quote": {
+          "lead": "{{name}} ti propone {{total}}. Se accetti, la richiesta è confermata a questo prezzo. Hai tempo fino a {{answerBy}}.",
+          "leadNoDeadline": "{{name}} ti propone {{total}}. Se accetti, la richiesta è confermata a questo prezzo.",
+          "title": "Il preventivo è pronto"
+        },
+        "refused": {
+          "lead": "In quell’orario non è disponibile. Puoi scegliere un altro orario.",
+          "leadReason": "Motivo: {{reason}}",
+          "title": "{{name}} non può accettare"
+        },
+        "taken": {
+          "lead": "{{name}} ti aspetta {{when}}.",
+          "title": "Prenotazione confermata"
+        },
+        "waiting": {
+          "lead": "{{name}} deve ancora rispondere: ha tempo fino a {{when}}. Se non risponde, la richiesta si annulla da sola e ti avvisiamo.",
+          "leadNoDeadline": "{{name}} deve ancora rispondere. Se non risponde in tempo, la richiesta si annulla da sola e ti avvisiamo.",
+          "title": "Richiesta inviata"
+        }
+      },
+      "pipeline": {
+        "outside": "La richiesta si è fermata qui: non c’è altro da fare.",
+        "refresh": "Aggiorna lo stato",
+        "steps": {
+          "done": {
+            "label": "Lavoro finito",
+            "text": "Il professionista ha finito"
+          },
+          "inProgress": {
+            "label": "In corso",
+            "text": "Il giorno del lavoro"
+          },
+          "payment": {
+            "label": "Pagamento",
+            "text": "Il lavoro è chiuso"
+          },
+          "request": {
+            "label": "Richiesta",
+            "text": "Hai inviato la richiesta"
+          },
+          "taken": {
+            "label": "Presa in carico",
+            "text": "Il professionista accetta"
+          }
+        },
+        "title": "Dov’è la tua richiesta"
+      },
+      "proposal": {
+        "accept": "Accetta il nuovo orario",
+        "reject": "Non va bene"
+      },
+      "quote": {
+        "accept": "Accetta il preventivo",
+        "otherTime": "Propone anche questo orario: {{when}}.",
+        "reject": "Rifiuta",
+        "total": "Totale"
+      },
+      "report": {
+        "back": "Annulla",
+        "open": "Segnala un problema",
+        "reasonLegend": "Che cosa è andato storto?",
+        "reasonRequired": "Scegli che cosa è andato storto.",
+        "send": "Invia la segnalazione",
+        "text": "Finché non è risolto, il pagamento a {{name}} resta fermo. Lo valutiamo noi.",
+        "textHint": "Lo leggono {{name}} e il team di CasaZen. Solo testo, niente foto.",
+        "textLabel": "Racconta cosa è successo",
+        "textRequired": "Con «Altro» serve scrivere cosa è successo.",
+        "textTooLong": "Il testo è troppo lungo: massimo 1000 caratteri.",
+        "title": "Segnala un problema"
+      },
+      "reschedule": {
+        "back": "Lascio com’è",
+        "confirm": "Sposta la richiesta",
+        "error": "Non riusciamo a caricare gli orari liberi.",
+        "loading": "Cerco gli orari liberi…",
+        "none": "Non ci sono altri orari liberi nei prossimi giorni.",
+        "text": "Scegli un orario libero: il professionista dovrà confermare di nuovo.",
+        "title": "Scegli un altro orario"
+      },
+      "ticket": {
+        "price": {
+          "estimate": "Totale stimato",
+          "final": "Totale",
+          "label": "Prezzo",
+          "quote": "Preventivo"
+        },
+        "priceNone": "Da concordare con il professionista",
+        "when": "Quando",
+        "where": "Dove"
+      },
+      "working": "Un momento…"
     },
     "responseTime": {
       "hours_one": "circa {{count}} ora",

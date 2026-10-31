@@ -77,6 +77,8 @@ export function SupplierSiteShell() {
   const onBooking = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/prenota`, end: true }) !== null;
   const onConfirm = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/conferma`, end: true }) !== null;
   const onRequest = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/richiesta`, end: true }) !== null;
+  // The request on measure (SP-12c): a form like the booking, private in the same way and not indexed.
+  const onInquiry = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/preventivo`, end: true }) !== null;
   const onCustomerArea = onConfirm || onRequest;
   let title = t('supplierShowcase.title');
   let description: string | undefined;
@@ -97,6 +99,9 @@ export function SupplierSiteShell() {
     } else if (onBooking) {
       title = t('supplierSite.meta.booking', { name });
       description = undefined;
+    } else if (onInquiry) {
+      title = t('supplierSite.meta.inquiry', { name });
+      description = undefined;
     } else if (onConfirm) {
       title = t('supplierSite.meta.confirm', { name });
       description = undefined;
@@ -109,7 +114,7 @@ export function SupplierSiteShell() {
   // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, for the preview of a draft and for
   // the private pages of the booking.
   // No canonical, no Open Graph, no structured data (decision D11).
-  useSeoMeta({ title, description, noindex: isError || preview || onBooking || onCustomerArea });
+  useSeoMeta({ title, description, noindex: isError || preview || onBooking || onInquiry || onCustomerArea });
 
   if (!slug || isLoading) {
     return (

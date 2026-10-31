@@ -1437,7 +1437,11 @@
       "showcaseNotPublished": "The showcase is not published yet: publish it first.",
       "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
       "showcaseUndoUnavailable": "The time to undo the publication has run out.",
-      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version."
+      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version.",
+      "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
+      "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
+      "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
+      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later."
     }
   },
   "appShell": {
@@ -12421,6 +12425,27 @@
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
   },
+  "servicePayment": {
+    "amount": "Amount",
+    "completed": "Work finished on",
+    "failed": "The last payment attempt did not go through. You can try again.",
+    "invalidLink": "This payment link is not valid or was replaced by a more recent one. If you received a more recent request, use that one.",
+    "loadError": "We cannot load the payment right now.",
+    "loading": "Loading the payment…",
+    "notice": "You pay online with CasaZen, safely.",
+    "paid": "Payment received. Thank you!",
+    "payNow": "Pay {{amount}}",
+    "processing": "We are confirming the payment: it takes a few moments.",
+    "property": "Property",
+    "retry": "Try again",
+    "service": "Service",
+    "sessionError": "We cannot open the payment right now. Try again shortly.",
+    "supplier": "Professional",
+    "title": "Payment of a service",
+    "total": "Total",
+    "unavailable": "This payment is no longer available: it may already have been settled another way or withdrawn.",
+    "validUntil": "The link works until {{date}}."
+  },
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
@@ -16681,6 +16706,7 @@
       "checkEmail": {
         "back": "Back to {{name}}",
         "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
+        "leadNoAddress": "We wrote you an e-mail. Open the link to send the request to {{name}}.",
         "nothingYet": "Until you open the link, {{name}} receives nothing.",
         "spam": "Cannot find it? Look in the spam folder too.",
         "title": "Check your e-mail",
@@ -16766,7 +16792,7 @@
         "other": "We could not send the request. Check your connection and try again.",
         "outsideZone": "This town is outside the professional’s area. You can send a request on measure.",
         "payment": "The payment service is not answering right now. Try again shortly.",
-        "paymentSoon": "Payment by card on this site arrives with the next update: for now you cannot book from here.",
+        "paymentFailed": "The payment did not go through. You can start again.",
         "preview": "This is the preview: the request is not sent.",
         "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
         "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
@@ -16776,6 +16802,15 @@
         "unavailable": "Booking is not available right now. Try again later."
       },
       "optional": "optional",
+      "payment": {
+        "blocked": "Amount blocked on your card: {{amount}}.",
+        "chargeIfAccepted": "We charge it only if {{name}} accepts. If it refuses, does not answer in time or you cancel first, the block is released and you pay nothing.",
+        "failed": "The card was not accepted. Check the details or try another card.",
+        "held": "CasaZen holds the amount until you confirm all is fine or the time to report a problem ends: after the job we tell you until when.",
+        "submit": "Block {{amount}} and continue",
+        "until": "Confirm it by {{time}}: after that, the time is free again and the block is released.",
+        "working": "One moment…"
+      },
       "problems": {
         "accessNotes": {
           "tooLong": "The text is too long: write what matters."
@@ -16825,12 +16860,17 @@
         "onQuoteItem": "{{name}}: send a request on measure",
         "onQuoteLead": "For these services the professional decides the price:",
         "optionsError": "We cannot load the options of this service.",
-        "optionsTitle": "To give you the right price"
+        "optionsTitle": "To give you the right price",
+        "variation": "Need something different?"
       },
       "stepInfo": {
         "details": {
           "purpose": "Last step: we send you a link to confirm your e-mail.",
           "title": "Your details"
+        },
+        "payment": {
+          "purpose": "The amount is only blocked, not charged.",
+          "title": "We block the amount on your card"
         },
         "service": {
           "purpose": "Choose the service. The price updates as you choose.",
@@ -16849,6 +16889,7 @@
         "back": "Back to step: {{step}}",
         "details": "Your details",
         "label": "Booking steps",
+        "payment": "Payment",
         "progress": "Step {{current}} of {{total}}",
         "service": "Service",
         "when": "When",
@@ -16987,6 +17028,235 @@
       },
       "title": "Book in five steps"
     },
+    "inquiry": {
+      "actions": {
+        "after": "We send you an e-mail with a link: until you open it, {{name}} receives nothing.",
+        "offline": "You are offline: connect to send the request.",
+        "send": "Send the request",
+        "sending": "Sending…"
+      },
+      "again": "Make a new request",
+      "alternatives": {
+        "lead": "They work in your town and take requests online.",
+        "none": "For now we have no other professionals to suggest for this request.",
+        "title": "Other professionals for you",
+        "typical": "Usually replies in {{typical}}"
+      },
+      "back": "Back to {{name}}",
+      "cancel": {
+        "confirm": "Yes, close the request",
+        "text": "Closing the request costs nothing. {{name}} is told.",
+        "title": "Do you want to close the request?"
+      },
+      "chat": {
+        "closed": "The conversation is closed: you can read the messages but not write more.",
+        "composerLabel": "Write to {{name}}",
+        "contacts": "Messages stay inside CasaZen: do not write phone numbers or e-mail addresses.",
+        "empty": "There are no messages yet.",
+        "logLabel": "Messages with {{name}}",
+        "offline": "You are offline: connect to write.",
+        "placeholder": "Write a message…",
+        "sendError": "We could not send the message. Check the connection and try again.",
+        "system": "CasaZen",
+        "title": "The conversation",
+        "typical": "{{name}} usually replies in {{typical}}.",
+        "unavailable": "{{name}} is not available right now: you can read the messages but not write more.",
+        "you": "You"
+      },
+      "checkEmail": {
+        "back": "Back to {{name}}",
+        "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
+        "leadNoAddress": "We wrote you an e-mail. Open the link to send the request to {{name}}.",
+        "nothingYet": "Until you open the link, {{name}} receives nothing.",
+        "spam": "Cannot find it? Look in the spam folder too.",
+        "title": "Check your e-mail",
+        "until": "The link works until {{time}}: after that, you have to make the request again."
+      },
+      "confirm": {
+        "again": "Make a new request",
+        "already": {
+          "lead": "The request had already been sent: you find it in \"My request\" with the code next to this.",
+          "title": "You have already checked your e-mail"
+        },
+        "done": {
+          "lead": "{{name}} has received your request and has until {{when}} to answer you. The conversation is on your \"My request\" page.",
+          "leadNoDeadline": "{{name}} has received your request. The conversation is on your \"My request\" page.",
+          "title": "Request sent"
+        },
+        "expired": {
+          "text": "The time to check the e-mail is over and the request was not sent. You can start again.",
+          "title": "The link has expired"
+        },
+        "invalid": {
+          "text": "The link may be incomplete or already used. If you have already checked your e-mail, you find the request in \"My request\" with the code we wrote to you; otherwise you can start again.",
+          "title": "This link is not valid"
+        },
+        "kind": "Request on measure",
+        "myRequest": "My request",
+        "next": {
+          "close": "Closing costs nothing",
+          "closeText": "From the \"My request\" page you can close the request whenever you like, at no cost.",
+          "mail": "We tell you by e-mail",
+          "mailText": "When the professional answers you we write to you, without the text of the message: the words stay on your page.",
+          "talk": "Write with {{name}}",
+          "talkText": "It has until {{when}} to answer you. If it does not, the request closes and, if there are any, we show you other professionals.",
+          "talkTextNoDeadline": "It answers you on your \"My request\" page. If it does not answer in time, the request closes and, if there are any, we show you other professionals."
+        },
+        "unavailable": "The request cannot be sent right now. Try again later."
+      },
+      "form": {
+        "comune": "In which town?",
+        "consent": "I have read the <privacy>privacy notice</privacy> and I agree to my data being processed for this request.",
+        "counter": "{{used}} / {{max}} characters",
+        "email": "E-mail",
+        "emailFix": "Yes, correct it",
+        "emailHint": "We send the link to send the request here.",
+        "emailSuggest": "Did you mean {{email}}?",
+        "fullName": "Full name",
+        "message": "Describe what you need",
+        "messageHint": "Where, how big, when you need it: the more details you give, the more precise the professional can be. Do not write phone numbers or e-mail addresses: the conversation stays inside CasaZen.",
+        "messagePlaceholder": "For example: cleaning after the renovation of a two-room flat, with windows and balcony.",
+        "phone": "Phone",
+        "phoneHint": "The professional sees it only when it takes the request.",
+        "privacy": "Name, e-mail and phone reach the professional only when it takes the request.",
+        "service": "About which service?",
+        "serviceHint": "If there is one, pick the closest to what you are looking for.",
+        "serviceOther": "Something else",
+        "whatTitle": "What you need",
+        "whoTitle": "Your details"
+      },
+      "how": {
+        "check": "Check your e-mail",
+        "checkText": "We send you a link: until you open it, {{name}} receives nothing.",
+        "describe": "Tell us what you need",
+        "describeText": "A few lines about the job and the town where it is done.",
+        "talk": "Write with {{name}}",
+        "talkText": "The conversation stays inside CasaZen. If needed, the professional sends you an offer with the price and the time.",
+        "title": "How it works"
+      },
+      "lead": "Tell us what you need: {{name}} answers you here, in a conversation inside CasaZen, and if needed sends you an offer with the price and the time.",
+      "manage": {
+        "cancel": "Close the request",
+        "lead": "Closing costs nothing.",
+        "title": "Close the request"
+      },
+      "notice": {
+        "consent": "To go on we need your consent to the processing of your data.",
+        "consentOutdated": "The text of the privacy notice changed while you were writing: read it again and confirm.",
+        "invalid": "Some data are not valid: check the marked fields.",
+        "offline": "{{name}} is not taking requests right now.",
+        "other": "We could not send the request. Check the connection and try again.",
+        "outsideZone": "{{comune}} is outside the area where {{name}} works: it cannot take requests from there. Choose another town.",
+        "preview": "This is the preview: the request is not sent.",
+        "rateLimited": "Too many attempts in a row. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a row. Try again in {{minutes}} minutes.",
+        "serviceGone": "This service is no longer available. Choose another one, or leave \"Something else\".",
+        "siteGone": "This page is no longer available.",
+        "unavailable": "The request is not available right now. Try again later."
+      },
+      "offer": {
+        "accept": "Accept the offer",
+        "acceptPay": "Accept and pay {{total}}",
+        "decline": "Not interested",
+        "label": "Offer",
+        "line": "{{quantity}} × {{label}}",
+        "notReserved": "The time is not reserved until you accept: if it is no longer free meanwhile, we tell you and you can keep writing.",
+        "validUntil": "The offer is valid until {{when}}.",
+        "write": "Write to {{name}}"
+      },
+      "payment": {
+        "chargeIfFree": "If the time is still free, the amount is charged and the request is taken by {{name}}. If it is not, the block is removed and you pay nothing.",
+        "continue": "Go on with the payment",
+        "status": {
+          "authorized": {
+            "text": "{{amount}} are blocked on your card. We are checking that the time is still free: if it is, the amount is charged and the request is taken by {{name}}; if it is not, the block is removed.",
+            "title": "Amount blocked on the card"
+          },
+          "awaiting_card": {
+            "text": "To accept the offer the card has to be confirmed: we have not charged you anything.",
+            "title": "Waiting for the card"
+          }
+        },
+        "taking": "Card confirmed. We are having {{name}} take the request: you can leave this page open, as soon as it is done you see it here and we write to you.",
+        "title": "Confirm the payment"
+      },
+      "phases": {
+        "card": {
+          "lead": "Only the card is left: we block {{total}} and, if the time is still free, the request is taken by {{name}}.",
+          "title": "Confirm the payment"
+        },
+        "closedByCustomer": {
+          "lead": "Closing costs nothing. You can make a new request whenever you like.",
+          "title": "You closed the request"
+        },
+        "closedBySupplier": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "{{name}} closed the request"
+        },
+        "closedBySystem": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "The request was closed"
+        },
+        "declined": {
+          "lead": "You turned the offer down. You can keep writing: {{name}} can send you another one.",
+          "title": "Offer turned down"
+        },
+        "expired": {
+          "lead": "You did not answer the offer in time, so the request closed. You can make a new request whenever you like.",
+          "title": "The offer has expired"
+        },
+        "lapsed": {
+          "lead": "You can no longer answer this offer. The request closes by itself; you can make a new one whenever you like.",
+          "title": "The offer is no longer valid"
+        },
+        "offer": {
+          "lead": "Total {{total}}, {{when}}. The time is not reserved until you accept.",
+          "leadPay": "Total {{total}}, {{when}}. If you accept, we block the amount on your card: the request is taken when the block is confirmed.",
+          "title": "{{name}} sent you an offer"
+        },
+        "refused": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "{{name}} cannot take it"
+        },
+        "silent": {
+          "lead": "The request closed. If there are other professionals in your town, you find them below.",
+          "title": "{{name}} did not answer in time"
+        },
+        "talking": {
+          "lead": "Write below: the conversation stays inside CasaZen.",
+          "title": "You are writing with {{name}}"
+        },
+        "waiting": {
+          "ifSilent": "If it does not answer in time, the request closes and, if there are any, we show you other professionals.",
+          "lead": "{{name}} has until {{when}} to answer you. The conversation is below.",
+          "leadNoDeadline": "{{name}} still has to answer you. The conversation is below.",
+          "title": "Request sent to {{name}}"
+        }
+      },
+      "problems": {
+        "email": {
+          "invalid": "Check the e-mail: something is missing (for example the @ or the domain).",
+          "required": "Write your e-mail: we send the link there.",
+          "tooLong": "The e-mail is too long."
+        },
+        "fullName": {
+          "invalid": "Write your name in full.",
+          "required": "Write your full name.",
+          "tooLong": "The name is too long."
+        },
+        "message": {
+          "required": "Write what you need.",
+          "tooLong": "The text is too long: at most {{max}} characters.",
+          "tooShort": "Write a few more words: at least {{min}} characters are needed."
+        },
+        "phone": {
+          "invalid": "The number looks incomplete: check the digits.",
+          "required": "Write a phone number."
+        }
+      },
+      "title": "Request on measure",
+      "titleFor": "Request on measure: {{service}}"
+    },
     "list": {
       "all": "All services",
       "allCategories": "All",
@@ -17024,6 +17294,7 @@
       "aboutDescription": "The story, the people and the guarantees of {{name}}.",
       "booking": "Book · {{name}}",
       "confirm": "Your request · {{name}}",
+      "inquiry": "Request on measure · {{name}}",
       "request": "My request · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: what it includes, what it costs and when {{name}} is free.",
@@ -17043,6 +17314,266 @@
     "paused": {
       "text": "The showcase is paused: you cannot book for now. Come back later.",
       "title": "{{name}} is not taking bookings for now"
+    },
+    "request": {
+      "again": "Book again",
+      "calendar": {
+        "add": "Add to calendar",
+        "description": "Request code: {{code}}.",
+        "summary": "{{service}} · {{name}}"
+      },
+      "cancel": {
+        "back": "No, keep it",
+        "confirm": "Yes, cancel the request",
+        "reason": "Want to tell us why?",
+        "reasonHint": "{{name}} reads it.",
+        "reasonTooLong": "The text is too long: write what matters.",
+        "text": "Cancelling costs nothing. {{name}} is told and the time is free again.",
+        "title": "Do you want to cancel the request?"
+      },
+      "confirmOk": {
+        "back": "Not yet",
+        "confirm": "Yes, all is fine",
+        "open": "All is fine",
+        "text": "If you confirm, {{name}} receives the payment at once and you can no longer report a problem with this job.",
+        "title": "Is all fine?"
+      },
+      "countdown": {
+        "customer": "You have {{time}} left to answer.",
+        "over": "The time to answer is over.",
+        "supplier": "{{name}} has {{time}} left to answer."
+      },
+      "dispute": {
+        "openedByCasaZen": "The job does not appear to be done: CasaZen opened this report",
+        "reasons": {
+          "incomplete": "The job is incomplete",
+          "not_as_described": "It is not as described",
+          "not_done": "The job was not done",
+          "other": "Other",
+          "poor_quality": "The job was badly done"
+        },
+        "refundDone": "Refunded: {{amount}}.",
+        "refundPending": "Refund in progress: {{amount}}.",
+        "status": {
+          "AwaitingDecision": "We are looking into it. The payment to {{name}} is stopped until we decide.",
+          "AwaitingSupplier": "We told {{name}}: it has until {{when}} to answer. Then we look into it. Meanwhile the payment is stopped.",
+          "ResolvedForCustomer": "After checking, we sided with you.",
+          "ResolvedForSupplier": "After checking, the amount went to {{name}}.",
+          "Withdrawn": "You withdrew the report: the payment to {{name}} goes on."
+        },
+        "supplierReplied": "{{name}} answered.",
+        "title": "Your report",
+        "withdraw": "Withdraw the report"
+      },
+      "errors": {
+        "authorizationExpired": "The block on your card has expired: the request cannot be accepted this way. Nothing was charged.",
+        "cannotCancel": "This request can no longer be cancelled from here.",
+        "cannotReschedule": "This request can no longer be moved.",
+        "captureFailed": "We could not charge the amount to your card: the request stays as it is and nothing was charged.",
+        "changed": "The request changed in the meantime: here it is as it is now.",
+        "inFlight": "A payment from an earlier attempt is still being checked: try again in a moment.",
+        "invalid": "Something is wrong: check and try again.",
+        "messageInvalid": "The message is not valid: it needs plain text, up to 1000 characters.",
+        "noOffer": "There is no offer to accept.",
+        "noProposal": "There is no time to accept.",
+        "noQuote": "There is no quote to accept.",
+        "notConfirmable": "There is nothing to confirm right now: the payment may already have been released or be stopped.",
+        "notReportable": "You cannot report a problem for this request from here.",
+        "offerExpired": "The time to answer the offer is over.",
+        "other": "We could not complete the operation. Check your connection and try again.",
+        "proposalExpired": "The time to answer the proposal is over.",
+        "providerError": "The payment service is not answering right now. Nothing was charged: try again in a moment.",
+        "quoteExpired": "The time to answer the quote is over.",
+        "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "slotGone": "That time is no longer free. Nothing has changed and nothing was charged: write to the professional to agree another one, or turn the offer down.",
+        "slotTaken": "This time is no longer free: choose another one.",
+        "supplierUnavailable": "The professional is not available right now.",
+        "threadClosed": "The conversation is closed: no more messages can be written.",
+        "threadFull": "The conversation has reached the most messages it can hold: no more can be written.",
+        "tooEarly": "You will be able to report a problem when the job is finished.",
+        "windowClosed": "The time to report a problem is over."
+      },
+      "gate": {
+        "code": "Request code",
+        "codeHint": "You find it in the e-mail: five characters, a dash, five more.",
+        "codeInvalid": "The code has ten characters, for example 7K2XM-9QD4T.",
+        "email": "E-mail",
+        "emailHint": "The one you booked with.",
+        "emailInvalid": "Check the e-mail: something is missing (for example the @ or the domain).",
+        "error": "We cannot look for the request right now. Check your connection and try again.",
+        "lead": "Write the code and the e-mail you used to book.",
+        "notFound": "We cannot find a request with this code and this e-mail. Check that you wrote them as in the confirmation e-mail.",
+        "privacy": "We do not keep the e-mail in this browser.",
+        "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "searching": "Looking…",
+        "submit": "Find my request",
+        "title": "My request"
+      },
+      "manage": {
+        "cancel": "Cancel the request",
+        "lead": "Cancelling costs nothing.",
+        "reschedule": "Move the time",
+        "title": "Change or cancel"
+      },
+      "payment": {
+        "status": {
+          "authorized": {
+            "text": "{{amount}} are blocked on your card: we have not charged anything. We will do it only if {{name}} accepts; if it refuses, does not answer in time or you cancel first, the block is released.",
+            "title": "Amount blocked on your card"
+          },
+          "canceled": {
+            "text": "The block on your card was released: nothing was charged.",
+            "title": "No charge"
+          },
+          "held": {
+            "text": "{{amount}} are charged and held by CasaZen. {{name}} receives them when you confirm all is fine or when the time to report a problem ends.",
+            "title": "Amount charged and held by CasaZen"
+          },
+          "refunded": {
+            "text": "We refunded {{refunded}} to you. When it shows on your statement depends on your bank.",
+            "title": "Amount refunded"
+          },
+          "released": {
+            "text": "The amount was released to {{name}}.",
+            "title": "Payment completed"
+          },
+          "review": {
+            "text": "We are checking the payment of this request.",
+            "title": "Payment being checked"
+          }
+        },
+        "title": "The payment",
+        "window": "You can report a problem until {{when}}."
+      },
+      "phases": {
+        "cancelledByCustomer": {
+          "lead": "Cancelling costs nothing. The time is free again.",
+          "title": "You cancelled the request"
+        },
+        "cancelledBySupplier": {
+          "lead": "You can book again, also for another time.",
+          "leadReason": "Reason: {{reason}}",
+          "title": "{{name}} cancelled the request"
+        },
+        "cancelledBySystem": {
+          "lead": "The time to answer is over. You can book again whenever you like.",
+          "title": "The request was cancelled"
+        },
+        "done": {
+          "lead": "{{name}} marked the work as finished.",
+          "leadHeld": "{{name}} marked the work as finished. If all is fine, confirm it: {{name}} receives the payment at once. If something is wrong, report it.",
+          "title": "Work finished"
+        },
+        "inProgress": {
+          "lead": "{{name}} is at work.",
+          "title": "The work is in progress"
+        },
+        "lapsed": {
+          "lead": "The request is about to be cancelled because there was no answer in time. You can book again whenever you like.",
+          "title": "The time to answer is over"
+        },
+        "paid": {
+          "lead": "The work is done. Thank you!",
+          "title": "All done"
+        },
+        "proposal": {
+          "lead": "It proposes {{when}}. If you accept, the request is confirmed at that time. You have until {{answerBy}}.",
+          "leadNoDeadline": "It proposes {{when}}. If you accept, the request is confirmed at that time.",
+          "title": "{{name}} proposes another time"
+        },
+        "quote": {
+          "lead": "{{name}} proposes {{total}}. If you accept, the request is confirmed at this price. You have until {{answerBy}}.",
+          "leadNoDeadline": "{{name}} proposes {{total}}. If you accept, the request is confirmed at this price.",
+          "title": "The quote is ready"
+        },
+        "refused": {
+          "lead": "It is not available at that time. You can choose another time.",
+          "leadReason": "Reason: {{reason}}",
+          "title": "{{name}} cannot accept"
+        },
+        "taken": {
+          "lead": "{{name}} expects you {{when}}.",
+          "title": "Booking confirmed"
+        },
+        "waiting": {
+          "lead": "{{name}} still has to answer: it has until {{when}}. If it does not answer, the request is cancelled by itself and we tell you.",
+          "leadNoDeadline": "{{name}} still has to answer. If it does not answer in time, the request is cancelled by itself and we tell you.",
+          "title": "Request sent"
+        }
+      },
+      "pipeline": {
+        "outside": "The request stopped here: there is nothing more to do.",
+        "refresh": "Refresh the status",
+        "steps": {
+          "done": {
+            "label": "Work finished",
+            "text": "The professional is done"
+          },
+          "inProgress": {
+            "label": "In progress",
+            "text": "The day of the work"
+          },
+          "payment": {
+            "label": "Payment",
+            "text": "The work is closed"
+          },
+          "request": {
+            "label": "Request",
+            "text": "You sent the request"
+          },
+          "taken": {
+            "label": "Accepted",
+            "text": "The professional accepts"
+          }
+        },
+        "title": "Where your request is"
+      },
+      "proposal": {
+        "accept": "Accept the new time",
+        "reject": "It does not suit me"
+      },
+      "quote": {
+        "accept": "Accept the quote",
+        "otherTime": "It also proposes this time: {{when}}.",
+        "reject": "Decline",
+        "total": "Total"
+      },
+      "report": {
+        "back": "Cancel",
+        "open": "Report a problem",
+        "reasonLegend": "What went wrong?",
+        "reasonRequired": "Choose what went wrong.",
+        "send": "Send the report",
+        "text": "Until it is solved, the payment to {{name}} stays stopped. We look into it.",
+        "textHint": "{{name}} and the CasaZen team read it. Text only, no photos.",
+        "textLabel": "Tell us what happened",
+        "textRequired": "With “Other” you need to write what happened.",
+        "textTooLong": "The text is too long: 1000 characters at most.",
+        "title": "Report a problem"
+      },
+      "reschedule": {
+        "back": "Leave it as it is",
+        "confirm": "Move the request",
+        "error": "We cannot load the free times.",
+        "loading": "Looking for free times…",
+        "none": "There are no other free times in the next days.",
+        "text": "Choose a free time: the professional will have to confirm again.",
+        "title": "Choose another time"
+      },
+      "ticket": {
+        "price": {
+          "estimate": "Estimated total",
+          "final": "Total",
+          "label": "Price",
+          "quote": "Quote"
+        },
+        "priceNone": "To agree with the professional",
+        "when": "When",
+        "where": "Where"
+      },
+      "working": "One moment…"
     },
     "responseTime": {
       "hours_one": "about {{count}} hour",
