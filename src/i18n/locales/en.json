@@ -16601,7 +16601,8 @@
         "onQuoteItem": "{{name}}: send a request on measure",
         "onQuoteLead": "For these services the professional decides the price:",
         "optionsError": "We cannot load the options of this service.",
-        "optionsTitle": "To give you the right price"
+        "optionsTitle": "To give you the right price",
+        "variation": "Need something different?"
       },
       "stepInfo": {
         "details": {
@@ -16768,6 +16769,124 @@
       },
       "title": "Book in five steps"
     },
+    "inquiry": {
+      "actions": {
+        "after": "We send you an e-mail with a link: until you open it, {{name}} receives nothing.",
+        "offline": "You are offline: connect to send the request.",
+        "send": "Send the request",
+        "sending": "Sending…"
+      },
+      "back": "Back to {{name}}",
+      "checkEmail": {
+        "back": "Back to {{name}}",
+        "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
+        "leadNoAddress": "We wrote you an e-mail. Open the link to send the request to {{name}}.",
+        "nothingYet": "Until you open the link, {{name}} receives nothing.",
+        "spam": "Cannot find it? Look in the spam folder too.",
+        "title": "Check your e-mail",
+        "until": "The link works until {{time}}: after that, you have to make the request again."
+      },
+      "confirm": {
+        "again": "Make a new request",
+        "already": {
+          "lead": "The request had already been sent: you find it in \"My request\" with the code next to this.",
+          "title": "You have already checked your e-mail"
+        },
+        "done": {
+          "lead": "{{name}} has received your request and has until {{when}} to answer you. The conversation is on your \"My request\" page.",
+          "leadNoDeadline": "{{name}} has received your request. The conversation is on your \"My request\" page.",
+          "title": "Request sent"
+        },
+        "expired": {
+          "text": "The time to check the e-mail is over and the request was not sent. You can start again.",
+          "title": "The link has expired"
+        },
+        "invalid": {
+          "text": "The link may be incomplete or already used. If you have already checked your e-mail, you find the request in \"My request\" with the code we wrote to you; otherwise you can start again.",
+          "title": "This link is not valid"
+        },
+        "kind": "Request on measure",
+        "myRequest": "My request",
+        "next": {
+          "close": "Closing costs nothing",
+          "closeText": "From the \"My request\" page you can close the request whenever you like, at no cost.",
+          "mail": "We tell you by e-mail",
+          "mailText": "When the professional answers you we write to you, without the text of the message: the words stay on your page.",
+          "talk": "Write with {{name}}",
+          "talkText": "It has until {{when}} to answer you. If it does not, the request closes and, if there are any, we show you other professionals.",
+          "talkTextNoDeadline": "It answers you on your \"My request\" page. If it does not answer in time, the request closes and, if there are any, we show you other professionals."
+        },
+        "unavailable": "The request cannot be sent right now. Try again later."
+      },
+      "form": {
+        "comune": "In which town?",
+        "consent": "I have read the <privacy>privacy notice</privacy> and I agree to my data being processed for this request.",
+        "counter": "{{used}} / {{max}} characters",
+        "email": "E-mail",
+        "emailFix": "Yes, correct it",
+        "emailHint": "We send the link to send the request here.",
+        "emailSuggest": "Did you mean {{email}}?",
+        "fullName": "Full name",
+        "message": "Describe what you need",
+        "messageHint": "Where, how big, when you need it: the more details you give, the more precise the professional can be. Do not write phone numbers or e-mail addresses: the conversation stays inside CasaZen.",
+        "messagePlaceholder": "For example: cleaning after the renovation of a two-room flat, with windows and balcony.",
+        "phone": "Phone",
+        "phoneHint": "The professional sees it only when it takes the request.",
+        "privacy": "Name, e-mail and phone reach the professional only when it takes the request.",
+        "service": "About which service?",
+        "serviceHint": "If there is one, pick the closest to what you are looking for.",
+        "serviceOther": "Something else",
+        "whatTitle": "What you need",
+        "whoTitle": "Your details"
+      },
+      "how": {
+        "check": "Check your e-mail",
+        "checkText": "We send you a link: until you open it, {{name}} receives nothing.",
+        "describe": "Tell us what you need",
+        "describeText": "A few lines about the job and the town where it is done.",
+        "talk": "Write with {{name}}",
+        "talkText": "The conversation stays inside CasaZen. If needed, the professional sends you an offer with the price and the time.",
+        "title": "How it works"
+      },
+      "lead": "Tell us what you need: {{name}} answers you here, in a conversation inside CasaZen, and if needed sends you an offer with the price and the time.",
+      "notice": {
+        "consent": "To go on we need your consent to the processing of your data.",
+        "consentOutdated": "The text of the privacy notice changed while you were writing: read it again and confirm.",
+        "invalid": "Some data are not valid: check the marked fields.",
+        "offline": "{{name}} is not taking requests right now.",
+        "other": "We could not send the request. Check the connection and try again.",
+        "outsideZone": "{{comune}} is outside the area where {{name}} works: it cannot take requests from there. Choose another town.",
+        "preview": "This is the preview: the request is not sent.",
+        "rateLimited": "Too many attempts in a row. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a row. Try again in {{minutes}} minutes.",
+        "serviceGone": "This service is no longer available. Choose another one, or leave \"Something else\".",
+        "siteGone": "This page is no longer available.",
+        "unavailable": "The request is not available right now. Try again later."
+      },
+      "problems": {
+        "email": {
+          "invalid": "Check the e-mail: something is missing (for example the @ or the domain).",
+          "required": "Write your e-mail: we send the link there.",
+          "tooLong": "The e-mail is too long."
+        },
+        "fullName": {
+          "invalid": "Write your name in full.",
+          "required": "Write your full name.",
+          "tooLong": "The name is too long."
+        },
+        "message": {
+          "required": "Write what you need.",
+          "tooLong": "The text is too long: at most {{max}} characters.",
+          "tooShort": "Write a few more words: at least {{min}} characters are needed."
+        },
+        "phone": {
+          "invalid": "The number looks incomplete: check the digits.",
+          "required": "Write a phone number."
+        }
+      },
+      "title": "Request on measure",
+      "titleFor": "Request on measure: {{service}}"
+    },
     "list": {
       "all": "All services",
       "allCategories": "All",
@@ -16805,6 +16924,7 @@
       "aboutDescription": "The story, the people and the guarantees of {{name}}.",
       "booking": "Book · {{name}}",
       "confirm": "Your request · {{name}}",
+      "inquiry": "Request on measure · {{name}}",
       "request": "My request · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: what it includes, what it costs and when {{name}} is free.",

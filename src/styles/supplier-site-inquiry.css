@@ -1,0 +1,74 @@
+/*
+ * The request on measure from the public site of a supplier (SP-12c): the form (`vi`). Same rules as `supplier-site.css` and `supplier-site-booking.css`:
+ * everything wears the tokens of the site (`--vz-*`), so it wears its style, typeface and button color. Targets are 44 px at least and
+ * nothing is wider than the screen at 360 px.
+ */
+
+/* ------------------------------------------------------------------- Form */
+.vi-lead {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--vz-muted);
+  font-size: 1.05rem;
+}
+
+.vi-message {
+  min-height: 150px;
+}
+
+.vi-counter {
+  margin-top: -14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vb-variation {
+  margin: 0;
+}
+
+.vb-variation a {
+  font-weight: 650;
+}
+
+.vi-how {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(18px, 2.4vw, 26px);
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-line);
+  border-radius: var(--vz-r-xl);
+}
+
+.vi-how h2 {
+  font-size: 1.25rem;
+}
+
+.vi-how ol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vi-how li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.vi-how li > svg {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--vz-cta-ink);
+}
+
+.vi-how p {
+  margin: 2px 0 0;
+  color: var(--vz-muted);
+  font-size: 0.93rem;
+}

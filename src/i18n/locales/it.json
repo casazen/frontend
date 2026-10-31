@@ -16601,7 +16601,8 @@
         "onQuoteItem": "{{name}}: manda una richiesta su misura",
         "onQuoteLead": "Per questi servizi il prezzo lo decide il professionista:",
         "optionsError": "Non riusciamo a caricare le opzioni di questo servizio.",
-        "optionsTitle": "Per darti il prezzo giusto"
+        "optionsTitle": "Per darti il prezzo giusto",
+        "variation": "Serve una variazione?"
       },
       "stepInfo": {
         "details": {
@@ -16768,6 +16769,124 @@
       },
       "title": "Prenoti in cinque passi"
     },
+    "inquiry": {
+      "actions": {
+        "after": "Ti mandiamo un’email con un link: finché non lo apri, {{name}} non riceve nulla.",
+        "offline": "Sei offline: collegati per inviare la richiesta.",
+        "send": "Invia la richiesta",
+        "sending": "Invio…"
+      },
+      "back": "Torna a {{name}}",
+      "checkEmail": {
+        "back": "Torna a {{name}}",
+        "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
+        "leadNoAddress": "Ti abbiamo scritto un’email. Apri il link per inviare la richiesta a {{name}}.",
+        "nothingYet": "Finché non apri il link, {{name}} non riceve nulla.",
+        "spam": "Non la trovi? Guarda anche nella cartella dello spam.",
+        "title": "Controlla la tua email",
+        "until": "Il link vale fino alle {{time}}: dopo, devi rifare la richiesta."
+      },
+      "confirm": {
+        "again": "Fai una nuova richiesta",
+        "already": {
+          "lead": "La richiesta era già stata inviata: la trovi in «La mia richiesta» con il codice qui accanto.",
+          "title": "Hai già controllato la tua email"
+        },
+        "done": {
+          "lead": "{{name}} ha ricevuto la tua richiesta e ha tempo fino a {{when}} per risponderti. La conversazione è nella tua pagina «La mia richiesta».",
+          "leadNoDeadline": "{{name}} ha ricevuto la tua richiesta. La conversazione è nella tua pagina «La mia richiesta».",
+          "title": "Richiesta inviata"
+        },
+        "expired": {
+          "text": "Il tempo per controllare l’email è finito e la richiesta non è stata inviata. Puoi ricominciare.",
+          "title": "Il link è scaduto"
+        },
+        "invalid": {
+          "text": "Il link potrebbe essere incompleto o già usato. Se hai già controllato l’email, trovi la richiesta in «La mia richiesta» con il codice che ti abbiamo scritto; altrimenti puoi ricominciare.",
+          "title": "Questo link non è valido"
+        },
+        "kind": "Richiesta su misura",
+        "myRequest": "La mia richiesta",
+        "next": {
+          "close": "Chiudere non costa nulla",
+          "closeText": "Dalla pagina «La mia richiesta» puoi chiudere la richiesta quando vuoi, senza costi.",
+          "mail": "Ti avvisiamo per email",
+          "mailText": "Quando il professionista ti risponde ti scriviamo, senza il testo del messaggio: le parole restano nella tua pagina.",
+          "talk": "Scrivi con {{name}}",
+          "talkText": "Ha tempo fino a {{when}} per risponderti. Se non lo fa, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti.",
+          "talkTextNoDeadline": "Ti risponde nella tua pagina «La mia richiesta». Se non lo fa in tempo, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti."
+        },
+        "unavailable": "La richiesta non può essere inviata in questo momento. Riprova più tardi."
+      },
+      "form": {
+        "comune": "In quale comune?",
+        "consent": "Ho letto l’<privacy>informativa sulla privacy</privacy> e acconsento al trattamento dei miei dati per questa richiesta.",
+        "counter": "{{used}} / {{max}} caratteri",
+        "email": "Email",
+        "emailFix": "Sì, correggi",
+        "emailHint": "Ti mandiamo qui il link per inviare la richiesta.",
+        "emailSuggest": "Forse intendevi {{email}}?",
+        "fullName": "Nome e cognome",
+        "message": "Descrivi cosa ti serve",
+        "messageHint": "Dove, quanto è grande, quando ti serve: più dettagli dai, più preciso sarà il professionista. Non scrivere numeri di telefono né indirizzi email: la conversazione resta dentro CasaZen.",
+        "messagePlaceholder": "Per esempio: pulizia dopo la ristrutturazione di un bilocale, con vetri e balcone.",
+        "phone": "Telefono",
+        "phoneHint": "Lo vede il professionista solo quando prende in carico la richiesta.",
+        "privacy": "Nome, email e telefono arrivano al professionista solo quando prende in carico la richiesta.",
+        "service": "Su quale servizio?",
+        "serviceHint": "Se c’è, scegli quello più vicino a ciò che cerchi.",
+        "serviceOther": "Altro, una cosa diversa",
+        "whatTitle": "Di cosa hai bisogno",
+        "whoTitle": "I tuoi dati"
+      },
+      "how": {
+        "check": "Controlla la tua email",
+        "checkText": "Ti mandiamo un link: finché non lo apri, {{name}} non riceve nulla.",
+        "describe": "Racconta cosa ti serve",
+        "describeText": "Qualche riga sul lavoro e il comune dove si fa.",
+        "talk": "Scrivi con {{name}}",
+        "talkText": "La conversazione resta dentro CasaZen. Se serve, il professionista ti manda un’offerta con il prezzo e l’orario.",
+        "title": "Come funziona"
+      },
+      "lead": "Raccontaci cosa ti serve: {{name}} ti risponde qui, in una conversazione dentro CasaZen, e se serve ti manda un’offerta con il prezzo e l’orario.",
+      "notice": {
+        "consent": "Per continuare serve il tuo consenso al trattamento dei dati.",
+        "consentOutdated": "Il testo dell’informativa è cambiato mentre scrivevi: rileggilo e conferma di nuovo.",
+        "invalid": "Alcuni dati non sono validi: controlla i campi segnati.",
+        "offline": "{{name}} non riceve richieste in questo momento.",
+        "other": "Non siamo riusciti a inviare la richiesta. Controlla la connessione e riprova.",
+        "outsideZone": "{{comune}} è fuori dalla zona in cui lavora {{name}}: da lì non può ricevere richieste. Scegli un altro comune.",
+        "preview": "Questa è l’anteprima: la richiesta non si invia.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "serviceGone": "Questo servizio non è più disponibile. Scegline un altro, oppure lascia «Altro».",
+        "siteGone": "Questa pagina non è più disponibile.",
+        "unavailable": "La richiesta non è disponibile in questo momento. Riprova più tardi."
+      },
+      "problems": {
+        "email": {
+          "invalid": "Controlla l’email: manca qualcosa (per esempio la @ o il dominio).",
+          "required": "Scrivi la tua email: ti mandiamo lì il link.",
+          "tooLong": "L’email è troppo lunga."
+        },
+        "fullName": {
+          "invalid": "Scrivi il tuo nome per intero.",
+          "required": "Scrivi nome e cognome.",
+          "tooLong": "Il nome è troppo lungo."
+        },
+        "message": {
+          "required": "Scrivi cosa ti serve.",
+          "tooLong": "Il testo è troppo lungo: massimo {{max}} caratteri.",
+          "tooShort": "Scrivi qualche parola in più: servono almeno {{min}} caratteri."
+        },
+        "phone": {
+          "invalid": "Il numero sembra incompleto: controlla le cifre.",
+          "required": "Scrivi un numero di telefono."
+        }
+      },
+      "title": "Richiesta su misura",
+      "titleFor": "Richiesta su misura: {{service}}"
+    },
     "list": {
       "all": "Tutti i servizi",
       "allCategories": "Tutti",
@@ -16805,6 +16924,7 @@
       "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
       "booking": "Prenota · {{name}}",
       "confirm": "La tua richiesta · {{name}}",
+      "inquiry": "Richiesta su misura · {{name}}",
       "request": "La mia richiesta · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
