@@ -3,9 +3,9 @@ import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail } from '@/types';
 /**
  * The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change.
  * `guida` is the first and the one the sheet opens on (LR-GUIDE-1): what to do about the contract, with the tools to decide it; `dati`
- * holds only the data of the contract.
+ * holds only the data of the contract; `interventi` (LR-03c) the jobs asked of the suppliers for this contract.
  */
-export const LEASE_TABS = ['guida', 'dati', 'documenti', 'pagamenti', 'scadenze'] as const;
+export const LEASE_TABS = ['guida', 'dati', 'documenti', 'pagamenti', 'scadenze', 'interventi'] as const;
 export type LeaseTab = (typeof LEASE_TABS)[number];
 
 /** The tab the sheet opens on when the address says none (or one that does not exist). */
