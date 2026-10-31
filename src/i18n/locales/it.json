@@ -16454,7 +16454,7 @@
           "title": "Il link è scaduto"
         },
         "invalid": {
-          "text": "Il link potrebbe essere incompleto o già usato. Se hai ricevuto un’email più recente, usa quella; altrimenti puoi ricominciare.",
+          "text": "Il link potrebbe essere incompleto o già usato. Se hai già controllato l’email, trovi la richiesta in «La mia richiesta» con il codice che ti abbiamo scritto; altrimenti puoi ricominciare.",
           "title": "Questo link non è valido"
         },
         "keepCode": "Conservalo: insieme alla tua email ti serve per ritrovare la richiesta.",
@@ -16635,6 +16635,7 @@
         "covered": "Perfetto: il professionista lavora a {{comune}}.",
         "hint": "Scrivi il nome e scegli dall’elenco.",
         "label": "In quale comune?",
+        "noList": "L’elenco dei comuni non è disponibile in questo momento. Riprova più tardi, oppure manda una richiesta su misura al professionista.",
         "outside": "{{comune}} è fuori dalla zona abituale del professionista: il prezzo lo decide lui, con una richiesta su misura.",
         "privacy": "L’indirizzo esatto lo chiediamo all’ultimo passo e arriva al professionista solo dopo che accetta."
       }

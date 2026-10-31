@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CircleAlert, CircleCheck, FileText, Lock } from 'lucide-react';
 import { buildInquiryPath } from '@/lib/supplier-site/booking-params';
+import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import type { Comune } from '@/types/comune.types';
 import { FinderComuneField } from '../finder-comune-field';
 
@@ -23,6 +24,9 @@ interface StepWhereProps {
 export function StepWhere({ supplierSlug, serviceSlug, comune, onComune, zone, problem }: StepWhereProps) {
   const { t } = useTranslation();
   const id = useId();
+  // The official list of comuni is what the field searches: if it is not there, say so instead of an empty list that never answers.
+  const list = useComuneDatasetStatus();
+  const listMissing = list.isSuccess && list.data.datasetAvailable === false;
   return (
     <div className="vb-step-where">
       <div className="vb-field">
@@ -40,6 +44,19 @@ export function StepWhere({ supplierSlug, serviceSlug, comune, onComune, zone, p
           </p>
         ) : null}
       </div>
+
+      {listMissing ? (
+        <div className="vb-callout" data-testid="supplier-booking-no-comuni">
+          <p className="is-warn">
+            <CircleAlert aria-hidden="true" />
+            <span>{t('supplierSite.booking.where.noList')}</span>
+          </p>
+          <Link className="vz-btn vz-btn--secondary" to={buildInquiryPath(supplierSlug, { service: serviceSlug })}>
+            <FileText aria-hidden="true" />
+            <span>{t('supplierSite.cta.inquiry')}</span>
+          </Link>
+        </div>
+      ) : null}
 
       <div className="vb-zone" aria-live="polite" data-zone={zone}>
         {zone === 'checking' ? <p>{t('supplierSite.booking.where.checking')}</p> : null}

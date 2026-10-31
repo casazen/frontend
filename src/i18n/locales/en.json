@@ -16454,7 +16454,7 @@
           "title": "The link has expired"
         },
         "invalid": {
-          "text": "The link may be incomplete or already used. If you received a more recent e-mail, use that one; otherwise you can start again.",
+          "text": "The link may be incomplete or already used. If you already checked your e-mail, you find the request in “My request” with the code we wrote you; otherwise you can start again.",
           "title": "This link is not valid"
         },
         "keepCode": "Keep it: together with your e-mail you need it to find the request again.",
@@ -16635,6 +16635,7 @@
         "covered": "Perfect: the professional works in {{comune}}.",
         "hint": "Write the name and pick it from the list.",
         "label": "Which town?",
+        "noList": "The list of towns is not available right now. Try again later, or send the professional a request on measure.",
         "outside": "{{comune}} is outside the professional’s usual area: they decide the price, with a request on measure.",
         "privacy": "We ask for the exact address in the last step, and it reaches the professional only after they accept."
       }

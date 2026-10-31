@@ -108,7 +108,19 @@ export function StepDetails({ draft, onChange, consent, onConsent, trap, onTrap,
       {/* The trap for robots: hidden by the stylesheet, not by `type="hidden"`, out of the tab order and out of the reading order. */}
       <div className="vb-trap" aria-hidden="true">
         <label htmlFor={trapId}>{t('supplierSite.booking.details.trap')}</label>
-        <input id={trapId} type="text" name="website" tabIndex={-1} autoComplete="off" value={trap} onChange={(event) => onTrap(event.target.value)} />
+        <input
+          id={trapId}
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          // A password manager or an autofill must not fill the trap for a person: the booking would be answered and dropped.
+          data-lpignore="true"
+          data-1p-ignore=""
+          data-form-type="other"
+          value={trap}
+          onChange={(event) => onTrap(event.target.value)}
+        />
       </div>
     </div>
   );
