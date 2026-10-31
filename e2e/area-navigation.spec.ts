@@ -142,7 +142,7 @@ test.describe('Area navigation (UI-04a)', () => {
 
     test('the supplier sees the requests awaiting an answer on Richieste', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
-      await mockSupplierConsoleApi(page, { active: true });
+      await mockSupplierConsoleApi(page, { active: true, toAnswer: 1 });
       await page.goto(demoUrl('/app/supplier/availability', 'supplier'), { waitUntil: 'domcontentloaded' });
 
       const inbox = page.getByRole('navigation', { name: 'Menu Portale fornitori' }).getByRole('link', { name: /Richieste/ });
