@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { ListBulkAction } from '@/components/shared/list-view/list-types';
 import { useAcceptSupplierRequests } from '@/queries/supplier/use-inbox';
 import type { SupplierServiceRequest } from '@/types/service-request';
-import { acceptInBlocks, NOT_IN_BLOCK, type BulkAcceptFailure } from './bulk-accept';
+import { acceptInBlocks, NEEDS_OFFER, NOT_IN_BLOCK, type BulkAcceptFailure } from './bulk-accept';
 import { BulkAcceptDialog, type BulkAcceptSummary } from './bulk-accept-dialog';
 import { canBulkAccept } from './request-model';
 
@@ -32,7 +32,9 @@ export function useBulkAccept(): { action: ListBulkAction<SupplierServiceRequest
       },
       run: async (rows) => {
         const eligible = rows.filter(canBulkAccept);
-        const skipped: BulkAcceptFailure[] = rows.filter((row) => !canBulkAccept(row)).map((row) => ({ id: row.id, code: NOT_IN_BLOCK, message: null }));
+        const skipped: BulkAcceptFailure[] = rows
+          .filter((row) => !canBulkAccept(row))
+          .map((row) => ({ id: row.id, code: row.kind === 'Custom' ? NEEDS_OFFER : NOT_IN_BLOCK, message: null }));
         const outcome = await acceptInBlocks(
           eligible.map((row) => row.id),
           mutateAsync,

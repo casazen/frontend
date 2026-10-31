@@ -10,7 +10,8 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { formatRomeDateTime, romeDateOf, romeWallClock } from '@/lib/stay-dates';
 import { useSupplierChecklist, useSupplierToday } from '@/queries/supplier/use-inbox';
 import type { SupplierServiceRequest } from '@/types/service-request';
-import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestTitle, requestWhen, respondByText } from '../requests/request-model';
+import { isInquiry } from '../inquiry/inquiry-model';
+import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle, requestWhen, respondByText } from '../requests/request-model';
 import '../requests/supplier-request-drawer';
 import type { RequestActions } from '../requests/use-request-actions';
 import { formatMoney } from '../services/lib/service-money';
@@ -183,8 +184,10 @@ function requestRow(request: SupplierServiceRequest, { t, locale, today, actions
   const respond = respondByText(request, locale, t);
   const phase = phaseOf(request);
   const waitsForPrimary = phase === 'backupWaiting' || phase === 'backupAccepted';
-  const action: DayListItem['action'] =
-    phase === 'backupAccepted'
+  const action: DayListItem['action'] = isInquiry(request)
+    ? // A request on measure of the showcase (SP-10b) is never taken as it is: it is answered on its page, with the conversation and an offer.
+      { label: t('supplier.inquiry.action.answer'), ariaLabel: t('supplier.inquiry.action.answerAria', { name }), href: requestPath(request.id), testId: `answer-${request.id}` }
+    : phase === 'backupAccepted'
       ? undefined
       : phase === 'backupWaiting'
         ? {

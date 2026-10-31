@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { SupplierServiceRequest } from '@/types/service-request';
-import { BLOCK_NOT_SENT, NOT_IN_BLOCK, type BulkAcceptFailure } from './bulk-accept';
+import { BLOCK_NOT_SENT, NEEDS_OFFER, NOT_IN_BLOCK, type BulkAcceptFailure } from './bulk-accept';
 import { requestPath, requestTitle, requestWhen } from './request-model';
 
 /** What the supplier is told after taking many requests at once when some of them were not taken: how many were, and each one that was not. */
@@ -18,6 +18,7 @@ export interface BulkAcceptSummary {
 function reasonOf(failure: BulkAcceptFailure, t: (key: string) => string): string {
   if (failure.message) return failure.message;
   if (failure.code === NOT_IN_BLOCK) return t('supplier.requests.bulk.summary.notInBulk');
+  if (failure.code === NEEDS_OFFER) return t('supplier.requests.bulk.summary.needsOffer');
   if (failure.code === BLOCK_NOT_SENT) return t('supplier.requests.bulk.summary.notSent');
   return t('supplier.requests.bulk.summary.unknown');
 }

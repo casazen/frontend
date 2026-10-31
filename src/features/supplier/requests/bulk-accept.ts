@@ -4,6 +4,8 @@ import { ACCEPT_REQUESTS_MAX, type AcceptSupplierRequestsResponse } from '@/type
 export const BLOCK_NOT_SENT = 'block_not_sent';
 /** The code of a request that is not taken in a block (a backup that waits for the primary supplier): it has its own button. */
 export const NOT_IN_BLOCK = 'not_in_bulk';
+/** The code of a request on measure of the showcase (SP-10b): it has no time and no price, so it is answered with an offer and never taken as it is. */
+export const NEEDS_OFFER = 'needs_offer';
 
 /** A request that was not taken: why, in the words of the server when it gave them (`message`, localized) and its `code`. */
 export interface BulkAcceptFailure {
