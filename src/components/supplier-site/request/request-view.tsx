@@ -1,16 +1,17 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Ban, CalendarClock, CalendarPlus, Check, CircleAlert, CircleCheck, CircleX, FileText, Hourglass, PartyPopper, RotateCcw, Wrench } from 'lucide-react';
+import { Ban, CalendarClock, CalendarPlus, Check, CircleAlert, CircleCheck, CircleX, Clock, FileText, Hourglass, PartyPopper, RotateCcw, Wrench } from 'lucide-react';
 import { publicBookingApi, type PublicBookingAccess, type PublicBookingView } from '@/api/public-supplier-booking.api';
 import { formatMoney } from '@/features/supplier/services/lib/service-money';
 import { buildBookingPath } from '@/lib/supplier-site/booking-params';
 import { buildIcs } from '@/lib/supplier-site/calendar-ics';
-import { formatSlotLabel } from '@/lib/supplier-site/format';
+import { formatDeadline, formatSlotLabel } from '@/lib/supplier-site/format';
 import type { RequestFailure } from '@/lib/supplier-site/request-errors';
 import { icsEventOf, phaseOf, REQUEST_STAGES, stageIndexOf, toneOf, type RequestPhase } from '@/lib/supplier-site/request-view';
 import { CodeLine } from '../booking/code-line';
 import { CancelPanel, ReschedulePanel } from './request-panels';
+import { useMinuteClock } from './use-minute-clock';
 
 interface RequestViewProps {
   view: PublicBookingView;
@@ -97,6 +98,31 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
     case 'custom':
       return { title: t('supplierSite.request.phases.custom.title'), lead: t('supplierSite.request.phases.custom.lead') };
   }
+}
+
+/**
+ * The time left to answer, counting down by itself (every figure is the server's deadline: `respondBy` of the supplier, `answerBy` of
+ * the customer). It says whose time it is, and when it is over it says so instead of going negative.
+ */
+function Countdown({ until, who, supplierName }: { until: string | null | undefined; who: 'supplier' | 'customer'; supplierName: string }) {
+  const { t } = useTranslation();
+  const minute = useMinuteClock();
+  if (!until) return null;
+  const end = new Date(until).getTime();
+  if (Number.isNaN(end)) return null;
+  const minutes = Math.ceil((end - minute * 60_000) / 60_000);
+  return (
+    <p className="vf-countdown" data-testid="supplier-request-countdown">
+      <Clock aria-hidden="true" />
+      <span>
+        {minutes <= 0
+          ? t('supplierSite.request.countdown.over')
+          : who === 'supplier'
+            ? t('supplierSite.request.countdown.supplier', { name: supplierName, time: formatDeadline(minutes, t) })
+            : t('supplierSite.request.countdown.customer', { time: formatDeadline(minutes, t) })}
+      </span>
+    </p>
+  );
 }
 
 /** The ticket beside the sentence: the code, the service, when, where, and the price as the server states it (never computed here). */
@@ -316,6 +342,9 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
               {hero.title}
             </h1>
             <p className="vf-hero__lead">{hero.lead}</p>
+            {phase === 'waiting' && !view.proposal && !view.quote ? <Countdown until={view.respondBy} who="supplier" supplierName={view.supplier.name} /> : null}
+            {phase === 'proposal' ? <Countdown until={view.proposal?.answerBy} who="customer" supplierName={view.supplier.name} /> : null}
+            {phase === 'quote' ? <Countdown until={view.quote?.answerBy} who="customer" supplierName={view.supplier.name} /> : null}
             <Offer view={view} phase={phase} />
             {panel === null ? failureNote : null}
             {primary ? <div className="vf-hero__a">{primary}</div> : null}

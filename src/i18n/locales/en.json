@@ -16800,6 +16800,11 @@
         "text": "Cancelling costs nothing. {{name}} is told and the time is free again.",
         "title": "Do you want to cancel the request?"
       },
+      "countdown": {
+        "customer": "You have {{time}} left to answer.",
+        "over": "The time to answer is over.",
+        "supplier": "{{name}} has {{time}} left to answer."
+      },
       "errors": {
         "cannotCancel": "This request can no longer be cancelled from here.",
         "cannotReschedule": "This request can no longer be moved.",

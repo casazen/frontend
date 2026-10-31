@@ -16800,6 +16800,11 @@
         "text": "Annullare non costa nulla. {{name}} riceve un avviso e l’orario torna libero.",
         "title": "Vuoi annullare la richiesta?"
       },
+      "countdown": {
+        "customer": "Hai ancora {{time}} per rispondere.",
+        "over": "Il tempo per rispondere è finito.",
+        "supplier": "{{name}} ha ancora {{time}} per rispondere."
+      },
       "errors": {
         "cannotCancel": "Questa richiesta non si può più annullare da qui.",
         "cannotReschedule": "Questa richiesta non si può più spostare.",
