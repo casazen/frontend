@@ -8,10 +8,12 @@ interface BookingStepsProps {
   current: BookingStep;
   /** A step already done can be gone back to; the ones ahead cannot be jumped to. */
   onGo: (step: BookingStep) => void;
+  /** False once the hold is made: the steps done are only read, no longer links back. */
+  interactive?: boolean;
 }
 
 /** Where the person is in the booking: the steps in a row on a wide screen, "Passo 2 di 5" with a bar on a phone. */
-export function BookingSteps({ steps, current, onGo }: BookingStepsProps) {
+export function BookingSteps({ steps, current, onGo, interactive = true }: BookingStepsProps) {
   const { t } = useTranslation();
   const index = steps.indexOf(current);
   return (
@@ -30,12 +32,14 @@ export function BookingSteps({ steps, current, onGo }: BookingStepsProps) {
           );
           return (
             <li key={step} className={done ? 'is-done' : position === index ? 'is-cur' : undefined}>
-              {done ? (
+              {done && interactive ? (
                 <button type="button" onClick={() => onGo(step)} aria-label={t('supplierSite.booking.steps.back', { step: label })}>
                   {body}
                 </button>
               ) : (
-                <span aria-current={position === index ? 'step' : undefined}>{body}</span>
+                <span aria-current={position === index ? 'step' : undefined} className={done ? 'is-locked' : undefined}>
+                  {body}
+                </span>
               )}
             </li>
           );

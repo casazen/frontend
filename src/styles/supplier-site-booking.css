@@ -1596,3 +1596,138 @@
   padding: 0;
   list-style: none;
 }
+
+/* --------------------------------------------- The card (step 5) and the money */
+.vb-step-payment {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.vb-pay {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  list-style: none;
+  border-radius: var(--vz-r);
+  background: var(--vz-surface-2);
+  font-size: 0.95rem;
+}
+
+.vb-pay li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.vb-pay svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  color: var(--vz-cta-ink);
+}
+
+.vf-pay__box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 62ch;
+  padding: 16px 18px;
+  border: 1px solid var(--vz-line);
+  border-radius: var(--vz-r-lg);
+  background: var(--vz-surface);
+}
+
+.vf-pay__box p {
+  margin: 4px 0 0;
+  color: var(--vz-muted);
+}
+
+.vf-pay__box .vf-pay__window {
+  color: var(--vz-text);
+  font-weight: 650;
+}
+
+.vf-pay__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--vz-r);
+  background: var(--vz-cta-soft);
+  color: var(--vz-cta-ink);
+}
+
+.vf-pay__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.vf-pay .vz-btn {
+  margin-top: 14px;
+}
+
+.vf-dispute {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 62ch;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: var(--vz-r-lg);
+  background: var(--vz-warn-soft);
+}
+
+.vf-dispute h3 {
+  font-family: var(--vz-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.vf-dispute p,
+.vf-dispute blockquote {
+  margin: 0;
+}
+
+.vf-dispute blockquote {
+  padding-left: 12px;
+  border-left: 3px solid var(--vz-line-strong);
+  color: var(--vz-text);
+  overflow-wrap: anywhere;
+}
+
+.vf-dispute__reason {
+  font-weight: 650;
+}
+
+.vf-dispute__refund {
+  font-weight: 650;
+}
+
+.vf-reasons {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.vf-reasons legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-weight: 650;
+}
+
+.vf-pay-panel .vf-panel {
+  margin-top: 8px;
+}
+
+.vb-steps li > span.is-locked {
+  color: var(--vz-text);
+}

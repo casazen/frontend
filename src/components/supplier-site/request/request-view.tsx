@@ -10,6 +10,7 @@ import { formatSlotLabel } from '@/lib/supplier-site/format';
 import type { RequestFailure } from '@/lib/supplier-site/request-errors';
 import { icsEventOf, phaseOf, REQUEST_STAGES, stageIndexOf, toneOf, type RequestPhase } from '@/lib/supplier-site/request-view';
 import { CodeLine } from '../booking/code-line';
+import { ConfirmOkPanel, PaymentBlock, ReportProblemPanel } from './payment-block';
 import { CancelPanel, ReschedulePanel } from './request-panels';
 
 interface RequestViewProps {
@@ -74,7 +75,11 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
     case 'inProgress':
       return { title: t('supplierSite.request.phases.inProgress.title'), lead: t('supplierSite.request.phases.inProgress.lead', { name }) };
     case 'done':
-      return { title: t('supplierSite.request.phases.done.title'), lead: t('supplierSite.request.phases.done.lead', { name }) };
+      return {
+        title: t('supplierSite.request.phases.done.title'),
+        // With the money held by CasaZen the customer has two things to say: all fine, or a problem.
+        lead: view.actions.canConfirmOk || view.actions.canReportProblem ? t('supplierSite.request.phases.done.leadHeld', { name }) : t('supplierSite.request.phases.done.lead', { name }),
+      };
     case 'paid':
       return { title: t('supplierSite.request.phases.paid.title'), lead: t('supplierSite.request.phases.paid.lead') };
     case 'refused':
@@ -209,8 +214,8 @@ function Offer({ view, phase }: { view: PublicBookingView; phase: RequestPhase }
  * the path; then, if it is still allowed, "Modifica o annulla". What may be done is the server's `actions`, never worked out here.
  */
 export function RequestView({ view, failure, pending, act }: RequestViewProps) {
-  const { t } = useTranslation();
-  const [panel, setPanel] = useState<'cancel' | 'reschedule' | null>(null);
+  const { t, i18n } = useTranslation();
+  const [panel, setPanel] = useState<'cancel' | 'reschedule' | 'confirmOk' | 'report' | null>(null);
   const phase = phaseOf(view);
   const tone = toneOf(phase);
   const hero = useHeroText(view, phase);
@@ -283,6 +288,22 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
       </Link>
     );
   }
+  // The money: "Tutto a posto" is the one thing to do when it can be done; a problem is said with a quieter button.
+  const payButtons =
+    actions.canConfirmOk || actions.canReportProblem ? (
+      <>
+        {actions.canConfirmOk ? (
+          <button type="button" className={primary ? 'vz-btn vz-btn--secondary' : 'vz-btn vz-btn--primary vz-btn--lg'} disabled={pending} onClick={() => setPanel('confirmOk')}>
+            {t('supplierSite.request.confirmOk.open')}
+          </button>
+        ) : null}
+        {actions.canReportProblem ? (
+          <button type="button" className={actions.canConfirmOk || primary ? 'vz-linkbtn' : 'vz-btn vz-btn--secondary vz-btn--lg'} disabled={pending} onClick={() => setPanel('report')}>
+            {t('supplierSite.request.report.open')}
+          </button>
+        ) : null}
+      </>
+    ) : null;
   const canManage = actions.canCancel || (actions.canReschedule && serviceSlug !== null);
 
   let failureText: string | null = null;
@@ -318,11 +339,36 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
             <p className="vf-hero__lead">{hero.lead}</p>
             <Offer view={view} phase={phase} />
             {panel === null ? failureNote : null}
-            {primary ? <div className="vf-hero__a">{primary}</div> : null}
+            {primary || payButtons ? (
+              <div className="vf-hero__a">
+                {primary}
+                {payButtons}
+              </div>
+            ) : null}
           </div>
           <Ticket view={view} phase={phase} />
         </div>
       </section>
+
+      <PaymentBlock view={view} pending={pending} onWithdraw={() => void doAct((access) => publicBookingApi.withdrawProblem(access))} />
+      {panel === 'confirmOk' || panel === 'report' ? (
+        <section className="vz-section vz-section--tight vf-pay-panel">
+          <div className="vz-container">
+            {failureNote}
+            {panel === 'confirmOk' ? (
+              <ConfirmOkPanel supplierName={view.supplier.name} pending={pending} onBack={() => setPanel(null)} onConfirm={() => void doAct((access) => publicBookingApi.confirmOk(access))} />
+            ) : (
+              <ReportProblemPanel
+                supplierName={view.supplier.name}
+                deadline={view.payment?.releaseAtUtc ? formatSlotLabel(view.payment.releaseAtUtc, t, i18n.language) : ''}
+                pending={pending}
+                onBack={() => setPanel(null)}
+                onConfirm={(reason, text) => void doAct((access) => publicBookingApi.reportProblem(access, reason, text))}
+              />
+            )}
+          </div>
+        </section>
+      ) : null}
 
       <Pipeline view={view} pending={pending} onRefresh={() => void doAct((access) => publicBookingApi.lookup(access))} />
 
@@ -333,7 +379,7 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
               {t('supplierSite.request.manage.title')}
             </h2>
             <p className="vf-p">{t('supplierSite.request.manage.lead')}</p>
-            {panel !== null ? failureNote : null}
+            {panel === 'cancel' || panel === 'reschedule' ? failureNote : null}
             {panel === null ? (
               <div className="vf-manage__a">
                 {actions.canReschedule && serviceSlug ? (

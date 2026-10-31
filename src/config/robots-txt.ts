@@ -47,6 +47,8 @@ export const DISALLOWED_PATHS = [
   '/fornitori/*/prenota',
   '/fornitori/*/conferma',
   '/fornitori/*/richiesta',
+  // The payment page of a service (SP-15c-d): its address carries the secret of the payment link.
+  '/service/pay/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',

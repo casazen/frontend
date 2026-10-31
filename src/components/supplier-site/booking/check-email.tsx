@@ -7,10 +7,10 @@ import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 interface CheckEmailProps {
   slug: string;
   supplierName: string;
-  /** The address the person typed: shown back so it can see a slip. Held in memory only. */
-  email: string;
-  /** When the hold lapses (UTC). */
-  expiresAt: string;
+  /** The address the person typed: shown back so it can see a slip. Held in memory only; missing when the person came back from the bank. */
+  email?: string;
+  /** When the hold lapses (UTC); missing together with the address. */
+  expiresAt?: string;
 }
 
 /**
@@ -20,14 +20,14 @@ interface CheckEmailProps {
  */
 export function CheckEmail({ slug, supplierName, email, expiresAt }: CheckEmailProps) {
   const { t, i18n } = useTranslation();
-  const until = formatRomeDateTime(expiresAt, i18n.language, { hour: '2-digit', minute: '2-digit' });
+  const until = expiresAt ? formatRomeDateTime(expiresAt, i18n.language, { hour: '2-digit', minute: '2-digit' }) : '';
   return (
     <section className="vz-state vb-check-email" data-testid="supplier-booking-check-email">
       <span className="vz-state__icon" aria-hidden="true">
         <Mail />
       </span>
       <h1 tabIndex={-1}>{t('supplierSite.booking.checkEmail.title')}</h1>
-      <p>{t('supplierSite.booking.checkEmail.lead', { email, name: supplierName })}</p>
+      <p>{email ? t('supplierSite.booking.checkEmail.lead', { email, name: supplierName }) : t('supplierSite.booking.checkEmail.leadNoAddress', { name: supplierName })}</p>
       <ul className="vb-check-email__list">
         <li>
           <MailQuestionMark aria-hidden="true" />

@@ -13,7 +13,11 @@ export type RequestRefusal =
   | 'supplierUnavailable'
   | 'noQuote'
   | 'quoteExpired'
-  | 'invalid';
+  | 'invalid'
+  | 'notConfirmable'
+  | 'windowClosed'
+  | 'tooEarly'
+  | 'notReportable';
 
 export type RequestFailure =
   /** 404 `supplier_booking_not_found`: one answer for a code, a supplier or an address that does not match. */
@@ -37,6 +41,11 @@ const REFUSALS: Record<string, RequestRefusal> = {
   supplier_booking_no_quote: 'noQuote',
   supplier_booking_quote_expired: 'quoteExpired',
   supplier_booking_invalid: 'invalid',
+  service_payment_not_confirmable: 'notConfirmable',
+  service_dispute_window_closed: 'windowClosed',
+  service_dispute_too_early: 'tooEarly',
+  service_dispute_not_reportable: 'notReportable',
+  service_dispute_invalid: 'invalid',
 };
 
 export function readRequestFailure(error: unknown): RequestFailure {
