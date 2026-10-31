@@ -71,6 +71,13 @@ export function SupplierSiteShell() {
   const onServices = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi`, end: true }) !== null;
   const onService = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi/:serviceSlug`, end: true });
   const onAbout = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/chi-siamo`, end: true }) !== null;
+  // The pages of the booking (SP-12b): the booking itself, the page of the e-mail link and the customer's own request. They are private
+  // (a hold, a token, a code in the address) and never indexed; the last two stay open while the supplier has paused the site, because a
+  // customer who booked before the pause must still reach its request.
+  const onBooking = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/prenota`, end: true }) !== null;
+  const onConfirm = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/conferma`, end: true }) !== null;
+  const onRequest = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/richiesta`, end: true }) !== null;
+  const onCustomerArea = onConfirm || onRequest;
   let title = t('supplierShowcase.title');
   let description: string | undefined;
   if (model) {
@@ -87,12 +94,22 @@ export function SupplierSiteShell() {
     } else if (onAbout) {
       title = t('supplierSite.meta.about', { name });
       description = model.bio ? truncateDescription(model.bio) : t('supplierSite.meta.aboutDescription', { name });
+    } else if (onBooking) {
+      title = t('supplierSite.meta.booking', { name });
+      description = undefined;
+    } else if (onConfirm) {
+      title = t('supplierSite.meta.confirm', { name });
+      description = undefined;
+    } else if (onRequest) {
+      title = t('supplierSite.meta.request', { name });
+      description = undefined;
     }
   }
 
-  // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, and for the preview of a draft.
+  // Indexable as it always was; `noindex` only for a showcase that does not exist or fails to load, for the preview of a draft and for
+  // the private pages of the booking.
   // No canonical, no Open Graph, no structured data (decision D11).
-  useSeoMeta({ title, description, noindex: isError || preview });
+  useSeoMeta({ title, description, noindex: isError || preview || onBooking || onCustomerArea });
 
   if (!slug || isLoading) {
     return (
@@ -137,7 +154,7 @@ export function SupplierSiteShell() {
         <SiteHeader model={model} variant={variant} onHome={onHome && !model.paused} />
         {online ? null : <OfflineBar />}
         <main id="vz-main" className="vz-main" tabIndex={-1}>
-          {model.paused ? <SitePaused model={model} /> : <Outlet />}
+          {model.paused && !onCustomerArea ? <SitePaused model={model} /> : <Outlet />}
         </main>
         <SiteFooter model={model} />
         {hasBar ? <StickyBookBar model={model} /> : null}

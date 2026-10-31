@@ -16406,6 +16406,240 @@
       "valuesEyebrow": "Strengths",
       "where": "We work in {{places}}"
     },
+    "booking": {
+      "actions": {
+        "after": "Cancelling costs nothing: you can do it from the link in the confirmation e-mail.",
+        "back": "Back",
+        "next": "Continue",
+        "offline": "You are offline: you can check your details, but you need a connection to send the request.",
+        "send": "Send the request",
+        "sending": "One moment…"
+      },
+      "back": {
+        "toService": "Back to {{name}}",
+        "toServices": "Back to the services"
+      },
+      "checkEmail": {
+        "back": "Back to {{name}}",
+        "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
+        "nothingYet": "Until you open the link, {{name}} receives nothing.",
+        "spam": "Cannot find it? Look in the spam folder too.",
+        "title": "Check your e-mail",
+        "until": "The link works until {{time}}: after that, the time is free again."
+      },
+      "closed": {
+        "title": "You cannot book here right now"
+      },
+      "confirm": {
+        "already": {
+          "lead": "The request had already been sent: you will find the code below.",
+          "title": "You already checked your e-mail"
+        },
+        "awaitingPayment": {
+          "text": "Your e-mail is checked. The request goes out as soon as the amount is blocked on your card: we refresh by ourselves, there is nothing else to do if you already confirmed it.",
+          "title": "Almost there"
+        },
+        "bookAgain": "Book again",
+        "checking": "Checking the link…",
+        "code": "Code",
+        "copied": "Code copied",
+        "copy": "Copy the code",
+        "done": {
+          "lead": "{{name}} received your request for “{{service}}” and answers by {{when}}. If it does not answer, the request is cancelled by itself and we tell you.",
+          "leadNoDeadline": "{{name}} received your request for “{{service}}”. If it does not answer in time, the request is cancelled by itself and we tell you.",
+          "title": "Request sent"
+        },
+        "expired": {
+          "text": "The time to check the e-mail is over: the time is free again and the request was not sent. If you had blocked the amount on your card, nothing was charged. You can start again.",
+          "title": "The link has expired"
+        },
+        "invalid": {
+          "text": "The link may be incomplete or already used. If you already checked your e-mail, you find the request in “My request” with the code we wrote you; otherwise you can start again.",
+          "title": "This link is not valid"
+        },
+        "keepCode": "Keep it: together with your e-mail you need it to find the request again.",
+        "myRequest": "My request",
+        "next": {
+          "change": "Cancelling costs nothing",
+          "changeText": "From the page “My request” you can cancel, at no cost, until the time of the job.",
+          "mail": "We write to you by e-mail",
+          "mailText": "As soon as it answers, we write you the outcome.",
+          "review": "{{name}} looks at the request",
+          "reviewText": "It has until {{when}} to accept. The time is not confirmed until it accepts.",
+          "reviewTextNoDeadline": "The time is not confirmed until it accepts.",
+          "title": "What happens now"
+        },
+        "retry": {
+          "text": "Check your connection and try again.",
+          "textWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+          "title": "We cannot check the link"
+        },
+        "ticket": "Your request",
+        "unavailable": {
+          "text": "The request cannot be sent right now. Try again later.",
+          "title": "{{name}} is not available right now"
+        }
+      },
+      "details": {
+        "accessNotes": "How do we get in?",
+        "accessNotesHint": "Doorbell, keys, the concierge’s hours.",
+        "address": "Street and number",
+        "addressHint": "The professional sees it only after accepting.",
+        "consent": "I have read the <privacy>privacy notice</privacy> and I agree to my data being processed for this booking.",
+        "email": "E-mail",
+        "emailFix": "Yes, fix it",
+        "emailHint": "We send the link to confirm here.",
+        "emailSuggest": "Did you mean {{email}}?",
+        "floor": "Floor, staircase, apartment",
+        "fullName": "Full name",
+        "phone": "Phone",
+        "phoneHint": "The professional sees it only after accepting.",
+        "postalCode": "Postcode",
+        "trap": "Leave this field empty",
+        "whereTitle": "Where we have to go",
+        "whoTitle": "Your details"
+      },
+      "notice": {
+        "consent": "To continue we need your consent to the processing of your data.",
+        "consentOutdated": "The text of the notice changed while you were filling in: read it again and confirm again.",
+        "invalid": "Some details are not valid: check the marked fields.",
+        "offline": "The professional is not taking bookings right now.",
+        "other": "We could not send the request. Check your connection and try again.",
+        "outsideZone": "This town is outside the professional’s area. You can send a request on measure.",
+        "payment": "The payment service is not answering right now. Try again shortly.",
+        "paymentSoon": "Payment by card on this site arrives with the next update: for now you cannot book from here.",
+        "preview": "This is the preview: the request is not sent.",
+        "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "serviceGone": "This service is no longer available. Choose another one.",
+        "siteGone": "This page is no longer available.",
+        "slotTaken": "This time was just taken by somebody else. Choose another one.",
+        "unavailable": "Booking is not available right now. Try again later."
+      },
+      "optional": "optional",
+      "problems": {
+        "accessNotes": {
+          "tooLong": "The text is too long: write what matters."
+        },
+        "address": {
+          "required": "Write the street and the number.",
+          "tooLong": "The address is too long."
+        },
+        "comune": {
+          "required": "Choose the town from the list."
+        },
+        "consent": {
+          "required": "To continue we need your consent."
+        },
+        "email": {
+          "invalid": "Check the e-mail: something is missing (for example the @ or the domain).",
+          "required": "Write your e-mail: we send the link there.",
+          "tooLong": "The e-mail is too long."
+        },
+        "floor": {
+          "tooLong": "Write something shorter."
+        },
+        "fullName": {
+          "invalid": "Write your name in full.",
+          "required": "Write your full name.",
+          "tooLong": "The name is too long."
+        },
+        "phone": {
+          "invalid": "The number looks incomplete: check the digits.",
+          "required": "Write a phone number."
+        },
+        "postalCode": {
+          "invalid": "The postcode has 5 digits.",
+          "required": "Write the postcode."
+        },
+        "service": {
+          "required": "Choose the service you need."
+        },
+        "slot": {
+          "required": "Choose a day and a time among the free ones.",
+          "taken": "This time is no longer free: choose another one."
+        }
+      },
+      "service": {
+        "legend": "Service",
+        "loadingOptions": "Loading the options…",
+        "onQuoteItem": "{{name}}: send a request on measure",
+        "onQuoteLead": "For these services the professional decides the price:",
+        "optionsError": "We cannot load the options of this service.",
+        "optionsTitle": "To give you the right price"
+      },
+      "stepInfo": {
+        "details": {
+          "purpose": "Last step: we send you a link to confirm your e-mail.",
+          "title": "Your details"
+        },
+        "service": {
+          "purpose": "Choose the service. The price updates as you choose.",
+          "title": "What do you need?"
+        },
+        "when": {
+          "purpose": "You only see the times that are really free.",
+          "title": "When suits you?"
+        },
+        "where": {
+          "purpose": "We check right away that the town is one we serve.",
+          "title": "Where is the work done?"
+        }
+      },
+      "steps": {
+        "back": "Back to step: {{step}}",
+        "details": "Your details",
+        "label": "Booking steps",
+        "progress": "Step {{current}} of {{total}}",
+        "service": "Service",
+        "when": "When",
+        "where": "Where"
+      },
+      "summary": {
+        "empty": "Choose a service: the summary shows up here.",
+        "hold": "On your card the amount is only blocked: it is charged only if the professional accepts.",
+        "title": "Your summary",
+        "toggle": "Your summary",
+        "urgent": "Urgency",
+        "urgentValue": "Today or tomorrow",
+        "when": "When",
+        "where": "Where"
+      },
+      "title": "Book a service",
+      "titleFor": "Book: {{service}}",
+      "when": {
+        "dayLegend": "Day",
+        "dayOff": "not available",
+        "error": "We cannot load the free times.",
+        "loading": "Looking for free times…",
+        "nextWeek": "Following days",
+        "none": "No free time in the coming weeks. You can send the professional a request on measure.",
+        "noneUrgent": "No urgent time is free right now.",
+        "parts": {
+          "afternoon": "Afternoon",
+          "evening": "Evening",
+          "morning": "Morning"
+        },
+        "pickTime": "{{day}}: choose the arrival time",
+        "prevWeek": "Previous days",
+        "slotsCount_one": "{{count}} time",
+        "slotsCount_other": "{{count}} times",
+        "until": "until {{time}}",
+        "urgentOff": "See the normal times",
+        "urgentText": "The times of today and tomorrow, with a surcharge of {{amount}}.",
+        "urgentTextFree": "The times of today and tomorrow.",
+        "urgentTitle": "Is it urgent?"
+      },
+      "where": {
+        "checking": "Checking the area…",
+        "covered": "Perfect: the professional works in {{comune}}.",
+        "hint": "Write the name and pick it from the list.",
+        "label": "Which town?",
+        "noList": "The list of towns is not available right now. Try again later, or send the professional a request on measure.",
+        "outside": "{{comune}} is outside the professional’s usual area: they decide the price, with a request on measure.",
+        "privacy": "We ask for the exact address in the last step, and it reaches the professional only after they accept."
+      }
+    },
     "categories": {
       "eyebrow": "Services",
       "title": "What we do"
@@ -16529,6 +16763,9 @@
     "meta": {
       "about": "About us · {{name}}",
       "aboutDescription": "The story, the people and the guarantees of {{name}}.",
+      "booking": "Book · {{name}}",
+      "confirm": "Your request · {{name}}",
+      "request": "My request · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: what it includes, what it costs and when {{name}} is free.",
       "services": "Services and prices · {{name}}",

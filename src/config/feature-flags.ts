@@ -8,6 +8,7 @@ export type FeatureFlagKey =
   | 'rliProvider'
   | 'eSignProvider'
   | 'supplierOnlinePayments'
+  | 'supplierShowcaseBooking'
   | 'concordatoFacile'
   | 'supplierRequestBackups';
 
@@ -39,6 +40,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * it is off. The payments account (SP-16c-b) does not read it: it asks the server, whose endpoints answer 404 while the flag is off.
    */
   supplierOnlinePayments: false,
+  /**
+   * SP-09 to SP-12b: booking from the public site of a supplier (backend `SupplierShowcaseBooking`), off until the product owner turns it on.
+   * The pages of the booking (`/prenota`), of the check of the e-mail (`/conferma`) and of the customer's own request (`/richiesta`) are
+   * behind it: while it is off their addresses lead back to the home of the site.
+   */
+  supplierShowcaseBooking: false,
   /**
    * ConcordatoFacile, the partner that prepares a canone concordato contract (backend `ConcordatoFacile`): on in the test environment,
    * off in production until CasaZen confirms the trial run and the privacy framework to ConcordatoFacile. While it is off the card
