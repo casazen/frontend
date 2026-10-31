@@ -237,11 +237,12 @@ export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput, option
   });
 }
 
-export function useRliChecklist(id: string) {
+/** `enabled: false`: not read (the list of the files of a lease asks it only for a lease with an extra-EU tenant, the only one with a Questura receipt). */
+export function useRliChecklist(id: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [LEASES_KEY, id, 'rli', 'checklist'],
     queryFn: () => leasesApi.getRliChecklist(id),
-    enabled: !!id,
+    enabled: !!id && (options.enabled ?? true),
   });
 }
 

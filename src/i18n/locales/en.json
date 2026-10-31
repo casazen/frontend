@@ -6208,6 +6208,25 @@
       "start": "Start of the lease",
       "title": "Term and dates"
     },
+    "deadlines": {
+      "allRents": "All the rents",
+      "loadError": "The dates of this contract could not be loaded.",
+      "loading": "Loading the dates…",
+      "none": "No dates to keep for this contract in the coming year.",
+      "periodEnd": "End of the period",
+      "title": "Dates of this contract"
+    },
+    "files": {
+      "download": "Download",
+      "downloadFailed": "The file could not be downloaded.",
+      "questura": "Questura receipt",
+      "registeredOn": "Registered on {{date}}",
+      "registration": "Registration receipt",
+      "sentOn": "Communication of {{date}}",
+      "signed": "Signed contract",
+      "signedOn": "Signed on {{date}}",
+      "title": "Contract and receipts"
+    },
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -6215,11 +6234,18 @@
       },
       "more": "Show the whole history"
     },
+    "menu": {
+      "documents": "Go to the documents",
+      "openProperty": "Open the property",
+      "readContract": "Read the contract",
+      "readDraft": "Read the draft of the contract"
+    },
     "now": {
       "kicker": "What to do now"
     },
     "party": {
-      "extraEu": "Non-EU"
+      "extraEu": "Non-EU",
+      "verifiedOn": "Document checked on {{date}}"
     },
     "property": {
       "open": "Open the property",
