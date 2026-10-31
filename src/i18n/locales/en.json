@@ -6239,7 +6239,8 @@
       "documents": "Go to the documents",
       "openProperty": "Open the property",
       "readContract": "Read the contract",
-      "readDraft": "Read the draft of the contract"
+      "readDraft": "Read the draft of the contract",
+      "requestJob": "Request a job"
     },
     "now": {
       "kicker": "What to do now"
@@ -6252,6 +6253,23 @@
       "open": "Open the property",
       "title": "Property"
     },
+    "requests": {
+      "action": {
+        "confirmAmount": "Confirm the amount",
+        "markPaid": "Mark as paid",
+        "pay": "Pay",
+        "proposal": "Answer the proposed time"
+      },
+      "hideClosed": "Hide the closed jobs",
+      "loadError": "The jobs for this contract could not be loaded.",
+      "loading": "Loading the jobs…",
+      "none": "No job has been requested for this contract.",
+      "noneOpen": "No job to follow.",
+      "request": "Request a job",
+      "showClosed_one": "Show the closed job",
+      "showClosed_other": "Show the {{count}} closed jobs",
+      "title": "Maintenance for this contract"
+    },
     "status": {
       "explain": "What this status means"
     },
@@ -6260,7 +6278,8 @@
       "deadlines": "Deadlines",
       "documents": "Documents",
       "label": "Sections of the lease",
-      "payments": "Payments"
+      "payments": "Payments",
+      "requests": "Maintenance"
     },
     "toDefine": "To be set"
   },

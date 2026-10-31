@@ -1,5 +1,5 @@
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
-import { useId, useState } from 'react';
+import { useContext, useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -13,6 +13,8 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { WorkspaceContext } from '@/contexts/workspace-context';
+import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { useLease, useLeaseListStage, useLeaseNextStep } from '@/queries/use-leases';
 import { getHttpStatus } from '@/lib/api-errors';
 import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
@@ -24,6 +26,7 @@ import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
 import { LeaseFiles } from './components/lease-files';
 import { LeaseHistory } from './components/lease-history';
 import { LeaseNowBlock } from './components/lease-now-block';
+import { LeaseRequestsTab } from './components/lease-requests-tab';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { useLeaseSheetMenu } from './components/use-lease-sheet-menu';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
@@ -38,6 +41,9 @@ import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
 const LEASES_PATH = '/app/long-rent/leases';
+
+/** The statuses of a lease signed by every party: from then on there is a tenancy a job can be asked for (a draft may still go away). */
+const CAN_ASK_FOR_JOBS: readonly LeaseStatus[] = ['Signed', 'RegistrationPending', 'SentToProvider', 'Registered'];
 
 /** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
 function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
@@ -75,11 +81,12 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 }
 
 /**
- * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
- * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
+ * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then six tabs
+ * (Guida, Dati, Documenti, Pagamenti, Scadenze, Interventi: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
- * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
+ * The tab `interventi` (LR-03c) lists the jobs asked of the suppliers for this contract and asks for a new one, ready with the property and
+ * the lease. The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, ask for a job, go to the documents)
  * and then what can be done to the lease while it lives (delete the draft, record a notice, end it early…, LR-10), which opens from the
  * address too (`?azione=`).
  */
@@ -99,6 +106,12 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   const tab = leaseTabOf(searchParams.get('tab'), DEFAULT_LEASE_TAB);
   const [explainOpen, setExplainOpen] = useState(false);
   const explainId = useId();
+  // A job for this contract: who may write the properties of the area, once the contract is signed. Without a workspace (a page rendered on
+  // its own) nothing is hidden and the server decides.
+  const workspace = useContext(WorkspaceContext);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const canAsk = CAN_ASK_FOR_JOBS.includes(lease.status) && (workspace ? workspace.hasPermission('long-rent', 'property.write') : true);
+  const askForJob = canAsk ? () => setRequestOpen(true) : undefined;
 
   const parties = lease.parties ?? [];
   const showQuestura = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
@@ -113,11 +126,12 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
     { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
     { value: 'pagamenti', label: t('leaseSheet.tabs.payments'), testId: 'lease-tab-pagamenti' },
     { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
+    { value: 'interventi', label: t('leaseSheet.tabs.requests'), testId: 'lease-tab-interventi' },
   ];
 
   const title = leaseTitle(lease, i18n.language, t);
   const actions = useLeaseActions(lease, { tenant: title, property: lease.property?.name ?? t('leaseList.property.unknown') });
-  const links = useLeaseSheetMenu(lease, { partnerDraft });
+  const links = useLeaseSheetMenu(lease, { partnerDraft, onRequest: askForJob });
   // What changes the lease comes after what only takes somewhere, apart; the one that destroys is the last of the menu (LR-10).
   const menu: PageHeaderMenuItem[] = actions.menu.length > 0 ? [...links, { separator: true }, ...actions.menu] : links;
 
@@ -151,12 +165,24 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
             {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showQuestura} />}
+            {tab === 'interventi' && <LeaseRequestsTab leaseId={lease.id} onRequest={askForJob} />}
           </Tabs>
           <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />
         </div>
       </div>
 
       {actions.dialogs}
+      {/* Mounted when asked, so every request starts from nothing; the property and the lease are the ones of this sheet. */}
+      {requestOpen ? (
+        <ServiceRequestForm
+          propertyId={lease.propertyId}
+          leaseId={lease.id}
+          context="long-rent"
+          open
+          onOpenChange={(open) => !open && setRequestOpen(false)}
+          hideTrigger
+        />
+      ) : null}
     </div>
   );
 }

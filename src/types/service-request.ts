@@ -29,6 +29,8 @@ export interface ServiceRequest {
   rentalContext?: ServiceRequestRentalContext;
   propertyId: string;
   propertyName?: string | null;
+  /** The lease contract a long-rent request was made for, when it was asked from the sheet of that contract (LR-03c); the supplier never gets it. */
+  leaseId?: string | null;
   supplierOrgId: string;
   supplierName?: string | null;
   category: string;
@@ -506,6 +508,8 @@ export interface CreateServiceRequestDto {
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */
 export interface CreateLongRentServiceRequestDto {
   propertyId: string;
+  /** The lease contract the request is for (LR-03c): a lease of that property; the server refuses another's. */
+  leaseId?: string;
   supplierOrgId: string;
   category: string;
   urgency?: ServiceRequestUrgency;
