@@ -29,6 +29,7 @@ const FLAGS_OFF: FeatureFlags = {
   rliProvider: false,
   eSignProvider: false,
   supplierOnlinePayments: false,
+  supplierShowcaseBooking: false,
   concordatoFacile: false,
   supplierRequestBackups: false,
 };
@@ -38,6 +39,7 @@ const FLAGS_ON: FeatureFlags = {
   rliProvider: true,
   eSignProvider: true,
   supplierOnlinePayments: true,
+  supplierShowcaseBooking: true,
   concordatoFacile: true,
   supplierRequestBackups: true,
 };

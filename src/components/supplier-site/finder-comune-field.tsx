@@ -12,7 +12,8 @@ const SEARCH_DEBOUNCE_MS = 250;
 interface FinderComuneFieldProps {
   /** Id of the input: the label of the field points at it. */
   id: string;
-  value: Comune | null;
+  /** The comune shown: the name and the province are all the field needs of it. */
+  value: Pick<Comune, 'name' | 'provinceCode'> | null;
   onChange: (comune: Comune | null) => void;
 }
 

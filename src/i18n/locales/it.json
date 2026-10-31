@@ -16406,6 +16406,239 @@
       "valuesEyebrow": "Punti di forza",
       "where": "Lavoriamo a {{places}}"
     },
+    "booking": {
+      "actions": {
+        "after": "Annullare non costa nulla: puoi farlo dal link nell’email di conferma.",
+        "back": "Indietro",
+        "next": "Continua",
+        "offline": "Sei offline: puoi controllare i dati, ma per inviare la richiesta serve la connessione.",
+        "send": "Invia la richiesta",
+        "sending": "Un momento…"
+      },
+      "back": {
+        "toService": "Torna a {{name}}",
+        "toServices": "Torna ai servizi"
+      },
+      "checkEmail": {
+        "back": "Torna a {{name}}",
+        "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
+        "nothingYet": "Finché non apri il link, {{name}} non riceve nulla.",
+        "spam": "Non la trovi? Guarda anche nella cartella dello spam.",
+        "title": "Controlla la tua email",
+        "until": "Il link vale fino alle {{time}}: dopo, l’orario torna libero."
+      },
+      "closed": {
+        "title": "Qui non si può prenotare adesso"
+      },
+      "confirm": {
+        "already": {
+          "lead": "La richiesta era già stata inviata: qui sotto trovi il codice.",
+          "title": "Hai già controllato la tua email"
+        },
+        "awaitingPayment": {
+          "text": "L’email è controllata. La richiesta parte appena l’importo è bloccato sulla carta: aggiorniamo da soli, non serve fare altro se l’hai già confermato.",
+          "title": "Ci siamo quasi"
+        },
+        "bookAgain": "Prenota di nuovo",
+        "checking": "Controllo il link…",
+        "code": "Codice",
+        "copied": "Codice copiato",
+        "copy": "Copia il codice",
+        "done": {
+          "lead": "{{name}} ha ricevuto la tua richiesta per «{{service}}» e risponde entro {{when}}. Se non risponde, la richiesta si annulla da sola e ti avvisiamo.",
+          "leadNoDeadline": "{{name}} ha ricevuto la tua richiesta per «{{service}}». Se non risponde in tempo, la richiesta si annulla da sola e ti avvisiamo.",
+          "title": "Richiesta inviata"
+        },
+        "expired": {
+          "text": "Il tempo per controllare l’email è finito: l’orario è tornato libero e la richiesta non è stata inviata. Se avevi bloccato l’importo sulla carta, non è stato addebitato nulla. Puoi ricominciare.",
+          "title": "Il link è scaduto"
+        },
+        "invalid": {
+          "text": "Il link potrebbe essere incompleto o già usato. Se hai ricevuto un’email più recente, usa quella; altrimenti puoi ricominciare.",
+          "title": "Questo link non è valido"
+        },
+        "keepCode": "Conservalo: insieme alla tua email ti serve per ritrovare la richiesta.",
+        "myRequest": "La mia richiesta",
+        "next": {
+          "change": "Annullare non costa nulla",
+          "changeText": "Dalla pagina «La mia richiesta» puoi annullare, senza costi, fino all’orario del lavoro.",
+          "mail": "Ti scriviamo per email",
+          "mailText": "Appena risponde, ti scriviamo l’esito.",
+          "review": "{{name}} guarda la richiesta",
+          "reviewText": "Ha tempo fino a {{when}} per accettare. L’orario non è confermato finché non accetta.",
+          "reviewTextNoDeadline": "L’orario non è confermato finché non accetta.",
+          "title": "Cosa succede ora"
+        },
+        "retry": {
+          "text": "Controlla la connessione e riprova.",
+          "textWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+          "title": "Non riusciamo a controllare il link"
+        },
+        "ticket": "La tua richiesta",
+        "unavailable": {
+          "text": "La richiesta non può essere inviata in questo momento. Riprova più tardi.",
+          "title": "{{name}} non è disponibile adesso"
+        }
+      },
+      "details": {
+        "accessNotes": "Come entriamo?",
+        "accessNotesHint": "Citofono, chiavi, orari del portiere.",
+        "address": "Via e numero civico",
+        "addressHint": "Lo vede il professionista solo dopo che accetta.",
+        "consent": "Ho letto l’<privacy>informativa sulla privacy</privacy> e acconsento al trattamento dei miei dati per questa prenotazione.",
+        "email": "Email",
+        "emailFix": "Sì, correggi",
+        "emailHint": "Ti mandiamo qui il link per confermare.",
+        "emailSuggest": "Forse intendevi {{email}}?",
+        "floor": "Piano, scala, interno",
+        "fullName": "Nome e cognome",
+        "phone": "Telefono",
+        "phoneHint": "Lo vede il professionista solo dopo che accetta.",
+        "postalCode": "CAP",
+        "trap": "Lascia vuoto questo campo",
+        "whereTitle": "Dove dobbiamo venire",
+        "whoTitle": "I tuoi dati"
+      },
+      "notice": {
+        "consent": "Per continuare serve il tuo consenso al trattamento dei dati.",
+        "consentOutdated": "Il testo dell’informativa è cambiato mentre compilavi: rileggilo e conferma di nuovo.",
+        "invalid": "Alcuni dati non sono validi: controlla i campi segnati.",
+        "offline": "Il professionista non accetta prenotazioni in questo momento.",
+        "other": "Non siamo riusciti a inviare la richiesta. Controlla la connessione e riprova.",
+        "outsideZone": "Questo comune è fuori dalla zona del professionista. Puoi mandare una richiesta su misura.",
+        "payment": "Il servizio di pagamento non risponde adesso. Riprova tra poco.",
+        "paymentSoon": "Il pagamento con carta di questo sito arriva con il prossimo aggiornamento: per ora da qui non si può prenotare.",
+        "preview": "Questa è l’anteprima: la richiesta non si invia.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "serviceGone": "Questo servizio non è più disponibile. Scegline un altro.",
+        "siteGone": "Questa pagina non è più disponibile.",
+        "slotTaken": "Questo orario è appena stato preso da qualcun altro. Scegline un altro.",
+        "unavailable": "La prenotazione non è disponibile in questo momento. Riprova più tardi."
+      },
+      "optional": "facoltativo",
+      "problems": {
+        "accessNotes": {
+          "tooLong": "Il testo è troppo lungo: scrivi l’essenziale."
+        },
+        "address": {
+          "required": "Scrivi la via e il numero civico.",
+          "tooLong": "L’indirizzo è troppo lungo."
+        },
+        "comune": {
+          "required": "Scegli il comune dall’elenco."
+        },
+        "consent": {
+          "required": "Per continuare serve il tuo consenso."
+        },
+        "email": {
+          "invalid": "Controlla l’email: manca qualcosa (per esempio la @ o il dominio).",
+          "required": "Scrivi la tua email: ti mandiamo lì il link.",
+          "tooLong": "L’email è troppo lunga."
+        },
+        "floor": {
+          "tooLong": "Scrivi qualcosa di più breve."
+        },
+        "fullName": {
+          "invalid": "Scrivi il tuo nome per intero.",
+          "required": "Scrivi nome e cognome.",
+          "tooLong": "Il nome è troppo lungo."
+        },
+        "phone": {
+          "invalid": "Il numero sembra incompleto: controlla le cifre.",
+          "required": "Scrivi un numero di telefono."
+        },
+        "postalCode": {
+          "invalid": "Il CAP ha 5 cifre.",
+          "required": "Scrivi il CAP."
+        },
+        "service": {
+          "required": "Scegli il servizio che ti serve."
+        },
+        "slot": {
+          "required": "Scegli un giorno e un orario tra quelli liberi.",
+          "taken": "Questo orario non è più libero: scegline un altro."
+        }
+      },
+      "service": {
+        "legend": "Servizio",
+        "loadingOptions": "Carico le opzioni…",
+        "onQuoteItem": "{{name}}: manda una richiesta su misura",
+        "onQuoteLead": "Per questi servizi il prezzo lo decide il professionista:",
+        "optionsError": "Non riusciamo a caricare le opzioni di questo servizio.",
+        "optionsTitle": "Per darti il prezzo giusto"
+      },
+      "stepInfo": {
+        "details": {
+          "purpose": "Ultimo passo: ti mandiamo un link per confermare l’email.",
+          "title": "I tuoi dati"
+        },
+        "service": {
+          "purpose": "Scegli il servizio. Il prezzo si aggiorna mentre scegli.",
+          "title": "Che cosa ti serve?"
+        },
+        "when": {
+          "purpose": "Vedi solo gli orari davvero liberi.",
+          "title": "Quando ti va bene?"
+        },
+        "where": {
+          "purpose": "Controlliamo subito che il comune sia tra quelli serviti.",
+          "title": "Dove si fa il lavoro?"
+        }
+      },
+      "steps": {
+        "back": "Torna al passo: {{step}}",
+        "details": "I tuoi dati",
+        "label": "Passi della prenotazione",
+        "progress": "Passo {{current}} di {{total}}",
+        "service": "Servizio",
+        "when": "Quando",
+        "where": "Dove"
+      },
+      "summary": {
+        "empty": "Scegli un servizio: qui compare il riepilogo.",
+        "hold": "Sulla carta l’importo resta solo bloccato: viene addebitato soltanto se il professionista accetta.",
+        "title": "Il tuo riepilogo",
+        "toggle": "Il tuo riepilogo",
+        "urgent": "Urgenza",
+        "urgentValue": "Oggi o domani",
+        "when": "Quando",
+        "where": "Dove"
+      },
+      "title": "Prenota un servizio",
+      "titleFor": "Prenota: {{service}}",
+      "when": {
+        "dayLegend": "Giorno",
+        "dayOff": "non disponibile",
+        "error": "Non riusciamo a caricare gli orari liberi.",
+        "loading": "Cerco gli orari liberi…",
+        "nextWeek": "Giorni successivi",
+        "none": "Nessun orario libero nelle prossime settimane. Puoi mandare una richiesta su misura al professionista.",
+        "noneUrgent": "Nessun orario urgente libero adesso.",
+        "parts": {
+          "afternoon": "Pomeriggio",
+          "evening": "Sera",
+          "morning": "Mattina"
+        },
+        "pickTime": "{{day}}: scegli l’orario di arrivo",
+        "prevWeek": "Giorni precedenti",
+        "slotsCount_one": "{{count}} orario",
+        "slotsCount_other": "{{count}} orari",
+        "until": "fino alle {{time}}",
+        "urgentOff": "Guarda gli orari normali",
+        "urgentText": "Gli orari di oggi e di domani, con un supplemento di {{amount}}.",
+        "urgentTextFree": "Gli orari di oggi e di domani.",
+        "urgentTitle": "È urgente?"
+      },
+      "where": {
+        "checking": "Controllo la zona…",
+        "covered": "Perfetto: il professionista lavora a {{comune}}.",
+        "hint": "Scrivi il nome e scegli dall’elenco.",
+        "label": "In quale comune?",
+        "outside": "{{comune}} è fuori dalla zona abituale del professionista: il prezzo lo decide lui, con una richiesta su misura.",
+        "privacy": "L’indirizzo esatto lo chiediamo all’ultimo passo e arriva al professionista solo dopo che accetta."
+      }
+    },
     "categories": {
       "eyebrow": "Servizi",
       "title": "Di cosa ci occupiamo"
@@ -16529,6 +16762,9 @@
     "meta": {
       "about": "Chi siamo · {{name}}",
       "aboutDescription": "La storia, le persone e le garanzie di {{name}}.",
+      "booking": "Prenota · {{name}}",
+      "confirm": "La tua richiesta · {{name}}",
+      "request": "La mia richiesta · {{name}}",
       "service": "{{service}} · {{name}}",
       "serviceDescription": "{{service}}: cosa comprende, quanto costa e quando è libero {{name}}.",
       "services": "Servizi e prezzi · {{name}}",
