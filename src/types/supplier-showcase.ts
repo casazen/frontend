@@ -49,6 +49,23 @@ export interface ShowcaseContent {
   publicUrl: string | null;
 }
 
+/** What an image of the showcase is for: the logo, the cover, the photo of a job, the "before" photo of a job (SP-13b). */
+export type ShowcaseMediaKind = 'logo' | 'cover' | 'work' | 'before';
+
+/** An image the server stored for the showcase (SP-13b): its `url` goes into the content as it is. */
+export interface ShowcaseMedia {
+  id: string;
+  kind: ShowcaseMediaKind;
+  /** The absolute public address, in the supplier's own folder of the storage (the only place the content may point to). */
+  url: string;
+  contentType: 'image/jpeg' | 'image/png' | 'image/webp';
+  /** The size of the stored file, after its metadata (EXIF, GPS position...) was removed. */
+  bytes: number;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+}
+
 /** The two true numbers of the editor: the requests that came from the showcase in the last 30 days and how many still wait. */
 export interface ShowcaseStats {
   days: number;

@@ -1,5 +1,17 @@
 import { ApiClient } from '@/api/client';
-import type { ShowcaseContent, ShowcaseStats } from '@/types/supplier-showcase';
+import axios from '@/lib/axios';
+import type { ShowcaseContent, ShowcaseMedia, ShowcaseMediaKind, ShowcaseStats } from '@/types/supplier-showcase';
+
+/** A photo of 10 MB on a slow connection takes more than the default 30 seconds. */
+const UPLOAD_TIMEOUT_MS = 120_000;
+
+/** What a caller of the upload can follow and stop. */
+export interface UploadMediaOptions {
+  /** Told how much of the file has gone, from 0 to 100. */
+  onProgress?: (percent: number) => void;
+  /** Stops the upload (the person cancels or leaves the picker). */
+  signal?: AbortSignal;
+}
 
 /**
  * The content of the supplier's showcase (SP-13a). Every route is of the caller's own supplier org; every answer, but the stats, is the
@@ -31,4 +43,25 @@ export const supplierShowcaseApi = {
   resume: () => ApiClient.post<ShowcaseContent>('/supplier/showcase/resume'),
 
   getStats: () => ApiClient.get<ShowcaseStats>('/supplier/showcase/stats'),
+
+  /**
+   * Uploads an image of the showcase (SP-13b, multipart `kind` and `file`): the logo (200 KB at most), the cover, the photo of a job or its
+   * "before" (10 MB). The server reads the type from the content (PNG, JPEG, WebP) and stores the file without its metadata; the answer
+   * carries the `url` to put into the content. Errors: 413 `showcase_media_too_large`, 415 `showcase_media_unsupported_type`, 422
+   * `showcase_media_invalid_image` / `_dimensions` / `_limit_reached`, 429 when the editor sends too many.
+   */
+  async uploadMedia(kind: ShowcaseMediaKind, file: File, options: UploadMediaOptions = {}): Promise<ShowcaseMedia> {
+    const form = new FormData();
+    form.append('kind', kind);
+    form.append('file', file, file.name);
+    const response = await axios.post<ShowcaseMedia>('/supplier/showcase/media', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT_MS,
+      signal: options.signal,
+      onUploadProgress: (event) => {
+        if (event.total) options.onProgress?.(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+      },
+    });
+    return response.data;
+  },
 };

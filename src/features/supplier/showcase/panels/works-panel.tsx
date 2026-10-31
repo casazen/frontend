@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ImageOff } from 'lucide-react';
 import type { PublicShowcaseWork } from '@/api/public-supplier.api';
@@ -12,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { useSupplierProfile } from '@/queries/supplier/use-profile';
 import { useSupplierServices } from '@/queries/use-supplier-services';
 import { SHOWCASE_LIMITS } from '../showcase-limits';
-import { PROFILE_PATH, SERVICES_PATH } from '../showcase-model';
+import { SHOWCASE_MEDIA } from '../showcase-media';
 import { ADVISED_WORKS, buildPhotoPool, worksWithPhoto } from '../showcase-photos';
 import { CountedField } from './counted-field';
 import { isRefused, type PanelProps } from './panel-types';
@@ -48,10 +47,11 @@ function PhotoThumb({ url, className }: { url: string | null | undefined; classN
 type Picking = { kind: 'cover' } | { kind: 'work'; index: number; field: 'photoUrl' | 'beforeUrl' };
 
 /**
- * "Foto e lavori" (SP-13d): the cover and the jobs of the gallery, with photos **chosen among the ones the supplier already has** on its
- * profile and its services (they sit in its own folder of the storage, the only place the server accepts; the upload from here is
- * SP-13b). A job has a caption, a place and, if the supplier wants, a "before" photo for the before and after. Jobs are moved with
- * buttons and taken out with an "Annulla".
+ * "Foto e lavori" (SP-13d): the cover and the jobs of the gallery, with photos **uploaded here** (SP-13b: checked, made smaller and stored by
+ * the server without its metadata) or **chosen among the ones the supplier already has** on its profile and its services (they sit in its own
+ * folder of the storage, the only place the server accepts). A job has a caption, a place and, if the supplier wants, a "before" photo for the
+ * before and after. Jobs are moved with buttons and taken out with an "Annulla"; a photo taken out of the content is removed from the storage
+ * by itself within two days, when nothing uses it (the server cleans up every night: the editor never deletes a file).
  */
 export function WorksPanel({ doc, change, invalid }: PanelProps) {
   const { t } = useTranslation();
@@ -124,19 +124,9 @@ export function WorksPanel({ doc, change, invalid }: PanelProps) {
           <p className="text-sm text-foreground/70" data-testid="supplier-showcase-works-count">
             {t('supplier.showcase.editor.works.count', { count: withPhoto, advised: ADVISED_WORKS })}
           </p>
-          {!loading && pool.length === 0 ? (
-            <div className="mt-2 space-y-2 rounded-lg border border-dashed p-3 text-sm" data-testid="supplier-showcase-works-nophotos">
-              <p>{t('supplier.showcase.editor.photos.none')}</p>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild variant="outline" size="sm">
-                  <Link to={PROFILE_PATH}>{t('supplier.showcase.editor.photos.addToProfile')}</Link>
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link to={SERVICES_PATH}>{t('supplier.showcase.editor.photos.addToService')}</Link>
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          <p className="text-sm text-foreground/70" data-testid="supplier-showcase-works-limits">
+            {t('supplier.showcase.media.limits', { works: SHOWCASE_MEDIA.galleryWorks, photos: SHOWCASE_MEDIA.galleryPhotos })}
+          </p>
         </div>
         <ReorderableList<PublicShowcaseWork>
           items={gallery}
@@ -219,6 +209,7 @@ export function WorksPanel({ doc, change, invalid }: PanelProps) {
           if (!open) setPicking(null);
         }}
         title={pickerTitle}
+        kind={picking?.kind === 'work' ? (picking.field === 'beforeUrl' ? 'before' : 'work') : 'cover'}
         photos={pool}
         loading={loading}
         selected={selected}
