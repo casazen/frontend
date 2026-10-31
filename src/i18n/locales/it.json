@@ -6243,7 +6243,8 @@
       "documents": "Vai ai documenti",
       "openProperty": "Apri l'immobile",
       "readContract": "Leggi il contratto",
-      "readDraft": "Leggi la bozza del contratto"
+      "readDraft": "Leggi la bozza del contratto",
+      "requestJob": "Richiedi intervento"
     },
     "now": {
       "kicker": "Cosa devi fare ora"
@@ -6256,6 +6257,23 @@
       "open": "Apri l'immobile",
       "title": "Immobile"
     },
+    "requests": {
+      "action": {
+        "confirmAmount": "Conferma l'importo",
+        "markPaid": "Segna come pagato",
+        "pay": "Paga",
+        "proposal": "Rispondi all'orario"
+      },
+      "hideClosed": "Nascondi gli interventi chiusi",
+      "loadError": "Impossibile caricare gli interventi di questo contratto.",
+      "loading": "Caricamento degli interventi…",
+      "none": "Nessun intervento richiesto per questo contratto.",
+      "noneOpen": "Nessun intervento da seguire.",
+      "request": "Richiedi intervento",
+      "showClosed_one": "Mostra l'intervento chiuso",
+      "showClosed_other": "Mostra i {{count}} interventi chiusi",
+      "title": "Interventi per questo contratto"
+    },
     "status": {
       "explain": "Cosa significa questo stato"
     },
@@ -6264,7 +6282,8 @@
       "deadlines": "Scadenze",
       "documents": "Documenti",
       "label": "Sezioni del contratto",
-      "payments": "Pagamenti"
+      "payments": "Pagamenti",
+      "requests": "Interventi"
     },
     "toDefine": "Da definire"
   },

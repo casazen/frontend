@@ -101,6 +101,18 @@ export function useLongRentServiceRequests(propertyId?: string) {
   });
 }
 
+/**
+ * The long-rent requests made for one lease contract (LR-03c), newest first, for the tab of the jobs of its sheet: the most the API gives
+ * in a page, a contract does not have more. Read again when the tab opens: the requests change on other screens.
+ */
+export function useLeaseServiceRequests(leaseId: string) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', 'lease', leaseId],
+    queryFn: () => fetchLongRentServiceRequests({ leaseId, pageSize: 100 }),
+    refetchOnMount: 'always',
+  });
+}
+
 /** How often a request waiting for the payment to be confirmed is read again, in milliseconds. */
 const PAYMENT_POLL_MS = 4000;
 
