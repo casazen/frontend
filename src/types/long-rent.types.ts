@@ -42,6 +42,8 @@ export interface LongRentDeadlines {
 export interface LongRentDeadlinesParams {
   from?: string;
   to?: string;
+  /** The dates of one lease only (the sheet of a contract, LR-03c): narrows what the caller already reaches; another lease gives none. */
+  leaseId?: string;
 }
 
 /** The leases of the area counted as the views of the list of leases are (`active` includes `expiring`; `inPreparation` is `toSign` + `toRegister`). */

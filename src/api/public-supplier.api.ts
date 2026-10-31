@@ -235,9 +235,10 @@ export const publicSupplierApi = {
 
   /**
    * The free slots of a service from `from` (a day in Rome, default today) for `days` days (1 to 62, default 14). A slot shown is
-   * not a promise: the booking checks it again. A paused showcase answers 422 `supplier_booking_offline`.
+   * not a promise: the booking checks it again. A paused showcase answers 422 `supplier_booking_offline`. `urgent` asks for the
+   * urgent slots instead (SP-04c: only today and tomorrow, inside the urgent window of the supplier, for a service that offers them).
    */
-  getSlots: (slug: string, params: { service: string; from?: string; days?: number }) =>
+  getSlots: (slug: string, params: { service: string; from?: string; days?: number; urgent?: boolean }) =>
     ApiClient.get<PublicSlotsResponse>(`/public/suppliers/${encodeURIComponent(slug)}/slots`, params, { public: true }),
 
   /**

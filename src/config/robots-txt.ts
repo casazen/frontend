@@ -42,6 +42,11 @@ export const DISALLOWED_PATHS = [
   '/book/*/bookings/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
+  // The private pages of the booking from a supplier's site (SP-12b): the booking in progress, the page of the verification link (its
+  // address carries the secret of the link until the page takes it out) and the customer's own request (a code). The site itself stays indexed.
+  '/fornitori/*/prenota',
+  '/fornitori/*/conferma',
+  '/fornitori/*/richiesta',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',
