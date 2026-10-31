@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
+import { formatDate } from '@/lib/utils';
 import { useLongRentDeadlines } from '@/queries/use-long-rent-agenda';
 import type { LeaseDetail } from '@/types';
 import { agendaWindow, leaseDeadlineRows } from '../deadlines/deadlines-model';
@@ -19,13 +20,15 @@ const WINDOW_DAYS = 366;
  * The dates of this contract (LR-03c), the ones the server keeps for it (`GET /long-rent/deadlines?leaseId=`): the registration and the
  * Questura communication while they are to be done, the end of the period and the last day to give notice, and the rents late or next.
  * Nothing is worked out here: which dates there are, and which are late, is the server's. A renewal by itself is told in words, with no
- * number of months or days (the figures of the law are the legal's to confirm). The panels of the registration and of the Questura stay
+ * number of months or days (the figures of the law are the legal's to confirm). The return of the deposit has no date of its own to keep:
+ * once it is recorded (an event of the lease) the sheet says when, under the dates. The panels of the registration and of the Questura stay
  * under it, as they were.
  */
 export function LeaseDates({ lease }: { lease: LeaseDetail }) {
   const { t } = useTranslation();
   const agenda = useLongRentDeadlines({ ...agendaWindow(todayInRome(), WINDOW_DAYS), leaseId: lease.id });
   const renews = leaseTermFacts(lease, t).some((fact) => fact.key === 'renews');
+  const depositReturned = (lease.events ?? []).find((event) => event.eventType === 'DepositReturnRecorded');
   const { rows, moreRents } = useMemo(() => leaseDeadlineRows(agenda.data?.items ?? [], { t }, { renews }), [agenda.data, t, renews]);
 
   // The rents past the next ones are on the tab of the payments: one quiet way there, only when some were left out.
@@ -57,6 +60,11 @@ export function LeaseDates({ lease }: { lease: LeaseDetail }) {
       ) : (
         <SkeletonCard lines={3} label={t('leaseSheet.deadlines.loading')} />
       )}
+      {depositReturned ? (
+        <p className="text-sm text-foreground/70" data-testid="lease-deposit-returned">
+          {t('leaseSheet.deadlines.depositReturned', { date: formatDate(depositReturned.occurredAt) })}
+        </p>
+      ) : null}
     </PlainSection>
   );
 }
