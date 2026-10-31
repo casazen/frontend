@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check, CircleAlert, Copy, Hourglass, Mail, TriangleAlert, Undo2 } from 'lucide-react';
+import { Check, CircleAlert, Hourglass, Mail, TriangleAlert, Undo2 } from 'lucide-react';
 import type { PublicBookingConfirmation } from '@/api/public-supplier-booking.api';
 import { addressWithoutToken, readConfirmLink } from '@/lib/supplier-site/confirm-link';
 import { readConfirmFailure, type ConfirmFailure } from '@/lib/supplier-site/booking-errors';
@@ -9,6 +9,7 @@ import { formatSlotLabel } from '@/lib/supplier-site/format';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { useBookingConfirmation } from '@/queries/use-public-supplier-booking';
 import { useSupplierSite } from '../site-context';
+import { CodeLine } from './code-line';
 
 /** A state of the page that is not the success: one icon, one sentence of what happened, the way on. */
 function Outcome({ icon, tone, title, text, actions, testId }: { icon: ReactNode; tone?: 'error'; title: string; text: string; actions?: ReactNode; testId: string }) {
@@ -23,32 +24,6 @@ function Outcome({ icon, tone, title, text, actions, testId }: { icon: ReactNode
         {actions ? <div className="vz-state__actions">{actions}</div> : null}
       </section>
     </div>
-  );
-}
-
-/** The code of the booking to keep: shown whole, with a button that copies it. */
-function CodeLine({ code }: { code: string }) {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  };
-  return (
-    <p className="vf-code">
-      <span>{t('supplierSite.booking.confirm.code')}</span>
-      <strong>{code}</strong>
-      <button type="button" className="vf-copy" onClick={() => void copy()} aria-label={t('supplierSite.booking.confirm.copy')}>
-        {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-      </button>
-      <span className="sr-only" role="status">
-        {copied ? t('supplierSite.booking.confirm.copied') : ''}
-      </span>
-    </p>
   );
 }
 

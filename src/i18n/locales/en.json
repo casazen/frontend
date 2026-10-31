@@ -16784,6 +16784,178 @@
       "text": "The showcase is paused: you cannot book for now. Come back later.",
       "title": "{{name}} is not taking bookings for now"
     },
+    "request": {
+      "again": "Book again",
+      "calendar": {
+        "add": "Add to calendar",
+        "description": "Request code: {{code}}.",
+        "summary": "{{service}} · {{name}}"
+      },
+      "cancel": {
+        "back": "No, keep it",
+        "confirm": "Yes, cancel the request",
+        "reason": "Want to tell us why?",
+        "reasonHint": "{{name}} reads it.",
+        "reasonTooLong": "The text is too long: write what matters.",
+        "text": "Cancelling costs nothing. {{name}} is told and the time is free again.",
+        "title": "Do you want to cancel the request?"
+      },
+      "errors": {
+        "cannotCancel": "This request can no longer be cancelled from here.",
+        "cannotReschedule": "This request can no longer be moved.",
+        "changed": "The request changed in the meantime: here it is as it is now.",
+        "invalid": "Something is wrong: check and try again.",
+        "noProposal": "There is no time to accept.",
+        "noQuote": "There is no quote to accept.",
+        "other": "We could not complete the operation. Check your connection and try again.",
+        "proposalExpired": "The time to answer the proposal is over.",
+        "quoteExpired": "The time to answer the quote is over.",
+        "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "slotTaken": "This time is no longer free: choose another one.",
+        "supplierUnavailable": "The professional is not available right now."
+      },
+      "gate": {
+        "code": "Request code",
+        "codeHint": "You find it in the e-mail: five characters, a dash, five more.",
+        "codeInvalid": "The code has ten characters, for example 7K2XM-9QD4T.",
+        "email": "E-mail",
+        "emailHint": "The one you booked with.",
+        "emailInvalid": "Check the e-mail: something is missing (for example the @ or the domain).",
+        "error": "We cannot look for the request right now. Check your connection and try again.",
+        "lead": "Write the code and the e-mail you used to book.",
+        "notFound": "We cannot find a request with this code and this e-mail. Check that you wrote them as in the confirmation e-mail.",
+        "privacy": "We do not keep the e-mail in this browser.",
+        "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
+        "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "searching": "Looking…",
+        "submit": "Find my request",
+        "title": "My request"
+      },
+      "manage": {
+        "cancel": "Cancel the request",
+        "lead": "Cancelling costs nothing.",
+        "reschedule": "Move the time",
+        "title": "Change or cancel"
+      },
+      "phases": {
+        "cancelledByCustomer": {
+          "lead": "Cancelling costs nothing. The time is free again.",
+          "title": "You cancelled the request"
+        },
+        "cancelledBySupplier": {
+          "lead": "You can book again, also for another time.",
+          "leadReason": "Reason: {{reason}}",
+          "title": "{{name}} cancelled the request"
+        },
+        "cancelledBySystem": {
+          "lead": "The time to answer is over. You can book again whenever you like.",
+          "title": "The request was cancelled"
+        },
+        "custom": {
+          "lead": "Here you see where the request is. Messages and the offer are handled with the next update.",
+          "title": "Request on measure"
+        },
+        "done": {
+          "lead": "{{name}} marked the work as finished.",
+          "title": "Work finished"
+        },
+        "inProgress": {
+          "lead": "{{name}} is at work.",
+          "title": "The work is in progress"
+        },
+        "lapsed": {
+          "lead": "The request is about to be cancelled because there was no answer in time. You can book again whenever you like.",
+          "title": "The time to answer is over"
+        },
+        "paid": {
+          "lead": "The work is done. Thank you!",
+          "title": "All done"
+        },
+        "proposal": {
+          "lead": "It proposes {{when}}. If you accept, the request is confirmed at that time. You have until {{answerBy}}.",
+          "leadNoDeadline": "It proposes {{when}}. If you accept, the request is confirmed at that time.",
+          "title": "{{name}} proposes another time"
+        },
+        "quote": {
+          "lead": "{{name}} proposes {{total}}. If you accept, the request is confirmed at this price. You have until {{answerBy}}.",
+          "leadNoDeadline": "{{name}} proposes {{total}}. If you accept, the request is confirmed at this price.",
+          "title": "The quote is ready"
+        },
+        "refused": {
+          "lead": "It is not available at that time. You can choose another time.",
+          "leadReason": "Reason: {{reason}}",
+          "title": "{{name}} cannot accept"
+        },
+        "taken": {
+          "lead": "{{name}} expects you {{when}}.",
+          "title": "Booking confirmed"
+        },
+        "waiting": {
+          "lead": "{{name}} still has to answer: it has until {{when}}. If it does not answer, the request is cancelled by itself and we tell you.",
+          "leadNoDeadline": "{{name}} still has to answer. If it does not answer in time, the request is cancelled by itself and we tell you.",
+          "title": "Request sent"
+        }
+      },
+      "pipeline": {
+        "outside": "The request stopped here: there is nothing more to do.",
+        "refresh": "Refresh the status",
+        "steps": {
+          "done": {
+            "label": "Work finished",
+            "text": "The professional is done"
+          },
+          "inProgress": {
+            "label": "In progress",
+            "text": "The day of the work"
+          },
+          "payment": {
+            "label": "Payment",
+            "text": "The work is closed"
+          },
+          "request": {
+            "label": "Request",
+            "text": "You sent the request"
+          },
+          "taken": {
+            "label": "Accepted",
+            "text": "The professional accepts"
+          }
+        },
+        "title": "Where your request is"
+      },
+      "proposal": {
+        "accept": "Accept the new time",
+        "reject": "It does not suit me"
+      },
+      "quote": {
+        "accept": "Accept the quote",
+        "otherTime": "It also proposes this time: {{when}}.",
+        "reject": "Decline",
+        "total": "Total"
+      },
+      "reschedule": {
+        "back": "Leave it as it is",
+        "confirm": "Move the request",
+        "error": "We cannot load the free times.",
+        "loading": "Looking for free times…",
+        "none": "There are no other free times in the next days.",
+        "text": "Choose a free time: the professional will have to confirm again.",
+        "title": "Choose another time"
+      },
+      "ticket": {
+        "price": {
+          "estimate": "Estimated total",
+          "final": "Total",
+          "label": "Price",
+          "quote": "Quote"
+        },
+        "priceNone": "To agree with the professional",
+        "when": "When",
+        "where": "Where"
+      },
+      "working": "One moment…"
+    },
     "responseTime": {
       "hours_one": "about {{count}} hour",
       "hours_other": "about {{count}} hours",

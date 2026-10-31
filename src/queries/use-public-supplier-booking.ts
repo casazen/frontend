@@ -1,6 +1,8 @@
+import { useCallback, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { publicSupplierApi } from '@/api/public-supplier.api';
-import { publicBookingApi, type PublicBookingBody } from '@/api/public-supplier-booking.api';
+import { publicBookingApi, type PublicBookingAccess, type PublicBookingBody, type PublicBookingView } from '@/api/public-supplier-booking.api';
+import { readRequestFailure, type RequestFailure } from '@/lib/supplier-site/request-errors';
 
 /** The slots are cached for 30 seconds on the server: asking again sooner would tell nothing new. */
 const SLOTS_STALE_MS = 30_000;
@@ -47,4 +49,66 @@ export function useBookingConfirmation(slug: string, holdId: string | null, toke
     refetchOnReconnect: false,
     refetchInterval: (query) => (query.state.status !== 'error' && query.state.data?.awaitingPayment ? AWAITING_PAYMENT_POLL_MS : false),
   });
+}
+
+export interface BookingRequestSession {
+  access: PublicBookingAccess;
+  view: PublicBookingView;
+}
+
+/**
+ * The customer's own request ("La mia richiesta"): it finds the booking with the code and the e-mail and then acts on it, every call
+ * answering the booking as it is after it. The code and the e-mail live **in memory only**, in this hook: not in the address, not in a
+ * storage, not in the cache of the queries (which is why these are plain calls and not queries), so a shared phone keeps nothing.
+ * When the server says the request moved under the customer (409), refused for what is true now (422) or took the time away, the page
+ * reads the booking again so that what it shows is the truth.
+ */
+export function useBookingRequest(slug: string) {
+  const [session, setSession] = useState<BookingRequestSession | null>(null);
+  const [failure, setFailure] = useState<RequestFailure | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const run = useCallback(async (call: () => Promise<PublicBookingView>, access: PublicBookingAccess): Promise<boolean> => {
+    setPending(true);
+    setFailure(null);
+    try {
+      setSession({ access, view: await call() });
+      return true;
+    } catch (error) {
+      const found = readRequestFailure(error);
+      setFailure(found);
+      if (found.kind === 'changed' || found.kind === 'refused' || found.kind === 'slotTaken') {
+        // What the page showed is not true any more: read it again, quietly.
+        try {
+          setSession({ access, view: await publicBookingApi.lookup(access) });
+        } catch {
+          // The failure above stays; the next try says more.
+        }
+      }
+      return false;
+    } finally {
+      setPending(false);
+    }
+  }, []);
+
+  const find = useCallback(
+    (code: string, email: string) => {
+      const access = { slug, code: code.trim(), email: email.trim() };
+      return run(() => publicBookingApi.lookup(access), access);
+    },
+    [run, slug],
+  );
+
+  /** One action on the booking found: `call` gets the credentials and answers the booking. */
+  const act = useCallback(
+    (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => {
+      if (!session) return Promise.resolve(false);
+      return run(() => call(session.access), session.access);
+    },
+    [run, session],
+  );
+
+  const clearFailure = useCallback(() => setFailure(null), []);
+
+  return { session, failure, pending, find, act, clearFailure };
 }
