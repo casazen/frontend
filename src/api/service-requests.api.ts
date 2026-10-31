@@ -213,6 +213,8 @@ export async function fetchUsedSuppliers(): Promise<UsedSuppliersResponse> {
 
 export async function fetchLongRentServiceRequests(params: {
   propertyId?: string;
+  /** Only the requests made for this lease contract (LR-03c). */
+  leaseId?: string;
   status?: string;
   /** `open` or `closed` (LR-08a); without it, every request. */
   view?: ServiceRequestHostView;

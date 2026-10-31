@@ -48,6 +48,8 @@ export interface RequestedService {
 
 interface ServiceRequestFormProps {
   propertyId: string;
+  /** Long-rent only: the lease contract the request is made for (LR-03c, the sheet of a contract); the server checks it is a lease of the property. */
+  leaseId?: string;
   /**
    * Rental context the request is opened in (decision D2): `short-rent` → for one stay of the property (`bookingId`
    * required by the API); `long-rent` → for the property, never a booking.
@@ -89,6 +91,7 @@ interface ServiceRequestFormProps {
  */
 export function ServiceRequestForm({
   propertyId,
+  leaseId,
   context = 'short-rent',
   bookingId,
   jobDate,
@@ -194,7 +197,7 @@ export function ServiceRequestForm({
     if (isShortRent) {
       createStayRequest.mutate({ ...common, bookingId: effectiveStay, serviceListingId: service?.id }, afterCreate);
     } else {
-      createLongRentRequest.mutate(common, afterCreate);
+      createLongRentRequest.mutate({ ...common, leaseId }, afterCreate);
     }
   };
 
