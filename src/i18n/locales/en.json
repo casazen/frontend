@@ -1437,7 +1437,11 @@
       "showcaseNotPublished": "The showcase is not published yet: publish it first.",
       "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
       "showcaseUndoUnavailable": "The time to undo the publication has run out.",
-      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version."
+      "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version.",
+      "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
+      "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
+      "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
+      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later."
     }
   },
   "appShell": {
@@ -12372,6 +12376,27 @@
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
   },
+  "servicePayment": {
+    "amount": "Amount",
+    "completed": "Work finished on",
+    "failed": "The last payment attempt did not go through. You can try again.",
+    "invalidLink": "This payment link is not valid or was replaced by a more recent one. If you received a more recent request, use that one.",
+    "loadError": "We cannot load the payment right now.",
+    "loading": "Loading the payment…",
+    "notice": "You pay online with CasaZen, safely.",
+    "paid": "Payment received. Thank you!",
+    "payNow": "Pay {{amount}}",
+    "processing": "We are confirming the payment: it takes a few moments.",
+    "property": "Property",
+    "retry": "Try again",
+    "service": "Service",
+    "sessionError": "We cannot open the payment right now. Try again shortly.",
+    "supplier": "Professional",
+    "title": "Payment of a service",
+    "total": "Total",
+    "unavailable": "This payment is no longer available: it may already have been settled another way or withdrawn.",
+    "validUntil": "The link works until {{date}}."
+  },
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
@@ -16422,6 +16447,7 @@
       "checkEmail": {
         "back": "Back to {{name}}",
         "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
+        "leadNoAddress": "We wrote you an e-mail. Open the link to send the request to {{name}}.",
         "nothingYet": "Until you open the link, {{name}} receives nothing.",
         "spam": "Cannot find it? Look in the spam folder too.",
         "title": "Check your e-mail",
@@ -16507,7 +16533,7 @@
         "other": "We could not send the request. Check your connection and try again.",
         "outsideZone": "This town is outside the professional’s area. You can send a request on measure.",
         "payment": "The payment service is not answering right now. Try again shortly.",
-        "paymentSoon": "Payment by card on this site arrives with the next update: for now you cannot book from here.",
+        "paymentFailed": "The payment did not go through. You can start again.",
         "preview": "This is the preview: the request is not sent.",
         "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
         "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
@@ -16517,6 +16543,15 @@
         "unavailable": "Booking is not available right now. Try again later."
       },
       "optional": "optional",
+      "payment": {
+        "blocked": "Amount blocked on your card: {{amount}}.",
+        "chargeIfAccepted": "We charge it only if {{name}} accepts. If it refuses, does not answer in time or you cancel first, the block is released and you pay nothing.",
+        "failed": "The card was not accepted. Check the details or try another card.",
+        "held": "CasaZen holds the amount until you confirm all is fine or the time to report a problem ends: after the job we tell you until when.",
+        "submit": "Block {{amount}} and continue",
+        "until": "Confirm it by {{time}}: after that, the time is free again and the block is released.",
+        "working": "One moment…"
+      },
       "problems": {
         "accessNotes": {
           "tooLong": "The text is too long: write what matters."
@@ -16573,6 +16608,10 @@
           "purpose": "Last step: we send you a link to confirm your e-mail.",
           "title": "Your details"
         },
+        "payment": {
+          "purpose": "The amount is only blocked, not charged.",
+          "title": "We block the amount on your card"
+        },
         "service": {
           "purpose": "Choose the service. The price updates as you choose.",
           "title": "What do you need?"
@@ -16590,6 +16629,7 @@
         "back": "Back to step: {{step}}",
         "details": "Your details",
         "label": "Booking steps",
+        "payment": "Payment",
         "progress": "Step {{current}} of {{total}}",
         "service": "Service",
         "when": "When",
@@ -16801,25 +16841,60 @@
         "text": "Cancelling costs nothing. {{name}} is told and the time is free again.",
         "title": "Do you want to cancel the request?"
       },
+      "confirmOk": {
+        "back": "Not yet",
+        "confirm": "Yes, all is fine",
+        "open": "All is fine",
+        "text": "If you confirm, {{name}} receives the payment at once and you can no longer report a problem with this job.",
+        "title": "Is all fine?"
+      },
       "countdown": {
         "customer": "You have {{time}} left to answer.",
         "over": "The time to answer is over.",
         "supplier": "{{name}} has {{time}} left to answer."
       },
+      "dispute": {
+        "openedByCasaZen": "The job does not appear to be done: CasaZen opened this report",
+        "reasons": {
+          "incomplete": "The job is incomplete",
+          "not_as_described": "It is not as described",
+          "not_done": "The job was not done",
+          "other": "Other",
+          "poor_quality": "The job was badly done"
+        },
+        "refundDone": "Refunded: {{amount}}.",
+        "refundPending": "Refund in progress: {{amount}}.",
+        "status": {
+          "AwaitingDecision": "We are looking into it. The payment to {{name}} is stopped until we decide.",
+          "AwaitingSupplier": "We told {{name}}: it has until {{when}} to answer. Then we look into it. Meanwhile the payment is stopped.",
+          "ResolvedForCustomer": "After checking, we sided with you.",
+          "ResolvedForSupplier": "After checking, the amount went to {{name}}.",
+          "Withdrawn": "You withdrew the report: the payment to {{name}} goes on."
+        },
+        "supplierReplied": "{{name}} answered.",
+        "title": "Your report",
+        "withdraw": "Withdraw the report"
+      },
       "errors": {
+        "authorizationExpired": "The block on your card has expired: the request cannot be accepted this way. Nothing was charged.",
         "cannotCancel": "This request can no longer be cancelled from here.",
         "cannotReschedule": "This request can no longer be moved.",
+        "captureFailed": "We could not charge the amount to your card: the request stays as it is and nothing was charged.",
         "changed": "The request changed in the meantime: here it is as it is now.",
         "invalid": "Something is wrong: check and try again.",
         "noProposal": "There is no time to accept.",
         "noQuote": "There is no quote to accept.",
+        "notConfirmable": "There is nothing to confirm right now: the payment may already have been released or be stopped.",
+        "notReportable": "You cannot report a problem for this request from here.",
         "other": "We could not complete the operation. Check your connection and try again.",
         "proposalExpired": "The time to answer the proposal is over.",
         "quoteExpired": "The time to answer the quote is over.",
         "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
         "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
         "slotTaken": "This time is no longer free: choose another one.",
-        "supplierUnavailable": "The professional is not available right now."
+        "supplierUnavailable": "The professional is not available right now.",
+        "tooEarly": "You will be able to report a problem when the job is finished.",
+        "windowClosed": "The time to report a problem is over."
       },
       "gate": {
         "code": "Request code",
@@ -16844,6 +16919,36 @@
         "reschedule": "Move the time",
         "title": "Change or cancel"
       },
+      "payment": {
+        "status": {
+          "authorized": {
+            "text": "{{amount}} are blocked on your card: we have not charged anything. We will do it only if {{name}} accepts; if it refuses, does not answer in time or you cancel first, the block is released.",
+            "title": "Amount blocked on your card"
+          },
+          "canceled": {
+            "text": "The block on your card was released: nothing was charged.",
+            "title": "No charge"
+          },
+          "held": {
+            "text": "{{amount}} are charged and held by CasaZen. {{name}} receives them when you confirm all is fine or when the time to report a problem ends.",
+            "title": "Amount charged and held by CasaZen"
+          },
+          "refunded": {
+            "text": "We refunded {{refunded}} to you. When it shows on your statement depends on your bank.",
+            "title": "Amount refunded"
+          },
+          "released": {
+            "text": "The amount was released to {{name}}.",
+            "title": "Payment completed"
+          },
+          "review": {
+            "text": "We are checking the payment of this request.",
+            "title": "Payment being checked"
+          }
+        },
+        "title": "The payment",
+        "window": "You can report a problem until {{when}}."
+      },
       "phases": {
         "cancelledByCustomer": {
           "lead": "Cancelling costs nothing. The time is free again.",
@@ -16864,6 +16969,7 @@
         },
         "done": {
           "lead": "{{name}} marked the work as finished.",
+          "leadHeld": "{{name}} marked the work as finished. If all is fine, confirm it: {{name}} receives the payment at once. If something is wrong, report it.",
           "title": "Work finished"
         },
         "inProgress": {
@@ -16939,6 +17045,19 @@
         "otherTime": "It also proposes this time: {{when}}.",
         "reject": "Decline",
         "total": "Total"
+      },
+      "report": {
+        "back": "Cancel",
+        "open": "Report a problem",
+        "reasonLegend": "What went wrong?",
+        "reasonRequired": "Choose what went wrong.",
+        "send": "Send the report",
+        "text": "Until it is solved, the payment to {{name}} stays stopped. We look into it.",
+        "textHint": "{{name}} and the CasaZen team read it. Text only, no photos.",
+        "textLabel": "Tell us what happened",
+        "textRequired": "With “Other” you need to write what happened.",
+        "textTooLong": "The text is too long: 1000 characters at most.",
+        "title": "Report a problem"
       },
       "reschedule": {
         "back": "Leave it as it is",

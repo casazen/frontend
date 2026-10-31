@@ -1437,7 +1437,11 @@
       "showcaseNotPublished": "La vetrina non è ancora pubblicata: pubblicala prima.",
       "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
       "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
-      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione."
+      "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione.",
+      "servicePaymentInFlight": "C’è già un pagamento in corso per questo importo: aspetta qualche istante.",
+      "servicePaymentLinkInvalid": "Questo link di pagamento non è valido o è scaduto.",
+      "servicePaymentNotPayable": "Questo pagamento non si può più pagare: potrebbe essere già saldato o ritirato.",
+      "servicePaymentSupplierNotReady": "Il professionista non può ricevere il pagamento in questo momento. Riprova più tardi."
     }
   },
   "appShell": {
@@ -12372,6 +12376,27 @@
     "empty": "Nessuna categoria di servizio disponibile.",
     "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
   },
+  "servicePayment": {
+    "amount": "Importo",
+    "completed": "Lavoro finito il",
+    "failed": "L’ultimo tentativo di pagamento non è andato a buon fine. Puoi riprovare.",
+    "invalidLink": "Questo link di pagamento non è valido o è stato sostituito da uno più recente. Se hai ricevuto una richiesta più recente, usa quella.",
+    "loadError": "Non riusciamo a caricare il pagamento adesso.",
+    "loading": "Carico il pagamento…",
+    "notice": "Paghi online con CasaZen, in modo sicuro.",
+    "paid": "Pagamento ricevuto. Grazie!",
+    "payNow": "Paga {{amount}}",
+    "processing": "Stiamo confermando il pagamento: ci vuole qualche istante.",
+    "property": "Immobile",
+    "retry": "Riprova",
+    "service": "Servizio",
+    "sessionError": "Non riusciamo ad aprire il pagamento adesso. Riprova tra poco.",
+    "supplier": "Professionista",
+    "title": "Pagamento di un servizio",
+    "total": "Totale",
+    "unavailable": "Questo pagamento non è più disponibile: potrebbe essere già stato saldato in altro modo o ritirato.",
+    "validUntil": "Il link vale fino al {{date}}."
+  },
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
@@ -16422,6 +16447,7 @@
       "checkEmail": {
         "back": "Torna a {{name}}",
         "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
+        "leadNoAddress": "Ti abbiamo scritto un’email. Apri il link per inviare la richiesta a {{name}}.",
         "nothingYet": "Finché non apri il link, {{name}} non riceve nulla.",
         "spam": "Non la trovi? Guarda anche nella cartella dello spam.",
         "title": "Controlla la tua email",
@@ -16507,7 +16533,7 @@
         "other": "Non siamo riusciti a inviare la richiesta. Controlla la connessione e riprova.",
         "outsideZone": "Questo comune è fuori dalla zona del professionista. Puoi mandare una richiesta su misura.",
         "payment": "Il servizio di pagamento non risponde adesso. Riprova tra poco.",
-        "paymentSoon": "Il pagamento con carta di questo sito arriva con il prossimo aggiornamento: per ora da qui non si può prenotare.",
+        "paymentFailed": "Il pagamento non è andato a buon fine. Puoi riprovare da capo.",
         "preview": "Questa è l’anteprima: la richiesta non si invia.",
         "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
         "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
@@ -16517,6 +16543,15 @@
         "unavailable": "La prenotazione non è disponibile in questo momento. Riprova più tardi."
       },
       "optional": "facoltativo",
+      "payment": {
+        "blocked": "Importo bloccato sulla carta: {{amount}}.",
+        "chargeIfAccepted": "Lo addebitiamo soltanto se {{name}} accetta. Se rifiuta, non risponde in tempo o annulli prima, il blocco viene rilasciato e non paghi nulla.",
+        "failed": "La carta non è stata accettata. Controlla i dati o prova con un’altra carta.",
+        "held": "CasaZen trattiene l’importo finché non confermi che è tutto a posto o finché non finisce il tempo per segnalare un problema: dopo il lavoro ti diciamo fino a quando.",
+        "submit": "Blocca {{amount}} e continua",
+        "until": "Confermalo entro le {{time}}: dopo, l’orario torna libero e il blocco viene rilasciato.",
+        "working": "Un momento…"
+      },
       "problems": {
         "accessNotes": {
           "tooLong": "Il testo è troppo lungo: scrivi l’essenziale."
@@ -16573,6 +16608,10 @@
           "purpose": "Ultimo passo: ti mandiamo un link per confermare l’email.",
           "title": "I tuoi dati"
         },
+        "payment": {
+          "purpose": "L’importo viene solo bloccato, non addebitato.",
+          "title": "Blocchiamo l’importo sulla carta"
+        },
         "service": {
           "purpose": "Scegli il servizio. Il prezzo si aggiorna mentre scegli.",
           "title": "Che cosa ti serve?"
@@ -16590,6 +16629,7 @@
         "back": "Torna al passo: {{step}}",
         "details": "I tuoi dati",
         "label": "Passi della prenotazione",
+        "payment": "Pagamento",
         "progress": "Passo {{current}} di {{total}}",
         "service": "Servizio",
         "when": "Quando",
@@ -16801,25 +16841,60 @@
         "text": "Annullare non costa nulla. {{name}} riceve un avviso e l’orario torna libero.",
         "title": "Vuoi annullare la richiesta?"
       },
+      "confirmOk": {
+        "back": "Non ancora",
+        "confirm": "Sì, è tutto a posto",
+        "open": "Tutto a posto",
+        "text": "Se confermi, {{name}} riceve subito il pagamento e non potrai più segnalare un problema su questo lavoro.",
+        "title": "È tutto a posto?"
+      },
       "countdown": {
         "customer": "Hai ancora {{time}} per rispondere.",
         "over": "Il tempo per rispondere è finito.",
         "supplier": "{{name}} ha ancora {{time}} per rispondere."
       },
+      "dispute": {
+        "openedByCasaZen": "Il lavoro non risulta fatto: la segnalazione l’ha aperta CasaZen",
+        "reasons": {
+          "incomplete": "Il lavoro è incompleto",
+          "not_as_described": "Non corrisponde a quanto descritto",
+          "not_done": "Il lavoro non è stato fatto",
+          "other": "Altro",
+          "poor_quality": "Il lavoro è fatto male"
+        },
+        "refundDone": "Rimborsato: {{amount}}.",
+        "refundPending": "Rimborso in corso: {{amount}}.",
+        "status": {
+          "AwaitingDecision": "La stiamo valutando. Il pagamento a {{name}} è fermo finché non decidiamo.",
+          "AwaitingSupplier": "Abbiamo avvisato {{name}}: ha tempo fino a {{when}} per rispondere. Poi la valutiamo noi. Intanto il pagamento è fermo.",
+          "ResolvedForCustomer": "Dopo la verifica abbiamo dato ragione a te.",
+          "ResolvedForSupplier": "Dopo la verifica, l’importo è andato a {{name}}.",
+          "Withdrawn": "Hai ritirato la segnalazione: il pagamento a {{name}} riprende."
+        },
+        "supplierReplied": "{{name}} ha risposto.",
+        "title": "La tua segnalazione",
+        "withdraw": "Ritira la segnalazione"
+      },
       "errors": {
+        "authorizationExpired": "Il blocco sulla carta è scaduto: la richiesta non si può accettare così. Non ti abbiamo addebitato nulla.",
         "cannotCancel": "Questa richiesta non si può più annullare da qui.",
         "cannotReschedule": "Questa richiesta non si può più spostare.",
+        "captureFailed": "Non siamo riusciti ad addebitare l’importo sulla tua carta: la richiesta resta com’è e non ti abbiamo addebitato nulla.",
         "changed": "Nel frattempo la richiesta è cambiata: ti mostro com’è adesso.",
         "invalid": "Qualcosa non va: controlla e riprova.",
         "noProposal": "Non c’è nessun orario da accettare.",
         "noQuote": "Non c’è nessun preventivo da accettare.",
+        "notConfirmable": "Non c’è niente da confermare adesso: il pagamento potrebbe essere già stato rilasciato o essere fermo.",
+        "notReportable": "Per questa richiesta non si può segnalare un problema da qui.",
         "other": "Non siamo riusciti a completare l’operazione. Controlla la connessione e riprova.",
         "proposalExpired": "Il tempo per rispondere alla proposta è finito.",
         "quoteExpired": "Il tempo per rispondere al preventivo è finito.",
         "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
         "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
         "slotTaken": "Questo orario non è più libero: scegline un altro.",
-        "supplierUnavailable": "Il professionista non è disponibile in questo momento."
+        "supplierUnavailable": "Il professionista non è disponibile in questo momento.",
+        "tooEarly": "Potrai segnalare un problema quando il lavoro sarà finito.",
+        "windowClosed": "Il tempo per segnalare un problema è finito."
       },
       "gate": {
         "code": "Codice della richiesta",
@@ -16844,6 +16919,36 @@
         "reschedule": "Sposta l’orario",
         "title": "Modifica o annulla"
       },
+      "payment": {
+        "status": {
+          "authorized": {
+            "text": "Sulla tua carta sono bloccati {{amount}}: non ti abbiamo addebitato nulla. Lo faremo soltanto se {{name}} accetta; se rifiuta, non risponde in tempo o annulli prima, il blocco viene rilasciato.",
+            "title": "Importo bloccato sulla carta"
+          },
+          "canceled": {
+            "text": "Il blocco sulla carta è stato rilasciato: non è stato addebitato nulla.",
+            "title": "Nessun addebito"
+          },
+          "held": {
+            "text": "{{amount}} sono incassati e li trattiene CasaZen. {{name}} li riceve quando confermi che è tutto a posto o quando finisce il tempo per segnalare un problema.",
+            "title": "Importo incassato e trattenuto da CasaZen"
+          },
+          "refunded": {
+            "text": "Ti abbiamo rimborsato {{refunded}}. Quando compare sul tuo estratto conto dipende dalla tua banca.",
+            "title": "Importo rimborsato"
+          },
+          "released": {
+            "text": "L’importo è stato rilasciato a {{name}}.",
+            "title": "Pagamento completato"
+          },
+          "review": {
+            "text": "Stiamo controllando il pagamento di questa richiesta.",
+            "title": "Pagamento in verifica"
+          }
+        },
+        "title": "Il pagamento",
+        "window": "Puoi segnalare un problema fino a {{when}}."
+      },
       "phases": {
         "cancelledByCustomer": {
           "lead": "Annullare non costa nulla. L’orario è tornato libero.",
@@ -16864,6 +16969,7 @@
         },
         "done": {
           "lead": "{{name}} ha segnato il lavoro come finito.",
+          "leadHeld": "{{name}} ha segnato il lavoro come finito. Se è tutto a posto, confermalo: {{name}} riceve subito il pagamento. Se qualcosa non va, segnalalo.",
           "title": "Lavoro finito"
         },
         "inProgress": {
@@ -16939,6 +17045,19 @@
         "otherTime": "Propone anche questo orario: {{when}}.",
         "reject": "Rifiuta",
         "total": "Totale"
+      },
+      "report": {
+        "back": "Annulla",
+        "open": "Segnala un problema",
+        "reasonLegend": "Che cosa è andato storto?",
+        "reasonRequired": "Scegli che cosa è andato storto.",
+        "send": "Invia la segnalazione",
+        "text": "Finché non è risolto, il pagamento a {{name}} resta fermo. Lo valutiamo noi.",
+        "textHint": "Lo leggono {{name}} e il team di CasaZen. Solo testo, niente foto.",
+        "textLabel": "Racconta cosa è successo",
+        "textRequired": "Con «Altro» serve scrivere cosa è successo.",
+        "textTooLong": "Il testo è troppo lungo: massimo 1000 caratteri.",
+        "title": "Segnala un problema"
       },
       "reschedule": {
         "back": "Lascio com’è",

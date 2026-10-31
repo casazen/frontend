@@ -47,6 +47,7 @@ import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
+import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
@@ -330,6 +331,13 @@ export const appRoutes: RouteObject[] = [
     // A tenant's page, not the landlord's console: it keeps its look until it is redesigned.
     path: '/rent/pay/:installmentId',
     element: <RentPaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // Link of the payment request of a service a supplier completed (SP-15c-d): the host pays from the e-mail, no sign-in. A payer's page,
+    // not the console: it keeps its look until it is redesigned (like the rent payment).
+    path: '/service/pay/:paymentId',
+    element: <ServicePaymentPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {

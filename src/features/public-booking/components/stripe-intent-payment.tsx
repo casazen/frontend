@@ -14,9 +14,12 @@ interface StripeIntentFormProps {
   /** The intent was submitted without a redirect: its status as far as Stripe.js knows (never the booking's). */
   onSubmitted: (status: ClientPaymentStatus) => void;
   onError: (message: string) => void;
+  /** The words of the button; left out, "Paga subito" / "Conferma" as the checkout has always said. A block that is not a charge says so here. */
+  submitLabel?: string;
+  busyLabel?: string;
 }
 
-function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeIntentFormProps) {
+function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, busyLabel: busyText }: StripeIntentFormProps) {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -55,8 +58,8 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeInten
     }
   };
 
-  const idleLabel = mode === 'payment' ? t('publicBooking.payNow') : t('publicBooking.confirmPaymentSetup');
-  const busyLabel = mode === 'payment' ? t('publicBooking.processing') : t('publicBooking.confirming');
+  const idleLabel = submitLabel ?? (mode === 'payment' ? t('publicBooking.payNow') : t('publicBooking.confirmPaymentSetup'));
+  const busyLabel = busyText ?? (mode === 'payment' ? t('publicBooking.processing') : t('publicBooking.confirming'));
 
   return (
     <div className="space-y-4" data-testid={mode === 'payment' ? 'checkout-payment-step' : 'checkout-setup-step'}>

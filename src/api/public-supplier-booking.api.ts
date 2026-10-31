@@ -156,7 +156,7 @@ export interface PublicBookingActions {
 }
 
 /** The customer's complaint about a job paid inside CasaZen, as the customer reads it (SP-15c-c). */
-interface PublicBookingDispute {
+export interface PublicBookingDispute {
   status: 'AwaitingSupplier' | 'AwaitingDecision' | 'ResolvedForSupplier' | 'ResolvedForCustomer' | 'Withdrawn';
   reason: string;
   noShow: boolean;
@@ -171,7 +171,7 @@ interface PublicBookingDispute {
 }
 
 /** The money of a booking paid inside CasaZen (SP-15c-a); missing when the booking is not. */
-interface PublicBookingPayment {
+export interface PublicBookingPayment {
   status: 'authorized' | 'held' | 'released' | 'refunded' | 'canceled' | 'review';
   amountCents: number;
   currency: string;
@@ -258,4 +258,22 @@ export const publicBookingApi = {
 
   /** Turns the quote down. */
   rejectQuote: (access: PublicBookingAccess, quoteSentAt: string) => customerCall('quote/reject', access, { quoteSentAt }),
+
+  /**
+   * "Tutto a posto" (SP-15c-a): the work is done and CasaZen holds the money; the supplier is paid at once. 422
+   * `service_payment_not_confirmable` when there is nothing to release (not paid inside CasaZen, work not done, closed or stopped).
+   */
+  confirmOk: (access: PublicBookingAccess) => customerCall('confirm-ok', access),
+
+  /**
+   * "Segnala un problema" (SP-15c-c): stops the release until a person decides. `reason` is one of {@link COMPLAINT_REASONS}, `text`
+   * at most 1000 characters (required for `other`). 422 `service_dispute_window_closed` / `_too_early` / `_not_reportable` / `_invalid`.
+   */
+  reportProblem: (access: PublicBookingAccess, reason: string, text: string) => customerCall('report-problem', access, { reason, text }),
+
+  /** Takes the complaint back: the money is no longer stopped. 409 `service_dispute_not_open` if it was decided already. */
+  withdrawProblem: (access: PublicBookingAccess) => customerCall('withdraw-problem', access),
 };
+
+/** The reasons of a complaint, as the server names them. `other` needs the words of the customer. */
+export const COMPLAINT_REASONS = ['not_done', 'incomplete', 'poor_quality', 'not_as_described', 'other'] as const;

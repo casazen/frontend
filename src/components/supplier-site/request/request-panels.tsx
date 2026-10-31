@@ -1,21 +1,13 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatStayDate } from '@/lib/stay-dates';
 import { slotClock } from '@/lib/supplier-site/booking-flow';
 import { useSupplierSlots } from '@/queries/use-public-supplier';
 import { BookingField } from '../booking/booking-field';
+import { usePanelFocus } from './use-panel-focus';
 
 /** What the customer may write for the supplier when it cancels: the server takes 500 characters. */
 const REASON_MAX = 500;
-
-/** A panel that opens in the page takes the focus on its title, so a keyboard or a screen reader lands on it. */
-function usePanelFocus() {
-  const ref = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    ref.current?.focus();
-  }, []);
-  return ref;
-}
 
 interface CancelPanelProps {
   supplierName: string;
