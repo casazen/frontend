@@ -3,8 +3,7 @@ import type { ShowcaseBlockedBy, ShowcaseContent, ShowcaseDocument, ShowcaseRead
 /** Where the supplier turns the payments on: the answers' tab of its settings has the payments account (SP-16c-b). */
 export const PAYMENTS_SETTINGS_PATH = '/app/supplier/settings?tab=pagamenti';
 
-/** Where the photos of the profile are added, and the catalog of services ("Servizi e prezzi") with the photos of each. */
-export const PROFILE_PATH = '/app/supplier/profile';
+/** The catalog of services ("Servizi e prezzi"): where a service is added, shown or paused. */
 export const SERVICES_PATH = '/app/supplier/services';
 
 /** The page of the editor in the console (the route of the menu "Vetrina"). */

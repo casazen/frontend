@@ -15,6 +15,10 @@ export const supplierSitePaths = {
   about: (slug: string) => `${supplierShowcasePath(slug)}/chi-siamo`,
   /** The booking, a page of its own (SP-12b): the finder and the cards send the customer here with the parameters they know. */
   booking: (slug: string) => `${supplierShowcasePath(slug)}/prenota`,
+  /** The page the link of the verification e-mail opens: `?hold=<id>` in the query, the token in the fragment (`#token=`). */
+  confirm: (slug: string) => `${supplierShowcasePath(slug)}/conferma`,
+  /** "La mia richiesta": the customer finds the booking again with its code and e-mail; the link of the e-mails carries `?code=XXXXX-XXXXX`. */
+  request: (slug: string) => `${supplierShowcasePath(slug)}/richiesta`,
   /** The request on measure, with its chat (SP-12c). */
   inquiry: (slug: string) => `${supplierShowcasePath(slug)}/preventivo`,
 };
