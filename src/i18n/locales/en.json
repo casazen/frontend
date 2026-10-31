@@ -16847,6 +16847,11 @@
         "text": "If you confirm, {{name}} receives the payment at once and you can no longer report a problem with this job.",
         "title": "Is all fine?"
       },
+      "countdown": {
+        "customer": "You have {{time}} left to answer.",
+        "over": "The time to answer is over.",
+        "supplier": "{{name}} has {{time}} left to answer."
+      },
       "dispute": {
         "openedByCasaZen": "The job does not appear to be done: CasaZen opened this report",
         "reasons": {

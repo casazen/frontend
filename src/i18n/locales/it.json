@@ -16847,6 +16847,11 @@
         "text": "Se confermi, {{name}} riceve subito il pagamento e non potrai più segnalare un problema su questo lavoro.",
         "title": "È tutto a posto?"
       },
+      "countdown": {
+        "customer": "Hai ancora {{time}} per rispondere.",
+        "over": "Il tempo per rispondere è finito.",
+        "supplier": "{{name}} ha ancora {{time}} per rispondere."
+      },
       "dispute": {
         "openedByCasaZen": "Il lavoro non risulta fatto: la segnalazione l’ha aperta CasaZen",
         "reasons": {

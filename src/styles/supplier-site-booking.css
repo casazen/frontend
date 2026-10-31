@@ -1731,3 +1731,18 @@
 .vb-steps li > span.is-locked {
   color: var(--vz-text);
 }
+
+.vf-countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.vf-countdown svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
