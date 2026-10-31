@@ -17,7 +17,9 @@ export type RequestRefusal =
   | 'notConfirmable'
   | 'windowClosed'
   | 'tooEarly'
-  | 'notReportable';
+  | 'notReportable'
+  | 'captureFailed'
+  | 'authorizationExpired';
 
 export type RequestFailure =
   /** 404 `supplier_booking_not_found`: one answer for a code, a supplier or an address that does not match. */
@@ -46,6 +48,9 @@ const REFUSALS: Record<string, RequestRefusal> = {
   service_dispute_too_early: 'tooEarly',
   service_dispute_not_reportable: 'notReportable',
   service_dispute_invalid: 'invalid',
+  // Accepting a time for a booking paid inside CasaZen charges the blocked card first (409): the money says no, the request stays as it is.
+  service_payment_capture_failed: 'captureFailed',
+  service_payment_authorization_expired: 'authorizationExpired',
 };
 
 export function readRequestFailure(error: unknown): RequestFailure {
@@ -54,7 +59,7 @@ export function readRequestFailure(error: unknown): RequestFailure {
   const code = getProblemCode(error.response.data);
   if (status === 429) return { kind: 'rateLimited', retryAfterSeconds: getRetryAfterSeconds(error) };
   if (status === 404) return { kind: 'notFound' };
+  if (code && REFUSALS[code] && (status === 422 || status === 409)) return { kind: 'refused', reason: REFUSALS[code] };
   if (status === 409) return code === 'supplier_slot_unavailable' ? { kind: 'slotTaken' } : { kind: 'changed' };
-  if (status === 422 && code && REFUSALS[code]) return { kind: 'refused', reason: REFUSALS[code] };
   return { kind: 'other' };
 }

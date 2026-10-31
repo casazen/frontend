@@ -16875,8 +16875,10 @@
         "withdraw": "Withdraw the report"
       },
       "errors": {
+        "authorizationExpired": "The block on your card has expired: the request cannot be accepted this way. Nothing was charged.",
         "cannotCancel": "This request can no longer be cancelled from here.",
         "cannotReschedule": "This request can no longer be moved.",
+        "captureFailed": "We could not charge the amount to your card: the request stays as it is and nothing was charged.",
         "changed": "The request changed in the meantime: here it is as it is now.",
         "invalid": "Something is wrong: check and try again.",
         "noProposal": "There is no time to accept.",

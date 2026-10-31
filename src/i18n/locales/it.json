@@ -16875,8 +16875,10 @@
         "withdraw": "Ritira la segnalazione"
       },
       "errors": {
+        "authorizationExpired": "Il blocco sulla carta è scaduto: la richiesta non si può accettare così. Non ti abbiamo addebitato nulla.",
         "cannotCancel": "Questa richiesta non si può più annullare da qui.",
         "cannotReschedule": "Questa richiesta non si può più spostare.",
+        "captureFailed": "Non siamo riusciti ad addebitare l’importo sulla tua carta: la richiesta resta com’è e non ti abbiamo addebitato nulla.",
         "changed": "Nel frattempo la richiesta è cambiata: ti mostro com’è adesso.",
         "invalid": "Qualcosa non va: controlla e riprova.",
         "noProposal": "Non c’è nessun orario da accettare.",
