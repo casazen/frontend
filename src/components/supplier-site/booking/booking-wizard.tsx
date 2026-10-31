@@ -16,6 +16,7 @@ import {
   selectionOf,
   toBookingBody,
   validateDetails,
+  type BookingDraft,
   type BookingStep,
   type DetailsProblems,
   type DraftComune,
@@ -46,6 +47,18 @@ const FORM_STEPS: readonly BookingStep[] = BOOKING_STEPS.filter((step) => step !
 
 /** The estimate waits for the person to stop pressing before it is asked: one request per decision. */
 const ESTIMATE_DEBOUNCE_MS = 400;
+
+/**
+ * Where a visit with no `?step=` starts: the first step the address and the draft leave open. It is decided **once**, when the page opens
+ * (a new visitor starts at the service; a link from a card with the service in it starts at the place; a draft with a time starts at the
+ * data), so that choosing a service does not move the page to the next step by itself.
+ */
+function landingStepOf(draft: BookingDraft, seedComune: string | undefined): BookingStep {
+  if (!draft.service) return 'service';
+  const hasComune = draft.comune !== undefined ? draft.comune !== null : seedComune !== undefined;
+  if (!hasComune) return 'where';
+  return draft.startUtc ? 'details' : 'when';
+}
 
 function stepOfSearch(search: URLSearchParams): BookingStep | null {
   const value = search.get('step');
@@ -169,9 +182,17 @@ export function BookingWizard() {
   };
   const firstOpen = FORM_STEPS.find((step) => !done[step]);
   const reachable = firstOpen ? FORM_STEPS.indexOf(firstOpen) : FORM_STEPS.length - 1;
-  const asked = stepOfSearch(search);
-  const step: BookingStep = asked !== null && FORM_STEPS.indexOf(asked) <= reachable ? asked : FORM_STEPS[reachable];
+  const [landing] = useState(() => landingStepOf(draft, seed.comune));
+  const asked = stepOfSearch(search) ?? landing;
+  const askedIndex = FORM_STEPS.indexOf(asked);
+  const step: BookingStep = askedIndex <= reachable ? asked : FORM_STEPS[reachable];
   const stepIndex = FORM_STEPS.indexOf(step);
+  // The step asked for needs what is still arriving (the service in full, the comune of the link, the free times): wait, do not flash another step.
+  const resolving =
+    askedIndex > reachable &&
+    ((serviceSlug !== null && detailQuery.isLoading) ||
+      (draft.comune === undefined && seed.comune !== undefined && seededComune.isLoading) ||
+      (draft.startUtc !== null && slotsQuery.isLoading));
 
   // Said to the person: the problems of the step it tried to leave, and what a refusal of the server meant.
   const tried = triedStep === step;
@@ -308,10 +329,16 @@ export function BookingWizard() {
   // The payment step exists only for a site that takes the money inside CasaZen.
   const stepsShown: BookingStep[] = showcase.acceptsOnlinePayments === true ? [...BOOKING_STEPS] : [...FORM_STEPS];
   const submitDisabled =
-    createHold.isPending || (step === 'service' && detailQuery.isLoading) || (step === 'where' && zone === 'checking') || (lastStep && !online);
+    createHold.isPending || resolving || (step === 'service' && detailQuery.isLoading) || (step === 'where' && zone === 'checking') || (lastStep && !online);
 
   let content = null;
-  if (step === 'service') {
+  if (resolving) {
+    content = (
+      <p className="vb-note" role="status">
+        {t('shared.loading.defaultMessage')}
+      </p>
+    );
+  } else if (step === 'service') {
     content = (
       <StepService
         supplierSlug={slug}
