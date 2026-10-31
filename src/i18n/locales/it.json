@@ -7615,6 +7615,8 @@
       "selected_other": "{{count}} selezionate"
     },
     "chips": {
+      "count_one": "{{count}} elemento",
+      "count_other": "{{count}} elementi",
       "label": "Filtri rapidi",
       "needAttention_one": "{{count}} da gestire",
       "needAttention_other": "{{count}} da gestire"
@@ -7681,7 +7683,8 @@
       "previous": "Precedente"
     },
     "row": {
-      "more": "Altre azioni: {{name}}"
+      "more": "Altre azioni: {{name}}",
+      "newTab": "(si apre in una nuova scheda)"
     },
     "select": {
       "done": "Fine",
@@ -14727,10 +14730,13 @@
     "requests": {
       "action": {
         "acceptBackup": "Accetta come riserva",
+        "call": "Chiama",
         "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
+        "details": "Dettagli",
         "editQuote": "Modifica il preventivo",
+        "map": "Vedi in mappa",
         "openPage": "Apri la scheda completa",
         "quote": "Invia un preventivo",
         "recordPayment": "Ho incassato fuori da CasaZen",
@@ -14753,6 +14759,32 @@
           "priority": "Il cliente ha chiesto anche ad altri fornitori come riserva: hai tempo fino alle {{time}} per accettare, poi il lavoro può passare a una riserva."
         },
         "primaryUntil": "Il fornitore scelto ha tempo fino alle {{time}}"
+      },
+      "bulk": {
+        "accept": "Accetta le selezionate",
+        "confirm": {
+          "confirm": "Accetta",
+          "description_one": "La accetti così com’è, con il giorno e l’ora indicati. Se non si può accettare, resta da rispondere e te lo diciamo.",
+          "description_other": "Le accetti così come sono, con il giorno e l’ora indicati. Quelle che non si possono accettare (per esempio perché si sovrappongono a un lavoro già accettato) restano da rispondere e te lo diciamo.",
+          "title_one": "Accettare {{count}} richiesta?",
+          "title_other": "Accettare {{count}} richieste?"
+        },
+        "done_one": "{{count}} richiesta accettata",
+        "done_other": "{{count}} richieste accettate",
+        "none": "Nessuna richiesta accettata: {{count}} da vedere",
+        "partial": "Accettate: {{accepted}}. Da vedere: {{count}}.",
+        "summary": {
+          "close": "Chiudi",
+          "description_one": "Questa richiesta non è stata accettata e aspetta ancora la tua risposta.",
+          "description_other": "Queste richieste non sono state accettate e aspettano ancora la tua risposta. Aprile una alla volta per rispondere in un altro modo.",
+          "list": "Richieste non accettate",
+          "notInBulk": "È una richiesta come riserva: accettala dalla sua scheda.",
+          "notSent": "Non siamo riusciti a inviare la risposta. Riprova.",
+          "open": "Apri la richiesta",
+          "titleNone": "Nessuna richiesta accettata",
+          "titleSome": "Accettate: {{accepted}}. Da vedere: {{count}}.",
+          "unknown": "Non è stato possibile accettarla."
+        }
       },
       "cancel": {
         "back": "Indietro",
@@ -14814,8 +14846,14 @@
         "where": "Dove"
       },
       "filters": {
+        "comune": "Comune",
+        "comuneAll": "Tutti i comuni",
         "month": "Questo mese",
         "period": "Ultima attività tra",
+        "service": "Servizio",
+        "serviceAll": "Tutti i servizi",
+        "source": "Provenienza",
+        "sourceAll": "Tutte le provenienze",
         "today": "Oggi",
         "week": "Prossimi 7 giorni",
         "when": "Giorno del lavoro",
@@ -14857,6 +14895,7 @@
         "columns": {
           "price": "Prezzo",
           "request": "Richiesta",
+          "source": "Provenienza",
           "state": "Stato",
           "when": "Quando",
           "where": "Dove"
@@ -14864,8 +14903,9 @@
         "count_one": "{{count}} richiesta",
         "count_other": "{{count}} richieste",
         "loadError": "Impossibile caricare le richieste.",
-        "search": "Cerca richieste",
-        "searchPlaceholder": "Cerca servizio o comune"
+        "nameSearch": "Nessun servizio o comune con «{{text}}»: ecco i clienti con questo nome tra le richieste caricate.",
+        "search": "Cerca richieste per servizio, comune o cliente",
+        "searchPlaceholder": "Cerca servizio, comune o cliente"
       },
       "loadError": "Impossibile caricare la richiesta.",
       "loading": "Caricamento della richiesta…",

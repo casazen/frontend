@@ -1,5 +1,6 @@
 import { ApiClient } from '@/api/client';
 import type {
+  AcceptSupplierRequestsResponse,
   ActivationStatus,
   CalendarSyncStatus,
   FreeEventDecision,
@@ -79,6 +80,9 @@ export async function fetchSupplierInbox({
   status,
   tab,
   q,
+  service,
+  comune,
+  source,
   when,
   from,
   to,
@@ -91,11 +95,23 @@ export async function fetchSupplierInbox({
     page,
     pageSize,
     ...(q ? { q } : {}),
+    ...(service ? { service } : {}),
+    ...(comune ? { comune } : {}),
+    ...(source ? { source } : {}),
     ...(when ? { when } : {}),
     ...(from ? { from } : {}),
     ...(to ? { to } : {}),
     ...(clientId ? { clientId } : {}),
   });
+}
+
+/**
+ * Takes several new requests as they are (`POST /supplier/inbox/accept`, SP-04e): at most 20 ids, each taken on its own as a single take
+ * would be. One that cannot be taken (no longer new, overlapping a job already accepted...) does not stop the others and comes back with its
+ * `code` and `message`: the answer is 200 with one result per request, in the order sent.
+ */
+export async function acceptSupplierRequests(ids: string[]): Promise<AcceptSupplierRequestsResponse> {
+  return ApiClient.post<AcceptSupplierRequestsResponse>('/supplier/inbox/accept', { ids });
 }
 
 /** The numbers on the chips of the list of requests (SP-04e): they agree with the lists because the server counts with their rules. */

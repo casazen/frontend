@@ -127,7 +127,7 @@ export interface ListToolbarProps<Row> {
   rows: readonly Row[];
   /** The rows that pass the search and the filters, whatever the quick filter: what the counters of the chips count. */
   chipRows: readonly Row[];
-  /** `server` mode: the counters of the chips that need attention, by id (the list cannot count what it does not have). */
+  /** `server` mode: the counters of the chips that need attention (`urgent`) or only have a size (`counted`), by id (the list cannot count what it does not have). */
   chipCounts?: Readonly<Record<string, number | undefined>>;
   mode: ListMode;
   savedViews: UseSavedViews;
@@ -324,7 +324,9 @@ export function ListToolbar<Row>({
         <div role="group" aria-label={t('listView.chips.label')} className="relative -mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none]" data-testid="list-chips">
           {chips.map((chip) => {
             const active = state.chip === chip.id;
-            const count = chip.urgent ? (mode === 'server' ? (chipCounts?.[chip.id] ?? 0) : chipCount(chip, chipRows)) : 0;
+            // `urgent`: what needs attention, in red. `counted`: only a size, quiet (SP-08b).
+            const alarm = chip.urgent === true;
+            const count = alarm || chip.counted ? (mode === 'server' ? (chipCounts?.[chip.id] ?? 0) : chipCount(chip, chipRows)) : 0;
             const Icon = chip.icon;
             return (
               <button
@@ -344,10 +346,20 @@ export function ListToolbar<Row>({
                 {chip.label}
                 {count > 0 ? (
                   <>
-                    <span aria-hidden="true" className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger-soft px-1.5 text-xs font-semibold leading-none text-danger-foreground ring-1 ring-inset ring-danger-border">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none ring-1 ring-inset',
+                        alarm
+                          ? 'bg-danger-soft text-danger-foreground ring-danger-border'
+                          : active
+                            ? 'bg-primary-foreground/20 text-primary-foreground ring-primary-foreground/30'
+                            : 'bg-muted text-foreground ring-border',
+                      )}
+                    >
                       {count > 99 ? '99+' : count}
                     </span>
-                    <span className="sr-only">{t('listView.chips.needAttention', { count })}</span>
+                    <span className="sr-only">{t(alarm ? 'listView.chips.needAttention' : 'listView.chips.count', { count })}</span>
                   </>
                 ) : null}
               </button>

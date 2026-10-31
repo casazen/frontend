@@ -57,7 +57,7 @@ export interface ListViewProps<Row> {
   totalCount?: number;
   /** `server` mode: the rows in a page. With it, and more rows than a page, the list has previous and next. */
   pageSize?: number;
-  /** `server` mode: the numbers on the quick filters that need attention (`urgent`), by id. */
+  /** `server` mode: the numbers on the quick filters that need attention (`urgent`) or only have a size (`counted`), by id. */
   chipCounts?: Readonly<Record<string, number | undefined>>;
   /** Whose saved views these are. Without it the list offers none. */
   viewsScope?: ListViewsScope | null;
@@ -270,15 +270,23 @@ export function ListView<Row>({
   const [confirming, setConfirming] = useState<{ action: ListBulkAction<Row>; rows: Row[] } | null>(null);
 
   const runBulk = async (action: ListBulkAction<Row>, on: Row[]) => {
+    let outcome: Awaited<ReturnType<ListBulkAction<Row>['run']>>;
     try {
-      await action.run(on);
+      outcome = await action.run(on);
     } catch (failure) {
       toast.error(getProblemMessage(failure, t) ?? t('listView.bulk.failed'));
       return;
     }
     clearSelection();
-    const message = action.doneMessage?.(on.length) ?? t('listView.bulk.done', { action: action.label, count: on.length });
     const undo = action.undo;
+    // An action that knows how it went (some rows through, some not: SP-08b) says so; otherwise the default line.
+    if (outcome) {
+      if (undo) toastUndo(outcome.title, { description: outcome.description, undo: () => undo(on) });
+      else if (outcome.tone === 'warning') toast.warning(outcome.title, { description: outcome.description });
+      else toast.success(outcome.title, { description: outcome.description });
+      return;
+    }
+    const message = action.doneMessage?.(on.length) ?? t('listView.bulk.done', { action: action.label, count: on.length });
     if (undo) toastUndo(message, { undo: () => undo(on) });
     else toast.success(message);
   };

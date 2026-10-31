@@ -31,23 +31,14 @@ import {
   requestWhen,
   respondByText,
   type RequestAction,
-  type RequestPhase,
 } from './request-model';
+import { PHASE_STATUS } from './request-state';
 import type { RequestActions } from './use-request-actions';
 
 const URGENCY_KEYS: Record<ServiceRequestUrgency, string> = {
   Normal: 'serviceRequest.urgencyNormal',
   High: 'serviceRequest.urgencyHigh',
   Emergency: 'serviceRequest.urgencyEmergency',
-};
-
-/** The phases that are a state of their own and not a status of the API, by the `data-status` they carry. */
-const PHASE_STATUS: Partial<Record<RequestPhase, string>> = {
-  proposalPending: 'ProposalPending',
-  quotePending: 'QuotePending',
-  backupWaiting: 'BackupWaiting',
-  backupAccepted: 'BackupAccepted',
-  backupActive: 'BackupActive',
 };
 
 /**

@@ -71,14 +71,21 @@ export type SupplierInboxTab = 'da-rispondere' | 'in-attesa' | 'programmate' | '
 /** `when` of `GET /supplier/inbox`: the day of the job is today, in the next 7 days or this month (Europe/Rome). */
 export type SupplierInboxWhen = 'oggi' | 'settimana' | 'mese';
 
+/** `source` of `GET /supplier/inbox`: where the request comes from, a host of CasaZen or a customer of the public showcase. */
+export type SupplierInboxSource = 'casazen' | 'showcase';
+
 /**
  * Filters of the supplier inbox: `tab` says which requests (and `status` is then ignored by the server); `q` is 2 to 60 characters;
- * `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request.
+ * `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request. `service` is a service of the catalog (its id) or a
+ * category code; `comune` an ISTAT code or a name (SP-08b).
  */
 export interface SupplierInboxParams {
   status?: SupplierInboxStatus;
   tab?: SupplierInboxTab;
   q?: string;
+  service?: string;
+  comune?: string;
+  source?: SupplierInboxSource;
   when?: SupplierInboxWhen;
   from?: string;
   to?: string;
@@ -97,6 +104,28 @@ export interface SupplierInboxCounts {
   archive: number;
   /** Payments asked for that are late and still owed. */
   paymentsLate: number;
+}
+
+/** The most requests `POST /supplier/inbox/accept` takes in one call (SP-04e). */
+export const ACCEPT_REQUESTS_MAX = 20;
+
+/**
+ * One request of `POST /supplier/inbox/accept`: taken (`accepted`, with the `status` it reached) or not (`code` and the localized `message`
+ * of the server: the request is no longer new, changed meanwhile, overlaps a job already accepted, the supplier is suspended...).
+ */
+export interface AcceptSupplierRequestResult {
+  id: string;
+  accepted: boolean;
+  status?: string | null;
+  code?: string | null;
+  message?: string | null;
+}
+
+/** `POST /supplier/inbox/accept` (SP-04e): one result per request, in the order they were sent. */
+export interface AcceptSupplierRequestsResponse {
+  results: AcceptSupplierRequestResult[];
+  accepted: number;
+  failed: number;
 }
 
 export interface UpdateAvailabilityEntry {

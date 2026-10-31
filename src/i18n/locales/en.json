@@ -7615,6 +7615,8 @@
       "selected_other": "{{count}} selected"
     },
     "chips": {
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
       "label": "Quick filters",
       "needAttention_one": "{{count}} needs attention",
       "needAttention_other": "{{count}} need attention"
@@ -7681,7 +7683,8 @@
       "previous": "Previous"
     },
     "row": {
-      "more": "More actions: {{name}}"
+      "more": "More actions: {{name}}",
+      "newTab": "(opens in a new tab)"
     },
     "select": {
       "done": "Done",
@@ -14727,10 +14730,13 @@
     "requests": {
       "action": {
         "acceptBackup": "Accept as a backup",
+        "call": "Call",
         "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
+        "details": "Details",
         "editQuote": "Change the quote",
+        "map": "See on the map",
         "openPage": "Open the full page",
         "quote": "Send a quote",
         "recordPayment": "I was paid outside CasaZen",
@@ -14753,6 +14759,32 @@
           "priority": "The customer also asked other suppliers as backups: you have until {{time}} to accept, then the job may pass to a backup."
         },
         "primaryUntil": "The chosen supplier has until {{time}}"
+      },
+      "bulk": {
+        "accept": "Accept the selected",
+        "confirm": {
+          "confirm": "Accept",
+          "description_one": "You accept it as it is, on the day and at the time shown. If it cannot be accepted, it stays to be answered and we tell you.",
+          "description_other": "You accept them as they are, on the days and at the times shown. Those that cannot be accepted (for example because they overlap a job you already accepted) stay to be answered and we tell you.",
+          "title_one": "Accept {{count}} request?",
+          "title_other": "Accept {{count}} requests?"
+        },
+        "done_one": "{{count}} request accepted",
+        "done_other": "{{count}} requests accepted",
+        "none": "No request accepted: {{count}} to look at",
+        "partial": "Accepted: {{accepted}}. To look at: {{count}}.",
+        "summary": {
+          "close": "Close",
+          "description_one": "This request was not accepted and is still waiting for your answer.",
+          "description_other": "These requests were not accepted and are still waiting for your answer. Open them one at a time to answer another way.",
+          "list": "Requests that were not accepted",
+          "notInBulk": "It is a request you have as a backup: accept it from its own page.",
+          "notSent": "We could not send the answer. Try again.",
+          "open": "Open the request",
+          "titleNone": "No request accepted",
+          "titleSome": "Accepted: {{accepted}}. To look at: {{count}}.",
+          "unknown": "It could not be accepted."
+        }
       },
       "cancel": {
         "back": "Go back",
@@ -14814,8 +14846,14 @@
         "where": "Where"
       },
       "filters": {
+        "comune": "Comune",
+        "comuneAll": "All comuni",
         "month": "This month",
         "period": "Last activity between",
+        "service": "Service",
+        "serviceAll": "All services",
+        "source": "Where from",
+        "sourceAll": "Anywhere",
         "today": "Today",
         "week": "Next 7 days",
         "when": "Day of the job",
@@ -14857,6 +14895,7 @@
         "columns": {
           "price": "Price",
           "request": "Request",
+          "source": "Where from",
           "state": "State",
           "when": "When",
           "where": "Where"
@@ -14864,8 +14903,9 @@
         "count_one": "{{count}} request",
         "count_other": "{{count}} requests",
         "loadError": "Could not load the requests.",
-        "search": "Search requests",
-        "searchPlaceholder": "Search by service or comune"
+        "nameSearch": "No service or comune matches “{{text}}”: here are the customers with that name among the requests loaded.",
+        "search": "Search requests by service, comune or customer",
+        "searchPlaceholder": "Search service, comune or customer"
       },
       "loadError": "Could not load the request.",
       "loading": "Loading the request…",
