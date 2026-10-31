@@ -54,6 +54,7 @@ import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/su
 import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
+import { SupplierRequestPage } from '@/pages/supplier-request';
 import { SupplierServicePage } from '@/pages/supplier-service';
 import { SupplierServicesPage } from '@/pages/supplier-services';
 import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
@@ -306,10 +307,11 @@ export const appRoutes: RouteObject[] = [
       { path: 'servizi', element: <SupplierServicesPage /> },
       { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
       { path: 'chi-siamo', element: <SupplierAboutPage /> },
-      // The booking from the site (SP-12b): the five steps and the page the link of the verification e-mail opens. Both behind the
-      // booking flag (with it off their addresses lead back to the home), and never indexed.
+      // The booking from the site (SP-12b): the steps, the page the link of the verification e-mail opens and the customer's own request
+      // (the link of the other e-mails). All behind the booking flag (with it off their addresses lead back to the home), never indexed.
       { path: 'prenota', element: <SupplierBookingPage /> },
       { path: 'conferma', element: <SupplierBookingConfirmPage /> },
+      { path: 'richiesta', element: <SupplierRequestPage /> },
     ],
   },
   {

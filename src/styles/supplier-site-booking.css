@@ -1340,3 +1340,291 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ------------------------------------------- The customer's own request (vf-) */
+.vf-gate {
+  padding-block: clamp(24px, 5vw, 72px);
+}
+
+.vf-gate__panel {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.vf-gate__panel h1 {
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+}
+
+.vf-gate__code {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.vf-p {
+  margin: 0 0 14px;
+  max-width: 56ch;
+  color: var(--vz-muted);
+}
+
+.vf-track__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.vf-track__head .vf-h2 {
+  margin: 0;
+}
+
+.vf-track__head .vz-linkbtn {
+  gap: 6px;
+  text-decoration: none;
+}
+
+.vf-track__head .vz-linkbtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vf-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.vf-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 10px;
+  border: 1px solid var(--vz-line);
+  border-radius: var(--vz-r);
+  background: var(--vz-surface);
+  color: var(--vz-muted);
+  min-width: 0;
+}
+
+.vf-steps__n {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--vz-surface-2);
+  font-weight: 750;
+  font-size: 0.85rem;
+}
+
+.vf-steps__n svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vf-steps__t {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.vf-steps__t small {
+  font-size: 0.74rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vf-steps li.is-done {
+  color: var(--vz-text);
+}
+
+.vf-steps li.is-done .vf-steps__n {
+  background: var(--vz-cta-soft);
+  color: var(--vz-cta-ink);
+}
+
+.vf-steps li.is-cur {
+  border-color: var(--vz-cta);
+  color: var(--vz-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--vz-cta) 16%, transparent);
+}
+
+.vf-steps li.is-cur .vf-steps__n {
+  background: var(--vz-cta);
+  color: #fff;
+}
+
+@media (max-width: 899.98px) {
+  .vf-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vf-steps__t small {
+    -webkit-line-clamp: 2;
+  }
+}
+
+.vf-ticket__l {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+}
+
+.vf-ticket__l li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.vf-ticket__l li span {
+  color: var(--vz-muted);
+}
+
+.vf-ticket__l li strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* What the supplier offered: the other time with its message, or the quote with its lines. */
+.vf-offer {
+  width: 100%;
+  max-width: 54ch;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--vz-r);
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-line);
+}
+
+.vf-offer p {
+  margin: 0;
+}
+
+.vf-offer ul {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.vf-offer li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vf-offer__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--vz-line);
+  font-weight: 650;
+}
+
+.vf-offer__total strong {
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.vf-offer__note {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--vz-muted);
+}
+
+.vf-manage__a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.vf-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  padding: clamp(16px, 2.4vw, 24px);
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-line);
+  border-radius: var(--vz-r-lg);
+}
+
+.vf-panel h3 {
+  font-size: 1.3rem;
+}
+
+.vf-panel h3:focus {
+  outline: none;
+}
+
+.vf-panel p {
+  margin: 0;
+  color: var(--vz-muted);
+}
+
+.vf-panel__a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.vf-rs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vf-rs__day {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.vf-rs__day legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-weight: 700;
+}
+
+.vf-rs__day ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vf-countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.vf-countdown svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}

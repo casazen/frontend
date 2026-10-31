@@ -16785,6 +16785,183 @@
       "text": "La vetrina è in pausa: per ora non si può prenotare. Torna a trovarci più avanti.",
       "title": "{{name}} non accetta prenotazioni per ora"
     },
+    "request": {
+      "again": "Prenota di nuovo",
+      "calendar": {
+        "add": "Aggiungi al calendario",
+        "description": "Codice della richiesta: {{code}}.",
+        "summary": "{{service}} · {{name}}"
+      },
+      "cancel": {
+        "back": "No, la tengo",
+        "confirm": "Sì, annulla la richiesta",
+        "reason": "Vuoi dirci il motivo?",
+        "reasonHint": "Lo legge {{name}}.",
+        "reasonTooLong": "Il testo è troppo lungo: scrivi l’essenziale.",
+        "text": "Annullare non costa nulla. {{name}} riceve un avviso e l’orario torna libero.",
+        "title": "Vuoi annullare la richiesta?"
+      },
+      "countdown": {
+        "customer": "Hai ancora {{time}} per rispondere.",
+        "over": "Il tempo per rispondere è finito.",
+        "supplier": "{{name}} ha ancora {{time}} per rispondere."
+      },
+      "errors": {
+        "cannotCancel": "Questa richiesta non si può più annullare da qui.",
+        "cannotReschedule": "Questa richiesta non si può più spostare.",
+        "changed": "Nel frattempo la richiesta è cambiata: ti mostro com’è adesso.",
+        "invalid": "Qualcosa non va: controlla e riprova.",
+        "noProposal": "Non c’è nessun orario da accettare.",
+        "noQuote": "Non c’è nessun preventivo da accettare.",
+        "other": "Non siamo riusciti a completare l’operazione. Controlla la connessione e riprova.",
+        "proposalExpired": "Il tempo per rispondere alla proposta è finito.",
+        "quoteExpired": "Il tempo per rispondere al preventivo è finito.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "slotTaken": "Questo orario non è più libero: scegline un altro.",
+        "supplierUnavailable": "Il professionista non è disponibile in questo momento."
+      },
+      "gate": {
+        "code": "Codice della richiesta",
+        "codeHint": "Lo trovi nell’email: cinque caratteri, un trattino, altri cinque.",
+        "codeInvalid": "Il codice ha dieci caratteri, per esempio 7K2XM-9QD4T.",
+        "email": "Email",
+        "emailHint": "Quella con cui hai prenotato.",
+        "emailInvalid": "Controlla l’email: manca qualcosa (per esempio la @ o il dominio).",
+        "error": "Non riusciamo a cercare la richiesta adesso. Controlla la connessione e riprova.",
+        "lead": "Scrivi il codice e l’email che hai usato per prenotare.",
+        "notFound": "Non troviamo una richiesta con questo codice e questa email. Controlla di averli scritti come nell’email di conferma.",
+        "privacy": "Non salviamo l’email in questo browser.",
+        "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
+        "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "searching": "Cerco…",
+        "submit": "Cerca la mia richiesta",
+        "title": "La mia richiesta"
+      },
+      "manage": {
+        "cancel": "Annulla la richiesta",
+        "lead": "Annullare non costa nulla.",
+        "reschedule": "Sposta l’orario",
+        "title": "Modifica o annulla"
+      },
+      "phases": {
+        "cancelledByCustomer": {
+          "lead": "Annullare non costa nulla. L’orario è tornato libero.",
+          "title": "Hai annullato la richiesta"
+        },
+        "cancelledBySupplier": {
+          "lead": "Puoi prenotare di nuovo, anche per un altro orario.",
+          "leadReason": "Motivo: {{reason}}",
+          "title": "{{name}} ha annullato la richiesta"
+        },
+        "cancelledBySystem": {
+          "lead": "Il tempo per rispondere è finito. Puoi prenotare di nuovo quando vuoi.",
+          "title": "La richiesta è stata annullata"
+        },
+        "custom": {
+          "lead": "Qui vedi a che punto è la richiesta. I messaggi e l’offerta si gestiscono con il prossimo aggiornamento.",
+          "title": "Richiesta su misura"
+        },
+        "done": {
+          "lead": "{{name}} ha segnato il lavoro come finito.",
+          "title": "Lavoro finito"
+        },
+        "inProgress": {
+          "lead": "{{name}} è al lavoro.",
+          "title": "Il lavoro è in corso"
+        },
+        "lapsed": {
+          "lead": "La richiesta sta per essere annullata perché non c’è stata una risposta in tempo. Puoi prenotare di nuovo quando vuoi.",
+          "title": "Il tempo per rispondere è finito"
+        },
+        "paid": {
+          "lead": "Il lavoro è concluso. Grazie!",
+          "title": "Tutto fatto"
+        },
+        "proposal": {
+          "lead": "Propone {{when}}. Se accetti, la richiesta è confermata a quell’orario. Hai tempo fino a {{answerBy}}.",
+          "leadNoDeadline": "Propone {{when}}. Se accetti, la richiesta è confermata a quell’orario.",
+          "title": "{{name}} ti propone un altro orario"
+        },
+        "quote": {
+          "lead": "{{name}} ti propone {{total}}. Se accetti, la richiesta è confermata a questo prezzo. Hai tempo fino a {{answerBy}}.",
+          "leadNoDeadline": "{{name}} ti propone {{total}}. Se accetti, la richiesta è confermata a questo prezzo.",
+          "title": "Il preventivo è pronto"
+        },
+        "refused": {
+          "lead": "In quell’orario non è disponibile. Puoi scegliere un altro orario.",
+          "leadReason": "Motivo: {{reason}}",
+          "title": "{{name}} non può accettare"
+        },
+        "taken": {
+          "lead": "{{name}} ti aspetta {{when}}.",
+          "title": "Prenotazione confermata"
+        },
+        "waiting": {
+          "lead": "{{name}} deve ancora rispondere: ha tempo fino a {{when}}. Se non risponde, la richiesta si annulla da sola e ti avvisiamo.",
+          "leadNoDeadline": "{{name}} deve ancora rispondere. Se non risponde in tempo, la richiesta si annulla da sola e ti avvisiamo.",
+          "title": "Richiesta inviata"
+        }
+      },
+      "pipeline": {
+        "outside": "La richiesta si è fermata qui: non c’è altro da fare.",
+        "refresh": "Aggiorna lo stato",
+        "steps": {
+          "done": {
+            "label": "Lavoro finito",
+            "text": "Il professionista ha finito"
+          },
+          "inProgress": {
+            "label": "In corso",
+            "text": "Il giorno del lavoro"
+          },
+          "payment": {
+            "label": "Pagamento",
+            "text": "Il lavoro è chiuso"
+          },
+          "request": {
+            "label": "Richiesta",
+            "text": "Hai inviato la richiesta"
+          },
+          "taken": {
+            "label": "Presa in carico",
+            "text": "Il professionista accetta"
+          }
+        },
+        "title": "Dov’è la tua richiesta"
+      },
+      "proposal": {
+        "accept": "Accetta il nuovo orario",
+        "reject": "Non va bene"
+      },
+      "quote": {
+        "accept": "Accetta il preventivo",
+        "otherTime": "Propone anche questo orario: {{when}}.",
+        "reject": "Rifiuta",
+        "total": "Totale"
+      },
+      "reschedule": {
+        "back": "Lascio com’è",
+        "confirm": "Sposta la richiesta",
+        "error": "Non riusciamo a caricare gli orari liberi.",
+        "loading": "Cerco gli orari liberi…",
+        "none": "Non ci sono altri orari liberi nei prossimi giorni.",
+        "text": "Scegli un orario libero: il professionista dovrà confermare di nuovo.",
+        "title": "Scegli un altro orario"
+      },
+      "ticket": {
+        "price": {
+          "estimate": "Totale stimato",
+          "final": "Totale",
+          "label": "Prezzo",
+          "quote": "Preventivo"
+        },
+        "priceNone": "Da concordare con il professionista",
+        "when": "Quando",
+        "where": "Dove"
+      },
+      "working": "Un momento…"
+    },
     "responseTime": {
       "hours_one": "circa {{count}} ora",
       "hours_other": "circa {{count}} ore",
