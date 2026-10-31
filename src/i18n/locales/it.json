@@ -6212,6 +6212,26 @@
       "start": "Inizio del contratto",
       "title": "Durata e date"
     },
+    "deadlines": {
+      "allRents": "Tutte le rate",
+      "depositReturned": "Cauzione restituita il {{date}}",
+      "loadError": "Impossibile caricare le date del contratto.",
+      "loading": "Caricamento delle date…",
+      "none": "Nessuna data da ricordare per questo contratto nel prossimo anno.",
+      "periodEnd": "Fine del periodo",
+      "title": "Le date del contratto"
+    },
+    "files": {
+      "download": "Scarica",
+      "downloadFailed": "Impossibile scaricare il file.",
+      "questura": "Ricevuta della Questura",
+      "registeredOn": "Registrato il {{date}}",
+      "registration": "Ricevuta di registrazione",
+      "sentOn": "Comunicazione del {{date}}",
+      "signed": "Contratto firmato",
+      "signedOn": "Firmato il {{date}}",
+      "title": "Contratto e ricevute"
+    },
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -6219,11 +6239,18 @@
       },
       "more": "Mostra tutta la cronologia"
     },
+    "menu": {
+      "documents": "Vai ai documenti",
+      "openProperty": "Apri l'immobile",
+      "readContract": "Leggi il contratto",
+      "readDraft": "Leggi la bozza del contratto"
+    },
     "now": {
       "kicker": "Cosa devi fare ora"
     },
     "party": {
-      "extraEu": "Extra-UE"
+      "extraEu": "Extra-UE",
+      "verifiedOn": "Documento verificato il {{date}}"
     },
     "property": {
       "open": "Apri l'immobile",
@@ -16034,11 +16061,8 @@
         },
         "noAddress": "L'anteprima c'è quando la vetrina ha un indirizzo, cioè dopo l'attivazione del profilo.",
         "photos": {
-          "addToProfile": "Aggiungi foto al profilo",
-          "addToService": "Aggiungi foto a un servizio",
           "loading": "Cerco le tue foto…",
-          "none": "Non hai ancora foto da scegliere. Aggiungile al profilo o a un servizio, poi le trovi qui.",
-          "pickerHint": "Scegli tra le foto che hai già nel profilo e nei servizi.",
+          "pickerHint": "Carica una foto nuova, oppure scegline una che hai già nel profilo e nei servizi.",
           "profilePhoto": "Foto {{n}} del profilo",
           "servicePhoto": "{{service}}: foto {{n}}"
         },
@@ -16251,6 +16275,43 @@
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
       "loadError": "Impossibile caricare la vetrina.",
       "loading": "Caricamento della vetrina…",
+      "media": {
+        "cancel": "Annulla l'invio",
+        "dismiss": "Chiudi",
+        "errors": {
+          "dimensions": "L'immagine ha troppi pixel: riducila e riprova.",
+          "empty": "Il file è vuoto: scegline un altro.",
+          "failed": "L'invio non è riuscito. Riprova tra qualche istante.",
+          "invalidImage": "Il file non si può usare come immagine: è danneggiato, incompleto o animato. Esportalo di nuovo come PNG, JPG o WebP.",
+          "limitReached": "Hai già molti file nella vetrina, compresi quelli che non usi più: questi vengono tolti da soli entro due giorni. Riprova più tardi.",
+          "tooLarge": "Il file è troppo pesante: il limite è {{limit}}. Scegline uno più leggero.",
+          "unsupportedType": "Puoi caricare solo immagini PNG, JPG o WebP (non SVG, PDF o altri formati)."
+        },
+        "failedFile": "«{{name}}»: {{message}}",
+        "hint": "PNG, JPG o WebP, fino a {{limit}}.",
+        "limits": "Fino a {{works}} lavori e {{photos}} foto in tutto: ogni lavoro ha la sua foto e, se vuoi, la foto «prima».",
+        "logo": {
+          "button": "Scegli il logo",
+          "card": {
+            "description": "Il tuo marchio, caricato da te: un PNG, un JPG o un WebP fino a 200 KB.",
+            "name": "Il tuo logo"
+          },
+          "change": "Scegli un altro logo",
+          "current": "Il tuo logo",
+          "remove": "Togli il logo",
+          "title": "Carica il tuo logo",
+          "titleChange": "Carica un altro logo"
+        },
+        "photo": {
+          "button": "Scegli un file",
+          "orPick": "Oppure scegli una foto che hai già",
+          "title": "Carica una nuova foto"
+        },
+        "preparing": "Preparo «{{name}}»…",
+        "progressLabel": "Avanzamento dell'invio",
+        "retry": "Riprova",
+        "uploading": "Invio di «{{name}}»… {{percent}}%"
+      },
       "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
       "open": "Apri la pagina pubblica",
       "preview": {

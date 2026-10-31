@@ -138,6 +138,10 @@ export interface LeaseParty {
   fiscalCodeMasked: string;
   contactEmailMasked: string;
   isExtraEU: boolean;
+  /** The day the landlord checked the identity document (LR-12): a date and nothing else, the document is never kept (decision LR-D3). */
+  documentsVerifiedOn?: string | null;
+  /** The residence is on record (LR-12); the residence itself never arrives. */
+  hasResidence?: boolean;
 }
 
 export interface LeaseEvent {

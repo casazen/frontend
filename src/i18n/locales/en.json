@@ -6212,6 +6212,26 @@
       "start": "Start of the lease",
       "title": "Term and dates"
     },
+    "deadlines": {
+      "allRents": "All the rents",
+      "depositReturned": "Deposit returned on {{date}}",
+      "loadError": "The dates of this contract could not be loaded.",
+      "loading": "Loading the dates…",
+      "none": "No dates to keep for this contract in the coming year.",
+      "periodEnd": "End of the period",
+      "title": "Dates of this contract"
+    },
+    "files": {
+      "download": "Download",
+      "downloadFailed": "The file could not be downloaded.",
+      "questura": "Questura receipt",
+      "registeredOn": "Registered on {{date}}",
+      "registration": "Registration receipt",
+      "sentOn": "Communication of {{date}}",
+      "signed": "Signed contract",
+      "signedOn": "Signed on {{date}}",
+      "title": "Contract and receipts"
+    },
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -6219,11 +6239,18 @@
       },
       "more": "Show the whole history"
     },
+    "menu": {
+      "documents": "Go to the documents",
+      "openProperty": "Open the property",
+      "readContract": "Read the contract",
+      "readDraft": "Read the draft of the contract"
+    },
     "now": {
       "kicker": "What to do now"
     },
     "party": {
-      "extraEu": "Non-EU"
+      "extraEu": "Non-EU",
+      "verifiedOn": "Document checked on {{date}}"
     },
     "property": {
       "open": "Open the property",
@@ -16034,11 +16061,8 @@
         },
         "noAddress": "The preview shows up once the showcase has an address, that is after the profile is activated.",
         "photos": {
-          "addToProfile": "Add photos to the profile",
-          "addToService": "Add photos to a service",
           "loading": "Looking for your photos…",
-          "none": "You have no photos to choose from yet. Add them to the profile or to a service and you will find them here.",
-          "pickerHint": "Choose among the photos you already have on the profile and on the services.",
+          "pickerHint": "Upload a new photo, or choose one you already have on the profile and on the services.",
           "profilePhoto": "Profile photo {{n}}",
           "servicePhoto": "{{service}}: photo {{n}}"
         },
@@ -16251,6 +16275,43 @@
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
       "loadError": "Could not load the showcase.",
       "loading": "Loading the showcase…",
+      "media": {
+        "cancel": "Cancel the upload",
+        "dismiss": "Close",
+        "errors": {
+          "dimensions": "The image has too many pixels: make it smaller and try again.",
+          "empty": "The file is empty: choose another one.",
+          "failed": "The upload did not work. Try again in a moment.",
+          "invalidImage": "The file cannot be used as an image: it is damaged, incomplete or animated. Export it again as PNG, JPG or WebP.",
+          "limitReached": "You already have many files in the showcase, including the ones you no longer use: those are removed by themselves within two days. Try again later.",
+          "tooLarge": "The file is too heavy: the limit is {{limit}}. Choose a lighter one.",
+          "unsupportedType": "You can only upload PNG, JPG or WebP images (not SVG, PDF or other formats)."
+        },
+        "failedFile": "\"{{name}}\": {{message}}",
+        "hint": "PNG, JPG or WebP, up to {{limit}}.",
+        "limits": "Up to {{works}} jobs and {{photos}} photos in all: each job has its photo and, if you want, its \"before\" photo.",
+        "logo": {
+          "button": "Choose the logo",
+          "card": {
+            "description": "Your own mark, uploaded by you: a PNG, a JPG or a WebP up to 200 KB.",
+            "name": "Your logo"
+          },
+          "change": "Choose another logo",
+          "current": "Your logo",
+          "remove": "Remove the logo",
+          "title": "Upload your logo",
+          "titleChange": "Upload another logo"
+        },
+        "photo": {
+          "button": "Choose a file",
+          "orPick": "Or choose a photo you already have",
+          "title": "Upload a new photo"
+        },
+        "preparing": "Getting \"{{name}}\" ready…",
+        "progressLabel": "Upload progress",
+        "retry": "Try again",
+        "uploading": "Uploading \"{{name}}\"… {{percent}}%"
+      },
       "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
       "open": "Open the public page",
       "preview": {

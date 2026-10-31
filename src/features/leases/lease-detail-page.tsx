@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { ChevronDown, FileText } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { BackLink } from '@/components/shared/back-link';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
@@ -20,9 +21,11 @@ import { cn } from '@/lib/utils';
 import type { LeaseDetail, LeaseNextStep, LeaseStage, LeaseStatus } from '@/types';
 import { LeaseDataTab } from './components/lease-data-tab';
 import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
+import { LeaseFiles } from './components/lease-files';
 import { LeaseHistory } from './components/lease-history';
 import { LeaseNowBlock } from './components/lease-now-block';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
+import { useLeaseSheetMenu } from './components/use-lease-sheet-menu';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { LeaseGuide } from './guide/lease-guide';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
@@ -76,8 +79,9 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
  * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
- * What can be done to the lease while it lives (delete the draft, record a notice, end it early…) is in the menu «⋯» of the header
- * and opens from the address too (`?azione=`, LR-10).
+ * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
+ * and then what can be done to the lease while it lives (delete the draft, record a notice, end it early…, LR-10), which opens from the
+ * address too (`?azione=`).
  */
 function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: LeaseNextStep | null; stage: LeaseStage | undefined }) {
   const { t, i18n } = useTranslation();
@@ -113,6 +117,9 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
 
   const title = leaseTitle(lease, i18n.language, t);
   const actions = useLeaseActions(lease, { tenant: title, property: lease.property?.name ?? t('leaseList.property.unknown') });
+  const links = useLeaseSheetMenu(lease, { partnerDraft });
+  // What changes the lease comes after what only takes somewhere, apart; the one that destroys is the last of the menu (LR-10).
+  const menu: PageHeaderMenuItem[] = actions.menu.length > 0 ? [...links, { separator: true }, ...actions.menu] : links;
 
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-sheet">
@@ -121,7 +128,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
         title={title}
         description={leasePurpose(lease, t)}
         action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
-        secondary={actions.menu}
+        secondary={menu}
       />
 
       {explainOpen ? (
@@ -141,7 +148,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB}>
             {tab === 'guida' && <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />}
             {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
-            {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
+            {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showQuestura} />}
           </Tabs>
