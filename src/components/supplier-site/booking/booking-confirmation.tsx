@@ -123,10 +123,20 @@ export function BookingConfirmation() {
       {t('supplierSite.booking.confirm.bookAgain')}
     </Link>
   );
+  // A link that is no good may be one already used (the token leaves the address when the page opens, so a reload cannot use it again):
+  // whoever already checked the e-mail finds the request with its code.
+  const invalidActions = (
+    <>
+      {bookAgain}
+      <Link className="vz-btn vz-btn--secondary vz-btn--lg" to={supplierSitePaths.request(model.slug)}>
+        {t('supplierSite.booking.confirm.myRequest')}
+      </Link>
+    </>
+  );
 
   // A link for a request on measure (SP-12c) or one with nothing usable in it.
   if (!link.hold || !link.token) {
-    return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={bookAgain} />;
+    return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={invalidActions} />;
   }
   if (confirmation.isLoading) {
     return (
@@ -148,7 +158,7 @@ export function BookingConfirmation() {
       return <Outcome testId="supplier-booking-supplier-unavailable" tone="error" icon={<CircleAlert />} title={t('supplierSite.booking.confirm.unavailable.title', { name: model.name })} text={t('supplierSite.booking.confirm.unavailable.text')} />;
     }
     if (failure.kind === 'invalid') {
-      return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={bookAgain} />;
+      return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={invalidActions} />;
     }
     const wait = failure.kind === 'rateLimited' && failure.retryAfterSeconds ? Math.max(1, Math.ceil(failure.retryAfterSeconds / 60)) : null;
     return (

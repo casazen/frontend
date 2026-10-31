@@ -656,6 +656,23 @@
   background: var(--vz-warn-soft);
 }
 
+.vb-callout p {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  max-width: 54ch;
+  font-weight: 600;
+  color: var(--vz-warn);
+}
+
+.vb-callout p svg {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
 /* ------------------------------------------------------------------- When */
 .vb-step-when {
   display: flex;

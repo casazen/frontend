@@ -30,7 +30,8 @@ export function useBookingSlots(slug: string, serviceSlug: string | null, urgent
 
 /** Holds the slot and e-mails the link. One call per attempt; the page keeps the id of the attempt and the answer. */
 export function useCreateBookingHold(slug: string) {
-  return useMutation({ mutationFn: (body: PublicBookingBody) => publicBookingApi.createHold(slug, body) });
+  // `gcTime: 0`: the mutation (the body with the name, the e-mail and the phone, and the secret of the card in the answer) is not kept in the cache.
+  return useMutation({ mutationFn: (body: PublicBookingBody) => publicBookingApi.createHold(slug, body), gcTime: 0 });
 }
 
 /**
