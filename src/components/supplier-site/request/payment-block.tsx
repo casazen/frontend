@@ -9,6 +9,7 @@ import { usePanelFocus } from './use-panel-focus';
 
 /** What the server allows to say about the money, as the customer reads it. */
 const STATUS_ICON: Record<PublicBookingPayment['status'], typeof Lock> = {
+  awaiting_card: Lock,
   authorized: Lock,
   held: ShieldCheck,
   released: Banknote,
@@ -62,6 +63,9 @@ export function PaymentBlock({ view, onWithdraw, pending }: PaymentBlockProps) {
   if (!payment) return null;
   const Icon = STATUS_ICON[payment.status];
   const name = view.supplier.name;
+  // The offer of a request on measure is already agreed by the supplier: until the card is through the money is only blocked, and it is
+  // charged when the time is still free, not "if the professional accepts" (which is what a booking says).
+  const own = payment.status === 'awaiting_card' || (view.kind === 'Custom' && payment.status === 'authorized') ? 'supplierSite.inquiry.payment.status' : 'supplierSite.request.payment.status';
   const amount = formatMoney(payment.amountCents, i18n.language);
   const refunded = formatMoney(payment.refundedCents > 0 ? payment.refundedCents : payment.amountCents, i18n.language);
   const reportUntil = view.actions.canReportProblem && payment.releaseAtUtc ? formatSlotLabel(payment.releaseAtUtc, t, i18n.language) : '';
@@ -76,8 +80,8 @@ export function PaymentBlock({ view, onWithdraw, pending }: PaymentBlockProps) {
             <Icon />
           </span>
           <div>
-            <strong>{t(`supplierSite.request.payment.status.${payment.status}.title`)}</strong>
-            <p>{t(`supplierSite.request.payment.status.${payment.status}.text`, { amount, name, refunded })}</p>
+            <strong>{t(`${own}.${payment.status}.title`)}</strong>
+            <p>{t(`${own}.${payment.status}.text`, { amount, name, refunded })}</p>
             {reportUntil ? <p className="vf-pay__window">{t('supplierSite.request.payment.window', { when: reportUntil })}</p> : null}
           </div>
         </div>

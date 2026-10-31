@@ -19,7 +19,15 @@ export type RequestRefusal =
   | 'tooEarly'
   | 'notReportable'
   | 'captureFailed'
-  | 'authorizationExpired';
+  | 'authorizationExpired'
+  // The request on measure (SP-12c): the offer, the messages and the card of the offer.
+  | 'noOffer'
+  | 'offerExpired'
+  | 'messageInvalid'
+  | 'threadFull'
+  | 'threadClosed'
+  | 'inFlight'
+  | 'providerError';
 
 export type RequestFailure =
   /** 404 `supplier_booking_not_found`: one answer for a code, a supplier or an address that does not match. */
@@ -28,7 +36,7 @@ export type RequestFailure =
   | { kind: 'rateLimited'; retryAfterSeconds?: number }
   /** 409 `service_request_state_changed` / `service_request_quote_changed`: somebody else moved first; the page reads it again. */
   | { kind: 'changed' }
-  /** 409 `supplier_slot_unavailable`: the time asked for went. */
+  /** 409 `supplier_slot_unavailable` / `supplier_commitment_conflict`: the time asked for (or the time of the offer) went. */
   | { kind: 'slotTaken' }
   /** 422: the rules of the area said no; the page reads it again to show what is true now. */
   | { kind: 'refused'; reason: RequestRefusal }
@@ -51,6 +59,16 @@ const REFUSALS: Record<string, RequestRefusal> = {
   // Accepting a time for a booking paid inside CasaZen charges the blocked card first (409): the money says no, the request stays as it is.
   service_payment_capture_failed: 'captureFailed',
   service_payment_authorization_expired: 'authorizationExpired',
+  // The same two, as the acceptance of an offer paid inside CasaZen names them (SP-10b-b): nothing was charged, the offer stands.
+  payment_capture_failed: 'captureFailed',
+  payment_authorization_expired: 'authorizationExpired',
+  supplier_booking_no_offer: 'noOffer',
+  supplier_booking_offer_expired: 'offerExpired',
+  service_request_message_invalid: 'messageInvalid',
+  service_request_thread_full: 'threadFull',
+  service_request_thread_closed: 'threadClosed',
+  service_payment_in_flight: 'inFlight',
+  payment_provider_error: 'providerError',
 };
 
 export function readRequestFailure(error: unknown): RequestFailure {
@@ -59,7 +77,7 @@ export function readRequestFailure(error: unknown): RequestFailure {
   const code = getProblemCode(error.response.data);
   if (status === 429) return { kind: 'rateLimited', retryAfterSeconds: getRetryAfterSeconds(error) };
   if (status === 404) return { kind: 'notFound' };
-  if (code && REFUSALS[code] && (status === 422 || status === 409)) return { kind: 'refused', reason: REFUSALS[code] };
-  if (status === 409) return code === 'supplier_slot_unavailable' ? { kind: 'slotTaken' } : { kind: 'changed' };
+  if (code && REFUSALS[code] && (status === 422 || status === 409 || status === 503)) return { kind: 'refused', reason: REFUSALS[code] };
+  if (status === 409) return code === 'supplier_slot_unavailable' || code === 'supplier_commitment_conflict' ? { kind: 'slotTaken' } : { kind: 'changed' };
   return { kind: 'other' };
 }

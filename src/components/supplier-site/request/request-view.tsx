@@ -1,15 +1,20 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Ban, CalendarClock, CalendarPlus, Check, CircleAlert, CircleCheck, CircleX, Clock, FileText, Hourglass, PartyPopper, RotateCcw, Wrench } from 'lucide-react';
+import { Ban, CalendarClock, CalendarPlus, Check, CircleAlert, CircleCheck, CircleX, Clock, CreditCard, FileText, Hourglass, MessagesSquare, PartyPopper, RotateCcw, Wrench } from 'lucide-react';
 import { publicBookingApi, type PublicBookingAccess, type PublicBookingView } from '@/api/public-supplier-booking.api';
 import { formatMoney } from '@/features/supplier/services/lib/service-money';
-import { buildBookingPath } from '@/lib/supplier-site/booking-params';
+import { buildBookingPath, buildInquiryPath } from '@/lib/supplier-site/booking-params';
 import { buildIcs } from '@/lib/supplier-site/calendar-ics';
-import { formatDeadline, formatSlotLabel } from '@/lib/supplier-site/format';
+import { formatDeadline, formatSlotLabel, formatSlotRange } from '@/lib/supplier-site/format';
 import type { RequestFailure } from '@/lib/supplier-site/request-errors';
-import { icsEventOf, phaseOf, REQUEST_STAGES, stageIndexOf, toneOf, type RequestPhase } from '@/lib/supplier-site/request-view';
+import { icsEventOf, negotiationOf, phaseOf, REQUEST_STAGES, stageIndexOf, toneOf, type RequestPhase } from '@/lib/supplier-site/request-view';
 import { CodeLine } from '../booking/code-line';
+import { Alternatives } from '../inquiry/alternatives';
+import { CONVERSATION_ID, InquiryConversation } from '../inquiry/inquiry-conversation';
+import { InquiryOffer } from '../inquiry/inquiry-offer';
+import { OfferPayment } from '../inquiry/offer-payment';
+import type { InquirySiteInfo, QuietCall } from '../inquiry/types';
 import { ConfirmOkPanel, PaymentBlock, ReportProblemPanel } from './payment-block';
 import { CancelPanel, ReschedulePanel } from './request-panels';
 import { useMinuteClock } from './use-minute-clock';
@@ -20,6 +25,10 @@ interface RequestViewProps {
   pending: boolean;
   /** One action on the booking: the page gives the call, the hook gives the credentials and keeps the answer. */
   act: (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => Promise<boolean>;
+  /** A call that does not disturb the page (a message, an answer to an offer, the card): used by the request on measure (SP-12c). */
+  quiet: QuietCall;
+  /** What of the supplier's site the request on measure needs (the typical time to answer, the color of the buttons). */
+  site?: InquirySiteInfo;
 }
 
 const PHASE_ICON: Record<RequestPhase, ReactNode> = {
@@ -32,7 +41,10 @@ const PHASE_ICON: Record<RequestPhase, ReactNode> = {
   paid: <PartyPopper />,
   refused: <CircleX />,
   cancelled: <Ban />,
-  custom: <Hourglass />,
+  conversation: <MessagesSquare />,
+  offer: <FileText />,
+  cardPending: <CreditCard />,
+  offerLapsed: <Hourglass />,
 };
 
 /** The sentence at the top, from the phase and the facts the server gave (the supplier's own deadlines, its own words, its own price). */
@@ -84,12 +96,32 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
     case 'paid':
       return { title: t('supplierSite.request.phases.paid.title'), lead: t('supplierSite.request.phases.paid.lead') };
     case 'refused':
+      if (view.kind === 'Custom') {
+        return {
+          title: t('supplierSite.inquiry.phases.refused.title', { name }),
+          lead: view.rejectionReason ? t('supplierSite.request.phases.refused.leadReason', { reason: view.rejectionReason }) : t('supplierSite.inquiry.phases.refused.lead'),
+        };
+      }
       return {
         title: t('supplierSite.request.phases.refused.title', { name }),
         lead: view.rejectionReason ? t('supplierSite.request.phases.refused.leadReason', { reason: view.rejectionReason }) : t('supplierSite.request.phases.refused.lead'),
       };
     case 'cancelled': {
       const by = view.cancellation?.by ?? 'system';
+      if (view.kind === 'Custom') {
+        // A request on measure has no time to give back: the words are its own. Who did not answer is said as it was (D24).
+        if (by === 'customer') return { title: t('supplierSite.inquiry.phases.closedByCustomer.title'), lead: t('supplierSite.inquiry.phases.closedByCustomer.lead') };
+        if (by === 'supplier') {
+          const reason = view.cancellation?.reason;
+          return {
+            title: t('supplierSite.inquiry.phases.closedBySupplier.title', { name }),
+            lead: reason ? t('supplierSite.request.phases.cancelledBySupplier.leadReason', { reason }) : t('supplierSite.inquiry.phases.closedBySupplier.lead'),
+          };
+        }
+        if (negotiationOf(view) === 'Expired') return { title: t('supplierSite.inquiry.phases.expired.title'), lead: t('supplierSite.inquiry.phases.expired.lead') };
+        if (view.alternatives !== undefined) return { title: t('supplierSite.inquiry.phases.silent.title', { name }), lead: t('supplierSite.inquiry.phases.silent.lead') };
+        return { title: t('supplierSite.inquiry.phases.closedBySystem.title'), lead: t('supplierSite.inquiry.phases.closedBySystem.lead') };
+      }
       if (by === 'customer') return { title: t('supplierSite.request.phases.cancelledByCustomer.title'), lead: t('supplierSite.request.phases.cancelledByCustomer.lead') };
       if (by === 'supplier') {
         const reason = view.cancellation?.reason;
@@ -100,8 +132,30 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
       }
       return { title: t('supplierSite.request.phases.cancelledBySystem.title'), lead: t('supplierSite.request.phases.cancelledBySystem.lead') };
     }
-    case 'custom':
-      return { title: t('supplierSite.request.phases.custom.title'), lead: t('supplierSite.request.phases.custom.lead') };
+    case 'conversation': {
+      const negotiation = negotiationOf(view);
+      if (negotiation === 'AwaitingSupplier') {
+        return {
+          title: t('supplierSite.inquiry.phases.waiting.title', { name }),
+          lead: view.respondBy ? t('supplierSite.inquiry.phases.waiting.lead', { name, when: when(view.respondBy) }) : t('supplierSite.inquiry.phases.waiting.leadNoDeadline', { name }),
+        };
+      }
+      if (negotiation === 'OfferDeclined') return { title: t('supplierSite.inquiry.phases.declined.title'), lead: t('supplierSite.inquiry.phases.declined.lead', { name }) };
+      return { title: t('supplierSite.inquiry.phases.talking.title', { name }), lead: t('supplierSite.inquiry.phases.talking.lead') };
+    }
+    case 'offer': {
+      const offer = view.offer;
+      const slot = offer ? formatSlotRange(offer.startUtc, offer.endUtc, t, i18n.language) : '';
+      const total = money(offer?.totalCents ?? 0);
+      return {
+        title: t('supplierSite.inquiry.phases.offer.title', { name }),
+        lead: offer?.paymentRequired ? t('supplierSite.inquiry.phases.offer.leadPay', { total, when: slot }) : t('supplierSite.inquiry.phases.offer.lead', { total, when: slot }),
+      };
+    }
+    case 'cardPending':
+      return { title: t('supplierSite.inquiry.phases.card.title'), lead: t('supplierSite.inquiry.phases.card.lead', { name, total: money(view.offer?.totalCents ?? 0) }) };
+    case 'offerLapsed':
+      return { title: t('supplierSite.inquiry.phases.lapsed.title'), lead: t('supplierSite.inquiry.phases.lapsed.lead') };
   }
 }
 
@@ -130,24 +184,30 @@ function Countdown({ until, who, supplierName }: { until: string | null | undefi
   );
 }
 
-/** The ticket beside the sentence: the code, the service, when, where, and the price as the server states it (never computed here). */
-function Ticket({ view, phase }: { view: PublicBookingView; phase: RequestPhase }) {
+/**
+ * The ticket beside the sentence: the code, the service, when, where, and the price as the server states it (never computed here). A
+ * request on measure has no time and no price until the supplier makes an offer: then the ticket carries the offer's.
+ */
+function Ticket({ view }: { view: PublicBookingView }) {
   const { t, i18n } = useTranslation();
   const { price, place } = view;
-  const custom = phase === 'custom';
+  // New and on measure: the day it was made stands in for the time (the server says to ignore it), and the offer, if any, brings the real one.
+  const noTime = view.kind === 'Custom' && view.status === 'Richiesto';
+  const offer = noTime ? (view.offer ?? null) : null;
   const where = [place.address, place.floor, place.city].filter(Boolean).join(', ');
   let priceText: string;
-  if (price.amountCents === null || price.amountCents === undefined || custom) priceText = t('supplierSite.request.ticket.priceNone');
+  if (offer) priceText = `${t('supplierSite.inquiry.offer.label')} ${formatMoney(offer.totalCents, i18n.language)}`;
+  else if (price.amountCents === null || price.amountCents === undefined || noTime) priceText = t('supplierSite.request.ticket.priceNone');
   else priceText = `${t(`supplierSite.request.ticket.price.${price.basis ?? 'estimate'}`)} ${formatMoney(price.amountCents, i18n.language)}`;
   return (
     <aside className="vf-ticket" aria-label={t('supplierSite.booking.confirm.ticket')}>
       <CodeLine code={view.publicCode} />
       <p className="vf-ticket__t">{view.service.name}</p>
       <ul className="vf-ticket__l">
-        {custom ? null : (
+        {noTime && !offer ? null : (
           <li>
             <span>{t('supplierSite.request.ticket.when')}</span>
-            <strong>{formatSlotLabel(view.startUtc, t, i18n.language)}</strong>
+            <strong>{offer ? formatSlotRange(offer.startUtc, offer.endUtc, t, i18n.language) : formatSlotLabel(view.startUtc, t, i18n.language)}</strong>
           </li>
         )}
         <li>
@@ -239,24 +299,56 @@ function Offer({ view, phase }: { view: PublicBookingView; phase: RequestPhase }
  * "La mia richiesta" (SP-12b): at the top one sentence of where the request is and **one** thing to do, with the ticket beside it; then
  * the path; then, if it is still allowed, "Modifica o annulla". What may be done is the server's `actions`, never worked out here.
  */
-export function RequestView({ view, failure, pending, act }: RequestViewProps) {
+export function RequestView({ view, failure, pending, act, quiet, site }: RequestViewProps) {
   const { t, i18n } = useTranslation();
   const [panel, setPanel] = useState<'cancel' | 'reschedule' | 'confirmOk' | 'report' | null>(null);
+  // The answer to an offer (SP-12c) goes through the quiet call: it is the one press that moves the request, so it keeps its own "working"
+  // and remembers which offer it failed on (a time that went is true of that offer only).
+  const [answering, setAnswering] = useState(false);
+  const [tried, setTried] = useState<{ offerSentAt: string; failure: RequestFailure } | null>(null);
   const phase = phaseOf(view);
   const tone = toneOf(phase);
   const hero = useHeroText(view, phase);
   const { actions } = view;
   const supplierSlug = view.supplier.slug;
   const serviceSlug = view.service.slug ?? null;
-  const rebook = serviceSlug ? buildBookingPath(supplierSlug, { service: serviceSlug }) : buildBookingPath(supplierSlug);
+  const custom = view.kind === 'Custom';
+  const rebook = custom
+    ? buildInquiryPath(supplierSlug, serviceSlug ? { service: serviceSlug } : {})
+    : serviceSlug
+      ? buildBookingPath(supplierSlug, { service: serviceSlug })
+      : buildBookingPath(supplierSlug);
+  const offer = view.offer ?? null;
+  // The time of the offer went (409): nothing changed and nothing was charged, but accepting it again would say the same.
+  const slotGone = tried?.failure.kind === 'slotTaken' && offer !== null && tried.offerSentAt === offer.sentAt;
+  const busy = pending || answering;
 
   const doAct = async (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => {
+    setTried(null);
     const done = await act(call);
     if (done) {
       setPanel(null);
       // What was in focus may be gone (the buttons of an answered offer): the sentence at the top takes it.
       document.getElementById('vf-title')?.focus();
     }
+  };
+
+  /** Accepts or turns down the offer that is on the screen, by its version; when it was replaced meanwhile the page reads the new one. */
+  const answerOffer = async (answer: 'accept' | 'decline') => {
+    if (!offer) return;
+    setAnswering(true);
+    setTried(null);
+    const outcome = await quiet((access) => (answer === 'accept' ? publicBookingApi.acceptOffer(access, offer.sentAt) : publicBookingApi.declineOffer(access, offer.sentAt)));
+    setAnswering(false);
+    if (outcome.ok) document.getElementById('vf-title')?.focus();
+    else setTried({ offerSentAt: offer.sentAt, failure: outcome.failure });
+  };
+
+  /** From the note of a time that went: the person writes to the supplier, in the box of the conversation. */
+  const writeToSupplier = () => {
+    const box = document.querySelector<HTMLElement>(`#${CONVERSATION_ID} textarea`);
+    box?.scrollIntoView({ block: 'center' });
+    box?.focus();
   };
 
   const downloadCalendar = () => {
@@ -300,6 +392,34 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
         </button>
       </>
     );
+  } else if (phase === 'offer' && offer && actions.canRespondToOffer) {
+    primary = (
+      <>
+        {slotGone ? (
+          <button type="button" className="vz-btn vz-btn--primary vz-btn--lg" onClick={writeToSupplier}>
+            {t('supplierSite.inquiry.offer.write', { name: view.supplier.name })}
+          </button>
+        ) : (
+          <button type="button" className="vz-btn vz-btn--primary vz-btn--lg" disabled={busy} onClick={() => void answerOffer('accept')} data-testid="supplier-inquiry-offer-accept">
+            {busy
+              ? t('supplierSite.request.working')
+              : offer.paymentRequired
+                ? t('supplierSite.inquiry.offer.acceptPay', { total: formatMoney(offer.totalCents, i18n.language) })
+                : t('supplierSite.inquiry.offer.accept')}
+          </button>
+        )}
+        <button type="button" className="vz-linkbtn" disabled={busy} onClick={() => void answerOffer('decline')} data-testid="supplier-inquiry-offer-decline">
+          {t('supplierSite.inquiry.offer.decline')}
+        </button>
+      </>
+    );
+  } else if (phase === 'cardPending' && offer) {
+    // The card is asked below; the one thing left to say here is "not any more", which releases the block.
+    primary = (
+      <button type="button" className="vz-linkbtn" disabled={busy} onClick={() => void answerOffer('decline')} data-testid="supplier-inquiry-offer-decline">
+        {t('supplierSite.inquiry.offer.decline')}
+      </button>
+    );
   } else if (phase === 'taken') {
     primary = (
       <button type="button" className="vz-btn vz-btn--primary vz-btn--lg" onClick={downloadCalendar}>
@@ -310,7 +430,7 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
   } else if (phase === 'refused' || phase === 'cancelled') {
     primary = (
       <Link className="vz-btn vz-btn--primary vz-btn--lg" to={rebook}>
-        {t('supplierSite.request.again')}
+        {custom ? t('supplierSite.inquiry.again') : t('supplierSite.request.again')}
       </Link>
     );
   }
@@ -332,14 +452,17 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
     ) : null;
   const canManage = actions.canCancel || (actions.canReschedule && serviceSlug !== null);
 
+  // What went wrong is the last thing the person tried: an action of the page, or the answer to an offer.
+  const shownFailure = tried?.failure ?? failure;
   let failureText: string | null = null;
-  if (failure) {
-    if (failure.kind === 'rateLimited') {
-      failureText = failure.retryAfterSeconds
-        ? t('supplierSite.request.errors.rateLimitedWait', { minutes: Math.max(1, Math.ceil(failure.retryAfterSeconds / 60)) })
+  if (shownFailure) {
+    if (shownFailure.kind === 'rateLimited') {
+      failureText = shownFailure.retryAfterSeconds
+        ? t('supplierSite.request.errors.rateLimitedWait', { minutes: Math.max(1, Math.ceil(shownFailure.retryAfterSeconds / 60)) })
         : t('supplierSite.request.errors.rateLimited');
-    } else if (failure.kind === 'refused') failureText = t(`supplierSite.request.errors.${failure.reason}`);
-    else if (failure.kind === 'changed' || failure.kind === 'slotTaken') failureText = t(`supplierSite.request.errors.${failure.kind}`);
+    } else if (shownFailure.kind === 'refused') failureText = t(`supplierSite.request.errors.${shownFailure.reason}`);
+    else if (shownFailure.kind === 'slotTaken') failureText = t(custom ? 'supplierSite.request.errors.slotGone' : 'supplierSite.request.errors.slotTaken');
+    else if (shownFailure.kind === 'changed') failureText = t('supplierSite.request.errors.changed');
     else failureText = t('supplierSite.request.errors.other');
   }
 
@@ -366,7 +489,15 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
             {phase === 'waiting' && !view.proposal && !view.quote ? <Countdown until={view.respondBy} who="supplier" supplierName={view.supplier.name} /> : null}
             {phase === 'proposal' ? <Countdown until={view.proposal?.answerBy} who="customer" supplierName={view.supplier.name} /> : null}
             {phase === 'quote' ? <Countdown until={view.quote?.answerBy} who="customer" supplierName={view.supplier.name} /> : null}
+            {phase === 'conversation' && negotiationOf(view) === 'AwaitingSupplier' && view.respondBy ? (
+              <>
+                <Countdown until={view.respondBy} who="supplier" supplierName={view.supplier.name} />
+                <p className="vi-note">{t('supplierSite.inquiry.phases.waiting.ifSilent')}</p>
+              </>
+            ) : null}
+            {phase === 'offer' || phase === 'cardPending' ? <Countdown until={offer?.validUntil} who="customer" supplierName={view.supplier.name} /> : null}
             <Offer view={view} phase={phase} />
+            {offer && (phase === 'offer' || phase === 'cardPending' || phase === 'offerLapsed') ? <InquiryOffer offer={offer} stale={phase === 'offerLapsed'} /> : null}
             {panel === null ? failureNote : null}
             {primary || payButtons ? (
               <div className="vf-hero__a">
@@ -375,9 +506,23 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
               </div>
             ) : null}
           </div>
-          <Ticket view={view} phase={phase} />
+          <Ticket view={view} />
         </div>
       </section>
+
+      {phase === 'cardPending' && offer && site ? (
+        <OfferPayment
+          view={view}
+          offer={offer}
+          buttonColor={site.buttonColor}
+          quiet={quiet}
+          busy={busy}
+          onContinue={() => void answerOffer('accept')}
+          onFailure={(found) => setTried({ offerSentAt: offer.sentAt, failure: found })}
+        />
+      ) : null}
+      {phase === 'cancelled' && view.alternatives !== undefined ? <Alternatives alternatives={view.alternatives} /> : null}
+      {view.thread ? <InquiryConversation view={view} quiet={quiet} typicalResponseMinutes={site?.typicalResponseMinutes ?? null} /> : null}
 
       <PaymentBlock view={view} pending={pending} onWithdraw={() => void doAct((access) => publicBookingApi.withdrawProblem(access))} />
       {panel === 'confirmOk' || panel === 'report' ? (
@@ -405,9 +550,9 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
         <section className="vz-section vz-section--tight vf-manage" id="vf-modifica" aria-labelledby="vf-manage-title">
           <div className="vz-container">
             <h2 id="vf-manage-title" className="vf-h2">
-              {t('supplierSite.request.manage.title')}
+              {t(custom ? 'supplierSite.inquiry.manage.title' : 'supplierSite.request.manage.title')}
             </h2>
-            <p className="vf-p">{t('supplierSite.request.manage.lead')}</p>
+            <p className="vf-p">{t(custom ? 'supplierSite.inquiry.manage.lead' : 'supplierSite.request.manage.lead')}</p>
             {panel === 'cancel' || panel === 'reschedule' ? failureNote : null}
             {panel === null ? (
               <div className="vf-manage__a">
@@ -418,13 +563,19 @@ export function RequestView({ view, failure, pending, act }: RequestViewProps) {
                 ) : null}
                 {actions.canCancel ? (
                   <button type="button" className="vz-btn vz-btn--secondary" onClick={() => setPanel('cancel')}>
-                    {t('supplierSite.request.manage.cancel')}
+                    {t(custom ? 'supplierSite.inquiry.manage.cancel' : 'supplierSite.request.manage.cancel')}
                   </button>
                 ) : null}
               </div>
             ) : null}
             {panel === 'cancel' ? (
-              <CancelPanel supplierName={view.supplier.name} pending={pending} onBack={() => setPanel(null)} onConfirm={(reason) => void doAct((access) => publicBookingApi.cancel(access, reason || undefined))} />
+              <CancelPanel
+                supplierName={view.supplier.name}
+                pending={pending}
+                variant={custom ? 'inquiry' : 'booking'}
+                onBack={() => setPanel(null)}
+                onConfirm={(reason) => void doAct((access) => publicBookingApi.cancel(access, reason || undefined))}
+              />
             ) : null}
             {panel === 'reschedule' && serviceSlug ? (
               <ReschedulePanel

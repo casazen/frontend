@@ -1,4 +1,5 @@
 import { ApiClient } from './client';
+import type { PublicSupplierPriceUnit } from './public-supplier.api';
 
 /**
  * The booking of a service from the public site of a supplier, by a customer with no account (backend SP-10, runbook `suppliers.md`
@@ -153,7 +154,79 @@ export interface PublicBookingActions {
   canConfirmOk: boolean;
   canReportProblem: boolean;
   canWithdrawProblem: boolean;
+  /** SP-10b-b: an offer of a request on measure waits, its time has not passed and the supplier is active. Missing from an older server: read as false. */
+  canRespondToOffer?: boolean;
 }
+
+/** One message of the conversation of a request on measure: plain text, written by the customer, the supplier or CasaZen itself. */
+export interface PublicBookingMessage {
+  id: string;
+  author: 'customer' | 'supplier' | 'system';
+  body: string;
+  createdAt: string;
+  /** When the other party first read it; `null` marks what is new to the reader. */
+  readAt?: string | null;
+}
+
+/** The conversation of a request on measure (SP-10b); `canWrite` is false once the request is closed or the supplier is not active. */
+export interface PublicBookingThread {
+  canWrite: boolean;
+  messages: PublicBookingMessage[];
+}
+
+/** One line of an offer: how many of what, at the price of one. The amount is the server's. */
+export interface PublicBookingOfferLine {
+  label: string;
+  quantity: number;
+  unitAmountCents: number;
+  amountCents: number;
+}
+
+/**
+ * The offer the supplier sent for a request on measure and the customer has not answered (SP-10b-b). `sentAt` is its version, which the
+ * answer repeats. The work is not reserved: the time is judged again when the customer accepts.
+ */
+export interface PublicBookingOffer {
+  sentAt: string;
+  lines: PublicBookingOfferLine[];
+  totalCents: number;
+  currency: string;
+  note?: string | null;
+  startUtc: string;
+  endUtc: string;
+  startLocal: string;
+  endLocal: string;
+  /** The instant the customer has to answer by; after it CasaZen closes the request. */
+  validUntil?: string | null;
+  /** Accepting is paid inside CasaZen: the card is blocked for the total and the request is taken when it is. */
+  paymentRequired?: boolean;
+}
+
+/** What the browser needs to block the card for the offer it accepted: a credential, given only in the answer of the acceptance. */
+export interface PublicBookingPaymentSession {
+  clientSecret: string;
+  publishableKey: string;
+  amountCents: number;
+  currency: string;
+}
+
+/** Another professional offered to the customer of a request nobody answered (SP-10c): what its showcase says, and the way to it. */
+export interface PublicAlternative {
+  name: string;
+  slug: string;
+  coverUrl?: string | null;
+  coverAlt?: string | null;
+  verified: boolean;
+  /** The typical time to answer in minutes, measured; missing until it is. */
+  medianResponseMinutes?: number | null;
+  /** The service of the same category with the lowest "from" price; missing when it has none published. */
+  service?: { slug: string; name: string; fromPriceCents?: number | null; priceUnit: PublicSupplierPriceUnit; requiresQuote: boolean } | null;
+}
+
+/**
+ * Where the negotiation of a request on measure is. An open set: a state the page does not know is read as `InConversation`.
+ */
+export type PublicNegotiation = 'AwaitingSupplier' | 'InConversation' | 'OfferSent' | 'AwaitingPayment' | 'OfferDeclined' | 'Agreed' | 'Declined' | 'Expired' | 'Closed';
 
 /** The customer's complaint about a job paid inside CasaZen, as the customer reads it (SP-15c-c). */
 export interface PublicBookingDispute {
@@ -172,7 +245,8 @@ export interface PublicBookingDispute {
 
 /** The money of a booking paid inside CasaZen (SP-15c-a); missing when the booking is not. */
 export interface PublicBookingPayment {
-  status: 'authorized' | 'held' | 'released' | 'refunded' | 'canceled' | 'review';
+  /** `awaiting_card` (SP-10b-b): the offer was accepted and the card is not blocked yet. */
+  status: 'awaiting_card' | 'authorized' | 'held' | 'released' | 'refunded' | 'canceled' | 'review';
   amountCents: number;
   currency: string;
   refundedCents: number;
@@ -206,10 +280,20 @@ export interface PublicBookingView {
   actions: PublicBookingActions;
   /** `Custom` for a request on measure (SP-10b): no time, no price and a conversation. Missing for every other booking. */
   kind?: 'Custom';
-  /** The conversation of a request on measure (SP-12c). */
-  thread?: { canWrite: boolean; messages: { id: string; author: 'customer' | 'supplier' | 'system'; body: string; createdAt: string; readAt?: string | null }[] };
+  /** The conversation of a request on measure (SP-10b). */
+  thread?: PublicBookingThread;
+  /** Where the negotiation of a request on measure is (open set: see {@link PublicNegotiation}). */
   negotiation?: string;
+  /** The offer that waits for the customer's answer (SP-10b-b); missing when there is none and for every other booking. */
+  offer?: PublicBookingOffer | null;
+  /** Only in the answer of an `offer/accept` that asks for a card: the credential for the Payment Element. Never kept anywhere but in the page. */
+  paymentSession?: PublicBookingPaymentSession | null;
   payment?: PublicBookingPayment | null;
+  /**
+   * The other professionals offered to the customer of a request CasaZen closed because the supplier did not answer in time (SP-10c):
+   * at most three, best first. An empty list is "nobody to suggest" and is said plainly; missing for every other booking.
+   */
+  alternatives?: PublicAlternative[];
 }
 
 const enc = encodeURIComponent;
@@ -273,6 +357,27 @@ export const publicBookingApi = {
 
   /** Takes the complaint back: the money is no longer stopped. 409 `service_dispute_not_open` if it was decided already. */
   withdrawProblem: (access: PublicBookingAccess) => customerCall('withdraw-problem', access),
+
+  /**
+   * A message of the customer in the conversation of a request on measure (SP-10b): 1 to 1000 characters of plain text. Answers the
+   * request with the thread, the new message in it. 409 `service_request_thread_closed` / `service_request_state_changed`; 422
+   * `service_request_message_invalid` / `service_request_thread_full` / `supplier_booking_supplier_unavailable`.
+   */
+  sendMessage: (access: PublicBookingAccess, body: string) => customerCall('messages', access, { body }),
+
+  /**
+   * Accepts the offer it read (`offer.sentAt`, repeated as given). Not paid inside CasaZen: the request is taken at the offer's time and
+   * total. Paid inside CasaZen: the request is NOT taken yet, the answer is `negotiation: "AwaitingPayment"` with a `paymentSession` (the
+   * same one if asked again before the card is blocked); asked again once the card is blocked it takes the request. 409
+   * `service_request_offer_changed` (replaced or taken back), `supplier_slot_unavailable` / `supplier_commitment_conflict` (the time is
+   * gone: nothing changed, the offer stands and nothing is charged), `payment_authorization_expired` / `payment_capture_failed` (nothing
+   * charged), `service_payment_in_flight`; 422 `supplier_booking_no_offer` / `supplier_booking_offer_expired` /
+   * `supplier_booking_supplier_unavailable`; 503 `payment_provider_error`.
+   */
+  acceptOffer: (access: PublicBookingAccess, offerSentAt: string) => customerCall('offer/accept', access, { offerSentAt }),
+
+  /** Turns the offer down: the conversation goes on and nobody has a clock on them; a card block made for it is released. */
+  declineOffer: (access: PublicBookingAccess, offerSentAt: string) => customerCall('offer/decline', access, { offerSentAt }),
 };
 
 /** The reasons of a complaint, as the server names them. `other` needs the words of the customer. */
