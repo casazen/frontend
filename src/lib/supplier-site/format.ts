@@ -33,3 +33,17 @@ export function formatTypicalResponse(minutes: number, t: TFunction): string {
   }
   return t('supplierSite.responseTime.hours', { count: Math.round(minutes / 60) });
 }
+
+/**
+ * A stretch of time as a person says it, on the clock of Rome: "giovedì 5 novembre alle 09:00–11:00"; an end on another day is said whole.
+ * The two instants are the UTC ones the server gave (the offer carries the Rome offset next to them, which is what keeps the two passes of
+ * the hour that happens twice apart). An end that is not a date leaves only the start.
+ */
+export function formatSlotRange(startUtc: string, endUtc: string, t: TFunction, locale: string): string {
+  const start = formatSlotLabel(startUtc, t, locale);
+  const startClock = romeWallClock(startUtc);
+  const endClock = romeWallClock(endUtc);
+  if (!start || !endClock) return start;
+  if (startClock?.date === endClock.date) return `${start}–${pad(endClock.hour)}:${pad(endClock.minute)}`;
+  return `${start} → ${formatSlotLabel(endUtc, t, locale)}`;
+}

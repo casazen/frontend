@@ -16776,7 +16776,34 @@
         "send": "Invia la richiesta",
         "sending": "Invio…"
       },
+      "again": "Fai una nuova richiesta",
+      "alternatives": {
+        "lead": "Lavorano nel tuo comune e prendono richieste online.",
+        "none": "Per ora non abbiamo altri professionisti da proporti per questa richiesta.",
+        "title": "Altri professionisti per te",
+        "typical": "Di solito risponde in {{typical}}"
+      },
       "back": "Torna a {{name}}",
+      "cancel": {
+        "confirm": "Sì, chiudi la richiesta",
+        "text": "Chiudere la richiesta non costa nulla. {{name}} riceve un avviso.",
+        "title": "Vuoi chiudere la richiesta?"
+      },
+      "chat": {
+        "closed": "La conversazione è chiusa: puoi leggere i messaggi, ma non scriverne altri.",
+        "composerLabel": "Scrivi a {{name}}",
+        "contacts": "I messaggi restano dentro CasaZen: non scrivere numeri di telefono né indirizzi email.",
+        "empty": "Non ci sono ancora messaggi.",
+        "logLabel": "Messaggi con {{name}}",
+        "offline": "Sei offline: collegati per scrivere.",
+        "placeholder": "Scrivi un messaggio…",
+        "sendError": "Non siamo riusciti a inviare il messaggio. Controlla la connessione e riprova.",
+        "system": "CasaZen",
+        "title": "La conversazione",
+        "typical": "Di solito {{name}} risponde in {{typical}}.",
+        "unavailable": "{{name}} non è disponibile in questo momento: puoi leggere i messaggi, ma non scriverne altri.",
+        "you": "Tu"
+      },
       "checkEmail": {
         "back": "Torna a {{name}}",
         "lead": "Ti abbiamo scritto a {{email}}. Apri il link per inviare la richiesta a {{name}}.",
@@ -16849,6 +16876,11 @@
         "title": "Come funziona"
       },
       "lead": "Raccontaci cosa ti serve: {{name}} ti risponde qui, in una conversazione dentro CasaZen, e se serve ti manda un’offerta con il prezzo e l’orario.",
+      "manage": {
+        "cancel": "Chiudi la richiesta",
+        "lead": "Chiudere non costa nulla.",
+        "title": "Chiudi la richiesta"
+      },
       "notice": {
         "consent": "Per continuare serve il tuo consenso al trattamento dei dati.",
         "consentOutdated": "Il testo dell’informativa è cambiato mentre scrivevi: rileggilo e conferma di nuovo.",
@@ -16862,6 +16894,85 @@
         "serviceGone": "Questo servizio non è più disponibile. Scegline un altro, oppure lascia «Altro».",
         "siteGone": "Questa pagina non è più disponibile.",
         "unavailable": "La richiesta non è disponibile in questo momento. Riprova più tardi."
+      },
+      "offer": {
+        "accept": "Accetta l’offerta",
+        "acceptPay": "Accetta e paga {{total}}",
+        "decline": "Non mi interessa",
+        "label": "Offerta",
+        "line": "{{quantity}} × {{label}}",
+        "notReserved": "L’orario non è riservato finché non accetti: se nel frattempo non fosse più libero, te lo diciamo e puoi continuare a scrivere.",
+        "validUntil": "L’offerta vale fino a {{when}}.",
+        "write": "Scrivi a {{name}}"
+      },
+      "payment": {
+        "chargeIfFree": "Se l’orario è ancora libero, l’importo viene addebitato e la richiesta passa in carico a {{name}}. Se non lo è, il blocco viene tolto e non paghi nulla.",
+        "continue": "Continua con il pagamento",
+        "status": {
+          "authorized": {
+            "text": "Sulla tua carta sono bloccati {{amount}}. Stiamo controllando che l’orario sia ancora libero: se lo è, l’importo viene addebitato e la richiesta passa in carico a {{name}}; se non lo è, il blocco viene tolto.",
+            "title": "Importo bloccato sulla carta"
+          },
+          "awaiting_card": {
+            "text": "Per accettare l’offerta serve confermare la carta: non ti abbiamo addebitato nulla.",
+            "title": "In attesa della carta"
+          }
+        },
+        "taking": "Carta confermata. Stiamo prendendo in carico la richiesta con {{name}}: puoi lasciare aperta questa pagina, appena è fatto lo vedi qui e ti scriviamo.",
+        "title": "Conferma il pagamento"
+      },
+      "phases": {
+        "card": {
+          "lead": "Manca solo la carta: blocchiamo {{total}} e, se l’orario è ancora libero, la richiesta passa in carico a {{name}}.",
+          "title": "Conferma il pagamento"
+        },
+        "closedByCustomer": {
+          "lead": "Chiudere non costa nulla. Puoi fare una nuova richiesta quando vuoi.",
+          "title": "Hai chiuso la richiesta"
+        },
+        "closedBySupplier": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "{{name}} ha chiuso la richiesta"
+        },
+        "closedBySystem": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "La richiesta è stata chiusa"
+        },
+        "declined": {
+          "lead": "Hai rifiutato l’offerta. Puoi continuare a scrivere: {{name}} può mandartene un’altra.",
+          "title": "Offerta rifiutata"
+        },
+        "expired": {
+          "lead": "Non hai risposto all’offerta in tempo, quindi la richiesta si è chiusa. Puoi fare una nuova richiesta quando vuoi.",
+          "title": "L’offerta è scaduta"
+        },
+        "lapsed": {
+          "lead": "Non puoi più rispondere a questa offerta. La richiesta si chiude da sola; puoi farne una nuova quando vuoi.",
+          "title": "L’offerta non è più valida"
+        },
+        "offer": {
+          "lead": "Totale {{total}}, {{when}}. L’orario non è riservato finché non accetti.",
+          "leadPay": "Totale {{total}}, {{when}}. Se accetti, blocchiamo l’importo sulla tua carta: la richiesta passa in carico quando il blocco è confermato.",
+          "title": "{{name}} ti ha mandato un’offerta"
+        },
+        "refused": {
+          "lead": "Puoi fare una nuova richiesta quando vuoi.",
+          "title": "{{name}} non può occuparsene"
+        },
+        "silent": {
+          "lead": "La richiesta si è chiusa. Se ci sono altri professionisti nel tuo comune, li trovi qui sotto.",
+          "title": "{{name}} non ha risposto in tempo"
+        },
+        "talking": {
+          "lead": "Scrivi qui sotto: la conversazione resta dentro CasaZen.",
+          "title": "Stai scrivendo con {{name}}"
+        },
+        "waiting": {
+          "ifSilent": "Se non risponde in tempo, la richiesta si chiude e, se ce ne sono, ti mostriamo altri professionisti.",
+          "lead": "{{name}} ha tempo fino a {{when}} per risponderti. La conversazione è qui sotto.",
+          "leadNoDeadline": "{{name}} deve ancora risponderti. La conversazione è qui sotto.",
+          "title": "Richiesta inviata a {{name}}"
+        }
       },
       "problems": {
         "email": {
@@ -17001,18 +17112,26 @@
         "cannotReschedule": "Questa richiesta non si può più spostare.",
         "captureFailed": "Non siamo riusciti ad addebitare l’importo sulla tua carta: la richiesta resta com’è e non ti abbiamo addebitato nulla.",
         "changed": "Nel frattempo la richiesta è cambiata: ti mostro com’è adesso.",
+        "inFlight": "C’è un pagamento di un tentativo precedente ancora in verifica: riprova tra poco.",
         "invalid": "Qualcosa non va: controlla e riprova.",
+        "messageInvalid": "Il messaggio non è valido: serve del testo semplice, fino a 1000 caratteri.",
+        "noOffer": "Non c’è nessuna offerta da accettare.",
         "noProposal": "Non c’è nessun orario da accettare.",
         "noQuote": "Non c’è nessun preventivo da accettare.",
         "notConfirmable": "Non c’è niente da confermare adesso: il pagamento potrebbe essere già stato rilasciato o essere fermo.",
         "notReportable": "Per questa richiesta non si può segnalare un problema da qui.",
+        "offerExpired": "Il tempo per rispondere all’offerta è finito.",
         "other": "Non siamo riusciti a completare l’operazione. Controlla la connessione e riprova.",
         "proposalExpired": "Il tempo per rispondere alla proposta è finito.",
+        "providerError": "Il servizio di pagamento non risponde adesso. Non è stato addebitato nulla: riprova tra poco.",
         "quoteExpired": "Il tempo per rispondere al preventivo è finito.",
         "rateLimited": "Troppi tentativi ravvicinati. Riprova tra qualche minuto.",
         "rateLimitedWait": "Troppi tentativi ravvicinati. Riprova tra {{minutes}} minuti.",
+        "slotGone": "Quell’orario non è più libero. Non è cambiato nulla e non ti abbiamo addebitato nulla: scrivi al professionista per concordarne un altro, oppure rifiuta l’offerta.",
         "slotTaken": "Questo orario non è più libero: scegline un altro.",
         "supplierUnavailable": "Il professionista non è disponibile in questo momento.",
+        "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi.",
+        "threadFull": "La conversazione ha raggiunto il numero massimo di messaggi: non se ne possono scrivere altri.",
         "tooEarly": "Potrai segnalare un problema quando il lavoro sarà finito.",
         "windowClosed": "Il tempo per segnalare un problema è finito."
       },
@@ -17082,10 +17201,6 @@
         "cancelledBySystem": {
           "lead": "Il tempo per rispondere è finito. Puoi prenotare di nuovo quando vuoi.",
           "title": "La richiesta è stata annullata"
-        },
-        "custom": {
-          "lead": "Qui vedi a che punto è la richiesta. I messaggi e l’offerta si gestiscono con il prossimo aggiornamento.",
-          "title": "Richiesta su misura"
         },
         "done": {
           "lead": "{{name}} ha segnato il lavoro come finito.",

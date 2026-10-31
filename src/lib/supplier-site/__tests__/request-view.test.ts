@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { PublicBookingView } from '@/api/public-supplier-booking.api';
 import { buildIcs } from '../calendar-ics';
-import { icsEventOf, normalizeCode, phaseOf, stageIndexOf } from '../request-view';
+import { icsEventOf, negotiationOf, normalizeCode, phaseOf, stageIndexOf } from '../request-view';
 
 const none = { canCancel: false, canReschedule: false, canRespondToProposal: false, canRespondToQuote: false, canConfirmOk: false, canReportProblem: false, canWithdrawProblem: false };
 
@@ -30,7 +30,37 @@ describe('the customer request: where it is and what the calendar file carries',
     expect(phaseOf({ ...view, status: 'Pagato' })).toBe('paid');
     expect(phaseOf({ ...view, status: 'Rifiutato' })).toBe('refused');
     expect(phaseOf({ ...view, status: 'Annullato' })).toBe('cancelled');
-    expect(phaseOf({ ...view, kind: 'Custom' })).toBe('custom');
+    // A request on measure that is still new is a conversation; once its offer is taken it goes the way of every other request.
+    expect(phaseOf({ ...view, status: 'Richiesto', kind: 'Custom' })).toBe('conversation');
+    expect(phaseOf({ ...view, kind: 'Custom' })).toBe('taken');
+  });
+
+  it('phaseOf_ARequestOnMeasure_FollowsItsOffer', () => {
+    const offer = {
+      sentAt: '2026-11-10T08:00:00Z',
+      lines: [{ label: 'Pulizia vetri', quantity: 2, unitAmountCents: 4500, amountCents: 9000 }],
+      totalCents: 9000,
+      currency: 'EUR',
+      startUtc: '2026-11-13T08:00:00Z',
+      endUtc: '2026-11-13T10:00:00Z',
+      startLocal: '2026-11-13T09:00:00+01:00',
+      endLocal: '2026-11-13T11:00:00+01:00',
+      validUntil: '2026-11-11T08:00:00Z',
+    };
+    const open = { ...view, status: 'Richiesto' as const, kind: 'Custom' as const };
+
+    expect(phaseOf({ ...open, offer, negotiation: 'OfferSent', actions: { ...none, canRespondToOffer: true } })).toBe('offer');
+    // The card of the offer: the offer stands, the customer has accepted and the card is not through.
+    expect(phaseOf({ ...open, offer, negotiation: 'AwaitingPayment', actions: { ...none, canRespondToOffer: true } })).toBe('cardPending');
+    // An offer nobody can answer any more is not offered for an answer.
+    expect(phaseOf({ ...open, offer, negotiation: 'OfferSent', actions: none })).toBe('offerLapsed');
+    expect(phaseOf({ ...open, negotiation: 'OfferDeclined' })).toBe('conversation');
+  });
+
+  it('negotiationOf_AStateTheServerAddsLater_IsAConversation', () => {
+    expect(negotiationOf({ ...view, negotiation: 'OfferSent' })).toBe('OfferSent');
+    expect(negotiationOf({ ...view, negotiation: 'SomethingNew' })).toBe('InConversation');
+    expect(negotiationOf(view)).toBe('InConversation');
   });
 
   it('phaseOf_AnOfferTheCustomerCanStillAnswer_IsTheOffer_AnExpiredOneIsWaiting', () => {

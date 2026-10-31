@@ -28,11 +28,11 @@ const heldView: PublicBookingView = {
   payment: { status: 'held', amountCents: 9000, currency: 'EUR', refundedCents: 0, releaseAtUtc: '2099-11-13T11:00:00Z', releaseAtLocal: '2099-11-13T12:00:00+01:00' },
 };
 
-function renderView(view: PublicBookingView, act = vi.fn().mockResolvedValue(true)) {
+function renderView(view: PublicBookingView, act = vi.fn().mockResolvedValue(true), quiet = vi.fn().mockResolvedValue({ ok: true })) {
   render(
     <I18nextProvider i18n={i18n}>
       <MemoryRouter>
-        <RequestView view={view} failure={null} pending={false} act={act} />
+        <RequestView view={view} failure={null} pending={false} act={act} quiet={quiet} />
       </MemoryRouter>
     </I18nextProvider>,
   );

@@ -1,5 +1,6 @@
 /*
- * The request on measure from the public site of a supplier (SP-12c): the form (`vi`). Same rules as `supplier-site.css` and `supplier-site-booking.css`:
+ * The request on measure from the public site of a supplier (SP-12c): the form (`vi`), the conversation, the offer, the card of the offer
+ * and the other professionals (`vi-chat`, `vi-offer`, `vi-pay`, `vi-alt`). Same rules as `supplier-site.css` and `supplier-site-booking.css`:
  * everything wears the tokens of the site (`--vz-*`), so it wears its style, typeface and button color. Targets are 44 px at least and
  * nothing is wider than the screen at 360 px.
  */
@@ -71,4 +72,201 @@
   margin: 2px 0 0;
   color: var(--vz-muted);
   font-size: 0.93rem;
+}
+
+/* --------------------------------------------------------- The page of the request */
+.vi-note {
+  max-width: 54ch;
+  margin: 0;
+  color: var(--vz-muted);
+  font-size: 0.95rem;
+}
+
+.vi-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vi-offer li > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.vi-offer .vf-offer__total {
+  margin-top: 6px;
+}
+
+.vi-offer__note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The conversation is drawn with the shared thread and composer of CasaZen (they speak the colors of the app): inside the site they take
+ * the colors of the site instead, so the bubbles, the box and the button look like the rest of the page.
+ */
+.vi-chat {
+  --color-primary: var(--vz-cta);
+  --color-primary-foreground: #ffffff;
+  --color-background: var(--vz-bg);
+  --color-foreground: var(--vz-text);
+  --color-card: var(--vz-surface);
+  --color-card-foreground: var(--vz-text);
+  --color-muted: var(--vz-surface-2);
+  --color-muted-foreground: var(--vz-muted);
+  --color-border: var(--vz-line);
+  --color-input: var(--vz-control);
+  --color-ring: var(--vz-focus);
+  --color-destructive: var(--vz-err);
+}
+
+.vi-chat__in {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 760px;
+  min-width: 0;
+}
+
+.vi-chat .vf-h2,
+.vi-chat .vf-p {
+  margin-bottom: 0;
+}
+
+.vi-chat__write {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vi-chat textarea {
+  min-height: 96px;
+  font-size: 1rem;
+}
+
+.vi-chat button[type='submit'] {
+  min-height: 44px;
+}
+
+.vi-chat .vb-hint--icon svg {
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------ The card of the offer */
+.vi-pay__in {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  min-width: 0;
+}
+
+.vi-pay .vf-h2 {
+  margin-bottom: 0;
+}
+
+/* ----------------------------------------------------------- Other professionals */
+.vi-alt__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: clamp(14px, 2vw, 22px);
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vi-alt__list > li {
+  display: flex;
+  min-width: 0;
+}
+
+.vi-alt__card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-line);
+  border-radius: var(--vz-r-lg);
+  box-shadow: var(--vz-shadow-1);
+}
+
+.vi-alt__media {
+  aspect-ratio: 16 / 9;
+  background: var(--vz-surface-2);
+}
+
+.vi-alt__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vi-alt__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.vi-alt__name {
+  font-size: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.vi-alt__name a {
+  color: var(--vz-text);
+  text-decoration: none;
+}
+
+.vi-alt__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--vz-muted);
+  font-size: 0.92rem;
+}
+
+.vi-alt__meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vi-alt__meta svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--vz-cta-ink);
+}
+
+.vi-alt__service {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.vi-alt__price {
+  color: var(--vz-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vi-alt__price strong {
+  color: var(--vz-text);
+}
+
+@media (max-width: 599.98px) {
+  .vi-counter {
+    margin-top: -8px;
+  }
 }

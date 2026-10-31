@@ -16776,7 +16776,34 @@
         "send": "Send the request",
         "sending": "Sending…"
       },
+      "again": "Make a new request",
+      "alternatives": {
+        "lead": "They work in your town and take requests online.",
+        "none": "For now we have no other professionals to suggest for this request.",
+        "title": "Other professionals for you",
+        "typical": "Usually replies in {{typical}}"
+      },
       "back": "Back to {{name}}",
+      "cancel": {
+        "confirm": "Yes, close the request",
+        "text": "Closing the request costs nothing. {{name}} is told.",
+        "title": "Do you want to close the request?"
+      },
+      "chat": {
+        "closed": "The conversation is closed: you can read the messages but not write more.",
+        "composerLabel": "Write to {{name}}",
+        "contacts": "Messages stay inside CasaZen: do not write phone numbers or e-mail addresses.",
+        "empty": "There are no messages yet.",
+        "logLabel": "Messages with {{name}}",
+        "offline": "You are offline: connect to write.",
+        "placeholder": "Write a message…",
+        "sendError": "We could not send the message. Check the connection and try again.",
+        "system": "CasaZen",
+        "title": "The conversation",
+        "typical": "{{name}} usually replies in {{typical}}.",
+        "unavailable": "{{name}} is not available right now: you can read the messages but not write more.",
+        "you": "You"
+      },
       "checkEmail": {
         "back": "Back to {{name}}",
         "lead": "We wrote to {{email}}. Open the link to send the request to {{name}}.",
@@ -16849,6 +16876,11 @@
         "title": "How it works"
       },
       "lead": "Tell us what you need: {{name}} answers you here, in a conversation inside CasaZen, and if needed sends you an offer with the price and the time.",
+      "manage": {
+        "cancel": "Close the request",
+        "lead": "Closing costs nothing.",
+        "title": "Close the request"
+      },
       "notice": {
         "consent": "To go on we need your consent to the processing of your data.",
         "consentOutdated": "The text of the privacy notice changed while you were writing: read it again and confirm.",
@@ -16862,6 +16894,85 @@
         "serviceGone": "This service is no longer available. Choose another one, or leave \"Something else\".",
         "siteGone": "This page is no longer available.",
         "unavailable": "The request is not available right now. Try again later."
+      },
+      "offer": {
+        "accept": "Accept the offer",
+        "acceptPay": "Accept and pay {{total}}",
+        "decline": "Not interested",
+        "label": "Offer",
+        "line": "{{quantity}} × {{label}}",
+        "notReserved": "The time is not reserved until you accept: if it is no longer free meanwhile, we tell you and you can keep writing.",
+        "validUntil": "The offer is valid until {{when}}.",
+        "write": "Write to {{name}}"
+      },
+      "payment": {
+        "chargeIfFree": "If the time is still free, the amount is charged and the request is taken by {{name}}. If it is not, the block is removed and you pay nothing.",
+        "continue": "Go on with the payment",
+        "status": {
+          "authorized": {
+            "text": "{{amount}} are blocked on your card. We are checking that the time is still free: if it is, the amount is charged and the request is taken by {{name}}; if it is not, the block is removed.",
+            "title": "Amount blocked on the card"
+          },
+          "awaiting_card": {
+            "text": "To accept the offer the card has to be confirmed: we have not charged you anything.",
+            "title": "Waiting for the card"
+          }
+        },
+        "taking": "Card confirmed. We are having {{name}} take the request: you can leave this page open, as soon as it is done you see it here and we write to you.",
+        "title": "Confirm the payment"
+      },
+      "phases": {
+        "card": {
+          "lead": "Only the card is left: we block {{total}} and, if the time is still free, the request is taken by {{name}}.",
+          "title": "Confirm the payment"
+        },
+        "closedByCustomer": {
+          "lead": "Closing costs nothing. You can make a new request whenever you like.",
+          "title": "You closed the request"
+        },
+        "closedBySupplier": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "{{name}} closed the request"
+        },
+        "closedBySystem": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "The request was closed"
+        },
+        "declined": {
+          "lead": "You turned the offer down. You can keep writing: {{name}} can send you another one.",
+          "title": "Offer turned down"
+        },
+        "expired": {
+          "lead": "You did not answer the offer in time, so the request closed. You can make a new request whenever you like.",
+          "title": "The offer has expired"
+        },
+        "lapsed": {
+          "lead": "You can no longer answer this offer. The request closes by itself; you can make a new one whenever you like.",
+          "title": "The offer is no longer valid"
+        },
+        "offer": {
+          "lead": "Total {{total}}, {{when}}. The time is not reserved until you accept.",
+          "leadPay": "Total {{total}}, {{when}}. If you accept, we block the amount on your card: the request is taken when the block is confirmed.",
+          "title": "{{name}} sent you an offer"
+        },
+        "refused": {
+          "lead": "You can make a new request whenever you like.",
+          "title": "{{name}} cannot take it"
+        },
+        "silent": {
+          "lead": "The request closed. If there are other professionals in your town, you find them below.",
+          "title": "{{name}} did not answer in time"
+        },
+        "talking": {
+          "lead": "Write below: the conversation stays inside CasaZen.",
+          "title": "You are writing with {{name}}"
+        },
+        "waiting": {
+          "ifSilent": "If it does not answer in time, the request closes and, if there are any, we show you other professionals.",
+          "lead": "{{name}} has until {{when}} to answer you. The conversation is below.",
+          "leadNoDeadline": "{{name}} still has to answer you. The conversation is below.",
+          "title": "Request sent to {{name}}"
+        }
       },
       "problems": {
         "email": {
@@ -17001,18 +17112,26 @@
         "cannotReschedule": "This request can no longer be moved.",
         "captureFailed": "We could not charge the amount to your card: the request stays as it is and nothing was charged.",
         "changed": "The request changed in the meantime: here it is as it is now.",
+        "inFlight": "A payment from an earlier attempt is still being checked: try again in a moment.",
         "invalid": "Something is wrong: check and try again.",
+        "messageInvalid": "The message is not valid: it needs plain text, up to 1000 characters.",
+        "noOffer": "There is no offer to accept.",
         "noProposal": "There is no time to accept.",
         "noQuote": "There is no quote to accept.",
         "notConfirmable": "There is nothing to confirm right now: the payment may already have been released or be stopped.",
         "notReportable": "You cannot report a problem for this request from here.",
+        "offerExpired": "The time to answer the offer is over.",
         "other": "We could not complete the operation. Check your connection and try again.",
         "proposalExpired": "The time to answer the proposal is over.",
+        "providerError": "The payment service is not answering right now. Nothing was charged: try again in a moment.",
         "quoteExpired": "The time to answer the quote is over.",
         "rateLimited": "Too many attempts in a short time. Try again in a few minutes.",
         "rateLimitedWait": "Too many attempts in a short time. Try again in {{minutes}} minutes.",
+        "slotGone": "That time is no longer free. Nothing has changed and nothing was charged: write to the professional to agree another one, or turn the offer down.",
         "slotTaken": "This time is no longer free: choose another one.",
         "supplierUnavailable": "The professional is not available right now.",
+        "threadClosed": "The conversation is closed: no more messages can be written.",
+        "threadFull": "The conversation has reached the most messages it can hold: no more can be written.",
         "tooEarly": "You will be able to report a problem when the job is finished.",
         "windowClosed": "The time to report a problem is over."
       },
@@ -17082,10 +17201,6 @@
         "cancelledBySystem": {
           "lead": "The time to answer is over. You can book again whenever you like.",
           "title": "The request was cancelled"
-        },
-        "custom": {
-          "lead": "Here you see where the request is. Messages and the offer are handled with the next update.",
-          "title": "Request on measure"
         },
         "done": {
           "lead": "{{name}} marked the work as finished.",
