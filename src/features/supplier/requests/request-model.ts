@@ -250,3 +250,43 @@ export function reasonText(reason: string | null | undefined, t: Translate): str
   if (!text) return null;
   return Object.prototype.hasOwnProperty.call(REASON_KEYS, text) ? t(REASON_KEYS[text]) : text;
 }
+
+/* ------------------------------------------------------------------------------------- Rows of the list (SP-08b) */
+
+/** The phone number as a link that starts a call (`tel:`): digits and a leading plus only. */
+export function telHref(phone: string): string {
+  return `tel:${phone.replace(/[^\d+]/g, '')}`;
+}
+
+/**
+ * Where the job is, on a map: the street address, which the supplier has only after the take (decision D9), searched on a map in another tab.
+ * Null while there is no address, so a request not yet taken never offers it.
+ */
+export function mapHref(request: Pick<SupplierServiceRequest, 'address' | 'postalCode' | 'city'>): string | null {
+  const street = request.address?.trim();
+  if (!street) return null;
+  const place = [street, [request.postalCode, request.city].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
+}
+
+/**
+ * A request the supplier can take together with others, in one go: a new one, or one it has as a backup when the job is free. A backup that
+ * waits for the primary supplier is not taken: the job is not its yet, it has its own button on the request. Nor is a request on measure
+ * of the showcase (SP-10b): it has no time and no price, and is answered with an offer, never taken as it is (422 `supplier_inquiry_needs_offer`).
+ */
+export function canBulkAccept(request: PhaseSource & Partial<Pick<SupplierServiceRequest, 'kind'>>): boolean {
+  const phase = phaseOf(request);
+  return request.kind !== 'Custom' && (phase === 'toAnswer' || phase === 'backupActive');
+}
+
+/** Capitals and accents do not matter: "José" is found by "jose". */
+const fold = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/**
+ * Who asks has this text in the name the console shows (any case, accents ignored): the search by name among the rows the console has
+ * loaded (SP-D23: the names of private customers are encrypted, so the server cannot search them).
+ */
+export function clientNameMatches(request: Pick<SupplierServiceRequest, 'clientName'>, text: string): boolean {
+  const wanted = fold(text.trim());
+  return wanted.length > 0 && fold(request.clientName ?? '').includes(wanted);
+}

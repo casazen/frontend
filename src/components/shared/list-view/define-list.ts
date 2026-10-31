@@ -57,6 +57,9 @@ export function defineList<Row>(definition: ListDefinition<Row>): ListDefinition
   if (definition.defaultChip !== undefined && !chips.some((chip) => chip.id === definition.defaultChip)) {
     fail(key, `the default chip "${definition.defaultChip}" is not one of the chips`);
   }
+  if (definition.allChip !== undefined && !chips.some((chip) => chip.id === definition.allChip)) {
+    fail(key, `the chip for everything "${definition.allChip}" is not one of the chips`);
+  }
 
   checkUnique(key, 'filter', filters.map((filter) => filter.id));
   checkUnique(key, 'view', views.map((view) => view.id));
