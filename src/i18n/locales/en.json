@@ -7646,6 +7646,8 @@
       "selected_other": "{{count}} selected"
     },
     "chips": {
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
       "label": "Quick filters",
       "needAttention_one": "{{count}} needs attention",
       "needAttention_other": "{{count}} need attention"
@@ -7712,7 +7714,8 @@
       "previous": "Previous"
     },
     "row": {
-      "more": "More actions: {{name}}"
+      "more": "More actions: {{name}}",
+      "newTab": "(opens in a new tab)"
     },
     "select": {
       "done": "Done",
@@ -14776,13 +14779,148 @@
         "title": "To do"
       }
     },
+    "dispute": {
+      "deadline": "You have until {{when}} to reply. If you do not, the report goes to the CasaZen team anyway, who decide.",
+      "deadlineLate": "The time to reply is over, but you can still do it until CasaZen has decided.",
+      "money": {
+        "AwaitingDecision": "The CasaZen team is looking at the report and your reply. Until it decides, the payment stays held by CasaZen.",
+        "AwaitingSupplier": "Until there is a decision, the payment stays held by CasaZen.",
+        "ResolvedForCustomer": "CasaZen decided in favour of the customer.",
+        "ResolvedForCustomerRefund": "CasaZen decided in favour of the customer: {{amount}} goes back to the customer.",
+        "ResolvedForSupplier": "CasaZen decided in your favour: the payment is not refunded to the customer.",
+        "Withdrawn": "The customer took the report back: the payment goes on as before."
+      },
+      "noShow": "Nobody marked the work as done and the time agreed for it has passed.",
+      "reason": {
+        "incomplete": "The work is incomplete.",
+        "not_as_described": "It is not as it was described.",
+        "not_done": "The work was not done.",
+        "other": "Another reason.",
+        "poor_quality": "The quality is not what was expected."
+      },
+      "reasonLabel": "Reason:",
+      "repliedAt": "sent on {{when}}",
+      "repliedToast": "Reply sent",
+      "replyFailed": "We could not send the reply. Try again.",
+      "replyHint": "Write the facts: what you did, when and what happened. You can reply once, in plain text.",
+      "replyLabel": "Your reply",
+      "replyPlaceholder": "For example: I arrived at the agreed time and finished the work as described.",
+      "said": "What {{name}} wrote",
+      "send": "Send the reply",
+      "status": {
+        "AwaitingDecision": "Waiting for the decision of CasaZen",
+        "AwaitingSupplier": "Waiting for your reply",
+        "ResolvedForCustomer": "Decided in favour of the customer",
+        "ResolvedForSupplier": "Decided in your favour",
+        "Withdrawn": "Taken back by the customer"
+      },
+      "title": {
+        "customer": "The customer reported a problem",
+        "host": "The host reported a problem",
+        "system": "CasaZen opened a report"
+      },
+      "weight": "A decision in favour of the customer can weigh on your standing as a supplier.",
+      "yourReply": "Your reply"
+    },
+    "inquiry": {
+      "action": {
+        "answer": "Answer",
+        "answerAria": "Answer the request: {{name}}"
+      },
+      "messages": {
+        "closed": "The conversation is closed: you can read the messages again, not write more.",
+        "composerLabel": "Write to {{name}}",
+        "contacts": "Write here: phone, e-mail and address are visible once the job is accepted; do not exchange them outside CasaZen before then.",
+        "empty": "No messages yet.",
+        "loadError": "Could not load the messages.",
+        "loading": "Loading the messages…",
+        "logLabel": "Conversation with {{name}}",
+        "offline": "You are offline: you can send the message when you are back online.",
+        "placeholder": "Write your reply",
+        "sendError": "Message not sent. Try again.",
+        "title": "Messages"
+      },
+      "now": {
+        "awaiting": {
+          "client": "They described the job and are waiting for your answer.",
+          "title": "Answer the request",
+          "you": "Read what they ask and answer: write to them in the messages below, or send them an offer right away with a price and a time."
+        },
+        "cannotAnswer": "You cannot answer this request right now.",
+        "conversation": {
+          "client": "They read your messages and wait for your offer.",
+          "title": "You are talking to the customer",
+          "you": "When you are ready, send an offer with a price and a time. Until the customer accepts it, no time is reserved."
+        },
+        "decline": "I cannot do it",
+        "leftHours_one": "about {{count}} hour left",
+        "leftHours_other": "about {{count}} hours left",
+        "leftMinutes_one": "{{count}} minute left",
+        "leftMinutes_other": "{{count}} minutes left",
+        "loadError": "Could not load the conversation.",
+        "loading": "Loading the conversation…",
+        "offerDeclined": {
+          "client": "They turned the offer down and can still write to you.",
+          "title": "The customer did not accept the offer",
+          "you": "You can go on writing to them and send another offer."
+        },
+        "offerSent": {
+          "client": "They see the lines, the total and the time, and can accept or turn them down.",
+          "title": "Offer sent, waiting for the customer",
+          "you": "There is nothing more to do. Until the customer answers you can replace the offer or take it back."
+        },
+        "open": "Answer the customer",
+        "quietTitle": "State of the request",
+        "replace": "Replace the offer",
+        "send": "Send an offer",
+        "sendAnother": "Send a new offer",
+        "then": "Next: when the customer accepts the offer, the job is yours and you see the address and the contact.",
+        "timeOver": "The time to answer is over",
+        "withdraw": "Take the offer back",
+        "withdrawDialog": {
+          "again": "You can go on writing to them and send another offer.",
+          "back": "Go back",
+          "confirm": "Take the offer back",
+          "description": "The customer will no longer be able to accept it. The request stays open.",
+          "title": "Take the offer back?"
+        }
+      },
+      "offer": {
+        "errors": {
+          "durationInvalid": "Write the duration in hours, for example 2 or 1.5 (from a quarter of an hour to 24 hours).",
+          "durationRequired": "Write how many hours the work takes.",
+          "timeInvalid": "That time does not exist: choose another.",
+          "timePast": "That time has already passed: choose a future one.",
+          "timeRequired": "Choose the day and the time."
+        },
+        "failed": "We could not send the offer. Try again.",
+        "intro": "The customer sees the lines, the total and the time, and accepts or turns them down. If they accept, the job is accepted at that price and at that time.",
+        "introReplace": "The new offer takes the place of the one sent: the customer has not answered yet.",
+        "send": "Send the offer",
+        "sentToast": "Offer sent to the customer",
+        "title": "Send an offer",
+        "titleReplace": "Replace the offer",
+        "update": "Update the offer",
+        "when": {
+          "day": "Day",
+          "hint": "The time is not reserved until the customer accepts.",
+          "hours": "Duration (hours)",
+          "start": "Start",
+          "title": "When"
+        },
+        "withdrawnToast": "Offer taken back"
+      }
+    },
     "requests": {
       "action": {
         "acceptBackup": "Accept as a backup",
+        "call": "Call",
         "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
+        "details": "Details",
         "editQuote": "Change the quote",
+        "map": "See on the map",
         "openPage": "Open the full page",
         "quote": "Send a quote",
         "recordPayment": "I was paid outside CasaZen",
@@ -14805,6 +14943,33 @@
           "priority": "The customer also asked other suppliers as backups: you have until {{time}} to accept, then the job may pass to a backup."
         },
         "primaryUntil": "The chosen supplier has until {{time}}"
+      },
+      "bulk": {
+        "accept": "Accept the selected",
+        "confirm": {
+          "confirm": "Accept",
+          "description_one": "You accept it as it is, on the day and at the time shown. If it cannot be accepted, it stays to be answered and we tell you.",
+          "description_other": "You accept them as they are, on the days and at the times shown. Those that cannot be accepted (for example because they overlap a job you already accepted) stay to be answered and we tell you.",
+          "title_one": "Accept {{count}} request?",
+          "title_other": "Accept {{count}} requests?"
+        },
+        "done_one": "{{count}} request accepted",
+        "done_other": "{{count}} requests accepted",
+        "none": "No request accepted: {{count}} to look at",
+        "partial": "Accepted: {{accepted}}. To look at: {{count}}.",
+        "summary": {
+          "close": "Close",
+          "description_one": "This request was not accepted and is still waiting for your answer.",
+          "description_other": "These requests were not accepted and are still waiting for your answer. Open them one at a time to answer another way.",
+          "list": "Requests that were not accepted",
+          "needsOffer": "It is answered with an offer: open it and write to the customer.",
+          "notInBulk": "It is a request you have as a backup: accept it from its own page.",
+          "notSent": "We could not send the answer. Try again.",
+          "open": "Open the request",
+          "titleNone": "No request accepted",
+          "titleSome": "Accepted: {{accepted}}. To look at: {{count}}.",
+          "unknown": "It could not be accepted."
+        }
       },
       "cancel": {
         "back": "Go back",
@@ -14866,8 +15031,14 @@
         "where": "Where"
       },
       "filters": {
+        "comune": "Comune",
+        "comuneAll": "All comuni",
         "month": "This month",
         "period": "Last activity between",
+        "service": "Service",
+        "serviceAll": "All services",
+        "source": "Where from",
+        "sourceAll": "Anywhere",
         "today": "Today",
         "week": "Next 7 days",
         "when": "Day of the job",
@@ -14909,6 +15080,7 @@
         "columns": {
           "price": "Price",
           "request": "Request",
+          "source": "Where from",
           "state": "State",
           "when": "When",
           "where": "Where"
@@ -14916,8 +15088,9 @@
         "count_one": "{{count}} request",
         "count_other": "{{count}} requests",
         "loadError": "Could not load the requests.",
-        "search": "Search requests",
-        "searchPlaceholder": "Search by service or comune"
+        "nameSearch": "No service or comune matches “{{text}}”: here are the customers with that name among the requests loaded.",
+        "search": "Search requests by service, comune or customer",
+        "searchPlaceholder": "Search service, comune or customer"
       },
       "loadError": "Could not load the request.",
       "loading": "Loading the request…",
@@ -14960,6 +15133,7 @@
           "you": "The customer has to pay for the job and mark the request as paid.",
           "youOnline": "The customer pays online through CasaZen: we let you know as soon as it happens."
         },
+        "holdWindow": "The customer has already paid and CasaZen holds the payment. When you mark the job as done, the customer has some time to confirm that all is well or to report a problem; then the payment is released.",
         "inProgress": {
           "client": "Sees that the job is under way.",
           "then": "Next: the customer sees that you are done.",
@@ -15050,13 +15224,18 @@
         "remindHint": "The customer gets an e-mail with a new link. You can send one a day.",
         "state": "Payment status",
         "status": {
+          "Authorized": "Amount blocked on the customer’s card",
+          "Disputed": "In dispute: CasaZen keeps holding the payment",
           "Failed": "Payment failed",
+          "Held": "Paid by the customer: CasaZen holds the funds until the confirmation or the release",
           "NeedsReview": "Being checked by CasaZen",
           "Paid": "Paid",
           "PartiallyRefunded": "Partly refunded",
           "Processing": "Being processed",
           "Refunded": "Refunded",
+          "Released": "Payment released",
           "Requested": "Asked of the customer",
+          "TransferFailed": "The transfer has not gone through yet: CasaZen tries again",
           "unknown": "Being checked"
         },
         "subNet": "Net {{amount}}",

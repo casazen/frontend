@@ -8,6 +8,9 @@ import { ErrorState } from '@/components/shared/error-state';
 import { StatusPipeline } from '@/components/shared/status/status-pipeline';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { useSupplierInboxItem } from '@/queries/supplier/use-inbox';
+import { RequestDispute } from './inquiry/dispute-block';
+import { isInquiry } from './inquiry/inquiry-model';
+import { InquiryMessages } from './inquiry/inquiry-messages';
 import { INBOX_PATH, requestTitle } from './requests/request-model';
 import { RequestDetails, RequestFacts, RequestNow } from './requests/request-parts';
 import { useRequestActions } from './requests/use-request-actions';
@@ -63,6 +66,8 @@ export function SupplierRequestDetailPage() {
       />
       <StatusPipeline kind="request" status={request.status} perspective="supplier" />
       <RequestNow request={request} actions={actions} />
+      <RequestDispute request={request} suspended={actions.suspended} />
+      {isInquiry(request) ? <InquiryMessages request={request} actions={actions} /> : null}
       <RequestFacts request={request} />
       <RequestDetails request={request} />
       {actions.dialog}

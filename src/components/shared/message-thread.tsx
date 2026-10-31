@@ -6,8 +6,12 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 
-/** From this many characters the composer shows how many are left. */
+/**
+ * From this many characters the composer shows how many are left; for a box with a shorter limit (the 1,000 characters of the messages of a
+ * request on measure, SP-08e), from nine tenths of it.
+ */
 const COUNTER_FROM = 1800;
+const counterFrom = (maxLength: number) => Math.min(COUNTER_FROM, Math.floor(maxLength * 0.9));
 
 const SHORT_DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
 
@@ -168,7 +172,7 @@ export function MessageComposer({ label, placeholder, maxLength, disabledReason,
         <p id={hintId} className="text-xs text-muted-foreground" role={blocked ? 'status' : undefined}>
           {blocked
             ? disabledReason
-            : text.length >= COUNTER_FROM
+            : text.length >= counterFrom(maxLength)
               ? t('messageThread.counter', { count: text.length, max: maxLength })
               : touch
                 ? ''
