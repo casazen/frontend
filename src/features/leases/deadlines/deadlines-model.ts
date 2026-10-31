@@ -69,13 +69,16 @@ export function filterDeadlines(items: readonly LongRentDeadline[], filterId: De
 
 // ------------------------------------------------------------------------------------------------ the windows of time
 
+/** The days a window of the agenda covers (both included). */
+export type DeadlineWindow = Required<Pick<LongRentDeadlinesParams, 'from' | 'to'>>;
+
 /** How far the agenda looks: ninety days, then half a year, then a year (366 days, the most the server answers for). */
 const WINDOW_DAYS = [90, 180, 366] as const;
 
 export const FIRST_WINDOW_DAYS: number = WINDOW_DAYS[0];
 
 /** The window of `days` days from today. */
-export function agendaWindow(today: string, days: number): Required<LongRentDeadlinesParams> {
+export function agendaWindow(today: string, days: number): DeadlineWindow {
   return { from: today, to: addDays(today, days) };
 }
 
@@ -87,7 +90,7 @@ export function longerWindowDays(days: number): number | null {
 const OVERVIEW_MONTHS = 4;
 
 /** The window the overview looks at: from today to the same day four months later (or the last day of that month). */
-export function overviewWindow(today: string): Required<LongRentDeadlinesParams> {
+export function overviewWindow(today: string): DeadlineWindow {
   const month = shiftMonth(monthOfDate(today), OVERVIEW_MONTHS);
   const lastDay = Number(endOfMonth(`${month}-01`).slice(8, 10));
   const day = Math.min(Number(today.slice(8, 10)), lastDay);
@@ -139,6 +142,52 @@ export function deadlineRow(item: LongRentDeadline, { t, today }: DeadlineContex
     tone: when.tone,
     href: deadlineHref(item, today),
   };
+}
+
+// ------------------------------------------------------------------------------------------- the dates of one lease
+
+/** How many of the installments still to come the sheet of a lease lists (the late ones are always there): the rest is in its payments. */
+const NEXT_RENTS_ON_THE_SHEET = 2;
+
+export interface LeaseDeadlineRows {
+  rows: DayListItem[];
+  /** The installments left out of the rows: the tab of the payments has them all. */
+  moreRents: number;
+}
+
+/**
+ * The dates on the sheet of one lease (LR-03c): the ones the server gives for it, in its order. No tenant and no property under a row (the
+ * sheet is that lease's), and no link to a page of the area for a date this very tab deals with. `renews`: the lease goes on by itself if
+ * nobody gives notice (its type renews and no notice or early termination is recorded), so the end of the period is told as that and says it:
+ * in words only, no number of months or days of the law (decision LR-D29).
+ */
+export function leaseDeadlineRows(items: readonly LongRentDeadline[], { t }: Pick<DeadlineContext, 't'>, { renews }: { renews: boolean }): LeaseDeadlineRows {
+  const rents = items.filter((item) => item.type === 'Rent');
+  const kept = new Set([...rents.filter((item) => item.isOverdue), ...rents.filter((item) => !item.isOverdue).slice(0, NEXT_RENTS_ON_THE_SHEET)]);
+  const shown = items.filter((item) => item.type !== 'Rent' || kept.has(item));
+
+  const rows = shown.map((item): DayListItem => {
+    const when = whenText(item, t);
+    const row: DayListItem = {
+      id: `${item.type}:${item.installmentId ?? item.date}`,
+      day: item.date,
+      title: item.type === 'LeaseEnd' && renews ? t('leaseSheet.deadlines.periodEnd') : typeTitle(item, t),
+      meta: when.text,
+      tone: when.tone,
+    };
+    switch (item.type) {
+      case 'LeaseEnd':
+        return renews ? { ...row, subtitle: t('leaseLifecycle.facts.renewsValue'), href: leaseSheetPath(item.leaseId, 'dati') } : { ...row, href: leaseSheetPath(item.leaseId, 'dati') };
+      case 'Notice':
+        return { ...row, href: leaseSheetPath(item.leaseId, 'dati') };
+      case 'Rent':
+        return { ...row, href: leaseSheetPath(item.leaseId, 'pagamenti') };
+      default:
+        // The registration and the Questura communication are done on this tab, a few lines down: nothing to open.
+        return row;
+    }
+  });
+  return { rows, moreRents: rents.length - kept.size };
 }
 
 // ---------------------------------------------------------------------------------------------------------- months

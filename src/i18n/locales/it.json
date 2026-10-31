@@ -6208,6 +6208,26 @@
       "start": "Inizio del contratto",
       "title": "Durata e date"
     },
+    "deadlines": {
+      "allRents": "Tutte le rate",
+      "depositReturned": "Cauzione restituita il {{date}}",
+      "loadError": "Impossibile caricare le date del contratto.",
+      "loading": "Caricamento delle date…",
+      "none": "Nessuna data da ricordare per questo contratto nel prossimo anno.",
+      "periodEnd": "Fine del periodo",
+      "title": "Le date del contratto"
+    },
+    "files": {
+      "download": "Scarica",
+      "downloadFailed": "Impossibile scaricare il file.",
+      "questura": "Ricevuta della Questura",
+      "registeredOn": "Registrato il {{date}}",
+      "registration": "Ricevuta di registrazione",
+      "sentOn": "Comunicazione del {{date}}",
+      "signed": "Contratto firmato",
+      "signedOn": "Firmato il {{date}}",
+      "title": "Contratto e ricevute"
+    },
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -6215,11 +6235,18 @@
       },
       "more": "Mostra tutta la cronologia"
     },
+    "menu": {
+      "documents": "Vai ai documenti",
+      "openProperty": "Apri l'immobile",
+      "readContract": "Leggi il contratto",
+      "readDraft": "Leggi la bozza del contratto"
+    },
     "now": {
       "kicker": "Cosa devi fare ora"
     },
     "party": {
-      "extraEu": "Extra-UE"
+      "extraEu": "Extra-UE",
+      "verifiedOn": "Documento verificato il {{date}}"
     },
     "property": {
       "open": "Apri l'immobile",
