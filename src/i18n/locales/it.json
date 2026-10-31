@@ -6210,6 +6210,7 @@
     },
     "deadlines": {
       "allRents": "Tutte le rate",
+      "depositReturned": "Cauzione restituita il {{date}}",
       "loadError": "Impossibile caricare le date del contratto.",
       "loading": "Caricamento delle date…",
       "none": "Nessuna data da ricordare per questo contratto nel prossimo anno.",

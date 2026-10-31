@@ -6210,6 +6210,7 @@
     },
     "deadlines": {
       "allRents": "All the rents",
+      "depositReturned": "Deposit returned on {{date}}",
       "loadError": "The dates of this contract could not be loaded.",
       "loading": "Loading the dates…",
       "none": "No dates to keep for this contract in the coming year.",
