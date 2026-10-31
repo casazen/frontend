@@ -1,31 +1,17 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, CircleAlert, Hourglass, Mail, TriangleAlert, Undo2 } from 'lucide-react';
 import type { PublicBookingConfirmation } from '@/api/public-supplier-booking.api';
-import { addressWithoutToken, readConfirmLink } from '@/lib/supplier-site/confirm-link';
+import { addressWithoutToken, readConfirmLink, type ConfirmLink } from '@/lib/supplier-site/confirm-link';
 import { readConfirmFailure, type ConfirmFailure } from '@/lib/supplier-site/booking-errors';
 import { formatSlotLabel } from '@/lib/supplier-site/format';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { useBookingConfirmation } from '@/queries/use-public-supplier-booking';
+import { InquiryConfirmation } from '../inquiry/inquiry-confirmation';
 import { useSupplierSite } from '../site-context';
 import { CodeLine } from './code-line';
-
-/** A state of the page that is not the success: one icon, one sentence of what happened, the way on. */
-function Outcome({ icon, tone, title, text, actions, testId }: { icon: ReactNode; tone?: 'error'; title: string; text: string; actions?: ReactNode; testId: string }) {
-  return (
-    <div className="vz-container" data-testid={testId}>
-      <section className={`vz-state${tone ? ` vz-state--${tone}` : ''}`}>
-        <span className="vz-state__icon" aria-hidden="true">
-          {icon}
-        </span>
-        <h1 tabIndex={-1}>{title}</h1>
-        <p>{text}</p>
-        {actions ? <div className="vz-state__actions">{actions}</div> : null}
-      </section>
-    </div>
-  );
-}
+import { Outcome } from './outcome';
 
 function Done({ slug, supplierName, result }: { slug: string; supplierName: string; result: PublicBookingConfirmation }) {
   const { t, i18n } = useTranslation();
@@ -101,22 +87,10 @@ function Done({ slug, supplierName, result }: { slug: string; supplierName: stri
   );
 }
 
-/**
- * The page the link of the verification e-mail opens, `/fornitori/:slug/conferma?hold=…#token=…` (SP-12b). It takes the token out of the
- * address as soon as it has read it (so it stays in no history entry, no bookmark and no shared screenshot), checks the e-mail once and
- * says what happened: the request is sent, it already was, the card still has to be blocked, the link is no good or ran out.
- */
-export function BookingConfirmation() {
+/** The check of the e-mail of a booking that holds a slot: the link carries `?hold=`. */
+function HoldConfirmation({ link }: { link: ConfirmLink }) {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
-  const { pathname, search, hash } = useLocation();
-  const [link] = useState(() => readConfirmLink(search, hash));
-
-  // The token leaves the address bar at once; the page keeps it in memory for the one call.
-  useEffect(() => {
-    if (link.token) window.history.replaceState(window.history.state, '', addressWithoutToken(pathname, link));
-  }, [link, pathname]);
-
   const confirmation = useBookingConfirmation(model.slug, link.hold, link.token);
   const bookAgain = (
     <Link className="vz-btn vz-btn--primary vz-btn--lg" to={supplierSitePaths.booking(model.slug)}>
@@ -134,7 +108,7 @@ export function BookingConfirmation() {
     </>
   );
 
-  // A link for a request on measure (SP-12c) or one with nothing usable in it.
+  // A link with nothing usable in it.
   if (!link.hold || !link.token) {
     return <Outcome testId="supplier-booking-link-invalid" tone="error" icon={<TriangleAlert />} title={t('supplierSite.booking.confirm.invalid.title')} text={t('supplierSite.booking.confirm.invalid.text')} actions={invalidActions} />;
   }
@@ -182,4 +156,23 @@ export function BookingConfirmation() {
     return <Outcome testId="supplier-booking-awaiting-payment" icon={<Hourglass />} title={t('supplierSite.booking.confirm.awaitingPayment.title')} text={t('supplierSite.booking.confirm.awaitingPayment.text')} />;
   }
   return <Done slug={model.slug} supplierName={model.name} result={result} />;
+}
+
+/**
+ * The page the link of the verification e-mail opens, `/fornitori/:slug/conferma?hold=…#token=…` (SP-12b) or `?inquiry=…#token=…` for a
+ * request on measure (SP-12c). It takes the token out of the address as soon as it has read it (so it stays in no history entry, no
+ * bookmark and no shared screenshot), checks the e-mail once and says what happened: the request is sent, it already was, the card still
+ * has to be blocked, the link is no good or ran out.
+ */
+export function BookingConfirmation() {
+  const { pathname, search, hash } = useLocation();
+  const [link] = useState(() => readConfirmLink(search, hash));
+
+  // The token leaves the address bar at once; the page keeps it in memory for the one call.
+  useEffect(() => {
+    if (link.token) window.history.replaceState(window.history.state, '', addressWithoutToken(pathname, link));
+  }, [link, pathname]);
+
+  if (link.inquiry && !link.hold) return <InquiryConfirmation inquiryId={link.inquiry} token={link.token} />;
+  return <HoldConfirmation link={link} />;
 }

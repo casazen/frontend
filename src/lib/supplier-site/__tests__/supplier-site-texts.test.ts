@@ -3,11 +3,11 @@ import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
 
 /**
- * Nothing the booking, the request of the customer and the payment page say may be untrue (D24, decisions VT-D1/VT-D2): no cash, no
+ * Nothing the booking, the request of the customer (and the request on measure, SP-12c) and the payment page say may be untrue (D24, decisions VT-D1/VT-D2): no cash, no
  * deposit, no text message, no review, no promise of how fast the professional answers, no date of accounting or time of refund, no name
  * of the supplier of the guided form nor «partner». The texts are scanned, not the pages: a new sentence that breaks a rule fails here.
  */
-const FAMILIES = ['supplierSite.booking', 'supplierSite.request', 'servicePayment'];
+const FAMILIES = ['supplierSite.booking', 'supplierSite.request', 'supplierSite.inquiry', 'servicePayment'];
 
 function texts(node: unknown, path = ''): Array<[string, string]> {
   if (typeof node === 'string') return [[path, node]];

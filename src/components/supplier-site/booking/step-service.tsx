@@ -77,6 +77,13 @@ export function StepService({ supplierSlug, services, chosen, onChoose, detail, 
         <ServiceOptionsFields service={detail.service} selection={selection} onQuantity={onQuantity} onSurface={onSurface} onOption={onOption} />
       ) : null}
 
+      {chosen ? (
+        <p className="vb-hint vb-variation">
+          <span>{t('supplierSite.booking.service.variation')}</span>{' '}
+          <Link to={buildInquiryPath(supplierSlug, { service: chosen })}>{t('supplierSite.cta.inquiry')}</Link>
+        </p>
+      ) : null}
+
       {onQuote.length > 0 ? (
         <div className="vb-quote-list">
           <p className="vb-hint">{t('supplierSite.booking.service.onQuoteLead')}</p>

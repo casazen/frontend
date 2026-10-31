@@ -92,6 +92,30 @@ export function phoneDigits(value: string): number {
   return value.replace(/\D/g, '').length;
 }
 
+/** The problem of a name and surname, or null when it is fine. The request on measure (SP-12c) asks for the same three data. */
+export function fullNameProblem(value: string): FieldProblem | null {
+  const fullName = value.trim();
+  if (!fullName) return 'required';
+  if (fullName.length < 2 || !/\p{L}/u.test(fullName)) return 'invalid';
+  return fullName.length > BOOKING_LIMITS.fullName ? 'tooLong' : null;
+}
+
+/** The problem of an e-mail address, or null when it is fine. */
+export function emailProblem(value: string): FieldProblem | null {
+  const email = value.trim();
+  if (!email) return 'required';
+  if (!EMAIL_SHAPE.test(email)) return 'invalid';
+  return email.length > BOOKING_LIMITS.email ? 'tooLong' : null;
+}
+
+/** The problem of a phone number, or null when it is fine. */
+export function phoneProblem(value: string): FieldProblem | null {
+  const phone = value.trim();
+  if (!phone) return 'required';
+  const digits = phoneDigits(phone);
+  return !/^\+?[\d\s().-]+$/.test(phone) || digits < BOOKING_LIMITS.phoneMinDigits || digits > BOOKING_LIMITS.phoneMaxDigits ? 'invalid' : null;
+}
+
 /** The problems of the last step; empty means the booking can be sent. The consent is the person's, given now, never remembered. */
 export function validateDetails(draft: BookingDraft, consent: boolean): DetailsProblems {
   const problems: DetailsProblems = {};
@@ -106,21 +130,12 @@ export function validateDetails(draft: BookingDraft, consent: boolean): DetailsP
   if (draft.floor.trim().length > BOOKING_LIMITS.floor) problems.floor = 'tooLong';
   if (draft.accessNotes.trim().length > BOOKING_LIMITS.accessNotes) problems.accessNotes = 'tooLong';
 
-  const fullName = draft.fullName.trim();
-  if (!fullName) problems.fullName = 'required';
-  else if (fullName.length < 2 || !/\p{L}/u.test(fullName)) problems.fullName = 'invalid';
-  else if (fullName.length > BOOKING_LIMITS.fullName) problems.fullName = 'tooLong';
-
-  const email = draft.email.trim();
-  if (!email) problems.email = 'required';
-  else if (!EMAIL_SHAPE.test(email)) problems.email = 'invalid';
-  else if (email.length > BOOKING_LIMITS.email) problems.email = 'tooLong';
-
-  const phone = draft.phone.trim();
-  if (!phone) problems.phone = 'required';
-  else if (!/^\+?[\d\s().-]+$/.test(phone) || phoneDigits(phone) < BOOKING_LIMITS.phoneMinDigits || phoneDigits(phone) > BOOKING_LIMITS.phoneMaxDigits) {
-    problems.phone = 'invalid';
-  }
+  const fullName = fullNameProblem(draft.fullName);
+  if (fullName) problems.fullName = fullName;
+  const email = emailProblem(draft.email);
+  if (email) problems.email = email;
+  const phone = phoneProblem(draft.phone);
+  if (phone) problems.phone = phone;
 
   if (!consent) problems.consent = 'required';
   return problems;

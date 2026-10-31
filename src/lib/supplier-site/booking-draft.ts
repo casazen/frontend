@@ -21,7 +21,8 @@ function whole(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= 9999 ? value : null;
 }
 
-function comuneOf(value: unknown): DraftComune | null | undefined {
+/** The comune of a stored draft, rebuilt member by member (shared with the draft of the request on measure); undefined when it is not one. */
+export function comuneOf(value: unknown): DraftComune | null | undefined {
   if (value === null) return null;
   if (typeof value !== 'object' || value === undefined) return undefined;
   const { istatCode, name, provinceCode } = value as Record<string, unknown>;

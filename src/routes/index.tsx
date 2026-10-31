@@ -55,6 +55,7 @@ import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/su
 import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
+import { SupplierInquiryPage } from '@/pages/supplier-inquiry';
 import { SupplierRequestPage } from '@/pages/supplier-request';
 import { SupplierServicePage } from '@/pages/supplier-service';
 import { SupplierServicesPage } from '@/pages/supplier-services';
@@ -313,6 +314,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'prenota', element: <SupplierBookingPage /> },
       { path: 'conferma', element: <SupplierBookingConfirmPage /> },
       { path: 'richiesta', element: <SupplierRequestPage /> },
+      // The request on measure (SP-12c), for what the price list does not say: the form; its check, its conversation and its offer are the pages above.
+      { path: 'preventivo', element: <SupplierInquiryPage /> },
     ],
   },
   {

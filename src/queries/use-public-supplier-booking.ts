@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { publicSupplierApi } from '@/api/public-supplier.api';
 import { publicBookingApi, type PublicBookingAccess, type PublicBookingBody, type PublicBookingView } from '@/api/public-supplier-booking.api';
+import { publicInquiryApi, type PublicInquiryBody } from '@/api/public-supplier-inquiry.api';
 import { readRequestFailure, type RequestFailure } from '@/lib/supplier-site/request-errors';
 
 /** The slots are cached for 30 seconds on the server: asking again sooner would tell nothing new. */
@@ -49,6 +50,28 @@ export function useBookingConfirmation(slug: string, holdId: string | null, toke
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: (query) => (query.state.status !== 'error' && query.state.data?.awaitingPayment ? AWAITING_PAYMENT_POLL_MS : false),
+  });
+}
+
+/** Sends the request on measure and e-mails the link. One call per attempt; the page keeps the id of the attempt and the answer. */
+export function useCreateInquiry(slug: string) {
+  // `gcTime: 0`: the mutation (the body with the words, the name, the e-mail and the phone) is not kept in the cache.
+  return useMutation({ mutationFn: (body: PublicInquiryBody) => publicInquiryApi.create(slug, body), gcTime: 0 });
+}
+
+/**
+ * Checks the e-mail address of a request on measure with the token of the link. Like the booking's, a query because it is idempotent by
+ * design (a second click answers `alreadyConfirmed`) and because the page of the link may be drawn twice; it runs once.
+ */
+export function useInquiryConfirmation(slug: string, inquiryId: string | null, token: string | null) {
+  return useQuery({
+    queryKey: ['supplier-inquiry-confirm', slug, inquiryId],
+    queryFn: () => publicInquiryApi.confirmEmail(slug, inquiryId as string, token as string),
+    enabled: !!slug && !!inquiryId && !!token,
+    retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
