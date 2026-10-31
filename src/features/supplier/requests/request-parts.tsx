@@ -19,6 +19,8 @@ import type {
   SupplierServiceRequest,
   SupplierServiceRequestDetail,
 } from '@/types/service-request';
+import { InquiryNow } from '../inquiry/inquiry-now';
+import { isOpenInquiry } from '../inquiry/inquiry-model';
 import { formatMoney } from '../services/lib/service-money';
 import { QuoteSummary } from './quote-summary';
 import {
@@ -81,8 +83,16 @@ type RunAction = Extract<CalmAction, { onClick: () => void }>;
  * highlighted block of the page and of the drawer; a request that waits for somebody else, or is over, shows the same words without
  * the colour and without buttons of its own, because there is nothing it has to do. What the supplier may still do (change or take back
  * a quote, remind the payer, record a payment) is a quiet row of buttons under the words.
+ *
+ * A request on measure of the showcase (SP-08e) that is still being negotiated has its own block, with the conversation and the offer
+ * (`InquiryNow`): it is never taken as it is, nor answered with a quote. `inDrawer` is for the drawer of the list, which only links to the page.
  */
-export function RequestNow({ request, actions }: { request: SupplierServiceRequest; actions: RequestActions }) {
+export function RequestNow({ request, actions, inDrawer = false }: { request: SupplierServiceRequest; actions: RequestActions; inDrawer?: boolean }) {
+  if (isOpenInquiry(request)) return <InquiryNow request={request} actions={actions} inDrawer={inDrawer} />;
+  return <StandardRequestNow request={request} actions={actions} />;
+}
+
+function StandardRequestNow({ request, actions }: { request: SupplierServiceRequest; actions: RequestActions }) {
   const { t, i18n } = useTranslation();
   const { flags } = useFeatureFlags();
   const phase = phaseOf(request);
@@ -164,6 +174,12 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
       ) : null}
       {reason ? <p className="mt-2 break-words text-foreground/80">{t('supplier.requests.now.reason', { reason })}</p> : null}
       {toConfirm ? <p className="mt-2 break-words font-medium">{t('supplier.requests.now.amountToConfirm')}</p> : null}
+      {/* The customer paid inside CasaZen and CasaZen holds the money (SP-15c): what marking the work as done starts, without a date or a number. */}
+      {(phase === 'scheduled' || phase === 'inProgress') && request.paymentMode === 'Online' && request.payment?.status === 'Held' ? (
+        <p className="mt-2 break-words text-foreground/80" data-testid="supplier-request-hold-note">
+          {t('supplier.requests.now.holdWindow')}
+        </p>
+      ) : null}
     </>
   );
 
@@ -323,7 +339,21 @@ function Row({ label, children, testId, tall = false }: { label: string; childre
   );
 }
 
-const PAYMENT_STATUSES = new Set(['Requested', 'Processing', 'Paid', 'Failed', 'PartiallyRefunded', 'Refunded', 'NeedsReview']);
+// The last five are the money CasaZen holds (SP-15c): blocked on the card, charged and held, released, in dispute, a transfer to retry.
+const PAYMENT_STATUSES = new Set([
+  'Requested',
+  'Processing',
+  'Paid',
+  'Failed',
+  'PartiallyRefunded',
+  'Refunded',
+  'NeedsReview',
+  'Authorized',
+  'Held',
+  'Released',
+  'Disputed',
+  'TransferFailed',
+]);
 
 function JobGroup({ request, open }: { request: SupplierServiceRequest; open: boolean }) {
   const { t, i18n } = useTranslation();

@@ -386,6 +386,12 @@ export interface SupplierServiceRequest {
    */
   autoAccepted?: boolean;
   /**
+   * `Standard` (a host's request, or a booking at a free slot) or `Custom` (a request on measure from the showcase, SP-10b): the latter has no
+   * time and no price, is carried on in a thread of messages and answered with an offer, and is not taken (422 `supplier_inquiry_needs_offer`).
+   * Absent in an older answer: a standard request.
+   */
+  kind?: string;
+  /**
    * Where the request is for the console, worked out once by the server (SP-04e): `to_answer`, `proposal_pending`, `quote_pending`
    * (SP-04b), `scheduled`, `in_progress`, `completed`, `paid`, `rejected`, `cancelled`. An open set: a value this version does not know
    * is read from `status`.

@@ -271,11 +271,12 @@ export function mapHref(request: Pick<SupplierServiceRequest, 'address' | 'posta
 
 /**
  * A request the supplier can take together with others, in one go: a new one, or one it has as a backup when the job is free. A backup that
- * waits for the primary supplier is not taken: the job is not its yet, it has its own button on the request.
+ * waits for the primary supplier is not taken: the job is not its yet, it has its own button on the request. Nor is a request on measure
+ * of the showcase (SP-10b): it has no time and no price, and is answered with an offer, never taken as it is (422 `supplier_inquiry_needs_offer`).
  */
-export function canBulkAccept(request: PhaseSource): boolean {
+export function canBulkAccept(request: PhaseSource & Partial<Pick<SupplierServiceRequest, 'kind'>>): boolean {
   const phase = phaseOf(request);
-  return phase === 'toAnswer' || phase === 'backupActive';
+  return request.kind !== 'Custom' && (phase === 'toAnswer' || phase === 'backupActive');
 }
 
 /** Capitals and accents do not matter: "José" is found by "jose". */

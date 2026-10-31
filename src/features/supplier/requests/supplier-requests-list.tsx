@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BellRing, Check, CheckCircle2, ExternalLink, FileText, Inbox, MapPin, Pencil, Phone, Undo2, Wallet, XCircle } from 'lucide-react';
+import { BellRing, Check, CheckCircle2, ExternalLink, FileText, Inbox, MapPin, MessageSquare, Pencil, Phone, Undo2, Wallet, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import { parseDateRange, type ListState } from '@/components/shared/list-view/list-state';
@@ -8,6 +8,7 @@ import { isFeatureEnabled } from '@/config/feature-flags';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import type { SupplierInboxCounts, SupplierInboxParams, SupplierInboxSource, SupplierInboxTab, SupplierInboxWhen } from '@/types/supplier';
+import { isInquiry } from '../inquiry/inquiry-model';
 import { PriceCell, RequestWho, WhenCell, WhereCell } from './request-cells';
 import { isBackup, mapHref, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle, requestWhen, telHref } from './request-model';
 import { RequestStateBadge } from './request-parts';
@@ -101,6 +102,13 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
     // time are in front of the supplier.
     const primaryAction = (request: SupplierServiceRequest): ListRowAction | null => {
       const phase = phaseOf(request);
+      // A request on measure of the showcase (SP-10b) is never taken as it is (it has no time and no price): it is answered, in the
+      // conversation and with an offer, on its own page. Once the offer is sent there is nothing to do but wait.
+      if (isInquiry(request)) {
+        return phase === 'toAnswer'
+          ? { id: 'answer', label: t('supplier.inquiry.action.answer'), icon: MessageSquare, href: requestPath(request.id), testId: `answer-${request.id}` }
+          : null;
+      }
       if (phase === 'toAnswer' || phase === 'backupActive') {
         return { id: 'take', label: t('supplier.requests.action.take'), icon: Check, onSelect: () => take(request.id), disabled: suspended || busy, testId: `take-${request.id}` };
       }
@@ -263,17 +271,21 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
         if (phone) entries.push({ id: 'call', label: t('supplier.requests.action.call'), icon: Phone, href: telHref(phone), testId: `call-${request.id}` });
 
         if (phase === 'toAnswer') {
-          entries.push(
-            { id: 'quote', label: t('supplier.requests.action.quote'), icon: FileText, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `quote-${request.id}` },
-            'separator',
-            { id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` },
-          );
+          // A request on measure is answered with an offer, on its page: a quote from here would be refused by the server.
+          if (!isInquiry(request)) {
+            entries.push(
+              { id: 'quote', label: t('supplier.requests.action.quote'), icon: FileText, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `quote-${request.id}` },
+              'separator',
+            );
+          }
+          entries.push({ id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` });
         }
         // A backup answers the request as it is: it can refuse, it cannot quote (the host did not choose it).
         if (isBackup(request)) {
           entries.push({ id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` });
         }
-        if (phase === 'quotePending') {
+        // The offer on a request on measure is changed or taken back on its page, with the conversation in front of the supplier.
+        if (phase === 'quotePending' && !isInquiry(request)) {
           entries.push(
             { id: 'edit-quote', label: t('supplier.requests.action.editQuote'), icon: Pencil, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `edit-quote-${request.id}` },
             { id: 'withdraw-quote', label: t('supplier.requests.action.withdrawQuote'), icon: Undo2, onSelect: () => askWithdrawQuote(request.id), disabled: suspended || busy, testId: `withdraw-quote-${request.id}` },

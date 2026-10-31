@@ -14727,6 +14727,138 @@
         "title": "Da fare"
       }
     },
+    "dispute": {
+      "deadline": "Hai tempo fino al {{when}} per rispondere. Se non rispondi, la segnalazione passa comunque al team di CasaZen, che decide.",
+      "deadlineLate": "Il tempo per rispondere è passato, ma puoi ancora farlo finché CasaZen non ha deciso.",
+      "money": {
+        "AwaitingDecision": "Il team di CasaZen valuta la segnalazione e la tua risposta. Finché non decide, il pagamento resta trattenuto da CasaZen.",
+        "AwaitingSupplier": "Finché non c’è una decisione, il pagamento resta trattenuto da CasaZen.",
+        "ResolvedForCustomer": "CasaZen ha deciso a favore del cliente.",
+        "ResolvedForCustomerRefund": "CasaZen ha deciso a favore del cliente: al cliente tornano {{amount}}.",
+        "ResolvedForSupplier": "CasaZen ha deciso a tuo favore: il pagamento non viene rimborsato al cliente.",
+        "Withdrawn": "Il cliente ha ritirato la segnalazione: il pagamento prosegue come prima."
+      },
+      "noShow": "Nessuno ha segnato il lavoro come completato e l’orario previsto è passato.",
+      "reason": {
+        "incomplete": "Il lavoro è incompleto.",
+        "not_as_described": "Non è come era stato descritto.",
+        "not_done": "Il lavoro non è stato fatto.",
+        "other": "Altro motivo.",
+        "poor_quality": "La qualità non è quella attesa."
+      },
+      "reasonLabel": "Motivo:",
+      "repliedAt": "inviata il {{when}}",
+      "repliedToast": "Risposta inviata",
+      "replyFailed": "Non siamo riusciti a inviare la risposta. Riprova.",
+      "replyHint": "Scrivi i fatti: cosa hai fatto, quando e cosa è successo. Puoi rispondere una volta sola, in testo semplice.",
+      "replyLabel": "La tua risposta",
+      "replyPlaceholder": "Per esempio: sono arrivato all’orario concordato e ho finito il lavoro come descritto.",
+      "said": "Cosa ha scritto {{name}}",
+      "send": "Invia la risposta",
+      "status": {
+        "AwaitingDecision": "In attesa della decisione di CasaZen",
+        "AwaitingSupplier": "In attesa della tua risposta",
+        "ResolvedForCustomer": "Risolta a favore del cliente",
+        "ResolvedForSupplier": "Risolta a tuo favore",
+        "Withdrawn": "Ritirata dal cliente"
+      },
+      "title": {
+        "customer": "Il cliente ha segnalato un problema",
+        "host": "L’host ha segnalato un problema",
+        "system": "CasaZen ha aperto una segnalazione"
+      },
+      "weight": "Un esito a favore del cliente può pesare sulla tua posizione di fornitore.",
+      "yourReply": "La tua risposta"
+    },
+    "inquiry": {
+      "action": {
+        "answer": "Rispondi",
+        "answerAria": "Rispondi alla richiesta: {{name}}"
+      },
+      "messages": {
+        "closed": "La conversazione è chiusa: puoi rileggere i messaggi, non scriverne altri.",
+        "composerLabel": "Scrivi a {{name}}",
+        "contacts": "Scrivi qui dentro: telefono, email e indirizzo si vedono dopo che il lavoro è accettato, non scambiarli prima fuori da CasaZen.",
+        "empty": "Nessun messaggio, per ora.",
+        "loadError": "Impossibile caricare i messaggi.",
+        "loading": "Caricamento dei messaggi…",
+        "logLabel": "Conversazione con {{name}}",
+        "offline": "Sei offline: potrai inviare il messaggio quando torni online.",
+        "placeholder": "Scrivi la tua risposta",
+        "sendError": "Messaggio non inviato. Riprova.",
+        "title": "Messaggi"
+      },
+      "now": {
+        "awaiting": {
+          "client": "Ha descritto il lavoro e aspetta la tua risposta.",
+          "title": "Rispondi alla richiesta",
+          "you": "Leggi cosa ti chiede e rispondi: scrivigli nei messaggi qui sotto, oppure mandagli subito un’offerta con prezzo e orario."
+        },
+        "cannotAnswer": "In questo momento non puoi rispondere a questa richiesta.",
+        "conversation": {
+          "client": "Legge i tuoi messaggi e aspetta la tua offerta.",
+          "title": "Stai parlando con il cliente",
+          "you": "Quando sei pronto, manda un’offerta con prezzo e orario. Finché il cliente non l’accetta, nessun orario è riservato."
+        },
+        "decline": "Non posso farlo",
+        "leftHours_one": "resta circa {{count}} ora",
+        "leftHours_other": "restano circa {{count}} ore",
+        "leftMinutes_one": "resta {{count}} minuto",
+        "leftMinutes_other": "restano {{count}} minuti",
+        "loadError": "Impossibile caricare la conversazione.",
+        "loading": "Caricamento della conversazione…",
+        "offerDeclined": {
+          "client": "Ha rifiutato l’offerta e può ancora scriverti.",
+          "title": "Il cliente non ha accettato l’offerta",
+          "you": "Puoi continuare a scrivergli e mandare un’altra offerta."
+        },
+        "offerSent": {
+          "client": "Vede le voci, il totale e l’orario e può accettarli o rifiutarli.",
+          "title": "Offerta inviata, in attesa del cliente",
+          "you": "Non devi fare altro. Finché il cliente non risponde puoi sostituire l’offerta o ritirarla."
+        },
+        "open": "Rispondi al cliente",
+        "quietTitle": "Stato della richiesta",
+        "replace": "Sostituisci l’offerta",
+        "send": "Invia un’offerta",
+        "sendAnother": "Invia una nuova offerta",
+        "then": "Poi: quando il cliente accetta l’offerta, il lavoro è tuo e vedi indirizzo e contatti.",
+        "timeOver": "Il tempo per rispondere è scaduto",
+        "withdraw": "Ritira l’offerta",
+        "withdrawDialog": {
+          "again": "Potrai continuare a scrivergli e mandare un’altra offerta.",
+          "back": "Indietro",
+          "confirm": "Ritira l’offerta",
+          "description": "Il cliente non potrà più accettarla. La richiesta resta aperta.",
+          "title": "Ritirare l’offerta?"
+        }
+      },
+      "offer": {
+        "errors": {
+          "durationInvalid": "Scrivi la durata in ore, per esempio 2 o 1,5 (da un quarto d’ora a 24 ore).",
+          "durationRequired": "Scrivi quante ore dura il lavoro.",
+          "timeInvalid": "A quell’ora non c’è un orario valido: scegline un altro.",
+          "timePast": "L’orario è già passato: scegline uno futuro.",
+          "timeRequired": "Scegli il giorno e l’ora."
+        },
+        "failed": "Non siamo riusciti a inviare l’offerta. Riprova.",
+        "intro": "Il cliente vede le voci, il totale e l’orario e li accetta o li rifiuta. Se li accetta, il lavoro è accettato a quel prezzo e a quell’ora.",
+        "introReplace": "La nuova offerta prende il posto di quella inviata: il cliente non ha ancora risposto.",
+        "send": "Invia l’offerta",
+        "sentToast": "Offerta inviata al cliente",
+        "title": "Invia un’offerta",
+        "titleReplace": "Sostituisci l’offerta",
+        "update": "Aggiorna l’offerta",
+        "when": {
+          "day": "Giorno",
+          "hint": "L’orario non è riservato finché il cliente non accetta.",
+          "hours": "Durata (ore)",
+          "start": "Inizio",
+          "title": "Quando"
+        },
+        "withdrawnToast": "Offerta ritirata"
+      }
+    },
     "requests": {
       "action": {
         "acceptBackup": "Accetta come riserva",
@@ -14778,6 +14910,7 @@
           "description_one": "Questa richiesta non è stata accettata e aspetta ancora la tua risposta.",
           "description_other": "Queste richieste non sono state accettate e aspettano ancora la tua risposta. Aprile una alla volta per rispondere in un altro modo.",
           "list": "Richieste non accettate",
+          "needsOffer": "Va risposta con un’offerta: aprila e scrivi al cliente.",
           "notInBulk": "È una richiesta come riserva: accettala dalla sua scheda.",
           "notSent": "Non siamo riusciti a inviare la risposta. Riprova.",
           "open": "Apri la richiesta",
@@ -14948,6 +15081,7 @@
           "you": "Il cliente deve pagare il lavoro e segnare la richiesta come pagata.",
           "youOnline": "Il cliente paga online da CasaZen: ti avvisiamo appena succede."
         },
+        "holdWindow": "Il cliente ha già pagato e CasaZen trattiene il pagamento. Quando segni il lavoro come completato, il cliente ha un po’ di tempo per confermare che va tutto bene o per segnalare un problema; poi il pagamento viene rilasciato.",
         "inProgress": {
           "client": "Vede che l’intervento è in corso.",
           "then": "Poi: il cliente vede che hai finito.",
@@ -15038,13 +15172,18 @@
         "remindHint": "Il cliente riceve un’email con un nuovo link. Puoi inviarne una al giorno.",
         "state": "Stato del pagamento",
         "status": {
+          "Authorized": "Importo bloccato sulla carta del cliente",
+          "Disputed": "In contestazione: il pagamento resta trattenuto da CasaZen",
           "Failed": "Pagamento non riuscito",
+          "Held": "Pagato dal cliente: CasaZen trattiene i fondi fino alla conferma o al rilascio",
           "NeedsReview": "In verifica da CasaZen",
           "Paid": "Pagato",
           "PartiallyRefunded": "Rimborsato in parte",
           "Processing": "In elaborazione",
           "Refunded": "Rimborsato",
+          "Released": "Pagamento rilasciato",
           "Requested": "Richiesto al cliente",
+          "TransferFailed": "Il trasferimento non è ancora riuscito: CasaZen riprova",
           "unknown": "In verifica"
         },
         "subNet": "Netto {{amount}}",
