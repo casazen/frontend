@@ -15,6 +15,12 @@
       "orgSettingsChanged": "Company data changed",
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
+      "propertyActivatedWithReminders": "Property activated with {{reminders}} still to complete",
+      "reminder": {
+        "documents": "the documents",
+        "documents_safety": "the documents and the safety sheet",
+        "safety": "the safety sheet"
+      },
       "system": "System"
     },
     "home": {
@@ -3199,6 +3205,7 @@
       "saveAndContinue": "Save and continue",
       "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
+      "remindersAccept": "Activate anyway: I know that the safety sheet and the documents still to complete are my obligation and I will complete them as soon as possible.",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
       "completed": "Property activated successfully",
@@ -3423,7 +3430,7 @@
       "disclaimer": "CasaZen records what you declare: it does not inspect the property and does not certify its compliance. You declare the safety requirements in the BDSR with the CIN request (art. 13-ter, par. 3).",
       "importedFromLegacy": "We imported the answers of the old checklist (smoke detector, extinguisher, gas certificate). Review the items marked \"To review\", complete the missing ones and confirm again.",
       "complete": "Checklist complete: nothing is blocking.",
-      "blockersTitle": "To complete before the activation (last save):",
+      "blockersTitle": "Points to complete (last save):",
       "itemsTitle": "Equipment and requirements",
       "toReview": "To review",
       "confirm": "I confirm that this information is true and matches what I declared in the BDSR. I know that CasaZen does not check or certify the compliance of the property.",
@@ -10737,15 +10744,19 @@
       },
       "none": "You have not chosen anything yet: you can also skip this and add them later.",
       "safety": {
+        "backToQuick": "Back to the quick questions",
         "complete": "The sheet is complete.",
-        "description": "The property's safety sheet: you fill it in once and it is needed to activate the property.",
-        "dialogDescription": "Fill in the items and save: the property is activated only with a complete, confirmed sheet.",
+        "description": "A few answers are enough. The devices are your legal obligation, but the sheet does not block the activation.",
+        "dialogDescription": "Fill in the items and save. The safety devices are your obligation: the sheet does not block the activation, but it stays among the things to complete.",
         "dialogTitle": "Safety sheet",
+        "full": "Add where they are, dates and proofs",
+        "fullHint": "Optional: they are used for the reminders.",
         "loadFailed": "I cannot read the safety sheet. Try again in a moment.",
         "loading": "Checking the sheet…",
         "open": "Fill in the sheet",
         "progress": "{{done}} of {{total}} items in order",
         "progressLabel": "Progress of the safety sheet",
+        "quickDescription": "Three questions and a list to tick. What we already know, we fill in for you.",
         "review": "Review the sheet",
         "title": "Safety"
       }
@@ -10878,6 +10889,9 @@
         "loading": "Checking what is missing…",
         "none": "All in order: only the final confirmation is missing.",
         "refused": "It cannot be activated yet: the service reports these points",
+        "reminders": "Still to complete (does not block the activation)",
+        "safety_one": "Complete the safety sheet: {{count}} point left",
+        "safety_other": "Complete the safety sheet: {{count}} points left",
         "title": "What is missing"
       },
       "summary": {
@@ -11049,6 +11063,73 @@
         "checkOut": "Check-out by",
         "title": "Arrival and departure"
       }
+    },
+    "safetyQuick": {
+      "intro": "A few answers: from them we work out what the law asks of your home.",
+      "why": {
+        "title": "Why we ask",
+        "text": "For short stays the law (art. 13-ter of D.L. 145/2023) asks for fire extinguishers and, when there is gas or a flame in the home, gas and carbon monoxide detectors. You declare them in BDSR when you apply for the CIN: CasaZen records what you declare, it does not check or certify it."
+      },
+      "heat": {
+        "question": "Is there gas or a flame in the home?",
+        "hint": "Gas hob, boiler, water heater, stove, fireplace or a gas cylinder.",
+        "yes": "Yes",
+        "no": "No, everything is electric",
+        "which": "What is there?",
+        "whichRequired": "Choose at least one.",
+        "exempt": "With no gas and no flame the detectors are not needed: the extinguisher still is.",
+        "source": {
+          "GasSupply": "Mains gas, LPG or cylinder",
+          "GasHob": "Gas hob",
+          "Boiler": "Boiler",
+          "WaterHeater": "Gas water heater",
+          "Stove": "Stove",
+          "Fireplace": "Fireplace",
+          "Other": "Something else that burns"
+        }
+      },
+      "business": {
+        "question": "Do you rent with a VAT number or as a business?",
+        "hint": "Also as a company, or from the third apartment let for short stays.",
+        "helpTitle": "Business activity",
+        "help": "What counts is the VAT number, the company or the number of apartments let for short stays: over the threshold the activity is presumed to be a business (art. 1, c. 595, L. 178/2020). Only then are compliant systems required too.",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "floors": {
+        "question": "How many floors does the home have?",
+        "label": "Floors of the home"
+      },
+      "have": {
+        "title": "What do you already have in the home?",
+        "required": "Required",
+        "recommended": "Recommended",
+        "minimum_one": "At least {{count}} is needed.",
+        "minimum_other": "At least {{count}} are needed.",
+        "count": "Extinguishers",
+        "toReview": "To confirm again"
+      },
+      "items": {
+        "FireExtinguishers": "Fire extinguisher",
+        "GasDetector": "Gas detector",
+        "CoDetector": "Carbon monoxide detector",
+        "SystemsCompliance": "Compliant systems, with the declaration of conformity",
+        "SmokeDetector": "Smoke detector",
+        "EmergencyInstructions": "Emergency instructions and numbers for guests",
+        "BdsrDeclaration": "I declared these devices in BDSR when I applied for the CIN"
+      },
+      "bdsrHint": "No CIN yet? You apply for it on the BDSR portal of the Ministry of Tourism: tick this point afterwards.",
+      "prefill": {
+        "label": "Prefilled",
+        "amenity": "From the amenities you chose: check it.",
+        "fiscalVat": "Your tax data have a VAT number: check it.",
+        "fiscalThreshold": "With the homes you let for short stays the activity is presumed to be a business: check it.",
+        "fiscalNone": "Your tax data have no VAT number and you are under the threshold: check it.",
+        "floors": "An apartment is usually on one floor: change it if yours is not.",
+        "cin": "You already have the CIN, which is issued with this declaration: check it."
+      },
+      "missingTitle": "Still to complete in the sheet",
+      "save": "Save"
     },
     "steps": {
       "amenities": {
