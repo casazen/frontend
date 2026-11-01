@@ -10,6 +10,7 @@ export * from './gdpr.types';
 export * from './tourist-tax.types';  // ✅ New
 export * from './calendar.types';  // ✅ New
 export * from './pricing-adapter.types';
+export * from './price-suggestion.types';
 export * from './lease.types';
 export * from './lease-lifecycle.types';
 export * from './lease-operations.types';

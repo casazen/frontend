@@ -413,6 +413,44 @@ describe('ListView, when there is nothing to show', () => {
     expect(namesInTable()).toHaveLength(6);
   });
 
+  it('says it its own way when the quick filter alone leaves nothing, and the button leads to everything', () => {
+    const noResults = {
+      title: 'No stay with these filters',
+      description: 'Try removing a filter.',
+      byChip: { done: { title: 'Nothing is done yet', description: 'The stays that are over show up here.', actionLabel: 'See all the stays' } },
+    };
+    renderList({
+      list: stayList({ extra: { noResults } }),
+      rows: STAYS.filter((stay) => stay.status !== 'done'),
+      initial: '/app/short-rent/bookings?chip=done',
+    });
+
+    expect(screen.getByText('Nothing is done yet')).toBeInTheDocument();
+    expect(screen.getByText('The stays that are over show up here.')).toBeInTheDocument();
+    expect(screen.queryByText('No stay with these filters')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'See all the stays' }));
+
+    expect(addressNow()).toBe('?chip=all');
+    expect(namesInTable()).toHaveLength(5);
+  });
+
+  it('keeps the words of the list for the quick filter with a search or a filter on top of it', () => {
+    const noResults = {
+      title: 'No stay with these filters',
+      description: 'Try removing a filter.',
+      byChip: { done: { title: 'Nothing is done yet', description: 'The stays that are over show up here.' } },
+    };
+    renderList({
+      list: stayList({ extra: { noResults } }),
+      rows: STAYS.filter((stay) => stay.status !== 'done'),
+      initial: '/app/short-rent/bookings?chip=done&f_property=trullo',
+    });
+
+    expect(screen.getByText('No stay with these filters')).toBeInTheDocument();
+    expect(screen.queryByText('Nothing is done yet')).not.toBeInTheDocument();
+  });
+
   it('is not "empty" when the rows are there and the search finds none of them', () => {
     renderList({ initial: '/app/short-rent/bookings?chip=all&q=nobody' });
 

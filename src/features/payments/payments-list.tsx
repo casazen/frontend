@@ -11,8 +11,10 @@ import { cn, formatCurrency } from '@/lib/utils';
 import type { PaymentListItem } from '@/types';
 import {
   dayInRange,
+  isCanceled,
   isCollected,
   isGivenBack,
+  isIncoming,
   isWaiting,
   isWaitingForTheHost,
   monthRange,
@@ -34,6 +36,9 @@ interface PaymentsListOptions {
  * The list of the payments (SR-04c): the unified list in `client` mode, in the words of the host. The API gives all the payments
  * at once (`GET /api/payments`, SR-03: the guest, the property and the code of the booking, the amounts, the status and the method
  * by name) and the list does the searching, the quick filters, the filters and the order itself.
+ *
+ * It opens on «In arrivo»: the payments of the stays that are coming or on, not the history (`isIncoming`); «Tutti» is next to it,
+ * then the ones to collect, collected, refunded and cancelled. «Azzera i filtri» goes to «Tutti».
  *
  * Five columns: who and for what (the guest, the booking, the property), when, the method, the state and the amount. The property,
  * the code of the booking and what was given back are there for who asks for them (and for the CSV). The day is the one the
@@ -144,14 +149,18 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
         placeholder: t('payment.list.searchPlaceholder'),
         text: (payment) => [guest(payment), payment.bookingCode, payment.propertyName, method(payment), state(payment), payment.description].filter(Boolean).join(' '),
       },
-      // A payment in part given back is in two of them: it came in, and a part went back.
+      // A payment in part given back is in two of them: it came in, and a part went back. The list opens on «In arrivo», which is not the
+      // one for everything: «Tutti» is (`allChip`), and what «Azzera i filtri» leads to.
       chips: [
+        { id: 'incoming', label: t('payment.list.chips.incoming'), hint: t('payment.list.chips.incomingHint'), test: (payment) => isIncoming(payment, today) },
         { id: 'all', label: t('payment.list.chips.all') },
         { id: 'toCollect', label: t('payment.list.chips.toCollect'), hint: t('payment.list.chips.toCollectHint'), test: isWaiting },
         { id: 'collected', label: t('payment.list.chips.collected'), hint: t('payment.list.chips.collectedHint'), test: isCollected },
         { id: 'refunded', label: t('payment.list.chips.refunded'), hint: t('payment.list.chips.refundedHint'), test: isGivenBack },
+        { id: 'canceled', label: t('payment.list.chips.canceled'), hint: t('payment.list.chips.canceledHint'), test: isCanceled },
       ],
-      defaultChip: 'all',
+      defaultChip: 'incoming',
+      allChip: 'all',
       filters: [
         {
           id: 'property',
@@ -216,7 +225,18 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
         description: t('payment.list.emptyDescription'),
         action: canCreateBooking ? { label: t('booking.list.newBooking'), href: `${BOOKINGS_PATH}/create` } : undefined,
       },
-      noResults: { title: t('payment.list.noResultsTitle'), description: t('payment.list.noResultsDescription') },
+      noResults: {
+        title: t('payment.list.noResultsTitle'),
+        description: t('payment.list.noResultsDescription'),
+        // The view the page opens on may well be empty: it says so, and leads to the whole list.
+        byChip: {
+          incoming: {
+            title: t('payment.list.noIncomingTitle'),
+            description: t('payment.list.noIncomingDescription'),
+            actionLabel: t('payment.list.noIncomingAction'),
+          },
+        },
+      },
       countLabel: (count) => t('payment.list.count', { count }),
     });
   }, [t, i18n, canCreateBooking, canRecordPayment]);

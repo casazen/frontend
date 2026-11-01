@@ -17,7 +17,10 @@ interface AmenitiesStepProps {
  */
 export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
   const { t } = useTranslation();
-  const chosen = form.watch('amenities').length;
+  const amenities = form.watch('amenities');
+  const chosen = amenities.length;
+  // The area of the first step: with one floor it gives the minimum of extinguishers (one every 200 m²).
+  const area = Number(form.watch('areaSqm'));
 
   return (
     <>
@@ -39,7 +42,7 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
         {chosen > 0 ? t('propertyWizard.amenities.count', { count: chosen }) : t('propertyWizard.amenities.none')}
       </p>
 
-      <SafetyCard propertyId={propertyId} />
+      <SafetyCard propertyId={propertyId} amenities={amenities} areaSqm={area > 0 ? area : null} />
     </>
   );
 }

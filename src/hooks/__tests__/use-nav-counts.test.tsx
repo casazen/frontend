@@ -3,17 +3,31 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bookingsApi } from '@/api/bookings.api';
+import { fetchComplianceSummary } from '@/api/compliance.api';
 import { fetchSupplierInboxCounts } from '@/services/supplier-api';
 import { ROUTE_MANIFEST, type RouteManifestEntry } from '@/config/route-manifest';
 import { useNavCounts } from '../use-nav-counts';
 
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getApprovalRequests: vi.fn() } }));
+vi.mock('@/api/compliance.api', () => ({ fetchComplianceSummary: vi.fn() }));
 vi.mock('@/services/supplier-api', () => ({ fetchSupplierInboxCounts: vi.fn() }));
 
 const entry = (path: string) => ROUTE_MANIFEST.find((candidate) => candidate.path === path) as RouteManifestEntry;
 const bookings = entry('/app/short-rent/bookings');
 const inbox = entry('/app/supplier/inbox');
 const dashboard = entry('/app/short-rent');
+const compliance = entry('/app/short-rent/compliance');
+
+const section = (count: number) => ({ count, items: [] });
+/** The summary of the cockpit: what the law dates is the three sections of the Alloggiati Web, whatever else is pending. */
+const summary = {
+  alloggiatiFailures: section(1),
+  alloggiatiManualRequired: section(2),
+  guestCheckInsIncomplete: section(3),
+  propertiesPending: section(21),
+  checkoutsDue: section(4),
+  turnoversPending: section(2),
+};
 
 function render(entries: RouteManifestEntry[], client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })) {
   const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
@@ -82,15 +96,48 @@ describe('useNavCounts (UI-04a)', () => {
     expect(result.current).toEqual({});
   });
 
+  it('NavCounts_ComplianceEntry_CountsWhatCarriesARiskOfASanctionNotTheWholeList', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summary as never);
+    const { result } = render([dashboard, compliance]);
+
+    // 1 failed + 2 to send + 3 guest data: the 21 properties to activate and the upkeep do not weigh on the menu.
+    await waitFor(() => expect(result.current).toEqual({ compliance: 6 }));
+    expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_MenuWithoutTheAdempimenti_DoesNotAskForTheSummary', () => {
+    render([dashboard, bookings]);
+
+    expect(fetchComplianceSummary).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_ComplianceFails_LeavesTheEntryWithoutACounterAndSaysNothing', async () => {
+    vi.mocked(fetchComplianceSummary).mockRejectedValue(new Error('boom'));
+    const { result, client } = render([compliance]);
+
+    await waitFor(() => expect(client.getQueryState(['compliance', 'summary'])?.status).toBe('error'));
+    expect(result.current).toEqual({});
+  });
+
+  it('NavCounts_ComplianceAnswerOfAnotherShape_IsNotACount', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue('<!doctype html><html></html>' as never);
+    const { result, client } = render([compliance]);
+
+    await waitFor(() => expect(client.getQueryState(['compliance', 'summary'])?.status).toBe('success'));
+    expect(result.current).toEqual({});
+  });
+
   it('NavCounts_PageAlreadyLoadedTheNumbers_ReadsTheSameCacheEntry', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
     client.setQueryData(['bookings', 'approval-requests'], [{ id: 'a' }]);
     client.setQueryData(['supplier', 'inbox', 'counts'], { toAnswer: 5, awaitingCustomer: 4 });
+    client.setQueryData(['compliance', 'summary'], summary);
 
-    const { result } = render([bookings, inbox], client);
+    const { result } = render([bookings, inbox, compliance], client);
 
-    expect(result.current).toEqual({ bookingRequests: 1, supplierRequests: 5 });
+    expect(result.current).toEqual({ bookingRequests: 1, supplierRequests: 5, compliance: 6 });
     expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
     expect(fetchSupplierInboxCounts).not.toHaveBeenCalled();
+    expect(fetchComplianceSummary).not.toHaveBeenCalled();
   });
 });

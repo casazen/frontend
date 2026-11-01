@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CasaZenRing } from '@/components/brand/casazen-mark';
-import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { SEO_FEATURED_GUIDES, SEO_FEATURED_TAX_PAGES, SEO_HUB_PATH, type SeoFeaturedPage } from '@/features/public-seo/seo-paths';
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
@@ -94,6 +94,27 @@ const AUDIENCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
 ];
 
 const range = (count: number) => Array.from({ length: count }, (_, index) => index + 1);
+
+/** A short list of links to the pages of the hub that the home page names (`SEO_FEATURED_GUIDES`, `SEO_FEATURED_TAX_PAGES`). */
+function GuideLinks({ title, pages, text }: { title: string; pages: readonly SeoFeaturedPage[]; text: (comune: string) => string }) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-ink-800">{title}</h3>
+      <ul className="mt-4 flex flex-wrap gap-2.5">
+        {pages.map((page) => (
+          <li key={page.path}>
+            <a
+              href={page.path}
+              className="inline-flex rounded-full border border-ink-700/15 bg-white px-4 py-2 text-[0.95rem] font-medium text-ink-700 transition-colors hover:border-terra-500 hover:text-terra-800"
+            >
+              {text(page.comune)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
@@ -217,7 +238,22 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </Section>
 
       <Section title={t('site.home.guides.title')} intro={t('site.home.guides.text')} icon={BookOpen} tint="terra">
-        <SecondaryLink href={SEO_HUB_PATH}>{t('site.home.guides.cta')}</SecondaryLink>
+        {/* Plain links, with the words people search for: the guides are one click from the home page, not two. */}
+        <div className="grid gap-8 sm:grid-cols-2">
+          <GuideLinks
+            title={t('site.home.guides.guidesTitle')}
+            pages={SEO_FEATURED_GUIDES}
+            text={(comune) => t('site.home.guides.guideLink', { comune })}
+          />
+          <GuideLinks
+            title={t('site.home.guides.taxTitle')}
+            pages={SEO_FEATURED_TAX_PAGES}
+            text={(comune) => t('site.home.guides.taxLink', { comune })}
+          />
+        </div>
+        <div className="mt-8">
+          <SecondaryLink href={SEO_HUB_PATH}>{t('site.home.guides.cta')}</SecondaryLink>
+        </div>
       </Section>
 
       <Section title={t('site.home.faq.title')} intro={t('site.home.faq.intro')} tone="cream">

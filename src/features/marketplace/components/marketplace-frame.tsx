@@ -34,13 +34,10 @@ interface MarketplaceFrameProps {
    * action that starts one from what the page is about (a supplier: «Richiedi fornitore»).
    */
   primary?: PageHeaderAction | null | ((requestIntervention: (from?: InterventionRequestStart) => void) => PageHeaderAction);
-  /**
-   * The page looks for suppliers around the property, which is done by its comune (the one of the official list): without one the page
-   * asks for it instead. A page about what was already asked (Le mie app) does not need it. Default: yes.
-   */
-  needsComune?: boolean;
-  /** What the page shows for the property. */
+  /** What the page shows for the property: it looks for suppliers around it, which is done by its comune (the one of the official list). */
   children: (context: MarketplaceContext) => ReactNode;
+  /** What the page shows under it whatever the comune of the property says: the parts that do not look for suppliers (the integrations). */
+  after?: ReactNode;
 }
 
 export interface MarketplaceContext {
@@ -55,20 +52,17 @@ export interface MarketplaceContext {
  * the property the suppliers are looked for around, and the states that come before any supplier: the properties are loading or
  * failed to load, the host has none, or the one chosen has no comune yet. The page itself is the `children`.
  */
-export function MarketplaceFrame({ section, title, description, trail, toolbar, primary, needsComune = true, children }: MarketplaceFrameProps) {
+export function MarketplaceFrame({ section, title, description, trail, toolbar, primary, children, after }: MarketplaceFrameProps) {
   const { t } = useTranslation();
   const { properties, property, isLoading, isError, error, refetch, setProperty } = useMarketplaceProperty();
   const request = useRequestIntervention(property?.id);
 
-  const crumbs: PageCrumb[] | undefined = trail?.map((step) => ({
-    label: step.label,
-    to: step.path ? marketplaceHref(step.path, property?.id) : undefined,
-  }));
+  const crumbs = trailCrumbs(trail, property?.id);
 
-  // The one action is there when there is something to ask a supplier for: a property, and for a page that looks for suppliers, its comune.
+  // The one action is there when there is something to ask a supplier for: a property and its comune.
   const asked = typeof primary === 'function' ? primary(request.open) : primary;
   const mainAction: PageHeaderAction | undefined =
-    asked === null || !property || (needsComune && !property.comuneIstatCode)
+    asked === null || !property || !property.comuneIstatCode
       ? undefined
       : (asked ?? {
           label: t('marketplace.requestIntervention'),
@@ -102,10 +96,10 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
           <div className="grid gap-3 md:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] md:items-end">
             <PropertyPicker properties={properties} value={property.id} onChange={setProperty} />
             {/* There is nothing to search while the property has no comune to look in. */}
-            {property.comuneIstatCode || !needsComune ? toolbar : null}
+            {property.comuneIstatCode ? toolbar : null}
           </div>
 
-          {property.comuneIstatCode || !needsComune ? (
+          {property.comuneIstatCode ? (
             children({ property, requestIntervention: request.open })
           ) : (
             <EmptyState
@@ -116,9 +110,41 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
               className="py-8"
             />
           )}
+          {after}
           {request.dialog}
         </>
       )}
+    </div>
+  );
+}
+
+/** The steps of the trail as the links of the page header; the property the marketplace is about goes into each address. */
+function trailCrumbs(trail: MarketplaceTrailStep[] | undefined, propertyId: string | undefined): PageCrumb[] | undefined {
+  return trail?.map((step) => ({ label: step.label, to: step.path ? marketplaceHref(step.path, propertyId) : undefined }));
+}
+
+interface MarketplaceAccountFrameProps {
+  /** The tab the page is. */
+  section: MarketplaceSection;
+  title: string;
+  description?: string;
+  trail?: MarketplaceTrailStep[];
+  children: ReactNode;
+}
+
+/**
+ * The frame of a page that is about the host and not about a property (Le mie app: the integrations it has on): the head of the
+ * page and the tabs, with no property to choose and no comune to ask for. The property is still read, only so that the tabs keep the
+ * one that was chosen when the host goes back to Scopri.
+ */
+export function MarketplaceAccountFrame({ section, title, description, trail, children }: MarketplaceAccountFrameProps) {
+  const { property } = useMarketplaceProperty();
+
+  return (
+    <div className="min-w-0 space-y-6" data-testid="marketplace-page">
+      <PageHeader title={title} description={description} crumbs={trailCrumbs(trail, property?.id)} />
+      <MarketplaceTabs section={section} propertyId={property?.id} />
+      {children}
     </div>
   );
 }
