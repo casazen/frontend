@@ -10816,6 +10816,8 @@
         "loading": "Checking what is missing…",
         "none": "All in order: only the final confirmation is missing.",
         "refused": "It cannot be activated yet: the service reports these points",
+        "safety_one": "Complete the safety sheet: {{count}} point left",
+        "safety_other": "Complete the safety sheet: {{count}} points left",
         "title": "What is missing"
       },
       "summary": {

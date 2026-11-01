@@ -10816,6 +10816,8 @@
         "loading": "Controllo cosa manca…",
         "none": "Tutto a posto: manca solo la conferma finale.",
         "refused": "Non si può ancora attivare: il servizio segnala questi punti",
+        "safety_one": "Completa la scheda di sicurezza: resta {{count}} punto",
+        "safety_other": "Completa la scheda di sicurezza: restano {{count}} punti",
         "title": "Cosa manca"
       },
       "summary": {

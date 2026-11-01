@@ -7,7 +7,7 @@ import { knownBlockers } from '@/features/compliance/activation-wizard-model';
 import { useStepTexts } from '@/features/compliance/use-activation-step-texts';
 import type { Property } from '@/types';
 import type { ActivationBlocker, ComplianceWizardStep } from '@/types/compliance.types';
-import { fixTargetFor, type FinishSection } from './finish-model';
+import { fixTargetFor, missingLines, type FinishSection } from './finish-model';
 
 interface MissingSectionProps {
   /** The steps of the activation, as the server answers them; `undefined` while they are being read. */
@@ -95,13 +95,25 @@ export function MissingSection({ steps, failed, onRetry, property, refused }: Mi
         <>
           <p className="text-sm text-foreground/70">{t('propertyWizard.last.missing.lead')}</p>
           <ul className="space-y-1" data-testid="property-wizard-missing-list">
-            {blockers.map((blocker, index) => (
-              <li key={`${blocker.step}-${blocker.code}-${index}`} data-code={blocker.code} className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
-                <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-danger-foreground" />
-                <span className="min-w-0 flex-1 break-words">{texts.blocker(blocker)}</span>
-                <FixButton stepId={blocker.step} property={property} label={fix} />
-              </li>
-            ))}
+            {missingLines(blockers).map((line, index) =>
+              line.kind === 'safety' ? (
+                <li key={`safety-${index}`} data-code="safety_sheet" className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
+                  <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-danger-foreground" />
+                  <span className="min-w-0 flex-1 break-words">{t('propertyWizard.last.missing.safety', { count: line.count })}</span>
+                  <FixButton stepId="safety" property={property} label={fix} />
+                </li>
+              ) : (
+                <li
+                  key={`${line.blocker.step}-${line.blocker.code}-${index}`}
+                  data-code={line.blocker.code}
+                  className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm"
+                >
+                  <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-danger-foreground" />
+                  <span className="min-w-0 flex-1 break-words">{texts.blocker(line.blocker)}</span>
+                  <FixButton stepId={line.blocker.step} property={property} label={fix} />
+                </li>
+              ),
+            )}
           </ul>
         </>
       )}
