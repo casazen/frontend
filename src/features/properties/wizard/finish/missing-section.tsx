@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, CircleCheck, Info } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { knownBlockers } from '@/features/compliance/activation-wizard-model';
+import { knownBlockers, openReminders, REMINDER_STEP_IDS } from '@/features/compliance/activation-wizard-model';
 import { useStepTexts } from '@/features/compliance/use-activation-step-texts';
 import type { Property } from '@/types';
 import type { ActivationBlocker, ComplianceWizardStep } from '@/types/compliance.types';
@@ -61,7 +61,9 @@ export function MissingSection({ steps, failed, onRetry, property, refused }: Mi
   const { t } = useTranslation();
   const texts = useStepTexts(steps ?? []);
   const blockers = steps ? knownBlockers(steps) : [];
-  const advice = (steps ?? []).filter((step) => !step.blocker && step.status !== 'complete');
+  // The documents and the safety sheet (PO decision 2026-11-01): the host's obligations, listed apart, never in the way of the activation.
+  const reminders = openReminders(steps ?? []);
+  const advice = (steps ?? []).filter((step) => !step.blocker && step.status !== 'complete' && !REMINDER_STEP_IDS.includes(step.id));
   const warnings = (steps ?? []).flatMap((step) => step.warnings ?? []);
   const fix = t('propertyWizard.last.missing.fix');
 
@@ -117,6 +119,25 @@ export function MissingSection({ steps, failed, onRetry, property, refused }: Mi
           </ul>
         </>
       )}
+
+      {reminders.length > 0 ? (
+        <div className="space-y-1" data-testid="property-wizard-reminders">
+          <p className="text-sm font-medium">{t('propertyWizard.last.missing.reminders')}</p>
+          <ul className="space-y-1">
+            {reminders.map((step) => (
+              <li key={step.id} data-step={step.id} className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm">
+                <Info aria-hidden="true" className="size-4 shrink-0 text-warning-foreground" />
+                <span className="min-w-0 flex-1 break-words">
+                  {step.id === 'safety'
+                    ? t('propertyWizard.last.missing.safety', { count: Math.max(1, step.blockers?.length ?? 0) })
+                    : (step.message ?? texts.title(step.id))}
+                </span>
+                <FixButton stepId={step.id} property={property} label={fix} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {refused && refused.length > 0 ? (
         <Alert variant="danger" title={t('propertyWizard.last.missing.refused')} data-testid="property-wizard-refused">

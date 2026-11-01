@@ -15,6 +15,12 @@
       "orgSettingsChanged": "Dati dell'azienda modificati",
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
+      "propertyActivatedWithReminders": "Immobile attivato con {{reminders}} da completare",
+      "reminder": {
+        "documents": "i documenti",
+        "documents_safety": "i documenti e la scheda di sicurezza",
+        "safety": "la scheda di sicurezza"
+      },
       "system": "Sistema"
     },
     "home": {
@@ -3167,6 +3173,7 @@
       "saveAndContinue": "Salva e continua",
       "documentsHint": "Carica i documenti richiesti per l'attivazione. Le prove di sicurezza (foto o documenti) sono facoltative e si allegano nella checklist di sicurezza.",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
+      "remindersAccept": "Attivo comunque: so che la scheda di sicurezza e i documenti ancora da completare sono un mio obbligo e li completo il prima possibile.",
       "backToEdit": "Torna alla modifica immobile",
       "complete": "Completa attivazione",
       "completed": "Immobile attivato con successo",
@@ -3391,7 +3398,7 @@
       "disclaimer": "CasaZen registra quanto dichiari: non verifica l'immobile e non ne certifica la conformità. I requisiti di sicurezza li dichiari in BDSR con la richiesta del CIN (art. 13-ter, c. 3).",
       "importedFromLegacy": "Abbiamo importato le risposte della vecchia checklist (rilevatore di fumo, estintore, certificato gas). Rivedi le voci segnate \"Da rivedere\", completa quelle mancanti e conferma di nuovo.",
       "complete": "Checklist completa: nessun punto bloccante.",
-      "blockersTitle": "Punti da completare prima dell'attivazione (ultimo salvataggio):",
+      "blockersTitle": "Punti da completare (ultimo salvataggio):",
       "itemsTitle": "Dotazioni e requisiti",
       "toReview": "Da rivedere",
       "confirm": "Confermo che queste informazioni sono vere e corrispondono a quanto ho dichiarato in BDSR. So che CasaZen non verifica e non certifica la conformità dell'immobile.",
@@ -10673,8 +10680,8 @@
       "safety": {
         "backToQuick": "Torna alle domande rapide",
         "complete": "La scheda è completa.",
-        "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
-        "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
+        "description": "Bastano poche risposte. Le dotazioni sono un tuo obbligo di legge, ma la scheda non blocca l'attivazione.",
+        "dialogDescription": "Compila le voci e salva. Le dotazioni di sicurezza sono un tuo obbligo: la scheda non blocca l'attivazione, ma resta tra le cose da completare.",
         "dialogTitle": "Scheda di sicurezza",
         "full": "Aggiungi posizione, date e prove",
         "fullHint": "Facoltativi: servono per i promemoria.",
@@ -10816,6 +10823,7 @@
         "loading": "Controllo cosa manca…",
         "none": "Tutto a posto: manca solo la conferma finale.",
         "refused": "Non si può ancora attivare: il servizio segnala questi punti",
+        "reminders": "Da completare (non blocca l'attivazione)",
         "safety_one": "Completa la scheda di sicurezza: resta {{count}} punto",
         "safety_other": "Completa la scheda di sicurezza: restano {{count}} punti",
         "title": "Cosa manca"
@@ -11054,7 +11062,7 @@
         "floors": "Di solito un appartamento è su un piano: cambialo se non è così.",
         "cin": "Hai già il CIN, che si ottiene con questa dichiarazione: controlla."
       },
-      "missingTitle": "Per attivare l'immobile manca ancora",
+      "missingTitle": "Da completare nella scheda",
       "save": "Salva"
     },
     "steps": {

@@ -23,7 +23,16 @@ import { IcalSettings } from '@/features/properties/components/ical-settings';
 import { TouristTaxStepInfo } from '@/features/compliance/components/tourist-tax-step-info';
 import { SafetyChecklistForm } from '@/features/compliance/components/safety-checklist-form';
 import { PropertyForm } from '@/features/properties/components/property-form';
-import { REVIEW_STEP_ID, stepHref, changedPropertyFields, initialStepId, knownBlockers, propertyFormPayload, wizardStepIds } from '@/features/compliance/activation-wizard-model';
+import {
+  REVIEW_STEP_ID,
+  stepHref,
+  changedPropertyFields,
+  initialStepId,
+  knownBlockers,
+  openReminders,
+  propertyFormPayload,
+  wizardStepIds,
+} from '@/features/compliance/activation-wizard-model';
 import { CIN_FORMAT_MESSAGE_KEY, isEmptyOrValidCin, normalizeCin } from '@/lib/cin-format';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
@@ -150,11 +159,15 @@ function ActivationWizardContent({
   const cinChanged = cinDraft !== null && normalizeCin(cinDraft) !== normalizeCin(property.cinCode);
 
   const [tosAccepted, setTosAccepted] = useState(false);
+  const [remindersAccepted, setRemindersAccepted] = useState(false);
   const [blockedBlockers, setBlockedBlockers] = useState<ActivationBlocker[] | null>(null);
 
   const openBlockers = knownBlockers(steps);
+  // The documents and the safety sheet do not block since the PO decision of 2026-11-01: open, the host acknowledges them once.
+  const remindersOpen = openReminders(steps).length > 0;
   const reviewStatus: ComplianceStepStatus = openBlockers.length === 0 ? 'complete' : 'pending';
-  const canComplete = openBlockers.length === 0 && tosAccepted && !completeActivation.isPending;
+  const canComplete =
+    openBlockers.length === 0 && tosAccepted && (!remindersOpen || remindersAccepted) && !completeActivation.isPending;
 
   const onNavigate = () => {
     // The 409 list refers to the last attempt: after a step is opened the summary shows the fresh server state.
@@ -224,7 +237,7 @@ function ActivationWizardContent({
     setBlockedBlockers(null);
     try {
       // Only the terms: the checklist, the CIN and the documents are saved in their own steps (never overwritten here).
-      const result = await completeActivation.mutateAsync({ tosAccepted: true });
+      const result = await completeActivation.mutateAsync({ tosAccepted: true, ...(remindersOpen ? { remindersAcknowledged: true } : {}) });
       if (result.complianceStatus === 'Active') {
         navigate(`/app/short-rent/properties/${propertyId}`);
         return;
@@ -460,6 +473,18 @@ function ActivationWizardContent({
                 ))}
 
                 <div className="space-y-3 border-t pt-4">
+                  {remindersOpen ? (
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="activation-reminders"
+                        className="mt-0.5"
+                        checked={remindersAccepted}
+                        onCheckedChange={(checked) => setRemindersAccepted(checked === true)}
+                        data-testid="activation-reminders-ack"
+                      />
+                      <Label htmlFor="activation-reminders">{t('compliance.activation.remindersAccept')}</Label>
+                    </div>
+                  ) : null}
                   <div className="flex items-start gap-2">
                     <Checkbox
                       id="activation-tos"

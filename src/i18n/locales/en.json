@@ -15,6 +15,12 @@
       "orgSettingsChanged": "Company data changed",
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
+      "propertyActivatedWithReminders": "Property activated with {{reminders}} still to complete",
+      "reminder": {
+        "documents": "the documents",
+        "documents_safety": "the documents and the safety sheet",
+        "safety": "the safety sheet"
+      },
       "system": "System"
     },
     "home": {
@@ -3167,6 +3173,7 @@
       "saveAndContinue": "Save and continue",
       "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
+      "remindersAccept": "Activate anyway: I know that the safety sheet and the documents still to complete are my obligation and I will complete them as soon as possible.",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
       "completed": "Property activated successfully",
@@ -3391,7 +3398,7 @@
       "disclaimer": "CasaZen records what you declare: it does not inspect the property and does not certify its compliance. You declare the safety requirements in the BDSR with the CIN request (art. 13-ter, par. 3).",
       "importedFromLegacy": "We imported the answers of the old checklist (smoke detector, extinguisher, gas certificate). Review the items marked \"To review\", complete the missing ones and confirm again.",
       "complete": "Checklist complete: nothing is blocking.",
-      "blockersTitle": "To complete before the activation (last save):",
+      "blockersTitle": "Points to complete (last save):",
       "itemsTitle": "Equipment and requirements",
       "toReview": "To review",
       "confirm": "I confirm that this information is true and matches what I declared in the BDSR. I know that CasaZen does not check or certify the compliance of the property.",
@@ -10673,8 +10680,8 @@
       "safety": {
         "backToQuick": "Back to the quick questions",
         "complete": "The sheet is complete.",
-        "description": "The property's safety sheet: you fill it in once and it is needed to activate the property.",
-        "dialogDescription": "Fill in the items and save: the property is activated only with a complete, confirmed sheet.",
+        "description": "A few answers are enough. The devices are your legal obligation, but the sheet does not block the activation.",
+        "dialogDescription": "Fill in the items and save. The safety devices are your obligation: the sheet does not block the activation, but it stays among the things to complete.",
         "dialogTitle": "Safety sheet",
         "full": "Add where they are, dates and proofs",
         "fullHint": "Optional: they are used for the reminders.",
@@ -10816,6 +10823,7 @@
         "loading": "Checking what is missing…",
         "none": "All in order: only the final confirmation is missing.",
         "refused": "It cannot be activated yet: the service reports these points",
+        "reminders": "Still to complete (does not block the activation)",
         "safety_one": "Complete the safety sheet: {{count}} point left",
         "safety_other": "Complete the safety sheet: {{count}} points left",
         "title": "What is missing"
@@ -11054,7 +11062,7 @@
         "floors": "An apartment is usually on one floor: change it if yours is not.",
         "cin": "You already have the CIN, which is issued with this declaration: check it."
       },
-      "missingTitle": "Still missing to activate the property",
+      "missingTitle": "Still to complete in the sheet",
       "save": "Save"
     },
     "steps": {

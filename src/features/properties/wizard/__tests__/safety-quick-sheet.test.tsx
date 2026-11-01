@@ -221,7 +221,7 @@ describe('SafetyQuickSheet', () => {
     render(<SafetyQuickSheet propertyId="prop-1" amenities={[]} areaSqm={null} />);
 
     const missing = screen.getByTestId('safety-quick-missing');
-    expect(missing).toHaveTextContent("Per attivare l'immobile manca ancora");
+    expect(missing).toHaveTextContent('Da completare nella scheda');
     expect(missing).toHaveTextContent('BDSR');
     expect(screen.queryByTestId('safety-quick-prefill-floorCount')).not.toBeInTheDocument();
   });
