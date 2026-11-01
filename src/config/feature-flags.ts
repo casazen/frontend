@@ -10,7 +10,8 @@ export type FeatureFlagKey =
   | 'supplierOnlinePayments'
   | 'supplierShowcaseBooking'
   | 'concordatoFacile'
-  | 'supplierRequestBackups';
+  | 'supplierRequestBackups'
+  | 'agencyTier';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -63,6 +64,15 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * flag says, because the server follows it to its end.
    */
   supplierRequestBackups: false,
+  /**
+   * The agency plan (backend `AgencyTier`, ADR-010): owners' statements, wire transfers to the owners, withholding tax, internal staff
+   * activities and trusted suppliers. Off until the product owner turns it on, and even then the backend answers only an org on the
+   * Agency plan whose role holds the agency permission. While it is off the pages that read those endpoints («Ritenute d'acconto» and
+   * «Bonifici proprietari» of the administration, «Fornitori fidati» of short rents, «Rendiconti» and «Attività» of the staff console)
+   * are in no menu and their addresses lead to the home of the area: before, they were shown to everyone and their first
+   * read answered 403, which sent the whole app to the no-access page.
+   */
+  agencyTier: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
