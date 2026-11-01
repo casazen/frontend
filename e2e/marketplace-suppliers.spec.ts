@@ -58,6 +58,18 @@ async function mockMarketplaceApis(page: Page) {
   await mockEntitlement(page);
   await mockServiceCategoriesApi(page);
 
+  // «Altre integrazioni» of Scopri read the calendars and the Stripe account: nothing linked, nothing connected.
+  await page.route('**/api/properties/calendar-overview', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ syncEveryMinutes: 15, staleAfterMinutes: 45, properties: [] }) }),
+  );
+  await page.route('**/api/connect/status**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] }),
+    }),
+  );
+
   await page.route('**/api/suppliers**', async (route) => {
     if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
       await route.fallback();

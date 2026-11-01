@@ -162,6 +162,19 @@ describe('MarketplacePage · Scopri', () => {
     await waitFor(() => expect(within(screen.getByTestId('marketplace-integration-calendars')).getByTestId('marketplace-integration-calendars-status')).toHaveTextContent('Da attivare'));
   });
 
+  it('MarketplacePage_Scopri_UnreadableAnswers_ShowTheCardsWithoutAStateAndDoNotBreak', async () => {
+    // An answer that is not what the API sends (a page of HTML from a proxy, say) is as good as none.
+    api.getCalendarOverview.mockResolvedValue('<!doctype html>' as never);
+    api.getConnectStatus.mockResolvedValue('<!doctype html>' as never);
+    renderAt(<MarketplacePage />);
+
+    const calendars = await screen.findByTestId('marketplace-integration-calendars');
+    await waitFor(() => expect(api.getConnectStatus).toHaveBeenCalled());
+    expect(within(calendars).queryByTestId('marketplace-integration-calendars-status')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('marketplace-integration-payments')).queryByTestId('marketplace-integration-payments-status')).not.toBeInTheDocument();
+    expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
+  });
+
   it('MarketplacePage_Scopri_WithoutPropertyWrite_NeitherShowsNorReadsThePayments', async () => {
     workspace.permissions = new Set(['short-rent:booking.read', 'short-rent:property.read']);
     renderAt(<MarketplacePage />);

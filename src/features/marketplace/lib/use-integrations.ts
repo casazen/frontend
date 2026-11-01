@@ -43,23 +43,25 @@ export function useIntegrations(): Integration[] {
   const integrations: Integration[] = [];
 
   if (canCalendars) {
-    const linked = calendars.data?.properties.reduce((total, property) => total + property.feeds.length, 0) ?? 0;
+    // An answer that is not a list of properties is as good as no answer: the card says nothing of its state, it does not break the page.
+    const properties = Array.isArray(calendars.data?.properties) ? calendars.data.properties : null;
+    const linked = properties?.reduce((total, property) => total + (Array.isArray(property.feeds) ? property.feeds.length : 0), 0) ?? 0;
     integrations.push({
       id: 'calendars',
       icon: CalendarSync,
       href: CHANNELS_PATH,
-      status: calendars.data ? (linked > 0 ? 'active' : 'inactive') : calendars.isError ? 'unknown' : 'loading',
+      status: properties ? (linked > 0 ? 'active' : 'inactive') : calendars.isPending ? 'loading' : 'unknown',
       count: linked,
     });
   }
 
   if (canPayments) {
-    const connect = payments.data ? resolveConnectUiStatus(payments.data) : undefined;
+    const connect = payments.data && typeof payments.data === 'object' ? resolveConnectUiStatus(payments.data) : undefined;
     integrations.push({
       id: 'payments',
       icon: CreditCard,
       href: PAYMENTS_PATH,
-      status: connect === 'active' ? 'active' : connect === 'pending' ? 'pending' : connect ? 'inactive' : payments.isError ? 'unknown' : 'loading',
+      status: connect === 'active' ? 'active' : connect === 'pending' ? 'pending' : connect ? 'inactive' : payments.isPending ? 'loading' : 'unknown',
     });
   }
 
