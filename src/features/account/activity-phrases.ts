@@ -14,6 +14,11 @@ export interface PhraseContext {
  * ids and never a name, so the sentence is composed here from the type of the event and what its ids and details say. The events
  * of the people have their words; every other one gets the generic sentence until the page that shows it (the log) writes its own.
  */
+/** True when `key` has a text: the translation of a missing key is the key itself. */
+function i18nHas(t: TFunction, key: string): boolean {
+  return t(key, { defaultValue: '' }) !== '';
+}
+
 export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: PhraseContext): string {
   const { details } = entry;
   const member = () => memberName(entry.subjectId) ?? t('account.activity.formerMember');
@@ -48,6 +53,14 @@ export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: Phras
     case 'AdminGrantedConcordatoFacileGift':
       // The administrator of the platform gave the org a complimentary practice of the guided contract (CF-END): no name of the supplier.
       return t('leaseRound.activity.adminGrantedGift');
+    case 'PropertyActivatedWithReminders': {
+      // A property activated with the documents or the safety sheet still to complete, acknowledged by the host (PO decision 2026-11-01).
+      // The detail is `documents`, `safety` or `documents.safety`: each has its words; anything else gets the generic sentence.
+      const key = `account.activity.reminder.${(details.reminders ?? '').replace('.', '_')}`;
+      return i18nHas(t, key)
+        ? t('account.activity.propertyActivatedWithReminders', { reminders: t(key) })
+        : t('account.activity.other');
+    }
     default:
       return t('account.activity.other');
   }

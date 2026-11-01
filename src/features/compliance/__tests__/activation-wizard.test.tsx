@@ -316,6 +316,28 @@ describe('PropertyActivationWizard', () => {
     expect(await screen.findByText('property-detail')).toBeInTheDocument();
   });
 
+  it('remindersOpen_DocumentsAndSafetyAsWarnings_TheAcknowledgementIsAskedAndSentWithTheTerms', async () => {
+    // PO decision 2026-11-01 (option A): the documents and the safety sheet do not block; open, the host acknowledges them once.
+    mockActivation(
+      activation('Pending', {
+        documents: { blocker: false, status: 'warning', message: 'Carica i documenti richiesti: CinCertificate.' },
+        safety: { blocker: false, status: 'warning', blockers: [{ step: 'safety', code: 'safety_confirmation_missing', message: '' }] },
+      }),
+    );
+    renderWizard();
+
+    expect(screen.getByTestId('activation-review')).toBeInTheDocument();
+    fireEvent.click(tosCheckbox()!);
+    expect(screen.getByTestId('activation-complete-button')).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('activation-reminders-ack'));
+    expect(screen.getByTestId('activation-complete-button')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('activation-complete-button'));
+
+    await waitFor(() => expect(completeActivation).toHaveBeenCalledTimes(1));
+    expect(completeActivation.mock.calls[0][0]).toEqual({ tosAccepted: true, remindersAcknowledged: true });
+  });
+
   it('stepWithWarnings_CinIstatMismatch_ShowsTheServerNoteWithoutBlockingTheStep', () => {
     mockActivation(
       activation('Active', {
