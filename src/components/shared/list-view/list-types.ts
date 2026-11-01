@@ -348,10 +348,22 @@ export interface ListDefinition<Row> {
 
   /** Nothing in the list at all. */
   empty: ListEmpty;
-  /** Rows exist but none passes the search and the filters. */
-  noResults?: { title: string; description?: string };
+  /**
+   * Rows exist but none passes the search and the filters. `byChip` says it another way when the quick filter alone leaves nothing (no
+   * words, no filter), for the list that opens on a narrowed quick filter («Nessun incasso in arrivo»); `actionLabel` names the way
+   * out, which is the same one as «Azzera i filtri»: the quick filter for everything.
+   */
+  noResults?: { title: string; description?: string; byChip?: Readonly<Record<string, ListNoResultsOfChip>> };
   /** The name of the rows with a number: "12 ospiti". Default: "12 risultati". */
   countLabel?: (count: number) => string;
+}
+
+/** What a list says when the quick filter alone leaves no row (`ListDefinition.noResults.byChip`). */
+export interface ListNoResultsOfChip {
+  title: string;
+  description: string;
+  /** The button that goes back to the quick filter for everything. Default: «Azzera i filtri». */
+  actionLabel?: string;
 }
 
 /** Where saved views live: a person, in one of the contexts (areas) of the app. */

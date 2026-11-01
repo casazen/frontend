@@ -50,6 +50,7 @@ function userVariants(contextKey: AppContextKey) {
   const flagSets: [string, Partial<FeatureFlags>][] = [
     ['flags off', {}],
     ['otaPartnerApi on', { otaPartnerApi: true }],
+    ['agencyTier on', { agencyTier: true }],
   ];
   return predicates.flatMap(([userLabel, hasPermission]) =>
     flagSets.map(([flagLabel, features]) => ({ label: `${userLabel}, ${flagLabel}`, hasPermission, features })),
@@ -93,7 +94,6 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/channels',
       '/app/short-rent/verifications',
       '/app/short-rent/approval-queue',
-      '/app/short-rent/trusted-suppliers',
       '/app/short-rent/profile',
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',
@@ -148,16 +148,33 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/seo',
       '/app/admin/marketing',
       '/app/admin/cin',
-      '/app/admin/statements',
     ]);
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin/suppliers/invite',
       '/app/admin/invite-qr',
       '/app/admin/ai',
       '/app/admin/demo',
-      '/app/admin/activities',
       '/app/admin/profile',
     ]);
+  });
+
+  // The pages of the agency plan read endpoints that answer only an org on that plan (ADR-010): shown to everyone, their first read
+  // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
+  const AGENCY_PAGES: [AppContextKey, string][] = [
+    ['short-rent', '/app/short-rent/trusted-suppliers'],
+    ['account', '/app/account/withholding'],
+    ['account', '/app/account/wire-transfers'],
+    ['admin', '/app/admin/statements'],
+    ['admin', '/app/admin/activities'],
+  ];
+
+  it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
+    expect(entryOf(path).featureFlag).toBe('agencyTier');
+    expect(isEntryFeatureEnabled(entryOf(path), {})).toBe(false);
+    for (const features of [{}, { agencyTier: false }, { otaPartnerApi: true }]) {
+      expect(paths(getVisibleNavEntries(contextKey, allowAll, features))).not.toContain(path);
+    }
+    expect(paths(getVisibleNavEntries(contextKey, allowAll, { agencyTier: true }))).toContain(path);
   });
 
   it.each(CONTEXTS)('%s: at most seven primary entries for every role and flag', (contextKey) => {

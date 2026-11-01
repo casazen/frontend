@@ -7907,6 +7907,12 @@
     "notEstimatedUnknown": "regime fiscale non registrato",
     "toCheck": "da verificare: vedi «Da sapere»",
     "notesTitle": "Da sapere",
+    "term": {
+      "label": "Periodo del contratto",
+      "period": "dal {{from}} al {{to}}",
+      "ended": "concluso",
+      "endsToday": "termina oggi"
+    },
     "empty": {
       "title": "Nessun contratto in vigore nel {{year}}",
       "description": "Appena un contratto firmato è in vigore, qui trovi i canoni e le imposte stimate per il commercialista.",
@@ -8804,12 +8810,11 @@
   },
   "marketplace": {
     "title": "Marketplace",
-    "description": "Trova i fornitori che lavorano vicino ai tuoi immobili e chiedi un intervento.",
+    "description": "Fornitori vicino ai tuoi immobili, partner esterni e integrazioni.",
     "requestIntervention": "Richiedi un intervento",
     "sections": {
       "label": "Sezioni del Marketplace",
       "discover": "Scopri",
-      "categories": "Categorie",
       "mine": "Le mie app"
     },
     "search": {
@@ -8819,14 +8824,47 @@
       "description": "Per nome del fornitore, servizio o categoria."
     },
     "casazenSuppliers": "Fornitori CasaZen",
-    "seeAll": "Vedi tutti",
-    "seeAllOf": "Vedi tutti: {{category}}",
     "categories": {
-      "title": "Categorie",
-      "description": "Sfoglia i fornitori per tipo di servizio.",
       "count_one": "{{count}} fornitore",
       "count_other": "{{count}} fornitori",
       "none": "Ancora nessun fornitore"
+    },
+    "partners": {
+      "title": "Integrazioni con partner esterni",
+      "description": "Servizi di aziende esterne per pulizie, check-in e manutenzione. Non sono fornitori CasaZen: si aprono sul sito dell'azienda. Controlla che servano la tua zona.",
+      "learnMore": "Scopri",
+      "learnMoreAria": "Scopri {{name}} (si apre in una nuova scheda)",
+      "items": {
+        "operto": "Tecnologia per gli ospiti che riduce i costi di gestione.",
+        "turno": "Trova e gestisci servizi di pulizia per affitti brevi.",
+        "properly": "Piattaforma di controllo qualità degli interventi.",
+        "doinn": "Trova e gestisci servizi di pulizia per affitti brevi.",
+        "tidy": "Automazione di pulizia e manutenzione dell'immobile."
+      }
+    },
+    "integrations": {
+      "title": "Altre integrazioni",
+      "description": "Quello che CasaZen collega già: attivalo o gestiscilo dalla sua pagina.",
+      "status": {
+        "active": "Attiva",
+        "inactive": "Da attivare",
+        "pending": "In verifica"
+      },
+      "manage": "Gestisci",
+      "activate": "Attiva",
+      "items": {
+        "calendars": {
+          "title": "Calendari Airbnb e Booking.com",
+          "summary": "Collega i calendari dei portali (iCal) per evitare le doppie prenotazioni.",
+          "detail_one": "{{count}} calendario collegato",
+          "detail_other": "{{count}} calendari collegati"
+        },
+        "payments": {
+          "title": "Pagamenti con carta",
+          "summary": "Incassa dai tuoi ospiti con carta, tramite Stripe.",
+          "detail": "Incassi con carta attivi."
+        }
+      }
     },
     "category": {
       "description": "I fornitori di questa categoria che lavorano nella zona dell'immobile.",
@@ -8847,6 +8885,7 @@
     },
     "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "noNetwork": "In questo territorio non c'è ancora una rete CasaZen per questa categoria.",
+    "noNetworkPartners": "Qui sotto trovi i partner esterni.",
     "noMatch": "Nessun fornitore corrisponde alla ricerca.",
     "noVerified": "Nessuno di questi fornitori è verificato.",
     "clearFilters": "Azzera i filtri",
@@ -8887,21 +8926,10 @@
     },
     "mine": {
       "title": "Le mie app",
-      "description": "I fornitori a cui hai già chiesto un intervento e le richieste che hai mandato.",
-      "suppliersTitle": "I miei fornitori",
-      "summary_one": "{{count}} richiesta · ultima il {{date}}",
-      "summary_other": "{{count}} richieste · ultima il {{date}}",
-      "open_one": "{{count}} aperta",
-      "open_other": "{{count}} aperte",
-      "requestAgain": "Richiedi di nuovo",
-      "openPage": "Apri la scheda",
-      "seeRequests": "Vedi le richieste",
-      "notAround": "Non lavora nella zona di questo immobile.",
-      "onlySupplier": "Solo le richieste di {{name}}",
-      "showAll": "Mostra tutte",
-      "emptyTitle": "Non hai ancora chiesto interventi",
-      "emptyHint": "Quando chiederai un intervento a un fornitore lo ritroverai qui, con le sue richieste.",
-      "discover": "Scopri i fornitori"
+      "description": "Le integrazioni che hai attivato.",
+      "emptyTitle": "Nessuna integrazione attiva",
+      "emptyHint": "Quando colleghi un calendario o attivi i pagamenti con carta li trovi qui.",
+      "discover": "Scopri le integrazioni"
     },
     "supplier": {
       "title": "Fornitore",
@@ -8909,10 +8937,7 @@
       "requestService": "Richiedi: {{service}}",
       "backToMarketplace": "Torna al Marketplace"
     },
-    "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
-    "noRequests": "Nessuna richiesta di servizio.",
-    "noRequestsHint": "Seleziona una proprietà e un fornitore per creare il primo intervento.",
     "viewBooking": "Vedi prenotazione",
     "quickActions": "Azioni rapide",
     "goToBookings": "Vai alle prenotazioni",
@@ -9453,8 +9478,12 @@
       },
       "chips": {
         "all": "Tutti",
+        "canceled": "Annullati",
+        "canceledHint": "Pagamenti annullati insieme alla prenotazione: non sono mai arrivati",
         "collected": "Incassati",
         "collectedHint": "Pagamenti arrivati, anche se in parte rimborsati",
+        "incoming": "In arrivo",
+        "incomingHint": "Pagamenti dei soggiorni in arrivo o in corso, da incassare o già incassati",
         "refunded": "Rimborsati",
         "refundedHint": "Pagamenti restituiti, in tutto o in parte",
         "toCollect": "Da incassare",
@@ -9484,6 +9513,9 @@
       },
       "forBooking": "Prenotazione {{code}}",
       "loadError": "Impossibile caricare i pagamenti. Riprova.",
+      "noIncomingAction": "Vedi tutti i pagamenti",
+      "noIncomingDescription": "Qui compaiono i pagamenti dei soggiorni in arrivo o in corso. Per vedere anche quelli passati apri «Tutti».",
+      "noIncomingTitle": "Nessun incasso in arrivo",
       "noResultsDescription": "Prova a togliere un filtro o a cercare con un altro nome.",
       "noResultsTitle": "Nessun pagamento con questi filtri",
       "refundedAmount": "Rimborsati {{amount}}",
@@ -12711,7 +12743,11 @@
     "noAccess": {
       "title": "Nessun accesso disponibile",
       "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
-      "loginAgain": "Accedi di nuovo"
+      "loginAgain": "Accedi di nuovo",
+      "pageTitle": "Non hai accesso a questa pagina",
+      "pageDescription": "Il tuo ruolo non comprende questa pagina: le altre aree del tuo account restano a tua disposizione. Se ti hanno appena dato un nuovo ruolo, accedi di nuovo per aggiornarlo.",
+      "chooseArea": "Torna alle tue aree",
+      "goHome": "Torna alla home"
     },
     "accountInactive": {
       "title": "Account disattivato",

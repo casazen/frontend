@@ -40,7 +40,9 @@ export interface Payment {
 /**
  * A payment as `GET /payments` lists it (SR-03, `PaymentListItemDto`): the guest, the property and the code of its booking,
  * the amounts in euros and in cents (exact), the status and the method by name. The days are UTC instants: `processedAt` is
- * when the money came in (null until then), `createdAt` when the payment was recorded.
+ * when the money came in (null until then), `createdAt` when the payment was recorded. `bookingCheckIn` and `bookingCheckOut` are
+ * the stay of the booking as calendar days (`YYYY-MM-DD`): a payment has no due date, the stay is what says a payment is for a stay
+ * that is coming or on, or one that is over.
  */
 export interface PaymentListItem {
   id: string;
@@ -66,6 +68,9 @@ export interface PaymentListItem {
   stripePaymentIntentId?: string | null;
   processedAt: string | null;
   createdAt: string;
+  /** The first and the last day of the stay of the booking; missing (an API older than the web app) or null when not read. */
+  bookingCheckIn?: string | null;
+  bookingCheckOut?: string | null;
 }
 
 /** `POST /payments` (SR-06b): a payment the host received outside CasaZen, cash or bank transfer, to record on a booking. */
