@@ -53,8 +53,9 @@ function PaymentsSummary({ month, today }: { month: PaymentsMonth; today: string
 
 /**
  * The payments of the host (SR-04c): the three numbers of the month and the unified list in `client` mode. The API gives every
- * payment at once, so the search, the quick filters (to collect, collected, refunded), the filters (property, method, dates), the
- * order and the views all work on the rows in the page, and all of it is in the address (`?chip=toCollect&f_method=BankTransfer`).
+ * payment at once, so the search, the quick filters (in arrivo, which the page opens on, all, to collect, collected, refunded,
+ * cancelled), the filters (property, method, dates), the order and the views all work on the rows in the page, and all of it is in
+ * the address (`?chip=toCollect&f_method=BankTransfer`; the page opens on «In arrivo» when there is no `chip`).
  * The page is for who may read the payments (`payment.read`); the others find the reserved page of the shell.
  */
 export function PaymentsPage() {

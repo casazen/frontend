@@ -66,12 +66,13 @@ export const REPORTS: readonly ReportDefinition[] = [
   { id: 'annual', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'annual' }, formats: ['csv', 'pdf'] },
   { id: 'withholding', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'withholding' }, formats: ['csv', 'pdf'] },
   { id: 'alloggiati', type: 'operational', suggested: null, source: { kind: 'page', href: () => ALLOGGIATI_PATH }, formats: [] },
-  // The statement is the list of the payments of last month, which the page can download.
+  // The statement is the list of the payments of last month, which the page can download: all of them (`chip=all`), the page opens on
+  // the ones of the stays that are coming.
   {
     id: 'payments',
     type: 'financial',
     suggested: null,
-    source: { kind: 'page', href: (today) => `${PAYMENTS_PATH}?f_date=${previousMonthRange(today)}` },
+    source: { kind: 'page', href: (today) => `${PAYMENTS_PATH}?chip=all&f_date=${previousMonthRange(today)}` },
     formats: [],
   },
 ];

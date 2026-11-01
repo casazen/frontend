@@ -19,13 +19,13 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the main menu has seven entries in three groups and "Altro" holds the rest', async ({ page }) => {
+    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds the rest', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await expect(menu.getByRole('group')).toHaveCount(3);
-      await expect(menu.getByRole('link')).toHaveCount(7);
-      for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili', 'Sito di prenotazione', 'Marketplace', 'Incassi']) {
+      await expect(menu.getByRole('link')).toHaveCount(8);
+      for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Adempimenti', 'Immobili', 'Sito di prenotazione', 'Marketplace', 'Incassi']) {
         await expect(menu.getByRole('link', { name })).toBeVisible();
       }
 
@@ -33,7 +33,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(more).toHaveAttribute('aria-expanded', 'false');
       await more.click();
       await expect(more).toHaveAttribute('aria-expanded', 'true');
-      const others = ['Ospiti', 'Adempimenti', 'Ricavi', 'Regime fiscale', 'Profilo', 'Stripe Connect', 'Dominio pubblico', 'Organizzazione'];
+      const others = ['Ospiti', 'Ricavi', 'Regime fiscale', 'Profilo', 'Stripe Connect', 'Dominio pubblico', 'Organizzazione'];
       for (const name of others) {
         await expect(menu.getByRole('link', { name, exact: true })).toBeVisible();
       }
@@ -163,8 +163,8 @@ test.describe('Area navigation (UI-04a)', () => {
       );
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
+      // The adempimenti are in the main menu: no need to open "Altro" to reach them.
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
-      await menu.getByRole('button', { name: 'Altro' }).click();
       await menu.getByRole('link', { name: 'Adempimenti' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
@@ -175,9 +175,9 @@ test.describe('Area navigation (UI-04a)', () => {
       await related.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/alloggiati$/);
-      // Still "Adempimenti" that is highlighted, and "Altro" stays open.
+      // Still "Adempimenti" that is highlighted, and "Altro" stays closed.
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
-      await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+      await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
       await expect(page.getByRole('link', { name: 'Alloggiati' })).toHaveCount(0);
     });
 
