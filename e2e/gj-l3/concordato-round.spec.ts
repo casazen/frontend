@@ -46,7 +46,7 @@ import {
  * simulated page `/guided-form`; its look is not the supplier's).
  *
  * Three tests: the whole round with each of the two accesses, and (admin access) the way of a practice that the service closes without an
- * attestation: the sheet says why, offers «Riprendi la compilazione» with no privacy notice asked again, and the second form makes a second
+ * attestation: the sheet says why, offers «Compila di nuovo il modulo» with no privacy notice asked again, and the second form makes a second
  * practice.
  *
  * Every action goes through the UI; the API is only an oracle for the assertions (read-only, on behalf of the landlord), except the move of
@@ -285,7 +285,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
         await snap('sheet-with-the-closed-practice');
 
         const again = page.getByTestId('lease-partner-proceed');
-        await expect(again).toHaveText('Riprendi la compilazione');
+        await expect(again).toHaveText('Compila di nuovo il modulo');
         await expect(again).toBeEnabled();
         await again.click();
         await page.waitForURL(/\/guided-form/, { timeout: 60_000 });

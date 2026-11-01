@@ -348,9 +348,47 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
     expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
     expect(post).not.toHaveBeenCalled();
+    // The practice is with the supplier, not waiting for the person: nothing sends them to their mailbox.
+    expect(screen.queryByTestId('lease-partner-hint')).not.toBeInTheDocument();
   });
 
-  it('render_ConcordatoDraftForThePartner_PracticeClosed_TheFormCanBeResumed', async () => {
+  // The two statuses in which the practice waits for the person (a request e-mailed to them, or stopped for want of an answer) say so:
+  // the sheet was the only place where they would look and it told them nothing to do. The words are the product's, not the supplier's.
+  it.each(['AwaitingUser', 'Suspended'] as const)('render_ConcordatoDraftForThePartner_Practice%s_WaitsForThePerson_SaysToLookInTheMailbox', async (practiceStatus) => {
+    mockLeaseWithService(partnerDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: practiceStatus }] } }),
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const hint = await screen.findByTestId('lease-partner-hint');
+    expect(hint).toHaveTextContent(i18n.t(`guidedContract.hint.${practiceStatus}`));
+    expect(hint).toHaveTextContent(/e-mail/);
+    expect(hint).toHaveTextContent(/spam/);
+    expect(within(screen.getByTestId('lease-partner-status')).getByTestId('cf-status-badge')).toHaveAttribute('data-status', practiceStatus);
+    expect(screen.queryByTestId('lease-partner-proceed')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lease-partner-draft').textContent).not.toMatch(/partner|concordato\s*facile/i);
+  });
+
+  it.each(['Received', 'DraftSent', 'SignedReceived', 'SentToAssociation', 'Attested', 'Registered'] as const)(
+    'render_ConcordatoDraftForThePartner_Practice%s_IsWithTheSupplier_NoHintToLookInTheMailbox',
+    async (practiceStatus) => {
+      mockLeaseWithService(partnerDraft(), {
+        access: () => accessOf({ ...ACTIVE, ...OPENED }),
+        status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: practiceStatus }] } }),
+      });
+
+      renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+      const status = await screen.findByTestId('lease-partner-status');
+      expect(within(status).getByTestId('cf-status-badge')).toHaveAttribute('data-status', practiceStatus);
+      expect(screen.queryByTestId('lease-partner-hint')).not.toBeInTheDocument();
+    },
+  );
+
+  // A new form after the closing makes a new practice: the button says so instead of «resume».
+  it('render_ConcordatoDraftForThePartner_PracticeClosed_TheFormCanBeFilledInAgain', async () => {
     mockLeaseWithService(partnerDraft(), {
       access: () => accessOf({ ...ACTIVE, ...OPENED }),
       status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: 'ClosedWithoutAttestation', closeReason: 'withdrawn' }] } }),
@@ -359,7 +397,8 @@ describe('LeaseDetailPage', () => {
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
     const proceed = await mainButton();
-    expect(proceed).toHaveTextContent(i18n.t('guidedContract.resume'));
+    expect(proceed).toHaveTextContent(i18n.t('guidedContract.fillAgain'));
+    expect(proceed).not.toHaveTextContent(i18n.t('guidedContract.resume'));
     expect(screen.queryByTestId('lease-partner-status')).not.toBeInTheDocument();
     // CF-END: what became of the practice is said, with its number, before the button that starts again.
     const closed = screen.getByTestId('lease-partner-closed');

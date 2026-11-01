@@ -11,7 +11,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatDateTime } from '@/lib/utils';
 import { isCfPrivacyNotAccepted, useCfAcceptPrivacy, useCfAccess, useCfStatus, useOpenCfForm } from '@/queries/use-concordatofacile';
-import type { CfAccessResponse, CfPracticeResponse } from '@/types/concordatofacile.types';
+import type { CfAccessResponse, CfPracticeResponse, CfPracticeStatus } from '@/types/concordatofacile.types';
 import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
 
 /**
@@ -23,6 +23,12 @@ const BUTTONS = 'flex flex-col gap-2 sm:flex-row sm:flex-wrap';
 
 /** A practice of the partner that is closed without an attestation: the form can be filled in again. Any other one is under way or done. */
 const CLOSED = 'ClosedWithoutAttestation';
+
+/**
+ * The statuses in which the practice waits for the person and not for the supplier: a request for data or documents was e-mailed to
+ * them (`AwaitingUser`), or the practice stopped for want of an answer (`Suspended`). Nothing else in the sheet would send them to their mailbox.
+ */
+const WAITS_FOR_THE_PERSON: readonly CfPracticeStatus[] = ['AwaitingUser', 'Suspended'];
 
 /** The date of a practice as the person reads it; nothing for a value that is not a date (the sheet never fails on the partner's data). */
 function changedOn(value: string): string | null {
@@ -75,6 +81,11 @@ function StatusView({ leaseId, practice }: { leaseId: string; practice: CfPracti
       <p className="text-xs text-foreground/70" data-testid="lease-partner-practice">
         {t('leaseRound.practice.number', { id: practice.practiceId })}
       </p>
+      {WAITS_FOR_THE_PERSON.includes(practice.status) ? (
+        <p className="text-sm font-medium" data-testid="lease-partner-hint">
+          {t(`guidedContract.hint.${practice.status}`)}
+        </p>
+      ) : null}
       <p className="text-sm">{t('guidedContract.sent')}</p>
       {practice.comuneDiffersFromLink ? <p className="text-sm font-medium" data-testid="lease-partner-comune">{t('guidedContract.comuneDiffers')}</p> : null}
       <div className={BUTTONS}>
@@ -116,9 +127,10 @@ interface FormViewProps {
 
 /**
  * No practice under way (none yet, or all closed): the person fills the form in. Before anything, the privacy notice (a box, once, kept
- * on the server); then ONE main button — «Procedi con la creazione del contratto», or «Riprendi la compilazione» when the form was opened
- * before. Without the access it goes to the page of the service (payment, or the gift practice); with it (platform administrator,
- * payment, gift) it goes straight to the form, in this same tab, with no page in between.
+ * on the server); then ONE main button — «Procedi con la creazione del contratto», «Riprendi la compilazione» when the form was opened
+ * before, or «Compila di nuovo il modulo» when its practice was closed (a new form makes a new practice, nothing is resumed). Without
+ * the access it goes to the page of the service (payment, or the gift practice); with it (platform administrator, payment, gift) it
+ * goes straight to the form, in this same tab, with no page in between.
  */
 function FormView({ leaseId, access, accessPending, checking, unavailable, closed }: FormViewProps) {
   const { t } = useTranslation();
@@ -135,6 +147,8 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
   // Pressed once: the page is on its way out when the link has been made (see `useOpenCfForm`).
   const busy = accept.isPending || form.isPending || form.isSuccess;
   const waiting = accessPending || checking;
+  let proceedLabel = opened ? t('guidedContract.resume') : t('leases.partnerDraft.proceed');
+  if (closed) proceedLabel = t('guidedContract.fillAgain');
 
   const go = async () => {
     setFailure(null);
@@ -180,7 +194,7 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
           className={BUTTON}
           data-testid="lease-partner-proceed"
         >
-          {opened ? t('guidedContract.resume') : t('leases.partnerDraft.proceed')}
+          {proceedLabel}
         </Button>
         <UploadLink leaseId={leaseId} />
       </div>
