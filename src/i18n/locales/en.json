@@ -12677,7 +12677,11 @@
     "noAccess": {
       "title": "No access available",
       "description": "Your account is not associated with any operational workspace. Sign out and sign back in, or contact the administrator for role assignment.",
-      "loginAgain": "Sign in again"
+      "loginAgain": "Sign in again",
+      "pageTitle": "You can't open this page",
+      "pageDescription": "Your role does not include this page: the other areas of your account are still available. If you were just given a new role, sign in again to refresh it.",
+      "chooseArea": "Back to your areas",
+      "goHome": "Back to home"
     },
     "accountInactive": {
       "title": "Account deactivated",
