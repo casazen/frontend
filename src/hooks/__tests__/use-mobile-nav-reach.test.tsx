@@ -32,6 +32,7 @@ const FLAGS_OFF: FeatureFlags = {
   supplierShowcaseBooking: false,
   concordatoFacile: false,
   supplierRequestBackups: false,
+  agencyTier: false,
 };
 const FLAGS_ON: FeatureFlags = {
   otaPartnerApi: true,
@@ -42,6 +43,7 @@ const FLAGS_ON: FeatureFlags = {
   supplierShowcaseBooking: true,
   concordatoFacile: true,
   supplierRequestBackups: true,
+  agencyTier: true,
 };
 
 function permissionsOf(context: AppContextKey): string[] {
