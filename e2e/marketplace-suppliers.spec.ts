@@ -157,16 +157,16 @@ test.describe('Marketplace suppliers (#340)', () => {
     await mockMarketplaceApis(page);
     await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
 
-    // Scopri: «Fornitori CasaZen» has a row for each category the suppliers offer (MKT: the marketplace has pages of its own).
+    // Scopri: «Fornitori CasaZen» is a tile for each category (MKT: the categories are the first group of Scopri, then the partners).
     await expect(page.getByTestId('marketplace-property-select')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('marketplace-category-row-cleaning')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`)).toBeVisible();
+    await expect(page.getByTestId('marketplace-category-cleaning')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('marketplace-partners-section')).toBeVisible();
 
-    // Categorie → a category → the suppliers that offer it.
-    await page.getByTestId('marketplace-section-categories').click();
+    // A category → the suppliers that offer it.
     await page.getByTestId('marketplace-category-cleaning').click();
     await expect(page).toHaveURL(/\/marketplace\/categories\/cleaning/);
     await expect(page.getByTestId('marketplace-supplier-grid')).toBeVisible();
+    await expect(page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`)).toBeVisible();
 
     // The search: Enter on Scopri leads to the page of the search, which asks the suppliers with the words.
     await page.getByTestId('marketplace-section-discover').click();

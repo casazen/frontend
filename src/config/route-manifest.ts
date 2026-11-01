@@ -438,13 +438,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
   },
-  // The other pages of the marketplace (MKT): the tabs Categorie and Le mie app, a category, the search. They are in no menu: the entry
-  // above stays the highlighted one (the pages are under its address) and its tabs lead to them.
+  // The other pages of the marketplace (MKT): the tab Le mie app, a category, the search. They are in no menu: the entry above stays the
+  // highlighted one (the pages are under its address) and its tabs lead to them. The old page of the categories is Scopri now.
   {
     path: '/app/short-rent/marketplace/categories',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    component: async () => ({ default: (await import('@/features/marketplace/categories-page')).MarketplaceCategoriesPage }),
+    component: async () => ({ default: (await import('@/features/marketplace/categories-redirect')).MarketplaceCategoriesRedirect }),
   },
   {
     path: '/app/short-rent/marketplace/categories/:category',

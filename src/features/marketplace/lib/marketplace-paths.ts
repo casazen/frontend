@@ -1,9 +1,13 @@
-/** The addresses of the pages of the Marketplace of Affitti brevi (MKT): Scopri, Categorie, a category, Cerca, Le mie app. */
+/**
+ * The addresses of the pages of the Marketplace of Affitti brevi (MKT): Scopri (which shows the categories), a category, Cerca, Le mie
+ * app. The old page of the categories, `…/categories`, leads to Scopri (`MarketplaceCategoriesRedirect`).
+ */
 
 export const MARKETPLACE_PATH = '/app/short-rent/marketplace';
+/** The base of the pages of one category (`…/categories/cleaning`); the address alone leads to Scopri. */
 export const MARKETPLACE_CATEGORIES_PATH = `${MARKETPLACE_PATH}/categories`;
 export const MARKETPLACE_SEARCH_PATH = `${MARKETPLACE_PATH}/search`;
-/** «Le mie app»: what the host already uses of the marketplace. */
+/** «Le mie app»: the integrations the host has on. */
 export const MARKETPLACE_MINE_PATH = `${MARKETPLACE_PATH}/mine`;
 
 /** The parameter of the address that holds the property the marketplace is about. */
