@@ -3,17 +3,20 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Ellipsis } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getNavBarLabel, getNavLabel } from '@/lib/nav-labels';
+import { getNavBarLabel, getNavCountLabel, getNavLabel } from '@/lib/nav-labels';
 import { useMobileNav } from '@/hooks/use-mobile-nav';
 import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useUiStore } from '@/store/ui-store';
-import type { AppContextKey } from '@/config/route-manifest';
+import type { AppContextKey, NavCountKey } from '@/config/route-manifest';
 import { NavCountPill } from './nav-count-pill';
 import { NavIcon } from './nav-icon';
 
 interface BottomNavProps {
   contextKey: AppContextKey;
 }
+
+/** The counter that "Altro" shows on its own: what carries a risk of a sanction is never hidden behind it. */
+const COMPLIANCE_COUNT: NavCountKey = 'compliance';
 
 // A column of the bar is a fifth of a 360 px screen (72 px) and the widest name ("Prenotazioni", "Disponibilità") is
 // about 67 px in Inter at 11 px semibold: it fits with no ellipsis (the tabs have no side padding, the room is the
@@ -55,9 +58,11 @@ function BarIcon({ active, children }: { active: boolean; children: React.ReactN
  */
 export function BottomNav({ contextKey }: BottomNavProps) {
   const { t } = useTranslation();
-  const { bottomEntries, hasMore, hasBar, activeTab, sidebarOpen, setSidebarOpen } = useMobileNav(contextKey);
+  const { bottomEntries, moreEntries, hasMore, hasBar, activeTab, sidebarOpen, setSidebarOpen } = useMobileNav(contextKey);
   const setBottomBarVisible = useUiStore((state) => state.setBottomBarVisible);
-  const counts = useNavCounts(bottomEntries);
+  const counts = useNavCounts([...bottomEntries, ...moreEntries]);
+  // A risk of a sanction behind "Altro" is not hidden by it: the tab says there is something, in red, before the sheet is opened.
+  const moreFines = moreEntries.some((entry) => entry.navCount === COMPLIANCE_COUNT) ? (counts[COMPLIANCE_COUNT] ?? 0) : 0;
 
   useEffect(() => {
     if (!hasBar) return undefined;
@@ -119,6 +124,12 @@ export function BottomNav({ contextKey }: BottomNavProps) {
             <span>{t('nav.more')}</span>
             <BarIcon active={moreIsActive}>
               <Ellipsis className="h-6 w-6 shrink-0" aria-hidden="true" />
+              {moreFines > 0 ? (
+                <>
+                  <span aria-hidden="true" data-testid="more-compliance-mark" className="absolute right-2 top-0.5 size-2.5 rounded-full bg-destructive ring-2 ring-background" />
+                  <span className="sr-only">{`, ${getNavCountLabel(COMPLIANCE_COUNT, moreFines, t)}`}</span>
+                </>
+              ) : null}
             </BarIcon>
           </button>
         ) : null}

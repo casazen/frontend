@@ -3125,21 +3125,53 @@
       "turnoversPending": "Properties to declare ready"
     },
     "cockpit": {
-      "kicker": "What is missing",
+      "kicker": {
+        "fine": "You risk a penalty",
+        "start": "To get started",
+        "chore": "To close"
+      },
       "allClear": {
         "title": "You are all set",
         "body": "Nothing is pending: your properties are active and your stays are in order.",
         "cta": "Open properties"
       },
-      "then_one": "Then: {{count}} more thing to fix",
-      "then_other": "Then: {{count}} more things to fix",
-      "stays": {
-        "title": "To do"
+      "then": {
+        "lead": "Then: {{what}}",
+        "fine_one": "{{count}} more with a legal deadline",
+        "fine_other": "{{count}} more with a legal deadline",
+        "start_one": "{{count}} property to activate",
+        "start_other": "{{count}} properties to activate",
+        "chore_one": "{{count}} to close",
+        "chore_other": "{{count}} to close"
       },
-      "properties": {
-        "title": "Your properties"
+      "fine": {
+        "title": "Legal deadlines",
+        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "moreLink": "See them all in Alloggiati"
       },
-      "seeAll": "See all ({{count}})",
+      "start": {
+        "title": "To get started",
+        "intro": "Until they are in order, these properties are not activated and cannot be booked from your site."
+      },
+      "chore": {
+        "title": "To close"
+      },
+      "deadline": {
+        "overdueJustNow": "Just overdue",
+        "overdueHours_one": "Overdue by {{count}} hour",
+        "overdueHours_other": "Overdue by {{count}} hours",
+        "overdueDays_one": "Overdue by {{count}} day",
+        "overdueDays_other": "Overdue by {{count}} days",
+        "endOfToday": "By today",
+        "endOfTomorrow": "By tomorrow",
+        "endOfDay": "By {{date}}"
+      },
+      "active": {
+        "toggle_one": "{{count}} property in order",
+        "toggle_other": "{{count}} properties in order"
+      },
+      "openAll": "All duties",
+      "showMore": "Show the other {{count}}",
       "showLess": "Show less",
       "missing": {
         "lead": "Missing: {{what}}",
@@ -8984,7 +9016,9 @@
       "bookingRequests_one": "{{count}} request to approve",
       "bookingRequests_other": "{{count}} requests to approve",
       "supplierRequests_one": "{{count}} request to accept",
-      "supplierRequests_other": "{{count}} requests to accept"
+      "supplierRequests_other": "{{count}} requests to accept",
+      "compliance_one": "{{count}} duty with a risk of penalty",
+      "compliance_other": "{{count}} duties with a risk of penalty"
     },
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",

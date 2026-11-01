@@ -208,6 +208,12 @@ export interface ComplianceSummaryItem {
    * Absent on an API that does not send it yet.
    */
   missing?: DashboardMissing[];
+  /**
+   * When the item has to be done by (UTC), if the stay fixes it: the legal term of the Alloggiati communication, the day the
+   * guest arrives (their data are needed by then), the day the guest leaves. Null for the others; absent on an API that does
+   * not send it yet (the page then reads it from the Home's "Da fare", where it can).
+   */
+  dueAt?: string | null;
 }
 
 export interface ComplianceSummarySection {

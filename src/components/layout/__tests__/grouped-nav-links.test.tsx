@@ -60,7 +60,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).toHaveAttribute('aria-labelledby');
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).not.toHaveAttribute('aria-label');
       const everyday = screen.getByRole('group', { name: 'Ogni giorno' });
-      expect(within(everyday).getAllByRole('link').map((item) => item.textContent)).toEqual(['Cruscotto', 'Calendario', 'Prenotazioni']);
+      expect(within(everyday).getAllByRole('link').map((item) => item.textContent)).toEqual(['Cruscotto', 'Calendario', 'Prenotazioni', 'Adempimenti']);
       const offer = screen.getByRole('group', { name: 'La tua offerta' });
       expect(within(offer).getAllByRole('link').map((item) => item.textContent)).toEqual(['Immobili', 'Sito di prenotazione', 'Marketplace']);
       const management = screen.getByRole('group', { name: 'Gestione' });
@@ -162,6 +162,22 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(pill).toHaveTextContent('120 richieste da approvare');
     });
 
+    it('GroupedNavLinks_RiskOfASanction_ShowsTheRedCounterOnTheAdempimentiAndSaysItAloud', () => {
+      renderNav('/app/short-rent', { counts: { compliance: 2 } });
+
+      const compliance = link(/Adempimenti/);
+      expect(within(compliance).getByTestId('nav-count')).toHaveClass('bg-destructive');
+      expect(compliance).toHaveAccessibleName('Adempimenti, 2 adempimenti con rischio di sanzione');
+      // The counter of the bookings is the accent of the area: the colors tell the two apart.
+      expect(link(/Prenotazioni/).querySelector('[data-testid="nav-count"]')).toBeNull();
+    });
+
+    it('GroupedNavLinks_OneRiskOfASanction_UsesTheSingular', () => {
+      renderNav('/app/short-rent', { counts: { compliance: 1 } });
+
+      expect(link(/Adempimenti/)).toHaveAccessibleName('Adempimenti, 1 adempimento con rischio di sanzione');
+    });
+
     it('GroupedNavLinks_Supplier_CountsTheRequestsToAccept', () => {
       renderNav('/app/supplier/dashboard', { contextKey: 'supplier', counts: { supplierRequests: 4 } });
 
@@ -195,7 +211,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       const more = screen.getByTestId('nav-more');
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Ospiti',
-        'Adempimenti',
         'CRM Ospiti',
         'Ricavi',
         'Regime fiscale',
@@ -222,10 +237,11 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(link('Ospiti')).toHaveAttribute('aria-current', 'page');
     });
 
-    it('GroupedNavLinks_PageThatHangsFromAnEntryOfMore_OpensItAndMarksThatEntry', () => {
+    it('GroupedNavLinks_PageThatHangsFromAnEntryOfTheMainMenu_MarksThatEntryAndLeavesMoreClosed', () => {
       renderNav('/app/short-rent/alloggiati');
 
-      expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+      // «Adempimenti» is in the main menu: the page that hangs from it does not open "Altro".
+      expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
       expect(link('Adempimenti')).toHaveAttribute('aria-current', 'page');
       // The page is in no menu, only the entry it hangs from is.
       expect(screen.queryByRole('link', { name: 'Alloggiati' })).not.toBeInTheDocument();

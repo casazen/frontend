@@ -3125,21 +3125,53 @@
       "turnoversPending": "Proprietà da dichiarare pronte"
     },
     "cockpit": {
-      "kicker": "Cosa manca",
+      "kicker": {
+        "fine": "Rischi una sanzione",
+        "start": "Per iniziare a lavorare",
+        "chore": "Da chiudere"
+      },
       "allClear": {
         "title": "Sei in regola",
         "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
         "cta": "Apri gli immobili"
       },
-      "then_one": "Poi: ancora {{count}} cosa da sistemare",
-      "then_other": "Poi: ancora {{count}} cose da sistemare",
-      "stays": {
-        "title": "Da fare"
+      "then": {
+        "lead": "Poi: {{what}}",
+        "fine_one": "ancora {{count}} con scadenza di legge",
+        "fine_other": "ancora {{count}} con scadenza di legge",
+        "start_one": "{{count}} casa da attivare",
+        "start_other": "{{count}} case da attivare",
+        "chore_one": "{{count}} da chiudere",
+        "chore_other": "{{count}} da chiudere"
       },
-      "properties": {
-        "title": "I tuoi immobili"
+      "fine": {
+        "title": "Scadenze di legge",
+        "intro": "Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24): se non parte in tempo rischi una sanzione.",
+        "moreLink": "Vedile tutte in Alloggiati"
       },
-      "seeAll": "Vedi tutte ({{count}})",
+      "start": {
+        "title": "Per iniziare a lavorare",
+        "intro": "Finché non sono a posto, queste case non si attivano e non si possono prenotare dal tuo sito."
+      },
+      "chore": {
+        "title": "Da chiudere"
+      },
+      "deadline": {
+        "overdueJustNow": "Scaduto da poco",
+        "overdueHours_one": "Scaduto da {{count}} ora",
+        "overdueHours_other": "Scaduto da {{count}} ore",
+        "overdueDays_one": "Scaduto da {{count}} giorno",
+        "overdueDays_other": "Scaduto da {{count}} giorni",
+        "endOfToday": "Entro oggi",
+        "endOfTomorrow": "Entro domani",
+        "endOfDay": "Entro il {{date}}"
+      },
+      "active": {
+        "toggle_one": "{{count}} casa in regola",
+        "toggle_other": "{{count}} case in regola"
+      },
+      "openAll": "Tutti gli adempimenti",
+      "showMore": "Mostra le altre {{count}}",
       "showLess": "Mostra meno",
       "missing": {
         "lead": "Manca: {{what}}",
@@ -8984,7 +9016,9 @@
       "bookingRequests_one": "{{count}} richiesta da approvare",
       "bookingRequests_other": "{{count}} richieste da approvare",
       "supplierRequests_one": "{{count}} richiesta da accettare",
-      "supplierRequests_other": "{{count}} richieste da accettare"
+      "supplierRequests_other": "{{count}} richieste da accettare",
+      "compliance_one": "{{count}} adempimento con rischio di sanzione",
+      "compliance_other": "{{count}} adempimenti con rischio di sanzione"
     },
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
