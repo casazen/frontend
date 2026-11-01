@@ -86,7 +86,6 @@ function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; p
           </Button>
         ) : null}
       </div>
-      {request.dialog}
 
       <SupplierTrust supplier={supplier} />
       <SupplierAbout supplier={supplier} />

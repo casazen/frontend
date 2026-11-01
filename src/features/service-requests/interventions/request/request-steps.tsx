@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
 import type { TFunction } from 'i18next';
-import { Link } from 'react-router-dom';
-import { useFormContext, useWatch, type UseFormSetValue } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock, Info } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
@@ -17,10 +16,7 @@ import { Select } from '@/components/ui/select';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { isFeatureEnabled } from '@/config/feature-flags';
-import { stayDateOf } from '@/features/bookings/lib/booking-price';
-import { RecommendedBadge } from '@/features/marketplace/components/recommended-badge';
-import { supplierFacts } from '@/features/marketplace/lib/supplier-labels';
-import { orderStaysForRequest, stayOptionLabel } from '@/features/service-requests/lib/stays';
+import { stayOptionLabel } from '@/features/service-requests/lib/stays';
 import { formatPrice } from '@/features/supplier/services/lib/service-labels';
 import { formatMoney } from '@/features/supplier/services/lib/service-money';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -28,14 +24,11 @@ import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatWorkDuration } from '@/lib/work-duration';
-import { usePropertyBookings } from '@/queries/use-bookings';
 import { useHostSupplierServices, useHostSupplierSlots } from '@/queries/use-host-supplier-catalog';
 import { useProperties } from '@/queries/use-properties';
-import { useServiceCategories } from '@/queries/use-service-categories';
 import { useSuppliersByProperty } from '@/queries/use-service-requests';
 import type { HostSupplierService } from '@/types/host-supplier-catalog';
-import type { SupplierPicker } from '@/types/service-request';
-import { marketplaceForPropertyPath } from '../paths';
+import { assign, NO_SERVICE, useUpcomingStays } from './request-form';
 import {
   CUSTOM_SERVICE,
   dayForStay,
@@ -59,176 +52,7 @@ import {
   type RequestValues,
 } from './request-model';
 
-type SetValue = UseFormSetValue<RequestValues>;
-
-/** The fields that describe the service chosen, empty: nothing chosen. */
-const NO_SERVICE: Partial<RequestValues> = {
-  serviceId: '',
-  serviceName: '',
-  serviceMinutes: null,
-  serviceEstimateCents: null,
-  serviceRequiresQuote: false,
-  servicePriceFromCents: null,
-  servicePriceUnit: '',
-  startTime: '',
-};
-
-/** Nothing of step ③ chosen: the supplier and its services depend on the property and on the kind of job, so a change of either one starts it again. */
-const NO_SUPPLIER: Partial<RequestValues> = { ...NO_SERVICE, supplierOrgId: '', supplierName: '' };
-
-function assign(setValue: SetValue, values: Partial<RequestValues>) {
-  (Object.keys(values) as (keyof RequestValues)[]).forEach((name) => {
-    setValue(name, values[name] as never, { shouldDirty: true });
-  });
-}
-
-/* ------------------------------------------------------------------------------------------------ ① Cosa serve */
-
-/** Step ①: what is needed (a category of the catalog), how pressing it is and what the supplier should know. No guests' data. */
-export function WhatStep() {
-  const { t } = useTranslation();
-  const { register, control, setValue, formState } = useFormContext<RequestValues>();
-  const categories = useServiceCategories();
-  const notes = useWatch({ control, name: 'notes' });
-  const categoryField = register('category');
-
-  return (
-    <div className="space-y-6">
-      <Field label={t('requestWizard.what.category')} error={formState.errors.category}>
-        <Select
-          data-testid="request-category"
-          {...categoryField}
-          onChange={(event) => {
-            void categoryField.onChange(event);
-            assign(setValue, NO_SUPPLIER);
-          }}
-        >
-          <option value="">{t('requestWizard.what.categoryPlaceholder')}</option>
-          {(categories.data ?? []).map((code) => (
-            <option key={code} value={code}>
-              {getServiceCategoryLabel(code, t)}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      <div className="space-y-2">
-        <ChoiceGroup legend={t('requestWizard.what.urgency')} legendVisible minCardWidth={12}>
-          {URGENCIES.map((urgency) => (
-            <ChoiceCard
-              key={urgency}
-              value={urgency}
-              title={t(`requestWizard.what.urgencies.${urgency}.title`)}
-              description={t(`requestWizard.what.urgencies.${urgency}.text`)}
-              data-testid={`request-urgency-${urgency}`}
-              {...register('urgency')}
-            />
-          ))}
-        </ChoiceGroup>
-        <FormFieldError error={formState.errors.urgency} />
-      </div>
-
-      <Field
-        label={t('requestWizard.what.notes')}
-        hint={t('requestWizard.what.notesHint')}
-        optional
-        counter={`${notes.length}/${REQUEST_NOTES_MAX}`}
-        error={formState.errors.notes}
-      >
-        <Textarea rows={4} maxLength={REQUEST_NOTES_MAX} data-testid="request-notes" {...register('notes')} />
-      </Field>
-    </div>
-  );
-}
-
-/* ---------------------------------------------------------------------------------------------- ② Dove e quando */
-
-/** The stays a request can be linked to: those not over yet (check-out today or later), soonest first. */
-function useUpcomingStays(propertyId: string) {
-  const bookings = usePropertyBookings(propertyId || undefined);
-  const today = todayInRome();
-  const stays = useMemo(
-    () => orderStaysForRequest(bookings.data ?? [], today).filter((stay) => stayDateOf(stay.checkOutDate) >= today),
-    [bookings.data, today],
-  );
-  return { stays, all: bookings.data };
-}
-
-/**
- * Step ②: the property, the stay it is for (optional: without one the request is for the house alone) and the day. For cleaning it says
- * the hours that are advised between the guests who leave and the ones who arrive.
- */
-export function WhenStep() {
-  const { t, i18n } = useTranslation();
-  const { register, control, setValue, formState } = useFormContext<RequestValues>();
-  const properties = useProperties({ mode: 'short' });
-  const propertyList = Array.isArray(properties.data) ? properties.data : [];
-  const [propertyId, day, category] = useWatch({ control, name: ['propertyId', 'day', 'category'] });
-  const { stays, all } = useUpcomingStays(propertyId);
-  const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
-  const propertyField = register('propertyId');
-  const stayField = register('bookingId');
-
-  return (
-    <div className="space-y-6">
-      <Field label={t('requestWizard.when.property')} error={formState.errors.propertyId}>
-        <Select
-          data-testid="request-property"
-          {...propertyField}
-          onChange={(event) => {
-            void propertyField.onChange(event);
-            // The stay belongs to the property: another property has other stays, and other suppliers cover it.
-            setValue('bookingId', '', { shouldDirty: true });
-            assign(setValue, NO_SUPPLIER);
-          }}
-        >
-          <option value="">{t('requestWizard.when.propertyPlaceholder')}</option>
-          {propertyList.map((property) => (
-            <option key={property.id} value={property.id}>
-              {[property.name, property.city].filter(Boolean).join(' · ')}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field label={t('requestWizard.when.stay')} hint={t('requestWizard.when.stayHint')} optional error={formState.errors.bookingId}>
-        <Select
-          data-testid="request-stay"
-          {...stayField}
-          onChange={(event) => {
-            void stayField.onChange(event);
-            const stay = stays.find((candidate) => candidate.id === event.target.value);
-            // The work is on the day the guests leave, unless the host says otherwise below.
-            if (stay) setValue('day', dayForStay(stay.checkOutDate), { shouldDirty: true });
-          }}
-        >
-          <option value="">{t('requestWizard.when.stayNone')}</option>
-          {stays.map((stay) => (
-            <option key={stay.id} value={stay.id}>
-              {stayOptionLabel(stay, t, i18n.language)}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field label={t('requestWizard.when.day')} error={formState.errors.day}>
-        <Input type="date" min={todayInRome()} data-testid="request-day" {...register('day')} />
-      </Field>
-
-      {window ? (
-        <p className="flex items-start gap-2 rounded-md bg-muted p-3 text-sm" data-testid="request-window">
-          <CalendarClock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
-          <span className="min-w-0 break-words">
-            {window.to ? t('requestWizard.when.window.both', { from: window.from, to: window.to }) : t('requestWizard.when.window.open', { from: window.from })}{' '}
-            <span className="text-foreground/70">{t('requestWizard.when.window.defaults', { checkOut: DEFAULT_CHECK_OUT_BY, checkIn: DEFAULT_CHECK_IN_FROM })}</span>
-          </span>
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-/* ----------------------------------------------------------------------------------------------------- ③ Chi */
+/* ---------------------------------------------------------------------------------------------------- ⑤ Dettagli */
 
 /** What a refusal of the supplier's catalog (it is not active, or does not cover the comune) says. */
 function CatalogProblem({ error }: { error: unknown }) {
@@ -247,86 +71,6 @@ function CatalogProblem({ error }: { error: unknown }) {
   );
 }
 
-function supplierDescription(supplier: SupplierPicker, t: TFunction, language: string): ReactNode {
-  const facts = supplierFacts(supplier, t, language);
-  return facts ?? t('requestWizard.who.priceOnRequest');
-}
-
-/** The suppliers that cover the comune of the property for the category, one to choose. */
-function SupplierChoices() {
-  const { t, i18n } = useTranslation();
-  const { control, setValue, formState } = useFormContext<RequestValues>();
-  const [propertyId, category, chosen] = useWatch({ control, name: ['propertyId', 'category', 'supplierOrgId'] });
-  const suppliers = useSuppliersByProperty(propertyId, category);
-
-  if (suppliers.isPending) return <SkeletonLine lines={4} label={t('requestWizard.who.loadingSuppliers')} />;
-  if (suppliers.isError) {
-    return (
-      <Alert
-        variant="danger"
-        action={
-          <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={() => void suppliers.refetch()}>
-            {t('requestWizard.retry')}
-          </Button>
-        }
-      >
-        {t('requestWizard.who.suppliersError')}
-      </Alert>
-    );
-  }
-
-  const items = suppliers.data.items;
-  const notAvailable = chosen !== '' && !items.some((supplier) => supplier.orgId === chosen);
-
-  const choose = (supplier: SupplierPicker) => {
-    if (supplier.orgId === chosen) return;
-    assign(setValue, { ...NO_SERVICE, supplierOrgId: supplier.orgId, supplierName: supplier.legalName });
-  };
-
-  return (
-    <div className="space-y-3">
-      {notAvailable ? (
-        <Alert variant="warning" data-testid="request-supplier-unavailable">
-          {t('requestWizard.who.supplierUnavailable')}
-        </Alert>
-      ) : null}
-      {items.length === 0 ? (
-        <Alert variant="info" data-testid="request-no-suppliers">
-          {t('requestWizard.who.noSuppliers')}{' '}
-          <Link to={marketplaceForPropertyPath(propertyId)} className="font-medium underline underline-offset-4">
-            {t('requestWizard.who.lookAround')}
-          </Link>
-        </Alert>
-      ) : (
-        <ChoiceGroup legend={t('requestWizard.who.suppliers')} legendVisible minCardWidth={14}>
-          {items.map((supplier) => (
-            <ChoiceCard
-              key={supplier.orgId}
-              name="request-supplier"
-              value={supplier.orgId}
-              checked={chosen === supplier.orgId}
-              onChange={() => choose(supplier)}
-              title={
-                supplier.recommended ? (
-                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    {supplier.legalName}
-                    <RecommendedBadge />
-                  </span>
-                ) : (
-                  supplier.legalName
-                )
-              }
-              description={supplierDescription(supplier, t, i18n.language)}
-              data-testid={`request-supplier-${supplier.orgId}`}
-            />
-          ))}
-        </ChoiceGroup>
-      )}
-      <FormFieldError error={formState.errors.supplierOrgId} />
-    </div>
-  );
-}
-
 /** What the card of a service says: how long it takes and what it costs. */
 function serviceDescription(service: HostSupplierService, t: TFunction, language: string): string {
   const duration = service.durationMinutes === null ? t('requestWizard.who.noDuration') : formatWorkDuration(service.durationMinutes, t);
@@ -334,18 +78,23 @@ function serviceDescription(service: HostSupplierService, t: TFunction, language
   return `${duration} · ${price}`;
 }
 
-/** The services of the supplier for the category, one to choose, or «altro lavoro» outside the catalog. */
+/**
+ * The services of the supplier for the category, one to choose, or «altro lavoro» outside the catalog. A supplier with a single service
+ * has it chosen already, and so does the service the address names (the page of a supplier: «Richiedi» of one of its services).
+ */
 function ServiceChoices() {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
-  const [supplierOrgId, propertyId, category, day, serviceId] = useWatch({ control, name: ['supplierOrgId', 'propertyId', 'category', 'day', 'serviceId'] });
+  const [supplierOrgId, propertyId, category, day, serviceId, serviceName] = useWatch({
+    control,
+    name: ['supplierOrgId', 'propertyId', 'category', 'day', 'serviceId', 'serviceName'],
+  });
   const services = useHostSupplierServices(supplierOrgId, propertyId, category);
   const { all } = useUpcomingStays(propertyId);
   const items = services.data?.items;
 
-  const chooseService = useCallback(
+  const applyService = useCallback(
     (service: HostSupplierService) => {
-      if (service.id === serviceId) return;
       const proposal = proposedSchedule(category === 'cleaning' ? turnoverWindow(day, all ?? []) : null);
       assign(setValue, {
         ...NO_SERVICE,
@@ -360,7 +109,7 @@ function ServiceChoices() {
         ...(service.durationMinutes === null ? { startTime: proposal.startTime, durationChoice: proposal.durationChoice } : {}),
       });
     },
-    [serviceId, category, day, all, setValue],
+    [category, day, all, setValue],
   );
 
   const chooseCustom = () => {
@@ -369,24 +118,31 @@ function ServiceChoices() {
     assign(setValue, { ...NO_SERVICE, serviceId: CUSTOM_SERVICE, startTime: proposal.startTime, durationChoice: proposal.durationChoice });
   };
 
-  // A supplier with a single service for this work: it is the one chosen (the host can still pick «altro lavoro»).
   useEffect(() => {
-    if (serviceId === '' && items?.length === 1) chooseService(items[0]);
-  }, [items, serviceId, chooseService]);
+    if (!items) return;
+    if (serviceId === '' && items.length === 1) {
+      applyService(items[0]);
+    } else if (isCatalogService(serviceId) && serviceName === '') {
+      // Named by the address, not yet by a click: the catalog fills in what the summary says of it. A service that is not this supplier's is not kept.
+      const named = items.find((service) => service.id === serviceId);
+      if (named) applyService(named);
+      else setValue('serviceId', '');
+    }
+  }, [items, serviceId, serviceName, applyService, setValue]);
 
   if (services.isPending) return <SkeletonLine lines={3} label={t('requestWizard.who.loadingServices')} />;
   if (services.isError) return <CatalogProblem error={services.error} />;
 
   return (
     <div className="space-y-3">
-      <ChoiceGroup legend={t('requestWizard.who.services')} legendVisible minCardWidth={14}>
+      <ChoiceGroup legend={t('requestWizard.who.services')} minCardWidth={14}>
         {services.data.items.map((service) => (
           <ChoiceCard
             key={service.id}
             name="request-service"
             value={service.id}
             checked={serviceId === service.id}
-            onChange={() => chooseService(service)}
+            onChange={() => (serviceId === service.id ? undefined : applyService(service))}
             title={service.name}
             description={serviceDescription(service, t, i18n.language)}
             data-testid={`request-service-${service.id}`}
@@ -563,21 +319,121 @@ function TimeChoices() {
   return timedByHost({ serviceId, serviceMinutes }) ? <CustomTime /> : <SlotChoices />;
 }
 
-/** Step ③: the supplier, the service and when. Nothing here is kept in the draft: the suppliers and their agendas change. */
-export function WhoStep() {
-  const { control } = useFormContext<RequestValues>();
-  const [supplierOrgId, serviceId] = useWatch({ control, name: ['supplierOrgId', 'serviceId'] });
+/**
+ * Step ⑤: the service of the supplier chosen, the day and the time (a free slot, or the time the host writes), how urgent it is, what the
+ * supplier should know, and, if the host wants, the stay the work is linked to: it is the house that is asked for, the stay is only a
+ * link. Nothing here is kept in the draft: the services and the agendas change.
+ */
+export function DetailsStep({ goTo }: { goTo: (stepId: string) => void }) {
+  const { t, i18n } = useTranslation();
+  const { register, control, setValue, formState } = useFormContext<RequestValues>();
+  const [propertyId, category, supplierOrgId, supplierName, serviceId, day, notes] = useWatch({
+    control,
+    name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes'],
+  });
+  const suppliers = useSuppliersByProperty(propertyId, category);
+  const { stays, all } = useUpcomingStays(propertyId);
+  const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
+  const stayField = register('bookingId');
+  const notAvailable = supplierOrgId !== '' && suppliers.isSuccess && !suppliers.data.items.some((supplier) => supplier.orgId === supplierOrgId);
+
+  // A supplier named by the address (the page of a supplier) is known by its id: its name is for the summary.
+  useEffect(() => {
+    if (supplierOrgId === '' || supplierName !== '') return;
+    const supplier = suppliers.data?.items.find((candidate) => candidate.orgId === supplierOrgId);
+    if (supplier) setValue('supplierName', supplier.legalName);
+  }, [supplierOrgId, supplierName, suppliers.data, setValue]);
 
   return (
     <div className="space-y-8">
-      <SupplierChoices />
-      {supplierOrgId !== '' ? <ServiceChoices /> : null}
-      {supplierOrgId !== '' && serviceId !== '' ? <TimeChoices /> : null}
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid="request-chosen-supplier">
+        <span className="text-foreground/70">{t('requestWizard.details.supplier')}</span>
+        <span className="font-medium">{supplierName}</span>
+        <Button type="button" variant="link" className="h-auto p-0" onClick={() => goTo('proposals')} data-testid="request-change-supplier">
+          {t('requestWizard.details.changeSupplier')}
+        </Button>
+      </p>
+
+      {notAvailable ? (
+        <Alert variant="warning" data-testid="request-supplier-unavailable">
+          {t('requestWizard.who.supplierUnavailable')}
+        </Alert>
+      ) : null}
+
+      <PlainSection title={t('requestWizard.details.service')}>
+        <ServiceChoices />
+      </PlainSection>
+
+      {supplierOrgId !== '' && serviceId !== '' ? (
+        <PlainSection title={t('requestWizard.details.when')}>
+          <div className="space-y-4">
+            <Field label={t('requestWizard.when.day')} error={formState.errors.day}>
+              <Input type="date" min={todayInRome()} data-testid="request-day" {...register('day')} />
+            </Field>
+            {window ? (
+              <p className="flex items-start gap-2 rounded-md bg-muted p-3 text-sm" data-testid="request-window">
+                <CalendarClock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
+                <span className="min-w-0 break-words">
+                  {window.to ? t('requestWizard.when.window.both', { from: window.from, to: window.to }) : t('requestWizard.when.window.open', { from: window.from })}{' '}
+                  <span className="text-foreground/70">{t('requestWizard.when.window.defaults', { checkOut: DEFAULT_CHECK_OUT_BY, checkIn: DEFAULT_CHECK_IN_FROM })}</span>
+                </span>
+              </p>
+            ) : null}
+            <TimeChoices />
+          </div>
+        </PlainSection>
+      ) : null}
+
+      <PlainSection title={t('requestWizard.what.urgency')}>
+        <ChoiceGroup legend={t('requestWizard.what.urgency')} minCardWidth={12}>
+          {URGENCIES.map((urgency) => (
+            <ChoiceCard
+              key={urgency}
+              value={urgency}
+              title={t(`requestWizard.what.urgencies.${urgency}.title`)}
+              description={t(`requestWizard.what.urgencies.${urgency}.text`)}
+              data-testid={`request-urgency-${urgency}`}
+              {...register('urgency')}
+            />
+          ))}
+        </ChoiceGroup>
+        <FormFieldError error={formState.errors.urgency} />
+      </PlainSection>
+
+      <Field
+        label={t('requestWizard.what.notes')}
+        hint={t('requestWizard.what.notesHint')}
+        optional
+        counter={`${notes.length}/${REQUEST_NOTES_MAX}`}
+        error={formState.errors.notes}
+      >
+        <Textarea rows={4} maxLength={REQUEST_NOTES_MAX} data-testid="request-notes" {...register('notes')} />
+      </Field>
+
+      <Field label={t('requestWizard.when.stay')} hint={t('requestWizard.when.stayHint')} optional error={formState.errors.bookingId}>
+        <Select
+          data-testid="request-stay"
+          {...stayField}
+          onChange={(event) => {
+            void stayField.onChange(event);
+            const stay = stays.find((candidate) => candidate.id === event.target.value);
+            // The work is on the day the guests leave, unless the host says otherwise above.
+            if (stay) setValue('day', dayForStay(stay.checkOutDate), { shouldDirty: true });
+          }}
+        >
+          <option value="">{t('requestWizard.when.stayNone')}</option>
+          {stays.map((stay) => (
+            <option key={stay.id} value={stay.id}>
+              {stayOptionLabel(stay, t, i18n.language)}
+            </option>
+          ))}
+        </Select>
+      </Field>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------------------------------- ④ Riepilogo */
+/* ------------------------------------------------------------------------------------------------- ⑥ Riepilogo */
 
 /** "10:00" plus 120 minutes is "12:00" (the wall clock of the day; a job that runs past midnight is written "24:00"). */
 function endTime(start: string, minutes: number): string {
@@ -626,7 +482,7 @@ function BackupChoice() {
   );
 }
 
-/** Step ④: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
+/** Step ⑥: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
 export function ReviewStep() {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<RequestValues>();
@@ -642,29 +498,35 @@ export function ReviewStep() {
 
   const items: WizardSummaryItem[] = [
     {
-      id: 'what',
-      label: t('requestWizard.review.what'),
-      value: [getServiceCategoryLabel(values.category, t), t(`requestWizard.what.urgencies.${values.urgency}.title`)].join(' · '),
-      stepId: 'what',
-    },
-    { id: 'notes', label: t('requestWizard.review.notes'), value: values.notes.trim() ? <span className="whitespace-pre-wrap">{values.notes.trim()}</span> : '', stepId: 'what' },
-    {
       id: 'where',
       label: t('requestWizard.review.where'),
-      value: [[property?.name, property?.city].filter(Boolean).join(' · '), stay ? stayOptionLabel(stay, t, i18n.language) : t('requestWizard.review.houseOnly')].filter(Boolean).join(' — '),
-      stepId: 'when',
-    },
-    {
-      id: 'when',
-      label: t('requestWizard.review.when'),
-      value: [dayText, hours, minutes ? formatWorkDuration(minutes, t) : ''].filter(Boolean).join(' · '),
-      stepId: 'who',
+      value: [property?.name, property?.city].filter(Boolean).join(' · '),
+      stepId: 'property',
     },
     {
       id: 'who',
       label: t('requestWizard.review.who'),
       value: [values.supplierName, isCatalogService(values.serviceId) ? values.serviceName : t('requestWizard.who.custom.title')].filter(Boolean).join(' · '),
-      stepId: 'who',
+      stepId: 'proposals',
+    },
+    {
+      id: 'what',
+      label: t('requestWizard.review.what'),
+      value: [getServiceCategoryLabel(values.category, t), t(`requestWizard.what.urgencies.${values.urgency}.title`)].join(' · '),
+      stepId: 'details',
+    },
+    {
+      id: 'when',
+      label: t('requestWizard.review.when'),
+      value: [dayText, hours, minutes ? formatWorkDuration(minutes, t) : ''].filter(Boolean).join(' · '),
+      stepId: 'details',
+    },
+    { id: 'notes', label: t('requestWizard.review.notes'), value: values.notes.trim() ? <span className="whitespace-pre-wrap">{values.notes.trim()}</span> : '', stepId: 'details' },
+    {
+      id: 'stay',
+      label: t('requestWizard.review.stay'),
+      value: stay ? stayOptionLabel(stay, t, i18n.language) : t('requestWizard.review.houseOnly'),
+      stepId: 'details',
     },
     { id: 'price', label: t('requestWizard.review.price'), value: priceLine(values, t, i18n.language) },
   ];

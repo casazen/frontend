@@ -12135,11 +12135,40 @@
     }
   },
   "requestWizard": {
+    "channel": {
+      "addComune": "Aggiungi il comune",
+      "casazen": {
+        "none": "Nella zona di questo immobile non ce ne sono ancora.",
+        "text": "Professionisti della tua zona, con prezzi e orari chiari: scegli tu chi chiamare.",
+        "title": "Un fornitore CasaZen"
+      },
+      "external": {
+        "text": "Aziende esterne per pulizie, check-in e manutenzione: il lavoro si organizza sul loro sito.",
+        "title": "Un servizio esterno"
+      },
+      "legend": "Chi vuoi coinvolgere",
+      "noComune": "Per cercare i fornitori della tua zona serve il comune dell'immobile: finché manca ti proponiamo i partner esterni.",
+      "noNetwork": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen: ti proponiamo i partner esterni.",
+      "recommended": "Consigliato"
+    },
+    "details": {
+      "changeSupplier": "Cambia fornitore",
+      "service": "Servizio",
+      "supplier": "Fornitore:",
+      "when": "Quando"
+    },
     "done": {
       "another": "Fai un'altra richiesta",
       "answers": "Il fornitore decide: accetta, rifiuta oppure ti propone un altro orario.",
       "cancel": "Puoi annullare quando vuoi, senza costi, finché il lavoro non è iniziato.",
       "description": "La richiesta è partita: ecco cosa succede adesso.",
+      "external": {
+        "back": "Torna al Marketplace",
+        "description": "CasaZen non ha inviato nulla: il lavoro si organizza sul sito del partner che hai scelto.",
+        "notFollowed": "Questo lavoro non compare in Interventi: lo segui dal partner.",
+        "site": "Apri il sito del partner e organizza il lavoro lì.",
+        "title": "Ora tocca al partner"
+      },
       "respondBy": "Ha tempo per rispondere fino a {{when}}.",
       "see": "Vedi la richiesta",
       "title": "Richiesta inviata a {{supplier}}",
@@ -12169,11 +12198,26 @@
       "urgencyRequired": "Scegli quanto è urgente."
     },
     "finish": "Invia la richiesta",
+    "finishExternal": "Ho scelto un partner",
+    "loadError": "Non riesco a preparare la richiesta.",
     "loading": "Preparo la richiesta…",
     "noProperty": {
       "action": "Aggiungi un immobile",
       "text": "Per chiedere un intervento serve almeno un immobile.",
       "title": "Prima serve un immobile"
+    },
+    "partners": {
+      "how": "Il lavoro si organizza sul sito del partner: CasaZen non lo gestisce e non lo trovi in Interventi. Controlla che il partner serva la tua zona."
+    },
+    "property": {
+      "legend": "Immobile"
+    },
+    "proposals": {
+      "noPartners": "Per questo tipo di lavoro non c'è ancora nessun servizio esterno: prova un altro servizio.",
+      "orPartner": "Preferisci un servizio esterno?",
+      "partnersIntro": "Intanto, questi servizi esterni si occupano di questo lavoro:",
+      "ranking": "Li mettiamo in ordine di affidabilità e disponibilità: il primo è il più consigliato.",
+      "seePartners": "Vedi i partner esterni"
     },
     "retry": "Riprova",
     "review": {
@@ -12206,37 +12250,54 @@
         "never": "Non vede mai i dati dei tuoi ospiti: se colleghi un soggiorno, ne conosce solo le date.",
         "title": "Cosa vede il fornitore"
       },
+      "stay": "Soggiorno",
       "what": "Cosa serve",
       "when": "Quando",
       "where": "Dove",
       "who": "Chi"
     },
+    "service": {
+      "legend": "Tipo di lavoro"
+    },
     "steps": {
+      "channel": {
+        "label": "Chi",
+        "purpose": "Ti consigliamo un fornitore CasaZen della tua zona. In alternativa puoi rivolgerti a un servizio esterno.",
+        "title": "Chi vuoi coinvolgere?"
+      },
+      "details": {
+        "label": "Dettagli",
+        "purpose": "Il servizio, il giorno e l'orario, quanto è urgente e cosa deve sapere il fornitore.",
+        "title": "Quando e come?"
+      },
+      "partners": {
+        "label": "Partner",
+        "purpose": "Ti mostriamo i partner che offrono il servizio che hai scelto.",
+        "title": "Scegli un servizio esterno"
+      },
+      "property": {
+        "label": "Immobile",
+        "purpose": "La richiesta è per la casa. Un soggiorno lo puoi collegare alla fine, se vuoi.",
+        "title": "Per quale immobile?"
+      },
+      "proposals": {
+        "label": "Proposte",
+        "purpose": "Ti proponiamo i fornitori della tua zona, dal più consigliato.",
+        "title": "Chi se ne occupa?"
+      },
       "review": {
         "label": "Riepilogo",
         "purpose": "La richiesta parte solo quando premi «Invia la richiesta».",
         "title": "Controlla e invia"
       },
-      "what": {
-        "label": "Cosa serve",
-        "purpose": "Scegli il tipo di lavoro e quanto è urgente.",
-        "title": "Di che intervento hai bisogno?"
-      },
-      "when": {
-        "label": "Dove e quando",
-        "purpose": "Scegli l'immobile e il giorno. Il soggiorno è facoltativo.",
-        "title": "Dove e quando serve?"
-      },
-      "who": {
-        "label": "Chi",
-        "purpose": "Scegli il fornitore, il servizio e l'orario tra quelli liberi.",
-        "title": "Chi se ne occupa?"
+      "service": {
+        "label": "Servizio",
+        "purpose": "Scegli il tipo di lavoro.",
+        "title": "Di che servizio hai bisogno?"
       }
     },
     "title": "Richiedi un intervento",
     "what": {
-      "category": "Tipo di intervento",
-      "categoryPlaceholder": "Scegli il tipo",
       "notes": "Cosa deve fare il fornitore?",
       "notesHint": "Descrivi il lavoro in poche righe. Non scrivere dati degli ospiti (nome, telefono, documenti): il fornitore legge queste note solo quando accetta.",
       "urgencies": {
@@ -12257,8 +12318,6 @@
     },
     "when": {
       "day": "Giorno del lavoro",
-      "property": "Immobile",
-      "propertyPlaceholder": "Scegli l'immobile",
       "stay": "Collega a un soggiorno",
       "stayHint": "Facoltativo: senza, la richiesta riguarda solo la casa.",
       "stayNone": "Nessun soggiorno: solo la casa",
@@ -12287,12 +12346,10 @@
       "loadingServices": "Cerco i servizi…",
       "loadingSlots": "Cerco gli orari liberi…",
       "loadingSuppliers": "Cerco i fornitori…",
-      "lookAround": "Guarda il marketplace",
       "nearbyDays": "Giorni vicini con orari liberi",
       "noDuration": "Durata da concordare",
       "noSlotsAtAll": "Nessun orario libero nei prossimi giorni. Scegli un altro servizio o un altro fornitore.",
       "noSlotsDay": "Nessun orario libero {{day}}.",
-      "noSuppliers": "Nessun fornitore copre il comune di questo immobile per questo tipo di lavoro.",
       "priceOnRequest": "Prezzo su preventivo",
       "services": "Servizio",
       "showEvery": "Mostra tutti gli orari",

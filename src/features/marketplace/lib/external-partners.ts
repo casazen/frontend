@@ -26,3 +26,8 @@ export const EXTERNAL_PARTNERS: readonly ExternalPartner[] = [
   { code: 'doinn', name: 'Doinn', categories: ['cleaning'], url: 'https://doinn.co/' },
   { code: 'tidy', name: 'TIDY', categories: ['cleaning', 'maintenance'], url: 'https://www.tidy.com/' },
 ];
+
+/** The partners that work for a category of services (the guided request offers them when the host goes outside CasaZen). */
+export function partnersForCategory(category: string): ExternalPartner[] {
+  return EXTERNAL_PARTNERS.filter((partner) => partner.categories.includes(category));
+}

@@ -128,6 +128,11 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'ota.write',
         'guest.read',
         'guest.write',
+        // Same set as the backend bootstrap (`ContextAccessBootstrap`, AM-03): what the owner holds on top of the ones above. Without
+        // `servicerequest.write` the guided request («Richiedi un intervento») is a reserved page for a person from the token alone.
+        'servicerequest.write',
+        'guest.manage',
+        'alloggiati.submit',
       ],
       defaultRoute: '/app/short-rent',
     });

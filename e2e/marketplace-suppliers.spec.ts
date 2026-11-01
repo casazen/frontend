@@ -100,6 +100,28 @@ async function mockMarketplaceApis(page: Page) {
     });
   });
 
+  // The services of the supplier and their free slots (SR-08a), which the guided request reads: one service of 150 minutes, and a slot on
+  // every day that is asked for.
+  await page.route(`**/api/suppliers/${SUPPLIER_ORG_ID}/services**`, async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith('/slots')) {
+      const date = url.searchParams.get('date') ?? '2099-10-05';
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ serviceId: SERVICE_ID, durationMinutes: 150, from: date, to: date, slots: [{ startUtc: `${date}T08:00:00Z`, endUtc: `${date}T10:30:00Z` }] }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [{ id: SERVICE_ID, name: 'Pulizia profonda', category: 'cleaning', durationMinutes: 150, priceFromCents: 9000, priceUnit: 'PerJob', requiresQuote: false, estimatedAmountCents: 9000 }],
+      }),
+    });
+  });
+
   await page.route('**/api/bookings**', async (route) => {
     const url = new URL(route.request().url());
     if (!url.pathname.startsWith('/api/') || route.request().method() !== 'GET' || url.pathname !== '/api/bookings') {
@@ -132,9 +154,11 @@ async function mockMarketplaceApis(page: Page) {
       expect(body.propertyId).toBe(PROPERTY_ID);
       expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
       expect(body.category).toBe('cleaning');
-      // D2: the request is for the stay chosen in the dialog.
+      // The request is for the house; the stay is a link the host chose in the wizard.
       expect(body.bookingId).toBe(STAY_ID);
-      expect(body.durationMinutes).toBe(120);
+      // A service of the catalog goes with its slot and never with a length: the server takes it from the service.
+      expect(body.serviceListingId).toBe(SERVICE_ID);
+      expect(body.durationMinutes).toBeUndefined();
       expect(body.scheduledStartUtc).toEqual(expect.any(String));
       expect(body.chargeToGuest).toBeUndefined();
 
@@ -165,7 +189,7 @@ async function mockMarketplaceApis(page: Page) {
 }
 
 test.describe('Marketplace suppliers (#340)', () => {
-  test('AC6: browse suppliers → request service for a stay → success', async ({ page }) => {
+  test('AC6: browse suppliers → guided request (a stay is only a link) → success', async ({ page }) => {
     await mockMarketplaceApis(page);
     await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
 
@@ -197,25 +221,29 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByRole('dialog').getByText('Pulizie Express Srl')).toBeVisible();
 
     await page.getByTestId('marketplace-request-service-btn').click();
-    await expect(page.getByTestId('service-request-dialog')).toBeVisible();
-    // Without a stay the request cannot be sent (D2).
-    await expect(page.getByTestId('submit-service-request')).toBeDisabled();
-    await page.getByTestId('service-request-stay').selectOption(STAY_ID);
-    await page.getByTestId('service-request-start-time').fill('10:00');
-    await page.getByTestId('service-request-duration').selectOption('120');
-    await expect(page.getByTestId('submit-service-request')).toBeEnabled();
+    // «Richiedi fornitore» opens the guided request on its details: the property, the kind of work and the supplier are known.
+    await expect(page).toHaveURL(/\/interventions\/request\?.*supplierOrgId=/);
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
+    // The supplier has one service for the job: it is the one chosen.
+    await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
+    // The request is for the house. A stay is only a link, and with it the work is on the day the guests leave.
+    await page.getByTestId('request-stay').selectOption(STAY_ID);
+    await expect(page.getByTestId('request-day')).toHaveValue('2099-10-05');
+    await page.locator('[data-testid^="request-slot-"]').first().click();
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
 
     const createResp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && r.url().includes('/api/service-requests'),
     );
-    await page.getByTestId('submit-service-request').click();
+    await page.getByTestId('request-finish').click();
     expect((await createResp).status()).toBe(201);
 
-    // The page of the supplier (MKT), which can be shared: every service has its own «Richiedi», and the request is for that service.
+    // The page of the supplier (MKT), which can be shared: every service has its own «Richiedi», and the request starts with that service.
     await page.goto(demoUrl(`/app/short-rent/marketplace/suppliers/${SUPPLIER_ORG_ID}?propertyId=${PROPERTY_ID}`, 'short-stay'));
     await expect(page.getByTestId('marketplace-supplier-page')).toBeVisible({ timeout: 15_000 });
     await page.getByTestId(`marketplace-request-service-${SERVICE_ID}`).click();
-    await expect(page.getByTestId('service-request-service')).toContainText('Pulizia profonda');
-    await expect(page.getByTestId('service-request-duration')).toHaveValue('150');
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
+    await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
   });
 });
