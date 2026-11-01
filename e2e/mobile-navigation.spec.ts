@@ -131,9 +131,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(sheet(page)).toBeFocused();
 
-      // The first Tab reaches the first tile; the focus never leaves the sheet (a trap).
+      // The first Tab reaches the first tile (the adempimenti, first in the sheet now); the focus never leaves the sheet (a trap).
       await page.keyboard.press('Tab');
-      await expect(sheet(page).getByRole('link', { name: 'Sito di prenotazione' })).toBeFocused();
+      await expect(sheet(page).getByRole('link', { name: 'Adempimenti' })).toBeFocused();
       for (let i = 0; i < 14; i += 1) {
         await page.keyboard.press('Tab');
         expect(await sheet(page).evaluate((element) => element.contains(document.activeElement))).toBe(true);

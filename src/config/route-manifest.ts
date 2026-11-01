@@ -20,8 +20,11 @@ export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work
  */
 export type NavPlacement = 'primary' | 'secondary';
 
-/** The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests';
+/**
+ * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
+ * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
+ */
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
 export const MAX_PRIMARY_NAV_ENTRIES = 8;
@@ -181,12 +184,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // What the host still has to do (CIN, check-ins, Alloggiati, cleanings); the Alloggiati dashboard and the CIN page hang from it.
+    // In the main menu, with the number of the things that carry a risk of a sanction: what the law dates is not tucked away in
+    // "Altro". The page reads `GET api/compliance/summary`, which asks `booking.read` as well as the properties.
     path: '/app/short-rent/compliance',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
+    requiredPermissions: ['property.read', 'booking.read'],
     navKey: 'nav.compliance',
-    navPlacement: 'secondary',
-    navOrder: 21,
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 3.5,
+    navCount: 'compliance',
     icon: 'ClipboardCheck',
     component: async () => ({
       default: (await import('@/features/compliance/compliance-summary-page')).ComplianceSummaryPage,
@@ -438,13 +445,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
   },
-  // The other pages of the marketplace (MKT): the tabs Categorie and Le mie app, a category, the search. They are in no menu: the entry
-  // above stays the highlighted one (the pages are under its address) and its tabs lead to them.
+  // The other pages of the marketplace (MKT): the tab Le mie app, a category, the search. They are in no menu: the entry above stays the
+  // highlighted one (the pages are under its address) and its tabs lead to them. The old page of the categories is Scopri now.
   {
     path: '/app/short-rent/marketplace/categories',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    component: async () => ({ default: (await import('@/features/marketplace/categories-page')).MarketplaceCategoriesPage }),
+    component: async () => ({ default: (await import('@/features/marketplace/categories-redirect')).MarketplaceCategoriesRedirect }),
   },
   {
     path: '/app/short-rent/marketplace/categories/:category',

@@ -86,11 +86,13 @@ function overviewSyncEnded(previous: CalendarOverview | undefined, next: Calenda
  * The calendars of every property in one read (SR-10b), for the page "Canali e calendari". It is read again at every visit (the page
  * is where one comes to see whether a calendar answers) and polled while any feed syncs: one cycle for the whole page, never one per
  * row. When a sync ends the booking calendars are refreshed with the new blocks, as for the feeds of one property.
+ * `enabled` false reads nothing: the marketplace shows the state of the calendars only to the people who may open the page.
  */
-export function useCalendarOverview() {
+export function useCalendarOverview(enabled = true) {
   const queryClient = useQueryClient();
   return useQuery({
     queryKey: calendarOverviewKey,
+    enabled,
     queryFn: async () => {
       const previous = queryClient.getQueryData<CalendarOverview>(calendarOverviewKey);
       const overview = await propertyIcalApi.getCalendarOverview();

@@ -3131,21 +3131,53 @@
       "turnoversPending": "Properties to declare ready"
     },
     "cockpit": {
-      "kicker": "What is missing",
+      "kicker": {
+        "fine": "You risk a penalty",
+        "start": "To get started",
+        "chore": "To close"
+      },
       "allClear": {
         "title": "You are all set",
         "body": "Nothing is pending: your properties are active and your stays are in order.",
         "cta": "Open properties"
       },
-      "then_one": "Then: {{count}} more thing to fix",
-      "then_other": "Then: {{count}} more things to fix",
-      "stays": {
-        "title": "To do"
+      "then": {
+        "lead": "Then: {{what}}",
+        "fine_one": "{{count}} more with a legal deadline",
+        "fine_other": "{{count}} more with a legal deadline",
+        "start_one": "{{count}} property to activate",
+        "start_other": "{{count}} properties to activate",
+        "chore_one": "{{count}} to close",
+        "chore_other": "{{count}} to close"
       },
-      "properties": {
-        "title": "Your properties"
+      "fine": {
+        "title": "Legal deadlines",
+        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "moreLink": "See them all in Alloggiati"
       },
-      "seeAll": "See all ({{count}})",
+      "start": {
+        "title": "To get started",
+        "intro": "Until they are in order, these properties are not activated and cannot be booked from your site."
+      },
+      "chore": {
+        "title": "To close"
+      },
+      "deadline": {
+        "overdueJustNow": "Just overdue",
+        "overdueHours_one": "Overdue by {{count}} hour",
+        "overdueHours_other": "Overdue by {{count}} hours",
+        "overdueDays_one": "Overdue by {{count}} day",
+        "overdueDays_other": "Overdue by {{count}} days",
+        "endOfToday": "By today",
+        "endOfTomorrow": "By tomorrow",
+        "endOfDay": "By {{date}}"
+      },
+      "active": {
+        "toggle_one": "{{count}} property in order",
+        "toggle_other": "{{count}} properties in order"
+      },
+      "openAll": "All duties",
+      "showMore": "Show the other {{count}}",
       "showLess": "Show less",
       "missing": {
         "lead": "Missing: {{what}}",
@@ -8785,12 +8817,11 @@
   },
   "marketplace": {
     "title": "Marketplace",
-    "description": "Find the suppliers that work near your properties and ask for an intervention.",
+    "description": "Suppliers near your properties, external partners and integrations.",
     "requestIntervention": "Request an intervention",
     "sections": {
       "label": "Marketplace sections",
       "discover": "Discover",
-      "categories": "Categories",
       "mine": "My apps"
     },
     "search": {
@@ -8800,14 +8831,47 @@
       "description": "By supplier name, service or category."
     },
     "casazenSuppliers": "CasaZen suppliers",
-    "seeAll": "See all",
-    "seeAllOf": "See all: {{category}}",
     "categories": {
-      "title": "Categories",
-      "description": "Browse the suppliers by type of service.",
       "count_one": "{{count}} supplier",
       "count_other": "{{count}} suppliers",
       "none": "No suppliers yet"
+    },
+    "partners": {
+      "title": "Integrations with external partners",
+      "description": "Services from outside companies for cleaning, check-in and maintenance. They are not CasaZen suppliers: they open on the company's own site. Check that they serve your area.",
+      "learnMore": "Learn more",
+      "learnMoreAria": "Learn more about {{name}} (opens in a new tab)",
+      "items": {
+        "operto": "Guest technology that cuts the cost of running a rental.",
+        "turno": "Find and manage cleaning services for short-term rentals.",
+        "properly": "A platform that checks the quality of the work done.",
+        "doinn": "Find and manage cleaning services for short-term rentals.",
+        "tidy": "Automation of the cleaning and maintenance of the property."
+      }
+    },
+    "integrations": {
+      "title": "Other integrations",
+      "description": "What CasaZen already connects to: turn it on or manage it from its own page.",
+      "status": {
+        "active": "On",
+        "inactive": "Not set up",
+        "pending": "Being verified"
+      },
+      "manage": "Manage",
+      "activate": "Set up",
+      "items": {
+        "calendars": {
+          "title": "Airbnb and Booking.com calendars",
+          "summary": "Link the calendars of the portals (iCal) to avoid double bookings.",
+          "detail_one": "{{count}} calendar linked",
+          "detail_other": "{{count}} calendars linked"
+        },
+        "payments": {
+          "title": "Card payments",
+          "summary": "Get paid by your guests by card, through Stripe.",
+          "detail": "Card payments are on."
+        }
+      }
     },
     "category": {
       "description": "The suppliers of this category that work in the area of the property.",
@@ -8828,6 +8892,7 @@
     },
     "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "noNetwork": "There is no CasaZen network in this area yet for this category.",
+    "noNetworkPartners": "You will find external partners below.",
     "noMatch": "No supplier matches the search.",
     "noVerified": "None of these suppliers is verified.",
     "clearFilters": "Clear the filters",
@@ -8868,21 +8933,10 @@
     },
     "mine": {
       "title": "My apps",
-      "description": "The suppliers you already asked for an intervention and the requests you sent.",
-      "suppliersTitle": "My suppliers",
-      "summary_one": "{{count}} request · last on {{date}}",
-      "summary_other": "{{count}} requests · last on {{date}}",
-      "open_one": "{{count}} open",
-      "open_other": "{{count}} open",
-      "requestAgain": "Request again",
-      "openPage": "View the page",
-      "seeRequests": "See the requests",
-      "notAround": "It does not work in the area of this property.",
-      "onlySupplier": "Only the requests of {{name}}",
-      "showAll": "Show all",
-      "emptyTitle": "You have not asked for any intervention yet",
-      "emptyHint": "When you ask a supplier for an intervention you will find it here, with its requests.",
-      "discover": "Discover the suppliers"
+      "description": "The integrations you have turned on.",
+      "emptyTitle": "No integration is on",
+      "emptyHint": "When you link a calendar or turn on card payments you will find them here.",
+      "discover": "Discover the integrations"
     },
     "supplier": {
       "title": "Supplier",
@@ -8890,10 +8944,7 @@
       "requestService": "Request: {{service}}",
       "backToMarketplace": "Back to the Marketplace"
     },
-    "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
-    "noRequests": "No service requests yet.",
-    "noRequestsHint": "Select a property and a supplier to create your first intervention.",
     "viewBooking": "View booking",
     "quickActions": "Quick actions",
     "goToBookings": "Go to bookings",
@@ -8997,7 +9048,9 @@
       "bookingRequests_one": "{{count}} request to approve",
       "bookingRequests_other": "{{count}} requests to approve",
       "supplierRequests_one": "{{count}} request to accept",
-      "supplierRequests_other": "{{count}} requests to accept"
+      "supplierRequests_other": "{{count}} requests to accept",
+      "compliance_one": "{{count}} duty with a risk of penalty",
+      "compliance_other": "{{count}} duties with a risk of penalty"
     },
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
@@ -9432,8 +9485,12 @@
       },
       "chips": {
         "all": "All",
+        "canceled": "Canceled",
+        "canceledHint": "Payments canceled with the booking: the money never arrived",
         "collected": "Collected",
         "collectedHint": "Payments that arrived, even if partly refunded",
+        "incoming": "Upcoming",
+        "incomingHint": "Payments of stays that are coming or on, still to collect or already collected",
         "refunded": "Refunded",
         "refundedHint": "Payments given back, in full or in part",
         "toCollect": "To collect",
@@ -9463,6 +9520,9 @@
       },
       "forBooking": "Booking {{code}}",
       "loadError": "Failed to load payments. Please try again.",
+      "noIncomingAction": "See all payments",
+      "noIncomingDescription": "The payments of stays that are coming or on show up here. To see the past ones too, open “All”.",
+      "noIncomingTitle": "No payments coming in",
       "noResultsDescription": "Try removing a filter or searching with another name.",
       "noResultsTitle": "No payments with these filters",
       "refundedAmount": "Refunded {{amount}}",

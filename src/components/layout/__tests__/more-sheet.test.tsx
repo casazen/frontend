@@ -105,15 +105,22 @@ describe('MoreSheet (UI-04b)', () => {
 
       const nav = within(sheet()).getByRole('navigation', { name: 'Menu Affitti brevi' });
       const groups = within(nav).getAllByRole('group');
-      expect(groups.map((group) => group.getAttribute('data-testid'))).toEqual(['nav-group-offer', 'nav-group-management', 'nav-group-more']);
-      expect(groups[0]).toHaveAccessibleName('La tua offerta');
-      expect(tiles(groups[0])).toEqual(['Sito di prenotazione', 'Marketplace']);
-      expect(groups[1]).toHaveAccessibleName('Gestione');
-      expect(tiles(groups[1])).toEqual(['Incassi']);
-      expect(groups[2]).toHaveAccessibleName('Altro');
-      expect(tiles(groups[2])).toEqual([
+      expect(groups.map((group) => group.getAttribute('data-testid'))).toEqual([
+        'nav-group-everyday',
+        'nav-group-offer',
+        'nav-group-management',
+        'nav-group-more',
+      ]);
+      // The adempimenti are first on the phone too, with their counter: what the law dates is not tucked in "Altro".
+      expect(groups[0]).toHaveAccessibleName('Ogni giorno');
+      expect(tiles(groups[0])).toEqual(['Adempimenti']);
+      expect(groups[1]).toHaveAccessibleName('La tua offerta');
+      expect(tiles(groups[1])).toEqual(['Sito di prenotazione', 'Marketplace']);
+      expect(groups[2]).toHaveAccessibleName('Gestione');
+      expect(tiles(groups[2])).toEqual(['Incassi']);
+      expect(groups[3]).toHaveAccessibleName('Altro');
+      expect(tiles(groups[3])).toEqual([
         'Ospiti',
-        'Adempimenti',
         'CRM Ospiti',
         'Ricavi',
         'Regime fiscale',

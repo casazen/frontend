@@ -6,7 +6,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ComplianceSummaryWidget } from '../compliance-summary-widget';
 import { fetchComplianceSummary } from '@/api/compliance.api';
 import type { AppContextKey } from '@/config/route-manifest';
-import type { ComplianceSummaryResult } from '@/types/compliance.types';
+import { freezeClock, NOON_UTC } from '@/test/clock';
+import type { ComplianceSummaryItem, ComplianceSummaryResult } from '@/types/compliance.types';
 
 vi.mock('@/api/compliance.api', () => ({
   fetchComplianceSummary: vi.fn(),
@@ -16,9 +17,11 @@ vi.mock('@/api/compliance.api', () => ({
   completeCheckoutWizard: vi.fn(),
 }));
 
-// The property, the deadline and the state of a row come from these two reads: the tests of the cockpit do without them.
+// The property, the deadline and the state of a row come from these two reads: the tests of the cockpit do without them, but for the
+// list of the properties (the ones in order are behind one line), which a test can hand in.
+const reads = vi.hoisted(() => ({ properties: undefined as unknown }));
 vi.mock('@/queries/use-dashboard', () => ({ useDashboardToday: () => ({ data: undefined }) }));
-vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: undefined }) }));
+vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: reads.properties }) }));
 
 const permissions = vi.hoisted(() => ({ granted: [] as string[] }));
 vi.mock('@/hooks/use-workspace', () => ({
@@ -106,10 +109,12 @@ function renderWidget() {
 
 beforeEach(() => {
   permissions.granted = HOST_PERMISSIONS;
+  reads.properties = undefined;
 });
 
 afterEach(() => {
   vi.clearAllMocks();
+  vi.useRealTimers();
   cleanup();
 });
 
@@ -210,3 +215,151 @@ describe('ComplianceSummaryWidget links (CO-04, A5-09)', () => {
     expect(screen.queryByTestId('compliance-summary-checkouts-link')).not.toBeInTheDocument();
   });
 });
+
+describe('ComplianceSummaryWidget levels', () => {
+  const manyStays = (count: number, action: 'SendAlloggiati' | 'CheckOut', dueAt?: string): ComplianceSummaryItem[] =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `stay-${action}-${index}`,
+      label: `Ospite ${index + 1}`,
+      action,
+      propertyId: null,
+      bookingId: `stay-${action}-${index}`,
+      dueAt,
+    }));
+  const manyProperties = (count: number): ComplianceSummaryItem[] =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `property-${index}`,
+      label: `Casa ${index + 1}`,
+      action: 'ActivateProperty',
+      propertyId: `property-${index}`,
+      bookingId: null,
+    }));
+
+  it('widget_AllLevels_ShowsWhatTheLawDatesFirstThenTheStartOfTheProperties', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(cockpit);
+    renderWidget();
+
+    const fine = await screen.findByTestId('compliance-tier-fine');
+    const start = screen.getByTestId('compliance-tier-start');
+    const chore = screen.getByTestId('compliance-tier-chore');
+    // In the page: the law, then the properties that cannot start, then the upkeep.
+    expect(fine.compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(start.compareDocumentPosition(chore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    expect(fine).toHaveTextContent('Carla Neri');
+    expect(fine).toHaveTextContent('Mario Rossi');
+    expect(fine).toHaveTextContent('Anna Verdi');
+    expect(fine).not.toHaveTextContent('Villa Test');
+    expect(start).toHaveTextContent('Villa Test');
+    expect(chore).toHaveTextContent('Luigi Bianchi');
+    // The block on top is about the law, and says so.
+    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Rischi una sanzione');
+    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Alloggiati Web non accettato: Carla Neri');
+  });
+
+  it('widget_ThingsTheLawDates_AreNeverCutBehindSeeAll', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({ ...cockpit, alloggiatiManualRequired: { count: 6, items: manyStays(6, 'SendAlloggiati') } });
+    renderWidget();
+
+    const fine = await screen.findByTestId('compliance-tier-fine');
+    // Six to send, one failed, one of the guest data: all there, with no "Vedi tutte" or "Mostra" button.
+    expect(fine.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(8);
+    expect(screen.queryByRole('button', { name: /mostra/i })).not.toBeInTheDocument();
+  });
+
+  it('widget_ServerListsLessThanItCounts_SaysSoAndLeadsToTheAlloggiatiPage', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({ ...cockpit, alloggiatiManualRequired: { count: 15, items: manyStays(4, 'SendAlloggiati') } });
+    renderWidget();
+
+    const more = await screen.findByTestId('compliance-summary-more');
+    expect(more).toHaveTextContent('e altri 11');
+    expect(screen.getByRole('link', { name: 'Vedile tutte in Alloggiati' })).toHaveAttribute('href', '/app/short-rent/alloggiati');
+  });
+
+  it('widget_DeadlineOfARow_IsInWordsAndTheNearestIsFirst', async () => {
+    freezeClock(NOON_UTC);
+    const [late, soon] = [manyStays(1, 'SendAlloggiati', '2026-09-21T10:00:00Z')[0], { ...manyStays(2, 'SendAlloggiati')[1], dueAt: '2026-09-24T14:30:00Z' }];
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ alloggiatiManualRequired: { count: 2, items: [soon, late] } }));
+    renderWidget();
+
+    const rows = (await screen.findByTestId('compliance-tier-fine')).querySelectorAll('[data-testid="compliance-summary-row"]');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent('Scaduto da 3 giorni');
+    expect(rows[1]).toHaveTextContent('Entro oggi alle 16:30');
+    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Scaduto da 3 giorni');
+  });
+
+  it('widget_ManyPropertiesToActivate_ShowThreeAndTheRestOnRequest', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ propertiesPending: { count: 5, items: manyProperties(5) } }));
+    renderWidget();
+
+    const start = await screen.findByTestId('compliance-tier-start');
+    expect(start.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(3);
+    // A calm tone: no deadline and no red on what only keeps a property from starting.
+    expect(start).not.toHaveTextContent(/scadut|entro/i);
+    // The explanation of the level: what happens until they are in order.
+    expect(start).toHaveTextContent('non si possono prenotare dal tuo sito');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra le altre 2' }));
+    expect(start.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(5);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra meno' }));
+    expect(start.querySelectorAll('[data-testid="compliance-summary-row"]')).toHaveLength(3);
+  });
+
+  it('widget_OnlyTheStartOfAProperty_TheBlockIsCalmAndNoLevelOfTheLawIsShown', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ propertiesPending: { count: 1, items: manyProperties(1) } }));
+    renderWidget();
+
+    const focus = await screen.findByTestId('compliance-summary-focus');
+    expect(focus).toHaveTextContent('Per iniziare a lavorare');
+    expect(focus).toHaveTextContent('Completa l\'attivazione di Casa 1');
+    expect(focus).toHaveAttribute('data-tone', 'neutral');
+    expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
+  });
+
+  it('widget_TheLawIsLate_TheBlockIsRed', async () => {
+    freezeClock(NOON_UTC);
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({ alloggiatiManualRequired: { count: 1, items: manyStays(1, 'SendAlloggiati', '2026-09-21T10:00:00Z') } }),
+    );
+    renderWidget();
+
+    expect(await screen.findByTestId('compliance-summary-focus')).toHaveAttribute('data-tone', 'danger');
+  });
+
+  it('widget_PropertiesInOrder_AreBehindOneLineAndNeverCountedAsToDo', async () => {
+    reads.properties = [{ id: 'ok-1', name: 'Casa in regola', city: 'Como', complianceStatus: 'Active' }];
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ checkoutsDue: cockpit.checkoutsDue }));
+    renderWidget();
+
+    const toggle = await screen.findByRole('button', { name: '1 casa in regola' });
+    expect(screen.queryByTestId('compliance-summary-properties-section')).not.toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('compliance-summary-properties-section')).toHaveTextContent('Casa in regola');
+  });
+
+  it('widget_NothingPending_SaysAllClear', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({}));
+    renderWidget();
+
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toBeInTheDocument();
+    expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
+  });
+});
+
+function summaryWith(parts: Partial<ComplianceSummaryResult>): ComplianceSummaryResult {
+  return {
+    propertiesPending: empty,
+    guestCheckInsIncomplete: empty,
+    checkoutsDue: empty,
+    alloggiatiFailures: empty,
+    alloggiatiManualRequired: empty,
+    turnoversPending: empty,
+    ...parts,
+  };
+}
