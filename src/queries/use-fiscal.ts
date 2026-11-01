@@ -10,10 +10,12 @@ import {
 
 const KEY = 'fiscal';
 
-export function useFiscalRegime(taxYear: number) {
+/** `enabled: false` for a page that only borrows a hint from it, when the person may not read the tax data (`payment.read`). */
+export function useFiscalRegime(taxYear: number, enabled = true) {
   return useQuery({
     queryKey: [KEY, 'regime', taxYear],
     queryFn: () => fiscalApi.getRegime(taxYear),
+    enabled,
   });
 }
 

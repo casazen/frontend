@@ -1,6 +1,7 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
+import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { IcalSettings } from '@/features/properties/components/ical-settings';
 import { useProperty } from '@/queries/use-properties';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
@@ -23,6 +24,9 @@ interface FinishStepProps {
   refused: readonly ActivationBlocker[] | null;
   tosAccepted: boolean;
   onTosChange: (accepted: boolean) => void;
+  /** The host acknowledged the reminders still open (the documents, the safety sheet). */
+  remindersAccepted: boolean;
+  onRemindersChange: (accepted: boolean) => void;
 }
 
 /**
@@ -31,7 +35,18 @@ interface FinishStepProps {
  * terms. The main button of the wizard activates when nothing blocks, and otherwise says «Finisci dopo»: the property stays «Da
  * completare». Nothing here publishes a property that the server says is not ready.
  */
-export function FinishStep({ form, propertyId, activation, activationFailed, onRetryActivation, refused, tosAccepted, onTosChange }: FinishStepProps) {
+export function FinishStep({
+  form,
+  propertyId,
+  activation,
+  activationFailed,
+  onRetryActivation,
+  refused,
+  tosAccepted,
+  onTosChange,
+  remindersAccepted,
+  onRemindersChange,
+}: FinishStepProps) {
   const { t } = useTranslation();
   const property = useProperty(propertyId, { fresh: true });
   const steps = activation?.steps;
@@ -64,7 +79,15 @@ export function FinishStep({ form, propertyId, activation, activationFailed, onR
 
       <SummarySection property={property.data} steps={steps} />
 
-      <ActivationSection form={form} stage={stage} tosAccepted={tosAccepted} onTosChange={onTosChange} />
+      <ActivationSection
+        form={form}
+        stage={stage}
+        tosAccepted={tosAccepted}
+        onTosChange={onTosChange}
+        remindersOpen={openReminders(steps ?? []).length > 0}
+        remindersAccepted={remindersAccepted}
+        onRemindersChange={onRemindersChange}
+      />
     </>
   );
 }
