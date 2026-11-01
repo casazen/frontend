@@ -22,7 +22,7 @@ import { autoCardContent, filterListRows, sortListRows, visibleColumns } from '.
 import { ListPagination } from './list-pagination';
 import { ListPanel } from './list-panels';
 import { ListRowActions } from './list-row-actions';
-import { isRefined } from './list-state';
+import { activeFilterCount, isRefined } from './list-state';
 import { ListToolbar } from './list-toolbar';
 import {
   isDrawerDetail,
@@ -362,12 +362,14 @@ export function ListView<Row>({
     const { icon, ...rest } = list.empty;
     content = <EmptyState icon={icon ?? Inbox} {...rest} />;
   } else if (noResults) {
+    // With no words and no filter it is the quick filter alone that leaves nothing: the list may say so its own way.
+    const ownText = state.q.trim() === '' && activeFilterCount(state) === 0 ? list.noResults?.byChip?.[state.chip] : undefined;
     content = (
       <EmptyState
         icon={SearchX}
-        title={list.noResults?.title ?? t('listView.noResults.title')}
-        description={list.noResults?.description ?? t('listView.noResults.description')}
-        action={{ label: t('listView.clear'), onClick: listState.clear }}
+        title={ownText?.title ?? list.noResults?.title ?? t('listView.noResults.title')}
+        description={ownText?.description ?? list.noResults?.description ?? t('listView.noResults.description')}
+        action={{ label: ownText?.actionLabel ?? t('listView.clear'), onClick: listState.clear }}
       />
     );
   } else if (isBoard) {
