@@ -10902,6 +10902,75 @@
       "title": "Foto"
     },
     "prices": {
+      "ai": {
+        "applied": {
+          "text": "Ho inserito i valori qui sotto: controllali e continua quando vuoi.",
+          "undo": "Annulla"
+        },
+        "ask": {
+          "calculate": "Calcola il prezzo",
+          "decline": "No, lo scrivo io",
+          "description": "Parto dai dati della casa, dalla zona e dalle case simili su CasaZen. Poi decidi tu: non cambio nulla senza il tuo sì.",
+          "title": "Vuoi che calcoli io il prezzo con l'AI?"
+        },
+        "basedOn": {
+          "amenities_one": "{{count}} dotazione",
+          "amenities_other": "{{count}} dotazioni",
+          "area": "{{area}} m²",
+          "bedrooms_one": "{{count}} camera",
+          "bedrooms_other": "{{count}} camere",
+          "general": "stima generale della zona",
+          "guests_one": "{{count}} ospite",
+          "guests_other": "{{count}} ospiti",
+          "label": "Basato su:",
+          "similar_one": "{{count}} casa simile su CasaZen",
+          "similar_other": "{{count}} case simili su CasaZen"
+        },
+        "declined": {
+          "again": "Calcolalo con l'AI",
+          "text": "Vuoi un aiuto col prezzo?"
+        },
+        "error": "Non sono riuscito a calcolare il prezzo. Riprova tra poco.",
+        "help": {
+          "body": "L'AI guarda i dati che hai già inserito (ospiti, camere, metri quadri, dotazioni), la zona e, se ce ne sono almeno 3, i prezzi delle case simili pubblicate su CasaZen nello stesso comune: mai l'indirizzo, mai i dati di altri host. Più sono completi i passi precedenti, più la stima è precisa.",
+          "label": "Su cosa si basa il prezzo calcolato con l'AI",
+          "title": "Su cosa si basa"
+        },
+        "loading": "Sto calcolando…",
+        "none": {
+          "ai_budget_exhausted": "Il calcolo con l'AI è sospeso fino al prossimo mese: scrivi tu il prezzo.",
+          "ai_invalid_answer": "Non sono riuscito a dare un prezzo affidabile. Riprova o scrivi tu il prezzo.",
+          "ai_not_configured": "Il calcolo con l'AI non è attivo in questo momento: scrivi tu il prezzo.",
+          "ai_unavailable": "Non riesco a raggiungere l'AI adesso. Riprova tra poco o scrivi tu il prezzo.",
+          "retry": "Riprova"
+        },
+        "positioning": {
+          "Higher": "Più alto",
+          "Lower": "Più basso",
+          "Market": "In linea",
+          "question": "Rispetto alle case simili della zona vuoi un prezzo…"
+        },
+        "result": {
+          "again": "Cambia posizionamento",
+          "also": "Anche: {{items}}.",
+          "apply": "Usa questi valori",
+          "cleaning": "pulizia {{price}}",
+          "estimate": "È una stima: controllala sempre con il Calendario e con quello che chiedono gli altri.",
+          "figuresOnly": "L'AI non ha risposto, quindi ho calcolato il prezzo dalle {{count}} case simili pubblicate a {{comune}}.",
+          "keepMine": "Lascio il mio",
+          "minNights_one": "minimo {{count}} notte",
+          "minNights_other": "minimo {{count}} notti",
+          "perNight": "{{price}} a notte",
+          "range": "Di solito tra {{min}} e {{max}} per case come la tua in zona.",
+          "title": "Prezzo consigliato",
+          "weekend": "weekend +{{percent}}%",
+          "why": "Perché questo prezzo"
+        },
+        "tips": {
+          "amenities": "Per una stima più precisa scegli prima le dotazioni, nel passo «Dotazioni».",
+          "area": "Per una stima più precisa indica prima i metri quadri, nel primo passo."
+        }
+      },
       "calendar": "Il prezzo base vale per ogni notte; nel Calendario vedi i prezzi che si applicano.",
       "cleaning": {
         "hint": "Si paga una volta a soggiorno.",
