@@ -50,6 +50,7 @@ function userVariants(contextKey: AppContextKey) {
   const flagSets: [string, Partial<FeatureFlags>][] = [
     ['flags off', {}],
     ['otaPartnerApi on', { otaPartnerApi: true }],
+    ['agencyTier on', { agencyTier: true }],
   ];
   return predicates.flatMap(([userLabel, hasPermission]) =>
     flagSets.map(([flagLabel, features]) => ({ label: `${userLabel}, ${flagLabel}`, hasPermission, features })),
@@ -57,26 +58,34 @@ function userVariants(contextKey: AppContextKey) {
 }
 
 describe('route-manifest main menu (UI-04a)', () => {
-  it('returns the primary short-rent entries in order, seven at most', () => {
+  it('returns the primary short-rent entries in order, eight at most, the adempimenti among them', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll);
     expect(paths(primary)).toEqual([
       '/app/short-rent',
       '/app/short-rent/bookings/calendar',
       '/app/short-rent/bookings',
+      '/app/short-rent/compliance',
       '/app/short-rent/properties',
       '/app/short-rent/vetrina',
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',
     ]);
-    expect(primary).toHaveLength(7);
+    expect(primary).toHaveLength(8);
     expect(primary.length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
+  });
+
+  it('shows the risk of a sanction on the adempimenti entry and asks the permission of the summary it reads', () => {
+    const compliance = entryOf('/app/short-rent/compliance');
+    expect(compliance.navCount).toBe('compliance');
+    // `GET api/compliance/summary` is `booking.read`: an entry the user opens must not end on a 403.
+    expect(compliance.requiredPermissions).toEqual(expect.arrayContaining(['property.read', 'booking.read']));
+    expect(paths(getPrimaryNavEntries('short-rent', without('booking.read')))).not.toContain('/app/short-rent/compliance');
   });
 
   it('puts the rest of short-rent in "Altro", the OTA channels only with their flag', () => {
     const withoutFlag = paths(getSecondaryNavEntries('short-rent', allowAll));
     expect(withoutFlag).toEqual([
       '/app/short-rent/guests',
-      '/app/short-rent/compliance',
       '/app/short-rent/crm/guests',
       '/app/short-rent/payments/revenue',
       '/app/short-rent/fiscal',
@@ -85,7 +94,6 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/channels',
       '/app/short-rent/verifications',
       '/app/short-rent/approval-queue',
-      '/app/short-rent/trusted-suppliers',
       '/app/short-rent/profile',
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',
@@ -140,16 +148,33 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/seo',
       '/app/admin/marketing',
       '/app/admin/cin',
-      '/app/admin/statements',
     ]);
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin/suppliers/invite',
       '/app/admin/invite-qr',
       '/app/admin/ai',
       '/app/admin/demo',
-      '/app/admin/activities',
       '/app/admin/profile',
     ]);
+  });
+
+  // The pages of the agency plan read endpoints that answer only an org on that plan (ADR-010): shown to everyone, their first read
+  // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
+  const AGENCY_PAGES: [AppContextKey, string][] = [
+    ['short-rent', '/app/short-rent/trusted-suppliers'],
+    ['account', '/app/account/withholding'],
+    ['account', '/app/account/wire-transfers'],
+    ['admin', '/app/admin/statements'],
+    ['admin', '/app/admin/activities'],
+  ];
+
+  it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
+    expect(entryOf(path).featureFlag).toBe('agencyTier');
+    expect(isEntryFeatureEnabled(entryOf(path), {})).toBe(false);
+    for (const features of [{}, { agencyTier: false }, { otaPartnerApi: true }]) {
+      expect(paths(getVisibleNavEntries(contextKey, allowAll, features))).not.toContain(path);
+    }
+    expect(paths(getVisibleNavEntries(contextKey, allowAll, { agencyTier: true }))).toContain(path);
   });
 
   it.each(CONTEXTS)('%s: at most seven primary entries for every role and flag', (contextKey) => {
@@ -174,7 +199,7 @@ describe('route-manifest main menu (UI-04a)', () => {
   it('lists the sections of the sidebar and "Altro" from the same entries', () => {
     const nav = getContextNav('short-rent', allowAll, { otaPartnerApi: true });
     expect(nav.sections.map((section) => section.group)).toEqual(['everyday', 'offer', 'management']);
-    expect(nav.sections.map((section) => section.entries.length)).toEqual([3, 3, 1]);
+    expect(nav.sections.map((section) => section.entries.length)).toEqual([4, 3, 1]);
     expect(paths(nav.more)).toEqual(paths(getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true })));
   });
 
@@ -189,6 +214,8 @@ describe('route-manifest main menu (UI-04a)', () => {
   it('gives a counter only to the entries whose number is already read by the app', () => {
     const counted = ROUTE_MANIFEST.filter((entry) => entry.navCount).map((entry) => [entry.path, entry.navCount]);
     expect(counted).toEqual([
+      // The risk of a sanction (the Alloggiati Web communications and the guest data they need), from the summary of the cockpit.
+      ['/app/short-rent/compliance', 'compliance'],
       ['/app/short-rent/bookings', 'bookingRequests'],
       ['/app/supplier/inbox', 'supplierRequests'],
     ]);
@@ -226,6 +253,7 @@ describe('route-manifest bottom bar (UI-04a, drawn by UI-04b)', () => {
   it('keeps what the bar does not list in the phone menu', () => {
     const nav = getContextNav('short-rent', allowAll, {}, { withoutBottom: true });
     expect(nav.sections.flatMap((section) => paths(section.entries))).toEqual([
+      '/app/short-rent/compliance',
       '/app/short-rent/vetrina',
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',

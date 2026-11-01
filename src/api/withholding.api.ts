@@ -8,6 +8,7 @@ import type {
 /**
  * Withholding tax API (ADR-018).
  * Agency withholding tax calculation, F24 generation, and payment reconciliation.
+ * Paths are relative to the API base URL, which already ends in `/api` (backend `api/withholding/...`).
  */
 export const withholdingApi = {
   /**
@@ -16,19 +17,19 @@ export const withholdingApi = {
    * Per AC-NF18-7: downloadable as PDF/Excel.
    */
   getSummary: (month: number, year: number) =>
-    ApiClient.get<WithholdingSummary>('/api/withholding/summary', { month, year }),
+    ApiClient.get<WithholdingSummary>('/withholding/summary', { month, year }),
 
   /**
    * Get F24 preview for a given month and year (ADR-018-R8, ADR-018-R9).
    * Tax code 1919, reference month/year, total amount, due date 16th of following month.
    */
   getF24Preview: (month: number, year: number) =>
-    ApiClient.get<F24Preview>('/api/withholding/f24', { month, year }),
+    ApiClient.get<F24Preview>('/withholding/f24', { month, year }),
 
   /**
    * Record F24 payment (ADR-018, AC-NF18-10).
    * Reconciliation: marks the F24 as paid.
    */
   recordPayment: (request: RecordPaymentRequest) =>
-    ApiClient.post<void>('/api/withholding/reconcile', request),
+    ApiClient.post<void>('/withholding/reconcile', request),
 };

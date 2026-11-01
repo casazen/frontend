@@ -15,6 +15,12 @@
       "orgSettingsChanged": "Company data changed",
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
+      "propertyActivatedWithReminders": "Property activated with {{reminders}} still to complete",
+      "reminder": {
+        "documents": "the documents",
+        "documents_safety": "the documents and the safety sheet",
+        "safety": "the safety sheet"
+      },
       "system": "System"
     },
     "home": {
@@ -3125,21 +3131,53 @@
       "turnoversPending": "Properties to declare ready"
     },
     "cockpit": {
-      "kicker": "What is missing",
+      "kicker": {
+        "fine": "You risk a penalty",
+        "start": "To get started",
+        "chore": "To close"
+      },
       "allClear": {
         "title": "You are all set",
         "body": "Nothing is pending: your properties are active and your stays are in order.",
         "cta": "Open properties"
       },
-      "then_one": "Then: {{count}} more thing to fix",
-      "then_other": "Then: {{count}} more things to fix",
-      "stays": {
-        "title": "To do"
+      "then": {
+        "lead": "Then: {{what}}",
+        "fine_one": "{{count}} more with a legal deadline",
+        "fine_other": "{{count}} more with a legal deadline",
+        "start_one": "{{count}} property to activate",
+        "start_other": "{{count}} properties to activate",
+        "chore_one": "{{count}} to close",
+        "chore_other": "{{count}} to close"
       },
-      "properties": {
-        "title": "Your properties"
+      "fine": {
+        "title": "Legal deadlines",
+        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "moreLink": "See them all in Alloggiati"
       },
-      "seeAll": "See all ({{count}})",
+      "start": {
+        "title": "To get started",
+        "intro": "Until they are in order, these properties are not activated and cannot be booked from your site."
+      },
+      "chore": {
+        "title": "To close"
+      },
+      "deadline": {
+        "overdueJustNow": "Just overdue",
+        "overdueHours_one": "Overdue by {{count}} hour",
+        "overdueHours_other": "Overdue by {{count}} hours",
+        "overdueDays_one": "Overdue by {{count}} day",
+        "overdueDays_other": "Overdue by {{count}} days",
+        "endOfToday": "By today",
+        "endOfTomorrow": "By tomorrow",
+        "endOfDay": "By {{date}}"
+      },
+      "active": {
+        "toggle_one": "{{count}} property in order",
+        "toggle_other": "{{count}} properties in order"
+      },
+      "openAll": "All duties",
+      "showMore": "Show the other {{count}}",
       "showLess": "Show less",
       "missing": {
         "lead": "Missing: {{what}}",
@@ -3167,6 +3205,7 @@
       "saveAndContinue": "Save and continue",
       "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
+      "remindersAccept": "Activate anyway: I know that the safety sheet and the documents still to complete are my obligation and I will complete them as soon as possible.",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
       "completed": "Property activated successfully",
@@ -3391,7 +3430,7 @@
       "disclaimer": "CasaZen records what you declare: it does not inspect the property and does not certify its compliance. You declare the safety requirements in the BDSR with the CIN request (art. 13-ter, par. 3).",
       "importedFromLegacy": "We imported the answers of the old checklist (smoke detector, extinguisher, gas certificate). Review the items marked \"To review\", complete the missing ones and confirm again.",
       "complete": "Checklist complete: nothing is blocking.",
-      "blockersTitle": "To complete before the activation (last save):",
+      "blockersTitle": "Points to complete (last save):",
       "itemsTitle": "Equipment and requirements",
       "toReview": "To review",
       "confirm": "I confirm that this information is true and matches what I declared in the BDSR. I know that CasaZen does not check or certify the compliance of the property.",
@@ -7875,6 +7914,12 @@
     "notEstimatedUnknown": "tax regime not recorded",
     "toCheck": "to be checked: see “Good to know”",
     "notesTitle": "Good to know",
+    "term": {
+      "label": "Lease period",
+      "period": "from {{from}} to {{to}}",
+      "ended": "ended",
+      "endsToday": "ends today"
+    },
     "empty": {
       "title": "No lease in force in {{year}}",
       "description": "As soon as a signed lease is in force, you find its rent and estimated taxes here, ready for your accountant.",
@@ -8772,12 +8817,11 @@
   },
   "marketplace": {
     "title": "Marketplace",
-    "description": "Find the suppliers that work near your properties and ask for an intervention.",
+    "description": "Suppliers near your properties, external partners and integrations.",
     "requestIntervention": "Request an intervention",
     "sections": {
       "label": "Marketplace sections",
       "discover": "Discover",
-      "categories": "Categories",
       "mine": "My apps"
     },
     "search": {
@@ -8787,14 +8831,47 @@
       "description": "By supplier name, service or category."
     },
     "casazenSuppliers": "CasaZen suppliers",
-    "seeAll": "See all",
-    "seeAllOf": "See all: {{category}}",
     "categories": {
-      "title": "Categories",
-      "description": "Browse the suppliers by type of service.",
       "count_one": "{{count}} supplier",
       "count_other": "{{count}} suppliers",
       "none": "No suppliers yet"
+    },
+    "partners": {
+      "title": "Integrations with external partners",
+      "description": "Services from outside companies for cleaning, check-in and maintenance. They are not CasaZen suppliers: they open on the company's own site. Check that they serve your area.",
+      "learnMore": "Learn more",
+      "learnMoreAria": "Learn more about {{name}} (opens in a new tab)",
+      "items": {
+        "operto": "Guest technology that cuts the cost of running a rental.",
+        "turno": "Find and manage cleaning services for short-term rentals.",
+        "properly": "A platform that checks the quality of the work done.",
+        "doinn": "Find and manage cleaning services for short-term rentals.",
+        "tidy": "Automation of the cleaning and maintenance of the property."
+      }
+    },
+    "integrations": {
+      "title": "Other integrations",
+      "description": "What CasaZen already connects to: turn it on or manage it from its own page.",
+      "status": {
+        "active": "On",
+        "inactive": "Not set up",
+        "pending": "Being verified"
+      },
+      "manage": "Manage",
+      "activate": "Set up",
+      "items": {
+        "calendars": {
+          "title": "Airbnb and Booking.com calendars",
+          "summary": "Link the calendars of the portals (iCal) to avoid double bookings.",
+          "detail_one": "{{count}} calendar linked",
+          "detail_other": "{{count}} calendars linked"
+        },
+        "payments": {
+          "title": "Card payments",
+          "summary": "Get paid by your guests by card, through Stripe.",
+          "detail": "Card payments are on."
+        }
+      }
     },
     "category": {
       "description": "The suppliers of this category that work in the area of the property.",
@@ -8815,6 +8892,7 @@
     },
     "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "noNetwork": "There is no CasaZen network in this area yet for this category.",
+    "noNetworkPartners": "You will find external partners below.",
     "noMatch": "No supplier matches the search.",
     "noVerified": "None of these suppliers is verified.",
     "clearFilters": "Clear the filters",
@@ -8855,21 +8933,10 @@
     },
     "mine": {
       "title": "My apps",
-      "description": "The suppliers you already asked for an intervention and the requests you sent.",
-      "suppliersTitle": "My suppliers",
-      "summary_one": "{{count}} request · last on {{date}}",
-      "summary_other": "{{count}} requests · last on {{date}}",
-      "open_one": "{{count}} open",
-      "open_other": "{{count}} open",
-      "requestAgain": "Request again",
-      "openPage": "View the page",
-      "seeRequests": "See the requests",
-      "notAround": "It does not work in the area of this property.",
-      "onlySupplier": "Only the requests of {{name}}",
-      "showAll": "Show all",
-      "emptyTitle": "You have not asked for any intervention yet",
-      "emptyHint": "When you ask a supplier for an intervention you will find it here, with its requests.",
-      "discover": "Discover the suppliers"
+      "description": "The integrations you have turned on.",
+      "emptyTitle": "No integration is on",
+      "emptyHint": "When you link a calendar or turn on card payments you will find them here.",
+      "discover": "Discover the integrations"
     },
     "supplier": {
       "title": "Supplier",
@@ -8877,10 +8944,7 @@
       "requestService": "Request: {{service}}",
       "backToMarketplace": "Back to the Marketplace"
     },
-    "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
-    "noRequests": "No service requests yet.",
-    "noRequestsHint": "Select a property and a supplier to create your first intervention.",
     "viewBooking": "View booking",
     "quickActions": "Quick actions",
     "goToBookings": "Go to bookings",
@@ -8984,7 +9048,9 @@
       "bookingRequests_one": "{{count}} request to approve",
       "bookingRequests_other": "{{count}} requests to approve",
       "supplierRequests_one": "{{count}} request to accept",
-      "supplierRequests_other": "{{count}} requests to accept"
+      "supplierRequests_other": "{{count}} requests to accept",
+      "compliance_one": "{{count}} duty with a risk of penalty",
+      "compliance_other": "{{count}} duties with a risk of penalty"
     },
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
@@ -9419,8 +9485,12 @@
       },
       "chips": {
         "all": "All",
+        "canceled": "Canceled",
+        "canceledHint": "Payments canceled with the booking: the money never arrived",
         "collected": "Collected",
         "collectedHint": "Payments that arrived, even if partly refunded",
+        "incoming": "Upcoming",
+        "incomingHint": "Payments of stays that are coming or on, still to collect or already collected",
         "refunded": "Refunded",
         "refundedHint": "Payments given back, in full or in part",
         "toCollect": "To collect",
@@ -9450,6 +9520,9 @@
       },
       "forBooking": "Booking {{code}}",
       "loadError": "Failed to load payments. Please try again.",
+      "noIncomingAction": "See all payments",
+      "noIncomingDescription": "The payments of stays that are coming or on show up here. To see the past ones too, open “All”.",
+      "noIncomingTitle": "No payments coming in",
       "noResultsDescription": "Try removing a filter or searching with another name.",
       "noResultsTitle": "No payments with these filters",
       "refundedAmount": "Refunded {{amount}}",
@@ -10671,15 +10744,19 @@
       },
       "none": "You have not chosen anything yet: you can also skip this and add them later.",
       "safety": {
+        "backToQuick": "Back to the quick questions",
         "complete": "The sheet is complete.",
-        "description": "The property's safety sheet: you fill it in once and it is needed to activate the property.",
-        "dialogDescription": "Fill in the items and save: the property is activated only with a complete, confirmed sheet.",
+        "description": "A few answers are enough. The devices are your legal obligation, but the sheet does not block the activation.",
+        "dialogDescription": "Fill in the items and save. The safety devices are your obligation: the sheet does not block the activation, but it stays among the things to complete.",
         "dialogTitle": "Safety sheet",
+        "full": "Add where they are, dates and proofs",
+        "fullHint": "Optional: they are used for the reminders.",
         "loadFailed": "I cannot read the safety sheet. Try again in a moment.",
         "loading": "Checking the sheet…",
         "open": "Fill in the sheet",
         "progress": "{{done}} of {{total}} items in order",
         "progressLabel": "Progress of the safety sheet",
+        "quickDescription": "Three questions and a list to tick. What we already know, we fill in for you.",
         "review": "Review the sheet",
         "title": "Safety"
       }
@@ -10812,6 +10889,9 @@
         "loading": "Checking what is missing…",
         "none": "All in order: only the final confirmation is missing.",
         "refused": "It cannot be activated yet: the service reports these points",
+        "reminders": "Still to complete (does not block the activation)",
+        "safety_one": "Complete the safety sheet: {{count}} point left",
+        "safety_other": "Complete the safety sheet: {{count}} points left",
         "title": "What is missing"
       },
       "summary": {
@@ -10882,13 +10962,36 @@
           "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
           "label": "Headline"
         },
-        "suggest": "Suggest a text",
+        "aiUnavailable": "The AI is not available right now: we put the text together from the details you entered. You can try again shortly.",
+        "aiWritten": "Text written by the AI from {{basis}}: read it and change it as you like.",
+        "basis": {
+          "comune": "the comune of {{place}}",
+          "facts": "the details of the property",
+          "photos_one": "{{count}} photo",
+          "photos_other": "{{count}} photos",
+          "similar_one": "{{count}} similar listing in the area",
+          "similar_other": "{{count}} similar listings in the area"
+        },
+        "help": {
+          "text": "The AI looks at up to 6 photos (the cover first), knows the comune but not the address, and compares the listings published on CasaZen in the same area. It only uses the details of the property and what can be seen: for a more precise text, upload photos of every room and choose the cover with care.",
+          "title": "How the AI writes the text"
+        },
+        "photosNotRead": "The AI service in use does not read photos: the text is based on the details and the comune.",
+        "rateLimited": "You asked for many texts in a short time: try again in a few minutes.",
+        "regenerate": "Regenerate",
+        "suggest": "Suggest with AI",
         "suggested": "Text put together from the details you entered: review it and change it as you like.",
         "text": {
           "label": "Description"
         },
+        "tips": {
+          "fewPhotos": "With at least {{count}} photos (living area, bedrooms, bathroom, outdoors) the AI describes the home better.",
+          "noPhotos": "Upload the photos first: the AI will write a description that matches what they show (light, style, spaces, view)."
+        },
         "title": "Your listing",
-        "undo": "Undo"
+        "undo": "Undo",
+        "writing": "Writing…",
+        "writingStatus": "The AI is looking at the photos and writing the text: it takes a few seconds."
       },
       "queue": {
         "dismiss": "Remove",
@@ -10902,6 +11005,75 @@
       "title": "Photos"
     },
     "prices": {
+      "ai": {
+        "applied": {
+          "text": "I've filled in the values below: check them and carry on when you like.",
+          "undo": "Undo"
+        },
+        "ask": {
+          "calculate": "Work out the price",
+          "decline": "No, I'll type it",
+          "description": "I start from the home's details, the area and similar homes on CasaZen. Then you decide: nothing changes without your yes.",
+          "title": "Want me to work out the price with AI?"
+        },
+        "basedOn": {
+          "amenities_one": "{{count}} amenity",
+          "amenities_other": "{{count}} amenities",
+          "area": "{{area}} m²",
+          "bedrooms_one": "{{count}} bedroom",
+          "bedrooms_other": "{{count}} bedrooms",
+          "general": "general estimate for the area",
+          "guests_one": "{{count}} guest",
+          "guests_other": "{{count}} guests",
+          "label": "Based on:",
+          "similar_one": "{{count}} similar home on CasaZen",
+          "similar_other": "{{count}} similar homes on CasaZen"
+        },
+        "declined": {
+          "again": "Work it out with AI",
+          "text": "Want some help with the price?"
+        },
+        "error": "I couldn't work out the price. Try again in a moment.",
+        "help": {
+          "body": "The AI looks at what you've already entered (guests, bedrooms, square metres, amenities), the area and, if there are at least 3, the prices of similar homes published on CasaZen in the same comune: never the address, never other hosts' data. The more complete the earlier steps, the more accurate the estimate.",
+          "label": "What the AI price is based on",
+          "title": "What it is based on"
+        },
+        "loading": "Working it out…",
+        "none": {
+          "ai_budget_exhausted": "Working out the price with AI is paused until next month: type the price yourself.",
+          "ai_invalid_answer": "I couldn't come up with a reliable price. Try again or type the price yourself.",
+          "ai_not_configured": "Working out the price with AI isn't active right now: type the price yourself.",
+          "ai_unavailable": "I can't reach the AI right now. Try again in a moment or type the price yourself.",
+          "retry": "Try again"
+        },
+        "positioning": {
+          "Higher": "Higher",
+          "Lower": "Lower",
+          "Market": "In line",
+          "question": "Compared with similar homes in the area, do you want a price…"
+        },
+        "result": {
+          "again": "Change positioning",
+          "also": "Also: {{items}}.",
+          "apply": "Use these values",
+          "cleaning": "cleaning {{price}}",
+          "estimate": "It's an estimate: always check it against the Calendar and what others ask.",
+          "figuresOnly": "The AI didn't answer, so I worked the price out from the {{count}} similar homes published in {{comune}}.",
+          "keepMine": "Keep mine",
+          "minNights_one": "minimum {{count}} night",
+          "minNights_other": "minimum {{count}} nights",
+          "perNight": "{{price}} a night",
+          "range": "Homes like yours in the area usually ask between {{min}} and {{max}}.",
+          "title": "Suggested price",
+          "weekend": "weekend +{{percent}}%",
+          "why": "Why this price"
+        },
+        "tips": {
+          "amenities": "For a more accurate estimate, choose the amenities first, in the «Amenities» step.",
+          "area": "For a more accurate estimate, enter the square metres first, in the first step."
+        }
+      },
       "calendar": "The base price applies to every night; the Calendar shows the prices that apply.",
       "cleaning": {
         "hint": "Paid once per stay.",
@@ -10984,6 +11156,73 @@
         "title": "Arrival and departure"
       }
     },
+    "safetyQuick": {
+      "intro": "A few answers: from them we work out what the law asks of your home.",
+      "why": {
+        "title": "Why we ask",
+        "text": "For short stays the law (art. 13-ter of D.L. 145/2023) asks for fire extinguishers and, when there is gas or a flame in the home, gas and carbon monoxide detectors. You declare them in BDSR when you apply for the CIN: CasaZen records what you declare, it does not check or certify it."
+      },
+      "heat": {
+        "question": "Is there gas or a flame in the home?",
+        "hint": "Gas hob, boiler, water heater, stove, fireplace or a gas cylinder.",
+        "yes": "Yes",
+        "no": "No, everything is electric",
+        "which": "What is there?",
+        "whichRequired": "Choose at least one.",
+        "exempt": "With no gas and no flame the detectors are not needed: the extinguisher still is.",
+        "source": {
+          "GasSupply": "Mains gas, LPG or cylinder",
+          "GasHob": "Gas hob",
+          "Boiler": "Boiler",
+          "WaterHeater": "Gas water heater",
+          "Stove": "Stove",
+          "Fireplace": "Fireplace",
+          "Other": "Something else that burns"
+        }
+      },
+      "business": {
+        "question": "Do you rent with a VAT number or as a business?",
+        "hint": "Also as a company, or from the third apartment let for short stays.",
+        "helpTitle": "Business activity",
+        "help": "What counts is the VAT number, the company or the number of apartments let for short stays: over the threshold the activity is presumed to be a business (art. 1, c. 595, L. 178/2020). Only then are compliant systems required too.",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "floors": {
+        "question": "How many floors does the home have?",
+        "label": "Floors of the home"
+      },
+      "have": {
+        "title": "What do you already have in the home?",
+        "required": "Required",
+        "recommended": "Recommended",
+        "minimum_one": "At least {{count}} is needed.",
+        "minimum_other": "At least {{count}} are needed.",
+        "count": "Extinguishers",
+        "toReview": "To confirm again"
+      },
+      "items": {
+        "FireExtinguishers": "Fire extinguisher",
+        "GasDetector": "Gas detector",
+        "CoDetector": "Carbon monoxide detector",
+        "SystemsCompliance": "Compliant systems, with the declaration of conformity",
+        "SmokeDetector": "Smoke detector",
+        "EmergencyInstructions": "Emergency instructions and numbers for guests",
+        "BdsrDeclaration": "I declared these devices in BDSR when I applied for the CIN"
+      },
+      "bdsrHint": "No CIN yet? You apply for it on the BDSR portal of the Ministry of Tourism: tick this point afterwards.",
+      "prefill": {
+        "label": "Prefilled",
+        "amenity": "From the amenities you chose: check it.",
+        "fiscalVat": "Your tax data have a VAT number: check it.",
+        "fiscalThreshold": "With the homes you let for short stays the activity is presumed to be a business: check it.",
+        "fiscalNone": "Your tax data have no VAT number and you are under the threshold: check it.",
+        "floors": "An apartment is usually on one floor: change it if yours is not.",
+        "cin": "You already have the CIN, which is issued with this declaration: check it."
+      },
+      "missingTitle": "Still to complete in the sheet",
+      "save": "Save"
+    },
     "steps": {
       "amenities": {
         "label": "Amenities",
@@ -11050,7 +11289,7 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
-      "description": "The description can have at most 600 characters.",
+      "description": "The description can have at most 2,000 characters.",
       "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
       "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
@@ -12677,7 +12916,11 @@
     "noAccess": {
       "title": "No access available",
       "description": "Your account is not associated with any operational workspace. Sign out and sign back in, or contact the administrator for role assignment.",
-      "loginAgain": "Sign in again"
+      "loginAgain": "Sign in again",
+      "pageTitle": "You can't open this page",
+      "pageDescription": "Your role does not include this page: the other areas of your account are still available. If you were just given a new role, sign in again to refresh it.",
+      "chooseArea": "Back to your areas",
+      "goHome": "Back to home"
     },
     "accountInactive": {
       "title": "Account deactivated",
@@ -12865,7 +13108,11 @@
       "guides": {
         "title": "Free guides per comune",
         "text": "For each comune we explain CIN, Alloggiati Web and the tourist tax with the official sources; for Lombardy also the CIR and the tourist flow reporting on Ross1000. Every guide is reviewed by a person before it is published.",
-        "cta": "Go to the guides"
+        "cta": "Go to the guides",
+        "guidesTitle": "Short-term rentals: guide by comune",
+        "taxTitle": "Tourist tax",
+        "guideLink": "Short-term rentals in {{comune}}",
+        "taxLink": "Tourist tax in {{comune}}"
       },
       "faq": {
         "title": "Frequently asked questions",

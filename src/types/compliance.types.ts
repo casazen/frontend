@@ -16,7 +16,10 @@ export interface ComplianceWizardStep {
   linkUrl?: string | null;
   /** Only on the `tourist-tax` step. */
   touristTax?: ActivationTouristTax | null;
-  /** What keeps this blocking step incomplete, with stable codes (e.g. `safety_gas_detector_missing`). */
+  /**
+   * What keeps this step incomplete, with stable codes (e.g. `safety_gas_detector_missing`). On a step that does not block (the
+   * documents and the safety sheet since 2026-11-01) they are the points of the reminder still open.
+   */
   blockers?: ActivationBlocker[];
   /** Non-blocking notes of the step with stable codes (SU-04): the step may be complete and still carry them. */
   warnings?: ActivationWarning[];
@@ -80,6 +83,11 @@ export interface ActivationBlockedProblem {
 /** The safety checklist is saved on its own endpoint (CO-07), never with the activation. */
 export interface CompletePropertyActivationCommand {
   tosAccepted?: boolean;
+  /**
+   * The host knows that the reminders still open (the documents, the safety sheet) are their own obligations and will complete
+   * them: needed only when some are open (409 `activation_reminders_ack_required` otherwise). Recorded in the activity log.
+   */
+  remindersAcknowledged?: boolean;
 }
 
 // ─── D.L. 145/2023 art. 13-ter safety checklist (CO-07) ──────────────────────
@@ -208,6 +216,12 @@ export interface ComplianceSummaryItem {
    * Absent on an API that does not send it yet.
    */
   missing?: DashboardMissing[];
+  /**
+   * When the item has to be done by (UTC), if the stay fixes it: the legal term of the Alloggiati communication, the day the
+   * guest arrives (their data are needed by then), the day the guest leaves. Null for the others; absent on an API that does
+   * not send it yet (the page then reads it from the Home's "Da fare", where it can).
+   */
+  dueAt?: string | null;
 }
 
 export interface ComplianceSummarySection {

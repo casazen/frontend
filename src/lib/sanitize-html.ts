@@ -59,7 +59,30 @@ function getPurifier(): DOMPurifyInstance {
   return instance;
 }
 
+/** Elements that carry text: when sanitizing leaves one with none, nothing of it is worth showing. */
+const TEXT_ELEMENTS = 'li, p, h2, h3, h4, a, strong, em, ul, ol';
+
+/** Passes needed at most: removing the last item of a list empties the list, and a list nests only so deep. */
+const MAX_EMPTY_PASSES = 10;
+
+/**
+ * Drops what the sanitizer left empty: an item whose link lost its address or its text (a published guide ended its sources with a
+ * bullet and nothing after it), a paragraph made of a removed tag. Same rule as the backend `SeoHtmlSanitizer`. Table cells are not
+ * touched: an empty cell is still a cell.
+ */
+function removeEmptyElements(root: ParentNode): void {
+  for (let pass = 0; pass < MAX_EMPTY_PASSES; pass += 1) {
+    const empty = Array.from(root.querySelectorAll(TEXT_ELEMENTS)).filter((element) => (element.textContent ?? '').trim() === '');
+    if (empty.length === 0) return;
+    empty.forEach((element) => element.remove());
+  }
+}
+
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html || !html.trim()) return '';
-  return getPurifier().sanitize(html, CONFIG).trim();
+  const fragment = getPurifier().sanitize(html, { ...CONFIG, RETURN_DOM_FRAGMENT: true });
+  removeEmptyElements(fragment);
+  const container = window.document.createElement('div');
+  container.appendChild(fragment);
+  return container.innerHTML.trim();
 }

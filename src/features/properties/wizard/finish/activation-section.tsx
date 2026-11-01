@@ -12,14 +12,28 @@ interface ActivationSectionProps {
   stage: FinishStage;
   tosAccepted: boolean;
   onTosChange: (accepted: boolean) => void;
+  /** Reminders still open (the documents, the safety sheet): the host acknowledges them once to activate. */
+  remindersOpen: boolean;
+  remindersAccepted: boolean;
+  onRemindersChange: (accepted: boolean) => void;
 }
 
 /**
  * The end of the wizard (SR-07c): «Mostra la casa sul sito» and, when nothing blocks, the terms. The switch is on by default and
  * **off and explained while the server reports blockers**: it decides only whether a property that is ready appears on the site, it
- * never publishes one that is not. The terms are the text and the box of the activation of today.
+ * never publishes one that is not. The terms are the text and the box of the activation of today. With the documents or the safety
+ * sheet still open (reminders since the PO decision of 2026-11-01) one more box says that the host knows they are their obligations:
+ * the server records it with the activation.
  */
-export function ActivationSection({ form, stage, tosAccepted, onTosChange }: ActivationSectionProps) {
+export function ActivationSection({
+  form,
+  stage,
+  tosAccepted,
+  onTosChange,
+  remindersOpen,
+  remindersAccepted,
+  onRemindersChange,
+}: ActivationSectionProps) {
   const { t } = useTranslation();
   const decidable = stage === 'ready' || stage === 'active';
 
@@ -60,11 +74,25 @@ export function ActivationSection({ form, stage, tosAccepted, onTosChange }: Act
 
       {stage === 'ready' ? (
         <div className="space-y-2 border-t pt-4">
+          {remindersOpen ? (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="property-wizard-reminders"
+                className="mt-0.5"
+                checked={remindersAccepted}
+                onCheckedChange={(checked) => onRemindersChange(checked === true)}
+                data-testid="property-wizard-reminders-ack"
+              />
+              <Label htmlFor="property-wizard-reminders">{t('compliance.activation.remindersAccept')}</Label>
+            </div>
+          ) : null}
           <div className="flex items-start gap-2">
             <Checkbox id="property-wizard-tos" className="mt-0.5" checked={tosAccepted} onCheckedChange={(checked) => onTosChange(checked === true)} data-testid="property-wizard-tos" />
             <Label htmlFor="property-wizard-tos">{t('compliance.activation.tosAccept')}</Label>
           </div>
-          {!tosAccepted ? <p className="text-xs text-foreground/70">{t('compliance.activation.review.tosHint')}</p> : null}
+          {!tosAccepted || (remindersOpen && !remindersAccepted) ? (
+            <p className="text-xs text-foreground/70">{t('compliance.activation.review.tosHint')}</p>
+          ) : null}
         </div>
       ) : stage === 'blocked' ? (
         <p className="border-t pt-4 text-sm text-foreground/70" data-testid="property-wizard-finish-later-hint">

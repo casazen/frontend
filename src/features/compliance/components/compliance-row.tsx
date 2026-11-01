@@ -29,13 +29,15 @@ interface ComplianceRowProps {
   testId?: string;
   /** The `data-testid` of the title: of the link when there is one, of the plain text otherwise. */
   titleTestId?: string;
+  /** What the law dates and the host answers for: the icon takes the color of urgency (the words of the row say the same). */
+  urgent?: boolean;
 }
 
 /**
  * A row of the pages of the adempimenti (cockpit, CIN, Alloggiati Web): what it is about, where it is and what it lacks, one
  * state, and the one button that does what it asks. On a phone it is a single column with the button under the text.
  */
-export function ComplianceRow({ icon: Icon, title, to, sub, detail, badge, note, action, testId, titleTestId }: ComplianceRowProps) {
+export function ComplianceRow({ icon: Icon, title, to, sub, detail, badge, note, action, testId, titleTestId, urgent = false }: ComplianceRowProps) {
   const text = (
     <>
       <span className={cn('block break-words font-semibold', to && 'group-hover/open:underline')}>{title}</span>
@@ -52,7 +54,10 @@ export function ComplianceRow({ icon: Icon, title, to, sub, detail, badge, note,
       )}
     >
       {Icon ? (
-        <span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-muted text-foreground/70">
+        <span
+          aria-hidden="true"
+          className={cn('grid size-9 place-items-center rounded-full', urgent ? 'bg-danger-soft text-danger-foreground' : 'bg-muted text-foreground/70')}
+        >
           <Icon className="size-[18px]" />
         </span>
       ) : null}

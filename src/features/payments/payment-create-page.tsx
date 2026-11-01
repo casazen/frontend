@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { useBookings } from '@/queries/use-bookings';
 import { cn } from '@/lib/utils';
 import { RecordPaymentForm, type RecordPaymentOption } from './components/record-payment-form';
+import { PAYMENTS_PATH } from './lib/payment-list';
 import { balanceOf, canRecordPayment } from './lib/record-payment';
 
 /**
@@ -37,7 +38,10 @@ export function PaymentCreatePage() {
   );
   const wanted = searchParams.get('bookingId') ?? undefined;
   const initialBookingId = options.some((option) => option.id === wanted) ? wanted : undefined;
-  const backToList = () => navigate('/app/short-rent/payments');
+  const backToList = () => navigate(PAYMENTS_PATH);
+  // A payment just recorded is collected: the list opens on «Incassati», where it is whatever the stay. The page opens on «In arrivo»,
+  // which leaves out the stays that are over, and the host would not find the payment it just recorded.
+  const toRecordedPayment = () => navigate(`${PAYMENTS_PATH}?chip=collected`);
 
   // A payment is recorded against a booking: while they load, when they fail to load and when there are none, the form
   // would be a dead end (an empty list is never shown as if nothing was wrong, A4-25).
@@ -70,7 +74,7 @@ export function PaymentCreatePage() {
           <CardDescription>{t('payment.create.paymentDetailsDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <RecordPaymentForm options={options} initialBookingId={initialBookingId} onRecorded={backToList} onCancel={backToList} />
+          <RecordPaymentForm options={options} initialBookingId={initialBookingId} onRecorded={toRecordedPayment} onCancel={backToList} />
         </CardContent>
       </Card>
     );

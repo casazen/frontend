@@ -7,7 +7,7 @@ import { useServiceCategories } from '@/queries/use-service-categories';
 import { useMarketplaceSuppliers } from '@/queries/use-service-requests';
 import { MarketplaceFrame } from './components/marketplace-frame';
 import { SupplierResults } from './components/supplier-results';
-import { MARKETPLACE_CATEGORIES_PATH, MARKETPLACE_PATH, marketplaceHref } from './lib/marketplace-paths';
+import { MARKETPLACE_PATH, marketplaceHref } from './lib/marketplace-paths';
 import { useSupplierFilters } from './lib/use-supplier-filters';
 
 /**
@@ -21,14 +21,10 @@ export function MarketplaceCategoryPage() {
 
   return (
     <MarketplaceFrame
-      section="categories"
+      section="discover"
       title={label}
       description={t('marketplace.category.description')}
-      trail={[
-        { label: t('marketplace.title'), path: MARKETPLACE_PATH },
-        { label: t('marketplace.categories.title'), path: MARKETPLACE_CATEGORIES_PATH },
-        { label },
-      ]}
+      trail={[{ label: t('marketplace.title'), path: MARKETPLACE_PATH }, { label }]}
     >
       {({ property }) => <CategorySuppliers category={category} propertyId={property.id} />}
     </MarketplaceFrame>
@@ -49,7 +45,7 @@ function CategorySuppliers({ category, propertyId }: { category: string; propert
         icon={LayoutGrid}
         title={t('marketplace.category.notFound')}
         description={t('marketplace.category.notFoundHint')}
-        action={{ label: t('marketplace.category.seeAll'), href: marketplaceHref(MARKETPLACE_CATEGORIES_PATH, propertyId) }}
+        action={{ label: t('marketplace.category.seeAll'), href: marketplaceHref(MARKETPLACE_PATH, propertyId) }}
         className="py-8"
       />
     );

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
+import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
@@ -136,6 +137,8 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
   const [propertyId, setPropertyId] = useState<string | null>(property?.id ?? null);
   const [planLimitHit, setPlanLimitHit] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(false);
+  /** The host knows that the documents and the safety sheet still open are their obligations (reminders, PO decision 2026-11-01). */
+  const [remindersAccepted, setRemindersAccepted] = useState(false);
   /** The blockers of the last refused activation (409): the server knows some that the screen could not. */
   const [refused, setRefused] = useState<readonly ActivationBlocker[] | null>(null);
   /** «Mostra la casa sul sito» as the server has it: what the form started from, then what was last written. */
@@ -146,6 +149,7 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
   const activation = useComplianceActivation(propertyId ?? '');
   const completeActivation = useCompleteComplianceActivation(propertyId ?? '');
   const stage = finishStage(activation.data);
+  const remindersOpen = openReminders(activation.data?.steps ?? []).length > 0;
 
   // Said before the first step is saved: the plan usage (any writer reads it) or the entitlement (the billing administrator) say
   // there is no room, or the server just refused (403 `plan_limit_reached`). The server stays the source of truth on a create.
@@ -210,7 +214,8 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
         storedVisibility.current = values.publishedOnSite;
       } else {
         try {
-          await completeActivation.mutateAsync({ tosAccepted: true });
+          // The button is off until the reminders, when open, are acknowledged: the flag goes only with them.
+          await completeActivation.mutateAsync({ tosAccepted: true, ...(remindersOpen ? { remindersAcknowledged: true } : {}) });
         } catch (error) {
           const blocked = getActivationBlockedProblem(error);
           if (blocked) setRefused(blocked.blockers.length > 0 ? blocked.blockers : blocked.incompleteBlockers.map((step) => ({ step, code: '', message: '' })));
@@ -288,8 +293,9 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
       label: t('propertyWizard.steps.finish.label'),
       title: t('propertyWizard.steps.finish.title'),
       purpose: t('propertyWizard.steps.finish.purpose'),
-      // The terms are the one thing the host still has to do when nothing blocks; a click before that would only be refused.
-      nextDisabled: stage === 'loading' || (stage === 'ready' && !tosAccepted),
+      // The terms (and, with reminders open, the acknowledgement) are what the host still has to do when nothing blocks; a click
+      // before that would only be refused.
+      nextDisabled: stage === 'loading' || (stage === 'ready' && (!tosAccepted || (remindersOpen && !remindersAccepted))),
       render: ({ form }) =>
         propertyId ? (
           <FinishStep
@@ -301,6 +307,8 @@ export function PropertyWizard({ property, initialStepId, onCreated }: PropertyW
             refused={refused}
             tosAccepted={tosAccepted}
             onTosChange={setTosAccepted}
+            remindersAccepted={remindersAccepted}
+            onRemindersChange={setRemindersAccepted}
           />
         ) : null,
     },
