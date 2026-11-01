@@ -134,7 +134,7 @@ function ServiceChoices() {
   if (services.isError) return <CatalogProblem error={services.error} />;
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <ChoiceGroup legend={t('requestWizard.who.services')} minCardWidth={14}>
         {services.data.items.map((service) => (
           <ChoiceCard

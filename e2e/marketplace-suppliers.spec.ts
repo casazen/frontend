@@ -6,12 +6,13 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
 import type { Page } from '@playwright/test';
 
-const PROPERTY_ID = 'prop-marketplace-e2e';
-const SUPPLIER_ORG_ID = 'sup-org-marketplace-e2e';
-const SERVICE_ID = 'svc-marketplace-e2e';
-const STAY_ID = 'booking-marketplace-e2e';
+// Ids as the API gives them (GUIDs): the guided request takes the ids of its address only when they are one.
+const PROPERTY_ID = 'a1b2c3d4-0000-4000-8000-0000000000a1';
+const SUPPLIER_ORG_ID = 'a1b2c3d4-0000-4000-8000-0000000000b2';
+const SERVICE_ID = 'a1b2c3d4-0000-4000-8000-0000000000c3';
+const STAY_ID = 'a1b2c3d4-0000-4000-8000-0000000000d4';
 
-/** A future stay of the property: short-rent requests are for a stay (SU-07, D2). */
+/** A future stay of the property: a request is for the house, and the host may link a stay to it (SR-D3). */
 const sampleStay = {
   id: STAY_ID,
   propertyId: PROPERTY_ID,
@@ -52,7 +53,9 @@ const sampleSuppliers = {
   pageSize: 1,
 };
 
+/** Mocks what the marketplace and the guided request read; `posted` collects the bodies of the requests the page creates. */
 async function mockMarketplaceApis(page: Page) {
+  const posted: Record<string, unknown>[] = [];
   await mockPropertiesApi(page, [sampleProperty]);
   await mockCurrentUserWithOrg(page);
   await mockEntitlement(page);
@@ -151,16 +154,7 @@ async function mockMarketplaceApis(page: Page) {
     }
     if (method === 'POST') {
       const body = route.request().postDataJSON() as Record<string, unknown>;
-      expect(body.propertyId).toBe(PROPERTY_ID);
-      expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
-      expect(body.category).toBe('cleaning');
-      // The request is for the house; the stay is a link the host chose in the wizard.
-      expect(body.bookingId).toBe(STAY_ID);
-      // A service of the catalog goes with its slot and never with a length: the server takes it from the service.
-      expect(body.serviceListingId).toBe(SERVICE_ID);
-      expect(body.durationMinutes).toBeUndefined();
-      expect(body.scheduledStartUtc).toEqual(expect.any(String));
-      expect(body.chargeToGuest).toBeUndefined();
+      posted.push(body);
 
       await route.fulfill({
         status: 201,
@@ -168,7 +162,7 @@ async function mockMarketplaceApis(page: Page) {
         body: JSON.stringify({
           id: 'sr-created-e2e',
           orgId: 'org-e2e',
-          bookingId: STAY_ID,
+          bookingId: typeof body.bookingId === 'string' ? body.bookingId : null,
           rentalContext: 'ShortRent',
           propertyId: PROPERTY_ID,
           propertyName: sampleProperty.name,
@@ -186,11 +180,13 @@ async function mockMarketplaceApis(page: Page) {
     }
     await route.fallback();
   });
+
+  return { posted };
 }
 
 test.describe('Marketplace suppliers (#340)', () => {
   test('AC6: browse suppliers → guided request (a stay is only a link) → success', async ({ page }) => {
-    await mockMarketplaceApis(page);
+    const { posted } = await mockMarketplaceApis(page);
     await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
 
     // Scopri: «Fornitori CasaZen» is a tile for each category (MKT: the categories are the first group of Scopri, then the partners).
@@ -238,6 +234,18 @@ test.describe('Marketplace suppliers (#340)', () => {
     );
     await page.getByTestId('request-finish').click();
     expect((await createResp).status()).toBe(201);
+    expect(posted).toHaveLength(1);
+    const [body] = posted;
+    expect(body.propertyId).toBe(PROPERTY_ID);
+    expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
+    expect(body.category).toBe('cleaning');
+    // The request is for the house; the stay is a link the host chose in the wizard.
+    expect(body.bookingId).toBe(STAY_ID);
+    // A service of the catalog goes with its slot and never with a length: the server takes it from the service.
+    expect(body.serviceListingId).toBe(SERVICE_ID);
+    expect(body.durationMinutes).toBeUndefined();
+    expect(body.scheduledStartUtc).toEqual(expect.any(String));
+    expect(body.chargeToGuest).toBeUndefined();
 
     // The page of the supplier (MKT), which can be shared: every service has its own «Richiedi», and the request starts with that service.
     await page.goto(demoUrl(`/app/short-rent/marketplace/suppliers/${SUPPLIER_ORG_ID}?propertyId=${PROPERTY_ID}`, 'short-stay'));
@@ -245,5 +253,34 @@ test.describe('Marketplace suppliers (#340)', () => {
     await page.getByTestId(`marketplace-request-service-${SERVICE_ID}`).click();
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
     await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
+  });
+
+  test('a job outside the catalog: the host gives the time and the length, and the request is for the house alone', async ({ page }) => {
+    const { posted } = await mockMarketplaceApis(page);
+    await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ORG_ID}`, 'short-stay'));
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
+
+    await page.getByTestId('request-service-custom').check({ force: true });
+    await page.getByTestId('request-day').fill('2099-10-05');
+    await page.getByTestId('request-start-time').fill('09:30');
+    await page.getByTestId('request-duration').selectOption('120');
+    await page.getByTestId('request-notes').fill('Le chiavi sono nella cassetta.');
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
+
+    const createResp = page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/api/service-requests'));
+    await page.getByTestId('request-finish').click();
+    expect((await createResp).status()).toBe(201);
+
+    expect(posted).toHaveLength(1);
+    const [body] = posted;
+    expect(body.propertyId).toBe(PROPERTY_ID);
+    expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
+    // No stay and no service of the catalog: the length is the one the host chose.
+    expect(body.bookingId).toBeUndefined();
+    expect(body.serviceListingId).toBeUndefined();
+    expect(body.durationMinutes).toBe(120);
+    expect(body.notes).toBe('Le chiavi sono nella cassetta.');
+    expect(body.scheduledStartUtc).toEqual(expect.any(String));
   });
 });
