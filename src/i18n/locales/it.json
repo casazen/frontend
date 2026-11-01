@@ -7875,6 +7875,12 @@
     "notEstimatedUnknown": "regime fiscale non registrato",
     "toCheck": "da verificare: vedi «Da sapere»",
     "notesTitle": "Da sapere",
+    "term": {
+      "label": "Periodo del contratto",
+      "period": "dal {{from}} al {{to}}",
+      "ended": "concluso",
+      "endsToday": "termina oggi"
+    },
     "empty": {
       "title": "Nessun contratto in vigore nel {{year}}",
       "description": "Appena un contratto firmato è in vigore, qui trovi i canoni e le imposte stimate per il commercialista.",
@@ -12696,7 +12702,11 @@
     "noAccess": {
       "title": "Nessun accesso disponibile",
       "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
-      "loginAgain": "Accedi di nuovo"
+      "loginAgain": "Accedi di nuovo",
+      "pageTitle": "Non hai accesso a questa pagina",
+      "pageDescription": "Il tuo ruolo non comprende questa pagina: le altre aree del tuo account restano a tua disposizione. Se ti hanno appena dato un nuovo ruolo, accedi di nuovo per aggiornarlo.",
+      "chooseArea": "Torna alle tue aree",
+      "goHome": "Torna alla home"
     },
     "accountInactive": {
       "title": "Account disattivato",

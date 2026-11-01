@@ -64,6 +64,8 @@ describe('parseFeatureFlags', () => {
     expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ ...allOff, otaPartnerApi: true });
     expect(parseFeatureFlags({ eSignProvider: true })).toEqual({ ...allOff, eSignProvider: true });
     expect(parseFeatureFlags({ aiSupplierDiscovery: true })).toEqual({ ...allOff, aiSupplierDiscovery: true });
+    // The key the backend sends for `Features:AgencyTier` (GET /api/public/features).
+    expect(parseFeatureFlags({ agencyTier: true })).toEqual({ ...allOff, agencyTier: true });
     expect(parseFeatureFlags({ otaPartnerApi: 'true', aiSupplierDiscovery: 1 })).toEqual(allOff);
     expect(parseFeatureFlags(null)).toEqual(allOff);
     expect(parseFeatureFlags({})).toEqual(allOff);
