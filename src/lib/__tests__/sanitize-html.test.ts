@@ -131,6 +131,33 @@ describe('sanitizeHtml (allowlist, mirror of backend SeoHtmlSanitizer)', () => {
     expect(sanitizeHtml(html)).toBe('');
   });
 
+  // The «Fonti ufficiali» of a published guide ended with a bullet and nothing after it. Same cases as the backend tests.
+  it('sanitizeHtml_ListItemWithNoTextOrAnEmptyLink_DropsTheItemAndKeepsTheOthers', () => {
+    expect(
+      sanitizeHtml(
+        '<ul><li><a href="https://example.com">fonte</a></li><li><a href="https://example.com/x"></a></li><li></li></ul>',
+      ),
+    ).toBe('<ul><li><a href="https://example.com" rel="noopener noreferrer">fonte</a></li></ul>');
+  });
+
+  it('sanitizeHtml_ListWithOnlyEmptyItems_DropsTheWholeList', () => {
+    expect(sanitizeHtml('<p>Fonti ufficiali</p><ul><li></li><li> </li></ul>')).toBe('<p>Fonti ufficiali</p>');
+  });
+
+  it.each([
+    ['<p></p><p>testo</p>', '<p>testo</p>'],
+    ['<p><br></p><p>testo</p>', '<p>testo</p>'],
+    ['<h2> </h2><p>testo</p>', '<p>testo</p>'],
+  ])('sanitizeHtml_BlockWithNoText_IsDropped (%s)', (html, expected) => {
+    expect(sanitizeHtml(html)).toBe(expected);
+  });
+
+  it('sanitizeHtml_EmptyTableCell_IsKept', () => {
+    const html = '<table><tbody><tr><td></td><td>5</td></tr></tbody></table>';
+
+    expect(sanitizeHtml(html)).toBe(html);
+  });
+
   it('sanitizeHtml_AlreadySanitizedHtml_IsStable', () => {
     const once = sanitizeHtml('<h2>Titolo</h2><p><a href="https://example.com">link</a> &amp; testo</p>');
 

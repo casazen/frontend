@@ -1,6 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import type { ComplianceActivationResult, ComplianceWizardStep } from '@/types/compliance.types';
-import { finishActions, finishStage, fixTargetFor } from '../finish/finish-model';
+import { finishActions, finishStage, fixTargetFor, missingLines } from '../finish/finish-model';
+
+describe('«Cosa manca»', () => {
+  it('missingLines_SafetyPoints_OneLineWhereTheFirstWas', () => {
+    const lines = missingLines([
+      { step: 'cin', code: 'activation_cin_missing', message: '' },
+      { step: 'safety', code: 'safety_entrepreneurial_unanswered', message: '' },
+      { step: 'documents', code: 'activation_documents_missing', message: '' },
+      { step: 'safety', code: 'safety_floors_unanswered', message: '' },
+      { step: 'safety', code: 'safety_confirmation_missing', message: '' },
+    ]);
+
+    expect(lines.map((line) => (line.kind === 'safety' ? `safety:${line.count}` : line.blocker.code))).toEqual([
+      'activation_cin_missing',
+      'safety:3',
+      'activation_documents_missing',
+    ]);
+    expect(missingLines([{ step: 'cin', code: 'activation_cin_missing', message: '' }])).toHaveLength(1);
+  });
+});
 
 const step = (id: string, open: boolean, blocker = true): ComplianceWizardStep => ({ id, label: id, status: open ? 'pending' : 'complete', blocker });
 const activation = (status: ComplianceActivationResult['complianceStatus'], open: string[]): ComplianceActivationResult => ({

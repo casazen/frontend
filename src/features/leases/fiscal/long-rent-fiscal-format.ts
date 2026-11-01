@@ -55,3 +55,33 @@ export function fiscalMonthLabel(date: string | null, language: string): string 
 export function fiscalRateLabel(rate: number, language: string): string {
   return new Intl.NumberFormat(language, { style: 'percent', maximumFractionDigits: 2 }).format(rate);
 }
+
+/** Where a lease stands on the day of the report, from the last day of the period it is in: over, over today, or still going. */
+export type FiscalTermState = 'ended' | 'endsToday' | 'running';
+
+export function fiscalTermState(row: Pick<LongRentFiscalRow, 'currentTermEndDate'>, today: string): FiscalTermState {
+  const end = parseStayDate(row.currentTermEndDate);
+  if (!end || !today) return 'running';
+  if (end < today) return 'ended';
+  return end === today ? 'endsToday' : 'running';
+}
+
+/**
+ * "dal 1 nov 2026 al 31 ott 2029", with «concluso» or «termina oggi» when the period is over or ends today: the line that tells apart
+ * two leases of one tenant on one property (a lease ended early and the one that replaced it), which the report lists as two rows.
+ * Empty when the API sent no readable date.
+ */
+export function fiscalTermText(
+  row: Pick<LongRentFiscalRow, 'startDate' | 'currentTermEndDate'>,
+  language: string,
+  t: TFunction,
+  today: string,
+): string {
+  const day = (value: string) => formatStayDate(parseStayDate(value), language, { day: 'numeric', month: 'short', year: 'numeric' });
+  const from = day(row.startDate);
+  const to = day(row.currentTermEndDate);
+  if (!from || !to) return '';
+  const period = t('longRentFiscal.term.period', { from, to });
+  const state = fiscalTermState(row, today);
+  return state === 'running' ? period : `${period} · ${t(`longRentFiscal.term.${state}`)}`;
+}

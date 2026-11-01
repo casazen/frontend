@@ -300,8 +300,9 @@ test.describe('Business Golden Path', () => {
 
     await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
 
-    // Back on the list, the payment is there, already collected (SR-06b: a recorded payment is born collected).
-    await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
+    // Back on the list, on «Incassati» (the page opens on «In arrivo», which leaves out a stay that is over), the payment is there,
+    // already collected (SR-06b: a recorded payment is born collected).
+    await expect(page).toHaveURL(/\/app\/short-rent\/payments\?chip=collected$/);
     const row = page.getByRole('row', { name: /Bonifico bancario/ });
     await expect(row).toContainText('Incassato');
   });
