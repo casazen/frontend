@@ -2,6 +2,7 @@ import { act } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SEO_FEATURED_GUIDES, SEO_FEATURED_TAX_PAGES } from '@/features/public-seo/seo-paths';
 import { createSiteI18n } from '../site-i18n';
 import { SiteApp } from '../site-app';
 import { SITE_PAGES, type SitePageId } from '../site-pages';
@@ -68,6 +69,29 @@ describe('public site render (SEO-VETRINA)', () => {
     expect(html).toContain('href="/per-i-fornitori"');
     expect(html).toContain('href="mailto:info@example.com?subject=Richiesta%20di%20invito%20a%20CasaZen"');
     expect(html).toContain('Richiedi un invito');
+  });
+
+  it('render_home_linksTheGuidesAndTheTaxPageOfTheComuniPeopleSearchFor', () => {
+    for (const [lng, guide, tax] of [
+      ['it', 'Affitti brevi a Como', 'Tassa di soggiorno a Como'],
+      ['en', 'Short-term rentals in Como', 'Tourist tax in Como'],
+    ] as const) {
+      const html = render('home', LEGAL, lng);
+      // Plain links with the words of the search, one click from the home page.
+      expect(html, lng).toContain(`<a href="/p/affitti-brevi/lombardia/como"`);
+      expect(html, lng).toContain(guide);
+      expect(html, lng).toContain(`<a href="/p/tassa-soggiorno/como"`);
+      expect(html, lng).toContain(tax);
+      for (const page of SEO_FEATURED_GUIDES) expect(html, `${lng} ${page.path}`).toContain(`href="${page.path}"`);
+    }
+  });
+
+  it('seoFeaturedPages_arePathsOfTheHubOfTheGuidesAndOfTheTaxPages', () => {
+    for (const page of SEO_FEATURED_GUIDES) expect(page.path).toMatch(/^\/p\/affitti-brevi\/[a-z-]+\/[a-z-]+$/);
+    for (const page of SEO_FEATURED_TAX_PAGES) expect(page.path).toMatch(/^\/p\/tassa-soggiorno\/[a-z-]+$/);
+    // One link per page: a repeated path would be a list that lies about its size.
+    const paths = [...SEO_FEATURED_GUIDES, ...SEO_FEATURED_TAX_PAGES].map((page) => page.path);
+    expect(new Set(paths).size).toBe(paths.length);
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('render_%s_onTheProductionSiteHasNoWayInToTheApp', (page) => {
