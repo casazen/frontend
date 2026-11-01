@@ -10882,13 +10882,36 @@
           "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
           "label": "Headline"
         },
-        "suggest": "Suggest a text",
+        "aiUnavailable": "The AI is not available right now: we put the text together from the details you entered. You can try again shortly.",
+        "aiWritten": "Text written by the AI from {{basis}}: read it and change it as you like.",
+        "basis": {
+          "comune": "the comune of {{place}}",
+          "facts": "the details of the property",
+          "photos_one": "{{count}} photo",
+          "photos_other": "{{count}} photos",
+          "similar_one": "{{count}} similar listing in the area",
+          "similar_other": "{{count}} similar listings in the area"
+        },
+        "help": {
+          "text": "The AI looks at up to 6 photos (the cover first), knows the comune but not the address, and compares the listings published on CasaZen in the same area. It only uses the details of the property and what can be seen: for a more precise text, upload photos of every room and choose the cover with care.",
+          "title": "How the AI writes the text"
+        },
+        "photosNotRead": "The AI service in use does not read photos: the text is based on the details and the comune.",
+        "rateLimited": "You asked for many texts in a short time: try again in a few minutes.",
+        "regenerate": "Regenerate",
+        "suggest": "Suggest with AI",
         "suggested": "Text put together from the details you entered: review it and change it as you like.",
         "text": {
           "label": "Description"
         },
+        "tips": {
+          "fewPhotos": "With at least {{count}} photos (living area, bedrooms, bathroom, outdoors) the AI describes the home better.",
+          "noPhotos": "Upload the photos first: the AI will write a description that matches what they show (light, style, spaces, view)."
+        },
         "title": "Your listing",
-        "undo": "Undo"
+        "undo": "Undo",
+        "writing": "Writing…",
+        "writingStatus": "The AI is looking at the photos and writing the text: it takes a few seconds."
       },
       "queue": {
         "dismiss": "Remove",
@@ -11050,7 +11073,7 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
-      "description": "The description can have at most 600 characters.",
+      "description": "The description can have at most 2,000 characters.",
       "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
       "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
