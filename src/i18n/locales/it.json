@@ -10671,15 +10671,19 @@
       },
       "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
       "safety": {
+        "backToQuick": "Torna alle domande rapide",
         "complete": "La scheda è completa.",
         "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
         "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
         "dialogTitle": "Scheda di sicurezza",
+        "full": "Aggiungi posizione, date e prove",
+        "fullHint": "Facoltativi: servono per i promemoria.",
         "loadFailed": "Non riesco a leggere la scheda di sicurezza. Riprova tra poco.",
         "loading": "Controllo la scheda…",
         "open": "Compila la scheda",
         "progress": "{{done}} di {{total}} voci a posto",
         "progressLabel": "Avanzamento della scheda di sicurezza",
+        "quickDescription": "Tre domande e un elenco da spuntare. Quello che sappiamo già lo precompiliamo noi.",
         "review": "Rivedi la scheda",
         "title": "Sicurezza"
       }
@@ -10983,6 +10987,73 @@
         "checkOut": "Check-out entro le",
         "title": "Arrivo e partenza"
       }
+    },
+    "safetyQuick": {
+      "intro": "Poche risposte: da queste capiamo cosa chiede la legge per la tua casa.",
+      "why": {
+        "title": "Perché te lo chiediamo",
+        "text": "Per gli affitti brevi la legge (art. 13-ter del D.L. 145/2023) chiede gli estintori e, se in casa c'è gas o una fiamma, i rilevatori di gas e di monossido. Queste dotazioni le dichiari in BDSR quando chiedi il CIN: CasaZen registra quello che dichiari, non verifica e non certifica."
+      },
+      "heat": {
+        "question": "In casa c'è gas o una fiamma?",
+        "hint": "Fornelli a gas, caldaia, scaldabagno, stufa, camino o una bombola.",
+        "yes": "Sì",
+        "no": "No, è tutto elettrico",
+        "which": "Cosa c'è?",
+        "whichRequired": "Scegli almeno una voce.",
+        "exempt": "Senza gas né fiamme i rilevatori non servono: resta l'estintore.",
+        "source": {
+          "GasSupply": "Gas di rete, GPL o bombola",
+          "GasHob": "Fornelli a gas",
+          "Boiler": "Caldaia",
+          "WaterHeater": "Scaldabagno a gas",
+          "Stove": "Stufa",
+          "Fireplace": "Camino",
+          "Other": "Altro che brucia"
+        }
+      },
+      "business": {
+        "question": "Affitti con partita IVA o come attività d'impresa?",
+        "hint": "Anche come società, o dal terzo appartamento in affitto breve.",
+        "helpTitle": "Attività d'impresa",
+        "help": "Conta la partita IVA, la società o il numero di appartamenti in affitto breve: oltre la soglia l'attività si presume d'impresa (art. 1, c. 595, L. 178/2020). Solo in questo caso servono anche gli impianti a norma.",
+        "yes": "Sì",
+        "no": "No"
+      },
+      "floors": {
+        "question": "Su quanti piani è la casa?",
+        "label": "Piani della casa"
+      },
+      "have": {
+        "title": "Cosa hai già in casa?",
+        "required": "Obbligatorio",
+        "recommended": "Consigliato",
+        "minimum_one": "Ne serve almeno {{count}}.",
+        "minimum_other": "Ne servono almeno {{count}}.",
+        "count": "Estintori",
+        "toReview": "Da riconfermare"
+      },
+      "items": {
+        "FireExtinguishers": "Estintore",
+        "GasDetector": "Rilevatore di gas",
+        "CoDetector": "Rilevatore di monossido di carbonio",
+        "SystemsCompliance": "Impianti a norma, con la dichiarazione di conformità",
+        "SmokeDetector": "Rilevatore di fumo",
+        "EmergencyInstructions": "Istruzioni e numeri di emergenza per gli ospiti",
+        "BdsrDeclaration": "Ho dichiarato queste dotazioni in BDSR quando ho chiesto il CIN"
+      },
+      "bdsrHint": "Non hai ancora il CIN? Lo chiedi sul portale BDSR del Ministero del Turismo: questo punto lo spunti dopo.",
+      "prefill": {
+        "label": "Precompilato",
+        "amenity": "Dalle dotazioni che hai scelto: controlla.",
+        "fiscalVat": "Nei tuoi dati fiscali c'è la partita IVA: controlla.",
+        "fiscalThreshold": "Con le case che hai in affitto breve l'attività si presume d'impresa: controlla.",
+        "fiscalNone": "Nei tuoi dati fiscali non c'è la partita IVA e sei sotto la soglia: controlla.",
+        "floors": "Di solito un appartamento è su un piano: cambialo se non è così.",
+        "cin": "Hai già il CIN, che si ottiene con questa dichiarazione: controlla."
+      },
+      "missingTitle": "Per attivare l'immobile manca ancora",
+      "save": "Salva"
     },
     "steps": {
       "amenities": {
