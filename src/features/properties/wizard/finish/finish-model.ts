@@ -1,7 +1,31 @@
 import { knownBlockers } from '@/features/compliance/activation-wizard-model';
 import type { Property } from '@/types';
-import type { ComplianceActivationResult } from '@/types/compliance.types';
+import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
 import { baseDataStepFor, type WizardStepId } from '../property-wizard-model';
+
+/** A line of «Cosa manca»: a blocker of the server, or the whole safety sheet with how many of its points are open. */
+export type MissingLine = { kind: 'blocker'; blocker: ActivationBlocker } | { kind: 'safety'; count: number };
+
+/**
+ * The blockers as «Cosa manca» lists them: one line each, except the points of the safety sheet (the facts, each device, the
+ * declaration, the confirmation), which are one line where the first of them was, since one «Correggi» opens the sheet for all.
+ */
+export function missingLines(blockers: readonly ActivationBlocker[]): MissingLine[] {
+  const lines: MissingLine[] = [];
+  let safety: { kind: 'safety'; count: number } | null = null;
+  for (const blocker of blockers) {
+    if (blocker.step !== 'safety') {
+      lines.push({ kind: 'blocker', blocker });
+      continue;
+    }
+    if (!safety) {
+      safety = { kind: 'safety', count: 0 };
+      lines.push(safety);
+    }
+    safety.count += 1;
+  }
+  return lines;
+}
 
 /**
  * Where the wizard stands at its last step, **as the server says it** (`compliance/activation`): nothing is worked out from the
