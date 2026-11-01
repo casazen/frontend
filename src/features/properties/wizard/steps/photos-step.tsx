@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dropzone } from '@/components/ui/dropzone';
-import { Field } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
 import { getProblemMessage } from '@/lib/api-errors';
 import { usePropertyPhotos, useReorderPropertyPhotos, useSetPropertyCoverPhoto } from '@/queries/use-property-photos';
 import { FALLBACK_PHOTO_RULES, toMegabytes } from '../../photo-selection';
@@ -16,7 +13,7 @@ import { PhotoGallery } from '../photos/photo-gallery';
 import { useDelayedPhotoDelete } from '../photos/use-delayed-photo-delete';
 import { usePhotoUploadQueue } from '../photos/use-photo-upload-queue';
 import type { PropertyWizardValues } from '../property-wizard-model';
-import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, suggestListingText } from '../suggest-listing-text';
+import { ListingTextCard } from './listing-text-card';
 
 /** The photos the page asks for: the server advises the same number (`photos` in «cosa manca»); fewer is allowed. */
 const RECOMMENDED_PHOTOS = 5;
@@ -29,8 +26,8 @@ interface PhotosStepProps {
 /**
  * Step 2 · «Mostra la casa con qualche foto» (SR-07b): the photos and the text of the listing. The photos are uploaded one file at a
  * time with the reason for each one that fails, the first is the cover, the order is changed by dragging or with the buttons, and a
- * photo that is deleted can be brought back for a few seconds. The text is the person's: «Suggerisci un testo» only composes it from
- * what they already entered, and can be taken back. Photos are **recommended, not required**.
+ * photo that is deleted can be brought back for a few seconds. The text is the person's: «Suggerisci con l'AI» writes one from these
+ * photos, the comune and the data (`ListingTextCard`), and can be taken back. Photos are **recommended, not required**.
  */
 export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const { t } = useTranslation();
@@ -70,26 +67,6 @@ export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const addFiles = async (files: File[]) => {
     await flush();
     queue.add(files);
-  };
-
-  const [previous, setPrevious] = useState<{ listingTitle: string; description: string } | null>(null);
-  const { register, setValue, getValues, watch, formState } = form;
-  const titleLength = watch('listingTitle').length;
-  const descriptionLength = watch('description').length;
-
-  const suggest = () => {
-    const values = getValues();
-    setPrevious({ listingTitle: values.listingTitle, description: values.description });
-    const text = suggestListingText(values, t);
-    setValue('listingTitle', text.title, { shouldDirty: true, shouldValidate: true });
-    setValue('description', text.description, { shouldDirty: true, shouldValidate: true });
-  };
-
-  const undoSuggestion = () => {
-    if (!previous) return;
-    setValue('listingTitle', previous.listingTitle, { shouldDirty: true, shouldValidate: true });
-    setValue('description', previous.description, { shouldDirty: true, shouldValidate: true });
-    setPrevious(null);
   };
 
   return (
@@ -176,50 +153,7 @@ export function PhotosStep({ form, propertyId }: PhotosStepProps) {
         </p>
       </section>
 
-      <section aria-labelledby="property-wizard-listing-title" className="min-w-0 space-y-4 rounded-lg bg-muted p-4">
-        <div className="space-y-1">
-          <h3 id="property-wizard-listing-title" className="text-base font-semibold">
-            {t('propertyWizard.photos.listing.title')}
-          </h3>
-          <p className="text-sm text-foreground/70">{t('propertyWizard.photos.listing.description')}</p>
-        </div>
-
-        <Field
-          label={t('propertyWizard.photos.listing.headline.label')}
-          optional
-          hint={t('propertyWizard.photos.listing.headline.hint')}
-          counter={`${titleLength}/${LISTING_TITLE_MAX}`}
-          error={formState.errors.listingTitle}
-        >
-          <Input autoComplete="off" maxLength={LISTING_TITLE_MAX} {...register('listingTitle')} />
-        </Field>
-
-        <Field
-          label={t('propertyWizard.photos.listing.text.label')}
-          optional
-          counter={`${descriptionLength}/${LISTING_DESCRIPTION_MAX}`}
-          error={formState.errors.description}
-        >
-          <Textarea rows={5} {...register('description')} />
-        </Field>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" onClick={suggest} data-testid="property-wizard-suggest">
-            <Sparkles aria-hidden="true" className="size-4" />
-            {t('propertyWizard.photos.listing.suggest')}
-          </Button>
-          {previous ? (
-            <Button type="button" variant="ghost" onClick={undoSuggestion} data-testid="property-wizard-suggest-undo">
-              {t('propertyWizard.photos.listing.undo')}
-            </Button>
-          ) : null}
-        </div>
-        {previous ? (
-          <p role="status" className="text-sm text-foreground/70">
-            {t('propertyWizard.photos.listing.suggested')}
-          </p>
-        ) : null}
-      </section>
+      <ListingTextCard form={form} propertyId={propertyId} photos={photos} />
     </>
   );
 }

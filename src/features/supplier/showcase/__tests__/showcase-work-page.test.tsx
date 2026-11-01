@@ -15,6 +15,8 @@ const api = vi.hoisted(() => ({
   resume: vi.fn(),
   discard: vi.fn(),
   saveDraft: vi.fn(),
+  getTextSuggestionStatus: vi.fn(),
+  suggestTexts: vi.fn(),
 }));
 vi.mock('@/api/supplier-showcase.api', () => ({ supplierShowcaseApi: api }));
 
@@ -64,9 +66,11 @@ function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   };
 }
 
-function renderEditor(answer: ShowcaseContent, step: 'style' | 'works' | 'texts' | 'services' | 'publish') {
+function renderEditor(answer: ShowcaseContent, step: 'style' | 'works' | 'texts' | 'services' | 'publish', options: { ai?: boolean } = {}) {
   api.getContent.mockResolvedValue(answer);
   api.getStats.mockResolvedValue({ days: 30, requests: 0, pending: 0 });
+  // The AI help is off unless a test turns it on: the static starter is what the panel shows then.
+  api.getTextSuggestionStatus.mockResolvedValue({ available: options.ai === true });
   return renderRouted({ at: `${PATH}?step=${step}`, routes: [{ path: PATH, element: <SupplierShowcaseHubPage /> }] });
 }
 
@@ -161,6 +165,46 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     expect(options.action.label).toBe('Annulla');
     // Nothing is offered once the three are filled.
     expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
+  });
+
+  it('with the AI help available it replaces the starter button, drafts from what the supplier typed and fills only the empty members', async () => {
+    api.saveDraft.mockResolvedValue(content({ version: 4 }));
+    api.suggestTexts.mockResolvedValue({
+      tagline: 'Pulizie e giardinaggio per case vacanza',
+      intro: 'Pulizie e cura del giardino a Seveso.',
+      prep: [],
+      basis: { categories: ['cleaning'], zones: ['Seveso'], services: ['Pulizia di fine soggiorno'], answers: ['about'] },
+      rejected: [],
+      aiUsed: true,
+    });
+    renderEditor(content({ draft: { tagline: 'La mia frase' } }), 'texts', { ai: true });
+
+    // The block of the AI is there and the static starter is not: one way in, not two.
+    fireEvent.change(await screen.findByLabelText(/Due righe su di te/), { target: { value: 'Siamo una piccola squadra.' } });
+    expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('supplier-showcase-ai-write'));
+
+    await waitFor(() => expect(api.suggestTexts).toHaveBeenCalledWith({ answers: { about: 'Siamo una piccola squadra.' }, regenerate: false }));
+    const result = await screen.findByTestId('supplier-showcase-ai-result');
+    // The sentence is already written by the supplier: offered, but not ticked, and it says that taking it replaces the text.
+    expect(within(screen.getByTestId('supplier-showcase-ai-field-tagline')).getByText('Sostituisce il testo che hai già scritto.')).toBeInTheDocument();
+    expect(within(result).getByText(/Basato su: Pulizie · Seveso · 1 servizio · le tue righe/)).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('supplier-showcase-ai-use'));
+
+    await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { intro: 'Pulizie e cura del giardino a Seveso.' }), { timeout: 3000 });
+    expect(screen.getByLabelText(/Frase in grande/)).toHaveValue('La mia frase');
+    expect(screen.getByLabelText(/Introduzione/)).toHaveValue('Pulizie e cura del giardino a Seveso.');
+    // What the AI wrote is marked as a draft until the supplier changes it.
+    expect(screen.getAllByText("Bozza scritta dall'AI: rivedila prima di pubblicare.")).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText(/Introduzione/), { target: { value: 'Pulizie e giardini a Seveso.' } });
+    expect(screen.queryByText("Bozza scritta dall'AI: rivedila prima di pubblicare.")).not.toBeInTheDocument();
+  });
+
+  it('keeps the starter button when the AI help is not available', async () => {
+    renderEditor(content({ draft: {} }), 'texts', { ai: false });
+
+    expect(await screen.findByTestId('supplier-showcase-starter')).toBeInTheDocument();
+    expect(screen.queryByTestId('supplier-showcase-ai')).not.toBeInTheDocument();
   });
 
   it('leaves a service out of the page by naming the others, and keeps the last one on', async () => {
