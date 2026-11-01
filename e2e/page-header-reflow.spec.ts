@@ -27,11 +27,15 @@ interface HeaderPage {
 }
 
 const childLinks = (page: Page) => page.getByTestId('nav-child-links');
+/** The tabs of a section of the menu, which are a native menu on a phone (`NavSectionTabs`). */
+const sectionMenu = (page: Page) => page.getByTestId('nav-section-select');
 
 const PAGES: HeaderPage[] = [
   { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
-  { name: 'compliance (pages that hang from it)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Adempimenti', controls: childLinks },
-  { name: 'booking site (pages that hang from it)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: childLinks },
+  { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Adempimenti', controls: sectionMenu },
+  { name: 'booking site (menu of its section)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: sectionMenu },
+  { name: 'guests (menu of the section of the bookings)', path: '/app/short-rent/guests', profile: 'dual', heading: 'Ospiti', controls: sectionMenu },
+  { name: 'tenants (menu of the section of the contracts)', path: '/app/long-rent/tenants', profile: 'dual', heading: 'Inquilini', controls: sectionMenu },
   { name: 'CIN audit of the console (pages that hang from it)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: childLinks },
   { name: 'supplier availability (link to the calendar)', path: '/app/supplier/availability', profile: 'supplier', heading: 'Disponibilità', controls: childLinks, supplier: true },
   { name: 'bookings (new booking)', path: '/app/short-rent/bookings', profile: 'dual', heading: 'Prenotazioni', controls: (page) => page.getByTestId('new-booking') },

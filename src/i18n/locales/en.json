@@ -1878,12 +1878,6 @@
         "documents": "Documents to receive"
       }
     },
-    "sections": {
-      "bookings": "Bookings",
-      "guests": "Guests",
-      "label": "Sections of Bookings",
-      "payments": "Payments"
-    },
     "detail": {
       "guestInformation": "Guest Information",
       "guestName": "Name",
@@ -9044,6 +9038,7 @@
     "expand": "Expand menu",
     "menuLabel": "{{area}} menu",
     "childLinksLabel": "Related pages",
+    "sectionLabel": "Sections of {{section}}",
     "count": {
       "bookingRequests_one": "{{count}} request to approve",
       "bookingRequests_other": "{{count}} requests to approve",

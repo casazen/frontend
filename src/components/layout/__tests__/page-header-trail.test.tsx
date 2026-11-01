@@ -194,7 +194,9 @@ describe('PageHeader with the trail (UI-05)', () => {
   });
 
   it('PageHeader_AutoCrumbsOnAPageWithNothingAboveIt_DrawNothing', () => {
-    render(inShell('short-rent', <PageHeader title="Prenotazioni" crumbs="auto" />, '/app/short-rent/bookings'));
+    // The marketplace is a page of the main menu with nothing above it and no section of its own (Prenotazioni has tabs, and they
+    // are a navigation too).
+    render(inShell('short-rent', <PageHeader title="Marketplace" crumbs="auto" />, '/app/short-rent/marketplace'));
 
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
