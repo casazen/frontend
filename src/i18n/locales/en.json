@@ -16209,6 +16209,58 @@
         "title": "Discard the changes?"
       },
       "editor": {
+        "ai": {
+          "again": "Write another draft",
+          "answers": {
+            "about": {
+              "hint": "In your own words: the AI keeps them as they are. Without them, the draft only talks about your services and your zones.",
+              "label": "Two lines about you"
+            },
+            "differentiator": {
+              "label": "What sets you apart"
+            },
+            "less": "Fewer questions",
+            "more": "More questions",
+            "specialties": {
+              "label": "What you specialise in"
+            },
+            "title": "Tell us about you (optional)",
+            "years": {
+              "hint": "As you would write it: “since 2015”, “for ten years”.",
+              "label": "How long you have been working"
+            }
+          },
+          "applied": "Draft added",
+          "basedOn": {
+            "answers": "your lines",
+            "label": "Based on: {{parts}}",
+            "services_one": "{{count}} service",
+            "services_other": "{{count}} services",
+            "zonesMore": "{{names}} and {{count}} more"
+          },
+          "draftMark": "Draft written by the AI: read it before you publish.",
+          "dropped": "I could not write: {{names}}. Try again or write it yourself.",
+          "error": "I could not write the draft. Try again in a moment.",
+          "hint": "A draft written from your profile and what you tell us. You read it, change it as you like, and nobody sees it until you publish.",
+          "replaces": "Replaces the text you already wrote.",
+          "result": {
+            "close": "Close",
+            "title": "Here is a draft",
+            "use": "Use the chosen parts"
+          },
+          "starterInstead": "Prefer a ready-made text? Use the starting text",
+          "tipBasis": {
+            "body": "It only uses what is true and already in your profile: the categories, the zones, the names of your services and the lines you write below. It does not invent years of experience, certifications, guarantees, prices or times.",
+            "title": "What it is based on"
+          },
+          "tipBetter": {
+            "body": "For a text that is more yours, complete your services and zones first and write two lines about you: it keeps what you write as it is.",
+            "title": "How to get a better draft"
+          },
+          "title": "Write with AI",
+          "write": "Write the draft",
+          "writing": "Writing…"
+        },
         "charsLeft_one": "{{count}} character left",
         "charsLeft_other": "{{count}} characters left",
         "color": {

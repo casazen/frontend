@@ -16209,6 +16209,58 @@
         "title": "Annullare le modifiche?"
       },
       "editor": {
+        "ai": {
+          "again": "Scrivi un'altra bozza",
+          "answers": {
+            "about": {
+              "hint": "Con parole tue: l'AI le riporta come sono. Senza righe, la bozza parla solo dei tuoi servizi e delle tue zone.",
+              "label": "Due righe su di te"
+            },
+            "differentiator": {
+              "label": "Cosa ti distingue"
+            },
+            "less": "Meno domande",
+            "more": "Altre domande",
+            "specialties": {
+              "label": "In cosa sei specializzato"
+            },
+            "title": "Raccontaci di te (facoltativo)",
+            "years": {
+              "hint": "Come lo scriveresti tu: «dal 2015», «da dieci anni».",
+              "label": "Da quanto lavori"
+            }
+          },
+          "applied": "Bozza inserita",
+          "basedOn": {
+            "answers": "le tue righe",
+            "label": "Basato su: {{parts}}",
+            "services_one": "{{count}} servizio",
+            "services_other": "{{count}} servizi",
+            "zonesMore": "{{names}} e altre {{count}}"
+          },
+          "draftMark": "Bozza scritta dall'AI: rivedila prima di pubblicare.",
+          "dropped": "Non sono riuscito a scrivere: {{names}}. Riprova o scrivilo tu.",
+          "error": "Non sono riuscito a scrivere la bozza. Riprova tra poco.",
+          "hint": "Una bozza scritta con i dati del tuo profilo e con quello che ci racconti. La rivedi, la cambi come vuoi e nessuno la vede finché non pubblichi.",
+          "replaces": "Sostituisce il testo che hai già scritto.",
+          "result": {
+            "close": "Chiudi",
+            "title": "Ecco una bozza",
+            "use": "Usa le parti scelte"
+          },
+          "starterInstead": "Preferisci un testo già pronto? Usa il testo di partenza",
+          "tipBasis": {
+            "body": "Usa solo ciò che è vero e già nel tuo profilo: le categorie, le zone, i nomi dei servizi e le righe che scrivi qui sotto. Non inventa anni di esperienza, certificazioni, garanzie, prezzi o tempi.",
+            "title": "Su cosa si basa"
+          },
+          "tipBetter": {
+            "body": "Per un testo più tuo completa prima servizi e zone e racconta due righe su di te: quello che scrivi lo riporta com'è.",
+            "title": "Come avere una bozza migliore"
+          },
+          "title": "Scrivi con l'AI",
+          "write": "Scrivi la bozza",
+          "writing": "Sto scrivendo…"
+        },
         "charsLeft_one": "{{count}} carattere rimasto",
         "charsLeft_other": "{{count}} caratteri rimasti",
         "color": {

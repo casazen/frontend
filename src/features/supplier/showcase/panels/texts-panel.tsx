@@ -1,12 +1,16 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ReorderableList } from '@/components/shared/reorderable-list';
 import type { PublicShowcaseCertification, PublicShowcaseFaq, PublicShowcaseTeamMember } from '@/api/public-supplier.api';
 import { Button } from '@/components/ui/button';
 import { starterContentFor } from '@/lib/supplier-site/starter-content';
 import { toastUndo } from '@/lib/toast-undo';
+import { useShowcaseTextSuggestionStatus } from '@/queries/supplier/use-showcase';
+import type { ShowcaseTextField } from '@/types/supplier-showcase';
+import { isAiDraftIntact, withoutApplied, type AppliedAi } from '../showcase-ai-texts';
 import { SHOWCASE_LIMITS } from '../showcase-limits';
 import { starterFill } from '../showcase-starter';
+import { AiTextsBlock } from './ai-texts-block';
 import { CountedField } from './counted-field';
 import { isRefused, type PanelProps } from './panel-types';
 
@@ -32,6 +36,8 @@ function Block({ title, hint, children }: { title: string; hint?: string; childr
  * "Testi" (SP-13d): the sentence in large type, the introduction and "chi siamo" with their counters; the guarantee, the people, the
  * strengths, the certifications and the questions **the supplier writes** — CasaZen precompiles none of them and never adds an
  * insurance or a certification: what is not written is not on the page. Lists are edited row by row (move, remove with an "Annulla").
+ * The sentence, the introduction, "chi siamo" and the tips can be drafted by the AI help (`AiTextsBlock`, when the server says a provider is
+ * configured), always as a draft the supplier chooses, changes and publishes; without it the static starter below is the way in.
  */
 export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { categories: string[] }) {
   const { t } = useTranslation();
@@ -43,6 +49,11 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
     change(fill.patch);
     toastUndo(t('supplier.showcase.editor.starter.applied'), { undo: () => change(fill.inverse) });
   };
+  // The AI help, only while the server says a provider answers; what it wrote is marked as a draft until the supplier changes it.
+  const assist = useShowcaseTextSuggestionStatus();
+  const aiAvailable = assist.data?.available === true;
+  const [applied, setApplied] = useState<AppliedAi>({});
+  const draftMark = (field: ShowcaseTextField) => (isAiDraftIntact(doc, applied, field) ? t('supplier.showcase.editor.ai.draftMark') : undefined);
   const team = doc.team ?? [];
   const values = doc.values ?? [];
   const certs = doc.certs ?? [];
@@ -58,7 +69,15 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
 
   return (
     <div className="space-y-8" data-testid="supplier-showcase-panel-texts">
-      {fill ? (
+      {aiAvailable ? (
+        <AiTextsBlock
+          doc={doc}
+          change={change}
+          onApplied={(next) => setApplied((previous) => ({ ...previous, ...next }))}
+          onTakenBack={(fields) => setApplied((previous) => withoutApplied(previous, fields))}
+          onUseStarter={fill ? applyStarter : undefined}
+        />
+      ) : fill ? (
         <Block title={t('supplier.showcase.editor.starter.title')} hint={t('supplier.showcase.editor.starter.hint')}>
           <div>
             <Button type="button" variant="outline" onClick={applyStarter} data-testid="supplier-showcase-starter">
@@ -71,6 +90,7 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
       <Block title={t('supplier.showcase.editor.texts.presentation')} hint={t('supplier.showcase.editor.texts.presentationHint')}>
         <CountedField
           label={t('supplier.showcase.editor.texts.tagline')}
+          hint={draftMark('tagline')}
           value={doc.tagline ?? ''}
           max={L.tagline}
           invalid={isRefused(invalid, 'tagline')}
@@ -78,6 +98,7 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
         />
         <CountedField
           label={t('supplier.showcase.editor.texts.intro')}
+          hint={draftMark('intro')}
           value={doc.intro ?? ''}
           max={L.intro}
           multiline
@@ -87,7 +108,7 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
         />
         <CountedField
           label={t('supplier.showcase.editor.texts.bio')}
-          hint={t('supplier.showcase.editor.texts.bioHint')}
+          hint={draftMark('bio') ?? t('supplier.showcase.editor.texts.bioHint')}
           value={doc.bio ?? ''}
           max={L.bio}
           multiline
@@ -237,7 +258,7 @@ export function TextsPanel({ doc, change, invalid, categories }: PanelProps & { 
         />
       </Block>
 
-      <Block title={t('supplier.showcase.editor.texts.prepTitle')} hint={t('supplier.showcase.editor.texts.prepHint')}>
+      <Block title={t('supplier.showcase.editor.texts.prepTitle')} hint={draftMark('prep') ?? t('supplier.showcase.editor.texts.prepHint')}>
         <ReorderableList<string>
           items={prep}
           onChange={(next) => change({ prep: next })}
