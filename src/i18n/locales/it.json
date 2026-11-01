@@ -15,6 +15,12 @@
       "orgSettingsChanged": "Dati dell'azienda modificati",
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
+      "propertyActivatedWithReminders": "Immobile attivato con {{reminders}} da completare",
+      "reminder": {
+        "documents": "i documenti",
+        "documents_safety": "i documenti e la scheda di sicurezza",
+        "safety": "la scheda di sicurezza"
+      },
       "system": "Sistema"
     },
     "home": {
@@ -3125,21 +3131,53 @@
       "turnoversPending": "Proprietà da dichiarare pronte"
     },
     "cockpit": {
-      "kicker": "Cosa manca",
+      "kicker": {
+        "fine": "Rischi una sanzione",
+        "start": "Per iniziare a lavorare",
+        "chore": "Da chiudere"
+      },
       "allClear": {
         "title": "Sei in regola",
         "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
         "cta": "Apri gli immobili"
       },
-      "then_one": "Poi: ancora {{count}} cosa da sistemare",
-      "then_other": "Poi: ancora {{count}} cose da sistemare",
-      "stays": {
-        "title": "Da fare"
+      "then": {
+        "lead": "Poi: {{what}}",
+        "fine_one": "ancora {{count}} con scadenza di legge",
+        "fine_other": "ancora {{count}} con scadenza di legge",
+        "start_one": "{{count}} casa da attivare",
+        "start_other": "{{count}} case da attivare",
+        "chore_one": "{{count}} da chiudere",
+        "chore_other": "{{count}} da chiudere"
       },
-      "properties": {
-        "title": "I tuoi immobili"
+      "fine": {
+        "title": "Scadenze di legge",
+        "intro": "Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24): se non parte in tempo rischi una sanzione.",
+        "moreLink": "Vedile tutte in Alloggiati"
       },
-      "seeAll": "Vedi tutte ({{count}})",
+      "start": {
+        "title": "Per iniziare a lavorare",
+        "intro": "Finché non sono a posto, queste case non si attivano e non si possono prenotare dal tuo sito."
+      },
+      "chore": {
+        "title": "Da chiudere"
+      },
+      "deadline": {
+        "overdueJustNow": "Scaduto da poco",
+        "overdueHours_one": "Scaduto da {{count}} ora",
+        "overdueHours_other": "Scaduto da {{count}} ore",
+        "overdueDays_one": "Scaduto da {{count}} giorno",
+        "overdueDays_other": "Scaduto da {{count}} giorni",
+        "endOfToday": "Entro oggi",
+        "endOfTomorrow": "Entro domani",
+        "endOfDay": "Entro il {{date}}"
+      },
+      "active": {
+        "toggle_one": "{{count}} casa in regola",
+        "toggle_other": "{{count}} case in regola"
+      },
+      "openAll": "Tutti gli adempimenti",
+      "showMore": "Mostra le altre {{count}}",
       "showLess": "Mostra meno",
       "missing": {
         "lead": "Manca: {{what}}",
@@ -3167,6 +3205,7 @@
       "saveAndContinue": "Salva e continua",
       "documentsHint": "Carica i documenti richiesti per l'attivazione. Le prove di sicurezza (foto o documenti) sono facoltative e si allegano nella checklist di sicurezza.",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
+      "remindersAccept": "Attivo comunque: so che la scheda di sicurezza e i documenti ancora da completare sono un mio obbligo e li completo il prima possibile.",
       "backToEdit": "Torna alla modifica immobile",
       "complete": "Completa attivazione",
       "completed": "Immobile attivato con successo",
@@ -3391,7 +3430,7 @@
       "disclaimer": "CasaZen registra quanto dichiari: non verifica l'immobile e non ne certifica la conformità. I requisiti di sicurezza li dichiari in BDSR con la richiesta del CIN (art. 13-ter, c. 3).",
       "importedFromLegacy": "Abbiamo importato le risposte della vecchia checklist (rilevatore di fumo, estintore, certificato gas). Rivedi le voci segnate \"Da rivedere\", completa quelle mancanti e conferma di nuovo.",
       "complete": "Checklist completa: nessun punto bloccante.",
-      "blockersTitle": "Punti da completare prima dell'attivazione (ultimo salvataggio):",
+      "blockersTitle": "Punti da completare (ultimo salvataggio):",
       "itemsTitle": "Dotazioni e requisiti",
       "toReview": "Da rivedere",
       "confirm": "Confermo che queste informazioni sono vere e corrispondono a quanto ho dichiarato in BDSR. So che CasaZen non verifica e non certifica la conformità dell'immobile.",
@@ -7875,6 +7914,12 @@
     "notEstimatedUnknown": "regime fiscale non registrato",
     "toCheck": "da verificare: vedi «Da sapere»",
     "notesTitle": "Da sapere",
+    "term": {
+      "label": "Periodo del contratto",
+      "period": "dal {{from}} al {{to}}",
+      "ended": "concluso",
+      "endsToday": "termina oggi"
+    },
     "empty": {
       "title": "Nessun contratto in vigore nel {{year}}",
       "description": "Appena un contratto firmato è in vigore, qui trovi i canoni e le imposte stimate per il commercialista.",
@@ -9003,7 +9048,9 @@
       "bookingRequests_one": "{{count}} richiesta da approvare",
       "bookingRequests_other": "{{count}} richieste da approvare",
       "supplierRequests_one": "{{count}} richiesta da accettare",
-      "supplierRequests_other": "{{count}} richieste da accettare"
+      "supplierRequests_other": "{{count}} richieste da accettare",
+      "compliance_one": "{{count}} adempimento con rischio di sanzione",
+      "compliance_other": "{{count}} adempimenti con rischio di sanzione"
     },
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
@@ -9438,8 +9485,12 @@
       },
       "chips": {
         "all": "Tutti",
+        "canceled": "Annullati",
+        "canceledHint": "Pagamenti annullati insieme alla prenotazione: non sono mai arrivati",
         "collected": "Incassati",
         "collectedHint": "Pagamenti arrivati, anche se in parte rimborsati",
+        "incoming": "In arrivo",
+        "incomingHint": "Pagamenti dei soggiorni in arrivo o in corso, da incassare o già incassati",
         "refunded": "Rimborsati",
         "refundedHint": "Pagamenti restituiti, in tutto o in parte",
         "toCollect": "Da incassare",
@@ -9469,6 +9520,9 @@
       },
       "forBooking": "Prenotazione {{code}}",
       "loadError": "Impossibile caricare i pagamenti. Riprova.",
+      "noIncomingAction": "Vedi tutti i pagamenti",
+      "noIncomingDescription": "Qui compaiono i pagamenti dei soggiorni in arrivo o in corso. Per vedere anche quelli passati apri «Tutti».",
+      "noIncomingTitle": "Nessun incasso in arrivo",
       "noResultsDescription": "Prova a togliere un filtro o a cercare con un altro nome.",
       "noResultsTitle": "Nessun pagamento con questi filtri",
       "refundedAmount": "Rimborsati {{amount}}",
@@ -10690,15 +10744,19 @@
       },
       "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
       "safety": {
+        "backToQuick": "Torna alle domande rapide",
         "complete": "La scheda è completa.",
-        "description": "La scheda di sicurezza dell'immobile: la compili una volta e serve per attivarlo.",
-        "dialogDescription": "Compila le voci e salva: l'immobile si attiva solo con la scheda completa e confermata.",
+        "description": "Bastano poche risposte. Le dotazioni sono un tuo obbligo di legge, ma la scheda non blocca l'attivazione.",
+        "dialogDescription": "Compila le voci e salva. Le dotazioni di sicurezza sono un tuo obbligo: la scheda non blocca l'attivazione, ma resta tra le cose da completare.",
         "dialogTitle": "Scheda di sicurezza",
+        "full": "Aggiungi posizione, date e prove",
+        "fullHint": "Facoltativi: servono per i promemoria.",
         "loadFailed": "Non riesco a leggere la scheda di sicurezza. Riprova tra poco.",
         "loading": "Controllo la scheda…",
         "open": "Compila la scheda",
         "progress": "{{done}} di {{total}} voci a posto",
         "progressLabel": "Avanzamento della scheda di sicurezza",
+        "quickDescription": "Tre domande e un elenco da spuntare. Quello che sappiamo già lo precompiliamo noi.",
         "review": "Rivedi la scheda",
         "title": "Sicurezza"
       }
@@ -10831,6 +10889,9 @@
         "loading": "Controllo cosa manca…",
         "none": "Tutto a posto: manca solo la conferma finale.",
         "refused": "Non si può ancora attivare: il servizio segnala questi punti",
+        "reminders": "Da completare (non blocca l'attivazione)",
+        "safety_one": "Completa la scheda di sicurezza: resta {{count}} punto",
+        "safety_other": "Completa la scheda di sicurezza: restano {{count}} punti",
         "title": "Cosa manca"
       },
       "summary": {
@@ -10901,13 +10962,36 @@
           "hint": "Breve e concreto, fino a 60 caratteri. Se lo lasci vuoto si usa il nome dell'immobile.",
           "label": "Titolo"
         },
-        "suggest": "Suggerisci un testo",
+        "aiUnavailable": "L'AI ora non è disponibile: abbiamo composto il testo con i dati che hai inserito. Puoi riprovare tra poco.",
+        "aiWritten": "Testo scritto dall'AI in base a {{basis}}: rileggilo e cambialo come vuoi.",
+        "basis": {
+          "comune": "il comune di {{place}}",
+          "facts": "i dati dell'immobile",
+          "photos_one": "{{count}} foto",
+          "photos_other": "{{count}} foto",
+          "similar_one": "{{count}} annuncio simile della zona",
+          "similar_other": "{{count}} annunci simili della zona"
+        },
+        "help": {
+          "text": "L'AI guarda fino a 6 foto (la copertina per prima), conosce il comune ma non l'indirizzo e confronta gli annunci pubblicati su CasaZen nella stessa zona. Usa solo i dati dell'immobile e ciò che si vede: per un testo più preciso carica le foto di tutti gli ambienti e scegli bene la copertina.",
+          "title": "Come scrive il testo l'AI"
+        },
+        "photosNotRead": "Il servizio AI in uso non legge le foto: il testo si basa sui dati e sul comune.",
+        "rateLimited": "Hai chiesto molti testi in poco tempo: riprova tra qualche minuto.",
+        "regenerate": "Rigenera",
+        "suggest": "Suggerisci con l'AI",
         "suggested": "Testo composto con i dati che hai inserito: rivedilo e cambialo come vuoi.",
         "text": {
           "label": "Descrizione"
         },
+        "tips": {
+          "fewPhotos": "Con almeno {{count}} foto (zona giorno, camere, bagno, esterni) l'AI descrive meglio la casa.",
+          "noPhotos": "Carica prima le foto: l'AI scriverà una descrizione in linea con quello che mostrano (luce, stile, spazi, vista)."
+        },
         "title": "Il tuo annuncio",
-        "undo": "Annulla"
+        "undo": "Annulla",
+        "writing": "Sto scrivendo…",
+        "writingStatus": "L'AI sta guardando le foto e scrivendo il testo: ci vuole qualche secondo."
       },
       "queue": {
         "dismiss": "Togli",
@@ -10921,6 +11005,75 @@
       "title": "Foto"
     },
     "prices": {
+      "ai": {
+        "applied": {
+          "text": "Ho inserito i valori qui sotto: controllali e continua quando vuoi.",
+          "undo": "Annulla"
+        },
+        "ask": {
+          "calculate": "Calcola il prezzo",
+          "decline": "No, lo scrivo io",
+          "description": "Parto dai dati della casa, dalla zona e dalle case simili su CasaZen. Poi decidi tu: non cambio nulla senza il tuo sì.",
+          "title": "Vuoi che calcoli io il prezzo con l'AI?"
+        },
+        "basedOn": {
+          "amenities_one": "{{count}} dotazione",
+          "amenities_other": "{{count}} dotazioni",
+          "area": "{{area}} m²",
+          "bedrooms_one": "{{count}} camera",
+          "bedrooms_other": "{{count}} camere",
+          "general": "stima generale della zona",
+          "guests_one": "{{count}} ospite",
+          "guests_other": "{{count}} ospiti",
+          "label": "Basato su:",
+          "similar_one": "{{count}} casa simile su CasaZen",
+          "similar_other": "{{count}} case simili su CasaZen"
+        },
+        "declined": {
+          "again": "Calcolalo con l'AI",
+          "text": "Vuoi un aiuto col prezzo?"
+        },
+        "error": "Non sono riuscito a calcolare il prezzo. Riprova tra poco.",
+        "help": {
+          "body": "L'AI guarda i dati che hai già inserito (ospiti, camere, metri quadri, dotazioni), la zona e, se ce ne sono almeno 3, i prezzi delle case simili pubblicate su CasaZen nello stesso comune: mai l'indirizzo, mai i dati di altri host. Più sono completi i passi precedenti, più la stima è precisa.",
+          "label": "Su cosa si basa il prezzo calcolato con l'AI",
+          "title": "Su cosa si basa"
+        },
+        "loading": "Sto calcolando…",
+        "none": {
+          "ai_budget_exhausted": "Il calcolo con l'AI è sospeso fino al prossimo mese: scrivi tu il prezzo.",
+          "ai_invalid_answer": "Non sono riuscito a dare un prezzo affidabile. Riprova o scrivi tu il prezzo.",
+          "ai_not_configured": "Il calcolo con l'AI non è attivo in questo momento: scrivi tu il prezzo.",
+          "ai_unavailable": "Non riesco a raggiungere l'AI adesso. Riprova tra poco o scrivi tu il prezzo.",
+          "retry": "Riprova"
+        },
+        "positioning": {
+          "Higher": "Più alto",
+          "Lower": "Più basso",
+          "Market": "In linea",
+          "question": "Rispetto alle case simili della zona vuoi un prezzo…"
+        },
+        "result": {
+          "again": "Cambia posizionamento",
+          "also": "Anche: {{items}}.",
+          "apply": "Usa questi valori",
+          "cleaning": "pulizia {{price}}",
+          "estimate": "È una stima: controllala sempre con il Calendario e con quello che chiedono gli altri.",
+          "figuresOnly": "L'AI non ha risposto, quindi ho calcolato il prezzo dalle {{count}} case simili pubblicate a {{comune}}.",
+          "keepMine": "Lascio il mio",
+          "minNights_one": "minimo {{count}} notte",
+          "minNights_other": "minimo {{count}} notti",
+          "perNight": "{{price}} a notte",
+          "range": "Di solito tra {{min}} e {{max}} per case come la tua in zona.",
+          "title": "Prezzo consigliato",
+          "weekend": "weekend +{{percent}}%",
+          "why": "Perché questo prezzo"
+        },
+        "tips": {
+          "amenities": "Per una stima più precisa scegli prima le dotazioni, nel passo «Dotazioni».",
+          "area": "Per una stima più precisa indica prima i metri quadri, nel primo passo."
+        }
+      },
       "calendar": "Il prezzo base vale per ogni notte; nel Calendario vedi i prezzi che si applicano.",
       "cleaning": {
         "hint": "Si paga una volta a soggiorno.",
@@ -11003,6 +11156,73 @@
         "title": "Arrivo e partenza"
       }
     },
+    "safetyQuick": {
+      "intro": "Poche risposte: da queste capiamo cosa chiede la legge per la tua casa.",
+      "why": {
+        "title": "Perché te lo chiediamo",
+        "text": "Per gli affitti brevi la legge (art. 13-ter del D.L. 145/2023) chiede gli estintori e, se in casa c'è gas o una fiamma, i rilevatori di gas e di monossido. Queste dotazioni le dichiari in BDSR quando chiedi il CIN: CasaZen registra quello che dichiari, non verifica e non certifica."
+      },
+      "heat": {
+        "question": "In casa c'è gas o una fiamma?",
+        "hint": "Fornelli a gas, caldaia, scaldabagno, stufa, camino o una bombola.",
+        "yes": "Sì",
+        "no": "No, è tutto elettrico",
+        "which": "Cosa c'è?",
+        "whichRequired": "Scegli almeno una voce.",
+        "exempt": "Senza gas né fiamme i rilevatori non servono: resta l'estintore.",
+        "source": {
+          "GasSupply": "Gas di rete, GPL o bombola",
+          "GasHob": "Fornelli a gas",
+          "Boiler": "Caldaia",
+          "WaterHeater": "Scaldabagno a gas",
+          "Stove": "Stufa",
+          "Fireplace": "Camino",
+          "Other": "Altro che brucia"
+        }
+      },
+      "business": {
+        "question": "Affitti con partita IVA o come attività d'impresa?",
+        "hint": "Anche come società, o dal terzo appartamento in affitto breve.",
+        "helpTitle": "Attività d'impresa",
+        "help": "Conta la partita IVA, la società o il numero di appartamenti in affitto breve: oltre la soglia l'attività si presume d'impresa (art. 1, c. 595, L. 178/2020). Solo in questo caso servono anche gli impianti a norma.",
+        "yes": "Sì",
+        "no": "No"
+      },
+      "floors": {
+        "question": "Su quanti piani è la casa?",
+        "label": "Piani della casa"
+      },
+      "have": {
+        "title": "Cosa hai già in casa?",
+        "required": "Obbligatorio",
+        "recommended": "Consigliato",
+        "minimum_one": "Ne serve almeno {{count}}.",
+        "minimum_other": "Ne servono almeno {{count}}.",
+        "count": "Estintori",
+        "toReview": "Da riconfermare"
+      },
+      "items": {
+        "FireExtinguishers": "Estintore",
+        "GasDetector": "Rilevatore di gas",
+        "CoDetector": "Rilevatore di monossido di carbonio",
+        "SystemsCompliance": "Impianti a norma, con la dichiarazione di conformità",
+        "SmokeDetector": "Rilevatore di fumo",
+        "EmergencyInstructions": "Istruzioni e numeri di emergenza per gli ospiti",
+        "BdsrDeclaration": "Ho dichiarato queste dotazioni in BDSR quando ho chiesto il CIN"
+      },
+      "bdsrHint": "Non hai ancora il CIN? Lo chiedi sul portale BDSR del Ministero del Turismo: questo punto lo spunti dopo.",
+      "prefill": {
+        "label": "Precompilato",
+        "amenity": "Dalle dotazioni che hai scelto: controlla.",
+        "fiscalVat": "Nei tuoi dati fiscali c'è la partita IVA: controlla.",
+        "fiscalThreshold": "Con le case che hai in affitto breve l'attività si presume d'impresa: controlla.",
+        "fiscalNone": "Nei tuoi dati fiscali non c'è la partita IVA e sei sotto la soglia: controlla.",
+        "floors": "Di solito un appartamento è su un piano: cambialo se non è così.",
+        "cin": "Hai già il CIN, che si ottiene con questa dichiarazione: controlla."
+      },
+      "missingTitle": "Da completare nella scheda",
+      "save": "Salva"
+    },
     "steps": {
       "amenities": {
         "label": "Dotazioni",
@@ -11069,7 +11289,7 @@
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
-      "description": "La descrizione può avere al massimo 600 caratteri.",
+      "description": "La descrizione può avere al massimo 2.000 caratteri.",
       "extraGuestFee": "Scrivi l'importo in euro, da 0 a 1.000, solo numeri: per esempio 15. Lascia vuoto se non accetti ospiti in più.",
       "houseRules": "Le altre regole possono avere al massimo 1000 caratteri.",
       "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
@@ -12753,7 +12973,11 @@
     "noAccess": {
       "title": "Nessun accesso disponibile",
       "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
-      "loginAgain": "Accedi di nuovo"
+      "loginAgain": "Accedi di nuovo",
+      "pageTitle": "Non hai accesso a questa pagina",
+      "pageDescription": "Il tuo ruolo non comprende questa pagina: le altre aree del tuo account restano a tua disposizione. Se ti hanno appena dato un nuovo ruolo, accedi di nuovo per aggiornarlo.",
+      "chooseArea": "Torna alle tue aree",
+      "goHome": "Torna alla home"
     },
     "accountInactive": {
       "title": "Account disattivato",
@@ -12941,7 +13165,11 @@
       "guides": {
         "title": "Guide gratuite per comune",
         "text": "Per ogni comune spieghiamo CIN, Alloggiati Web e imposta di soggiorno con le fonti ufficiali; per la Lombardia anche il CIR e la comunicazione dei flussi turistici su Ross1000. Ogni guida è rivista da una persona prima della pubblicazione.",
-        "cta": "Vai alle guide"
+        "cta": "Vai alle guide",
+        "guidesTitle": "Affitti brevi: guida per comune",
+        "taxTitle": "Tassa di soggiorno",
+        "guideLink": "Affitti brevi a {{comune}}",
+        "taxLink": "Tassa di soggiorno a {{comune}}"
       },
       "faq": {
         "title": "Domande frequenti",
@@ -16285,6 +16513,58 @@
         "title": "Annullare le modifiche?"
       },
       "editor": {
+        "ai": {
+          "again": "Scrivi un'altra bozza",
+          "answers": {
+            "about": {
+              "hint": "Con parole tue: l'AI le riporta come sono. Senza righe, la bozza parla solo dei tuoi servizi e delle tue zone.",
+              "label": "Due righe su di te"
+            },
+            "differentiator": {
+              "label": "Cosa ti distingue"
+            },
+            "less": "Meno domande",
+            "more": "Altre domande",
+            "specialties": {
+              "label": "In cosa sei specializzato"
+            },
+            "title": "Raccontaci di te (facoltativo)",
+            "years": {
+              "hint": "Come lo scriveresti tu: «dal 2015», «da dieci anni».",
+              "label": "Da quanto lavori"
+            }
+          },
+          "applied": "Bozza inserita",
+          "basedOn": {
+            "answers": "le tue righe",
+            "label": "Basato su: {{parts}}",
+            "services_one": "{{count}} servizio",
+            "services_other": "{{count}} servizi",
+            "zonesMore": "{{names}} e altre {{count}}"
+          },
+          "draftMark": "Bozza scritta dall'AI: rivedila prima di pubblicare.",
+          "dropped": "Non sono riuscito a scrivere: {{names}}. Riprova o scrivilo tu.",
+          "error": "Non sono riuscito a scrivere la bozza. Riprova tra poco.",
+          "hint": "Una bozza scritta con i dati del tuo profilo e con quello che ci racconti. La rivedi, la cambi come vuoi e nessuno la vede finché non pubblichi.",
+          "replaces": "Sostituisce il testo che hai già scritto.",
+          "result": {
+            "close": "Chiudi",
+            "title": "Ecco una bozza",
+            "use": "Usa le parti scelte"
+          },
+          "starterInstead": "Preferisci un testo già pronto? Usa il testo di partenza",
+          "tipBasis": {
+            "body": "Usa solo ciò che è vero e già nel tuo profilo: le categorie, le zone, i nomi dei servizi e le righe che scrivi qui sotto. Non inventa anni di esperienza, certificazioni, garanzie, prezzi o tempi.",
+            "title": "Su cosa si basa"
+          },
+          "tipBetter": {
+            "body": "Per un testo più tuo completa prima servizi e zone e racconta due righe su di te: quello che scrivi lo riporta com'è.",
+            "title": "Come avere una bozza migliore"
+          },
+          "title": "Scrivi con l'AI",
+          "write": "Scrivi la bozza",
+          "writing": "Sto scrivendo…"
+        },
         "charsLeft_one": "{{count}} carattere rimasto",
         "charsLeft_other": "{{count}} caratteri rimasti",
         "color": {

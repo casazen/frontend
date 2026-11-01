@@ -6,6 +6,7 @@ import {
   changedPropertyFields,
   initialStepId,
   knownBlockers,
+  openReminders,
   propertyFormPayload,
   wizardStepIds,
 } from '../activation-wizard-model';
@@ -108,6 +109,22 @@ describe('wizard steps', () => {
       { step: 'cin', code: 'activation_cin_missing', message: 'm' },
       { step: 'safety', code: '', message: '' },
     ]);
+  });
+
+  it('openReminders_DocumentsAndSafetyAsWarnings_TheyAreTheRemindersAndNoBlocker', () => {
+    // PO decision 2026-11-01 (option A): the documents and the safety sheet do not block.
+    const permissive = [
+      step('base-data', 'complete'),
+      step('cin', 'complete'),
+      step('documents', 'warning', false),
+      step('safety', 'warning', false, [{ step: 'safety', code: 'safety_confirmation_missing', message: '' }]),
+      step('ical', 'warning', false),
+    ];
+
+    expect(openReminders(permissive).map((s) => s.id)).toEqual(['documents', 'safety']);
+    expect(knownBlockers(permissive)).toEqual([]);
+    expect(initialStepId(permissive)).toBe(REVIEW_STEP_ID);
+    expect(openReminders(permissive.map((s) => ({ ...s, status: 'complete' as const })))).toEqual([]);
   });
 });
 

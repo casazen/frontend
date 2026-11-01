@@ -72,3 +72,49 @@ export interface ShowcaseStats {
   requests: number;
   pending: number;
 }
+
+/**
+ * The members of the showcase the AI help may draft: the sentence in large type, the introduction, "chi siamo" and the tips "prima che
+ * arriviamo". The guarantee, the people, the strengths, the certifications and the questions are never drafted: the supplier writes them.
+ */
+export type ShowcaseTextField = 'tagline' | 'intro' | 'bio' | 'prep';
+
+/** What the supplier typed about itself for the AI, all optional: the only source of a personal claim in the text. */
+export interface ShowcaseTextAnswers {
+  about?: string;
+  years?: string;
+  specialties?: string;
+  differentiator?: string;
+}
+
+/** Body of `POST api/supplier/showcase/texts/suggestion`: the members to draft (none = all), the answers, and "write a new one". */
+export interface ShowcaseTextSuggestionRequest {
+  fields?: ShowcaseTextField[];
+  answers?: ShowcaseTextAnswers;
+  regenerate?: boolean;
+}
+
+/** What a suggestion was written from: category codes, comune names, the names of the services, and which answers were used. */
+export interface ShowcaseTextBasis {
+  categories: string[];
+  zones: string[];
+  services: string[];
+  answers: Array<keyof ShowcaseTextAnswers>;
+}
+
+/** A draft of the AI: only the members that passed the server's checks, what it was based on, and the members that were dropped. */
+export interface ShowcaseTextSuggestion {
+  tagline?: string;
+  intro?: string;
+  bio?: string;
+  prep: string[];
+  basis: ShowcaseTextBasis;
+  /** Written by the AI but dropped (over the limit, or a claim the supplier did not make): asked again or written by hand. */
+  rejected: ShowcaseTextField[];
+  aiUsed: boolean;
+}
+
+/** Whether the AI help can answer now; when it cannot the editor shows none of it and keeps the static starter. */
+export interface ShowcaseTextSuggestionStatus {
+  available: boolean;
+}

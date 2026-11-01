@@ -31,6 +31,17 @@ export function isOpenBlocker(step: ComplianceWizardStep): boolean {
 }
 
 /**
+ * The compliance steps that are the host's reminders since the PO decision of 2026-11-01 (option A): the required documents and the
+ * safety sheet. They do not block; activating with one open needs the host's acknowledgement (`remindersAcknowledged`).
+ */
+export const REMINDER_STEP_IDS: readonly string[] = ['documents', 'safety'];
+
+/** The reminders still open, as the server reports them (a step that does not block and is not complete). */
+export function openReminders(steps: readonly ComplianceWizardStep[]): ComplianceWizardStep[] {
+  return steps.filter((step) => REMINDER_STEP_IDS.includes(step.id) && !step.blocker && step.status !== 'complete');
+}
+
+/**
  * What still blocks the activation according to the server: the blockers of every open blocking step, or one
  * generic entry (empty code) for a blocking step that does not list them.
  */

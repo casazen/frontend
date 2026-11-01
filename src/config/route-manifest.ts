@@ -20,8 +20,11 @@ export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work
  */
 export type NavPlacement = 'primary' | 'secondary';
 
-/** The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests';
+/**
+ * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
+ * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
+ */
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
 export const MAX_PRIMARY_NAV_ENTRIES = 8;
@@ -181,12 +184,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // What the host still has to do (CIN, check-ins, Alloggiati, cleanings); the Alloggiati dashboard and the CIN page hang from it.
+    // In the main menu, with the number of the things that carry a risk of a sanction: what the law dates is not tucked away in
+    // "Altro". The page reads `GET api/compliance/summary`, which asks `booking.read` as well as the properties.
     path: '/app/short-rent/compliance',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
+    requiredPermissions: ['property.read', 'booking.read'],
     navKey: 'nav.compliance',
-    navPlacement: 'secondary',
-    navOrder: 21,
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 3.5,
+    navCount: 'compliance',
     icon: 'ClipboardCheck',
     component: async () => ({
       default: (await import('@/features/compliance/compliance-summary-page')).ComplianceSummaryPage,
@@ -472,9 +479,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
   },
   {
+    // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan.
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
+    featureFlag: 'agencyTier',
     navKey: 'nav.trustedSuppliers',
     navPlacement: 'secondary',
     navOrder: 30,
@@ -949,11 +958,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Withholding tax management (ADR-018): withholding summary by month/owner/apartment, F24 preview and download,
-    // and payment reconciliation. For org billing administrators who handle tax compliance.
+    // and payment reconciliation. For org billing administrators who handle tax compliance. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
     navKey: 'nav.withholding',
     navGroup: 'account',
     navPlacement: 'primary',
@@ -963,11 +973,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
-    // For org billing administrators who handle owner payments.
+    // For org billing administrators who handle owner payments. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
     navKey: 'nav.wireTransfers',
     navGroup: 'account',
     navPlacement: 'primary',
@@ -1219,9 +1230,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
   {
+    // Reads the agency endpoint `/statements` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
     path: '/app/admin/statements',
     context: 'admin',
     requiredPermissions: ['admin.statements.read'],
+    featureFlag: 'agencyTier',
     navKey: 'nav.statements',
     navGroup: 'platform',
     navPlacement: 'primary',
@@ -1230,9 +1243,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
   },
   {
+    // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
     path: '/app/admin/activities',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
+    featureFlag: 'agencyTier',
     navKey: 'nav.staffActivities',
     navGroup: 'platform',
     navPlacement: 'secondary',

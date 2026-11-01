@@ -12,6 +12,7 @@ import {
   saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
+import { fineCount } from '@/features/compliance/lib/compliance-tiers';
 import type {
   CheckoutWizardCompleteCommand,
   CheckoutWizardProgressCommand,
@@ -98,6 +99,24 @@ export function useComplianceSummary() {
     queryFn: fetchComplianceSummary,
     refetchOnMount: 'always',
   });
+}
+
+/** How long the number on the menu is trusted before it is read again: the page itself always reads again when it opens. */
+const FINE_COUNT_STALE_MS = 60_000;
+
+/**
+ * How many things carry a risk of a sanction (`fineCount`): the number on the menu entry «Adempimenti» and the reason of the block
+ * of the Home. It is the summary the page reads, in the same cache entry, so opening the page shows what the menu counted. A counter is
+ * a hint: while it loads, when it fails or when the server answers something that is not the summary, there is no number.
+ */
+export function useComplianceFineCount(enabled: boolean): number | undefined {
+  const query = useQuery({
+    queryKey: [COMPLIANCE_KEY, 'summary'],
+    queryFn: fetchComplianceSummary,
+    enabled,
+    staleTime: FINE_COUNT_STALE_MS,
+  });
+  return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
 }
 
 const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];
