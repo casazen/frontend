@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { PaymentCreatePage } from '../payment-create-page';
 
@@ -28,12 +28,23 @@ function mockBookings(state: Record<string, unknown>) {
   queries.useBookings.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...state });
 }
 
+/** The list of the payments, with the address it was opened on (`?chip=collected`). */
+function PaymentsListStub() {
+  const { search } = useLocation();
+  return (
+    <>
+      <p>Elenco dei pagamenti</p>
+      <output data-testid="list-address">{search}</output>
+    </>
+  );
+}
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/app/short-rent/payments/create']}>
       <Routes>
         <Route path="/app/short-rent/payments/create" element={<PaymentCreatePage />} />
-        <Route path="/app/short-rent/payments" element={<p>Elenco dei pagamenti</p>} />
+        <Route path="/app/short-rent/payments" element={<PaymentsListStub />} />
         <Route path="/app/short-rent/bookings/create" element={<p>Nuova prenotazione (pagina)</p>} />
       </Routes>
     </MemoryRouter>,
@@ -123,6 +134,8 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
       }),
     );
     expect(await screen.findByText('Elenco dei pagamenti')).toBeInTheDocument();
+    // The list opens on «Incassati»: the page opens on «In arrivo», which leaves out the stays that are over.
+    expect(screen.getByTestId('list-address')).toHaveTextContent('?chip=collected');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -132,6 +145,8 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
     expect(screen.getByText('Elenco dei pagamenti')).toBeInTheDocument();
+    // Nothing was recorded: the list opens as it always does.
+    expect(screen.getByTestId('list-address').textContent).toBe('');
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
