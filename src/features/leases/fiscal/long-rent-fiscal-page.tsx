@@ -36,7 +36,7 @@ export function LongRentFiscalPage() {
 
   const { data, isLoading, isError, error, refetch } = useLongRentFiscalReport(year);
   const download = useDownloadLongRentFiscal();
-  const list = useLongRentFiscalList(year);
+  const list = useLongRentFiscalList(year, data?.generatedOn);
 
   const onDownload = () =>
     download.mutate(year, {

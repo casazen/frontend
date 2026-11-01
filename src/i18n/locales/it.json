@@ -7875,6 +7875,12 @@
     "notEstimatedUnknown": "regime fiscale non registrato",
     "toCheck": "da verificare: vedi «Da sapere»",
     "notesTitle": "Da sapere",
+    "term": {
+      "label": "Periodo del contratto",
+      "period": "dal {{from}} al {{to}}",
+      "ended": "concluso",
+      "endsToday": "termina oggi"
+    },
     "empty": {
       "title": "Nessun contratto in vigore nel {{year}}",
       "description": "Appena un contratto firmato è in vigore, qui trovi i canoni e le imposte stimate per il commercialista.",

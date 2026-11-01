@@ -7875,6 +7875,12 @@
     "notEstimatedUnknown": "tax regime not recorded",
     "toCheck": "to be checked: see “Good to know”",
     "notesTitle": "Good to know",
+    "term": {
+      "label": "Lease period",
+      "period": "from {{from}} to {{to}}",
+      "ended": "ended",
+      "endsToday": "ends today"
+    },
     "empty": {
       "title": "No lease in force in {{year}}",
       "description": "As soon as a signed lease is in force, you find its rent and estimated taxes here, ready for your accountant.",
