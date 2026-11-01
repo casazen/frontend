@@ -1,13 +1,14 @@
 import { useMemo, type ReactNode } from 'react';
-import { CalendarRange, Euro, FileText } from 'lucide-react';
+import { CalendarDays, CalendarRange, Euro, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListDefinition } from '@/components/shared/list-view/list-types';
 import type { LongRentFiscalRow } from '@/api/long-rent-fiscal.api';
 import { getLeaseContractTypeLabel, getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
+import { todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import { fiscalMonthLabel, fiscalRateLabel, fiscalTenantName } from './long-rent-fiscal-format';
+import { fiscalMonthLabel, fiscalRateLabel, fiscalTenantName, fiscalTermText } from './long-rent-fiscal-format';
 
 /** The page of a lease: the name of the tenant leads there. */
 const leasePath = (row: LongRentFiscalRow) => `/app/long-rent/leases/${row.leaseId}`;
@@ -61,7 +62,10 @@ function amountCell(main: ReactNode, detail?: ReactNode): ReactNode {
  * none); the rate of the cedolare, or why there is no figure. No search, no filters, no CSV of its own: the file is the one the server
  * makes (the button of the page).
  */
-export function buildLongRentFiscalList(t: TFunction, language: string, year: number): ListDefinition<LongRentFiscalRow> {
+export function buildLongRentFiscalList(t: TFunction, language: string, year: number, today: string): ListDefinition<LongRentFiscalRow> {
+  // Under the tenant and the property: the period of the lease, so that two leases of one tenant on one property are not twins.
+  const term = (row: LongRentFiscalRow) => fiscalTermText(row, language, t, today);
+
   return defineList<LongRentFiscalRow>({
     key: 'long-rent-fiscal',
     title: t('longRentFiscal.title'),
@@ -78,6 +82,7 @@ export function buildLongRentFiscalList(t: TFunction, language: string, year: nu
           <span className="block min-w-0">
             {cell.open(fiscalTenantName(row, t))}
             <span className={SUB_LINE}>{row.propertyName}</span>
+            {term(row) ? <span className={SUB_LINE}>{term(row)}</span> : null}
           </span>
         ),
       },
@@ -136,6 +141,7 @@ export function buildLongRentFiscalList(t: TFunction, language: string, year: nu
       sub: row.propertyName,
       status: <span className="whitespace-nowrap font-medium">{taxText(row, t)}</span>,
       meta: [
+        ...(term(row) ? [{ icon: CalendarDays, label: t('longRentFiscal.term.label'), text: term(row) }] : []),
         { icon: CalendarRange, label: t('longRentFiscal.columns.accrual'), text: `${formatCurrency(row.accrualEur)} · ${accrualDetail(row, t)}` },
         { icon: Euro, label: t('longRentFiscal.columns.collected'), text: collectedText(row, t) },
       ],
@@ -158,8 +164,11 @@ export function buildLongRentFiscalList(t: TFunction, language: string, year: nu
   });
 }
 
-/** The list of the fiscal report of a year in the words of the person; it follows the language. */
-export function useLongRentFiscalList(year: number): ListDefinition<LongRentFiscalRow> {
+/**
+ * The list of the fiscal report of a year in the words of the person; it follows the language. `today` is the day the server made the
+ * report (`generatedOn`, Europe/Rome): the periods of the leases are told over or not from it; until the report is there, the clock.
+ */
+export function useLongRentFiscalList(year: number, today?: string): ListDefinition<LongRentFiscalRow> {
   const { t, i18n } = useTranslation();
-  return useMemo(() => buildLongRentFiscalList(t, i18n.language, year), [t, i18n.language, year]);
+  return useMemo(() => buildLongRentFiscalList(t, i18n.language, year, today ?? todayInRome()), [t, i18n.language, year, today]);
 }

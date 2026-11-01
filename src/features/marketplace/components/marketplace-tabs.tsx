@@ -1,10 +1,13 @@
-import { Compass, LayoutGrid, Users } from 'lucide-react';
+import { Compass, Plug } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { RouteTabs, type RouteTabItem } from '@/components/ui/route-tabs';
-import { MARKETPLACE_CATEGORIES_PATH, MARKETPLACE_MINE_PATH, MARKETPLACE_PATH, marketplaceHref } from '../lib/marketplace-paths';
+import { MARKETPLACE_MINE_PATH, MARKETPLACE_PATH, marketplaceHref } from '../lib/marketplace-paths';
 
-/** The tabs of the marketplace: each is a page of its own. A search and the page of a supplier belong to Scopri. */
-export type MarketplaceSection = 'discover' | 'categories' | 'mine';
+/**
+ * The tabs of the marketplace: each is a page of its own. A search, a category and the page of a supplier belong to Scopri, which shows
+ * the categories itself (the tab «Categorie» was folded into it).
+ */
+export type MarketplaceSection = 'discover' | 'mine';
 
 interface MarketplaceTabsProps {
   /** The tab the page is. */
@@ -25,17 +28,10 @@ export function MarketplaceTabs({ section, propertyId }: MarketplaceTabsProps) {
       testId: 'marketplace-section-discover',
     },
     {
-      label: t('marketplace.sections.categories'),
-      href: marketplaceHref(MARKETPLACE_CATEGORIES_PATH, propertyId),
-      current: section === 'categories',
-      icon: LayoutGrid,
-      testId: 'marketplace-section-categories',
-    },
-    {
       label: t('marketplace.sections.mine'),
       href: marketplaceHref(MARKETPLACE_MINE_PATH, propertyId),
       current: section === 'mine',
-      icon: Users,
+      icon: Plug,
       testId: 'marketplace-section-mine',
     },
   ];
