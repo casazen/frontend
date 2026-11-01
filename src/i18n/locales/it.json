@@ -12865,7 +12865,11 @@
       "guides": {
         "title": "Guide gratuite per comune",
         "text": "Per ogni comune spieghiamo CIN, Alloggiati Web e imposta di soggiorno con le fonti ufficiali; per la Lombardia anche il CIR e la comunicazione dei flussi turistici su Ross1000. Ogni guida è rivista da una persona prima della pubblicazione.",
-        "cta": "Vai alle guide"
+        "cta": "Vai alle guide",
+        "guidesTitle": "Affitti brevi: guida per comune",
+        "taxTitle": "Tassa di soggiorno",
+        "guideLink": "Affitti brevi a {{comune}}",
+        "taxLink": "Tassa di soggiorno a {{comune}}"
       },
       "faq": {
         "title": "Domande frequenti",

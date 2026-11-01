@@ -12865,7 +12865,11 @@
       "guides": {
         "title": "Free guides per comune",
         "text": "For each comune we explain CIN, Alloggiati Web and the tourist tax with the official sources; for Lombardy also the CIR and the tourist flow reporting on Ross1000. Every guide is reviewed by a person before it is published.",
-        "cta": "Go to the guides"
+        "cta": "Go to the guides",
+        "guidesTitle": "Short-term rentals: guide by comune",
+        "taxTitle": "Tourist tax",
+        "guideLink": "Short-term rentals in {{comune}}",
+        "taxLink": "Tourist tax in {{comune}}"
       },
       "faq": {
         "title": "Frequently asked questions",
