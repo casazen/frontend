@@ -32,9 +32,9 @@ export function ErrorState({ title, error, onRetry, showSupport = false, testId 
     <div
       role="alert"
       data-testid={testId}
-      className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 p-8 text-center"
+      className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card px-6 py-8 text-center"
     >
-      <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
+      <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
       <p className="font-medium">{title}</p>
       {detail && <p className="max-w-md text-sm text-muted-foreground">{detail}</p>}
       {onRetry && (

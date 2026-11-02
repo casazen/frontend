@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { LOCALE_STORAGE_KEY } from '@/i18n/locale-storage';
@@ -26,6 +27,13 @@ const NAV: { id: SitePageId; key: string }[] = [
   { id: 'about', key: 'site.nav.about' },
 ];
 
+/** The audiences, under the "Solutions" menu of the header. */
+const SOLUTIONS: { id: SitePageId; key: string }[] = [
+  { id: 'shortRent', key: 'site.nav.shortRent' },
+  { id: 'longRent', key: 'site.nav.longRent' },
+  { id: 'suppliers', key: 'site.nav.suppliers' },
+];
+
 const FOOTER_LINK = 'text-ink-200 hover:text-white hover:underline underline-offset-4';
 
 /** Header, main area and footer of every page of the public site (SEO-VETRINA). Plain links: no client-side router. */
@@ -51,22 +59,49 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
             <CasaZenLogo size={36} />
           </a>
           <nav aria-label={t('site.nav.main')} className="order-3 w-full md:order-none md:w-auto md:flex-1">
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[0.95rem] font-medium sm:gap-x-6">
-              {NAV.map((item) => (
-                <li key={item.id}>
-                  <a
-                    href={sitePageById(item.id).path}
-                    aria-current={current === item.id ? 'page' : undefined}
-                    className={
-                      current === item.id
-                        ? 'border-b-2 border-terra-500 pb-1 font-semibold text-ink-800'
-                        : 'border-b-2 border-transparent pb-1 text-ink-500 hover:text-ink-800'
-                    }
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] font-medium sm:gap-x-6">
+              {/* Four entries, like the headers of the tools the hosts already know: the audiences go under one menu. The
+                  menu is a native <details>: it works in the prerendered HTML, before any script runs. */}
+              <li className="relative">
+                <details className="group">
+                  <summary
+                    className={`flex cursor-pointer list-none items-center gap-1 border-b-2 pb-1 [&::-webkit-details-marker]:hidden ${
+                      SOLUTIONS.some((item) => item.id === current)
+                        ? 'border-terra-500 font-semibold text-ink-800'
+                        : 'border-transparent text-ink-500 hover:text-ink-800'
+                    }`}
                   >
-                    {t(item.key)}
-                  </a>
-                </li>
-              ))}
+                    {t('site.nav.solutions')}
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <ul className="mt-2 min-w-48 rounded-xl border border-ink-700/10 bg-white p-2 shadow-lg md:absolute md:left-0 md:top-full">
+                    {SOLUTIONS.map((item) => (
+                      <li key={item.id}>
+                        <a
+                          href={sitePageById(item.id).path}
+                          aria-current={current === item.id ? 'page' : undefined}
+                          className="block rounded-lg px-3 py-2 text-ink-600 hover:bg-cream-50 hover:text-ink-800 aria-[current=page]:font-semibold aria-[current=page]:text-ink-800"
+                        >
+                          {t(item.key)}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <a
+                  href={sitePageById('features').path}
+                  aria-current={current === 'features' ? 'page' : undefined}
+                  className={
+                    current === 'features'
+                      ? 'border-b-2 border-terra-500 pb-1 font-semibold text-ink-800'
+                      : 'border-b-2 border-transparent pb-1 text-ink-500 hover:text-ink-800'
+                  }
+                >
+                  {t('site.nav.features')}
+                </a>
+              </li>
               <li>
                 <a href={SEO_HUB_PATH} className="border-b-2 border-transparent pb-1 text-ink-500 hover:text-ink-800">
                   {t('site.nav.guides')}
