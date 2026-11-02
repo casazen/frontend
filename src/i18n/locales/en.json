@@ -12953,9 +12953,22 @@
     "durationMinutes_one": "{{count}} minute",
     "durationMinutes_other": "{{count}} minutes",
     "durationHoursMinutes": "{{hours}} and {{minutes}}",
+    "list": {
+      "by": {
+        "Host": "By you",
+        "Supplier": "By the supplier",
+        "System": "By CasaZen, automatically"
+      },
+      "cancelReason": "Reason: {{reason}}",
+      "hideClosed": "Hide the closed requests",
+      "noneToFollow": "No requests to follow.",
+      "noTime": "Time to be agreed",
+      "showClosed_one": "Show the closed request",
+      "showClosed_other": "Show the {{count}} closed requests",
+      "showMore_one": "Show one more",
+      "showMore_other": "Show {{count}} more"
+    },
     "timeline": {
-      "actorHost": "Your team",
-      "actorSupplier": "The supplier",
       "rejectionReason": "Reason for the rejection: {{reason}}",
       "noRejectionReason": "The supplier gave no reason.",
       "alreadyReRequested": "Already requested from another supplier.",

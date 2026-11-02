@@ -12953,9 +12953,22 @@
     "durationMinutes_one": "{{count}} minuto",
     "durationMinutes_other": "{{count}} minuti",
     "durationHoursMinutes": "{{hours}} e {{minutes}}",
+    "list": {
+      "by": {
+        "Host": "Da te",
+        "Supplier": "Dal fornitore",
+        "System": "Da CasaZen, in automatico"
+      },
+      "cancelReason": "Motivo: {{reason}}",
+      "hideClosed": "Nascondi le richieste concluse",
+      "noneToFollow": "Nessuna richiesta da seguire.",
+      "noTime": "Orario da concordare",
+      "showClosed_one": "Mostra la richiesta conclusa",
+      "showClosed_other": "Mostra le {{count}} richieste concluse",
+      "showMore_one": "Mostra un'altra",
+      "showMore_other": "Mostra altre {{count}}"
+    },
     "timeline": {
-      "actorHost": "Il tuo team",
-      "actorSupplier": "Il fornitore",
       "rejectionReason": "Motivo del rifiuto: {{reason}}",
       "noRejectionReason": "Il fornitore non ha indicato un motivo.",
       "alreadyReRequested": "Già richiesto a un altro fornitore.",

@@ -6,6 +6,10 @@ const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 
 
 type Auth = Record<string, string>;
 
+/** What the host reads on the request of a test run, and on its cancellation: it is a test, there is nothing to do. */
+const TEST_REQUEST_NOTE = 'Richiesta di prova creata da un test automatico: nessuna azione necessaria.';
+const TEST_CANCEL_REASON = 'Test automatico: richiesta di prova annullata a fine verifica.';
+
 interface Stay {
   id: string;
   status: string;
@@ -104,6 +108,9 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     // The time and the length are the host's own (a service of the catalog would go with one of its slots instead), and the stay is a link.
     await page.getByTestId('request-service-custom').check({ force: true });
     await page.getByTestId('request-stay').selectOption(stayId);
+    // Every run leaves its request in the history of the stay (the staging suite runs at every push to develop): said in words, so that
+    // whoever finds it there knows nobody has to answer it.
+    await page.getByTestId('request-notes').fill(TEST_REQUEST_NOTE);
     await page.getByTestId('request-start-time').fill(startTime);
     await page.getByTestId('request-duration').selectOption('120');
     await page.getByTestId('request-next').click();
@@ -134,7 +141,7 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
       // The supplier's agenda goes back as it was, also when an assertion above failed: the next run asks for the same stay.
       const cancelled = await request.post(`${API}/service-requests/${body.id}/cancel`, {
         headers: auth,
-        data: { reason: 'E2E cleanup' },
+        data: { reason: TEST_CANCEL_REASON },
       });
       if (!cancelled.ok()) {
         test.info().annotations.push({ type: 'cleanup-failed', description: `cancelling ${body.id} answered ${cancelled.status()}` });

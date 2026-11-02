@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { romeWallTimeToUtc } from '@/lib/stay-dates';
@@ -20,7 +20,11 @@ const api = vi.hoisted(() => ({
   getBookings: vi.fn(),
 }));
 
+// The drawer of the app is on the shell, not in this list: its door is a mock, to see when the list uses it.
+const drawer = vi.hoisted(() => ({ open: vi.fn(), close: vi.fn(), current: null }));
+
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('@/components/shared/detail-drawer/use-detail-drawer', () => ({ useDetailDrawer: () => drawer }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: api.fetchServiceCategories }));
 vi.mock('@/api/service-requests.api', () => ({
   markServiceRequestPaid: api.markServiceRequestPaid,
@@ -84,6 +88,21 @@ const REJECTED: ServiceRequest = {
   ],
 };
 
+/** A request cancelled by `actor` on the day `day` of October (the ones of an automatic test run, or of a host who changed its mind). */
+function cancelled(id: string, day: number, actor: 'Host' | 'Supplier' | 'System' = 'Supplier', reason: string | null = 'E2E cleanup'): ServiceRequest {
+  const at = `2026-10-${String(day).padStart(2, '0')}T18:21:46Z`;
+  return {
+    ...BASE,
+    id,
+    status: 'Annullato',
+    cancelledAt: at,
+    cancelledBy: actor,
+    cancellationReason: reason,
+    updatedAt: at,
+    history: [STEP.requested, { status: 'Annullato', at, actor, reason }],
+  };
+}
+
 const SUPPLIERS = {
   items: [
     { orgId: 'sup-1', legalName: 'Pulizie Express Srl', phone: '', email: '', categories: ['cleaning'], comuni: [], photoUrls: [] },
@@ -94,6 +113,11 @@ const SUPPLIERS = {
   pageSize: 2,
 };
 
+/** Where the router is: a click on the name of a request either goes to its page or leaves the address as it was (the drawer opens). */
+function LocationProbe() {
+  return <p data-testid="location">{useLocation().pathname}</p>;
+}
+
 function renderTimeline(props: Partial<React.ComponentProps<typeof ServiceRequestTimeline>> & { requests: ServiceRequest[] }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -101,6 +125,7 @@ function renderTimeline(props: Partial<React.ComponentProps<typeof ServiceReques
       <QueryClientProvider client={client}>
         <MemoryRouter>
           <ServiceRequestTimeline {...props} />
+          <LocationProbe />
         </MemoryRouter>
       </QueryClientProvider>
     </I18nextProvider>,
@@ -111,9 +136,15 @@ function problem(status: number, code: string, detail: string) {
   return Object.assign(new Error(detail), { isAxiosError: true, response: { status, data: { code, detail } } });
 }
 
+/** The closed requests are kept out of the way: this opens (or closes) them. */
+function toggleClosed() {
+  fireEvent.click(screen.getByTestId('service-requests-closed-toggle'));
+}
+
 describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    drawer.open.mockReturnValue(false);
     api.markServiceRequestPaid.mockResolvedValue({ ...PAID });
     api.markLongRentServiceRequestPaid.mockResolvedValue({ ...PAID });
     api.fetchSuppliersByProperty.mockResolvedValue(SUPPLIERS);
@@ -125,27 +156,141 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     await i18n.changeLanguage('it');
   });
 
-  // ─── The real timeline ───
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
-  it('ServiceRequestTimeline_PaidRequest_ShowsEveryStepWithItsDateInRomeAndWho', () => {
+  // ─── The requests to follow are the list; the ones that are over are behind a button ───
+
+  it('ServiceRequestTimeline_OpenAndOverRequests_ListsTheOpenOnesAndKeepsTheOthersBehindAButton', () => {
+    renderTimeline({ requests: [PAID, BASE, cancelled('sr-old', 3)] });
+
+    expect(within(screen.getByTestId('service-requests-to-follow')).getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByTestId('service-request-sr-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('service-requests-closed')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('service-request-sr-old')).not.toBeInTheDocument();
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveTextContent('Mostra le 2 richieste concluse');
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveAttribute('aria-expanded', 'false');
+
+    toggleClosed();
+
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveTextContent('Nascondi le richieste concluse');
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveAttribute('aria-expanded', 'true');
+    expect(within(screen.getByTestId('service-requests-closed')).getAllByRole('listitem')).toHaveLength(2);
+
+    toggleClosed();
+
+    expect(screen.queryByTestId('service-requests-closed')).not.toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_OnlyOverRequests_SaysNothingIsToFollowAndOffersThem', () => {
+    renderTimeline({ requests: [cancelled('sr-old', 3)] });
+
+    expect(screen.getByTestId('service-requests-none-to-follow')).toHaveTextContent('Nessuna richiesta da seguire.');
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveTextContent('Mostra la richiesta conclusa');
+    expect(screen.queryByTestId('service-requests-to-follow')).not.toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_OnlyOpenRequests_HasNoButtonForTheClosedOnes', () => {
+    renderTimeline({ requests: [BASE] });
+
+    expect(screen.queryByTestId('service-requests-closed-toggle')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('service-requests-none-to-follow')).not.toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_ManyClosedRequests_AreShownFiveAtATimeLatestFirst', () => {
+    const many = Array.from({ length: 17 }, (_, index) => cancelled(`sr-c${index + 1}`, index + 1));
+    renderTimeline({ requests: [BASE, ...many] });
+
+    expect(screen.getByTestId('service-requests-closed-toggle')).toHaveTextContent('Mostra le 17 richieste concluse');
+    toggleClosed();
+
+    const shown = () => within(screen.getByTestId('service-requests-closed')).getAllByRole('listitem');
+    expect(shown()).toHaveLength(5);
+    // The one closed last (the 17th of the month) comes first.
+    expect(shown()[0]).toHaveAttribute('data-testid', 'service-request-sr-c17');
+    expect(shown()[4]).toHaveAttribute('data-testid', 'service-request-sr-c13');
+    expect(screen.getByTestId('service-requests-closed-more')).toHaveTextContent('Mostra altre 10');
+
+    fireEvent.click(screen.getByTestId('service-requests-closed-more'));
+
+    expect(shown()).toHaveLength(15);
+    expect(screen.getByTestId('service-requests-closed-more')).toHaveTextContent('Mostra altre 2');
+
+    fireEvent.click(screen.getByTestId('service-requests-closed-more'));
+
+    expect(shown()).toHaveLength(17);
+    expect(screen.queryByTestId('service-requests-closed-more')).not.toBeInTheDocument();
+
+    // Hidden and opened again, it starts from five.
+    toggleClosed();
+    toggleClosed();
+    expect(shown()).toHaveLength(5);
+  });
+
+  it('ServiceRequestTimeline_ToFollow_NearestJobFirst', () => {
+    const later: ServiceRequest = { ...BASE, id: 'sr-later', scheduledStart: '2026-10-20T10:00:00Z', scheduledEnd: '2026-10-20T12:00:00Z' };
+    const sooner: ServiceRequest = { ...BASE, id: 'sr-sooner', scheduledStart: '2026-10-05T10:00:00Z', scheduledEnd: '2026-10-05T12:00:00Z' };
+    renderTimeline({ requests: [later, sooner] });
+
+    const rows = within(screen.getByTestId('service-requests-to-follow')).getAllByRole('listitem');
+    expect(rows.map((row) => row.getAttribute('data-testid'))).toEqual(['service-request-sr-sooner', 'service-request-sr-later']);
+  });
+
+  // ─── What a row says ───
+
+  it('ServiceRequestTimeline_RequestWithATime_SaysTheDayTheHoursAndTheSupplier', () => {
+    const timed: ServiceRequest = { ...BASE, scheduledStart: '2026-10-05T08:00:00Z', scheduledEnd: '2026-10-05T10:00:00Z' };
+    renderTimeline({ requests: [timed] });
+
+    const row = screen.getByTestId('service-request-sr-1');
+    expect(row).toHaveTextContent('Pulizie');
+    expect(row).toHaveTextContent('Pulizie Express Srl');
+    expect(row).toHaveTextContent('5 ott');
+    // 08:00Z and 10:00Z are 10:00 and 12:00 in Rome, two hours.
+    expect(row).toHaveTextContent('10:00–12:00');
+    expect(row).toHaveTextContent('Richiesto');
+  });
+
+  it('ServiceRequestTimeline_RequestWithoutATime_SaysItIsToBeAgreed', () => {
+    renderTimeline({ requests: [BASE] });
+
+    expect(screen.getByTestId('service-request-sr-1')).toHaveTextContent('Orario da concordare');
+  });
+
+  it('ServiceRequestTimeline_RequestOfACatalogService_IsNamedByTheService', () => {
+    renderTimeline({ requests: [{ ...BASE, serviceName: 'Pulizia di fine soggiorno' }] });
+
+    expect(screen.getByTestId('service-request-open-sr-1')).toHaveTextContent('Pulizia di fine soggiorno');
+  });
+
+  it('ServiceRequestTimeline_PaidRequest_SaysWhoPaidAndWhenInRome', () => {
     renderTimeline({ requests: [PAID] });
+    toggleClosed();
 
-    const steps = within(screen.getByTestId('service-request-history-sr-1')).getAllByRole('listitem');
-    expect(steps).toHaveLength(4);
-    expect(steps[0]).toHaveTextContent('Richiesto');
-    expect(steps[0]).toHaveTextContent('20 settembre 2026');
-    expect(steps[0]).toHaveTextContent('Il tuo team');
-    expect(steps[1]).toHaveTextContent('Preso in carico');
-    expect(steps[1]).toHaveTextContent('25 settembre 2026');
-    expect(steps[1]).toHaveTextContent('01:30');
-    expect(steps[1]).toHaveTextContent('Pulizie Express Srl');
-    expect(steps[2]).toHaveTextContent('Completato');
-    expect(steps[2]).toHaveTextContent('Pulizie Express Srl');
-    expect(steps[3]).toHaveTextContent('Pagato');
-    expect(steps[3]).toHaveTextContent('27 settembre 2026');
-    expect(steps[3]).toHaveTextContent('Il tuo team');
+    const row = screen.getByTestId('service-request-sr-1');
+    expect(row).toHaveTextContent('Pagato');
+    expect(row).toHaveTextContent('Da te');
+    // 09:00 UTC of 27 September is 11:00 in Rome.
+    expect(row).toHaveTextContent('27 set');
+    expect(row).toHaveTextContent('11:00');
     // Nothing left to wait for once it is paid.
     expect(screen.queryByTestId('service-request-waiting-sr-1')).not.toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_StepOfAnotherYear_SaysTheYear', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+
+    vi.setSystemTime(new Date('2026-10-01T10:00:00Z'));
+    const { unmount } = renderTimeline({ requests: [PAID] });
+    toggleClosed();
+    expect(screen.getByTestId('service-request-sr-1')).not.toHaveTextContent('2026');
+    unmount();
+
+    vi.setSystemTime(new Date('2027-01-15T10:00:00Z'));
+    renderTimeline({ requests: [PAID] });
+    toggleClosed();
+    expect(screen.getByTestId('service-request-sr-1')).toHaveTextContent('27 set 2026');
   });
 
   it.each([
@@ -158,12 +303,14 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(screen.getByTestId('service-request-waiting-sr-1')).toHaveTextContent(hint);
   });
 
-  it('ServiceRequestTimeline_RejectedRequest_ShowsTheReasonAndTheRejectionDate', () => {
+  it('ServiceRequestTimeline_RejectedRequest_ShowsTheReasonAndWhoRefusedWhen', () => {
     renderTimeline({ requests: [REJECTED] });
 
+    const row = screen.getByTestId('service-request-sr-rejected');
     expect(screen.getByTestId('service-request-rejection-sr-rejected')).toHaveTextContent('Motivo del rifiuto: Siamo chiusi per ferie');
-    expect(screen.getByTestId('service-request-step-sr-rejected-Rifiutato')).toHaveTextContent('21 settembre 2026');
-    expect(screen.getByTestId('service-request-step-sr-rejected-Rifiutato')).toHaveTextContent('Pulizie Express Srl');
+    expect(row).toHaveTextContent('Rifiutato');
+    expect(row).toHaveTextContent('Dal fornitore');
+    expect(row).toHaveTextContent('21 set');
     expect(screen.queryByTestId('service-request-waiting-sr-rejected')).not.toBeInTheDocument();
   });
 
@@ -178,24 +325,61 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(screen.getByTestId('service-request-rejection-sr-rejected')).toHaveTextContent('Il fornitore non ha indicato un motivo.');
   });
 
-  it('ServiceRequestTimeline_RequestWithoutHistory_ShowsTheStatusAndNoSteps', () => {
+  it.each([
+    ['Host', 'Da te'],
+    ['Supplier', 'Dal fornitore'],
+    ['System', 'Da CasaZen, in automatico'],
+  ] as const)('ServiceRequestTimeline_CancelledBy%s_Says%s', (actor, by) => {
+    renderTimeline({ requests: [cancelled('sr-c', 3, actor)] });
+    toggleClosed();
+
+    const row = screen.getByTestId('service-request-sr-c');
+    expect(row).toHaveTextContent('Annullato');
+    expect(row).toHaveTextContent(by);
+    expect(row).toHaveTextContent('3 ott');
+    expect(row).toHaveTextContent('Motivo: E2E cleanup');
+  });
+
+  it('ServiceRequestTimeline_CancelledForNoAnswer_SaysItInWordsAndNotTheCode', () => {
+    renderTimeline({ requests: [cancelled('sr-c', 3, 'System', 'NoResponse')] });
+    toggleClosed();
+
+    expect(screen.getByTestId('service-request-cancellation-sr-c')).toHaveTextContent('Motivo: Il fornitore non ha risposto in tempo.');
+    expect(screen.getByTestId('service-request-sr-c')).not.toHaveTextContent('NoResponse');
+  });
+
+  it('ServiceRequestTimeline_CancelledWithoutReason_SaysNoReason', () => {
+    renderTimeline({ requests: [cancelled('sr-c', 3, 'Host', null)] });
+    toggleClosed();
+
+    expect(screen.queryByTestId('service-request-cancellation-sr-c')).not.toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_RequestWithoutHistory_StillShowsItsStatus', () => {
     renderTimeline({ requests: [{ ...BASE, history: undefined }] });
 
     expect(screen.getByTestId('service-request-sr-1')).toHaveTextContent('Richiesto');
-    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
-  it('ServiceRequestTimeline_NoSupplierName_NamesTheSupplierGenerically', () => {
+  it('ServiceRequestTimeline_CancelledWithoutHistory_UsesTheDatesTheRequestKeeps', () => {
+    renderTimeline({ requests: [{ ...cancelled('sr-c', 3, 'Host'), history: undefined }] });
+    toggleClosed();
+
+    expect(screen.getByTestId('service-request-sr-c')).toHaveTextContent('Da te');
+    expect(screen.getByTestId('service-request-sr-c')).toHaveTextContent('3 ott');
+  });
+
+  it('ServiceRequestTimeline_NoSupplierName_ShowsTheNameOfTheJobOnly', () => {
     renderTimeline({ requests: [{ ...COMPLETED, supplierName: null }] });
 
-    expect(screen.getByTestId('service-request-step-sr-1-PresoInCarico')).toHaveTextContent('Il fornitore');
+    expect(screen.getByTestId('service-request-open-sr-1')).toHaveTextContent(/^Pulizie\s*Orario da concordare$/);
   });
 
-  it('ServiceRequestTimeline_English_ShowsTranslatedSteps', async () => {
+  it('ServiceRequestTimeline_English_ShowsTranslatedRows', async () => {
     await i18n.changeLanguage('en');
     renderTimeline({ requests: [REJECTED] });
 
-    expect(screen.getByTestId('service-request-step-sr-rejected-Richiesto')).toHaveTextContent('Your team');
+    expect(screen.getByTestId('service-request-sr-rejected')).toHaveTextContent('By the supplier');
     expect(screen.getByTestId('service-request-rejection-sr-rejected')).toHaveTextContent('Reason for the rejection: Siamo chiusi per ferie');
     expect(screen.getByTestId('request-other-supplier-sr-rejected')).toHaveTextContent('Request another supplier');
   });
@@ -203,9 +387,66 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
   it('ServiceRequestTimeline_ShowPropertyAndStay_NamesThePropertyAndLinksTheStay', () => {
     renderTimeline({ requests: [BASE, { ...BASE, id: 'sr-legacy', bookingId: null }], showProperty: true, showStay: true });
 
-    expect(screen.getAllByText('· Villa Rosa')).toHaveLength(2);
+    expect(screen.getByTestId('service-request-sr-1')).toHaveTextContent('Villa Rosa');
+    expect(screen.getByTestId('service-request-sr-legacy')).toHaveTextContent('Villa Rosa');
     expect(screen.getByTestId('service-request-stay-sr-1')).toHaveAttribute('href', '/app/short-rent/bookings/b-1');
     expect(screen.getByTestId('service-request-no-stay-sr-legacy')).toBeInTheDocument();
+  });
+
+  it('ServiceRequestTimeline_WithoutShowStay_HasNoStayLink', () => {
+    renderTimeline({ requests: [BASE] });
+
+    expect(screen.queryByTestId('service-request-stay-sr-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('service-request-no-stay-sr-1')).not.toBeInTheDocument();
+  });
+
+  // ─── The name of a request opens it ───
+
+  it('ServiceRequestTimeline_NameOfARequest_OpensItsDrawerWhenThePageHasOne', () => {
+    drawer.open.mockReturnValue(true);
+    renderTimeline({ requests: [BASE] });
+
+    const link = screen.getByTestId('service-request-open-sr-1');
+    expect(link).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
+    fireEvent.click(link);
+
+    expect(drawer.open).toHaveBeenCalledWith('intervention', 'sr-1', { opener: link });
+    // The click is the drawer's: the link does not go to the page as well.
+    expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/);
+  });
+
+  it('ServiceRequestTimeline_NoDrawerOnThePage_TheNameGoesToThePageOfTheRequest', () => {
+    drawer.open.mockReturnValue(false);
+    renderTimeline({ requests: [BASE] });
+
+    fireEvent.click(screen.getByTestId('service-request-open-sr-1'));
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent/interventions/sr-1');
+  });
+
+  it('ServiceRequestTimeline_ClickThatAsksForANewTab_IsTheBrowsers', () => {
+    drawer.open.mockReturnValue(true);
+    renderTimeline({ requests: [BASE] });
+    const link = screen.getByTestId('service-request-open-sr-1');
+    // The new tab is the browser's doing: here it only must not be the drawer's.
+    link.addEventListener('click', (event) => event.preventDefault(), { once: true });
+
+    fireEvent.click(link, { ctrlKey: true });
+
+    expect(drawer.open).not.toHaveBeenCalled();
+    expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/);
+  });
+
+  it('ServiceRequestTimeline_LongRent_LinksToThePageOfTheRequestAndNeverOpensTheShortRentDrawer', () => {
+    drawer.open.mockReturnValue(true);
+    renderTimeline({ requests: [{ ...BASE, rentalContext: 'LongRent', bookingId: null }], context: 'long-rent' });
+
+    const link = screen.getByTestId('service-request-open-sr-1');
+    expect(link).toHaveAttribute('href', '/app/long-rent/service-requests/sr-1');
+    fireEvent.click(link);
+
+    expect(drawer.open).not.toHaveBeenCalled();
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/long-rent/service-requests/sr-1');
   });
 
   // ─── "Segna pagato" asks for confirmation ───
@@ -282,7 +523,7 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
 
     expect(screen.queryByTestId('mark-paid-sr-1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('request-other-supplier-sr-rejected')).not.toBeInTheDocument();
-    // The timeline itself is still readable.
+    // The list itself is still readable.
     expect(screen.getByTestId('service-request-rejection-sr-rejected')).toBeInTheDocument();
   });
 
@@ -400,6 +641,10 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
       createdAt: '2026-09-22T08:00:00Z',
     };
     renderTimeline({ requests: [replacement, REJECTED] });
+
+    // The refusal is over once the job was asked of another supplier: it moves to the closed ones, with the note.
+    expect(screen.queryByTestId('service-request-sr-rejected')).not.toBeInTheDocument();
+    toggleClosed();
 
     expect(screen.getByTestId('service-request-replaced-sr-rejected')).toHaveTextContent('Già richiesto a un altro fornitore.');
     expect(screen.queryByTestId('request-other-supplier-sr-rejected')).not.toBeInTheDocument();
