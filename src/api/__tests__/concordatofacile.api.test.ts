@@ -19,3 +19,22 @@ describe('ConcordatoFacileApi.createCheckout', () => {
     expect(ApiClient.post).toHaveBeenCalledWith(`/leases/${leaseId}/concordatofacile/checkout`, {});
   });
 });
+
+describe('ConcordatoFacileApi.sync', () => {
+  it('posts nothing to the sync of the lease and gives back where it stands and its status', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ state: 'ReadingContract', leaseStatus: 'Draft' });
+
+    await expect(ConcordatoFacileApi.sync(leaseId)).resolves.toEqual({ state: 'ReadingContract', leaseStatus: 'Draft' });
+
+    expect(ApiClient.post).toHaveBeenCalledWith(`/leases/${leaseId}/concordatofacile/sync`);
+  });
+
+  it.each([null, 'ok', {}, { state: 'Completed' }, { leaseStatus: 'Registered' }, { state: 1, leaseStatus: 'Registered' }, { state: 'Completed', leaseStatus: 'Unknown' }])(
+    'refuses an answer that is not the state and a status of a lease (%j)',
+    async (answer) => {
+      vi.mocked(ApiClient.post).mockResolvedValueOnce(answer);
+
+      await expect(ConcordatoFacileApi.sync(leaseId)).rejects.toThrow(/Unexpected response body/);
+    },
+  );
+});

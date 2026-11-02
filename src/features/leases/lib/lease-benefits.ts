@@ -35,8 +35,8 @@ export const BENEFIT_TEXT: Readonly<Record<BenefitDocument, { nameKey: string; u
 /** Where the file of a document is downloaded from: the signed copy or the receipt of the lease itself, or a document uploaded to it. */
 export type BenefitSource = { from: 'signed' } | { from: 'receipt' } | { from: 'document'; document: LeaseDocument };
 
-/** What a screen needs of a lease to tell which of the three documents it has. */
-type BenefitLease = Pick<LeaseDetail, 'hasSignedPdf' | 'registration'>;
+/** What a screen needs of a lease to tell which of the three documents it has (`isConcordatoFacileSource`: the lease of the guided service, CF-DONE). */
+type BenefitLease = Pick<LeaseDetail, 'hasSignedPdf' | 'registration' | 'isConcordatoFacileSource'>;
 
 /**
  * A contract of canone concordato, whoever made it: by type, and always the one the guided service prepared (it only prepares those).
@@ -67,22 +67,26 @@ export function newestDocument(documents: readonly LeaseDocument[], kind: LeaseD
 /**
  * The file of the lease that holds the contract AND its attestation (CF-DOCS-REAL), if there is one: the newest contract document the reading
  * recognized an attestation in. The person is not asked for the attestation again when it is there.
+ *
+ * `viaService` (CF-DONE): the lease is the one the guided service prepared, and the service delivers the signed contract and its attestation
+ * in ONE file. Any contract file uploaded to such a lease is that file, whether or not the reading recognized the attestation inside it (a
+ * scan can be hard to read): the attestation is taken from it and never asked for again.
  */
-export function contractWithAttestation(documents: readonly LeaseDocument[]): LeaseDocument | undefined {
+export function contractWithAttestation(documents: readonly LeaseDocument[], viaService = false): LeaseDocument | undefined {
   return newestDocument(
-    documents.filter((document) => document.kind === 'Contract' && document.containsAttestation === true),
+    documents.filter((document) => document.kind === 'Contract' && (viaService || document.containsAttestation === true)),
     'Contract',
   );
 }
 
-/** Whether the lease has its attestation: the document of that kind, or the contract file that holds it. */
-export function hasAttestation(documents: readonly LeaseDocument[]): boolean {
-  return newestDocument(documents, 'Attestation') !== undefined || contractWithAttestation(documents) !== undefined;
+/** Whether the lease has its attestation: the document of that kind, or the contract file that holds it (`viaService`: see {@link contractWithAttestation}). */
+export function hasAttestation(documents: readonly LeaseDocument[], viaService = false): boolean {
+  return newestDocument(documents, 'Attestation') !== undefined || contractWithAttestation(documents, viaService) !== undefined;
 }
 
 /** The documents to bring after a registration: three, or two when the contract file holds the attestation (while the list is not known, three). */
-export function benefitDocuments(documents: readonly LeaseDocument[] | undefined): readonly BenefitDocument[] {
-  return documents && contractWithAttestation(documents) ? BENEFIT_DOCUMENTS_TOGETHER : BENEFIT_DOCUMENTS;
+export function benefitDocuments(documents: readonly LeaseDocument[] | undefined, viaService = false): readonly BenefitDocument[] {
+  return documents && contractWithAttestation(documents, viaService) ? BENEFIT_DOCUMENTS_TOGETHER : BENEFIT_DOCUMENTS;
 }
 
 /**
@@ -99,6 +103,7 @@ export function benefitSource(
   if (id === 'contract' && lease.hasSignedPdf) return { from: 'signed' };
   if (id === 'receipt' && lease.registration?.hasReceipt) return { from: 'receipt' };
   if (!documents) return undefined;
-  const document = id === 'contractWithAttestation' ? contractWithAttestation(documents) : newestDocument(documents, BENEFIT_DOCUMENT_KIND[id]);
+  const document =
+    id === 'contractWithAttestation' ? contractWithAttestation(documents, lease.isConcordatoFacileSource === true) : newestDocument(documents, BENEFIT_DOCUMENT_KIND[id]);
   return document ? { from: 'document', document } : null;
 }

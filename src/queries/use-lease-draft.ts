@@ -6,7 +6,8 @@ import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { ImportSignedInput, LeaseContractType, LeaseOrigin } from '@/types';
 
-const DRAFT_KEY = 'lease-draft';
+/** The first part of the key of every query about the draft of a lease (the draft, its reading, its review): whoever changes it invalidates by it. */
+export const DRAFT_KEY = 'lease-draft';
 const LEASES_KEY = 'leases';
 
 /**

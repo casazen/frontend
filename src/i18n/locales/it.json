@@ -2607,8 +2607,14 @@
     "import": {
       "action": "Completa e importa il contratto",
       "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
-      "instructions": "Carica il file che hai ricevuto, con il contratto firmato e l’attestazione: lo leggiamo, riconosciamo le sue parti e compiliamo i dati della bozza, poi li controlli e importi il contratto. La ricevuta di registrazione è un file a parte e si carica dopo. Il caricamento non richiede un nuovo pagamento.",
-      "title": "Il contratto è arrivato"
+      "instructions": "Carica il file che hai ricevuto, con il contratto firmato e l’attestazione: lo leggiamo, riconosciamo le sue parti e compiliamo noi i dati del contratto, senza che tu debba scrivere nulla: ti chiedo solo ciò che non riusciamo a leggere. La ricevuta di registrazione è un file a parte e si carica dopo. Il caricamento non richiede un nuovo pagamento.",
+      "needsData": "Ho letto i documenti, ma per importare il contratto manca ancora qualche dato: ti chiedo solo quello che manca.",
+      "title": "Il contratto è arrivato",
+      "waitingForSignature": "Ho letto i documenti. Il contratto passa a «firmato» da solo quando la pratica lo conferma: non devi fare altro."
+    },
+    "outcome": {
+      "registered": "Il contratto è registrato: abbiamo letto i documenti e compilato i dati. Aprilo per vederli.",
+      "signed": "Abbiamo letto il contratto e ora risulta firmato. Carica anche la ricevuta di registrazione: la registrazione si dichiara da sola."
     },
     "kinds": {
       "Contract": "Contratto firmato e attestazione",
@@ -4531,6 +4537,7 @@
   "guidedContract": {
     "checkAgain": "Controlla di nuovo",
     "comuneDiffers": "Il comune scelto nel modulo è diverso da quello della casa del contratto.",
+    "concluded": "La pratica è conclusa. Carica i documenti che hai ricevuto: li leggiamo e compiliamo noi i dati del contratto, non devi compilare nulla.",
     "confirmAction": "Conferma",
     "confirmOther": "Scegli un altro contratto",
     "confirmWithoutPractice": "Stai caricando i documenti sul contratto «{{lease}}»: conferma che è quello giusto.",
@@ -4551,6 +4558,7 @@
     "privacyLabel": "Ho letto e accetto l’informativa privacy",
     "privacyRead": "Leggi l’informativa",
     "reading": "Sto leggendo il contratto…",
+    "readingDocuments": "Sto leggendo i documenti che hai caricato: da lì compilo i dati del contratto.",
     "resume": "Riprendi la compilazione",
     "sent": "Il modulo è stato inviato. Quando ricevi i documenti, caricali qui: li leggiamo e compiliamo i dati.",
     "statusLabel": "Stato della pratica",
@@ -5264,9 +5272,9 @@
         "title": "Il contratto è concluso"
       },
       "AwaitPartnerContract": {
-        "action": "Apri il contratto",
-        "detail": "Il contratto di questa bozza lo prepariamo con il modulo guidato.",
-        "title": "Aspetta il contratto"
+        "action": "Apri la pratica",
+        "detail": "Il contratto lo prepara il servizio guidato: nella scheda vedi a che punto è la pratica e carichi i documenti quando li ricevi.",
+        "title": "Segui la pratica"
       },
       "ChooseProperty": {
         "action": "Scegli l'immobile",
@@ -6276,8 +6284,7 @@
       "documents": "Vai ai documenti",
       "openProperty": "Apri l'immobile",
       "readContract": "Leggi il contratto",
-      "readDraft": "Leggi la bozza del contratto",
-      "requestJob": "Richiedi intervento"
+      "readDraft": "Leggi la bozza del contratto"
     },
     "now": {
       "kicker": "Cosa devi fare ora"
@@ -6290,33 +6297,16 @@
       "open": "Apri l'immobile",
       "title": "Immobile"
     },
-    "requests": {
-      "action": {
-        "confirmAmount": "Conferma l'importo",
-        "markPaid": "Segna come pagato",
-        "pay": "Paga",
-        "proposal": "Rispondi all'orario"
-      },
-      "hideClosed": "Nascondi gli interventi chiusi",
-      "loadError": "Impossibile caricare gli interventi di questo contratto.",
-      "loading": "Caricamento degli interventi…",
-      "none": "Nessun intervento richiesto per questo contratto.",
-      "noneOpen": "Nessun intervento da seguire.",
-      "request": "Richiedi intervento",
-      "showClosed_one": "Mostra l'intervento chiuso",
-      "showClosed_other": "Mostra i {{count}} interventi chiusi",
-      "title": "Interventi per questo contratto"
-    },
     "status": {
-      "explain": "Cosa significa questo stato"
+      "explain": "Cosa significa questo stato",
+      "serviceDraft": "Il contratto lo prepara il servizio guidato: qui segui la pratica e non devi compilare nulla. Questa bozza passa a «Registrato» da sola quando la pratica è conclusa e hai caricato i documenti che ricevi: li leggiamo e compiliamo noi i dati."
     },
     "tabs": {
       "data": "Dati",
       "deadlines": "Scadenze",
       "documents": "Documenti",
       "label": "Sezioni del contratto",
-      "payments": "Pagamenti",
-      "requests": "Interventi"
+      "payments": "Pagamenti"
     },
     "toDefine": "Da definire"
   },
@@ -13446,7 +13436,7 @@
         "lease": {
           "tab": "Contratti",
           "title": "Affitti lunghi: dal contratto al canone",
-          "text": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti, scadenze e interventi: i canoni si pagano online con Stripe o si segnano come incassati.",
+          "text": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti e scadenze: i canoni si pagano online con Stripe o si segnano come incassati.",
           "alt": "Scheda di un contratto di affitto lungo con le sezioni Guida, Dati, Documenti, Pagamenti, Scadenze e Interventi"
         }
       },
@@ -13582,7 +13572,7 @@
       "featuresTitle": "Dal contratto al canone",
       "featuresIntro": "Quello che CasaZen fa oggi per chi affitta a lungo termine.",
       "screenTitle": "La scheda del contratto",
-      "screenIntro": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti, scadenze e interventi.",
+      "screenIntro": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti e scadenze.",
       "screenAlt": "Scheda di un contratto di affitto lungo con le sezioni Guida, Dati, Documenti, Pagamenti, Scadenze e Interventi",
       "groups": {
         "contracts": {

@@ -3,9 +3,10 @@ import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail } from '@/types';
 /**
  * The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change.
  * `guida` is the first and the one the sheet opens on (LR-GUIDE-1): what to do about the contract, with the tools to decide it; `dati`
- * holds only the data of the contract; `interventi` (LR-03c) the jobs asked of the suppliers for this contract.
+ * holds only the data of the contract. (The jobs asked of the suppliers had a tab of their own here, `interventi`: it was taken away, the
+ * jobs are followed in the area «Interventi»; an address that still names it opens the guide, like any name the sheet does not know.)
  */
-export const LEASE_TABS = ['guida', 'dati', 'documenti', 'pagamenti', 'scadenze', 'interventi'] as const;
+export const LEASE_TABS = ['guida', 'dati', 'documenti', 'pagamenti', 'scadenze'] as const;
 export type LeaseTab = (typeof LEASE_TABS)[number];
 
 /** The tab the sheet opens on when the address says none (or one that does not exist). */
@@ -71,4 +72,14 @@ export function leaseEventActor(eventType: string): LeaseEventActor | undefined 
  */
 export function isPartnerDraft(lease: Pick<LeaseDetail, 'status' | 'contractType' | 'startDate'>): boolean {
   return lease.status === 'Draft' && lease.contractType === 'Concordato' && lease.startDate.startsWith(LEASE_DRAFT_PLACEHOLDER_DATE);
+}
+
+/**
+ * A draft of the guided service (CF-DONE): the one made for it (`isPartnerDraft`, saved with only its property) or one the server has
+ * marked as the service's (`isConcordatoFacileSource`: the documents the service delivers were read into it, so it no longer looks like
+ * a draft with nothing in it). Its data are never typed in the wizard: the sheet shows the state of the practice and the draft moves on
+ * (signed, registered) as the practice does, once the documents are uploaded.
+ */
+export function isServiceDraft(lease: Pick<LeaseDetail, 'status' | 'contractType' | 'startDate' | 'isConcordatoFacileSource'>): boolean {
+  return lease.status === 'Draft' && (isPartnerDraft(lease) || lease.isConcordatoFacileSource === true);
 }

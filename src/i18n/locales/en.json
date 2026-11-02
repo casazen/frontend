@@ -2607,8 +2607,14 @@
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
-      "instructions": "Upload the file you received, with the signed contract and the attestation: we read it, recognize its parts and fill in the data of the draft, then you check them and import the contract. The registration receipt is a file of its own, uploaded afterwards. Uploading needs no new payment.",
-      "title": "The contract has arrived"
+      "instructions": "Upload the file you received, with the signed contract and the attestation: we read it, recognize its parts and fill in the data of the contract ourselves, so you do not have to type anything: we only ask you for what we cannot read. The registration receipt is a file of its own, uploaded afterwards. Uploading needs no new payment.",
+      "needsData": "I have read the documents, but some data is still missing to import the contract: I only ask you for what is missing.",
+      "title": "The contract has arrived",
+      "waitingForSignature": "I have read the documents. The contract becomes “signed” on its own once the practice confirms it: there is nothing else for you to do."
+    },
+    "outcome": {
+      "registered": "The contract is registered: we read the documents and filled in the data. Open it to see them.",
+      "signed": "We read the contract and it now counts as signed. Upload the registration receipt too: the registration is declared on its own."
     },
     "kinds": {
       "Contract": "Signed contract and attestation",
@@ -4531,6 +4537,7 @@
   "guidedContract": {
     "checkAgain": "Check again",
     "comuneDiffers": "The municipality chosen in the form differs from the one of the property of the contract.",
+    "concluded": "The practice is concluded. Upload the documents you received: we read them and fill in the data of the contract, there is nothing for you to fill in.",
     "confirmAction": "Confirm",
     "confirmOther": "Choose another contract",
     "confirmWithoutPractice": "You are uploading the documents to the contract “{{lease}}”: confirm it is the right one.",
@@ -4551,6 +4558,7 @@
     "privacyLabel": "I have read and accept the privacy notice",
     "privacyRead": "Read the notice",
     "reading": "Reading the contract…",
+    "readingDocuments": "I am reading the documents you uploaded: the data of the contract are filled in from them.",
     "resume": "Resume filling in the form",
     "sent": "The form has been sent. When you receive the documents, upload them here: we read them and fill in the data.",
     "statusLabel": "Status of the practice",
@@ -5264,9 +5272,9 @@
         "title": "The lease has ended"
       },
       "AwaitPartnerContract": {
-        "action": "Open the lease",
-        "detail": "The contract of this draft is prepared with the guided form.",
-        "title": "Wait for the contract"
+        "action": "Open the practice",
+        "detail": "The guided service prepares the contract: in the sheet you see where the practice stands and upload the documents when you receive them.",
+        "title": "Follow the practice"
       },
       "ChooseProperty": {
         "action": "Choose the property",
@@ -6276,8 +6284,7 @@
       "documents": "Go to the documents",
       "openProperty": "Open the property",
       "readContract": "Read the contract",
-      "readDraft": "Read the draft of the contract",
-      "requestJob": "Request a job"
+      "readDraft": "Read the draft of the contract"
     },
     "now": {
       "kicker": "What to do now"
@@ -6290,33 +6297,16 @@
       "open": "Open the property",
       "title": "Property"
     },
-    "requests": {
-      "action": {
-        "confirmAmount": "Confirm the amount",
-        "markPaid": "Mark as paid",
-        "pay": "Pay",
-        "proposal": "Answer the proposed time"
-      },
-      "hideClosed": "Hide the closed jobs",
-      "loadError": "The jobs for this contract could not be loaded.",
-      "loading": "Loading the jobs…",
-      "none": "No job has been requested for this contract.",
-      "noneOpen": "No job to follow.",
-      "request": "Request a job",
-      "showClosed_one": "Show the closed job",
-      "showClosed_other": "Show the {{count}} closed jobs",
-      "title": "Maintenance for this contract"
-    },
     "status": {
-      "explain": "What this status means"
+      "explain": "What this status means",
+      "serviceDraft": "The guided service prepares this contract: here you follow the practice and there is nothing for you to fill in. This draft becomes “Registered” on its own once the practice is concluded and you have uploaded the documents you receive: we read them and fill in the data."
     },
     "tabs": {
       "data": "Details",
       "deadlines": "Deadlines",
       "documents": "Documents",
       "label": "Sections of the lease",
-      "payments": "Payments",
-      "requests": "Maintenance"
+      "payments": "Payments"
     },
     "toDefine": "To be set"
   },
@@ -13446,7 +13436,7 @@
         "lease": {
           "tab": "Leases",
           "title": "Long rentals: from contract to rent",
-          "text": "Each contract has its own sheet with details, documents, payments, deadlines and jobs: rent is paid online with Stripe or marked as received.",
+          "text": "Each contract has its own sheet with details, documents, payments and deadlines: rent is paid online with Stripe or marked as received.",
           "alt": "Sheet of a long-term lease with the Guide, Details, Documents, Payments, Deadlines and Jobs tabs"
         }
       },
@@ -13582,7 +13572,7 @@
       "featuresTitle": "From contract to rent",
       "featuresIntro": "What CasaZen does today for long-term landlords.",
       "screenTitle": "The contract sheet",
-      "screenIntro": "Each contract has its own sheet with details, documents, payments, deadlines and jobs.",
+      "screenIntro": "Each contract has its own sheet with details, documents, payments and deadlines.",
       "screenAlt": "Sheet of a long-term lease with the Guide, Details, Documents, Payments, Deadlines and Jobs tabs",
       "groups": {
         "contracts": {

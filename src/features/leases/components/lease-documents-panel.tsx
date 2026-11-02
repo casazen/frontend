@@ -11,6 +11,7 @@ import { saveBlobAs } from '@/lib/file-download';
 import { DocumentPages } from '@/components/documents/document-pages';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { formatDateTime } from '@/lib/utils';
+import { CF_SYNC_QUERY_KEY } from '@/queries/use-concordatofacile';
 import { useRefreshDraftReading } from '@/queries/use-lease-draft';
 import { recognizedParts } from '../lib/document-sections';
 import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
@@ -36,6 +37,8 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       setSelection(EMPTY_DOCUMENT); setSaved(true);
       await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
       void refreshReading();
+      // The lease of the guided service moves on with what was uploaded (CF-DONE): where the sync of the lease is mounted, it is asked again.
+      void client.invalidateQueries({ queryKey: CF_SYNC_QUERY_KEY(leaseId) });
     },
   });
   const download = useMutation({

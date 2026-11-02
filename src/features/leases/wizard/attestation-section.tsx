@@ -17,17 +17,19 @@ import { WIZARD_BUTTON } from './lease-wizard-frame';
  *
  * When the contract file that was uploaded holds the attestation too (the file the guided service delivers, CF-DOCS-REAL: the reading
  * recognized its pages) the section says so — «Attestazione: inclusa nel contratto caricato» — and asks for nothing: no second upload, no
- * button. A separate attestation uploaded as such still counts and is told the same way as before.
+ * button. A separate attestation uploaded as such still counts and is told the same way as before. For the lease the guided service
+ * prepared (`viaService`, CF-DONE), whose file always holds both, any contract file that was uploaded counts as holding the attestation:
+ * it is taken from there, whether or not the reading recognized its pages, and the person is never asked to upload it again.
  *
  * Unlike the receipt of the registration, which the declaration refers to, nothing here has to be chosen or kept: the attestation is a
  * document of the lease, so the file already uploaded is the one in use and «Carica un nuovo file» adds the one that replaces it.
  */
-export function AttestationSection({ leaseId }: { leaseId: string }) {
+export function AttestationSection({ leaseId, viaService = false }: { leaseId: string; viaService?: boolean }) {
   const { t } = useTranslation();
   const documents = useLeaseDocuments(leaseId);
   const [uploadOpen, setUploadOpen] = useState(false);
   const attestation = documents.data ? newestDocument(documents.data, 'Attestation') : undefined;
-  const included = documents.data ? contractWithAttestation(documents.data) : undefined;
+  const included = documents.data ? contractWithAttestation(documents.data, viaService) : undefined;
   const name = t('leaseRound.document.attestation.name');
 
   return (

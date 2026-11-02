@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { LeaseDocumentsUploadPage } from '../lease-documents-upload-page';
 import { LEASE_CONFIRMED_STATE } from '../lib/upload-link';
 import { buildDetail, buildSummary, httpError, renderAt } from './lease-test-utils';
@@ -229,5 +233,113 @@ describe('lease-owned partner documents', () => {
     const waiting = await screen.findByRole('button', { name: i18n.t('guidedContract.reading') });
     expect(waiting).toBeDisabled();
     expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
+  });
+
+  // CF-DONE: an upload moves the lease of the guided service on without leaving the page. The server reads the file into the draft and,
+  // once the practice allows it, imports the contract and declares the registration; the page tells what became of the lease.
+  describe('the lease of the guided service follows its practice', () => {
+    const syncUrl = `/leases/${id}/concordatofacile/sync`;
+    const syncCalls = () => post.mock.calls.filter(([url]) => url === syncUrl);
+
+    /** The same page with the service on (the flags of a person are off without a provider): the sync is asked once the contract is confirmed. */
+    function renderWithService(query: string, state: unknown = LEASE_CONFIRMED_STATE) {
+      const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+      return render(
+        <QueryClientProvider client={client}>
+          <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, concordatoFacile: true }, isLoading: false }}>
+            <MemoryRouter initialEntries={[{ pathname: path, search: query, state }]}>
+              <Routes>
+                <Route path={path} element={<LeaseDocumentsUploadPage />} />
+              </Routes>
+            </MemoryRouter>
+          </FeatureFlagsContext.Provider>
+        </QueryClientProvider>,
+      );
+    }
+
+    /** The lease of the service as the server has it now: `status()` says which, the documents none. */
+    function mockServiceLease(status: () => 'Draft' | 'Signed' | 'Registered' = () => 'Draft') {
+      get.mockImplementation((url) => {
+        if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, origin: 'Imported', isConcordatoFacileSource: true, status: status() }) });
+        if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+        if (url === `/leases/${id}/draft/reading`) return Promise.resolve({ data: { state: 'None', documents: [], fields: [], stipulaDate: null, contractDocumentId: null } });
+        return Promise.reject(httpError(404));
+      });
+    }
+
+    it.each([
+      ['Signed', 'WaitingForReceipt', 'signed'],
+      ['Registered', 'Completed', 'registered'],
+    ] as const)('asks the server to move the lease on once, and says what the documents did to it: %s', async (leaseStatus, state, outcome) => {
+      let status: 'Draft' | 'Signed' | 'Registered' = 'Draft';
+      mockServiceLease(() => status);
+      post.mockImplementation((url) => {
+        if (url !== syncUrl) return Promise.reject(httpError(404));
+        status = leaseStatus; // the server read the documents and moved the lease on
+        return Promise.resolve({ data: { state, leaseStatus } });
+      });
+
+      renderWithService(`?leaseId=${id}`);
+
+      expect(await screen.findByTestId('cf-documents-outcome')).toHaveTextContent(i18n.t(`cfDocuments.outcome.${outcome}`));
+      expect(syncCalls()).toHaveLength(1);
+      expect(screen.getByRole('link', { name: i18n.t('cfDocuments.openLease') })).toHaveAttribute('href', `/app/long-rent/leases/${id}`);
+    });
+
+    it('says nothing of an outcome while the lease is still a draft', async () => {
+      mockServiceLease();
+      post.mockResolvedValue({ data: { state: 'WaitingForContract', leaseStatus: 'Draft' } });
+
+      renderWithService(`?leaseId=${id}`);
+
+      await screen.findByText(i18n.t('cfDocuments.empty'));
+      await waitFor(() => expect(syncCalls()).toHaveLength(1));
+      expect(screen.queryByTestId('cf-documents-outcome')).not.toBeInTheDocument();
+    });
+
+    it('asks nothing before the person has said the contract is the right one, then asks once', async () => {
+      mockServiceLease();
+      post.mockResolvedValue({ data: { state: 'WaitingForContract', leaseStatus: 'Draft' } });
+
+      // A link from outside: the history entry carries no confirmation (`null`: an explicit `undefined` would take the default one).
+      renderWithService(`?leaseId=${id}`, null);
+
+      const confirm = await screen.findByTestId('cf-documents-confirm-button');
+      // A link from outside decides nothing on its own: not even the lease is moved on before the person has confirmed it.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(post).not.toHaveBeenCalled();
+      fireEvent.click(confirm);
+      await screen.findByText(i18n.t('cfDocuments.empty'));
+      await waitFor(() => expect(syncCalls()).toHaveLength(1));
+    });
+
+    it('asks nothing of the service while it is off, whatever the lease', async () => {
+      mockServiceLease();
+
+      renderPage(`?leaseId=${id}`);
+
+      await screen.findByText(i18n.t('cfDocuments.empty'));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(post).not.toHaveBeenCalled();
+    });
+
+    it('asks again when a document is uploaded, so the lease moves on without leaving the page', async () => {
+      mockServiceLease();
+      post.mockImplementation((url) => {
+        if (url === syncUrl) return Promise.resolve({ data: { state: 'WaitingForContract', leaseStatus: 'Draft' } });
+        return Promise.resolve({ data: { id: 'doc-1' } });
+      });
+
+      renderWithService(`?leaseId=${id}`);
+      await screen.findByText(i18n.t('cfDocuments.empty'));
+      await waitFor(() => expect(syncCalls()).toHaveLength(1));
+
+      const file = new File(['%PDF-1.7\nexample'], 'contratto.pdf', { type: 'application/pdf' });
+      fireEvent.change(screen.getByLabelText(i18n.t('documentPages.select')), { target: { files: [file] } });
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('cfDocuments.upload') }));
+
+      await waitFor(() => expect(post.mock.calls.some(([url]) => url === `/leases/${id}/documents`)).toBe(true));
+      await waitFor(() => expect(syncCalls()).toHaveLength(2));
+    });
   });
 });
