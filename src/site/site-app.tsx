@@ -1,6 +1,7 @@
 import type { i18n as I18n } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { SiteLayout } from './components/site-layout';
+import { IntegrationsPage } from './components/integrations-page';
 import { AboutPage, FeaturesPage, HomePage, SuppliersPage } from './components/site-pages-content';
 import type { SiteLegal } from './site-config';
 import type { SitePageId } from './site-pages';
@@ -20,6 +21,8 @@ function PageContent({ page, legal }: { page: SitePageId; legal: SiteLegal }) {
       return <HomePage legal={legal} />;
     case 'features':
       return <FeaturesPage legal={legal} />;
+    case 'integrations':
+      return <IntegrationsPage legal={legal} />;
     case 'suppliers':
       return <SuppliersPage legal={legal} />;
     case 'about':

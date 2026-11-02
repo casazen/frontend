@@ -28,6 +28,7 @@ describe('site middleware (SEO-VETRINA)', () => {
   it.each([
     [`${PUBLIC_SITE}/`, `/${SITE_ASSET_DIR}/index.html`],
     [`${PUBLIC_SITE}/funzionalita`, `/${SITE_ASSET_DIR}/funzionalita.html`],
+    [`${PUBLIC_SITE}/integrazioni`, `/${SITE_ASSET_DIR}/integrazioni.html`],
     [`${PUBLIC_SITE}/?utm_source=newsletter`, `/${SITE_ASSET_DIR}/index.html`],
     ['https://casazen-app-git-feature-x-casazen.vercel.app/chi-siamo', `/${SITE_ASSET_DIR}/chi-siamo.html`],
     ['http://localhost:3000/funzionalita', `/${SITE_ASSET_DIR}/funzionalita.html`],
