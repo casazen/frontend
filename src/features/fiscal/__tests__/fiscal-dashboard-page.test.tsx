@@ -118,6 +118,8 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
     const alert = await screen.findByTestId('fiscal-piva-alert');
     expect(alert).toHaveTextContent(i18n.t('fiscal.alert.piva', { max: 2 }));
     expect(alert).toHaveTextContent('più di 2 appartamenti');
+    expect(document.body).not.toHaveTextContent('returned an object');
+    expect(screen.getByTestId('fiscal-focus-cta').closest('[data-testid="fiscal-piva-alert"]')).not.toBeNull();
     expect(screen.getByTestId('fiscal-tax-note-p-irpef')).toHaveTextContent(i18n.t('fiscal.taxNote.thresholdExceeded'));
   });
 
