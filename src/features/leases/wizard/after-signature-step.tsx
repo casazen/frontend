@@ -179,7 +179,7 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
       {registrationBlock}
 
       {/* The attestation is what the benefits of a canone concordato are claimed with: asked here, never a stop (CF-END). */}
-      {isConcordatoLease(lease) ? <AttestationSection leaseId={lease.id} /> : null}
+      {isConcordatoLease(lease) ? <AttestationSection leaseId={lease.id} viaService={lease.isConcordatoFacileSource === true} /> : null}
 
       <PlainSection title={t('leaseWizard.after.rows.title')}>
         <ul role="list" className="divide-y divide-border">
