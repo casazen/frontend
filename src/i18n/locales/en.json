@@ -12436,6 +12436,50 @@
     }
   },
   "requestWizard": {
+    "assist": {
+      "change": "Change",
+      "chosen": "The AI chose: {{service}}.",
+      "error": "I cannot read your description right now.",
+      "help": {
+        "body": "Write what is wrong and where, when you need it and whether there are times to respect. Do not write the names, phone numbers or documents of guests: the AI does not need them.",
+        "label": "How to describe the job",
+        "title": "A more precise suggestion"
+      },
+      "none": {
+        "ai_budget_exhausted": "The AI suggestion is not available at the moment: choose the service yourself.",
+        "ai_invalid_answer": "I could not give you a clear suggestion. Try again, or choose the service yourself.",
+        "ai_not_configured": "The AI suggestion is not available at the moment: choose the service yourself.",
+        "ai_not_understood": "I could not tell what the job is. Try writing a bit more (what happened, where, by when) or choose the service yourself.",
+        "ai_unavailable": "I cannot give you a suggestion right now. Try again in a moment, or choose the service yourself.",
+        "retry": "Try again"
+      },
+      "open": "Describe it",
+      "result": {
+        "casazen_one": "A CasaZen supplier in your area",
+        "casazen_other": "{{count}} CasaZen suppliers in your area",
+        "edit": "Change the words",
+        "external": "An external partner: there are no CasaZen suppliers in your area yet for this service",
+        "note": "Note for the supplier",
+        "service": "Service",
+        "skip": "I'll choose",
+        "title": "I suggest",
+        "urgency": "Urgency",
+        "useCasazen": "See the suppliers",
+        "usePartners": "See the partners",
+        "who": "Who"
+      },
+      "text": "Describe what you need: I pick the service, the urgency and who to call.",
+      "title": "Prefer to tell us in your own words?",
+      "write": {
+        "close": "I'll choose",
+        "hint": "A few lines are enough. The more you say (where, since when, by when), the more precise the suggestion.",
+        "label": "What do you need?",
+        "loading": "Reading…",
+        "placeholder": "E.g. The kitchen tap is leaking, I need someone tomorrow morning",
+        "submit": "Suggest with AI",
+        "tip": "Add where the problem is and when you need it."
+      }
+    },
     "channel": {
       "addComune": "Add the comune",
       "casazen": {

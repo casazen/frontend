@@ -23,6 +23,7 @@ import { useProperties } from '@/queries/use-properties';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { useMarketplaceSuppliers, useSuppliersByProperty } from '@/queries/use-service-requests';
 import type { SupplierPicker } from '@/types/service-request';
+import { AssistChoiceLine, RequestAssistCard } from './request-assist-card';
 import { assign, NO_SUPPLIER } from './request-form';
 import type { RequestChannel, RequestValues } from './request-model';
 
@@ -143,6 +144,9 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
           {t('requestWizard.channel.noNetwork')}
         </Alert>
       ) : null}
+
+      {/* Optional, and only where an AI is in effect: the host tells the job in words and the wizard goes on from what the AI proposes. */}
+      <RequestAssistCard onUse={onChannel} />
     </div>
   );
 }
@@ -218,7 +222,7 @@ function supplierDescription(supplier: SupplierPicker, t: TFunction, language: s
  * gives (SP-REL: load and reliability), the first one marked «Consigliato» when it is strictly ahead. With none the page says so and puts
  * the partners of that service next to the sentence, with a way to go on with them.
  */
-export function ProposalsStep({ onChannel }: { onChannel: ChangeChannel }) {
+export function ProposalsStep({ onChannel, goTo }: { onChannel: ChangeChannel; goTo: (stepId: string) => void }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
   const [propertyId, category, chosen] = useWatch({ control, name: ['propertyId', 'category', 'supplierOrgId'] });
@@ -252,6 +256,7 @@ export function ProposalsStep({ onChannel }: { onChannel: ChangeChannel }) {
   if (items.length === 0) {
     return (
       <div className="space-y-4" data-testid="request-no-suppliers">
+        <AssistChoiceLine goTo={goTo} />
         <Alert variant="info">{t('marketplace.noNetwork')}</Alert>
         {partners.length > 0 ? (
           <>
@@ -274,6 +279,7 @@ export function ProposalsStep({ onChannel }: { onChannel: ChangeChannel }) {
 
   return (
     <div className="flex flex-col gap-3">
+      <AssistChoiceLine goTo={goTo} />
       {notAvailable ? (
         <Alert variant="warning" data-testid="request-supplier-unavailable">
           {t('requestWizard.who.supplierUnavailable')}
@@ -319,7 +325,7 @@ export function ProposalsStep({ onChannel }: { onChannel: ChangeChannel }) {
  * Step ④ with an external partner, the last one: the partners of the service, each with its own site. The work is organised there, so
  * CasaZen sends nothing and says so.
  */
-export function PartnersStep() {
+export function PartnersStep({ goTo }: { goTo: (stepId: string) => void }) {
   const { t } = useTranslation();
   const { control } = useFormContext<RequestValues>();
   const category = useWatch({ control, name: 'category' });
@@ -327,6 +333,7 @@ export function PartnersStep() {
 
   return (
     <div className="space-y-4" data-testid="request-partners">
+      <AssistChoiceLine goTo={goTo} />
       <Alert variant="info">{t('requestWizard.partners.how')}</Alert>
       {partners.length > 0 ? (
         <ul role="list" className="grid list-none gap-3 sm:grid-cols-2">

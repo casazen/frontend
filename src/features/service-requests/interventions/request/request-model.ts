@@ -7,6 +7,7 @@ import { isStayDate, romeWallClock, romeWallTimeToUtc, todayInRome } from '@/lib
 import type { Booking } from '@/types';
 import type { HostSupplierSlot } from '@/types/host-supplier-catalog';
 import type { CreateServiceRequestDto, ServiceRequestUrgency } from '@/types/service-request';
+import type { ServiceRequestAssist } from '@/types/service-request-assist';
 
 /**
  * The model of «Richiedi un intervento» (SR-08b): what the wizard asks, the rules of its steps, the window that is advised for a
@@ -65,6 +66,16 @@ const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 export interface RequestValues {
   // ① Immobile
   propertyId: string;
+  // ② Chi: «Descrivi di cosa hai bisogno» (WIZ-AI-REQUEST). The AI help is optional and none of this is ever sent as it is: the choices it
+  // fills in (the service, the urgency, the notes, the channel) are the answers of the steps, which the host reads and changes.
+  /** What the host wrote for the AI (kept while the wizard is open, not in the draft: it is theirs and it is short-lived). */
+  assistText: string;
+  /** The service the AI chose from the words, while it is still the one chosen: the line «L'AI ha scelto…» says so. `''` = the host chose. */
+  aiCategory: string;
+  /** Why the AI chose it, as it said it (for that line only). */
+  aiExplanation: string;
+  /** The sentence the AI wrote for the supplier and put in the notes: the notes are replaced by a new one only while they are still this. */
+  aiSummary: string;
   // ③ Servizio
   category: string;
   // ④ Proposte
@@ -103,6 +114,10 @@ export interface RequestValues {
 
 /** The fields that depend on the supplier and its agenda: never written to the draft (they change, and the slots are the supplier's). */
 export const REQUEST_DRAFT_EXCLUDE: readonly string[] = [
+  'assistText',
+  'aiCategory',
+  'aiExplanation',
+  'aiSummary',
   'supplierOrgId',
   'supplierName',
   'serviceId',
@@ -214,6 +229,10 @@ export function requestDefaults(search: URLSearchParams, categories: readonly st
 
   const values: RequestValues = {
     propertyId: id('propertyId'),
+    assistText: '',
+    aiCategory: '',
+    aiExplanation: '',
+    aiSummary: '',
     category: categories?.includes(type) ? type : '',
     supplierOrgId: id('supplierOrgId'),
     supplierName: '',
@@ -247,6 +266,45 @@ export function openingStepFor(values: Pick<RequestValues, 'propertyId' | 'categ
   if (values.category === '') return 'channel';
   if (channel === 'external') return 'partners';
   return values.supplierOrgId === '' ? 'proposals' : 'details';
+}
+
+/** The shortest and the longest description the AI reads (what the API takes: 8 to 600 characters). */
+export const ASSIST_MIN_TEXT = 8;
+export const ASSIST_MAX_TEXT = 600;
+
+/** What the wizard does with the proposal of the AI once the host takes it. */
+export interface AssistOutcome {
+  /** The answers the proposal fills in. */
+  values: Partial<RequestValues>;
+  channel: RequestChannel;
+  /** Where the wizard goes on from: the proposals of the CasaZen suppliers, or the partners. */
+  step: 'proposals' | 'partners';
+}
+
+/**
+ * The proposal of the AI as the answers of the wizard: the service, the urgency and the sentence for the supplier as the notes (only when
+ * the host has no notes of their own: none yet, or still the ones the AI wrote before), with the channel and the step it goes on from.
+ * `null` when the AI proposed nothing the wizard can use (no service, a service the catalog does not have, no channel).
+ */
+export function assistOutcome(
+  assist: ServiceRequestAssist,
+  current: Pick<RequestValues, 'notes' | 'aiSummary'>,
+  categories: readonly string[],
+): AssistOutcome | null {
+  if (!assist.aiUsed || !assist.category || !assist.channel || !categories.includes(assist.category)) return null;
+
+  const summary = (assist.summary ?? '').trim().slice(0, REQUEST_NOTES_MAX);
+  const notes = current.notes.trim();
+  const values: Partial<RequestValues> = {
+    category: assist.category,
+    urgency: assist.urgency ?? 'Normal',
+    aiCategory: assist.category,
+    aiExplanation: (assist.explanation ?? '').trim(),
+    aiSummary: summary,
+  };
+  if (summary && (notes === '' || notes === current.aiSummary.trim())) values.notes = summary;
+
+  return { values, channel: assist.channel, step: assist.channel === 'casazen' ? 'proposals' : 'partners' };
 }
 
 /** The first day the work can be on for a stay: its check-out day, never one that has passed. */
