@@ -107,8 +107,7 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
     if (count !== undefined) expect(grid.getAttribute('class')).not.toContain('sm:grid-cols-2');
   });
 
-  // The integrations page is a list of logos, with no card grid to line up.
-  it.each(SITE_PAGES.map((page) => page.id).filter((id) => id !== 'integrations'))('render_%s_theCardsOfAGridHaveTheSameRowsAndOneChildForEach', (page) => {
+  it.each(SITE_PAGES.map((page) => page.id))('render_%s_theCardsOfAGridHaveTheSameRowsAndOneChildForEach', (page) => {
     const html = renderToString(
       <SiteApp page={page} i18n={createSiteI18n('it')} legal={{ name: null, vatId: null, address: null, email: 'info@example.com' }} year={2026} />,
     );

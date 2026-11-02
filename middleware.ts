@@ -24,14 +24,15 @@ import { next, rewrite } from '@vercel/functions';
 /** Public path → file under `dist/_site/` (`SITE_PAGES` of `src/site/site-pages.ts`). */
 export const SITE_PAGE_FILES: Readonly<Record<string, string>> = {
   '/': 'index.html',
+  '/affitti-brevi': 'affitti-brevi.html',
+  '/affitti-lunghi': 'affitti-lunghi.html',
   '/funzionalita': 'funzionalita.html',
-  '/integrazioni': 'integrazioni.html',
   '/per-i-fornitori': 'per-i-fornitori.html',
   '/chi-siamo': 'chi-siamo.html',
 };
 
 export const config = {
-  matcher: ['/', '/funzionalita', '/integrazioni', '/per-i-fornitori', '/chi-siamo'],
+  matcher: ['/', '/affitti-brevi', '/affitti-lunghi', '/funzionalita', '/per-i-fornitori', '/chi-siamo'],
 };
 
 const SITE_ASSET_DIR = '_site';
