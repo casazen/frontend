@@ -73,6 +73,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/sitemap-supplier.xml',
       // SEO-VETRINA: the pages of the public site and their sitemap.
       '/funzionalita',
+      '/integrazioni',
       '/per-i-fornitori',
       '/chi-siamo',
       '/sitemap-site.xml',

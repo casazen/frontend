@@ -8,7 +8,7 @@
  * the paths; `src/test/site-middleware.test.ts` checks that both lists are the same.
  */
 
-export type SitePageId = 'home' | 'features' | 'suppliers' | 'about';
+export type SitePageId = 'home' | 'features' | 'integrations' | 'suppliers' | 'about';
 
 export interface SitePage {
   id: SitePageId;
@@ -27,6 +27,7 @@ export const SITE_SITEMAP_PATH = '/sitemap-site.xml';
 export const SITE_PAGES: readonly SitePage[] = [
   { id: 'home', path: '/', file: 'index.html' },
   { id: 'features', path: '/funzionalita', file: 'funzionalita.html' },
+  { id: 'integrations', path: '/integrazioni', file: 'integrazioni.html' },
   { id: 'suppliers', path: '/per-i-fornitori', file: 'per-i-fornitori.html' },
   { id: 'about', path: '/chi-siamo', file: 'chi-siamo.html' },
 ];

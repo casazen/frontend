@@ -25,12 +25,13 @@ import { next, rewrite } from '@vercel/functions';
 export const SITE_PAGE_FILES: Readonly<Record<string, string>> = {
   '/': 'index.html',
   '/funzionalita': 'funzionalita.html',
+  '/integrazioni': 'integrazioni.html',
   '/per-i-fornitori': 'per-i-fornitori.html',
   '/chi-siamo': 'chi-siamo.html',
 };
 
 export const config = {
-  matcher: ['/', '/funzionalita', '/per-i-fornitori', '/chi-siamo'],
+  matcher: ['/', '/funzionalita', '/integrazioni', '/per-i-fornitori', '/chi-siamo'],
 };
 
 const SITE_ASSET_DIR = '_site';

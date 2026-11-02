@@ -60,7 +60,7 @@ import {
  */
 
 /** "Ask for an invitation": an e-mail link when the contact address is configured, otherwise only the notice. */
-function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; variant?: 'primary' | 'secondary' }) {
+export function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; variant?: 'primary' | 'secondary' }) {
   const { t } = useTranslation();
   const href = inviteHref(legal.email, t('site.invite.subject'));
   if (!href) return <p className="text-ink-500">{t('site.invite.notice')}</p>;

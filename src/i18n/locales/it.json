@@ -13123,6 +13123,10 @@
       "about": {
         "title": "Chi siamo e contatti | CasaZen",
         "description": "CasaZen è il gestionale per host e property manager di affitti brevi e lunghi in Italia, costruito sulle regole italiane. Come lavoriamo, dati societari e contatti."
+      },
+      "integrations": {
+        "title": "Integrazioni: canali di vendita e partner collegabili | CasaZen",
+        "description": "Le OTA, i metasearch e gli strumenti partner che si possono collegare a CasaZen: Booking.com, Airbnb, Expedia, Vrbo e centinaia di altri canali e servizi."
       }
     },
     "nav": {
@@ -13135,7 +13139,8 @@
       "login": "Accedi",
       "switchLanguage": "English",
       "switchLanguageLabel": "Passa all'inglese",
-      "search": "Cerca casa"
+      "search": "Cerca casa",
+      "integrations": "Integrazioni"
     },
     "footer": {
       "tagline": "Il gestionale per gli affitti brevi e lunghi in regola.",
@@ -13388,6 +13393,65 @@
       "notice": "CasaZen è in fase di avvio: per ora l'accesso è solo su invito.",
       "cta": "Richiedi un invito",
       "subject": "Richiesta di invito a CasaZen"
+    },
+    "integrations": {
+      "title": "Integrazioni",
+      "intro": "I canali di vendita e gli strumenti partner che si possono collegare a CasaZen, per categoria.",
+      "jump": "Categorie",
+      "noteTitle": "Buono a sapersi",
+      "note1": "I collegamenti si attivano canale per canale: l'elenco indica ciò che si può collegare, non che ogni collegamento sia già attivo per il tuo account. Oggi i calendari dei portali si sincronizzano tramite iCal.",
+      "note2": "Per alcuni partner il collegamento si completa sul sito del partner. Chiedici lo stato di un canale o di uno strumento prima di contare su di esso.",
+      "groups": {
+        "ota": {
+          "title": "Canali di vendita (OTA)",
+          "intro": "Portali e marketplace dove pubblicare i tuoi alloggi, nazionali e internazionali."
+        },
+        "metasearch": {
+          "title": "Metasearch",
+          "intro": "Comparatori che mostrano tariffe e disponibilità quando l'ospite sta confrontando le strutture."
+        },
+        "gds": {
+          "title": "Distribuzione globale (GDS)",
+          "intro": "Reti di distribuzione per raggiungere agenzie, wholesaler e canali globali."
+        },
+        "revenue": {
+          "title": "Prezzi e revenue management",
+          "intro": "Strumenti per impostare le tariffe in base a domanda e concorrenza."
+        },
+        "payments": {
+          "title": "Pagamenti",
+          "intro": "Circuiti e sistemi per incassi online, carte e preautorizzazioni."
+        },
+        "smart": {
+          "title": "Check-in, accessi e guest experience",
+          "intro": "Self check-in, serrature smart, upselling e strumenti per l'accoglienza."
+        },
+        "ai": {
+          "title": "Assistenti AI",
+          "intro": "Assistenti per i messaggi con gli ospiti e per le attività di ogni giorno."
+        },
+        "housekeeping": {
+          "title": "Pulizie e operatività",
+          "intro": "Strumenti per coordinare pulizie, camere pronte e staff."
+        },
+        "admin": {
+          "title": "Amministrazione e adempimenti",
+          "intro": "Fiscalità, documenti, comunicazioni obbligatorie e contabilità."
+        },
+        "software": {
+          "title": "Software gestionali e calendari",
+          "intro": "Gestionali e sistemi verticali, calendari e strumenti d'ufficio da collegare."
+        },
+        "other": {
+          "title": "Altri strumenti",
+          "intro": "Servizi digitali, marketing e automazioni complementari."
+        }
+      },
+      "cta": {
+        "title": "Non trovi quello che usi?",
+        "text": "Scrivici quale canale o strumento ti serve: ci dici se si può collegare."
+      },
+      "trademarks": "I marchi e i loghi mostrati appartengono ai rispettivi proprietari e servono solo a indicare i servizi collegabili; non implicano accordi commerciali o approvazioni."
     }
   },
   "siteAppearance": {

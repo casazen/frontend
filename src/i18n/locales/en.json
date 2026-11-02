@@ -13123,6 +13123,10 @@
       "about": {
         "title": "About us and contacts | CasaZen",
         "description": "CasaZen is the management app for hosts and property managers of short- and long-term rentals in Italy, built on Italian rules. How we work, company details and contacts."
+      },
+      "integrations": {
+        "title": "Integrations: sales channels and partner tools | CasaZen",
+        "description": "The OTAs, metasearch sites and partner tools that can be connected to CasaZen: Booking.com, Airbnb, Expedia, Vrbo and hundreds of other channels and services."
       }
     },
     "nav": {
@@ -13135,7 +13139,8 @@
       "login": "Log in",
       "switchLanguage": "Italiano",
       "switchLanguageLabel": "Switch to Italian",
-      "search": "Find a home"
+      "search": "Find a home",
+      "integrations": "Integrations"
     },
     "footer": {
       "tagline": "The management app for short- and long-term rentals, by the rules.",
@@ -13388,6 +13393,65 @@
       "notice": "CasaZen is just getting started: for now access is by invitation only.",
       "cta": "Ask for an invitation",
       "subject": "Invitation request for CasaZen"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "intro": "The sales channels and partner tools that can be connected to CasaZen, by category.",
+      "jump": "Categories",
+      "noteTitle": "Good to know",
+      "note1": "Connections are enabled channel by channel: the list shows what can be connected, not that every connection is already active for your account. Today portal calendars are synchronised through iCal.",
+      "note2": "For some partners the connection is completed on the partner's own site. Ask us about the status of a channel or tool before relying on it.",
+      "groups": {
+        "ota": {
+          "title": "Sales channels (OTAs)",
+          "intro": "Portals and marketplaces where you list your homes, national and international."
+        },
+        "metasearch": {
+          "title": "Metasearch",
+          "intro": "Comparison sites that show rates and availability while guests compare properties."
+        },
+        "gds": {
+          "title": "Global distribution (GDS)",
+          "intro": "Distribution networks that reach travel agencies, wholesalers and global channels."
+        },
+        "revenue": {
+          "title": "Pricing and revenue management",
+          "intro": "Tools that set your rates based on demand and competitors."
+        },
+        "payments": {
+          "title": "Payments",
+          "intro": "Networks and systems for online payments, cards and pre-authorisations."
+        },
+        "smart": {
+          "title": "Check-in, access and guest experience",
+          "intro": "Self check-in, smart locks, upselling and hospitality tools."
+        },
+        "ai": {
+          "title": "AI assistants",
+          "intro": "Assistants for guest messaging and everyday tasks."
+        },
+        "housekeeping": {
+          "title": "Cleaning and operations",
+          "intro": "Tools to coordinate cleaning, ready rooms and staff."
+        },
+        "admin": {
+          "title": "Administration and compliance",
+          "intro": "Tax, documents, mandatory reporting and accounting."
+        },
+        "software": {
+          "title": "Management software and calendars",
+          "intro": "Property management and vertical systems, calendars and office tools to connect."
+        },
+        "other": {
+          "title": "Other tools",
+          "intro": "Complementary digital services, marketing and automations."
+        }
+      },
+      "cta": {
+        "title": "Can't find what you use?",
+        "text": "Tell us which channel or tool you need and we will tell you whether it can be connected."
+      },
+      "trademarks": "The trademarks and logos shown belong to their respective owners and only indicate the services that can be connected; they do not imply any commercial agreement or endorsement."
     }
   },
   "siteAppearance": {
