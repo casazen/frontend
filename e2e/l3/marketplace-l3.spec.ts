@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { requireE2eCredentials } from '../helpers/env';
+import { isLocalApi, requireE2eCredentials } from '../helpers/env';
 import { readAccessToken } from '../helpers/auth';
 
 const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 'http://localhost:5000/api';
@@ -8,7 +8,7 @@ const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 
  * The test that writes (a request, then its cancellation) runs on a local API only: the cancellation e-mails and pushes the host, and on the
  * shared test environment that is the person who owns the test account, at every push to develop and every night.
  */
-const LOCAL_API = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(API);
+const LOCAL_API = isLocalApi(API);
 
 type Auth = Record<string, string>;
 
