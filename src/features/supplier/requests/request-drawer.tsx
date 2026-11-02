@@ -4,6 +4,7 @@ import type { DetailContentProps, DetailTitleProps } from '@/components/shared/d
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { useSupplierInboxItem } from '@/queries/supplier/use-inbox';
+import { RequestDispute } from '../inquiry/dispute-block';
 import { requestTitle } from './request-model';
 import { RequestFacts, RequestHistory, RequestNow, RequestStateBadge } from './request-parts';
 import { useRequestActions } from './use-request-actions';
@@ -35,7 +36,8 @@ export function RequestDrawerContent({ id }: DetailContentProps) {
         <RequestStateBadge request={data} size="lg" />
         <p className="break-words text-sm text-foreground/70">{[data.clientName, data.propertyName].filter(Boolean).join(' · ')}</p>
       </div>
-      <RequestNow request={data} actions={actions} />
+      <RequestNow request={data} actions={actions} inDrawer />
+      <RequestDispute request={data} suspended={actions.suspended} />
       <RequestFacts request={data} compact />
       <PlainSection title={t('supplier.requests.history.title')}>
         <RequestHistory request={data} limit={3} />

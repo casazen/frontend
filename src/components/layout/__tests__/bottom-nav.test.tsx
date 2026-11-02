@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useUiStore } from '@/store/ui-store';
 import { BottomNav } from '../bottom-nav';
 
@@ -134,10 +135,10 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_NoDestinationButPagesBehindAltro_ShowsTheBarWithAltroAlone', () => {
-      // A role with few permissions has none of the four destinations but still has pages (the profile): the header has no
-      // menu button since UI-05, so the bar is the way to them.
-      arrange(['long-rent'], () => false);
-      renderBar('long-rent', '/app/long-rent/profile');
+      // A role with few permissions has none of the four destinations but still has pages (the organization of the owner who
+      // holds no lease or property permission): the header has no menu button since UI-05, so the bar is the way to them.
+      arrange(['long-rent'], (_ctx, permission) => permission === ORG_BILLING_ADMIN_PERMISSION);
+      renderBar('long-rent', '/app/long-rent/settings/organization');
 
       expect(within(bar()).queryAllByRole('link')).toHaveLength(0);
       expect(more()).toBeInTheDocument();
@@ -301,16 +302,35 @@ describe('BottomNav (UI-04b)', () => {
       expect(screen.queryByTestId('nav-count')).not.toBeInTheDocument();
     });
 
-    it('BottomNav_AsksForTheCountOfTheDestinationsOfTheBar', () => {
+    it('BottomNav_AsksForTheCountOfTheDestinationsOfTheBarAndOfWhatIsBehindAltro', () => {
       renderBar('short-rent');
 
-      const entries = vi.mocked(useNavCounts).mock.calls[0][0];
-      expect(entries.map((entry) => entry.path)).toEqual([
+      const paths = vi.mocked(useNavCounts).mock.calls[0][0].map((entry) => entry.path);
+      expect(paths.slice(0, 4)).toEqual([
         '/app/short-rent',
         '/app/short-rent/bookings/calendar',
         '/app/short-rent/bookings',
         '/app/short-rent/properties',
       ]);
+      // The adempimenti are behind "Altro": their number is asked for too, to mark the tab.
+      expect(paths).toContain('/app/short-rent/compliance');
+    });
+
+    it('BottomNav_RiskOfASanctionBehindAltro_MarksTheTabInRedAndSaysItAloud', () => {
+      vi.mocked(useNavCounts).mockReturnValue({ compliance: 3 });
+      renderBar('short-rent');
+
+      const tab = within(bar()).getByRole('button', { name: /^Altro/ });
+      expect(within(tab).getByTestId('more-compliance-mark')).toBeInTheDocument();
+      expect(tab).toHaveAccessibleName('Altro, 3 adempimenti con rischio di sanzione');
+    });
+
+    it('BottomNav_NoRiskOfASanction_LeavesAltroPlain', () => {
+      vi.mocked(useNavCounts).mockReturnValue({ compliance: 0 });
+      renderBar('short-rent');
+
+      expect(screen.queryByTestId('more-compliance-mark')).not.toBeInTheDocument();
+      expect(more()).toBeInTheDocument();
     });
   });
 

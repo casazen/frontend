@@ -13,9 +13,9 @@ export function isBillingContext(value: string | null | undefined): value is Bil
 }
 
 /**
- * Plan and billing of the org in the account area (AM-08a): one page where the rental contexts have two. It is not among the return
- * pages of Stripe (`BILLING_RETURN_PATHS`): the backend refuses a `returnPath` it does not list, so Stripe still returns to a plan
- * page of a rental context, which hands the person over to this one.
+ * Plan and billing of the org in the account area (AM-08a): one page where the rental contexts have two. It is among the return pages
+ * of Stripe (`BILLING_RETURN_PATHS`, AM-08a-FU1): the checkout and the portal started from it come back to it, with the message of the
+ * outcome (`?checkout=`), also for the people who work only in the account area.
  */
 export const ACCOUNT_BILLING_PATH = '/app/account/billing';
 
@@ -29,9 +29,10 @@ export function billingPagePath(context: BillingContextKey): string {
   return `/app/${context}/settings/billing`;
 }
 
-const BILLING_RETURN_PATHS: ReadonlySet<string> = new Set(
-  BILLING_CONTEXTS.flatMap((context) => [planPagePath(context), billingPagePath(context)]),
-);
+const BILLING_RETURN_PATHS: ReadonlySet<string> = new Set([
+  ...BILLING_CONTEXTS.flatMap((context) => [planPagePath(context), billingPagePath(context)]),
+  ACCOUNT_BILLING_PATH,
+]);
 
 /**
  * `returnPath` for the checkout and the portal from the current page: the page itself when it is a plan or billing

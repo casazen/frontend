@@ -23,10 +23,40 @@
       "exports",
       "types"
     ],
+    "src/components/checkin/**": [
+      "exports"
+    ],
     "src/types/**": [
       "types"
     ],
+    "src/features/site-maps/index.ts": [
+      "types"
+    ],
     "src/queries/**": [
+      "exports"
+    ],
+    "src/components/guards/**": [
+      "exports"
+    ],
+    "src/layouts/ConsoleLayout.tsx": [
+      "exports"
+    ],
+    "src/components/campaigns/CampaignEditor.tsx": [
+      "exports"
+    ],
+    "src/pages/CampaignsPage.tsx": [
+      "exports"
+    ],
+    "src/pages/RoutinesPage.tsx": [
+      "exports"
+    ],
+    "src/pages/SegmentsPage.tsx": [
+      "exports"
+    ],
+    "src/pages/PropertyQrCode.tsx": [
+      "exports"
+    ],
+    "src/pages/SwissCompliancePage.tsx": [
       "exports"
     ]
   },

@@ -7,6 +7,7 @@ import {
   getContextNav,
   getNavChildren,
   getNavMatchEntries,
+  getNavSection,
   getOrgBillingPageAlternates,
   getPrimaryNavEntries,
   getSecondaryNavEntries,
@@ -22,6 +23,7 @@ import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { NAV_ICONS } from '@/lib/nav-icons';
 import { resolveActiveNavEntry } from '@/lib/nav-active';
 import { planPagePath, billingPagePath } from '@/lib/billing-routes';
+import { profilePathForContext } from '@/lib/profile-path';
 
 const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
 
@@ -50,6 +52,7 @@ function userVariants(contextKey: AppContextKey) {
   const flagSets: [string, Partial<FeatureFlags>][] = [
     ['flags off', {}],
     ['otaPartnerApi on', { otaPartnerApi: true }],
+    ['agencyTier on', { agencyTier: true }],
   ];
   return predicates.flatMap(([userLabel, hasPermission]) =>
     flagSets.map(([flagLabel, features]) => ({ label: `${userLabel}, ${flagLabel}`, hasPermission, features })),
@@ -57,40 +60,40 @@ function userVariants(contextKey: AppContextKey) {
 }
 
 describe('route-manifest main menu (UI-04a)', () => {
-  it('returns the primary short-rent entries in order, seven at most', () => {
+  it('returns the primary short-rent entries in order, eight at most, the adempimenti among them', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll);
     expect(paths(primary)).toEqual([
       '/app/short-rent',
       '/app/short-rent/bookings/calendar',
       '/app/short-rent/bookings',
+      '/app/short-rent/compliance',
       '/app/short-rent/properties',
       '/app/short-rent/vetrina',
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',
     ]);
-    expect(primary).toHaveLength(MAX_PRIMARY_NAV_ENTRIES);
+    expect(primary).toHaveLength(8);
+    expect(primary.length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
   });
 
-  it('puts the rest of short-rent in "Altro", the OTA channels only with their flag', () => {
-    const withoutFlag = paths(getSecondaryNavEntries('short-rent', allowAll));
-    expect(withoutFlag).toEqual([
-      '/app/short-rent/guests',
-      '/app/short-rent/compliance',
-      '/app/short-rent/payments/revenue',
-      '/app/short-rent/fiscal',
-      '/app/short-rent/reports',
-      '/app/short-rent/reviews',
-      '/app/short-rent/channels',
-      '/app/short-rent/profile',
-      '/app/short-rent/settings/payments',
-      '/app/short-rent/settings/domain',
+  it('shows the risk of a sanction on the adempimenti entry and asks the permission of the summary it reads', () => {
+    const compliance = entryOf('/app/short-rent/compliance');
+    expect(compliance.navCount).toBe('compliance');
+    // `GET api/compliance/summary` is `booking.read`: an entry the user opens must not end on a 403.
+    expect(compliance.requiredPermissions).toEqual(expect.arrayContaining(['property.read', 'booking.read']));
+    expect(paths(getPrimaryNavEntries('short-rent', without('booking.read')))).not.toContain('/app/short-rent/compliance');
+  });
+
+  it('keeps "Altro" of short-rent to three entries: the other pages are the tabs of the entry they belong to', () => {
+    // It held sixteen. Profilo is in the menu of the user, the rest hangs from an entry of the main menu (see the sections below).
+    const expected = [
+      '/app/short-rent/approval-queue',
       '/app/short-rent/settings/organization',
       '/app/short-rent/settings/invitations',
-    ]);
-
-    const withFlag = paths(getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true }));
-    expect(withFlag).toContain('/app/short-rent/ota');
-    expect(withFlag.indexOf('/app/short-rent/ota')).toBe(withFlag.indexOf('/app/short-rent/fiscal') + 1);
+    ];
+    expect(paths(getSecondaryNavEntries('short-rent', allowAll))).toEqual(expected);
+    // The OTA channels, behind their flag, are a tab of Immobili: the flag does not add an entry to "Altro".
+    expect(paths(getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true }))).toEqual(expected);
   });
 
   it('keeps the long-rent, supplier and staff menus to the pages they have', () => {
@@ -101,10 +104,8 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/long-rent/properties',
       '/app/long-rent/service-requests',
     ]);
+    // Inquilini and Scadenze are tabs of Contratti, the fiscal report a tab of Canoni; Profilo is in the menu of the user.
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
-      '/app/long-rent/deadlines',
-      '/app/long-rent/fiscal',
-      '/app/long-rent/profile',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
     ]);
@@ -144,6 +145,28 @@ describe('route-manifest main menu (UI-04a)', () => {
     ]);
   });
 
+  // The pages of the agency plan read endpoints that answer only an org on that plan (ADR-010): shown to everyone, their first read
+  // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
+  const AGENCY_PAGES: [AppContextKey, string][] = [
+    ['short-rent', '/app/short-rent/trusted-suppliers'],
+    ['account', '/app/account/withholding'],
+    ['account', '/app/account/wire-transfers'],
+    ['admin', '/app/admin/statements'],
+    ['admin', '/app/admin/activities'],
+  ];
+
+  it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
+    expect(entryOf(path).featureFlag).toBe('agencyTier');
+    expect(isEntryFeatureEnabled(entryOf(path), {})).toBe(false);
+    // In the menus, or hanging from an entry of them (the trusted suppliers are a tab of Immobili since the sections are tabs).
+    const reachable = (features: Partial<FeatureFlags>) => paths(getNavMatchEntries(contextKey, allowAll, features));
+    for (const features of [{}, { agencyTier: false }, { otaPartnerApi: true }]) {
+      expect(paths(getVisibleNavEntries(contextKey, allowAll, features))).not.toContain(path);
+      expect(reachable(features)).not.toContain(path);
+    }
+    expect(reachable({ agencyTier: true })).toContain(path);
+  });
+
   it.each(CONTEXTS)('%s: at most seven primary entries for every role and flag', (contextKey) => {
     for (const { label, hasPermission, features } of userVariants(contextKey)) {
       const primary = getPrimaryNavEntries(contextKey, hasPermission, features);
@@ -166,7 +189,7 @@ describe('route-manifest main menu (UI-04a)', () => {
   it('lists the sections of the sidebar and "Altro" from the same entries', () => {
     const nav = getContextNav('short-rent', allowAll, { otaPartnerApi: true });
     expect(nav.sections.map((section) => section.group)).toEqual(['everyday', 'offer', 'management']);
-    expect(nav.sections.map((section) => section.entries.length)).toEqual([3, 3, 1]);
+    expect(nav.sections.map((section) => section.entries.length)).toEqual([4, 3, 1]);
     expect(paths(nav.more)).toEqual(paths(getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true })));
   });
 
@@ -181,6 +204,8 @@ describe('route-manifest main menu (UI-04a)', () => {
   it('gives a counter only to the entries whose number is already read by the app', () => {
     const counted = ROUTE_MANIFEST.filter((entry) => entry.navCount).map((entry) => [entry.path, entry.navCount]);
     expect(counted).toEqual([
+      // The risk of a sanction (the Alloggiati Web communications and the guest data they need), from the summary of the cockpit.
+      ['/app/short-rent/compliance', 'compliance'],
       ['/app/short-rent/bookings', 'bookingRequests'],
       ['/app/supplier/inbox', 'supplierRequests'],
     ]);
@@ -218,28 +243,58 @@ describe('route-manifest bottom bar (UI-04a, drawn by UI-04b)', () => {
   it('keeps what the bar does not list in the phone menu', () => {
     const nav = getContextNav('short-rent', allowAll, {}, { withoutBottom: true });
     expect(nav.sections.flatMap((section) => paths(section.entries))).toEqual([
+      '/app/short-rent/compliance',
       '/app/short-rent/vetrina',
       '/app/short-rent/marketplace',
       '/app/short-rent/payments',
     ]);
-    expect(paths(nav.more)).toContain('/app/short-rent/profile');
+    // Profilo is not here: the menu of the user (header, sheet of the phone) leads to it.
+    expect(paths(nav.more)).toEqual([
+      '/app/short-rent/approval-queue',
+      '/app/short-rent/settings/organization',
+      '/app/short-rent/settings/invitations',
+    ]);
   });
 });
 
 describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
   const hanging = ROUTE_MANIFEST.filter((entry) => entry.navParent);
 
-  it('lists the pages that hang from the entries of the old menus', () => {
-    expect(hanging.map((entry) => [entry.path, entry.navParent])).toEqual([
-      ['/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
-      ['/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
-      ['/app/short-rent/alloggiati', '/app/short-rent/compliance'],
-      ['/app/short-rent/compliance/cin', '/app/short-rent/compliance'],
-      ['/app/admin/compliance/tax-rates', '/app/admin/cin'],
-      ['/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
-      ['/app/supplier/calendar', '/app/supplier/availability'],
-      ['/app/supplier/earnings', '/app/supplier/settings'],
-    ]);
+  // The sections of the menus: an entry and, in tab order, the pages that hang from it. This is what keeps "Altro" short.
+  const SECTIONS: Record<string, string[]> = {
+    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/crm/guests', '/app/short-rent/reviews'],
+    '/app/short-rent/compliance': ['/app/short-rent/alloggiati', '/app/short-rent/alloggiati/reports', '/app/short-rent/compliance/cin'],
+    '/app/short-rent/properties': [
+      '/app/short-rent/interventions',
+      '/app/short-rent/trusted-suppliers',
+      '/app/short-rent/channels',
+      '/app/short-rent/ota',
+    ],
+    '/app/short-rent/vetrina': [
+      '/app/short-rent/settings/site-appearance',
+      '/app/short-rent/settings/site-documents',
+      '/app/short-rent/settings/domain',
+    ],
+    '/app/short-rent/payments': [
+      '/app/short-rent/payments/revenue',
+      '/app/short-rent/reports',
+      '/app/short-rent/fiscal',
+      '/app/short-rent/settings/payments',
+    ],
+    '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
+    '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines'],
+    '/app/long-rent/rents': ['/app/long-rent/fiscal'],
+    '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
+    '/app/supplier/availability': ['/app/supplier/calendar'],
+    '/app/supplier/settings': ['/app/supplier/earnings'],
+  };
+  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
+
+  it('lists the pages of each section in tab order, and no other page hangs', () => {
+    for (const [parent, pages] of Object.entries(SECTIONS)) {
+      expect(paths(getNavChildren(parent, allowAll, EVERY_FLAG)), parent).toEqual(pages);
+    }
+    expect(hanging.map((entry) => entry.path).sort()).toEqual(Object.values(SECTIONS).flat().sort());
   });
 
   it('hangs only from an entry of the menus of the same area, and never from another page that hangs', () => {
@@ -262,6 +317,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     expect(visible).not.toContain('/app/short-rent/compliance/cin');
     expect(paths(getNavChildren('/app/short-rent/compliance', allowAll))).toEqual([
       '/app/short-rent/alloggiati',
+      '/app/short-rent/alloggiati/reports',
       '/app/short-rent/compliance/cin',
     ]);
     expect(paths(getNavMatchEntries('short-rent', allowAll))).toEqual(
@@ -281,18 +337,117 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // The same for the LTR reference data of the staff console, which asks for another permission than the audit.
     const noAudit = without('admin.cin.read');
     expect(paths(getSecondaryNavEntries('admin', noAudit))).toContain('/app/admin/compliance/ltr-reference-data');
+
+    // And for Incassi: who cannot read the payments still finds the fiscal regime and the Stripe account in "Altro".
+    const noPayments = without('payment.read');
+    expect(paths(getVisibleNavEntries('short-rent', noPayments))).not.toContain('/app/short-rent/payments');
+    expect(paths(getSecondaryNavEntries('short-rent', noPayments))).toEqual(
+      expect.arrayContaining(['/app/short-rent/fiscal', '/app/short-rent/settings/payments']),
+    );
+    expect(paths(getSecondaryNavEntries('short-rent', noPayments))).not.toContain('/app/short-rent/reports');
   });
 
   it('lists only the pages the user may open', () => {
     expect(paths(getNavChildren('/app/short-rent/compliance', without('booking.read')))).toEqual([
       '/app/short-rent/compliance/cin',
     ]);
-    // The branding and documents pages are for the org billing administrator.
-    expect(getNavChildren('/app/short-rent/vetrina', notBillingAdmin)).toEqual([]);
+    // The branding and documents pages are for the org billing administrator; the domain is not.
+    expect(paths(getNavChildren('/app/short-rent/vetrina', notBillingAdmin))).toEqual(['/app/short-rent/settings/domain']);
     expect(paths(getNavChildren('/app/short-rent/vetrina', allowAll))).toEqual([
       '/app/short-rent/settings/site-appearance',
       '/app/short-rent/settings/site-documents',
+      '/app/short-rent/settings/domain',
     ]);
+  });
+});
+
+describe('route-manifest sections as tabs (UI-04a)', () => {
+  it('gives every page of a section the same tabs, the entry first', () => {
+    const bookings = [
+      '/app/short-rent/bookings',
+      '/app/short-rent/guests',
+      '/app/short-rent/crm/guests',
+      '/app/short-rent/reviews',
+    ];
+    for (const page of bookings) expect(paths(getNavSection(page, allowAll)), page).toEqual(bookings);
+
+    const payments = [
+      '/app/short-rent/payments',
+      '/app/short-rent/payments/revenue',
+      '/app/short-rent/reports',
+      '/app/short-rent/fiscal',
+      '/app/short-rent/settings/payments',
+    ];
+    for (const page of payments) expect(paths(getNavSection(page, allowAll)), page).toEqual(payments);
+
+    // The same strip in the other rental area.
+    const leases = ['/app/long-rent/leases', '/app/long-rent/tenants', '/app/long-rent/deadlines'];
+    for (const page of leases) expect(paths(getNavSection(page, allowAll)), page).toEqual(leases);
+  });
+
+  it('draws no tabs for a page that is in no section, a record of a section, or an entry with no other page', () => {
+    for (const pathname of [
+      '/app/short-rent',
+      '/app/short-rent/bookings/calendar',
+      '/app/short-rent/marketplace',
+      '/app/short-rent/settings/organization',
+      '/app/short-rent/approval-queue/', // only the verifications hang from it, and they ask another permission
+      '/app/short-rent/bookings/create',
+      '/app/short-rent/payments/6f1c9a52-1111-4222-8333-944455556666',
+      '/app/long-rent/properties',
+      '/not/a/page',
+    ]) {
+      const section = getNavSection(pathname, (_ctx, permission) => permission !== 'verification.decide');
+      expect(paths(section), pathname).toEqual([]);
+    }
+  });
+
+  it('takes the address as it is typed: a trailing slash is the same page', () => {
+    expect(paths(getNavSection('/app/short-rent/guests/', allowAll))).toEqual(paths(getNavSection('/app/short-rent/guests', allowAll)));
+    expect(getNavSection('/app/short-rent/guests/', allowAll).length).toBeGreaterThan(1);
+  });
+
+  it('leaves out the tabs the user may not open, the OTA tab while its flag is off and the trusted suppliers while the agency plan is', () => {
+    expect(paths(getNavSection('/app/short-rent/properties', allowAll))).toEqual([
+      '/app/short-rent/properties',
+      '/app/short-rent/interventions',
+      '/app/short-rent/channels',
+    ]);
+    expect(paths(getNavSection('/app/short-rent/properties', allowAll, { agencyTier: true }))).toEqual([
+      '/app/short-rent/properties',
+      '/app/short-rent/interventions',
+      '/app/short-rent/trusted-suppliers',
+      '/app/short-rent/channels',
+    ]);
+    expect(paths(getNavSection('/app/short-rent/properties', allowAll, { otaPartnerApi: true }))).toContain('/app/short-rent/ota');
+    expect(paths(getNavSection('/app/short-rent/properties', without('ota.read'), { otaPartnerApi: true }))).not.toContain(
+      '/app/short-rent/ota',
+    );
+    // Who may not write the properties has no Stripe tab in Incassi.
+    expect(paths(getNavSection('/app/short-rent/payments', without('property.write')))).not.toContain('/app/short-rent/settings/payments');
+    // The branding and the documents are for the org billing administrator only.
+    expect(paths(getNavSection('/app/short-rent/vetrina', notBillingAdmin))).toEqual([
+      '/app/short-rent/vetrina',
+      '/app/short-rent/settings/domain',
+    ]);
+  });
+
+  it('draws no tabs when the user cannot open the entry: its pages are entries of "Altro" of their own', () => {
+    const noPayments = without('payment.read');
+    for (const page of ['/app/short-rent/payments', '/app/short-rent/fiscal', '/app/short-rent/settings/payments']) {
+      expect(paths(getNavSection(page, noPayments)), page).toEqual([]);
+    }
+    // And no tabs for a page the user cannot open, even when its entry is open to them.
+    expect(paths(getNavSection('/app/short-rent/reports', without('payment.read')))).toEqual([]);
+  });
+
+  it('puts the entry a page hangs from first in its tabs, for a user who may open every page', () => {
+    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
+    for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
+      const tabs = paths(getNavSection(entry.path, allowAll, flags));
+      expect(tabs[0], entry.path).toBe(entry.navParent);
+      expect(tabs, entry.path).toContain(entry.path);
+    }
   });
 });
 
@@ -339,6 +494,8 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
     '/app/long-rent/settings/plan',
     '/app/long-rent/settings/billing',
   ];
+  // Profilo left the menus of the rental areas: the menu of the user (header, sheet of the phone) leads to it from every area.
+  const REACHED_BY_THE_USER_MENU = ['/app/short-rent/profile', '/app/long-rent/profile'];
 
   it('keeps every page that was in a menu reachable by a full-access user, with every flag on', () => {
     expect(MENU_PAGES_BEFORE).toHaveLength(44);
@@ -349,7 +506,8 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
       const inMenu = visible.includes(page);
       const hangsFromVisible = entry.navParent !== undefined && visible.includes(entry.navParent);
       const byOrgBadge = REACHED_BY_THE_ORG_BADGE.includes(page);
-      expect(inMenu || hangsFromVisible || byOrgBadge, page).toBe(true);
+      const byUserMenu = REACHED_BY_THE_USER_MENU.includes(page);
+      expect(inMenu || hangsFromVisible || byOrgBadge || byUserMenu, page).toBe(true);
     }
   });
 
@@ -365,6 +523,17 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
       expect(entry.navParent, page).toBeUndefined();
     }
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toContain('/app/long-rent/settings/organization');
+  });
+
+  it('keeps Profilo one click from the menu of the user and in no menu of the rental areas', () => {
+    for (const context of ['short-rent', 'long-rent'] as const) {
+      const page = profilePathForContext(context);
+      expect(REACHED_BY_THE_USER_MENU).toContain(page);
+      expect(entryOf(page).context).toBe(context);
+      expect(entryOf(page).navPlacement, page).toBeUndefined();
+      expect(entryOf(page).navParent, page).toBeUndefined();
+      expect(paths(getVisibleNavEntries(context, allowAll))).not.toContain(page);
+    }
   });
 
   // Baseline of the manifest before UI-04a: every route is still there with its legacy addresses (emails and Stripe returns).
@@ -459,8 +628,8 @@ describe('route-manifest nav helpers', () => {
     expect(paths(getVisibleNavEntries('short-rent', notBillingAdmin))).not.toContain(orgPaths[0]);
     expect(paths(getVisibleNavEntries('long-rent', notBillingAdmin))).not.toContain(orgPaths[1]);
     expect(paths(getVisibleNavEntries('short-rent', without('booking.read'))).includes(orgPaths[0])).toBe(true);
-    // Stripe Connect does not need to be the org administrator.
-    expect(paths(getVisibleNavEntries('short-rent', notBillingAdmin))).toContain('/app/short-rent/settings/payments');
+    // Stripe Connect (a tab of Incassi) does not need to be the org administrator.
+    expect(paths(getNavChildren('/app/short-rent/payments', notBillingAdmin))).toContain('/app/short-rent/settings/payments');
   });
 
   // TN-3 / PL-12: plan and billing are for the org billing administrator, wherever the user finds them.
@@ -496,6 +665,7 @@ describe('route-manifest nav helpers', () => {
   it('hides OTA when ota.read permission is missing', () => {
     const visible = getVisibleNavEntries('short-rent', denyOta, { otaPartnerApi: true });
     expect(visible.some((e) => e.path === '/app/short-rent/ota')).toBe(false);
+    expect(paths(getNavChildren('/app/short-rent/properties', denyOta, { otaPartnerApi: true }))).not.toContain('/app/short-rent/ota');
   });
 
   // FD-20 / D10: the OTA partner API is in freeze behind the otaPartnerApi flag.
@@ -508,11 +678,16 @@ describe('route-manifest nav helpers', () => {
     for (const entries of [flagOff, flagsNotLoaded, phoneMenu.more, sidebar.more]) {
       expect(entries.some((e) => e.path.startsWith('/app/short-rent/ota'))).toBe(false);
     }
+    // It is a tab of Immobili, and the tab is not there either.
+    for (const features of [{ otaPartnerApi: false }, undefined]) {
+      expect(paths(getNavChildren('/app/short-rent/properties', allowAll, features))).not.toContain('/app/short-rent/ota');
+    }
   });
 
-  it('shows OTA channels when the otaPartnerApi flag is on', () => {
-    const visible = getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true });
-    expect(visible.some((e) => e.path === '/app/short-rent/ota')).toBe(true);
+  it('shows OTA channels when the otaPartnerApi flag is on, as a tab of Immobili', () => {
+    expect(paths(getNavChildren('/app/short-rent/properties', allowAll, { otaPartnerApi: true }))).toContain('/app/short-rent/ota');
+    // It is not an entry of the menus of its own: Immobili stands for it.
+    expect(paths(getVisibleNavEntries('short-rent', allowAll, { otaPartnerApi: true }))).not.toContain('/app/short-rent/ota');
   });
 
   it('puts every /ota route behind the otaPartnerApi flag', () => {
@@ -663,12 +838,12 @@ describe('route-manifest nav helpers', () => {
     expect(paths(visible)).toEqual([
       '/app/long-rent/properties',
       '/app/long-rent/service-requests',
-      '/app/long-rent/profile',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
     ]);
+    // Profilo is no entry of the menu: for a user the area gives nothing, `getFirstOpenablePage` leads to it.
     const nothing = getVisibleNavEntries('long-rent', (_ctx, permission) => !permission);
-    expect(paths(nothing)).toEqual(['/app/long-rent/profile']);
+    expect(paths(nothing)).toEqual([]);
   });
 
   // A host invites other independent hosts from "Altro" of both rental areas; the admin has one section for all the invites.

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, type Appearance, type StripeElementLocale } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { clientStatusFromIntent, type ClientPaymentStatus } from '@/features/public-booking/checkout-outcome';
@@ -14,9 +14,12 @@ interface StripeIntentFormProps {
   /** The intent was submitted without a redirect: its status as far as Stripe.js knows (never the booking's). */
   onSubmitted: (status: ClientPaymentStatus) => void;
   onError: (message: string) => void;
+  /** The words of the button; left out, "Paga subito" / "Conferma" as the checkout has always said. A block that is not a charge says so here. */
+  submitLabel?: string;
+  busyLabel?: string;
 }
 
-function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeIntentFormProps) {
+function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, busyLabel: busyText }: StripeIntentFormProps) {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -55,8 +58,8 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeInten
     }
   };
 
-  const idleLabel = mode === 'payment' ? t('publicBooking.payNow') : t('publicBooking.confirmPaymentSetup');
-  const busyLabel = mode === 'payment' ? t('publicBooking.processing') : t('publicBooking.confirming');
+  const idleLabel = submitLabel ?? (mode === 'payment' ? t('publicBooking.payNow') : t('publicBooking.confirmPaymentSetup'));
+  const busyLabel = busyText ?? (mode === 'payment' ? t('publicBooking.processing') : t('publicBooking.confirming'));
 
   return (
     <div className="space-y-4" data-testid={mode === 'payment' ? 'checkout-payment-step' : 'checkout-setup-step'}>
@@ -70,9 +73,13 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError }: StripeInten
 
 interface StripeIntentPaymentProps extends StripeIntentFormProps {
   publishableKey: string;
-  /** Connected account of the host: the checkout makes direct charges. */
-  stripeAccountId: string;
+  /** Connected account of the host: the checkout makes direct charges. Without one (a charge on the platform) Stripe.js uses the platform's own account. */
+  stripeAccountId?: string | null;
   clientSecret: string;
+  /** How the element looks: the theme and color of the site (`stripeAppearance`). Left out, Stripe's own look. */
+  appearance?: Appearance;
+  /** The language of the element (`stripeLocale`). Left out, the one of the browser. */
+  locale?: StripeElementLocale;
 }
 
 /**
@@ -83,15 +90,17 @@ export function StripeIntentPayment({
   publishableKey,
   stripeAccountId,
   clientSecret,
+  appearance,
+  locale,
   ...formProps
 }: StripeIntentPaymentProps) {
   const stripePromise = useMemo(
-    () => loadStripe(publishableKey, { stripeAccount: stripeAccountId }),
+    () => loadStripe(publishableKey, stripeAccountId ? { stripeAccount: stripeAccountId } : undefined),
     [publishableKey, stripeAccountId],
   );
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret }}>
+    <Elements stripe={stripePromise} options={{ clientSecret, appearance, locale }}>
       <StripeIntentForm {...formProps} />
     </Elements>
   );

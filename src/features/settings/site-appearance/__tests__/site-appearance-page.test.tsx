@@ -46,7 +46,8 @@ function branding(overrides: Partial<OrgBranding> = {}): OrgBranding {
     logoUrl: null,
     heroImageUrl: null,
     primaryColor: null,
-    publicThemeId: 'mare',
+    publicThemeId: 'terra',
+    publicFontId: null,
     tagline: null,
     slug: 'villa-parco',
     displayName: 'Villa Parco',
@@ -152,7 +153,8 @@ describe('SiteAppearancePage', () => {
     vi.mocked(OrgsApi.getBranding).mockResolvedValue(
       branding({
         primaryColor: '#1a6b8f',
-        publicThemeId: 'montagna',
+        publicThemeId: 'citta',
+        publicFontId: 'classico',
         tagline: 'Baite in quota',
         logoUrl: 'https://cdn.test/logo.png',
       }),
@@ -160,10 +162,12 @@ describe('SiteAppearancePage', () => {
     renderPage();
 
     expect(await screen.findByTestId('site-primary-color-input')).toHaveValue('#1a6b8f');
-    expect(screen.getByTestId('site-theme-montagna')).toBeChecked();
+    expect(screen.getByTestId('site-theme-citta')).toBeChecked();
+    expect(screen.getByTestId('site-font-classico')).toBeChecked();
     expect(screen.getByTestId('site-tagline-input')).toHaveValue('Baite in quota');
     const preview = screen.getByTestId('site-preview-root');
-    expect(preview).toHaveAttribute('data-theme', 'montagna');
+    expect(preview).toHaveAttribute('data-theme', 'citta');
+    expect(preview).toHaveAttribute('data-font', 'classico');
     expect(preview.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
     expect(screen.getByTestId('site-preview-logo')).toHaveAttribute('src', 'https://cdn.test/logo.png');
     expect(within(preview).getByText('Baite in quota')).toBeInTheDocument();
@@ -174,7 +178,7 @@ describe('SiteAppearancePage', () => {
     renderPage();
 
     await screen.findByTestId('site-appearance-form');
-    for (const themeId of ['mare', 'montagna', 'urban']) {
+    for (const themeId of ['terra', 'mare', 'citta']) {
       expect(screen.getByTestId(`site-theme-sample-${themeId}`)).toHaveAttribute('data-theme', themeId);
     }
   });
@@ -184,10 +188,10 @@ describe('SiteAppearancePage', () => {
 
     await screen.findByTestId('site-appearance-form');
     expect(screen.queryByTestId('site-color-contrast')).not.toBeInTheDocument();
-    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#b4492f');
+    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#a3431f');
 
-    fireEvent.click(screen.getByTestId('site-theme-urban'));
-    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#2f3bd1');
+    fireEvent.click(screen.getByTestId('site-theme-citta'));
+    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#2e2a26');
   });
 
   it('SiteAppearancePage_DarkColor_AnnouncesWhiteButtonTextWithItsContrast', async () => {
@@ -223,7 +227,7 @@ describe('SiteAppearancePage', () => {
     renderPage();
 
     await screen.findByTestId('site-appearance-form');
-    fireEvent.click(screen.getByTestId('site-theme-urban'));
+    fireEvent.click(screen.getByTestId('site-theme-citta'));
     fireEvent.change(screen.getByTestId('site-primary-color-input'), { target: { value: '#ABC' } });
     fireEvent.change(screen.getByTestId('site-tagline-input'), { target: { value: '  Nel cuore\n della città ' } });
     fireEvent.click(screen.getByTestId('save-site-appearance'));
@@ -231,11 +235,44 @@ describe('SiteAppearancePage', () => {
     await waitFor(() =>
       expect(OrgsApi.updateBranding).toHaveBeenCalledWith({
         primaryColor: '#aabbcc',
-        publicThemeId: 'urban',
+        publicThemeId: 'citta',
+        publicFontId: null,
         tagline: 'Nel cuore della città',
       }),
     );
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('siteAppearance.saved')));
+  });
+
+  it('SiteAppearancePage_FontChosen_IsSentAndTheFontOfTheThemeIsSentAsNull', async () => {
+    vi.mocked(OrgsApi.updateBranding).mockResolvedValue(branding());
+    renderPage();
+
+    await screen.findByTestId('site-appearance-form');
+    // Nothing chosen: the font of the theme is the one that is checked.
+    expect(screen.getByTestId('site-font-editoriale')).toBeChecked();
+    fireEvent.click(screen.getByTestId('site-font-classico'));
+    expect(screen.getByTestId('site-preview-root')).toHaveAttribute('data-font', 'classico');
+    fireEvent.click(screen.getByTestId('save-site-appearance'));
+    await waitFor(() =>
+      expect(OrgsApi.updateBranding).toHaveBeenLastCalledWith({
+        primaryColor: null,
+        publicThemeId: 'terra',
+        publicFontId: 'classico',
+        tagline: null,
+      }),
+    );
+
+    fireEvent.click(screen.getByTestId('site-font-reset'));
+    expect(screen.getByTestId('site-preview-root')).not.toHaveAttribute('data-font');
+    fireEvent.click(screen.getByTestId('save-site-appearance'));
+    await waitFor(() =>
+      expect(OrgsApi.updateBranding).toHaveBeenLastCalledWith({
+        primaryColor: null,
+        publicThemeId: 'terra',
+        publicFontId: null,
+        tagline: null,
+      }),
+    );
   });
 
   it('SiteAppearancePage_ThemeColorChosen_SendsNullColor', async () => {
@@ -247,7 +284,12 @@ describe('SiteAppearancePage', () => {
     fireEvent.click(screen.getByTestId('save-site-appearance'));
 
     await waitFor(() =>
-      expect(OrgsApi.updateBranding).toHaveBeenCalledWith({ primaryColor: null, publicThemeId: 'mare', tagline: null }),
+      expect(OrgsApi.updateBranding).toHaveBeenCalledWith({
+        primaryColor: null,
+        publicThemeId: 'terra',
+        publicFontId: null,
+        tagline: null,
+      }),
     );
   });
 

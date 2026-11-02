@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { rentApi, rentRegisterApi } from '@/api/rent.api';
-import type { MarkRentPaidInput, RentRegisterParams } from '@/types';
+import { rentApi, rentBankImportApi, rentRegisterApi } from '@/api/rent.api';
+import type { BankColumnMapping, BankImportSelection, MarkRentPaidInput, RentRegisterParams } from '@/types';
 import { LEASES_KEY } from './use-leases';
 import { RENT_KEY, RENT_REGISTER_KEY } from './use-rent';
 
@@ -48,6 +48,23 @@ export function useRentRegisterActions() {
         return await rentApi.markPaid(leaseId, installmentId, input);
       } finally {
         refresh(leaseId);
+      }
+    },
+
+    /** Reads a bank statement and proposes the installment each credit pays. Writes nothing, keeps nothing. */
+    previewBankStatement: (file: File, mapping?: BankColumnMapping) => rentBankImportApi.preview(file, mapping),
+
+    /**
+     * Declares paid the installments the landlord chose from a bank statement (the file goes again: the server reads amounts, dates and
+     * payers from it). Many leases may change, so everything the rents show is read again, whether it worked or not.
+     */
+    confirmBankStatement: async (file: File, selections: BankImportSelection[], mapping?: BankColumnMapping) => {
+      try {
+        return await rentBankImportApi.confirm(file, selections, mapping);
+      } finally {
+        void queryClient.invalidateQueries({ queryKey: [RENT_REGISTER_KEY] });
+        void queryClient.invalidateQueries({ queryKey: [RENT_KEY] });
+        void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       }
     },
   };

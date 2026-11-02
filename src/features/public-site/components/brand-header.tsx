@@ -10,6 +10,8 @@ import { sitePageById, type SitePageId } from '@/site/site-pages';
 
 /** The pages of the public site of CasaZen that the header leads to (`src/site/site-pages.ts`). */
 const SITE_NAV: { id: SitePageId; key: string }[] = [
+  { id: 'shortRent', key: 'site.nav.shortRent' },
+  { id: 'longRent', key: 'site.nav.longRent' },
   { id: 'features', key: 'site.nav.features' },
   { id: 'suppliers', key: 'site.nav.suppliers' },
   { id: 'about', key: 'site.nav.about' },

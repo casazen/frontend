@@ -53,7 +53,11 @@ export function LeaseListDetail({ lease }: { lease: LeaseSummary }) {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-list-detail">
-      <StatusExplainer kind="lease" status={lease.status} compact />
+      {lease.stage ? (
+        <StatusExplainer kind="leaseStage" status={lease.stage} compact />
+      ) : (
+        <StatusExplainer kind="lease" status={lease.status} compact />
+      )}
 
       <dl className="space-y-3 text-sm">
         <Fact label={t('leaseList.detail.tenant')}>{leaseTenantName(lease, t)}</Fact>

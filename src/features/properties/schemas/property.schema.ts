@@ -7,7 +7,7 @@ export const DEFAULT_PROPERTY_TIMEZONE = 'Europe/Rome';
 
 /**
  * Property form (short stays). Types and limits are the API ones (A2-27): whole bathrooms (the API stores an int),
- * 0 bedrooms for a studio flat, amounts in euros. No country nor currency field: the API has none.
+ * 0 bedrooms for a studio flat. Country and currency fields added per ADR-001-R7.
  */
 export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
@@ -19,6 +19,10 @@ export const propertyFormSchema = z.object({
   /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
+  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
+  country: z.enum(['IT', 'CH']),
+  /** ISO 4217 currency code (ADR-001-R7), auto-derived from country. */
+  currency: z.enum(['EUR', 'CHF']),
   latitude: z
     .number({ error: 'property.validation.latitude.range' })
     .min(-90, 'property.validation.latitude.range')
@@ -121,6 +125,8 @@ export function propertyFormDefaults(
     return {
       ...shortStayDefaults,
       comuneIstatCode: '',
+      country: 'IT' as const,
+      currency: 'EUR' as const,
       // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
       ...(variant === 'long-rent' ? { nightlyRate: 0, maxGuests: 0 } : {}),
     };
@@ -141,6 +147,8 @@ export function propertyFormDefaults(
     bathrooms: property.bathrooms,
     maxGuests: property.maxGuests,
     nightlyRate: property.nightlyRate,
+    country: property.country,
+    currency: property.currency,
   };
 }
 
@@ -166,6 +174,8 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     maxGuests: values.maxGuests,
     nightlyRate: values.nightlyRate,
     amenities: values.amenities,
+    country: values.country,
+    currency: values.currency,
   };
   if (variant === 'long-rent') return payload;
 

@@ -1,9 +1,13 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { Button } from '@/components/ui/button';
 import { LongRentGuide } from '@/features/onboarding/components/long-rent-guide';
+import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
+import { longRentRequestPath } from '@/features/service-requests/long-rent/paths';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useLongRentPropertiesList } from './long-rent-properties-list';
@@ -22,12 +26,16 @@ export function LongRentPropertiesPage() {
   const viewsScope = useListViewsScope();
   const { rows, isLoading, isError, error, refetch, leasesKnown, leasesFailed, refetchLeases } = useLongRentPropertyRows({ fresh: true });
   const canWrite = hasPermission('long-rent', 'property.write');
+  const navigate = useNavigate();
+  // "Richiedi intervento" from the row of a property (LR-07b): the window of the request, opened on that property.
+  const [requestFor, setRequestFor] = useState<string | null>(null);
 
   const list = useLongRentPropertiesList({
     canWrite,
     canCreateLease: hasPermission('long-rent', 'lease.create'),
     canReadLease: hasPermission('long-rent', 'lease.read'),
     leasesKnown,
+    onRequest: setRequestFor,
   });
 
   return (
@@ -64,6 +72,23 @@ export function LongRentPropertiesPage() {
         viewsScope={viewsScope}
         testId="long-rent-properties-list"
       />
+
+      {requestFor ? (
+        // Mounted when asked, so it starts from nothing every time; once made, the page of the new request is the way on (as from Interventi).
+        <ServiceRequestForm
+          propertyId={requestFor}
+          context="long-rent"
+          open
+          hideTrigger
+          onOpenChange={(open) => {
+            if (!open) setRequestFor(null);
+          }}
+          onCreated={(request) => {
+            setRequestFor(null);
+            navigate(longRentRequestPath(request.id));
+          }}
+        />
+      ) : null}
     </div>
   );
 }

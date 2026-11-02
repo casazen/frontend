@@ -92,10 +92,12 @@ interface InboxItem {
 
 export async function mockSupplierConsoleApi(
   page: Page,
-  options?: { active?: boolean; inboxItems?: InboxItem[] },
+  options?: { active?: boolean; inboxItems?: InboxItem[]; toAnswer?: number },
 ): Promise<void> {
   const active = options?.active ?? false;
   const inboxItems = options?.inboxItems ?? [];
+  // The number of requests waiting for the supplier's answer: the counter of "Richieste" in the menu reads `toAnswer` of `inbox/counts` (SP-08b).
+  const toAnswer = options?.toAnswer ?? 0;
   // Stateful like the API: what the wizard saves is what the next read returns (SU-05).
   let profile: SupplierProfile = active
     ? { ...demoSupplierProfile, status: 'Active', categories: ['cleaning'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
@@ -168,7 +170,7 @@ export async function mockSupplierConsoleApi(
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ toAnswer: 0, awaitingCustomer: 0, scheduled: 0, toCollect: 0, archive: 0, paymentsLate: 0 }),
+        body: JSON.stringify({ toAnswer, awaitingCustomer: 0, scheduled: 0, toCollect: 0, archive: 0, paymentsLate: 0 }),
       });
       return;
     }

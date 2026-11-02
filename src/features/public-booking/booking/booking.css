@@ -1,0 +1,520 @@
+/*
+ * The booking card of the property page (DB-04b): the fixed card of the desktop, the bar of the phone and the sheet that holds the
+ * same card. The look is the one of the redesign prototype (`redesign/assets/site-property.css`, prefix `pp-`); colors, radii, shadows
+ * and the display font come from the tokens of the theme of the host (`--cz-public-*`). The line of a field is a `border` in a class
+ * (a utility `border-*` cannot beat the rule `* { border-color }` of globals.css, a class can).
+ */
+
+.pp-book {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  border: 1px solid var(--cz-public-border);
+  box-shadow: var(--cz-public-shadow-widget);
+}
+
+.pp-book--sheet {
+  padding: 0;
+  gap: 18px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------- Price */
+.pp-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0;
+  color: var(--cz-public-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-price__n {
+  font-family: var(--cz-public-font-display);
+  font-weight: var(--cz-public-display-weight);
+  font-size: 2.15rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--cz-public-text);
+}
+
+.pp-price__sub {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-price[data-stale='true'] {
+  opacity: 0.55;
+}
+
+.pp-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 0;
+  font-size: 0.9rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-mode svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--cz-public-ink);
+}
+
+.pp-mode strong {
+  color: var(--cz-public-text);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ Fields */
+.pp-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--cz-public-line-strong);
+  border-radius: var(--cz-public-radius);
+  background: var(--cz-public-surface);
+}
+
+.pp-field {
+  display: flex;
+  min-width: 0;
+  min-height: 60px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  text-align: left;
+  background: transparent;
+  color: var(--cz-public-text);
+  transition: background-color 120ms ease;
+}
+
+.pp-field:hover {
+  background: var(--cz-public-surface-2);
+}
+
+.pp-field[aria-expanded='true'] {
+  background: var(--cz-public-surface);
+  box-shadow: inset 0 0 0 2px var(--cz-public-text);
+}
+
+.pp-field__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cz-public-text);
+}
+
+.pp-field__value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.pp-field__value.is-empty {
+  color: var(--cz-public-muted);
+}
+
+/* The dates are one button with two halves; the guests are one under it. */
+.pp-field--dates {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  border-radius: calc(var(--cz-public-radius) - 1px) calc(var(--cz-public-radius) - 1px) 0 0;
+}
+
+.pp-field--dates > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+}
+
+.pp-field--dates > span + span {
+  border-left: 1px solid var(--cz-public-line-strong);
+}
+
+.pp-field--who {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--cz-public-line-strong);
+  border-radius: 0 0 calc(var(--cz-public-radius) - 1px) calc(var(--cz-public-radius) - 1px);
+}
+
+.pp-field--who > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-field--who > svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--cz-public-muted);
+}
+
+/* ---------------------------------------------------------------- Messages */
+.pp-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--cz-public-radius-sm);
+  font-size: 0.92rem;
+}
+
+.pp-msg p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.pp-msg svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pp-msg--hint,
+.pp-msg--info {
+  background: var(--cz-public-surface-2);
+  color: var(--cz-public-text);
+}
+
+.pp-msg--err {
+  background: var(--cz-public-err-soft);
+  color: var(--cz-public-err);
+}
+
+.pp-alt {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--cz-public-radius-sm);
+  background: var(--cz-public-surface);
+  border: 1px solid color-mix(in srgb, var(--cz-public-err) 22%, var(--cz-public-border));
+  color: var(--cz-public-text);
+  font-weight: 600;
+  text-align: left;
+}
+
+.pp-alt > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-alt svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--cz-public-ink);
+}
+
+.pp-alt:hover {
+  border-color: var(--cz-public-text);
+}
+
+/* --------------------------------------------------------------------- CTA */
+.pp-book__cta {
+  display: flex;
+  min-height: 52px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.pp-book__cta[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.pp-book__note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: -6px 0 0;
+  font-size: 0.88rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-book__note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--cz-public-ok);
+}
+
+/* --------------------------------------------------------------- Breakdown */
+.pp-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--cz-public-border);
+  font-size: 0.95rem;
+}
+
+.pp-lines[data-stale='true'] {
+  opacity: 0.55;
+}
+
+.pp-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.pp-line dt {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.pp-line dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pp-line--total {
+  padding-top: 10px;
+  border-top: 1px solid var(--cz-public-border);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.pp-tax {
+  position: relative;
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  margin: -6px 0;
+  border-radius: 999px;
+  color: var(--cz-public-muted);
+}
+
+/* The target is 44 px for a finger; the icon stays small. */
+.pp-tax::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+
+.pp-tax:hover,
+.pp-tax[aria-expanded='true'] {
+  background: var(--cz-public-surface-2);
+  color: var(--cz-public-text);
+}
+
+.pp-tax svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pp-taxnote {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--cz-public-radius-sm);
+  background: var(--cz-public-surface-2);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.pp-trust {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 16px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--cz-public-border);
+  font-size: 0.86rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-trust li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.pp-trust svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cz-public-ok);
+}
+
+.pp-ask {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-ask a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-weight: 600;
+  color: var(--cz-public-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* A new total lights up for a moment (only when motion is welcome). */
+@media (prefers-reduced-motion: no-preference) {
+  .pp-flash {
+    animation: pp-flash 1s ease-out;
+  }
+}
+
+@keyframes pp-flash {
+  0% {
+    background: color-mix(in srgb, var(--cz-public-primary) 20%, transparent);
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
+/* ---------------------------------------------------------- Bar of the phone */
+.pp-dock {
+  position: fixed;
+  z-index: 40;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--cz-public-surface) 96%, transparent);
+  border-top: 1px solid var(--cz-public-border);
+  box-shadow: 0 -10px 30px rgb(31 42 48 / 0.08);
+  backdrop-filter: saturate(1.4) blur(14px);
+}
+
+.pp-dock__info {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 2px 0;
+  text-align: left;
+  color: var(--cz-public-text);
+}
+
+.pp-dock__info strong {
+  font-size: 1.12rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pp-dock__info strong small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--cz-public-muted);
+}
+
+.pp-dock__info > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-dock__info u {
+  text-underline-offset: 3px;
+  color: var(--cz-public-text);
+}
+
+.pp-dock__cta {
+  flex-shrink: 0;
+  min-height: 52px;
+  padding-inline: 26px;
+}
+
+@media (max-width: 419.98px) {
+  .pp-dock {
+    gap: 10px;
+  }
+
+  .pp-dock__cta {
+    padding-inline: 18px;
+    font-size: 0.98rem;
+  }
+}
+
+/* ------------------------------------------------------- Calendar of the page */
+.pp-cal {
+  padding: clamp(14px, 2.4vw, 26px);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  border: 1px solid var(--cz-public-border);
+}
+
+.pp-cal__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 0.88rem;
+  color: var(--cz-public-muted);
+}
+
+.pp-cal__note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+@media (max-width: 767.98px) {
+  .pp-cal {
+    margin-inline: -6px;
+    padding: 14px 10px;
+  }
+}

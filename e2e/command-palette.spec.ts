@@ -388,12 +388,16 @@ test.describe('Command palette (UI-06)', () => {
       await openPage(page, '/app/short-rent', 'dual');
       await openFromKeyboard(page);
 
-      // With two areas the same page of each is told apart by the area in its second line.
+      // With two areas the same page of each is told apart by the area in its second line. The pages of the section Immobili of Affitti
+      // brevi (the interventions, the calendars of the channels; the trusted suppliers too on the agency plan) hang from it, which their
+      // second line names, so the words of Immobili find them too.
       await search(page, 'immobili');
       const pages = group(page, 'Pagine').getByRole('option');
-      await expect(pages).toHaveCount(2);
-      await expect(pages.nth(0)).toContainText('Affitti brevi');
-      await expect(pages.nth(1)).toContainText('Affitti lunghi');
+      await expect(pages).toHaveCount(4);
+      await expect(pages.filter({ hasText: 'Affitti brevi' })).toHaveCount(3);
+      await expect(pages.filter({ hasText: 'Affitti lunghi' })).toHaveCount(1);
+      await expect(pages.filter({ hasText: 'Interventi' })).toHaveCount(1);
+      await expect(pages.filter({ hasText: 'Canali e calendari' })).toHaveCount(1);
 
       await search(page, 'lunghi');
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Cambia area: Affitti lunghi');

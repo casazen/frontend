@@ -1,4 +1,6 @@
+import { todayInRome } from '@/lib/stay-dates';
 import type { LeaseDetail, LeaseStage } from '@/types';
+import { leaseNotBegun } from './lifecycle-format';
 
 /** The parameter of the address that opens an action on the sheet of a lease: `?azione=disdetta`. */
 export const LEASE_ACTION_PARAM = 'azione';
@@ -30,6 +32,8 @@ export interface LeaseActionContext {
   canManage: boolean;
   /** The person may change the mode of the property (`property.write`) and the page that does it exists. */
   canChangeMode: boolean;
+  /** Today in Rome (`yyyy-MM-dd`); the real one when not given. */
+  today?: string;
 }
 
 export type LeaseActionAvailability = Readonly<Record<LeaseAction, boolean>>;
@@ -40,11 +44,15 @@ export type LeaseActionAvailability = Readonly<Record<LeaseAction, boolean>>;
  *
  * - a draft (in progress or in review) can be deleted; once downloaded for the signature on paper it can first be taken back;
  * - a lease in force (active or in expiry) can receive a notice while it has none and its type renews by itself, and can be ended early
- *   while it is not ended already; a lease in expiry can move on to short rent, and the notice it has can be taken back (the server
+ *   while it is not ended already and has begun (a lease whose first day has not come cannot be ended early, only a consensual
+ *   resolution cancels it: LR-TERM); a lease in expiry can move on to short rent, and the notice it has can be taken back (the server
  *   allows it while the period has not ended, which is what "in expiry" with a notice means: after it the lease is concluded);
  * - a lease that has concluded has no action that destroys anything; the data of its parties can be erased at any stage.
  */
-export function availableLeaseActions(lease: LeaseDetail, { stage, canManage, canChangeMode }: LeaseActionContext): LeaseActionAvailability {
+export function availableLeaseActions(
+  lease: LeaseDetail,
+  { stage, canManage, canChangeMode, today = todayInRome() }: LeaseActionContext,
+): LeaseActionAvailability {
   const isDraft = lease.status === 'Draft';
   const inForce = stage === 'Active' || stage === 'Expiring';
 
@@ -53,7 +61,7 @@ export function availableLeaseActions(lease: LeaseDetail, { stage, canManage, ca
     'annulla-firma': canManage && isDraft && stage === 'SentForSignature' && Boolean(lease.sentForSignatureAt),
     disdetta: canManage && inForce && !lease.noticeOn && !lease.terminatedOn && lease.renewalMonths !== 0,
     'togli-disdetta': canManage && stage === 'Expiring' && Boolean(lease.noticeOn) && !lease.terminatedOn,
-    termina: canManage && inForce && !lease.terminatedOn,
+    termina: canManage && inForce && !lease.terminatedOn && !leaseNotBegun(lease, today),
     'passa-a-breve': canChangeMode && stage === 'Expiring',
     'cancellazione-dati': canManage,
   };

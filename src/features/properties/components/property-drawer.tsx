@@ -21,7 +21,7 @@ import type { Property } from '@/types';
 import { formatPropertyLocation } from '../property-location';
 import {
   PROPERTY_DRAWER_KIND,
-  propertyActivationPath,
+  propertyWizardPath,
   propertyBookingsPath,
   propertyCalendarPath,
   propertyPath,
@@ -88,7 +88,7 @@ function KeyData({ property }: { property: Property }) {
         <dd className="break-words">
           {property.nightlyRate > 0 ? (
             <>
-              <strong>{formatCurrency(property.nightlyRate)}</strong> {t('property.list.perNight')}
+              <strong>{formatCurrency(property.nightlyRate, property.currency)}</strong> {t('property.list.perNight')}
             </>
           ) : (
             t('property.table.noRate')
@@ -141,7 +141,7 @@ export function PropertyDrawerContent({ id }: DetailContentProps) {
   const mainAction =
     (status === 'Pending' || status === 'Suspended') && canWrite ? (
       <Button asChild>
-        <Link to={propertyActivationPath(property.id)}>
+        <Link to={propertyWizardPath(property.id)}>
           <CircleCheck aria-hidden="true" className="size-4" />
           {t('property.drawer.complete')}
         </Link>

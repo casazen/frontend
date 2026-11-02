@@ -7,6 +7,8 @@ import { useCallback, useSyncExternalStore } from 'react';
 export const PHONE_QUERY = '(width < 48rem)';
 /** At or above `md`: where the sidebar and the header take the place of the bottom bar. */
 export const FROM_TABLET_QUERY = '(width >= 48rem)';
+/** At or above `lg`: where the booking card of a property page is fixed beside the page and not a bar under it. */
+export const FROM_DESKTOP_QUERY = '(width >= 64rem)';
 /** Between `md` and `lg`: the sidebar is a rail of icons. */
 export const TABLET_QUERY = '(width >= 48rem) and (width < 64rem)';
 

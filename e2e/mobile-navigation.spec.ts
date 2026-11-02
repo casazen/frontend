@@ -99,8 +99,8 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sheet(page).getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
 
       // A page of "Altro" opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab.
-      await sheet(page).getByRole('link', { name: 'Profilo' }).click();
-      await expect(page).toHaveURL(/\/app\/short-rent\/profile$/);
+      await sheet(page).getByRole('link', { name: 'Coda di approvazione' }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue$/);
       await expect(sheet(page)).toBeHidden();
       await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
       await expect(more(page)).toHaveAttribute('aria-current', 'page');
@@ -131,9 +131,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(sheet(page)).toBeFocused();
 
-      // The first Tab reaches the first tile; the focus never leaves the sheet (a trap).
+      // The first Tab reaches the first tile (the adempimenti, first in the sheet now); the focus never leaves the sheet (a trap).
       await page.keyboard.press('Tab');
-      await expect(sheet(page).getByRole('link', { name: 'Sito di prenotazione' })).toBeFocused();
+      await expect(sheet(page).getByRole('link', { name: 'Adempimenti' })).toBeFocused();
       for (let i = 0; i < 14; i += 1) {
         await page.keyboard.press('Tab');
         expect(await sheet(page).evaluate((element) => element.contains(document.activeElement))).toBe(true);
@@ -199,7 +199,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       expect(box.height).toBeLessThanOrEqual(480 * 0.85 + 1);
       expect(Math.round(box.y + box.height)).toBe(480);
 
-      const last = sheet(page).getByRole('link', { name: 'Organizzazione' });
+      const last = sheet(page).getByRole('link', { name: 'Consiglia CasaZen' });
       await last.scrollIntoViewIfNeeded();
       await expect(last).toBeInViewport();
       // It scrolls up and down, never sideways, and the page behind does not get wider.
@@ -433,11 +433,11 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(other).toHaveAttribute('aria-expanded', 'true');
 
       await page.keyboard.press('Tab');
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toBeFocused();
-      await expect(tooltip(page)).toHaveText('Ospiti');
+      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toBeFocused();
+      await expect(tooltip(page)).toHaveText('Coda di approvazione');
       await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(/\/app\/short-rent\/guests$/);
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toHaveAttribute('aria-current', 'page');
+      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue$/);
+      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
     test('with several areas the switcher is the icon of the area, with its name, and it works', async ({ page }) => {

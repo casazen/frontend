@@ -18,6 +18,9 @@ interface NavChildLinksProps {
  * `PageHeader`. The list comes from the manifest, so a page that hangs from another entry shows up here by itself; the
  * links are those the user may open. Nothing is shown when there are none.
  *
+ * The rental areas do not use it: there the pages of a section are tabs on every page of it (`NavSectionTabs`, drawn by
+ * `PageHeader`). It stays for the staff console and the supplier area.
+ *
  * Like the org badge (`useBillingContext`) it can be rendered where there is no workspace or no router, as an isolated
  * test of a page does: without a router there is nowhere to go (nothing is shown), without a workspace every page counts.
  */

@@ -8,7 +8,7 @@ import type { PublicOrgDto } from '@/types';
 
 /**
  * BK-16 (A3-08) on the real route table: an org's own host serves that org's booking site and nothing else. No app, no
- * login (it used to send the guest of `https://www.villa.example/` to Auth0), no search, no guides, no other org.
+ * login (it used to send the guest of `https://www.villa.example/` to Auth0), no cross-site search, no guides, no other org.
  */
 const PUBLIC_SITE = 'https://public-site.example.test';
 
@@ -89,7 +89,7 @@ describe('routes of an org own host (BK-16)', () => {
     },
   );
 
-  it.each(['/login', '/signup', '/onboarding', '/app/short-rent/bookings', '/search', '/p/affitti-brevi', '/checkin/abc', '/s/supplier', '/fornitori/supplier', '/anything'])(
+  it.each(['/login', '/signup', '/onboarding', '/app/short-rent/bookings', '/p/affitti-brevi', '/checkin/abc', '/s/supplier', '/fornitori/supplier', '/anything'])(
     'AnyOtherRoute_%s_IsNotFoundNeverTheAppOrTheLogin',
     async (path) => {
       const router = renderHostSite(path);

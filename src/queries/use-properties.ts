@@ -25,6 +25,12 @@ const PROPERTIES_KEY = 'properties';
 const APE_READ_KEY = 'ape-read';
 
 /**
+ * The rows of the host's list of Affitti brevi (SR-07a): the short-stay properties with the state, what is missing and the nights
+ * told by the server. The list and its drawer read the same query, so a change made in one shows in the other.
+ */
+export const SHORT_PROPERTIES_OVERVIEW = { mode: 'short', view: 'overview' } as const;
+
+/**
  * `fresh`: read again from the server every time the list is shown, even when it is cached (the page of the list: a property
  * is created, edited or paused on other pages, where this list is not watched, so a refresh there would not reach it).
  */
@@ -46,6 +52,20 @@ export function useProperty(id: string, options: { fresh?: boolean } = {}) {
     queryFn: () => propertiesApi.getById(id),
     enabled: !!id,
     ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
+  });
+}
+
+/**
+ * How many properties the org has of how many its plan allows (SR-07a), read again every time it is asked for: a property is
+ * created or deleted on other pages. A refusal (no permission) leaves it empty: the server still decides on a create.
+ */
+export function usePlanUsage(enabled = true) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, 'plan-usage'],
+    queryFn: () => propertiesApi.getPlanUsage(),
+    enabled,
+    retry: false,
+    refetchOnMount: 'always',
   });
 }
 

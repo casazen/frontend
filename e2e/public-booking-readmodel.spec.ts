@@ -13,14 +13,19 @@ test.describe('Public booking read-model (#212)', () => {
     await mockPublicBookingReadApi(page);
   });
 
-  test('AC11: search results show the CIN code, city, price, and capacity without operator identity', async ({ page }) => {
+  test('AC11: search results show the city, price, capacity and host, and lead to the site of the host, without operator identity', async ({ page }) => {
     await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
 
-    await expect(page.getByRole('heading', { name: 'Trastevere Loft' })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('CIN: IT058091C27G5FFZDZ')).toBeVisible();
-    await expect(page.getByText('Rome (00153)')).toBeVisible();
-    // The compliance state is for the host only: no "valid"/"missing" badge for guests
-    await expect(page.getByTestId('public-cin')).toHaveCount(1);
+    // The public search is the results page of a site (SEARCH-GLOBAL): a card per home, the name is its one link.
+    const home = page.getByTestId('house-card').first();
+    await expect(home.getByRole('link', { name: 'Trastevere Loft' })).toBeVisible({ timeout: 15_000 });
+    await expect(home.getByRole('link', { name: 'Trastevere Loft' })).toHaveAttribute('href', new RegExp(`^/book/demo-casazen/property/${PUBLIC_SEARCH_PROPERTY_ID}`));
+    await expect(home).toContainText('Rome');
+    await expect(home.getByTestId('house-card-price')).toContainText('145');
+    await expect(home.locator('.hcard__facts')).toContainText('4');
+    await expect(home.getByTestId('house-card-host')).toContainText('Demo Casazen Stays');
+    // The compliance state is for the host only: no "valid"/"missing" badge for guests, and no CIN in a list (it is on the page of the home).
+    await expect(page.getByTestId('public-cin')).toHaveCount(0);
     await expect(page.getByText(/CIN (valido|mancante|non valido)/)).toHaveCount(0);
 
     const bodyText = await page.locator('body').innerText();
@@ -31,17 +36,13 @@ test.describe('Public booking read-model (#212)', () => {
   test('AC12: public search request is sent without Authorization header', async ({ page }) => {
     let authHeader: string | undefined;
 
-    await page.route('**/api/properties/search**', async (route) => {
+    await page.route('**/api/public/stays?**', async (route) => {
       authHeader = route.request().headers()['authorization'];
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockPublicSearchResults),
-      });
+      await route.fallback();
     });
 
     await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
-    await expect(page.getByRole('heading', { name: 'Trastevere Loft' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('house-card').first()).toBeVisible({ timeout: 15_000 });
 
     expect(authHeader).toBeUndefined();
   });

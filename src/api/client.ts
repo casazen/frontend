@@ -36,6 +36,10 @@ export interface ApiRequestOptions {
    * `Idempotency-Key`; the access token of a signed-in user is attached by the interceptor and is never passed here.
    */
   headers?: Record<string, string>;
+  /** Cancels the request: a screen that asks again before the answer comes does not wait for the old one (the quote of the booking card). */
+  signal?: AbortSignal;
+  /** Milliseconds before the request is given up, for a call that takes longer than the default (a text the AI writes from photos). */
+  timeout?: number;
 }
 
 export class ApiClient {

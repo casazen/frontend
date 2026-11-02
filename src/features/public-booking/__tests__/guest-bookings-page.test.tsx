@@ -15,6 +15,10 @@ vi.mock('@/api/guest-session.api', () => ({
 vi.mock('@/api/public-booking.api', () => ({
   publicBookingApi: { sendGuestCheckInLink: vi.fn() },
 }));
+// The cancellation section of the guest area (DB-08b) is covered by its own test; here its preview never arrives.
+vi.mock('@/api/guest-cancellation.api', () => ({
+  guestCancellationApi: { getPreview: vi.fn(() => new Promise(() => undefined)), cancel: vi.fn() },
+}));
 
 const org = { slug: 'demo-casazen', displayName: 'Demo Casazen Stays' } as unknown as PublicOrgDto;
 const CODE = 'K7M4Q-9XP2H';

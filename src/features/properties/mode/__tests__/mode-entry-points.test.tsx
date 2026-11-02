@@ -28,6 +28,8 @@ vi.mock('@/api/service-requests.api', () => ({
   markServiceRequestPaid: vi.fn(),
   markLongRentServiceRequestPaid: vi.fn(),
 }));
+// What the server adds to the page of a long-term property (LR-07a): nothing here, the page works without it.
+vi.mock('@/api/long-rent-properties.api', () => ({ longRentPropertiesApi: { getAll: vi.fn().mockResolvedValue([]) } }));
 vi.mock('@/queries/use-cin', () => ({ useUpdatePropertyCin: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => false }) }));
 vi.mock('../../components/ical-settings', () => ({ IcalSettings: () => <div /> }));

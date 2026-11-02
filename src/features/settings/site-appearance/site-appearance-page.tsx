@@ -6,6 +6,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,10 +17,15 @@ import { needsOrgSetup } from '@/lib/onboarding';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { analyzePrimaryColor, publicSiteColorStyle } from '@/lib/public-site-colors';
 import {
+  DEFAULT_PUBLIC_SITE_THEME,
+  PUBLIC_SITE_FONTS,
   PUBLIC_SITE_THEMES,
   PUBLIC_SITE_THEME_PALETTES,
+  THEME_DEFAULT_FONT,
   normalizeHexColor,
+  resolvePublicSiteFont,
   resolvePublicSiteTheme,
+  type PublicSiteFontId,
   type PublicSiteThemeId,
 } from '@/lib/public-site-themes';
 import { cn } from '@/lib/utils';
@@ -55,6 +61,8 @@ function formatRatio(ratio: number, language: string): string {
 
 interface BrandingForm {
   themeId: PublicSiteThemeId;
+  /** The font pair the host chose; null = the one its theme starts with. */
+  fontId: PublicSiteFontId | null;
   /** Text as typed; empty = theme color. */
   primaryColor: string;
   tagline: string;
@@ -63,6 +71,7 @@ interface BrandingForm {
 function toForm(branding: OrgBranding): BrandingForm {
   return {
     themeId: resolvePublicSiteTheme(branding.publicThemeId),
+    fontId: resolvePublicSiteFont(branding.publicFontId),
     primaryColor: branding.primaryColor ?? '',
     tagline: branding.tagline ?? '',
   };
@@ -97,7 +106,12 @@ export function SiteAppearanceContent() {
   const brandingQuery = useOrgBranding(isAdmin);
   const updateBranding = useUpdateOrgBranding();
 
-  const [form, setForm] = useState<BrandingForm>({ themeId: 'mare', primaryColor: '', tagline: '' });
+  const [form, setForm] = useState<BrandingForm>({
+    themeId: DEFAULT_PUBLIC_SITE_THEME,
+    fontId: null,
+    primaryColor: '',
+    tagline: '',
+  });
   const [submitted, setSubmitted] = useState(false);
   // Sync the form from the server branding whenever it (re)loads (adjusting state during render).
   const [synced, setSynced] = useState<OrgBranding | undefined>(undefined);
@@ -122,6 +136,7 @@ export function SiteAppearanceContent() {
     updateBranding.mutate({
       primaryColor: normalizeHexColor(form.primaryColor),
       publicThemeId: form.themeId,
+      publicFontId: form.fontId,
       tagline: tagline || null,
     });
   };
@@ -173,6 +188,8 @@ export function SiteAppearanceContent() {
     const colorPickerValue = previewColor ?? PUBLIC_SITE_THEME_PALETTES[form.themeId].primary;
     const colorStyle = publicSiteColorStyle(previewColor, form.themeId);
     const colorAnalysis = previewColor ? analyzePrimaryColor(previewColor, form.themeId) : null;
+    // The font pair that is checked: the one chosen, or the one the theme starts with.
+    const activeFontId = form.fontId ?? THEME_DEFAULT_FONT[form.themeId];
 
     return (
       <div className="grid items-start gap-6 lg:grid-cols-2">
@@ -216,7 +233,7 @@ export function SiteAppearanceContent() {
                         />
                         {t(`siteAppearance.theme.options.${themeId}.name`)}
                       </span>
-                      <ThemeSample themeId={themeId} style={colorStyle} />
+                      <ThemeSample themeId={themeId} fontId={form.fontId} style={colorStyle} />
                       <span className="text-muted-foreground">
                         {t(`siteAppearance.theme.options.${themeId}.description`)}
                       </span>
@@ -224,6 +241,41 @@ export function SiteAppearanceContent() {
                   ))}
                 </div>
               </fieldset>
+
+              <div className="space-y-2" data-testid="site-font-section">
+                <ChoiceGroup legend={t('siteAppearance.font.label')} legendVisible minCardWidth={12}>
+                  {PUBLIC_SITE_FONTS.map((fontId) => (
+                    <ChoiceCard
+                      key={fontId}
+                      name="public-font"
+                      value={fontId}
+                      checked={activeFontId === fontId}
+                      onChange={() => setForm((f) => ({ ...f, fontId }))}
+                      data-testid={`site-font-${fontId}`}
+                      title={
+                        <span className="flex items-center gap-3">
+                          <FontSample themeId={form.themeId} fontId={fontId} style={colorStyle} />
+                          {t(`siteAppearance.font.options.${fontId}.name`)}
+                        </span>
+                      }
+                      description={t(`siteAppearance.font.options.${fontId}.description`)}
+                    />
+                  ))}
+                </ChoiceGroup>
+                {form.fontId ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setForm((f) => ({ ...f, fontId: null }))}
+                    data-testid="site-font-reset"
+                  >
+                    {t('siteAppearance.font.useTheme')}
+                  </Button>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('siteAppearance.font.usingTheme')}</p>
+                )}
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="site-primary-color">{t('siteAppearance.color.label')}</Label>
@@ -338,6 +390,7 @@ export function SiteAppearanceContent() {
         <SitePreview
           branding={branding}
           themeId={form.themeId}
+          fontId={form.fontId}
           colorStyle={colorStyle}
           tagline={form.tagline.trim() || null}
         />
@@ -454,11 +507,21 @@ function BrandingImageField({ kind, url }: { kind: BrandingImageKind; url: strin
  * is being edited, since that is what the site will look like with this theme). Decorative: the theme name and
  * description next to it carry the meaning.
  */
-function ThemeSample({ themeId, style }: { themeId: PublicSiteThemeId; style: CSSProperties | undefined }) {
+function ThemeSample({
+  themeId,
+  fontId,
+  style,
+}: {
+  themeId: PublicSiteThemeId;
+  /** The font pair the host chose, so the sample shows the title font of the site as it will be; null = the theme's own. */
+  fontId: PublicSiteFontId | null;
+  style: CSSProperties | undefined;
+}) {
   return (
     <span
       className="public-site-root pointer-events-none flex items-center justify-between gap-2 rounded border px-3 py-2"
       data-theme={themeId}
+      data-font={fontId ?? undefined}
       style={style}
       aria-hidden
       data-testid={`site-theme-sample-${themeId}`}
@@ -469,9 +532,34 @@ function ThemeSample({ themeId, style }: { themeId: PublicSiteThemeId; style: CS
   );
 }
 
+/** Miniature of a font pair on the theme being edited: "Aa" in the title font of the pair. Decorative, the name sits next to it. */
+function FontSample({
+  themeId,
+  fontId,
+  style,
+}: {
+  themeId: PublicSiteThemeId;
+  fontId: PublicSiteFontId;
+  style: CSSProperties | undefined;
+}) {
+  return (
+    <span
+      className="public-site-root pointer-events-none grid h-10 w-12 shrink-0 place-items-center rounded border"
+      data-theme={themeId}
+      data-font={fontId}
+      style={style}
+      aria-hidden
+      data-testid={`site-font-sample-${fontId}`}
+    >
+      <span className="public-display text-xl leading-none">{FONT_SAMPLE}</span>
+    </span>
+  );
+}
+
 interface SitePreviewProps {
   branding: OrgBranding;
   themeId: PublicSiteThemeId;
+  fontId: PublicSiteFontId | null;
   /** Inline color variables of the host's primary color (`publicSiteColorStyle`), undefined for the theme's own. */
   colorStyle: CSSProperties | undefined;
   tagline: string | null;
@@ -482,7 +570,7 @@ interface SitePreviewProps {
  * (`public-tokens.css`) and same `Hero` component as `/book/{slug}`. Without a hero image the real site shows the first
  * property photo; the preview shows the theme's gradient instead.
  */
-function SitePreview({ branding, themeId, colorStyle, tagline }: SitePreviewProps) {
+function SitePreview({ branding, themeId, fontId, colorStyle, tagline }: SitePreviewProps) {
   const { t } = useTranslation();
   const publicPath = `${PUBLIC_PATH_PREFIX}${encodeURIComponent(branding.slug)}`;
 
@@ -509,6 +597,7 @@ function SitePreview({ branding, themeId, colorStyle, tagline }: SitePreviewProp
         <div
           className="public-site-root min-h-0 overflow-hidden rounded-md border"
           data-theme={themeId}
+          data-font={fontId ?? undefined}
           style={colorStyle}
           data-testid="site-preview-root"
         >

@@ -35,9 +35,22 @@ export const DISALLOWED_PATHS = [
   '/invite/',
   '/login',
   '/book/*/my-bookings',
+  // The results of a booking site for a stay (DB-07c): every search is its own address, none is worth a place in the index.
+  '/book/*/search',
   '/book/*/booking/',
+  // The page of the link that lets a guest cancel (DB-08a): its address carries the secret of the link until the page takes it out.
+  '/book/*/bookings/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
+  // The private pages of the booking from a supplier's site (SP-12b): the booking in progress, the page of the verification link (its
+  // address carries the secret of the link until the page takes it out) and the customer's own request (a code). The site itself stays indexed.
+  '/fornitori/*/prenota',
+  '/fornitori/*/conferma',
+  '/fornitori/*/richiesta',
+  // The request on measure (SP-12c): the form is as private as the booking's, and not worth a place in the index.
+  '/fornitori/*/preventivo',
+  // The payment page of a service (SP-15c-d): its address carries the secret of the payment link.
+  '/service/pay/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',

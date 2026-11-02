@@ -2,7 +2,16 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments' | 'concordatoFacile';
+export type FeatureFlagKey =
+  | 'otaPartnerApi'
+  | 'aiSupplierDiscovery'
+  | 'rliProvider'
+  | 'eSignProvider'
+  | 'supplierOnlinePayments'
+  | 'supplierShowcaseBooking'
+  | 'concordatoFacile'
+  | 'supplierRequestBackups'
+  | 'agencyTier';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -33,6 +42,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   supplierOnlinePayments: false,
   /**
+   * SP-09 to SP-12b: booking from the public site of a supplier (backend `SupplierShowcaseBooking`), off until the product owner turns it on.
+   * The pages of the booking (`/prenota`), of the check of the e-mail (`/conferma`) and of the customer's own request (`/richiesta`) are
+   * behind it: while it is off their addresses lead back to the home of the site.
+   */
+  supplierShowcaseBooking: false,
+  /**
    * ConcordatoFacile, the partner that prepares a canone concordato contract (backend `ConcordatoFacile`): on in the test environment,
    * off in production until CasaZen confirms the trial run and the privacy framework to ConcordatoFacile. While it is off the card
    * «Parto da zero» of a new canone concordato is disabled («disponibile a breve») and its address shows the question again; «Ho già il
@@ -42,6 +57,22 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * button (`?practice=`) fall back to choosing the contract (the backend answers 404 to the lookup).
    */
   concordatoFacile: false,
+  /**
+   * SP-BKP: a host's request goes to the supplier it chose and, at the same moment, to up to three backup suppliers (backend
+   * `SupplierRequestBackups`): off until the product owner turns it on in the test environment. It only decides whether the host is offered
+   * the choice (the switch of «Interventi» in the settings and the one of the request); a group that exists is always shown, whatever the
+   * flag says, because the server follows it to its end.
+   */
+  supplierRequestBackups: false,
+  /**
+   * The agency plan (backend `AgencyTier`, ADR-010): owners' statements, wire transfers to the owners, withholding tax, internal staff
+   * activities and trusted suppliers. Off until the product owner turns it on, and even then the backend answers only an org on the
+   * Agency plan whose role holds the agency permission. While it is off the pages that read those endpoints («Ritenute d'acconto» and
+   * «Bonifici proprietari» of the administration, «Fornitori fidati» of short rents, «Rendiconti» and «Attività» of the staff console)
+   * are in no menu and their addresses lead to the home of the area: before, they were shown to everyone and their first
+   * read answered 403, which sent the whole app to the no-access page.
+   */
+  agencyTier: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

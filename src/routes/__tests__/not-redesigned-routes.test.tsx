@@ -34,6 +34,7 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     supplierShowcasePath('splendore-pulizie'),
     '/checkin/abc123',
     '/rent/pay/installment-1',
+    '/service/pay/payment-1',
   ])('Route_%s_KeepsTheCurrentLook', (path) => {
     expect(matchRoutes(appRoutes, path), `${path} matches a route`).not.toBeNull();
     expect(notRedesigned(path)).toBe(true);

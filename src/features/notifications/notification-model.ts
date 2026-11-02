@@ -14,9 +14,9 @@ const BOOKINGS = '/app/short-rent/bookings';
 const bookingRoute = (id: string) => `${BOOKINGS}/${encodeURIComponent(id)}`;
 const bookingTab = (tab: string) => (id: string) => `${bookingRoute(id)}?tab=${tab}`;
 
-/** A service request: the supplier opens it in the inbox; the host finds it in «Le tue richieste» of the marketplace. */
+/** A service request: the supplier opens it in the inbox; the host finds it in «Le tue richieste» of «Le mie app» of the marketplace. */
 const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
-  context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace';
+  context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace/mine';
 
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
 
@@ -46,6 +46,17 @@ const KINDS: Record<string, NotificationKind> = {
   'service-request-proposal-accepted': serviceRequest('notifications.types.serviceRequestProposalAccepted'),
   'service-request-proposal-rejected': serviceRequest('notifications.types.serviceRequestProposalRejected'),
   'service-request-rescheduled': serviceRequest('notifications.types.serviceRequestRescheduled'),
+  'service-request-quote-sent': serviceRequest('notifications.types.serviceRequestQuoteSent'),
+  'service-request-quote-accepted': serviceRequest('notifications.types.serviceRequestQuoteAccepted'),
+  'service-request-quote-rejected': serviceRequest('notifications.types.serviceRequestQuoteRejected'),
+  'service-request-quote-expired': serviceRequest('notifications.types.serviceRequestQuoteExpired'),
+  'service-request-day-before': serviceRequest('notifications.types.serviceRequestDayBefore'),
+  // SP-BKP: the notices of a supplier that has a request as a backup.
+  'service-request-backup-invited': serviceRequest('notifications.types.serviceRequestBackupInvited'),
+  'service-request-backup-active': serviceRequest('notifications.types.serviceRequestBackupActive'),
+  'service-request-backup-won': serviceRequest('notifications.types.serviceRequestBackupWon'),
+  'service-request-backup-closed': serviceRequest('notifications.types.serviceRequestBackupClosed'),
+  'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived'),
 };
 
 const GENERIC_KIND = { icon: Bell, textKey: 'notifications.types.generic' } as const;

@@ -60,11 +60,26 @@ export function readableTextOn(fillHex: string): { color: string; ratio: number 
   return { color, ratio: contrastRatio(color, fillHex) };
 }
 
+/** `aHex` mixed with `bHex`: `share` of `bHex` (0 = `aHex`, 1 = `bHex`), channel by channel, as `color-mix(in srgb, ...)` does. */
+export function mixHex(aHex: string, bHex: string, share: number): string {
+  const [ar, ag, ab] = toRgb(aHex);
+  const [br, bg, bb] = toRgb(bHex);
+  return toHex([ar + (br - ar) * share, ag + (bg - ag) * share, ab + (bb - ab) * share]);
+}
+
 /** `colorHex` mixed with black by `amount` (0 = unchanged, 1 = black): the same hue, darker. */
 function darken(colorHex: string, amount: number): string {
-  const [r, g, b] = toRgb(colorHex);
-  return toHex([r * (1 - amount), g * (1 - amount), b * (1 - amount)]);
+  return mixHex(colorHex, '#000000', amount);
 }
+
+/** How much deeper than the primary the fill under the pointer is (the prototype's `color-mix(c 82%, #000)`). */
+const HOVER_DARKEN = 0.18;
+
+/** Where the search for the ink starts: 22% deeper than the primary (`color-mix(c 78%, #000)`); it goes on from there until AA. */
+const INK_DARKEN = 0.22;
+
+/** How much of the primary is in its faint tint, the rest being white (`color-mix(c 13%, #fff)`). */
+const SOFT_SHARE = 0.13;
 
 /**
  * The color to use as text, link hover or focus ring on the given light surfaces: `colorHex` itself when it reaches
@@ -91,6 +106,12 @@ export interface PrimaryColorAnalysis {
   primaryText: string;
   /** True when `primaryText` is not the host's color (it is too light to be read as text on the page). */
   primaryTextAdjusted: boolean;
+  /** The fill under the pointer: the primary 18% deeper, or the primary itself when the deeper one would not hold `onPrimary` at AA. */
+  hover: string;
+  /** The faint tint of the primary (13% of it over white): pills, selected rows, icon discs. */
+  soft: string;
+  /** The primary as text on its own `soft` tint, on the page and on the cards: the deepest of the texts, always AA on the three. */
+  ink: string;
 }
 
 /** What the public site does with a primary color on a theme, so that every pair meets AA (shell, preview, settings page). */
@@ -100,10 +121,14 @@ export function analyzePrimaryColor(primaryHex: string, themeId: PublicSiteTheme
   const palette = PUBLIC_SITE_THEME_PALETTES[themeId];
   const { color: onPrimary, ratio: onPrimaryRatio } = readableTextOn(primary);
   const primaryText = readableOnSurfaces(primary, [palette.bg, palette.surface]);
-  return { primary, onPrimary, onPrimaryRatio, primaryText, primaryTextAdjusted: primaryText !== primary };
+  const deeper = darken(primary, HOVER_DARKEN);
+  const hover = contrastRatio(onPrimary, deeper) >= AA_TEXT_CONTRAST ? deeper : primary;
+  const soft = mixHex('#ffffff', primary, SOFT_SHARE);
+  const ink = readableOnSurfaces(darken(primary, INK_DARKEN), [palette.bg, palette.surface, soft]);
+  return { primary, onPrimary, onPrimaryRatio, primaryText, primaryTextAdjusted: primaryText !== primary, hover, soft, ink };
 }
 
-/** CSS custom properties of a host primary color (set inline on the themed root): the color and the two derived ones. */
+/** CSS custom properties of a host primary color (set inline on the themed root): the color and the ones derived from it. */
 export function publicSiteColorVars(
   primaryHex: string | null | undefined,
   themeId: PublicSiteThemeId,
@@ -114,6 +139,9 @@ export function publicSiteColorVars(
     '--cz-public-primary': analysis.primary,
     '--cz-public-on-primary': analysis.onPrimary,
     '--cz-public-primary-text': analysis.primaryText,
+    '--cz-public-hover': analysis.hover,
+    '--cz-public-ink': analysis.ink,
+    '--cz-public-soft': analysis.soft,
   };
 }
 

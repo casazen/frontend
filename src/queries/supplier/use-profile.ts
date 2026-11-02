@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { acceptSupplierTos, completeSupplierActivation, saveSupplierActivationStep, fetchSupplierActivation, fetchSupplierShowcasePreview, fetchSupplierProfile, updateSupplierProfile, uploadSupplierPhotos } from '@/services/supplier-api';
+import { acceptSupplierTos, completeSupplierActivation, saveSupplierActivationStep, fetchSupplierActivation, fetchSupplierProfile, updateSupplierProfile, uploadSupplierPhotos } from '@/services/supplier-api';
 
 export function useSupplierActivation() {
   return useQuery({
@@ -77,14 +77,5 @@ export function useUploadSupplierPhotos() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
     },
-  });
-}
-
-
-/** The owner's preview of the public showcase (SU-13). */
-export function useSupplierShowcasePreview() {
-  return useQuery({
-    queryKey: ['supplier', 'showcase'],
-    queryFn: fetchSupplierShowcasePreview,
   });
 }

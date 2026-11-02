@@ -9,19 +9,21 @@ import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
 import { toast } from 'sonner';
-import { PropertyForm } from '../components/property-form';
 import { QuickPropertyForm } from '../components/quick-property-form';
 import type { CreatePropertyDto } from '@/types';
 import { isDuplicateAddressError } from '../property-errors';
-import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from './paths';
+import { LONG_RENT_PROPERTIES_PATH } from './paths';
+import { LongRentPropertyWizard } from './wizard/long-rent-property-wizard';
 
 const LONG_RENT_LEASES_PATH = '/app/long-rent/leases';
 
-/** New long-term property: the owner lands on its page to upload the APE right away (A7-06). */
+/**
+ * New long-term property. The first property of a new landlord (`?first=1`, set by the onboarding) is the short form, and then the
+ * guide of the first steps asks the rest; any other is the wizard "Aggiungi immobile" (LR-07c), which ends on "Crea il contratto".
+ */
 export function LongRentPropertyCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // First property of a new landlord (`?first=1`, set by the onboarding): the short form, then the guide asks the rest.
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
   const createProperty = useCreateProperty('Long');
@@ -32,21 +34,18 @@ export function LongRentPropertyCreatePage() {
   // The server enforces the plan limit; the entitlement read only avoids filling a form that cannot be saved.
   const blockedByPlan = planLimitHit || entitlement?.canAddProperty === false;
 
-  const handleSubmit = async (data: CreatePropertyDto) => {
+  // The short form of the first property: it creates and goes to the guide, which asks for the APE and the contract.
+  const handleQuickSubmit = async (data: CreatePropertyDto) => {
     setPlanLimitHit(false);
     try {
-      const created = await createProperty.mutateAsync(data);
+      await createProperty.mutateAsync(data);
       // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
       await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      if (quick) {
-        toast.success(t('property.quick.created'));
-        navigate(LONG_RENT_LEASES_PATH);
-        return;
-      }
-      navigate(longRentPropertyPath(created.id));
+      toast.success(t('property.quick.created'));
+      navigate(LONG_RENT_LEASES_PATH);
     } catch (error) {
       // Other errors are shown by the mutation's toast; the form stays filled in. A duplicate address goes back to the
-      // form, which shows it under the unit field (PC-06).
+      // form, which shows it under the address field (PC-06).
       if (isPlanLimitError(error)) setPlanLimitHit(true);
       else if (isDuplicateAddressError(error)) throw error;
     }
@@ -81,20 +80,17 @@ export function LongRentPropertyCreatePage() {
         <div className={FOCUS_COLUMN}>
           <QuickPropertyForm
             variant="long-rent"
-            onSubmit={handleSubmit}
+            onSubmit={handleQuickSubmit}
             isLoading={createProperty.isPending}
             disabled={blockedByPlan}
             onFullForm={() => navigate('/app/long-rent/properties/new')}
           />
         </div>
-      ) : (
-        <PropertyForm
-          variant="long-rent"
-          onSubmit={handleSubmit}
-          onCancel={() => navigate(LONG_RENT_PROPERTIES_PATH)}
-          isLoading={createProperty.isPending}
-          disabled={blockedByPlan}
-        />
+      ) : blockedByPlan ? null : (
+        // Over the plan there is nothing to fill in: the notice above says why and where to go. What was typed stays in the draft.
+        <div className={FOCUS_COLUMN}>
+          <LongRentPropertyWizard onPlanLimit={() => setPlanLimitHit(true)} onExit={() => navigate(LONG_RENT_PROPERTIES_PATH)} />
+        </div>
       )}
     </div>
   );

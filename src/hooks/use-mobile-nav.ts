@@ -38,9 +38,9 @@ export function useMobileNav(contextKey: AppContextKey) {
 
   const bottomEntries = getBottomNavEntries(contextKey, permissionCheck, flags);
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
-  const hasMore =
-    getVisibleNavEntries(contextKey, permissionCheck, flags).some((entry) => entry.navBottom === undefined) ||
-    getAccessibleAreas(contexts).length > 1;
+  // What the bar does not list: the sheet of "Altro" holds it, and the counters of these entries show on "Altro".
+  const moreEntries = getVisibleNavEntries(contextKey, permissionCheck, flags).filter((entry) => entry.navBottom === undefined);
+  const hasMore = moreEntries.length > 0 || getAccessibleAreas(contexts).length > 1;
 
   const hasBar = bottomEntries.length > 0 || hasMore;
 
@@ -56,6 +56,7 @@ export function useMobileNav(contextKey: AppContextKey) {
 
   return {
     bottomEntries,
+    moreEntries,
     hasMore,
     hasBar,
     activeTab: resolveActiveTab(),

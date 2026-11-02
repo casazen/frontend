@@ -8,7 +8,7 @@
  * the paths; `src/test/site-middleware.test.ts` checks that both lists are the same.
  */
 
-export type SitePageId = 'home' | 'features' | 'suppliers' | 'about';
+export type SitePageId = 'home' | 'shortRent' | 'longRent' | 'features' | 'suppliers' | 'about';
 
 export interface SitePage {
   id: SitePageId;
@@ -26,6 +26,8 @@ export const SITE_SITEMAP_PATH = '/sitemap-site.xml';
 
 export const SITE_PAGES: readonly SitePage[] = [
   { id: 'home', path: '/', file: 'index.html' },
+  { id: 'shortRent', path: '/affitti-brevi', file: 'affitti-brevi.html' },
+  { id: 'longRent', path: '/affitti-lunghi', file: 'affitti-lunghi.html' },
   { id: 'features', path: '/funzionalita', file: 'funzionalita.html' },
   { id: 'suppliers', path: '/per-i-fornitori', file: 'per-i-fornitori.html' },
   { id: 'about', path: '/chi-siamo', file: 'chi-siamo.html' },
@@ -48,9 +50,18 @@ export function sitePageUrl(origin: string, page: SitePage): string {
   return page.path === '/' ? `${origin}/` : `${origin}${page.path}`;
 }
 
-/** The sitemap of the public site: one `<loc>` per page on the public origin. */
+/**
+ * The public search of homes, a page of the app (not prerendered, so not one of `SITE_PAGES`): the pages of the site link to it and its
+ * sitemap lists it. The page without a search is for the crawlers; the address of a search is `noindex,follow` (see the page).
+ */
+export const SEARCH_PATH = '/search';
+
+/** The sitemap of the public site: one `<loc>` per page on the public origin, then the public pages of the app that belong to it. */
 export function buildSiteSitemap(origin: string): string {
-  const urls = SITE_PAGES.map((page) => `  <url><loc>${sitePageUrl(origin, page)}</loc></url>`);
+  const urls = [
+    ...SITE_PAGES.map((page) => `  <url><loc>${sitePageUrl(origin, page)}</loc></url>`),
+    `  <url><loc>${origin}${SEARCH_PATH}</loc></url>`,
+  ];
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

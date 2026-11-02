@@ -1,6 +1,6 @@
 // US-004 (#202) tenant boundary — org + plan entitlement surfaced read-only on the frontend.
 
-export type PlanTier = 'Starter' | 'Pro' | 'Scale';
+export type PlanTier = 'Starter' | 'Pro' | 'Scale' | 'Agency';
 
 /** Public projection of the caller's organization (AC9/AC11). Never carries Stripe/billing ids. */
 export interface Org {
@@ -37,6 +37,8 @@ export interface Entitlement {
   openAccess?: boolean;
   /** The plan has a free seat for one more person (AM-02). */
   canInviteMember?: boolean;
+  /** Whether the org has the Agency tier (ADR-010). */
+  isAgency?: boolean;
 }
 
 /** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */
@@ -73,11 +75,45 @@ export interface PublicOrgDto {
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
   publicThemeId?: string | null;
+  /** The font pair the host chose (see `src/lib/public-site-themes.ts`), or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   showPoweredBy?: boolean;
+  /**
+   * Version of the text of the optional «send me offers» consent (DB-03, `Gdpr:MarketingConsentVersion`), or null while the text has no
+   * version: the checkout then shows no box and the API refuses a `marketingConsent: true`. Absent on an older backend.
+   */
+  marketingConsentVersion?: string | null;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
   operator?: PublicOperator | null;
+  /** How the host is named on the site ("Scrivi a Giulia", "Ti ospita Giulia"), or null: the site shows `displayName` only (DB-03). */
+  hostName?: string | null;
+  /** The phone number the host chose to publish (`+` or digits only), or null: the footer has no phone (DB-03). */
+  publicPhone?: string | null;
+  /** A guest can book on this site now: the org can take a payment (DB-03). Absent on an older backend. */
+  acceptsBookings?: boolean;
+}
+
+/**
+ * Body of `POST /api/public/orgs/{slug}/contact` (DB-03b, "Scrivi a {host}"): who writes, what, and the consent to send both to the
+ * host. It goes in the body, never in the address. The answer is a 202 with no body, the same whatever the site publishes.
+ */
+export interface HostContactPayload {
+  /** The address the host answers to (a plain address, at most 254 characters). */
+  email: string;
+  /** 5 to 2000 characters once trimmed. */
+  message: string;
+  /** At most 100 characters; left out when the visitor gave none. */
+  name?: string;
+  /** The home the visitor was looking at: counts only if it is a published home of the site. */
+  propertyId?: string;
+  /** The language of the site the visitor was reading, so that the host answers in it. */
+  lang?: 'it' | 'en';
+  /** The visitor agrees that the message and their address go to the host: always `true` (the backend refuses anything else). */
+  consent: true;
+  /** The honeypot: a field no person fills. Sent as it was found. */
+  website?: string;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */
@@ -93,6 +129,8 @@ export interface OrgBranding {
   primaryColor: string | null;
   /** Always one of the supported theme ids. */
   publicThemeId: string;
+  /** The font pair the host chose, or null for the font of the theme; absent on an older backend. */
+  publicFontId?: string | null;
   tagline: string | null;
   /** Public slug (preview link /book/{slug}), edited in the org settings. */
   slug: string;
@@ -104,6 +142,8 @@ export interface OrgBranding {
 export interface UpdateOrgBrandingRequest {
   primaryColor: string | null;
   publicThemeId: string;
+  /** The font pair (null = the font of the theme). Left out, the backend keeps the stored choice. */
+  publicFontId?: string | null;
   tagline: string | null;
 }
 
@@ -119,7 +159,14 @@ export interface OrgSettings {
   legalName?: string | null;
   /** Registered office ("sede legale") of the operator, one line, shown in the same footer (DB-03b-a). */
   registeredOffice?: string | null;
+  /** Phone number of the account (AM-08b-b), never published; null while not entered, absent on an older backend. */
+  contactPhone?: string | null;
+  /** Language of the account (AM-08b-b): the language of the emails to the team when nobody chooses another; absent on an older backend. */
+  defaultLanguage?: OrgLanguage;
 }
+
+/** The languages of an account: Italian (the default) or English. */
+export type OrgLanguage = 'it' | 'en';
 
 export interface UpdateOrgSettingsRequest {
   name: string;
@@ -129,6 +176,9 @@ export interface UpdateOrgSettingsRequest {
   /** Operator data (DB-03b-a): left out = unchanged on the server, an empty string clears it. */
   legalName?: string;
   registeredOffice?: string;
+  /** Phone and language of the account (AM-08b-b), same rule: left out = unchanged, an empty phone clears it, an empty language is Italian. */
+  contactPhone?: string;
+  defaultLanguage?: OrgLanguage;
 }
 
 /** GET /api/orgs/me/settings/slug-availability (A1-23). */

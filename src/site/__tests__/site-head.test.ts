@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildOrganizationJsonLd, buildSiteHead } from '../site-head';
+import { buildOrganizationJsonLd, buildSiteHead, buildWebSiteJsonLd } from '../site-head';
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 
@@ -28,6 +28,19 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
     expect(head).toContain('<meta property="og:url" content="https://site.example.test/funzionalita" />');
     // The JSON-LD Organization is on the home page only.
     expect(head).not.toContain('application/ld+json');
+  });
+
+  it('buildSiteHead_homeWithPublicOrigin_declaresTheSearchOfHomesAsTheSearchOfTheSite', () => {
+    const head = buildSiteHead({ page: sitePageById('home'), title: 'T', description: 'D', origin: 'https://site.example.test', legal: NO_LEGAL });
+
+    // The Organization and the WebSite with its SearchAction: two scripts, the second one points at the search of the app.
+    expect(head.match(/application\/ld\+json/g)).toHaveLength(2);
+    expect(head).toContain('"urlTemplate":"https://site.example.test/search?where={search_term_string}"');
+    expect(buildWebSiteJsonLd('https://site.example.test')).toMatchObject({
+      '@type': 'WebSite',
+      url: 'https://site.example.test/',
+      potentialAction: { '@type': 'SearchAction', 'query-input': 'required name=search_term_string' },
+    });
   });
 
   it('buildSiteHead_withoutPublicOrigin_hasNoCanonical', () => {

@@ -232,16 +232,21 @@ export function activeFilterCount(state: ListState): number {
   return Object.keys(state.filters).length;
 }
 
+/** The quick filter that stands for "everything": the one the list names (`allChip`), else the first. */
+export function allChipId<Row>(def: ListDefinition<Row>): string {
+  return def.allChip ?? (def.chips ?? [])[0]?.id ?? '';
+}
+
 /**
- * The list is narrowed down: a search, a filter, or a quick filter other than the first (the one for "everything"). With
- * nothing in the list, this is what tells "there is nothing yet" from "nothing passes".
+ * The list is narrowed down: a search, a filter, or a quick filter other than the one for "everything" (the first, or the
+ * `allChip` of the list). With nothing in the list, this is what tells "there is nothing yet" from "nothing passes".
  */
 export function isRefined<Row>(def: ListDefinition<Row>, state: ListState): boolean {
   const chips = def.chips ?? [];
-  return state.q.trim() !== '' || activeFilterCount(state) > 0 || (chips.length > 0 && state.chip !== chips[0].id);
+  return state.q.trim() !== '' || activeFilterCount(state) > 0 || (chips.length > 0 && state.chip !== allChipId(def));
 }
 
 /** The state "Azzera i filtri" leads to: no search, no filter, the quick filter for everything; the order, columns and layout stay. */
 export function clearedState<Row>(def: ListDefinition<Row>, state: ListState): ListState {
-  return { ...state, q: '', filters: {}, chip: (def.chips ?? [])[0]?.id ?? '', page: 1 };
+  return { ...state, q: '', filters: {}, chip: allChipId(def), page: 1 };
 }

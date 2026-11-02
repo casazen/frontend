@@ -10,13 +10,21 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format currency values
+ * Format currency values. Italian by default; the booking site passes the locale of the guest's language (`useSiteMoney`).
  */
-export function formatCurrency(amount: number, currency: string = 'EUR'): string {
-  return new Intl.NumberFormat('it-IT', {
+export function formatCurrency(amount: number, currency: string = 'EUR', locale: string = 'it-IT'): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
   }).format(amount);
+}
+
+/**
+ * The sign a form label writes beside an amount it asks for: `€` for the euro, the code for any other currency (`CHF`). The prices of a
+ * house in Switzerland are asked, and shown, in francs (CHF-MONEY).
+ */
+export function currencyLabel(currency: string | null | undefined): string {
+  return !currency || currency === 'EUR' ? '€' : currency;
 }
 
 /**

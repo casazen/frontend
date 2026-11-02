@@ -87,13 +87,19 @@ test.describe('Navigation (#252 / #259)', () => {
       await expect(sheet).not.toBeVisible();
     });
 
-    test('the sheet shows disambiguated payment labels', async ({ page }) => {
+    test('the sheet has one tile for the money and the Stripe account is a tab of its section', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await expect(sheet.getByRole('link', { name: /Incassi|Payments/i })).toBeVisible();
-      await expect(sheet.getByRole('link', { name: /Stripe Connect/i })).toBeVisible();
+      // The pages of a section are not tiles: they are the tabs on top of the page of their entry.
+      await expect(sheet.getByRole('link', { name: /Stripe Connect/i })).toHaveCount(0);
+
+      await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
+      await page.getByTestId('nav-section-select').selectOption({ label: 'Stripe Connect' });
+      await expect(page).toHaveURL(/\/app\/short-rent\/settings\/payments/);
     });
 
     test('no horizontal overflow on dashboard', async ({ page }) => {

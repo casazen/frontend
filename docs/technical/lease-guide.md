@@ -37,7 +37,7 @@ Gli strumenti sono i pannelli che la scheda «Dati» ospitava, con un titolo e u
   when: (f) => !f.noticeRecorded && !f.terminated && !f.termRenewed,   // condizioni sui dati
   priority: byPhase({ expiring: 28 }, 62), // più basso = prima; una funzione se una scadenza lo rende più urgente
   needsRules: true,                        // i testi citano cifre delle regole del server: aspetta che arrivino
-  action: lifecycle('disdetta'),           // il gesto: scheda, finestra (?azione=), strumento, pagina ufficiale, ricevuta
+  action: operation('disdetta'),           // il gesto: scheda, finestra (?azione=), operazione (?operazione=), strumento, pagina ufficiale, ricevuta
   sources: ['law431'],                     // sotto «Perché?»
 }
 ```
@@ -66,6 +66,36 @@ Regole di contenuto (decisioni LR-D29 e LR-D20):
   numeri.
 - Sono **suggerimenti senza data certa**: la guida non crea scadenze né promemoria (LR-D20) e non scrive a nessuno.
 - Il nome del fornitore del modulo guidato e la parola «partner» non compaiono in nessun testo (`src/i18n/no-supplier-name.test.ts`).
+
+## Le operazioni (LR-OPS-1)
+
+Sotto gli strumenti, la guida ha l'area **Operazioni**: ciò che il locatore può fare ora sulla fine del contratto, una riga per operazione con
+una frase di stato e un pulsante che apre una finestra. Ogni operazione dice **quando** serve (la scadenza calcolata dal server), prepara
+**una bozza di lettera** con i dati del contratto (un PDF da scaricare, firmare e spedire) e dice **cosa fare dopo**. CasaZen non spedisce
+nulla: «Segna come inviata» scrive solo una riga nella cronologia. Il testo di una lettera è una **bozza non approvata** finché il PO non
+l'approva sull'host (`LeaseLetters__Variants__…`, runbook `lease-operations.md` del backend): il PDF porta la filigrana «BOZZA — testo non
+ancora approvato» e la finestra lo dice in una frase.
+
+| File (`src/features/leases/operations/`) | Cosa fa |
+|---|---|
+| `lease-operations.tsx` | L'area: legge `GET /leases/:id/operations` (`useLeaseOperations`), mostra le righe disponibili (disdetta, rinnovo, conferma dell'esigenza, recesso) e apre la finestra dall'indirizzo `?operazione=disdetta`, `rinnovo`, `conferma-esigenza` o `recesso`. Senza il permesso `lease.create`, senza nulla da fare o se la risposta fallisce non c'è nessuna sezione. |
+| `operation-ids.ts` | I nomi delle operazioni (`LEASE_OPERATIONS`) e il parametro dell'indirizzo; nessun import, perché il catalogo dei consigli e la tabella dei passi li nominano senza trascinarsi dietro le finestre. |
+| `disdetta-dialog.tsx` | «Prepara la disdetta»: quando finisce il contratto e entro quando la lettera è in tempo (dal server), il motivo di legge alla prima scadenza (l'unico campo) e «Scarica la bozza». Sotto, «Dopo l'invio»: «Segna come inviata» e il rimando a «Registra la disdetta» (l'azione che ferma il rinnovo). |
+| `withdrawal-dialog.tsx` | «Registra il recesso dell'inquilino»: giorno di ricezione, motivo, preavviso del contratto (solo per la facoltà); mostra dove finisce il contratto (anteprima di ciò che calcola il server) e non va avanti se il preavviso scade oltre il periodo in corso. Registrato, la riga offre «Presa d'atto e prossimi passi». |
+| `renewal-dialog.tsx` | «Registra il rinnovo» (1b): rinnovo standard (mesi e date dal server) o proroga a un giorno concordato, con l'avviso (stesso di LR-OVERLAP) se un altro contratto dell'immobile è in mezzo; sposta la fine e allunga il piano dei canoni. La finestra si apre solo nell'ultimo tratto prima della fine (`renewal.available`); registrato, la riga offre «Accordo e prossimi passi» (piano già esteso, comunicazione all'Agenzia delle Entrate, bozza dell'accordo da far firmare) finché non si apre la finestra del periodo dopo. |
+| `need-confirmation-dialog.tsx` | «Conferma l'esigenza» (1b): per un transitorio la cui esigenza è del locatore, entro quando va spedita la lettera (l'ultimo giorno del contratto: il termine esatto lo conferma il commercialista) e «Scarica la bozza»; sotto, «Segna come inviata». Se l'esigenza è del conduttore non c'è né riga né lettera. |
+| `use-sheet-operations.ts` | La query delle operazioni per chi sta sulla scheda (l'area e la guida, per il consiglio che ne dipende): una sola richiesta al server. |
+| `istat-dialog.tsx` | «Calcola l'aggiornamento ISTAT» (1c): la variazione dell'indice FOI e la quota che il contratto riconosce (le scrive la persona; il server suggerisce una quota e ne mette il tetto), il giorno da cui vale il nuovo canone (mai nel passato); il server calcola il nuovo canone al centesimo (`POST …/istat/calculate`, con un breve ritardo mentre si scrive) e la bozza della richiesta ha gli stessi numeri. Non compare con la cedolare secca, che sospende ogni aggiornamento. Non cambia il canone né il piano dei canoni. |
+| `cedolare-dialog.tsx` | «Comunica la cedolare secca» (1c): per un contratto in cedolare secca, la bozza della comunicazione all'inquilino con la rinuncia agli aggiornamenti (un solo campo facoltativo: da quando vale l'opzione). I contratti fatti in CasaZen hanno già la clausola: la finestra lo dice. |
+| `handover-dialog.tsx` | «Prepara il verbale di riconsegna» (1c): per un contratto che sta finendo (disdetta registrata, cessazione anticipata, transitorio), tre righe su cosa fare il giorno, il giorno (facoltativo, il server propone l'ultimo giorno del contratto) e il verbale in bozza con le righe da compilare a mano (stato, contatori, chiavi). Si firma il giorno stesso, non si spedisce: niente «Segna come inviata». |
+| `deposit-dialog.tsx` | «Restituzione della cauzione» (1c): per un contratto che sta finendo e ha un deposito. La persona scrive il giorno della restituzione (e quello del versamento, di norma l'inizio del contratto), **il tasso di interesse legale di ogni anno** in cui ha tenuto il deposito (CasaZen non li conosce: cambiano ogni anno; la finestra elenca gli anni), gli interessi già pagati e, se trattiene qualcosa, le somme con il motivo; il server calcola il prospetto al centesimo mentre scrive (`POST …/deposit/calculate`, con un breve ritardo) e si vede solo quello che corrisponde al modulo sullo schermo. «Scarica il prospetto» e «Registra la restituzione» usano lo stesso ingresso; la registrazione chiede conferma, vale solo per un giorno già avvenuto e scrive una riga nella cronologia (CasaZen non muove denaro e non cambia il deposito). |
+| `letter-sent-form.tsx` | «Segna come inviata»: giorno e mezzo, un evento nella cronologia e nient'altro. |
+
+Dal catalogo dei consigli e dalla tabella dei passi si arriva alle operazioni con `operation('disdetta')` (azione `kind: 'operation'`; il consiglio
+`transitorioConfirmNeedLandlord` porta a `operation('conferma-esigenza')` solo quando l'esigenza è del locatore, fatto `landlordConfirmsNeed` che viene
+dalle operazioni) e con il
+bersaglio `{ kind: 'operation', operation: 'disdetta' }` di `lease-next-step.ts` (`operationPath`). Nessun mese e nessun giorno di legge è scritto qui: i
+mesi di preavviso e i giorni per comunicare la fine all'Agenzia delle Entrate vengono da `GET /long-rent/rules`; le date calcolate, dal server.
 
 ## Cosa non c'è
 

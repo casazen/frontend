@@ -25,7 +25,7 @@ export function useCreateDirectBooking() {
 export function useDirectBookingQuote(payload: DirectBookingQuotePayload | null) {
   return useQuery({
     queryKey: ['public-booking-quote', payload],
-    queryFn: () => publicBookingApi.quoteDirectBooking(payload!),
+    queryFn: ({ signal }) => publicBookingApi.quoteDirectBooking(payload!, signal),
     enabled: payload !== null,
     placeholderData: keepPreviousData,
     staleTime: 30_000,

@@ -1,49 +1,80 @@
 import { useTranslation } from 'react-i18next';
-import { Bath, BedDouble, Moon, Users } from 'lucide-react';
+import { ArrowUpDown, Bath, BedDouble, DoorOpen, Layers, Moon, Ruler, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { floorKind, pickText, positive } from '@/features/public-booking/lib/property-profile';
 import type { PublicPropertyDetailDto } from '@/types';
-
-/** A positive finite count, or null: a missing or malformed number is left out, never shown as "NaN" or "0". */
-function positiveCount(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
-}
+import '@/features/public-booking/property-page.css';
 
 interface Fact {
   icon: LucideIcon;
-  count: number;
-  /** Plural noun of the fact ("guests", "bedrooms"): the count goes in front of it. */
-  labelKey: string;
+  /** What is said in big: a number, or a word when a number would not do («Terra»). */
+  value: string;
+  label: string;
+  key: string;
 }
 
-/** The facts of the house that every guest looks for first, as a short row of tiles. Only what the host has filled in. */
-export function PropertyFacts({ property }: { property: Pick<PublicPropertyDetailDto, 'maxGuests' | 'bedrooms' | 'bathrooms' | 'minNights'> }) {
-  const { t } = useTranslation();
-  const minNights = positiveCount(property.minNights);
+type FactsProperty = Pick<
+  PublicPropertyDetailDto,
+  'maxGuests' | 'bedrooms' | 'bathrooms' | 'minNights' | 'beds' | 'areaSqm' | 'floorLevel' | 'floorNote' | 'amenities'
+>;
 
-  const candidates: Array<Omit<Fact, 'count'> & { count: number | null }> = [
-    { icon: Users, count: positiveCount(property.maxGuests), labelKey: 'publicProperty.facts.guests' },
-    { icon: BedDouble, count: positiveCount(property.bedrooms), labelKey: 'publicProperty.facts.bedrooms' },
-    { icon: Bath, count: positiveCount(property.bathrooms), labelKey: 'publicProperty.facts.bathrooms' },
-    // One night is no minimum at all: only a real minimum is worth a tile.
-    { icon: Moon, count: minNights !== null && minNights > 1 ? minNights : null, labelKey: 'publicProperty.facts.minNights' },
-  ];
-  const facts = candidates.filter((fact): fact is Fact => fact.count !== null);
+/**
+ * The facts of the house that every guest looks for first (DB-04a): guests, rooms, beds, bathrooms, area, floor and lift, as big
+ * tiles with an icon. Only what the host has filled in: a missing or malformed number is left out, never shown as «NaN» or «0», and
+ * the lift is said only when the house has it (its absence is not a fact the host stated).
+ */
+export function PropertyFacts({ property }: { property: FactsProperty }) {
+  const { t, i18n } = useTranslation();
+  const number = (value: number) => new Intl.NumberFormat(i18n.language).format(value);
+
+  const facts: Fact[] = [];
+  const add = (key: string, icon: LucideIcon, value: string, label: string) => facts.push({ key, icon, value, label });
+
+  const guests = positive(property.maxGuests);
+  if (guests) add('guests', Users, number(guests), t('publicProperty.facts.guests', { count: guests }));
+  const bedrooms = positive(property.bedrooms);
+  if (bedrooms) add('bedrooms', DoorOpen, number(bedrooms), t('publicProperty.facts.bedrooms', { count: bedrooms }));
+  const beds = positive(property.beds);
+  if (beds) add('beds', BedDouble, number(beds), t('publicProperty.facts.beds', { count: beds }));
+  const bathrooms = positive(property.bathrooms);
+  if (bathrooms) add('bathrooms', Bath, number(bathrooms), t('publicProperty.facts.bathrooms', { count: bathrooms }));
+  const area = positive(property.areaSqm);
+  if (area) add('area', Ruler, t('publicProperty.facts.areaValue', { value: number(area) }), t('publicProperty.facts.area'));
+
+  if (typeof property.floorLevel === 'number' && Number.isFinite(property.floorLevel)) {
+    const kind = floorKind(property.floorLevel);
+    const value =
+      kind === 'ground'
+        ? t('publicProperty.facts.floorGround')
+        : kind === 'below'
+          ? t('publicProperty.facts.floorBelow')
+          : t('publicProperty.facts.floorUpper', { n: property.floorLevel });
+    const note = pickText(property.floorNote, i18n.language);
+    add('floor', Layers, value, [t('publicProperty.facts.floor'), note].filter(Boolean).join(' · '));
+  }
+
+  if ((property.amenities ?? []).includes('Elevator')) {
+    add('elevator', ArrowUpDown, t('publicProperty.facts.yes'), t('publicProperty.facts.elevator'));
+  }
+
+  // One night is no minimum at all: only a real minimum is worth a tile.
+  const minNights = positive(property.minNights);
+  if (minNights !== null && minNights > 1) {
+    add('minNights', Moon, number(minNights), t('publicProperty.facts.minNights', { count: minNights }));
+  }
+
   if (facts.length === 0) return null;
 
   return (
-    <ul
-      aria-label={t('publicProperty.facts.label')}
-      className={cn('grid gap-3', facts.length > 3 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')}
-      data-testid="property-facts"
-    >
-      {facts.map(({ icon: Icon, count, labelKey }) => (
-        <li key={labelKey} className="public-site-card flex min-w-0 flex-col gap-2 p-4">
-          <Icon className="h-5 w-5 text-[var(--cz-public-primary-text)]" aria-hidden />
-          <p className="min-w-0">
-            <strong className="public-display text-2xl font-semibold leading-none">{count}</strong>{' '}
-            <span className="text-sm text-[var(--cz-public-muted)]">{t(labelKey, { count })}</span>
-          </p>
+    <ul aria-label={t('publicProperty.facts.label')} className="pp-specs" data-testid="property-facts">
+      {facts.map(({ key, icon: Icon, value, label }) => (
+        <li key={key} className={cn('pp-spec', value.length > 7 && 'pp-spec--wide')}>
+          <span className="pp-spec__icon" aria-hidden="true">
+            <Icon />
+          </span>
+          <strong className="pp-spec__value">{value}</strong>
+          <span className="pp-spec__label">{label}</span>
         </li>
       ))}
     </ul>

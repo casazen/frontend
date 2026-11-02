@@ -10,7 +10,8 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { formatRomeDateTime, romeDateOf, romeWallClock } from '@/lib/stay-dates';
 import { useSupplierChecklist, useSupplierToday } from '@/queries/supplier/use-inbox';
 import type { SupplierServiceRequest } from '@/types/service-request';
-import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestTitle, requestWhen, respondByText } from '../requests/request-model';
+import { isInquiry } from '../inquiry/inquiry-model';
+import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle, requestWhen, respondByText } from '../requests/request-model';
 import '../requests/supplier-request-drawer';
 import type { RequestActions } from '../requests/use-request-actions';
 import { formatMoney } from '../services/lib/service-money';
@@ -172,11 +173,39 @@ interface RowContext {
   open: (id: string) => boolean;
 }
 
-/** A new request: who asks and where, until when to answer, and the button that takes it. */
+/**
+ * A new request: who asks and where, until when to answer, and the button that takes it. A request the supplier has as a backup (SP-BKP)
+ * says «Accetta come riserva» while the primary supplier has its hour, shows no button once the supplier said yes, and has the usual
+ * «Accetta» when the job is free; the line under it is not a warning for a backup that waits (it is no deadline of its own).
+ */
 function requestRow(request: SupplierServiceRequest, { t, locale, today, actions, open }: RowContext & { actions: RequestActions }): DayListItem {
   const name = requestTitle(request, t);
   const price = request.price?.amountCents;
   const respond = respondByText(request, locale, t);
+  const phase = phaseOf(request);
+  const waitsForPrimary = phase === 'backupWaiting' || phase === 'backupAccepted';
+  const action: DayListItem['action'] = isInquiry(request)
+    ? // A request on measure of the showcase (SP-10b) is never taken as it is: it is answered on its page, with the conversation and an offer.
+      { label: t('supplier.inquiry.action.answer'), ariaLabel: t('supplier.inquiry.action.answerAria', { name }), href: requestPath(request.id), testId: `answer-${request.id}` }
+    : phase === 'backupAccepted'
+      ? undefined
+      : phase === 'backupWaiting'
+        ? {
+            label: t('supplier.requests.action.acceptBackup'),
+            ariaLabel: t('supplier.home.today.acceptBackupAria', { name }),
+            onClick: () => actions.acceptBackup(request.id),
+            loading: actions.acceptingBackupId === request.id,
+            disabled: actions.suspended || (actions.busy && actions.acceptingBackupId !== request.id),
+            testId: `accept-backup-${request.id}`,
+          }
+        : {
+            label: t('supplier.requests.action.take'),
+            ariaLabel: t('supplier.home.today.takeAria', { name }),
+            onClick: () => actions.take(request.id),
+            loading: actions.takingId === request.id,
+            disabled: actions.suspended || (actions.busy && actions.takingId !== request.id),
+            testId: `take-${request.id}`,
+          };
   return {
     id: request.id,
     ...whenOf(request, today, locale),
@@ -185,16 +214,9 @@ function requestRow(request: SupplierServiceRequest, { t, locale, today, actions
       .filter(Boolean)
       .join(' · '),
     meta: respond ?? undefined,
-    tone: respond ? 'warning' : undefined,
+    tone: respond && !waitsForPrimary ? 'warning' : undefined,
     onOpen: () => void open(request.id),
-    action: {
-      label: t('supplier.requests.action.take'),
-      ariaLabel: t('supplier.home.today.takeAria', { name }),
-      onClick: () => actions.take(request.id),
-      loading: actions.takingId === request.id,
-      disabled: actions.suspended || (actions.busy && actions.takingId !== request.id),
-      testId: `take-${request.id}`,
-    },
+    action,
   };
 }
 

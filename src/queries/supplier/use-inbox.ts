@@ -1,5 +1,5 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierKpis, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierKpis, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
 import type { SupplierInboxParams, SupplierKpiPeriod, SupplierOverviewPeriod } from '@/types/supplier';
 
 /**
@@ -18,12 +18,33 @@ export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' 
 }
 
 
-/** The numbers on the chips of the list of requests (SP-04e). Under `['supplier', 'inbox']`: every action of the supplier reloads them. */
-export function useSupplierInboxCounts() {
+/**
+ * The numbers on the chips of the list of requests (SP-04e), and the counter of "Richieste" in the menu (`toAnswer`, SP-08b). Under
+ * `['supplier', 'inbox']`: every action of the supplier reloads them. The page reads them again when it opens; the menu asks only when it
+ * has the entry (`enabled`) and takes what the cache has (`refetchOnMount: true`: only if it is stale).
+ */
+export function useSupplierInboxCounts(options?: { enabled?: boolean; refetchOnMount?: boolean | 'always' }) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'counts'],
     queryFn: fetchSupplierInboxCounts,
-    refetchOnMount: 'always',
+    enabled: options?.enabled ?? true,
+    refetchOnMount: options?.refetchOnMount ?? 'always',
+  });
+}
+
+/**
+ * Takes up to 20 new requests in one call (SP-04e, `POST inbox/accept`): the lists, the numbers and the home are read again whatever the
+ * outcome, because some of the requests may have been taken even when others were not. The outcome per request is the caller's to tell.
+ */
+export function useAcceptSupplierRequests() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => acceptSupplierRequests(ids),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['service-requests'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'dashboard'] });
+    },
   });
 }
 

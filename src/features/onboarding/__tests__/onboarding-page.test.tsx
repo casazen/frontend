@@ -38,6 +38,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
 import { OnboardingPage } from '../onboarding-page';
+import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { captureSignupAttribution, readPendingSignupAttribution } from '@/lib/signup-attribution';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
@@ -120,6 +121,8 @@ async function chooseShortTermWithConsents() {
 describe('OnboardingPage (PL-01)', () => {
   beforeEach(() => {
     vi.stubGlobal('location', { ...window.location, assign });
+    // The visitor allowed statistics: without that the attribution is neither kept nor sent (`cookie-consent.test.ts` proves it).
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
   });
 
   afterEach(() => {

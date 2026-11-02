@@ -110,6 +110,12 @@ function Details({ row, membersKnown, canWrite, onAssign }: { row: AccountProper
             <dd className="break-words">{row.missing.map((item) => missingLabel(item, t)).join(', ')}</dd>
           </>
         ) : null}
+        {row.advice.length > 0 ? (
+          <>
+            <dt className="text-foreground/70">{t('accountProperties.drawer.advice')}</dt>
+            <dd className="break-words">{row.advice.map((item) => missingLabel(item, t)).join(', ')}</dd>
+          </>
+        ) : null}
       </dl>
     </PlainSection>
   );

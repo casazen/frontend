@@ -24,6 +24,7 @@ import { FormFieldError } from '@/components/shared/form-field-error';
 import { ComunePicker } from '@/components/shared/comune-picker';
 import { useCancellationPolicies } from '@/queries/use-properties';
 import { getProblemMessage } from '@/lib/api-errors';
+import { currencyLabel } from '@/lib/utils';
 import { isDuplicateAddressError } from '../property-errors';
 
 const selectClassName =
@@ -117,6 +118,9 @@ export function PropertyForm({
 
   const selectedAmenities = watch('amenities') || [];
   const comuneIstatCode = watch('comuneIstatCode') || null;
+  const country = watch('country');
+  // The prices are asked in the currency of the country (CHF-MONEY): francs for a house in Switzerland.
+  const currency = country === 'CH' ? 'CHF' : 'EUR';
 
   const toggleAmenity = (amenity: string) => {
     const current = selectedAmenities;
@@ -125,6 +129,11 @@ export function PropertyForm({
       : [...current, amenity];
     setValue('amenities', updated, { shouldDirty: true });
   };
+
+  // Auto-update currency when country changes
+  useEffect(() => {
+    setValue('currency', currency, { shouldDirty: true });
+  }, [currency, setValue]);
 
   // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
   return (
@@ -212,6 +221,20 @@ export function PropertyForm({
                   </p>
                 )}
                 <FormFieldError error={errors.comuneIstatCode} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country">{t('property.country')}</Label>
+                  <select id="country" className={selectClassName} {...register('country')}>
+                    <option value="IT">{t('property.country.it')}</option>
+                    <option value="CH">{t('property.country.ch')}</option>
+                  </select>
+                  <FormFieldError error={errors.country} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t('property.currency')}</Label>
+                  <Input id="currency" value={watch('currency')} readOnly disabled className="bg-muted" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit">{t('property.form.unit')}</Label>
@@ -306,16 +329,18 @@ export function PropertyForm({
                     <FormFieldError error={errors.nightlyRate} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cleaningFee">{t('property.form.cleaningFee')}</Label>
+                    <Label htmlFor="cleaningFee">{t('property.form.cleaningFee', { currency: currencyLabel(currency) })}</Label>
                     <Input id="cleaningFee" type="number" min={0} step="0.01" {...register('cleaningFee', asNumber)} />
                     <FormFieldError error={errors.cleaningFee} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="damageDeposit">{t('property.form.damageDeposit')}</Label>
+                    <Label htmlFor="damageDeposit">{t('property.form.damageDeposit', { currency: currencyLabel(currency) })}</Label>
                     <Input id="damageDeposit" type="number" min={0} step="0.01" {...register('damageDeposit', asNumber)} />
                     <FormFieldError error={errors.damageDeposit} />
                   </div>
-                  <p className="col-span-3 text-xs text-muted-foreground">{t('property.form.amountsInEuro')}</p>
+                  <p className="col-span-3 text-xs text-muted-foreground">
+                    {t(currency === 'CHF' ? 'property.form.amountsInFrancs' : 'property.form.amountsInEuro')}
+                  </p>
                 </div>
               )}
             </CardContent>

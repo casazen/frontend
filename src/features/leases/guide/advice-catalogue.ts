@@ -1,6 +1,7 @@
 import type { LeaseContractType } from '@/types';
 import type { LeaseTab } from '../lib/lease-sheet';
 import type { LeaseAction } from '../lifecycle/lifecycle-actions';
+import type { LeaseOperationId } from '../operations/operation-ids';
 import type { GuideFacts, GuidePhase } from './guide-facts';
 
 /**
@@ -17,8 +18,8 @@ import type { GuideFacts, GuidePhase } from './guide-facts';
  * - `coveredBy`: the codes of the step of «Cosa devi fare ora» that already say it; then the guide keeps quiet.
  * - `needsRules`: the text has a figure that comes from the rules of the server (`{{registrationDays}}`…); no figure of law is written in
  *   the interface (LR-D29), so the advice waits until the rules arrive.
- * - `action`: the one gesture: a tab of the sheet, a window of the sheet (`?azione=`), a tool, an official page, or the receipt of the
- *   registration to download. Only the follow-up of a registered canone concordato (`render: 'benefits'`) has its own buttons inside.
+ * - `action`: the one gesture: a tab of the sheet, a window of the sheet (`?azione=`), the window of an operation that prepares a letter
+ *   (`?operazione=`, LR-OPS-1), a tool, an official page, or the receipt of the registration to download. Only the follow-up of a registered canone concordato (`render: 'benefits'`) has its own buttons inside.
  * - `sources`: where the rule is read, shown under «Perché?». Only pages and laws the project already cites.
  *
  * The texts are `leaseGuide.advice.<id>.{title, body, why, action}`, in both languages, with only the placeholders of `guideValues`.
@@ -29,6 +30,7 @@ export type GuideTool = 'regime' | 'rent' | 'attestation' | 'imu';
 export type AdviceAction =
   | { kind: 'tab'; tab: LeaseTab }
   | { kind: 'lifecycle'; action: LeaseAction }
+  | { kind: 'operation'; operation: LeaseOperationId }
   | { kind: 'tool'; tool: GuideTool }
   | { kind: 'official'; source: SourceId }
   | { kind: 'receipt' };
@@ -107,6 +109,7 @@ const byPhase = (priorities: Partial<Record<GuidePhase, number>>, otherwise: num
 const tab = (name: LeaseTab): AdviceAction => ({ kind: 'tab', tab: name });
 const tool = (name: GuideTool): AdviceAction => ({ kind: 'tool', tool: name });
 const lifecycle = (action: LeaseAction): AdviceAction => ({ kind: 'lifecycle', action });
+const operation = (id: LeaseOperationId): AdviceAction => ({ kind: 'operation', operation: id });
 const official = (source: SourceId): AdviceAction => ({ kind: 'official', source });
 
 export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
@@ -241,7 +244,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: IN_FORCE,
     when: (f) => f.taxRegime === 'Ordinario',
     priority: 44,
-    action: tab('pagamenti'),
+    action: operation('istat'),
     sources: ['law431'],
   },
   {
@@ -250,7 +253,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: IN_FORCE,
     when: (f) => f.taxRegime === 'Ordinario',
     priority: 44,
-    action: tab('pagamenti'),
+    action: operation('istat'),
     sources: ['dm2017'],
   },
   {
@@ -420,7 +423,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     when: (f) => !f.noticeRecorded && !f.terminated && !f.termRenewed,
     priority: byPhase({ expiring: 28 }, 62),
     needsRules: true,
-    action: lifecycle('disdetta'),
+    action: operation('disdetta'),
     sources: ['law431'],
   },
   {
@@ -430,7 +433,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     when: (f) => !f.noticeRecorded && !f.terminated && !f.termRenewed,
     priority: byPhase({ expiring: 28 }, 62),
     needsRules: true,
-    action: lifecycle('disdetta'),
+    action: operation('disdetta'),
     sources: ['law431', 'dm2017'],
   },
   {
@@ -440,7 +443,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     when: (f) => f.termRenewed && !f.noticeRecorded && !f.terminated,
     priority: byPhase({ expiring: 26 }, 64),
     needsRules: true,
-    action: lifecycle('disdetta'),
+    action: operation('disdetta'),
     sources: ['law431'],
   },
   {
@@ -454,11 +457,23 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     sources: ['law431'],
   },
   {
+    // The need is the tenant's, or the operations have not arrived: the date the confirmation is due by is on the sheet.
     id: 'transitorioConfirmNeed',
     types: ['Transitorio'],
     phases: IN_FORCE,
+    when: (f) => f.landlordConfirmsNeed !== true,
     priority: byPhase({ expiring: 20 }, 70),
     action: tab('dati'),
+    sources: ['dm2017'],
+  },
+  {
+    // The need is the landlord's: CasaZen prepares the letter (the window of the operations, LR-OPS-1b).
+    id: 'transitorioConfirmNeedLandlord',
+    types: ['Transitorio'],
+    phases: IN_FORCE,
+    when: (f) => f.landlordConfirmsNeed === true,
+    priority: byPhase({ expiring: 20 }, 70),
+    action: operation('conferma-esigenza'),
     sources: ['dm2017'],
   },
   {
@@ -467,7 +482,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: ENDING,
     when: isEnding,
     priority: 33,
-    action: tab('documenti'),
+    action: operation('riconsegna'),
     sources: [],
   },
   {
@@ -476,7 +491,7 @@ export const ADVICE_CATALOGUE: readonly AdviceEntry[] = [
     phases: ENDING,
     when: (f) => f.hasDeposit && isEnding(f),
     priority: 35,
-    action: tab('documenti'),
+    action: operation('cauzione'),
     sources: ['law392'],
   },
   {

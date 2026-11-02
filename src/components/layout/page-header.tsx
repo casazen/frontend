@@ -9,6 +9,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { usePageTitle } from '@/hooks/use-page-title';
 import { getManifestCrumbs, type PageCrumb } from '@/lib/page-crumbs';
 import { useAppShell } from './app-shell-context';
+import { NavSectionTabs } from './nav-section-tabs';
 import { PageCrumbs } from './page-crumbs';
 import {
   PageHeaderMenu,
@@ -52,34 +53,44 @@ interface PageHeaderProps {
  * Without the props of UI-05 (`crumbs`, `primary`, `secondary`) it is the head every page has, in the same markup, so that
  * the 64 pages that use it are unchanged. With them it becomes the head of the new interface: breadcrumb on a computer and
  * link back on a phone, the primary action next to the title (fixed above the bottom bar on a phone), the others in "⋯".
+ *
+ * A page that belongs to a section of the menu (Prenotazioni · Ospiti · Recensioni, Incassi · Ricavi · Report…) gets the tabs of the
+ * section right under its head (`NavSectionTabs`): the page does not have to ask for them, and a page that is in no section is
+ * unchanged.
  */
 export function PageHeader({ title, description, action, crumbs, primary, secondary, mobilePrimary }: PageHeaderProps) {
   usePageTitle(title);
 
   if (crumbs === undefined && primary === undefined && !secondary?.length) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0 grow basis-56">
-          <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-muted-foreground mt-2 break-words">{description}</p>
-          )}
+      <>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="min-w-0 grow basis-56">
+            <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
+            {description && (
+              <p className="text-muted-foreground mt-2 break-words">{description}</p>
+            )}
+          </div>
+          {action && <div className="min-w-0 max-w-full">{action}</div>}
         </div>
-        {action && <div className="min-w-0 max-w-full">{action}</div>}
-      </div>
+        <NavSectionTabs />
+      </>
     );
   }
 
   return (
-    <PageHeaderWithTrail
-      title={title}
-      description={description}
-      action={action}
-      crumbs={crumbs}
-      primary={primary}
-      secondary={secondary}
-      mobilePrimary={mobilePrimary}
-    />
+    <>
+      <PageHeaderWithTrail
+        title={title}
+        description={description}
+        action={action}
+        crumbs={crumbs}
+        primary={primary}
+        secondary={secondary}
+        mobilePrimary={mobilePrimary}
+      />
+      <NavSectionTabs />
+    </>
   );
 }
 

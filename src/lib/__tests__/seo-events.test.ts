@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { LANDING_TOUCH_STORAGE_KEY } from '@/lib/signup-attribution';
 import { PublicSeoApi } from '@/api/public-seo.api';
 import { resolvePlausibleDomain } from '@/config/analytics.config';
@@ -83,6 +84,8 @@ describe('trackSeoEvent (SE-04, #300 AC3 AC8)', () => {
 
   beforeEach(() => {
     window.sessionStorage.clear();
+    // The visitor allowed statistics: without that nothing is sent (`cookie-consent.test.ts` proves it).
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     sendBeacon.mockReset().mockReturnValue(true);
     Object.defineProperty(window.navigator, 'sendBeacon', { value: sendBeacon, configurable: true, writable: true });
     vi.mocked(PublicSeoApi.trackEvent).mockReset().mockResolvedValue(undefined);
@@ -92,6 +95,7 @@ describe('trackSeoEvent (SE-04, #300 AC3 AC8)', () => {
 
   afterEach(() => {
     Reflect.deleteProperty(window.navigator, 'sendBeacon');
+    window.localStorage.removeItem(CONSENT_STORAGE_KEY);
   });
 
   it('trackSeoEvent_BeaconAccepted_SendsAJsonBeaconToTheEventsEndpoint', async () => {

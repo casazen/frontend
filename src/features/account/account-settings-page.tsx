@@ -11,6 +11,9 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { reachableEntry, type Reach } from './account-home-model';
+import { AccountPrivacySection } from './account-privacy-section';
+import { SettingsJumpNav, type JumpSection } from './settings-jump-nav';
+import { settingsSectionId } from './settings-sections';
 
 // The pages of the rental areas that this one gathers: it shows what they show, to the people who may open them, with the same endpoints.
 const PAYMENTS_PATH = '/app/short-rent/settings/payments';
@@ -38,10 +41,21 @@ export function AccountSettingsPage() {
   const focus =
     orgSettings.data && isOrgProfileIncomplete(orgSettings.data) ? 'organization' : showPayments && isPaymentsMissing(payments) ? 'payments' : null;
   const billing = reachableEntry([BILLING_PATH], reach);
+  const showPrivacy = isOrgBillingAdmin(contexts);
+
+  // The sections the person has on this page, in the order they are on it: the row of links «Vai a…» and `?section=` (AM-08b-e).
+  const jumpSections: JumpSection[] = [
+    { id: 'company', label: t('nav.organization') },
+    ...(showPayments ? [{ id: 'payments' as const, label: t('settings.connectPaymentsTitle') }] : []),
+    ...(billing ? [{ id: 'billing' as const, label: t('accountSettings.billing.title') }] : []),
+    ...(showPrivacy ? [{ id: 'privacy' as const, label: t('accountSettings.privacy.title') }] : []),
+  ];
 
   return (
     <div className="space-y-8">
       <PageHeader title={t('nav.accountSettings')} description={t('accountSettings.description')} crumbs="auto" />
+
+      <SettingsJumpNav sections={jumpSections} />
 
       {focus === 'organization' ? (
         <FocusBlock
@@ -60,24 +74,33 @@ export function AccountSettingsPage() {
 
       {/* What the org says about itself on the left, how it gets paid and where it pays on the right (under each other on a narrow screen). */}
       <div className={cn(PAGE_COLUMNS, 'gap-8')}>
-        <PlainSection title={t('nav.organization')} data-testid="account-settings-organization">
+        <PlainSection id={settingsSectionId('company')} className="scroll-mt-4" title={t('nav.organization')} data-testid="account-settings-organization">
           <p className="text-sm text-foreground/70">{t('orgSettings.formDescription')}</p>
           <OrganizationSettings showSiteAppearanceLink={reachableEntry([SITE_APPEARANCE_PATH], reach) !== undefined} />
         </PlainSection>
 
         <div className="min-w-0 space-y-8">
           {showPayments ? (
-            <PlainSection title={t('settings.connectPaymentsTitle')} data-testid="account-settings-payments">
+            <PlainSection id={settingsSectionId('payments')} className="scroll-mt-4" title={t('settings.connectPaymentsTitle')} data-testid="account-settings-payments">
               <p className="text-sm text-foreground/70">{t('settings.connectDescription')}</p>
               <PaymentsBody payments={payments} showAction={focus !== 'payments'} />
             </PlainSection>
           ) : null}
 
           {billing ? (
-            <PlainSection title={t('accountSettings.billing.title')} actionLabel={t('accountSettings.billing.action')} href={billing.path}>
+            <PlainSection
+              id={settingsSectionId('billing')}
+              className="scroll-mt-4"
+              title={t('accountSettings.billing.title')}
+              actionLabel={t('accountSettings.billing.action')}
+              href={billing.path}
+            >
               <p className="text-sm text-foreground/70">{t('accountSettings.billing.body')}</p>
             </PlainSection>
           ) : null}
+
+          {/* The data of the organization, to take away (AM-08b-c): the endpoint is the one of the org billing administrator. */}
+          {showPrivacy ? <AccountPrivacySection /> : null}
         </div>
       </div>
     </div>

@@ -45,6 +45,7 @@ export function mockCheckoutOutcome(overrides?: Partial<CheckoutOutcome>): Check
     currency: 'EUR',
     expiresAt: null,
     deferredChargeDate: null,
+    bookingCode: 'K7M4Q-9XP2H',
     ...overrides,
   };
 }

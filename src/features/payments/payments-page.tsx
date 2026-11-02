@@ -4,8 +4,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { ListView } from '@/components/shared/list-view/list-view';
-import { BookingsSectionTabs } from '@/features/bookings/components/bookings-section-tabs';
-import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { usePayments } from '@/queries/use-payments';
@@ -53,8 +51,9 @@ function PaymentsSummary({ month, today }: { month: PaymentsMonth; today: string
 
 /**
  * The payments of the host (SR-04c): the three numbers of the month and the unified list in `client` mode. The API gives every
- * payment at once, so the search, the quick filters (to collect, collected, refunded), the filters (property, method, dates), the
- * order and the views all work on the rows in the page, and all of it is in the address (`?chip=toCollect&f_method=BankTransfer`).
+ * payment at once, so the search, the quick filters (in arrivo, which the page opens on, all, to collect, collected, refunded,
+ * cancelled), the filters (property, method, dates), the order and the views all work on the rows in the page, and all of it is in
+ * the address (`?chip=toCollect&f_method=BankTransfer`; the page opens on «In arrivo» when there is no `chip`).
  * The page is for who may read the payments (`payment.read`); the others find the reserved page of the shell.
  */
 export function PaymentsPage() {
@@ -74,13 +73,7 @@ export function PaymentsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          title={t('payment.list.title')}
-          description={t('payment.list.description')}
-          crumbs={[{ label: t('booking.sections.bookings'), to: BOOKINGS_PATH }, { label: t('payment.list.title') }]}
-        />
-
-        <BookingsSectionTabs />
+        <PageHeader title={t('payment.list.title')} description={t('payment.list.description')} />
 
         {rows.length > 0 && !payments.isError ? <PaymentsSummary month={month} today={today} /> : null}
 

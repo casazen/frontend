@@ -7,7 +7,7 @@ import { usePublicOrg } from '@/queries/use-public-org';
 import type { PublicOrgDto } from '@/types';
 import { PublicSiteShell } from '../PublicSiteShell';
 
-vi.mock('@/queries/use-public-org', () => ({ usePublicOrg: vi.fn() }));
+vi.mock('@/queries/use-public-org', () => ({ usePublicOrg: vi.fn(), useOrgProperties: () => ({ data: undefined }) }));
 vi.mock('@/components/shared/cookie-consent-banner', () => ({ CookieConsentBanner: () => null }));
 vi.mock('@/features/public-site/components/Footer', () => ({ Footer: () => null }));
 
@@ -41,10 +41,31 @@ describe('PublicSiteShell branding', () => {
   });
 
   it('PublicSiteShell_OrgPrimaryColor_IsSetOnTheThemedRoot', () => {
-    const root = renderWith({ primaryColor: '#1A6B8F', publicThemeId: 'montagna' });
+    const root = renderWith({ primaryColor: '#1A6B8F', publicThemeId: 'citta' });
 
-    expect(root).toHaveAttribute('data-theme', 'montagna');
+    expect(root).toHaveAttribute('data-theme', 'citta');
     expect(root.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
+    // The three colors derived from it travel with it (DB-01).
+    expect(root.style.getPropertyValue('--cz-public-hover')).toMatch(/^#[0-9a-f]{6}$/);
+    expect(root.style.getPropertyValue('--cz-public-ink')).toMatch(/^#[0-9a-f]{6}$/);
+    expect(root.style.getPropertyValue('--cz-public-soft')).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it('PublicSiteShell_HostFontPair_IsSetAsDataFontAndAnUnknownOneIsIgnored', () => {
+    expect(renderWith({ publicFontId: 'classico' })).toHaveAttribute('data-font', 'classico');
+    cleanup();
+
+    expect(renderWith({ publicFontId: 'comic-sans' })).not.toHaveAttribute('data-font');
+    cleanup();
+
+    expect(renderWith({ publicFontId: null })).not.toHaveAttribute('data-font');
+  });
+
+  it.each([
+    ['montagna', 'terra'],
+    ['urban', 'citta'],
+  ])('PublicSiteShell_ThemeIdFromBeforeDB01_%s_IsReadAs_%s', (stored, expected) => {
+    expect(renderWith({ publicThemeId: stored })).toHaveAttribute('data-theme', expected);
   });
 
   it('PublicSiteShell_OnlyLegacyThemeColor_IsStillApplied', () => {
@@ -56,7 +77,7 @@ describe('PublicSiteShell branding', () => {
   it('PublicSiteShell_NoColorAndUnknownTheme_UsesDefaultThemeTokens', () => {
     const root = renderWith({ publicThemeId: 'collina' });
 
-    expect(root).toHaveAttribute('data-theme', 'mare');
+    expect(root).toHaveAttribute('data-theme', 'terra');
     expect(root.style.getPropertyValue('--cz-public-primary')).toBe('');
   });
 

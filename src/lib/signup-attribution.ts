@@ -1,11 +1,16 @@
 import { isAxiosError } from 'axios';
 import { UsersApi } from '@/api/users.api';
 import { AuthTokenUnavailableError, isTransientRequestError } from '@/lib/api-errors';
+import { hasConsent } from '@/lib/cookie-consent';
 import { HOST_INVITE_PATH_PREFIX } from '@/lib/host-invite';
 import type { SignupAttribution } from '@/types';
 
 /**
  * Signup attribution (SE-03, A8-03): where a host signup came from, measured per comune.
+ *
+ * It is a statistic about the visitor, so **nothing of it is stored or sent until the visitor allows statistics** (DB-02b,
+ * `hasConsent('statistics')`): without the consent the touch of the first page is only held in memory, `/signup` stores nothing and
+ * a waiting attribution is forgotten instead of sent; withdrawing the consent forgets what was kept.
  *
  * 1. The first public page of a visit records a landing "touch" (path, referrer host, UTM parameters) for this tab.
  * 2. The CTA of the SEO pages opens `/signup` with the comune and the UTM parameters of the visit.
@@ -147,9 +152,14 @@ interface PageLocation {
   origin: string;
 }
 
+/** The first page of a visit that the visitor opened before allowing statistics: held in memory only, never stored, until they do. */
+let deferredTouch: LandingTouch | null = null;
+
 /**
  * Records the first page of the visit in this tab (landing path, referrer host, UTM parameters). Called once when the
- * app starts on a public page; later pages of the same visit keep the first touch.
+ * app starts on a public page; later pages of the same visit keep the first touch. Stored only when the visitor allows
+ * statistics; before that it is held in memory (`keepDeferredLandingTouch` stores it the moment they do, so that a visitor who
+ * accepts on the second page still counts for the page they came in by).
  */
 export function recordLandingTouch(location: PageLocation = window.location, referrer = document.referrer): void {
   if (readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) return;
@@ -158,7 +168,23 @@ export function recordLandingTouch(location: PageLocation = window.location, ref
     referrerHost: externalReferrerHost(referrer, location.origin),
     utm: readUtm(location.search),
   };
-  writeJson(session, LANDING_TOUCH_STORAGE_KEY, touch);
+  if (hasConsent('statistics')) writeJson(session, LANDING_TOUCH_STORAGE_KEY, touch);
+  else deferredTouch ??= touch;
+}
+
+/** The visitor has just allowed statistics: the first page of the visit, held in memory until now, is kept like any other touch. */
+export function keepDeferredLandingTouch(): void {
+  if (deferredTouch && !readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) {
+    writeJson(session, LANDING_TOUCH_STORAGE_KEY, deferredTouch);
+  }
+  deferredTouch = null;
+}
+
+/** The visitor does not allow statistics (or no longer does): the source of the visit is forgotten, in the page and in the browser. */
+export function forgetVisitMarketing(): void {
+  deferredTouch = null;
+  remove(session, LANDING_TOUCH_STORAGE_KEY);
+  discardSignupAttribution();
 }
 
 /**
@@ -237,6 +263,9 @@ export function captureSignupAttribution(
   referrer = document.referrer,
   now = Date.now(),
 ): SignupAttribution {
+  // A statistic about the visitor: nothing is read into it or kept before they allow statistics (DB-02b).
+  if (!hasConsent('statistics')) return {};
+
   const params = new URLSearchParams(location.search);
   const touch = readLandingTouch();
   const utm = readUtm(location.search);
@@ -289,12 +318,13 @@ export type SignupAttributionSyncResult = 'none' | 'sent' | 'discarded' | 'kept'
 /**
  * Sends the attribution once the first onboarding created the org. `onboarded`: the user passed the onboarding guard;
  * a pending attribution that is not ready then belongs to an account that already existed (it came through `/signup`
- * and signed in), so it is discarded. Never throws.
+ * and signed in), so it is discarded; so is one that waits while the visitor does not allow statistics (it is never sent
+ * without that). Never throws.
  */
 export async function syncSignupAttribution(now = Date.now()): Promise<SignupAttributionSyncResult> {
   const pending = readPending(now);
   if (!pending) return 'none';
-  if (!pending.ready) {
+  if (!pending.ready || !hasConsent('statistics')) {
     discardSignupAttribution();
     return 'discarded';
   }

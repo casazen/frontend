@@ -13,6 +13,11 @@ export interface OnboardingLinkResponse {
   url: string;
 }
 
+/** The single-use login link to the Express Dashboard of the org's Stripe account (AM-08b-d). A credential: it is opened at once and never kept. */
+export interface DashboardLinkResponse {
+  url: string;
+}
+
 export type ConnectUiStatus = 'disconnected' | 'pending' | 'active';
 
 export function resolveConnectUiStatus(status: ConnectStatus | undefined): ConnectUiStatus {

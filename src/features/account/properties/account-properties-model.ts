@@ -3,7 +3,7 @@ import { leaseOfRow } from '@/features/properties/long-rent/long-rent-property-f
 import { longRentPropertyRows } from '@/features/properties/long-rent/long-rent-property-rows';
 import { memberName } from '@/features/team/people-rows';
 import { propertyStatus, type LongRentPropertyStatus, type PropertyStatus } from '@/lib/status-dictionary';
-import type { LeaseSummary, Property, RentalMode } from '@/types';
+import type { LeaseSummary, Property, PropertyMissingItem, RentalMode } from '@/types';
 import type { OrgMember, OrgMemberProperties, OrgMemberProperty } from '@/types/org-team.types';
 
 /** What the person sees of a property: the state of a short-term one, or whether a long-term one is let. */
@@ -11,8 +11,29 @@ export type AccountPropertyState =
   | { kind: 'property'; status: PropertyStatus }
   | { kind: 'longRentProperty'; status: LongRentPropertyStatus };
 
-/** What a short-term property that is not ready still lacks, read from the empty fields of its record: nothing is guessed. */
-export type MissingItem = 'cin' | 'photos' | 'price';
+/**
+ * What a short-term property still lacks. The server says it (`missing` of the list asked with `?view=overview`, SR-07a: the rules of the
+ * activation wizard, worked out once, there); only an answer without it (an older backend) is read from the empty fields of the record.
+ */
+export type MissingItem = 'baseData' | 'cin' | 'documents' | 'safety' | 'activationNotConfirmed' | 'photos' | 'calendar' | 'price';
+
+/** The codes the server sends (`PropertyMissingCodes`) and the item each one is; a code this version does not know is left out, never shown as it is. */
+const SERVER_MISSING: Record<string, MissingItem> = {
+  base_data: 'baseData',
+  cin: 'cin',
+  documents: 'documents',
+  safety: 'safety',
+  activation_not_confirmed: 'activationNotConfirmed',
+  photos: 'photos',
+  calendar: 'calendar',
+};
+
+/** The things the server says a property lacks that block its activation (`blocking`) or only advise (`!blocking`), in its order. */
+function serverMissing(items: readonly PropertyMissingItem[], blocking: boolean): MissingItem[] {
+  return items
+    .filter((item) => item.blocking === blocking && Object.hasOwn(SERVER_MISSING, item.code))
+    .map((item) => SERVER_MISSING[item.code]);
+}
 
 /** What the person may do in each area (`hasPermission` of the workspace, read once): who may open, who may change. */
 export interface AccountPropertyRights {
@@ -32,7 +53,10 @@ export interface AccountPropertyRow {
   lease: LeaseSummary | null;
   /** A short-term property that cannot receive bookings yet (to complete, or suspended). */
   needsCompleting: boolean;
+  /** What blocks a short-term property that cannot work yet, for the list and the drawer. */
   missing: MissingItem[];
+  /** What the server only advises (the photos, the calendar); the drawer says it, the list does not. */
+  advice: MissingItem[];
   /** The member in charge, by name. `null`: nobody (also a member who is gone: the name goes back to nobody when the access ends). */
   responsible: { userId: string; name: string } | null;
   /** How many active people reach the property; `null` while the backend has not said. */
@@ -45,7 +69,7 @@ export const modeOf = (property: Pick<Property, 'rentalMode'>): RentalMode => (p
 /** The area of a mode: where its properties are worked. */
 export const areaKeyOf = (mode: RentalMode) => (mode === 'Long' ? ('long-rent' as const) : ('short-rent' as const));
 
-/** The CIN, the photos and the price of the night are empty on the record. (The calendar and the documents are not on it.) */
+/** The fallback of an answer without `missing`: the CIN, the photos and the price of the night that are empty on the record (the documents and the calendar are not on it). */
 export function missingOf(property: Pick<Property, 'cinCode' | 'photoUrls' | 'nightlyRate'>): MissingItem[] {
   const items: MissingItem[] = [];
   if (!property.cinCode?.trim()) items.push('cin');
@@ -56,8 +80,13 @@ export function missingOf(property: Pick<Property, 'cinCode' | 'photoUrls' | 'ni
 
 // The keys are written out (`*Key:` properties) so that the i18n test finds a missing translation.
 const MISSING_LABELS: Record<MissingItem, { labelKey: string }> = {
+  baseData: { labelKey: 'accountProperties.missing.baseData' },
   cin: { labelKey: 'accountProperties.missing.cin' },
+  documents: { labelKey: 'accountProperties.missing.documents' },
+  safety: { labelKey: 'accountProperties.missing.safety' },
+  activationNotConfirmed: { labelKey: 'accountProperties.missing.activationNotConfirmed' },
   photos: { labelKey: 'accountProperties.missing.photos' },
+  calendar: { labelKey: 'accountProperties.missing.calendar' },
   price: { labelKey: 'accountProperties.missing.price' },
 };
 
@@ -101,6 +130,8 @@ export function accountPropertyRows({ properties, leases, members, peopleByPrope
     const longRow = longRows.get(property.id);
     const status = propertyStatus(property);
     const needsCompleting = mode === 'Short' && (status === 'Pending' || status === 'Suspended');
+    // The server's own list when it sends one (only for a short-term property); the empty fields of the record otherwise.
+    const told = mode === 'Short' ? property.missing : undefined;
     const state: AccountPropertyState | null =
       mode === 'Short' ? { kind: 'property', status } : longRow?.status ? { kind: 'longRentProperty', status: longRow.status } : null;
     const responsibleName = property.responsibleUserId ? nameOf?.get(property.responsibleUserId) : undefined;
@@ -111,7 +142,8 @@ export function accountPropertyRows({ properties, leases, members, peopleByPrope
       state,
       lease: longRow ? leaseOfRow(longRow) : null,
       needsCompleting,
-      missing: needsCompleting ? missingOf(property) : [],
+      missing: needsCompleting ? (told ? serverMissing(told, true) : missingOf(property)) : [],
+      advice: told ? serverMissing(told, false) : [],
       responsible: property.responsibleUserId && responsibleName ? { userId: property.responsibleUserId, name: responsibleName } : null,
       people: peopleByProperty?.get(property.id) ?? null,
     };

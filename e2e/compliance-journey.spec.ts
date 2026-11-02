@@ -1,8 +1,8 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { fillHostBookingGuestContact } from './helpers/onboarding';
-import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
-import { buildCreatedProperty } from './fixtures/properties.fixtures';
+import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { NEW_PROPERTY_ID, buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockCinComplianceApi } from './helpers/cin-mock';
 import { mockAlloggiatiApi, mockCheckInApi, mockBookingDetailApi, DEMO_CHECKIN_TOKEN, DEMO_BOOKING_ID } from './helpers/alloggiati-mock';
 
@@ -170,31 +170,20 @@ test.describe('Italian Compliance Golden Path', () => {
       await mockCinComplianceApi(page);
     });
 
-    test('property create accepts a real CIN written with hyphens', async ({ page }) => {
-      await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
-
-      await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
+    test('the form of a property accepts a real CIN written with hyphens', async ({ page }) => {
+      // «Aggiungi immobile» does not ask the CIN at its first steps (the sheet of the property does): it is written in the form.
+      await mockPropertiesApi(page, [buildCreatedProperty({ name: 'Casa Conforme' })]);
+      await page.goto(demoUrl(`/app/short-rent/properties/${NEW_PROPERTY_ID}/edit`, 'short-stay'));
 
       // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
-      await fillPropertyForm(page, {
-        name: 'Casa Conforme',
-        description: 'Test CIN validation.',
-        address: 'Via Dante 1',
-        comune: 'Roma',
-        postalCode: '00100',
-        bedrooms: 2,
-        bathrooms: 1,
-        maxGuests: 4,
-        nightlyRate: 120,
-        cinCode: 'IT-058091-C2-7G5FFZDZ',
-      });
+      await page.locator('#cinCode').fill('IT-058091-C2-7G5FFZDZ');
 
       const resp = page.waitForResponse(
-        (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),
+        (r) => r.request().method() === 'PUT' && r.url().includes(`/api/properties/${NEW_PROPERTY_ID}`),
       );
-      await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
-      expect((await resp).status()).toBe(201);
-      await expect(page.getByText(/created successfully|creato con successo/i)).toBeVisible();
+      await page.getByRole('button', { name: 'Aggiorna immobile', exact: true }).click();
+      expect((await resp).status()).toBe(204);
+      await expect(page.getByText(/updated successfully|aggiornato con successo/i)).toBeVisible();
     });
 
     test('CIN deadline banner visible → navigates to compliance dashboard', async ({ page }) => {

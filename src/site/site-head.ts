@@ -1,4 +1,4 @@
-import { sitePageUrl, type SitePage } from './site-pages';
+import { SEARCH_PATH, sitePageUrl, type SitePage } from './site-pages';
 import type { SiteLegal } from './site-config';
 
 /**
@@ -45,6 +45,24 @@ export function buildOrganizationJsonLd(origin: string | null, legal: SiteLegal)
   };
 }
 
+/**
+ * The `WebSite` of the home page with its search (SEARCH-GLOBAL): the place typed is the `where` of the public search of homes. Only with
+ * a public origin, since the address of the search has to be absolute.
+ */
+export function buildWebSiteJsonLd(origin: string): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'CasaZen',
+    url: `${origin}/`,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${origin}${SEARCH_PATH}?where={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+}
+
 export function buildSiteHead({ page, title, description, origin, legal }: SiteHeadInput): string {
   const tags = [
     `<title>${escapeHtml(title)}</title>`,
@@ -74,6 +92,7 @@ export function buildSiteHead({ page, title, description, origin, legal }: SiteH
 
   if (page.id === 'home') {
     tags.push(`<script type="application/ld+json">${jsonForScript(buildOrganizationJsonLd(origin, legal))}</script>`);
+    if (origin) tags.push(`<script type="application/ld+json">${jsonForScript(buildWebSiteJsonLd(origin))}</script>`);
   }
 
   return tags.join('\n    ');

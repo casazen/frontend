@@ -1,7 +1,10 @@
-import { addDays, endOfMonth, romeDateOf, startOfMonth } from '@/lib/stay-dates';
+import { addDays, endOfMonth, isStayDate, romeDateOf, startOfMonth } from '@/lib/stay-dates';
 import type { PaymentListItem, PaymentStatus } from '@/types';
 
-/** `/app/short-rent/payments`: the page, and where the numbers of the month lead (`?chip=toCollect&f_date=…`). */
+/**
+ * `/app/short-rent/payments`: the page, and where the numbers of the month lead (`?chip=toCollect&f_date=…`). The page opens on «In
+ * arrivo»: a link that wants another view says it (`?chip=all`), as these do.
+ */
 export const PAYMENTS_PATH = '/app/short-rent/payments';
 
 /** The page of one payment. */
@@ -13,6 +16,8 @@ const COLLECTED: readonly PaymentStatus[] = ['Completed', 'PartiallyRefunded'];
 const WAITING: readonly PaymentStatus[] = ['Pending', 'Processing'];
 /** Given back to the guest, all or in part. */
 const GIVEN_BACK: readonly PaymentStatus[] = ['Refunded', 'PartiallyRefunded'];
+/** Nothing is coming from them: never collected (cancelled with the booking, BK-02), failed, or all of it given back. */
+const NOTHING_COMING: readonly PaymentStatus[] = ['Canceled', 'Failed', 'Refunded'];
 
 /**
  * A row only the host can collect (SR-06b): `Pending`, and neither a Stripe intent nor a transaction id. It is the "pay at the
@@ -25,6 +30,21 @@ export const isWaitingForTheHost = (payment: PaymentListItem) =>
 export const isCollected = (payment: PaymentListItem) => COLLECTED.includes(payment.status);
 export const isWaiting = (payment: PaymentListItem) => WAITING.includes(payment.status);
 export const isGivenBack = (payment: PaymentListItem) => GIVEN_BACK.includes(payment.status);
+/** Never collected: the payment was cancelled with its booking. */
+export const isCanceled = (payment: PaymentListItem) => payment.status === 'Canceled';
+
+/**
+ * «In arrivo», the view the page opens on: what is scheduled or on and not past. A payment has no due date, so the stay of its
+ * booking places it in time: the payments of a stay that is coming or on (its last day is `today` or later), paid or still to
+ * collect, and not the ones that will bring nothing (`NOTHING_COMING`). The payments of a stay that is over are in «Tutti», and the
+ * ones of those still to collect also in «Da incassare». An API that does not send the stay (older than the web app) leaves only
+ * the payments still waiting. This is the one line to change if the view should mean something else.
+ */
+export function isIncoming(payment: PaymentListItem, today: string): boolean {
+  if (NOTHING_COMING.includes(payment.status)) return false;
+  const stayEnd = payment.bookingCheckOut;
+  return stayEnd && isStayDate(stayEnd) ? stayEnd >= today : isWaiting(payment);
+}
 
 const HAS_ZONE = /(?:Z|[+-]\d{2}:?\d{2})$/i;
 

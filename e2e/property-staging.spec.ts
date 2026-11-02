@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { requireE2eCredentials } from './helpers/env';
 import { pinE2eLocale } from './helpers/locale';
-import { fillPropertyForm } from './helpers/properties-api-mock';
+import { fillPropertyWizard } from './helpers/properties-api-mock';
 
 // Exercise the real API through the same proxy used by the staging UI, without bypassing CORS.
 const STAGING_API = '/api';
@@ -53,29 +53,29 @@ test.describe('Property flow on staging API (live)', () => {
   });
 
   test('creates a property via UI and opens its detail page', async ({ page }) => {
-    const uniqueName = `E2E Staging ${Date.now()}`;
+    const runId = Date.now();
+    const uniqueName = `E2E Staging ${runId}`;
+    // The staging org keeps every property the earlier runs created, and the API refuses a second active property at the same
+    // address and unit (409 duplicate_property_address): each run takes a street number of its own.
+    const uniqueAddress = `Via Milano ${(runId % 99_000) + 1}`;
 
     await page.getByTestId('property-add').click();
-    await expect(page.getByRole('heading', { name: /^(Create Property|Crea proprietà)$/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /^(Add property|Aggiungi immobile)$/ })).toBeVisible();
 
+    // «Aggiungi immobile» (SR-07b): the property is created by the first «Continua».
     const planAlert = page.getByTestId('plan-limit-alert');
-    const createButton = page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ });
-    await expect.poll(async () => await planAlert.isVisible() || await createButton.isEnabled()).toBe(true);
+    const nextButton = page.getByTestId('property-wizard-next');
+    await expect.poll(async () => await planAlert.isVisible() || await nextButton.isEnabled()).toBe(true);
     if (await planAlert.isVisible()) {
-      await expect(createButton).toBeDisabled();
+      await expect(nextButton).toBeDisabled();
       await page.goto(PROPERTIES_PATH);
       await page.locator('table tbody tr').first().getByRole('button').first().click();
     } else {
-      await fillPropertyForm(page, {
+      await fillPropertyWizard(page, {
         name: uniqueName,
-        description: 'Proprietà creata dal test E2E staging live.',
-        address: 'Via Milano 5',
+        address: uniqueAddress,
         comune: 'Milano',
         postalCode: '20100',
-        bedrooms: 2,
-        bathrooms: 1,
-        maxGuests: 4,
-        nightlyRate: 99,
       });
 
       const createResponse = page.waitForResponse(
@@ -83,7 +83,7 @@ test.describe('Property flow on staging API (live)', () => {
         { timeout: 30_000 },
       );
 
-      await page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ }).click();
+      await nextButton.click();
       const response = await createResponse;
 
       expect(response.status(), 'Property create must not return 500').not.toBe(500);
@@ -95,12 +95,14 @@ test.describe('Property flow on staging API (live)', () => {
           '403/409 on create must be plan_limit_reached, not a schema failure',
         ).toBe('plan_limit_reached');
         await expect(
-          page.getByText(/Hai raggiunto il limite del tuo piano|You have reached your plan limit/i),
+          page.getByText(/Hai raggiunto il limite del tuo piano|You have reached your plan limit/i).first(),
         ).toBeVisible();
         await page.goto(PROPERTIES_PATH);
         await page.locator('table tbody tr').first().getByRole('button').first().click();
       } else {
         expect(response.status()).toBe(201);
+        // The property exists from here: «Salva e chiudi» leaves the wizard and the list has it.
+        await page.getByTestId('property-wizard-save-close').click();
         await expect(page.getByRole('button', { name: uniqueName, exact: true })).toBeVisible({ timeout: 15_000 });
         await page.getByRole('button', { name: uniqueName, exact: true }).click();
       }

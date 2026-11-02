@@ -56,7 +56,8 @@ interface Context {
   locale: string;
 }
 
-const MARKETPLACE_PATH = '/app/short-rent/marketplace';
+/** Where the requests to the suppliers are: «Le mie app» of the marketplace (MKT). */
+const SERVICES_PATH = '/app/short-rent/marketplace/mine';
 const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
 const bookingPath = (bookingId: string) => `/app/short-rent/bookings/${bookingId}`;
 const clock = (instant: string): string => {
@@ -138,7 +139,7 @@ function serviceRow(service: DashboardTodayService, { t }: Context): HomeRow {
     title: service.serviceName?.trim() || getServiceCategoryLabel(service.category, t),
     sub: [service.propertyName, service.supplierName, time].filter(Boolean).join(' · '),
     note: { text: getServiceRequestStatusLabel(service.status, t), tone: SERVICE_TONES[service.status] ?? 'neutral' },
-    to: service.bookingId ? bookingPath(service.bookingId) : MARKETPLACE_PATH,
+    to: service.bookingId ? bookingPath(service.bookingId) : SERVICES_PATH,
   };
 }
 
@@ -215,7 +216,7 @@ function todoPath(item: DashboardTodoItem, hasPermission: PermissionPredicate): 
     if (route) return route;
   }
   if (item.bookingId) return item.action === 'ReviewFailedPayment' ? `${bookingPath(item.bookingId)}?tab=payment` : bookingPath(item.bookingId);
-  return item.propertyId && item.action === 'ActivateProperty' ? `/app/short-rent/properties/${item.propertyId}` : MARKETPLACE_PATH;
+  return item.propertyId && item.action === 'ActivateProperty' ? `/app/short-rent/properties/${item.propertyId}` : SERVICES_PATH;
 }
 
 /** What the item still lacks, in a few words, for the codes that say something the title does not. */

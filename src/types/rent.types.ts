@@ -165,6 +165,114 @@ export interface RentReminderResult {
   nextReminderAllowedAt: string;
 }
 
+/**
+ * Import of a bank statement on the rents (`/long-rent/rents/bank-import`). The landlord uploads the movements file of their bank, the
+ * server proposes for each credit the installment it pays, and the landlord confirms; the file is not kept, the confirmation sends it again.
+ */
+export type BankStatementFormat = 'Csv' | 'Xlsx' | 'Camt053' | 'Mt940';
+
+/** How sure the server is: only `High` is ticked by itself; the others wait for the landlord's choice. */
+export type BankImportConfidence = 'High' | 'Medium' | 'Low';
+
+/** Why the server thinks so; the screen says it in words. */
+export type BankImportReason = 'Amount' | 'Surname' | 'FirstName' | 'PayerIban' | 'PayerName' | 'Property' | 'Month';
+
+/** An installment a credit can pay. The tenant is the first one of the lease, by name only; null once that tenant was anonymized. */
+export interface BankImportInstallment {
+  id: string;
+  leaseId: string;
+  propertyId: string;
+  propertyName: string;
+  tenantName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  dueDate: string;
+  amount: number;
+  currency: string;
+}
+
+/** A credit of the file that has at least one installment of its amount to pay, with the one proposed and the other possible ones. */
+export interface BankImportSuggestion {
+  /** SHA-256 of the movement: how the credit is named when the landlord confirms. */
+  fingerprint: string;
+  /** Value date of the credit (`YYYY-MM-DD`): the day the installment is declared paid. */
+  date: string;
+  amount: number;
+  currency: string;
+  /** The reason of the payment as the bank wrote it (clipped): it is the landlord's own file, shown back to them. */
+  description: string;
+  payer: string | null;
+  confidence: BankImportConfidence;
+  reasons: BankImportReason[];
+  installment: BankImportInstallment;
+  alternatives: BankImportInstallment[];
+}
+
+/** A credit with no installment to pay. */
+export interface BankImportCredit {
+  fingerprint: string;
+  date: string;
+  amount: number;
+  currency: string;
+  description: string;
+  payer: string | null;
+}
+
+export interface BankImportSummary {
+  movements: number;
+  credits: number;
+  alreadyImported: number;
+  suggested: number;
+  /** How many suggestions are `High`. */
+  confident: number;
+  unmatched: number;
+}
+
+/** `POST /long-rent/rents/bank-import/preview`: nothing is written. `unmatched` lists at most 200, the latest first. */
+export interface BankImportPreview {
+  format: BankStatementFormat;
+  summary: BankImportSummary;
+  suggestions: BankImportSuggestion[];
+  unmatched: BankImportCredit[];
+}
+
+/**
+ * The columns of a table when the landlord says which is which (the importer did not recognize the titles). Rows and columns are counted
+ * from 0 over the rows that are not empty; `headerRow` is -1 when the file has no titles.
+ */
+export interface BankColumnMapping {
+  headerRow: number;
+  date: number;
+  description: number;
+  amount: number;
+}
+
+/** What the server adds to the 422 `bank_statement_columns_unrecognized`: the first rows of the table, to let the landlord say which column is which. */
+export interface BankColumnsProblem {
+  /** The row that looks like titles, -1 if none does. */
+  headerRow: number;
+  columnCount: number;
+  rows: string[][];
+}
+
+/** One choice of the landlord: this credit pays this installment. */
+export interface BankImportSelection {
+  fingerprint: string;
+  installmentId: string;
+}
+
+/** A choice that was not applied, and the stable code of the refusal (`bank_movement_already_imported`, `rent_installment_not_payable`…). */
+export interface BankImportSkipped extends BankImportSelection {
+  code: string;
+}
+
+/** `POST /long-rent/rents/bank-import/confirm`: a skipped choice never stops the others. */
+export interface BankImportConfirmation {
+  requested: number;
+  confirmed: BankImportSelection[];
+  skipped: BankImportSkipped[];
+}
+
 export type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavailable';
 
 /** `POST /public/rent-payments/:id` with the token of the link: what the tenant sees, no personal data. */

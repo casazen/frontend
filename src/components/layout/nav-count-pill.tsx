@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { RouteManifestEntry } from '@/config/route-manifest';
+import type { NavCountKey, RouteManifestEntry } from '@/config/route-manifest';
 import { getNavCountLabel } from '@/lib/nav-labels';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +9,16 @@ interface NavCountPillProps {
   /** Where the pill sits (next to the name, or on a corner of the icon): the place is the parent's. */
   className?: string;
 }
+
+/**
+ * What a counter is about decides its color: a thing to answer is the accent of the area, a risk of a sanction is red. The
+ * words for a screen reader say the same, so the color is never the only signal.
+ */
+const PILL_COLOR: Record<NavCountKey, string> = {
+  bookingRequests: 'bg-primary text-primary-foreground',
+  supplierRequests: 'bg-primary text-primary-foreground',
+  compliance: 'bg-destructive text-destructive-foreground',
+};
 
 /**
  * The counter of a menu entry (`navCount`, UI-04a): the number on the screen (99+ above that) and, for a screen reader,
@@ -21,10 +31,8 @@ export function NavCountPill({ entry, count, className }: NavCountPillProps) {
   return (
     <span
       data-testid="nav-count"
-      className={cn(
-        'inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold leading-none text-primary-foreground',
-        className,
-      )}
+      data-count-kind={entry.navCount}
+      className={cn('inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none', PILL_COLOR[entry.navCount], className)}
     >
       <span aria-hidden="true">{count > 99 ? '99+' : count}</span>
       <span className="sr-only">{`, ${getNavCountLabel(entry.navCount, count, t)}`}</span>

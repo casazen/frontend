@@ -27,3 +27,19 @@ export function useStartConnectOnboarding() {
     },
   });
 }
+
+/**
+ * Opens the Express Dashboard of the org's Stripe account (AM-08b-d, «Gestisci su Stripe»): the API gives a single-use login link, which
+ * is followed at once and never kept. Errors are shown by the page (a 422 says the account is not ready: connect it or finish the
+ * verification first).
+ */
+export function useOpenStripeDashboard() {
+  return useMutation({
+    mutationFn: () => ConnectApi.createDashboardLink(),
+    // The link is a credential: the mutation does not keep its answer once nobody watches it (`gcTime: 0`).
+    gcTime: 0,
+    onSuccess: (data) => {
+      window.location.assign(data.url);
+    },
+  });
+}

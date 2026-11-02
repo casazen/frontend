@@ -1,25 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_PUBLIC_SITE_THEME,
+  PUBLIC_SITE_FONTS,
   PUBLIC_SITE_THEMES,
+  THEME_DEFAULT_FONT,
   normalizeHexColor,
+  resolvePublicSiteFont,
   resolvePublicSiteTheme,
 } from '../public-site-themes';
 
 describe('public-site-themes', () => {
   it('PUBLIC_SITE_THEMES_MirrorsBackend_ListsTheThreeSupportedThemes', () => {
-    expect(PUBLIC_SITE_THEMES).toEqual(['mare', 'montagna', 'urban']);
-    expect(DEFAULT_PUBLIC_SITE_THEME).toBe('mare');
+    expect(PUBLIC_SITE_THEMES).toEqual(['terra', 'mare', 'citta']);
+    expect(DEFAULT_PUBLIC_SITE_THEME).toBe('terra');
+    expect(PUBLIC_SITE_FONTS).toEqual(['editoriale', 'moderno', 'classico']);
+    expect(THEME_DEFAULT_FONT).toEqual({ terra: 'editoriale', mare: 'editoriale', citta: 'moderno' });
   });
 
   it.each([
-    ['montagna', 'montagna'],
-    [' Urban ', 'urban'],
-    [null, 'mare'],
-    [undefined, 'mare'],
-    ['collina', 'mare'],
+    ['terra', 'terra'],
+    [' Mare ', 'mare'],
+    ['CITTA', 'citta'],
+    // Ids from before DB-01, read as the theme that replaces them (the backend rewrites the stored ones).
+    ['montagna', 'terra'],
+    [' Urban ', 'citta'],
+    [null, 'terra'],
+    [undefined, 'terra'],
+    ['collina', 'terra'],
   ])('resolvePublicSiteTheme_%s_Returns%s', (input, expected) => {
     expect(resolvePublicSiteTheme(input)).toBe(expected);
+  });
+
+  it.each([
+    ['editoriale', 'editoriale'],
+    [' Classico ', 'classico'],
+    ['MODERNO', 'moderno'],
+    [null, null],
+    [undefined, null],
+    ['comic-sans', null],
+  ])('resolvePublicSiteFont_%s_Returns%s', (input, expected) => {
+    expect(resolvePublicSiteFont(input)).toBe(expected);
   });
 
   it.each([

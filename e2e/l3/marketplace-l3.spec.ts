@@ -42,9 +42,9 @@ async function findCandidate(request: APIRequestContext, auth: Auth): Promise<Ca
 }
 
 /**
- * L3 — supplier requests against the real API (SU-07, decision D2, A4-33). In short-term rental a request is for a
- * stay: the API refuses one without `bookingId`, and a request sent from the web marketplace for a stay is the one the
- * booking detail and the app's booking screen (`GET /service-requests?bookingId=`) show.
+ * L3 — supplier requests against the real API (SU-07, decision D2, A4-33). In short-term rental a request is for the
+ * property and, when the host names one, a stay (the stay is optional since SR-08a, decision SR-D3); a request sent from the
+ * web marketplace for a stay is the one the booking detail and the app's booking screen (`GET /service-requests?bookingId=`) show.
  */
 test.describe('L3 marketplace: supplier request for a stay', () => {
   test.skip(!process.env.E2E_LOCAL && !process.env.E2E_STAGING, 'Set E2E_LOCAL=1 or E2E_STAGING=1');
@@ -61,21 +61,22 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     auth = { Authorization: `Bearer ${token}` };
   });
 
-  test('AC: a short-rent request without a stay is refused with 422 service_request_booking_required', async ({ request }) => {
+  test('AC: a short-rent request without a stay is no longer refused for it: it goes on to the supplier lookup', async ({ request }) => {
     const properties = await request.get(`${API}/properties`, { headers: auth });
     expect(properties.status()).toBe(200);
     const [property] = (await properties.json()) as { id: string }[];
     test.skip(!property, 'The E2E user has no property: seed one on the environment.');
 
-    // An empty supplier id is 400 validation_error (NotEmptyGuid) before the stay rule. A non-empty id with no
-    // bookingId is otherwise well formed, so the missing stay reaches 422 service_request_booking_required.
+    // An empty supplier id is 400 validation_error (NotEmptyGuid). A non-empty id that is nobody's, with no bookingId, is
+    // otherwise well formed: the missing stay is no reason to refuse (it was 422 service_request_booking_required before
+    // SR-08a), so the request goes on to the supplier lookup and nothing is created.
     const refused = await request.post(`${API}/service-requests`, {
       headers: auth,
       data: { propertyId: property.id, supplierOrgId: '11111111-1111-1111-1111-111111111111', category: 'cleaning' },
     });
 
-    expect(refused.status()).toBe(422);
-    expect(((await refused.json()) as { code?: string }).code).toBe('service_request_booking_required');
+    expect(refused.status()).toBe(404);
+    expect(((await refused.json()) as { code?: string }).code).toBe('supplier_not_found');
   });
 
   test('AC: a request sent from the marketplace for a stay shows in the booking detail and in the app query', async ({
@@ -89,33 +90,55 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     );
     const { propertyId, stayId, supplierOrgId } = candidate!;
 
-    await page.goto(`/app/short-rent/marketplace?propertyId=${propertyId}`);
-    await page.getByTestId('marketplace-category-filter').selectOption('cleaning');
+    // The environment is long-lived and the request of a regular host is accepted at once: the job an earlier run left would overlap
+    // this one (409 supplier_commitment_conflict). So each run asks for an hour of its own (12:00 to 19:00, two hours long) and cancels
+    // its request at the end.
+    const startTime = `${String(12 + (Date.now() % 8)).padStart(2, '0')}:00`;
+
+    // The suppliers of the category have a page of their own (MKT): the category in the address, the property chosen.
+    await page.goto(`/app/short-rent/marketplace/categories/cleaning?propertyId=${propertyId}`);
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
     await page.getByTestId('marketplace-request-service-btn').click();
-    await expect(page.getByTestId('submit-service-request')).toBeDisabled();
-    await page.getByTestId('service-request-stay').selectOption(stayId);
-    await page.getByTestId('service-request-start-time').fill('10:00');
-    await page.getByTestId('service-request-duration').selectOption('120');
+    // «Richiedi fornitore» opens the guided request on its details: the property, the kind of work and the supplier are known.
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 30_000 });
+    // The time and the length are the host's own (a service of the catalog would go with one of its slots instead), and the stay is a link.
+    await page.getByTestId('request-service-custom').check({ force: true });
+    await page.getByTestId('request-stay').selectOption(stayId);
+    await page.getByTestId('request-start-time').fill(startTime);
+    await page.getByTestId('request-duration').selectOption('120');
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
 
     const created = page.waitForResponse(
       (r) => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/api/service-requests'),
     );
-    await page.getByTestId('submit-service-request').click();
+    await page.getByTestId('request-finish').click();
     const response = await created;
     expect(response.status()).toBe(201);
     const body = (await response.json()) as { id: string; bookingId: string; rentalContext: string };
-    expect(body.bookingId).toBe(stayId);
-    expect(body.rentalContext).toBe('ShortRent');
 
-    // Web: the booking detail lists the stay's requests.
-    await page.goto(`/app/short-rent/bookings/${stayId}`);
-    await expect(page.getByTestId(`service-request-${body.id}`)).toBeVisible({ timeout: 30_000 });
+    try {
+      expect(body.bookingId).toBe(stayId);
+      expect(body.rentalContext).toBe('ShortRent');
 
-    // App: the booking screen asks the same list by stay.
-    const appList = await request.get(`${API}/service-requests?bookingId=${stayId}&pageSize=50`, { headers: auth });
-    expect(appList.status()).toBe(200);
-    const items = ((await appList.json()) as { items: { id: string; bookingId: string }[] }).items;
-    expect(items.find((i) => i.id === body.id)?.bookingId).toBe(stayId);
+      // Web: the booking detail lists the stay's requests.
+      await page.goto(`/app/short-rent/bookings/${stayId}`);
+      await expect(page.getByTestId(`service-request-${body.id}`)).toBeVisible({ timeout: 30_000 });
+
+      // App: the booking screen asks the same list by stay.
+      const appList = await request.get(`${API}/service-requests?bookingId=${stayId}&pageSize=50`, { headers: auth });
+      expect(appList.status()).toBe(200);
+      const items = ((await appList.json()) as { items: { id: string; bookingId: string }[] }).items;
+      expect(items.find((i) => i.id === body.id)?.bookingId).toBe(stayId);
+    } finally {
+      // The supplier's agenda goes back as it was, also when an assertion above failed: the next run asks for the same stay.
+      const cancelled = await request.post(`${API}/service-requests/${body.id}/cancel`, {
+        headers: auth,
+        data: { reason: 'E2E cleanup' },
+      });
+      if (!cancelled.ok()) {
+        test.info().annotations.push({ type: 'cleanup-failed', description: `cancelling ${body.id} answered ${cancelled.status()}` });
+      }
+    }
   });
 });

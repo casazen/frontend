@@ -23,6 +23,7 @@ import { RoleCard } from '../role-card';
 import { areaName } from '../team-labels';
 import { assignableRoles } from '../team-roles';
 import { usePickerProperties } from '../team-properties';
+import { ACCOUNT_ROLES_PATH } from '../team-paths';
 import { hasFullAccess, inviteScopeOf, type InviteValues } from './invite-model';
 
 /** The two ways a person is told how many seats are left: a line while there are some, a warning with the way out when there are none. */
@@ -126,6 +127,16 @@ export function RoleStep() {
         ))}
       </ChoiceGroup>
       <FormFieldError error={formState.errors.role} />
+      {/* The whole matrix on its own page, in another tab: the wizard keeps what was typed (AM-04b-FU2). */}
+      <Link
+        to={ACCOUNT_ROLES_PATH}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex min-h-11 items-center text-sm font-medium text-primary-text underline underline-offset-2"
+        data-testid="invite-compare-roles"
+      >
+        {t('team.invite.role.compare')}
+      </Link>
     </div>
   );
 }

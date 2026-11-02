@@ -12,9 +12,12 @@ function amountOf(value: unknown): string | undefined {
   return typeof value === 'number' ? formatCurrency(value) : undefined;
 }
 
-function dayOf(value: unknown, language: string): string | undefined {
-  return typeof value === 'string' ? formatStayDate(parseStayDate(value), language) : undefined;
+function dayOf(value: unknown, language: string, options?: Intl.DateTimeFormatOptions): string | undefined {
+  return typeof value === 'string' ? formatStayDate(parseStayDate(value), language, options) : undefined;
 }
+
+/** «1 nov 2026»: the short month, for the days of another lease in a sentence of its own. */
+const SHORT_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
 /**
  * The sentence for a code of the closed list the server sends in `flow.steps[n].needs` and in the checks of the review
@@ -72,6 +75,9 @@ function messageOptions(t: Translate, i18n: Exists, need: Pick<LeaseNeed, 'code'
     inhabitants: typeof params.inhabitants === 'number' ? new Intl.NumberFormat(i18n.language).format(params.inhabitants) : undefined,
     start: dayOf(params.start, i18n.language),
     end: dayOf(params.end, i18n.language),
+    // The days of the other lease of the property that is in the way of this one (`lease_overlap`, LR-OVERLAP).
+    from: dayOf(params.conflictingFrom, i18n.language, SHORT_DAY),
+    to: dayOf(params.conflictingTo, i18n.language, SHORT_DAY),
     // A review check that names the whole term (start and end) is told in full; the one with the start alone, briefly.
     context: need.code === 'start_ok' && params.end ? 'term' : undefined,
     reason: typeof params.reason === 'string' && i18n.exists(reasonKey) ? t(reasonKey, limits) : '',

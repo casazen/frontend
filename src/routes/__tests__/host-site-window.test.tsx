@@ -19,6 +19,7 @@ describe('toAppPath / toHostPath', () => {
     ['/property/casa-mare', '/book/villa-rossi/property/casa-mare'],
     ['/property/casa-mare/checkout', '/book/villa-rossi/property/casa-mare/checkout'],
     ['/my-bookings', '/book/villa-rossi/my-bookings'],
+    ['/search', '/book/villa-rossi/search'],
     ['/booking/0f6c', '/book/villa-rossi/booking/0f6c'],
     ['/requests/0f6c/confirm', '/book/villa-rossi/requests/0f6c/confirm'],
     // Anything else is the route itself: legal pages, and the `/book/…` links of older shares and Stripe return URLs.
@@ -34,6 +35,7 @@ describe('toAppPath / toHostPath', () => {
     ['/book/villa-rossi/', '/'],
     ['/book/villa-rossi/property/casa-mare', '/property/casa-mare'],
     ['/book/villa-rossi/my-bookings', '/my-bookings'],
+    ['/book/villa-rossi/search', '/search'],
     ['/book/villa-rossi/booking/0f6c', '/booking/0f6c'],
     ['/book/villa-rossi/requests/0f6c/confirm', '/requests/0f6c/confirm'],
     // A legacy single-segment link and another org's path stay as they are: there is no clean form of them.

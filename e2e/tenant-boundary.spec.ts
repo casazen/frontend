@@ -35,7 +35,7 @@ test.describe('Multi-tenant Org boundary (#202)', () => {
     await expect(alert).toContainText('Hai raggiunto il limite del tuo piano');
     await expect(page.getByRole('link', { name: 'Passa a un piano superiore' })).toBeVisible();
 
-    // Server stays the source of truth, but the client pre-disables submit while over the limit.
-    await expect(page.getByRole('button', { name: 'Crea immobile', exact: true })).toBeDisabled();
+    // Server stays the source of truth, but the client pre-disables the first «Continua» (where the property is created) over the limit.
+    await expect(page.getByTestId('property-wizard-next')).toBeDisabled();
   });
 });

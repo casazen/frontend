@@ -14,6 +14,7 @@ import type {
   UpdateOrgBrandingRequest,
   UpdateOrgSettingsRequest,
 } from '@/types';
+import type { OrgServiceRequestSettings } from '@/types/service-request';
 
 export const OrgsApi = {
   getPlans: (): Promise<PlanCatalogEntry[]> =>
@@ -28,6 +29,13 @@ export const OrgsApi = {
 
   updateSettings: (payload: UpdateOrgSettingsRequest): Promise<OrgSettings> =>
     ApiClient.put<OrgSettings>('/orgs/me/settings', payload),
+
+  /** SP-BKP: whether the org's requests to suppliers also go to up to three backup suppliers (on by default). Org billing admin only. */
+  getServiceRequestSettings: (): Promise<OrgServiceRequestSettings> =>
+    ApiClient.get<OrgServiceRequestSettings>('/orgs/me/service-request-settings'),
+
+  updateServiceRequestSettings: (payload: OrgServiceRequestSettings): Promise<OrgServiceRequestSettings> =>
+    ApiClient.put<OrgServiceRequestSettings>('/orgs/me/service-request-settings', payload),
 
   /** A1-23: whether a slug can become the org's public address (advisory: the PUT checks again). */
   checkSlugAvailability: (slug: string): Promise<OrgSlugAvailability> =>

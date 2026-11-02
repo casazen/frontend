@@ -175,6 +175,28 @@ const demoSafetyChecklistUnanswered: SafetyChecklist = {
   updatedAt: null,
 };
 
+/**
+ * The compliance reads of any property (not only the demo one): a safety sheet not answered yet and an activation with its blockers
+ * open. The wizard "Aggiungi immobile" reads both for the property it has just created, whatever its id.
+ */
+export async function mockCompliancePendingForAnyProperty(page: Page): Promise<void> {
+  await page.route('**/api/properties/*/compliance/safety-checklist', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(demoSafetyChecklistUnanswered) });
+  });
+
+  await page.route('**/api/properties/*/compliance/activation', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(demoActivationPending) });
+  });
+}
+
 export async function mockComplianceApi(page: Page): Promise<void> {
   await page.route(`**/api/properties/${DEMO_PROPERTY_ID}/compliance/safety-checklist`, async (route) => {
     if (route.request().method() !== 'GET') {

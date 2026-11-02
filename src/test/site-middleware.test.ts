@@ -27,6 +27,8 @@ describe('site middleware (SEO-VETRINA)', () => {
 
   it.each([
     [`${PUBLIC_SITE}/`, `/${SITE_ASSET_DIR}/index.html`],
+    [`${PUBLIC_SITE}/affitti-brevi`, `/${SITE_ASSET_DIR}/affitti-brevi.html`],
+    [`${PUBLIC_SITE}/affitti-lunghi`, `/${SITE_ASSET_DIR}/affitti-lunghi.html`],
     [`${PUBLIC_SITE}/funzionalita`, `/${SITE_ASSET_DIR}/funzionalita.html`],
     [`${PUBLIC_SITE}/?utm_source=newsletter`, `/${SITE_ASSET_DIR}/index.html`],
     ['https://casazen-app-git-feature-x-casazen.vercel.app/chi-siamo', `/${SITE_ASSET_DIR}/chi-siamo.html`],

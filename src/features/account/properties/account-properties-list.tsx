@@ -11,7 +11,7 @@ import { propertyActivationPath } from '@/features/properties/properties-paths';
 import { formatPropertyLocation } from '@/features/properties/property-location';
 import type { LongRentPropertyStatus, PropertyStatus } from '@/lib/status-dictionary';
 import { areaKeyOf, missingText, type AccountPropertyRights, type AccountPropertyRow, type AccountPropertyState } from './account-properties-model';
-import { ModeTag, PeopleButton, StateCell, Unknown } from './account-property-cells';
+import { ModeTag, PeopleButton, ScheduledChange, StateCell, Unknown } from './account-property-cells';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import { ACCOUNT_PROPERTY_DRAWER_KIND } from './account-property-drawer';
 
@@ -247,7 +247,13 @@ export function useAccountPropertiesList({
           ...(membersKnown ? [{ icon: UserCheck, text: personInCharge(row), label: t('accountProperties.list.columns.responsible') }] : []),
           ...(peopleKnown && row.people !== null ? [{ icon: Users, text: t('accountProperties.list.people', { count: row.people }), label: t('accountProperties.list.columns.people') }] : []),
         ],
-        foot: row.missing.length > 0 ? <p className="text-sm text-foreground/70">{missingText(row.missing, t)}</p> : undefined,
+        foot:
+          row.missing.length > 0 || row.property.scheduledModeChange ? (
+            <div className="space-y-0.5">
+              {row.missing.length > 0 ? <p className="text-sm text-foreground/70">{missingText(row.missing, t)}</p> : null}
+              <ScheduledChange row={row} className="block break-words text-sm text-foreground/70" />
+            </div>
+          ) : undefined,
       }),
       // The name of the property opens its drawer; its page is the first entry of "⋯" and the button of the drawer.
       detail: { drawerKind: ACCOUNT_PROPERTY_DRAWER_KIND },

@@ -35,6 +35,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   // SubscriptionStatus as `GET /api/billing/subscription` sends it
   subscription: ["active", "trialing", "past_due", "incomplete", "unpaid", "canceled", "none"],
   lease: [...LEASE_STATUSES],
+  // LeaseStage (LR-01b): the eight stages of the path of a long-term lease, as the server sends them with the lease
+  leaseStage: ["Draft", "DataPending", "InReview", "SentForSignature", "Signed", "Active", "Expiring", "Concluded"],
   // RentLedgerStatus, and the overdue installment that the API flags with `isOverdue`
   rent: ["Scheduled", "Overdue", "Processing", "Paid", "Failed", "Cancelled"],
   // Casazen.Core.Entities.PaymentStatus
@@ -47,7 +49,7 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   // No enum: the regime of a property for the tax year, as the interface works it out from what the host chose and confirmed (SR-FISC)
   fiscalRegime: ["Confirmed", "ToConfirm", "NotChosen"],
   // AlloggiatiWebStatus
-  alloggiati: ["DaInviare", "DaInviareManualmente", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
+  alloggiati: ["DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
   // SupplierServiceListingStatus (SP-06)
   serviceListing: ["Draft", "Active", "Paused"],
 };

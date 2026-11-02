@@ -32,6 +32,8 @@ describe('billing-routes', () => {
     expect(toBillingReturnPath('/app/long-rent/settings/plan')).toBe('/app/long-rent/settings/plan');
     expect(toBillingReturnPath('/app/long-rent/settings/billing/')).toBe('/app/long-rent/settings/billing');
     expect(toBillingReturnPath('/app/short-rent/settings/plan')).toBe('/app/short-rent/settings/plan');
+    // AM-08a-FU1: the billing page of the account area is a return page too (the backend lists it since the twin PR).
+    expect(toBillingReturnPath('/app/account/billing')).toBe('/app/account/billing');
   });
 
   it('toBillingReturnPath_OtherPage_IsNotSentTheBackendWouldRefuseIt', () => {

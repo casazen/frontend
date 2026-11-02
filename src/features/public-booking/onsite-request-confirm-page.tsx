@@ -1,13 +1,18 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CheckCircle2, Loader2, MailCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PublicSiteState } from '@/features/public-site/components/public-site-state';
+import { BookingCode } from '@/features/public-booking/confirmation/booking-code';
+import { ConfirmationHero } from '@/features/public-booking/confirmation/confirmation-hero';
 import { useConfirmOnSiteRequestEmail } from '@/queries/use-public-booking';
 import { getProblemMessage } from '@/lib/api-errors';
-import { buildOrgBookingPath } from '@/lib/booking-url';
+import { buildGuestBookingsPath, buildOrgBookingPath } from '@/lib/booking-url';
+import { useSeoMeta } from '@/lib/seo-meta';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import type { OnSiteRequestConfirmation, PublicOrgDto } from '@/types';
+import '@/features/public-booking/confirmation/confirmation.css';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -16,7 +21,8 @@ interface PublicBookingContext {
 /**
  * Page of the link in the "request received" email of a "pay at the property" request (BK-06, decision D5, A3-06). The
  * guest confirms the address with a click (never on page load, so a mail scanner opening the link confirms nothing);
- * only then the request goes to the host, who accepts or declines it.
+ * only then the request goes to the host, who accepts or declines it. It has the look of the confirmation page (DB-06b): one title,
+ * one action, and once it is done the code of the booking with «Copia».
  */
 export function OnSiteRequestConfirmPage() {
   const { t } = useTranslation();
@@ -25,68 +31,95 @@ export function OnSiteRequestConfirmPage() {
   const token = searchParams.get('token') ?? '';
   const { org } = useOutletContext<PublicBookingContext>();
   const confirm = useConfirmOnSiteRequestEmail();
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
-  const backLink = (
-    <Button asChild variant="outline" className="w-full">
-      <Link to={buildOrgBookingPath(orgSlug)}>{t('publicBooking.backToProperties')}</Link>
-    </Button>
+  useSeoMeta({ title: t('siteConfirm.pageTitle', { org: org.displayName }), noindex: true });
+
+  // The page changed from the question to the answer: the title takes the focus, so a screen reader reads it.
+  useEffect(() => {
+    titleRef.current?.focus({ preventScroll: true });
+  }, [confirm.isSuccess]);
+
+  const back = (
+    <Link to={buildOrgBookingPath(orgSlug)} className="bc-link">
+      {t('publicBooking.backToProperties')}
+      <ArrowRight aria-hidden />
+    </Link>
   );
 
   if (!bookingId || !token) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 text-center" data-testid="onsite-confirm-invalid">
-        <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
-        <p role="alert">{t('publicBooking.onSiteRequest.linkIncomplete')}</p>
-        {backLink}
-      </div>
+      <PublicSiteState
+        icon={AlertCircle}
+        role="alert"
+        testId="onsite-confirm-invalid"
+        title={t('siteConfirm.invalid.title')}
+        description={t('publicBooking.onSiteRequest.linkIncomplete')}
+      >
+        <Button asChild variant="outline">
+          <Link to={buildOrgBookingPath(orgSlug)}>{t('publicBooking.backToProperties')}</Link>
+        </Button>
+      </PublicSiteState>
     );
   }
 
   if (confirm.isSuccess) {
-    return <ConfirmedRequest result={confirm.data} backLink={backLink} />;
+    return <ConfirmedRequest result={confirm.data} orgSlug={orgSlug} titleRef={titleRef} back={back} />;
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="onsite-confirm-page">
-      <MailCheck className="mx-auto h-12 w-12 text-amber-700" />
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">{t('publicBooking.onSiteRequest.confirmTitle')}</h2>
-        <p className="text-muted-foreground">
-          {t('publicBooking.onSiteRequest.confirmDescription', { orgName: org.displayName })}
-        </p>
-      </div>
-      {confirm.isError && (
-        <p className="text-sm text-destructive" role="alert" data-testid="onsite-confirm-error">
+    <div className="bc" data-testid="onsite-confirm-page">
+      <ConfirmationHero
+        seal="mail"
+        title={t('publicBooking.onSiteRequest.confirmTitle')}
+        titleRef={titleRef}
+        lead={t('publicBooking.onSiteRequest.confirmDescription', { orgName: org.displayName })}
+        actions={
+          <>
+            <button
+              type="button"
+              className="public-site-cta bc-cta border-0"
+              aria-disabled={confirm.isPending ? true : undefined}
+              onClick={() => {
+                if (!confirm.isPending) confirm.mutate({ bookingId, token });
+              }}
+              data-testid="onsite-confirm-action"
+            >
+              {confirm.isPending ? (
+                <>
+                  <Loader2 className="bc-spin" aria-hidden />
+                  {t('publicBooking.onSiteRequest.confirming')}
+                </>
+              ) : (
+                t('publicBooking.onSiteRequest.confirmAction')
+              )}
+            </button>
+            {back}
+          </>
+        }
+      />
+      {confirm.isError ? (
+        <p className="bc-pay__error" role="alert" data-testid="onsite-confirm-error">
           {getProblemMessage(confirm.error, t) ?? t('publicBooking.onSiteRequest.confirmError')}
         </p>
-      )}
-      <Button
-        className="w-full"
-        disabled={confirm.isPending}
-        onClick={() => confirm.mutate({ bookingId, token })}
-      >
-        {confirm.isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('publicBooking.onSiteRequest.confirming')}
-          </>
-        ) : (
-          t('publicBooking.onSiteRequest.confirmAction')
-        )}
-      </Button>
-      {backLink}
+      ) : null}
     </div>
   );
 }
 
 function ConfirmedRequest({
   result,
-  backLink,
+  orgSlug,
+  titleRef,
+  back,
 }: {
   result: OnSiteRequestConfirmation;
-  backLink: ReactNode;
+  orgSlug: string;
+  titleRef: RefObject<HTMLHeadingElement | null>;
+  back: ReactNode;
 }) {
   const { t, i18n } = useTranslation();
+  const code = result.bookingCode?.trim() ?? '';
 
   const message = (() => {
     if (result.status === 'Confirmed') return t('publicBooking.onSiteRequest.alreadyAccepted');
@@ -99,17 +132,38 @@ function ConfirmedRequest({
   })();
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="onsite-confirm-done">
-      <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">{t('publicBooking.onSiteRequest.confirmedTitle')}</h2>
-        <p className="text-muted-foreground">{message}</p>
-      </div>
-      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
-        <p className="font-mono text-lg font-semibold">{result.bookingId}</p>
-      </div>
-      {backLink}
+    <div className="bc" data-testid="onsite-confirm-done">
+      <ConfirmationHero
+        seal="mail"
+        title={t('publicBooking.onSiteRequest.confirmedTitle')}
+        titleRef={titleRef}
+        lead={message}
+        actions={
+          code ? (
+            <Link to={buildGuestBookingsPath(orgSlug, code)} className="bc-link" data-testid="onsite-confirm-manage">
+              {t('siteConfirm.action.manage')}
+              <ArrowRight aria-hidden />
+            </Link>
+          ) : (
+            back
+          )
+        }
+        aside={
+          <div className="bc-codecard">
+            {code ? (
+              <BookingCode code={code} />
+            ) : (
+              <p className="bc-codecard__ref">
+                <MailCheck aria-hidden />
+                <span>
+                  <span className="bc-k">{t('publicBooking.bookingReference')}</span>
+                  <strong>{result.bookingId}</strong>
+                </span>
+              </p>
+            )}
+          </div>
+        }
+      />
     </div>
   );
 }

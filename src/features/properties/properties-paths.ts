@@ -25,8 +25,15 @@ export const propertyPricingPath = (id: string) => `${propertyPath(id)}/pricing`
 /** A tab of the page of the property (`?tab=`). */
 export const propertyTabPath = (id: string, tab: string) => `${propertyPath(id)}?tab=${tab}`;
 
-/** The wizard that activates a property (or activates it again once what blocked it is fixed). */
+/** The old wizard that activates a property: still there for the links that already exist (emails, bookmarks). */
 export const propertyActivationPath = (id: string) => `${propertyPath(id)}/activation`;
+
+/**
+ * «Aggiungi immobile» reopened on a property (SR-07c): on the first step that has something missing as the server tells it, or on the
+ * step named. This is where «Completa» of the list, the drawer and the page of the property go.
+ */
+export const propertyWizardPath = (id: string, step?: string) =>
+  `${PROPERTY_CREATE_PATH}?propertyId=${encodeURIComponent(id)}${step ? `&step=${encodeURIComponent(step)}` : ''}`;
 
 /** The calendar of the area, on this property. */
 export const propertyCalendarPath = (id: string) => `/app/${AREA}/bookings/calendar?propertyId=${encodeURIComponent(id)}`;

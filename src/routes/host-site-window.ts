@@ -4,7 +4,7 @@ import { createPath, parsePath } from 'react-router-dom';
  * First path segments of an org site's pages. On the org's own host they are written without the `/book/:orgSlug`
  * prefix (`https://www.villa.example/property/casa-mare`), inside the app they are the routes `/book/:orgSlug/property/…`.
  */
-export const HOST_SITE_SEGMENTS: readonly string[] = ['property', 'my-bookings', 'booking', 'requests'];
+export const HOST_SITE_SEGMENTS: readonly string[] = ['property', 'my-bookings', 'booking', 'requests', 'search'];
 
 function firstSegment(pathname: string): string {
   return pathname.split('/')[1] ?? '';

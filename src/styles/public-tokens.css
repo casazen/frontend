@@ -1,91 +1,176 @@
 @import './public-fonts.css';
 
 /*
- * Design tokens of the public booking site: one block per theme (`Org.PublicThemeId`, BK-12/BK-13).
+ * Design tokens of the public booking site: one block per theme (`Org.PublicThemeId`, BK-12/BK-13, DB-01) and one per font
+ * pair (`Org.PublicFontId`). The look is the one of the redesign prototype (`redesign/assets/site-base.css`): Terra
+ * (terracotta on cream), Mare (petrol blue on white) and Città (ink on stone).
  *
  * The three lists of themes must stay in sync: `Casazen.Core/Branding/PublicSiteThemes.cs` (accepted ids),
  * `src/lib/public-site-themes.ts` (ids and the palette below, mirrored) and this file. A test
  * (`src/styles/__tests__/public-tokens.test.ts`) parses this file and fails when the palette drifts from
  * `public-site-themes.ts` or when a pair of colors falls below WCAG 2.1 AA:
- *   - text, muted text and primary text on the page background and on the cards: 4.5:1
- *   - text on the primary color (`--cz-public-on-primary` on `--cz-public-primary`): 4.5:1
+ *   - text and muted text on the page background, the cards and the tinted surfaces: 4.5:1
+ *   - text on the primary color (`--cz-public-on-primary` on `--cz-public-primary` and on `--cz-public-hover`): 4.5:1
+ *   - the primary as text on the page background and on the cards, the ink on the soft tint: 4.5:1
  *
- * Colors a host can override (`primary`, `on-primary`, `primary-text`) are set inline on `.public-site-root` by
- * `publicSiteColorStyle` (`src/lib/public-site-colors.ts`), which derives the other two from the chosen primary so
- * that the AA pairs still hold.
+ * Colors a host can override (`primary`, `on-primary`, `primary-text`, and the three derived from the primary: `hover`, `ink`,
+ * `soft`) are set inline on `.public-site-root` by `publicSiteColorStyle` (`src/lib/public-site-colors.ts`), which derives
+ * them from the chosen primary so that the AA pairs still hold.
  *
  *   --cz-public-primary       fill of buttons and accents (never used as text color: see primary-text)
  *   --cz-public-on-primary    text and icons placed on a primary fill
  *   --cz-public-primary-text  the primary color as text, link hover and focus ring on the page background / cards
+ *   --cz-public-hover         the primary fill under the pointer
+ *   --cz-public-soft          the faint tint of the primary: pills, selected rows, icon discs
+ *   --cz-public-ink           the primary as text on its own soft tint (and on the page): the deepest of the three
+ *   --cz-public-surface-2/-3  tinted surfaces (sunken blocks, bars, skeletons), in order of depth
+ *   --cz-public-border        the hairline; --cz-public-line-strong the line of a field or a divider that has to show
+ *   --cz-public-radius-sm/-md/-lg/-xl  the scale of the radii; --cz-public-radius is the middle one (what the pages used so
+ *                             far for cards and buttons); --cz-public-btn-radius is the one of the buttons
+ *
+ * The font pair is chosen by `data-font` on the same element as `data-theme`; without it the pair of the theme applies
+ * (Terra and Mare: editoriale, Città: moderno), which is what the theme blocks set.
  */
 
-[data-theme='mare'] {
-  --cz-public-font-display: 'Fraunces Variable', Fraunces, Georgia, 'Times New Roman', serif;
+[data-theme='terra'] {
+  --cz-public-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --cz-public-display-weight: 600;
-  --cz-public-display-tracking: -0.01em;
-  --cz-public-primary: #b4492f;
+  --cz-public-display-weight: 500;
+  --cz-public-display-tracking: -0.015em;
+  --cz-public-primary: #a3431f;
   --cz-public-on-primary: #ffffff;
-  --cz-public-primary-text: #b4492f;
-  --cz-public-bg: #f6f1e7;
-  --cz-public-surface: #ffffff;
-  --cz-public-text: #16324f;
-  --cz-public-muted: #52606d;
-  --cz-public-border: rgba(22, 50, 79, 0.14);
-  --cz-public-radius: 14px;
-  --cz-public-shadow-card: 0 1px 2px rgba(22, 50, 79, 0.08), 0 8px 20px rgba(22, 50, 79, 0.06);
-  --cz-public-shadow-widget: 0 10px 36px rgba(22, 50, 79, 0.16);
+  --cz-public-primary-text: #a3431f;
+  --cz-public-hover: #8c3819;
+  --cz-public-ink: #8c3819;
+  --cz-public-soft: #f6e2d7;
+  --cz-public-bg: #f6f1e9;
+  --cz-public-surface: #fffdf9;
+  --cz-public-surface-2: #efe6d9;
+  --cz-public-surface-3: #e7dccb;
+  --cz-public-text: #1f2a30;
+  --cz-public-muted: #56616a;
+  --cz-public-border: #e2d6c5;
+  --cz-public-line-strong: #cfc0aa;
+  --cz-public-radius-sm: 10px;
+  --cz-public-radius-md: 16px;
+  --cz-public-radius-lg: 24px;
+  --cz-public-radius-xl: 34px;
+  --cz-public-radius: var(--cz-public-radius-md);
+  --cz-public-btn-radius: 14px;
+  --cz-public-shadow-card: 0 1px 2px rgb(31 42 48 / 0.06), 0 6px 16px rgb(31 42 48 / 0.06);
+  --cz-public-shadow-widget: 0 2px 6px rgb(31 42 48 / 0.06), 0 16px 40px rgb(31 42 48 / 0.12);
   --cz-public-section-y: 4rem;
 }
 
-[data-theme='montagna'] {
-  --cz-public-font-display: 'Lora Variable', Lora, Georgia, 'Times New Roman', serif;
+[data-theme='mare'] {
+  --cz-public-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --cz-public-display-weight: 600;
-  --cz-public-display-tracking: 0;
-  --cz-public-primary: #2e6a4a;
+  --cz-public-display-weight: 500;
+  --cz-public-display-tracking: -0.015em;
+  --cz-public-primary: #0f5e73;
   --cz-public-on-primary: #ffffff;
-  --cz-public-primary-text: #2e6a4a;
-  --cz-public-bg: #edf1ea;
-  --cz-public-surface: #fbfcfa;
-  --cz-public-text: #1c2b22;
-  --cz-public-muted: #4a5a50;
-  --cz-public-border: rgba(28, 43, 34, 0.2);
-  --cz-public-radius: 6px;
-  --cz-public-shadow-card: 0 1px 0 rgba(28, 43, 34, 0.06);
-  --cz-public-shadow-widget: 0 6px 24px rgba(28, 43, 34, 0.18);
-  --cz-public-section-y: 3.5rem;
+  --cz-public-primary-text: #0f5e73;
+  --cz-public-hover: #0b4a5b;
+  --cz-public-ink: #0b4a5b;
+  --cz-public-soft: #dceef1;
+  --cz-public-bg: #f3f7f6;
+  --cz-public-surface: #ffffff;
+  --cz-public-surface-2: #e4eeec;
+  --cz-public-surface-3: #d6e6e3;
+  --cz-public-text: #12303a;
+  --cz-public-muted: #4d6169;
+  --cz-public-border: #d3e2df;
+  --cz-public-line-strong: #b4cfca;
+  --cz-public-radius-sm: 14px;
+  --cz-public-radius-md: 22px;
+  --cz-public-radius-lg: 30px;
+  --cz-public-radius-xl: 42px;
+  --cz-public-radius: var(--cz-public-radius-md);
+  --cz-public-btn-radius: 999px;
+  --cz-public-shadow-card: 0 1px 2px rgb(18 48 58 / 0.06), 0 6px 16px rgb(18 48 58 / 0.06);
+  --cz-public-shadow-widget: 0 2px 6px rgb(18 48 58 / 0.06), 0 16px 40px rgb(18 48 58 / 0.12);
+  --cz-public-section-y: 4.5rem;
 }
 
-[data-theme='urban'] {
-  --cz-public-font-display: 'Space Grotesk Variable', 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+[data-theme='citta'] {
+  --cz-public-font-display: 'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif;
   --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --cz-public-display-weight: 700;
-  --cz-public-display-tracking: -0.02em;
-  --cz-public-primary: #2f3bd1;
+  --cz-public-display-tracking: -0.03em;
+  --cz-public-primary: #2e2a26;
   --cz-public-on-primary: #ffffff;
-  --cz-public-primary-text: #2f3bd1;
-  --cz-public-bg: #f1f2f4;
+  --cz-public-primary-text: #2e2a26;
+  --cz-public-hover: #171513;
+  --cz-public-ink: #2e2a26;
+  --cz-public-soft: #e9e4dd;
+  --cz-public-bg: #f5f3f0;
   --cz-public-surface: #ffffff;
-  --cz-public-text: #111318;
-  --cz-public-muted: #555b66;
-  --cz-public-border: rgba(17, 19, 24, 0.22);
-  --cz-public-radius: 2px;
-  --cz-public-shadow-card: none;
-  --cz-public-shadow-widget: 0 12px 32px rgba(17, 19, 24, 0.2);
+  --cz-public-surface-2: #eae6e0;
+  --cz-public-surface-3: #ddd7cf;
+  --cz-public-text: #1e1c1a;
+  --cz-public-muted: #5a554f;
+  --cz-public-border: #dad4cb;
+  --cz-public-line-strong: #bdb5a9;
+  --cz-public-radius-sm: 3px;
+  --cz-public-radius-md: 6px;
+  --cz-public-radius-lg: 10px;
+  --cz-public-radius-xl: 14px;
+  --cz-public-radius: var(--cz-public-radius-md);
+  --cz-public-btn-radius: 4px;
+  --cz-public-shadow-card: 0 1px 2px rgb(30 28 26 / 0.06), 0 6px 16px rgb(30 28 26 / 0.06);
+  --cz-public-shadow-widget: 0 2px 6px rgb(30 28 26 / 0.06), 0 16px 40px rgb(30 28 26 / 0.12);
   --cz-public-section-y: 3rem;
 }
 
+/*
+ * The states every page shows (available, careful, wrong, a star): the same on the three themes, each with its tint. The
+ * pairs are AA on the page, on the cards and on their own tint (public-tokens.test.ts). They replace the fixed palette
+ * colors (`text-green-600`, `bg-red-50`...) of the pages.
+ */
+[data-theme='terra'],
+[data-theme='mare'],
+[data-theme='citta'] {
+  --cz-public-ok: #1b7a4a;
+  --cz-public-ok-soft: #e3f3ea;
+  --cz-public-warn: #8a4b05;
+  --cz-public-warn-soft: #fdf0d8;
+  --cz-public-err: #b4232a;
+  --cz-public-err-soft: #fdecec;
+  --cz-public-star: #c07a14;
+}
+
+/*
+ * Font pairs. `editoriale` and `moderno` are what Terra / Mare and Città start with, `classico` is the third. On the element
+ * that carries both attributes this rule wins over the theme block by specificity, whichever comes first.
+ */
+.public-site-root[data-font='editoriale'] {
+  --cz-public-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --cz-public-display-weight: 500;
+  --cz-public-display-tracking: -0.015em;
+}
+
+.public-site-root[data-font='moderno'] {
+  --cz-public-font-display: 'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif;
+  --cz-public-display-weight: 700;
+  --cz-public-display-tracking: -0.03em;
+}
+
+.public-site-root[data-font='classico'] {
+  --cz-public-font-display: 'Playfair Display Variable', 'Playfair Display', Didot, 'Bodoni MT', Georgia, 'Times New Roman', serif;
+  --cz-public-display-weight: 500;
+  --cz-public-display-tracking: -0.01em;
+}
+
 @media (max-width: 767px) {
-  [data-theme='mare'] {
+  [data-theme='terra'] {
     --cz-public-section-y: 2rem;
   }
 
-  [data-theme='montagna'] {
-    --cz-public-section-y: 1.75rem;
+  [data-theme='mare'] {
+    --cz-public-section-y: 2.25rem;
   }
 
-  [data-theme='urban'] {
+  [data-theme='citta'] {
     --cz-public-section-y: 1.5rem;
   }
 }
@@ -110,6 +195,15 @@
   --color-card-foreground: var(--cz-public-text);
   --color-border: var(--cz-public-border);
   --color-input: var(--cz-public-border);
+
+  /* The ones the app would otherwise paint in its cool greys on the warm paper of the theme: muted blocks, hover and popovers. */
+  --color-muted: var(--cz-public-surface-2);
+  --color-accent: var(--cz-public-soft);
+  --color-accent-foreground: var(--cz-public-ink);
+  --color-secondary: var(--cz-public-surface-2);
+  --color-secondary-foreground: var(--cz-public-text);
+  --color-popover: var(--cz-public-surface);
+  --color-popover-foreground: var(--cz-public-text);
 }
 
 .public-site-root h1,
@@ -143,14 +237,16 @@
 .public-site-cta {
   background: var(--cz-public-primary);
   color: var(--cz-public-on-primary);
-  border-radius: var(--cz-public-radius);
+  border-radius: var(--cz-public-btn-radius);
   font-weight: 600;
   transition:
+    background-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
 }
 
 .public-site-cta:hover:not(:disabled) {
+  background: var(--cz-public-hover);
   box-shadow: 0 3px 10px color-mix(in srgb, var(--cz-public-primary) 45%, transparent);
   transform: translateY(-1px);
 }
@@ -169,7 +265,7 @@
 .public-site-cta-inverse {
   background: var(--cz-public-on-primary);
   color: var(--cz-public-primary-text);
-  border-radius: var(--cz-public-radius);
+  border-radius: var(--cz-public-btn-radius);
   font-weight: 600;
 }
 
@@ -183,7 +279,7 @@
   background: var(--cz-public-surface);
   color: var(--cz-public-text);
   border: 1px solid color-mix(in srgb, var(--cz-public-text) 55%, transparent);
-  border-radius: var(--cz-public-radius);
+  border-radius: var(--cz-public-btn-radius);
   font-weight: 600;
   transition:
     background-color 150ms ease,

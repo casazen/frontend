@@ -53,7 +53,7 @@ export function CinCompliancePage() {
             {summary?.hasNonCompliant ? (
               <FocusBlock
                 tone={summary.deadlineStatus === 'passed' ? 'danger' : 'warning'}
-                kicker={t('compliance.cockpit.kicker')}
+                kicker={t('compliance.cockpit.kicker.fine')}
                 title={t('cin.banner.nonCompliantCount', { count: summary.missing + summary.invalid })}
                 body={<span data-testid="cin-deadline-message">{deadlineMessage(summary, i18n.language, t)}</span>}
                 primary={{ ...primary, testId: 'cin-focus-cta' }}

@@ -174,7 +174,8 @@ describe('CheckInPage', () => {
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
     const [, payload] = vi.mocked(publicCheckinApi.submit).mock.calls[0];
     expect(payload).not.toHaveProperty('gdprConsent');
-    expect(payload.marketingConsent).toBe(false);
+    expect(payload.marketingConsentEmail).toBe(false);
+    expect(payload.marketingConsentWhatsApp).toBe(false);
   });
 
   it('marketingConsent_offeredWithAVersion_isOptionalAndSentOnlyWhenTicked', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -189,13 +190,18 @@ describe('CheckInPage', () => {
 
     const marketing = screen.getByTestId('checkin-marketing-consent');
     expect(marketing).toHaveTextContent('Facoltativo. Versione del testo: marketing-2026-10');
-    const checkbox = within(marketing).getByRole('checkbox');
-    expect(checkbox).not.toBeChecked();
-    fireEvent.click(checkbox);
+    const checkboxes = within(marketing).getAllByRole('checkbox');
+    expect(checkboxes[0]).not.toBeChecked();
+    fireEvent.click(checkboxes[0]);
+
+    // Fill in the required marketing email after ticking the channel (label: "Il tuo indirizzo email *")
+    const emailInput = await screen.findByLabelText(/il tuo indirizzo email/i);
+    fireEvent.change(emailInput, { target: { value: 'guest@example.com' } });
+
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(publicCheckinApi.submit).mock.calls[0][1].marketingConsent).toBe(true);
+    expect(vi.mocked(publicCheckinApi.submit).mock.calls[0][1].marketingConsentEmail).toBe(true);
   });
 
   it('marketingConsent_versionNotConfigured_isNotOffered', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {

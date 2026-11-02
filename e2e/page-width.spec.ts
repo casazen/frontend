@@ -37,7 +37,6 @@ test.describe('Page width', () => {
     { name: 'the profile of Affitti brevi', path: '/app/short-rent/profile', profile: 'short-stay', heading: /Il mio profilo/ },
     { name: 'the profile of Affitti lunghi', path: '/app/long-rent/profile', profile: 'long-term', heading: /Il mio profilo/ },
     { name: 'the profile of the staff console', path: '/app/admin/profile', profile: 'admin', heading: /Profilo utente/ },
-    { name: 'the form of a new property', path: '/app/short-rent/properties/create', profile: 'short-stay', heading: /Crea propriet/ },
     { name: 'the form of a new lease', path: '/app/long-rent/leases/new?tipo=libero&come=casazen', profile: 'long-term', heading: /Nuovo contratto/ },
   ];
 
@@ -76,6 +75,15 @@ test.describe('Page width', () => {
     const title = (await page.getByRole('heading', { level: 1, name: 'Profilo fiscale' }).boundingBox())!;
     const form = (await page.getByTestId('fiscal-wizard-form').boundingBox())!;
     expect(Math.abs(form.x - title.x)).toBeLessThan(2);
+  });
+
+  test('the wizard of a new property starts under its title', async ({ page }) => {
+    await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { level: 1, name: 'Aggiungi immobile' })).toBeVisible();
+
+    const column = await widths(page, '[data-testid="property-wizard-page"]');
+    expect(column.left).toBe(0);
+    expect(column.width).toBe(FOCUS_WIDTH);
   });
 
   test('the wizard of a new booking starts under its title', async ({ page }) => {

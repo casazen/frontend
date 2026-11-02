@@ -60,6 +60,8 @@ export interface WizardStep<TValues extends FieldValues> {
   nextLabel?: string;
   /** Runs once the step is valid and before moving on (a save on the server). If it throws the wizard stays on the step. */
   beforeNext?: (values: TValues) => void | Promise<void>;
+  /** The main button cannot be pressed: something outside the form (a plan with no room) stops the step, and the step says why. */
+  nextDisabled?: boolean;
   /** The fields of the step. Do not render a `<form>` in here: the wizard already is one. Buttons must be `type="button"`. */
   render: (context: WizardStepContext<TValues>) => React.ReactNode;
 }
@@ -580,6 +582,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
               type="submit"
               form={formId}
               loading={busy}
+              disabled={step.nextDisabled}
               data-testid={isLast ? ids.finish : ids.next}
               className={cn(BUTTON, "grow sm:grow-0")}
               iconRight={isLast ? <Check /> : <ArrowRight />}

@@ -68,6 +68,21 @@ function OnboardingError({ payments }: { payments: ConnectPayments }) {
   );
 }
 
+function DashboardError({ payments }: { payments: ConnectPayments }) {
+  const { t } = useTranslation();
+  const { openDashboard } = payments;
+
+  return (
+    <ConnectErrorAlert
+      testId="connect-dashboard-error"
+      message={getProblemMessage(openDashboard.error, t) ?? t('settings.manageOnStripeFailed')}
+      retryable={isRetryableConnectError(openDashboard.error)}
+      retrying={openDashboard.isPending}
+      onRetry={() => openDashboard.mutate()}
+    />
+  );
+}
+
 /**
  * The one block to look at when the account cannot take payments yet: the booking site does not take them either, and the button
  * that connects Stripe or finishes the verification is here. Nothing while the status is not known (a failed read is never "not
@@ -111,7 +126,7 @@ interface PaymentsBodyProps {
 /** Where the Stripe account stands: its state in a word, what it means, the account, and the way to go on when the page does not show another. */
 export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
   const { t } = useTranslation();
-  const { status, uiStatus, isLoading, isError, error, isFetching, refetch, startOnboarding } = payments;
+  const { status, uiStatus, isLoading, isError, error, isFetching, refetch, startOnboarding, openDashboard } = payments;
   const view = STATUS_VIEW[uiStatus];
   const hasRequirements = (status?.requirementsDue?.length ?? 0) > 0;
   const needsAction = uiStatus !== 'active';
@@ -141,6 +156,25 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
           </div>
 
           {uiStatus === 'active' ? <p className="text-sm text-foreground/70">{t('settings.accountActiveMessage')}</p> : null}
+
+          {/* The balance, the payouts and the bank details live on Stripe: the way there, once the account is verified (AM-08b-d). */}
+          {uiStatus === 'active' && status.connectedAccountId ? (
+            <div className="space-y-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                loading={openDashboard.isPending}
+                iconRight={<ExternalLink />}
+                onClick={() => openDashboard.mutate()}
+                data-testid="connect-manage-on-stripe"
+              >
+                {t('settings.manageOnStripe')}
+              </Button>
+              <p className="text-sm text-foreground/70">{t('settings.manageOnStripeHint')}</p>
+              {openDashboard.isError ? <DashboardError payments={payments} /> : null}
+            </div>
+          ) : null}
 
           {hasRequirements && needsAction ? (
             <div className="space-y-0.5 text-sm" data-testid="connect-requirements-alert">

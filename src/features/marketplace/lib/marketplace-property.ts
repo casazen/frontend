@@ -1,14 +1,9 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { propertyStatus } from '@/lib/status-dictionary';
 import { useProperties } from '@/queries/use-properties';
 import type { Property } from '@/types';
-
-/** The parameter of the address that holds the property the marketplace is about. */
-export const MARKETPLACE_PROPERTY_PARAM = 'propertyId';
-
-/** The parameter of the address that holds the category the list is narrowed to (the drawer starts a request from it). */
-export const MARKETPLACE_CATEGORY_PARAM = 'category';
+import { MARKETPLACE_PROPERTY_PARAM } from './marketplace-paths';
 
 /**
  * The property the marketplace is about: the one the address asks for if it is one of the host's, else the first active one,
@@ -27,14 +22,28 @@ export function pickMarketplaceProperty(
 }
 
 /**
- * The properties of Affitti brevi and the one the marketplace is about (`?propertyId=`). The page and its drawer both ask for
- * it: the query is the same, so a shared address (`?propertyId=…&detail=marketplace-supplier:…`) opens on the right property.
+ * The properties of Affitti brevi and the one the marketplace is about (`?propertyId=`). The pages and the drawer of a supplier all
+ * ask for it: the query is the same, so a shared address (`?propertyId=…&detail=marketplace-supplier:…`) opens on the right
+ * property. `setProperty` writes the choice in the address, in place of the entry of the history.
  */
 export function useMarketplaceProperty() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requested = searchParams.get(MARKETPLACE_PROPERTY_PARAM);
   const { data: properties, isLoading, isError, error, refetch } = useProperties({ mode: 'short' });
   const property = useMemo(() => pickMarketplaceProperty(properties, requested), [properties, requested]);
 
-  return { properties, property, isLoading, isError, error, refetch };
+  const setProperty = useCallback(
+    (id: string) =>
+      setSearchParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          next.set(MARKETPLACE_PROPERTY_PARAM, id);
+          return next;
+        },
+        { replace: true },
+      ),
+    [setSearchParams],
+  );
+
+  return { properties, property, isLoading, isError, error, refetch, setProperty };
 }

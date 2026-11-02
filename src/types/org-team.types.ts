@@ -187,9 +187,11 @@ export type OrgActivityType =
   | 'PlanChanged'
   | 'OrgNameChanged'
   | 'OrgSlugChanged'
+  | 'OrgSettingsChanged'
   | 'PropertyModeChangeScheduled'
   | 'PropertyModeChangeCancelled'
   | 'PropertyModeChanged'
+  | 'PropertyActivatedWithReminders'
   | 'TrustedSupplierAdded'
   | 'TrustedSupplierRemoved'
   | 'AdminGrantedConcordatoFacileGift';

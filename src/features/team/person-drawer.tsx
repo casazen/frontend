@@ -16,6 +16,7 @@ import { AccessPreview } from './access-preview';
 import { usePeopleRows, type PersonRow } from './people-rows';
 import { PersonActions } from './person-actions';
 import { orgRoleDescription } from './team-labels';
+import { personPreviewPath } from './team-paths';
 import { dayOf } from './team-dates';
 
 /** What the address calls the drawer of a person of the page: `?detail=org-person:<key of the row>`. */
@@ -131,7 +132,12 @@ function PersonDetails({ row, callerRole, close }: { row: PersonRow; callerRole:
         </dl>
       </PlainSection>
 
-      <PlainSection title={row.kind === 'invitation' ? t('team.preview.titleInvited') : t('team.preview.title')}>
+      <PlainSection
+        title={row.kind === 'invitation' ? t('team.preview.titleInvited') : t('team.preview.title')}
+        actionLabel={t('team.preview.detail')}
+        href={personPreviewPath(row.key)}
+        actionTestId="person-preview-link"
+      >
         <PreviewBody row={row} />
       </PlainSection>
     </div>

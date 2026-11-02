@@ -34,21 +34,32 @@ import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
-import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
+import { OrgHomePage } from '@/features/public-site/home/org-home-page';
+import { SiteSearchPage } from '@/features/public-site/search/site-search-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-document-page';
 import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { GuestCancelLinkPage } from '@/features/public-booking/guest-cancel-link-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
+import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierAboutPage } from '@/pages/supplier-about';
+import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
+import { SupplierBookingPage } from '@/pages/supplier-booking';
+import { SupplierInquiryPage } from '@/pages/supplier-inquiry';
+import { SupplierRequestPage } from '@/pages/supplier-request';
+import { SupplierServicePage } from '@/pages/supplier-service';
+import { SupplierServicesPage } from '@/pages/supplier-services';
+import { SupplierSiteShell } from '@/components/supplier-site/supplier-site-shell';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
@@ -59,6 +70,7 @@ import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
+import { ownerPortalRoutes } from './ownerPortalRoutes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -244,7 +256,9 @@ export const appRoutes: RouteObject[] = [
     // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
-      { index: true, element: <OrgLandingPage /> },
+      { index: true, element: <OrgHomePage /> },
+      // The results of the site for a stay and a search (DB-07c): in the address, so a search can be shared and Back finds it again.
+      { path: 'search', element: <SiteSearchPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
       { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },
@@ -257,6 +271,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
       { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
+      // The link of the email that lets the guest cancel (DB-08a/b): what they get back today, and the cancellation, with the signed token.
+      { path: 'bookings/:bookingId/cancel', element: <GuestCancelLinkPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
@@ -278,8 +294,28 @@ export const appRoutes: RouteObject[] = [
       { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
       { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
       { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
-      // Public showcase of a supplier (SU-13, A4-16): in the public shell, `noindex` (see the page).
-      { path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`, element: <SupplierShowcasePage /> },
+    ],
+  },
+  {
+    // Public showcase of a supplier (SU-13, A4-16, SP-09-FE): the frame of its own, with the look the supplier chose, not the one of
+    // CasaZen's public pages. It keeps the marker: the redesign of the app (`data-ui="v2"`) never reaches it.
+    path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`,
+    element: <SupplierSiteShell />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+    children: [
+      { index: true, element: <SupplierShowcasePage /> },
+      // The services of the supplier and one of them with its estimate (they need the list of services, so, like it, the bookings flag);
+      // the story of the supplier.
+      { path: 'servizi', element: <SupplierServicesPage /> },
+      { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
+      { path: 'chi-siamo', element: <SupplierAboutPage /> },
+      // The booking from the site (SP-12b): the steps, the page the link of the verification e-mail opens and the customer's own request
+      // (the link of the other e-mails). All behind the booking flag (with it off their addresses lead back to the home), never indexed.
+      { path: 'prenota', element: <SupplierBookingPage /> },
+      { path: 'conferma', element: <SupplierBookingConfirmPage /> },
+      { path: 'richiesta', element: <SupplierRequestPage /> },
+      // The request on measure (SP-12c), for what the price list does not say: the form; its check, its conversation and its offer are the pages above.
+      { path: 'preventivo', element: <SupplierInquiryPage /> },
     ],
   },
   {
@@ -301,6 +337,13 @@ export const appRoutes: RouteObject[] = [
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
+    // Link of the payment request of a service a supplier completed (SP-15c-d): the host pays from the e-mail, no sign-in. A payer's page,
+    // not the console: it keeps its look until it is redesigned (like the rent payment).
+    path: '/service/pay/:paymentId',
+    element: <ServicePaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
     // The module of the service that prepares the contract, simulated for the test environments (CF-SIM): the signed link of a
     // contract opens it there. A public page like the real module (no sign-in); where the simulator is off the API answers 404 and
     // the page says it is not available.
@@ -318,6 +361,11 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/help/ical',
     element: <IcalHelpPage />,
+  },
+  // Owner portal routes (ADR-011-R6): dedicated portal with Auth0 login
+  {
+    element: <AuthProviderBoundary />,
+    children: ownerPortalRoutes,
   },
   // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
   ...devRoutes,

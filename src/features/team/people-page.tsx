@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { usePeopleList } from './people-list';
 import { usePeopleRows } from './people-rows';
-import { ACCOUNT_INVITE_PATH } from './team-paths';
+import { ACCOUNT_INVITE_PATH, ACCOUNT_ROLES_PATH } from './team-paths';
 
 /**
  * Persone, in the Amministrazione (AM-04b): the people who work with the owner, in the unified list. One row for each member and for
@@ -27,6 +27,7 @@ export function PeoplePage() {
         description={t('team.description')}
         crumbs="auto"
         primary={{ label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
+        secondary={[{ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'people-roles' }]}
       />
 
       {/* The members are there without their invitations: it is said, never guessed (nobody is "not invited" because a list failed). */}

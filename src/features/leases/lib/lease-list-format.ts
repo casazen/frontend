@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseSummary } from '@/types';
+import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseProgress, type LeaseSummary } from '@/types';
 
 /**
  * What the list of leases and its drawer say about a row, in words (LR-02). Everything here reads what the API sends for the
@@ -66,4 +66,16 @@ export function leaseOverdueText(lease: LeaseSummary, t: TFunction): string | nu
 export function leaseNextRentText(lease: LeaseSummary, t: TFunction, language: string): string | null {
   const date = formatStayDate(parseStayDate(lease.nextRentDueDate), language, SHORT_DAY);
   return date ? t('leaseList.rent.next', { date }) : null;
+}
+
+/**
+ * What the bar of the list measures, in words (LR-02b): the steps of the path done before the contract runs («3 di 8 passi»), the year or the
+ * month of the period once it does («Anno 4 di 8»), and «Concluso» at the end. The numbers are the server's.
+ */
+export function leaseProgressText(progress: LeaseProgress, t: TFunction): string {
+  if (progress.kind === 'End') return t('leaseList.progress.concluded');
+  const values = { done: progress.done, total: progress.total };
+  if (progress.unit === 'Years') return t('leaseList.progress.years', values);
+  if (progress.unit === 'Months') return t('leaseList.progress.months', values);
+  return t('leaseList.progress.steps', values);
 }

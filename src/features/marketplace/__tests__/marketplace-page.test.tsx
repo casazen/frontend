@@ -1,158 +1,261 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { Property } from '@/types';
-import type { ServiceRequest } from '@/types/service-request';
+import type { CalendarOverview } from '@/types/property-ical';
+import type { SupplierPicker } from '@/types/service-request';
+import { MarketplaceCategoriesRedirect } from '../categories-redirect';
 import { MarketplacePage } from '../marketplace-page';
+import { MarketplaceMinePage } from '../mine-page';
+import { EXTERNAL_PARTNERS } from '../lib/external-partners';
 
 const api = vi.hoisted(() => ({
-  fetchServiceRequests: vi.fn(),
-  fetchSuppliersByProperty: vi.fn(),
   fetchMarketplaceSuppliers: vi.fn(),
-  markServiceRequestPaid: vi.fn(),
+  fetchSuppliersByProperty: vi.fn(),
   fetchServiceCategories: vi.fn(),
   getProperties: vi.fn(),
+  getCalendarOverview: vi.fn(),
+  getConnectStatus: vi.fn(),
 }));
 const workspace = vi.hoisted(() => ({ permissions: new Set<string>() }));
 
-vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-// The shell (sidebar, header, navigation) is not what these tests are about.
-vi.mock('@/components/layout/app-shell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: api.fetchServiceCategories }));
 vi.mock('@/api/service-requests.api', () => ({
-  fetchServiceRequests: api.fetchServiceRequests,
-  fetchSuppliersByProperty: api.fetchSuppliersByProperty,
   fetchMarketplaceSuppliers: api.fetchMarketplaceSuppliers,
-  markServiceRequestPaid: api.markServiceRequestPaid,
+  fetchSuppliersByProperty: api.fetchSuppliersByProperty,
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: api.getProperties } }));
+vi.mock('@/api/property-ical.api', () => ({ propertyIcalApi: { getCalendarOverview: api.getCalendarOverview } }));
+vi.mock('@/api/connect.api', () => ({ ConnectApi: { getStatus: api.getConnectStatus } }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
+    contexts: [{ contextKey: 'short-rent' }],
     hasPermission: (context: string, permission: string) => workspace.permissions.has(`${context}:${permission}`),
   }),
 }));
 
-// The marketplace is about one property: the requests below are the ones sent for it.
-const PROPERTY = {
-  id: 'prop-1',
-  name: 'Villa Rosa',
-  comuneIstatCode: '058091',
-  complianceStatus: 'Active',
-  isPaused: false,
-} as Property;
+const PROPERTY = { id: 'prop-1', name: 'Villa Rosa', comuneIstatCode: '058091', complianceStatus: 'Active', isPaused: false } as Property;
 
-const REJECTED: ServiceRequest = {
-  id: 'sr-rejected',
-  orgId: 'org-1',
-  bookingId: 'b-1',
-  rentalContext: 'ShortRent',
-  propertyId: 'prop-1',
-  propertyName: 'Villa Rosa',
-  supplierOrgId: 'sup-1',
-  supplierName: 'Pulizie Express Srl',
-  category: 'cleaning',
-  urgency: 'Normal',
-  status: 'Rifiutato',
-  rejectionReason: 'Siamo chiusi per ferie',
-  chargeToGuest: false,
-  createdAt: '2026-09-20T08:00:00Z',
-  updatedAt: '2026-09-21T10:00:00Z',
-  history: [
-    { status: 'Richiesto', at: '2026-09-20T08:00:00Z', actor: 'Host' },
-    { status: 'Rifiutato', at: '2026-09-21T10:00:00Z', actor: 'Supplier', reason: 'Siamo chiusi per ferie' },
-  ],
-};
+const CLEANER = {
+  orgId: 'sup-1',
+  legalName: 'Pulizie Express Srl',
+  categories: ['cleaning'],
+  comuni: ['058091'],
+  photoUrls: [],
+  services: [],
+} as unknown as SupplierPicker;
 
-const COMPLETED: ServiceRequest = {
-  ...REJECTED,
-  id: 'sr-completed',
-  status: 'Completato',
-  rejectionReason: null,
-  completedAt: '2026-09-26T10:15:00Z',
-  history: [
-    { status: 'Richiesto', at: '2026-09-20T08:00:00Z', actor: 'Host' },
-    { status: 'PresoInCarico', at: '2026-09-24T10:00:00Z', actor: 'Supplier' },
-    { status: 'Completato', at: '2026-09-26T10:15:00Z', actor: 'Supplier' },
-  ],
-};
+const CATEGORIES = ['cleaning', 'maintenance', 'plumbing'];
 
-function renderPage() {
+const feeds = (count: number): CalendarOverview => ({
+  syncEveryMinutes: 15,
+  staleAfterMinutes: 45,
+  properties: [
+    {
+      propertyId: 'prop-1',
+      propertyName: 'Villa Rosa',
+      feeds: Array.from({ length: count }, (_, index) => ({ feedId: `f${index}`, channel: 'Airbnb', syncing: false })),
+    },
+  ] as CalendarOverview['properties'],
+});
+
+const ACTIVE_STRIPE = { connectedAccountId: 'acct_1', chargesEnabled: true, payoutsEnabled: true, detailsSubmitted: true, requirementsDue: [] };
+const NO_STRIPE = { connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] };
+
+function renderAt(element: React.ReactNode, route = '/app/short-rent/marketplace') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter>
-          <MarketplacePage />
-        </MemoryRouter>
+        <MemoryRouter initialEntries={[route]}>{element}</MemoryRouter>
       </QueryClientProvider>
     </I18nextProvider>,
   );
 }
 
-describe('MarketplacePage requests (SU-09, A4-28)', () => {
-  beforeEach(async () => {
-    vi.clearAllMocks();
-    workspace.permissions = new Set(['short-rent:property.read', 'short-rent:property.write']);
-    api.getProperties.mockResolvedValue([PROPERTY]);
-    api.fetchSuppliersByProperty.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
+beforeEach(async () => {
+  vi.clearAllMocks();
+  workspace.permissions = new Set(['short-rent:booking.read', 'short-rent:property.read', 'short-rent:property.write']);
+  api.getProperties.mockResolvedValue([PROPERTY]);
+  api.fetchServiceCategories.mockResolvedValue(CATEGORIES);
+  api.fetchMarketplaceSuppliers.mockResolvedValue({ items: [CLEANER], totalCount: 1, page: 1, pageSize: 1 });
+  api.fetchSuppliersByProperty.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
+  api.getCalendarOverview.mockResolvedValue(feeds(2));
+  api.getConnectStatus.mockResolvedValue(NO_STRIPE);
+  await i18n.changeLanguage('it');
+});
+
+describe('MarketplacePage · Scopri', () => {
+  it('MarketplacePage_Scopri_ShowsTheThreeGroupsInTheOrderOfTheBrief', async () => {
+    renderAt(<MarketplacePage />);
+
+    expect(await screen.findByTestId('marketplace-category-cleaning')).toBeInTheDocument();
+    await screen.findByTestId('marketplace-integrations-section');
+    const groups = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+    expect(groups).toEqual(['Fornitori CasaZen', 'Integrazioni con partner esterni', 'Altre integrazioni']);
+  });
+
+  it('MarketplacePage_Scopri_ShowsEveryCategoryAsATileWithItsSuppliers', async () => {
+    renderAt(<MarketplacePage />);
+
+    const cleaning = await screen.findByTestId('marketplace-category-cleaning');
+    expect(cleaning).toHaveTextContent('Pulizie');
+    expect(cleaning).toHaveTextContent('1 fornitore');
+    expect(cleaning).toHaveAttribute('href', expect.stringContaining('/app/short-rent/marketplace/categories/cleaning'));
+    expect(cleaning).toHaveAttribute('href', expect.stringContaining('propertyId=prop-1'));
+    expect(screen.getByTestId('marketplace-category-plumbing')).toHaveTextContent('Ancora nessun fornitore');
+    expect(screen.queryByTestId('marketplace-no-network')).not.toBeInTheDocument();
+  });
+
+  it('MarketplacePage_Scopri_NoSupplierAround_SaysSoAndPointsToThePartners', async () => {
     api.fetchMarketplaceSuppliers.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
-    api.fetchServiceCategories.mockResolvedValue(['cleaning']);
-    api.fetchServiceRequests.mockResolvedValue({ items: [REJECTED, COMPLETED], total: 2, page: 1, pageSize: 50 });
-    api.markServiceRequestPaid.mockResolvedValue({ ...COMPLETED, status: 'Pagato' });
-    await i18n.changeLanguage('it');
+    renderAt(<MarketplacePage />);
+
+    const note = await screen.findByTestId('marketplace-no-network');
+    expect(note).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
+    expect(note).toHaveTextContent('Qui sotto trovi i partner esterni.');
+    expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
   });
 
-  it('MarketplacePage_Requests_ShowTheRealTimelineWithTheRejectionReasonAndTheStayLink', async () => {
-    renderPage();
+  it('MarketplacePage_Scopri_PartnerCards_OpenTheirOwnSiteInANewTabAndClaimNoPartnership', async () => {
+    renderAt(<MarketplacePage />);
 
-    const rejected = await screen.findByTestId('service-request-sr-rejected');
-    expect(rejected).toHaveTextContent('Villa Rosa');
-    expect(within(rejected).getByTestId('service-request-rejection-sr-rejected')).toHaveTextContent('Siamo chiusi per ferie');
-    expect(within(rejected).getByTestId('request-other-supplier-sr-rejected')).toBeInTheDocument();
-    expect(within(rejected).getByTestId('service-request-stay-sr-rejected')).toHaveAttribute('href', '/app/short-rent/bookings/b-1');
-    expect(within(screen.getByTestId('service-request-sr-completed')).getByTestId('mark-paid-sr-completed')).toBeInTheDocument();
+    const section = await screen.findByTestId('marketplace-partners-section');
+    for (const partner of EXTERNAL_PARTNERS) {
+      const link = within(section).getByTestId(`marketplace-partner-${partner.code}-link`);
+      expect(link).toHaveAttribute('href', partner.url);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link.getAttribute('rel')).toContain('noopener');
+      expect(link.getAttribute('rel')).toContain('noreferrer');
+      expect(link.getAttribute('href')).not.toContain('?');
+      expect(link).toHaveAccessibleName(`Scopri ${partner.name} (si apre in una nuova scheda)`);
+    }
+    expect(EXTERNAL_PARTNERS.every((partner) => partner.url.startsWith('https://'))).toBe(true);
+    expect(within(section).getByTestId('marketplace-partner-tidy')).toHaveTextContent('Pulizie');
+    expect(within(section).getByTestId('marketplace-partner-tidy')).toHaveTextContent('Manutenzione');
+    expect(section).toHaveTextContent('Non sono fornitori CasaZen');
   });
 
-  it('MarketplacePage_MarkPaid_AsksForConfirmationFirst', async () => {
-    renderPage();
+  it('MarketplacePage_Scopri_OtherIntegrations_SayWhetherTheyAreOn', async () => {
+    api.getConnectStatus.mockResolvedValue(ACTIVE_STRIPE);
+    renderAt(<MarketplacePage />);
 
-    fireEvent.click(await screen.findByTestId('mark-paid-sr-completed'));
-
-    expect(api.markServiceRequestPaid).not.toHaveBeenCalled();
-    fireEvent.click(await screen.findByTestId('mark-paid-confirm'));
-    await waitFor(() => expect(api.markServiceRequestPaid).toHaveBeenCalledWith('sr-completed'));
+    const calendars = await screen.findByTestId('marketplace-integration-calendars');
+    await waitFor(() => expect(within(calendars).getByTestId('marketplace-integration-calendars-status')).toHaveTextContent('Attiva'));
+    expect(calendars).toHaveTextContent('2 calendari collegati');
+    expect(within(calendars).getByRole('link', { name: 'Gestisci' })).toHaveAttribute('href', '/app/short-rent/channels');
+    const payments = screen.getByTestId('marketplace-integration-payments');
+    await waitFor(() => expect(within(payments).getByTestId('marketplace-integration-payments-status')).toHaveTextContent('Attiva'));
+    expect(within(payments).getByRole('link', { name: 'Gestisci' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
   });
 
-  it('MarketplacePage_WithoutPropertyWrite_ShowsTheRequestsButNoActions', async () => {
-    workspace.permissions = new Set(['short-rent:property.read']);
+  it('MarketplacePage_Scopri_NotConnected_OffersToSetItUp', async () => {
+    api.getCalendarOverview.mockResolvedValue(feeds(0));
+    renderAt(<MarketplacePage />);
 
-    renderPage();
-
-    expect(await screen.findByTestId('service-request-sr-rejected')).toBeInTheDocument();
-    expect(screen.queryByTestId('mark-paid-sr-completed')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('request-other-supplier-sr-rejected')).not.toBeInTheDocument();
+    const payments = await screen.findByTestId('marketplace-integration-payments');
+    await waitFor(() => expect(within(payments).getByTestId('marketplace-integration-payments-status')).toHaveTextContent('Da attivare'));
+    expect(within(payments).getByRole('link', { name: 'Attiva' })).toBeInTheDocument();
+    await waitFor(() => expect(within(screen.getByTestId('marketplace-integration-calendars')).getByTestId('marketplace-integration-calendars-status')).toHaveTextContent('Da attivare'));
   });
 
-  it('MarketplacePage_RequestsLoadFails_ShowsAnErrorWithRetryNotAnEmptyList', async () => {
-    api.fetchServiceRequests.mockRejectedValueOnce(new Error('boom')).mockResolvedValue({ items: [REJECTED], total: 1, page: 1, pageSize: 50 });
-    renderPage();
+  it('MarketplacePage_Scopri_UnreadableAnswers_ShowTheCardsWithoutAStateAndDoNotBreak', async () => {
+    // An answer that is not what the API sends (a page of HTML from a proxy, say) is as good as none.
+    api.getCalendarOverview.mockResolvedValue('<!doctype html>' as never);
+    api.getConnectStatus.mockResolvedValue('<!doctype html>' as never);
+    renderAt(<MarketplacePage />);
 
-    expect(await screen.findByTestId('marketplace-requests-error')).toBeInTheDocument();
-    expect(screen.queryByText(i18n.t('marketplace.noRequests'))).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
-
-    expect(await screen.findByTestId('service-request-sr-rejected')).toBeInTheDocument();
+    const calendars = await screen.findByTestId('marketplace-integration-calendars');
+    await waitFor(() => expect(api.getConnectStatus).toHaveBeenCalled());
+    expect(within(calendars).queryByTestId('marketplace-integration-calendars-status')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('marketplace-integration-payments')).queryByTestId('marketplace-integration-payments-status')).not.toBeInTheDocument();
+    expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
   });
 
-  it('MarketplacePage_NoRequests_ShowsTheEmptyState', async () => {
-    api.fetchServiceRequests.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
-    renderPage();
+  it('MarketplacePage_Scopri_WithoutPropertyWrite_NeitherShowsNorReadsThePayments', async () => {
+    workspace.permissions = new Set(['short-rent:booking.read', 'short-rent:property.read']);
+    renderAt(<MarketplacePage />);
 
-    expect(await screen.findByText(i18n.t('marketplace.noRequests'))).toBeInTheDocument();
-    expect(screen.queryByTestId('marketplace-requests-list')).not.toBeInTheDocument();
+    await screen.findByTestId('marketplace-integration-calendars');
+    expect(screen.queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
+    expect(api.getConnectStatus).not.toHaveBeenCalled();
+  });
+
+  it('MarketplacePage_Scopri_WithoutAnyIntegrationPermission_HidesTheGroupAndReadsNothing', async () => {
+    workspace.permissions = new Set(['short-rent:booking.read']);
+    renderAt(<MarketplacePage />);
+
+    await screen.findByTestId('marketplace-partners-section');
+    expect(screen.queryByTestId('marketplace-integrations-section')).not.toBeInTheDocument();
+    expect(api.getCalendarOverview).not.toHaveBeenCalled();
+    expect(api.getConnectStatus).not.toHaveBeenCalled();
+  });
+
+  it('MarketplacePage_Scopri_PropertyWithoutComune_AsksForItButStillShowsThePartners', async () => {
+    api.getProperties.mockResolvedValue([{ ...PROPERTY, comuneIstatCode: undefined }]);
+    renderAt(<MarketplacePage />);
+
+    expect(await screen.findByText('Aggiungi il comune per vedere i fornitori della tua zona')).toBeInTheDocument();
+    expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-suppliers-section')).not.toBeInTheDocument();
+  });
+
+  it('MarketplacePage_Tabs_AreScopriAndLeMieAppOnly', async () => {
+    renderAt(<MarketplacePage />);
+
+    await screen.findByTestId('marketplace-category-cleaning');
+    expect(screen.getAllByTestId('marketplace-section-discover').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('marketplace-section-mine').length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('marketplace-section-categories')).not.toBeInTheDocument();
+    expect(screen.queryByText('Categorie')).not.toBeInTheDocument();
+  });
+});
+
+describe('MarketplaceMinePage · Le mie app', () => {
+  it('MarketplaceMinePage_ShowsOnlyTheIntegrationsThatAreOn', async () => {
+    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
+
+    const list = await screen.findByTestId('marketplace-active-integrations');
+    expect(within(list).getByTestId('marketplace-integration-calendars')).toHaveTextContent('2 calendari collegati');
+    expect(within(list).queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
+    // What was used (suppliers and requests) is not here: it is in Interventi.
+    expect(screen.queryByText('Pulizie Express Srl')).not.toBeInTheDocument();
+    expect(api.fetchMarketplaceSuppliers).not.toHaveBeenCalled();
+  });
+
+  it('MarketplaceMinePage_NothingOn_SaysSoAndLeadsToScopri', async () => {
+    api.getCalendarOverview.mockResolvedValue(feeds(0));
+    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
+
+    expect(await screen.findByText('Nessuna integrazione attiva')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Scopri le integrazioni' })).toHaveAttribute('href', expect.stringContaining('/app/short-rent/marketplace'));
+  });
+
+  it('MarketplaceMinePage_PendingPayments_IsNotListedAsActive', async () => {
+    api.getConnectStatus.mockResolvedValue({ ...NO_STRIPE, connectedAccountId: 'acct_1' });
+    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
+
+    await screen.findByTestId('marketplace-active-integrations');
+    expect(screen.queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
+  });
+});
+
+describe('MarketplaceCategoriesRedirect', () => {
+  it('MarketplaceCategoriesRedirect_OldAddress_OpensScopriOnTheSameProperty', async () => {
+    function Scopri() {
+      return <div data-testid="scopri">{useLocation().search}</div>;
+    }
+    renderAt(
+      <Routes>
+        <Route path="/app/short-rent/marketplace/categories" element={<MarketplaceCategoriesRedirect />} />
+        <Route path="/app/short-rent/marketplace" element={<Scopri />} />
+      </Routes>,
+      '/app/short-rent/marketplace/categories?propertyId=prop-1',
+    );
+
+    expect(await screen.findByTestId('scopri')).toHaveTextContent('?propertyId=prop-1');
   });
 });

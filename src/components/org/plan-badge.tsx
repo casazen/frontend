@@ -7,6 +7,7 @@ const TIER_VARIANT: Record<PlanTier, BadgeProps['variant']> = {
   Starter: 'secondary',
   Pro: 'default',
   Scale: 'success',
+  Agency: 'default',
 };
 
 interface PlanBadgeProps {

@@ -22,10 +22,12 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CasaZenRing } from '@/components/brand/casazen-mark';
-import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { SEO_FEATURED_GUIDES, SEO_FEATURED_TAX_PAGES, SEO_HUB_PATH, type SeoFeaturedPage } from '@/features/public-seo/seo-paths';
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
+import { HomeSearch } from './home-search';
+import { ChannelsCatalogue, ChannelsStrip, ProductShowcase, SiteExamples } from './home-showcase';
 import { HeroArt, ThemeSwatches } from './site-art';
 import {
   BulletList,
@@ -59,7 +61,7 @@ import {
  */
 
 /** "Ask for an invitation": an e-mail link when the contact address is configured, otherwise only the notice. */
-function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; variant?: 'primary' | 'secondary' }) {
+export function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; variant?: 'primary' | 'secondary' }) {
   const { t } = useTranslation();
   const href = inviteHref(legal.email, t('site.invite.subject'));
   if (!href) return <p className="text-ink-500">{t('site.invite.notice')}</p>;
@@ -94,6 +96,30 @@ const AUDIENCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
 
 const range = (count: number) => Array.from({ length: count }, (_, index) => index + 1);
 
+/** A short list of links to the pages of the hub that the home page names (`SEO_FEATURED_GUIDES`, `SEO_FEATURED_TAX_PAGES`). */
+function GuideLinks({ title, pages, text }: { title: string; pages: readonly SeoFeaturedPage[]; text: (comune: string) => string }) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-ink-800">{title}</h3>
+      <ul className="mt-4 flex flex-wrap gap-2.5">
+        {pages.map((page) => (
+          <li key={page.path}>
+            <a
+              href={page.path}
+              className="inline-flex rounded-full border border-ink-700/15 bg-white px-4 py-2 text-[0.95rem] font-medium text-ink-700 transition-colors hover:border-terra-500 hover:text-terra-800"
+            >
+              {text(page.comune)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** The two ways of renting, each with its own page. */
+const RENT_KINDS = ['short', 'long'] as const;
+
 export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
@@ -119,12 +145,16 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
         </div>
       </section>
 
+      <ChannelsStrip />
+
       <FactsStrip
         items={range(4).map((n) => ({
           value: t(`site.home.facts.item${n}Value`),
           label: t(`site.home.facts.item${n}Label`),
         }))}
       />
+
+      <HomeSearch />
 
       <Section title={t('site.home.contrast.title')} intro={t('site.home.contrast.intro')} tone="cream">
         <Compare
@@ -145,6 +175,32 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
           />
         </Section>
       </div>
+
+      <Section title={t('site.home.rents.title')} intro={t('site.home.rents.intro')}>
+        <div className="grid gap-6 md:grid-cols-2">
+          {RENT_KINDS.map((kind) => (
+            <FeatureCard
+              key={kind}
+              title={t(`site.home.rents.${kind}.title`)}
+              text={t(`site.home.rents.${kind}.text`)}
+              icon={kind === 'short' ? House : KeyRound}
+              tint={kind === 'short' ? 'terra' : 'savoia'}
+              heading="h3"
+              extra
+            >
+              <PrimaryLink href={sitePageById(kind === 'short' ? 'shortRent' : 'longRent').path}>
+                {t(`site.home.rents.${kind}.cta`)}
+              </PrimaryLink>
+            </FeatureCard>
+          ))}
+        </div>
+      </Section>
+
+      <ProductShowcase />
+
+      <SiteExamples />
+
+      <ChannelsCatalogue />
 
       <Section title={t('site.home.compliance.title')} intro={t('site.home.compliance.intro')} tone="cream">
         <CardGrid count={5}>
@@ -214,7 +270,22 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </Section>
 
       <Section title={t('site.home.guides.title')} intro={t('site.home.guides.text')} icon={BookOpen} tint="terra">
-        <SecondaryLink href={SEO_HUB_PATH}>{t('site.home.guides.cta')}</SecondaryLink>
+        {/* Plain links, with the words people search for: the guides are one click from the home page, not two. */}
+        <div className="grid gap-8 sm:grid-cols-2">
+          <GuideLinks
+            title={t('site.home.guides.guidesTitle')}
+            pages={SEO_FEATURED_GUIDES}
+            text={(comune) => t('site.home.guides.guideLink', { comune })}
+          />
+          <GuideLinks
+            title={t('site.home.guides.taxTitle')}
+            pages={SEO_FEATURED_TAX_PAGES}
+            text={(comune) => t('site.home.guides.taxLink', { comune })}
+          />
+        </div>
+        <div className="mt-8">
+          <SecondaryLink href={SEO_HUB_PATH}>{t('site.home.guides.cta')}</SecondaryLink>
+        </div>
       </Section>
 
       <Section title={t('site.home.faq.title')} intro={t('site.home.faq.intro')} tone="cream">

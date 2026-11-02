@@ -1,36 +1,34 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FocusBlock, PlainSection, type CalmTone } from '@/components/shared/calm';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { FocusBlock, PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { ComplianceRow, ROW_BUTTON } from '@/features/compliance/components/compliance-row';
-import { buildCockpit, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
-import { useComplianceSummary } from '@/features/compliance/use-compliance';
+import { focusToneOf, thenOf, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
+import { useCockpit } from '@/features/compliance/use-cockpit';
 import { NoteLine } from '@/features/dashboard/components/note-line';
-import { useWorkspace } from '@/hooks/use-workspace';
-import { useDashboardToday } from '@/queries/use-dashboard';
-import { useProperties } from '@/queries/use-properties';
 
-/** How many rows a list of the cockpit shows before "Vedi tutte". */
-const VISIBLE = 5;
+/** How many rows of the calm levels show before "Mostra le altre": what the law dates is never cut. */
+const CALM_VISIBLE = 3;
+
+/** Where every Alloggiati Web communication is listed, the ones the cockpit does not. */
+const ALLOGGIATI_PATH = '/app/short-rent/alloggiati';
 
 function Badge({ badge }: { badge: CockpitBadge }) {
   return badge.kind === 'property' ? <StatusBadge kind="property" status={badge.status} /> : <StatusBadge kind="alloggiati" status={badge.status} />;
 }
 
-/** Red for what failed or is past its deadline, amber for the rest: the words of the block say the same. */
-function toneOf(row: CockpitRow): CalmTone {
-  return row.note?.tone === 'danger' || (row.badge?.kind === 'alloggiati' && row.badge.status === 'Errore') ? 'danger' : 'warning';
-}
-
 function CockpitRowItem({ row }: { row: CockpitRow }) {
   const { t } = useTranslation();
+  const urgent = row.tier === 'fine';
   return (
     <ComplianceRow
       icon={row.icon}
+      urgent={urgent}
       title={row.title}
       to={row.quiet ? (row.to ?? undefined) : undefined}
       sub={row.sub}
@@ -41,7 +39,8 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
       testId="compliance-summary-row"
       action={
         row.to && !row.quiet ? (
-          <Button asChild variant="outline" size="sm" className={ROW_BUTTON}>
+          // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
+          <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
             <Link to={row.to} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
               {row.cta}
             </Link>
@@ -64,29 +63,18 @@ function RowList({ rows }: { rows: readonly CockpitRow[] }) {
 }
 
 /**
- * What the host still has to do for the law, on the page `/compliance` (the Home no longer carries it): the one thing that
- * lacks first, with the button that takes to the right place, then the stays to look after and the state of every property,
- * each with what it lacks. Everything comes from `GET api/compliance/summary`; the property and the deadline of a stay come
- * from the Home's "Da fare", and the state and the city of a property from the list of properties: when those are late or
- * fail the rows do without them.
+ * What the host still has to do, on the page `/compliance`, in three levels that do not weigh the same (the Home no longer carries
+ * it as a list): the one thing to do first in the block on top, then what the law dates (the Alloggiati Web communications and the
+ * guest data they need: red, with its deadline in words, never cut, the nearest first), then what keeps a property from starting (the
+ * activation, calm: without it the property just does not work), then the upkeep of the stays that are over. The properties in order
+ * stay behind one line. Everything comes from `GET api/compliance/summary`.
  */
 export function ComplianceSummaryWidget() {
-  const { t, i18n } = useTranslation();
-  const { hasPermission } = useWorkspace();
-  const summary = useComplianceSummary();
-  const today = useDashboardToday();
-  // Read again at every visit: the page is where one comes back to see whether what was fixed is fixed.
-  const properties = useProperties({ mode: 'short' }, { fresh: true });
-  const [showAllStays, setShowAllStays] = useState(false);
-  const [showAllProperties, setShowAllProperties] = useState(false);
-
-  const propertyList = Array.isArray(properties.data) ? properties.data : undefined;
-  const todo = today.data?.todo?.items;
-  const locale = i18n.language;
-  const model = useMemo(
-    () => (summary.data ? buildCockpit(summary.data, { todo, properties: propertyList }, { t, locale, hasPermission, exists: (key) => i18n.exists(key) }) : null),
-    [summary.data, todo, propertyList, t, locale, hasPermission, i18n],
-  );
+  const { t } = useTranslation();
+  const { model, summary } = useCockpit({ freshProperties: true });
+  const [showAllStart, setShowAllStart] = useState(false);
+  const [showAllChore, setShowAllChore] = useState(false);
+  const [showActive, setShowActive] = useState(false);
 
   if (!model) {
     return (
@@ -103,30 +91,27 @@ export function ComplianceSummaryWidget() {
     );
   }
 
-  const { stays, focus } = model;
-  const propertyRows = [...model.properties, ...model.activeProperties];
-  const total = model.stayTotal + model.propertyTotal;
-  // The properties that need something are always there; the ones in order are listed up to the same number of rows.
-  const propertyLimit = Math.max(VISIBLE, model.properties.length);
-  const shownStays = showAllStays ? stays : stays.slice(0, VISIBLE);
-  const shownProperties = showAllProperties ? propertyRows : propertyRows.slice(0, propertyLimit);
-  const more = (expanded: boolean, rows: number, limit: number, toggle: () => void) =>
-    rows > limit ? { actionLabel: expanded ? t('compliance.cockpit.showLess') : t('compliance.cockpit.seeAll', { count: rows }), onAction: toggle } : {};
+  const { fine, start, chore, focus } = model;
+  const shown = (rows: CockpitRow[], expanded: boolean) => (expanded ? rows : rows.slice(0, CALM_VISIBLE));
+  const more = (rows: CockpitRow[], expanded: boolean, toggle: () => void) =>
+    rows.length > CALM_VISIBLE
+      ? { actionLabel: expanded ? t('compliance.cockpit.showLess') : t('compliance.cockpit.showMore', { count: rows.length - CALM_VISIBLE }), onAction: toggle }
+      : {};
 
   return (
     <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
       {focus?.to ? (
         <FocusBlock
-          tone={toneOf(focus)}
-          kicker={t('compliance.cockpit.kicker')}
+          tone={focusToneOf(focus)}
+          kicker={t(`compliance.cockpit.kicker.${focus.tier}`)}
           title={focus.title}
           body={[focus.sub, focus.detail].filter(Boolean).join(' · ') || undefined}
           when={focus.note?.text}
-          then={total > 1 ? t('compliance.cockpit.then', { count: total - 1 }) : undefined}
+          then={thenOf(model, focus, t)}
           primary={{ label: focus.cta, href: focus.to, ariaLabel: `${focus.cta}: ${focus.subject}`, testId: 'compliance-summary-focus-cta' }}
           data-testid="compliance-summary-focus"
         />
-      ) : total === 0 ? (
+      ) : model.total === 0 ? (
         <FocusBlock
           tone="success"
           title={t('compliance.cockpit.allClear.title')}
@@ -136,30 +121,64 @@ export function ComplianceSummaryWidget() {
         />
       ) : null}
 
-      {stays.length > 0 ? (
-        <PlainSection
-          title={t('compliance.cockpit.stays.title')}
-          count={model.stayTotal}
-          data-testid="compliance-summary-stays"
-          {...more(showAllStays, stays.length, VISIBLE, () => setShowAllStays((value) => !value))}
-        >
-          <RowList rows={shownStays} />
-          {model.hidden > 0 ? (
+      {fine.total > 0 ? (
+        <PlainSection title={t('compliance.cockpit.fine.title')} count={fine.total} data-testid="compliance-tier-fine">
+          <p className="text-sm text-foreground/70">{t('compliance.cockpit.fine.intro')}</p>
+          <RowList rows={fine.rows} />
+          {fine.hidden > 0 ? (
             <p className="text-sm text-foreground/70" data-testid="compliance-summary-more">
-              {t('compliance.summary.moreItems', { count: model.hidden })}
+              {t('compliance.summary.moreItems', { count: fine.hidden })}{' '}
+              <Link to={ALLOGGIATI_PATH} className="font-medium text-primary-text underline underline-offset-2">
+                {t('compliance.cockpit.fine.moreLink')}
+              </Link>
             </p>
           ) : null}
         </PlainSection>
       ) : null}
 
-      {propertyRows.length > 0 ? (
+      {start.total > 0 ? (
         <PlainSection
-          title={t('compliance.cockpit.properties.title')}
-          data-testid="compliance-summary-properties-section"
-          {...more(showAllProperties, propertyRows.length, propertyLimit, () => setShowAllProperties((value) => !value))}
+          title={t('compliance.cockpit.start.title')}
+          count={start.total}
+          data-testid="compliance-tier-start"
+          {...more(start.rows, showAllStart, () => setShowAllStart((value) => !value))}
         >
-          <RowList rows={shownProperties} />
+          <p className="text-sm text-foreground/70">{t('compliance.cockpit.start.intro')}</p>
+          <RowList rows={shown(start.rows, showAllStart)} />
         </PlainSection>
+      ) : null}
+
+      {chore.total > 0 ? (
+        <PlainSection
+          title={t('compliance.cockpit.chore.title')}
+          count={chore.total}
+          data-testid="compliance-tier-chore"
+          {...more(chore.rows, showAllChore, () => setShowAllChore((value) => !value))}
+        >
+          <RowList rows={shown(chore.rows, showAllChore)} />
+        </PlainSection>
+      ) : null}
+
+      {model.activeProperties.length > 0 ? (
+        <div data-testid="compliance-summary-active">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-auto min-h-11 gap-1.5 px-2 text-foreground/80"
+            aria-expanded={showActive}
+            aria-controls="compliance-active-properties"
+            onClick={() => setShowActive((value) => !value)}
+          >
+            {showActive ? <ChevronDown aria-hidden="true" className="size-4" /> : <ChevronRight aria-hidden="true" className="size-4" />}
+            {t('compliance.cockpit.active.toggle', { count: model.activeProperties.length })}
+          </Button>
+          {showActive ? (
+            <div id="compliance-active-properties" data-testid="compliance-summary-properties-section">
+              <RowList rows={model.activeProperties} />
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

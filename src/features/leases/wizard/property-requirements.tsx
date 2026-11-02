@@ -10,6 +10,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { hasApeIdentification, latestApeDocument } from '@/lib/ape-documents';
 import { DocumentUploadDialog } from '@/features/properties/components/document-upload-dialog';
 import { ApeIdentificationForm } from '@/features/properties/components/ape-identification-form';
+import { longRentPropertyDataPath } from '@/features/properties/long-rent/paths';
 import { cn } from '@/lib/utils';
 import type { LeaseNeed, Property } from '@/types';
 
@@ -80,7 +81,8 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
                 </p>
                 <p className="text-muted-foreground">{t('leaseWizardGuide.property.cadastralExplain')}</p>
                 <Button asChild variant="outline" size="sm" className="max-sm:min-h-11">
-                  <Link to={`/app/long-rent/properties/${property.id}`}>{t('leaseWizard.property.cadastralAdd')}</Link>
+                  {/* The tab "Dati" of the property: where the cadastral identification is (LR-07d). */}
+                  <Link to={longRentPropertyDataPath(property.id)}>{t('leaseWizard.property.cadastralAdd')}</Link>
                 </Button>
               </>
             ) : null}

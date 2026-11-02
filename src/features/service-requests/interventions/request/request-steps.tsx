@@ -1,0 +1,566 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { isAxiosError } from 'axios';
+import type { TFunction } from 'i18next';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { CalendarClock, Info } from 'lucide-react';
+import { PlainSection } from '@/components/shared/calm';
+import { FormFieldError } from '@/components/shared/form-field-error';
+import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
+import { Field } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { SkeletonLine } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
+import { isFeatureEnabled } from '@/config/feature-flags';
+import { stayOptionLabel } from '@/features/service-requests/lib/stays';
+import { formatPrice } from '@/features/supplier/services/lib/service-labels';
+import { formatMoney } from '@/features/supplier/services/lib/service-money';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
+import { getServiceCategoryLabel } from '@/lib/i18n-labels';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { formatWorkDuration } from '@/lib/work-duration';
+import { useHostSupplierServices, useHostSupplierSlots } from '@/queries/use-host-supplier-catalog';
+import { useProperties } from '@/queries/use-properties';
+import { useSuppliersByProperty } from '@/queries/use-service-requests';
+import type { HostSupplierService } from '@/types/host-supplier-catalog';
+import { assign, NO_SERVICE, useUpcomingStays } from './request-form';
+import {
+  CUSTOM_SERVICE,
+  dayForStay,
+  DEFAULT_CHECK_IN_FROM,
+  DEFAULT_CHECK_OUT_BY,
+  DURATION_OTHER,
+  DURATIONS,
+  isCatalogService,
+  MAX_DURATION,
+  MIN_DURATION,
+  proposedSchedule,
+  REQUEST_NOTES_MAX,
+  slotsInWindow,
+  slotsOfDay,
+  daysWithSlots,
+  SUPPLIER_SEES,
+  timedByHost,
+  turnoverWindow,
+  typedDuration,
+  URGENCIES,
+  type RequestValues,
+} from './request-model';
+
+/* ---------------------------------------------------------------------------------------------------- ⑤ Dettagli */
+
+/** What a refusal of the supplier's catalog (it is not active, or does not cover the comune) says. */
+function CatalogProblem({ error }: { error: unknown }) {
+  const { t } = useTranslation();
+  const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
+  const text =
+    code === 'service_request_supplier_outside_comune'
+      ? t('requestWizard.errors.supplierOutsideComune')
+      : code === 'service_request_supplier_inactive' || getHttpStatus(error) === 404
+        ? t('requestWizard.errors.supplierInactive')
+        : t('requestWizard.who.catalogError');
+  return (
+    <Alert variant="warning" data-testid="request-catalog-problem">
+      {text}
+    </Alert>
+  );
+}
+
+/** What the card of a service says: how long it takes and what it costs. */
+function serviceDescription(service: HostSupplierService, t: TFunction, language: string): string {
+  const duration = service.durationMinutes === null ? t('requestWizard.who.noDuration') : formatWorkDuration(service.durationMinutes, t);
+  const price = formatPrice(service, t, language);
+  return `${duration} · ${price}`;
+}
+
+/**
+ * The services of the supplier for the category, one to choose, or «altro lavoro» outside the catalog. A supplier with a single service
+ * has it chosen already, and so does the service the address names (the page of a supplier: «Richiedi» of one of its services).
+ */
+function ServiceChoices() {
+  const { t, i18n } = useTranslation();
+  const { control, setValue, formState } = useFormContext<RequestValues>();
+  const [supplierOrgId, propertyId, category, day, serviceId, serviceName] = useWatch({
+    control,
+    name: ['supplierOrgId', 'propertyId', 'category', 'day', 'serviceId', 'serviceName'],
+  });
+  const services = useHostSupplierServices(supplierOrgId, propertyId, category);
+  const { all } = useUpcomingStays(propertyId);
+  const items = services.data?.items;
+
+  const applyService = useCallback(
+    (service: HostSupplierService) => {
+      const proposal = proposedSchedule(category === 'cleaning' ? turnoverWindow(day, all ?? []) : null);
+      assign(setValue, {
+        ...NO_SERVICE,
+        serviceId: service.id,
+        serviceName: service.name,
+        serviceMinutes: service.durationMinutes,
+        serviceEstimateCents: service.estimatedAmountCents,
+        serviceRequiresQuote: service.requiresQuote,
+        servicePriceFromCents: service.priceFromCents,
+        servicePriceUnit: service.priceUnit,
+        // A service without a duration has no slots: the host gives the time and the length, from the advised hours.
+        ...(service.durationMinutes === null ? { startTime: proposal.startTime, durationChoice: proposal.durationChoice } : {}),
+      });
+    },
+    [category, day, all, setValue],
+  );
+
+  const chooseCustom = () => {
+    if (serviceId === CUSTOM_SERVICE) return;
+    const proposal = proposedSchedule(category === 'cleaning' ? turnoverWindow(day, all ?? []) : null);
+    assign(setValue, { ...NO_SERVICE, serviceId: CUSTOM_SERVICE, startTime: proposal.startTime, durationChoice: proposal.durationChoice });
+  };
+
+  useEffect(() => {
+    if (!items) return;
+    if (serviceId === '' && items.length === 1) {
+      applyService(items[0]);
+    } else if (isCatalogService(serviceId) && serviceName === '') {
+      // Named by the address, not yet by a click: the catalog fills in what the summary says of it. A service that is not this supplier's is not kept.
+      const named = items.find((service) => service.id === serviceId);
+      if (named) applyService(named);
+      else setValue('serviceId', '');
+    }
+  }, [items, serviceId, serviceName, applyService, setValue]);
+
+  if (services.isPending) return <SkeletonLine lines={3} label={t('requestWizard.who.loadingServices')} />;
+  if (services.isError) return <CatalogProblem error={services.error} />;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ChoiceGroup legend={t('requestWizard.who.services')} minCardWidth={14}>
+        {services.data.items.map((service) => (
+          <ChoiceCard
+            key={service.id}
+            name="request-service"
+            value={service.id}
+            checked={serviceId === service.id}
+            onChange={() => (serviceId === service.id ? undefined : applyService(service))}
+            title={service.name}
+            description={serviceDescription(service, t, i18n.language)}
+            data-testid={`request-service-${service.id}`}
+          />
+        ))}
+        <ChoiceCard
+          name="request-service"
+          value={CUSTOM_SERVICE}
+          checked={serviceId === CUSTOM_SERVICE}
+          onChange={chooseCustom}
+          title={t('requestWizard.who.custom.title')}
+          description={t('requestWizard.who.custom.text')}
+          data-testid="request-service-custom"
+        />
+      </ChoiceGroup>
+      <FormFieldError error={formState.errors.serviceId} />
+    </div>
+  );
+}
+
+/** The slots of the day, as buttons; the advised hours first for a cleaning; the nearest days when the day has none. */
+function SlotChoices() {
+  const { t, i18n } = useTranslation();
+  const { control, setValue, formState } = useFormContext<RequestValues>();
+  const [supplierOrgId, serviceId, propertyId, category, day, startTime] = useWatch({
+    control,
+    name: ['supplierOrgId', 'serviceId', 'propertyId', 'category', 'day', 'startTime'],
+  });
+  const slots = useHostSupplierSlots(supplierOrgId, serviceId, propertyId, day, true);
+  const { all: stays } = useUpcomingStays(propertyId);
+  const window = category === 'cleaning' ? turnoverWindow(day, stays ?? []) : null;
+  const [showEvery, setShowEvery] = useState(false);
+
+  const free = useMemo(() => slotsOfDay(slots.data?.slots ?? [], day), [slots.data, day]);
+  const advised = useMemo(() => slotsInWindow(free, window), [free, window]);
+  const filtered = window !== null && advised.length > 0 && !showEvery;
+  const shown = filtered ? advised : free;
+  const nearby = useMemo(() => daysWithSlots(slots.data?.slots ?? []).filter((candidate) => candidate > day).slice(0, 4), [slots.data, day]);
+  const dayText = formatStayDate(day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // A time that is not free any more (someone took it, or the day was changed) is not kept: the host is asked again.
+  useEffect(() => {
+    if (startTime !== '' && slots.data && !free.some((slot) => slot.time === startTime)) setValue('startTime', '');
+  }, [free, slots.data, startTime, setValue]);
+
+  if (slots.isPending) return <SkeletonLine lines={3} label={t('requestWizard.who.loadingSlots')} />;
+  if (slots.isError) {
+    return (
+      <Alert
+        variant="danger"
+        action={
+          <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={() => void slots.refetch()}>
+            {t('requestWizard.retry')}
+          </Button>
+        }
+      >
+        {t('requestWizard.who.slotsError')}
+      </Alert>
+    );
+  }
+
+  const pick = (time: string) => setValue('startTime', time, { shouldDirty: true, shouldValidate: true });
+  const goTo = (nextDay: string) => {
+    setValue('day', nextDay, { shouldDirty: true });
+    setValue('startTime', '', { shouldDirty: true });
+    setShowEvery(false);
+  };
+
+  return (
+    <div className="space-y-3" data-testid="request-slots">
+      <h3 className="text-sm font-semibold">{t('requestWizard.who.slotsTitle', { day: dayText })}</h3>
+      <p role="status" className="sr-only">
+        {t('requestWizard.who.slotsCount', { count: shown.length, day: dayText })}
+      </p>
+
+      {filtered ? (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground/70" data-testid="request-slots-advised">
+          <span>
+            {window?.to
+              ? t('requestWizard.who.advised.both', { from: window.from, to: window.to })
+              : t('requestWizard.who.advised.open', { from: window?.from })}
+          </span>
+          <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={() => setShowEvery(true)} data-testid="request-slots-all">
+            {t('requestWizard.who.showEvery')}
+          </Button>
+        </p>
+      ) : null}
+      {window !== null && advised.length === 0 && free.length > 0 ? <p className="text-sm text-foreground/70">{t('requestWizard.who.advised.none')}</p> : null}
+
+      {shown.length > 0 ? (
+        <div role="group" aria-label={t('requestWizard.who.slotsLabel', { day: dayText })} className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          {shown.map((slot) => (
+            <button
+              key={slot.startUtc}
+              type="button"
+              aria-pressed={startTime === slot.time}
+              aria-label={t('requestWizard.who.slot', { from: slot.time, to: slot.endTime })}
+              onClick={() => pick(slot.time)}
+              data-testid={`request-slot-${slot.time}`}
+              className={
+                startTime === slot.time
+                  ? 'min-h-11 rounded-md border border-primary bg-primary px-3 text-sm font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+                  : 'min-h-11 rounded-md border bg-background px-3 text-sm font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+              }
+            >
+              {slot.time}
+              <span className="block text-xs font-normal opacity-80" aria-hidden="true">
+                {t('requestWizard.who.until', { to: slot.endTime })}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3" data-testid="request-no-slots">
+          <Alert variant="info">{t('requestWizard.who.noSlotsDay', { day: dayText })}</Alert>
+          {nearby.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t('requestWizard.who.nearbyDays')}</p>
+              <div className="flex flex-wrap gap-2">
+                {nearby.map((candidate) => (
+                  <Button key={candidate} type="button" variant="outline" className="min-h-11" onClick={() => goTo(candidate)} data-testid={`request-nearby-${candidate}`}>
+                    {formatStayDate(candidate, i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-foreground/70">{t('requestWizard.who.noSlotsAtAll')}</p>
+          )}
+        </div>
+      )}
+      <FormFieldError error={formState.errors.startTime} />
+    </div>
+  );
+}
+
+/** A job the host times itself (outside the catalog, or a service with no duration): the time and the length, proposed and changeable. */
+function CustomTime() {
+  const { t } = useTranslation();
+  const { register, control, formState } = useFormContext<RequestValues>();
+  const choice = useWatch({ control, name: 'durationChoice' });
+
+  return (
+    <div className="space-y-4" data-testid="request-custom-time">
+      <p className="text-sm text-foreground/70">{t('requestWizard.who.custom.help')}</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t('requestWizard.who.startTime')} error={formState.errors.startTime}>
+          <Input type="time" step={300} data-testid="request-start-time" {...register('startTime')} />
+        </Field>
+        <Field label={t('requestWizard.who.duration')} error={formState.errors.durationChoice}>
+          <Select data-testid="request-duration" {...register('durationChoice')}>
+            {DURATIONS.map((minutes) => (
+              <option key={minutes} value={String(minutes)}>
+                {formatWorkDuration(minutes, t)}
+              </option>
+            ))}
+            <option value={DURATION_OTHER}>{t('requestWizard.who.durationOther')}</option>
+          </Select>
+        </Field>
+      </div>
+      {choice === DURATION_OTHER ? (
+        <Field label={t('requestWizard.who.durationMinutes')} hint={t('requestWizard.who.durationRange', { min: MIN_DURATION, max: MAX_DURATION })} error={formState.errors.durationOther}>
+          <Input type="number" inputMode="numeric" min={MIN_DURATION} max={MAX_DURATION} step={1} data-testid="request-duration-other" {...register('durationOther')} />
+        </Field>
+      ) : null}
+    </div>
+  );
+}
+
+/** When the work is: a slot of the service, or the time the host gives. */
+function TimeChoices() {
+  const { control } = useFormContext<RequestValues>();
+  const [serviceId, serviceMinutes] = useWatch({ control, name: ['serviceId', 'serviceMinutes'] });
+  return timedByHost({ serviceId, serviceMinutes }) ? <CustomTime /> : <SlotChoices />;
+}
+
+/**
+ * Step ⑤: the service of the supplier chosen, the day and the time (a free slot, or the time the host writes), how urgent it is, what the
+ * supplier should know, and, if the host wants, the stay the work is linked to: it is the house that is asked for, the stay is only a
+ * link. Nothing here is kept in the draft: the services and the agendas change.
+ */
+export function DetailsStep({ goTo }: { goTo: (stepId: string) => void }) {
+  const { t, i18n } = useTranslation();
+  const { register, control, setValue, formState } = useFormContext<RequestValues>();
+  const [propertyId, category, supplierOrgId, supplierName, serviceId, day, notes] = useWatch({
+    control,
+    name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes'],
+  });
+  const suppliers = useSuppliersByProperty(propertyId, category);
+  const { stays, all } = useUpcomingStays(propertyId);
+  const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
+  const stayField = register('bookingId');
+  const notAvailable = supplierOrgId !== '' && suppliers.isSuccess && !suppliers.data.items.some((supplier) => supplier.orgId === supplierOrgId);
+
+  // A supplier named by the address (the page of a supplier) is known by its id: its name is for the summary.
+  useEffect(() => {
+    if (supplierOrgId === '' || supplierName !== '') return;
+    const supplier = suppliers.data?.items.find((candidate) => candidate.orgId === supplierOrgId);
+    if (supplier) setValue('supplierName', supplier.legalName);
+  }, [supplierOrgId, supplierName, suppliers.data, setValue]);
+
+  return (
+    <div className="space-y-8">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid="request-chosen-supplier">
+        <span className="text-foreground/70">{t('requestWizard.details.supplier')}</span>
+        <span className="font-medium">{supplierName}</span>
+        <Button type="button" variant="link" className="h-auto p-0" onClick={() => goTo('proposals')} data-testid="request-change-supplier">
+          {t('requestWizard.details.changeSupplier')}
+        </Button>
+      </p>
+
+      {notAvailable ? (
+        <Alert variant="warning" data-testid="request-supplier-unavailable">
+          {t('requestWizard.who.supplierUnavailable')}
+        </Alert>
+      ) : null}
+
+      <PlainSection title={t('requestWizard.details.service')}>
+        <ServiceChoices />
+      </PlainSection>
+
+      {supplierOrgId !== '' && serviceId !== '' ? (
+        <PlainSection title={t('requestWizard.details.when')}>
+          <div className="space-y-4">
+            <Field label={t('requestWizard.when.day')} error={formState.errors.day}>
+              <Input type="date" min={todayInRome()} data-testid="request-day" {...register('day')} />
+            </Field>
+            {window ? (
+              <p className="flex items-start gap-2 rounded-md bg-muted p-3 text-sm" data-testid="request-window">
+                <CalendarClock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
+                <span className="min-w-0 break-words">
+                  {window.to ? t('requestWizard.when.window.both', { from: window.from, to: window.to }) : t('requestWizard.when.window.open', { from: window.from })}{' '}
+                  <span className="text-foreground/70">{t('requestWizard.when.window.defaults', { checkOut: DEFAULT_CHECK_OUT_BY, checkIn: DEFAULT_CHECK_IN_FROM })}</span>
+                </span>
+              </p>
+            ) : null}
+            <TimeChoices />
+          </div>
+        </PlainSection>
+      ) : null}
+
+      <PlainSection title={t('requestWizard.what.urgency')}>
+        <ChoiceGroup legend={t('requestWizard.what.urgency')} minCardWidth={12}>
+          {URGENCIES.map((urgency) => (
+            <ChoiceCard
+              key={urgency}
+              value={urgency}
+              title={t(`requestWizard.what.urgencies.${urgency}.title`)}
+              description={t(`requestWizard.what.urgencies.${urgency}.text`)}
+              data-testid={`request-urgency-${urgency}`}
+              {...register('urgency')}
+            />
+          ))}
+        </ChoiceGroup>
+        <FormFieldError error={formState.errors.urgency} />
+      </PlainSection>
+
+      <Field
+        label={t('requestWizard.what.notes')}
+        hint={t('requestWizard.what.notesHint')}
+        optional
+        counter={`${notes.length}/${REQUEST_NOTES_MAX}`}
+        error={formState.errors.notes}
+      >
+        <Textarea rows={4} maxLength={REQUEST_NOTES_MAX} data-testid="request-notes" {...register('notes')} />
+      </Field>
+
+      <Field label={t('requestWizard.when.stay')} hint={t('requestWizard.when.stayHint')} optional error={formState.errors.bookingId}>
+        <Select
+          data-testid="request-stay"
+          {...stayField}
+          onChange={(event) => {
+            void stayField.onChange(event);
+            const stay = stays.find((candidate) => candidate.id === event.target.value);
+            // The work is on the day the guests leave, unless the host says otherwise above.
+            if (stay) setValue('day', dayForStay(stay.checkOutDate), { shouldDirty: true });
+          }}
+        >
+          <option value="">{t('requestWizard.when.stayNone')}</option>
+          {stays.map((stay) => (
+            <option key={stay.id} value={stay.id}>
+              {stayOptionLabel(stay, t, i18n.language)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------------------------------- ⑥ Riepilogo */
+
+/** "10:00" plus 120 minutes is "12:00" (the wall clock of the day; a job that runs past midnight is written "24:00"). */
+function endTime(start: string, minutes: number): string {
+  const [hour, minute] = start.split(':').map(Number);
+  const total = hour * 60 + minute + minutes;
+  if (total >= 24 * 60) return '24:00';
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+/** The price the summary says: the service's estimate, «su preventivo», its «da» price, or nothing known. */
+function priceLine(values: RequestValues, t: TFunction, language: string): string {
+  if (!isCatalogService(values.serviceId)) return t('requestWizard.review.priceTbd');
+  if (values.serviceEstimateCents !== null) return t('requestWizard.review.priceEstimate', { price: formatMoney(values.serviceEstimateCents, language) });
+  if (values.serviceRequiresQuote) return t('requestWizard.review.priceQuote');
+  if (values.servicePriceFromCents !== null) {
+    return t('requestWizard.review.priceFrom', {
+      price: formatPrice({ requiresQuote: false, priceFromCents: values.servicePriceFromCents, priceUnit: values.servicePriceUnit as HostSupplierService['priceUnit'] }, t, language),
+    });
+  }
+  return t('requestWizard.review.priceTbd');
+}
+
+/**
+ * SP-BKP: «Se il fornitore non risponde» — the request also goes to up to three backup suppliers of the zone, declared as such: the one
+ * chosen keeps an hour to answer, then the first backup that accepts has the job. Offered while the server has the rule on; ticked unless
+ * the host unticks it (only a «no» is sent).
+ */
+function BackupChoice() {
+  const { t } = useTranslation();
+  const { flags } = useFeatureFlags();
+  const { register } = useFormContext<RequestValues>();
+  if (!isFeatureEnabled(flags, 'supplierRequestBackups')) return null;
+
+  return (
+    <div data-testid="request-backups">
+      <ChoiceGroup legend={t('requestWizard.review.backups.legend')} legendVisible minCardWidth={16}>
+        <ChoiceCard
+          type="checkbox"
+          title={t('requestWizard.review.backups.title')}
+          description={t('requestWizard.review.backups.description')}
+          data-testid="request-use-backups"
+          {...register('useBackups')}
+        />
+      </ChoiceGroup>
+    </div>
+  );
+}
+
+/** Step ⑥: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
+export function ReviewStep() {
+  const { t, i18n } = useTranslation();
+  const { control } = useFormContext<RequestValues>();
+  const values = useWatch({ control }) as RequestValues;
+  const properties = useProperties({ mode: 'short' });
+  const { stays } = useUpcomingStays(values.propertyId);
+
+  const property = (Array.isArray(properties.data) ? properties.data : []).find((candidate) => candidate.id === values.propertyId);
+  const stay = stays.find((candidate) => candidate.id === values.bookingId);
+  const minutes = isCatalogService(values.serviceId) && values.serviceMinutes !== null ? values.serviceMinutes : typedDuration(values);
+  const dayText = formatStayDate(values.day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
+  const hours = minutes ? `${values.startTime}–${endTime(values.startTime, minutes)}` : values.startTime;
+
+  const items: WizardSummaryItem[] = [
+    {
+      id: 'where',
+      label: t('requestWizard.review.where'),
+      value: [property?.name, property?.city].filter(Boolean).join(' · '),
+      stepId: 'property',
+    },
+    {
+      id: 'who',
+      label: t('requestWizard.review.who'),
+      value: [values.supplierName, isCatalogService(values.serviceId) ? values.serviceName : t('requestWizard.who.custom.title')].filter(Boolean).join(' · '),
+      stepId: 'proposals',
+    },
+    {
+      id: 'what',
+      label: t('requestWizard.review.what'),
+      value: [getServiceCategoryLabel(values.category, t), t(`requestWizard.what.urgencies.${values.urgency}.title`)].join(' · '),
+      stepId: 'details',
+    },
+    {
+      id: 'when',
+      label: t('requestWizard.review.when'),
+      value: [dayText, hours, minutes ? formatWorkDuration(minutes, t) : ''].filter(Boolean).join(' · '),
+      stepId: 'details',
+    },
+    { id: 'notes', label: t('requestWizard.review.notes'), value: values.notes.trim() ? <span className="whitespace-pre-wrap">{values.notes.trim()}</span> : '', stepId: 'details' },
+    {
+      id: 'stay',
+      label: t('requestWizard.review.stay'),
+      value: stay ? stayOptionLabel(stay, t, i18n.language) : t('requestWizard.review.houseOnly'),
+      stepId: 'details',
+    },
+    { id: 'price', label: t('requestWizard.review.price'), value: priceLine(values, t, i18n.language) },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <WizardSummary items={items} />
+
+      <BackupChoice />
+
+      <PlainSection title={t('requestWizard.review.sees.title')} data-testid="request-supplier-sees">
+        <div className="space-y-4 text-sm">
+          <div className="space-y-1">
+            <p className="font-medium">{t('requestWizard.review.sees.beforeTitle')}</p>
+            <ul className="list-disc space-y-1 pl-5">
+              {SUPPLIER_SEES.before.map((key) => (
+                <li key={key}>{t(key)}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium">{t('requestWizard.review.sees.afterTitle')}</p>
+            <ul className="list-disc space-y-1 pl-5">
+              {SUPPLIER_SEES.after.map((key) => (
+                <li key={key}>{t(key)}</li>
+              ))}
+            </ul>
+          </div>
+          <p className="flex items-start gap-2 text-foreground/70">
+            <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            <span className="min-w-0 break-words">{t(SUPPLIER_SEES.never)}</span>
+          </p>
+        </div>
+      </PlainSection>
+    </div>
+  );
+}

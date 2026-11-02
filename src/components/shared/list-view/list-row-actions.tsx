@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,18 @@ import type { ListMenuEntry, ListRowAction } from './list-types';
 
 /** `/app/...` goes through the router (no reload); anything else (an `https:` link, `mailto:`) is a plain link. */
 const isInternalPath = (href: string) => href.startsWith('/') && !href.startsWith('//');
+
+/** A link that leaves the app (`external`, a map) opens in another tab, and says so to a screen reader: the app stays where it was. */
+function OutsideLink({ action, children }: { action: ListRowAction; children: ReactNode }) {
+  const { t } = useTranslation();
+  if (!action.external) return <a href={action.href}>{children}</a>;
+  return (
+    <a href={action.href} target="_blank" rel="noopener noreferrer">
+      {children}
+      <span className="sr-only"> {t('listView.row.newTab')}</span>
+    </a>
+  );
+}
 
 interface ActionButtonProps {
   action: ListRowAction;
@@ -34,7 +47,7 @@ export function ListPrimaryAction({ action, className }: ActionButtonProps) {
   if (action.href) {
     return (
       <Button asChild variant={variant} size="sm" className={className} data-testid={action.testId}>
-        {isInternalPath(action.href) ? <Link to={action.href}>{content}</Link> : <a href={action.href}>{content}</a>}
+        {isInternalPath(action.href) ? <Link to={action.href}>{content}</Link> : <OutsideLink action={action}>{content}</OutsideLink>}
       </Button>
     );
   }
@@ -59,7 +72,7 @@ function MenuItem({ action }: { action: ListRowAction }) {
   if (action.href) {
     return (
       <DropdownMenuItem asChild className={className} disabled={action.disabled} data-testid={action.testId}>
-        {isInternalPath(action.href) ? <Link to={action.href}>{content}</Link> : <a href={action.href}>{content}</a>}
+        {isInternalPath(action.href) ? <Link to={action.href}>{content}</Link> : <OutsideLink action={action}>{content}</OutsideLink>}
       </DropdownMenuItem>
     );
   }

@@ -26,6 +26,21 @@ const EXTENSION_TYPES: Record<string, string> = {
 export const toMegabytes = (bytes: number) => Math.floor(bytes / (1024 * 1024));
 
 /**
+ * The problem of one file (type, then size), in the user's language, or null when the API would take it. Used for a selection
+ * as a whole and, by the queue of the wizard, for each file on its own so that the others are not held back by one.
+ */
+export function validatePhotoFile(file: File, rules: PhotoUploadRules, t: TranslateFn): string | null {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  const type = file.type.toLowerCase();
+  const knownType = rules.allowedContentTypes.includes(type) && EXTENSION_TYPES[extension] === type;
+  if (!knownType) return t('property.photos.selectionInvalidType', { name: file.name });
+  if (file.size === 0 || file.size > rules.maxFileSizeBytes) {
+    return t('property.photos.selectionTooLarge', { name: file.name, size: toMegabytes(rules.maxFileSizeBytes) });
+  }
+  return null;
+}
+
+/**
  * First problem of a selection of files, in the user's language, or null when it can be uploaded. The API checks the
  * same rules (and the content of each file); checking here too only spares a round trip and names the file. A
  * selection is uploaded whole or not at all, like the API does.
@@ -44,13 +59,8 @@ export function validatePhotoSelection(
     return t('property.photos.selectionOverLimit', { remaining: Math.max(remaining, 0), max: rules.maxPhotos });
   }
   for (const file of files) {
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-    const type = file.type.toLowerCase();
-    const knownType = rules.allowedContentTypes.includes(type) && EXTENSION_TYPES[extension] === type;
-    if (!knownType) return t('property.photos.selectionInvalidType', { name: file.name });
-    if (file.size === 0 || file.size > rules.maxFileSizeBytes) {
-      return t('property.photos.selectionTooLarge', { name: file.name, size: toMegabytes(rules.maxFileSizeBytes) });
-    }
+    const problem = validatePhotoFile(file, rules, t);
+    if (problem) return problem;
   }
   return null;
 }

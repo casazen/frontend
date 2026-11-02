@@ -8,7 +8,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs, withJsonErrorBody } from '@/lib/file-download';
 import type { LeaseDetail } from '@/types';
 import { RegisteredBenefits } from '../components/registered-benefits';
-import { leaseSheetPath } from '../lib/lease-next-step';
+import { leaseSheetPath, operationPath } from '../lib/lease-next-step';
 import { LEASE_ACTION_PARAM } from '../lifecycle/lifecycle-actions';
 import { SOURCES, type AdviceAction, type AdviceEntry, type GuideTool } from './advice-catalogue';
 import { Disclosure } from './disclosure';
@@ -66,6 +66,8 @@ function ActionOf({ action, label, leaseId, onOpenTool }: { action: AdviceAction
       return <GuideButton label={label} href={leaseSheetPath(leaseId, action.tab)} testId="lease-advice-action" />;
     case 'lifecycle':
       return <GuideButton label={label} href={lifecyclePath(leaseId, action.action)} testId="lease-advice-action" />;
+    case 'operation':
+      return <GuideButton label={label} href={operationPath(leaseId, action.operation)} testId="lease-advice-action" />;
     case 'tool':
       return <GuideButton label={label} onClick={() => onOpenTool(action.tool)} testId="lease-advice-action" />;
     case 'official': {

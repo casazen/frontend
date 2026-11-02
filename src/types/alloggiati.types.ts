@@ -2,15 +2,15 @@ import type { DocumentType, Gender } from './guest.types';
 import type { AlloggiatiCodeTable, StayGuestType } from './public-checkin.types';
 
 /**
- * State of an Alloggiati Web communication (CO-11, decision D6). CasaZen does not transmit yet: `Inviato` needs
- * a real receipt (CO-13); until then the host sends it on the Questura portal and declares it
- * (`InviatoManualmente`).
+ * State of an Alloggiati Web communication (CO-11, decision D6, ADR-015).
+ * SentReceiptPending: sent successfully, awaiting receipt retrieval.
  */
 export type AlloggiatiWebStatus =
   | 'DaInviare'
   | 'DaInviareManualmente'
   | 'InviatoManualmente'
   | 'Inviato'
+  | 'SentReceiptPending'
   | 'Rifiutato'
   | 'Errore';
 
@@ -201,4 +201,35 @@ export interface GuestCheckInDataResponse {
 
 export interface GuestDocumentUploadResponse {
   documentScanUrl: string;
+}
+
+export interface AlloggiatiReportDto {
+  reportId: string;
+  bookingId: string;
+  propertyId: string;
+  propertyName: string;
+  guestName: string;
+  checkInDate: string;
+  status: AlloggiatiWebStatus;
+  confirmationNumber: string | null;
+  reportedAt: string | null;
+  deadlineAt: string;
+  hoursUntilDeadline: number;
+  isOverdue: boolean;
+  hasErrors: boolean;
+  errorCount: number;
+}
+
+export interface AlloggiatiReportFilters {
+  propertyId?: string;
+  status?: AlloggiatiWebStatus;
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface AlloggiatiRowErrorDto {
+  rowNumber: number;
+  guestName: string;
+  tipoErrore: string;
+  errorMessage: string;
 }

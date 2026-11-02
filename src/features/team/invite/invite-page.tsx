@@ -6,6 +6,7 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { Button } from '@/components/ui/button';
+import { useOrgSettings } from '@/features/settings/organization/use-org-settings';
 import { ACCOUNT_BILLING_PATH } from '@/lib/billing-routes';
 import { cn } from '@/lib/utils';
 import { useCreateOrgInvitation, useOrgInvitations, useOrgMembers, useOrgRoles } from '@/queries/use-org-team';
@@ -26,7 +27,7 @@ import {
 } from './invite-model';
 import { ReviewStep, RoleStep, WhereStep, WhoStep } from './invite-steps';
 
-/** The language of the emails the person starts from: the one of the interface. */
+/** The language of the emails the person starts from when the account has not chosen one (or it cannot be read): the one of the interface. */
 function interfaceLanguage(language: string): OrgInvitationLanguage {
   return language.toLowerCase().startsWith('en') ? 'en' : 'it';
 }
@@ -51,6 +52,8 @@ function InviteWizard() {
   const members = useOrgMembers(true, { fresh: true });
   const invitations = useOrgInvitations({ fresh: true });
   const roles = useOrgRoles();
+  // The language of the account (AM-08b-b) is the language the emails start with; without it (a refusal, an older backend) the interface's.
+  const settings = useOrgSettings(true);
   const { properties, isError: propertiesFailed } = usePickerProperties();
   // The last seat is contended: a refusal for it keeps the answers (the wizard stays on its last step) and shows the way to the plan.
   const [seatLimitHit, setSeatLimitHit] = useState(false);
@@ -70,11 +73,14 @@ function InviteWizard() {
 
   // `?property=` needs the properties to know the area of the one it names: the wizard opens when they are there (or failed).
   const waitingForProperties = searchParams.has('property') && properties === undefined && !propertiesFailed;
+  // The wizard opens when the language is known (or could not be read), so that its first answer is never changed under the person's hands.
+  const waitingForSettings = settings.isPending;
+  const accountLanguage = settings.data?.defaultLanguage;
   const defaults = useMemo(
-    () => inviteDefaults(searchParams, interfaceLanguage(i18n.language), properties),
-    [searchParams, i18n.language, properties],
+    () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties),
+    [searchParams, accountLanguage, i18n.language, properties],
   );
-  if (waitingForProperties) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
+  if (waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
 
   const steps: WizardStep<InviteValues>[] = [
     {
