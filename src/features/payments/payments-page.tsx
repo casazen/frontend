@@ -4,8 +4,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { ListView } from '@/components/shared/list-view/list-view';
-import { BookingsSectionTabs } from '@/features/bookings/components/bookings-section-tabs';
-import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { usePayments } from '@/queries/use-payments';
@@ -75,13 +73,7 @@ export function PaymentsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          title={t('payment.list.title')}
-          description={t('payment.list.description')}
-          crumbs={[{ label: t('booking.sections.bookings'), to: BOOKINGS_PATH }, { label: t('payment.list.title') }]}
-        />
-
-        <BookingsSectionTabs />
+        <PageHeader title={t('payment.list.title')} description={t('payment.list.description')} />
 
         {rows.length > 0 && !payments.isError ? <PaymentsSummary month={month} today={today} /> : null}
 

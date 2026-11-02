@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ROUTE_MANIFEST, type AppContextKey, type PermissionPredicate } from '@/config/route-manifest';
-import { getContextHomeRoute } from '../context-home';
+import { getContextHomeRoute, getFirstOpenablePage } from '../context-home';
 
 function grants(contextKey: AppContextKey, permissions: string[]): PermissionPredicate {
   return (key, permission) => key === contextKey && (!permission || permissions.includes(permission));
@@ -31,7 +31,19 @@ describe('getContextHomeRoute (UI-00)', () => {
   });
 
   it('getContextHomeRoute_NoPermissionAtAll_ReturnsThePageThatAsksForNone', () => {
+    // The profile is not in the menu of the area any more (the menu of the user leads to it), and it is still the page that opens.
     expect(getContextHomeRoute('long-rent', grants('long-rent', []), NO_FLAGS)).toBe('/app/long-rent/profile');
+  });
+
+  it('getFirstOpenablePage_AMenuPageOpens_ReturnsTheFirstOneAndNotTheProfile', () => {
+    expect(getFirstOpenablePage('long-rent', grants('long-rent', ['property.read']), NO_FLAGS)).toBe('/app/long-rent/properties');
+    expect(getFirstOpenablePage('short-rent', grants('short-rent', []), NO_FLAGS)).toBe('/app/short-rent');
+  });
+
+  it('getFirstOpenablePage_NothingInTheMenu_ReturnsTheProfileOfTheAreaOrNothing', () => {
+    expect(getFirstOpenablePage('long-rent', grants('long-rent', []), NO_FLAGS)).toBe('/app/long-rent/profile');
+    // Every page of the admin area, the profile included, asks for a permission.
+    expect(getFirstOpenablePage('admin', grants('admin', []), NO_FLAGS)).toBeUndefined();
   });
 
   it('getContextHomeRoute_NothingTheUserCanOpen_ReturnsTheDefaultPageSoItsOwnGuardAnswers', () => {

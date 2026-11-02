@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useUiStore } from '@/store/ui-store';
 import { BottomNav } from '../bottom-nav';
 
@@ -134,10 +135,10 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_NoDestinationButPagesBehindAltro_ShowsTheBarWithAltroAlone', () => {
-      // A role with few permissions has none of the four destinations but still has pages (the profile): the header has no
-      // menu button since UI-05, so the bar is the way to them.
-      arrange(['long-rent'], () => false);
-      renderBar('long-rent', '/app/long-rent/profile');
+      // A role with few permissions has none of the four destinations but still has pages (the organization of the owner who
+      // holds no lease or property permission): the header has no menu button since UI-05, so the bar is the way to them.
+      arrange(['long-rent'], (_ctx, permission) => permission === ORG_BILLING_ADMIN_PERMISSION);
+      renderBar('long-rent', '/app/long-rent/settings/organization');
 
       expect(within(bar()).queryAllByRole('link')).toHaveLength(0);
       expect(more()).toBeInTheDocument();

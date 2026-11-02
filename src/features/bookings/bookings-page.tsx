@@ -14,7 +14,6 @@ import { useSendCheckInLink } from '@/queries/use-checkin';
 import { useProperties } from '@/queries/use-properties';
 import type { BookingListItem, Property } from '@/types';
 import { useBookingsList, type BookingRowHandlers } from './bookings-list';
-import { BookingsSectionTabs } from './components/bookings-section-tabs';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { DeclineBookingDialog } from './components/decline-booking-dialog';
@@ -79,8 +78,6 @@ function BookingsListPage() {
           primary={canWrite ? { label: t('booking.list.newBooking'), icon: Plus, to: createPath, testId: 'new-booking' } : undefined}
           mobilePrimary="fab"
         />
-
-        <BookingsSectionTabs />
 
         {nothingAtAll ? (
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm" data-testid="bookings-empty">
