@@ -72,8 +72,9 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/fornitori/pulizie-roma',
       '/sitemap-supplier.xml',
       // SEO-VETRINA: the pages of the public site and their sitemap.
+      '/affitti-brevi',
+      '/affitti-lunghi',
       '/funzionalita',
-      '/integrazioni',
       '/per-i-fornitori',
       '/chi-siamo',
       '/sitemap-site.xml',

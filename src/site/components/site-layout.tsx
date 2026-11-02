@@ -19,8 +19,9 @@ interface SiteLayoutProps {
 }
 
 const NAV: { id: SitePageId; key: string }[] = [
+  { id: 'shortRent', key: 'site.nav.shortRent' },
+  { id: 'longRent', key: 'site.nav.longRent' },
   { id: 'features', key: 'site.nav.features' },
-  { id: 'integrations', key: 'site.nav.integrations' },
   { id: 'suppliers', key: 'site.nav.suppliers' },
   { id: 'about', key: 'site.nav.about' },
 ];

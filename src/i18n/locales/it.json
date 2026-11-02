@@ -13124,9 +13124,13 @@
         "title": "Chi siamo e contatti | CasaZen",
         "description": "CasaZen è il gestionale per host e property manager di affitti brevi e lunghi in Italia, costruito sulle regole italiane. Come lavoriamo, dati societari e contatti."
       },
-      "integrations": {
-        "title": "Integrazioni: canali di vendita e partner collegabili | CasaZen",
-        "description": "Le OTA, i metasearch e gli strumenti partner che si possono collegare a CasaZen: Booking.com, Airbnb, Expedia, Vrbo e centinaia di altri canali e servizi."
+      "shortRent": {
+        "title": "Affitti brevi: adempimenti, calendario e prenotazioni dirette | CasaZen",
+        "description": "Per host e property manager di affitti brevi: CIN, Alloggiati Web, imposta di soggiorno, calendario, sito di prenotazione diretta e collegamento ai canali come Booking.com, Airbnb, Vrbo ed Expedia."
+      },
+      "longRent": {
+        "title": "Affitti lunghi: contratti, canoni e scadenze | CasaZen",
+        "description": "Per chi affitta a lungo termine: contratti 4+4, 3+2 e transitori, canoni con Stripe, promemoria di registrazione (RLI) e cedolare secca."
       }
     },
     "nav": {
@@ -13140,7 +13144,8 @@
       "switchLanguage": "English",
       "switchLanguageLabel": "Passa all'inglese",
       "search": "Cerca casa",
-      "integrations": "Integrazioni"
+      "shortRent": "Affitti brevi",
+      "longRent": "Affitti lunghi"
     },
     "footer": {
       "tagline": "Il gestionale per gli affitti brevi e lunghi in regola.",
@@ -13292,6 +13297,128 @@
         "title": "Cerchi una casa per le vacanze?",
         "where": "Dove",
         "wherePlaceholder": "Città o zona"
+      },
+      "channels": {
+        "title": "Si collega a Booking.com, Airbnb, Vrbo, Expedia e a molti altri canali",
+        "more": "…e oltre {{count}} tra canali di vendita, metasearch, pagamenti e strumenti per l'accoglienza.",
+        "note": "I collegamenti si attivano canale per canale; oggi i calendari dei portali si sincronizzano tramite iCal. Chiedici lo stato del canale che ti interessa.",
+        "groups": {
+          "ota": {
+            "title": "Canali di vendita (OTA)",
+            "intro": "Portali e marketplace dove pubblicare i tuoi alloggi, nazionali e internazionali."
+          },
+          "metasearch": {
+            "title": "Metasearch",
+            "intro": "Comparatori che mostrano tariffe e disponibilità quando l'ospite sta confrontando le strutture."
+          },
+          "gds": {
+            "title": "Distribuzione globale (GDS)",
+            "intro": "Reti di distribuzione per raggiungere agenzie, wholesaler e canali globali."
+          },
+          "revenue": {
+            "title": "Prezzi e revenue management",
+            "intro": "Strumenti per impostare le tariffe in base a domanda e concorrenza."
+          },
+          "payments": {
+            "title": "Pagamenti",
+            "intro": "Circuiti e sistemi per incassi online, carte e preautorizzazioni."
+          },
+          "smart": {
+            "title": "Check-in, accessi e guest experience",
+            "intro": "Self check-in, serrature smart, upselling e strumenti per l'accoglienza."
+          },
+          "ai": {
+            "title": "Assistenti AI",
+            "intro": "Assistenti per i messaggi con gli ospiti e per le attività di ogni giorno."
+          },
+          "housekeeping": {
+            "title": "Pulizie e operatività",
+            "intro": "Strumenti per coordinare pulizie, camere pronte e staff."
+          },
+          "admin": {
+            "title": "Amministrazione e adempimenti",
+            "intro": "Fiscalità, documenti, comunicazioni obbligatorie e contabilità."
+          },
+          "software": {
+            "title": "Software gestionali e calendari",
+            "intro": "Gestionali e sistemi verticali, calendari e strumenti d'ufficio da collegare."
+          },
+          "other": {
+            "title": "Altri strumenti",
+            "intro": "Servizi digitali, marketing e automazioni complementari."
+          }
+        },
+        "trademarks": "I marchi e i loghi mostrati appartengono ai rispettivi proprietari e servono solo a indicare i servizi collegabili; non implicano accordi commerciali o approvazioni.",
+        "tabs": "Categorie di canali e strumenti",
+        "showAll": "Mostra tutti ({{count}})",
+        "showLess": "Mostra meno",
+        "seeAll": "Vedi tutti",
+        "catalogTitle": "Tutti i canali e gli strumenti",
+        "catalogIntro": "L'elenco completo dei canali di vendita e dei partner che si possono collegare, per categoria."
+      },
+      "rents": {
+        "title": "Affitti brevi o affitti lunghi: due percorsi, un solo gestionale",
+        "intro": "CasaZen ha un percorso dedicato a ciascun modo di affittare, con le sue regole e i suoi strumenti.",
+        "short": {
+          "title": "Affitti brevi",
+          "text": "CIN, Alloggiati Web, imposta di soggiorno, calendario e un sito di prenotazione diretta tuo.",
+          "cta": "Scopri gli affitti brevi"
+        },
+        "long": {
+          "title": "Affitti lunghi",
+          "text": "Contratti 4+4, 3+2 e transitori, canoni con Stripe e scadenze di registrazione sempre sotto controllo.",
+          "cta": "Scopri gli affitti lunghi"
+        }
+      },
+      "showcase": {
+        "title": "CasaZen al lavoro",
+        "intro": "Alcune schermate e un breve video dei passaggi che contano di più, per vedere come ci si lavora davvero.",
+        "cockpit": {
+          "title": "Sai sempre cosa fare oggi",
+          "text": "La pagina Adempimenti mette in cima ciò che rischia una sanzione e ti indica il prossimo passo, uno alla volta.",
+          "alt": "Pagina Adempimenti di CasaZen con la prossima cosa da fare e le scadenze di legge",
+          "tab": "Cosa fare oggi"
+        },
+        "alloggiati": {
+          "title": "Alloggiati Web sotto controllo",
+          "text": "Per ogni soggiorno vedi lo stato della comunicazione alla Questura, la scadenza e cosa manca. CasaZen prepara i dati; l'invio al portale resta a te.",
+          "alt": "Pagina Alloggiati Web con le comunicazioni da inviare e la scadenza superata",
+          "tab": "Alloggiati Web"
+        },
+        "cin": {
+          "title": "Il CIN, immobile per immobile",
+          "text": "Il formato del codice è controllato e ogni immobile mostra se il CIN è valido, mancante o da correggere.",
+          "alt": "Pagina Conformità CIN con gli immobili e lo stato del CIN",
+          "tab": "CIN"
+        },
+        "caption": "Schermate e video registrati dall'app con dati di esempio.",
+        "checkin": {
+          "title": "Il check-in dell'ospite, dal telefono",
+          "text": "L'ospite riceve un link, inserisce i dati in tre passaggi e il documento. Tu li ritrovi già pronti per Alloggiati Web.",
+          "alt": "Breve video del check-in online dell'ospite su telefono: dati, documento e conferma",
+          "tab": "Check-in ospite"
+        },
+        "lease": {
+          "tab": "Contratti",
+          "title": "Affitti lunghi: dal contratto al canone",
+          "text": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti, scadenze e interventi: i canoni si pagano online con Stripe o si segnano come incassati.",
+          "alt": "Scheda di un contratto di affitto lungo con le sezioni Guida, Dati, Documenti, Pagamenti, Scadenze e Interventi"
+        }
+      },
+      "examples": {
+        "title": "Esempi di siti vetrina",
+        "intro": "Ogni host e ogni fornitore ha il proprio sito pubblico, con il proprio nome e i propri colori. Ecco due esempi.",
+        "host": {
+          "title": "Il sito di prenotazione di un host",
+          "text": "Le case, i prezzi chiari e la prenotazione diretta con pagamento su Stripe, senza commissioni CasaZen sulle prenotazioni.",
+          "alt": "Esempio di sito di prenotazione diretta di un host: titolo, ricerca per date e ospiti"
+        },
+        "supplier": {
+          "title": "La vetrina di un fornitore",
+          "text": "Servizi con prezzi di partenza, zone servite e richieste di preventivo: la pagina con cui un fornitore si presenta agli host.",
+          "alt": "Esempio di vetrina di un fornitore di pulizie con servizi e prezzi"
+        },
+        "caption": "Siti di esempio con nomi e dati inventati."
       }
     },
     "features": {
@@ -13394,64 +13521,42 @@
       "cta": "Richiedi un invito",
       "subject": "Richiesta di invito a CasaZen"
     },
-    "integrations": {
-      "title": "Integrazioni",
-      "intro": "I canali di vendita e gli strumenti partner che si possono collegare a CasaZen, per categoria.",
-      "jump": "Categorie",
-      "noteTitle": "Buono a sapersi",
-      "note1": "I collegamenti si attivano canale per canale: l'elenco indica ciò che si può collegare, non che ogni collegamento sia già attivo per il tuo account. Oggi i calendari dei portali si sincronizzano tramite iCal.",
-      "note2": "Per alcuni partner il collegamento si completa sul sito del partner. Chiedici lo stato di un canale o di uno strumento prima di contare su di esso.",
+    "shortRent": {
+      "title": "Affitti brevi",
+      "intro": "Per host e property manager: regole italiane sotto controllo, un calendario solo e un sito di prenotazione diretta, insieme ai canali che già usi.",
+      "otherLink": "Vai agli affitti lunghi",
+      "featuresTitle": "Tutto quello che serve per affittare in regola",
+      "featuresIntro": "Dagli adempimenti alle prenotazioni, spiegato senza giri di parole.",
+      "siteTitle": "Il tuo sito di prenotazione",
+      "siteIntro": "Un sito pubblico con il tuo nome e i tuoi colori, dove gli ospiti prenotano e pagano direttamente."
+    },
+    "longRent": {
+      "title": "Affitti lunghi",
+      "intro": "Per chi affitta a lungo termine: dal contratto al canone, senza perdere le scadenze.",
+      "otherLink": "Vai agli affitti brevi",
+      "featuresTitle": "Dal contratto al canone",
+      "featuresIntro": "Quello che CasaZen fa oggi per chi affitta a lungo termine.",
+      "screenTitle": "La scheda del contratto",
+      "screenIntro": "Ogni contratto ha la sua scheda con dati, documenti, pagamenti, scadenze e interventi.",
+      "screenAlt": "Scheda di un contratto di affitto lungo con le sezioni Guida, Dati, Documenti, Pagamenti, Scadenze e Interventi",
       "groups": {
-        "ota": {
-          "title": "Canali di vendita (OTA)",
-          "intro": "Portali e marketplace dove pubblicare i tuoi alloggi, nazionali e internazionali."
+        "contracts": {
+          "title": "Contratti",
+          "text": "I contratti più usati, in una sola scheda."
         },
-        "metasearch": {
-          "title": "Metasearch",
-          "intro": "Comparatori che mostrano tariffe e disponibilità quando l'ospite sta confrontando le strutture."
+        "rent": {
+          "title": "Canoni",
+          "text": "Chi paga cosa e quando, sempre chiaro."
         },
-        "gds": {
-          "title": "Distribuzione globale (GDS)",
-          "intro": "Reti di distribuzione per raggiungere agenzie, wholesaler e canali globali."
+        "deadlines": {
+          "title": "Scadenze",
+          "text": "Le date che contano, ricordate per tempo."
         },
-        "revenue": {
-          "title": "Prezzi e revenue management",
-          "intro": "Strumenti per impostare le tariffe in base a domanda e concorrenza."
-        },
-        "payments": {
-          "title": "Pagamenti",
-          "intro": "Circuiti e sistemi per incassi online, carte e preautorizzazioni."
-        },
-        "smart": {
-          "title": "Check-in, accessi e guest experience",
-          "intro": "Self check-in, serrature smart, upselling e strumenti per l'accoglienza."
-        },
-        "ai": {
-          "title": "Assistenti AI",
-          "intro": "Assistenti per i messaggi con gli ospiti e per le attività di ogni giorno."
-        },
-        "housekeeping": {
-          "title": "Pulizie e operatività",
-          "intro": "Strumenti per coordinare pulizie, camere pronte e staff."
-        },
-        "admin": {
-          "title": "Amministrazione e adempimenti",
-          "intro": "Fiscalità, documenti, comunicazioni obbligatorie e contabilità."
-        },
-        "software": {
-          "title": "Software gestionali e calendari",
-          "intro": "Gestionali e sistemi verticali, calendari e strumenti d'ufficio da collegare."
-        },
-        "other": {
-          "title": "Altri strumenti",
-          "intro": "Servizi digitali, marketing e automazioni complementari."
+        "tax": {
+          "title": "Fiscale",
+          "text": "Numeri chiari, con le dovute cautele."
         }
-      },
-      "cta": {
-        "title": "Non trovi quello che usi?",
-        "text": "Scrivici quale canale o strumento ti serve: ci dici se si può collegare."
-      },
-      "trademarks": "I marchi e i loghi mostrati appartengono ai rispettivi proprietari e servono solo a indicare i servizi collegabili; non implicano accordi commerciali o approvazioni."
+      }
     }
   },
   "siteAppearance": {
