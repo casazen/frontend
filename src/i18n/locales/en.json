@@ -12350,11 +12350,40 @@
     }
   },
   "requestWizard": {
+    "channel": {
+      "addComune": "Add the comune",
+      "casazen": {
+        "none": "There are none yet in the area of this property.",
+        "text": "Professionals of your area, with clear prices and times: you choose who to call.",
+        "title": "A CasaZen supplier"
+      },
+      "external": {
+        "text": "Outside companies for cleaning, check-in and maintenance: the work is organised on their site.",
+        "title": "An external service"
+      },
+      "legend": "Who do you want to ask",
+      "noComune": "To look for the suppliers of your area the comune of the property is needed: until it is there we propose the external partners.",
+      "noNetwork": "There are no CasaZen suppliers yet in the area of this property: we propose the external partners.",
+      "recommended": "Recommended"
+    },
+    "details": {
+      "changeSupplier": "Change supplier",
+      "service": "Service",
+      "supplier": "Supplier:",
+      "when": "When"
+    },
     "done": {
       "another": "Make another request",
       "answers": "The supplier decides: it accepts, declines or proposes another time.",
       "cancel": "You can cancel any time, at no cost, until the work has started.",
       "description": "The request is on its way: here is what happens now.",
+      "external": {
+        "back": "Back to the Marketplace",
+        "description": "CasaZen has sent nothing: the work is organised on the site of the partner you chose.",
+        "notFollowed": "This work does not show in Interventi: you follow it with the partner.",
+        "site": "Open the partner's site and organise the work there.",
+        "title": "Now it is up to the partner"
+      },
       "respondBy": "It has until {{when}} to answer.",
       "see": "See the request",
       "title": "Request sent to {{supplier}}",
@@ -12384,11 +12413,26 @@
       "urgencyRequired": "Choose how urgent it is."
     },
     "finish": "Send the request",
+    "finishExternal": "I chose a partner",
+    "loadError": "I cannot get the request ready.",
     "loading": "Getting the request ready…",
     "noProperty": {
       "action": "Add a property",
       "text": "To ask for a job you need at least one property.",
       "title": "You need a property first"
+    },
+    "partners": {
+      "how": "The work is organised on the partner's site: CasaZen does not manage it and you will not find it in Interventi. Check that the partner serves your area."
+    },
+    "property": {
+      "legend": "Property"
+    },
+    "proposals": {
+      "noPartners": "There is no external service yet for this kind of work: try another service.",
+      "orPartner": "Would you rather use an external service?",
+      "partnersIntro": "Meanwhile, these external services take care of this kind of work:",
+      "ranking": "They are in order of reliability and availability: the first is the most recommended.",
+      "seePartners": "See the external partners"
     },
     "retry": "Try again",
     "review": {
@@ -12421,37 +12465,54 @@
         "never": "It never sees your guests’ data: if you link a stay, it only knows its dates.",
         "title": "What the supplier sees"
       },
+      "stay": "Stay",
       "what": "What is needed",
       "when": "When",
       "where": "Where",
       "who": "Who"
     },
+    "service": {
+      "legend": "Kind of work"
+    },
     "steps": {
+      "channel": {
+        "label": "Who",
+        "purpose": "We advise a CasaZen supplier from your area. Otherwise you can turn to an external service.",
+        "title": "Who do you want to ask?"
+      },
+      "details": {
+        "label": "Details",
+        "purpose": "The service, the day and the time, how urgent it is and what the supplier should know.",
+        "title": "When and how?"
+      },
+      "partners": {
+        "label": "Partners",
+        "purpose": "These are the partners that offer the service you chose.",
+        "title": "Choose an external service"
+      },
+      "property": {
+        "label": "Property",
+        "purpose": "The request is for the house. You can link a stay at the end, if you want.",
+        "title": "Which property is it for?"
+      },
+      "proposals": {
+        "label": "Proposals",
+        "purpose": "We propose the suppliers of your area, the most recommended first.",
+        "title": "Who takes care of it?"
+      },
       "review": {
         "label": "Summary",
         "purpose": "The request leaves only when you press «Send the request».",
         "title": "Check and send"
       },
-      "what": {
-        "label": "What is needed",
-        "purpose": "Choose the kind of work and how urgent it is.",
-        "title": "What job do you need?"
-      },
-      "when": {
-        "label": "Where and when",
-        "purpose": "Choose the property and the day. The stay is optional.",
-        "title": "Where and when?"
-      },
-      "who": {
-        "label": "Who",
-        "purpose": "Choose the supplier, the service and a free time.",
-        "title": "Who takes care of it?"
+      "service": {
+        "label": "Service",
+        "purpose": "Choose the kind of work.",
+        "title": "What service do you need?"
       }
     },
     "title": "Request a job",
     "what": {
-      "category": "Kind of job",
-      "categoryPlaceholder": "Choose the kind",
       "notes": "What should the supplier do?",
       "notesHint": "Describe the work in a few lines. Do not write guests’ data (name, phone, documents): the supplier reads these notes only when it accepts.",
       "urgencies": {
@@ -12472,8 +12533,6 @@
     },
     "when": {
       "day": "Day of the work",
-      "property": "Property",
-      "propertyPlaceholder": "Choose the property",
       "stay": "Link to a stay",
       "stayHint": "Optional: without one, the request is about the house only.",
       "stayNone": "No stay: the house only",
@@ -12502,12 +12561,10 @@
       "loadingServices": "Looking for the services…",
       "loadingSlots": "Looking for free times…",
       "loadingSuppliers": "Looking for suppliers…",
-      "lookAround": "Look at the marketplace",
       "nearbyDays": "Nearby days with free times",
       "noDuration": "Length to be agreed",
       "noSlotsAtAll": "No free time in the coming days. Choose another service or another supplier.",
       "noSlotsDay": "No free time {{day}}.",
-      "noSuppliers": "No supplier covers the comune of this property for this kind of job.",
       "priceOnRequest": "Price on quote",
       "services": "Service",
       "showEvery": "Show all times",

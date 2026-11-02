@@ -59,10 +59,11 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
 
   const crumbs = trailCrumbs(trail, property?.id);
 
-  // The one action is there when there is something to ask a supplier for: a property and its comune.
+  // The one action is there when there is something to ask for: a property. The guided request asks for its comune itself, and with none
+  // in the zone it proposes the external partners.
   const asked = typeof primary === 'function' ? primary(request.open) : primary;
   const mainAction: PageHeaderAction | undefined =
-    asked === null || !property || !property.comuneIstatCode
+    asked === null || !property
       ? undefined
       : (asked ?? {
           label: t('marketplace.requestIntervention'),
@@ -111,7 +112,6 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
             />
           )}
           {after}
-          {request.dialog}
         </>
       )}
     </div>

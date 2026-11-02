@@ -11,10 +11,28 @@ import type { CreateServiceRequestDto, ServiceRequestUrgency } from '@/types/ser
 /**
  * The model of «Richiedi un intervento» (SR-08b): what the wizard asks, the rules of its steps, the window that is advised for a
  * turnover, the slots of a day, the request it sends and the way a refusal is told. No React in here.
+ *
+ * The steps, in the order the host walks them: the property, who to ask (a CasaZen supplier, or an external partner), the kind of
+ * service, the proposals (the suppliers in the order of the ranking, or the partners), the details (service, day and time, urgency,
+ * notes, and the stay if the host wants to link one) and the summary. A request is for the house: a stay is only a link.
  */
 
 /** Name of the flow: the draft is kept under it, for the signed-in person. */
 export const REQUEST_WIZARD_ID = 'intervention-request';
+
+/** The steps of the wizard (`?step=`). With an external partner the wizard stops at `partners`: there is nothing to send to CasaZen. */
+export type RequestStepId = 'property' | 'channel' | 'service' | 'proposals' | 'partners' | 'details' | 'review';
+
+/** Who the host asks: a CasaZen supplier (the rule, whenever one covers the comune) or an external partner. */
+export type RequestChannel = 'casazen' | 'external';
+
+/** The parameter of the address that holds the channel; without it the request goes to a CasaZen supplier. */
+export const CHANNEL_PARAM = 'channel';
+
+/** The channel the address asks for: only `external` is a choice, anything else is CasaZen. */
+export function channelOf(search: URLSearchParams): RequestChannel {
+  return search.get(CHANNEL_PARAM) === 'external' ? 'external' : 'casazen';
+}
 
 /** The longest note the API takes (`ServiceRequest.Notes`). */
 export const REQUEST_NOTES_MAX = 1000;
@@ -43,22 +61,17 @@ export const CUSTOM_SERVICE = 'custom';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-/** What the host answers in the wizard; the wizard holds them as the values of its form and keeps a draft of the first two steps. */
+/** What the host answers in the wizard; the wizard holds them as the values of its form and keeps a draft of the first answers. */
 export interface RequestValues {
-  // ① Cosa serve
-  category: string;
-  urgency: ServiceRequestUrgency;
-  notes: string;
-  // ② Dove e quando
+  // ① Immobile
   propertyId: string;
-  /** The stay the request is for; `''` is the house alone. */
-  bookingId: string;
-  /** The day of the work, `yyyy-MM-dd` (Europe/Rome). */
-  day: string;
-  // ③ Chi
+  // ③ Servizio
+  category: string;
+  // ④ Proposte
   supplierOrgId: string;
   /** For the summary only (never sent). */
   supplierName: string;
+  // ⑤ Dettagli
   /** `''` (not chosen yet), {@link CUSTOM_SERVICE} or the id of a service of the supplier's catalog. */
   serviceId: string;
   /** What the summary says of the service chosen (never sent): its name, length and price. */
@@ -68,13 +81,19 @@ export interface RequestValues {
   serviceRequiresQuote: boolean;
   servicePriceFromCents: number | null;
   servicePriceUnit: string;
+  /** The day of the work, `yyyy-MM-dd` (Europe/Rome). */
+  day: string;
   /** `HH:mm` (Europe/Rome): the slot chosen, or the time the host wrote. */
   startTime: string;
   /** For a job the host times itself: one of {@link DURATIONS} or {@link DURATION_OTHER}. */
   durationChoice: string;
   /** The minutes of «altro». */
   durationOther: string;
-  // ④ Riepilogo
+  urgency: ServiceRequestUrgency;
+  notes: string;
+  /** The stay the request is linked to, if the host wants one; `''` is the house alone. */
+  bookingId: string;
+  // ⑥ Riepilogo
   /**
    * SP-BKP: also send the request to up to three backup suppliers, declared as such (the choice of the last step, offered while the server
    * has the rule on). On unless it says `false`; only a «no» is sent, so a request made without the choice follows the org's.
@@ -82,7 +101,7 @@ export interface RequestValues {
   useBackups?: boolean;
 }
 
-/** The fields of step ③ and the ones that only describe them: never written to the draft (they change, and the slots are the supplier's). */
+/** The fields that depend on the supplier and its agenda: never written to the draft (they change, and the slots are the supplier's). */
 export const REQUEST_DRAFT_EXCLUDE: readonly string[] = [
   'supplierOrgId',
   'supplierName',
@@ -134,31 +153,32 @@ export function startsInThePast(day: string, time: string, now: Date = new Date(
 /**
  * The rules of the steps, checked before the next one opens (the messages are i18n keys, as in every form). `clock` is read when a rule
  * is checked, not when the rules are made: a person who leaves the page open is judged by the time it is when they press «Continua».
+ * The channel and the partners have none: the channel is always one of two, and a partner is only a link.
  */
-export function requestStepSchemas(clock: () => Date = () => new Date()): { what: StepSchema; when: StepSchema; who: StepSchema } {
+export function requestStepSchemas(clock: () => Date = () => new Date()): {
+  property: StepSchema;
+  service: StepSchema;
+  proposals: StepSchema;
+  details: StepSchema;
+} {
   return {
-    what: z.object({
-      category: z.string().min(1, 'requestWizard.errors.categoryRequired'),
-      urgency: z.enum(URGENCIES, 'requestWizard.errors.urgencyRequired'),
-      notes: z.string().max(REQUEST_NOTES_MAX, 'requestWizard.errors.notesTooLong'),
-    }),
-    when: z.object({
-      propertyId: z.string().min(1, 'requestWizard.errors.propertyRequired'),
-      bookingId: z.string().optional(),
-      day: z
-        .string()
-        .refine((day) => isStayDate(day), 'requestWizard.errors.dayRequired')
-        .refine((day) => !isStayDate(day) || day >= todayInRome(clock()), 'requestWizard.errors.dayPast'),
-    }),
-    who: z
+    property: z.object({ propertyId: z.string().min(1, 'requestWizard.errors.propertyRequired') }),
+    service: z.object({ category: z.string().min(1, 'requestWizard.errors.categoryRequired') }),
+    proposals: z.object({ supplierOrgId: z.string().min(1, 'requestWizard.errors.supplierRequired') }),
+    details: z
       .object({
-        supplierOrgId: z.string().min(1, 'requestWizard.errors.supplierRequired'),
         serviceId: z.string().min(1, 'requestWizard.errors.serviceRequired'),
         serviceMinutes: z.number().nullable(),
-        day: z.string(),
+        bookingId: z.string().optional(),
+        day: z
+          .string()
+          .refine((day) => isStayDate(day), 'requestWizard.errors.dayRequired')
+          .refine((day) => !isStayDate(day) || day >= todayInRome(clock()), 'requestWizard.errors.dayPast'),
         startTime: z.string(),
         durationChoice: z.string(),
         durationOther: z.string(),
+        urgency: z.enum(URGENCIES, 'requestWizard.errors.urgencyRequired'),
+        notes: z.string().max(REQUEST_NOTES_MAX, 'requestWizard.errors.notesTooLong'),
       })
       .superRefine((values, context) => {
         if (values.serviceId === '') return;
@@ -181,8 +201,8 @@ export interface RequestDefaults {
 }
 
 /**
- * Where the wizard starts, from the address the entry points use (`?propertyId=&bookingId=&type=&date=&supplierOrgId=`): what is not an
- * id, a category of the catalog or a day that has not passed is left out. `categories` is the catalog (without it no `type` is taken).
+ * Where the wizard starts, from the address the entry points use (`?propertyId=&bookingId=&type=&date=&supplierOrgId=&serviceId=`): what is
+ * not an id, a category of the catalog or a day that has not passed is left out. `categories` is the catalog (without it no `type` is taken).
  */
 export function requestDefaults(search: URLSearchParams, categories: readonly string[] | undefined, today: string = todayInRome()): RequestDefaults {
   const id = (name: string) => {
@@ -193,28 +213,40 @@ export function requestDefaults(search: URLSearchParams, categories: readonly st
   const date = search.get('date')?.trim() ?? '';
 
   const values: RequestValues = {
-    category: categories?.includes(type) ? type : '',
-    urgency: 'Normal',
-    notes: '',
     propertyId: id('propertyId'),
-    bookingId: id('bookingId'),
-    day: isStayDate(date) && date >= today ? date : today,
+    category: categories?.includes(type) ? type : '',
     supplierOrgId: id('supplierOrgId'),
     supplierName: '',
-    serviceId: '',
+    serviceId: id('serviceId'),
     serviceName: '',
     serviceMinutes: null,
     serviceEstimateCents: null,
     serviceRequiresQuote: false,
     servicePriceFromCents: null,
     servicePriceUnit: '',
+    day: isStayDate(date) && date >= today ? date : today,
     startTime: '',
     durationChoice: String(DEFAULT_DURATION),
     durationOther: '',
+    urgency: 'Normal',
+    notes: '',
+    bookingId: id('bookingId'),
     useBackups: true,
   };
-  const prefilled = ['propertyId', 'bookingId', 'type', 'date', 'supplierOrgId'].some((name) => search.has(name));
+  const prefilled = ['propertyId', 'bookingId', 'type', 'date', 'supplierOrgId', 'serviceId'].some((name) => search.has(name));
   return { values, prefilled };
+}
+
+/**
+ * The step a wizard opens on when the address did not name one: the first that is not answered already. The property comes first, then
+ * the channel (asked once the property is known: it decides who is looked for around it), then the service; with a service the host sees
+ * the proposals, and with a supplier already chosen (the page of a supplier) the details.
+ */
+export function openingStepFor(values: Pick<RequestValues, 'propertyId' | 'category' | 'supplierOrgId'>, channel: RequestChannel): RequestStepId {
+  if (values.propertyId === '') return 'property';
+  if (values.category === '') return 'channel';
+  if (channel === 'external') return 'partners';
+  return values.supplierOrgId === '' ? 'proposals' : 'details';
 }
 
 /** The first day the work can be on for a stay: its check-out day, never one that has passed. */
@@ -338,21 +370,21 @@ export type RequestProblemKind =
 export interface RequestProblem {
   kind: RequestProblemKind;
   /** The step the answers to change are on. */
-  step: 'when' | 'who';
+  step: 'proposals' | 'details';
 }
 
 const PROBLEMS: Readonly<Record<string, RequestProblem>> = {
-  supplier_slot_unavailable: { kind: 'slotTaken', step: 'who' },
-  supplier_commitment_conflict: { kind: 'commitmentConflict', step: 'who' },
-  service_request_supplier_inactive: { kind: 'supplierInactive', step: 'who' },
-  service_request_supplier_outside_comune: { kind: 'supplierOutsideComune', step: 'who' },
-  supplier_not_found: { kind: 'supplierInactive', step: 'who' },
-  service_request_service_unavailable: { kind: 'serviceUnavailable', step: 'who' },
-  supplier_service_not_found: { kind: 'serviceUnavailable', step: 'who' },
-  service_request_service_category_mismatch: { kind: 'serviceUnavailable', step: 'who' },
-  service_request_time_invalid: { kind: 'timeInvalid', step: 'who' },
-  service_request_booking_mismatch: { kind: 'stayMismatch', step: 'when' },
-  service_request_booking_not_allowed: { kind: 'stayMismatch', step: 'when' },
+  supplier_slot_unavailable: { kind: 'slotTaken', step: 'details' },
+  supplier_commitment_conflict: { kind: 'commitmentConflict', step: 'details' },
+  service_request_supplier_inactive: { kind: 'supplierInactive', step: 'proposals' },
+  service_request_supplier_outside_comune: { kind: 'supplierOutsideComune', step: 'proposals' },
+  supplier_not_found: { kind: 'supplierInactive', step: 'proposals' },
+  service_request_service_unavailable: { kind: 'serviceUnavailable', step: 'details' },
+  supplier_service_not_found: { kind: 'serviceUnavailable', step: 'details' },
+  service_request_service_category_mismatch: { kind: 'serviceUnavailable', step: 'details' },
+  service_request_time_invalid: { kind: 'timeInvalid', step: 'details' },
+  service_request_booking_mismatch: { kind: 'stayMismatch', step: 'details' },
+  service_request_booking_not_allowed: { kind: 'stayMismatch', step: 'details' },
 };
 
 /** The refusal of a failed creation that has a sentence and a step of its own, or `null` (the server's words are shown). */
