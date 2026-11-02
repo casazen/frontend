@@ -73,7 +73,7 @@ export function AlloggiatiDashboardPage() {
             {focus ? (
               <FocusBlock
                 tone={failed || focus.isOverdue ? 'danger' : 'warning'}
-                kicker={t('compliance.cockpit.kicker')}
+                kicker={t('compliance.cockpit.kicker.fine')}
                 title={t(failed ? 'alloggiati.focus.fix' : 'alloggiati.focus.send', { name: focus.guestName })}
                 body={[focus.propertyName, `${t('alloggiati.checkIn')} ${formatRecordDate(focus.checkInDate)}`, focus.dataComplete ? null : t('alloggiati.incompleteData')]
                   .filter(Boolean)
