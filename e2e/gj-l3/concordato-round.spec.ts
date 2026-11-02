@@ -4,7 +4,6 @@ import { accessToken, loadStack, loginAs, oracleFor, romeDay, type Oracle, type 
 import {
   acceptPrivacyAndProceed,
   becomeLongTermLandlord,
-  declareFromTheReceipt,
   downloadSample,
   expectNoSupplierName,
   grantGiftPractice,
@@ -33,8 +32,8 @@ import {
  *   two sample documents the service delivers (CF-DOCS-REAL: the contract with its attestation and its calculation sheet in ONE scan, and the
  *   receipt of the Agenzia delle Entrate) → «Carica i documenti» (the one file) → it is read by OCR and its three sections are recognized →
  *   «Completa e importa il contratto» → the wizard asks only what the contract does not say → the contract is imported (same lease, now
- *   Signed) → the receipt uploaded as a file of its own → the registration declared with the receipt already uploaded, whose number and
- *   day were read and proposed for the person to check.
+ *   Signed) → the receipt uploaded as a file of its own → the registration declared BY ITSELF from that receipt (CF-DONE: the lease follows
+ *   the practice, so the number and the day the receipt carries are recorded with no window to fill in, and the lease is Registered).
  *
  * ACCESS WITHOUT STRIPE. The real payment needs Stripe, and the CI has no Stripe test keys (the online-payment variant of the Golden Journey
  * is skipped for the same reason), so the round gets the access in the two ways the product has that need no payment:
@@ -480,24 +479,27 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       expect.soft(documents.map((d) => d.kind).sort(), 'the two documents of the practice: the contract with its attestation, and the receipt').toEqual(['Contract', 'Registration']);
     });
 
-    await step('The registration made by the service is declared with the receipt already uploaded; the lease is Registered', async () => {
+    await step('The service registers by itself: the receipt is read, the registration is declared with its number and day, the lease is Registered', async () => {
+      // CF-DONE: the page of the documents (and the sheet) ask the server to follow the practice, so with the contract imported and the receipt
+      // uploaded nobody opens a window to declare anything: the receipt of the Agenzia is read and the registration is recorded from it.
+      await expect
+        .poll(async () => (await hostApi.get<LeaseView>(`/leases/${leaseId}`)).status, {
+          message: 'the lease is Registered by itself, from the receipt',
+          timeout: 90_000,
+          intervals: [1_000, 2_000, 3_000],
+        })
+        .toBe('Registered');
+      const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
+      log(`the lease after the receipt: ${JSON.stringify(lease.registration)}`);
+      expect.soft(lease.registration, 'the registration declared from the receipt').toMatchObject({ status: 'Registered', channel: 'Manual', hasReceipt: true });
+      expect.soft(lease.registration?.registrationCode, 'the identification code the receipt of the Agenzia carries').toMatch(/^SIM\d{2}T\d{6}000AB$/);
+      expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day the receipt says the contract was registered').toBe(romeDay(0));
+
       await page.getByTestId('cf-documents-page').getByRole('link', { name: 'Apri il contratto' }).click();
       await expect(page).toHaveURL(new RegExp(`/app/long-rent/leases/${leaseId}`), { timeout: 20_000 });
       await expect(page.getByTestId('lease-sheet')).toBeVisible({ timeout: 30_000 });
-      await expectNoSupplierName(page, 'the sheet of the signed contract');
-      await snap('sheet-of-the-signed-contract');
-      // The number and the day are not typed: the receipt of the Agenzia was read and they are proposed, marked «Letto dalla ricevuta — controlla».
-      // The person checks them (the test reads what the window shows) and confirms: nothing is declared before.
-      const declared = await declareFromTheReceipt(page, leaseId, () => snap('declaration-of-the-registration'));
-      expect.soft(declared.code, 'the identification code the receipt of the Agenzia carries').toMatch(/^SIM\d{2}T\d{6}000AB$/);
-      expect.soft(declared.day, 'the day the receipt says the contract was registered').toBe(romeDay(0));
-      await expect
-        .poll(async () => (await hostApi.get<LeaseView>(`/leases/${leaseId}`)).status, { message: 'the lease is Registered', timeout: 30_000 })
-        .toBe('Registered');
-      const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
-      log(`the lease after the declaration: ${JSON.stringify(lease.registration)}`);
-      expect.soft(lease.registration, 'the registration declared').toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: declared.code, hasReceipt: true });
-      expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day of the registration').toBe(declared.day);
+      await expectNoSupplierName(page, 'the sheet of the registered contract');
+      await snap('sheet-after-the-receipt');
     });
 
     await step('The history of the contract tells the round in words, with no name of the supplier', async () => {
