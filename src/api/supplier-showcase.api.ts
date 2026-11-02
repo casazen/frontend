@@ -1,6 +1,14 @@
 import { ApiClient } from '@/api/client';
 import axios from '@/lib/axios';
-import type { ShowcaseContent, ShowcaseMedia, ShowcaseMediaKind, ShowcaseStats } from '@/types/supplier-showcase';
+import type {
+  ShowcaseContent,
+  ShowcaseMedia,
+  ShowcaseMediaKind,
+  ShowcaseStats,
+  ShowcaseTextSuggestion,
+  ShowcaseTextSuggestionRequest,
+  ShowcaseTextSuggestionStatus,
+} from '@/types/supplier-showcase';
 
 /** A photo of 10 MB on a slow connection takes more than the default 30 seconds. */
 const UPLOAD_TIMEOUT_MS = 120_000;
@@ -43,6 +51,18 @@ export const supplierShowcaseApi = {
   resume: () => ApiClient.post<ShowcaseContent>('/supplier/showcase/resume'),
 
   getStats: () => ApiClient.get<ShowcaseStats>('/supplier/showcase/stats'),
+
+  /** Whether the AI help of the texts can answer now (a provider is configured); it reads nothing of the supplier and calls no provider. */
+  getTextSuggestionStatus: () => ApiClient.get<ShowcaseTextSuggestionStatus>('/supplier/showcase/texts/suggestion/status'),
+
+  /**
+   * Drafts for the sentence, the introduction, "chi siamo" and the tips, written by the AI from what is true of the supplier and what it typed
+   * in `answers`, and checked on the server (no guarantee, certification, insurance, years, time, price or rating the supplier did not write).
+   * It changes nothing: the editor applies it to the draft. Errors: 422 `showcase_ai_unavailable`, `showcase_suggestion_not_enough_data`,
+   * `showcase_suggestion_unusable`, `ai_budget_exhausted`; 429 when the AI limit of the person or of the organization is over.
+   */
+  suggestTexts: (request: ShowcaseTextSuggestionRequest) =>
+    ApiClient.post<ShowcaseTextSuggestion>('/supplier/showcase/texts/suggestion', request),
 
   /**
    * Uploads an image of the showcase (SP-13b, multipart `kind` and `file`): the logo (200 KB at most), the cover, the photo of a job or its

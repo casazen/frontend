@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Qty } from '@/components/ui/qty';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
 import type { PropertyWizardValues } from '../property-wizard-model';
+import { AiPriceCard } from './ai-price-card';
 
 interface PricesStepProps {
   form: UseFormReturn<PropertyWizardValues>;
@@ -44,8 +45,9 @@ function TouristTaxNote({ propertyId, city }: { propertyId: string; city: string
 
 /**
  * Step 5 · «Quanto costa una notte?» (SR-07c): the base rate, the weekend surcharge (empty: none), the cleaning and the minimum stay.
- * No weekly discount and no «similar homes cost…» line: there is no source for either. The prices that apply on a given date are the
- * Calendar's; here is the base they start from.
+ * No weekly discount and no «similar homes cost…» line of ours: there is no source for either. The one place that speaks of similar homes
+ * is the card «Vuoi che calcoli io il prezzo con l'AI?» (WIZ-AI-PRICE), and only with what the server says it compared (at least three
+ * homes published in the comune). The prices that apply on a given date are the Calendar's; here is the base they start from.
  */
 export function PricesStep({ form, propertyId }: PricesStepProps) {
   const { t } = useTranslation();
@@ -53,6 +55,8 @@ export function PricesStep({ form, propertyId }: PricesStepProps) {
 
   return (
     <>
+      <AiPriceCard form={form} propertyId={propertyId} />
+
       <div className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Field label={t('propertyWizard.prices.rate.label')} hint={t('propertyWizard.prices.rate.hint')} error={formState.errors.nightlyRate}>
           <Input inputMode="decimal" autoComplete="off" {...register('nightlyRate')} />

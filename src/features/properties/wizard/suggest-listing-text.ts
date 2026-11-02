@@ -1,9 +1,12 @@
 import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyWizardValues } from './property-wizard-model';
 
-/** Limits of the listing headline and description in the wizard (the API takes longer descriptions; the wizard asks for a short pitch). */
+/**
+ * Limits of the listing headline and description in the wizard: the ones of the API. The description was a short pitch of 600 characters
+ * until the AI wrote it (a text of three or four paragraphs, up to about 1,200 characters, that the host then trims as they like).
+ */
 export const LISTING_TITLE_MAX = 60;
-export const LISTING_DESCRIPTION_MAX = 600;
+export const LISTING_DESCRIPTION_MAX = 2000;
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -32,10 +35,10 @@ function cut(text: string, max: number): string {
 }
 
 /**
- * «Suggerisci un testo» (SR-07b, SR-D34): a headline and a description made **only of what the person already entered** — the kind of
- * accommodation, the name, the comune, the spaces and the first three amenities they chose. No AI and no copy that the data does not
- * carry (nothing about the check-in being simple, the quiet or the view): a sentence whose data is missing is left out, and the
- * result always fits the limits of the fields.
+ * The text of «Suggerisci con l'AI» when no AI can write it (SR-07b, SR-D34; the AI's own is `listing-text.api.ts`): a headline and a
+ * description made **only of what the person already entered** — the kind of accommodation, the name, the comune, the spaces and the first
+ * three amenities they chose. No copy that the data does not carry (nothing about the check-in being simple, the quiet or the view): a
+ * sentence whose data is missing is left out, and the result always fits the limits of the fields.
  */
 export function suggestListingText(input: ListingTextInput, t: Translate): { title: string; description: string } {
   const type = input.accommodationType

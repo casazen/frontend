@@ -95,12 +95,12 @@ export const baseStepSchema: StepSchema = z.object({
 });
 
 /**
- * The headline and the description of the listing (step 2). The photos are optional, so is the text: blank is a valid answer. The
- * description is a short pitch here (600); the API takes up to 2000 and the form of the property goes further than the wizard.
+ * The headline and the description of the listing (step 2). The photos are optional, so is the text: blank is a valid answer. The limits are
+ * the API's (`LISTING_TITLE_MAX`, `LISTING_DESCRIPTION_MAX`): the description the AI writes has three or four paragraphs.
  */
 export const photosStepSchema: StepSchema = z.object({
   listingTitle: z.string().trim().max(60, 'propertyWizard.validation.listingTitle'),
-  description: z.string().trim().max(600, 'propertyWizard.validation.description'),
+  description: z.string().trim().max(2000, 'propertyWizard.validation.description'),
 });
 
 /** An amount in euros as typed (a comma or a point for the cents): the number, or `null` when it is not one. */

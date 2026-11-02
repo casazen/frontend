@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supplierShowcaseApi } from '@/api/supplier-showcase.api';
-import type { ShowcaseContent } from '@/types/supplier-showcase';
+import type { ShowcaseContent, ShowcaseTextSuggestionRequest } from '@/types/supplier-showcase';
 
 const CONTENT_KEY = ['supplier', 'showcase', 'content'] as const;
 const STATS_KEY = ['supplier', 'showcase', 'stats'] as const;
@@ -20,6 +20,20 @@ export function useStoreShowcaseContent() {
 /** The two true numbers: the requests that came from the showcase in the last 30 days and how many still wait. */
 export function useShowcaseStats() {
   return useQuery({ queryKey: STATS_KEY, queryFn: supplierShowcaseApi.getStats, staleTime: 60_000 });
+}
+
+/** Whether the AI help of the texts can answer now. Asked once in a while: the provider does not come and go between two keystrokes. */
+export function useShowcaseTextSuggestionStatus() {
+  return useQuery({
+    queryKey: ['supplier', 'showcase', 'text-suggestion-status'] as const,
+    queryFn: supplierShowcaseApi.getTextSuggestionStatus,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Asks the AI for drafts of the texts. Nothing is cached and nothing is written: the editor decides what to put in the draft. */
+export function useSuggestShowcaseTexts() {
+  return useMutation({ mutationFn: (request: ShowcaseTextSuggestionRequest) => supplierShowcaseApi.suggestTexts(request) });
 }
 
 /**

@@ -191,6 +191,7 @@ export type OrgActivityType =
   | 'PropertyModeChangeScheduled'
   | 'PropertyModeChangeCancelled'
   | 'PropertyModeChanged'
+  | 'PropertyActivatedWithReminders'
   | 'TrustedSupplierAdded'
   | 'TrustedSupplierRemoved'
   | 'AdminGrantedConcordatoFacileGift';

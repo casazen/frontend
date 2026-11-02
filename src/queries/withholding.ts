@@ -39,7 +39,8 @@ export async function downloadWithholdingStatement(
   year: number,
   format: 'pdf' | 'excel'
 ): Promise<void> {
-  const response = await axios.get('/api/withholding/download', {
+  // The backend has no export of the statement yet (no `download` action on `WithholdingController`): this answers 404.
+  const response = await axios.get('/withholding/download', {
     params: { month, year, format },
     responseType: 'blob',
   });
@@ -53,7 +54,8 @@ export async function downloadWithholdingStatement(
  * Usage: await downloadF24(month, year);
  */
 export async function downloadF24(month: number, year: number): Promise<void> {
-  const response = await axios.get('/api/withholding/f24/download', {
+  // The backend has no PDF of the F24 yet (no `f24/download` action on `WithholdingController`): this answers 404.
+  const response = await axios.get('/withholding/f24/download', {
     params: { month, year },
     responseType: 'blob',
   });

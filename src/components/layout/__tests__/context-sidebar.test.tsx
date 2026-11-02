@@ -98,12 +98,14 @@ describe('ContextSidebar (UI-04a)', () => {
     expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
   });
 
-  it('ContextSidebar_ShortRent_ShowsAtMostSevenEntriesInGroupsAndMore', () => {
+  it('ContextSidebar_ShortRent_ShowsAtMostEightEntriesInGroupsAndMore', () => {
     arrange(['short-rent']);
     renderSidebar('short-rent');
 
     const nav = screen.getByRole('navigation', { name: 'Menu Affitti brevi' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(7);
+    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    // The adempimenti are in the main menu, not tucked in "Altro".
+    expect(within(within(nav).getByRole('group', { name: 'Ogni giorno' })).getByRole('link', { name: /Adempimenti/ })).toBeInTheDocument();
     const groups = within(nav).getAllByRole('group');
     expect(groups).toHaveLength(3);
     expect(groups[0]).toHaveAccessibleName('Ogni giorno');
@@ -130,6 +132,20 @@ describe('ContextSidebar (UI-04a)', () => {
     const entries = vi.mocked(useNavCounts).mock.calls[0][0];
     expect(entries.map((entry) => entry.path)).toContain('/app/short-rent/bookings');
     expect(entries.some((entry) => entry.navCount === 'bookingRequests')).toBe(true);
+  });
+
+  it('ContextSidebar_RiskOfASanction_ShowsTheRedCounterOnTheAdempimentiAndSaysWhatItCounts', () => {
+    arrange(['short-rent']);
+    vi.mocked(useNavCounts).mockReturnValue({ compliance: 4 });
+    renderSidebar('short-rent');
+
+    const link = screen.getByRole('link', { name: /Adempimenti/ });
+    const pill = within(link).getByTestId('nav-count');
+    expect(pill).toHaveTextContent('4');
+    expect(pill).toHaveAttribute('data-count-kind', 'compliance');
+    // Red, not the accent of the area: what the law dates is not a thing to answer like the others.
+    expect(pill).toHaveClass('bg-destructive');
+    expect(link).toHaveAccessibleName('Adempimenti, 4 adempimenti con rischio di sanzione');
   });
 
   it('ContextSidebar_Supplier_ShowsTheCounterOfTheInbox', () => {
