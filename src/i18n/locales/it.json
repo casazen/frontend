@@ -8154,6 +8154,92 @@
       "reminding": "Sollecito in partenza…"
     },
     "alreadyHeld": "Questa operazione è già in corso.",
+    "bankImport": {
+      "action": "Importa estratto conto",
+      "choose": {
+        "button": "Scegli il file",
+        "description": "Carica il file dei movimenti che scarichi dalla tua banca. Cerco i bonifici dei canoni e ti propongo quali segnare come incassati: non registro niente finché non confermi.",
+        "dropTitle": "Trascina qui il file dell'estratto conto",
+        "empty": "Il file è vuoto.",
+        "hint": "CSV, Excel (.xlsx), CAMT.053 (XML) o MT940, fino a 8 MB. Il file viene letto e non viene salvato.",
+        "readFailed": "Non sono riuscito a leggere il file. Riprova, oppure esporta di nuovo i movimenti dalla banca.",
+        "reading": "Leggo il file…",
+        "tooLarge": "Il file è troppo grande: al massimo 8 MB. Esporta dalla banca un periodo più breve."
+      },
+      "columns": {
+        "amountHint": "Con il segno meno per le uscite, oppure solo gli accrediti.",
+        "back": "Indietro",
+        "column": "Colonna {{number}}",
+        "continue": "Continua",
+        "fields": {
+          "amount": "Importo",
+          "date": "Data",
+          "description": "Descrizione"
+        },
+        "hasTitles": "La prima riga contiene i titoli delle colonne",
+        "intro": "Non riconosco le colonne di questo file. Indicami quale contiene la data, la descrizione e l'importo.",
+        "option": "{{name}} · {{sample}}",
+        "placeholder": "Scegli la colonna",
+        "same": "Ogni colonna può avere un solo ruolo: scegline tre diverse.",
+        "tableLabel": "Le prime righe del file"
+      },
+      "done_one": "{{count}} canone segnato come incassato",
+      "done_other": "{{count}} canoni segnati come incassati",
+      "held_one": "Registro {{count}} incasso dall'estratto conto",
+      "held_other": "Registro {{count}} incassi dall'estratto conto",
+      "heldHint": "Annulla se hai cambiato idea: tra pochi secondi sono registrati.",
+      "hint": "Hai ricevuto dei bonifici? Importa l'estratto conto della banca: ti propongo io quali canoni segnare come incassati.",
+      "nothingDone": "Nessun canone è stato segnato come incassato.",
+      "reasons": {
+        "Amount": "importo uguale",
+        "FirstName": "nome",
+        "Month": "mese del canone",
+        "PayerIban": "IBAN già visto su questo contratto",
+        "PayerName": "pagatore già visto su questo contratto",
+        "Property": "immobile",
+        "Surname": "cognome",
+        "matched": "corrisponde: {{reasons}}"
+      },
+      "review": {
+        "alreadyImported_one": "{{count}} era già stato importato.",
+        "alreadyImported_other": "{{count}} erano già stati importati.",
+        "back": "Scegli un altro file",
+        "check": {
+          "hint": "L'importo corrisponde, ma non sono sicuro del canone: scegli tu se segnarli come incassati.",
+          "title": "Da controllare ({{count}})"
+        },
+        "choose": "Scegli il canone…",
+        "confirm_one": "Conferma {{count}} incasso",
+        "confirm_other": "Conferma {{count}} incassi",
+        "confirmNote": "Segno i canoni come incassati con la data dell'accredito e la nota «Da estratto conto». Hai qualche secondo per annullare.",
+        "credit": "Accredito del {{date}}",
+        "description": "Controlla gli incassi che ti propongo e conferma quelli giusti.",
+        "found_one": "Ho trovato {{count}} accredito nel file.",
+        "found_other": "Ho trovato {{count}} accrediti nel file.",
+        "noneHint": "Il bonifico deve avere lo stesso importo del canone, e il canone non deve essere già pagato. Controlla di aver caricato l'estratto giusto.",
+        "noneTitle": "Nessun accredito corrisponde a un canone da incassare",
+        "pick": "Canone da segnare come incassato per l'accredito del {{date}} di {{amount}}",
+        "rentOf": "Canone di {{month}} · scadenza {{due}}",
+        "sure": {
+          "hint": "L'importo è uguale e l'inquilino è riconosciuto: li ho già selezionati.",
+          "title": "Pronti da confermare ({{count}})"
+        },
+        "taken": "già scelto per un altro accredito",
+        "tenantUnknown": "Inquilino non indicato",
+        "tickCheck": "Segna come incassato l'accredito del {{date}} di {{amount}}",
+        "tickSure": "Segna come incassato: {{tenant}}, {{property}}, canone di {{month}}, {{amount}}",
+        "unmatched": {
+          "hint": "Non ho trovato un canone da incassare con questo importo e una scadenza vicina: possono essere altri incassi, oppure canoni già pagati.",
+          "more_one": "E altro {{count}} accredito non mostrato.",
+          "more_other": "E altri {{count}} accrediti non mostrati.",
+          "title": "Senza canone ({{count}})"
+        },
+        "waiting": "Sto ancora registrando gli incassi di prima: appena ho finito puoi confermare questi."
+      },
+      "skipped_one": "{{count}} incasso non registrato: era già pagato o è cambiato nel frattempo.",
+      "skipped_other": "{{count}} incassi non registrati: erano già pagati o sono cambiati nel frattempo.",
+      "title": "Importa estratto conto"
+    },
     "cancel": "Annulla",
     "chips": {
       "all": "Tutti",

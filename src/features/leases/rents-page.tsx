@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Euro, Plus } from 'lucide-react';
+import { Euro, Plus, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { StatStrip, StatTile } from '@/components/shared/calm';
@@ -14,9 +14,11 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { useLeases } from '@/queries/use-leases';
 import { useRentRegister } from '@/queries/use-rent-register';
 import type { RentRegisterPage, RentRegisterRow } from '@/types';
+import { BankStatementImportDialog } from './components/bank-statement-import-dialog';
 import { RecordRentPaymentDialog } from './components/record-rent-payment-dialog';
 import { RentMonthPicker } from './components/rent-month-picker';
 import { RentReminderDialog } from './components/rent-reminder-dialog';
+import { BANK_IMPORT_KEY } from './lib/bank-import';
 import { isRentMonth, monthName, monthOfDate, rentRegisterPath, rentStatusOfChip } from './lib/rent-register';
 import { useRentsList } from './rents-list';
 
@@ -75,6 +77,9 @@ function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentReg
  * the quick filter and the page are the list's (`?chip=overdue&page=2`), and the numbers of the month come from the server, whole,
  * whatever the filter. The landlord declares a payment received (a window of its own) and sends a reminder to a tenant who is late
  * (another one): nothing is written to anyone unless they press the button, and an e-mail waits six seconds with an «Annulla».
+ * Instead of declaring payments one by one they can import the statement of their bank («Importa estratto conto», its own window):
+ * the server proposes which rents the credits pay and nothing is recorded until they confirm. The way in is the menu of the page
+ * and, when something is still to collect, one quiet line under the numbers (the one block of the page stays the numbers).
  * Who may only read the leases sees the register and no button.
  */
 export function RentsPage() {
@@ -90,6 +95,7 @@ export function RentsPage() {
 
   const [reminding, setReminding] = useState<RentRegisterRow | null>(null);
   const [recording, setRecording] = useState<{ row: RentRegisterRow | null } | null>(null);
+  const [importing, setImporting] = useState(false);
   const recordRow = useCallback((row: RentRegisterRow) => setRecording({ row }), []);
 
   const list = useRentsList({ canManage, held, onRecord: recordRow, onRemind: setReminding });
@@ -126,6 +132,19 @@ export function RentsPage() {
             ? { label: t('longRentRents.actions.recordNew'), icon: Plus, onClick: () => setRecording({ row: null }), testId: 'rents-record-new' }
             : undefined
         }
+        secondary={
+          canManage
+            ? [
+                {
+                  label: t('longRentRents.bankImport.action'),
+                  icon: Upload,
+                  onClick: () => setImporting(true),
+                  disabled: held.has(BANK_IMPORT_KEY),
+                  testId: 'rents-import-statement',
+                },
+              ]
+            : undefined
+        }
         mobilePrimary="fab"
       />
 
@@ -133,6 +152,22 @@ export function RentsPage() {
 
       {data && !register.isError && !noContracts ? (
         <RentMonthNumbers data={data} month={shownMonth} currentMonth={currentMonth} dimmed={register.isPlaceholderData} />
+      ) : null}
+
+      {/* Quiet, under the numbers: the way to stop marking payments one by one is there when there is something to collect. */}
+      {canManage && data && !register.isError && !noContracts && data.counters.overdue.count + data.counters.pending.count > 0 ? (
+        <p className="text-sm text-foreground/70" data-testid="rents-import-hint">
+          {t('longRentRents.bankImport.hint')}{' '}
+          <button
+            type="button"
+            className="font-medium text-primary underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={held.has(BANK_IMPORT_KEY)}
+            onClick={() => setImporting(true)}
+            data-testid="rents-import-hint-button"
+          >
+            {t('longRentRents.bankImport.action')}
+          </button>
+        </p>
       ) : null}
 
       {noContracts ? (
@@ -175,6 +210,8 @@ export function RentsPage() {
       {recording ? (
         <RecordRentPaymentDialog key={recording.row?.id ?? 'choose'} row={recording.row ?? undefined} onClose={() => setRecording(null)} />
       ) : null}
+
+      {importing ? <BankStatementImportDialog onClose={() => setImporting(false)} /> : null}
     </div>
   );
 }

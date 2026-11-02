@@ -1,6 +1,10 @@
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
 import type {
+  BankColumnMapping,
+  BankImportConfirmation,
+  BankImportPreview,
+  BankImportSelection,
   ConfigureRentScheduleInput,
   MarkRentPaidInput,
   PublicRentPayment,
@@ -53,6 +57,38 @@ export const rentRegisterApi = {
   /** Emails the tenants of one installment now, with the optional short note of the landlord. Never automatic: only when this is called. */
   sendReminder: (installmentId: string, note?: string) =>
     ApiClient.post<RentReminderResult>(`/long-rent/rents/${encodeURIComponent(installmentId)}/reminder`, note ? { note } : undefined),
+};
+
+/** Explicit multipart: the client's default JSON content type would serialize the FormData as JSON. */
+const MULTIPART = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+function statementForm(file: File, mapping?: BankColumnMapping, selections?: BankImportSelection[]): FormData {
+  const form = new FormData();
+  form.append('file', file);
+  if (mapping) form.append('mapping', JSON.stringify(mapping));
+  if (selections) form.append('selections', JSON.stringify(selections));
+  return form;
+}
+
+/**
+ * Import of a bank statement on the rents. The file is read twice by the server, to propose and to confirm, and never kept: the
+ * confirmation sends it again with the choices, and the server reads amounts, dates and payers from the file itself.
+ */
+export const rentBankImportApi = {
+  /** Reads the file and proposes, for each credit, the installment it pays. Nothing is written. */
+  preview: async (file: File, mapping?: BankColumnMapping): Promise<BankImportPreview> => {
+    const url = '/long-rent/rents/bank-import/preview';
+    const data = await ApiClient.post<unknown>(url, statementForm(file, mapping), MULTIPART);
+    const preview = data as Partial<BankImportPreview> | null;
+    if (typeof data !== 'object' || preview === null || !Array.isArray(preview.suggestions) || !Array.isArray(preview.unmatched)) {
+      throw new UnexpectedApiResponseError(url);
+    }
+    return data as BankImportPreview;
+  },
+
+  /** Declares paid the installments the landlord chose, each with the credit of the file it was matched to. */
+  confirm: (file: File, selections: BankImportSelection[], mapping?: BankColumnMapping) =>
+    ApiClient.post<BankImportConfirmation>('/long-rent/rents/bank-import/confirm', statementForm(file, mapping, selections), MULTIPART),
 };
 
 /** The tenant's payment page (anonymous): the token of the link goes in the body, never in the URL of the API call. */

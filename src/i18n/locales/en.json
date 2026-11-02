@@ -8154,6 +8154,92 @@
       "reminding": "Reminder on its way…"
     },
     "alreadyHeld": "This is already on its way.",
+    "bankImport": {
+      "action": "Import bank statement",
+      "choose": {
+        "button": "Choose the file",
+        "description": "Upload the movements file you download from your bank. I look for the rent transfers and suggest which ones to mark as collected: nothing is recorded until you confirm.",
+        "dropTitle": "Drop the bank statement file here",
+        "empty": "The file is empty.",
+        "hint": "CSV, Excel (.xlsx), CAMT.053 (XML) or MT940, up to 8 MB. The file is read and not saved.",
+        "readFailed": "I could not read the file. Try again, or export the movements from your bank once more.",
+        "reading": "Reading the file…",
+        "tooLarge": "The file is too large: 8 MB at most. Export a shorter period from your bank."
+      },
+      "columns": {
+        "amountHint": "With a minus sign for money going out, or only the credits.",
+        "back": "Back",
+        "column": "Column {{number}}",
+        "continue": "Continue",
+        "fields": {
+          "amount": "Amount",
+          "date": "Date",
+          "description": "Description"
+        },
+        "hasTitles": "The first row holds the titles of the columns",
+        "intro": "I do not recognise the columns of this file. Tell me which one holds the date, the description and the amount.",
+        "option": "{{name}} · {{sample}}",
+        "placeholder": "Choose the column",
+        "same": "Each column can have one role only: pick three different ones.",
+        "tableLabel": "The first rows of the file"
+      },
+      "done_one": "{{count}} rent marked as collected",
+      "done_other": "{{count}} rents marked as collected",
+      "held_one": "Recording {{count}} payment from the bank statement",
+      "held_other": "Recording {{count}} payments from the bank statement",
+      "heldHint": "Cancel if you changed your mind: in a few seconds they are recorded.",
+      "hint": "Did you receive any transfers? Import the bank statement: I suggest which rents to mark as collected.",
+      "nothingDone": "No rent was marked as collected.",
+      "reasons": {
+        "Amount": "same amount",
+        "FirstName": "first name",
+        "Month": "month of the rent",
+        "PayerIban": "IBAN seen before on this lease",
+        "PayerName": "payer seen before on this lease",
+        "Property": "property",
+        "Surname": "surname",
+        "matched": "matches: {{reasons}}"
+      },
+      "review": {
+        "alreadyImported_one": "{{count}} had already been imported.",
+        "alreadyImported_other": "{{count}} had already been imported.",
+        "back": "Choose another file",
+        "check": {
+          "hint": "The amount matches, but I am not sure which rent: you choose whether to mark them as collected.",
+          "title": "To check ({{count}})"
+        },
+        "choose": "Choose the rent…",
+        "confirm_one": "Confirm {{count}} payment",
+        "confirm_other": "Confirm {{count}} payments",
+        "confirmNote": "I mark the rents as collected with the date of the credit and the note «Da estratto conto». You have a few seconds to cancel.",
+        "credit": "Credit of {{date}}",
+        "description": "Check the payments I suggest and confirm the right ones.",
+        "found_one": "I found {{count}} credit in the file.",
+        "found_other": "I found {{count}} credits in the file.",
+        "noneHint": "The transfer must have the same amount as the rent, and the rent must not be paid already. Check that you uploaded the right statement.",
+        "noneTitle": "No credit matches a rent to collect",
+        "pick": "Rent to mark as collected for the credit of {{date}} of {{amount}}",
+        "rentOf": "Rent of {{month}} · due {{due}}",
+        "sure": {
+          "hint": "The amount is the same and the tenant is recognised: I already selected them.",
+          "title": "Ready to confirm ({{count}})"
+        },
+        "taken": "already chosen for another credit",
+        "tenantUnknown": "Tenant not shown",
+        "tickCheck": "Mark the credit of {{date}} of {{amount}} as collected",
+        "tickSure": "Mark as collected: {{tenant}}, {{property}}, rent of {{month}}, {{amount}}",
+        "unmatched": {
+          "hint": "I found no rent to collect with this amount and a close due date: they may be other payments, or rents that are already paid.",
+          "more_one": "And {{count}} more credit not shown.",
+          "more_other": "And {{count}} more credits not shown.",
+          "title": "No rent for these ({{count}})"
+        },
+        "waiting": "The payments from before are still being recorded: you can confirm these as soon as that is done."
+      },
+      "skipped_one": "{{count}} payment not recorded: it was already paid or changed meanwhile.",
+      "skipped_other": "{{count}} payments not recorded: they were already paid or changed meanwhile.",
+      "title": "Import bank statement"
+    },
     "cancel": "Cancel",
     "chips": {
       "all": "All",
