@@ -9164,9 +9164,11 @@
     "loadingMore": "Carico…",
     "unreadDot": "Da leggere",
     "listLabel": "Elenco delle notifiche",
+    "toastOpen": "Apri",
     "types": {
       "newBooking": "Hai una nuova prenotazione.",
       "guestMessage": "Un ospite ti ha scritto un messaggio.",
+      "guestCheckinCompleted": "Un ospite ha completato il check-in online.",
       "guestDataMissing": "Mancano i dati di un ospite da registrare.",
       "alloggiatiDeadline": "Una comunicazione Alloggiati Web sta per scadere.",
       "alloggiatiOverdue": "Una comunicazione Alloggiati Web è scaduta.",

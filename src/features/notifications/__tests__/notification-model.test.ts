@@ -22,8 +22,8 @@ describe('notification model', () => {
 
   it('notificationKind_BackendPushTypes_AreAllKnown', () => {
     const backend = [
-      'new-booking', 'guest-message', 'guest-data-missing', 'alloggiati-deadline', 'alloggiati-overdue', 'alloggiati-failed',
-      'checkout-reminder', 'ota-stay-review', 'service-request-created', 'service-request-auto-accepted', 'service-request-taken',
+      'new-booking', 'guest-message', 'guest-checkin-completed', 'guest-data-missing', 'alloggiati-deadline', 'alloggiati-overdue',
+      'alloggiati-failed', 'checkout-reminder', 'ota-stay-review', 'service-request-created', 'service-request-auto-accepted', 'service-request-taken',
       'service-request-completed', 'service-request-rejected', 'service-request-paid', 'service-request-started',
       'service-request-cancelled', 'service-request-reminder', 'service-request-time-proposed',
       'service-request-proposal-accepted', 'service-request-proposal-rejected', 'service-request-rescheduled',
@@ -42,6 +42,7 @@ describe('notification model', () => {
     ['new-booking', '/app/short-rent/bookings/b-1'],
     ['checkout-reminder', '/app/short-rent/bookings/b-1'],
     ['guest-data-missing', '/app/short-rent/bookings/b-1?tab=guest'],
+    ['guest-checkin-completed', '/app/short-rent/bookings/b-1?tab=guest'],
     ['alloggiati-failed', '/app/short-rent/bookings/b-1?tab=alloggiati'],
   ])('notificationRoute_%s_OpensTheBooking', (type, expected) => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);

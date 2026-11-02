@@ -9,7 +9,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { retryTransientErrors } from '@/lib/query-client';
 
 const CHECKIN_KEY = 'checkin';
-const CHECKIN_SESSION_KEY = 'checkin-session';
+export const CHECKIN_SESSION_KEY = 'checkin-session';
 
 export function useCheckInContext(token: string) {
   return useQuery({

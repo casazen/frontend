@@ -9164,9 +9164,11 @@
     "loadingMore": "Loading…",
     "unreadDot": "Unread",
     "listLabel": "Notifications list",
+    "toastOpen": "Open",
     "types": {
       "newBooking": "You have a new booking.",
       "guestMessage": "A guest sent you a message.",
+      "guestCheckinCompleted": "A guest completed the online check-in.",
       "guestDataMissing": "A guest's data is still missing.",
       "alloggiatiDeadline": "An Alloggiati Web submission is about to expire.",
       "alloggiatiOverdue": "An Alloggiati Web submission is overdue.",

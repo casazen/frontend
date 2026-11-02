@@ -6,7 +6,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import type { AlloggiatiReportFilters } from '@/types/alloggiati.types';
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
-const ALLOGGIATI_KEY = 'alloggiati';
+export const ALLOGGIATI_KEY = 'alloggiati';
 
 export function useAlloggiatiSummary(propertyId?: string) {
   return useQuery({

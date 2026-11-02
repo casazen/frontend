@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import { dashboardApi } from '@/api/dashboard.api';
 import type { DashboardOverviewQuery } from '@/types/dashboard.types';
 
-const DASHBOARD_KEY = 'dashboard';
+export const DASHBOARD_KEY = 'dashboard';
 
 /**
  * The host's day (arrivals, departures, interventions, things to do), read again at every visit: bookings, check-ins and
