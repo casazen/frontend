@@ -3182,6 +3182,117 @@
         "guestData": "Guest details"
       }
     },
+    "autopilot": {
+      "button": "Handle with AI",
+      "title": "Handle with AI",
+      "intro": "I take care of what can be done from here. See what I do and confirm.",
+      "loading": "Looking at your duties…",
+      "error": "I cannot check your duties right now.",
+      "retry": "Try again",
+      "later": "Not now",
+      "close": "Close",
+      "working": "Working on it…",
+      "names": {
+        "others_one": "{{count}} other",
+        "others_other": "{{count}} others"
+      },
+      "plan": {
+        "do": "I do",
+        "wait": "I wait",
+        "host": "Left to you",
+        "nothing": "There is nothing I can do on my own right now.",
+        "start": "Start",
+        "ask_one": "I ask {{count}} guest for their details",
+        "ask_other": "I ask {{count}} guests for their details",
+        "askHow": {
+          "email": "I e-mail them the link to fill in their details: it only takes a few minutes.",
+          "chat": "I prepare the WhatsApp and SMS message for you: you send it with one tap.",
+          "mixed": "The link goes by e-mail; where there is a phone I also prepare the WhatsApp and SMS message, which you send with one tap."
+        },
+        "close_one": "I close {{count}} departure",
+        "close_other": "I close {{count}} departures",
+        "closeHow": "These stays are already over: I record the departure as you would.",
+        "beyond_one": "{{count}} is left for next time: then you start again.",
+        "beyond_other": "{{count}} are left for next time: then you start again.",
+        "ai": "The AI writes the WhatsApp and SMS messages: you read them before sending.",
+        "noAi": "The WhatsApp and SMS messages are ready-made CasaZen texts.",
+        "footnote": "Alloggiati Web and ISTAT cannot be sent from CasaZen yet: you do it on the portals, and I tell you when the data is ready.",
+        "reason": {
+          "asked_recently": "I asked {{names}} for their details a moment ago: I leave them alone for today.",
+          "awaiting_guest_data": "I will close the departure of {{names}} as soon as the guests' details arrive: closing it now would stop their link from working.",
+          "ready_to_upload": "Alloggiati ready to upload on the portal ({{names}}): you send them.",
+          "failed": "Alloggiati to correct ({{names}}).",
+          "data_missing": "Details to enter by hand ({{names}}): the stay is closed and the guest can no longer fill in the form.",
+          "codes_to_complete": "Alloggiati with official codes to complete ({{names}}): you pick them in “Edit guests”.",
+          "stay_days_invalid": "Stays the Alloggiati portal does not accept, under 1 or over 30 nights ({{names}}).",
+          "no_contact": "No contact to ask {{names}} for their details: add an e-mail or a phone number.",
+          "asked_enough": "I already asked {{names}} for their details several times: follow up yourself.",
+          "already_submitted": "Details already sent but incomplete ({{names}}): you correct them.",
+          "arrival_not_registered": "Arrival not registered ({{names}}): tell me if the guest arrived.",
+          "departure_today": "Today's departures ({{names}}): you close them when the guest has left.",
+          "no_permission": "You are not allowed to change the property of {{names}}.",
+          "unknown": "{{names}}: needs your attention."
+        },
+        "activation": "Properties to activate: {{count}}. You request the CIN and the documents.",
+        "turnovers": "Properties to declare ready: {{count}}. Only you know whether the home is ready.",
+        "openAlloggiati": "Open Alloggiati"
+      },
+      "result": {
+        "title": "Done",
+        "at": "At {{time}}",
+        "sentence": {
+          "lead": "I {{what}}.",
+          "emailed_one": "e-mailed {{count}} guest",
+          "emailed_other": "e-mailed {{count}} guests",
+          "closed_one": "closed {{count}} departure",
+          "closed_other": "closed {{count}} departures",
+          "chat_one": "prepared {{count}} message for you to send",
+          "chat_other": "prepared {{count}} messages for you to send",
+          "none": "There was nothing new to do."
+        },
+        "chat": {
+          "title": "Messages ready for WhatsApp and SMS",
+          "needed": "The e-mail did not go out: write to the guest yourself, one tap is enough.",
+          "optional": "The e-mail is on its way. Send the message only if you also want to remind the guest this way.",
+          "whatsapp": "WhatsApp",
+          "sms": "SMS",
+          "copy": "Copy the text",
+          "copied": "Text copied",
+          "copyFailed": "I could not copy the text",
+          "show": "See the text",
+          "noPhone": "There is no number with an international prefix: copy the text and send it however you like.",
+          "forGuest": "{{action}} to {{name}}"
+        },
+        "failed": {
+          "title": "I did not manage",
+          "line": "{{name}}: {{reason}}"
+        },
+        "skipped": {
+          "title": "Already in order",
+          "body": "Something changed while I was working: {{names}}."
+        },
+        "emailed": "E-mails with the link sent: {{names}}.",
+        "closed": "Departures closed: {{names}}.",
+        "beyond_one": "{{count}} is left: start again to do it.",
+        "beyond_other": "{{count}} are left: start again to do them.",
+        "aiFallback": "This time the messages are ready-made CasaZen texts: the AI did not answer.",
+        "again": "Check again"
+      },
+      "failure": {
+        "generic": "It did not work: try again shortly.",
+        "no_recipient": "The guest has no e-mail address.",
+        "provider_not_configured": "E-mail sending is not active in this environment.",
+        "queue_failed": "The e-mail did not go out: try again shortly.",
+        "rejected": "The e-mail address was refused: check it.",
+        "not_delivered": "The e-mail did not reach its destination.",
+        "link_unavailable": "CasaZen's public address is missing: contact support.",
+        "link_not_usable": "The link was no longer valid: try again.",
+        "checkin_already_completed": "The guest has already filled in the form: correct the details from “Edit guests”.",
+        "checkin_link_booking_not_eligible": "The stay is no longer open: the link cannot be sent.",
+        "booking_already_checked_out": "The departure was already closed.",
+        "unexpected": "Something went wrong: try again shortly."
+      }
+    },
     "properties": {
       "openWizard": "Activation wizard",
       "publishBlocked": "Complete the activation wizard before publishing the property."

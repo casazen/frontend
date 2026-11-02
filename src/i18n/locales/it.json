@@ -3182,6 +3182,117 @@
         "guestData": "Dati degli ospiti"
       }
     },
+    "autopilot": {
+      "button": "Gestisci con AI",
+      "title": "Gestisci con AI",
+      "intro": "Mi occupo io di quello che si può fare da qui. Guarda cosa faccio e conferma.",
+      "loading": "Sto guardando i tuoi adempimenti…",
+      "error": "Non riesco a controllare gli adempimenti adesso.",
+      "retry": "Riprova",
+      "later": "Non ora",
+      "close": "Chiudi",
+      "working": "Sto lavorando…",
+      "names": {
+        "others_one": "{{count}} altro",
+        "others_other": "altri {{count}}"
+      },
+      "plan": {
+        "do": "Faccio io",
+        "wait": "Aspetto",
+        "host": "Resta a te",
+        "nothing": "Per ora non c'è niente che io possa fare da solo.",
+        "start": "Avvia",
+        "ask_one": "Chiedo i dati a {{count}} ospite",
+        "ask_other": "Chiedo i dati a {{count}} ospiti",
+        "askHow": {
+          "email": "Gli mando per e-mail il link per compilare i dati: bastano pochi minuti.",
+          "chat": "Ti preparo il messaggio per WhatsApp e SMS: lo mandi tu con un tocco.",
+          "mixed": "Il link va per e-mail; dove c'è un telefono ti preparo anche il messaggio per WhatsApp e SMS, che mandi tu con un tocco."
+        },
+        "close_one": "Chiudo {{count}} partenza",
+        "close_other": "Chiudo {{count}} partenze",
+        "closeHow": "Sono soggiorni già finiti: registro la partenza come faresti tu.",
+        "beyond_one": "Ne resta {{count}} per la prossima volta: poi avvii di nuovo.",
+        "beyond_other": "Ne restano {{count}} per la prossima volta: poi avvii di nuovo.",
+        "ai": "I messaggi per WhatsApp e SMS li scrive l'AI: li leggi prima di mandarli.",
+        "noAi": "I messaggi per WhatsApp e SMS sono testi pronti di CasaZen.",
+        "footnote": "Alloggiati Web e ISTAT non si inviano ancora da CasaZen: li fai dai portali, io ti dico quando i dati sono pronti.",
+        "reason": {
+          "asked_recently": "Dati già chiesti da poco a {{names}}: per oggi non li disturbo.",
+          "awaiting_guest_data": "Chiuderò la partenza di {{names}} appena arrivano i dati degli ospiti: se la chiudessi adesso il loro link smetterebbe di funzionare.",
+          "ready_to_upload": "Alloggiati pronti da caricare sul portale ({{names}}): l'invio lo fai tu.",
+          "failed": "Alloggiati da correggere ({{names}}).",
+          "data_missing": "Dati da inserire a mano ({{names}}): il soggiorno è chiuso e l'ospite non può più compilare il modulo.",
+          "codes_to_complete": "Alloggiati con codici ufficiali da completare ({{names}}): li scegli tu da «Modifica ospiti».",
+          "stay_days_invalid": "Soggiorni che il portale Alloggiati non accetta, meno di 1 o più di 30 notti ({{names}}).",
+          "no_contact": "Nessun contatto per chiedere i dati a {{names}}: aggiungi un'e-mail o un telefono.",
+          "asked_enough": "Dati già chiesti più volte a {{names}}: sentili tu.",
+          "already_submitted": "Dati già inviati ma incompleti ({{names}}): li correggi tu.",
+          "arrival_not_registered": "Arrivo non registrato ({{names}}): dimmi tu se l'ospite è arrivato.",
+          "departure_today": "Partenze di oggi ({{names}}): le chiudi tu quando l'ospite è andato via.",
+          "no_permission": "Per {{names}} non hai il permesso di modificare la struttura.",
+          "unknown": "{{names}}: serve il tuo intervento."
+        },
+        "activation": "Immobili da attivare: {{count}}. Il CIN e i documenti li richiedi tu.",
+        "turnovers": "Case da dichiarare pronte: {{count}}. Solo tu sai se la casa è pronta.",
+        "openAlloggiati": "Apri Alloggiati"
+      },
+      "result": {
+        "title": "Fatto",
+        "at": "Alle {{time}}",
+        "sentence": {
+          "lead": "Ho {{what}}.",
+          "emailed_one": "mandato l'e-mail a {{count}} ospite",
+          "emailed_other": "mandato l'e-mail a {{count}} ospiti",
+          "closed_one": "chiuso {{count}} partenza",
+          "closed_other": "chiuso {{count}} partenze",
+          "chat_one": "preparato {{count}} messaggio da mandare tu",
+          "chat_other": "preparato {{count}} messaggi da mandare tu",
+          "none": "Non c'era niente di nuovo da fare."
+        },
+        "chat": {
+          "title": "Messaggi pronti per WhatsApp e SMS",
+          "needed": "L'e-mail non è partita: scrivi tu all'ospite, ti basta un tocco.",
+          "optional": "L'e-mail è partita. Manda il messaggio solo se vuoi sollecitare l'ospite anche così.",
+          "whatsapp": "WhatsApp",
+          "sms": "SMS",
+          "copy": "Copia il testo",
+          "copied": "Testo copiato",
+          "copyFailed": "Non sono riuscito a copiare il testo",
+          "show": "Vedi il testo",
+          "noPhone": "Manca un numero con il prefisso internazionale: copia il testo e mandalo come preferisci.",
+          "forGuest": "{{action}} a {{name}}"
+        },
+        "failed": {
+          "title": "Non ci sono riuscito",
+          "line": "{{name}}: {{reason}}"
+        },
+        "skipped": {
+          "title": "Già a posto",
+          "body": "Mentre lavoravo qualcosa è cambiato: {{names}}."
+        },
+        "emailed": "E-mail con il link partite: {{names}}.",
+        "closed": "Partenze chiuse: {{names}}.",
+        "beyond_one": "Ne resta {{count}}: avvia di nuovo per farla.",
+        "beyond_other": "Ne restano {{count}}: avvia di nuovo per farle.",
+        "aiFallback": "Questa volta i messaggi sono testi pronti di CasaZen: l'AI non ha risposto.",
+        "again": "Nuovo controllo"
+      },
+      "failure": {
+        "generic": "Non è andata: riprova tra poco.",
+        "no_recipient": "L'ospite non ha un indirizzo e-mail.",
+        "provider_not_configured": "L'invio delle e-mail non è attivo in questo ambiente.",
+        "queue_failed": "L'e-mail non è partita: riprova tra poco.",
+        "rejected": "L'indirizzo e-mail è stato rifiutato: controllalo.",
+        "not_delivered": "L'e-mail non è arrivata a destinazione.",
+        "link_unavailable": "Manca l'indirizzo pubblico di CasaZen: scrivi all'assistenza.",
+        "link_not_usable": "Il link non era più valido: riprova.",
+        "checkin_already_completed": "L'ospite ha già compilato il modulo: correggi i dati da «Modifica ospiti».",
+        "checkin_link_booking_not_eligible": "Il soggiorno non è più aperto: non si può mandare il link.",
+        "booking_already_checked_out": "La partenza era già chiusa.",
+        "unexpected": "Qualcosa è andato storto: riprova tra poco."
+      }
+    },
     "properties": {
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
