@@ -151,7 +151,15 @@ export function DashboardPage() {
                 </>
               ) : today.isError ? (
                 <div className="xl:col-span-2">
-                  <ErrorState title={t('dashboard.error.today')} error={today.error} onRetry={() => void today.refetch()} testId="dashboard-error" />
+                  <ErrorState
+                    title={t('dashboard.error.today')}
+                    error={today.error}
+                    onRetry={() => {
+                      void today.refetch();
+                      if (overview.isError) void overview.refetch();
+                    }}
+                    testId="dashboard-error"
+                  />
                 </div>
               ) : (
                 <>
@@ -164,7 +172,10 @@ export function DashboardPage() {
             {overview.data ? (
               <HomeNumbers overview={overview.data} period={period} />
             ) : overview.isError ? (
-              <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
+              // One error is enough when the day failed too: its retry reloads both.
+              today.isError ? null : (
+                <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
+              )
             ) : (
               <SkeletonLine lines={3} />
             )}
