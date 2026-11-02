@@ -47,7 +47,7 @@ describe('site links (SEO-VETRINA)', () => {
 
   it('sitePages_doNotIncludeThePricingPageOrAnySignupPath', () => {
     // CasaZen is on private invitation and prices are not defined (product owner, 2026-10-13).
-    expect(SITE_PAGES.map((page) => page.path)).toEqual(['/', '/funzionalita', '/integrazioni', '/per-i-fornitori', '/chi-siamo']);
+    expect(SITE_PAGES.map((page) => page.path)).toEqual(['/', '/affitti-brevi', '/affitti-lunghi', '/funzionalita', '/per-i-fornitori', '/chi-siamo']);
   });
 });
 

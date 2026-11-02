@@ -13168,9 +13168,13 @@
         "title": "About us and contacts | CasaZen",
         "description": "CasaZen is the management app for hosts and property managers of short- and long-term rentals in Italy, built on Italian rules. How we work, company details and contacts."
       },
-      "integrations": {
-        "title": "Integrations: sales channels and partner tools | CasaZen",
-        "description": "The OTAs, metasearch sites and partner tools that can be connected to CasaZen: Booking.com, Airbnb, Expedia, Vrbo and hundreds of other channels and services."
+      "shortRent": {
+        "title": "Short rentals: compliance, calendar and direct bookings | CasaZen",
+        "description": "For short-term rental hosts and property managers: CIN, Alloggiati Web, tourist tax, calendar, direct booking site and connections to channels such as Booking.com, Airbnb, Vrbo and Expedia."
+      },
+      "longRent": {
+        "title": "Long rentals: contracts, rent and deadlines | CasaZen",
+        "description": "For long-term landlords: 4+4, 3+2 and temporary contracts, rent with Stripe, registration reminders (RLI) and flat-rate tax."
       }
     },
     "nav": {
@@ -13184,7 +13188,8 @@
       "switchLanguage": "Italiano",
       "switchLanguageLabel": "Switch to Italian",
       "search": "Find a home",
-      "integrations": "Integrations"
+      "shortRent": "Short rentals",
+      "longRent": "Long rentals"
     },
     "footer": {
       "tagline": "The management app for short- and long-term rentals, by the rules.",
@@ -13336,6 +13341,128 @@
         "title": "Looking for a home for your holiday?",
         "where": "Where",
         "wherePlaceholder": "City or area"
+      },
+      "channels": {
+        "title": "Connects to Booking.com, Airbnb, Vrbo, Expedia and many more channels",
+        "more": "…and over {{count}} sales channels, metasearch sites, payment and hospitality tools.",
+        "note": "Connections are enabled channel by channel; today portal calendars are synchronised through iCal. Ask us about the status of the channel you care about.",
+        "groups": {
+          "ota": {
+            "title": "Sales channels (OTAs)",
+            "intro": "Portals and marketplaces where you list your homes, national and international."
+          },
+          "metasearch": {
+            "title": "Metasearch",
+            "intro": "Comparison sites that show rates and availability while guests compare properties."
+          },
+          "gds": {
+            "title": "Global distribution (GDS)",
+            "intro": "Distribution networks that reach travel agencies, wholesalers and global channels."
+          },
+          "revenue": {
+            "title": "Pricing and revenue management",
+            "intro": "Tools that set your rates based on demand and competitors."
+          },
+          "payments": {
+            "title": "Payments",
+            "intro": "Networks and systems for online payments, cards and pre-authorisations."
+          },
+          "smart": {
+            "title": "Check-in, access and guest experience",
+            "intro": "Self check-in, smart locks, upselling and hospitality tools."
+          },
+          "ai": {
+            "title": "AI assistants",
+            "intro": "Assistants for guest messaging and everyday tasks."
+          },
+          "housekeeping": {
+            "title": "Cleaning and operations",
+            "intro": "Tools to coordinate cleaning, ready rooms and staff."
+          },
+          "admin": {
+            "title": "Administration and compliance",
+            "intro": "Tax, documents, mandatory reporting and accounting."
+          },
+          "software": {
+            "title": "Management software and calendars",
+            "intro": "Property management and vertical systems, calendars and office tools to connect."
+          },
+          "other": {
+            "title": "Other tools",
+            "intro": "Complementary digital services, marketing and automations."
+          }
+        },
+        "trademarks": "The trademarks and logos shown belong to their respective owners and only indicate the services that can be connected; they do not imply any commercial agreement or endorsement.",
+        "tabs": "Channel and tool categories",
+        "showAll": "Show all ({{count}})",
+        "showLess": "Show less",
+        "seeAll": "See all",
+        "catalogTitle": "All channels and tools",
+        "catalogIntro": "The full list of sales channels and partners that can be connected, by category."
+      },
+      "rents": {
+        "title": "Short or long rentals: two paths, one system",
+        "intro": "CasaZen has a dedicated path for each way of renting, with its own rules and tools.",
+        "short": {
+          "title": "Short rentals",
+          "text": "CIN, Alloggiati Web, tourist tax, calendar and a direct booking site of your own.",
+          "cta": "Explore short rentals"
+        },
+        "long": {
+          "title": "Long rentals",
+          "text": "4+4, 3+2 and temporary contracts, rent with Stripe and registration deadlines always under control.",
+          "cta": "Explore long rentals"
+        }
+      },
+      "showcase": {
+        "title": "CasaZen at work",
+        "intro": "A few screens and a short video of the steps that matter most, to see how you really work with it.",
+        "cockpit": {
+          "title": "Always know what to do today",
+          "text": "The Compliance page puts what risks a penalty first and shows you the next step, one at a time.",
+          "alt": "CasaZen Compliance page with the next thing to do and the legal deadlines",
+          "tab": "What to do today"
+        },
+        "alloggiati": {
+          "title": "Alloggiati Web under control",
+          "text": "For each stay you see the status of the report to the police, the deadline and what is missing. CasaZen prepares the data; sending it to the portal is up to you.",
+          "alt": "Alloggiati Web page with the reports to send and an overdue deadline",
+          "tab": "Alloggiati Web"
+        },
+        "cin": {
+          "title": "The CIN, property by property",
+          "text": "The code format is checked and each property shows whether its CIN is valid, missing or needs fixing.",
+          "alt": "CIN compliance page with the properties and their CIN status",
+          "tab": "CIN"
+        },
+        "caption": "Screens and video recorded from the app with example data.",
+        "checkin": {
+          "title": "Guest check-in, from the phone",
+          "text": "The guest receives a link and enters their details in three steps, plus the document. You find them ready for Alloggiati Web.",
+          "alt": "Short video of the online guest check-in on a phone: details, document and confirmation",
+          "tab": "Guest check-in"
+        },
+        "lease": {
+          "tab": "Leases",
+          "title": "Long rentals: from contract to rent",
+          "text": "Each contract has its own sheet with details, documents, payments, deadlines and jobs: rent is paid online with Stripe or marked as received.",
+          "alt": "Sheet of a long-term lease with the Guide, Details, Documents, Payments, Deadlines and Jobs tabs"
+        }
+      },
+      "examples": {
+        "title": "Examples of showcase sites",
+        "intro": "Every host and every supplier has their own public site, with their own name and colours. Here are two examples.",
+        "host": {
+          "title": "A host's booking site",
+          "text": "The homes, clear prices and direct booking with payment on Stripe, with no CasaZen commission on bookings.",
+          "alt": "Example of a host's direct booking site: title, search by dates and guests"
+        },
+        "supplier": {
+          "title": "A supplier's showcase",
+          "text": "Services with starting prices, areas served and quote requests: the page a supplier uses to introduce themselves to hosts.",
+          "alt": "Example of a cleaning supplier's showcase with services and prices"
+        },
+        "caption": "Example sites with invented names and data."
       }
     },
     "features": {
@@ -13438,64 +13565,42 @@
       "cta": "Ask for an invitation",
       "subject": "Invitation request for CasaZen"
     },
-    "integrations": {
-      "title": "Integrations",
-      "intro": "The sales channels and partner tools that can be connected to CasaZen, by category.",
-      "jump": "Categories",
-      "noteTitle": "Good to know",
-      "note1": "Connections are enabled channel by channel: the list shows what can be connected, not that every connection is already active for your account. Today portal calendars are synchronised through iCal.",
-      "note2": "For some partners the connection is completed on the partner's own site. Ask us about the status of a channel or tool before relying on it.",
+    "shortRent": {
+      "title": "Short rentals",
+      "intro": "For hosts and property managers: Italian rules under control, a single calendar and a direct booking site, alongside the channels you already use.",
+      "otherLink": "Go to long rentals",
+      "featuresTitle": "Everything you need to rent by the rules",
+      "featuresIntro": "From compliance to bookings, explained plainly.",
+      "siteTitle": "Your booking site",
+      "siteIntro": "A public site with your name and colours, where guests book and pay directly."
+    },
+    "longRent": {
+      "title": "Long rentals",
+      "intro": "For long-term landlords: from the contract to the rent, without missing a deadline.",
+      "otherLink": "Go to short rentals",
+      "featuresTitle": "From contract to rent",
+      "featuresIntro": "What CasaZen does today for long-term landlords.",
+      "screenTitle": "The contract sheet",
+      "screenIntro": "Each contract has its own sheet with details, documents, payments, deadlines and jobs.",
+      "screenAlt": "Sheet of a long-term lease with the Guide, Details, Documents, Payments, Deadlines and Jobs tabs",
       "groups": {
-        "ota": {
-          "title": "Sales channels (OTAs)",
-          "intro": "Portals and marketplaces where you list your homes, national and international."
+        "contracts": {
+          "title": "Contracts",
+          "text": "The most used contracts, in a single sheet."
         },
-        "metasearch": {
-          "title": "Metasearch",
-          "intro": "Comparison sites that show rates and availability while guests compare properties."
+        "rent": {
+          "title": "Rent",
+          "text": "Who pays what and when, always clear."
         },
-        "gds": {
-          "title": "Global distribution (GDS)",
-          "intro": "Distribution networks that reach travel agencies, wholesalers and global channels."
+        "deadlines": {
+          "title": "Deadlines",
+          "text": "The dates that matter, reminded in time."
         },
-        "revenue": {
-          "title": "Pricing and revenue management",
-          "intro": "Tools that set your rates based on demand and competitors."
-        },
-        "payments": {
-          "title": "Payments",
-          "intro": "Networks and systems for online payments, cards and pre-authorisations."
-        },
-        "smart": {
-          "title": "Check-in, access and guest experience",
-          "intro": "Self check-in, smart locks, upselling and hospitality tools."
-        },
-        "ai": {
-          "title": "AI assistants",
-          "intro": "Assistants for guest messaging and everyday tasks."
-        },
-        "housekeeping": {
-          "title": "Cleaning and operations",
-          "intro": "Tools to coordinate cleaning, ready rooms and staff."
-        },
-        "admin": {
-          "title": "Administration and compliance",
-          "intro": "Tax, documents, mandatory reporting and accounting."
-        },
-        "software": {
-          "title": "Management software and calendars",
-          "intro": "Property management and vertical systems, calendars and office tools to connect."
-        },
-        "other": {
-          "title": "Other tools",
-          "intro": "Complementary digital services, marketing and automations."
+        "tax": {
+          "title": "Tax",
+          "text": "Clear numbers, with the right caution."
         }
-      },
-      "cta": {
-        "title": "Can't find what you use?",
-        "text": "Tell us which channel or tool you need and we will tell you whether it can be connected."
-      },
-      "trademarks": "The trademarks and logos shown belong to their respective owners and only indicate the services that can be connected; they do not imply any commercial agreement or endorsement."
+      }
     }
   },
   "siteAppearance": {
