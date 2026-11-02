@@ -39,7 +39,7 @@ function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlo
       return (
         <FocusBlock
           tone="warning"
-          kicker={t('compliance.cockpit.kicker')}
+          kicker={t('compliance.cockpit.kicker.fine')}
           title={t('fiscal.focus.vat.title')}
           body={t('fiscal.alert.piva', { max: snapshot.maxShortStayApartmentsPerTaxpayer })}
           primary={{ label: t('fiscal.alert.wizard'), href: WIZARD_PATH, testId: 'fiscal-focus-cta' }}
@@ -51,7 +51,7 @@ function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlo
       return (
         <FocusBlock
           tone="warning"
-          kicker={t('compliance.cockpit.kicker')}
+          kicker={t('compliance.cockpit.kicker.start')}
           title={t('fiscal.focus.confirm.title', { name: focus.row.name })}
           body={t('fiscal.focus.confirm.body', { regime: t(`fiscal.regime.${focus.regime}`) })}
           then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
@@ -71,7 +71,7 @@ function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlo
       return (
         <FocusBlock
           tone="warning"
-          kicker={t('compliance.cockpit.kicker')}
+          kicker={t('compliance.cockpit.kicker.start')}
           title={t('fiscal.focus.choose.title', { name: focus.row.name })}
           body={t('fiscal.taxNote.regimeNotAssigned')}
           then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}

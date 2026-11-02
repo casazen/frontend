@@ -39,10 +39,10 @@ export const INTEGRATION_GROUPS: readonly IntegrationGroup[] = [
   {
     id: 'ota',
     entries: [
-      { name: 'Booking.com', featured: true },
-      { name: 'Expedia', featured: true },
-      { name: 'Airbnb', featured: true },
-      { name: 'Agoda', featured: true },
+      { name: 'Booking.com', logo: '/integrations/ota/booking-com.svg', featured: true },
+      { name: 'Expedia', logo: '/integrations/ota/expedia.svg', featured: true },
+      { name: 'Airbnb', logo: '/integrations/ota/airbnb.svg', featured: true },
+      { name: 'Agoda', logo: '/integrations/ota/agoda.svg', featured: true },
       { name: 'Hotels.com', logo: '/integrations/ota/hotels-com.webp' },
       { name: 'Vrbo', logo: '/integrations/ota/vrbo.webp' },
       { name: 'Hostelworld', logo: '/integrations/ota/hostelworld.webp' },

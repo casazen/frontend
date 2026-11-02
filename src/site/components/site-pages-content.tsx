@@ -27,6 +27,7 @@ import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
 import { HomeSearch } from './home-search';
+import { ChannelsCatalogue, ChannelsStrip, ProductShowcase, SiteExamples } from './home-showcase';
 import { HeroArt, ThemeSwatches } from './site-art';
 import {
   BulletList,
@@ -116,6 +117,9 @@ function GuideLinks({ title, pages, text }: { title: string; pages: readonly Seo
   );
 }
 
+/** The two ways of renting, each with its own page. */
+const RENT_KINDS = ['short', 'long'] as const;
+
 export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
@@ -140,6 +144,8 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
           <HeroArt />
         </div>
       </section>
+
+      <ChannelsStrip />
 
       <FactsStrip
         items={range(4).map((n) => ({
@@ -169,6 +175,32 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
           />
         </Section>
       </div>
+
+      <Section title={t('site.home.rents.title')} intro={t('site.home.rents.intro')}>
+        <div className="grid gap-6 md:grid-cols-2">
+          {RENT_KINDS.map((kind) => (
+            <FeatureCard
+              key={kind}
+              title={t(`site.home.rents.${kind}.title`)}
+              text={t(`site.home.rents.${kind}.text`)}
+              icon={kind === 'short' ? House : KeyRound}
+              tint={kind === 'short' ? 'terra' : 'savoia'}
+              heading="h3"
+              extra
+            >
+              <PrimaryLink href={sitePageById(kind === 'short' ? 'shortRent' : 'longRent').path}>
+                {t(`site.home.rents.${kind}.cta`)}
+              </PrimaryLink>
+            </FeatureCard>
+          ))}
+        </div>
+      </Section>
+
+      <ProductShowcase />
+
+      <SiteExamples />
+
+      <ChannelsCatalogue />
 
       <Section title={t('site.home.compliance.title')} intro={t('site.home.compliance.intro')} tone="cream">
         <CardGrid count={5}>
