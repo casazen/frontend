@@ -60,6 +60,33 @@ describe("StatusExplainer full", () => {
     expect(screen.getByText("Stato successivo:")).toHaveClass("sr-only");
   });
 
+  it("StatusExplainer_SentenceOfTheCaller_ReplacesTheDictionarysAndTheWayForwardItDescribes", () => {
+    const { container } = render(<StatusExplainer kind="lease" status="Draft" explain="Il contratto lo prepara un servizio: segui la pratica." />);
+
+    // The state keeps its badge; its sentence is the caller's; the next state and the list of what it takes are those of another path.
+    expect(container.querySelector("[data-status='Draft']")).toHaveTextContent("Bozza");
+    expect(screen.getByText("Il contratto lo prepara un servizio: segui la pratica.")).toBeInTheDocument();
+    expect(screen.queryByText("Il contratto è in preparazione: non è ancora stato inviato alla firma.")).not.toBeInTheDocument();
+    expect(screen.queryByText("In attesa di firma")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Per passare a/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
+
+  it("StatusExplainer_SentenceOfTheCallerCompact_IsTheOnlyTextAndHasNoNeedSentence", () => {
+    const { container } = render(<StatusExplainer kind="lease" status="Draft" compact explain="Il contratto lo prepara un servizio." />);
+
+    expect(container.querySelector("p")?.textContent).toBe("Il contratto lo prepara un servizio.");
+    expect(screen.queryByText("In attesa di firma")).not.toBeInTheDocument();
+  });
+
+  it("StatusExplainer_NoSentenceOfTheCaller_IsTheDictionarysAsBefore", () => {
+    render(<StatusExplainer kind="lease" status="Draft" explain={undefined} />);
+
+    expect(screen.getByText("Il contratto è in preparazione: non è ancora stato inviato alla firma.")).toBeInTheDocument();
+    expect(screen.getByText("In attesa di firma")).toBeInTheDocument();
+    expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(3);
+  });
+
   it("StatusExplainer_SupplierPointOfView_UsesTheSuppliersSentencesAndNames", () => {
     render(<StatusExplainer kind="request" status="Richiesto" perspective="supplier" />);
 

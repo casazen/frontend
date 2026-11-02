@@ -1,10 +1,13 @@
 import { ApiClient } from '@/api/client';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import { LEASE_STATUSES } from '@/types/lease.types';
 import type {
   CfAccessResponse,
   CfCheckoutResponse,
   CfLinkResponse,
   CfPracticeLookupResponse,
   CfStatusResponse,
+  CfSyncResponse,
 } from '@/types/concordatofacile.types';
 
 /** ConcordatoFacile one-time payment and access (ADR-005). */
@@ -56,6 +59,27 @@ export const ConcordatoFacileApi = {
    */
   getStatus: (leaseId: string): Promise<CfStatusResponse> =>
     ApiClient.get<CfStatusResponse>(`/leases/${leaseId}/concordatofacile/status`),
+
+  /**
+   * Moves the lease of the guided service along with its practice (CF-DONE; needs `lease.sign` and `lease.register` on the lease: 403
+   * otherwise, 404 `lease_not_found` for another org's). Idempotent, nothing in the body: the server marks an old draft whose form was
+   * opened as the service's, reads the uploaded contract file into the draft, imports it as signed once the practice says it is signed and
+   * the data suffice, and declares the registration from the uploaded receipt. It answers where the lease stands and its status now.
+   */
+  sync: async (leaseId: string): Promise<CfSyncResponse> => {
+    const data = await ApiClient.post<unknown>(`/leases/${leaseId}/concordatofacile/sync`);
+    const answer = data as Partial<Record<keyof CfSyncResponse, unknown>> | null;
+    if (
+      typeof answer !== 'object' ||
+      answer === null ||
+      typeof answer.state !== 'string' ||
+      typeof answer.leaseStatus !== 'string' ||
+      !(LEASE_STATUSES as readonly string[]).includes(answer.leaseStatus)
+    ) {
+      throw new UnexpectedApiResponseError('/leases/:id/concordatofacile/sync');
+    }
+    return answer as unknown as CfSyncResponse;
+  },
 
   /**
    * Which lease of the org a practice of the partner belongs to (NF-06), for the upload page opened from the button «Carica i dati

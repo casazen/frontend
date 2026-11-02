@@ -1,3 +1,5 @@
+import type { LeaseStatus } from './lease.types';
+
 /** Response from GET /api/leases/{leaseId}/concordatofacile/access (ADR-005-R8). */
 export interface CfAccessResponse {
   /** Whether the user has access to the CF module for this lease. */
@@ -82,6 +84,37 @@ export interface CfPracticeLookupResponse {
   status: CfPracticeStatus | null;
   /** True when the practice is not linked to a lease: the user picks the contract. */
   manualSelectionRequired: boolean;
+}
+
+/**
+ * Where the lease of the guided service stands after `POST /api/leases/{leaseId}/concordatofacile/sync` (CF-DONE): what the server could
+ * do by itself with the documents the person uploaded and the practice, and what the lease waits for.
+ * - `NotApplicable`: not a lease of the service, nothing was done;
+ * - `WaitingForContract`: no contract file uploaded yet;
+ * - `ReadingContract`: the contract file is being read into the draft;
+ * - `WaitingForSignature`: read, but the practice does not say yet that the contract is signed;
+ * - `ContractNeedsData`: read, but the import needs something the reading did not find: the person completes only that;
+ * - `WaitingForReceipt`: the contract is imported (signed), the receipt of the registration is not uploaded yet;
+ * - `ReadingReceipt`: the receipt of the registration is being read;
+ * - `ReceiptNotUsable`: the receipt cannot declare the registration by itself (a scan, a discarded request): the person declares it;
+ * - `Completed`: the registration is declared, the procedure is over.
+ */
+export type CfSyncState =
+  | 'NotApplicable'
+  | 'WaitingForContract'
+  | 'ReadingContract'
+  | 'WaitingForSignature'
+  | 'ContractNeedsData'
+  | 'WaitingForReceipt'
+  | 'ReadingReceipt'
+  | 'ReceiptNotUsable'
+  | 'Completed';
+
+/** Response from POST /api/leases/{leaseId}/concordatofacile/sync (CF-DONE). */
+export interface CfSyncResponse {
+  state: CfSyncState;
+  /** The status of the lease now: it follows the practice (Draft, then Signed once the contract is imported, then Registered). */
+  leaseStatus: LeaseStatus;
 }
 
 /** Response from GET /api/leases/{leaseId}/concordatofacile/status (ADR-008-R15). */

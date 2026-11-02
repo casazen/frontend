@@ -27,6 +27,22 @@ const post = vi.mocked(axios.post);
 /** The address the server signs for the guided form (CF-FLOW): the tab of the browser goes to it. */
 const FORM_URL = 'https://form.example.test/?leaseId=lease-1&signature=abc123';
 
+/** The sync of the lease with its practice (CF-DONE): asked by itself when the sheet of a lease of the guided service opens. */
+const SYNC_URL = '/leases/lease-1/concordatofacile/sync';
+/** What the server answers to it while the lease waits for its contract. */
+const WAITING = { state: 'WaitingForContract', leaseStatus: 'Draft' };
+
+/** Every call of `post` that is not the sync: the ones the gestures of the person make. */
+const gestures = () => post.mock.calls.filter(([url]) => url !== SYNC_URL);
+
+/** `post`: the sync answers as `syncAnswer` says (the lease waits for its contract), any other call as `gesture` says (nothing by default). */
+function mockPost(
+  gesture: (url: string) => Promise<unknown> = () => Promise.resolve(undefined),
+  syncAnswer: () => Promise<unknown> = () => Promise.resolve({ data: WAITING }),
+) {
+  post.mockImplementation((url: string) => (url === SYNC_URL ? syncAnswer() : gesture(url)));
+}
+
 function mockLease(response: () => Promise<unknown>) {
   get.mockImplementation((url: string) =>
     url === '/leases/lease-1' ? response() : Promise.reject(httpError(404)),
@@ -68,19 +84,47 @@ const PRACTICE = { practiceId: 'P-0123456789abcdef', status: 'InProgress', statu
 
 /**
  * A lease with the access to the guided form as `access()` says now (none, by default) and the status of its practices as `status()`
- * answers (none yet, by default); the service answers 404 to anything else.
+ * answers (none yet, by default); the service answers 404 to anything else, the reading of the contract that was uploaded included
+ * unless `reading` says what it is.
  */
 function mockLeaseWithService(
   detail: Parameters<typeof buildDetail>[0],
-  { access = () => accessOf(), status = () => Promise.resolve({ data: NO_PRACTICES }) }: { access?: () => object; status?: () => Promise<unknown> } = {},
+  {
+    access = () => accessOf(),
+    status = () => Promise.resolve({ data: NO_PRACTICES }),
+    reading,
+  }: { access?: () => object; status?: () => Promise<unknown>; reading?: object } = {},
 ) {
   get.mockImplementation((url: string) => {
     if (url === '/leases/lease-1') return Promise.resolve({ data: buildDetail(detail) });
     if (url === '/leases/lease-1/concordatofacile/access') return Promise.resolve({ data: access() });
     if (url === '/leases/lease-1/concordatofacile/status') return status();
+    if (url === '/leases/lease-1/draft/reading' && reading) return Promise.resolve({ data: reading });
     return Promise.reject(httpError(404));
   });
 }
+
+/** The status of a practice that is over: the service says it is registered. */
+const CONCLUDED_PRACTICE = () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, status: 'Registered' }] } });
+
+/** The contract file that was uploaded was read and filled in a field: what the server says of it (names and fates, never a value). */
+const READ_CONTRACT = {
+  state: 'Done',
+  documents: [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Completed', error: null }],
+  fields: [{ field: 'rent', partyId: null, role: null, state: 'Read', confidence: 90, derived: false }],
+  stipulaDate: null,
+  contractDocumentId: 'doc-1',
+};
+
+/** A draft the server marked as the service's after reading its documents: it has dates and a rent now, and no longer looks like a draft with only its property. */
+const readDraft = (): Parameters<typeof buildDetail>[0] => ({
+  ...partnerDraft(),
+  origin: 'Imported',
+  isConcordatoFacileSource: true,
+  startDate: '2026-11-01T00:00:00Z',
+  endDate: '2029-10-31T00:00:00Z',
+  monthlyRent: 595,
+});
 
 /** The main button of the block of the draft, once the server has said what it needs to (a button that is working is not pressed yet). */
 async function mainButton() {
@@ -103,6 +147,7 @@ const partnerDraft = (): Parameters<typeof buildDetail>[0] => ({
 describe('LeaseDetailPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockPost();
     await i18n.changeLanguage('it');
   });
 
@@ -237,8 +282,36 @@ describe('LeaseDetailPage', () => {
     unmount();
 
     // An address of the old page (`?tab=cronologia`) leads to the tab that holds what it showed.
-    renderPage('?tab=cronologia');
+    const { unmount: unmountOld } = renderPage('?tab=cronologia');
     expect(await screen.findAllByTestId('lease-party')).toHaveLength(2);
+    unmountOld();
+
+    // The jobs asked of the suppliers had a tab here: it was taken away, an address that still names it opens the guide.
+    renderPage('?tab=interventi');
+    expect(await screen.findByTestId('lease-guide')).toBeInTheDocument();
+    expect(screen.getByTestId('lease-tab-guida')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('render_TheSheet_HasFiveTabsAndNoTabOfTheJobs_NorAWayToAskForOneInItsMenu', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
+
+    renderPage('?tab=dati');
+
+    await screen.findAllByTestId('lease-party');
+    const tabs = within(screen.getByRole('tablist')).getAllByRole('tab');
+    expect(tabs.map((tab) => tab.getAttribute('data-testid'))).toEqual([
+      'lease-tab-guida',
+      'lease-tab-dati',
+      'lease-tab-documenti',
+      'lease-tab-pagamenti',
+      'lease-tab-scadenze',
+    ]);
+    expect(screen.queryByTestId('lease-tab-interventi')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lease-requests')).not.toBeInTheDocument();
+    // The menu «⋯» offers the ways to somewhere else; «Richiedi intervento» is not one of them any more.
+    fireEvent.keyDown(screen.getByTestId('page-header-more'), { key: 'Enter' });
+    expect(await screen.findByTestId('lease-menu-documents')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-menu-request-job')).not.toBeInTheDocument();
   });
 
   it('render_ConcordatoDraftForThePartner_WaitsForItsContractWithoutDatesOrRentOfTheDraft', async () => {
@@ -277,7 +350,7 @@ describe('LeaseDetailPage', () => {
   // straight into the form, and once the form is sent the status of the practice.
   it('render_ConcordatoDraftForThePartner_NoAccess_TheBoxOfThePrivacyGatesTheButton_ThenItAcceptsAndGoesToThePayment', async () => {
     mockLeaseWithService(partnerDraft(), { access: () => accessOf({ privacyAccepted: false }) });
-    post.mockResolvedValue({ data: accessOf({ privacyAccepted: true }) });
+    mockPost(() => Promise.resolve({ data: accessOf({ privacyAccepted: true }) }));
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
 
@@ -297,15 +370,15 @@ describe('LeaseDetailPage', () => {
 
     // The acceptance is recorded, then the person goes to the page of payment: no link of the form is made without the access.
     expect(await screen.findByTestId('payment-page-stub')).toBeInTheDocument();
-    expect(post).toHaveBeenCalledTimes(1);
-    expect(post.mock.calls[0][0]).toBe('/leases/lease-1/concordatofacile/privacy-acceptance');
+    expect(gestures()).toHaveLength(1);
+    expect(gestures()[0][0]).toBe('/leases/lease-1/concordatofacile/privacy-acceptance');
   });
 
   it('render_ConcordatoDraftForThePartner_AccessActive_TheMainButtonOpensTheFormInThisTabFromTheClick', async () => {
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-    post.mockResolvedValue({ data: { url: FORM_URL } });
+    mockPost(() => Promise.resolve({ data: { url: FORM_URL } }));
     mockLeaseWithService(partnerDraft(), { access: () => accessOf(ACTIVE) });
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
@@ -320,8 +393,8 @@ describe('LeaseDetailPage', () => {
 
     // One call for the link, then this tab (not a new window, no page in between) goes to the address the server signed.
     await waitFor(() => expect(assign).toHaveBeenCalledWith(FORM_URL));
-    expect(post).toHaveBeenCalledTimes(1);
-    expect(post.mock.calls[0][0]).toBe('/leases/lease-1/concordatofacile/link');
+    expect(gestures()).toHaveLength(1);
+    expect(gestures()[0][0]).toBe('/leases/lease-1/concordatofacile/link');
     expect(open).not.toHaveBeenCalled();
     expect(screen.queryByTestId('payment-page-stub')).not.toBeInTheDocument();
     open.mockRestore();
@@ -347,7 +420,7 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('lease-partner-proceed')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();
     expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
-    expect(post).not.toHaveBeenCalled();
+    expect(gestures()).toHaveLength(0);
     // The practice is with the supplier, not waiting for the person: nothing sends them to their mailbox.
     expect(screen.queryByTestId('lease-partner-hint')).not.toBeInTheDocument();
   });
@@ -448,7 +521,7 @@ describe('LeaseDetailPage', () => {
   it('render_ConcordatoDraftForThePartner_LinkRefusedForThePrivacyNotice_AsksForTheBoxAndShowsNoError', async () => {
     let accepted = true;
     mockLeaseWithService(partnerDraft(), { access: () => accessOf({ ...ACTIVE, privacyAccepted: accepted }) });
-    post.mockImplementation(() => {
+    mockPost(() => {
       accepted = false; // the server does not have the notice: the access, read again, says so
       return Promise.reject(httpError(409, { code: 'concordatofacile_privacy_not_accepted' }));
     });
@@ -458,6 +531,125 @@ describe('LeaseDetailPage', () => {
 
     expect(await screen.findByTestId('lease-partner-privacy')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-open-error')).not.toBeInTheDocument();
+  });
+
+  // CF-DONE: the lease of the guided service follows its practice. The sheet shows the state of the practice and never asks for the data of
+  // the contract, which are read from the documents; the server moves the lease on (reads the documents into it, imports the contract as
+  // signed, declares the registration) and the sheet reads the lease again when it did.
+  it('render_ServiceDraft_PracticeConcluded_AsksTheServerToMoveItOnOnce_SaysToUploadTheDocumentsAndNeverToFillInData', async () => {
+    mockLeaseWithService(partnerDraft(), { access: () => accessOf({ ...ACTIVE, ...OPENED }), status: CONCLUDED_PRACTICE });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    expect(await screen.findByTestId('lease-partner-sentence')).toHaveTextContent(i18n.t('guidedContract.concluded'));
+    expect(within(screen.getByTestId('lease-partner-status')).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'Registered');
+    await waitFor(() => expect(post.mock.calls.filter(([url]) => url === SYNC_URL)).toHaveLength(1));
+    // No way into the wizard of the draft, and no gesture of the person: only the sync, asked by the sheet itself.
+    expect(screen.queryByTestId('lease-continue-draft')).not.toBeInTheDocument();
+    expect(gestures()).toHaveLength(0);
+    expect(screen.getByTestId('lease-partner-upload')).toBeInTheDocument();
+  });
+
+  it('render_ServiceDraft_StatusExplainer_SaysTheServicePreparesTheContract_WithoutTheChecklistOfTheDataToFillIn', async () => {
+    mockLeaseWithService(partnerDraft());
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+    fireEvent.click(await screen.findByTestId('lease-status-toggle'));
+
+    const explainer = await screen.findByTestId('lease-status-explainer');
+    expect(explainer).toHaveTextContent(i18n.t('leaseSheet.status.serviceDraft'));
+    expect(within(explainer).queryAllByRole('listitem')).toHaveLength(0);
+    for (const item of i18n.t('status.lease.Draft.need', { returnObjects: true }) as unknown as string[]) {
+      expect(explainer).not.toHaveTextContent(item);
+    }
+    expect(explainer.textContent).not.toMatch(/partner|concordato\s*facile/i);
+  });
+
+  it('render_Draft_NotTheServices_StatusExplainerKeepsItsChecklist', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail() }));
+
+    renderPage('?tab=dati');
+    fireEvent.click(await screen.findByTestId('lease-status-toggle'));
+
+    const explainer = await screen.findByTestId('lease-status-explainer');
+    expect(within(explainer).getAllByRole('listitem').length).toBeGreaterThan(0);
+    expect(explainer).not.toHaveTextContent(i18n.t('leaseSheet.status.serviceDraft'));
+  });
+
+  it('render_ServiceDraftWithItsDataRead_ShowsTheCardOfThePractice_NotTheWayIntoTheWizard', async () => {
+    // The server read the documents into the draft: it has dates and a rent and no longer looks like a draft with only its property.
+    mockLeaseWithService(readDraft(), {
+      access: () => accessOf({ ...ACTIVE, ...OPENED }),
+      status: CONCLUDED_PRACTICE,
+      reading: { state: 'None', documents: [], fields: [], stipulaDate: null, contractDocumentId: null },
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    expect(await screen.findByTestId('lease-partner-status')).toBeInTheDocument();
+    expect(screen.getByTestId('lease-partner-draft')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-continue-draft')).not.toBeInTheDocument();
+    // The step «Completa la bozza» is not laid over it either: the card is its one voice.
+    expect(screen.queryByTestId('lease-now')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['WaitingForSignature', 'cfDocuments.import.waitingForSignature', 'outline'],
+    ['ContractNeedsData', 'cfDocuments.import.needsData', 'default'],
+  ] as const)('render_ServiceDraftWithItsContractRead_Sync%s_TheOneCardShowsThePracticeAndWhatItWaitsFor', async (state, key) => {
+    mockLeaseWithService(readDraft(), { access: () => accessOf({ ...ACTIVE, ...OPENED }), status: CONCLUDED_PRACTICE, reading: READ_CONTRACT });
+    mockPost(undefined, () => Promise.resolve({ data: { state, leaseStatus: 'Draft' } }));
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    const panel = await screen.findByTestId('cf-import-panel');
+    // The practice stays in view when the contract arrives; one highlighted block, never two.
+    expect(await within(panel).findByTestId('lease-partner-status')).toBeInTheDocument();
+    expect(within(panel).getByTestId('lease-partner-practice')).toHaveTextContent('Pratica P-0123456789abcdef');
+    await waitFor(() => expect(within(panel).getByTestId('cf-import-description')).toHaveTextContent(i18n.t(key)));
+    expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
+    expect(panel.textContent).not.toMatch(/partner|concordato\s*facile/i);
+    // Waiting for the practice, the button is only the way to do it by hand (quiet) and there is nothing to check yet; with data missing the
+    // button is the thing to do (main) and the invitation to check what was read and complete the rest stays.
+    expect(within(panel).getByTestId('cf-import-open')).toHaveClass(state === 'WaitingForSignature' ? 'border-input' : 'bg-primary');
+    expect(within(panel).queryByTestId('lease-reading-done') !== null).toBe(state === 'ContractNeedsData');
+  });
+
+  it('render_ServiceDraft_TheServerMovesItOn_TheSheetReadsTheLeaseAgain_TheDraftBecomesTheRegisteredContractAndItsCardIsGone', async () => {
+    let registered = false;
+    get.mockImplementation((url: string) => {
+      if (url === '/leases/lease-1') {
+        return Promise.resolve({ data: buildDetail(registered ? { ...readDraft(), status: 'Registered' } : partnerDraft()) });
+      }
+      if (url === '/leases/lease-1/concordatofacile/access') return Promise.resolve({ data: accessOf({ ...ACTIVE, ...OPENED }) });
+      if (url === '/leases/lease-1/concordatofacile/status') return CONCLUDED_PRACTICE();
+      return Promise.reject(httpError(404));
+    });
+    mockPost(undefined, () => {
+      registered = true; // the server read the documents, imported the contract and declared the registration
+      return Promise.resolve({ data: { state: 'Completed', leaseStatus: 'Registered' } });
+    });
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    await waitFor(() => expect(screen.getByTestId('lease-status-toggle')).toHaveTextContent('Registrato'));
+    expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cf-import-panel')).not.toBeInTheDocument();
+    // Registered, the sheet follows nothing any more: the sync is not asked again.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(post.mock.calls.filter(([url]) => url === SYNC_URL)).toHaveLength(1);
+  });
+
+  it('render_ServiceDraft_ServerRefusesTheSync_TheSheetIsTheSheetItWas', async () => {
+    mockLeaseWithService(partnerDraft(), { access: () => accessOf({ ...ACTIVE, ...OPENED }), status: CONCLUDED_PRACTICE });
+    mockPost(undefined, () => Promise.reject(httpError(403)));
+
+    renderPageWithFlags('?tab=dati', { concordatoFacile: true });
+
+    expect(await screen.findByTestId('lease-partner-sentence')).toHaveTextContent(i18n.t('guidedContract.concluded'));
+    await waitFor(() => expect(post.mock.calls.filter(([url]) => url === SYNC_URL)).toHaveLength(1));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lease-load-error')).not.toBeInTheDocument();
   });
 
   it('render_ConcordatoLease_ServiceOff_ShowsNoPaymentPanelAndAsksNothingOfTheService', async () => {
@@ -480,6 +672,8 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('cf-entry-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-draft')).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
+    // CF-DONE: nor is the server asked to move it on with a practice it has none of.
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {

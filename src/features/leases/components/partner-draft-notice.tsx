@@ -5,14 +5,14 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { CfStatusBadge } from '@/components/cf-status-badge';
 import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getProblemMessage } from '@/lib/api-errors';
-import { formatDateTime } from '@/lib/utils';
-import { isCfPrivacyNotAccepted, useCfAcceptPrivacy, useCfAccess, useCfStatus, useOpenCfForm } from '@/queries/use-concordatofacile';
-import type { CfAccessResponse, CfPracticeResponse, CfPracticeStatus } from '@/types/concordatofacile.types';
+import { isCfPrivacyNotAccepted, useCfAcceptPrivacy, useOpenCfForm } from '@/queries/use-concordatofacile';
+import type { CfAccessResponse, CfPracticeResponse, CfPracticeStatus, CfSyncState } from '@/types/concordatofacile.types';
+import { useCfPractices } from '../lib/cf-practices';
 import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
+import { PracticeStatusLine } from './practice-status';
 
 /**
  * A button of this block: the whole width of a phone (360 px) and a label that may take two lines instead of pushing the page
@@ -21,20 +21,8 @@ import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
 const BUTTON = 'h-auto min-h-10 w-full whitespace-normal py-2 text-center sm:w-auto';
 const BUTTONS = 'flex flex-col gap-2 sm:flex-row sm:flex-wrap';
 
-/** A practice of the partner that is closed without an attestation: the form can be filled in again. Any other one is under way or done. */
-const CLOSED = 'ClosedWithoutAttestation';
-
-/**
- * The statuses in which the practice waits for the person and not for the supplier: a request for data or documents was e-mailed to
- * them (`AwaitingUser`), or the practice stopped for want of an answer (`Suspended`). Nothing else in the sheet would send them to their mailbox.
- */
-const WAITS_FOR_THE_PERSON: readonly CfPracticeStatus[] = ['AwaitingUser', 'Suspended'];
-
-/** The date of a practice as the person reads it; nothing for a value that is not a date (the sheet never fails on the partner's data). */
-function changedOn(value: string): string | null {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : formatDateTime(date);
-}
+/** The statuses in which the practice is over and the documents are with the person: the sentence under the status says to upload them. */
+const CONCLUDED: readonly CfPracticeStatus[] = ['Attested', 'Registered'];
 
 /** The block: its title and, where the form is still to be filled in, what it is about. */
 function NoticeFrame({ about = true, children }: { about?: boolean; children: ReactNode }) {
@@ -66,27 +54,20 @@ function UploadLink({ leaseId, primary = false }: { leaseId: string; primary?: b
 /**
  * The form is sent and its practice is not closed: where it stands (the status the server read), and nothing that opens the form
  * again. A second visit to the form after the sending makes a second practice, and for a practice already attested no link is made.
- * What is left to do is to upload the documents when they arrive.
+ * What is left to do is to upload the documents when they arrive; the data of the contract are never asked, they are read from them
+ * (CF-DONE). With the practice over the sentence says so, and while the documents are being read it says that.
  */
-function StatusView({ leaseId, practice }: { leaseId: string; practice: CfPracticeResponse }) {
+function StatusView({ leaseId, practice, syncState }: { leaseId: string; practice: CfPracticeResponse; syncState?: CfSyncState }) {
   const { t } = useTranslation();
-  const changed = changedOn(practice.statusChangedAt);
+  let sentence = t('guidedContract.sent');
+  if (CONCLUDED.includes(practice.status)) sentence = t('guidedContract.concluded');
+  if (syncState === 'ReadingContract') sentence = t('guidedContract.readingDocuments');
   return (
     <NoticeFrame about={false}>
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid="lease-partner-status">
-        <span className="text-foreground/70">{t('guidedContract.statusLabel')}</span>
-        <CfStatusBadge status={practice.status} />
-        {changed ? <span className="text-foreground/70">{t('guidedContract.lastChange', { date: changed })}</span> : null}
+      <PracticeStatusLine practice={practice} />
+      <p className="text-sm" data-testid="lease-partner-sentence">
+        {sentence}
       </p>
-      <p className="text-xs text-foreground/70" data-testid="lease-partner-practice">
-        {t('leaseRound.practice.number', { id: practice.practiceId })}
-      </p>
-      {WAITS_FOR_THE_PERSON.includes(practice.status) ? (
-        <p className="text-sm font-medium" data-testid="lease-partner-hint">
-          {t(`guidedContract.hint.${practice.status}`)}
-        </p>
-      ) : null}
-      <p className="text-sm">{t('guidedContract.sent')}</p>
       {practice.comuneDiffersFromLink ? <p className="text-sm font-medium" data-testid="lease-partner-comune">{t('guidedContract.comuneDiffers')}</p> : null}
       <div className={BUTTONS}>
         <UploadLink leaseId={leaseId} primary />
@@ -209,18 +190,10 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
 }
 
 /** The service is on: the access and, where the form was opened before, the status of its practice decide what the block offers. */
-function LiveNotice({ leaseId }: { leaseId: string }) {
-  const access = useCfAccess(leaseId);
-  const opened = access.data?.hasAccess === true && Boolean(access.data.linkOpenedAt);
-  // Asked only where there is an access and the form was opened at least once: before that there is nothing to read.
-  const status = useCfStatus(leaseId, { enabled: opened });
-  const running = status.data?.practices.find((practice) => practice.status !== CLOSED);
-  // No practice under way: the last one that was closed (the newest), to say what became of it.
-  const closed = status.data?.practices
-    .filter((practice) => practice.status === CLOSED)
-    .sort((a, b) => (Date.parse(b.statusChangedAt) || 0) - (Date.parse(a.statusChangedAt) || 0))[0];
+function LiveNotice({ leaseId, syncState }: { leaseId: string; syncState?: CfSyncState }) {
+  const { access, opened, status, running, closed } = useCfPractices(leaseId);
 
-  if (running) return <StatusView leaseId={leaseId} practice={running} />;
+  if (running) return <StatusView leaseId={leaseId} practice={running} syncState={syncState} />;
 
   return (
     <FormView
@@ -238,16 +211,17 @@ function LiveNotice({ leaseId }: { leaseId: string }) {
  * What a canone concordato draft made for the partner waits for, and the status page of its practice (CF-FLOW): the ONE highlighted
  * block of the sheet, with this precedence:
  *  - service off: the guided form is not available yet (button disabled);
- *  - a contract document uploaded: `CfImportPanel` takes the place of this block (the caller);
+ *  - a contract document uploaded: `CfImportPanel` takes the place of this block (the caller), with the status of the practice in it;
  *  - the form was sent and its practice is not closed: its status and «Carica i documenti» — no button that opens the form again;
  *  - otherwise the privacy notice (once), the main button and «Carica i documenti» (`FormView`).
- * The person tells nobody anything: the link that opens the form carries the reference of the contract.
+ * The person tells nobody anything: the link that opens the form carries the reference of the contract. `syncState` is what the server
+ * said last about the documents (`useCfCompletion`, CF-DONE).
  */
-export function PartnerDraftNotice({ leaseId }: { leaseId: string }) {
+export function PartnerDraftNotice({ leaseId, syncState }: { leaseId: string; syncState?: CfSyncState }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
 
-  if (flags.concordatoFacile) return <LiveNotice leaseId={leaseId} />;
+  if (flags.concordatoFacile) return <LiveNotice leaseId={leaseId} syncState={syncState} />;
 
   return (
     <NoticeFrame>

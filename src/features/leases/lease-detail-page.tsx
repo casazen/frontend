@@ -1,5 +1,5 @@
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
-import { useContext, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -13,8 +13,6 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
-import { WorkspaceContext } from '@/contexts/workspace-context';
-import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { useLease, useLeaseListStage, useLeaseNextStep } from '@/queries/use-leases';
 import { getHttpStatus } from '@/lib/api-errors';
 import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
@@ -26,24 +24,21 @@ import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
 import { LeaseFiles } from './components/lease-files';
 import { LeaseHistory } from './components/lease-history';
 import { LeaseNowBlock } from './components/lease-now-block';
-import { LeaseRequestsTab } from './components/lease-requests-tab';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { useLeaseSheetMenu } from './components/use-lease-sheet-menu';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { LeaseGuide } from './guide/lease-guide';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { useCfCompletion } from './lib/cf-completion';
 import { useCfDeliveredContract } from './lib/cf-import';
 import { describeLeaseStep } from './lib/lease-next-step';
-import { DEFAULT_LEASE_TAB, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+import { DEFAULT_LEASE_TAB, isServiceDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
 import { useLeaseActions } from './lifecycle/use-lease-actions';
 import { CfImportPanel } from './components/cf-import-panel';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
 const LEASES_PATH = '/app/long-rent/leases';
-
-/** The statuses of a lease signed by every party: from then on there is a tenancy a job can be asked for (a draft may still go away). */
-const CAN_ASK_FOR_JOBS: readonly LeaseStatus[] = ['Signed', 'RegistrationPending', 'SentToProvider', 'Registered'];
 
 /** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
 function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
@@ -81,37 +76,38 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 }
 
 /**
- * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then six tabs
- * (Guida, Dati, Documenti, Pagamenti, Scadenze, Interventi: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
+ * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
+ * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
- * The tab `interventi` (LR-03c) lists the jobs asked of the suppliers for this contract and asks for a new one, ready with the property and
- * the lease. The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, ask for a job, go to the documents)
+ * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
  * and then what can be done to the lease while it lives (delete the draft, record a notice, end it early…, LR-10), which opens from the
- * address too (`?azione=`).
+ * address too (`?azione=`). The jobs asked of the suppliers are followed in the area «Interventi», not here.
+ *
+ * The lease of the guided service (CF-DONE) follows its practice: the sheet shows the state of the practice and never asks for the data of
+ * the contract, which are read from the documents the service delivers; as soon as the practice and the documents allow it the draft
+ * becomes the signed and then the registered contract by itself (`useCfCompletion`), and its card is gone.
  */
 function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: LeaseNextStep | null; stage: LeaseStage | undefined }) {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
-  // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen. Its
-  // notice is its one voice, so the step of the server is not laid over it.
-  const partnerDraft = isPartnerDraft(lease);
-  // The contract the partner delivered, uploaded to that draft (CF-IMPORT): the notice that waited for it gives way to the one that
-  // goes on (where the reading stands and «Completa e importa il contratto»), which is then the one voice of the draft, and the way
-  // in to the partner's service (the practice is done) is not offered any more. Null for any lease that is not that draft.
+  // A concordato draft of the guided service (the one made for it, or one the server marked as its own): the contract comes from the
+  // service, not from the signature panel of CasaZen, and no data of it is typed. The card is its one voice, so the step of the server is
+  // not laid over it.
+  const serviceDraft = isServiceDraft(lease);
+  // The contract the service delivered, uploaded to that draft (CF-IMPORT): the card that waited for it gives way to the one that goes on
+  // (the practice, where the reading stands and «Completa e importa il contratto»), which is then the one voice of the draft, and the way
+  // in to the service (the practice is done) is not offered any more. Null for any lease that is not that draft.
   const cfContract = useCfDeliveredContract(lease);
-  const step = partnerDraft || cfContract ? null : nextStep;
+  // Keeps the lease moving along with its practice: reads the uploaded documents into the draft, imports the contract as signed and declares
+  // the registration when the practice and the documents allow it, and asks the sheet to read the lease again when it changed.
+  const completion = useCfCompletion(lease);
+  const step = serviceDraft || cfContract ? null : nextStep;
   // The sheet opens on the guide; the button of «Cosa devi fare ora» leads to the tab where its step is done (an address with `?tab=`
   // is always obeyed, the old names of the tabs too).
   const tab = leaseTabOf(searchParams.get('tab'), DEFAULT_LEASE_TAB);
   const [explainOpen, setExplainOpen] = useState(false);
   const explainId = useId();
-  // A job for this contract: who may write the properties of the area, once the contract is signed. Without a workspace (a page rendered on
-  // its own) nothing is hidden and the server decides.
-  const workspace = useContext(WorkspaceContext);
-  const [requestOpen, setRequestOpen] = useState(false);
-  const canAsk = CAN_ASK_FOR_JOBS.includes(lease.status) && (workspace ? workspace.hasPermission('long-rent', 'property.write') : true);
-  const askForJob = canAsk ? () => setRequestOpen(true) : undefined;
 
   const parties = lease.parties ?? [];
   const showQuestura = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
@@ -126,12 +122,11 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
     { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
     { value: 'pagamenti', label: t('leaseSheet.tabs.payments'), testId: 'lease-tab-pagamenti' },
     { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
-    { value: 'interventi', label: t('leaseSheet.tabs.requests'), testId: 'lease-tab-interventi' },
   ];
 
   const title = leaseTitle(lease, i18n.language, t);
   const actions = useLeaseActions(lease, { tenant: title, property: lease.property?.name ?? t('leaseList.property.unknown') });
-  const links = useLeaseSheetMenu(lease, { partnerDraft, onRequest: askForJob });
+  const links = useLeaseSheetMenu(lease, { serviceDraft });
   // What changes the lease comes after what only takes somewhere, apart; the one that destroys is the last of the menu (LR-10).
   const menu: PageHeaderMenuItem[] = actions.menu.length > 0 ? [...links, { separator: true }, ...actions.menu] : links;
 
@@ -147,14 +142,18 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
 
       {explainOpen ? (
         <div id={explainId} data-testid="lease-status-explainer" className="border-s-2 border-border ps-4">
-          <StatusExplainer kind="lease" status={lease.status} />
+          <StatusExplainer kind="lease" status={lease.status} explain={serviceDraft ? t('leaseSheet.status.serviceDraft') : undefined} />
         </div>
       ) : null}
 
       {now ? <LeaseNowBlock step={now} /> : null}
 
-      {cfContract ? <CfImportPanel leaseId={lease.id} reading={cfContract} /> : partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
-      {lease.status === 'Draft' && !partnerDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
+      {cfContract ? (
+        <CfImportPanel leaseId={lease.id} reading={cfContract} syncState={completion.state} />
+      ) : serviceDraft ? (
+        <PartnerDraftNotice leaseId={lease.id} syncState={completion.state} />
+      ) : null}
+      {lease.status === 'Draft' && !serviceDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
       {/* One column under 780 px of room (measured on this box, not on the screen: the menu takes part of it). */}
       <div className="@container min-w-0">
@@ -162,27 +161,15 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB}>
             {tab === 'guida' && <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />}
             {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
-            {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
+            {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{serviceDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showQuestura} />}
-            {tab === 'interventi' && <LeaseRequestsTab leaseId={lease.id} onRequest={askForJob} />}
           </Tabs>
           <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />
         </div>
       </div>
 
       {actions.dialogs}
-      {/* Mounted when asked, so every request starts from nothing; the property and the lease are the ones of this sheet. */}
-      {requestOpen ? (
-        <ServiceRequestForm
-          propertyId={lease.propertyId}
-          leaseId={lease.id}
-          context="long-rent"
-          open
-          onOpenChange={(open) => !open && setRequestOpen(false)}
-          hideTrigger
-        />
-      ) : null}
     </div>
   );
 }

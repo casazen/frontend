@@ -14,6 +14,12 @@ export interface StatusExplainerProps<K extends StatusKind> {
   compact?: boolean;
   /** Which items of "what is needed" are already done (from 0): they get a check, and are read as done. */
   done?: ReadonlyArray<number>;
+  /**
+   * A sentence of the caller in place of the dictionary's, for a state that means something else in this place (a draft that is not
+   * written in CasaZen but by a service). The state keeps its badge; the next state and the list of what it takes to get there, which
+   * are those of the dictionary, are left out: they would describe another path.
+   */
+  explain?: string;
   /** What to do about it: one or two buttons (`Button`), under the text. */
   actions?: React.ReactNode;
   className?: string;
@@ -31,18 +37,23 @@ function lowerFirst(text: string): string {
  *
  *     <StatusExplainer kind="lease" status={lease.status} actions={<Button>...</Button>} />
  */
-export function StatusExplainer<K extends StatusKind>({ kind, status, perspective = "host", compact = false, done = [], actions, className }: StatusExplainerProps<K>) {
+export function StatusExplainer<K extends StatusKind>({ kind, status, perspective = "host", compact = false, done = [], explain, actions, className }: StatusExplainerProps<K>) {
   const { t, i18n } = useTranslation();
   const view = getStatusView(kind, status, perspective, t, i18n);
-  const missing = view.need.filter((_, index) => !done.includes(index));
+  // A sentence of the caller replaces the dictionary's, and with it the path the dictionary describes (the next state and what it takes).
+  const own = explain !== undefined;
+  const sentence = own ? explain : view.explain;
+  const next = own ? null : view.next;
+  const need = own ? [] : view.need;
+  const missing = need.filter((_, index) => !done.includes(index));
 
   // The state after this one, in the same words: a quieter badge, never the same color as the current one.
-  const nextBadge = view.next ? (
+  const nextBadge = next ? (
     <>
       <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
       <span className="sr-only">{t("status.explainer.next")}</span>
       <span className="inline-flex max-w-full items-center rounded-full px-3 py-1 text-sm font-semibold text-foreground ring-1 ring-inset ring-border">
-        <span className="min-w-0 break-words">{view.next.label}</span>
+        <span className="min-w-0 break-words">{next.label}</span>
       </span>
     </>
   ) : null;
@@ -52,21 +63,21 @@ export function StatusExplainer<K extends StatusKind>({ kind, status, perspectiv
       <div className={cn("min-w-0 space-y-1.5", className)} data-status-explainer="compact">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge kind={kind} status={status} perspective={perspective} />
-          {view.next && (
+          {next && (
             <>
               <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
               <span className="sr-only">{t("status.explainer.next")}</span>
-              <span className="min-w-0 break-words text-sm font-medium">{view.next.label}</span>
+              <span className="min-w-0 break-words text-sm font-medium">{next.label}</span>
             </>
           )}
         </div>
-        {(view.explain || (view.next && missing.length > 0)) && (
+        {(sentence || (next && missing.length > 0)) && (
           <p className="break-words text-sm">
-            {view.explain}
-            {view.next && missing.length > 0 && (
+            {sentence}
+            {next && missing.length > 0 && (
               <>
                 {" "}
-                <strong>{t("status.explainer.compactNeed", { next: view.next.label })}</strong> {missing.map(lowerFirst).join("; ")}.
+                <strong>{t("status.explainer.compactNeed", { next: next.label })}</strong> {missing.map(lowerFirst).join("; ")}.
               </>
             )}
           </p>
@@ -82,12 +93,12 @@ export function StatusExplainer<K extends StatusKind>({ kind, status, perspectiv
         <StatusBadge kind={kind} status={status} perspective={perspective} size="lg" />
         {nextBadge}
       </div>
-      {view.explain && <p className="break-words text-sm">{view.explain}</p>}
-      {view.next && view.need.length > 0 && (
+      {sentence && <p className="break-words text-sm">{sentence}</p>}
+      {next && need.length > 0 && (
         <div className="space-y-2">
-          <p className="break-words text-sm font-semibold">{t("status.explainer.need", { next: view.next.label })}</p>
+          <p className="break-words text-sm font-semibold">{t("status.explainer.need", { next: next.label })}</p>
           <ul className="space-y-1.5" role="list">
-            {view.need.map((item, index) => {
+            {need.map((item, index) => {
               const isDone = done.includes(index);
               return (
                 <li key={item} className="flex min-w-0 items-start gap-2 text-sm">

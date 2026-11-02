@@ -8,7 +8,7 @@ import type {
   LongRentRules,
 } from '@/types';
 import { isLeasePlaceholderDate } from '../lib/lease-list-format';
-import { isPartnerDraft } from '../lib/lease-sheet';
+import { isServiceDraft } from '../lib/lease-sheet';
 import { leaseTermEnd } from '../lifecycle/lifecycle-format';
 
 /**
@@ -72,7 +72,7 @@ export interface GuideFacts {
   /** The deposit is above the limit of the rules; `false` while the rules are not known. */
   depositOverMax: boolean;
   extraEu: boolean;
-  /** A draft made for the guided service: its contract, range and attestation come from there. */
+  /** A draft of the guided service (made for it, or marked as its own once the documents it delivers were read): its contract, range and attestation come from there. */
   partnerDraft: boolean;
   /** The contract was prepared with the guided service (also an imported one that came from there). */
   viaService: boolean;
@@ -158,7 +158,7 @@ export function buildGuideFacts(inputs: GuideInputs): GuideFacts {
     hasDeposit: (lease.securityDeposit ?? 0) > 0,
     depositOverMax: !!rules && depositMonths !== null && depositMonths > rules.depositMaxRents + MONTHS_EPSILON,
     extraEu: lease.hasExtraEUTenant || (lease.parties ?? []).some((party) => party.role === 'Tenant' && party.isExtraEU),
-    partnerDraft: isPartnerDraft(lease),
+    partnerDraft: isServiceDraft(lease),
     viaService: lease.isConcordatoFacileSource === true,
     registered,
     hasReceipt: lease.registration?.hasReceipt === true,

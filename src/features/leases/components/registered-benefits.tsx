@@ -25,7 +25,7 @@ import { LeaseDocumentUploadDialog } from './lease-document-upload-dialog';
 const ROW_BUTTON = 'h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight sm:shrink-0';
 
 interface RegisteredBenefitsProps {
-  lease: Pick<LeaseDetail, 'id' | 'hasSignedPdf' | 'registration'>;
+  lease: Pick<LeaseDetail, 'id' | 'hasSignedPdf' | 'registration' | 'isConcordatoFacileSource'>;
   /**
    * The block is the one highlighted block of the screen (default), or it comes after another step that is more urgent and is only a
    * quiet section under it: a sheet shows one highlighted block, never two.
@@ -57,7 +57,8 @@ export function RegisteredBenefits({ lease, calm = false, plain = false }: Regis
   const [uploadOpen, setUploadOpen] = useState(false);
   const [downloading, setDownloading] = useState<BenefitDocument | null>(null);
 
-  const ids = benefitDocuments(documents.data);
+  // The lease of the guided service gets its contract and attestation in one file: any contract file uploaded to it is that file (CF-DONE).
+  const ids = benefitDocuments(documents.data, lease.isConcordatoFacileSource === true);
   const together = ids.length === 2;
   const rows = ids.map((id) => ({ id, source: benefitSource(id, lease, documents.data) }));
   const missing = rows.filter((row) => row.source === null).length;
