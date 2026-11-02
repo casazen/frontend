@@ -77,9 +77,12 @@ describe('getManifestCrumbs (UI-05)', () => {
   });
 
   it('getManifestCrumbs_PageAboveIsBehindAFlag_NeedsTheFlagOn', () => {
-    expect(crumbs('short-rent', '/app/short-rent/ota/create')).toEqual([]);
-    expect(crumbs('short-rent', '/app/short-rent/ota/create', { features: { otaPartnerApi: false } })).toEqual([]);
+    // OTA is a tab of Immobili: with its flag off the step of OTA is left out, the one of the section stays.
+    const withoutOta = [{ label: 'Immobili', to: '/app/short-rent/properties' }, { label: 'Questa pagina' }];
+    expect(crumbs('short-rent', '/app/short-rent/ota/create')).toEqual(withoutOta);
+    expect(crumbs('short-rent', '/app/short-rent/ota/create', { features: { otaPartnerApi: false } })).toEqual(withoutOta);
     expect(crumbs('short-rent', '/app/short-rent/ota/create', { features: { otaPartnerApi: true } })).toEqual([
+      { label: 'Immobili', to: '/app/short-rent/properties' },
       { label: 'OTA', to: '/app/short-rent/ota' },
       { label: 'Questa pagina' },
     ]);

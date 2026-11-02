@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser } from '@/queries/use-users';
 import { useProperties } from '@/queries/use-properties';
@@ -38,12 +37,9 @@ export function VetrinaPage() {
     <AppShell>
       {orgBookingPath ? (
         <div className="-m-4 flex h-[calc(100svh-var(--header-height))] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-var(--header-height)-var(--bottom-nav-height))] md:-m-6">
-          <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6">
-            <PageHeader
-              title={t('directBooking.title')}
-              description={t('directBooking.description')}
-              action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
-            />
+          {/* The tabs of the section (the head draws them) sit tight on the preview: the room under them is the padding of this band. */}
+          <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6 [&_nav>div]:mb-0">
+            <PageHeader title={t('directBooking.title')} description={t('directBooking.description')} />
             <div className="mt-3 empty:hidden">
               <SitePublicationBanner />
             </div>
@@ -98,11 +94,7 @@ export function VetrinaPage() {
         </div>
       ) : (
         <div className="w-full">
-          <PageHeader
-            title={t('directBooking.title')}
-            description={t('directBooking.description')}
-            action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
-          />
+          <PageHeader title={t('directBooking.title')} description={t('directBooking.description')} />
           <Card className="mt-6">
             <CardContent className="py-12 text-center">
               <Globe className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useGuestCrmProfiles } from '@/queries/crm';
+import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -50,10 +51,7 @@ export default function GuestList() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('crm.title')}</h1>
-        <p className="text-sm text-foreground/70">{t('crm.description')}</p>
-      </div>
+      <PageHeader title={t('crm.title')} description={t('crm.description')} />
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
