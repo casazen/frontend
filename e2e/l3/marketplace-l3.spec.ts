@@ -1,8 +1,14 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { requireE2eCredentials } from '../helpers/env';
+import { isLocalApi, requireE2eCredentials } from '../helpers/env';
 import { readAccessToken } from '../helpers/auth';
 
 const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 'http://localhost:5000/api';
+
+/**
+ * The test that writes (a request, then its cancellation) runs on a local API only: the cancellation e-mails and pushes the host, and on the
+ * shared test environment that is the person who owns the test account, at every push to develop and every night.
+ */
+const LOCAL_API = isLocalApi(API);
 
 type Auth = Record<string, string>;
 
@@ -83,6 +89,10 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     page,
     request,
   }) => {
+    test.skip(
+      !LOCAL_API,
+      'Creates and cancels a real request, and the cancellation e-mails the host: it runs on a local API only (E2E_LOCAL=1).',
+    );
     const candidate = await findCandidate(request, auth);
     test.skip(
       !candidate,

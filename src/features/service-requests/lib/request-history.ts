@@ -17,7 +17,7 @@ function jobKey(request: ServiceRequest): string {
  * Suppliers that already rejected this job (same property, stay and category) among `requests`, including the one of
  * `request` itself: they are left out of the list when the host asks another supplier (SU-09).
  */
-export function suppliersThatRejected(request: ServiceRequest, requests: ServiceRequest[]): string[] {
+export function suppliersThatRejected(request: ServiceRequest, requests: readonly ServiceRequest[]): string[] {
   const key = jobKey(request);
   const ids = new Set<string>([request.supplierOrgId]);
   for (const other of requests) {
@@ -30,7 +30,7 @@ export function suppliersThatRejected(request: ServiceRequest, requests: Service
  * True when a newer request for the same job is not rejected: the host already asked another supplier, so the rejected
  * one does not offer "ask another supplier" again (it would create a duplicate).
  */
-export function hasReplacement(request: ServiceRequest, requests: ServiceRequest[]): boolean {
+export function hasReplacement(request: ServiceRequest, requests: readonly ServiceRequest[]): boolean {
   const key = jobKey(request);
   return requests.some(
     (other) =>
