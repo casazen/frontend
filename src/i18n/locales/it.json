@@ -12436,6 +12436,50 @@
     }
   },
   "requestWizard": {
+    "assist": {
+      "change": "Cambia",
+      "chosen": "L'AI ha scelto: {{service}}.",
+      "error": "Non riesco a leggere la tua descrizione adesso.",
+      "help": {
+        "body": "Scrivi cosa non funziona e dove, per quando serve e se ci sono orari da rispettare. Non scrivere nomi, telefoni o documenti degli ospiti: all'AI non servono.",
+        "label": "Come descrivere il lavoro",
+        "title": "Un consiglio più preciso"
+      },
+      "none": {
+        "ai_budget_exhausted": "Il consiglio dell'AI non è disponibile al momento: scegli tu il servizio.",
+        "ai_invalid_answer": "Non sono riuscito a darti un consiglio chiaro. Riprova, oppure scegli tu il servizio.",
+        "ai_not_configured": "Il consiglio dell'AI non è disponibile al momento: scegli tu il servizio.",
+        "ai_not_understood": "Non sono riuscito a capire di che lavoro si tratta. Prova a scrivere qualcosa in più (cosa è successo, dove, per quando) oppure scegli tu il servizio.",
+        "ai_unavailable": "Non riesco a darti un consiglio adesso. Riprova tra poco, oppure scegli tu il servizio.",
+        "retry": "Riprova"
+      },
+      "open": "Descrivi a parole",
+      "result": {
+        "casazen_one": "Un fornitore CasaZen della tua zona",
+        "casazen_other": "{{count}} fornitori CasaZen della tua zona",
+        "edit": "Cambia le parole",
+        "external": "Un partner esterno: nella tua zona non ci sono ancora fornitori CasaZen per questo servizio",
+        "note": "Nota per il fornitore",
+        "service": "Servizio",
+        "skip": "Scelgo io",
+        "title": "Ti consiglio",
+        "urgency": "Urgenza",
+        "useCasazen": "Vedi i fornitori",
+        "usePartners": "Vedi i partner",
+        "who": "Chi"
+      },
+      "text": "Descrivi di cosa hai bisogno: scelgo io il servizio, l'urgenza e chi chiamare.",
+      "title": "Preferisci raccontarcelo?",
+      "write": {
+        "close": "Scelgo io",
+        "hint": "Bastano poche righe. Più dettagli dai (dove, da quando, per quando), più preciso è il consiglio.",
+        "label": "Di cosa hai bisogno?",
+        "loading": "Sto leggendo…",
+        "placeholder": "Es. Il rubinetto della cucina perde, serve qualcuno domani mattina",
+        "submit": "Suggerisci con l'AI",
+        "tip": "Aggiungi dove si trova il problema e per quando serve."
+      }
+    },
     "channel": {
       "addComune": "Aggiungi il comune",
       "casazen": {

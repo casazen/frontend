@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { AxiosError, type AxiosResponse } from 'axios';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import i18n from '@/i18n/config';
+import type { ServiceRequestAssist } from '@/types/service-request-assist';
 import {
+  assistOutcome,
   channelOf,
   CUSTOM_SERVICE,
   openingStepFor,
+  REQUEST_NOTES_MAX,
   requestDefaults,
   requestProblemOf,
   requestStepSchemas,
@@ -23,6 +26,10 @@ const SUPPLIER_ID = '9e0f1a2b-3c4d-4e5f-8a6b-7c8d9e0f1a2b';
 
 function values(overrides: Partial<RequestValues> = {}): RequestValues {
   return {
+    assistText: '',
+    aiCategory: '',
+    aiExplanation: '',
+    aiSummary: '',
     category: 'cleaning',
     urgency: 'Normal',
     notes: '',
@@ -213,6 +220,89 @@ describe('the rules of the steps (SR-08b)', () => {
     expect(schemas.service.safeParse({ category: 'cleaning' }).success).toBe(true);
     expect(schemas.proposals.safeParse({ supplierOrgId: '' }).success).toBe(false);
     expect(schemas.proposals.safeParse({ supplierOrgId: SUPPLIER_ID }).success).toBe(true);
+  });
+});
+
+describe('the proposal of the AI as the answers of the wizard (WIZ-AI-REQUEST)', () => {
+  const CATALOG = ['cleaning', 'plumbing'];
+  const noNotes = { notes: '', aiSummary: '' };
+
+  const proposal = (overrides: Partial<ServiceRequestAssist> = {}): ServiceRequestAssist => ({
+    aiUsed: true,
+    reason: null,
+    category: 'plumbing',
+    urgency: 'High',
+    summary: 'Il rubinetto della cucina perde acqua.',
+    explanation: 'Una perdita è un lavoro da idraulico.',
+    channel: 'casazen',
+    casazenSuppliers: 2,
+    ...overrides,
+  });
+
+  it('assistOutcome_ACasazenProposal_FillsTheServiceTheUrgencyAndTheNotes_AndGoesToTheProposals', () => {
+    const outcome = assistOutcome(proposal(), noNotes, CATALOG);
+
+    expect(outcome).toEqual({
+      values: {
+        category: 'plumbing',
+        urgency: 'High',
+        aiCategory: 'plumbing',
+        aiExplanation: 'Una perdita è un lavoro da idraulico.',
+        aiSummary: 'Il rubinetto della cucina perde acqua.',
+        notes: 'Il rubinetto della cucina perde acqua.',
+      },
+      channel: 'casazen',
+      step: 'proposals',
+    });
+  });
+
+  it('assistOutcome_AnExternalProposal_GoesToThePartners', () => {
+    const outcome = assistOutcome(proposal({ channel: 'external', casazenSuppliers: 0 }), noNotes, CATALOG);
+
+    expect(outcome?.channel).toBe('external');
+    expect(outcome?.step).toBe('partners');
+  });
+
+  it('assistOutcome_NotesTheHostWrote_AreKept', () => {
+    const outcome = assistOutcome(proposal(), { notes: 'Portare le chiavi di scorta.', aiSummary: '' }, CATALOG);
+
+    expect(outcome?.values.notes).toBeUndefined();
+    // The choices are still the AI's: only the notes are the host's.
+    expect(outcome?.values.category).toBe('plumbing');
+    expect(outcome?.values.aiSummary).toBe('Il rubinetto della cucina perde acqua.');
+  });
+
+  it('assistOutcome_NotesTheAiWroteBefore_AreReplacedByTheNewSentence', () => {
+    const outcome = assistOutcome(
+      proposal({ summary: 'Perdita dal sifone del lavandino.' }),
+      { notes: 'Il rubinetto della cucina perde acqua.', aiSummary: 'Il rubinetto della cucina perde acqua.' },
+      CATALOG,
+    );
+
+    expect(outcome?.values.notes).toBe('Perdita dal sifone del lavandino.');
+  });
+
+  it('assistOutcome_NoSentence_LeavesTheNotesAlone', () => {
+    const outcome = assistOutcome(proposal({ summary: null }), noNotes, CATALOG);
+
+    expect(outcome?.values.notes).toBeUndefined();
+    expect(outcome?.values.aiSummary).toBe('');
+  });
+
+  it('assistOutcome_NoUrgency_IsNormal_AndALongSentenceIsCutAtTheLimitOfTheNotes', () => {
+    const outcome = assistOutcome(proposal({ urgency: null, summary: 'x'.repeat(REQUEST_NOTES_MAX + 50) }), noNotes, CATALOG);
+
+    expect(outcome?.values.urgency).toBe('Normal');
+    expect(outcome?.values.notes).toHaveLength(REQUEST_NOTES_MAX);
+  });
+
+  it.each([
+    ['the AI is not behind it', { aiUsed: false, reason: 'ai_unavailable' as const, category: null, channel: null }],
+    ['it has no service', { category: null }],
+    ['the service is not in the catalog', { category: 'pool' }],
+    ['it has no channel', { channel: null }],
+  ])('assistOutcome_WhenNothingIsUsable_IsNull (%s)', (_label, overrides) => {
+    expect(assistOutcome(proposal(overrides), noNotes, CATALOG)).toBeNull();
   });
 });
 

@@ -145,12 +145,12 @@ function RequestWizard() {
   // partners: the work is organised on their site, there is nothing to send.
   const steps: WizardStep<RequestValues>[] =
     channel === 'external'
-      ? [property, who, service, { ...describe('partners'), render: () => <PartnersStep /> }]
+      ? [property, who, service, { ...describe('partners'), render: ({ goTo }) => <PartnersStep goTo={goTo} /> }]
       : [
           property,
           who,
           service,
-          { ...describe('proposals'), schema: schemas.proposals, render: () => <ProposalsStep onChannel={changeChannel} /> },
+          { ...describe('proposals'), schema: schemas.proposals, render: ({ goTo }) => <ProposalsStep onChannel={changeChannel} goTo={goTo} /> },
           { ...describe('details'), schema: schemas.details, render: ({ goTo }) => <DetailsStep goTo={goTo} /> },
           { ...describe('review'), render: () => <ReviewStep /> },
         ];

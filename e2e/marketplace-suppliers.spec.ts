@@ -53,9 +53,13 @@ const sampleSuppliers = {
   pageSize: 1,
 };
 
-/** Mocks what the marketplace and the guided request read; `posted` collects the bodies of the requests the page creates. */
+/**
+ * Mocks what the marketplace and the guided request read; `posted` collects the bodies of the requests the page creates and `assisted` the ones the
+ * AI help is asked.
+ */
 async function mockMarketplaceApis(page: Page) {
   const posted: Record<string, unknown>[] = [];
+  const assisted: Record<string, unknown>[] = [];
   await mockPropertiesApi(page, [sampleProperty]);
   await mockCurrentUserWithOrg(page);
   await mockEntitlement(page);
@@ -181,7 +185,31 @@ async function mockMarketplaceApis(page: Page) {
     await route.fallback();
   });
 
-  return { posted };
+  // «Descrivi di cosa hai bisogno» (WIZ-AI-REQUEST): an AI is in effect, and it reads a job as a cleaning that a CasaZen supplier covers. Registered
+  // after the list of the requests above, so that this address is the one it answers.
+  await page.route('**/api/service-requests/assist', async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true }) });
+      return;
+    }
+    assisted.push(route.request().postDataJSON() as Record<string, unknown>);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        aiUsed: true,
+        reason: null,
+        category: 'cleaning',
+        urgency: 'High',
+        summary: 'Pulizia profonda della casa, serve per sabato mattina.',
+        explanation: 'Serve una pulizia profonda e ha una data vicina.',
+        channel: 'casazen',
+        casazenSuppliers: 1,
+      }),
+    });
+  });
+
+  return { posted, assisted };
 }
 
 test.describe('Marketplace suppliers (#340)', () => {
@@ -282,5 +310,40 @@ test.describe('Marketplace suppliers (#340)', () => {
     expect(body.durationMinutes).toBe(120);
     expect(body.notes).toBe('Le chiavi sono nella cassetta.');
     expect(body.scheduledStartUtc).toEqual(expect.any(String));
+  });
+
+  test('the host describes the job in words: the AI proposes the service, and the wizard goes on from there', async ({ page }) => {
+    const { posted, assisted } = await mockMarketplaceApis(page);
+    await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}`, 'short-stay'));
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel', { timeout: 15_000 });
+
+    // Quiet under the two choices; the box opens only when the host wants it.
+    await expect(page.getByTestId('request-assist')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('request-assist-text')).toHaveCount(0);
+    await page.getByTestId('request-assist-open').click();
+    const words = 'Serve una pulizia profonda della casa per sabato mattina';
+    await page.getByTestId('request-assist-text').fill(words);
+    await page.getByTestId('request-assist-submit').click();
+
+    await expect(page.getByTestId('request-assist-result')).toBeVisible();
+    expect(assisted).toEqual([{ propertyId: PROPERTY_ID, text: words }]);
+    await expect(page.getByTestId('request-assist-category')).toHaveText('Pulizie');
+    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore CasaZen');
+    await expect(page.getByTestId('ai-content-notice')).toBeVisible();
+    // The host has decided nothing yet.
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
+
+    await page.getByTestId('request-assist-use').click();
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'proposals');
+    await expect(page.getByTestId('request-ai-choice')).toContainText("L'AI ha scelto: Pulizie.");
+    await page.getByTestId(`request-supplier-${SUPPLIER_ORG_ID}`).check({ force: true });
+    await page.getByTestId('request-next').click();
+
+    // The urgency and the sentence for the supplier are the answers of the details: the host can still change them.
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details');
+    await expect(page.getByTestId('request-urgency-High')).toBeChecked();
+    await expect(page.getByTestId('request-notes')).toHaveValue('Pulizia profonda della casa, serve per sabato mattina.');
+    // Nothing was sent to CasaZen: the request leaves only with the last button.
+    expect(posted).toHaveLength(0);
   });
 });
