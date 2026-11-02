@@ -19,7 +19,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { retryTransientErrors } from '@/lib/query-client';
 import { PAYMENTS_KEY } from './use-payments';
 
-const BOOKINGS_KEY = 'bookings';
+export const BOOKINGS_KEY = 'bookings';
 
 export function useBookings(params?: Record<string, unknown>) {
   return useQuery({

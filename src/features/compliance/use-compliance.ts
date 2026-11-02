@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 
-const COMPLIANCE_KEY = 'compliance';
+export const COMPLIANCE_KEY = 'compliance';
 
 /**
  * Steps of the activation wizard. Always read again from the server when the wizard opens (A5-18): the steps and the

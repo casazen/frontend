@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { InAppNotification } from '@/api/notifications.api';
 import { useAppShell } from '@/components/layout/app-shell-context';
 import { formatAbsolute, formatRelative } from '@/components/shared/timeline/timeline-time';
@@ -17,7 +18,11 @@ import {
   useUnreadNotificationCount,
 } from '@/queries/use-notifications';
 import { badgeText, notificationKind, notificationRoute } from './notification-model';
+import type { NotificationsChange } from './realtime-client';
 import { useNotificationsRealtime } from './use-notifications-realtime';
+
+/** How long the pop-up of a new notification stays: long enough to read it and to use «Apri». */
+const NEW_NOTIFICATION_TOAST_MS = 8_000;
 
 function relativeTime(createdAt: string, locale: string): string {
   const at = new Date(createdAt);
@@ -88,7 +93,19 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   const shell = useAppShell();
   const [open, setOpen] = useState(false);
 
-  const channel = useNotificationsRealtime({ enabled: true, userId, getAccessToken });
+  // A new notification is told on screen as it arrives, with the way to open what it is about: a host with the app open must not
+  // find out from the badge alone. The same event (type and entity) is one pop-up however many times it is sent.
+  const announceNew = (change: NotificationsChange) => {
+    if (change.type === null) return;
+    const route = notificationRoute({ type: change.type, entityId: change.entityId }, shell?.contextKey ?? null);
+    toast(t(notificationKind(change.type).textKey), {
+      id: `notification:${change.type}:${change.entityId ?? ''}`,
+      duration: NEW_NOTIFICATION_TOAST_MS,
+      action: route ? { label: t('notifications.toastOpen'), onClick: () => void navigate(route) } : undefined,
+    });
+  };
+
+  const channel = useNotificationsRealtime({ enabled: true, userId, getAccessToken, onNewNotification: announceNew });
   const count = useUnreadNotificationCount({ pollWhileDisconnected: channel !== 'connected' });
   const unread = count.data ?? 0;
   const list = useNotificationList(open);

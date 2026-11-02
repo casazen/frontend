@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 
@@ -27,6 +27,8 @@ const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, t
 const KINDS: Record<string, NotificationKind> = {
   'new-booking': { icon: BedDouble, textKey: 'notifications.types.newBooking', route: bookingRoute },
   'guest-message': { icon: MessageSquare, textKey: 'notifications.types.guestMessage', route: bookingTab('messages') },
+  // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
+  'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
