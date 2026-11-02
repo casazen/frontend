@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
 import { AREA_ORDER } from '@/config/areas';
-import { getDefaultRoute, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
+import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
 import { isAccountInactiveError } from '@/lib/api-errors';
 import { isOrgBillingAdmin, ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { getFirstOpenablePage } from '@/routes/context-home';
 import {
   deriveContextsFromAccessToken,
   deriveContextsFromRoles,
@@ -63,13 +64,13 @@ const AREAS_WITH_THEIR_OWN_HOME: readonly AppContextKey[] = ['account', 'long-re
  * to the owner and the administrators: the accountant and the property manager hold other permissions of the context. And
  * `/app/long-rent/leases` is the list of leases, while the home of Affitti lunghi is the Panoramica `/app/long-rent` since LR-05
  * (and a collaborator who holds only the properties cannot open either). The home of the area is the first page of its menu that
- * the role may open (AM-04, decision AM-D26).
+ * the role may open (AM-04, decision AM-D26), the profile of the area for a role the menu gives nothing.
  */
 function withAreaHomes(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
   return contexts.map((context) => {
     if (!AREAS_WITH_THEIR_OWN_HOME.includes(context.contextKey)) return context;
-    const home = getVisibleNavEntries(context.contextKey, (_, permission) => context.permissions.includes(permission))[0];
-    return home ? { ...context, defaultRoute: home.path } : context;
+    const home = getFirstOpenablePage(context.contextKey, (_, permission) => context.permissions.includes(permission), {});
+    return home ? { ...context, defaultRoute: home } : context;
   });
 }
 

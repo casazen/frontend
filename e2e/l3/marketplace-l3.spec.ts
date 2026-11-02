@@ -99,15 +99,20 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     await page.goto(`/app/short-rent/marketplace/categories/cleaning?propertyId=${propertyId}`);
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
     await page.getByTestId('marketplace-request-service-btn').click();
-    await expect(page.getByTestId('submit-service-request')).toBeDisabled();
-    await page.getByTestId('service-request-stay').selectOption(stayId);
-    await page.getByTestId('service-request-start-time').fill(startTime);
-    await page.getByTestId('service-request-duration').selectOption('120');
+    // «Richiedi fornitore» opens the guided request on its details: the property, the kind of work and the supplier are known.
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 30_000 });
+    // The time and the length are the host's own (a service of the catalog would go with one of its slots instead), and the stay is a link.
+    await page.getByTestId('request-service-custom').check({ force: true });
+    await page.getByTestId('request-stay').selectOption(stayId);
+    await page.getByTestId('request-start-time').fill(startTime);
+    await page.getByTestId('request-duration').selectOption('120');
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
 
     const created = page.waitForResponse(
       (r) => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/api/service-requests'),
     );
-    await page.getByTestId('submit-service-request').click();
+    await page.getByTestId('request-finish').click();
     const response = await created;
     expect(response.status()).toBe(201);
     const body = (await response.json()) as { id: string; bookingId: string; rentalContext: string };

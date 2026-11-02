@@ -103,7 +103,7 @@ describe('isNavEntryActive for pages that hang from an entry', () => {
 describe('isNavEntryActive on the route manifest', () => {
   const allowAll = () => true;
   const activePath = (contextKey: Parameters<typeof getNavMatchEntries>[0], pathname: string) =>
-    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true }))?.path;
+    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true }))?.path;
 
   it.each([
     ['short-rent', '/app/short-rent', '/app/short-rent'],
@@ -111,21 +111,35 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/bookings/abc', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/bookings/create', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/properties/p1/pricing', '/app/short-rent/properties'],
-    ['short-rent', '/app/short-rent/payments/revenue', '/app/short-rent/payments/revenue'],
+    // The pages of a section (Incassi, Prenotazioni, Immobili...) are tabs: the entry of the section is the one highlighted.
+    ['short-rent', '/app/short-rent/payments/revenue', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/payments/create', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/reports', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/settings/payments', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/alloggiati', '/app/short-rent/compliance'],
     ['short-rent', '/app/short-rent/compliance/cin', '/app/short-rent/compliance'],
     ['short-rent', '/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
     ['short-rent', '/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
-    ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/guests'],
-    ['short-rent', '/app/short-rent/fiscal/wizard', '/app/short-rent/fiscal'],
-    ['short-rent', '/app/short-rent/ota/create', '/app/short-rent/ota'],
-    // Plan and billing are in no menu: no entry stands for them.
+    ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/vetrina'],
+    ['short-rent', '/app/short-rent/guests', '/app/short-rent/bookings'],
+    ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/bookings'],
+    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/bookings'],
+    ['short-rent', '/app/short-rent/reviews', '/app/short-rent/bookings'],
+    ['short-rent', '/app/short-rent/trusted-suppliers', '/app/short-rent/properties'],
+    ['short-rent', '/app/short-rent/channels', '/app/short-rent/properties'],
+    ['short-rent', '/app/short-rent/verifications', '/app/short-rent/approval-queue'],
+    ['short-rent', '/app/short-rent/fiscal/wizard', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/ota/create', '/app/short-rent/properties'],
+    // Plan, billing and the profile are in no menu: no entry stands for them.
     ['short-rent', '/app/short-rent/settings/plan', undefined],
+    ['short-rent', '/app/short-rent/profile', undefined],
     // The Panoramica is the root page of its area (LR-05): highlighted on its own page, and not on every page of the area.
     ['long-rent', '/app/long-rent', '/app/long-rent'],
     ['long-rent', '/app/long-rent/settings/billing', undefined],
-    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/deadlines'],
+    ['long-rent', '/app/long-rent/profile', undefined],
+    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/leases'],
+    ['long-rent', '/app/long-rent/tenants/t1', '/app/long-rent/leases'],
+    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/rents'],
     ['long-rent', '/app/long-rent/leases', '/app/long-rent/leases'],
     // Contratti stays highlighted on the pages of a contract (it was not, as an "exact" entry).
     ['long-rent', '/app/long-rent/leases/new', '/app/long-rent/leases'],

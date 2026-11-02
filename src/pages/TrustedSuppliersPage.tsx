@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,59 +81,58 @@ export function TrustedSuppliersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('supplier.trusted.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('supplier.trusted.description')}</p>
-        </div>
-
-        <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button data-testid="invite-supplier-button">{t('supplier.trusted.invite')}</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="invite-email">{t('supplier.trusted.inviteEmail')}</Label>
-                <Input
-                  id="invite-email"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder={t('supplier.trusted.inviteEmailPlaceholder')}
-                  data-testid="invite-email-input"
-                />
+      <PageHeader
+        title={t('supplier.trusted.title')}
+        description={t('supplier.trusted.description')}
+        action={
+          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="invite-supplier-button">{t('supplier.trusted.invite')}</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email">{t('supplier.trusted.inviteEmail')}</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t('supplier.trusted.inviteEmailPlaceholder')}
+                    data-testid="invite-email-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-properties">{t('supplier.trusted.properties')}</Label>
+                  <Input
+                    id="invite-properties"
+                    value={invitePropertyIds}
+                    onChange={(e) => setInvitePropertyIds(e.target.value)}
+                    placeholder={t('supplier.trusted.propertiesPlaceholder')}
+                    data-testid="invite-properties-input"
+                  />
+                  <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    onClick={handleInvite}
+                    disabled={!inviteEmail || inviteSupplier.isPending}
+                    data-testid="invite-submit-button"
+                  >
+                    {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="invite-properties">{t('supplier.trusted.properties')}</Label>
-                <Input
-                  id="invite-properties"
-                  value={invitePropertyIds}
-                  onChange={(e) => setInvitePropertyIds(e.target.value)}
-                  placeholder={t('supplier.trusted.propertiesPlaceholder')}
-                  data-testid="invite-properties-input"
-                />
-                <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  onClick={handleInvite}
-                  disabled={!inviteEmail || inviteSupplier.isPending}
-                  data-testid="invite-submit-button"
-                >
-                  {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       {!suppliers || suppliers.length === 0 ? (
         <Card data-testid="trusted-suppliers-empty">

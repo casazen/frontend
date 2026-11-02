@@ -6,7 +6,7 @@ export const interventionPath = (id: string) => `${INTERVENTIONS_PATH}/${encodeU
 /** The kind of the global drawer (UI-15) that shows one intervention: the same one the calendar and the Home open. */
 export const INTERVENTION_DRAWER_KIND = 'intervention';
 
-/** «Richiedi un intervento»: the guided procedure in four steps. */
+/** «Richiedi un intervento»: the guided procedure (property, who, service, proposals, details, summary). */
 export const REQUEST_INTERVENTION_PATH = `${INTERVENTIONS_PATH}/request`;
 
 /** What the address of the guided request can start from (every entry point of the app uses the same words). */
@@ -17,6 +17,8 @@ export interface RequestStart {
   /** The day of the work, `yyyy-MM-dd`. */
   date?: string;
   supplierOrgId?: string;
+  /** A service of the supplier's catalog (the page of a supplier): the request starts with it chosen. */
+  serviceId?: string;
   /** A new request after one was made: the finished wizard stays finished at its own address, this makes it another one. */
   again?: string;
 }
@@ -29,6 +31,7 @@ export function requestInterventionPath(propertyId?: string, start: RequestStart
   if (start.type) params.set('type', start.type);
   if (start.date) params.set('date', start.date);
   if (start.supplierOrgId) params.set('supplierOrgId', start.supplierOrgId);
+  if (start.serviceId) params.set('serviceId', start.serviceId);
   if (start.again) params.set('n', start.again);
   const query = params.toString();
   return query ? `${REQUEST_INTERVENTION_PATH}?${query}` : REQUEST_INTERVENTION_PATH;

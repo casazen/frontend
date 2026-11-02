@@ -88,12 +88,7 @@ function SupplierPageBody({ orgId, context }: { orgId: string; context: Marketpl
         <SupplierAbout supplier={supplier} />
         <SupplierServices
           supplier={supplier}
-          onRequest={(service) =>
-            requestIntervention({
-              supplierOrgId: supplier.orgId,
-              service: { id: service.id, name: service.name, category: service.category, durationMinutes: service.durationMinutes },
-            })
-          }
+          onRequest={(service) => requestIntervention({ supplierOrgId: supplier.orgId, service: { id: service.id, category: service.category } })}
         />
       </div>
       <div className="min-w-0 space-y-8">

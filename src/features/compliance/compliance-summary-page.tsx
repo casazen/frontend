@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { ComplianceSummaryWidget } from '@/features/compliance/compliance-summary-widget';
 
 export function ComplianceSummaryPage() {
@@ -10,12 +9,7 @@ export function ComplianceSummaryPage() {
   return (
     <AppShell>
       <div className="space-y-6 md:space-y-8" data-testid="compliance-summary-page">
-        <PageHeader
-          title={t('compliance.page.title')}
-          description={t('compliance.page.description')}
-          crumbs="auto"
-          action={<NavChildLinks parentPath="/app/short-rent/compliance" />}
-        />
+        <PageHeader title={t('compliance.page.title')} description={t('compliance.page.description')} crumbs="auto" />
         <ComplianceSummaryWidget />
       </div>
     </AppShell>

@@ -19,7 +19,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds the rest', async ({ page }) => {
+    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds three more', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
@@ -33,13 +33,31 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(more).toHaveAttribute('aria-expanded', 'false');
       await more.click();
       await expect(more).toHaveAttribute('aria-expanded', 'true');
-      const others = ['Ospiti', 'Ricavi', 'Regime fiscale', 'Profilo', 'Stripe Connect', 'Dominio pubblico', 'Organizzazione'];
-      for (const name of others) {
-        await expect(menu.getByRole('link', { name, exact: true })).toBeVisible();
-      }
-      // The pages that hang from an entry, and plan and billing, are in no menu.
-      for (const name of ['Alloggiati', 'CIN', 'Aspetto sito', 'Documenti sito', 'Piano', 'Fatturazione']) {
-        await expect(menu.getByRole('link', { name })).toHaveCount(0);
+      // It held sixteen entries. The pages of a section are tabs on the page of their entry (below), Profilo is in the menu of the user.
+      await expect(menu.getByTestId('nav-more').getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      // The pages that hang from an entry, the profile, plan and billing are in no menu.
+      const inNoMenu = [
+        'Ospiti',
+        'CRM Ospiti',
+        'Recensioni',
+        'Ricavi',
+        'Report',
+        'Regime fiscale',
+        'Stripe Connect',
+        'Canali e calendari',
+        'Fornitori fidati',
+        'Dominio pubblico',
+        'Verifiche',
+        'Alloggiati',
+        'CIN',
+        'Aspetto sito',
+        'Documenti sito',
+        'Profilo',
+        'Piano',
+        'Fatturazione',
+      ];
+      for (const name of inNoMenu) {
+        await expect(menu.getByRole('link', { name, exact: true })).toHaveCount(0);
       }
     });
 
@@ -150,11 +168,11 @@ test.describe('Area navigation (UI-04a)', () => {
     });
 
     test('a page inside "Altro" opens it and keeps its entry highlighted', async ({ page }) => {
-      await page.goto(demoUrl('/app/short-rent/guests', 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await page.goto(demoUrl('/app/short-rent/approval-queue', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      await expect(menu.getByRole('link', { name: 'Ospiti', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
     test('a page that hangs from an entry is reached from that entry and highlights it', async ({ page }) => {
@@ -169,30 +187,56 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
 
-      // The page of the entry links to the pages that hang from it.
-      const related = page.getByRole('group', { name: 'Pagine collegate' });
-      await expect(related.getByRole('link')).toHaveText(['Alloggiati', 'Report Alloggiati', 'CIN']);
-      await related.getByRole('link', { name: 'Alloggiati', exact: true }).click();
+      // The pages that hang from the entry are the tabs on top of its page, and of each of them.
+      const tabs = page.getByRole('navigation', { name: 'Sezioni di Adempimenti' });
+      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN']);
+      await expect(tabs.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
+      await tabs.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/alloggiati$/);
-      // Still "Adempimenti" that is highlighted, and "Altro" stays closed.
+      // Still "Adempimenti" that is highlighted in the menu, and "Altro" stays closed; the tabs are there on this page too.
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
-      await expect(page.getByRole('link', { name: 'Alloggiati' })).toHaveCount(0);
+      await expect(menu.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveCount(0);
+      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN']);
+      await expect(tabs.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
-    test('the site pages are reached from "Sito di prenotazione"', async ({ page }) => {
+    test('the pages of a section are tabs on every page of it, and the entry of the menu stays highlighted', async ({ page }) => {
+      // The documents of the site are what the page of the third tab reads: none, so that it draws itself in the demo.
+      await page.route('**/api/orgs/me/site-documents', (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+      );
       await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      const related = page.getByRole('group', { name: 'Pagine collegate' });
-      await expect(related.getByRole('link')).toHaveText(['Aspetto sito', 'Documenti sito']);
-      await related.getByRole('link', { name: 'Documenti sito' }).click();
+      const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
+      const tabs = page.getByRole('navigation', { name: 'Sezioni di Sito di prenotazione' });
+      await expect(tabs.getByRole('link')).toHaveText(['Sito di prenotazione', 'Aspetto sito', 'Documenti sito', 'Dominio pubblico']);
+      await tabs.getByRole('link', { name: 'Documenti sito' }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/settings\/site-documents$/);
-      await expect(page.getByRole('navigation', { name: 'Menu Affitti brevi' }).getByRole('link', { name: 'Sito di prenotazione' })).toHaveAttribute(
-        'aria-current',
-        'page',
-      );
+      await expect(menu.getByRole('link', { name: 'Sito di prenotazione' })).toHaveAttribute('aria-current', 'page');
+      // The page of a tab has the same tabs, with its own marked (the strip is the head of the page, not of the first one).
+      await expect(tabs.getByRole('link')).toHaveText(['Sito di prenotazione', 'Aspetto sito', 'Documenti sito', 'Dominio pubblico']);
+      await expect(tabs.getByRole('link', { name: 'Documenti sito' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    test('the guests, the reviews and the CRM are tabs of Prenotazioni, the payments figures tabs of Incassi', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent/bookings', 'short-stay'), { waitUntil: 'domcontentloaded' });
+
+      const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
+      const bookingTabs = page.getByRole('navigation', { name: 'Sezioni di Prenotazioni' });
+      await expect(bookingTabs.getByRole('link')).toHaveText(['Prenotazioni', 'Ospiti', 'CRM Ospiti', 'Recensioni']);
+      await bookingTabs.getByRole('link', { name: 'Recensioni' }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/reviews$/);
+      await expect(menu.getByRole('link', { name: 'Prenotazioni' })).toHaveAttribute('aria-current', 'page');
+
+      await menu.getByRole('link', { name: 'Incassi' }).click();
+      const paymentTabs = page.getByRole('navigation', { name: 'Sezioni di Incassi' });
+      await expect(paymentTabs.getByRole('link')).toHaveText(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+      await paymentTabs.getByRole('link', { name: 'Regime fiscale' }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/fiscal$/);
+      await expect(menu.getByRole('link', { name: 'Incassi' })).toHaveAttribute('aria-current', 'page');
     });
 
     test('the iCal calendar of the supplier is reached from the availability', async ({ page }) => {
@@ -280,13 +324,29 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(sheet.getByRole('group', { name: 'Gestione' })).toBeVisible();
       await expect(sheet.getByRole('group', { name: 'Altro' })).toBeVisible();
       await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
-      await sheet.getByRole('link', { name: 'Profilo' }).click();
+      // Three tiles in "Altro" where there were sixteen; the profile is in the account row at the end of the sheet.
+      await expect(sheet.getByRole('group', { name: 'Altro' }).getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      await sheet.getByRole('link', { name: 'Coda di approvazione' }).click();
 
-      await expect(page).toHaveURL(/\/app\/short-rent\/profile/);
+      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue/);
       await expect(sheet).not.toBeVisible();
-      // The profile is not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
+      // The approval queue is not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-current', 'page');
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('a tab of a section is a menu on a phone, and the bar marks the entry of the section', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent/bookings', 'short-stay'), { waitUntil: 'domcontentloaded' });
+
+      // The strip of tabs becomes the native menu of the RouteTabs, which goes to the page that is chosen.
+      const select = page.getByTestId('nav-section-select');
+      await expect(select).toBeVisible();
+      await select.selectOption({ label: 'Ospiti' });
+
+      await expect(page).toHaveURL(/\/app\/short-rent\/guests$/);
+      await expect(page.getByTestId('nav-section-select')).toHaveValue('/app/short-rent/guests');
+      const bar = page.getByRole('navigation', { name: 'Navigazione mobile' });
+      await expect(bar.getByRole('link', { name: 'Prenotazioni' })).toHaveAttribute('aria-current', 'page');
     });
 
     test('no horizontal scroll with the area switcher open in the phone menu', async ({ page }) => {

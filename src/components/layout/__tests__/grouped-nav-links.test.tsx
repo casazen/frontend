@@ -198,30 +198,20 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
 
       const toggle = screen.getByRole('button', { name: 'Altro' });
       expect(toggle).toHaveAttribute('aria-expanded', 'false');
-      expect(screen.queryByRole('link', { name: 'Ospiti' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'Profilo' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Coda di approvazione' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Organizzazione' })).not.toBeInTheDocument();
     });
 
-    it('GroupedNavLinks_MoreMenu_OpensOnClickAndShowsTheOtherEntries', () => {
+    it('GroupedNavLinks_MoreMenu_OpensOnClickAndShowsTheThreeOtherEntries', () => {
       renderNav('/app/short-rent');
 
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
       const more = screen.getByTestId('nav-more');
+      // It held sixteen entries: the pages of a section are the tabs of its entry, Profilo is in the menu of the user.
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual([
-        'Ospiti',
-        'CRM Ospiti',
-        'Ricavi',
-        'Regime fiscale',
-        'Report',
-        'Recensioni',
-        'Canali e calendari',
-        'Verifiche',
         'Coda di approvazione',
-        'Profilo',
-        'Stripe Connect',
-        'Dominio pubblico',
         'Organizzazione',
         'Consiglia CasaZen',
       ]);
@@ -229,11 +219,28 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-controls', within(more).getByRole('list').id);
     });
 
+    it('GroupedNavLinks_PagesOfASection_AreNotEntriesOfTheMenu', () => {
+      renderNav('/app/short-rent');
+      fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
+
+      for (const name of ['Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Profilo']) {
+        expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
+      }
+    });
+
     it('GroupedNavLinks_PageInsideMoreMenu_OpensItAndMarksTheEntry', () => {
-      renderNav('/app/short-rent/guests/g1');
+      renderNav('/app/short-rent/approval-queue');
 
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      expect(link('Ospiti')).toHaveAttribute('aria-current', 'page');
+      expect(link('Coda di approvazione')).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('GroupedNavLinks_PageThatHangsFromAnEntryInMore_OpensMoreAndMarksThatEntry', () => {
+      renderNav('/app/short-rent/verifications');
+
+      expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+      expect(link('Coda di approvazione')).toHaveAttribute('aria-current', 'page');
+      expect(screen.queryByRole('link', { name: 'Verifiche' })).not.toBeInTheDocument();
     });
 
     it('GroupedNavLinks_PageThatHangsFromAnEntryOfTheMainMenu_MarksThatEntryAndLeavesMoreClosed', () => {
@@ -246,13 +253,29 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.queryByRole('link', { name: 'Alloggiati' })).not.toBeInTheDocument();
     });
 
+    it.each([
+      ['/app/short-rent/guests', 'Prenotazioni'],
+      ['/app/short-rent/reviews', 'Prenotazioni'],
+      ['/app/short-rent/payments/revenue', 'Incassi'],
+      ['/app/short-rent/fiscal', 'Incassi'],
+      ['/app/short-rent/settings/payments', 'Incassi'],
+      ['/app/short-rent/channels', 'Immobili'],
+      ['/app/short-rent/interventions', 'Immobili'],
+      ['/app/short-rent/settings/domain', 'Sito di prenotazione'],
+    ])('GroupedNavLinks_TabOfASection_%s_MarksTheEntryOfTheSection_%s', (path, entry) => {
+      renderNav(path);
+
+      expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
+      expect(link(entry)).toHaveAttribute('aria-current', 'page');
+    });
+
     it('GroupedNavLinks_UserClosesTheMenu_ItStaysClosedUntilThePageChanges', () => {
-      renderNav('/app/short-rent/guests');
+      renderNav('/app/short-rent/approval-queue');
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
 
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
-      expect(screen.queryByRole('link', { name: 'Ospiti' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Coda di approvazione' })).not.toBeInTheDocument();
     });
 
     it('GroupedNavLinks_ChoiceOfTheUser_ValidOnlyForThePageItWasMadeOn', () => {
@@ -266,9 +289,9 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
 
       // A page inside it: open again.
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
-      fireEvent.click(link('Profilo'));
+      fireEvent.click(link('Organizzazione'));
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      expect(link('Profilo')).toHaveAttribute('aria-current', 'page');
+      expect(link('Organizzazione')).toHaveAttribute('aria-current', 'page');
     });
 
     it('GroupedNavLinks_NoEntryForTheUser_HasNoMoreMenu', () => {
@@ -280,6 +303,24 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       cleanup();
       renderNav('/app/admin', { contextKey: 'admin', hasPermission: () => false });
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
+      cleanup();
+      // Profilo left the menus of the rental areas: with nothing else to open there is no "Altro" there either.
+      renderNav('/app/short-rent', { hasPermission: (_ctx, permission) => !permission });
+      expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
+    });
+
+    it('GroupedNavLinks_ARoleWithoutTheOwnerOfAPage_StillFindsItsPagesInMore', () => {
+      // Who cannot read the payments finds the fiscal regime and the Stripe account in "Altro", each as an entry of its own.
+      renderNav('/app/short-rent', { hasPermission: (_ctx, permission) => permission !== 'payment.read' });
+      fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
+
+      expect(within(screen.getByTestId('nav-more')).getAllByRole('link').map((item) => item.textContent)).toEqual([
+        'Regime fiscale',
+        'Stripe Connect',
+        'Coda di approvazione',
+        'Organizzazione',
+        'Consiglia CasaZen',
+      ]);
     });
   });
 
@@ -334,10 +375,10 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       renderNav('/app/short-rent', { collapsed: true });
 
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
-      tabTo(link('Ospiti'));
+      tabTo(link('Organizzazione'));
 
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByTestId('rail-tooltip')).toHaveTextContent('Ospiti');
+      expect(screen.getByTestId('rail-tooltip')).toHaveTextContent('Organizzazione');
     });
 
     it('GroupedNavLinks_Expanded_ShowsNoTooltipSinceTheNamesAreOnTheScreen', () => {
@@ -367,8 +408,12 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       // Entries of the bar are left out; the others are all there, "Altro" is not a closed menu.
       expect(screen.queryByRole('link', { name: 'Cruscotto' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Prenotazioni' })).not.toBeInTheDocument();
-      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Ospiti', 'Profilo', 'Stripe Connect']) {
+      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']) {
         expect(link(name)).toBeVisible();
+      }
+      // The pages of a section are its tabs, and Profilo is in the account block of the sheet: none is a tile.
+      for (const name of ['Ospiti', 'Profilo', 'Stripe Connect']) {
+        expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     });
@@ -447,7 +492,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
 
       expect(screen.getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(screen.queryByText('Altro')).not.toBeInTheDocument();
-      expect(link('Profilo')).toBeInTheDocument();
+      expect(link('Organizzazione')).toBeInTheDocument();
     });
   });
 });

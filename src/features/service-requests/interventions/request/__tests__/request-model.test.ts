@@ -3,7 +3,9 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import i18n from '@/i18n/config';
 import {
+  channelOf,
   CUSTOM_SERVICE,
+  openingStepFor,
   requestDefaults,
   requestProblemOf,
   requestStepSchemas,
@@ -83,11 +85,12 @@ describe('the request the wizard sends (SR-08b)', () => {
   });
 
   it('requestProblemOf_RefusalsThatSendTheHostBack_NameTheStepAndOtherAnswersAreTheServers', () => {
-    expect(requestProblemOf(problem(409, 'supplier_slot_unavailable'))).toEqual({ kind: 'slotTaken', step: 'who' });
-    expect(requestProblemOf(problem(409, 'supplier_commitment_conflict'))).toEqual({ kind: 'commitmentConflict', step: 'who' });
-    expect(requestProblemOf(problem(422, 'service_request_supplier_outside_comune'))).toEqual({ kind: 'supplierOutsideComune', step: 'who' });
-    expect(requestProblemOf(problem(422, 'service_request_supplier_inactive'))).toEqual({ kind: 'supplierInactive', step: 'who' });
-    expect(requestProblemOf(problem(422, 'service_request_booking_mismatch'))).toEqual({ kind: 'stayMismatch', step: 'when' });
+    // The slots, the service and the stay are in the details; the supplier is in the proposals.
+    expect(requestProblemOf(problem(409, 'supplier_slot_unavailable'))).toEqual({ kind: 'slotTaken', step: 'details' });
+    expect(requestProblemOf(problem(409, 'supplier_commitment_conflict'))).toEqual({ kind: 'commitmentConflict', step: 'details' });
+    expect(requestProblemOf(problem(422, 'service_request_supplier_outside_comune'))).toEqual({ kind: 'supplierOutsideComune', step: 'proposals' });
+    expect(requestProblemOf(problem(422, 'service_request_supplier_inactive'))).toEqual({ kind: 'supplierInactive', step: 'proposals' });
+    expect(requestProblemOf(problem(422, 'service_request_booking_mismatch'))).toEqual({ kind: 'stayMismatch', step: 'details' });
     expect(requestProblemOf(problem(403, 'forbidden'))).toBeNull();
     expect(requestProblemOf(new Error('network'))).toBeNull();
   });
@@ -95,15 +98,34 @@ describe('the request the wizard sends (SR-08b)', () => {
 
 describe('where the wizard starts (SR-08b)', () => {
   it('requestDefaults_AddressOfAnEntryPoint_IsTakenOnlyAsFarAsItIsValid', () => {
-    const search = new URLSearchParams(`propertyId=${PROPERTY_ID}&bookingId=not-an-id&type=cleaning&date=2020-01-01&supplierOrgId=${SUPPLIER_ID}`);
+    const search = new URLSearchParams(`propertyId=${PROPERTY_ID}&bookingId=not-an-id&type=cleaning&date=2020-01-01&supplierOrgId=${SUPPLIER_ID}&serviceId=${SERVICE_ID}`);
 
     const { values: start, prefilled } = requestDefaults(search, ['cleaning', 'plumbing'], '2026-11-03');
 
-    expect(start).toMatchObject({ propertyId: PROPERTY_ID, bookingId: '', category: 'cleaning', supplierOrgId: SUPPLIER_ID, day: '2026-11-03' });
+    expect(start).toMatchObject({ propertyId: PROPERTY_ID, bookingId: '', category: 'cleaning', supplierOrgId: SUPPLIER_ID, serviceId: SERVICE_ID, day: '2026-11-03' });
     expect(prefilled).toBe(true);
     // A category the catalog does not have is not taken.
     expect(requestDefaults(new URLSearchParams('type=gardening'), ['cleaning'], '2026-11-03').values.category).toBe('');
     expect(requestDefaults(new URLSearchParams(''), ['cleaning'], '2026-11-03').prefilled).toBe(false);
+  });
+
+  it('openingStepFor_OpensOnTheFirstStepThatTheAddressDoesNotAnswer', () => {
+    const none = { propertyId: '', category: '', supplierOrgId: '' };
+
+    expect(openingStepFor(none, 'casazen')).toBe('property');
+    expect(openingStepFor({ ...none, propertyId: PROPERTY_ID }, 'casazen')).toBe('channel');
+    expect(openingStepFor({ ...none, propertyId: PROPERTY_ID, category: 'cleaning' }, 'casazen')).toBe('proposals');
+    // The page of a supplier gives the supplier and the kind of work: the host goes straight to the details.
+    expect(openingStepFor({ propertyId: PROPERTY_ID, category: 'cleaning', supplierOrgId: SUPPLIER_ID }, 'casazen')).toBe('details');
+    // With an external partner the wizard stops at the partners.
+    expect(openingStepFor({ ...none, propertyId: PROPERTY_ID, category: 'cleaning' }, 'external')).toBe('partners');
+  });
+
+  it('channelOf_OnlyExternalIsAChoice_EverythingElseIsCasazen', () => {
+    expect(channelOf(new URLSearchParams('channel=external'))).toBe('external');
+    expect(channelOf(new URLSearchParams('channel=casazen'))).toBe('casazen');
+    expect(channelOf(new URLSearchParams('channel=other'))).toBe('casazen');
+    expect(channelOf(new URLSearchParams(''))).toBe('casazen');
   });
 });
 
@@ -142,25 +164,29 @@ describe('the turnover and the slots (SR-08b)', () => {
   });
 });
 
-describe('the rules of the third step (SR-08b)', () => {
+describe('the rules of the steps (SR-08b)', () => {
   // 3 November 2026, 07:30 UTC = 08:30 in Rome.
   const schemas = requestStepSchemas(() => new Date('2026-11-03T07:30:00Z'));
   const issues = (candidate: RequestValues) => {
-    const result = schemas.who.safeParse(candidate);
+    const result = schemas.details.safeParse(candidate);
     return result.success ? [] : result.error.issues.map((issue) => [issue.path.join('.'), issue.message]);
   };
 
-  it('whoSchema_CatalogServiceWithoutASlot_AsksForOne', () => {
+  it('detailsSchema_CatalogServiceWithoutASlot_AsksForOne', () => {
     expect(issues(values({ startTime: '' }))).toEqual([['startTime', 'requestWizard.errors.slotRequired']]);
     expect(issues(values())).toEqual([]);
   });
 
-  it('whoSchema_TimeAlreadyGoneByToday_IsRefused', () => {
+  it('detailsSchema_NoServiceChosen_AsksForOne', () => {
+    expect(issues(values({ serviceId: '', startTime: '' }))).toEqual([['serviceId', 'requestWizard.errors.serviceRequired']]);
+  });
+
+  it('detailsSchema_TimeAlreadyGoneByToday_IsRefused', () => {
     expect(issues(values({ serviceId: CUSTOM_SERVICE, serviceMinutes: null, startTime: '08:00' }))).toEqual([['startTime', 'requestWizard.errors.timePast']]);
     expect(issues(values({ serviceId: CUSTOM_SERVICE, serviceMinutes: null, startTime: '11:00' }))).toEqual([]);
   });
 
-  it('whoSchema_JobTimedByTheHost_NeedsALengthTheApiTakes', () => {
+  it('detailsSchema_JobTimedByTheHost_NeedsALengthTheApiTakes', () => {
     const custom = { serviceId: CUSTOM_SERVICE, serviceMinutes: null, startTime: '11:00' };
 
     expect(issues(values({ ...custom, durationChoice: 'other', durationOther: '3' }))).toEqual([['durationOther', 'requestWizard.errors.durationInvalid']]);
@@ -168,9 +194,25 @@ describe('the rules of the third step (SR-08b)', () => {
     expect(issues(values({ ...custom, durationChoice: 'other', durationOther: '45' }))).toEqual([]);
   });
 
-  it('whenSchema_DayThatHasPassed_IsRefused', () => {
-    expect(schemas.when.safeParse({ propertyId: PROPERTY_ID, bookingId: '', day: '2026-11-02' }).success).toBe(false);
-    expect(schemas.when.safeParse({ propertyId: PROPERTY_ID, bookingId: '', day: '2026-11-03' }).success).toBe(true);
+  it('detailsSchema_DayThatHasPassed_IsRefused', () => {
+    // A time on a day that has passed has passed too: the day is the first thing to say.
+    expect(issues(values({ day: '2026-11-02' }))[0]).toEqual(['day', 'requestWizard.errors.dayPast']);
+    expect(issues(values({ day: '2026-11-03' }))).toEqual([]);
+  });
+
+  it('detailsSchema_NotesTooLong_AreRefused_AndAStayIsNeverRequired', () => {
+    expect(issues(values({ notes: 'x'.repeat(1001) }))).toEqual([['notes', 'requestWizard.errors.notesTooLong']]);
+    // The request is for the house: no stay is not a problem.
+    expect(issues(values({ bookingId: '' }))).toEqual([]);
+  });
+
+  it('propertyServiceAndProposalsSchemas_AskForTheirOneAnswer', () => {
+    expect(schemas.property.safeParse({ propertyId: '' }).success).toBe(false);
+    expect(schemas.property.safeParse({ propertyId: PROPERTY_ID }).success).toBe(true);
+    expect(schemas.service.safeParse({ category: '' }).success).toBe(false);
+    expect(schemas.service.safeParse({ category: 'cleaning' }).success).toBe(true);
+    expect(schemas.proposals.safeParse({ supplierOrgId: '' }).success).toBe(false);
+    expect(schemas.proposals.safeParse({ supplierOrgId: SUPPLIER_ID }).success).toBe(true);
   });
 });
 

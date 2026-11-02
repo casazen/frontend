@@ -132,21 +132,24 @@ export function OtaPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <PageHeader title={t('ota.page.title')} description={t('ota.page.description')} />
-          <Button
-            variant="outline"
-            onClick={handleSyncAll}
-            disabled={syncAll.isPending || isLoading}
-          >
-            {syncAll.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            {t('ota.page.syncAll')}
-          </Button>
-        </div>
+        <PageHeader
+          title={t('ota.page.title')}
+          description={t('ota.page.description')}
+          action={
+            <Button
+              variant="outline"
+              onClick={handleSyncAll}
+              disabled={syncAll.isPending || isLoading}
+            >
+              {syncAll.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {t('ota.page.syncAll')}
+            </Button>
+          }
+        />
 
         {isLoading && (
           <div className="flex items-center justify-center py-12">

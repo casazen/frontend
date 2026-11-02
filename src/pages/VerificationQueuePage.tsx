@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { usePendingVerifications } from '@/queries/verification';
+import { PageHeader } from '@/components/layout/page-header';
 import { VerificationItem } from '@/components/verification/VerificationItem';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { AlertCircle } from 'lucide-react';
@@ -77,15 +78,10 @@ export function VerificationQueuePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('verification.queue.title')}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t('verification.queue.description')}
-        </p>
-      </div>
+    <div className="container mx-auto space-y-6 px-4 py-8">
+      <PageHeader title={t('verification.queue.title')} description={t('verification.queue.description')} />
 
-      <div className="mb-6 flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4">
         <div className="w-full sm:w-64">
           <label htmlFor="reason-filter" className="text-sm font-medium mb-2 block">
             {t('verification.filter.reason')}
