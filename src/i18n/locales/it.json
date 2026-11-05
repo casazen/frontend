@@ -9613,16 +9613,20 @@
     "dashboard": {
       "title": "Portale Proprietari",
       "viewStatements": "Visualizza rendiconti",
-      "totalRevenue": "Ricavi totali",
-      "totalBookings": "Prenotazioni totali",
-      "avgOccupancy": "Occupazione media",
-      "allProperties": "Tutti gli immobili",
-      "acrossProperties": "Media tra gli immobili",
       "yourProperties": "I tuoi immobili",
       "noProperties": "Non ci sono immobili disponibili",
       "revenue": "Ricavi",
       "bookings": "Prenotazioni",
       "occupancy": "Occupazione",
+      "adr": "ADR",
+      "revPar": "RevPAR",
+      "period": "Periodo",
+      "tilesLabel": "I numeri dei tuoi immobili",
+      "previousYear": "Confronto con gli stessi giorni dell'anno scorso: dal {{from}} al {{to}}.",
+      "share": "Ricavi per competenza, sulla tua quota di ogni immobile: le notti dei soggiorni confermati, alloggio e pulizie, tassa di soggiorno esclusa.",
+      "trendTitle": "Andamento nel tempo",
+      "overviewError": "Impossibile caricare i numeri del periodo.",
+      "trendError": "Impossibile caricare l'andamento.",
       "recentBookings": "Prenotazioni recenti",
       "error": "Errore nel caricamento",
       "errorMessage": "Impossibile caricare i dati del portale. Riprova più tardi."
@@ -12577,9 +12581,19 @@
         "all": "Tutti insieme",
         "channel": "Per canale",
         "label": "Come dividere i numeri",
+        "owner": "Per proprietario",
         "property": "Per immobile"
       },
       "na": "n.d.",
+      "owner": {
+        "caption": "Numeri per proprietario",
+        "columns": {
+          "name": "Proprietario",
+          "properties": "Immobili"
+        },
+        "total": "Totale",
+        "unassigned": "Immobili senza proprietario"
+      },
       "table": {
         "caption": {
           "channel": "Numeri per canale",

@@ -1,7 +1,7 @@
 import axios from '@/lib/axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
-import type { PerformanceGroupBy, PerformanceReport, TrendReport } from '@/types/report.types';
+import type { OwnerReport, PerformanceGroupBy, PerformanceReport, TrendReport } from '@/types/report.types';
 
 /** The reads of short rent under `GET /api/reports/*` (SR-10): ricavo, occupazione e canali. */
 export type HostReportKind = 'revenue-by-property' | 'occupancy-by-property' | 'bookings-by-channel';
@@ -42,6 +42,7 @@ export function hostReportFileName(kind: HostReportKind, period: ReportPeriod): 
 
 const PERFORMANCE_PATH = '/reports/performance';
 const TREND_PATH = '/reports/trend';
+const BY_OWNER_PATH = '/reports/by-owner';
 
 /** The query string of the performance report and of the trend; the bucket only where the read has one. */
 function performanceParams(query: PerformanceQuery, withBucket: boolean): Record<string, string> {
@@ -86,5 +87,19 @@ export const reportsApi = {
   getTrend: async (query: PerformanceQuery): Promise<TrendReport> => {
     const res = await axios.get<unknown>(TREND_PATH, { params: performanceParams(query, true) });
     return asReport<TrendReport>(TREND_PATH, res.data);
+  },
+
+  /**
+   * The figures of an agency cut by property owner (NF-96): one row for each owner, the properties nobody owns and the total, as the
+   * server sends them. The view is for the owner and the administrators of an agency, so a 403 is an answer here, not a failure:
+   * it resolves to `null` ("not for this caller") instead of throwing, because a 403 on a read would make the shared axios client
+   * send the whole app to the no-access page, and the page only has to leave the grouping out.
+   */
+  getByOwner: async (period: ReportPeriod): Promise<OwnerReport | null> => {
+    const res = await axios.get<unknown>(BY_OWNER_PATH, {
+      params: { from: period.from, to: period.to },
+      validateStatus: (status) => (status >= 200 && status < 300) || status === 403,
+    });
+    return res.status === 403 ? null : asReport<OwnerReport>(BY_OWNER_PATH, res.data);
   },
 };

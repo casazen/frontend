@@ -13,8 +13,11 @@ import type { PerformanceGroupBy, PerformanceReport, TrendBucket, TrendUnit } fr
 
 type Translate = (key: string) => string;
 
-/** How the overview is cut: all together, by property or by channel (the server's cuts) and, for an agency, by property owner. */
-export type OverviewGrouping = 'all' | 'property' | 'channel';
+/**
+ * How the overview is cut: all together, by property or by channel (the cuts of the performance report) and, for an agency, by
+ * property owner (a report of its own, `GET /api/reports/by-owner`).
+ */
+export type OverviewGrouping = 'all' | 'property' | 'channel' | 'owner';
 
 /** What the filters of the overview hold. */
 export interface OverviewState {
@@ -44,9 +47,9 @@ export const FIXED_PRESETS = PERIOD_PRESETS.filter((id): id is Exclude<PeriodPre
 /** The overview is a read of short rent: no fiscal rule applies to its days, only the ones of every report (24 months at most). */
 export const HOST_PERIOD_SOURCE: ReportSource = { kind: 'host', report: 'revenue-by-property' };
 
-/** The cut the server is asked for. */
+/** The cut the performance report and the trend are asked for; by owner they are asked for the whole scope, the owners are another read. */
 export function groupByOf(grouping: OverviewGrouping): PerformanceGroupBy {
-  return grouping === 'all' ? 'none' : grouping;
+  return grouping === 'property' || grouping === 'channel' ? grouping : 'none';
 }
 
 /** The question the performance report and the trend are asked for these days and filters (`propertyId` already checked). */

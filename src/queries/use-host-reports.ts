@@ -36,3 +36,18 @@ export function useTrendReport(query: PerformanceQuery, enabled = true) {
     refetchOnMount: 'always',
   });
 }
+
+/**
+ * The agency's figures cut by property owner for the days of `period` (NF-96). The data is `null` when the server answers 403: the
+ * view is not for this caller (a property manager, an org that is not on the agency plan), and the page leaves the grouping out
+ * instead of showing an error. `keepPreviousData` keeps that answer while the days change, so the refusal is not asked again for them.
+ */
+export function useOwnerReport(period: ReportPeriod, enabled: boolean) {
+  return useQuery({
+    queryKey: [HOST_REPORTS_KEY, 'by-owner', period],
+    queryFn: () => reportsApi.getByOwner(period),
+    enabled,
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+  });
+}

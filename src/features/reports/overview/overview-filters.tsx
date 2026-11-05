@@ -25,7 +25,7 @@ interface OverviewFiltersProps {
 /**
  * The filters of the overview of the Reports page: the period (the presets of the downloads and the days to type, the same checks),
  * one property or all, the comparison with last year and how the figures are cut. With one property there is nothing to choose
- * between, so the property is not asked.
+ * between, so the property is not asked; nor by owner, which is always the whole agency.
  */
 export function OverviewFilters({ state, days, properties, propertyId, groupings, onChange }: OverviewFiltersProps) {
   const { t } = useTranslation();
@@ -78,7 +78,7 @@ export function OverviewFilters({ state, days, properties, propertyId, groupings
           </>
         ) : null}
 
-        {properties.length > 1 ? (
+        {properties.length > 1 && state.grouping !== 'owner' ? (
           <Field label={t('reports.overview.filters.property')} className="w-full sm:w-60">
             <Select value={propertyId} onChange={(event) => onChange({ propertyId: event.target.value })} data-testid="reports-overview-property">
               <option value="">{t('reports.overview.filters.allProperties')}</option>

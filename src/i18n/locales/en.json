@@ -9613,16 +9613,20 @@
     "dashboard": {
       "title": "Owner Portal",
       "viewStatements": "View statements",
-      "totalRevenue": "Total revenue",
-      "totalBookings": "Total bookings",
-      "avgOccupancy": "Average occupancy",
-      "allProperties": "All properties",
-      "acrossProperties": "Across properties",
       "yourProperties": "Your properties",
       "noProperties": "No properties available",
       "revenue": "Revenue",
       "bookings": "Bookings",
       "occupancy": "Occupancy",
+      "adr": "ADR",
+      "revPar": "RevPAR",
+      "period": "Period",
+      "tilesLabel": "The numbers for your properties",
+      "previousYear": "Compared with the same days last year: {{from}} to {{to}}.",
+      "share": "Revenue on an accrual basis, on your share of each property: the nights of the confirmed stays, lodging and cleaning, tourist tax excluded.",
+      "trendTitle": "Trend over time",
+      "overviewError": "Could not load the numbers for the period.",
+      "trendError": "Could not load the trend.",
       "recentBookings": "Recent bookings",
       "error": "Loading error",
       "errorMessage": "Unable to load portal data. Please try again later."
@@ -12577,9 +12581,19 @@
         "all": "All together",
         "channel": "By channel",
         "label": "How to split the numbers",
+        "owner": "By owner",
         "property": "By property"
       },
       "na": "n/a",
+      "owner": {
+        "caption": "Numbers by owner",
+        "columns": {
+          "name": "Owner",
+          "properties": "Properties"
+        },
+        "total": "Total",
+        "unassigned": "Properties without an owner"
+      },
       "table": {
         "caption": {
           "channel": "Numbers by channel",
