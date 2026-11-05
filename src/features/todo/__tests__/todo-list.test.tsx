@@ -7,7 +7,16 @@ import type { TodoActivity } from '@/api/internal-activities.api';
 import { useActivities, useCloseActivity } from '@/queries/internalActivities';
 import { TodoListPage } from '../todo-list';
 
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
+type PermissionCheck = (context: string, permission: string) => boolean;
+
+// What the person may do: everything, unless a test narrows it to a role that only reads.
+const workspace = vi.hoisted(() => {
+  const hasPermission: PermissionCheck = () => true;
+  return { hasPermission };
+});
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (context: string, permission: string) => workspace.hasPermission(context, permission) }),
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
@@ -100,6 +109,7 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    workspace.hasPermission = () => true;
     vi.mocked(useCloseActivity).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useCloseActivity>);
     answer({ data: LIST });
     await i18n.changeLanguage('it');
@@ -241,6 +251,17 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Segna come fatto' }));
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
+  });
+
+  it('TodoListPage_RoleThatOnlyReads_SeesTheItemsButHasNoMarkAsDone', () => {
+    // The Commercialista and a collaborator without the right to write hold `property.read`, which is all the page asks. Closing an item
+    // takes it off the list of the whole organization, a deadline of the law included: it is offered to who may write the properties.
+    workspace.hasPermission = (context, permission) => context === 'short-rent' && ['property.read', 'booking.read'].includes(permission);
+    renderPage();
+
+    expect(cards()).toHaveLength(4);
+    expect(screen.queryByTestId('todo-close')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Segna come fatto/ })).not.toBeInTheDocument();
   });
 
   it('TodoListPage_NothingToDo_SaysSo', () => {

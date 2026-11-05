@@ -146,14 +146,20 @@ interface TodoActivityCardProps {
   activity: TodoActivity;
   /** The names of the host's properties, by id (the item carries the id only). */
   propertyNames: ReadonlyMap<string, string>;
-  /** Decides whether the person may open the page "Do now" leads to; without it the button is always offered. */
+  /**
+   * Decides what the person may do. Whether they may open the page "Do now" leads to (without it the button is always offered), and
+   * whether they may mark the item as done, which asks the permission to write the properties of Affitti brevi (without it there is no
+   * such button: what cannot be checked is not offered).
+   */
   hasPermission?: PermissionPredicate;
 }
 
 /**
  * One item of the "To do" list: what it is, on which object, by when and why in one line, how urgent it is (an icon and a word, never the
- * color alone), "Fallo ora" that opens the page where it is done, and "Segna come fatto" for the one who did it elsewhere. This is the
- * card of the host's list: the card of the staff work (status and notes) is `components/activities/ActivityCard`, which stays as it is.
+ * color alone), "Fallo ora" that opens the page where it is done, and "Segna come fatto" for the one who did it elsewhere and may write
+ * the properties: it takes the item off the list of the whole organization, a deadline of the law included, so a role that only reads has
+ * no such button (the endpoint must ask the same permission). This is the card of the host's list: the card of the staff work (status
+ * and notes) is `components/activities/ActivityCard`, which stays as it is.
  */
 export function TodoActivityCard({ activity, propertyNames, hasPermission }: TodoActivityCardProps) {
   const { t, i18n } = useTranslation();
@@ -161,6 +167,8 @@ export function TodoActivityCard({ activity, propertyNames, hasPermission }: Tod
   const close = useCloseActivity(activity.id);
   const text = describeTodo(activity, { t, exists: (key) => i18n.exists(key), locale: i18n.language, propertyNames });
   const route = todoActionRoute(activity, hasPermission);
+  // The page of the list asks `property.read` only, which every role of the area holds: closing is a write, and it is not offered on a guess.
+  const canClose = hasPermission?.('short-rent', 'property.write') === true;
   const { variant, Icon } = URGENCY_STYLE[text.urgency];
 
   return (
@@ -202,36 +210,42 @@ export function TodoActivityCard({ activity, propertyNames, hasPermission }: Tod
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        {route ? (
-          <Button asChild size="sm" className="min-h-11 md:min-h-0">
-            <Link to={route} aria-label={t('activity.todo.actions.doNowFor', { title: text.title })} data-testid="todo-do-now">
-              {t('activity.todo.actions.doNow')}
-            </Link>
-          </Button>
-        ) : null}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="min-h-11 md:min-h-0"
-          aria-label={t('activity.todo.actions.closeFor', { title: text.title })}
-          onClick={() => setClosing(true)}
-          data-testid="todo-close"
-        >
-          {t('activity.todo.actions.close')}
-        </Button>
-      </div>
+      {route || canClose ? (
+        <div className="flex flex-wrap gap-2">
+          {route ? (
+            <Button asChild size="sm" className="min-h-11 md:min-h-0">
+              <Link to={route} aria-label={t('activity.todo.actions.doNowFor', { title: text.title })} data-testid="todo-do-now">
+                {t('activity.todo.actions.doNow')}
+              </Link>
+            </Button>
+          ) : null}
+          {canClose ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="min-h-11 md:min-h-0"
+              aria-label={t('activity.todo.actions.closeFor', { title: text.title })}
+              onClick={() => setClosing(true)}
+              data-testid="todo-close"
+            >
+              {t('activity.todo.actions.close')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
-      <ConfirmationDialog
-        open={closing}
-        onOpenChange={setClosing}
-        title={t('activity.todo.close.title')}
-        description={t('activity.todo.close.description', { title: text.title })}
-        confirmLabel={t('activity.todo.close.confirm')}
-        isLoading={close.isPending}
-        onConfirm={() => close.mutate()}
-      />
+      {canClose ? (
+        <ConfirmationDialog
+          open={closing}
+          onOpenChange={setClosing}
+          title={t('activity.todo.close.title')}
+          description={t('activity.todo.close.description', { title: text.title })}
+          confirmLabel={t('activity.todo.close.confirm')}
+          isLoading={close.isPending}
+          onConfirm={() => close.mutate()}
+        />
+      ) : null}
     </li>
   );
 }

@@ -80,7 +80,9 @@ export function useActivityCount({ enabled = true }: { enabled?: boolean } = {})
 }
 
 /**
- * "Segna come fatto": closes one item by hand. The list and the number are read again whatever the answer: when the item was already
+ * "Segna come fatto": closes one item by hand. It takes the item off the list of the whole organization, so it asks the permission to
+ * write the properties (`property.write` of Affitti brevi): the card offers it only to who holds it and the endpoint must ask the same,
+ * a refusal (403) being told by the error toast. The list and the number are read again whatever the answer: when the item was already
  * closed or is not the caller's any more (404), reading the list is what takes it off the screen.
  */
 export function useCloseActivity(id: string) {
