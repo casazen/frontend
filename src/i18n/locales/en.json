@@ -12555,6 +12555,74 @@
     "noResultsDescription": "Try removing a filter or searching with another word.",
     "noResultsTitle": "No reports match",
     "open": "Open",
+    "overview": {
+      "basis": "Revenue on an accrual basis: the nights of the confirmed stays, lodging and cleaning, tourist tax excluded. ADR is the average revenue per night sold, RevPAR the revenue per night available.",
+      "compare": "Compare with last year",
+      "comparePeriod": "Compared with the same days last year: {{from}} to {{to}}.",
+      "delta": {
+        "none": "No comparison with last year",
+        "percent": "{{value}} on last year",
+        "points_one": "{{value}} point on last year",
+        "points_other": "{{value}} points on last year"
+      },
+      "empty": "No confirmed stays in this period: the trend and the comparisons appear as soon as there are bookings.",
+      "error": "Could not load the numbers for the period.",
+      "filters": {
+        "allProperties": "All properties",
+        "label": "Overview filters",
+        "period": "Period",
+        "property": "Property"
+      },
+      "groupBy": {
+        "all": "All together",
+        "channel": "By channel",
+        "label": "How to split the numbers",
+        "property": "By property"
+      },
+      "na": "n/a",
+      "table": {
+        "caption": {
+          "channel": "Numbers by channel",
+          "property": "Numbers by property"
+        },
+        "deltaPoints": "{{value}} pts",
+        "name": {
+          "channel": "Channel",
+          "property": "Property"
+        },
+        "other": "Other",
+        "previous": "Last year: {{value}}",
+        "total": "Total"
+      },
+      "tiles": {
+        "adr": "ADR",
+        "label": "The numbers for the period",
+        "occupancy": "Occupancy",
+        "revPar": "RevPAR",
+        "revenue": "Revenue"
+      },
+      "title": "Activity overview",
+      "trend": {
+        "empty": "Nothing to show for this line in the period.",
+        "forecast": "Forecast",
+        "metric": {
+          "adr": "ADR",
+          "occupancy": "Occupancy",
+          "revPar": "RevPAR",
+          "revenue": "Revenue"
+        },
+        "metricLabel": "Number to show",
+        "noChannelMetric": "Occupancy and RevPAR are not worked out per channel: they belong to the property.",
+        "period": "Period",
+        "previousYear": "Last year",
+        "series": {
+          "channel": "Channel",
+          "property": "Property"
+        },
+        "titleMonth": "Trend by month",
+        "titleWeek": "Trend by week"
+      }
+    },
     "preset": {
       "custom": "Custom dates",
       "last3Months": "Last 3 months",
