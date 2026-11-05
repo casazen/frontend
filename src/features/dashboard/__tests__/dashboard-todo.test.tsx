@@ -8,7 +8,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useComplianceFineCount } from '@/features/compliance/use-compliance';
 import type { TodoActivity } from '@/api/internal-activities.api';
-import { useActivities } from '@/queries/internalActivities';
+import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { DashboardPage } from '../dashboard-page';
 
 vi.mock('@/api/dashboard.api', () => ({
@@ -24,7 +24,7 @@ vi.mock('@/queries/use-properties', () => {
   const properties = [{ id: 'p-1', name: 'Casa Mare' }];
   return { useProperties: () => ({ data: properties, isSuccess: true }) };
 });
-vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useCloseActivity: vi.fn() }));
+vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn(), useCloseActivity: vi.fn() }));
 vi.mock('@/features/compliance/use-compliance', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/features/compliance/use-compliance')>()),
   useComplianceFineCount: vi.fn(),
@@ -73,6 +73,8 @@ function renderDashboard() {
 describe('DashboardPage To do list', () => {
   beforeEach(async () => {
     vi.mocked(useActivities).mockReturnValue({ data: LIST } as unknown as ReturnType<typeof useActivities>);
+    // The number of the menu: how many urgent items there are, the whole of them.
+    vi.mocked(useActivityCount).mockReturnValue({ data: { count: 2 } } as unknown as ReturnType<typeof useActivityCount>);
     vi.mocked(useComplianceFineCount).mockReturnValue(0);
     await i18n.changeLanguage('it');
   });
@@ -94,6 +96,20 @@ describe('DashboardPage To do list', () => {
     expect(within(summary).getByTestId('home-todo-counts')).toHaveTextContent('3 attività da fare');
     expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
     expect(within(summary).getByTestId('home-todo-see-all')).toHaveAttribute('href', '/app/short-rent/activities');
+  });
+
+  it('DashboardPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {
+    // The server sends 50 items at most while `/count` counts every urgent one: the Home tells no total and counts nothing from the array.
+    const cut = Array.from({ length: 50 }, (_, index) => todo({ id: `cut-${index}`, urgency: index === 0 ? 'High' : 'Medium' }));
+    vi.mocked(useActivities).mockReturnValue({ data: cut } as unknown as ReturnType<typeof useActivities>);
+    vi.mocked(useActivityCount).mockReturnValue({ data: { count: 61 } } as unknown as ReturnType<typeof useActivityCount>);
+    renderDashboard();
+
+    const summary = screen.getByTestId('home-todo-summary');
+    expect(within(summary).getByTestId('home-todo-counts')).toHaveTextContent('Le prime 50 attività da fare');
+    expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('61 urgenti');
+    // "Poi: altre 49 attività" would be a total too.
+    expect(screen.getByTestId('home-todo-focus')).not.toHaveTextContent('Poi:');
   });
 
   it('DashboardPage_NothingToDo_DrawsNothingForIt', () => {

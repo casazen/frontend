@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { useActivities } from '@/queries/internalActivities';
+import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { useProperties } from '@/queries/use-properties';
 import { TodoActivityCard } from './activity-card';
-import { countUrgent, typeTitle } from './lib/todo-model';
+import { TODO_LIST_LIMIT, countUrgent, isTruncatedList, typeTitle, urgentCountOf } from './lib/todo-model';
 
 /** The value of a filter that lets everything through. */
 const ALL = 'all';
@@ -24,12 +24,15 @@ const ACCOUNT = 'account';
  * person, in the order the server sends them: the most urgent first, then by deadline. The page renders that array as it is and
  * never sorts it again (ADR-026-R5); the two filters, by type and by property, only leave items out. Each card says what, on which
  * object, by when and why, and "Fallo ora" opens the page where it is done; the list is read again after any write of the app, on the
- * window focus and every minute, so what the system closes by itself leaves it (ADR-026-R7). The staff page is `/app/admin/activities`.
+ * window focus and every minute, so what the system closes by itself leaves it (ADR-026-R7). The server cuts the list at 50 items: from
+ * there the page says "the first 50" and tells no total, and how many are urgent is the number of the menu (`/count` counts them all).
+ * The staff page is `/app/admin/activities`.
  */
 export function TodoListPage() {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const activities = useActivities();
+  const urgentActivities = useActivityCount();
   const properties = useProperties({ mode: 'short' });
   const [type, setType] = useState(ALL);
   const [property, setProperty] = useState(ALL);
@@ -49,8 +52,15 @@ export function TodoListPage() {
       (type === ALL || item.activityType === type) &&
       (property === ALL || (property === ACCOUNT ? !item.propertyId : item.propertyId === property)),
   );
-  const urgent = countUrgent(visible);
   const filtered = type !== ALL || property !== ALL;
+  // The line counts the whole list while no filter is on, and its urgent items are the ones of the menu; with a filter it counts what is left.
+  const urgent = filtered ? countUrgent(visible) : urgentCountOf(items, urgentActivities.data?.count);
+  // A list of the length the server cuts at may have more items behind it: it is told as "the first 50", never as a total.
+  const truncated = isTruncatedList(items.length);
+  let summary: string;
+  if (!truncated) summary = t('activity.todo.summary.total', { count: visible.length });
+  else if (filtered) summary = t('activity.todo.summary.firstFiltered', { shown: visible.length, max: TODO_LIST_LIMIT });
+  else summary = t('activity.todo.summary.first', { max: TODO_LIST_LIMIT });
 
   let content: ReactNode;
   if (activities.isLoading) {
@@ -113,8 +123,8 @@ export function TodoListPage() {
         </div>
 
         <p className="text-sm text-foreground/70" aria-live="polite" data-testid="todo-summary">
-          {t('activity.todo.summary.total', { count: visible.length })}
-          {urgent > 0 ? (
+          {summary}
+          {urgent !== null && urgent > 0 ? (
             <>
               {' · '}
               <strong className="font-semibold text-danger-foreground" data-testid="todo-urgent-count">
@@ -156,7 +166,10 @@ export function TodoListPage() {
   return (
     <AppShell>
       <div className="space-y-6" data-testid="todo-page">
-        <PageHeader title={t('activity.todo.title')} description={t('activity.todo.description')} />
+        <PageHeader
+          title={t('activity.todo.title')}
+          description={truncated ? t('activity.todo.descriptionCut', { max: TODO_LIST_LIMIT }) : t('activity.todo.description')}
+        />
         {content}
       </div>
     </AppShell>

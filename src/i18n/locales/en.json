@@ -422,6 +422,7 @@
         "withTime": "{{day}} at {{time}}"
       },
       "description": "Everything there is to do, from the most urgent to the least urgent.",
+      "descriptionCut": "The first {{max}} things to do, from the most urgent to the least urgent.",
       "empty": {
         "description": "When something needs you, you will find it here, most urgent first.",
         "title": "Nothing to do"
@@ -462,6 +463,8 @@
         "property": "A property"
       },
       "summary": {
+        "first": "The first {{max}} tasks to do",
+        "firstFiltered": "{{shown}} of the first {{max}} tasks to do",
         "total_one": "{{count}} task to do",
         "total_other": "{{count}} tasks to do",
         "urgent_one": "{{count}} urgent",

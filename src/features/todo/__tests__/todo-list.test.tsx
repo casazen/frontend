@@ -4,7 +4,7 @@ import { createElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { TodoActivity } from '@/api/internal-activities.api';
-import { useActivities, useCloseActivity } from '@/queries/internalActivities';
+import { useActivities, useActivityCount, useCloseActivity } from '@/queries/internalActivities';
 import { TodoListPage } from '../todo-list';
 
 type PermissionCheck = (context: string, permission: string) => boolean;
@@ -21,7 +21,13 @@ vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+  PageHeader: ({ title, description }: { title: string; description?: string }) =>
+    createElement(
+      'div',
+      null,
+      createElement('h1', null, title),
+      description ? createElement('p', { 'data-testid': 'todo-page-description' }, description) : null,
+    ),
 }));
 vi.mock('@/queries/use-properties', () => ({
   useProperties: () => ({
@@ -31,7 +37,7 @@ vi.mock('@/queries/use-properties', () => ({
     ],
   }),
 }));
-vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useCloseActivity: vi.fn() }));
+vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn(), useCloseActivity: vi.fn() }));
 
 function todo(overrides: Partial<TodoActivity> & { id: string }): TodoActivity {
   return {
@@ -93,6 +99,11 @@ function answer(overrides: Record<string, unknown>) {
   } as unknown as ReturnType<typeof useActivities>);
 }
 
+/** The number of the menu (`GET /api/me/activities/count`): how many urgent items the account has, the whole of them. */
+function menuCount(count: number | undefined) {
+  vi.mocked(useActivityCount).mockReturnValue({ data: count === undefined ? undefined : { count } } as unknown as ReturnType<typeof useActivityCount>);
+}
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -111,6 +122,7 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     vi.clearAllMocks();
     workspace.hasPermission = () => true;
     vi.mocked(useCloseActivity).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useCloseActivity>);
+    menuCount(2);
     answer({ data: LIST });
     await i18n.changeLanguage('it');
   });
@@ -194,6 +206,22 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
 
     expect(screen.getByTestId('todo-summary')).toHaveTextContent('4 attività da fare');
     expect(screen.getByTestId('todo-urgent-count')).toHaveTextContent('2 urgenti');
+  });
+
+  it('TodoListPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {
+    // The server sends 50 items at most while `/count` counts every urgent one: the page tells no total and counts nothing from the array.
+    answer({ data: Array.from({ length: 50 }, (_, index) => todo({ id: `cut-${index}`, propertyId: index % 2 === 0 ? 'p-1' : 'p-2' })) });
+    menuCount(61);
+    renderPage();
+
+    expect(screen.getByTestId('todo-summary')).toHaveTextContent('Le prime 50 attività da fare');
+    expect(screen.getByTestId('todo-urgent-count')).toHaveTextContent('61 urgenti');
+    expect(screen.getByTestId('todo-page-description')).toHaveTextContent('Le prime 50 cose da fare');
+
+    // A filter leaves out items of those 50: the line counts what is left, and the number of the menu is not about them.
+    fireEvent.change(screen.getByTestId('todo-filter-property'), { target: { value: 'p-1' } });
+    expect(screen.getByTestId('todo-summary')).toHaveTextContent('25 tra le prime 50 attività da fare');
+    expect(screen.queryByTestId('todo-urgent-count')).not.toBeInTheDocument();
   });
 
   it('TodoListPage_FilterByType_LeavesItemsOutAndKeepsTheirOrder', () => {

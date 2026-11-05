@@ -3,7 +3,7 @@ import type { ActivityUrgency, TodoActivity } from '@/api/internal-activities.ap
 import { DayList, PlainSection, type CalmTone, type DayListItem } from '@/components/shared/calm';
 import type { PermissionPredicate } from '@/config/route-manifest';
 import { todoActionRoute } from './activity-card';
-import { HOME_NEXT_ITEMS, TODO_LIST_PATH, describeTodo } from './lib/todo-model';
+import { HOME_NEXT_ITEMS, TODO_LIST_LIMIT, TODO_LIST_PATH, describeTodo, isTruncatedList } from './lib/todo-model';
 
 /** Every level has its icon and its word in the row: the color of the tone is never the only signal. */
 const URGENCY_TONE: Record<ActivityUrgency, CalmTone> = { High: 'danger', Medium: 'warning', Low: 'info' };
@@ -11,10 +11,13 @@ const URGENCY_TONE: Record<ActivityUrgency, CalmTone> = { High: 'danger', Medium
 interface TodoTodayListProps {
   /** The items to list, in the order the server sent them: the ones after the item the focus block shows (all of them when it is not shown). */
   items: readonly TodoActivity[];
-  /** How many open items the host has in all, the one of the focus block included. */
+  /**
+   * How many open items the list the server sent holds, the one of the focus block included. The server cuts the list at
+   * {@link TODO_LIST_LIMIT}: from there it is "the first ones" and not a total.
+   */
   total: number;
-  /** How many of them are urgent: the number of the nav badge. */
-  urgent: number;
+  /** How many of them are urgent: the number of the nav badge (it counts them all, the list is cut). `null` when it is not known. */
+  urgent: number | null;
   propertyNames: ReadonlyMap<string, string>;
   hasPermission?: PermissionPredicate;
   limit?: number;
@@ -29,6 +32,8 @@ interface TodoTodayListProps {
 export function TodoTodayList({ items, total, urgent, propertyNames, hasPermission, limit = HOME_NEXT_ITEMS }: TodoTodayListProps) {
   const { t, i18n } = useTranslation();
   const context = { t, exists: (key: string) => i18n.exists(key), locale: i18n.language, propertyNames };
+  // A list of the length the server cuts at may have more items behind it: no total (and no count of the rest) is told from it.
+  const truncated = isTruncatedList(total);
 
   const rows: DayListItem[] = items.slice(0, limit).map((activity) => {
     const text = describeTodo(activity, context);
@@ -54,15 +59,15 @@ export function TodoTodayList({ items, total, urgent, propertyNames, hasPermissi
   return (
     <PlainSection
       title={t('activity.todo.next.title')}
-      count={items.length}
+      count={truncated ? undefined : items.length}
       actionLabel={t('activity.todo.next.seeAll')}
       href={TODO_LIST_PATH}
       actionTestId="home-todo-see-all"
       data-testid="home-todo-summary"
     >
       <p className="text-sm text-foreground/70" data-testid="home-todo-counts">
-        {t('activity.todo.summary.total', { count: total })}
-        {urgent > 0 ? (
+        {truncated ? t('activity.todo.summary.first', { max: TODO_LIST_LIMIT }) : t('activity.todo.summary.total', { count: total })}
+        {urgent !== null && urgent > 0 ? (
           <>
             {' · '}
             <strong className="font-semibold text-danger-foreground" data-testid="home-todo-urgent">

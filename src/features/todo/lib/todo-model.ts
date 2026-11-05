@@ -8,6 +8,14 @@ export const TODO_LIST_PATH = '/app/short-rent/activities';
 /** How many of the next items the Home lists under the one it shows first. */
 export const HOME_NEXT_ITEMS = 3;
 
+/** The most items the server sends in the list (`TodoLimits.MaxPendingItems` of the backend): it cuts the list there, while `/count` counts them all. */
+export const TODO_LIST_LIMIT = 50;
+
+/** Whether a list of this length may be only the first part of a longer one: its length is then "the first ones", never a total. */
+export function isTruncatedList(length: number): boolean {
+  return length >= TODO_LIST_LIMIT;
+}
+
 interface TypeKeys {
   titleKey: string;
   whyKey: string;
@@ -93,6 +101,16 @@ export function urgencyOf(value: string | null | undefined): ActivityUrgency {
 /** How many items are urgent: the ones the nav counts (`High`, ADR-026-R12). */
 export function countUrgent(items: readonly Pick<TodoActivity, 'urgency'>[]): number {
   return items.filter((item) => item.urgency === 'High').length;
+}
+
+/**
+ * How many items are urgent, for a line that counts them: the number of the nav badge when there is one (`/count` counts every urgent
+ * item, and the list is cut at {@link TODO_LIST_LIMIT}), else the urgent ones of the list, which are all of them only while the list is not
+ * cut. Of a cut list with no number from the server there is none to give (`null`).
+ */
+export function urgentCountOf(items: readonly Pick<TodoActivity, 'urgency'>[], serverCount: number | undefined): number | null {
+  if (typeof serverCount === 'number') return serverCount;
+  return isTruncatedList(items.length) ? null : countUrgent(items);
 }
 
 /** The instants of the API are UTC: a time written without a zone is UTC too, and never the clock of the browser. */

@@ -422,6 +422,7 @@
         "withTime": "{{day}} alle {{time}}"
       },
       "description": "Tutto quello che c'è da fare, dalla cosa più urgente alla meno urgente.",
+      "descriptionCut": "Le prime {{max}} cose da fare, dalla più urgente alla meno urgente.",
       "empty": {
         "description": "Quando c'è qualcosa che ha bisogno di te, lo trovi qui, in ordine di urgenza.",
         "title": "Non c'è niente da fare"
@@ -462,6 +463,8 @@
         "property": "Un immobile"
       },
       "summary": {
+        "first": "Le prime {{max}} attività da fare",
+        "firstFiltered": "{{shown}} tra le prime {{max}} attività da fare",
         "total_one": "{{count}} attività da fare",
         "total_other": "{{count}} attività da fare",
         "urgent_one": "{{count}} urgente",

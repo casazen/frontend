@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { TodoActivity } from '@/api/internal-activities.api';
 import { TodoFocusBlock } from '../focus-block';
-import { countUrgent } from '../lib/todo-model';
+import { TODO_LIST_LIMIT, countUrgent, urgentCountOf } from '../lib/todo-model';
 import { TodoTodayList } from '../today-list';
 
 const NAMES = new Map([
@@ -152,12 +152,35 @@ describe('the To do list on the Home (NF-07, ADR-026-R8)', () => {
       expect(screen.getByTestId('home-todo-nothing-else')).toBeInTheDocument();
       expect(screen.getByTestId('home-todo-urgent')).toHaveTextContent('1 urgente');
     });
+
+    it('TodoTodayList_ListCutByTheServer_SaysTheFirstOnesAndNoTotalNorUrgentCountItDoesNotKnow', () => {
+      // 50 is the most the server sends: there may be more behind them, so the line is no total and does not count the rest either.
+      wrap(<TodoTodayList items={LIST} total={TODO_LIST_LIMIT} urgent={null} propertyNames={NAMES} />);
+
+      expect(screen.getByTestId('home-todo-counts')).toHaveTextContent('Le prime 50 attività da fare');
+      expect(screen.queryByTestId('home-todo-urgent')).not.toBeInTheDocument();
+    });
   });
 
   describe('countUrgent', () => {
     it('countUrgent_Items_CountsOnlyHigh_LikeTheNavBadge', () => {
       expect(countUrgent(LIST)).toBe(2);
       expect(countUrgent([])).toBe(0);
+    });
+  });
+
+  describe('urgentCountOf', () => {
+    const cut = Array.from({ length: TODO_LIST_LIMIT }, (_, index) => todo({ id: `cut-${index}`, urgency: 'Medium' }));
+
+    it('urgentCountOf_NumberOfTheMenu_WinsOverTheListBecauseTheServerCutsTheList', () => {
+      expect(urgentCountOf(cut, 61)).toBe(61);
+      expect(urgentCountOf(LIST, 7)).toBe(7);
+      expect(urgentCountOf(LIST, 0)).toBe(0);
+    });
+
+    it('urgentCountOf_NoNumberFromTheMenu_CountsTheListOnlyWhileItIsWhole', () => {
+      expect(urgentCountOf(LIST, undefined)).toBe(2);
+      expect(urgentCountOf(cut, undefined)).toBeNull();
     });
   });
 });
