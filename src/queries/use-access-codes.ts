@@ -22,14 +22,15 @@ async function fetchAllStatus(): Promise<AccessCodeStatusItem[]> {
 }
 
 /**
- * For each property the caller reaches: is its lock code set, and when. It never carries a code. The list is read again whenever the
- * page opens (the client's default is not to): the codes are set from more than one screen.
+ * For each property the caller reaches: is its lock code set, and when. It never carries a code. The list is read again every time the
+ * page opens (`'always'`: the client's default is not to, and what it has stays fresh for five minutes): the codes are set from more
+ * than one screen.
  */
 export function useAccessCodeStatus() {
   return useQuery({
     queryKey: [...ACCESS_CODES_KEY, 'status'],
     queryFn: fetchAllStatus,
-    refetchOnMount: true,
+    refetchOnMount: 'always',
   });
 }
 
