@@ -50,6 +50,7 @@ test.describe('Area navigation (UI-04a)', () => {
         'Verifiche',
         'Alloggiati',
         'CIN',
+        'Identificazione',
         'Aspetto sito',
         'Documenti sito',
         'Profilo',
@@ -189,7 +190,7 @@ test.describe('Area navigation (UI-04a)', () => {
 
       // The pages that hang from the entry are the tabs on top of its page, and of each of them.
       const tabs = page.getByRole('navigation', { name: 'Sezioni di Adempimenti' });
-      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN']);
+      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN', 'Identificazione']);
       await expect(tabs.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
       await tabs.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
@@ -198,7 +199,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
       await expect(menu.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveCount(0);
-      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN']);
+      await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN', 'Identificazione']);
       await expect(tabs.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 

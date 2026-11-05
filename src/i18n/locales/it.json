@@ -3299,6 +3299,42 @@
         "unexpected": "Qualcosa è andato storto: riprova tra poco."
       }
     },
+    "identification": {
+      "description": "Il codice viene inviato all'ospite solo dopo che la verifica dell'identità è andata a buon fine.",
+      "dialog": {
+        "changeDescription": "Per {{name}}. Il nuovo codice sostituisce quello attuale, che CasaZen non può mostrarti.",
+        "changeTitle": "Cambia il codice",
+        "error": "Non siamo riusciti a salvare il codice. Quello di prima non è cambiato: riprova tra un momento.",
+        "fieldHint": "Lo vedi solo mentre lo scrivi: una volta salvato, CasaZen non lo mostra più.",
+        "fieldLabel": "Codice della serratura",
+        "save": "Salva codice",
+        "savedDescription": "Il codice di {{name}} è salvato. Per sicurezza CasaZen non lo mostra più: se serve, scrivine uno nuovo.",
+        "savedTitle": "Codice salvato",
+        "setDescription": "Per {{name}}. Un ospite lo riceve solo dopo che la verifica dell'identità è andata a buon fine.",
+        "setTitle": "Imposta il codice"
+      },
+      "empty": {
+        "action": "Aggiungi un immobile",
+        "description": "Quando avrai un immobile potrai impostare qui il codice della sua serratura.",
+        "title": "Non hai ancora immobili"
+      },
+      "list": {
+        "title": "Immobili"
+      },
+      "loadError": "Impossibile caricare i codici di accesso.",
+      "row": {
+        "changeCode": "Cambia codice",
+        "missingHint": "Senza codice, un ospite verificato non riceve nulla per entrare.",
+        "qr": "QR di ingresso",
+        "setCode": "Imposta codice",
+        "updated": "Codice aggiornato il {{date}}"
+      },
+      "state": {
+        "missing": "Codice mancante",
+        "set": "Codice impostato"
+      },
+      "title": "Identificazione e accesso"
+    },
     "properties": {
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
@@ -9156,6 +9192,7 @@
     "alloggiati": "Alloggiati",
     "alloggiatiReports": "Report Alloggiati",
     "cin": "CIN",
+    "identification": "Identificazione",
     "fiscal": "Regime fiscale",
     "payments": "Incassi",
     "revenue": "Ricavi",

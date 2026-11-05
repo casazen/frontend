@@ -161,6 +161,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/pricing'],
   },
   {
+    // The printable QR of the entrance of a property (NF-13), opened from «Identificazione e accesso»: the page was built before and no
+    // route reached it. In no menu: that page leads to it. It asks what reading the property asks, and reads the id from `:propertyId`.
+    path: '/app/short-rent/properties/:propertyId/qr',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({ default: (await import('@/pages/PropertyQrCode')).PropertyQrCodePage }),
+  },
+  {
     // Interventi (SR-08): what the host asked of the suppliers, from the request to the payment. A tab of the section Immobili: the page
     // hangs from that entry. Reading it asks what reading the properties asks; the steps on a request ask
     // `property.write` or `servicerequest.write`, and the page hides the buttons from who may not.
@@ -534,6 +542,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
     legacyPaths: ['/app/short-rent/cin', '/cin'],
+  },
+  {
+    // «Identificazione e accesso» (E03/F01/US03): the lock code of each property, write-only, and the way to the printable QR of its entrance. A
+    // tab of Adempimenti (the page links from there and from what is still to do: `?property=<id>` opens the code of one property). It asks what
+    // setting a code asks, `property.write` (the policy of `POST properties/{id}/access-code`); the list it reads asks `property.read`.
+    path: '/app/short-rent/compliance/identification',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'nav.identification',
+    navParent: '/app/short-rent/compliance',
+    navOrder: 3,
+    icon: 'ShieldCheck',
+    component: async () => ({
+      default: (await import('@/features/compliance/identification/identification-page')).IdentificationPage,
+    }),
   },
   {
     path: '/app/short-rent/bookings/:id',

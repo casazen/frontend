@@ -263,7 +263,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
   // The sections of the menus: an entry and, in tab order, the pages that hang from it. This is what keeps "Altro" short.
   const SECTIONS: Record<string, string[]> = {
     '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/crm/guests', '/app/short-rent/reviews'],
-    '/app/short-rent/compliance': ['/app/short-rent/alloggiati', '/app/short-rent/alloggiati/reports', '/app/short-rent/compliance/cin'],
+    '/app/short-rent/compliance': [
+      '/app/short-rent/alloggiati',
+      '/app/short-rent/alloggiati/reports',
+      '/app/short-rent/compliance/cin',
+      '/app/short-rent/compliance/identification',
+    ],
     '/app/short-rent/properties': [
       '/app/short-rent/interventions',
       '/app/short-rent/trusted-suppliers',
@@ -315,10 +320,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     const visible = paths(getVisibleNavEntries('short-rent', allowAll));
     expect(visible).not.toContain('/app/short-rent/alloggiati');
     expect(visible).not.toContain('/app/short-rent/compliance/cin');
+    expect(visible).not.toContain('/app/short-rent/compliance/identification');
     expect(paths(getNavChildren('/app/short-rent/compliance', allowAll))).toEqual([
       '/app/short-rent/alloggiati',
       '/app/short-rent/alloggiati/reports',
       '/app/short-rent/compliance/cin',
+      '/app/short-rent/compliance/identification',
     ]);
     expect(paths(getNavMatchEntries('short-rent', allowAll))).toEqual(
       expect.arrayContaining(['/app/short-rent/alloggiati', '/app/short-rent/compliance']),
@@ -350,7 +357,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
   it('lists only the pages the user may open', () => {
     expect(paths(getNavChildren('/app/short-rent/compliance', without('booking.read')))).toEqual([
       '/app/short-rent/compliance/cin',
+      '/app/short-rent/compliance/identification',
     ]);
+    // Setting a lock code asks for writing the properties: who may only read them has no tab for it.
+    expect(paths(getNavChildren('/app/short-rent/compliance', without('property.write')))).not.toContain(
+      '/app/short-rent/compliance/identification',
+    );
     // The branding and documents pages are for the org billing administrator; the domain is not.
     expect(paths(getNavChildren('/app/short-rent/vetrina', notBillingAdmin))).toEqual(['/app/short-rent/settings/domain']);
     expect(paths(getNavChildren('/app/short-rent/vetrina', allowAll))).toEqual([

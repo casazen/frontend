@@ -37,3 +37,4 @@ export * from './statement.types';
 export * from './withholding.types';
 export * from './routine.types';
 export * from './wire-transfer.types';
+export * from './access-code.types';
