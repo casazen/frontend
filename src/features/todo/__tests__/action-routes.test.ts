@@ -71,7 +71,8 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   });
 
   it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestInShortRent', (_action, target) => {
-    const targetOfEntry = target as { route: { path: string; target?: string; tab?: string }; fallback?: { path: string; target?: string; tab?: string } };
+    type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string };
+    const targetOfEntry = target as { route: RouteOfEntry; fallback?: RouteOfEntry };
     for (const candidate of [targetOfEntry.route, ...(targetOfEntry.fallback ? [targetOfEntry.fallback] : [])]) {
       expect(
         ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === 'short-rent'),
@@ -79,6 +80,8 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
       ).toBe(true);
       // A page with `:id` says whose id fills it, and a page without it does not ask for one.
       expect(candidate.path.includes(':id'), candidate.path).toBe(candidate.target !== undefined);
+      // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's.
+      expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity');
       if (candidate.tab !== undefined) expect(BOOKING_TABS as readonly string[]).toContain(candidate.tab);
     }
   });
@@ -140,6 +143,19 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   it('todoActionRoute_ItemWithoutTheIdThePageNeeds_ReturnsNullNeverAHalfBuiltAddress', () => {
     expect(todoActionRoute(itemFor('ReviewBooking', { entityId: NO_ID }))).toBeNull();
     expect(todoActionRoute(itemFor('ResumeWizard', { entityType: 'Draft', entityId: NO_ID, propertyId: null }))).toBeNull();
+  });
+
+  it('todoActionRoute_ItemAboutAnotherKindOfEntity_ReturnsNullNeverTheIdOfSomethingThatIsNotABooking', () => {
+    const readOnly = permissions(['property.read', 'booking.read']);
+
+    // A message thread of a channel is not a booking: its id opens no booking page.
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }))).toBeNull();
+    // A queue item reaches the queue, which needs no booking id, but not the read-only fallback that is a booking page.
+    const queueItem = itemFor('ApproveAiDraft', { entityType: 'ApprovalQueueItem' });
+    expect(todoActionRoute(queueItem)).toBe('/app/short-rent/approval-queue');
+    expect(todoActionRoute(queueItem, readOnly)).toBeNull();
+    // The same item about a booking still finds the stay.
+    expect(todoActionRoute(itemFor('ApproveAiDraft'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=messages`);
   });
 
   it('todoActionRoute_UnknownAction_ReturnsNullNeverTheDashboard', () => {

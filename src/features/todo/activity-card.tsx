@@ -20,6 +20,11 @@ export type TodoRouteTarget = 'entity' | 'property';
 export interface TodoRoute {
   path: string;
   target?: TodoRouteTarget;
+  /**
+   * The kind of entity an item must be about for `target: 'entity'` to fill the page with its id (`Booking` for the page of a booking).
+   * The id of an item about anything else (a queue item, a message thread) is not the id of a booking: it gets no address from this route.
+   */
+  entityType?: string;
   /** A tab of the page of a booking (`?tab=`). */
   tab?: BookingTab;
   /** Other parameters of the address, for a step of a wizard (`?step=`). */
@@ -32,6 +37,9 @@ export interface TodoActionTarget {
   /** Where it leads a person who cannot open `route`, or an item that lacks the id `route` needs: a page that tells the same thing in read-only. */
   fallback?: TodoRoute;
 }
+
+/** The `entityType` the server sends for an item about a booking. */
+const BOOKING = 'Booking';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -47,21 +55,25 @@ export interface TodoActionTarget {
  * - `FixListingError`: the property named by the item (its listing is part of it), or the channels when the item names none;
  * - `ReplyToMessage`, `ApproveAiDraft`: the tab Messaggi of the booking, or the queue of the approvals;
  * - `ResumeWizard`: the activation of the property, the one wizard that is resumed by property today.
+ *
+ * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
+ * for the page of a booking): `ReplyToMessage` may be about a message thread and `ApproveAiDraft` about a queue item, whose ids are not a
+ * booking's, so those items get no address from it (the button is left out and the row leads to the list).
  */
 export const ACTION_ROUTE_MAP = {
   ReviewBooking: {
-    route: { path: '/app/short-rent/bookings/:id', target: 'entity' },
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
   StartCheckIn: {
-    route: { path: '/app/short-rent/bookings/:id', target: 'entity', tab: 'guest' },
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
   },
   CompleteCheckOut: {
-    route: { path: '/app/short-rent/bookings/:id/checkout', target: 'entity' },
-    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity' },
+    route: { path: '/app/short-rent/bookings/:id/checkout', target: 'entity', entityType: BOOKING },
+    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
   VerifyIdentity: {
     route: { path: '/app/short-rent/verifications' },
-    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', tab: 'guest' },
+    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
   },
   UploadAlloggiatiProof: {
     route: { path: '/app/short-rent/alloggiati' },
@@ -74,11 +86,11 @@ export const ACTION_ROUTE_MAP = {
     fallback: { path: '/app/short-rent/channels' },
   },
   ReplyToMessage: {
-    route: { path: '/app/short-rent/bookings/:id', target: 'entity', tab: 'messages' },
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'messages' },
   },
   ApproveAiDraft: {
     route: { path: '/app/short-rent/approval-queue' },
-    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', tab: 'messages' },
+    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'messages' },
   },
   ResumeWizard: {
     route: { path: '/app/short-rent/properties/:id/activation', target: 'property' },
@@ -106,6 +118,12 @@ function propertyOf(activity: TodoRouteSubject): string | null {
   return activity.entityType === 'Property' && usable(activity.entityId) ? activity.entityId : null;
 }
 
+/** The id of the entity an item is about, for a page of that kind of entity (`route.entityType`): none for an item about anything else. */
+function entityOf(route: TodoRoute, activity: TodoRouteSubject): string | null {
+  if (route.entityType !== undefined && activity.entityType !== route.entityType) return null;
+  return usable(activity.entityId) ? activity.entityId : null;
+}
+
 function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?: PermissionPredicate): string | null {
   const entry = getManifestEntry(route.path);
   if (!entry) return null;
@@ -113,7 +131,7 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
 
   let path = entry.path;
   if (route.target) {
-    const id = route.target === 'property' ? propertyOf(activity) : usable(activity.entityId) ? activity.entityId : null;
+    const id = route.target === 'property' ? propertyOf(activity) : entityOf(route, activity);
     if (!id) return null;
     path = generatePath(entry.path, { id });
   }
@@ -127,8 +145,8 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
 
 /**
  * The address "Do now" opens for an item, or `null` when there is none to offer: an action unknown to this version of the app, an item
- * that lacks the id its page needs, or a person who can open neither the page nor its read-only fallback. The button is then left out,
- * and never sends the person to a page that answers "no access".
+ * that lacks the id its page needs (or is about another kind of entity than the page's), or a person who can open neither the page nor
+ * its read-only fallback. The button is then left out, and never sends the person to a page that answers "no access".
  */
 export function todoActionRoute(activity: TodoRouteSubject, hasPermission?: PermissionPredicate): string | null {
   if (!Object.hasOwn(ACTION_ROUTE_MAP, activity.action)) return null;
