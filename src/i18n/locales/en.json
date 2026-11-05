@@ -3299,6 +3299,42 @@
         "unexpected": "Something went wrong: try again shortly."
       }
     },
+    "identification": {
+      "description": "The code is sent to the guest only after the identity check has passed.",
+      "dialog": {
+        "changeDescription": "For {{name}}. The new code replaces the current one, which CasaZen cannot show you.",
+        "changeTitle": "Change the code",
+        "error": "We could not save the code. The previous one has not changed: try again in a moment.",
+        "fieldHint": "You only see it while you type it: once it is saved, CasaZen does not show it again.",
+        "fieldLabel": "Lock code",
+        "save": "Save code",
+        "savedDescription": "The code of {{name}} is saved. For safety CasaZen does not show it again: if you need to, write a new one.",
+        "savedTitle": "Code saved",
+        "setDescription": "For {{name}}. A guest receives it only after the identity check has passed.",
+        "setTitle": "Set the code"
+      },
+      "empty": {
+        "action": "Add a property",
+        "description": "Once you have a property you can set the code of its lock here.",
+        "title": "You have no properties yet"
+      },
+      "list": {
+        "title": "Properties"
+      },
+      "loadError": "We could not load the access codes.",
+      "row": {
+        "changeCode": "Change code",
+        "missingHint": "Without a code, a verified guest receives nothing to get in.",
+        "qr": "Entrance QR",
+        "setCode": "Set code",
+        "updated": "Code updated on {{date}}"
+      },
+      "state": {
+        "missing": "Code missing",
+        "set": "Code set"
+      },
+      "title": "Identification and access"
+    },
     "properties": {
       "openWizard": "Activation wizard",
       "publishBlocked": "Complete the activation wizard before publishing the property."
@@ -9156,6 +9192,7 @@
     "alloggiati": "Alloggiati",
     "alloggiatiReports": "Alloggiati reports",
     "cin": "CIN",
+    "identification": "Identification",
     "fiscal": "Fiscal regime",
     "payments": "Payments",
     "revenue": "Revenue",

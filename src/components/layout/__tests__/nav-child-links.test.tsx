@@ -42,6 +42,7 @@ describe('NavChildLinks (UI-04a)', () => {
       ['Alloggiati', '/app/short-rent/alloggiati'],
       ['Report Alloggiati', '/app/short-rent/alloggiati/reports'],
       ['CIN', '/app/short-rent/compliance/cin'],
+      ['Identificazione', '/app/short-rent/compliance/identification'],
     ]);
   });
 
@@ -56,7 +57,7 @@ describe('NavChildLinks (UI-04a)', () => {
   it('NavChildLinks_UserWhoMayOpenOnlySomeChildren_ListsOnlyThose', () => {
     renderLinks('/app/short-rent/compliance', (_ctx, permission) => permission !== 'booking.read');
 
-    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['CIN']);
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['CIN', 'Identificazione']);
   });
 
   it('NavChildLinks_UserWhoMayOpenNone_ShowsNothing', () => {
@@ -80,7 +81,12 @@ describe('NavChildLinks (UI-04a)', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['Alloggiati', 'Report Alloggiati', 'CIN']);
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Alloggiati',
+      'Report Alloggiati',
+      'CIN',
+      'Identificazione',
+    ]);
   });
 
   it('NavChildLinks_NoRouter_ShowsNothingAndDoesNotFail', () => {
