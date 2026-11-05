@@ -38,6 +38,9 @@ export function TodoListPage() {
   const [property, setProperty] = useState(ALL);
 
   const items = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
+  // An answer that is not a list (a server or a proxy that sends a page where the API should be) is a failed load: "nothing to do" would
+  // reassure about a list that may hold a deadline of the law.
+  const notAList = activities.data !== undefined && !Array.isArray(activities.data);
   const propertyNames = useMemo(
     () => new Map((Array.isArray(properties.data) ? properties.data : []).map((candidate) => [candidate.id, candidate.name] as const)),
     [properties.data],
@@ -71,7 +74,7 @@ export function TodoListPage() {
         <Skeleton className="h-32 w-full rounded-lg motion-reduce:animate-none" aria-hidden="true" />
       </div>
     );
-  } else if (activities.isError && !activities.data) {
+  } else if ((activities.isError && !activities.data) || notAList) {
     content = (
       <ErrorState testId="todo-error" title={t('activity.todo.loadError')} error={activities.error} onRetry={() => void activities.refetch()} />
     );

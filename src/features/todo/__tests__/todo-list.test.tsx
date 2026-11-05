@@ -319,13 +319,17 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 
-  it('TodoListPage_AnswerOfAnotherShape_IsNotAList', () => {
-    // A server or a proxy that answers with a page instead of the API.
-    answer({ data: '<!doctype html><html></html>' });
+  it('TodoListPage_AnswerOfAnotherShape_IsAFailedLoadWithRetryAndNeverNothingToDo', () => {
+    // A server or a proxy that answers with a page instead of the API: "nothing to do" would reassure about a list that may hold a deadline of the law.
+    const refetch = vi.fn();
+    answer({ data: '<!doctype html><html></html>', refetch });
     renderPage();
 
+    expect(screen.getByTestId('todo-error')).toHaveTextContent('Non riusciamo a caricare le attività.');
+    expect(screen.queryByTestId('todo-empty')).not.toBeInTheDocument();
     expect(screen.queryByTestId('todo-activity')).not.toBeInTheDocument();
-    expect(screen.getByTestId('todo-empty')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 
   it('TodoListPage_English_ShowsTheEnglishWords', async () => {
