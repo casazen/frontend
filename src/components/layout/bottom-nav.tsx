@@ -17,6 +17,8 @@ interface BottomNavProps {
 
 /** The counter that "Altro" shows on its own: what carries a risk of a sanction is never hidden behind it. */
 const COMPLIANCE_COUNT: NavCountKey = 'compliance';
+/** The other one: the urgent items of the "To do" list (ADR-026-R12) sit in "Altro" too, and are not hidden by it either. */
+const ACTIVITIES_COUNT: NavCountKey = 'activities';
 
 // A column of the bar is a fifth of a 360 px screen (72 px) and the widest name ("Prenotazioni", "Disponibilità") is
 // about 67 px in Inter at 11 px semibold: it fits with no ellipsis (the tabs have no side padding, the room is the
@@ -63,6 +65,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
   const counts = useNavCounts([...bottomEntries, ...moreEntries]);
   // A risk of a sanction behind "Altro" is not hidden by it: the tab says there is something, in red, before the sheet is opened.
   const moreFines = moreEntries.some((entry) => entry.navCount === COMPLIANCE_COUNT) ? (counts[COMPLIANCE_COUNT] ?? 0) : 0;
+  const moreUrgent = moreEntries.some((entry) => entry.navCount === ACTIVITIES_COUNT) ? (counts[ACTIVITIES_COUNT] ?? 0) : 0;
 
   useEffect(() => {
     if (!hasBar) return undefined;
@@ -124,10 +127,21 @@ export function BottomNav({ contextKey }: BottomNavProps) {
             <span>{t('nav.more')}</span>
             <BarIcon active={moreIsActive}>
               <Ellipsis className="h-6 w-6 shrink-0" aria-hidden="true" />
-              {moreFines > 0 ? (
+              {moreFines > 0 || moreUrgent > 0 ? (
                 <>
-                  <span aria-hidden="true" data-testid="more-compliance-mark" className="absolute right-2 top-0.5 size-2.5 rounded-full bg-destructive ring-2 ring-background" />
-                  <span className="sr-only">{`, ${getNavCountLabel(COMPLIANCE_COUNT, moreFines, t)}`}</span>
+                  <span
+                    aria-hidden="true"
+                    data-testid={moreFines > 0 ? 'more-compliance-mark' : 'more-activities-mark'}
+                    className="absolute right-2 top-0.5 size-2.5 rounded-full bg-destructive ring-2 ring-background"
+                  />
+                  <span className="sr-only">
+                    {`, ${[
+                      moreFines > 0 ? getNavCountLabel(COMPLIANCE_COUNT, moreFines, t) : null,
+                      moreUrgent > 0 ? getNavCountLabel(ACTIVITIES_COUNT, moreUrgent, t) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}`}
+                  </span>
                 </>
               ) : null}
             </BarIcon>

@@ -400,6 +400,134 @@
     }
   },
   "activity": {
+    "todo": {
+      "actions": {
+        "close": "Mark as done",
+        "closeFor": "Mark as done: {{title}}",
+        "doNow": "Do it now",
+        "doNowFor": "Do it now: {{title}}"
+      },
+      "close": {
+        "confirm": "Mark as done",
+        "description": "“{{title}}” will leave the list. If it is not really sorted out, CasaZen may raise it again.",
+        "title": "Mark this as done?"
+      },
+      "closeError": "We could not close the task. Please try again.",
+      "closed": "Task marked as done.",
+      "deadline": {
+        "by": "By {{when}}",
+        "overdue": "Overdue: {{when}}",
+        "today": "today",
+        "tomorrow": "tomorrow",
+        "withTime": "{{day}} at {{time}}"
+      },
+      "description": "Everything there is to do, from the most urgent to the least urgent.",
+      "empty": {
+        "description": "When something needs you, you will find it here, most urgent first.",
+        "title": "Nothing to do"
+      },
+      "entity": {
+        "Booking": "Booking",
+        "Property": "Property"
+      },
+      "filter": {
+        "account": "About your account",
+        "allProperties": "All properties",
+        "allTypes": "All types",
+        "label": "Filters",
+        "noMatch": "No task matches these filters.",
+        "property": "Filter by property",
+        "reset": "Show all",
+        "type": "Filter by type",
+        "unknownProperty": "Property"
+      },
+      "focus": {
+        "kicker": "Now",
+        "seeAll": "See all tasks",
+        "then_one": "Next: one more task",
+        "then_other": "Next: {{count}} more tasks"
+      },
+      "listLabel": "Tasks to do",
+      "loadError": "We could not load your tasks.",
+      "loading": "Loading your tasks…",
+      "next": {
+        "more_one": "And one more in the full list.",
+        "more_other": "And {{count}} more in the full list.",
+        "nothingElse": "Nothing else in line.",
+        "seeAll": "See all",
+        "title": "Next up"
+      },
+      "object": {
+        "organization": "Your account",
+        "property": "A property"
+      },
+      "summary": {
+        "total_one": "{{count}} task to do",
+        "total_other": "{{count}} tasks to do",
+        "urgent_one": "{{count}} urgent",
+        "urgent_other": "{{count}} urgent"
+      },
+      "title": "To-do list",
+      "type": {
+        "AlloggiatiDeadline": {
+          "title": "Alloggiati Web deadline",
+          "why": "Guests must be reported to the police within the deadline."
+        },
+        "CheckInPending": {
+          "title": "Check-in to complete",
+          "why": "The check-in of this stay is not complete yet."
+        },
+        "CheckOutPending": {
+          "title": "Check-out to complete",
+          "why": "The stay is over: record the departure."
+        },
+        "CredentialsToRenew": {
+          "title": "Credentials to renew",
+          "why": "The credentials of a service are about to expire or have already expired."
+        },
+        "FiscalDocument": {
+          "title": "Fiscal document to fix",
+          "why": "A fiscal document needs you."
+        },
+        "IntegrationError": {
+          "title": "Connection to fix",
+          "why": "A connection with an external service is not working."
+        },
+        "IstatDeadline": {
+          "title": "ISTAT data deadline",
+          "why": "The data of the period must be sent by the deadline."
+        },
+        "MessageToApprove": {
+          "title": "Message to approve",
+          "why": "A message waits for your approval before it is sent."
+        },
+        "PublicationError": {
+          "title": "Publication error",
+          "why": "A listing could not be published on a channel."
+        },
+        "ReceiptToRetrieve": {
+          "title": "Receipt to retrieve",
+          "why": "The receipt of the submission is missing: it is the proof to keep."
+        },
+        "ReconnectChannelManager": {
+          "title": "Reconnect the channel manager",
+          "why": "The connection with the channel manager was lost."
+        },
+        "WizardResume": {
+          "title": "Setup to resume",
+          "why": "You left a setup half way: you can continue where you were."
+        },
+        "unknown": {
+          "title": "Task to complete",
+          "why": "It needs your attention."
+        }
+      },
+      "urgency": {
+        "High": "Urgent",
+        "Low": "When you can",
+        "Medium": "Important"
+      }
+    },
     "staff": {
       "title": "My activities",
       "description": "View and update assigned activities",
@@ -9269,8 +9397,11 @@
       "supplierRequests_one": "{{count}} request to accept",
       "supplierRequests_other": "{{count}} requests to accept",
       "compliance_one": "{{count}} duty with a risk of penalty",
-      "compliance_other": "{{count}} duties with a risk of penalty"
+      "compliance_other": "{{count}} duties with a risk of penalty",
+      "activities_one": "{{count}} urgent task",
+      "activities_other": "{{count}} urgent tasks"
     },
+    "activities": "Activities",
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
     "channels": "Channels and calendars",

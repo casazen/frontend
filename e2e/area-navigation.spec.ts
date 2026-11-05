@@ -19,7 +19,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds three more', async ({ page }) => {
+    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds four more', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
@@ -34,7 +34,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await more.click();
       await expect(more).toHaveAttribute('aria-expanded', 'true');
       // It held sixteen entries. The pages of a section are tabs on the page of their entry (below), Profilo is in the menu of the user.
-      await expect(menu.getByTestId('nav-more').getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      await expect(menu.getByTestId('nav-more').getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
       // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
         'Ospiti',
@@ -325,8 +325,8 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(sheet.getByRole('group', { name: 'Gestione' })).toBeVisible();
       await expect(sheet.getByRole('group', { name: 'Altro' })).toBeVisible();
       await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
-      // Three tiles in "Altro" where there were sixteen; the profile is in the account row at the end of the sheet.
-      await expect(sheet.getByRole('group', { name: 'Altro' }).getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      // Four tiles in "Altro" where there were sixteen (the To do list is the last); the profile is in the account row at the end of the sheet.
+      await expect(sheet.getByRole('group', { name: 'Altro' }).getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
       await sheet.getByRole('link', { name: 'Coda di approvazione' }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue/);

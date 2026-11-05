@@ -99,6 +99,18 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyComplianceSummary) });
   });
 
+  // The To do list of the host (NF-07): the Home asks for the items and the menu for the number of the urgent ones. None, unless a spec
+  // answers otherwise.
+  await page.route('**/api/me/activities**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const path = new URL(route.request().url()).pathname.replace(/\/$/, '');
+    const body = path.endsWith('/count') ? { count: 0 } : [];
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+
   await page.route('**/api/bookings/approval-requests**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

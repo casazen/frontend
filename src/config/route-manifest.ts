@@ -23,8 +23,9 @@ export type NavPlacement = 'primary' | 'secondary';
 /**
  * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
  * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
+ * `activities` is the number of the urgent items of the "To do" list (`GET api/me/activities/count`, ADR-026-R12), in red too.
  */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance';
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
 export const MAX_PRIMARY_NAV_ENTRIES = 8;
@@ -301,6 +302,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 29,
     icon: 'CheckSquare',
     component: async () => ({ default: (await import('@/pages/ApprovalQueuePage')).ApprovalQueuePage }),
+  },
+  {
+    // «Attività» (NF-07, ADR-026): everything the system asks of the host, the most urgent first, each with its «Fallo ora»; the counter
+    // is the number of the urgent ones. In "Altro", the last of it: the main menu has its eight entries (UI-04a) and the Home already
+    // carries the first item and the next ones; "Altro" says on its own tab that something urgent waits inside. The server shows each user
+    // only the items its scope reaches (HostScope), so the page asks what reading the properties asks, held by every role of the area;
+    // each «Fallo ora» opens a page that asks its own permission (`ACTION_ROUTE_MAP`). Not the staff page `/app/admin/activities`.
+    path: '/app/short-rent/activities',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.activities',
+    navPlacement: 'secondary',
+    navOrder: 35,
+    navCount: 'activities',
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/todo/todo-list')).TodoListPage }),
   },
   {
     // The domain of the booking site: the last tab of the section, after its look and its documents.

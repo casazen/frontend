@@ -137,6 +137,9 @@ function NavMoreMenu({
 
   const activeInside = entries.some((entry) => entry.path === activePath);
   const open = choice && choice.pathname === pathname ? choice.open : activeInside;
+  // A counter inside a closed "Altro" is not hidden by it (the urgent items of the "To do" list): the toggle carries it, as the tab
+  // "Altro" of the phone does. Once the menu is open the entry shows its own.
+  const counted = open ? [] : entries.filter((entry) => entry.navCount && (counts[entry.navCount] ?? 0) > 0);
   const label = t('nav.more');
   const styles = LINK_STYLES.sidebar;
   const { triggerProps, tooltip } = useRailTooltip(label, collapsed);
@@ -153,9 +156,21 @@ function NavMoreMenu({
       >
         <Ellipsis className="h-5 w-5 shrink-0" aria-hidden="true" />
         <span className={cn('truncate', collapsed && 'sr-only')}>{label}</span>
+        {counted.map((entry) => (
+          <NavCountPill
+            key={entry.path}
+            entry={entry}
+            count={entry.navCount ? (counts[entry.navCount] ?? 0) : 0}
+            className={collapsed ? 'absolute right-1 top-1 h-4 min-w-4 px-1 text-[10px]' : 'ml-auto'}
+          />
+        ))}
         {collapsed ? null : (
           <ChevronDown
-            className={cn('ml-auto h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none', open && 'rotate-180')}
+            className={cn(
+              'h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none',
+              counted.length === 0 && 'ml-auto',
+              open && 'rotate-180',
+            )}
             aria-hidden="true"
           />
         )}

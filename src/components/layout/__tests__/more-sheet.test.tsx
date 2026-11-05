@@ -119,9 +119,9 @@ describe('MoreSheet (UI-04b)', () => {
       expect(groups[2]).toHaveAccessibleName('Gestione');
       expect(tiles(groups[2])).toEqual(['Incassi']);
       expect(groups[3]).toHaveAccessibleName('Altro');
-      // Three tiles where there were sixteen: the pages of a section are tabs on the page of their entry, and the profile is in the
-      // account row at the end of the sheet.
-      expect(tiles(groups[3])).toEqual(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      // Four tiles where there were sixteen: the pages of a section are tabs on the page of their entry, and the profile is in the
+      // account row at the end of the sheet. The To do list is the last of them.
+      expect(tiles(groups[3])).toEqual(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
