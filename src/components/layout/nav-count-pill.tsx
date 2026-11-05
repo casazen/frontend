@@ -11,13 +11,14 @@ interface NavCountPillProps {
 }
 
 /**
- * What a counter is about decides its color: a thing to answer is the accent of the area, a risk of a sanction is red. The
- * words for a screen reader say the same, so the color is never the only signal.
+ * What a counter is about decides its color: a thing to answer is the accent of the area, a risk of a sanction and an urgent
+ * thing to do are red. The words for a screen reader say the same, so the color is never the only signal.
  */
 const PILL_COLOR: Record<NavCountKey, string> = {
   bookingRequests: 'bg-primary text-primary-foreground',
   supplierRequests: 'bg-primary text-primary-foreground',
   compliance: 'bg-destructive text-destructive-foreground',
+  activities: 'bg-destructive text-destructive-foreground',
 };
 
 /**

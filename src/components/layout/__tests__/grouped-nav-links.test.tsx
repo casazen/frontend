@@ -202,18 +202,19 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.queryByRole('link', { name: 'Organizzazione' })).not.toBeInTheDocument();
     });
 
-    it('GroupedNavLinks_MoreMenu_OpensOnClickAndShowsTheThreeOtherEntries', () => {
+    it('GroupedNavLinks_MoreMenu_OpensOnClickAndShowsTheFourOtherEntries', () => {
       renderNav('/app/short-rent');
 
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
       const more = screen.getByTestId('nav-more');
-      // It held sixteen entries: the pages of a section are the tabs of its entry, Profilo is in the menu of the user.
+      // It held sixteen entries: the pages of a section are the tabs of its entry, Profilo is in the menu of the user. The To do list is the last.
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Coda di approvazione',
         'Organizzazione',
         'Consiglia CasaZen',
+        'Attività',
       ]);
       // The button controls the list it opens.
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-controls', within(more).getByRole('list').id);
@@ -294,6 +295,26 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(link('Organizzazione')).toHaveAttribute('aria-current', 'page');
     });
 
+    it('GroupedNavLinks_UrgentActivitiesInsideAClosedMore_SitOnTheToggleToo', () => {
+      renderNav('/app/short-rent', { counts: { activities: 3 } });
+
+      // The entry with the counter is behind "Altro": the toggle carries it, in red, and says it aloud.
+      const toggle = screen.getByRole('button', { name: /^Altro/ });
+      expect(within(toggle).getByTestId('nav-count')).toHaveClass('bg-destructive');
+      expect(toggle).toHaveAccessibleName('Altro, 3 attività urgenti');
+
+      // Once the menu is open the entry shows its own counter and the toggle gives it up.
+      fireEvent.click(toggle);
+      expect(within(screen.getByRole('button', { name: 'Altro' })).queryByTestId('nav-count')).not.toBeInTheDocument();
+      expect(within(link(/^Attività/)).getByTestId('nav-count')).toHaveTextContent('3');
+    });
+
+    it('GroupedNavLinks_NoUrgentActivity_LeavesTheToggleOfAltroPlain', () => {
+      renderNav('/app/short-rent', { counts: { activities: 0 } });
+
+      expect(within(screen.getByRole('button', { name: 'Altro' })).queryByTestId('nav-count')).not.toBeInTheDocument();
+    });
+
     it('GroupedNavLinks_NoEntryForTheUser_HasNoMoreMenu', () => {
       // A user who may open nothing of "Altro" (no permission at all, not even the org billing administrator one).
       renderNav('/app/supplier/dashboard', { contextKey: 'supplier', hasPermission: (_ctx, permission) => !permission });
@@ -320,6 +341,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Coda di approvazione',
         'Organizzazione',
         'Consiglia CasaZen',
+        'Attività',
       ]);
     });
   });
@@ -408,7 +430,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       // Entries of the bar are left out; the others are all there, "Altro" is not a closed menu.
       expect(screen.queryByRole('link', { name: 'Cruscotto' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Prenotazioni' })).not.toBeInTheDocument();
-      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']) {
+      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']) {
         expect(link(name)).toBeVisible();
       }
       // The pages of a section are its tabs, and Profilo is in the account block of the sheet: none is a tile.

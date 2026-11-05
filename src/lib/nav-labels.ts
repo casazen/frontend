@@ -37,6 +37,7 @@ const NAV_COUNT_LABELS: Record<NavCountKey, { labelKey: string }> = {
   bookingRequests: { labelKey: 'nav.count.bookingRequests' },
   supplierRequests: { labelKey: 'nav.count.supplierRequests' },
   compliance: { labelKey: 'nav.count.compliance' },
+  activities: { labelKey: 'nav.count.activities' },
 };
 
 /** What a screen reader says for the counter of an entry, e.g. "2 richieste da approvare". */

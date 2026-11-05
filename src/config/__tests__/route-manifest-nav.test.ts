@@ -84,12 +84,14 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getPrimaryNavEntries('short-rent', without('booking.read')))).not.toContain('/app/short-rent/compliance');
   });
 
-  it('keeps "Altro" of short-rent to three entries: the other pages are the tabs of the entry they belong to', () => {
-    // It held sixteen. Profilo is in the menu of the user, the rest hangs from an entry of the main menu (see the sections below).
+  it('keeps "Altro" of short-rent to four entries: the other pages are the tabs of the entry they belong to', () => {
+    // It held sixteen. Profilo is in the menu of the user, the rest hangs from an entry of the main menu (see the sections below). The
+    // To do list (NF-07) is the last of them: the main menu has its eight entries.
     const expected = [
       '/app/short-rent/approval-queue',
       '/app/short-rent/settings/organization',
       '/app/short-rent/settings/invitations',
+      '/app/short-rent/activities',
     ];
     expect(paths(getSecondaryNavEntries('short-rent', allowAll))).toEqual(expected);
     // The OTA channels, behind their flag, are a tab of Immobili: the flag does not add an entry to "Altro".
@@ -206,6 +208,8 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(counted).toEqual([
       // The risk of a sanction (the Alloggiati Web communications and the guest data they need), from the summary of the cockpit.
       ['/app/short-rent/compliance', 'compliance'],
+      // The urgent items of the To do list (NF-07, ADR-026-R12), from `GET api/me/activities/count`.
+      ['/app/short-rent/activities', 'activities'],
       ['/app/short-rent/bookings', 'bookingRequests'],
       ['/app/supplier/inbox', 'supplierRequests'],
     ]);
@@ -253,6 +257,7 @@ describe('route-manifest bottom bar (UI-04a, drawn by UI-04b)', () => {
       '/app/short-rent/approval-queue',
       '/app/short-rent/settings/organization',
       '/app/short-rent/settings/invitations',
+      '/app/short-rent/activities',
     ]);
   });
 });
@@ -732,6 +737,27 @@ describe('route-manifest nav helpers', () => {
   it('keeps the iCal-based calendar available with the otaPartnerApi flag off', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll, { otaPartnerApi: false });
     expect(primary.some((e) => e.path === '/app/short-rent/bookings/calendar')).toBe(true);
+  });
+
+  // NF-07 (ADR-026): the To do list is one entry of "Altro" with the counter of its urgent items. The main menu has its eight entries, and
+  // the page of the staff work (/app/admin/activities, the agency plan) is another page in another area.
+  it('puts the To do list in "Altro" of short-rent with the counter of its urgent items, apart from the staff page', () => {
+    const entry = entryOf('/app/short-rent/activities');
+    expect(entry.context).toBe('short-rent');
+    expect(entry.navKey).toBe('nav.activities');
+    expect(entry.navPlacement).toBe('secondary');
+    expect(entry.navCount).toBe('activities');
+    expect(entry.featureFlag).toBeUndefined();
+    // Every role of the area holds the permission it asks: the server shows each one only the items its scope reaches.
+    expect(entry.requiredPermissions).toEqual(['property.read']);
+    expect(paths(getSecondaryNavEntries('short-rent', without('property.read')))).not.toContain('/app/short-rent/activities');
+    // It is the last of "Altro", after the entries that were already there.
+    expect(paths(getSecondaryNavEntries('short-rent', allowAll)).at(-1)).toBe('/app/short-rent/activities');
+
+    const staff = entryOf('/app/admin/activities');
+    expect(staff.context).toBe('admin');
+    expect(staff.navKey).toBe('nav.staffActivities');
+    expect(staff.navCount).toBeUndefined();
   });
 
   // A1-16: the CIN audit page existed but had no route, so the admin had no menu entry or URL for it.

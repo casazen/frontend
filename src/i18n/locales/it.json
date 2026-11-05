@@ -400,6 +400,137 @@
     }
   },
   "activity": {
+    "todo": {
+      "actions": {
+        "close": "Segna come fatto",
+        "closeFor": "Segna come fatto: {{title}}",
+        "doNow": "Fallo ora",
+        "doNowFor": "Fallo ora: {{title}}"
+      },
+      "close": {
+        "confirm": "Segna come fatto",
+        "description": "«{{title}}» non comparirà più nell'elenco. Se la cosa non è davvero risolta, CasaZen potrebbe riproporla.",
+        "title": "Segnare questa attività come fatta?"
+      },
+      "closeError": "Non siamo riusciti a chiudere l'attività. Riprova.",
+      "closed": "Attività segnata come fatta.",
+      "deadline": {
+        "by": "Entro {{when}}",
+        "overdue": "Scaduta: {{when}}",
+        "today": "oggi",
+        "tomorrow": "domani",
+        "withTime": "{{day}} alle {{time}}"
+      },
+      "description": "Tutto quello che c'è da fare, dalla cosa più urgente alla meno urgente.",
+      "descriptionCut": "Le prime {{max}} cose da fare, dalla più urgente alla meno urgente.",
+      "empty": {
+        "description": "Quando c'è qualcosa che ha bisogno di te, lo trovi qui, in ordine di urgenza.",
+        "title": "Non c'è niente da fare"
+      },
+      "entity": {
+        "Booking": "Prenotazione",
+        "Property": "Immobile"
+      },
+      "filter": {
+        "account": "Riguardano l'account",
+        "allProperties": "Tutti gli immobili",
+        "allTypes": "Tutti i tipi",
+        "label": "Filtri",
+        "noMatch": "Nessuna attività con questi filtri.",
+        "property": "Filtra per immobile",
+        "reset": "Mostra tutte",
+        "type": "Filtra per tipo",
+        "unknownProperty": "Immobile"
+      },
+      "focus": {
+        "kicker": "Adesso",
+        "seeAll": "Vedi tutte le attività",
+        "then_one": "Poi: un'altra attività",
+        "then_other": "Poi: altre {{count}} attività"
+      },
+      "listLabel": "Attività da fare",
+      "loadError": "Non riusciamo a caricare le attività.",
+      "loading": "Carico le attività…",
+      "next": {
+        "more_one": "E un'altra nell'elenco completo.",
+        "more_other": "E altre {{count}} nell'elenco completo.",
+        "nothingElse": "Nient'altro in coda.",
+        "seeAll": "Vedi tutte",
+        "title": "Prossime attività"
+      },
+      "object": {
+        "organization": "Il tuo account",
+        "property": "Un immobile"
+      },
+      "summary": {
+        "first": "Le prime {{max}} attività da fare",
+        "firstFiltered": "{{shown}} tra le prime {{max}} attività da fare",
+        "total_one": "{{count}} attività da fare",
+        "total_other": "{{count}} attività da fare",
+        "urgent_one": "{{count}} urgente",
+        "urgent_other": "{{count}} urgenti"
+      },
+      "title": "Attività da fare",
+      "type": {
+        "AlloggiatiDeadline": {
+          "title": "Alloggiati Web in scadenza",
+          "why": "Gli ospiti vanno comunicati alla Questura entro la scadenza."
+        },
+        "CheckInPending": {
+          "title": "Check-in da completare",
+          "why": "Il check-in di questo soggiorno non è ancora completo."
+        },
+        "CheckOutPending": {
+          "title": "Check-out da completare",
+          "why": "Il soggiorno è finito: registra la partenza."
+        },
+        "CredentialsToRenew": {
+          "title": "Credenziali da rinnovare",
+          "why": "Le credenziali di un servizio stanno per scadere o sono già scadute."
+        },
+        "FiscalDocument": {
+          "title": "Documento fiscale da sistemare",
+          "why": "Un documento fiscale ha bisogno di te."
+        },
+        "IntegrationError": {
+          "title": "Collegamento da sistemare",
+          "why": "Un collegamento con un servizio esterno non funziona."
+        },
+        "IstatDeadline": {
+          "title": "Dati ISTAT in scadenza",
+          "why": "I dati del periodo vanno inviati entro la scadenza."
+        },
+        "MessageToApprove": {
+          "title": "Messaggio da approvare",
+          "why": "Un messaggio aspetta la tua approvazione prima di partire."
+        },
+        "PublicationError": {
+          "title": "Errore di pubblicazione",
+          "why": "Un annuncio non è stato pubblicato su un canale."
+        },
+        "ReceiptToRetrieve": {
+          "title": "Ricevuta da recuperare",
+          "why": "Manca la ricevuta dell'invio: serve per archiviare la prova."
+        },
+        "ReconnectChannelManager": {
+          "title": "Riconnetti il gestionale dei canali",
+          "why": "Il collegamento con il gestionale dei canali si è interrotto."
+        },
+        "WizardResume": {
+          "title": "Procedura da riprendere",
+          "why": "Hai lasciato una procedura a metà: puoi continuare da dove eri."
+        },
+        "unknown": {
+          "title": "Attività da completare",
+          "why": "Richiede la tua attenzione."
+        }
+      },
+      "urgency": {
+        "High": "Urgente",
+        "Low": "Quando puoi",
+        "Medium": "Importante"
+      }
+    },
     "staff": {
       "title": "Le mie attività",
       "description": "Visualizza e aggiorna le attività assegnate",
@@ -9269,8 +9400,11 @@
       "supplierRequests_one": "{{count}} richiesta da accettare",
       "supplierRequests_other": "{{count}} richieste da accettare",
       "compliance_one": "{{count}} adempimento con rischio di sanzione",
-      "compliance_other": "{{count}} adempimenti con rischio di sanzione"
+      "compliance_other": "{{count}} adempimenti con rischio di sanzione",
+      "activities_one": "{{count}} attività urgente",
+      "activities_other": "{{count}} attività urgenti"
     },
+    "activities": "Attività",
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
     "channels": "Canali e calendari",

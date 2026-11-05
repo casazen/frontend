@@ -11,9 +11,14 @@ import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ComplianceUrgentBlock } from '@/features/compliance/components/compliance-urgent-block';
+import { useComplianceFineCount } from '@/features/compliance/use-compliance';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
+import { TodoFocusBlock } from '@/features/todo/focus-block';
+import { isTruncatedList, urgentCountOf } from '@/features/todo/lib/todo-model';
+import { TodoTodayList } from '@/features/todo/today-list';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
+import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { useHostThreads } from '@/queries/use-booking-messages';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
 import { useProperties } from '@/queries/use-properties';
@@ -67,6 +72,18 @@ export function DashboardPage() {
   const threads = useHostThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
   const threadList = useMemo(() => threads.data?.items ?? [], [threads.data]);
 
+  // The "To do" list of the host (NF-07): what the system asks of it, already sorted by the server. Its first item is the "Adesso" of the Home
+  // and the next ones its summary, unless what carries a risk of a sanction already holds the one highlighted block of the page.
+  // The server cuts the list at 50: how many are urgent is the number of the menu (`/count`, which counts them all), and a list that long is
+  // told as "the first ones", with no total.
+  const activities = useActivities();
+  const urgentActivities = useActivityCount();
+  const todoItems = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
+  const todoTruncated = isTruncatedList(todoItems.length);
+  const complianceFines = useComplianceFineCount(canReadBookings);
+  const todoFocus = todoItems.length > 0 && !(typeof complianceFines === 'number' && complianceFines > 0);
+  const propertyNames = useMemo(() => new Map(propertyList.map((property) => [property.id, property.name] as const)), [propertyList]);
+
   const setQuery = useCallback(
     (changes: Record<string, string | null>) => {
       setParams(
@@ -119,6 +136,27 @@ export function DashboardPage() {
 
         {/* What carries a risk of a sanction is the first thing on the Home, whatever the filter below says: it is the host's, not a property's. */}
         {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}
+
+        {/* The "To do" list (NF-07): the first item in "Adesso", the next ones and the count of the urgent ones under it; nothing while there is nothing to do. */}
+        {!noActiveProperty && todoItems.length > 0 ? (
+          <>
+            {todoFocus ? (
+              <TodoFocusBlock
+                activity={todoItems[0]}
+                others={todoTruncated ? 0 : todoItems.length - 1}
+                propertyNames={propertyNames}
+                hasPermission={hasPermission}
+              />
+            ) : null}
+            <TodoTodayList
+              items={todoFocus ? todoItems.slice(1) : todoItems}
+              total={todoItems.length}
+              urgent={urgentCountOf(todoItems, urgentActivities.data?.count)}
+              propertyNames={propertyNames}
+              hasPermission={hasPermission}
+            />
+          </>
+        ) : null}
 
         {noActiveProperty ? null : (
           <HomeFilterBar
