@@ -2359,6 +2359,11 @@
       "completed": {
         "title": "The stay is over"
       },
+      "completeGuestData": {
+        "action": "Complete the check-in",
+        "body": "Some guest data are missing: you can enter them yourself now, step by step.",
+        "title": "Complete the guest data"
+      },
       "confirmManual": {
         "title": "Confirm the booking"
       },
@@ -2401,12 +2406,7 @@
         "title": "Wait for the guest's payment"
       },
       "whoGuest": "The guest's turn",
-      "whoHost": "Your turn",
-      "completeGuestData": {
-        "action": "Complete the check-in",
-        "body": "Some guest data are missing: you can enter them yourself now, step by step.",
-        "title": "Complete the guest data"
-      }
+      "whoHost": "Your turn"
     },
     "card": {
       "checkOutAction": "Check Out"
@@ -3451,8 +3451,8 @@
           "guests": "Guests",
           "nights": "Nights",
           "rate": "Rate",
-          "ratePerNight": "{{amount}} per person per night ({{source}})",
           "rateFrom": "Rate {{source}}",
+          "ratePerNight": "{{amount}} per person per night ({{source}})",
           "total": "Total"
         },
         "breakdownTitle": "Summary of the stay",
@@ -20302,6 +20302,16 @@
     "undoFailed": "Could not undo this.",
     "commitFailed": "Could not complete the action."
   },
+  "touristTax": {
+    "exemption": {
+      "disability_companion": "Companion of a person with a disability",
+      "health_care": "Stay for health or care reasons",
+      "host_family": "Family member of the manager",
+      "other": "Another exemption of the municipality",
+      "public_service": "Law enforcement or other public service on duty",
+      "resident": "Resident of the municipality"
+    }
+  },
   "touristTaxRules": {
     "perPersonPerNight": "{{amount}} per person per night",
     "percent": "{{percent}}% of the price per person per night",
@@ -20542,16 +20552,6 @@
       "edit": "Edit",
       "editField": "Edit {{field}}",
       "empty": "Not provided"
-    }
-  },
-  "touristTax": {
-    "exemption": {
-      "disability_companion": "Companion of a person with a disability",
-      "health_care": "Stay for health or care reasons",
-      "host_family": "Family member of the manager",
-      "other": "Another exemption of the municipality",
-      "public_service": "Law enforcement or other public service on duty",
-      "resident": "Resident of the municipality"
     }
   }
 }

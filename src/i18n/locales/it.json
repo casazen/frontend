@@ -2359,6 +2359,11 @@
       "completed": {
         "title": "Il soggiorno è concluso"
       },
+      "completeGuestData": {
+        "action": "Completa il check-in",
+        "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
+        "title": "Completa i dati degli ospiti"
+      },
       "confirmManual": {
         "title": "Conferma la prenotazione"
       },
@@ -2401,12 +2406,7 @@
         "title": "Aspetta il pagamento dell'ospite"
       },
       "whoGuest": "Tocca all'ospite",
-      "whoHost": "Tocca a te",
-      "completeGuestData": {
-        "action": "Completa il check-in",
-        "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
-        "title": "Completa i dati degli ospiti"
-      }
+      "whoHost": "Tocca a te"
     },
     "card": {
       "checkOutAction": "Check-out"
@@ -3451,8 +3451,8 @@
           "guests": "Ospiti",
           "nights": "Notti",
           "rate": "Aliquota",
-          "ratePerNight": "{{amount}} a persona per notte ({{source}})",
           "rateFrom": "Aliquota {{source}}",
+          "ratePerNight": "{{amount}} a persona per notte ({{source}})",
           "total": "Totale"
         },
         "breakdownTitle": "Riepilogo del soggiorno",
@@ -20302,6 +20302,16 @@
     "undoFailed": "Non è stato possibile annullare.",
     "commitFailed": "Non è stato possibile completare l'operazione."
   },
+  "touristTax": {
+    "exemption": {
+      "disability_companion": "Accompagnatore di una persona con disabilità",
+      "health_care": "Soggiorno per cure o motivi sanitari",
+      "host_family": "Familiare del gestore",
+      "other": "Altra esenzione prevista dal comune",
+      "public_service": "Forze dell’ordine o altro servizio pubblico in servizio",
+      "resident": "Residente nel comune"
+    }
+  },
   "touristTaxRules": {
     "perPersonPerNight": "{{amount}} a persona per notte",
     "percent": "{{percent}}% del prezzo per persona per notte",
@@ -20542,16 +20552,6 @@
       "edit": "Modifica",
       "editField": "Modifica {{field}}",
       "empty": "Non indicato"
-    }
-  },
-  "touristTax": {
-    "exemption": {
-      "disability_companion": "Accompagnatore di una persona con disabilità",
-      "health_care": "Soggiorno per cure o motivi sanitari",
-      "host_family": "Familiare del gestore",
-      "other": "Altra esenzione prevista dal comune",
-      "public_service": "Forze dell’ordine o altro servizio pubblico in servizio",
-      "resident": "Residente nel comune"
     }
   }
 }
