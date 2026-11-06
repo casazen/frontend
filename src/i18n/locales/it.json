@@ -9213,7 +9213,7 @@
     "sections": {
       "label": "Sezioni del Marketplace",
       "discover": "Scopri",
-      "mine": "Le mie app"
+      "mine": "Attivi"
     },
     "search": {
       "label": "Cerca nel Marketplace",
@@ -9228,17 +9228,8 @@
       "none": "Ancora nessun fornitore"
     },
     "partners": {
-      "title": "Integrazioni con partner esterni",
-      "description": "Servizi di aziende esterne per pulizie, check-in e manutenzione. Non sono fornitori CasaZen: si aprono sul sito dell'azienda. Controlla che servano la tua zona.",
       "learnMore": "Scopri",
-      "learnMoreAria": "Scopri {{name}} (si apre in una nuova scheda)",
-      "items": {
-        "operto": "Tecnologia per gli ospiti che riduce i costi di gestione.",
-        "turno": "Trova e gestisci servizi di pulizia per affitti brevi.",
-        "properly": "Piattaforma di controllo qualità degli interventi.",
-        "doinn": "Trova e gestisci servizi di pulizia per affitti brevi.",
-        "tidy": "Automazione di pulizia e manutenzione dell'immobile."
-      }
+      "learnMoreAria": "Scopri {{name}} (si apre in una nuova scheda)"
     },
     "integrations": {
       "title": "Altre integrazioni",
@@ -9280,6 +9271,81 @@
       "description": "Scegli come ordinare i fornitori e se vedere solo quelli verificati.",
       "done_one": "Mostra {{count}} fornitore",
       "done_other": "Mostra {{count}} fornitori"
+    },
+    "card": {
+      "activate": "Attiva",
+      "activateAria": "Attiva {{name}}",
+      "cost": "Costo: {{text}} ({{invoicedBy}})",
+      "costUnknown": "Costo non specificato",
+      "details": "Dettagli",
+      "detailsAria": "Dettagli di {{name}}",
+      "fix": "Correggi",
+      "fixAria": "Correggi {{name}}",
+      "invoicedBy": {
+        "CasaZen": "fatturato da CasaZen",
+        "ChannelManager": "fatturato dal channel manager",
+        "Partner": "fatturato dal partner",
+        "Unknown": "chi fattura non è specificato"
+      },
+      "logoAlt": "Logo di {{name}}",
+      "manage": "Gestisci",
+      "manageAria": "Gestisci {{name}}"
+    },
+    "detail": {
+      "audience": "Per chi è",
+      "cost": "Costo e chi fattura",
+      "costUnknown": "Costo non specificato",
+      "dataShared": "Quali dati si condividono",
+      "deactivation": "Come si disattiva",
+      "deactivationGuided": "La disattivazione si fa sul sito del fornitore.",
+      "fallbackTitle": "Dettagli",
+      "faq": "Domande frequenti",
+      "loadError": "Non riesco a caricare i dettagli.",
+      "loading": "Carico i dettagli…",
+      "needsPanel": "L'ultimo passaggio si fa sul pannello del tuo channel manager: CasaZen ti ci accompagna e poi ti riporta qui.",
+      "noRequirements": "Non sono indicati requisiti particolari.",
+      "notFound": "Scheda non disponibile",
+      "notFoundDescription": "Questa scheda non è disponibile per te.",
+      "notSpecified": "Non specificato",
+      "reason": {
+        "octorate_not_connected": "Per attivarla devi prima collegare il tuo channel manager.",
+        "unknown": "Al momento non si può attivare da qui."
+      },
+      "requirements": "Cosa serve per attivarla",
+      "whatItDoes": "Cosa fa"
+    },
+    "groups": {
+      "channelManagerFunctions": {
+        "description": "Funzioni in più del tuo channel manager, da richiedere con il tuo abbonamento.",
+        "title": "Funzioni del channel manager"
+      },
+      "connectChannels": "Collega i tuoi canali",
+      "connectedTools": {
+        "description": "Strumenti che si collegano al tuo channel manager per fare di più, come la fatturazione.",
+        "title": "Strumenti collegati"
+      },
+      "empty": "Per ora non c'è niente da mostrare qui.",
+      "homeServices": {
+        "description": "Fornitori CasaZen della tua zona per pulizie, manutenzione e altri lavori in casa.",
+        "title": "Servizi per la casa"
+      },
+      "loadError": "Non riesco a caricare questa parte del Marketplace.",
+      "octorateOff": "Per vedere queste schede devi prima collegare il tuo channel manager a CasaZen.",
+      "partners": {
+        "description": "Servizi di aziende esterne, non fornitori CasaZen: il lavoro si organizza con loro. Controlla che servano la tua zona.",
+        "empty": "Per ora non ci sono partner da mostrare.",
+        "title": "Partner"
+      },
+      "salesChannels": {
+        "description": "I portali dove vendi i tuoi alloggi e i calendari che tieni allineati.",
+        "title": "Canali di vendita"
+      }
+    },
+    "status": {
+      "Active": "Attivo",
+      "NotActive": "Non attivo",
+      "Pending": "In attesa",
+      "ToFix": "Da correggere"
     },
     "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "noNetwork": "In questo territorio non c'è ancora una rete CasaZen per questa categoria.",
@@ -13308,7 +13374,9 @@
       },
       "legend": "Chi vuoi coinvolgere",
       "noComune": "Per cercare i fornitori della tua zona serve il comune dell'immobile: finché manca ti proponiamo i partner esterni.",
+      "noComuneNoPartners": "Per cercare i fornitori della tua zona serve il comune dell'immobile.",
       "noNetwork": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen: ti proponiamo i partner esterni.",
+      "noNetworkNoPartners": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen.",
       "recommended": "Consigliato"
     },
     "details": {

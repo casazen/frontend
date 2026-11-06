@@ -37,6 +37,23 @@ vi.mock('@/api/service-requests.api', () => ({
 }));
 vi.mock('@/api/host-supplier-catalog.api', () => ({ fetchHostSupplierServices: vi.fn(), fetchHostSupplierSlots: vi.fn() }));
 vi.mock('@/api/service-request-assist.api', () => ({ serviceRequestAssistApi: { getAvailability: vi.fn(), assist: vi.fn() } }));
+// The partners come from the catalog of the marketplace: one, made up, for the cleaning.
+vi.mock('@/queries/use-marketplace', () => {
+  const partner = {
+    kind: 'Partner',
+    code: 'test-cleaning',
+    name: 'TEST Cleaning',
+    benefit: 'Cleaning for short stays.',
+    websiteUrl: 'https://example.com/cleaning',
+    serviceCategories: ['cleaning'],
+  };
+  return {
+    usePartnersByServiceCategory: () => ({
+      partnersFor: (category: string) => (category === 'cleaning' ? [partner] : []),
+      isLoading: false,
+    }),
+  };
+});
 
 const PROPERTY_ID = '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
 const SUPPLIER_ID = '9e0f1a2b-3c4d-4e5f-8a6b-7c8d9e0f1a2b';
@@ -222,6 +239,25 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     expect(await screen.findByTestId('request-partners', undefined, WAIT)).toBeInTheDocument();
     expect(screen.getByTestId('request-ai-choice')).toHaveTextContent("L'AI ha scelto: Pulizie.");
     // The path of the partners sends nothing to CasaZen.
+    expect(createServiceRequest).not.toHaveBeenCalled();
+  });
+
+  it('RequestAssist_ExternalProposalForAServiceNoPartnerCovers_IsNotFollowed_AndSaysThereIsNoPartner', async () => {
+    // The catalog has a partner for the cleaning only: for the plumbing the proposal of the external channel leads to a step with nobody in it.
+    vi.mocked(serviceRequestAssistApi.assist).mockResolvedValue({ ...PLUMBING, channel: 'external', casazenSuppliers: 0 });
+    renderPage();
+
+    await describeTheJob();
+
+    const result = await screen.findByTestId('request-assist-result', undefined, WAIT);
+    expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('Un partner esterno');
+    // «Vedi i partner» is not offered and the card says why; the other two ways on are still there.
+    expect(screen.queryByTestId('request-assist-use')).not.toBeInTheDocument();
+    expect(within(result).getByTestId('request-assist-no-partners')).toHaveTextContent("non c'è ancora nessun servizio esterno");
+    expect(screen.getByTestId('request-assist-edit')).toBeInTheDocument();
+    expect(screen.getByTestId('request-assist-skip')).toBeInTheDocument();
+    // Nobody was taken to the partners: the wizard stays where it was, and nothing was sent.
+    expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
     expect(createServiceRequest).not.toHaveBeenCalled();
   });
 

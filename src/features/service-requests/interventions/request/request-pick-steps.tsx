@@ -15,10 +15,10 @@ import { RecommendedBadge } from '@/features/marketplace/components/recommended-
 import { VerifiedBadge } from '@/features/marketplace/components/verified-badge';
 import { countByCategory } from '@/features/marketplace/lib/category-groups';
 import { categoryIcon } from '@/features/marketplace/lib/category-icons';
-import { partnersForCategory } from '@/features/marketplace/lib/external-partners';
 import { supplierFacts } from '@/features/marketplace/lib/supplier-labels';
 import { propertyEditPath } from '@/features/properties/properties-paths';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
+import { usePartnersByServiceCategory } from '@/queries/use-marketplace';
 import { useProperties } from '@/queries/use-properties';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { useMarketplaceSuppliers, useSuppliersByProperty } from '@/queries/use-service-requests';
@@ -34,6 +34,14 @@ export type ChangeChannel = (channel: RequestChannel, goToStep?: string) => void
 function useWizardProperty(propertyId: string) {
   const properties = useProperties({ mode: 'short' });
   return (Array.isArray(properties.data) ? properties.data : []).find((candidate) => candidate.id === propertyId);
+}
+
+/**
+ * The kinds of work an external partner covers, among the ones the wizard offers: the tiles of the service step with the external channel.
+ * The channel is offered only when there is at least one, so that it never leads to a step with nothing to pick.
+ */
+function coveredByPartners(catalog: readonly string[], partnersFor: (serviceCategory: string) => readonly unknown[]): string[] {
+  return catalog.filter((code) => partnersFor(code).length > 0);
 }
 
 /* ---------------------------------------------------------------------------------------------------- ① Immobile */
@@ -95,11 +103,20 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
   const hasComune = !!property?.comuneIstatCode;
   const suppliers = useMarketplaceSuppliers({ propertyId: hasComune ? propertyId : undefined });
   const noNetwork = !hasComune || (suppliers.isSuccess && suppliers.data.items.length === 0);
+  // The external channel is offered while a partner of the catalog covers a kind of work the wizard offers (or the catalog is being read)
+  // and not otherwise: a way nobody can follow. A partner that lists no such kind has no tile on the service step, so with it alone (and
+  // CasaZen out) the request would have no way out. The one the address names stays, so that the choice the wizard is on does not
+  // disappear under it.
+  const categories = useServiceCategories();
+  const { partnersFor, isLoading: partnersLoading } = usePartnersByServiceCategory();
+  const hasPartners = coveredByPartners(categories.data ?? [], partnersFor).length > 0;
+  const partnersAhead = hasPartners || partnersLoading;
+  const offerExternal = partnersAhead || channel === 'external';
 
-  // Nobody of CasaZen around: the partners are the way, and the host is shown them without having to find out.
+  // Nobody of CasaZen around: the partners are the way, and the host is shown them without having to find out (once the catalog has some).
   useEffect(() => {
-    if (noNetwork && !explicit && channel !== 'external') onChannel('external');
-  }, [noNetwork, explicit, channel, onChannel]);
+    if (noNetwork && !explicit && channel !== 'external' && hasPartners) onChannel('external');
+  }, [noNetwork, explicit, channel, hasPartners, onChannel]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -120,28 +137,30 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
           description={noNetwork ? t('requestWizard.channel.casazen.none') : t('requestWizard.channel.casazen.text')}
           data-testid="request-channel-casazen"
         />
-        <ChoiceCard
-          icon={Globe}
-          name="request-channel"
-          value="external"
-          checked={channel === 'external'}
-          onChange={() => onChannel('external')}
-          title={t('requestWizard.channel.external.title')}
-          description={t('requestWizard.channel.external.text')}
-          data-testid="request-channel-external"
-        />
+        {offerExternal ? (
+          <ChoiceCard
+            icon={Globe}
+            name="request-channel"
+            value="external"
+            checked={channel === 'external'}
+            onChange={() => onChannel('external')}
+            title={t('requestWizard.channel.external.title')}
+            description={t('requestWizard.channel.external.text')}
+            data-testid="request-channel-external"
+          />
+        ) : null}
       </ChoiceGroup>
 
       {!hasComune && property ? (
         <Alert variant="warning" data-testid="request-no-comune">
-          {t('requestWizard.channel.noComune')}{' '}
+          {t(partnersAhead ? 'requestWizard.channel.noComune' : 'requestWizard.channel.noComuneNoPartners')}{' '}
           <Link to={propertyEditPath(property.id)} className="font-medium underline underline-offset-4">
             {t('requestWizard.channel.addComune')}
           </Link>
         </Alert>
       ) : noNetwork ? (
         <Alert variant="info" data-testid="request-no-network">
-          {t('requestWizard.channel.noNetwork')}
+          {t(partnersAhead ? 'requestWizard.channel.noNetwork' : 'requestWizard.channel.noNetworkNoPartners')}
         </Alert>
       ) : null}
 
@@ -161,6 +180,7 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
   const { t } = useTranslation();
   const { register, setValue, control, formState } = useFormContext<RequestValues>();
   const categories = useServiceCategories();
+  const { partnersFor } = usePartnersByServiceCategory();
   const propertyId = useWatch({ control, name: 'propertyId' });
   const property = useWizardProperty(propertyId);
   const suppliers = useMarketplaceSuppliers({ propertyId: channel === 'casazen' && property?.comuneIstatCode ? propertyId : undefined });
@@ -170,9 +190,9 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
   if (categories.isPending) return <SkeletonLine lines={4} label={t('requestWizard.loading')} />;
 
   const catalog = categories.data ?? [];
-  const shown = channel === 'external' ? catalog.filter((code) => partnersForCategory(code).length > 0) : catalog;
+  const shown = channel === 'external' ? coveredByPartners(catalog, partnersFor) : catalog;
   const describe = (code: string): string | undefined => {
-    if (channel === 'external') return partnersForCategory(code).map((partner) => partner.name).join(', ');
+    if (channel === 'external') return partnersFor(code).map((partner) => partner.name).join(', ');
     if (suppliers.isPending && property?.comuneIstatCode) return undefined;
     const count = counts.get(code) ?? 0;
     return count > 0 ? t('marketplace.categories.count', { count }) : t('marketplace.categories.none');
@@ -227,7 +247,8 @@ export function ProposalsStep({ onChannel, goTo }: { onChannel: ChangeChannel; g
   const { control, setValue, formState } = useFormContext<RequestValues>();
   const [propertyId, category, chosen] = useWatch({ control, name: ['propertyId', 'category', 'supplierOrgId'] });
   const suppliers = useSuppliersByProperty(propertyId, category);
-  const partners = partnersForCategory(category);
+  const { partnersFor } = usePartnersByServiceCategory();
+  const partners = partnersFor(category);
 
   if (suppliers.isPending) return <SkeletonLine lines={4} label={t('requestWizard.who.loadingSuppliers')} />;
   if (suppliers.isError) {
@@ -329,7 +350,8 @@ export function PartnersStep({ goTo }: { goTo: (stepId: string) => void }) {
   const { t } = useTranslation();
   const { control } = useFormContext<RequestValues>();
   const category = useWatch({ control, name: 'category' });
-  const partners = partnersForCategory(category);
+  const { partnersFor } = usePartnersByServiceCategory();
+  const partners = partnersFor(category);
 
   return (
     <div className="space-y-4" data-testid="request-partners">

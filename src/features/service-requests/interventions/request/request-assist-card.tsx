@@ -10,6 +10,7 @@ import { HelpTip } from '@/components/ui/help-tip';
 import { Textarea } from '@/components/ui/textarea';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
+import { usePartnersByServiceCategory } from '@/queries/use-marketplace';
 import { useRequestAssist, useRequestAssistAvailability } from '@/queries/use-service-request-assist';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import type { ServiceRequestAssist, ServiceRequestAssistReason } from '@/types/service-request-assist';
@@ -32,12 +33,14 @@ const SHORT_TEXT = 30;
  * proposes the service, the urgency, a sentence for the supplier and who to ask (CasaZen suppliers whenever one covers the property:
  * the rule is the server's, not the AI's). Nothing is decided without the host: the proposal is read, and «Vedi i fornitori» (or «Vedi i
  * partner») puts it in the answers of the wizard, which go on being the host's to change. The card exists only where an AI is in effect;
- * when the AI is not behind an answer it says why, and the wizard is the one it always was.
+ * when the AI is not behind an answer it says why, and the wizard is the one it always was. A proposal of the external channel is
+ * followed only where the catalog has a partner for its service: with none the card says so and leaves the way on to the host.
  */
 export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
   const { t } = useTranslation();
   const { control, setValue, getValues, register, formState } = useFormContext<RequestValues>();
   const categories = useServiceCategories();
+  const { partnersFor } = usePartnersByServiceCategory();
   const availability = useRequestAssistAvailability();
   const assist = useRequestAssist();
   const propertyId = useWatch({ control, name: 'propertyId' });
@@ -68,9 +71,13 @@ export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
     setAnswer(null);
   };
 
+  // A proposal for the external channel leads to the partners of its service: with none in the catalog (or none the person may read) the
+  // step it leads to would be empty, so it is not followed (nobody is steered to a way with no partner).
+  const followable = (outcome: AssistOutcome) => outcome.channel !== 'external' || partnersFor(outcome.values.category ?? '').length > 0;
+
   const use = (proposal: ServiceRequestAssist) => {
     const outcome = assistOutcome(proposal, getValues(), categories.data ?? []);
-    if (!outcome) return;
+    if (!outcome || !followable(outcome)) return;
     // The suppliers and their services depend on the kind of work: another one starts them again.
     if (getValues('category') !== outcome.values.category) assign(setValue, NO_SUPPLIER);
     assign(setValue, outcome.values);
@@ -101,7 +108,7 @@ export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
           </Button>
         ) : answer ? (
           proposal ? (
-            <Proposal answer={answer} onUse={() => use(answer)} onEdit={edit} onSkip={close} />
+            <Proposal answer={answer} canUse={followable(proposal)} onUse={() => use(answer)} onEdit={edit} onSkip={close} />
           ) : (
             <NoProposal reason={answer.reason ?? 'ai_not_understood'} onRetry={ask} onEdit={edit} onSkip={close} retrying={assist.isPending} />
           )
@@ -180,13 +187,15 @@ function RetryButton({ onClick }: { onClick: () => void }) {
 
 interface ProposalProps {
   answer: ServiceRequestAssist;
+  /** False for a proposal of the external channel when the catalog has no partner for its service: there is nothing to go on to. */
+  canUse: boolean;
   onUse: () => void;
   onEdit: () => void;
   onSkip: () => void;
 }
 
 /** What the AI proposes, said plainly: the service, the urgency, who, why, and the sentence the supplier will read; then the ways on. */
-function Proposal({ answer, onUse, onEdit, onSkip }: ProposalProps) {
+function Proposal({ answer, canUse, onUse, onEdit, onSkip }: ProposalProps) {
   const { t } = useTranslation();
   const casazen = answer.channel === 'casazen';
 
@@ -221,10 +230,18 @@ function Proposal({ answer, onUse, onEdit, onSkip }: ProposalProps) {
 
       <AiContentNotice visible />
 
+      {canUse ? null : (
+        <Alert variant="info" data-testid="request-assist-no-partners">
+          {t('requestWizard.proposals.noPartners')}
+        </Alert>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" onClick={onUse} data-testid="request-assist-use">
-          {casazen ? t('requestWizard.assist.result.useCasazen') : t('requestWizard.assist.result.usePartners')}
-        </Button>
+        {canUse ? (
+          <Button type="button" onClick={onUse} data-testid="request-assist-use">
+            {casazen ? t('requestWizard.assist.result.useCasazen') : t('requestWizard.assist.result.usePartners')}
+          </Button>
+        ) : null}
         <Button type="button" variant="outline" onClick={onEdit} data-testid="request-assist-edit">
           {t('requestWizard.assist.result.edit')}
         </Button>
