@@ -17,12 +17,16 @@ import {
   type MappingDecision,
   type MappingRunner,
 } from '../mapping-model';
+import type { OctorateListing } from '@/types';
 import { linkedListing, listing, newListing } from './octorate-fixtures';
 
 const TWO_ROOMS = [
   { id: 'room-1', name: 'Doppia', maxGuests: 2 },
   { id: 'room-2', name: 'Suite', maxGuests: 4 },
 ];
+
+/** A property confirmed to some listing: the fixtures give every listing the same proposed property, so the confirmed ones are told apart. */
+const HELD = { id: 'prop-8', name: 'Casa Gialla', address: 'Via Po 3', city: 'Torino' };
 
 function decision(overrides: Partial<MappingDecision> = {}): MappingDecision {
   return { listingId: 'acc-1', action: 'confirm', propertyId: 'prop-1', other: false, needsRoom: false, roomId: '', ...overrides };
@@ -97,14 +101,16 @@ describe('what the host decides about a listing', () => {
 
 describe('answers about listings that moved on', () => {
   it('pruneDecisions_ListingsConfirmedOrGoneMeanwhile_DropsTheAnswersThatNoLongerApply', () => {
+    // A property is confirmed to one listing only: the confirmed listings hold one that is not the proposal of the open one.
+    const held = (overrides: Partial<OctorateListing>) => linkedListing({ proposedProperty: HELD, ...overrides });
     const listings = [
       listing({ octorateAccommodationId: 'open' }),
       listing({ octorateAccommodationId: 'room-on-open' }),
-      linkedListing({ octorateAccommodationId: 'confirmed-meanwhile' }),
-      linkedListing({ octorateAccommodationId: 'no-room', rooms: TWO_ROOMS, octorateProductId: null }),
-      linkedListing({ octorateAccommodationId: 'same-room', rooms: TWO_ROOMS, octorateProductId: 'room-2' }),
-      linkedListing({ octorateAccommodationId: 'imported', rooms: TWO_ROOMS, octorateProductId: null }),
-      linkedListing({ octorateAccommodationId: 'excluded-confirmed' }),
+      held({ octorateAccommodationId: 'confirmed-meanwhile' }),
+      held({ octorateAccommodationId: 'no-room', rooms: TWO_ROOMS, octorateProductId: null }),
+      held({ octorateAccommodationId: 'same-room', rooms: TWO_ROOMS, octorateProductId: 'room-2' }),
+      held({ octorateAccommodationId: 'imported', rooms: TWO_ROOMS, octorateProductId: null }),
+      held({ octorateAccommodationId: 'excluded-confirmed' }),
       listing({ octorateAccommodationId: 'already-excluded', status: 'Rejected', proposedProperty: null }),
       listing({ octorateAccommodationId: 'reconsidered', status: 'Rejected', proposedProperty: null }),
     ];
@@ -125,6 +131,36 @@ describe('answers about listings that moved on', () => {
     ];
 
     expect(pruneDecisions(decisions, listings).map((entry) => entry.listingId)).toEqual(['open', 'no-room', 'imported', 'reconsidered']);
+  });
+
+  it('pruneDecisions_ProposalMovedOrPropertyTakenMeanwhile_DropsTheConfirmationsOfSomethingTheHostDidNotSee', () => {
+    const casaBlu = { id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino' };
+    const casaVerde = { id: 'prop-9', name: 'Casa Verde', address: 'Via Po 2', city: 'Torino' };
+    const listings = [
+      listing({ octorateAccommodationId: 'moved', proposedProperty: casaBlu }),
+      listing({ octorateAccommodationId: 'vanished', proposedProperty: null, offeredForImport: true }),
+      listing({ octorateAccommodationId: 'same' }),
+      listing({ octorateAccommodationId: 'picked', status: 'Ambiguous', proposedProperty: null }),
+      listing({ octorateAccommodationId: 'picked-taken', status: 'Ambiguous', proposedProperty: null }),
+      listing({ octorateAccommodationId: 'proposal-taken', proposedProperty: casaVerde }),
+      listing({ octorateAccommodationId: 'choosing', status: 'Ambiguous', proposedProperty: null }),
+      linkedListing({ octorateAccommodationId: 'holder', proposedProperty: casaVerde }),
+    ];
+    const decisions = [
+      // The host confirmed Casa Rosa; the server proposes Casa Blu now: the radio would stay checked under another property.
+      decision({ listingId: 'moved' }),
+      // The proposal is gone: there is no radio to show the answer, which would stay active.
+      decision({ listingId: 'vanished' }),
+      decision({ listingId: 'same' }),
+      decision({ listingId: 'picked', propertyId: 'prop-5', other: true }),
+      // Casa Verde was confirmed to another listing meanwhile.
+      decision({ listingId: 'picked-taken', propertyId: 'prop-9', other: true }),
+      decision({ listingId: 'proposal-taken', propertyId: 'prop-9' }),
+      // "Another property" and none picked yet: the host is still choosing.
+      decision({ listingId: 'choosing', propertyId: '', other: true }),
+    ];
+
+    expect(pruneDecisions(decisions, listings).map((entry) => entry.listingId)).toEqual(['same', 'picked', 'choosing']);
   });
 
   it('pruneDecisions_NothingToDrop_GivesBackTheSameArray', () => {
@@ -169,7 +205,8 @@ describe('what the decisions make CasaZen do', () => {
       [a, b, c],
       [
         decision({ listingId: 'b', action: 'import', propertyId: '', roomId: 'room-1' }),
-        decision({ listingId: 'a', propertyId: 'prop-5', roomId: 'room-2' }),
+        // Another property than the proposed one, picked by the host from the list.
+        decision({ listingId: 'a', propertyId: 'prop-5', other: true, roomId: 'room-2' }),
         decision({ listingId: 'c', action: 'reject', propertyId: '' }),
       ],
     );
@@ -201,6 +238,16 @@ describe('what the decisions make CasaZen do', () => {
 
     expect(plan.actions).toEqual([]);
     expect(plan.later).toEqual([]);
+  });
+
+  it('buildMappingPlan_ConfirmationOfAProposalThatMoved_ConfirmsNothingAndLeavesTheListingForLater', () => {
+    const moved = listing({ octorateAccommodationId: 'acc-1', proposedProperty: { id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino' } });
+
+    // The answer confirms Casa Rosa (prop-1), the old proposal: the plan must not confirm a property the host did not see.
+    const plan = buildMappingPlan([moved], [decision()]);
+
+    expect(plan.actions).toEqual([]);
+    expect(plan.later.map((entry) => entry.octorateAccommodationId)).toEqual(['acc-1']);
   });
 
   it('buildMappingPlan_ExcludeAnswerOfAListingExcludedAlready_IsNotSentAgainNorListedAsLater', () => {

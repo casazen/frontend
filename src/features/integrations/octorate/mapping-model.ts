@@ -229,24 +229,36 @@ export function clearProposals(listings: readonly OctorateListing[], decisions: 
  * or by someone else meanwhile), has nothing left to decide, except the room still to set on a confirmed listing. A listing that is
  * excluded already is not excluded a second time (a run that went through leaves its own "exclude" answer behind); the host can still
  * link or import it, if they change their mind.
+ *
+ * A confirmation is about the property the host saw: the one CasaZen proposed, or the one they picked. The proposal moves while the host
+ * decides (the list is read again, another tab, another person confirms a listing and the property leaves every other proposal), and a
+ * property picked may be taken meanwhile. An answer that would now confirm something else than what the host saw, or a property that is
+ * taken, does not apply: the listing is back to "I'll do it later" and the host answers again.
  */
-function decisionApplies(decision: MappingDecision, listing: OctorateListing | undefined): boolean {
+function decisionApplies(decision: MappingDecision, listing: OctorateListing | undefined, taken: ReadonlySet<string>): boolean {
   if (!listing) return false;
   if (listing.status === 'Confirmed') {
     return decision.action !== 'reject' && decision.roomId !== '' && decision.roomId !== listing.octorateProductId;
   }
   if (decision.action === 'room') return false;
-  return !(decision.action === 'reject' && listing.status === 'Rejected');
+  if (decision.action === 'reject') return listing.status !== 'Rejected';
+  if (decision.action === 'confirm') {
+    if (taken.has(decision.propertyId)) return false;
+    return decision.other || listing.proposedProperty?.id === decision.propertyId;
+  }
+  return true;
 }
 
 /**
  * The decisions that still apply to the listings as they are now. A decision about a listing the host can no longer see (it was confirmed
  * by someone else, or is gone) is dropped, so that it cannot block the step with a rule (a property chosen twice) about a row that is not
- * there to fix. Plain data in, a copy out (the same array when nothing is dropped).
+ * there to fix; so is a confirmation of a proposal that is not the proposal any more, or of a property that is taken. Plain data in, a
+ * copy out (the same array when nothing is dropped).
  */
 export function pruneDecisions(decisions: readonly MappingDecision[], listings: readonly OctorateListing[]): readonly MappingDecision[] {
   const byListing = new Map(listings.map((listing) => [listing.octorateAccommodationId, listing]));
-  const kept = decisions.filter((decision) => decisionApplies(decision, byListing.get(decision.listingId)));
+  const taken = propertiesTaken(listings);
+  const kept = decisions.filter((decision) => decisionApplies(decision, byListing.get(decision.listingId), taken));
   return kept.length === decisions.length ? decisions : kept;
 }
 

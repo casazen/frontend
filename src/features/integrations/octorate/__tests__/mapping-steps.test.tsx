@@ -389,6 +389,28 @@ describe('mapping: which CasaZen property each listing is (NF-28, NF-04)', () =>
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(i18n.t('octorate.connect.mapping.errors.propertyTwice'));
     expect(octorateApi.confirmMapping).not.toHaveBeenCalled();
   });
+
+  it('OctorateMapping_ProposalChangedSinceTheAnswer_DoesNotKeepTheOldAnswerUnderTheNewProposal', async () => {
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing({ proposedProperty: { id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino' } }),
+    ]);
+    vi.mocked(propertiesApi.getAll).mockResolvedValue([property(), property({ id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino', maxGuests: 2 })]);
+    // The host confirmed Casa Rosa (prop-1) earlier; the server proposes Casa Blu now.
+    renderAt('mapping', [decision()]);
+
+    expect(await screen.findByTestId('octorate-mapping-proposal-acc-1', undefined, WAIT)).toHaveTextContent('Casa Blu');
+    // The answer was about another property: it is dropped, and the listing waits for a new answer.
+    await waitFor(() => expect(radio('later')).toBeChecked(), WAIT);
+    expect(radio('confirm')).not.toBeChecked();
+
+    // Going on confirms nothing the host did not see.
+    fireEvent.click(nextButton());
+    await onStep('summary');
+    fireEvent.click(finishButton());
+    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    expect(octorateApi.confirmMapping).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByTestId('octorate-result-acc-1')).toHaveAttribute('data-result', 'later'), WAIT);
+  });
 });
 
 describe('summary: what will happen, before the import (NF-05)', () => {
@@ -619,7 +641,13 @@ describe('accessibility of the steps after the consent (NF-14)', () => {
     vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
       listing({ rooms: TWO_ROOMS }),
       newListing(),
-      linkedListing({ octorateAccommodationId: 'acc-3', name: 'Attico', rooms: TWO_ROOMS, octorateProductId: null }),
+      linkedListing({
+        octorateAccommodationId: 'acc-3',
+        name: 'Attico',
+        rooms: TWO_ROOMS,
+        octorateProductId: null,
+        proposedProperty: { id: 'prop-3', name: 'Casa Verde', address: 'Via Po 2', city: 'Torino' },
+      }),
     ]);
     const { container } = renderAt('channels');
     await screen.findByTestId('octorate-channels-count', undefined, WAIT);
@@ -636,7 +664,14 @@ describe('accessibility of the steps after the consent (NF-14)', () => {
   });
 
   it('OctorateSummaryAndResult_HaveNoViolationThatAxeCanFindWithoutABrowser', async () => {
-    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([listing(), linkedListing({ octorateAccommodationId: 'acc-3', name: 'Attico' })]);
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing(),
+      linkedListing({
+        octorateAccommodationId: 'acc-3',
+        name: 'Attico',
+        proposedProperty: { id: 'prop-3', name: 'Casa Verde', address: 'Via Po 2', city: 'Torino' },
+      }),
+    ]);
     vi.mocked(propertyIcalApi.getFeeds).mockResolvedValue([feed({ deprecated: true, deprecatedAt: '2026-11-05T10:00:00Z' })]);
     const summary = renderAt('summary', [decision()]);
     await screen.findByText(i18n.t('octorate.connect.summary.groups.linked.label'), undefined, WAIT);
