@@ -436,6 +436,22 @@ describe('summary: what will happen, before the import (NF-05)', () => {
     expect(screen.getByTestId('octorate-result-acc-1')).toHaveTextContent(i18n.t('octorate.connect.summary.result.later.blocked'));
   });
 
+  it('OctorateSummary_ExcludeAnswerOfAListingExcludedAlready_IsNotListedAndNotSentAgain', async () => {
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing({ octorateAccommodationId: 'acc-3', name: 'Casa Verde', status: 'Rejected', proposedProperty: null }),
+    ]);
+    // The run before excluded the listing and left its answer in the draft of the wizard.
+    renderAt('summary', [decision({ listingId: 'acc-3', action: 'reject', propertyId: '' })]);
+
+    expect(await screen.findByTestId('octorate-summary-nothing', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('octorate.connect.summary.groups.excluded.label'))).not.toBeInTheDocument();
+    fireEvent.click(finishButton());
+
+    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    expect(octorateApi.rejectMapping).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByTestId('octorate-result-acc-3')).toHaveAttribute('data-result', 'excluded'), WAIT);
+  });
+
   it('OctorateSummary_Finish_ConfirmsImportsAndExcludesAndEndsInOneRowPerListing', async () => {
     const after = new Map<string, ReturnType<typeof listing>>();
     vi.mocked(octorateApi.getFoundListings).mockImplementation(async () => [

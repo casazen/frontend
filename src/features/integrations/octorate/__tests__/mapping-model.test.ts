@@ -105,6 +105,8 @@ describe('answers about listings that moved on', () => {
       linkedListing({ octorateAccommodationId: 'same-room', rooms: TWO_ROOMS, octorateProductId: 'room-2' }),
       linkedListing({ octorateAccommodationId: 'imported', rooms: TWO_ROOMS, octorateProductId: null }),
       linkedListing({ octorateAccommodationId: 'excluded-confirmed' }),
+      listing({ octorateAccommodationId: 'already-excluded', status: 'Rejected', proposedProperty: null }),
+      listing({ octorateAccommodationId: 'reconsidered', status: 'Rejected', proposedProperty: null }),
     ];
     const decisions = [
       decision({ listingId: 'open' }),
@@ -116,9 +118,13 @@ describe('answers about listings that moved on', () => {
       // The import went through and only its room failed: the answer stays, the next run sets the room.
       decision({ listingId: 'imported', action: 'import', propertyId: '', needsRoom: true, roomId: 'room-2' }),
       decision({ listingId: 'excluded-confirmed', action: 'reject', propertyId: '' }),
+      // The run that excluded the listing left its answer behind: the listing is not excluded a second time.
+      decision({ listingId: 'already-excluded', action: 'reject', propertyId: '' }),
+      // An excluded listing can still be imported, if the host changes their mind.
+      decision({ listingId: 'reconsidered', action: 'import', propertyId: '' }),
     ];
 
-    expect(pruneDecisions(decisions, listings).map((entry) => entry.listingId)).toEqual(['open', 'no-room', 'imported']);
+    expect(pruneDecisions(decisions, listings).map((entry) => entry.listingId)).toEqual(['open', 'no-room', 'imported', 'reconsidered']);
   });
 
   it('pruneDecisions_NothingToDrop_GivesBackTheSameArray', () => {
@@ -194,6 +200,29 @@ describe('what the decisions make CasaZen do', () => {
     const plan = buildMappingPlan([already], [decision({ listingId: 'acc-1', propertyId: 'prop-7', roomId: 'room-1' }), decision({ listingId: 'gone' })]);
 
     expect(plan.actions).toEqual([]);
+    expect(plan.later).toEqual([]);
+  });
+
+  it('buildMappingPlan_ExcludeAnswerOfAListingExcludedAlready_IsNotSentAgainNorListedAsLater', () => {
+    const excluded = listing({ octorateAccommodationId: 'excluded', status: 'Rejected', proposedProperty: null });
+    const reconsidered = listing({ octorateAccommodationId: 'reconsidered', status: 'Rejected', proposedProperty: null });
+    const proposed = listing({ octorateAccommodationId: 'proposed' });
+
+    const plan = buildMappingPlan(
+      [excluded, reconsidered, proposed],
+      [
+        decision({ listingId: 'excluded', action: 'reject', propertyId: '' }),
+        decision({ listingId: 'reconsidered', action: 'import', propertyId: '' }),
+        decision({ listingId: 'proposed', action: 'reject', propertyId: '' }),
+      ],
+    );
+
+    // The second run does not send the DELETE of the first one again; the listing the host reconsidered is imported; a listing that is
+    // still to exclude is excluded. The one excluded already is neither an action nor "left for later".
+    expect(plan.actions).toEqual([
+      { kind: 'import', listingId: 'reconsidered', roomId: '' },
+      { kind: 'reject', listingId: 'proposed' },
+    ]);
     expect(plan.later).toEqual([]);
   });
 

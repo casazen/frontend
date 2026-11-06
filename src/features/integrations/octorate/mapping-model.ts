@@ -226,12 +226,17 @@ export function clearProposals(listings: readonly OctorateListing[], decisions: 
 
 /**
  * Whether a decision still means something for the listing as it is now. A listing that is gone, or that is confirmed already (earlier,
- * or by someone else meanwhile), has nothing left to decide, except the room still to set on a confirmed listing.
+ * or by someone else meanwhile), has nothing left to decide, except the room still to set on a confirmed listing. A listing that is
+ * excluded already is not excluded a second time (a run that went through leaves its own "exclude" answer behind); the host can still
+ * link or import it, if they change their mind.
  */
 function decisionApplies(decision: MappingDecision, listing: OctorateListing | undefined): boolean {
   if (!listing) return false;
-  if (listing.status !== 'Confirmed') return decision.action !== 'room';
-  return decision.action !== 'reject' && decision.roomId !== '' && decision.roomId !== listing.octorateProductId;
+  if (listing.status === 'Confirmed') {
+    return decision.action !== 'reject' && decision.roomId !== '' && decision.roomId !== listing.octorateProductId;
+  }
+  if (decision.action === 'room') return false;
+  return !(decision.action === 'reject' && listing.status === 'Rejected');
 }
 
 /**
@@ -260,17 +265,19 @@ export interface MappingPlan {
 }
 
 /**
- * What the decisions make CasaZen do, given the listings as the server has them now. A decision about a listing that is gone, or about
- * one that is confirmed already (earlier, or by another person meanwhile), does nothing, except the room of a confirmed listing, which is
- * still set when it differs from the one the listing has.
+ * What the decisions make CasaZen do, given the listings as the server has them now. Only the decisions that still apply count (the
+ * answers are the host's, the listings are the server's, and they move on): a decision about a listing that is gone, or about one that is
+ * confirmed already (earlier, or by another person meanwhile), or about one that is excluded already and is to be excluded, does nothing,
+ * except the room of a confirmed listing, which is still set when it differs from the one the listing has.
  */
 export function buildMappingPlan(listings: readonly OctorateListing[], decisions: readonly MappingDecision[]): MappingPlan {
   const actions: PlanAction[] = [];
   const later: OctorateListing[] = [];
+  const current = pruneDecisions(decisions, listings);
 
   for (const listing of listings) {
     const listingId = listing.octorateAccommodationId;
-    const decision = findDecision(decisions, listingId);
+    const decision = findDecision(current, listingId);
 
     if (listing.status === 'Confirmed') {
       const roomId = decision && decision.action !== 'reject' ? decision.roomId : '';
