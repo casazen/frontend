@@ -19495,7 +19495,20 @@
     "back": "Back",
     "cancel": "Cancel",
     "continueTo": "Continue: {{step}}",
+    "savedAt": "Saved at {{time}}",
+    "saveError": "Could not save",
+    "saveRetry": "Try again",
+    "saving": "Saving…",
     "skip": "Skip this step",
+    "conflict": {
+      "confirmKeepMine": "Your changes will replace the version saved elsewhere.",
+      "confirmTakeTheirs": "Your unsaved changes in this tab will be lost.",
+      "description": "This draft was also saved from another device or tab. Choose which version to keep.",
+      "keepMine": "Keep my changes",
+      "serverSavedAt": "Version saved at {{time}}",
+      "takeTheirs": "Use server version",
+      "title": "Version conflict"
+    },
     "draft": {
       "resume": "Resume from step {{number}}",
       "resumeText": "You had reached step {{current}} of {{total}}: “{{step}}”.",

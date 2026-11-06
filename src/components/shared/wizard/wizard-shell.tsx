@@ -16,8 +16,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Stepper } from "@/components/ui/stepper";
-import { useWizardDraft } from "@/hooks/use-wizard-draft";
+import { SaveIndicator } from "@/components/shared/save-indicator";
+import { WizardConflictDialog } from "@/components/shared/wizard-conflict-dialog";
+import { useWizardDraft, type UseWizardDraft, type WizardDraftServer } from "@/hooks/use-wizard-draft";
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
@@ -119,9 +122,12 @@ export interface WizardShellProps<TValues extends FieldValues, TResult = void> {
   /**
    * The automatic draft. On by default. `exclude` lists the fields that are never saved because they are sensitive (fiscal
    * code, documents, IBAN, e-mail of third parties): `["fiscalCode", "guests.*.documentNumber"]`. `accept` can refuse a draft when
-   * the flow opens (a draft older than what the server already knows). `false` turns it off.
+   * the flow opens (a draft older than what the server already knows). `server` also keeps the draft on the server, to resume it on
+   * another device (ADR-024): the wizard shows a spinner until the draft of the server is read, shows where the saving stands
+   * (`SaveIndicator`) in place of the «Draft saved at» line, and asks which version to keep when two devices saved the same
+   * draft (`WizardConflictDialog`). `false` turns it off.
    */
-  draft?: false | { exclude?: readonly string[]; version?: number; accept?: (draft: WizardDraft) => boolean };
+  draft?: false | { exclude?: readonly string[]; version?: number; accept?: (draft: WizardDraft) => boolean; server?: WizardDraftServer };
   /** "Cancel" on the first step: the draft is deleted and this runs (it takes the person out of the flow). */
   onExit?: () => void;
   /** What to say when `onFinish` fails and the error has no message of its own (the API's message is shown when it has one). */
@@ -194,8 +200,31 @@ const BUTTON = "h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leadi
  *     <WizardShell id="property-new" steps={steps} defaultValues={defaults} finishLabel={t("...")}
  *       onFinish={createProperty} renderDone={({ result }) => <WizardDone ... />} />
  */
-export function WizardShell<TValues extends FieldValues, TResult = void>({
-  id,
+export function WizardShell<TValues extends FieldValues, TResult = void>(props: WizardShellProps<TValues, TResult>) {
+  const { id, draft: draftOption, testIds, className } = props;
+  // The draft: laid over the defaults when the wizard opens.
+  const draft = useWizardDraft(id, {
+    enabled: draftOption !== false,
+    exclude: draftOption ? draftOption.exclude : undefined,
+    version: draftOption ? draftOption.version : undefined,
+    accept: draftOption ? draftOption.accept : undefined,
+    server: draftOption ? draftOption.server : undefined,
+  });
+
+  // The form takes its initial values once, from the draft: with a draft on the server it waits for the answer of the server before
+  // it builds the form (a flow without one is ready at once).
+  if (!draft.ready) {
+    return (
+      <div data-testid={testIds?.root ?? DEFAULT_TEST_IDS.root} aria-busy="true" className={cn("flex min-w-0 justify-center py-12", className)}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+  return <WizardShellBody {...props} draftState={draft} />;
+}
+
+/** The wizard once its draft is known: the form, the steps, the buttons. `draftState` is the draft of the flow (`useWizardDraft`). */
+function WizardShellBody<TValues extends FieldValues, TResult = void>({
   steps,
   defaultValues,
   finishLabel,
@@ -209,21 +238,17 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   aboveFooter,
   testIds,
   className,
-}: WizardShellProps<TValues, TResult>) {
+  draftState: draft,
+}: WizardShellProps<TValues, TResult> & { draftState: UseWizardDraft }) {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const ids = { ...DEFAULT_TEST_IDS, ...testIds };
   const titleId = React.useId();
   const formId = React.useId();
 
-  // The draft: laid over the defaults when the wizard opens.
   const draftOn = draftOption !== false;
-  const draft = useWizardDraft(id, {
-    enabled: draftOn,
-    exclude: draftOption ? draftOption.exclude : undefined,
-    version: draftOption ? draftOption.version : undefined,
-    accept: draftOption ? draftOption.accept : undefined,
-  });
+  // A flow with a copy of the draft on the server saves on the blur of its form and when the step changes, and says where the saving stands.
+  const serverOn = draftOption ? Boolean(draftOption.server) : false;
   const [initialValues] = React.useState(
     () => ({ ...defaultValues, ...(draft.restored?.values ?? {}) }) as DefaultValues<TValues>
   );
@@ -322,8 +347,10 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     return unsubscribe;
   }, [form, draftOn, saveDraft]);
 
-  // Landing on another step: progress is told to the page and kept in the draft, the old problems go away and the
-  // focus goes to the heading of the new step, which a screen reader reads. Not on the first render.
+  // Landing on another step: progress is told to the page and kept in the draft (sent to the server at once, when the draft is
+  // there too), the old problems go away and the focus goes to the heading of the new step, which a screen reader reads. Not on
+  // the first render.
+  const flushDraft = draft.flush;
   const previousStepId = React.useRef(step.id);
   React.useEffect(() => {
     if (previousStepId.current === step.id) return;
@@ -333,6 +360,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     const values = form.getValues();
     onStepChange?.({ from, to: step.id, values });
     saveDraft({ step: step.id, values: values as Record<string, unknown> });
+    if (serverOn) flushDraft();
     form.clearErrors();
     titleRef.current?.focus();
     if (revealProblemsOnArrival.current) {
@@ -344,7 +372,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
         }
       });
     }
-  }, [step.id, isDone, form, onStepChange, saveDraft]);
+  }, [step.id, isDone, form, onStepChange, saveDraft, serverOn, flushDraft]);
 
   // After a failed "Continue", once the problems are on screen: the focus goes to the first field in error, or to the summary.
   React.useEffect(() => {
@@ -445,6 +473,14 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     );
   };
 
+  // The person chose the version of the server: its values and its step go back in the form (the draft already adopted its version).
+  const takeTheirs = () => {
+    const theirs = draft.takeTheirs();
+    if (!theirs) return;
+    form.reset({ ...defaultValues, ...theirs.values } as DefaultValues<TValues>);
+    if (steps.some((s) => s.id === theirs.step)) goTo(theirs.step);
+  };
+
   const showSummary = failedStepId === step.id && problems.length > 0;
   const finishMessage = finishError ? (getProblemMessage(finishError, t) ?? finishFailedMessage ?? t("wizard.errors.finishFailed")) : null;
 
@@ -502,6 +538,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
             noValidate
             aria-labelledby={titleId}
             className="min-w-0 space-y-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
+            onBlur={serverOn ? draft.onBlur : undefined}
             onSubmit={(event) => {
               event.preventDefault();
               void advance();
@@ -591,12 +628,33 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
             </Button>
           </div>
         </div>
-        {draft.savedAt && (
-          <p role="status" data-testid={ids.draftSaved} className="mt-2 text-xs text-muted-foreground md:text-right">
-            {t("wizard.draft.savedAt", { time: savedTime(draft.savedAt) })}
-          </p>
+        {serverOn ? (
+          <SaveIndicator
+            status={draft.status}
+            savedAt={draft.serverSavedAt}
+            onRetry={draft.retry}
+            data-testid={ids.draftSaved}
+            className="mt-2 md:text-right"
+          />
+        ) : (
+          draft.savedAt && (
+            <p role="status" data-testid={ids.draftSaved} className="mt-2 text-xs text-muted-foreground md:text-right">
+              {t("wizard.draft.savedAt", { time: savedTime(draft.savedAt) })}
+            </p>
+          )
         )}
       </div>
+
+      {/* Outside the form: a dialog inside it would submit it. The conflict has to be answered, so it is up while the draft has one. */}
+      {draft.conflict ? (
+        <WizardConflictDialog
+          open
+          serverDraft={draft.conflict.serverDraft}
+          serverVersion={draft.conflict.serverVersion}
+          onKeepMine={draft.keepMine}
+          onTakeTheirs={takeTheirs}
+        />
+      ) : null}
     </div>
   );
 }
