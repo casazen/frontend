@@ -12819,6 +12819,7 @@
     "title": "Report",
     "touristTax": {
       "basis": "Dovuta: l'imposta registrata sui soggiorni con check-in nel periodo. Versata: i versamenti che hai registrato con periodo compreso nel periodo. Il saldo totale è la differenza dei due totali: quanto è dovuto a ogni comune lo dicono le righe.",
+      "basisHidden": "Dovuta: l'imposta registrata sui soggiorni con check-in nel periodo, sugli immobili a cui hai accesso.",
       "caption": "Imposta di soggiorno per comune, dal {{from}} al {{to}}",
       "columns": {
         "actions": "Azioni",
@@ -12834,6 +12835,7 @@
       },
       "description": "Per ogni comune e periodo: l'imposta registrata sui soggiorni, quella che hai versato e le ricevute.",
       "empty": "Nessun soggiorno con check-in in questo periodo e nessun versamento registrato.",
+      "emptyHidden": "Nessun soggiorno con check-in in questo periodo, sugli immobili a cui hai accesso.",
       "error": "Impossibile caricare il riepilogo dell'imposta di soggiorno.",
       "errors": {
         "amountInvalid": "L'importo non è valido: scrivi un importo maggiore di zero con al massimo due decimali.",

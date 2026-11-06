@@ -159,8 +159,9 @@ export function TouristTaxSummaryPage() {
             ) : null}
 
             {data.comuni.length === 0 ? (
+              // A caller who cannot see the payments is told about the stays only: "no payment recorded" would be false or would give one away.
               <p className="text-sm text-foreground/70" data-testid="tourist-tax-empty">
-                {t('reports.touristTax.empty')}
+                {data.paymentsHidden ? t('reports.touristTax.emptyHidden') : t('reports.touristTax.empty')}
               </p>
             ) : (
               <ComuneSummaryTable
@@ -179,7 +180,9 @@ export function TouristTaxSummaryPage() {
               </Alert>
             ) : null}
 
-            <p className="text-sm text-foreground/70">{t('reports.touristTax.basis')}</p>
+            <p className="text-sm text-foreground/70" data-testid="tourist-tax-basis">
+              {data.paymentsHidden ? t('reports.touristTax.basisHidden') : t('reports.touristTax.basis')}
+            </p>
           </div>
         ) : summary.isError ? (
           <ErrorState

@@ -12819,6 +12819,7 @@
     "title": "Reports",
     "touristTax": {
       "basis": "Owed: the tax recorded on the stays that check in during the period. Paid: the payments you recorded whose period lies inside it. The total balance is the difference of the two totals: the rows say what is due to each municipality.",
+      "basisHidden": "Owed: the tax recorded on the stays that check in during the period, on the properties you have access to.",
       "caption": "Tourist tax by municipality, from {{from}} to {{to}}",
       "columns": {
         "actions": "Actions",
@@ -12834,6 +12835,7 @@
       },
       "description": "For each municipality and period: the tax recorded on the stays, the tax you paid and the receipts.",
       "empty": "No stay checks in during this period and no payment is recorded.",
+      "emptyHidden": "No stay checks in during this period on the properties you have access to.",
       "error": "The tourist tax summary could not be loaded.",
       "errors": {
         "amountInvalid": "The amount is not valid: write an amount above zero with at most two decimals.",
