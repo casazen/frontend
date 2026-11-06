@@ -50,6 +50,21 @@ export interface PublicCheckInGuestPrefill {
   documentNumberMasked?: string | null;
   documentIssuePlaceCode?: string | null;
   documentIssuePlaceName: string;
+  /** Day the document was issued (`YYYY-MM-DD`), when on file (NF-40). */
+  documentIssuedOn?: string | null;
+  /** Day the document expires (`YYYY-MM-DD`), when on file (NF-40). */
+  documentExpiresOn?: string | null;
+  /** Residence (NF-40): in Italy the comune and the province, abroad the state. Null until the guest says. */
+  residenceInItaly?: boolean | null;
+  residenceComuneCode?: string | null;
+  residenceComuneName?: string | null;
+  residenceProvince?: string | null;
+  residenceCountryCode?: string | null;
+  residenceCountryName?: string | null;
+  /** Statistical fields (NF-40), codes of the closed lists, asked only where the region requires them. */
+  tourismType?: string | null;
+  travelWay?: string | null;
+  educationLevel?: string | null;
 }
 
 /**
@@ -73,6 +88,20 @@ export interface PublicCheckInContextDto {
   privacyNoticeVersion?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
+  /**
+   * The statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`): the page asks these and no other
+   * (NF-40, data minimization). Empty when the region requires none.
+   */
+  requiredGuestFields?: string[];
+  /** The language to open the page in (`it`, `en`, `de`, `fr`, `es`): the guest's earlier choice, else the browser's, else `it`. Open session only. */
+  language?: string;
+  /** The languages the guest can choose. Open session only. */
+  supportedLanguages?: string[];
+}
+
+/** Answer of `PUT /public/checkin/{token}/language`: the language now saved on the session. */
+export interface PublicCheckInLanguageResponse {
+  language: string;
 }
 
 /**
@@ -98,6 +127,25 @@ export interface StayGuestSubmit {
   documentNumber: string | null;
   documentIssuePlaceName: string | null;
   documentIssuePlaceCode: string | null;
+  /** Optional (NF-40): sent with the document, `null` when not given. */
+  documentIssuedOn?: string | null;
+  documentExpiresOn?: string | null;
+  /** Optional residence (NF-40): in Italy comune and province, abroad the state; `null` when not said. */
+  residenceInItaly?: boolean | null;
+  residenceComuneName?: string | null;
+  residenceComuneCode?: string | null;
+  residenceProvince?: string | null;
+  residenceCountryName?: string | null;
+  residenceCountryCode?: string | null;
+  /** Statistical fields (NF-40): present only when the region requires them (absent otherwise, never sent empty). */
+  tourismType?: string | null;
+  travelWay?: string | null;
+  educationLevel?: string | null;
+  /**
+   * The tourist tax exemption the host chose (a reason code, NF-46): sent by the host's entries only. The guest portal never sends it, and the
+   * server ignores it there.
+   */
+  taxExemptionCode?: string | null;
 }
 
 /**

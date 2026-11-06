@@ -51,7 +51,7 @@ const permissions =
 
 const EXPECTED: Record<R6Action, string> = {
   ReviewBooking: `/app/short-rent/bookings/${BOOKING_ID}`,
-  StartCheckIn: `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`,
+  StartCheckIn: `/app/short-rent/bookings/${BOOKING_ID}/check-in`,
   CompleteCheckOut: `/app/short-rent/bookings/${BOOKING_ID}/checkout`,
   VerifyIdentity: '/app/short-rent/verifications',
   UploadAlloggiatiProof: '/app/short-rent/alloggiati',
@@ -116,6 +116,8 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
 
     // Check-out is written (`booking.write`): who may only read the bookings finds the stay.
     expect(todoActionRoute(itemFor('CompleteCheckOut'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    // The wizard "Guest check-in" saves the guests (`booking.write`): who may only read the bookings finds the documents of the stay.
+    expect(todoActionRoute(itemFor('StartCheckIn'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     // The queue of the verifications is decided by who holds `verification.decide`: the others find the documents of the stay.
     expect(todoActionRoute(itemFor('VerifyIdentity'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     // The queue of the approvals is `property.write`: the others find the messages of the stay.

@@ -198,6 +198,7 @@ export const STATUS_DICTIONARY = {
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
+    NotDue: { tone: "neutral", icon: "circle-dashed" },
   }),
   /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
   cin: defineKind<CinStatus>({

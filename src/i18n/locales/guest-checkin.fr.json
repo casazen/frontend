@@ -1,0 +1,256 @@
+{
+  "checkin": {
+    "documentType": {
+      "Passport": "Passeport",
+      "IdentityCard": "Carte d'identité",
+      "DriversLicense": "Permis de conduire",
+      "Other": "Autre"
+    },
+    "gender": {
+      "Male": "Homme",
+      "Female": "Femme",
+      "Other": "Autre"
+    },
+    "validation": {
+      "firstName": {
+        "required": "Le prénom est obligatoire",
+        "maxLength": "30 caractères au maximum"
+      },
+      "lastName": {
+        "required": "Le nom est obligatoire",
+        "maxLength": "50 caractères au maximum"
+      },
+      "dateOfBirth": {
+        "required": "La date de naissance est obligatoire",
+        "future": "La date de naissance ne peut pas être dans le futur"
+      },
+      "gender": {
+        "required": "Sélectionnez le sexe"
+      },
+      "documentType": {
+        "required": "Sélectionnez le type de document"
+      },
+      "documentNumber": {
+        "required": "Le numéro du document est obligatoire",
+        "invalid": "Lettres et chiffres uniquement, 20 au maximum"
+      },
+      "invalidValue": "Valeur non valide",
+      "bornInItaly": {
+        "required": "Indiquez si l'invité est né en Italie ou à l'étranger"
+      },
+      "birthComune": {
+        "required": "La commune de naissance est obligatoire"
+      },
+      "birthProvince": {
+        "invalid": "Saisissez le code de deux lettres (p. ex. RM)"
+      },
+      "birthCountry": {
+        "required": "Le pays de naissance est obligatoire"
+      },
+      "citizenship": {
+        "required": "La nationalité est obligatoire"
+      },
+      "label": {
+        "maxLength": "100 caractères au maximum"
+      },
+      "documentIssuePlace": {
+        "required": "Le lieu de délivrance est obligatoire"
+      },
+      "type": {
+        "memberWithoutHead": "Un membre de la famille ou du groupe doit suivre le chef de famille ou le chef de groupe",
+        "headWithoutMembers": "Ajoutez au moins un membre de la famille ou du groupe, ou choisissez « Invités individuels »"
+      },
+      "guests": {
+        "count": "Saisissez de 1 à 30 invités"
+      },
+      "marketingEmail": {
+        "required": "Saisissez l'adresse e-mail à laquelle recevoir les communications",
+        "invalid": "Saisissez une adresse e-mail valide (255 caractères au maximum)"
+      },
+      "documentExpiresOn": {
+        "beforeIssue": "La date d'expiration ne peut pas être antérieure à la date de délivrance",
+        "invalid": "Saisissez une date d'expiration valide"
+      },
+      "documentIssuedOn": {
+        "future": "La date de délivrance ne peut pas être dans le futur",
+        "invalid": "Saisissez une date de délivrance valide (à partir de 1900)"
+      },
+      "educationLevel": {
+        "required": "Sélectionnez le niveau d'études"
+      },
+      "residenceProvince": {
+        "invalid": "Saisissez le code de deux lettres (p. ex. RM)"
+      },
+      "tourismType": {
+        "required": "Sélectionnez le motif du voyage"
+      },
+      "travelWay": {
+        "required": "Sélectionnez le moyen de transport"
+      }
+    },
+    "loading": "Chargement du check-in…",
+    "invalidLink": "Lien non valide",
+    "invalidLinkDescription": "Le lien de check-in n'est pas valide ou a expiré. Contactez le gestionnaire du logement.",
+    "guestCheckIn": "Check-in des invités",
+    "birthDate": "Date de naissance *",
+    "genderLabel": "Sexe *",
+    "selectGender": "Sélectionner",
+    "documentTypeLabel": "Type de document *",
+    "selectDocumentType": "Sélectionner",
+    "documentNumber": "Numéro du document *",
+    "documentNumberOnFile": "Document enregistré : {{masked}}. Par sécurité, saisissez de nouveau le numéro complet.",
+    "saving": "Enregistrement…",
+    "firstName": "Prénom *",
+    "lastName": "Nom *",
+    "stepDocument": "Pièce d'identité",
+    "stepConsents": "Information sur la protection des données et consentements",
+    "stepOf": "Étape {{step}} sur {{total}}",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Envoyer le check-in",
+    "fixHighlightedFields": "Certaines informations ne sont pas valides : corrigez les champs signalés puis envoyez de nouveau.",
+    "successTitle": "Check-in terminé !",
+    "successDescription": "Vos informations ont été enregistrées. Merci !",
+    "alreadyCompletedTitle": "Check-in déjà terminé",
+    "alreadyCompletedDescription": "Les informations de ce séjour ont déjà été envoyées. Pour protéger votre vie privée, elles ne sont plus affichées. Pour les corriger, contactez le gestionnaire du logement.",
+    "marketingConsentVersion": "Facultatif. Version du texte : {{version}}",
+    "privacyNotice": {
+      "title": "Information sur le traitement des données personnelles (art. 13 RGPD)",
+      "legalObligation": "La déclaration de chaque invité à la police (Questura) via Alloggiati Web est une obligation légale (art. 109 TULPS) : le traitement repose sur l'art. 6, par. 1, point c) du RGPD et ne nécessite pas votre consentement. Sans ces données, le séjour ne peut pas être déclaré.",
+      "body": "[ESPACE RÉSERVÉ – l'information complète sera fournie par le responsable du traitement : identité du responsable, finalités, bases juridiques, destinataires (police), durée de conservation et droits des personnes concernées.]",
+      "version": "Version de l'information : {{version}}"
+    },
+    "stepGuests": "Invités",
+    "guestsIntro": "Saisissez tous les invités qui séjournent, mineurs compris : la loi (art. 109 TULPS) exige les données de chacun d'eux. Seul l'invité individuel, le chef de famille ou le chef de groupe doit fournir une pièce d'identité.",
+    "guestCountMismatch_one": "La réservation indique {{count}} invité : vérifiez que vous avez saisi toutes les personnes qui séjournent.",
+    "guestCountMismatch_other": "La réservation indique {{count}} invités : vérifiez que vous avez saisi toutes les personnes qui séjournent.",
+    "guestHeading": "Invité {{index}}",
+    "minor": "Mineur",
+    "stayKindLabel": "Qui séjourne *",
+    "stayKind": {
+      "SingleGuest": "Invités individuels (chacun avec son document)",
+      "HeadOfFamily": "Famille : chef de famille et membres de la famille",
+      "HeadOfGroup": "Groupe : chef de groupe et membres du groupe"
+    },
+    "stayKindHint": "Pour une famille ou un groupe, le premier invité est le chef de famille ou de groupe : lui seul doit fournir un document.",
+    "bornInLabel": "Lieu de naissance *",
+    "selectBornIn": "Sélectionner",
+    "bornIn": {
+      "yes": "En Italie",
+      "no": "À l'étranger"
+    },
+    "birthComune": "Commune de naissance *",
+    "birthProvince": "Province (deux lettres) *",
+    "birthCountry": "Pays de naissance *",
+    "citizenship": "Nationalité *",
+    "removeGuest": "Retirer l'invité",
+    "addGuest": "Ajouter un invité",
+    "consent": {
+      "title": "Consentement aux communications commerciales (facultatif)",
+      "intro": "Souhaitez-vous recevoir des nouvelles, des offres et des actualités du logement ? Choisissez vos canaux préférés. Ce n'est pas obligatoire : vous pouvez terminer le check-in sans donner votre consentement.",
+      "emailChannel": "J'accepte de recevoir des communications commerciales par e-mail",
+      "emailChannelDescription": "Vous recevrez des offres, des nouvelles et des promotions par e-mail.",
+      "whatsappChannel": "J'accepte de recevoir des communications commerciales par WhatsApp",
+      "whatsappChannelDescription": "Vous recevrez des offres, des nouvelles et des promotions par WhatsApp.",
+      "marketingEmail": "Votre adresse e-mail *",
+      "marketingEmailPlaceholder": "exemple@email.com",
+      "marketingEmailHint": "Saisissez votre adresse e-mail personnelle. N'utilisez pas l'adresse temporaire de la réservation (p. ex. celle de Booking.com).",
+      "skipAllowed": "Vous pouvez passer cette étape : le check-in sera terminé quand même."
+    },
+    "documentIntro": "Pièce d'identité de l'invité individuel ou du chef de famille ou de groupe. Les membres de la famille et du groupe n'en ont pas besoin.",
+    "documentOf": "Document de {{name}}",
+    "documentIssuePlace": "Lieu de délivrance *",
+    "documentIssuePlaceHint": "La commune si le document a été délivré en Italie, le pays s'il l'a été à l'étranger.",
+    "codeSelected": "Code Alloggiati : {{code}}",
+    "codeSearchFailed": "La liste officielle n'est pas disponible pour le moment : saisissez le nom complet.",
+    "choose": "Sélectionner",
+    "documentExpiresOn": {
+      "label": "Date d'expiration (facultatif)"
+    },
+    "documentIssuedOn": {
+      "label": "Date de délivrance (facultatif)"
+    },
+    "educationLevel": {
+      "label": "Niveau d'études *",
+      "none": "Aucun diplôme",
+      "primary": "École primaire",
+      "lower_secondary": "Collège",
+      "upper_secondary": "Lycée",
+      "degree": "Diplôme universitaire",
+      "postgraduate": "Diplôme de troisième cycle"
+    },
+    "errors": {
+      "codeInvalid": "Le code n'est pas valide.",
+      "codeUnknown": "Le code ne figure pas dans les listes officielles.",
+      "dateOfBirthInFuture": "La date de naissance ne peut pas être dans le futur.",
+      "documentExpiresBeforeIssue": "Le document ne peut pas expirer avant d'avoir été délivré.",
+      "documentIssuedOnInvalid": "La date de délivrance ne peut être ni dans le futur ni antérieure à 1900.",
+      "documentNumberInvalid": "Le numéro du document ne peut contenir que des lettres et des chiffres, 20 au maximum.",
+      "documentTypeInvalid": "Ce type de document n'est pas accepté : choisissez passeport, carte d'identité ou permis de conduire.",
+      "fieldMaxLength": "Le texte est trop long.",
+      "fieldRequired": "Ce champ est obligatoire.",
+      "genderInvalid": "Sélectionnez homme ou femme : ce sont les seules valeurs acceptées par Alloggiati Web.",
+      "guestTypeInvalid": "Le type d'invité n'est pas valide.",
+      "guestsCount": "Saisissez de 1 à 30 invités.",
+      "headWithoutMembers": "Ajoutez au moins un membre de la famille ou du groupe, ou choisissez « Invités individuels ».",
+      "marketingConsentMinor": "Un mineur ne peut pas consentir aux communications commerciales.",
+      "marketingConsentUnavailable": "Le consentement aux communications commerciales n'est pas disponible pour ce séjour.",
+      "marketingEmailInvalid": "Saisissez une adresse e-mail valide (255 caractères au maximum).",
+      "marketingEmailRequired": "Saisissez l'adresse e-mail à laquelle recevoir les communications.",
+      "memberWithoutHead": "Un membre de la famille ou du groupe doit suivre le chef de famille ou le chef de groupe.",
+      "network": "Le serveur est injoignable : vérifiez votre connexion et réessayez.",
+      "provinceInvalid": "Saisissez le code de deux lettres de la province (p. ex. RM).",
+      "statisticalValueInvalid": "La valeur choisie ne fait pas partie des valeurs autorisées.",
+      "summary_one": "1 champ à vérifier",
+      "summary_other": "{{count}} champs à vérifier",
+      "tooManyRequests": "Trop de demandes en peu de temps : patientez un instant puis réessayez."
+    },
+    "guestKind": {
+      "FamilyMember": "Membre de la famille",
+      "GroupMember": "Membre du groupe",
+      "HeadOfFamily": "Chef de famille",
+      "HeadOfGroup": "Chef de groupe",
+      "SingleGuest": "Invité individuel"
+    },
+    "language": {
+      "label": "Langue",
+      "loadFailed": "Nous n'avons pas pu charger cette langue : la page reste dans la langue précédente.",
+      "names": {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano"
+      },
+      "notSaved": "Nous n'avons pas pu enregistrer votre choix de langue : la page reste quand même dans cette langue."
+    },
+    "residence": {
+      "abroad": "À l'étranger",
+      "comune": "Commune de résidence",
+      "country": "Pays de résidence",
+      "hint": "Facultatif : où l'invité habite habituellement.",
+      "inItaly": "En Italie",
+      "label": "Résidence",
+      "province": "Province de résidence (deux lettres)"
+    },
+    "toast": {
+      "saved": "Informations du check-in enregistrées.",
+      "saveFailed": "Nous n'avons pas pu enregistrer les informations du check-in. Veuillez réessayer."
+    },
+    "tourismType": {
+      "business": "Professionnel",
+      "holiday": "Vacances",
+      "label": "Motif du voyage *",
+      "other": "Autre"
+    },
+    "travelWay": {
+      "bus": "Bus",
+      "car": "Voiture",
+      "label": "Moyen de transport utilisé *",
+      "other": "Autre",
+      "plane": "Avion",
+      "ship": "Bateau",
+      "train": "Train"
+    }
+  }
+}

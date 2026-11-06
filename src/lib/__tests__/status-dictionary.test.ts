@@ -49,7 +49,7 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   // No enum: the regime of a property for the tax year, as the interface works it out from what the host chose and confirmed (SR-FISC)
   fiscalRegime: ["Confirmed", "ToConfirm", "NotChosen"],
   // AlloggiatiWebStatus
-  alloggiati: ["DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
+  alloggiati: ["DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore", "NotDue"],
   // SupplierServiceListingStatus (SP-06)
   serviceListing: ["Draft", "Active", "Paused"],
   // ChannelPublishStatus (E02/F03/US01): the state of the content of a property on a channel

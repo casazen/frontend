@@ -30,6 +30,11 @@ export function canOpenCheckOut(booking: StayDates, today: string = todayInRome(
   return booking.status === 'Confirmed' && stayDateOf(booking.checkOutDate) <= today;
 }
 
+/** The host wizard "Guest check-in" of a stay (NF-40): the guests, their documents, the checks, the tourist tax, and what is sent. */
+export function checkInWizardPath(bookingId: string): string {
+  return `/app/short-rent/bookings/${bookingId}/check-in`;
+}
+
 /** Tab of the booking detail where the host completes the guest data for Alloggiati Web (CO-12). */
 export function guestDataCompletionPath(bookingId: string): string {
   return `/app/short-rent/bookings/${bookingId}?tab=alloggiati`;

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { act, render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { createElement } from 'react';
@@ -9,7 +9,9 @@ import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
 import { AlloggiatiGuestSummary } from '../components/alloggiati-guest-summary';
 import { alloggiatiApi } from '@/api/alloggiati.api';
+import { checkInWizardApi } from '@/api/checkin-wizard.api';
 import type { AlloggiatiGuestSummaryDto } from '@/types/alloggiati.types';
+import type { CheckInWizardGuest, CheckInWizardState } from '@/types/checkin-wizard.types';
 
 vi.mock('@/api/alloggiati.api', () => ({
   alloggiatiApi: {
@@ -23,6 +25,7 @@ vi.mock('@/api/alloggiati.api', () => ({
     downloadRecordFile: vi.fn(),
   },
 }));
+vi.mock('@/api/checkin-wizard.api', () => ({ checkInWizardApi: { getState: vi.fn() } }));
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: vi.fn(), withJsonErrorBody: vi.fn() }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -109,13 +112,14 @@ const summary: AlloggiatiGuestSummaryDto = {
 
 function renderSummary(canEdit = false, canRevealDocuments = false, canDownloadRecordFile = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
       createElement(AlloggiatiGuestSummary, { bookingId: BOOKING_ID, canEdit, canRevealDocuments, canDownloadRecordFile }),
     ),
   );
+  return { ...view, client };
 }
 
 function httpError(status: number, data?: unknown): AxiosError {
@@ -128,6 +132,45 @@ function httpError(status: number, data?: unknown): AxiosError {
     config,
   });
 }
+
+/**
+ * The same guests as the wizard of the check-in sees them: the fields the summary of the Alloggiati tab does not carry (the residence, the
+ * document dates, the exemption of the tourist tax). The form of the guests must hold them: the server takes the list as the whole truth.
+ */
+function wizardGuest(position: number, overrides: Partial<CheckInWizardGuest>): CheckInWizardGuest {
+  return {
+    saved: true,
+    position,
+    type: 'SingleGuest',
+    firstName: '',
+    lastName: '',
+    birthComuneName: '',
+    birthCountryName: '',
+    citizenshipName: '',
+    documentIssuePlaceName: '',
+    dataSource: 'Host',
+    ...overrides,
+  };
+}
+
+const wizardState = {
+  guests: [
+    wizardGuest(0, {
+      type: 'HeadOfFamily',
+      residenceInItaly: true,
+      residenceComuneName: 'Roma',
+      residenceProvince: 'RM',
+      documentIssuedOn: '2020-05-10T00:00:00',
+      documentExpiresOn: '2030-05-09',
+      taxExemptionCode: 'resident',
+    }),
+    wizardGuest(1, { type: 'FamilyMember', tourismType: 'holiday' }),
+  ],
+} as unknown as CheckInWizardState;
+
+beforeEach(() => {
+  vi.mocked(checkInWizardApi.getState).mockResolvedValue(wizardState);
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -250,6 +293,65 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     expect(guests.map((g) => g.type)).toEqual(['HeadOfFamily', 'FamilyMember']);
     expect(guests[0]).toMatchObject({ documentIssuePlaceName: 'Milano', documentNumber: 'CA12345AB' });
     expect(guests[1]).toMatchObject({ bornInItaly: false, birthCountryName: 'Francia', birthCountryCode: '900000101', documentNumber: null });
+  });
+
+  it('editGuests_Host_SavingKeepsTheResidenceTheDocumentDatesAndTheTaxExemptionThatTheSummaryDoesNotCarry', { timeout: 30_000 }, async () => {
+    // The server takes the list as the whole truth: a save that left these out would erase them.
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+    vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(summary);
+    renderSummary(true);
+
+    fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+    const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+    expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
+    fireEvent.change(dialog.getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+    fireEvent.click(dialog.getByTestId('stay-guests-save'));
+
+    await waitFor(() => expect(alloggiatiApi.replaceStayGuests).toHaveBeenCalledTimes(1));
+    const [, guests] = vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0];
+    expect(guests[0]).toMatchObject({
+      residenceInItaly: true,
+      residenceComuneName: 'Roma',
+      residenceProvince: 'RM',
+      documentIssuedOn: '2020-05-10',
+      documentExpiresOn: '2030-05-09',
+      taxExemptionCode: 'resident',
+    });
+    // The statistical fields the guest holds travel back too, though no region asks for them: left out, the save would erase them.
+    expect(guests[1]).toMatchObject({ tourismType: 'holiday' });
+  });
+
+  it('editGuests_TheFieldsTheSummaryLacksCannotBeRead_NoFormThatCouldEraseThemIsOpened', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([]);
+    vi.mocked(checkInWizardApi.getState).mockRejectedValue(new Error('boom'));
+    renderSummary(true);
+
+    fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+
+    expect(await screen.findByTestId('stay-guests-edit-load-error')).toHaveTextContent('Impossibile caricare i dati degli ospiti');
+    expect(screen.queryByTestId('stay-guests-edit-form')).not.toBeInTheDocument();
+  });
+
+  it('editGuests_WizardStateReadAgainFailsWhileTheFormIsOpen_KeepsTheFormAndWhatWasTyped', { timeout: 30_000 }, async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+    const view = renderSummary(true);
+    fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+    const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+    expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
+    fireEvent.change(dialog.getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+
+    // The page is focused again and the read of the guests of the wizard fails: the data are still there, and so is the form.
+    vi.mocked(checkInWizardApi.getState).mockRejectedValue(httpError(403, { code: 'forbidden' }));
+    await act(async () => {
+      await view.client.refetchQueries({ queryKey: ['checkin-wizard', BOOKING_ID] });
+    });
+
+    expect(screen.queryByTestId('stay-guests-edit-load-error')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stay-guests-edit-form')).toBeInTheDocument();
+    expect(dialog.getByLabelText(/^Luogo di rilascio/)).toHaveValue('Milano');
   });
 
   it('editGuests_HostWithoutGuestRead_ReentersTheNumberWithTheMaskedHint', { timeout: 30_000 }, async () => {
