@@ -8,6 +8,7 @@ export * from './api.types';
 export * from './guest.types';  // ✅ New
 export * from './gdpr.types';
 export * from './tourist-tax.types';  // ✅ New
+export * from './tourist-tax-summary.types';
 export * from './calendar.types';  // ✅ New
 export * from './pricing-adapter.types';
 export * from './price-suggestion.types';
