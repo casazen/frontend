@@ -13,6 +13,11 @@ import { MAX_BEDS_OF_A_KIND, MAX_ROOMS, bedroomCount, newRoomDraft, nextFreeBedT
 
 interface RoomsEditorProps {
   form: UseFormReturn<PropertyWizardValues>;
+  /**
+   * How many rooms the server has for the property. The server takes no empty list of rooms (a unit has a bed): taking off the last room
+   * that is saved would change nothing there, and it would come back — so it cannot be taken off, and the editor says so.
+   */
+  storedRoomCount?: number;
 }
 
 /**
@@ -20,10 +25,11 @@ interface RoomsEditorProps {
  * for each kind of bed with how many. Once there is a room the counters «Camere da letto» and «Letti» are read from the rooms (the API sets
  * them from the rooms at every save), so the host never states the same thing twice. Without rooms the counters are the host's, as before.
  */
-export function RoomsEditor({ form }: RoomsEditorProps) {
+export function RoomsEditor({ form, storedRoomCount = 0 }: RoomsEditorProps) {
   const { t, i18n } = useTranslation();
   const rooms = form.watch('rooms');
   const problem = form.formState.errors.rooms?.message;
+  const lastIsSaved = storedRoomCount > 0 && rooms.length === 1;
 
   /** One place changes the rooms, so the counters follow them whichever control was used. */
   const update = (next: RoomDraft[]) => {
@@ -74,6 +80,7 @@ export function RoomsEditor({ form }: RoomsEditorProps) {
                 variant="ghost"
                 size="sm"
                 className="min-h-11"
+                disabled={lastIsSaved}
                 onClick={() => update(rooms.filter((other) => other.key !== room.key))}
                 aria-label={t('propertyWizard.rooms.remove', { number: index + 1 })}
                 data-testid="property-wizard-room-remove"
@@ -143,6 +150,12 @@ export function RoomsEditor({ form }: RoomsEditorProps) {
           </fieldset>
         );
       })}
+
+      {lastIsSaved ? (
+        <p className="text-sm text-foreground/70" data-testid="property-wizard-rooms-last-saved">
+          {t('propertyWizard.rooms.lastSaved')}
+        </p>
+      ) : null}
 
       {problem ? (
         <p role="alert" className="text-sm text-danger-foreground" data-testid="property-wizard-rooms-problem">

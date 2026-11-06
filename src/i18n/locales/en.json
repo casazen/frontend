@@ -12515,6 +12515,7 @@
       },
       "derived": "Bedrooms and beds are worked out from this list.",
       "hint": "Optional, but the channels ask for it: list the rooms and the beds of each. If you do, bedrooms and beds are worked out from here.",
+      "lastSaved": "The last room already saved can't be taken off: you can change it or add another one.",
       "noBeds": "This room has no beds yet.",
       "optionLabel": "{{number}}. {{type}}",
       "remove": "Remove room {{number}}",

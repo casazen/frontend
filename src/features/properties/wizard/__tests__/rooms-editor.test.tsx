@@ -13,12 +13,20 @@ vi.mock('@/queries/use-comuni', () => ({
   useComune: () => ({ data: undefined, isError: false }),
 }));
 
-function Harness({ values = NEW_PROPERTY_DEFAULTS, withBaseStep = false }: { values?: PropertyWizardValues; withBaseStep?: boolean }) {
+function Harness({
+  values = NEW_PROPERTY_DEFAULTS,
+  withBaseStep = false,
+  storedRoomCount = 0,
+}: {
+  values?: PropertyWizardValues;
+  withBaseStep?: boolean;
+  storedRoomCount?: number;
+}) {
   const form = useForm<PropertyWizardValues>({ defaultValues: values });
   const [bedrooms, beds, rooms] = useWatch({ control: form.control, name: ['bedrooms', 'beds', 'rooms'] });
   return (
     <>
-      {withBaseStep ? <BaseStep form={form} /> : <RoomsEditor form={form} />}
+      {withBaseStep ? <BaseStep form={form} storedRoomCount={storedRoomCount} /> : <RoomsEditor form={form} storedRoomCount={storedRoomCount} />}
       <output data-testid="counters">{`${bedrooms}/${beds}`}</output>
       <output data-testid="rooms">{JSON.stringify(rooms.map((room) => [room.type, room.beds.map((bed) => [bed.type, bed.count])]))}</output>
     </>
@@ -91,6 +99,30 @@ describe('RoomsEditor (NF-34)', () => {
     fireEvent.click(screen.getByTestId('property-wizard-room-remove'));
     expect(rooms()).toHaveLength(0);
     expect(screen.getByTestId('counters')).toHaveTextContent('1/1');
+  });
+
+  it('removeRoom_TheLastRoomThatIsSaved_CannotBeTakenOff_TheServerTakesNoEmptyList', () => {
+    // The server keeps one room: the editor starts from it, and taking it off would change nothing there (it would come back).
+    const withOne = { ...NEW_PROPERTY_DEFAULTS, rooms: [{ key: 'room-1', type: 'Bedroom' as const, beds: [{ type: 'Double' as const, count: 1 }] }] };
+    render(<Harness values={withOne} storedRoomCount={1} />);
+
+    expect(screen.getByTestId('property-wizard-room-remove')).toBeDisabled();
+    expect(screen.getByTestId('property-wizard-rooms-last-saved')).toHaveTextContent('non si può togliere');
+
+    // Another room next to it: now either can go (the other stays), and the last one is locked again.
+    fireEvent.click(screen.getByTestId('property-wizard-room-add'));
+    expect(screen.queryByTestId('property-wizard-rooms-last-saved')).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByTestId('property-wizard-room-remove')[0]!);
+    expect(rooms()).toHaveLength(1);
+    expect(screen.getByTestId('property-wizard-room-remove')).toBeDisabled();
+  });
+
+  it('removeRoom_NothingIsSavedYet_TheOnlyRoomCanBeTakenOff', () => {
+    render(<Harness storedRoomCount={0} />);
+    fireEvent.click(screen.getByTestId('property-wizard-room-add'));
+
+    expect(screen.getByTestId('property-wizard-room-remove')).toBeEnabled();
+    expect(screen.queryByTestId('property-wizard-rooms-last-saved')).not.toBeInTheDocument();
   });
 
   it('firstStep_WithRooms_TheCountersAreReadFromThemAndNotTyped', () => {

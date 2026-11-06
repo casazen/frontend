@@ -82,6 +82,8 @@ function DerivedRow({ name, value }: { name: 'bedrooms' | 'beds'; value: number 
 
 interface BaseStepProps {
   form: UseFormReturn<PropertyWizardValues>;
+  /** How many rooms the server has for the property (none while it is not created): the last one saved cannot be taken off. */
+  storedRoomCount?: number;
 }
 
 /**
@@ -89,7 +91,7 @@ interface BaseStepProps {
  * list), its spaces and its rooms with their beds (NF-34). «Avanti» creates the property on the server and saves the rooms. No map:
  * without a geocoder a pin would be made up.
  */
-export function BaseStep({ form }: BaseStepProps) {
+export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
   const { t } = useTranslation();
   const {
     register,
@@ -175,7 +177,7 @@ export function BaseStep({ form }: BaseStepProps) {
         </Field>
       </section>
 
-      <RoomsEditor form={form} />
+      <RoomsEditor form={form} storedRoomCount={storedRoomCount} />
     </>
   );
 }

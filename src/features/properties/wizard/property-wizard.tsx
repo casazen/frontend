@@ -351,7 +351,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       render: ({ form }) => (
         <>
           {blockedByPlan ? <PlanLimitAlert /> : null}
-          <BaseStep form={form} />
+          <BaseStep form={form} storedRoomCount={storedRooms.data?.length ?? 0} />
         </>
       ),
     },

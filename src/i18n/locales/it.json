@@ -12515,6 +12515,7 @@
       },
       "derived": "Camere da letto e letti si calcolano da questo elenco.",
       "hint": "Facoltativo, ma i canali lo chiedono: elenca le camere e i letti di ognuna. Se lo fai, camere da letto e letti si calcolano da qui.",
+      "lastSaved": "L'ultima camera già salvata non si può togliere: puoi cambiarla o aggiungerne un'altra.",
       "noBeds": "Questa camera non ha ancora letti.",
       "optionLabel": "{{number}}. {{type}}",
       "remove": "Togli la camera {{number}}",
