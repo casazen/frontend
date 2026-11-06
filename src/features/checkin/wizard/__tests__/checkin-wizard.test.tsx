@@ -365,6 +365,24 @@ describe('CheckInWizardPage', () => {
     expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'documents');
   });
 
+  it('documentsStep_ServerRefusesAFieldOfTheGuestsStep_OpensThatStepAndShowsTheErrorOnTheField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(checkInWizardApi.getState).mockResolvedValue(wizardState({ suggestedStep: 'documents' }));
+    vi.mocked(checkInWizardApi.saveGuests).mockRejectedValue(
+      httpError(400, { code: 'validation_error', errors: { 'Guests[0].BirthProvince': ['Sigla non valida.'] } }),
+    );
+    renderWizard();
+    await screen.findByTestId('stay-guest-0-document');
+
+    change(within(screen.getByTestId('stay-guest-0-document')), /^Numero documento/, 'CA12345AB');
+    next();
+
+    // The field is on the other step: the host lands there with the error on it (the shell clears the errors when the step changes).
+    await waitFor(() => expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'guests'));
+    const card = within(screen.getByTestId('stay-guest-0'));
+    expect(await card.findByText('Sigla non valida.')).toBeInTheDocument();
+    expect(card.getByLabelText(/^Provincia/)).toHaveAttribute('aria-invalid', 'true');
+  });
+
   describe('Save and exit', () => {
     it('saveAndExit_NothingChanged_LeavesToTheBookingWithoutSaving', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       renderWizard();

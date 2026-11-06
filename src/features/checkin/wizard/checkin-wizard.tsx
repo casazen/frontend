@@ -9,6 +9,7 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,12 +57,24 @@ function stayPath(bookingId: string): string {
   return `${BOOKINGS_PATH}/${bookingId}`;
 }
 
-/** Puts the problems the server found in the data of the guests on the fields of the form of the wizard (the form is where this is rendered). */
+/**
+ * Puts the problems the server found in the data of the guests on the fields of the form of the wizard (the form is where this is rendered).
+ * A refused save opens the step the field is on, and the shell clears the errors of the form each time the step changes, in the same pass as
+ * this effect: so the problems are put on the fields once that pass is over, and again at every change of step.
+ */
 function ApplyFieldProblems({ problems }: { problems: readonly GuestFieldProblem[] }) {
   const { setError } = useFormContext<CheckInWizardValues>();
+  const stepId = useOptionalWizard()?.stepId;
   useEffect(() => {
-    applyGuestFieldProblems(problems, setError);
-  }, [problems, setError]);
+    if (problems.length === 0) return undefined;
+    let current = true;
+    queueMicrotask(() => {
+      if (current) applyGuestFieldProblems(problems, setError);
+    });
+    return () => {
+      current = false;
+    };
+  }, [problems, setError, stepId]);
   return null;
 }
 
