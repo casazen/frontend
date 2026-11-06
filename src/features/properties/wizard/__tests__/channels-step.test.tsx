@@ -192,6 +192,25 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     expect(publishMock).toHaveBeenCalledWith(expect.objectContaining({ overwrite: false }));
   });
 
+  it('aChannelChangedOutsideCasaZen_IsToldBeforeAnyPublication_WithTheWayToTheChoice', () => {
+    // The To do of a change made outside CasaZen leads to this step: the host does not have to be refused first to find the choice.
+    withRows(row('booking_xml', { status: 'Published', changedOutside: ['descriptions', 'rooms'] }), row('airbnb_xml'));
+    render(<Harness />);
+
+    expect(screen.getByTestId('property-wizard-channels-outside')).toHaveTextContent('Scegli quale versione tenere prima di pubblicare');
+    expect(screen.queryByTestId('outside-change-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('property-wizard-channels-outside-choose'));
+    expect(screen.getByTestId('outside-change-dialog')).toBeInTheDocument();
+    expect(publishMock).not.toHaveBeenCalled();
+  });
+
+  it('nothingChangedOutside_NoAlertOfTheChoice', () => {
+    withRows(row('booking_xml'));
+    render(<Harness />);
+
+    expect(screen.queryByTestId('property-wizard-channels-outside')).not.toBeInTheDocument();
+  });
+
   it('statusCannotBeRead_SaysSoAndOffersToTryAgain', () => {
     const refetch = vi.fn();
     state.status = { data: undefined, isLoading: false, isError: true, error: new Error('down'), refetch };

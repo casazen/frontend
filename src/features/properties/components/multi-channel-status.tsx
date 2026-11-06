@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Clock } from 'lucide-react';
@@ -10,6 +11,7 @@ import type { ChannelPublishStatus, ListingPropertySummary } from '@/types';
 import { firstStepToFix } from '../wizard/channels-model';
 import { propertyWizardPath } from '../properties-paths';
 import { useChannelName } from './channel-name';
+import { OutsideChangeDialog } from './outside-change-dialog';
 
 /** «Sincronizzazione in ritardo»: the channel manager has not confirmed the content for more than a day (NF-09, ADR-034). */
 export function SyncDelayedBadge({ className }: { className?: string }) {
@@ -105,7 +107,9 @@ export function MultiChannelStatus({ propertyId, canWrite }: DetailProps) {
   const { t } = useTranslation();
   const channelName = useChannelName();
   const status = useListingStatus(propertyId);
+  const [outsideOpen, setOutsideOpen] = useState(false);
   const rows = status.data?.channels ?? [];
+  const outsideRows = rows.filter((row) => row.changedOutside.length > 0);
 
   if (status.isLoading) return null;
   if (status.isError) {
@@ -137,6 +141,17 @@ export function MultiChannelStatus({ propertyId, canWrite }: DetailProps) {
           </li>
         ))}
       </ul>
+      {outsideRows.length > 0 ? (
+        // Somebody changed the content on a channel after the last publication: the host is told here and can choose which version stays.
+        <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg bg-muted p-3" role="status" data-testid="multi-channel-outside">
+          <p className="min-w-0 flex-1 text-sm">{t('listingStatus.outside.notice')}</p>
+          {canWrite ? (
+            <Button type="button" size="sm" variant="outline" className="min-h-11 md:min-h-0" onClick={() => setOutsideOpen(true)} data-testid="multi-channel-outside-choose">
+              {t('listingStatus.outside.choose')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       {canWrite && toFix ? (
         <Button asChild size="sm" variant="outline" className="min-h-11 md:min-h-0">
           <Link to={propertyWizardPath(propertyId, firstStepToFix(status.data))} data-testid="multi-channel-fix">
@@ -144,6 +159,7 @@ export function MultiChannelStatus({ propertyId, canWrite }: DetailProps) {
           </Link>
         </Button>
       ) : null}
+      {canWrite && outsideRows.length > 0 ? <OutsideChangeDialog open={outsideOpen} onOpenChange={setOutsideOpen} propertyId={propertyId} rows={outsideRows} /> : null}
     </div>
   );
 }

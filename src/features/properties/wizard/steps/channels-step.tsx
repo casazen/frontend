@@ -148,7 +148,23 @@ export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStep
         </Alert>
       ) : null}
 
-      <PublishProblemAlert problem={problem} goTo={goTo} onChoose={() => setOutsideOpen(true)} />
+      {outsideRows.length > 0 ? (
+        // A channel somebody changed outside CasaZen is told here, before «Pubblica» (the To do of the change leads to this step), with the
+        // way to the choice: nothing is overwritten without it, and the host does not have to be refused first to find it.
+        <Alert
+          variant="warning"
+          data-testid="property-wizard-channels-outside"
+          action={
+            <Button type="button" size="sm" variant="outline" onClick={() => setOutsideOpen(true)} data-testid="property-wizard-channels-outside-choose">
+              {t('propertyWizard.channels.outside.choose')}
+            </Button>
+          }
+        >
+          {t('propertyWizard.channels.outside.text')}
+        </Alert>
+      ) : null}
+
+      <PublishProblemAlert problem={problem} goTo={goTo} />
 
       {started ? (
         <p role="status" className="flex items-center gap-2 text-sm" data-testid="property-wizard-channels-started">
@@ -255,12 +271,10 @@ function ChannelCard({ entry, name, chosen, onChoose, goTo }: ChannelCardProps) 
 interface PublishProblemAlertProps {
   problem: PublishProblem | null;
   goTo: (stepId: string) => void;
-  /** Opens the dialog of a change made outside CasaZen again. */
-  onChoose: () => void;
 }
 
 /** What a refused publication says, answered where the host is looking. */
-function PublishProblemAlert({ problem, goTo, onChoose }: PublishProblemAlertProps) {
+function PublishProblemAlert({ problem, goTo }: PublishProblemAlertProps) {
   const { t } = useTranslation();
   if (!problem) return null;
 
@@ -300,19 +314,8 @@ function PublishProblemAlert({ problem, goTo, onChoose }: PublishProblemAlertPro
         </Alert>
       );
     case 'modified-outside':
-      return (
-        <Alert
-          variant="warning"
-          data-testid="property-wizard-channels-outside"
-          action={
-            <Button type="button" size="sm" variant="outline" onClick={onChoose}>
-              {t('propertyWizard.channels.outside.choose')}
-            </Button>
-          }
-        >
-          {t('propertyWizard.channels.outside.text')}
-        </Alert>
-      );
+      // Said by the alert above (the status lists the channels that changed) and answered in the dialog, which the refusal has just opened.
+      return null;
     default:
       return (
         <Alert variant="danger" data-testid="property-wizard-channels-publish-error">

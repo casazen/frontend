@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n/config';
@@ -9,7 +9,10 @@ const { state } = vi.hoisted(() => ({
   state: { data: undefined as unknown, isLoading: false, isError: false },
 }));
 
-vi.mock('@/queries/use-listing-status', () => ({ useListingStatus: () => state }));
+vi.mock('@/queries/use-listing-status', () => ({
+  useListingStatus: () => state,
+  useResolveOutsideChange: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
 
 const row = (channel: string, overrides: Partial<ListingChannelStatus> = {}): ListingChannelStatus => ({
   channel,
@@ -137,6 +140,43 @@ describe('MultiChannelStatus (the sheet of the property)', () => {
     );
 
     expect(screen.getByTestId('multi-channel-fix')).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=p1&step=photos');
+  });
+
+  it('changedOutsideCasaZen_IsToldWithTheWayToTheChoice_OnlyForWhoMayWrite', () => {
+    channels(row('booking_xml', { changedOutside: ['descriptions'] }), row('airbnb_xml'));
+    const { rerender } = render(
+      <MemoryRouter>
+        <MultiChannelStatus propertyId="p1" canWrite />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('multi-channel-outside')).toHaveTextContent('scegli quale versione tenere');
+    expect(screen.queryByTestId('outside-change-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('multi-channel-outside-choose'));
+    // The dialog lists the channel that changed, and only that one.
+    expect(screen.getByTestId('outside-change-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('outside-change-booking_xml')).toBeInTheDocument();
+    expect(screen.queryByTestId('outside-change-airbnb_xml')).not.toBeInTheDocument();
+
+    // Who may only read is told, and has no choice to make.
+    rerender(
+      <MemoryRouter>
+        <MultiChannelStatus propertyId="p1" canWrite={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('multi-channel-outside')).toBeInTheDocument();
+    expect(screen.queryByTestId('multi-channel-outside-choose')).not.toBeInTheDocument();
+  });
+
+  it('nothingChangedOutside_NoNotice', () => {
+    channels(row('booking_xml'));
+    render(
+      <MemoryRouter>
+        <MultiChannelStatus propertyId="p1" canWrite />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId('multi-channel-outside')).not.toBeInTheDocument();
   });
 
   it('syncAlert_ShowsTheLateSyncBadgeOnThatChannelOnly', () => {
