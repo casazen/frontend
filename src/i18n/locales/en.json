@@ -9668,7 +9668,6 @@
           "label": "CasaZen property",
           "likely": "Likely matches",
           "loadFailed": "We cannot load your properties. Try again to be able to choose one.",
-          "loading": "Loading your properties...",
           "others": "Your other properties",
           "placeholder": "Choose a property"
         },

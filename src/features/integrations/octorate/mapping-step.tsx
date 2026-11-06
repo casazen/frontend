@@ -16,6 +16,7 @@ import {
   clearProposals,
   decisionFor,
   findDecision,
+  forShortRent,
   hasSeveralRooms,
   isOpenListing,
   propertiesChosen,
@@ -23,15 +24,16 @@ import {
   pruneDecisions,
   replaceDecision,
   roomDecision,
+  shortRentIdsOf,
   type MappingChoice,
   type MappingDecision,
 } from './mapping-model';
 
 const NO_DECISIONS: MappingDecision[] = [];
 
-/** The properties of the host as the select needs them: where the list stands, and the properties by id. */
+/** The properties of the host as the select needs them: whether the list was read, and the properties by id. */
 interface PropertyChoices {
-  state: 'pending' | 'error' | 'ready';
+  state: 'error' | 'ready';
   all: readonly Property[];
   byId: ReadonlyMap<string, Property>;
 }
@@ -229,12 +231,9 @@ function OpenListingRow({ listing, decision, properties, taken, chosenElsewhere,
             <Select
               value={decision.propertyId}
               onChange={(event) => onDecide({ ...decision, propertyId: event.target.value })}
-              disabled={properties.state === 'pending'}
               data-testid={`octorate-mapping-property-${listingId}`}
             >
-              <option value="">
-                {properties.state === 'pending' ? t('octorate.connect.mapping.pick.loading') : t('octorate.connect.mapping.pick.placeholder')}
-              </option>
+              <option value="">{t('octorate.connect.mapping.pick.placeholder')}</option>
               <PropertyOptions listing={listing} properties={properties} taken={taken} chosenElsewhere={chosenElsewhere} />
             </Select>
           </Field>
@@ -337,7 +336,9 @@ export function MappingStep() {
     if (current !== decisions) setValue('decisions', [...current], { shouldDirty: true });
   }, [loaded, decisions, setValue]);
 
-  if (listings.isPending) {
+  // The server proposes among every property of the org and the host picks among the short-rent ones: the rows wait for both, so that a
+  // proposal the host cannot pick is never on screen, not even for a moment.
+  if (listings.isPending || properties.isPending) {
     return (
       <div className="flex min-w-0 items-center gap-3 rounded-lg bg-muted p-4 text-sm" data-testid="octorate-mapping-loading">
         <Spinner size="sm" />
@@ -356,11 +357,11 @@ export function MappingStep() {
     );
   }
 
-  const found = listings.data;
+  const found = forShortRent(listings.data, shortRentIdsOf(properties.data));
   const open = found.filter(isOpenListing);
   const linked = found.filter((listing) => !isOpenListing(listing));
   const choices: PropertyChoices = {
-    state: properties.isPending ? 'pending' : properties.isError ? 'error' : 'ready',
+    state: properties.isError ? 'error' : 'ready',
     all: properties.data ?? [],
     byId: new Map((properties.data ?? []).map((property) => [property.id, property])),
   };

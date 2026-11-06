@@ -6,6 +6,7 @@ import {
   clearProposals,
   decisionFor,
   decisionsAreReadable,
+  forShortRent,
   mergeOutcomes,
   pruneDecisions,
   readDecisions,
@@ -14,6 +15,7 @@ import {
   roomDecision,
   runMappingPlan,
   settleOutcomes,
+  shortRentIdsOf,
   type MappingDecision,
   type MappingRunner,
 } from '../mapping-model';
@@ -96,6 +98,44 @@ describe('what the host decides about a listing', () => {
     expect(decisionsAreReadable([decision()])).toBe(true);
     expect(decisionsAreReadable('not-a-list')).toBe(false);
     expect(decisionsAreReadable([{ listingId: 1 }])).toBe(false);
+  });
+});
+
+describe('the properties a listing can be', () => {
+  const longRent = { id: 'prop-long', name: 'Casa Lunga', address: 'Via Po 9', city: 'Torino' };
+  const shortRent = { id: 'prop-1', name: 'Casa Rosa', address: 'Via Roma 12', city: 'Milano' };
+
+  it('forShortRent_ProposalOrCandidateThatIsNotAShortRentProperty_IsLeftOutAndNothingElseIsTouched', () => {
+    const proposedLong = listing({ octorateAccommodationId: 'proposed-long', proposedProperty: longRent });
+    const proposedShort = listing({ octorateAccommodationId: 'proposed-short' });
+    const ambiguous = listing({ octorateAccommodationId: 'ambiguous', status: 'Ambiguous', proposedProperty: null, candidates: [longRent, shortRent] });
+    const confirmed = linkedListing({ octorateAccommodationId: 'confirmed', proposedProperty: longRent });
+
+    const found = forShortRent([proposedLong, proposedShort, ambiguous, confirmed], shortRentIdsOf([{ id: 'prop-1' }]));
+
+    // The server proposed a long-rent property: the host sees no proposal, and the listing reads as one with no match.
+    expect(found[0].proposedProperty).toBeNull();
+    expect(found[0].status).toBe('Proposed');
+    // A listing with nothing to leave out is the same object; the candidates of an ambiguous one are the short-rent ones only.
+    expect(found[1]).toBe(proposedShort);
+    expect(found[2].candidates.map((candidate) => candidate.id)).toEqual(['prop-1']);
+    expect(found[2].status).toBe('Ambiguous');
+    // A listing confirmed is a fact, whatever the property is.
+    expect(found[3]).toBe(confirmed);
+    // The listings that came in are not touched.
+    expect(proposedLong.proposedProperty).toBe(longRent);
+    expect(ambiguous.candidates).toHaveLength(2);
+  });
+
+  it('forShortRent_NoListOfProperties_LeavesNothingOut', () => {
+    const proposedLong = listing({ proposedProperty: longRent });
+
+    // The read of the properties failed: the host's list is not there to say what is short-rent, and the step says so.
+    const listings = [proposedLong];
+    expect(forShortRent(listings, shortRentIdsOf(undefined))).toBe(listings);
+    expect(shortRentIdsOf(undefined)).toBeNull();
+    // No short-rent property at all: no proposal is a property the host can pick.
+    expect(forShortRent(listings, shortRentIdsOf([]))[0].proposedProperty).toBeNull();
   });
 });
 

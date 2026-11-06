@@ -169,6 +169,18 @@ describe('channels found: what the channel manager holds (NF-28)', () => {
     expect(screen.getAllByText(never)).toHaveLength(1);
   });
 
+  it('OctorateChannelsFound_ProposalThatIsNotAShortRentProperty_IsNotNamedAndTheListingReadsAsNew', async () => {
+    // The next step does not offer a long-rent property: this one does not name it either.
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing({ proposedProperty: { id: 'prop-long', name: 'Casa Lunga', address: 'Via Po 9', city: 'Torino' } }),
+    ]);
+    renderAt('channels');
+
+    const card = within(await screen.findByTestId('octorate-channels-listing-acc-1', undefined, WAIT));
+    expect(card.getByTestId('octorate-listing-state-new')).toBeInTheDocument();
+    expect(card.queryByText(/Casa Lunga/)).not.toBeInTheDocument();
+  });
+
   it('OctorateChannelsFound_NothingStoredYet_ReadsTheChannelManagerOnceWithoutBeingAsked', async () => {
     vi.mocked(octorateApi.getFoundListings).mockResolvedValueOnce([]).mockResolvedValue([listing()]);
     vi.mocked(octorateApi.refreshListings).mockResolvedValue([listing()]);
@@ -368,6 +380,7 @@ describe('mapping: which CasaZen property each listing is (NF-28, NF-04)', () =>
       listing({ octorateAccommodationId: 'acc-2', name: 'Casa Blu', proposedProperty: { id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino' } }),
       listing({ octorateAccommodationId: 'acc-3', name: 'Casa Verde', status: 'Ambiguous', proposedProperty: null }),
     ]);
+    vi.mocked(propertiesApi.getAll).mockResolvedValue([property(), property({ id: 'prop-2', name: 'Casa Blu', address: 'Via Po 1', city: 'Torino', maxGuests: 2 })]);
     renderAt('mapping');
 
     fireEvent.click(await screen.findByTestId('octorate-mapping-confirm-all', undefined, WAIT));
@@ -410,6 +423,38 @@ describe('mapping: which CasaZen property each listing is (NF-28, NF-04)', () =>
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
     expect(octorateApi.confirmMapping).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId('octorate-result-acc-1')).toHaveAttribute('data-result', 'later'), WAIT);
+  });
+
+  it('OctorateMapping_ProposalOrCandidateThatIsNotAShortRentProperty_IsNeverOffered', async () => {
+    // The server proposes and shortlists among every property of the org, a long-rent one included. The host's list is the short-rent
+    // one (mode=short), which does not hold Casa Lunga: it is not on offer, because a long-rent property is never on a channel manager.
+    const longRent = { id: 'prop-long', name: 'Casa Lunga', address: 'Via Po 9', city: 'Torino' };
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing({ proposedProperty: longRent }),
+      listing({
+        octorateAccommodationId: 'acc-2',
+        name: 'Casa Blu',
+        status: 'Ambiguous',
+        proposedProperty: null,
+        candidates: [longRent, { id: 'prop-1', name: 'Casa Rosa', address: 'Via Roma 12', city: 'Milano' }],
+      }),
+    ]);
+    renderAt('mapping');
+    await screen.findByTestId('octorate-mapping-row-acc-1', undefined, WAIT);
+
+    // No proposal to confirm: the host can still import the listing or pick one of their own properties.
+    expect(propertiesApi.getAll).toHaveBeenCalledWith({ mode: 'short' });
+    expect(screen.queryByTestId('octorate-mapping-proposal-acc-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('octorate-mapping-confirm-acc-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('octorate-mapping-confirm-all')).not.toBeInTheDocument();
+    expect(radio('import')).toBeInTheDocument();
+    expect(radio('other')).toBeInTheDocument();
+    // The likely matches of the ambiguous listing are the short-rent ones only.
+    fireEvent.click(radio('other', 'acc-2'));
+    const select = await screen.findByTestId('octorate-mapping-property-acc-2', undefined, WAIT);
+    expect(within(select).getByRole('option', { name: /Casa Rosa/ })).toBeInTheDocument();
+    expect(within(select).queryByRole('option', { name: /Casa Lunga/ })).not.toBeInTheDocument();
+    expect(wizardText()).not.toContain('Casa Lunga');
   });
 });
 

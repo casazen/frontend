@@ -1,6 +1,6 @@
 import { z, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
-import type { OctorateListing } from '@/types';
+import type { OctorateListing, Property } from '@/types';
 
 /**
  * What a host decides about the listings found on the channel manager (E02/F01/US02/T05, NF-28), and what that makes CasaZen do.
@@ -101,6 +101,29 @@ export function hasSeveralRooms(listing: OctorateListing): boolean {
 /** A listing the host still has to decide about: everything but a mapping that is confirmed. */
 export function isOpenListing(listing: OctorateListing): boolean {
   return listing.status !== 'Confirmed';
+}
+
+/** The ids of the host's short-rent properties; `null` when there is no list (the read failed). */
+export function shortRentIdsOf(properties: readonly Pick<Property, 'id'>[] | undefined): ReadonlySet<string> | null {
+  return properties ? new Set(properties.map((property) => property.id)) : null;
+}
+
+/**
+ * The listings as the host can use them. The server proposes and shortlists among every property of the org, mode apart, but a
+ * long-rent property is never on a channel manager (the properties the host can pick are the short-rent ones): a proposal or a candidate
+ * that is not one of them is left out, and a listing left with no proposal reads as "no match, import it". A confirmed listing is a fact
+ * and is left as it is. With no list of properties nothing is left out.
+ */
+export function forShortRent(listings: readonly OctorateListing[], shortRentIds: ReadonlySet<string> | null): readonly OctorateListing[] {
+  if (shortRentIds === null) return listings;
+
+  return listings.map((listing) => {
+    if (listing.status === 'Confirmed') return listing;
+    const proposedProperty = listing.proposedProperty && shortRentIds.has(listing.proposedProperty.id) ? listing.proposedProperty : null;
+    const candidates = listing.candidates.filter((candidate) => shortRentIds.has(candidate.id));
+    if (proposedProperty === listing.proposedProperty && candidates.length === listing.candidates.length) return listing;
+    return { ...listing, proposedProperty, candidates };
+  });
 }
 
 export function findDecision(decisions: readonly MappingDecision[], listingId: string): MappingDecision | undefined {

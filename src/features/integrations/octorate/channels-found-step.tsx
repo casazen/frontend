@@ -5,9 +5,10 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useFoundListings, useRefreshListings } from '@/queries/use-octorate-mapping';
+import { useFoundListings, useRefreshListings, useShortRentProperties } from '@/queries/use-octorate-mapping';
 import { capacityText, detailsLine, listingAddress, listingName, listingStateHint } from './listing-labels';
 import { ChannelList, ListingStateBadge, StepNotice, StepProblem } from './listing-parts';
+import { forShortRent, shortRentIdsOf } from './mapping-model';
 import type { ConnectPhase } from './use-octorate-connect';
 
 /** A line of work in progress: the listings being read or shown (the spinner announces it). */
@@ -40,6 +41,8 @@ export function ChannelsFoundStep({ phase, onBackToConsent }: ChannelsFoundStepP
   const { t } = useTranslation();
   const connected = phase === 'connected';
   const listings = useFoundListings({ enabled: connected });
+  // The proposal named under a listing is one the host can pick in the next step: the short-rent properties only.
+  const properties = useShortRentProperties();
   const { mutate: readAgain, isPending: reading, isError: readFailed, error: readError } = useRefreshListings();
   // The channel manager has been read, by the step or by the host: the step never reads it again by itself.
   const asked = useRef(false);
@@ -75,7 +78,7 @@ export function ChannelsFoundStep({ phase, onBackToConsent }: ChannelsFoundStepP
     );
   }
 
-  if (listings.isPending) {
+  if (listings.isPending || properties.isPending) {
     return <Working message={t('octorate.connect.channelsFound.loading')} testId="octorate-channels-loading" />;
   }
   if (listings.isError) {
@@ -89,7 +92,7 @@ export function ChannelsFoundStep({ phase, onBackToConsent }: ChannelsFoundStepP
     );
   }
 
-  const found = listings.data;
+  const found = forShortRent(listings.data, shortRentIdsOf(properties.data));
   const refreshButton = (
     <Button type="button" variant="outline" size="sm" loading={reading} onClick={readNow} data-testid="octorate-channels-refresh">
       <RefreshCw aria-hidden="true" className="size-4" />
