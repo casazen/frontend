@@ -570,12 +570,60 @@ describe('CheckInWizardPage', () => {
       await waitFor(() => expect(checkInWizardApi.saveMunicipalityRate).toHaveBeenCalledTimes(1));
       expect(vi.mocked(checkInWizardApi.saveMunicipalityRate).mock.calls[0]).toEqual([
         PROPERTY_ID,
-        { ratePerPersonPerNight: 3, minimumAge: 10, maxNights: null, seasonStart: null, seasonEnd: null, sourceNote: 'Delibera del comune' },
+        {
+          ratePerPersonPerNight: 3,
+          minimumAge: 10,
+          maxNights: null,
+          seasonStart: null,
+          seasonEnd: null,
+          // The stay began on 10 October and the organization had no rate: from the check-in, or its first night would stay without one.
+          effectiveFrom: '2026-10-10',
+          sourceNote: 'Delibera del comune',
+        },
       ]);
       // Back on the same step, with the amounts now.
       await waitFor(() => expect(screen.queryByTestId('checkin-wizard-tax-rate')).not.toBeInTheDocument());
       expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'tax');
       expect(await screen.findByTestId('checkin-wizard-tax-breakdown')).toBeInTheDocument();
+    });
+
+    it('taxStep_EditingADeclaredRate_KeepsTheFirstDayItAlreadyHadSoOtherStaysKeepTheirRate', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      const declared = touristTax({ rateSource: 'HostDeclared', total: 6, amountDue: 6 });
+      const rateOf = (amount: number) => ({
+        ratePerPersonPerNight: amount,
+        minimumAge: 10,
+        effectiveFrom: '2026-09-01',
+        sourceNote: 'Delibera del comune',
+        updatedAt: '2026-09-01T10:00:00Z',
+      });
+      vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(declared);
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(wizardState({ tax: declared, suggestedStep: 'tax' }));
+      vi.mocked(checkInWizardApi.getMunicipalityRate).mockResolvedValue({
+        propertyId: PROPERTY_ID,
+        city: 'Roma',
+        officialRateInForce: false,
+        rate: rateOf(3),
+      });
+      vi.mocked(checkInWizardApi.saveMunicipalityRate).mockResolvedValue({
+        propertyId: PROPERTY_ID,
+        city: 'Roma',
+        officialRateInForce: false,
+        rate: rateOf(3.5),
+      });
+      renderWizard();
+
+      fireEvent.click(await screen.findByTestId('checkin-wizard-tax-edit-rate'));
+      const rate = within(await screen.findByTestId('checkin-wizard-tax-rate'));
+      await waitFor(() => expect(rate.getByLabelText(/^Importo a persona per notte/)).toHaveValue('3'));
+      fireEvent.change(rate.getByLabelText(/^Importo a persona per notte/), { target: { value: '3,50' } });
+      fireEvent.click(rate.getByTestId('tax-rate-save'));
+
+      await waitFor(() => expect(checkInWizardApi.saveMunicipalityRate).toHaveBeenCalledTimes(1));
+      // Saved again with no day, the API would read "today" and take the rate away from every earlier night of every stay of the comune.
+      expect(vi.mocked(checkInWizardApi.saveMunicipalityRate).mock.calls[0][1]).toMatchObject({
+        ratePerPersonPerNight: 3.5,
+        effectiveFrom: '2026-09-01',
+      });
     });
   });
 

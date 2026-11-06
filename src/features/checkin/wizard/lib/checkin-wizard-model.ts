@@ -329,6 +329,18 @@ export function taxBreakdownOf(tax: StayTouristTax): TaxBreakdown {
   };
 }
 
+/**
+ * The first day a municipality rate the host declares applies. The API reads "no day" as today, and a rate is in force only from its first
+ * day, so a stay that began before today (the wizard also opens for arrived and departed stays) would stay without a rate, and saving
+ * again a rate already declared would take it away from every earlier night. So: the day the rate already had, else today, but never later
+ * than the check-in of the stay the host is looking at. Days are `YYYY-MM-DD`.
+ */
+export function rateEffectiveFrom(declaredFrom: string | null | undefined, checkIn: string, today: string): string {
+  const first = (declaredFrom ?? today).slice(0, 10);
+  const arrival = checkIn.slice(0, 10);
+  return arrival < first ? arrival : first;
+}
+
 /** The fields of a guest that the reading of a document photo can fill. */
 export type ReadableGuestField = 'firstName' | 'lastName' | 'gender' | 'dateOfBirth' | 'documentType' | 'documentNumber' | 'documentExpiresOn';
 

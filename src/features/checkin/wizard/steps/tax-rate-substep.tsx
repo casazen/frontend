@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { getProblemMessage } from '@/lib/api-errors';
+import { todayInRome } from '@/lib/stay-dates';
 import { useMunicipalityRate, useSaveMunicipalityRate } from '@/queries/use-checkin-wizard';
 import type { SaveMunicipalityRateRequest } from '@/types/checkin-wizard.types';
+import { rateEffectiveFrom } from '../lib/checkin-wizard-model';
 
 /** What the API accepts of a declared rate: 0.01 to 50 per person per night, an exemption age of 0 to 18, a source of at most 500 characters. */
 const MIN_RATE = 0.01;
@@ -66,7 +68,7 @@ const rateFormSchema = z
 type RateFormValues = z.infer<typeof rateFormSchema>;
 type RateFormErrors = Partial<Record<keyof RateFormValues, string>>;
 
-function requestOf(values: RateFormValues): SaveMunicipalityRateRequest {
+function requestOf(values: RateFormValues, effectiveFrom: string): SaveMunicipalityRateRequest {
   const maxNights = parseNumber(values.maxNights);
   const seasonStart = values.seasonStart.trim();
   const seasonEnd = values.seasonEnd.trim();
@@ -76,6 +78,7 @@ function requestOf(values: RateFormValues): SaveMunicipalityRateRequest {
     maxNights: maxNights === null ? null : Math.trunc(maxNights),
     seasonStart: seasonStart === '' ? null : seasonStart,
     seasonEnd: seasonEnd === '' ? null : seasonEnd,
+    effectiveFrom,
     sourceNote: values.sourceNote.trim(),
   };
 }
@@ -83,6 +86,8 @@ function requestOf(values: RateFormValues): SaveMunicipalityRateRequest {
 interface TaxRateSubstepProps {
   bookingId: string;
   propertyId: string;
+  /** The check-in day of the stay (`YYYY-MM-DD`): the rate must apply from it, or the stay in front of the host would still lack one. */
+  checkIn: string;
   /** Called when the rate is saved or the host gives up: the tax step shows again. */
   onClose: () => void;
 }
@@ -93,7 +98,7 @@ interface TaxRateSubstepProps {
  * from. It sits inside the form of the wizard, so it is not a form of its own: its fields are plain controls, its buttons do not submit, and
  * saving it returns to the same step, where the tax is worked out again with it.
  */
-export function TaxRateSubstep({ bookingId, propertyId, onClose }: TaxRateSubstepProps) {
+export function TaxRateSubstep({ bookingId, propertyId, checkIn, onClose }: TaxRateSubstepProps) {
   const { t } = useTranslation();
   const rate = useMunicipalityRate(propertyId);
   const save = useSaveMunicipalityRate(bookingId, propertyId);
@@ -130,7 +135,7 @@ export function TaxRateSubstep({ bookingId, propertyId, onClose }: TaxRateSubste
     }
     setErrors({});
     try {
-      await save.mutateAsync(requestOf(values));
+      await save.mutateAsync(requestOf(values, rateEffectiveFrom(declared?.effectiveFrom, checkIn, todayInRome())));
       onClose();
     } catch (error) {
       setProblem(getProblemMessage(error, t) ?? t('checkin.wizard.tax.rateForm.saveFailed'));

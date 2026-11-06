@@ -206,7 +206,9 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
         </Alert>
       )}
 
-      {rateOpen && <TaxRateSubstep bookingId={bookingId} propertyId={propertyId} onClose={() => setRateOpen(false)} />}
+      {rateOpen && (
+        <TaxRateSubstep bookingId={bookingId} propertyId={propertyId} checkIn={state.booking.checkIn} onClose={() => setRateOpen(false)} />
+      )}
 
       {outlook === 'collectedByChannel' && breakdown && (
         <Alert variant="success" title={t('checkin.wizard.tax.channelCollectedTitle')} data-testid="checkin-wizard-tax-channel">

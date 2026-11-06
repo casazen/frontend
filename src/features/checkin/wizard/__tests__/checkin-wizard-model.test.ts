@@ -19,6 +19,7 @@ import {
   issueTarget,
   mergeReading,
   octorateResultKind,
+  rateEffectiveFrom,
   sortedIssues,
   statisticalFieldsOf,
   stepOfGuestField,
@@ -409,5 +410,25 @@ describe('the result and the tax', () => {
 
     expect(breakdown.capApplied).toBe(false);
     expect(breakdown.perPersonPerNight).toBeNull();
+  });
+});
+
+describe('the first day of a rate the host declares', () => {
+  it('rateEffectiveFrom_StayAlreadyBegun_StartsOnTheCheckInSoTheStayHasARate', () => {
+    expect(rateEffectiveFrom(undefined, '2026-10-10', '2026-11-06')).toBe('2026-10-10');
+  });
+
+  it('rateEffectiveFrom_StayStillToCome_StartsToday', () => {
+    expect(rateEffectiveFrom(null, '2026-12-01', '2026-11-06')).toBe('2026-11-06');
+  });
+
+  it('rateEffectiveFrom_RateAlreadyDeclared_KeepsItsDaySoEarlierNightsStayCovered', () => {
+    expect(rateEffectiveFrom('2026-09-01', '2026-10-10', '2026-11-06')).toBe('2026-09-01');
+    // The day comes back from the API as a date; a time after it changes nothing.
+    expect(rateEffectiveFrom('2026-09-01T00:00:00', '2026-12-01', '2026-11-06')).toBe('2026-09-01');
+  });
+
+  it('rateEffectiveFrom_RateDeclaredAfterTheCheckIn_GoesBackToTheCheckIn', () => {
+    expect(rateEffectiveFrom('2026-11-01', '2026-10-10', '2026-11-06')).toBe('2026-10-10');
   });
 });
