@@ -65,7 +65,45 @@ async function mockMarketplaceApis(page: Page) {
   await mockEntitlement(page);
   await mockServiceCategoriesApi(page);
 
-  // «Altre integrazioni» of Scopri read the calendars and the Stripe account: nothing linked, nothing connected.
+  // The five groups of Scopri come from the catalog: the channel manager is not connected, and one partner (made up) is listed.
+  await page.route('**/api/marketplace/catalog**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        octorate: { enabled: true, connected: false },
+        groups: [
+          { id: 'salesChannels', unchangedFlow: false, entries: [] },
+          { id: 'connectedTools', unchangedFlow: false, entries: [] },
+          { id: 'channelManagerFunctions', unchangedFlow: false, entries: [] },
+          { id: 'homeServices', unchangedFlow: true, entries: [] },
+          {
+            id: 'partners',
+            unchangedFlow: false,
+            entries: [
+              {
+                kind: 'Partner',
+                code: 'test-partner',
+                name: 'TEST Partner',
+                logoUrl: null,
+                benefit: 'A made-up partner.',
+                cost: { text: null, invoicedBy: 'Unknown' },
+                status: 'NotActive',
+                statusScope: 'Org',
+                canActivate: true,
+                reason: null,
+                job: 'Cleaning',
+                websiteUrl: 'https://example.com/',
+                serviceCategories: ['cleaning'],
+                octoratePortalCode: null,
+              },
+            ],
+          },
+        ],
+      }),
+    }),
+  );
+  // The calendars and the card payments of CasaZen, shown among the groups, read the calendars and the Stripe account: nothing linked, nothing connected.
   await page.route('**/api/properties/calendar-overview', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ syncEveryMinutes: 15, staleAfterMinutes: 45, properties: [] }) }),
   );

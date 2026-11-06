@@ -9204,7 +9204,7 @@
     "sections": {
       "label": "Marketplace sections",
       "discover": "Discover",
-      "mine": "My apps"
+      "mine": "Active"
     },
     "search": {
       "label": "Search the Marketplace",
@@ -9219,8 +9219,6 @@
       "none": "No suppliers yet"
     },
     "partners": {
-      "title": "Integrations with external partners",
-      "description": "Services from outside companies for cleaning, check-in and maintenance. They are not CasaZen suppliers: they open on the company's own site. Check that they serve your area.",
       "learnMore": "Learn more",
       "learnMoreAria": "Learn more about {{name}} (opens in a new tab)",
       "items": {
@@ -9271,6 +9269,64 @@
       "description": "Choose how to order the suppliers and whether to see only the verified ones.",
       "done_one": "Show {{count}} supplier",
       "done_other": "Show {{count}} suppliers"
+    },
+    "card": {
+      "activate": "Activate",
+      "activateAria": "Activate {{name}}",
+      "cost": "Cost: {{text}} ({{invoicedBy}})",
+      "costUnknown": "Cost not specified",
+      "details": "Details",
+      "detailsAria": "Details of {{name}}",
+      "fix": "Fix",
+      "fixAria": "Fix {{name}}",
+      "invoicedBy": {
+        "CasaZen": "invoiced by CasaZen",
+        "ChannelManager": "invoiced by the channel manager",
+        "Partner": "invoiced by the partner",
+        "Unknown": "who invoices is not specified"
+      },
+      "logoAlt": "{{name}} logo",
+      "manage": "Manage",
+      "manageAria": "Manage {{name}}"
+    },
+    "detail": {
+      "reason": {
+        "octorate_not_connected": "To activate it, first connect your channel manager.",
+        "unknown": "It cannot be activated from here right now."
+      }
+    },
+    "groups": {
+      "channelManagerFunctions": {
+        "description": "Extra functions of your channel manager, to request with your subscription.",
+        "title": "Channel manager functions"
+      },
+      "connectChannels": "Connect your channels",
+      "connectedTools": {
+        "description": "Tools that connect to your channel manager to do more, such as invoicing.",
+        "title": "Connected tools"
+      },
+      "empty": "There is nothing to show here for now.",
+      "homeServices": {
+        "description": "CasaZen suppliers in your area for cleaning, maintenance and other work at home.",
+        "title": "Home services"
+      },
+      "loadError": "I cannot load this part of the Marketplace.",
+      "octorateOff": "To see these cards, first connect your channel manager to CasaZen.",
+      "partners": {
+        "description": "Services from outside companies, not CasaZen suppliers: the work is arranged with them. Check that they serve your area.",
+        "empty": "There are no partners to show for now.",
+        "title": "Partners"
+      },
+      "salesChannels": {
+        "description": "The portals where you sell your listings, and the calendars you keep in line.",
+        "title": "Sales channels"
+      }
+    },
+    "status": {
+      "Active": "Active",
+      "NotActive": "Not active",
+      "Pending": "Pending",
+      "ToFix": "To fix"
     },
     "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "noNetwork": "There is no CasaZen network in this area yet for this category.",

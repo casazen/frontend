@@ -38,6 +38,8 @@ interface MarketplaceFrameProps {
   children: (context: MarketplaceContext) => ReactNode;
   /** What the page shows under it whatever the comune of the property says: the parts that do not look for suppliers (the integrations). */
   after?: ReactNode;
+  /** What the page shows above the suppliers whatever the comune of the property says: the groups that come before them (Scopri: the channels, the tools, the functions). */
+  before?: ReactNode;
 }
 
 export interface MarketplaceContext {
@@ -52,7 +54,7 @@ export interface MarketplaceContext {
  * the property the suppliers are looked for around, and the states that come before any supplier: the properties are loading or
  * failed to load, the host has none, or the one chosen has no comune yet. The page itself is the `children`.
  */
-export function MarketplaceFrame({ section, title, description, trail, toolbar, primary, children, after }: MarketplaceFrameProps) {
+export function MarketplaceFrame({ section, title, description, trail, toolbar, primary, children, before, after }: MarketplaceFrameProps) {
   const { t } = useTranslation();
   const { properties, property, isLoading, isError, error, refetch, setProperty } = useMarketplaceProperty();
   const request = useRequestIntervention(property?.id);
@@ -99,6 +101,8 @@ export function MarketplaceFrame({ section, title, description, trail, toolbar, 
             {/* There is nothing to search while the property has no comune to look in. */}
             {property.comuneIstatCode ? toolbar : null}
           </div>
+
+          {before}
 
           {property.comuneIstatCode ? (
             children({ property, requestIntervention: request.open })
