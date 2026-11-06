@@ -8,6 +8,7 @@ import { useServiceCategories } from '@/queries/use-service-categories';
 import type { MarketplaceCardStatus, MarketplaceCatalogEntry, MarketplaceGroupId } from '@/types';
 import { CategoryTile } from './components/category-tile';
 import { MarketplaceEntryCard } from './components/marketplace-entry-card';
+import { MarketplaceEntryDrawer } from './components/marketplace-entry-drawer';
 import { MarketplaceFrame } from './components/marketplace-frame';
 import { ChannelManagerOffNote, MarketplaceCards, MarketplaceGroup, MarketplaceGroupError } from './components/marketplace-group';
 import { SupplierSearchBox } from './components/supplier-search-box';
@@ -53,7 +54,13 @@ export function MarketplacePage() {
         />
       }
       before={<ChannelManagerGroups />}
-      after={<PartnersGroup />}
+      after={
+        <>
+          <PartnersGroup />
+          {/* The detail card of an integration: open while the address has `?entry=`, so that it can be shared. */}
+          <MarketplaceEntryDrawer />
+        </>
+      }
     >
       {({ property: current }) => <HomeServicesGroup propertyId={current.id} />}
     </MarketplaceFrame>

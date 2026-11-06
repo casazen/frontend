@@ -9290,10 +9290,27 @@
       "manageAria": "Gestisci {{name}}"
     },
     "detail": {
+      "audience": "Per chi è",
+      "cost": "Costo e chi fattura",
+      "costUnknown": "Costo non specificato",
+      "dataShared": "Quali dati si condividono",
+      "deactivation": "Come si disattiva",
+      "deactivationGuided": "La disattivazione si fa sul sito del fornitore.",
+      "fallbackTitle": "Dettagli",
+      "faq": "Domande frequenti",
+      "loadError": "Non riesco a caricare i dettagli.",
+      "loading": "Carico i dettagli…",
+      "needsPanel": "L'ultimo passaggio si fa sul pannello del tuo channel manager: CasaZen ti ci accompagna e poi ti riporta qui.",
+      "noRequirements": "Non sono indicati requisiti particolari.",
+      "notFound": "Scheda non disponibile",
+      "notFoundDescription": "Questa scheda non è disponibile per te.",
+      "notSpecified": "Non specificato",
       "reason": {
         "octorate_not_connected": "Per attivarla devi prima collegare il tuo channel manager.",
         "unknown": "Al momento non si può attivare da qui."
-      }
+      },
+      "requirements": "Cosa serve per attivarla",
+      "whatItDoes": "Cosa fa"
     },
     "groups": {
       "channelManagerFunctions": {

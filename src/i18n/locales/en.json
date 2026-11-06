@@ -9290,10 +9290,27 @@
       "manageAria": "Manage {{name}}"
     },
     "detail": {
+      "audience": "Who it is for",
+      "cost": "Cost and who invoices",
+      "costUnknown": "Cost not specified",
+      "dataShared": "What data is shared",
+      "deactivation": "How to deactivate",
+      "deactivationGuided": "It is deactivated on the provider's site.",
+      "fallbackTitle": "Details",
+      "faq": "Frequently asked questions",
+      "loadError": "I cannot load the details.",
+      "loading": "Loading the details…",
+      "needsPanel": "The last step is done on your channel manager's panel: CasaZen takes you there and brings you back here.",
+      "noRequirements": "No particular requirements are listed.",
+      "notFound": "Card not available",
+      "notFoundDescription": "This card is not available for you.",
+      "notSpecified": "Not specified",
       "reason": {
         "octorate_not_connected": "To activate it, first connect your channel manager.",
         "unknown": "It cannot be activated from here right now."
-      }
+      },
+      "requirements": "What you need to activate it",
+      "whatItDoes": "What it does"
     },
     "groups": {
       "channelManagerFunctions": {

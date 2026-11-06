@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
+import { rememberOpener } from '@/components/shared/detail-drawer/detail-opener';
 import { Button } from '@/components/ui/button';
 import type { MarketplaceCatalogEntry } from '@/types';
 import { httpsUrlOrNull, initialsOf, marketplaceAction, marketplaceEntryValue, marketplaceReturnTarget, type MarketplaceCardAction } from '../lib/marketplace-entry';
@@ -72,7 +73,9 @@ export function MarketplaceEntryCard({ entry, propertyId, builtIn, testId = `mar
     ? t('marketplace.card.cost', { text: entry.cost.text, invoicedBy: t(i18n.exists(invoicerKey) ? invoicerKey : 'marketplace.card.invoicedBy.Unknown') })
     : t('marketplace.card.costUnknown');
 
-  const openDetails = () =>
+  const openDetails = (event: MouseEvent<HTMLButtonElement>) => {
+    // The drawer gives the focus back to this button when it closes (Safari does not focus a button that is clicked, so it is said here).
+    rememberOpener(event.currentTarget);
     setSearchParams(
       (previous) => {
         const next = new URLSearchParams(previous);
@@ -82,6 +85,7 @@ export function MarketplaceEntryCard({ entry, propertyId, builtIn, testId = `mar
       // The card is part of the page, not a step of the way: it takes the place of the entry of the history, and Back leaves the page.
       { replace: true, preventScrollReset: true },
     );
+  };
 
   return (
     <li className="flex h-full min-w-0 flex-col gap-3 rounded-lg border bg-card p-4" data-testid={testId}>
