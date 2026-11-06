@@ -1,0 +1,68 @@
+name: CI speed profile (temporary, work branch only)
+
+# Throw-away measurement workflow for the CI speed-up work: per-file vitest durations with the phase breakdown, per-test
+# Playwright durations and retries, CPU utilisation while they run. Runs only on pushes to the work branch that touch this
+# file. It is deleted before the speed-up PR is merged.
+
+on:
+  push:
+    branches: [chore/ci-speed-frontend]
+    paths: ['.github/workflows/ci-speed-profile.yml']
+
+jobs:
+  vitest:
+    name: profile vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Machine
+        run: |
+          nproc; free -m; df -h / | tail -n 1; grep -m1 'model name' /proc/cpuinfo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Vitest (JSON report + CPU sampling)
+        run: |
+          mkdir -p prof
+          (vmstat -n 5 > prof/vmstat.log 2>&1 &)
+          npx vitest run --reporter=default --reporter=json --outputFile.json=prof/vitest-report.json 2>&1 | tee prof/vitest-default.log | tail -n 40
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: profile-vitest
+          retention-days: 7
+          path: prof/
+
+  e2e-l2:
+    name: profile e2e L2 shard ${{ matrix.shard }}/3
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Playwright L2 (JSON report + CPU sampling)
+        env:
+          CI: true
+          PLAYWRIGHT_JSON_OUTPUT_NAME: prof/playwright-report.json
+        run: |
+          mkdir -p prof
+          (vmstat -n 5 > prof/vmstat.log 2>&1 &)
+          npx playwright test --shard=${{ matrix.shard }}/3 --reporter=list,json 2>&1 | tee prof/playwright-list.log | tail -n 30
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: profile-e2e-l2-${{ matrix.shard }}
+          retention-days: 7
+          path: prof/
