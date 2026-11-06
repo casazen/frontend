@@ -13,7 +13,8 @@ interface Options {
 
 /**
  * The queue of the popup alerts (ADR-025). It opens no connection of its own: the alerts ride on the channel the bell already keeps
- * (`/hubs/notifications`, one per tab), as the second method `alertReceived`. An alert that is pushed goes into the queue at once;
+ * (`/hubs/notifications`, one per tab), as the second method `alertReceived`. An alert that is pushed goes into the queue at once, and
+ * the queue is read again right after it (a read that started before the alert would otherwise put its older answer over the queue);
  * with the socket down, or not up yet, the queue is read from `GET /api/me/alerts/pending` every 30 seconds, and once more each
  * time the channel comes up, because what was pushed while it was down (or before it was up) is not sent again.
  *
@@ -31,6 +32,10 @@ export function useAlertSignalr({ userId, getAccessToken }: Options) {
     alertsOnly: true,
     onAlert: (alert) => {
       queryClient.setQueryData<PendingAlert[]>(PENDING_ALERTS_KEY, (alerts) => upsertAlert(alerts ?? [], alert));
+      // A read of the list that started before this alert would put its older answer over the queue and take the alert out of it (with
+      // the channel up nothing else reads the list again). Reading it again, which the server can answer with the alert already in it,
+      // drops the answer in flight.
+      void queryClient.invalidateQueries({ queryKey: PENDING_ALERTS_KEY });
     },
   });
   const pending = usePendingAlerts({ pollWhileDisconnected: channel !== 'connected' });
