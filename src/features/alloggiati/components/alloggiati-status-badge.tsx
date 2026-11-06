@@ -19,6 +19,8 @@ const STATUS_STYLES: Record<AlloggiatiWebStatus, { variant: BadgeProps['variant'
   Inviato: { variant: 'success' },
   Rifiutato: { variant: 'destructive' },
   Errore: { variant: 'destructive' },
+  // A no-show owes no communication: neutral, neither the green of a receipt nor the orange of a task.
+  NotDue: { variant: 'outline' },
 };
 
 export function AlloggiatiStatusBadge({ status, isOverdue = false }: AlloggiatiStatusBadgeProps) {

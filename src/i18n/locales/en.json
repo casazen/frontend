@@ -1139,6 +1139,7 @@
       "errore": "Error",
       "inviato": "Sent (receipt)",
       "inviato_manualmente": "Sent manually",
+      "not_due": "Not due",
       "overdue": "Overdue",
       "pending": "Pending",
       "rifiutato": "Rejected",
@@ -1150,6 +1151,7 @@
       "DaInviareManualmente": "To send manually",
       "InviatoManualmente": "Sent manually",
       "Inviato": "Sent (receipt)",
+      "NotDue": "Not due",
       "Rifiutato": "Rejected",
       "Errore": "Error",
       "SentReceiptPending": "Sent, receipt pending"
@@ -1168,6 +1170,7 @@
       "Errore": "Error while preparing the communication: send it on the Questura portal.",
       "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
     },
+    "notDueNotice": "The guests did not arrive: no communication to the police is due for this stay.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
     "summaryError": "Unable to load the Alloggiati communications.",
     "markSentManually": "Mark as sent manually",
@@ -16246,6 +16249,10 @@
       "Inviato": {
         "label": "Sent (receipt)",
         "explain": "The communication was transmitted and has the receipt of the portal."
+      },
+      "NotDue": {
+        "label": "Not due",
+        "explain": "The guests did not arrive: no communication to the police is due for this stay."
       },
       "Rifiutato": {
         "label": "Rejected",

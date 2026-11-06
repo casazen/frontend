@@ -236,7 +236,7 @@ describe('keys used in code', () => {
         (c) => `serviceRequest.categories.${c}`,
       ),
       ...['Inviato', 'InCompilazione', 'Completo', 'AlloggiatiInviato', 'Scaduto'].map((s) => `checkin.status.${s}`),
-      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'Rifiutato', 'Errore'].map(
+      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'NotDue', 'Rifiutato', 'Errore'].map(
         (s) => `alloggiati.statusLabel.${s}`,
       ),
       ...['Errore', 'Rifiutato'].map((s) => `alloggiati.failureNotice.${s}`),

@@ -1139,6 +1139,7 @@
       "errore": "Errore",
       "inviato": "Inviato (ricevuta)",
       "inviato_manualmente": "Inviato manualmente",
+      "not_due": "Non dovuta",
       "overdue": "Scaduto",
       "pending": "Da inviare",
       "rifiutato": "Rifiutato",
@@ -1150,6 +1151,7 @@
       "DaInviareManualmente": "Da inviare manualmente",
       "InviatoManualmente": "Inviato manualmente",
       "Inviato": "Inviato (ricevuta)",
+      "NotDue": "Non dovuta",
       "Rifiutato": "Rifiutato",
       "Errore": "Errore",
       "SentReceiptPending": "Inviato, ricevuta in attesa"
@@ -1168,6 +1170,7 @@
       "Errore": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
       "Rifiutato": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura."
     },
+    "notDueNotice": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
     "markSentManually": "Segna come inviato manualmente",
@@ -16246,6 +16249,10 @@
       "Inviato": {
         "label": "Inviato (ricevuta)",
         "explain": "La comunicazione è stata trasmessa e ha la ricevuta del portale."
+      },
+      "NotDue": {
+        "label": "Non dovuta",
+        "explain": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare."
       },
       "Rifiutato": {
         "label": "Rifiutato",
