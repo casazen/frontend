@@ -45,8 +45,10 @@ describe('remittanceAmountText (NF-100)', () => {
   it.each([
     ['125,50', '125.50'],
     ['125.5', '125.50'],
+    ['12.50', '12.50'],
     ['1.250,00', '1250.00'],
     ['1,250.00', '1250.00'],
+    ['1.234.567,89', '1234567.89'],
     ['12', '12.00'],
     [' € 7,05 ', '7.05'],
     ['0,01', '0.01'],
@@ -55,10 +57,13 @@ describe('remittanceAmountText (NF-100)', () => {
     expect(remittanceAmountText(typed)).toBe(sent);
   });
 
-  it.each(['', '   ', 'abc', '0', '0,00', '-5', '12,3456', '1000000000,01'])('AmountTyped_%j_IsNotAPayment', (typed) => {
-    expect(remittanceAmountText(typed)).toBeNull();
-    expect(remittanceAmountCents(typed)).toBeNull();
-  });
+  it.each(['', '   ', 'abc', '0', '0,00', '-5', '12,3456', '1000000000,01', '1.250.00', '12.50.30', '1.2.3', '1,250,00'])(
+    'AmountTyped_%j_IsNotAPayment',
+    (typed) => {
+      expect(remittanceAmountText(typed)).toBeNull();
+      expect(remittanceAmountCents(typed)).toBeNull();
+    },
+  );
 
   it('AmountTyped_PointAndComma_AreReadAsAnItalianWritesThem', () => {
     // The mistake the text exists to avoid: "12.50" read with the Italian culture is 1250. Here it stays twelve euros and fifty cents,
@@ -66,6 +71,18 @@ describe('remittanceAmountText (NF-100)', () => {
     expect(remittanceAmountCents('12.50')).toBe(1250);
     expect(remittanceAmountCents('12,50')).toBe(1250);
     expect(remittanceAmountCents('1.250')).toBe(125000);
+  });
+
+  it('AmountTyped_MoreThanOneSeparator_IsReadOnlyWhenTheGroupsAreOfThreeDigits', () => {
+    // Money: the reading of the thousands alone takes "1.250.00" for 125000 euros, "12.50.30" for 125030 and "1.2.3" for 123, a payment of
+    // a hundred times what the host meant. Only a text grouped like a number is read: three digits per group, one separator for the
+    // thousands and the other for the cents.
+    expect(remittanceAmountCents('1.250.000')).toBe(125_000_000);
+    expect(remittanceAmountCents('1.250.000,50')).toBe(125_000_050);
+    expect(remittanceAmountCents('1,250,000.50')).toBe(125_000_050);
+    for (const typed of ['1.250.00', '12.50.30', '1.2.3', '1,250,00', '1250.000,00', '1.250,000']) {
+      expect(remittanceAmountCents(typed), typed).toBeNull();
+    }
   });
 });
 
@@ -82,6 +99,18 @@ describe('recordPaymentSchema (NF-100)', () => {
 
     expect(refusals(payment({ amount: '0' }))).toEqual(['amount: reports.touristTax.record.validation.amountInvalid']);
     expect(refusals(payment({ amount: '' }))).toEqual(['amount: reports.touristTax.record.validation.amountInvalid']);
+  });
+
+  it('RecordPayment_AmountWithGroupsThatAreNotOfThreeDigits_IsRefusedOnTheAmount', () => {
+    freezeClock(NOON_UTC);
+
+    // Money: a payment of a hundred times what the host meant is refused where it is typed, not recorded.
+    for (const amount of ['1.250.00', '12.50.30', '1.2.3']) {
+      expect(refusals(payment({ amount })), amount).toEqual(['amount: reports.touristTax.record.validation.amountInvalid']);
+    }
+    for (const amount of ['125,50', '1.250,00', '12.50']) {
+      expect(refusals(payment({ amount })), amount).toEqual([]);
+    }
   });
 
   it('RecordPayment_DayAfterToday_IsRefusedOnTheDayOfPayment', () => {

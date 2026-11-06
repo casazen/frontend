@@ -33,6 +33,21 @@ export const NOTES_MAX_LENGTH = 500;
 /** The largest payment the API takes (one billion euros), in cents. */
 const MAX_AMOUNT_CENTS = 100_000_000_000;
 
+/** An amount with more than one separator, written the way thousands are grouped: `1.250,00`, `1,250.00`, `1.234.567`. */
+const GROUPED_AMOUNT = /^\d{1,3}(?:(?:\.\d{3})+(?:,\d{1,2})?|(?:,\d{3})+(?:\.\d{1,2})?)$/;
+
+/**
+ * `parseEuros` takes as thousands any text that repeats a separator, whatever the size of its groups: `1.250.00` would be 125000
+ * euros, `12.50.30` 125030 and `1.2.3` 123, a payment of a hundred times what the host meant. A text with more than one separator is
+ * read only when it is grouped like a number: groups of three digits with one separator, then the other one for the cents. A single
+ * separator is left to `parseEuros`, which tells thousands (`1.250`) from cents (`12.50`).
+ */
+function hasSoundGroups(input: string): boolean {
+  const text = input.replace(/[\s€]/g, '');
+  const separators = text.match(/[.,]/g)?.length ?? 0;
+  return separators < 2 || GROUPED_AMOUNT.test(text);
+}
+
 /** An amount to read, from the cents the server sends: `1.234,56 €` in Italian, `€1,234.56` in English. */
 export function formatCents(cents: number, locale: string): string {
   return formatMoney(cents / 100, locale);
@@ -40,9 +55,11 @@ export function formatCents(cents: number, locale: string): string {
 
 /**
  * The cents an amount typed by the host stands for (`125,50`, `125.5`, `1.250,00`), or null when it is not a payment: blank, not a
- * number, more than two decimals, zero or more than the API takes.
+ * number, more than two decimals, more than one separator with groups that are not of three digits (`1.250.00`), zero or more than
+ * the API takes.
  */
 export function remittanceAmountCents(input: string): number | null {
+  if (!hasSoundGroups(input)) return null;
   const { cents } = parseEuros(input);
   return cents !== null && Number.isSafeInteger(cents) && cents > 0 && cents <= MAX_AMOUNT_CENTS ? cents : null;
 }
