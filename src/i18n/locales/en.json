@@ -9206,6 +9206,50 @@
       "verifyFailed": "Verification failed."
     }
   },
+  "marketing": {
+    "confirm": {
+      "action": "Confirm subscription",
+      "description": "Confirm that you want to receive e-mails with news and offers from this property. You can unsubscribe at any time: every message has its own link.",
+      "done": {
+        "description": "Thank you. From now on you may receive e-mails with news and offers from this property. If you change your mind, every message has a link to unsubscribe.",
+        "title": "Subscription confirmed"
+      },
+      "expired": {
+        "description": "This link is older than it is valid for. Use a more recent e-mail, or ask the property to send you a new one.",
+        "title": "The link has expired"
+      },
+      "invalid": {
+        "description": "The link is incomplete or has been changed. Open the link in the e-mail again, without changing it. If you have already confirmed, there is nothing else to do.",
+        "title": "The link is not valid"
+      },
+      "notFound": {
+        "description": "We can no longer find this subscription, so there is nothing to confirm. If you want to receive the property's e-mails, ask them to subscribe you again.",
+        "title": "Subscription not found"
+      },
+      "pageTitle": "Confirm subscription",
+      "retry": "We could not complete the request. Please try again in a moment.",
+      "title": "Confirm your subscription?"
+    },
+    "unsubscribe": {
+      "action": "Unsubscribe",
+      "description": "If you unsubscribe you will no longer receive promotional e-mails from this property. Messages about a stay, such as confirmations and arrival instructions, may still be sent.",
+      "done": {
+        "description": "You will no longer receive promotional e-mails from this property. Messages about a stay, such as confirmations and arrival instructions, may still be sent.",
+        "title": "You are unsubscribed"
+      },
+      "expired": {
+        "description": "This link is older than it is valid for. Use the link in a more recent e-mail, or write to the property and ask to be removed from the list.",
+        "title": "The link has expired"
+      },
+      "invalid": {
+        "description": "The link is incomplete or has been changed. Open the link in the e-mail again, without changing it. If you have already unsubscribed, there is nothing else to do.",
+        "title": "The link is not valid"
+      },
+      "pageTitle": "Unsubscribe",
+      "retry": "We could not complete the request. Please try again in a moment.",
+      "title": "Do you want to unsubscribe?"
+    }
+  },
   "marketplace": {
     "title": "Marketplace",
     "description": "Suppliers near your properties, external partners and integrations.",
@@ -9497,6 +9541,10 @@
     "compliance": "Compliance",
     "complianceAudit": "Compliance audit",
     "crm": "Guest CRM",
+    "crmAutomations": "Automations",
+    "crmCampaigns": "Campaigns",
+    "crmMerge": "Duplicates",
+    "crmSegments": "Audiences",
     "demoEnvironment": "Demo environment",
     "collapse": "Collapse menu",
     "expand": "Expand menu",

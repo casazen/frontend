@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { buildHostSiteRoutes } from './host-site-routes';
 import { createHostSiteWindow } from './host-site-window';
 import { getHostSite } from '@/lib/host-site';
+import { MARKETING_CONFIRM_PATH, UNSUBSCRIBE_PATH } from '@/lib/marketing-link-paths';
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
@@ -46,6 +47,8 @@ import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-reque
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { ConfirmPage } from '@/features/public-marketing/confirm-page';
+import { UnsubscribePage } from '@/features/public-marketing/unsubscribe-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
@@ -341,6 +344,20 @@ export const appRoutes: RouteObject[] = [
     // not the console: it keeps its look until it is redesigned (like the rent payment).
     path: '/service/pay/:paymentId',
     element: <ServicePaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The unsubscribe link of a marketing e-mail (CRM-08, NF-95): `/unsubscribe#orgId=…&emailHash=…&expiresAt=…&signature=…`. A public page of
+    // a guest (no sign-in, no menu, not indexed, no analytics), never behind the `crmMarketing` flag: an e-mail already sent must keep
+    // working. The signed values are in the fragment, which no server receives; the page takes them out of the address bar.
+    path: UNSUBSCRIBE_PATH,
+    element: <UnsubscribePage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The link of the double opt-in e-mail (CRM-03, NF-90): `/marketing/confirm#contactId=…&expiresAt=…&signature=…`. Public in the same way.
+    path: MARKETING_CONFIRM_PATH,
+    element: <ConfirmPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {

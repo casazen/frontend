@@ -12,7 +12,8 @@ export type FeatureFlagKey =
   | 'supplierShowcaseBooking'
   | 'concordatoFacile'
   | 'supplierRequestBackups'
-  | 'agencyTier';
+  | 'agencyTier'
+  | 'crmMarketing';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -81,6 +82,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * read answered 403, which sent the whole app to the no-access page.
    */
   agencyTier: false,
+  /**
+   * The CRM and marketing module (backend `CrmMarketing`, E07): the guest profiles, the segments, the campaigns, the automations and their
+   * menu entries, off until the product owner turns it on. While it is off the entry «CRM Ospiti» of «Altro» and the pages that hang from it
+   * are in no menu and their addresses lead to the home of the area. The pages the e-mails link to (the consent, the confirmation, the
+   * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
+   */
+  crmMarketing: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

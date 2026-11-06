@@ -103,7 +103,7 @@ describe('isNavEntryActive for pages that hang from an entry', () => {
 describe('isNavEntryActive on the route manifest', () => {
   const allowAll = () => true;
   const activePath = (contextKey: Parameters<typeof getNavMatchEntries>[0], pathname: string) =>
-    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true }))?.path;
+    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true, crmMarketing: true }))?.path;
 
   it.each([
     ['short-rent', '/app/short-rent', '/app/short-rent'],
@@ -123,7 +123,9 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/vetrina'],
     ['short-rent', '/app/short-rent/guests', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/bookings'],
-    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/bookings'],
+    // The CRM (behind its flag) is an entry of "Altro" of its own, not a tab of Prenotazioni.
+    ['short-rent', '/app/short-rent/crm/guests', '/app/short-rent/crm/guests'],
+    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/crm/guests'],
     ['short-rent', '/app/short-rent/reviews', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/trusted-suppliers', '/app/short-rent/properties'],
     ['short-rent', '/app/short-rent/channels', '/app/short-rent/properties'],
