@@ -96,6 +96,10 @@ export function ConnectSummaryStep({ progress, failures }: ConnectSummaryStepPro
   for (const property of properties.data ?? []) propertyNames.set(property.id, property.name);
 
   const plan = buildMappingPlan(found, decisions);
+  // A failure of an earlier run is shown while its listing is still waiting to be done: an answer changed since, or a listing done
+  // meanwhile, takes it away.
+  const waiting = new Set(plan.actions.map((action) => action.listingId));
+  const stillFailing = failures.filter((failure) => waiting.has(failure.listingId));
   const withRoom = (line: string, listingId: string, roomId: string) => {
     const room = byId.get(listingId)?.rooms.find((candidate) => candidate.id === roomId);
     return room ? `${line} · ${t('octorate.connect.summary.withRoom', { room: roomName(room, t) })}` : line;
@@ -149,10 +153,10 @@ export function ConnectSummaryStep({ progress, failures }: ConnectSummaryStepPro
 
   return (
     <div className="space-y-4" data-testid="octorate-summary-step">
-      {failures.length > 0 ? (
+      {stillFailing.length > 0 ? (
         <Alert variant="danger" title={t('octorate.connect.summary.failed.title')} data-testid="octorate-summary-failed">
           <ul className="space-y-1" role="list">
-            {failures.map((failure) => (
+            {stillFailing.map((failure) => (
               <li key={failure.listingId} className="break-words" data-testid={`octorate-summary-failed-${failure.listingId}`}>
                 <span className="font-medium">{nameOf(failure.listingId)}</span>
                 {': '}
