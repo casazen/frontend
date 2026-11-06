@@ -7,7 +7,8 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { propertyStatus, type PropertyStatus } from '@/lib/status-dictionary';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import type { Property } from '@/types';
+import type { ListingPropertySummary, Property } from '@/types';
+import { ChannelSummary } from './components/multi-channel-status';
 import { PropertyThumb } from './components/property-thumb';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import './components/property-drawer';
@@ -41,6 +42,11 @@ export interface PropertiesListOptions {
   onPause: (property: Property) => void;
   onActivate: (property: Property) => void;
   onDelete: (property: Property) => void;
+  /**
+   * The worst state of each property that has a channel, by property (`GET /properties/channel-status`): the column «Canali» and the line
+   * on the card. `null` or absent while the channel manager is not connected (the flag is off): then the list has no such column.
+   */
+  channelSummaries?: ReadonlyMap<string, ListingPropertySummary> | null;
 }
 
 /**
@@ -52,7 +58,7 @@ export interface PropertiesListOptions {
  * "on the site": they need what the property records do not carry (the list of what is missing for each property, the
  * bookings of the month, the host's own switch for the site), so they are not here and not made up.
  */
-export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete }: PropertiesListOptions) {
+export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries = null }: PropertiesListOptions) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -71,6 +77,16 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
     };
 
     const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : null);
+
+    /** The listing on the channels: the worst state, «Sincronizzazione in ritardo» and «Correggi». A property that was never published has no channel. */
+    const channelsOf = (property: Property) => {
+      const summary = channelSummaries?.get(property.id);
+      return summary ? (
+        <ChannelSummary propertyId={property.id} worstStatus={summary.worstStatus} syncAlert={summary.syncAlert} canWrite={canWrite} />
+      ) : (
+        <span className="text-foreground/70">{t('property.list.noChannels')}</span>
+      );
+    };
 
     /** The one thing to do about a property, by its state. */
     const primaryAction = (property: Property): ListRowAction | null => {
@@ -186,6 +202,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
             );
           },
         },
+        ...(channelSummaries ? [{ id: 'channels', label: t('property.list.columns.channels'), default: true, render: channelsOf }] : []),
       ],
       search: {
         label: t('property.list.search'),
@@ -242,7 +259,13 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
             { icon: BedDouble, text: spacesOf(property), label: t('property.list.columns.spaces') },
             ...(price ? [{ icon: Euro, text: `${price} ${t('property.list.perNight')}`, label: t('property.list.columns.price') }] : []),
           ],
-          foot: since ? <p className="text-sm text-foreground/70">{since}</p> : undefined,
+          foot:
+            since || channelSummaries ? (
+              <div className="space-y-1">
+                {since ? <p className="text-sm text-foreground/70">{since}</p> : null}
+                {channelSummaries ? channelsOf(property) : null}
+              </div>
+            ) : undefined,
         };
       },
       // The name of the property opens its drawer; the page of the property is the first entry of "⋯" and the foot of the drawer.
@@ -259,5 +282,5 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
       noResults: { title: t('property.list.noResults.title'), description: t('property.list.noResults.description') },
       countLabel: (count) => t('property.list.count', { count }),
     });
-  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete]);
+  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries]);
 }

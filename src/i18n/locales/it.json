@@ -500,6 +500,10 @@
           "title": "Dati ISTAT in scadenza",
           "why": "I dati del periodo vanno inviati entro la scadenza."
         },
+        "ListingChangedOutside": {
+          "title": "Annuncio modificato sul canale",
+          "why": "Il contenuto di un canale è stato cambiato fuori da CasaZen: scegli quale versione tenere."
+        },
         "MessageToApprove": {
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
@@ -7963,6 +7967,43 @@
       }
     }
   },
+  "listingStatus": {
+    "channels": {
+      "airbnb_xml": "Airbnb",
+      "booking_xml": "Booking.com",
+      "expedia": "Expedia",
+      "homeaway": "Vrbo"
+    },
+    "fix": "Correggi",
+    "groups": {
+      "descriptions": "Descrizioni",
+      "property": "Dati dell'immobile",
+      "rooms": "Camere e letti"
+    },
+    "loadFailed": "Non riesco a leggere lo stato dei canali. Riprova tra poco.",
+    "missingText": {
+      "en_description": "La descrizione in inglese",
+      "en_title": "Il titolo in inglese",
+      "it_description": "La descrizione in italiano",
+      "it_title": "Il titolo in italiano"
+    },
+    "none": "Non ancora pubblicato su nessun canale.",
+    "outside": {
+      "back": "Indietro",
+      "changed": "Cambiato fuori da CasaZen: {{groups}}.",
+      "confirmKeep": "Le modifiche fatte fuori da CasaZen andranno perse: {{fields}}. Continuare?",
+      "confirmTake": "Le tue modifiche in CasaZen andranno perse: {{fields}}. Continuare?",
+      "continue": "Continua",
+      "description": "Dopo l'ultimo invio qualcuno ha cambiato il contenuto direttamente sul canale. Non cambiamo nulla senza la tua scelta.",
+      "failed": "Non siamo riusciti a registrare la scelta. Riprova.",
+      "keep": "Tieni la versione di CasaZen",
+      "take": "Prendi la nuova versione",
+      "takeLoses": "i titoli e le descrizioni scritti in CasaZen",
+      "takeNotPossible": "La nuova versione si può prendere solo quando sono cambiate le descrizioni: qui puoi tenere quella di CasaZen.",
+      "title": "Modificato fuori da CasaZen"
+    },
+    "syncDelayed": "Sincronizzazione in ritardo"
+  },
   "listView": {
     "board": {
       "count_one": "{{count}} elemento",
@@ -10792,6 +10833,7 @@
         "todoHint": "Non possono ancora ricevere prenotazioni"
       },
       "columns": {
+        "channels": "Canali",
         "price": "Prezzo base",
         "property": "Immobile",
         "spaces": "Camere e ospiti",
@@ -10805,6 +10847,7 @@
       },
       "guestsCount_one": "{{count}} ospite",
       "guestsCount_other": "{{count}} ospiti",
+      "noChannels": "Non pubblicato",
       "noResults": {
         "description": "Prova a togliere un filtro o a cercare con il nome della città.",
         "title": "Nessun immobile con questi filtri"
@@ -10906,6 +10949,7 @@
       "fallbackTitle": "Immobile",
       "onSite": "Sul sito di prenotazione",
       "sections": {
+        "channels": "Canali",
         "data": "Dati dell'immobile",
         "pricing": "Prezzi"
       },
@@ -11628,6 +11672,42 @@
         "label": "Piano e interno"
       }
     },
+    "channels": {
+      "cin": {
+        "choose": "Aggiungi il CIN o scegli «Lo inserisco dopo» per pubblicare.",
+        "later": "Lo inserisco dopo",
+        "laterChosen": "Va bene: pubblichiamo comunque. I canali che richiedono il CIN restano da correggere finché non lo aggiungi.",
+        "missing": "Il CIN non c'è ancora. I canali che lo richiedono resteranno da correggere finché non lo aggiungi (lo trovi nell'ultimo passo).",
+        "stays": "Il CIN resta in CasaZen: per ora non viene inviato a {{channels}}."
+      },
+      "completeness": "Completezza del contenuto: {{value}}%",
+      "fix": "Correggi: {{step}}",
+      "incomplete": {
+        "title": "Prima di pubblicare servono questi testi"
+      },
+      "intro": "Qui vedi, canale per canale, a che punto è l'annuncio e cosa manca. Scegli dove pubblicare e premi «Pubblica».",
+      "lacks": "Manca qualcosa in:",
+      "loadFailed": "Non riesco a leggere lo stato dei canali. Riprova tra poco.",
+      "loading": "Carico i canali…",
+      "managed": "Contenuti gestiti su {{channel}}",
+      "mapping": {
+        "go": "Vai al collegamento dei canali",
+        "mustImport": "Gli annunci di questo immobile esistono già sul gestionale dei canali o sui portali: vanno importati e abbinati, non creati di nuovo.",
+        "unconfirmed": "Prima di pubblicare conferma o rifiuta l'abbinamento di questo immobile a un annuncio che esiste già sul gestionale dei canali."
+      },
+      "next": "Vai al riepilogo",
+      "noneChosen": "Scegli almeno un canale su cui pubblicare.",
+      "notPublished": "Non ancora pubblicato su questo canale.",
+      "outside": {
+        "choose": "Scegli",
+        "text": "Qualcuno ha cambiato il contenuto direttamente su un canale. Scegli quale versione tenere prima di pubblicare."
+      },
+      "publish": "Pubblica",
+      "publishFailed": "Non siamo riusciti ad avviare la pubblicazione. Riprova tra poco.",
+      "publishOn": "Pubblica su {{channel}}",
+      "started": "Invio avviato: qui sotto vedi il risultato di ogni canale appena arriva.",
+      "syncAlert": "Il canale non conferma l'annuncio da più di 24 ore."
+    },
     "descriptions": {
       "description": {
         "label": "Descrizione ({{language}})"
@@ -11707,8 +11787,14 @@
       "saveFailed": "Non siamo riusciti a salvare l'immobile. Controlla i dati e riprova."
     },
     "exit": {
+      "kept": "Chiuso. Le risposte del primo passo restano qui: riapri «Aggiungi immobile» per continuare.",
       "saveAndClose": "Salva e chiudi",
       "saved": "Salvato. Lo trovi in Immobili, da completare."
+    },
+    "imported": {
+      "all": "Stai vedendo tutti i passi dell'annuncio.",
+      "only": "Questo annuncio è già sui canali: ti mostriamo solo i passi in cui manca qualcosa, i canali e l'attivazione.",
+      "showAll": "Mostra tutti i passi"
     },
     "last": {
       "activation": {
@@ -11750,6 +11836,8 @@
         "amenities": "Dotazioni e sicurezza",
         "base": "Dati base",
         "by": "entro le {{time}}",
+        "channels": "Canali",
+        "channelsFailed": "Non riesco a leggere lo stato dei canali.",
         "descriptions": "Testi",
         "edit": "Modifica",
         "from": "dalle {{time}}",
@@ -11773,6 +11861,7 @@
         },
         "nights_one": "{{count}} notte",
         "nights_other": "{{count}} notti",
+        "notNow": "Non lo pubblichi ora",
         "notSaid": "Non indicato",
         "photos": "Foto",
         "photosCount_one": "{{count}} foto · la prima è la copertina",
@@ -11784,7 +11873,8 @@
         "rules": "Regole della casa",
         "safetyDone": "Scheda di sicurezza completa",
         "safetyOpen": "Scheda di sicurezza da completare",
-        "title": "Riepilogo"
+        "title": "Riepilogo",
+        "willPublish": "Lo pubblicherai"
       },
       "visibility": {
         "blocked": "Si attiva quando hai sistemato i punti segnati sopra.",
@@ -12146,6 +12236,11 @@
         "label": "Dati base",
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
+      },
+      "channels": {
+        "label": "Canali",
+        "purpose": "Scegli dove pubblicare l'annuncio e controlla cosa manca. Puoi anche farlo più tardi.",
+        "title": "Pubblica sui canali"
       },
       "descriptions": {
         "label": "Testi",
@@ -15392,6 +15487,32 @@
     }
   },
   "status": {
+    "channel": {
+      "Accepted": {
+        "explain": "Il gestionale dei canali ha ricevuto i contenuti e li sta passando al canale.",
+        "label": "Preso in carico"
+      },
+      "Draft": {
+        "explain": "L'annuncio non è ancora stato inviato a questo canale.",
+        "label": "Da pubblicare"
+      },
+      "ManagedOnChannel": {
+        "explain": "I contenuti di questo canale si modificano sul canale stesso: CasaZen non li invia.",
+        "label": "Gestito sul canale"
+      },
+      "Published": {
+        "explain": "Il canale ha confermato: l'annuncio è online con questi contenuti.",
+        "label": "Pubblicato"
+      },
+      "Sending": {
+        "explain": "Stiamo mandando i contenuti al gestionale dei canali.",
+        "label": "In invio"
+      },
+      "ToFix": {
+        "explain": "Il canale non ha accettato i contenuti o manca qualcosa: guarda il motivo e correggi.",
+        "label": "Da correggere"
+      }
+    },
     "explainer": {
       "need": "Per passare a «{{next}}» serve:",
       "compactNeed": "Per passare a «{{next}}»:",

@@ -500,6 +500,10 @@
           "title": "ISTAT data deadline",
           "why": "The data of the period must be sent by the deadline."
         },
+        "ListingChangedOutside": {
+          "title": "Listing changed on the channel",
+          "why": "A channel's content was changed outside CasaZen: choose which version to keep."
+        },
         "MessageToApprove": {
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
@@ -7963,6 +7967,43 @@
       }
     }
   },
+  "listingStatus": {
+    "channels": {
+      "airbnb_xml": "Airbnb",
+      "booking_xml": "Booking.com",
+      "expedia": "Expedia",
+      "homeaway": "Vrbo"
+    },
+    "fix": "Fix",
+    "groups": {
+      "descriptions": "Descriptions",
+      "property": "Property details",
+      "rooms": "Rooms and beds"
+    },
+    "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+    "missingText": {
+      "en_description": "The description in English",
+      "en_title": "The title in English",
+      "it_description": "The description in Italian",
+      "it_title": "The title in Italian"
+    },
+    "none": "Not published on any channel yet.",
+    "outside": {
+      "back": "Back",
+      "changed": "Changed outside CasaZen: {{groups}}.",
+      "confirmKeep": "The changes made outside CasaZen will be lost: {{fields}}. Continue?",
+      "confirmTake": "Your changes in CasaZen will be lost: {{fields}}. Continue?",
+      "continue": "Continue",
+      "description": "Since the last publication someone changed the content directly on the channel. We change nothing without your choice.",
+      "failed": "We couldn't record your choice. Try again.",
+      "keep": "Keep CasaZen's version",
+      "take": "Take the new version",
+      "takeLoses": "the titles and descriptions written in CasaZen",
+      "takeNotPossible": "The new version can be taken only when the descriptions changed: here you can keep CasaZen's.",
+      "title": "Changed outside CasaZen"
+    },
+    "syncDelayed": "Sync delayed"
+  },
   "listView": {
     "board": {
       "count_one": "{{count}} item",
@@ -10792,6 +10833,7 @@
         "todoHint": "They cannot receive bookings yet"
       },
       "columns": {
+        "channels": "Channels",
         "price": "Base price",
         "property": "Property",
         "spaces": "Rooms and guests",
@@ -10805,6 +10847,7 @@
       },
       "guestsCount_one": "{{count}} guest",
       "guestsCount_other": "{{count}} guests",
+      "noChannels": "Not published",
       "noResults": {
         "description": "Try removing a filter or searching by the name of the city.",
         "title": "No property matches these filters"
@@ -10906,6 +10949,7 @@
       "fallbackTitle": "Property",
       "onSite": "On the booking site",
       "sections": {
+        "channels": "Channels",
         "data": "Property details",
         "pricing": "Prices"
       },
@@ -11628,6 +11672,42 @@
         "label": "Floor and unit"
       }
     },
+    "channels": {
+      "cin": {
+        "choose": "Add the CIN or choose \"I'll add it later\" to publish.",
+        "later": "I'll add it later",
+        "laterChosen": "Fine: we publish anyway. The channels that ask for the CIN stay to fix until you add it.",
+        "missing": "The CIN is not there yet. The channels that ask for it will stay to fix until you add it (you find it in the last step).",
+        "stays": "The CIN stays in CasaZen: for now it is not sent to {{channels}}."
+      },
+      "completeness": "Completeness of the content: {{value}}%",
+      "fix": "Fix: {{step}}",
+      "incomplete": {
+        "title": "These texts are needed before you publish"
+      },
+      "intro": "Here you see, channel by channel, how far the listing is and what is missing. Choose where to publish and press \"Publish\".",
+      "lacks": "Something is missing in:",
+      "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+      "loading": "Loading the channels…",
+      "managed": "Content managed on {{channel}}",
+      "mapping": {
+        "go": "Go to the channel connection",
+        "mustImport": "The listings of this property already exist on the channel manager or on the portals: they are imported and matched, not created again.",
+        "unconfirmed": "Before you publish, confirm or reject the match of this property with a listing that already exists on the channel manager."
+      },
+      "next": "Go to the summary",
+      "noneChosen": "Choose at least one channel to publish to.",
+      "notPublished": "Not published on this channel yet.",
+      "outside": {
+        "choose": "Choose",
+        "text": "Someone changed the content directly on a channel. Choose which version to keep before you publish."
+      },
+      "publish": "Publish",
+      "publishFailed": "We couldn't start the publication. Try again in a moment.",
+      "publishOn": "Publish on {{channel}}",
+      "started": "Sending started: below you see the result of each channel as soon as it arrives.",
+      "syncAlert": "The channel has not confirmed the listing for more than 24 hours."
+    },
     "descriptions": {
       "description": {
         "label": "Description ({{language}})"
@@ -11707,8 +11787,14 @@
       "saveFailed": "We could not save the property. Check the data and try again."
     },
     "exit": {
+      "kept": "Closed. The answers of the first step stay here: open \"Add property\" again to go on.",
       "saveAndClose": "Save and close",
       "saved": "Saved. You will find it in Properties, to complete."
+    },
+    "imported": {
+      "all": "You are seeing all the steps of the listing.",
+      "only": "This listing is already on the channels: we only show the steps where something is missing, the channels and the activation.",
+      "showAll": "Show all steps"
     },
     "last": {
       "activation": {
@@ -11750,6 +11836,8 @@
         "amenities": "Amenities and safety",
         "base": "Basics",
         "by": "by {{time}}",
+        "channels": "Channels",
+        "channelsFailed": "We couldn't read the state of the channels.",
         "descriptions": "Texts",
         "edit": "Edit",
         "from": "from {{time}}",
@@ -11773,6 +11861,7 @@
         },
         "nights_one": "{{count}} night",
         "nights_other": "{{count}} nights",
+        "notNow": "You're not publishing it now",
         "notSaid": "Not stated",
         "photos": "Photos",
         "photosCount_one": "{{count}} photo · the first is the cover",
@@ -11784,7 +11873,8 @@
         "rules": "House rules",
         "safetyDone": "Safety sheet complete",
         "safetyOpen": "Safety sheet to complete",
-        "title": "Summary"
+        "title": "Summary",
+        "willPublish": "You'll publish it"
       },
       "visibility": {
         "blocked": "It turns on when you have fixed the points marked above.",
@@ -12146,6 +12236,11 @@
         "label": "Basics",
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
+      },
+      "channels": {
+        "label": "Channels",
+        "purpose": "Choose where to publish the listing and check what is missing. You can also do it later.",
+        "title": "Publish on the channels"
       },
       "descriptions": {
         "label": "Texts",
@@ -15392,6 +15487,32 @@
     }
   },
   "status": {
+    "channel": {
+      "Accepted": {
+        "explain": "The channel manager has received the content and is passing it to the channel.",
+        "label": "Accepted"
+      },
+      "Draft": {
+        "explain": "The listing has not been sent to this channel yet.",
+        "label": "To publish"
+      },
+      "ManagedOnChannel": {
+        "explain": "The content of this channel is edited on the channel itself: CasaZen doesn't send it.",
+        "label": "Managed on the channel"
+      },
+      "Published": {
+        "explain": "The channel confirmed it: the listing is online with this content.",
+        "label": "Published"
+      },
+      "Sending": {
+        "explain": "We are sending the content to the channel manager.",
+        "label": "Sending"
+      },
+      "ToFix": {
+        "explain": "The channel didn't accept the content or something is missing: read the reason and fix it.",
+        "label": "To fix"
+      }
+    },
     "explainer": {
       "need": "To move to “{{next}}” you need:",
       "compactNeed": "To move to “{{next}}”:",

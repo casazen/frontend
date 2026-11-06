@@ -8,12 +8,17 @@ import { useSiteProfile } from '@/queries/use-site-profile';
 import type { Property } from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
 import type { WizardStepId } from '../property-wizard-model';
+import { ChannelsSummary } from './channels-summary';
 
 interface SummarySectionProps {
   /** The property as the server has it: what was saved at each step, not what the form shows. */
   property: Property | undefined;
   /** Steps of the activation, for the state of the safety sheet. */
   steps: ComplianceWizardStep[] | undefined;
+  /** The channel manager is connected to this CasaZen (its flag is on): the summary says what happens on each channel. */
+  showChannels?: boolean;
+  /** The channels the host chose not to publish to. */
+  leftOutChannels?: readonly string[];
 }
 
 interface Row {
@@ -33,7 +38,7 @@ const hourMinute = (time: string | null | undefined) => (time ? time.slice(0, 5)
  * «Riepilogo» (SR-07c): what the property has, section by section, with «Modifica» to the step that holds it. It reads the property from
  * the server — so a step that was skipped shows «Non indicato» instead of the default its form started from.
  */
-export function SummarySection({ property, steps }: SummarySectionProps) {
+export function SummarySection({ property, steps, showChannels = false, leftOutChannels = [] }: SummarySectionProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const policies = useCancellationPolicies(Boolean(property?.cancellationPolicyId));
@@ -167,6 +172,7 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
             </dl>
           </div>
         ))}
+        {showChannels ? <ChannelsSummary propertyId={property.id} leftOut={leftOutChannels} /> : null}
       </div>
     </section>
   );

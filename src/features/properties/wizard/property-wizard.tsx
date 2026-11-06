@@ -6,10 +6,11 @@ import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
-import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { WizardShell, type WizardShellProps, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
 import { clearWizardDraft } from '@/lib/wizard-draft';
@@ -49,6 +50,7 @@ import { roomInputs, roomsSignature, type RoomDraft } from './rooms-model';
 import { stayDiscountTiers } from './stay-discounts-model';
 import { AmenitiesStep } from './steps/amenities-step';
 import { BaseStep } from './steps/base-step';
+import { ChannelsStep } from './steps/channels-step';
 import { DescriptionsStep } from './steps/descriptions-step';
 import { FinishStep } from './steps/finish-step';
 import { PhotosStep } from './steps/photos-step';
@@ -72,8 +74,8 @@ function PlanLimitAlert() {
 }
 
 interface SaveAndCloseProps {
-  /** Saves the answers of the step on screen, as «Avanti» does. */
-  save: (stepId: string, values: PropertyWizardValues) => Promise<void>;
+  /** Saves the answers of the step on screen, as «Avanti» does. Absent while nothing is saved yet (the first step of a new property): the button then only exits. */
+  save?: (stepId: string, values: PropertyWizardValues) => Promise<void>;
   onSaved: () => void;
 }
 
@@ -81,7 +83,8 @@ interface SaveAndCloseProps {
  * «Salva e chiudi» (SR-07b): leaves the wizard from any step with what was answered saved, as «Avanti» saves it, and without going
  * on. The property exists already and is «Da completare»: nothing is lost by closing the browser either. A step that is not valid
  * is not saved: its problems show, as with «Avanti». The descriptions step asks less here than it does for «Avanti» (only the lengths):
- * a host who has not written the English text yet still leaves with the rest saved.
+ * a host who has not written the English text yet still leaves with the rest saved. It is there on every step, the first included
+ * (E02/F03/US01/T04, NF-01, NF-06): where nothing is saved yet it only exits, and the answers of the first step stay in the draft.
  */
 function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
   const { t } = useTranslation();
@@ -93,6 +96,10 @@ function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
   if (!wizard) return null;
 
   const run = async () => {
+    if (!save) {
+      onSaved();
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -131,6 +138,11 @@ interface PropertyWizardProps {
   property?: Property;
   /** The rooms, discounts, translations and captions the server has for that property: the form starts from them. */
   listing?: WizardListingSeed;
+  /**
+   * The steps to show, when only some are: an already published or imported listing opens on the steps that lack data, the channels and
+   * the last one (the check of an imported listing). The step named in the address is shown as well. Absent = all of them.
+   */
+  onlySteps?: readonly WizardStepId[];
   /** The step to open on when the address names none. */
   initialStepId?: WizardStepId;
   /** Told the id of the property this very wizard created, so the page knows that the id which appears in the address is its own. */
@@ -147,8 +159,10 @@ interface PropertyWizardProps {
  * descriptions in the languages of the channel manager, the house rules, the prices with the length-of-stay discounts, and the last
  * one — calendars, CIN, documents, the summary, «Mostra la casa sul sito» and the activation with the terms.
  */
-export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initialStepId, onCreated }: PropertyWizardProps) {
+export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySteps, initialStepId, onCreated }: PropertyWizardProps) {
   const { t } = useTranslation();
+  // The channels step exists only where the channel manager is connected (its flag): the endpoints it reads answer 404 otherwise.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, org } = useCurrentUser();
@@ -308,7 +322,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initial
     await saveProperty.mutateAsync({ id: propertyId, data: amenitiesUpdatePayload(values, property ?? { amenities: [] }) });
   };
 
-  const steps: WizardStep<PropertyWizardValues>[] = [
+  const allSteps: WizardStep<PropertyWizardValues>[] = [
     {
       id: 'base',
       label: t('propertyWizard.steps.base.label'),
@@ -374,6 +388,20 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initial
       beforeNext: savePrices,
       render: ({ form }) => (propertyId ? <PricesStep form={form} propertyId={propertyId} /> : null),
     },
+    ...(connectorOn
+      ? [
+          {
+            id: 'channels',
+            label: t('propertyWizard.steps.channels.label'),
+            title: t('propertyWizard.steps.channels.title'),
+            purpose: t('propertyWizard.steps.channels.purpose'),
+            // The host may go on without publishing: the property is saved and can be published from here later.
+            optional: true,
+            nextLabel: t('propertyWizard.channels.next'),
+            render: ({ form, goTo }) => (propertyId ? <ChannelsStep form={form} propertyId={propertyId} goTo={goTo} /> : null),
+          } satisfies WizardStep<PropertyWizardValues>,
+        ]
+      : []),
     {
       id: 'finish',
       label: t('propertyWizard.steps.finish.label'),
@@ -406,14 +434,16 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initial
     descriptions: saveDescriptions,
     rules: saveRules,
     prices: savePrices,
-    // The calendars, the CIN and the documents are saved by their own buttons; the switch goes with the last one.
+    // Publishing is its own button; the calendars, the CIN and the documents are saved by theirs, and the switch goes with the last step.
+    channels: async () => undefined,
     finish: async () => undefined,
   };
 
   return (
-    <WizardShell<PropertyWizardValues, string | null>
+    <PropertyWizardShell
       id={WIZARD_ID}
-      steps={steps}
+      steps={allSteps}
+      onlySteps={onlySteps}
       defaultValues={defaults}
       initialStepId={initialStepId}
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}
@@ -423,15 +453,13 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initial
       draft={propertyId ? false : { accept: (saved) => saved.step === 'base' }}
       onExit={() => navigate(PROPERTIES_PATH)}
       aboveFooter={
-        propertyId ? (
-          <SaveAndClose
-            save={(stepId, values) => saveByStep[stepId]?.(values) ?? Promise.resolve()}
-            onSaved={() => {
-              toast.success(t('propertyWizard.exit.saved'));
-              navigate(PROPERTIES_PATH);
-            }}
-          />
-        ) : null
+        <SaveAndClose
+          save={propertyId ? (stepId, values) => saveByStep[stepId]?.(values) ?? Promise.resolve() : undefined}
+          onSaved={() => {
+            toast.success(t(propertyId ? 'propertyWizard.exit.saved' : 'propertyWizard.exit.kept'));
+            navigate(PROPERTIES_PATH);
+          }}
+        />
       }
       renderDone={() => <PropertyWizardDone propertyId={propertyId ?? searchParams.get(PROPERTY_ID_PARAM)} />}
       testIds={{
@@ -443,4 +471,20 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, initial
       }}
     />
   );
+}
+
+interface PropertyWizardShellProps extends WizardShellProps<PropertyWizardValues, string | null> {
+  onlySteps?: readonly WizardStepId[];
+}
+
+/**
+ * `WizardShell` with only some of the steps when the listing is already on the channels (the check of an imported listing): the ones
+ * asked for, and the one the address names, which is never hidden. The list is cut here, apart from the steps themselves.
+ */
+function PropertyWizardShell({ onlySteps, steps, ...shell }: PropertyWizardShellProps) {
+  const [searchParams] = useSearchParams();
+  const named = searchParams.get('step');
+  const shown = onlySteps ? steps.filter((step) => step.id === named || (onlySteps as readonly string[]).includes(step.id)) : steps;
+
+  return <WizardShell<PropertyWizardValues, string | null> {...shell} steps={shown} />;
 }

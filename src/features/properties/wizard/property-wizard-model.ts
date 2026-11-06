@@ -39,7 +39,7 @@ import {
 import { MAX_STAY_DISCOUNTS, stayDiscountDraftsFromServer, stayDiscountProblem, type StayDiscountDraft } from './stay-discounts-model';
 
 /** The steps of «Aggiungi immobile», in order. The address carries the id (`?step=photos`), so a step can be linked to. */
-export const WIZARD_STEP_IDS = ['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'finish'] as const;
+export const WIZARD_STEP_IDS = ['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'finish'] as const;
 export type WizardStepId = (typeof WIZARD_STEP_IDS)[number];
 
 /** Name of the query parameter that carries the property once it exists on the server (the end of the first step). */
@@ -107,7 +107,9 @@ export interface PropertyWizardValues {
   minNights: number;
   /** The length-of-stay discounts, at most 5 (NF-35); a row left empty is not sent. */
   stayDiscounts: StayDiscountDraft[];
-  // 7 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
+  // 7 · Canali (E02/F03/US01/T04). The codes of the channels the host chose not to publish to; none = all the ones that receive content.
+  skipChannels: string[];
+  // 8 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
   publishedOnSite: boolean;
 }
 
@@ -331,6 +333,7 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   cleaningFee: '',
   minNights: 1,
   stayDiscounts: [],
+  skipChannels: [],
   publishedOnSite: true,
 };
 
@@ -407,6 +410,7 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
     cleaningFee: property.cleaningFee > 0 ? String(property.cleaningFee) : '',
     minNights: property.minNights ?? 1,
     stayDiscounts: stayDiscountDraftsFromServer(seed.stayDiscounts),
+    skipChannels: [],
     publishedOnSite: property.publishedOnSite ?? true,
   };
 }

@@ -29,13 +29,21 @@ export interface TodoRoute {
   tab?: BookingTab;
   /** Other parameters of the address, for a step of a wizard (`?step=`). */
   search?: Readonly<Record<string, string>>;
+  /**
+   * The name of the parameter of the address that carries the id of the property the item is about (`propertyId` for the wizard «Aggiungi
+   * immobile» reopened on a property): a page that does not take the id in its path. Like `target: 'property'`, it needs an item that names one.
+   */
+  propertyParam?: string;
 }
 
 export interface TodoActionTarget {
   /** Where "Do now" leads. */
   route: TodoRoute;
-  /** Where it leads a person who cannot open `route`, or an item that lacks the id `route` needs: a page that tells the same thing in read-only. */
-  fallback?: TodoRoute;
+  /**
+   * Where it leads a person who cannot open `route`, or an item that lacks the id `route` needs: a page that tells the same thing in
+   * read-only. Several pages are tried in order, the first the person can open wins.
+   */
+  fallback?: TodoRoute | readonly TodoRoute[];
 }
 
 /** The `entityType` the server sends for an item about a booking. */
@@ -52,7 +60,9 @@ const BOOKING = 'Booking';
  * - `StartCheckIn`: the tab Documenti of the booking, where the online check-in of the guests is sent and followed;
  * - `VerifyIdentity`: the queue of the verifications, or the same tab for who may not decide them;
  * - `UploadAlloggiatiProof`, `UploadIstatProof`: the Alloggiati Web page, the summary of the adempimenti (ISTAT has no page of its own);
- * - `FixListingError`: the property named by the item (its listing is part of it), or the channels when the item names none;
+ * - `FixListingError`: the wizard «Aggiungi immobile» of the property named by the item, at the step of the channels where the state of each
+ *   channel and what to fix are told (E02/F03/US01/T04); for who may not write the properties the page of the property, and the channels
+ *   when the item names none;
  * - `ReplyToMessage`, `ApproveAiDraft`: the tab Messaggi of the booking, or the queue of the approvals;
  * - `ResumeWizard`: the activation of the property, the one wizard that is resumed by property today.
  *
@@ -82,8 +92,8 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/compliance' },
   },
   FixListingError: {
-    route: { path: '/app/short-rent/properties/:id', target: 'property' },
-    fallback: { path: '/app/short-rent/channels' },
+    route: { path: '/app/short-rent/properties/create', propertyParam: 'propertyId', search: { step: 'channels' } },
+    fallback: [{ path: '/app/short-rent/properties/:id', target: 'property' }, { path: '/app/short-rent/channels' }],
   },
   ReplyToMessage: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'messages' },
@@ -137,6 +147,11 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   }
 
   const query = new URLSearchParams();
+  if (route.propertyParam) {
+    const id = propertyOf(activity);
+    if (!id) return null;
+    query.set(route.propertyParam, id);
+  }
   if (route.tab && route.tab !== 'details') query.set('tab', route.tab);
   for (const [name, value] of Object.entries(route.search ?? {})) query.set(name, value);
   const search = query.toString();
@@ -151,7 +166,12 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
 export function todoActionRoute(activity: TodoRouteSubject, hasPermission?: PermissionPredicate): string | null {
   if (!Object.hasOwn(ACTION_ROUTE_MAP, activity.action)) return null;
   const target: TodoActionTarget = ACTION_ROUTE_MAP[activity.action as TodoAction];
-  return buildRoute(target.route, activity, hasPermission) ?? (target.fallback ? buildRoute(target.fallback, activity, hasPermission) : null);
+  const fallbacks = target.fallback === undefined ? [] : Array.isArray(target.fallback) ? target.fallback : [target.fallback as TodoRoute];
+  for (const route of [target.route, ...fallbacks]) {
+    const address = buildRoute(route, activity, hasPermission);
+    if (address) return address;
+  }
+  return null;
 }
 
 const URGENCY_STYLE: Record<ActivityUrgency, { variant: NonNullable<BadgeProps['variant']>; Icon: LucideIcon }> = {
