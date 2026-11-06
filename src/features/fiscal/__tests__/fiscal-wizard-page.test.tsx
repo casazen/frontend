@@ -7,6 +7,7 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { fiscalApi, type FiscalTaxProfile } from '@/api/fiscal.api';
+import { useUiStore } from '@/store/ui-store';
 import { FiscalWizardPage } from '../fiscal-wizard-page';
 
 vi.mock('@/api/fiscal.api', () => ({
@@ -155,5 +156,19 @@ describe('FiscalWizardPage (CO-19)', () => {
     expect(screen.queryByTestId('fiscal-wizard-form')).not.toBeInTheDocument();
     fireEvent.click(within(error).getByRole('button', { name: i18n.t('fiscal.retry') }));
     expect(await screen.findByTestId('fiscal-cf-input')).toHaveValue('RSSMRA80A01H501U');
+  });
+
+  it('FiscalWizard_OnScreen_HoldsThePopupAlertsBackUntilThePageIsLeft', async () => {
+    vi.mocked(fiscalApi.getTaxProfile).mockResolvedValueOnce(savedWithoutVat);
+
+    const { unmount } = renderPage();
+    await screen.findByTestId('fiscal-wizard-form');
+
+    // ADR-025-R7: this page has no `WizardShell`, so it tells the popup alerts to wait.
+    expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
+
+    unmount();
+
+    expect(useUiStore.getState().openWizards).toBe(0);
   });
 });

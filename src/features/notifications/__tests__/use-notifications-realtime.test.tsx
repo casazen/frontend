@@ -9,6 +9,7 @@ import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import type { PendingAlert } from '@/types/alert';
 import type { NotificationsChange, RealtimeClient, RealtimeState } from '../realtime-client';
 import { applyNotificationsChange, useNotificationsRealtime } from '../use-notifications-realtime';
 
@@ -16,7 +17,12 @@ function fakeClient(initial: RealtimeState = 'disconnected') {
   let state = initial;
   const stateListeners = new Set<(s: RealtimeState) => void>();
   const changeListeners = new Set<(c: NotificationsChange) => void>();
-  const client: RealtimeClient & { emit: (c: NotificationsChange) => void; setState: (s: RealtimeState) => void } = {
+  const alertListeners = new Set<(a: PendingAlert) => void>();
+  const client: RealtimeClient & {
+    emit: (c: NotificationsChange) => void;
+    emitAlert: (a: PendingAlert) => void;
+    setState: (s: RealtimeState) => void;
+  } = {
     connect: vi.fn(() => {
       state = 'connecting';
     }),
@@ -32,7 +38,12 @@ function fakeClient(initial: RealtimeState = 'disconnected') {
       changeListeners.add(l);
       return () => changeListeners.delete(l);
     },
+    onAlert: (l) => {
+      alertListeners.add(l);
+      return () => alertListeners.delete(l);
+    },
     emit: (c) => changeListeners.forEach((l) => l(c)),
+    emitAlert: (a) => alertListeners.forEach((l) => l(a)),
     setState: (s) => {
       state = s;
       stateListeners.forEach((l) => l(s));
@@ -196,6 +207,75 @@ describe('useNotificationsRealtime', () => {
       expect(client.disconnect).not.toHaveBeenCalled();
       expect(onNewNotification).not.toHaveBeenCalled();
       expect(latest).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('onAlert', () => {
+    const alert: PendingAlert = { alertId: 'a-1', alertType: 'BookingNeedsReview', entityType: 'Booking', entityId: 'b-1', urgency: 'High' };
+
+    it('useNotificationsRealtime_AnAlertArrives_CallsTheCallbackWithItOnTheSameChannel', () => {
+      const { wrapper } = setup();
+      const client = fakeClient();
+      const onAlert = vi.fn();
+      renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client, onAlert }), { wrapper });
+
+      act(() => client.emitAlert(alert));
+
+      expect(client.connect).toHaveBeenCalledTimes(1);
+      expect(onAlert).toHaveBeenCalledTimes(1);
+      expect(onAlert).toHaveBeenCalledWith(alert);
+    });
+
+    it('useNotificationsRealtime_ANewFunctionEveryRender_KeepsTheChannelAndCallsTheLatestAlertCallback', () => {
+      const { wrapper } = setup();
+      const client = fakeClient();
+      const first = vi.fn();
+      const latest = vi.fn();
+      const { rerender } = renderHook(
+        ({ callback }) => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client, onAlert: callback }),
+        { wrapper, initialProps: { callback: first } },
+      );
+
+      rerender({ callback: latest });
+      act(() => client.emitAlert(alert));
+
+      expect(client.connect).toHaveBeenCalledTimes(1);
+      expect(client.disconnect).not.toHaveBeenCalled();
+      expect(first).not.toHaveBeenCalled();
+      expect(latest).toHaveBeenCalledTimes(1);
+    });
+
+    it('useNotificationsRealtime_Unmounted_StopsListeningToAlerts', () => {
+      const { wrapper } = setup();
+      const client = fakeClient();
+      const onAlert = vi.fn();
+      const { unmount } = renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client, onAlert }), { wrapper });
+
+      unmount();
+      act(() => client.emitAlert(alert));
+
+      expect(onAlert).not.toHaveBeenCalled();
+    });
+
+    it('useNotificationsRealtime_AlertsOnly_LeavesTheNotificationsToTheBell', () => {
+      // The popup shares the channel with the bell: if both applied a change, the one that came second would see the count already
+      // grown and the bell would miss that a notification is new.
+      const { queryClient, wrapper } = setup();
+      queryClient.setQueryData(UNREAD_COUNT_KEY, 1);
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      const client = fakeClient();
+      const onAlert = vi.fn();
+      renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client, onAlert, alertsOnly: true }), { wrapper });
+
+      act(() => client.emit({ unreadCount: 5, type: 'guest-message', entityId: 'booking-1' }));
+      act(() => client.setState('connected'));
+      act(() => client.setState('connecting'));
+      act(() => client.setState('connected'));
+      act(() => client.emitAlert(alert));
+
+      expect(queryClient.getQueryData(UNREAD_COUNT_KEY)).toBe(1);
+      expect(invalidate).not.toHaveBeenCalled();
+      expect(onAlert).toHaveBeenCalledWith(alert);
     });
   });
 });

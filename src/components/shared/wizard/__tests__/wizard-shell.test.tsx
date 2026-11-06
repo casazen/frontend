@@ -670,3 +670,23 @@ describe("WizardShell on a phone", () => {
     }
   });
 });
+
+describe("WizardShell and the popup alerts", () => {
+  it("WizardShell_Mounted_TellsThePopupAlertsAWizardIsOpenUntilTheFlowIsLeft", () => {
+    const before = useUiStore.getState().openWizards;
+    const { unmount } = renderWizard({}, "/app/short-rent/properties/new?step=review");
+
+    expect(useUiStore.getState().openWizards).toBe(before + 1);
+
+    unmount();
+
+    expect(useUiStore.getState().openWizards).toBe(before);
+  });
+
+  it("WizardShell_Confirmation_IsStillAWizardOnScreen", () => {
+    const before = useUiStore.getState().openWizards;
+    renderWizard({}, "/app/short-rent/properties/new?step=fatto");
+
+    expect(useUiStore.getState().openWizards).toBe(before + 1);
+  });
+});

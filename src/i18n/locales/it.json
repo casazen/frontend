@@ -1066,6 +1066,34 @@
     "draft": "Testo generato con l'AI: è una bozza da rivedere prima di approvarla.",
     "supplierReason": "Motivazione generata con l'AI."
   },
+  "alert": {
+    "popup": {
+      "dismiss": "Ignora",
+      "dismissError": "Non siamo riusciti a ignorare l'avviso. Riprova.",
+      "doNow": "Fallo ora",
+      "remindError": "Non siamo riusciti a rimandare l'avviso. Riprova.",
+      "remindMeLater": "Ricordamelo più tardi",
+      "type": {
+        "AlloggiatiDeadline": "Una comunicazione Alloggiati Web sta per scadere.",
+        "BookingNeedsReview": "Una prenotazione va controllata.",
+        "ChannelSyncError": "La sincronizzazione con un canale non è riuscita.",
+        "CheckInPending": "C'è un check-in da completare.",
+        "CheckOutPending": "C'è un check-out da chiudere.",
+        "ComplianceIssue": "C'è un adempimento da sistemare.",
+        "generic": "C'è qualcosa che richiede la tua attenzione.",
+        "IstatDeadline": "Una comunicazione ISTAT sta per scadere."
+      }
+    },
+    "remindMeLater": {
+      "15min": "Tra 15 minuti",
+      "1hour": "Tra 1 ora",
+      "4hours": "Tra 4 ore",
+      "description": "Quando vuoi che ti riproponga questo avviso?",
+      "pastDeadline": "Le scelte oltre la scadenza non sono disponibili.",
+      "title": "Ricordamelo più tardi",
+      "tomorrow": "Domani alle 9:00"
+    }
+  },
   "alloggiati": {
     "loading": "Caricamento Alloggiati…",
     "title": "Alloggiati Web",

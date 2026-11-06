@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { useUiStore } from '@/store/ui-store';
 import type { ActivationStatus, ActivationStep, SupplierProfile } from '@/types/supplier';
 import { SupplierActivationPage } from '../supplier-activation-page';
 
@@ -239,5 +240,16 @@ describe('SupplierActivationPage: wizard persisted by the server (SU-05, A4-09)'
 
     expect(await screen.findByTestId('supplier-activation-suspended')).toBeInTheDocument();
     expect(screen.queryByTestId('supplier-activation-page')).not.toBeInTheDocument();
+  });
+
+  it('holds the popup alerts back while the steps are on screen and lets them through when the supplier leaves them (ADR-025-R7)', async () => {
+    const { unmount } = renderPage();
+
+    expect(await screen.findByTestId('supplier-activation-page')).toBeInTheDocument();
+    expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
+
+    unmount();
+
+    expect(useUiStore.getState().openWizards).toBe(0);
   });
 });

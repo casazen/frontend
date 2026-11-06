@@ -1,4 +1,5 @@
 import { apiConfig } from '@/config/api.config';
+import { ALERT_URGENCIES, type AlertUrgency, type PendingAlert } from '@/types/alert';
 
 /** What the server pushes on `notificationsChanged`: the new count and what changed (both may be null). */
 export interface NotificationsChange {
@@ -31,10 +32,14 @@ export interface RealtimeClient {
   onState(listener: (state: RealtimeState) => void): () => void;
   /** Called for every `notificationsChanged`; returns the unsubscribe. */
   onChange(listener: (change: NotificationsChange) => void): () => void;
+  /** Called for every `alertReceived` (a popup alert, ADR-025), on the same connection; returns the unsubscribe. */
+  onAlert(listener: (alert: PendingAlert) => void): () => void;
 }
 
 export const HUB_PATH = '/hubs/notifications';
 export const HUB_METHOD = 'notificationsChanged';
+/** The second client method of the same hub: a popup alert for this user, references only (ADR-025-R5). */
+export const ALERT_HUB_METHOD = 'alertReceived';
 
 /** Waits between attempts, in ms; the last one repeats for ever (the safety-net poll covers the gap). */
 export const RECONNECT_DELAYS_MS = [0, 2_000, 5_000, 10_000, 30_000] as const;
@@ -59,6 +64,27 @@ export function parseChange(payload: unknown): NotificationsChange | null {
     type: typeof type === 'string' ? type : null,
     entityId: typeof entityId === 'string' ? entityId : null,
   };
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isUrgency(value: string): value is AlertUrgency {
+  return (ALERT_URGENCIES as readonly string[]).includes(value);
+}
+
+/**
+ * A payload that is not `{ alertId, alertType, entityType, entityId, urgency }` (five texts) is ignored, never thrown, like a
+ * change. Only those five fields are kept: if a newer server ever adds more to the payload, nothing but the references reaches the
+ * queue and the screen (ADR-025-R5). A type the app does not know is kept (it is shown with a generic sentence, not lost); an
+ * urgency it does not know counts as `Normal`.
+ */
+export function parseAlert(payload: unknown): PendingAlert | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const { alertId, alertType, entityType, entityId, urgency } = payload as Record<string, unknown>;
+  if (!isText(alertId) || !isText(alertType) || !isText(entityType) || !isText(entityId) || !isText(urgency)) return null;
+  return { alertId, alertType, entityType, entityId, urgency: isUrgency(urgency) ? urgency : 'Normal' };
 }
 
 /**
@@ -100,6 +126,7 @@ export function createRealtimeClient(factory: HubConnectionFactory, timers: Time
   let retryHandle: unknown = null;
   const stateListeners = new Set<(state: RealtimeState) => void>();
   const changeListeners = new Set<(change: NotificationsChange) => void>();
+  const alertListeners = new Set<(alert: PendingAlert) => void>();
 
   const setState = (next: RealtimeState) => {
     if (state === next) return;
@@ -130,6 +157,10 @@ export function createRealtimeClient(factory: HubConnectionFactory, timers: Time
     hub.on(HUB_METHOD, (payload) => {
       const change = parseChange(payload);
       if (change && run === generation) changeListeners.forEach((listener) => listener(change));
+    });
+    hub.on(ALERT_HUB_METHOD, (payload) => {
+      const alert = parseAlert(payload);
+      if (alert && run === generation) alertListeners.forEach((listener) => listener(alert));
     });
     hub.onreconnecting(() => {
       if (run === generation) setState('connecting');
@@ -182,6 +213,10 @@ export function createRealtimeClient(factory: HubConnectionFactory, timers: Time
     onChange(listener) {
       changeListeners.add(listener);
       return () => changeListeners.delete(listener);
+    },
+    onAlert(listener) {
+      alertListeners.add(listener);
+      return () => alertListeners.delete(listener);
     },
   };
 }

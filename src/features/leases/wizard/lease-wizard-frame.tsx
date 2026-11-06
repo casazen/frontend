@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUiStore } from '@/store/ui-store';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 
 // A name that does not fit goes to a second line instead of out of the screen (wide fonts, 360 px).
 export const WIZARD_BUTTON = 'h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight';
@@ -33,7 +34,8 @@ interface FrameProps {
  * The frame of the wizard «Crea contratto» (LR-06a, LR-WIZ-1): the steps, the head of the screen, the step and the buttons. The head
  * says where the person is («Passo 2 di 7»), what they do (a title with a verb), why in one sentence, and what to have at hand before
  * starting. One focal point per step: the head, the fields and the one main button. On a phone the buttons are a fixed bar above the
- * bottom one.
+ * bottom one. Every screen of the wizard is drawn in this frame, so it is also what tells the popup alerts that a wizard is open: they
+ * wait in their queue for as long as one of these frames is on screen (ADR-025-R7).
  */
 export function LeaseWizardFrame({ stepper, position, title, summary, inHand, titleRef, children, footer }: FrameProps) {
   const { t } = useTranslation();
@@ -42,6 +44,7 @@ export function LeaseWizardFrame({ stepper, position, title, summary, inHand, ti
     setMobilePrimaryVisible(true);
     return () => setMobilePrimaryVisible(false);
   }, [setMobilePrimaryVisible]);
+  useWizardOpenFlag();
 
   return (
     <div className="grid w-full min-w-0 gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start" data-testid="lease-wizard">

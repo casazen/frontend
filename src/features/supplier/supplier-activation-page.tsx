@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useCompleteSupplierActivation, useSaveSupplierActivationStep, useSupplierActivation, useSupplierProfile } from '@/queries/supplier/use-profile';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import type { ActivationStatus, ActivationStepId, SupplierProfile } from '@/types/supplier';
 import { ActivationTermsCard } from './components/activation-terms-card';
 import { IdentityStep, PresentationStep, ServicesStep } from './components/activation-steps';
@@ -176,6 +177,8 @@ function StepNav({
 
 function ActivationWizard({ activation, profile }: { activation: ActivationStatus; profile: SupplierProfile }) {
   const { t } = useTranslation();
+  // The popup alerts wait in their queue while the steps are on screen (ADR-025-R7): this wizard has no `WizardShell`.
+  useWizardOpenFlag();
   const saveStep = useSaveSupplierActivationStep();
   // Fixed for the visit: a screen never disappears under the supplier's hands when its data is saved.
   const [screens] = useState(() => visibleScreens(activation));
