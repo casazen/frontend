@@ -281,4 +281,15 @@ describe('first property pending', () => {
     }
     expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/properties')).toBe(true);
   });
+
+  it('needsFirstProperty_ConnectionOfTheChannelManagerAndItsCallback_ReturnsFalseSoTheWizardOpens', () => {
+    // Who has the listings on the channel manager and none in CasaZen yet comes from the connection; the channel manager sends the host
+    // back to the same page (the query string, with the code and the state, is not part of the path the guard reads).
+    const profile = { ...onboarded, hasProperties: false };
+    for (const path of ['/app/short-rent/integrations/octorate', '/app/short-rent/integrations/octorate/']) {
+      expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);
+    }
+    // Only that page: a path that merely starts with the same letters still leads to the first property.
+    expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/integrations/octorate-other')).toBe(true);
+  });
 });

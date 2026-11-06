@@ -126,12 +126,15 @@ export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile
 /**
  * Pages a host without properties must still reach: the creation of the property itself (the destination, so no loop),
  * and the pages that are not about the property (account settings and plan, profile, legal documents). The plan and billing page of
- * the account area (AM-08a) is one of them: the plan pages of the rental areas hand a billing administrator over to it.
+ * the account area (AM-08a) is one of them: the plan pages of the rental areas hand a billing administrator over to it. So is the
+ * connection of the channel manager (E02/F01/US01/T04): whoever has the listings there and none in CasaZen yet starts from it, and the
+ * page of the consent is also the one the channel manager sends the host back to (the callback), which must open as it is.
  */
 const FIRST_PROPERTY_EXEMPT_PATTERNS = [
   /^\/(?:app\/(?:short|long)-rent\/)?properties\/(?:create|new)(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/settings(?:\/|$)/,
   /^\/app\/account\/billing(?:\/|$)/,
+  /^\/app\/short-rent\/integrations\/octorate(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/profile(?:\/|$)/,
   /^\/profile(?:\/|$)/,
   /^\/legale(?:\/|$)/,

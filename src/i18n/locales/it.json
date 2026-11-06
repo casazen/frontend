@@ -1309,6 +1309,12 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
+      "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
+      "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
+      "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
+      "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
+      "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
@@ -9499,6 +9505,103 @@
       "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
       "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa."
+    }
+  },
+  "octorate": {
+    "connect": {
+      "consent": {
+        "attention": {
+          "text": "Il collegamento con il tuo channel manager non è più valido. Ricollegalo per ripartire.",
+          "title": "Serve ricollegare il channel manager"
+        },
+        "checking": "Controllo lo stato del collegamento...",
+        "completing": "Stiamo completando il collegamento. Tieni aperta questa pagina.",
+        "connected": {
+          "already": "Il tuo channel manager è già collegato a CasaZen.",
+          "found_one": "Abbiamo trovato un immobile nel tuo account.",
+          "found_other": "Abbiamo trovato {{count}} immobili nel tuo account.",
+          "none": "Non abbiamo trovato immobili in questo account.",
+          "title": "Il tuo channel manager è collegato"
+        },
+        "denied": {
+          "text": "Il tuo channel manager non ha confermato il consenso, quindi non abbiamo collegato niente. Puoi riprovare quando vuoi.",
+          "title": "Collegamento non completato"
+        },
+        "failed": {
+          "text": "Non siamo riusciti a completare il collegamento. Non è cambiato nulla: puoi riprovare.",
+          "title": "Il collegamento non è riuscito"
+        },
+        "next": {
+          "finish": "Concludi",
+          "retry": "Riprova il collegamento",
+          "start": "Vai al tuo channel manager"
+        },
+        "notes": "CasaZen non vede mai la tua password: la inserisci solo sul sito del tuo channel manager. Il consenso riguarda tutti gli immobili che vedi nel tuo account.",
+        "steps": {
+          "comeBack": "Torni qui in automatico e ti diciamo quanti immobili abbiamo trovato.",
+          "open": "Si apre il sito del tuo channel manager, in questa stessa scheda.",
+          "signIn": "Accedi con le tue credenziali e autorizzi CasaZen."
+        },
+        "whatHappens": "Cosa succede"
+      },
+      "consentExplanation": "Collegheremo il tuo channel manager a CasaZen: ti portiamo sul suo sito per autorizzare CasaZen, poi torni qui e continuiamo insieme.",
+      "done": {
+        "confirm": "Non cambiamo nulla sui tuoi annunci senza la tua conferma.",
+        "reads": "Da ora CasaZen può leggere i tuoi annunci e le tue prenotazioni dal tuo channel manager.",
+        "toHome": "Torna alla home",
+        "toProperties": "Vai ai tuoi immobili"
+      },
+      "errors": {
+        "scenarioRequired": "Scegli dove si trovano oggi i tuoi annunci.",
+        "scenarioUnavailable": "Questa strada non è ancora disponibile: scegli un'altra risposta."
+      },
+      "exit": {
+        "saveAndExit": "Salva ed esci",
+        "saved": "Salvato. Puoi riprendere da dove eri quando vuoi."
+      },
+      "finishFailed": "Non siamo riusciti ad aprire il sito del tuo channel manager. Riprova tra qualche istante.",
+      "page": {
+        "description": "Un percorso guidato, un passo alla volta. Puoi uscire quando vuoi e riprendere da dove eri."
+      },
+      "scenario": {
+        "legend": "Dove si trovano oggi i tuoi annunci?",
+        "newInventory": {
+          "description": "Parti da zero: creiamo insieme il tuo primo annuncio.",
+          "title": "Non sono ancora stati pubblicati"
+        },
+        "onOctorate": {
+          "description": "Li colleghiamo a CasaZen con un'autorizzazione, senza ricrearli.",
+          "title": "Sono già su Octorate"
+        },
+        "onOtas": {
+          "description": "Importiamo gli annunci che hai già, con i loro codici, senza pubblicarne di nuovi.",
+          "soon": "Disponibile a breve: importeremo gli annunci che hai già, senza pubblicarne di nuovi.",
+          "title": "Sono già sulle OTA o in un altro gestionale"
+        }
+      },
+      "steps": {
+        "consent": {
+          "label": "Collegamento",
+          "purpose": "Ti portiamo sul suo sito per dare il consenso, poi torni qui.",
+          "title": "Collega il tuo channel manager"
+        },
+        "scenario": {
+          "label": "Annunci",
+          "purpose": "Scegli la situazione più vicina alla tua: ti portiamo noi sul percorso giusto.",
+          "title": "Dove si trovano oggi i tuoi annunci?"
+        },
+        "why": {
+          "purpose": "Cosa cambia per te quando i tuoi canali parlano con CasaZen."
+        }
+      },
+      "title": "Collega i tuoi canali",
+      "why": {
+        "bookings": "Le prenotazioni dei tuoi canali compaiono in CasaZen, insieme a quelle dirette.",
+        "calendars": "Un calendario unico: le date occupate di tutti i tuoi canali arrivano in CasaZen, per evitare le doppie prenotazioni.",
+        "prices": "Prezzi e disponibilità si gestiscono da un posto solo, senza aprire ogni sito.",
+        "safe": "Collegare non cambia nulla sui tuoi annunci: CasaZen non modifica niente senza la tua conferma."
+      },
+      "whyConnect": "Perché collegare"
     }
   },
   "onboarding": {

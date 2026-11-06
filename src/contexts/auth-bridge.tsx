@@ -13,6 +13,7 @@ import { setApiAuthHandlers } from '@/lib/axios';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { clearAllWizardDrafts } from '@/lib/wizard-draft';
 import { currentReturnTo } from '@/lib/auth-return-to';
+import { isOctorateCallbackPath } from '@/features/integrations/octorate/octorate-callback';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -230,7 +231,13 @@ export function AuthAppProviders({
   }
 
   return (
-    <Auth0Provider {...authConfig} onRedirectCallback={onRedirectCallback}>
+    <Auth0Provider
+      {...authConfig}
+      // The SDK takes any address with a `code` and a `state` for the end of its own login and would fail on these. The page the
+      // channel manager sends the host back to carries a code and a state of its own: they are not Auth0's, the SDK leaves them alone.
+      skipRedirectCallback={isOctorateCallbackPath(window.location.pathname)}
+      onRedirectCallback={onRedirectCallback}
+    >
       <Auth0AuthBridge>{children}</Auth0AuthBridge>
     </Auth0Provider>
   );

@@ -649,6 +649,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'otaPartnerApi',
   },
   {
+    // «Collega i tuoi canali» (E02/F01/US01/T04, ADR-023): the guided connection of the inventory to the channel manager, behind its flag.
+    // In no menu: the onboarding, the list of the properties and the settings of the integrations lead here. It is also the callback page
+    // the channel manager sends the host back to after the consent (`Octorate__RedirectUri` of the backend is this address on the host of
+    // the web app), so it may open with a `code` and a `state` in the address. Writing the connection asks `ota.write`, as the backend does.
+    path: '/app/short-rent/integrations/octorate',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    component: async () => ({
+      default: (await import('@/features/integrations/octorate/connect-wizard')).OctorateConnectWizardPage,
+    }),
+    featureFlag: 'octorateConnector',
+  },
+  {
     path: '/app/short-rent/vetrina',
     context: 'short-rent',
     requiredPermissions: [],

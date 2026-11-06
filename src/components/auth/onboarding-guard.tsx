@@ -11,6 +11,7 @@ import {
   needsFirstProperty,
   needsOnboarding,
 } from '@/lib/onboarding';
+import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
 import { readPendingSupplierClaim, SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { useMe } from '@/queries/use-users';
 import { isAccountInactiveError } from '@/lib/api-errors';
@@ -59,7 +60,9 @@ export function OnboardingGuard() {
   }
 
   if (isAuthenticated && needsOnboarding(user, profile, roles)) {
-    return <Navigate to="/onboarding" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    // `from` stays in the history of the browser: the code and the state of the callback of the channel manager do not go along.
+    const from = `${location.pathname}${searchWithoutOctorateCallback(location.pathname, location.search)}`;
+    return <Navigate to="/onboarding" replace state={{ from }} />;
   }
 
   // Onboarded host whose org has no property yet: the creation of the first one, never the whole wizard again.

@@ -6,6 +6,7 @@ import i18n from '@/i18n/config';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
+import { OCTORATE_CONNECT_PATH } from '@/features/integrations/octorate/octorate-callback';
 
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: vi.fn(),
@@ -212,5 +213,62 @@ describe('ContextRouteGuard reserved page', () => {
     expect(screen.getByText('home')).toBeInTheDocument();
     expect(screen.queryByTestId('reserved-page')).not.toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent');
+  });
+});
+
+function renderConnectRoute(entry: string, permissions: string[]) {
+  vi.mocked(useWorkspace).mockReturnValue({
+    contexts: [
+      {
+        contextKey: 'short-rent',
+        displayName: 'Affitti brevi',
+        roleKey: 'property_manager',
+        permissions,
+        defaultRoute: '/app/short-rent',
+      },
+    ],
+    activeContext: 'short-rent',
+    isReady: true,
+    setActiveContext: vi.fn(),
+    hasPermission: vi.fn().mockReturnValue(true),
+    getDefaultRoute: vi.fn().mockReturnValue('/app/short-rent'),
+  });
+
+  return render(
+    <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: true }, isLoading: false }}>
+      <MemoryRouter initialEntries={[entry]}>
+        <Routes>
+          <Route path="/app/short-rent" element={<p>home</p>} />
+          <Route
+            path={OCTORATE_CONNECT_PATH}
+            element={
+              <ContextRouteGuard contextKey="short-rent" requiredPermissions={['ota.write']} featureFlag="octorateConnector">
+                <p>connect wizard</p>
+              </ContextRouteGuard>
+            }
+          />
+        </Routes>
+        <LocationProbe />
+      </MemoryRouter>
+    </FeatureFlagsContext.Provider>,
+  );
+}
+
+// E02/F01/US01/T04: the page the channel manager sends the host back to comes with a single-use code and state in its address.
+describe('ContextRouteGuard callback page of the channel manager', () => {
+  it('ContextRouteGuard_CallbackPageWithoutThePermission_ShowsTheReservedPageWithoutTheCodeAndTheStateInTheAddress', () => {
+    renderConnectRoute(`${OCTORATE_CONNECT_PATH}?code=the-code&state=the-state&step=consent`, ['booking.read']);
+
+    expect(screen.getByRole('heading', { level: 1, name: i18n.t('appShell.reserved.title') })).toBeInTheDocument();
+    expect(screen.queryByText('connect wizard')).not.toBeInTheDocument();
+    // The reserved page stays on screen and in the history: the single-use secrets do not stay in the address with it.
+    expect(screen.getByTestId('location').textContent).toBe(`${OCTORATE_CONNECT_PATH}?step=consent`);
+  });
+
+  it('ContextRouteGuard_CallbackPageWithThePermission_LeavesTheAddressToTheWizard', () => {
+    renderConnectRoute(`${OCTORATE_CONNECT_PATH}?code=the-code&state=the-state`, ['ota.write']);
+
+    expect(screen.getByText('connect wizard')).toBeInTheDocument();
+    expect(screen.getByTestId('location').textContent).toBe(`${OCTORATE_CONNECT_PATH}?code=the-code&state=the-state`);
   });
 });

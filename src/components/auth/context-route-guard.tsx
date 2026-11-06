@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { isFeatureEnabled, type FeatureFlagKey } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
+import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getContextHomeRoute } from '@/routes/context-home';
@@ -68,6 +69,10 @@ export function ContextRouteGuard({
       const home = getContextHomeRoute(current.contextKey, hasPermission, flags);
       if (home !== pathname) return <Navigate to={`${home}${search}${hash}`} replace />;
     }
+    // The reserved page stays on screen and in the history: on the callback page of the channel manager the code and the state, which this
+    // role can never use, do not stay in the address with it.
+    const kept = searchWithoutOctorateCallback(pathname, search);
+    if (kept !== search) return <Navigate to={{ pathname, search: kept, hash }} replace />;
     return <ReservedPage contextKey={current.contextKey} homePath={getDefaultRoute(current.contextKey)} />;
   }
 

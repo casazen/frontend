@@ -31,4 +31,18 @@ describe('currentReturnTo', () => {
       '/register?inviteToken=abc#top',
     );
   });
+
+  it('currentReturnTo_CallbackPageOfTheChannelManager_LeavesTheCodeAndTheStateOut', () => {
+    // A `returnTo` lasts (a history entry, the state Auth0 keeps while the user signs in): the single-use secrets do not go into it.
+    expect(
+      currentReturnTo({ pathname: '/app/short-rent/integrations/octorate', search: '?code=the-code&state=the-state', hash: '' }),
+    ).toBe('/app/short-rent/integrations/octorate');
+    expect(
+      currentReturnTo({
+        pathname: '/app/short-rent/integrations/octorate',
+        search: '?step=why&error=access_denied&state=the-state',
+        hash: '#top',
+      }),
+    ).toBe('/app/short-rent/integrations/octorate?step=why#top');
+  });
 });
