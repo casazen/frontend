@@ -12,7 +12,7 @@ import { propertiesApi } from '@/api/properties.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
 import { createServiceRequest, fetchMarketplaceSuppliers, fetchSuppliersByProperty } from '@/api/service-requests.api';
 import { NOON_UTC, freezeClock } from '@/test/clock';
-import type { Booking, Property } from '@/types';
+import type { Booking, MarketplaceCatalogEntry, Property } from '@/types';
 import type { ServiceRequest, SupplierPicker } from '@/types/service-request';
 import { RequestInterventionPage } from '../request-page';
 
@@ -35,6 +35,20 @@ vi.mock('@/api/service-requests.api', () => ({
   fetchMarketplaceSuppliers: vi.fn(),
 }));
 vi.mock('@/api/host-supplier-catalog.api', () => ({ fetchHostSupplierServices: vi.fn(), fetchHostSupplierSlots: vi.fn() }));
+
+// The partners come from the catalog of the marketplace: the test gives the ones it wants (made up, as the real ones are entered by the
+// administrator and written nowhere in the code).
+const catalog = vi.hoisted(() => ({ partners: [] as unknown[], loading: false }));
+vi.mock('@/queries/use-marketplace', () => ({
+  usePartnersByServiceCategory: () => {
+    const partners = catalog.partners as MarketplaceCatalogEntry[];
+    return {
+      partnersFor: (category: string) => partners.filter((partner) => partner.serviceCategories?.includes(category)),
+      hasPartners: partners.length > 0,
+      isLoading: catalog.loading,
+    };
+  },
+}));
 
 const PROPERTY_ID = '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
 const OTHER_PROPERTY_ID = '7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4e';
@@ -76,6 +90,31 @@ const stay = {
   guest: { firstName: 'Mario', lastName: 'Rossi' },
 } as Booking;
 
+const cleaningPartner = {
+  kind: 'Partner',
+  code: 'test-cleaning',
+  name: 'TEST Cleaning',
+  logoUrl: null,
+  benefit: 'Cleaning for short stays.',
+  cost: { text: null, invoicedBy: 'Unknown' },
+  status: 'NotActive',
+  statusScope: 'Org',
+  canActivate: true,
+  reason: null,
+  job: 'Cleaning',
+  websiteUrl: 'https://example.com/cleaning',
+  serviceCategories: ['cleaning'],
+} as MarketplaceCatalogEntry;
+const checkinPartner = {
+  ...cleaningPartner,
+  code: 'test-checkin',
+  name: 'TEST Check-in',
+  benefit: 'Welcomes the guests.',
+  job: 'AccessProperty',
+  websiteUrl: 'https://example.com/checkin',
+  serviceCategories: ['check-in'],
+} as MarketplaceCatalogEntry;
+
 function refusal(status: number, code: string) {
   return new AxiosError('failed', AxiosError.ERR_BAD_REQUEST, undefined, undefined, { status, data: { code }, statusText: '', headers: {}, config: {} } as unknown as AxiosResponse);
 }
@@ -112,6 +151,8 @@ beforeEach(async () => {
   sessionStorage.clear();
   freezeClock(NOON_UTC);
   await i18n.changeLanguage('it');
+  catalog.partners = [cleaningPartner, checkinPartner];
+  catalog.loading = false;
   vi.mocked(fetchServiceCategories).mockResolvedValue(['cleaning', 'plumbing']);
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
   vi.mocked(bookingsApi.getAll).mockResolvedValue([] as never);
@@ -247,9 +288,10 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     const empty = await screen.findByTestId('request-no-suppliers', undefined, WAIT);
     expect(empty).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
-    // The partners of the cleaning: the ones the page lists for it, each with its own site.
-    expect(within(empty).getByTestId('marketplace-partner-turno-link')).toHaveAttribute('href', 'https://turno.com/');
-    expect(within(empty).queryByTestId('marketplace-partner-operto')).not.toBeInTheDocument();
+    // The partners of the cleaning: the ones the catalog lists for it, each with its own site and what it does.
+    expect(within(empty).getByTestId('marketplace-partner-test-cleaning-link')).toHaveAttribute('href', 'https://example.com/cleaning');
+    expect(within(empty).getByTestId('marketplace-partner-test-cleaning')).toHaveTextContent('Cleaning for short stays.');
+    expect(within(empty).queryByTestId('marketplace-partner-test-checkin')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('request-go-partners'));
     await stepIs('partners');
@@ -269,17 +311,45 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     // Only the kinds of work an external partner covers.
     await stepIs('service');
-    fireEvent.click(await screen.findByTestId('request-category-cleaning', undefined, WAIT));
+    const cleaning = await screen.findByTestId('request-category-cleaning', undefined, WAIT);
+    // The tile names the partners of the catalog that cover the service.
+    expect(cleaning.closest('label')).toHaveTextContent('TEST Cleaning');
+    fireEvent.click(cleaning);
     expect(screen.queryByTestId('request-category-plumbing')).not.toBeInTheDocument();
     next();
 
     await stepIs('partners');
-    expect(await screen.findByTestId('marketplace-partner-doinn-link', undefined, WAIT)).toHaveAttribute('target', '_blank');
+    expect(await screen.findByTestId('marketplace-partner-test-cleaning-link', undefined, WAIT)).toHaveAttribute('target', '_blank');
     // The wizard ends here: the work is organised on the partner's site, so nothing goes to CasaZen.
     fireEvent.click(screen.getByTestId('request-finish'));
     expect(await screen.findByText('Ora tocca al partner', undefined, WAIT)).toBeInTheDocument();
     expect(createServiceRequest).not.toHaveBeenCalled();
     expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`);
+  });
+
+  it('RequestInterventionPage_NoPartnerInTheCatalog_TheExternalChannelIsNotOffered_AndNobodyIsSteeredToIt', async () => {
+    catalog.partners = [];
+    vi.mocked(fetchMarketplaceSuppliers).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+    renderPage(`propertyId=${PROPERTY_ID}`);
+
+    await stepIs('channel');
+    // Nobody of CasaZen in the zone and no partner either: the reason is said, without promising partners.
+    const note = await screen.findByTestId('request-no-network', undefined, WAIT);
+    expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+    expect(note).not.toHaveTextContent('partner');
+    expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
+    expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
+  });
+
+  it('RequestInterventionPage_PartnersStillLoading_KeepsTheExternalChannelAndDoesNotSteerToItYet', async () => {
+    catalog.partners = [];
+    catalog.loading = true;
+    vi.mocked(fetchMarketplaceSuppliers).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+    renderPage(`propertyId=${PROPERTY_ID}`);
+
+    await stepIs('channel');
+    // As it is today while nothing covers a service: the external channel is there, and it is not chosen for the host.
+    expect(await screen.findByTestId('request-channel-external', undefined, WAIT)).not.toBeChecked();
   });
 
   it('RequestInterventionPage_SupplierAndServiceInTheAddress_OpenOnTheDetailsWithTheServiceChosen', async () => {

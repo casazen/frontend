@@ -9220,14 +9220,7 @@
     },
     "partners": {
       "learnMore": "Scopri",
-      "learnMoreAria": "Scopri {{name}} (si apre in una nuova scheda)",
-      "items": {
-        "operto": "Tecnologia per gli ospiti che riduce i costi di gestione.",
-        "turno": "Trova e gestisci servizi di pulizia per affitti brevi.",
-        "properly": "Piattaforma di controllo qualità degli interventi.",
-        "doinn": "Trova e gestisci servizi di pulizia per affitti brevi.",
-        "tidy": "Automazione di pulizia e manutenzione dell'immobile."
-      }
+      "learnMoreAria": "Scopri {{name}} (si apre in una nuova scheda)"
     },
     "integrations": {
       "title": "Altre integrazioni",
@@ -13161,7 +13154,9 @@
       },
       "legend": "Chi vuoi coinvolgere",
       "noComune": "Per cercare i fornitori della tua zona serve il comune dell'immobile: finché manca ti proponiamo i partner esterni.",
+      "noComuneNoPartners": "Per cercare i fornitori della tua zona serve il comune dell'immobile.",
       "noNetwork": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen: ti proponiamo i partner esterni.",
+      "noNetworkNoPartners": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen.",
       "recommended": "Consigliato"
     },
     "details": {

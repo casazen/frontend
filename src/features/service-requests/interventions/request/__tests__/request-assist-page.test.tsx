@@ -37,6 +37,24 @@ vi.mock('@/api/service-requests.api', () => ({
 }));
 vi.mock('@/api/host-supplier-catalog.api', () => ({ fetchHostSupplierServices: vi.fn(), fetchHostSupplierSlots: vi.fn() }));
 vi.mock('@/api/service-request-assist.api', () => ({ serviceRequestAssistApi: { getAvailability: vi.fn(), assist: vi.fn() } }));
+// The partners come from the catalog of the marketplace: one, made up, for the cleaning.
+vi.mock('@/queries/use-marketplace', () => {
+  const partner = {
+    kind: 'Partner',
+    code: 'test-cleaning',
+    name: 'TEST Cleaning',
+    benefit: 'Cleaning for short stays.',
+    websiteUrl: 'https://example.com/cleaning',
+    serviceCategories: ['cleaning'],
+  };
+  return {
+    usePartnersByServiceCategory: () => ({
+      partnersFor: (category: string) => (category === 'cleaning' ? [partner] : []),
+      hasPartners: true,
+      isLoading: false,
+    }),
+  };
+});
 
 const PROPERTY_ID = '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
 const SUPPLIER_ID = '9e0f1a2b-3c4d-4e5f-8a6b-7c8d9e0f1a2b';

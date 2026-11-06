@@ -9220,14 +9220,7 @@
     },
     "partners": {
       "learnMore": "Learn more",
-      "learnMoreAria": "Learn more about {{name}} (opens in a new tab)",
-      "items": {
-        "operto": "Guest technology that cuts the cost of running a rental.",
-        "turno": "Find and manage cleaning services for short-term rentals.",
-        "properly": "A platform that checks the quality of the work done.",
-        "doinn": "Find and manage cleaning services for short-term rentals.",
-        "tidy": "Automation of the cleaning and maintenance of the property."
-      }
+      "learnMoreAria": "Learn more about {{name}} (opens in a new tab)"
     },
     "integrations": {
       "title": "Other integrations",
@@ -13161,7 +13154,9 @@
       },
       "legend": "Who do you want to ask",
       "noComune": "To look for the suppliers of your area the comune of the property is needed: until it is there we propose the external partners.",
+      "noComuneNoPartners": "To look for the suppliers of your area the comune of the property is needed.",
       "noNetwork": "There are no CasaZen suppliers yet in the area of this property: we propose the external partners.",
+      "noNetworkNoPartners": "There are no CasaZen suppliers yet in the area of this property.",
       "recommended": "Recommended"
     },
     "details": {
