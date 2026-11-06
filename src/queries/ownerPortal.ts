@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { saveBlobAs } from '@/lib/file-download';
 import axios from '@/lib/axios';
+import type { OwnerPortalReportQuery } from '@/types';
 
 const OWNER_PORTAL_KEY = 'owner-portal';
 
@@ -13,6 +14,29 @@ export function useOwnerProperties() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'properties'],
     queryFn: () => ownerPortalApi.getProperties(),
+    refetchOnMount: 'always' as const,
+  });
+}
+
+/**
+ * The owner's properties on the Home's numbers for the days of `query` (NF-96): occupancy, revenue, ADR and RevPAR, next to the same
+ * days one year earlier when it asks. Read again at every visit; the previous numbers stay on screen while the next load.
+ */
+export function useOwnerOverview(query: OwnerPortalReportQuery) {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'overview', query],
+    queryFn: () => ownerPortalApi.getOverview(query),
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always' as const,
+  });
+}
+
+/** The same figures week by week or month by month (NF-96), each bucket next to its days one year earlier when asked. */
+export function useOwnerTrend(query: OwnerPortalReportQuery) {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'trend', query],
+    queryFn: () => ownerPortalApi.getTrend(query),
+    placeholderData: keepPreviousData,
     refetchOnMount: 'always' as const,
   });
 }

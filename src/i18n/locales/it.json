@@ -9747,16 +9747,20 @@
     "dashboard": {
       "title": "Portale Proprietari",
       "viewStatements": "Visualizza rendiconti",
-      "totalRevenue": "Ricavi totali",
-      "totalBookings": "Prenotazioni totali",
-      "avgOccupancy": "Occupazione media",
-      "allProperties": "Tutti gli immobili",
-      "acrossProperties": "Media tra gli immobili",
       "yourProperties": "I tuoi immobili",
       "noProperties": "Non ci sono immobili disponibili",
       "revenue": "Ricavi",
       "bookings": "Prenotazioni",
       "occupancy": "Occupazione",
+      "adr": "ADR",
+      "revPar": "RevPAR",
+      "period": "Periodo",
+      "tilesLabel": "I numeri dei tuoi immobili",
+      "previousYear": "Confronto con gli stessi giorni dell'anno scorso: dal {{from}} al {{to}}.",
+      "share": "Ricavi per competenza, sulla tua quota di ogni immobile: le notti dei soggiorni confermati, alloggio e pulizie, tassa di soggiorno esclusa.",
+      "trendTitle": "Andamento nel tempo",
+      "overviewError": "Impossibile caricare i numeri del periodo.",
+      "trendError": "Impossibile caricare l'andamento.",
       "recentBookings": "Prenotazioni recenti",
       "error": "Errore nel caricamento",
       "errorMessage": "Impossibile caricare i dati del portale. Riprova più tardi."
@@ -12689,6 +12693,84 @@
     "noResultsDescription": "Prova a togliere un filtro o a cercare con un'altra parola.",
     "noResultsTitle": "Nessun report con questi filtri",
     "open": "Apri",
+    "overview": {
+      "basis": "Ricavi per competenza: le notti dei soggiorni confermati, alloggio e pulizie, tassa di soggiorno esclusa. ADR è il ricavo medio per notte venduta, RevPAR il ricavo per ogni notte disponibile.",
+      "compare": "Confronta con l'anno scorso",
+      "comparePeriod": "Confronto con gli stessi giorni dell'anno scorso: dal {{from}} al {{to}}.",
+      "delta": {
+        "none": "Nessun confronto con l'anno scorso",
+        "percent": "{{value}} sull'anno scorso",
+        "points_one": "{{value}} punto sull'anno scorso",
+        "points_other": "{{value}} punti sull'anno scorso"
+      },
+      "empty": "Nessun soggiorno confermato in questo periodo: l'andamento e i confronti compaiono appena ci sono prenotazioni.",
+      "error": "Impossibile caricare i numeri del periodo.",
+      "filters": {
+        "allProperties": "Tutti gli immobili",
+        "label": "Filtri dell'andamento",
+        "period": "Periodo",
+        "property": "Immobile"
+      },
+      "groupBy": {
+        "all": "Tutti insieme",
+        "channel": "Per canale",
+        "label": "Come dividere i numeri",
+        "owner": "Per proprietario",
+        "property": "Per immobile"
+      },
+      "na": "n.d.",
+      "owner": {
+        "caption": "Numeri per proprietario",
+        "columns": {
+          "name": "Proprietario",
+          "properties": "Immobili"
+        },
+        "total": "Totale",
+        "unassigned": "Immobili senza proprietario"
+      },
+      "table": {
+        "caption": {
+          "channel": "Numeri per canale",
+          "property": "Numeri per immobile"
+        },
+        "deltaPoints": "{{value}} pt",
+        "name": {
+          "channel": "Canale",
+          "property": "Immobile"
+        },
+        "other": "Altri",
+        "previous": "Anno scorso: {{value}}",
+        "total": "Totale"
+      },
+      "tiles": {
+        "adr": "ADR",
+        "label": "I numeri del periodo",
+        "occupancy": "Occupazione",
+        "revPar": "RevPAR",
+        "revenue": "Ricavi"
+      },
+      "title": "Andamento dell'attività",
+      "trend": {
+        "empty": "Niente da mostrare per questa voce nel periodo.",
+        "forecast": "Prevista",
+        "metric": {
+          "adr": "ADR",
+          "occupancy": "Occupazione",
+          "revPar": "RevPAR",
+          "revenue": "Ricavi"
+        },
+        "metricLabel": "Numero da mostrare",
+        "noChannelMetric": "Occupazione e RevPAR non si calcolano per canale: appartengono all'immobile.",
+        "period": "Periodo",
+        "previousYear": "Anno scorso",
+        "series": {
+          "channel": "Canale",
+          "property": "Immobile"
+        },
+        "titleMonth": "Andamento per mese",
+        "titleWeek": "Andamento per settimana"
+      }
+    },
     "preset": {
       "custom": "Date a scelta",
       "last3Months": "Ultimi 3 mesi",
