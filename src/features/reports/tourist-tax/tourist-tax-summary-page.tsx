@@ -47,7 +47,9 @@ export function TouristTaxSummaryPage() {
 
   const [preset, setPreset] = useState<PeriodPresetId>('thisYear');
   const [custom, setCustom] = useState<ReportPeriod>(() => presetPeriod('thisYear', today));
-  const [recording, setRecording] = useState<TouristTaxComuneSummary | null>(null);
+  // The comune the person chose, with the days of the summary its row belongs to: while another period loads the previous summary stays
+  // on screen with its buttons, and a payment started from its row starts from those days, not from the ones just picked.
+  const [recording, setRecording] = useState<{ row: TouristTaxComuneSummary; period: ReportPeriod } | null>(null);
   // The payment to delete stays set while the dialog closes, so its sentence does not empty during the animation.
   const [deleting, setDeleting] = useState<{ remittance: TouristTaxRemittance; open: boolean } | null>(null);
 
@@ -168,7 +170,7 @@ export function TouristTaxSummaryPage() {
                 summary={data}
                 canWrite={canWrite}
                 downloadingId={downloadReceipt.isPending ? (downloadReceipt.variables ?? null) : null}
-                onRecord={setRecording}
+                onRecord={(row) => setRecording({ row, period: data.period })}
                 onDownloadReceipt={onDownloadReceipt}
                 onDeleteRemittance={(remittance) => setDeleting({ remittance, open: true })}
               />
@@ -195,7 +197,7 @@ export function TouristTaxSummaryPage() {
           <SkeletonLine lines={4} />
         )}
 
-        <RecordPaymentDialog comune={recording} period={period} onClose={() => setRecording(null)} />
+        <RecordPaymentDialog comune={recording?.row ?? null} period={recording?.period ?? period} onClose={() => setRecording(null)} />
 
         <ConfirmationDialog
           open={deleting?.open ?? false}

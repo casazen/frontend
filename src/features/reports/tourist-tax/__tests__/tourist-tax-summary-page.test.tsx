@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import i18n from '@/i18n/config';
@@ -144,5 +144,26 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
       expect(emptyState).not.toHaveTextContent(/versament/i);
       expect(screen.getByTestId('tourist-tax-basis')).not.toHaveTextContent(/versat|versament|saldo/i);
     }
+  });
+
+  // Money: while the summary of another period loads, the previous one stays on screen (dimmed) with its buttons. A payment started from
+  // one of its rows starts from the days of that summary, next to its comune and balance, never from the days that were just picked.
+  it('RecordPayment_WhileAnotherPeriodLoads_StartsFromTheDaysOfTheSummaryShown', async () => {
+    granted.add('short-rent:payment.write');
+    get.mockImplementation((_url: string, config?: { params?: { from?: string } }) =>
+      config?.params?.from === THIS_YEAR.from ? Promise.resolve({ data: fullSummary() }) : new Promise(() => undefined),
+    );
+    renderPage();
+    await screen.findByTestId('tourist-tax-results');
+
+    // Last year is asked for and never answered: the summary of this year is still shown.
+    fireEvent.change(screen.getByTestId('tourist-tax-period'), { target: { value: 'lastYear' } });
+    expect(screen.getByTestId('tourist-tax-results')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByTestId('tourist-tax-range')).toHaveTextContent('2025');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Registra versamento: Milano' }));
+
+    expect(screen.getByTestId('record-payment-from')).toHaveValue(THIS_YEAR.from);
+    expect(screen.getByTestId('record-payment-to')).toHaveValue(THIS_YEAR.to);
   });
 });
