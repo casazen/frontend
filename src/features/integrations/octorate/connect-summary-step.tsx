@@ -6,6 +6,7 @@ import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
@@ -14,7 +15,7 @@ import type { OctorateListing } from '@/types';
 import type { PropertyIcalFeed, PropertyIcalFeedChannel } from '@/types/property-ical';
 import type { ConnectWizardValues } from './inventory-scenario';
 import { listingName, roomName } from './listing-labels';
-import { StepProblem } from './listing-parts';
+import { StepNotice, StepProblem } from './listing-parts';
 import {
   MAPPING_STEP_ID,
   buildMappingPlan,
@@ -24,6 +25,7 @@ import {
   type ResultKind,
   type ResultRow,
 } from './mapping-model';
+import type { ConnectPhase } from './use-octorate-connect';
 
 const NO_DECISIONS: ConnectWizardValues['decisions'] = [];
 
@@ -45,6 +47,10 @@ interface ConnectSummaryStepProps {
   progress: MappingProgress | null;
   /** The listings the last run could not do, with the reason: the host fixes them and runs the rest again. */
   failures: readonly ListingOutcome[];
+  /** Where the consent stands: the last button needs a connection that works, and the summary says so when there is none. */
+  phase: ConnectPhase;
+  /** Back to the consent, for the host who got here without a connection (a draft taken up again, an address typed by hand). */
+  onBackToConsent: () => void;
 }
 
 /**
@@ -52,25 +58,44 @@ interface ConnectSummaryStepProps {
  * about the listings in the step before; nothing has been sent. The last button of the wizard does it, and each line can be changed:
  * "Modifica" goes back to the step of the answers (the answers are kept).
  *
+ * The last button concludes the whole path, so it needs a connection that works: opened with none (a draft taken up again after a
+ * disconnection, or the address of the step), the step says so, leads back to the consent and the button waits.
+ *
  * After a run that did not do everything, the listings that failed are listed here with the reason in the words of the app, and a link
  * to fix them: the ones that were done stay done (they are not listings to do any more), so running again only does the rest.
  */
-export function ConnectSummaryStep({ progress, failures }: ConnectSummaryStepProps) {
+export function ConnectSummaryStep({ progress, failures, phase, onBackToConsent }: ConnectSummaryStepProps) {
   const { t } = useTranslation();
-  const listings = useFoundListings();
+  const connected = phase === 'connected';
+  const listings = useFoundListings({ enabled: connected });
   const properties = useShortRentProperties();
   const { control } = useFormContext<ConnectWizardValues>();
   const decisions = useWatch({ control, name: 'decisions' }) ?? NO_DECISIONS;
   const wizard = useOptionalWizard();
 
-  if (listings.isPending) {
+  const preparing = (
+    <div className="flex min-w-0 items-center gap-3 rounded-lg bg-muted p-4 text-sm" data-testid="octorate-summary-loading">
+      <Spinner size="sm" />
+      <span className="min-w-0 break-words">{t('octorate.connect.summary.loading')}</span>
+    </div>
+  );
+
+  if (phase === 'checking' || phase === 'completing') return preparing;
+  if (!connected) {
     return (
-      <div className="flex min-w-0 items-center gap-3 rounded-lg bg-muted p-4 text-sm" data-testid="octorate-summary-loading">
-        <Spinner size="sm" />
-        <span className="min-w-0 break-words">{t('octorate.connect.summary.loading')}</span>
-      </div>
+      <StepNotice
+        title={t('octorate.connect.summary.notConnected.title')}
+        text={t('octorate.connect.summary.notConnected.text')}
+        testId="octorate-summary-not-connected"
+        action={
+          <Button type="button" size="sm" onClick={onBackToConsent} data-testid="octorate-summary-reconnect">
+            {t('octorate.connect.summary.notConnected.action')}
+          </Button>
+        }
+      />
     );
   }
+  if (listings.isPending) return preparing;
   if (listings.isError) {
     return (
       <StepProblem

@@ -458,6 +458,29 @@ describe('summary: what will happen, before the import (NF-05)', () => {
     expect(screen.getByTestId('octorate-result-acc-1')).toHaveTextContent(i18n.t('octorate.connect.summary.result.later.blocked'));
   });
 
+  it('OctorateSummary_ChannelManagerNotConnected_SaysSoAndTheLastButtonWaits', async () => {
+    vi.mocked(octorateApi.getConnectionStatus).mockResolvedValue(connection());
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([listing()]);
+    // A draft taken up again at the summary after the channel manager was disconnected, which is also what the address of the step gives.
+    renderAt('summary', [decision()]);
+
+    expect(await screen.findByTestId('octorate-summary-not-connected', undefined, WAIT)).toHaveTextContent(
+      i18n.t('octorate.connect.summary.notConnected.title'),
+    );
+    // Nothing can be concluded: no read, no call, no "Collegamento completato".
+    expect(finishButton()).toBeDisabled();
+    fireEvent.click(finishButton());
+    expect(octorateApi.getFoundListings).not.toHaveBeenCalled();
+    expect(octorateApi.confirmMapping).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();
+    expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', 'summary');
+    expect(wizardText()).not.toMatch(/octorate/i);
+
+    // The way on is the consent.
+    fireEvent.click(screen.getByTestId('octorate-summary-reconnect'));
+    await onStep('consent');
+  });
+
   it('OctorateSummary_ExcludeAnswerOfAListingExcludedAlready_IsNotListedAndNotSentAgain', async () => {
     vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
       listing({ octorateAccommodationId: 'acc-3', name: 'Casa Verde', status: 'Rejected', proposedProperty: null }),

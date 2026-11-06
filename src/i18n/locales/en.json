@@ -9779,6 +9779,11 @@
         "linkedLine": "{{listing}} → {{property}}",
         "loadFailed": "We cannot show the summary.",
         "loading": "Preparing the summary...",
+        "notConnected": {
+          "action": "Back to the connection",
+          "text": "To finish, connect your channel manager first. Your choices are kept.",
+          "title": "Your channel manager is not connected"
+        },
         "nothing": "You have not chosen anything to link or import right now. The listings stay as they are and CasaZen does not write to your properties.",
         "progress": "We are linking your listings: {{done}} of {{total}}.",
         "result": {

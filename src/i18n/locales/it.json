@@ -9779,6 +9779,11 @@
         "linkedLine": "{{listing}} → {{property}}",
         "loadFailed": "Non riusciamo a mostrare il riepilogo.",
         "loading": "Preparo il riepilogo...",
+        "notConnected": {
+          "action": "Torna al collegamento",
+          "text": "Per concludere serve prima collegare il tuo channel manager. Le tue scelte restano salvate.",
+          "title": "Il tuo channel manager non è collegato"
+        },
         "nothing": "Non hai scelto niente da collegare o importare ora. Gli annunci restano come sono e CasaZen non scrive sui tuoi immobili.",
         "progress": "Stiamo collegando i tuoi annunci: {{done}} di {{total}}.",
         "result": {

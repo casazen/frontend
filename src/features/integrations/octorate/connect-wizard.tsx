@@ -211,7 +211,17 @@ function ConnectWizard() {
       label: t('octorate.connect.steps.summary.label'),
       title: t('octorate.connect.steps.summary.title'),
       purpose: t('octorate.connect.steps.summary.purpose'),
-      render: () => <ConnectSummaryStep progress={progress} failures={outcomes.filter((outcome) => outcome.kind === 'failed')} />,
+      // The last button concludes the whole path and reads the channel manager: it waits for a connection that works (a draft taken up
+      // again after a disconnection, or the address of this step, must not end in "Collegamento completato" with nothing connected).
+      nextDisabled: !connected,
+      render: ({ goTo }) => (
+        <ConnectSummaryStep
+          progress={progress}
+          failures={outcomes.filter((outcome) => outcome.kind === 'failed')}
+          phase={connect.phase}
+          onBackToConsent={() => goTo(CONSENT_STEP_ID)}
+        />
+      ),
     },
   ];
 
