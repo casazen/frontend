@@ -11,9 +11,9 @@ import { usePropertyPhotos, useReorderPropertyPhotos, useSetPropertyCoverPhoto }
 import { FALLBACK_PHOTO_RULES, toMegabytes } from '../../photo-selection';
 import { PhotoGallery } from '../photos/photo-gallery';
 import { useDelayedPhotoDelete } from '../photos/use-delayed-photo-delete';
+import { PhotoDetails } from '../photos/photo-details';
 import { usePhotoUploadQueue } from '../photos/use-photo-upload-queue';
 import type { PropertyWizardValues } from '../property-wizard-model';
-import { ListingTextCard } from './listing-text-card';
 
 /** The photos the page asks for: the server advises the same number (`photos` in «cosa manca»); fewer is allowed. */
 const RECOMMENDED_PHOTOS = 5;
@@ -24,10 +24,11 @@ interface PhotosStepProps {
 }
 
 /**
- * Step 2 · «Mostra la casa con qualche foto» (SR-07b): the photos and the text of the listing. The photos are uploaded one file at a
- * time with the reason for each one that fails, the first is the cover, the order is changed by dragging or with the buttons, and a
- * photo that is deleted can be brought back for a few seconds. The text is the person's: «Suggerisci con l'AI» writes one from these
- * photos, the comune and the data (`ListingTextCard`), and can be taken back. Photos are **recommended, not required**.
+ * Step 2 · «Mostra la casa con qualche foto» (SR-07b): the photos, and for each one its caption (Italian and English) and its room
+ * (`PhotoDetails`, NF-32). The photos are uploaded one file at a time with the reason for each one that fails, the first is the cover,
+ * the order is changed by dragging or with the buttons, and a photo that is deleted can be brought back for a few seconds. The title and
+ * the description of the listing are the next steps' (the descriptions step has them in every language). Photos, and their captions, are
+ * **recommended, not required**.
  */
 export function PhotosStep({ form, propertyId }: PhotosStepProps) {
   const { t } = useTranslation();
@@ -153,7 +154,7 @@ export function PhotosStep({ form, propertyId }: PhotosStepProps) {
         </p>
       </section>
 
-      <ListingTextCard form={form} propertyId={propertyId} photos={photos} />
+      {photos.length > 0 && !unreadable ? <PhotoDetails form={form} propertyId={propertyId} photos={photos} /> : null}
     </>
   );
 }

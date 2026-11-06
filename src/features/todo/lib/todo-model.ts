@@ -32,6 +32,10 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   ReceiptToRetrieve: { titleKey: 'activity.todo.type.ReceiptToRetrieve.title', whyKey: 'activity.todo.type.ReceiptToRetrieve.why' },
   MessageToApprove: { titleKey: 'activity.todo.type.MessageToApprove.title', whyKey: 'activity.todo.type.MessageToApprove.why' },
   PublicationError: { titleKey: 'activity.todo.type.PublicationError.title', whyKey: 'activity.todo.type.PublicationError.why' },
+  ListingChangedOutside: {
+    titleKey: 'activity.todo.type.ListingChangedOutside.title',
+    whyKey: 'activity.todo.type.ListingChangedOutside.why',
+  },
   FiscalDocument: { titleKey: 'activity.todo.type.FiscalDocument.title', whyKey: 'activity.todo.type.FiscalDocument.why' },
   WizardResume: { titleKey: 'activity.todo.type.WizardResume.title', whyKey: 'activity.todo.type.WizardResume.why' },
   IntegrationError: { titleKey: 'activity.todo.type.IntegrationError.title', whyKey: 'activity.todo.type.IntegrationError.why' },

@@ -5,11 +5,14 @@ import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FACT_LINK, Fact, Facts } from '@/features/bookings/components/booking-facts';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { isValidCin } from '@/lib/cin-format';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { PropertyDetailDto } from '@/types';
 import { PRICING_SECTION_ID } from '../lib/property-sheet';
 import { propertyEditPath, propertyPricingPath, propertyTabPath } from '../properties-paths';
 import { formatPropertyLocation } from '../property-location';
+import { MultiChannelStatus } from './multi-channel-status';
 import { PropertyAmenitiesGrid } from './property-amenities-grid';
 import { PropertyCinBadge } from './property-cin-badge';
 import { PropertyPhotoCarousel } from './property-photo-carousel';
@@ -29,6 +32,8 @@ interface PropertyOverviewTabProps {
  */
 export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin }: PropertyOverviewTabProps) {
   const { t } = useTranslation();
+  // The listing on the channels (E02/F03/US01/T04) is told only where the channel manager is connected: its endpoints answer 404 otherwise.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const spaces = [
     t('property.table.bedroomsCount', { count: property.bedrooms }),
     t('property.table.bathroomsCount', { count: property.bathrooms }),
@@ -111,6 +116,12 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
           ) : null}
         </Facts>
       </PlainSection>
+
+      {connectorOn ? (
+        <PlainSection title={t('property.detail.sections.channels')}>
+          <MultiChannelStatus propertyId={property.id} canWrite={canWrite} cinValid={isValidCin(property.cinCode)} />
+        </PlainSection>
+      ) : null}
 
       <PropertyAmenitiesGrid amenities={property.amenities} />
     </div>

@@ -56,7 +56,7 @@ const EXPECTED: Record<R6Action, string> = {
   VerifyIdentity: '/app/short-rent/verifications',
   UploadAlloggiatiProof: '/app/short-rent/alloggiati',
   UploadIstatProof: '/app/short-rent/compliance',
-  FixListingError: `/app/short-rent/properties/${PROPERTY_ID}`,
+  FixListingError: `/app/short-rent/properties/create?propertyId=${PROPERTY_ID}&step=channels`,
   ReplyToMessage: `/app/short-rent/bookings/${BOOKING_ID}?tab=messages`,
   ApproveAiDraft: '/app/short-rent/approval-queue',
   ResumeWizard: `/app/short-rent/properties/${PROPERTY_ID}/activation`,
@@ -71,15 +71,17 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   });
 
   it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestInShortRent', (_action, target) => {
-    type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string };
-    const targetOfEntry = target as { route: RouteOfEntry; fallback?: RouteOfEntry };
-    for (const candidate of [targetOfEntry.route, ...(targetOfEntry.fallback ? [targetOfEntry.fallback] : [])]) {
+    type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string; propertyParam?: string };
+    const targetOfEntry = target as { route: RouteOfEntry; fallback?: RouteOfEntry | RouteOfEntry[] };
+    const fallbacks = targetOfEntry.fallback === undefined ? [] : Array.isArray(targetOfEntry.fallback) ? targetOfEntry.fallback : [targetOfEntry.fallback];
+    for (const candidate of [targetOfEntry.route, ...fallbacks]) {
       expect(
         ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === 'short-rent'),
         `${candidate.path} is not a route of the ROUTE_MANIFEST`,
       ).toBe(true);
-      // A page with `:id` says whose id fills it, and a page without it does not ask for one.
+      // A page with `:id` says whose id fills it, and a page without it does not ask for one (but for the property in its address).
       expect(candidate.path.includes(':id'), candidate.path).toBe(candidate.target !== undefined);
+      if (candidate.propertyParam !== undefined) expect(candidate.target, candidate.path).toBeUndefined();
       // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's.
       expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity');
       if (candidate.tab !== undefined) expect(BOOKING_TABS as readonly string[]).toContain(candidate.tab);
@@ -127,6 +129,23 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('ReviewBooking'), permissions([]))).toBeNull();
     // The wizard of the activation is written: `property.write`, and the activation has no read-only page.
     expect(todoActionRoute(itemFor('ResumeWizard'), permissions(['property.read']))).toBeNull();
+  });
+
+  it('todoActionRoute_FixListingError_OpensTheWizardOfThePropertyAtTheChannelsStep', () => {
+    // The three types of the story (a publication error, a silent channel, a change made outside CasaZen) share the action (E02/F03/US01/T04).
+    for (const entityType of ['Property', 'Channel', 'ListingChannelState']) {
+      const item = itemFor('FixListingError', { entityType, entityId: BOOKING_ID, propertyId: PROPERTY_ID });
+      expect(todoActionRoute(item), entityType).toBe(`/app/short-rent/properties/create?propertyId=${PROPERTY_ID}&step=channels`);
+    }
+  });
+
+  it('todoActionRoute_FixListingErrorForWhoCannotWriteTheProperties_OpensThePageOfTheProperty', () => {
+    const readOnly = permissions(['property.read']);
+
+    expect(todoActionRoute(itemFor('FixListingError'), readOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    // No property named: the channels, which every reader of the properties can open; and nothing for who can open nothing.
+    expect(todoActionRoute(itemFor('FixListingError', { propertyId: null, entityType: 'Channel' }), readOnly)).toBe('/app/short-rent/channels');
+    expect(todoActionRoute(itemFor('FixListingError'), permissions([]))).toBeNull();
   });
 
   it('todoActionRoute_ItemOfTheWholeAccount_UsesTheFallbackThatNeedsNoProperty', () => {

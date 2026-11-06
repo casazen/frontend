@@ -195,31 +195,5 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
   };
 }
 
-// Exact C# PropertyAmenity enum names — used as API values
-export const COMMON_AMENITIES = [
-  'WiFi',
-  'AirConditioning',
-  'Heating',
-  'Kitchen',
-  'Washer',
-  'Dryer',
-  'TV',
-  'FreeParking',
-  'Pool',
-  'HotTub',
-  'Gym',
-  'Elevator',
-  'Balcony',
-  'Terrace',
-  'Garden',
-  'BBQGrill',
-  'Fireplace',
-  'PetFriendly',
-  'SmokeDetector',
-  'FirstAidKit',
-  'FireExtinguisher',
-  'CarbonMonoxideDetector',
-];
-
-// Amenity labels are now resolved via getAmenityLabel() from @/lib/i18n-labels
-// See amenity.{key} entries in locale JSONs
+// The amenities a property can carry, and their labels and groups, are the catalog of `GET /api/public/amenities` (NF-33):
+// `useAmenityCatalog()` in `@/queries/use-amenity-catalog`, the one source of them.

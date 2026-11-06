@@ -500,6 +500,10 @@
           "title": "ISTAT data deadline",
           "why": "The data of the period must be sent by the deadline."
         },
+        "ListingChangedOutside": {
+          "title": "Listing changed on the channel",
+          "why": "A channel's content was changed outside CasaZen: choose which version to keep."
+        },
         "MessageToApprove": {
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
@@ -1282,30 +1286,6 @@
       "documentsLoadFailed": "Could not load the document numbers. Try again.",
       "guestsLoadFailed": "Could not load the guests’ data. Try again."
     }
-  },
-  "amenity": {
-    "WiFi": "WiFi",
-    "AirConditioning": "Air Conditioning",
-    "Heating": "Heating",
-    "Kitchen": "Kitchen",
-    "Washer": "Washer",
-    "Dryer": "Dryer",
-    "TV": "TV",
-    "FreeParking": "Parking",
-    "Pool": "Pool",
-    "HotTub": "Hot Tub",
-    "Gym": "Gym",
-    "Elevator": "Elevator",
-    "Balcony": "Balcony",
-    "Terrace": "Terrace",
-    "Garden": "Garden",
-    "BBQGrill": "BBQ Grill",
-    "Fireplace": "Fireplace",
-    "PetFriendly": "Pet Friendly",
-    "SmokeDetector": "Smoke Detector",
-    "FirstAidKit": "First Aid Kit",
-    "FireExtinguisher": "Fire Extinguisher",
-    "CarbonMonoxideDetector": "Carbon Monoxide Detector"
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
@@ -8418,6 +8398,46 @@
       }
     }
   },
+  "listingStatus": {
+    "channels": {
+      "airbnb_xml": "Airbnb",
+      "booking_xml": "Booking.com",
+      "expedia": "Expedia",
+      "homeaway": "Vrbo"
+    },
+    "fix": "Fix",
+    "groups": {
+      "descriptions": "Descriptions",
+      "property": "Property details",
+      "rooms": "Rooms and beds"
+    },
+    "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+    "missingText": {
+      "en_description": "The description in English",
+      "en_title": "The title in English",
+      "it_description": "The description in Italian",
+      "it_title": "The title in Italian"
+    },
+    "none": "Not published on any channel yet.",
+    "outside": {
+      "back": "Back",
+      "changed": "Changed outside CasaZen: {{groups}}.",
+      "choose": "Choose",
+      "confirmKeep": "The changes made outside CasaZen will be lost: {{fields}}. Continue?",
+      "confirmTake": "Your changes in CasaZen will be lost: {{fields}}. Continue?",
+      "continue": "Continue",
+      "description": "Since the last publication someone changed the content directly on the channel. We change nothing without your choice.",
+      "failed": "We couldn't record your choice. Try again.",
+      "keep": "Keep CasaZen's version",
+      "notice": "Someone changed the content directly on a channel: choose which version stays.",
+      "reread": "Your choice is recorded, but we couldn't read the new texts again. Reload the page before editing them, or the old texts would take their place back.",
+      "take": "Take the new version",
+      "takeLoses": "the descriptions, the house rules and the directions written in CasaZen",
+      "takeNotPossible": "The new version can be taken only when the descriptions changed: here you can keep CasaZen's.",
+      "title": "Changed outside CasaZen"
+    },
+    "syncDelayed": "Sync delayed"
+  },
   "listView": {
     "board": {
       "count_one": "{{count}} item",
@@ -11239,6 +11259,7 @@
         "reactivate": "Reactivate",
         "requestService": "Request an intervention"
       },
+      "channelsUnknown": "Channel status not available yet",
       "chips": {
         "active": "Active",
         "all": "All",
@@ -11247,6 +11268,7 @@
         "todoHint": "They cannot receive bookings yet"
       },
       "columns": {
+        "channels": "Channels",
         "price": "Base price",
         "property": "Property",
         "spaces": "Rooms and guests",
@@ -11260,6 +11282,7 @@
       },
       "guestsCount_one": "{{count}} guest",
       "guestsCount_other": "{{count}} guests",
+      "noChannels": "Not published",
       "noResults": {
         "description": "Try removing a filter or searching by the name of the city.",
         "title": "No property matches these filters"
@@ -11361,6 +11384,7 @@
       "fallbackTitle": "Property",
       "onSite": "On the booking site",
       "sections": {
+        "channels": "Channels",
         "data": "Property details",
         "pricing": "Prices"
       },
@@ -11995,12 +12019,8 @@
     "amenities": {
       "count_one": "You chose {{count}} amenity.",
       "count_other": "You chose {{count}} amenities.",
-      "groups": {
-        "comfort": "Comfort",
-        "essentials": "Essentials",
-        "other": "Other",
-        "outdoor": "Outdoors"
-      },
+      "loadFailed": "We couldn't read the list of amenities. Try again in a moment.",
+      "loading": "Loading the amenities…",
       "none": "You have not chosen anything yet: you can also skip this and add them later.",
       "safety": {
         "backToQuick": "Back to the quick questions",
@@ -12018,6 +12038,14 @@
         "quickDescription": "Three questions and a list to tick. What we already know, we fill in for you.",
         "review": "Review the sheet",
         "title": "Safety"
+      },
+      "search": {
+        "found_one": "{{count}} amenity found.",
+        "found_other": "{{count}} amenities found.",
+        "hint": "Type a word, in Italian or in English: for example \"washing machine\".",
+        "label": "Search for an amenity",
+        "none": "No amenity for \"{{query}}\". Try another word.",
+        "placeholder": "For example washing machine, pool, wi-fi"
       }
     },
     "base": {
@@ -12057,6 +12085,7 @@
           "hint": "Count every bed: a double bed is 1",
           "label": "Beds"
         },
+        "fromRooms": "Worked out from the rooms below",
         "maxGuests": {
           "hint": "How many people can sleep here",
           "label": "Maximum guests"
@@ -12076,6 +12105,86 @@
       "unit": {
         "hint": "If you have several apartments in the same building, write the unit or staircase: each one needs a different one.",
         "label": "Floor and unit"
+      }
+    },
+    "channels": {
+      "cin": {
+        "choose": "Add the CIN or choose \"I'll add it later\" to publish.",
+        "later": "I'll add it later",
+        "laterChosen": "Fine: we publish anyway. The channels that ask for the CIN stay to fix until you add it.",
+        "missing": "The CIN is not there yet. The channels that ask for it will stay to fix until you add it (you find it in the last step).",
+        "stays": "The CIN stays in CasaZen: for now it is not sent to {{channels}}."
+      },
+      "completeness": "Completeness of the content: {{value}}%",
+      "fix": "Fix: {{step}}",
+      "fixCin": "Fix: CIN",
+      "incomplete": {
+        "title": "These texts are needed before you publish"
+      },
+      "intro": "Here you see, channel by channel, how far the listing is and what is missing. Choose where to publish and press \"Publish\".",
+      "lacks": "Something is missing in:",
+      "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+      "loading": "Loading the channels…",
+      "managed": "Content managed on {{channel}}",
+      "mapping": {
+        "go": "Go to the channel connection",
+        "mustImport": "The listings of this property already exist on the channel manager or on the portals: they are imported and matched, not created again.",
+        "unconfirmed": "Before you publish, confirm or reject the match of this property with a listing that already exists on the channel manager."
+      },
+      "next": "Go to the summary",
+      "noneChosen": "Choose at least one channel to publish to.",
+      "notPublished": "Not published on this channel yet.",
+      "outside": {
+        "choose": "Choose",
+        "text": "Someone changed the content directly on a channel. Choose which version to keep before you publish."
+      },
+      "publish": "Publish",
+      "publishFailed": "We couldn't start the publication. Try again in a moment.",
+      "publishOn": "Publish on {{channel}}",
+      "started": "Sending started: below you see the result of each channel as soon as it arrives.",
+      "syncAlert": "The channel has not confirmed the listing for more than 24 hours."
+    },
+    "descriptions": {
+      "description": {
+        "label": "Description ({{language}})"
+      },
+      "en": {
+        "hint": "The title and the description in English are needed to publish on the channels. For now you write the English text yourself."
+      },
+      "intro": "To publish on the channels you need the title and the description in Italian and in English. The other languages are optional.",
+      "languages": {
+        "ca": "Catalan",
+        "de": "German",
+        "el": "Greek",
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "it": "Italian",
+        "ja": "Japanese",
+        "nl": "Dutch",
+        "pt": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "tr": "Turkish",
+        "zh": "Chinese"
+      },
+      "origin": {
+        "AutoTranslated": "Translated automatically",
+        "ModifiedAfterTranslation": "Edited after the translation",
+        "UserWritten": "Written by you"
+      },
+      "others": {
+        "empty": "Empty",
+        "filled": "Filled in",
+        "hint": "Optional: the channels that speak those languages show your text instead of an automatic one.",
+        "title": "Other languages"
+      },
+      "tabs": {
+        "label": "Language of the text",
+        "problem": "To fix"
+      },
+      "title": {
+        "label": "Title ({{language}})"
       }
     },
     "done": {
@@ -12114,8 +12223,14 @@
       "saveFailed": "We could not save the property. Check the data and try again."
     },
     "exit": {
+      "kept": "Closed. The answers of the first step stay here: open \"Add property\" again to go on.",
       "saveAndClose": "Save and close",
       "saved": "Saved. You will find it in Properties, to complete."
+    },
+    "imported": {
+      "all": "You are seeing all the steps of the listing.",
+      "only": "This listing is already on the channels: we only show the steps where something is missing, the channels and the activation.",
+      "showAll": "Show all steps"
     },
     "last": {
       "activation": {
@@ -12157,13 +12272,17 @@
         "amenities": "Amenities and safety",
         "base": "Basics",
         "by": "by {{time}}",
+        "channels": "Channels",
+        "channelsFailed": "We couldn't read the state of the channels.",
+        "descriptions": "Texts",
         "edit": "Edit",
         "from": "from {{time}}",
         "labels": {
           "amenities": "Chosen",
           "cleaning": "Cleaning",
           "headline": "Headline",
-          "house": "Smoking · pets · parties",
+          "headlineEn": "Title in English",
+          "house": "Smoking · pets · parties · children",
           "minNights": "Minimum stay",
           "name": "Name",
           "photos": "Photos",
@@ -12178,8 +12297,9 @@
         },
         "nights_one": "{{count}} night",
         "nights_other": "{{count}} nights",
+        "notNow": "You're not publishing it now",
         "notSaid": "Not stated",
-        "photos": "Photos and listing",
+        "photos": "Photos",
         "photosCount_one": "{{count}} photo · the first is the cover",
         "photosCount_other": "{{count}} photos · the first is the cover",
         "photosNone": "No photos for now (recommended, not required)",
@@ -12189,7 +12309,8 @@
         "rules": "House rules",
         "safetyDone": "Safety sheet complete",
         "safetyOpen": "Safety sheet to complete",
-        "title": "Summary"
+        "title": "Summary",
+        "willPublish": "You'll publish it"
       },
       "visibility": {
         "blocked": "It turns on when you have fixed the points marked above.",
@@ -12208,6 +12329,17 @@
       "title": "Add property"
     },
     "photos": {
+      "details": {
+        "captionEn": "Caption in English",
+        "captionIt": "Caption in Italian",
+        "hint": "The caption describes the photo to people who cannot see it and to the channels; the room says where it was taken. Both are optional.",
+        "noRooms": "List the rooms in the first step first, then you can choose the room of a photo.",
+        "photo": "Photo {{index}}",
+        "room": "Room",
+        "roomNone": "No room",
+        "roomsFailed": "We couldn't read the rooms: try again in a moment.",
+        "title": "Captions and rooms"
+      },
       "dropzone": {
         "button": "Choose photos",
         "title": "Drag your photos here"
@@ -12216,9 +12348,9 @@
         "moved": "Photo {{index}} moved to position {{position}} of {{total}}."
       },
       "listing": {
-        "description": "The headline and description guests read on your site. You can write them now or later.",
+        "description": "The title and the description in Italian: guests read them on your site and they go to the channels. They are needed to publish.",
         "headline": {
-          "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
+          "hint": "Short and concrete, up to 60 characters.",
           "label": "Headline"
         },
         "aiUnavailable": "The AI is not available right now: we put the text together from the details you entered. You can try again shortly.",
@@ -12346,6 +12478,16 @@
         "hint": "It applies to every night. Without a price the property stays “To complete”: it cannot be activated.",
         "label": "Base price per night (€)"
       },
+      "stayDiscounts": {
+        "add": "Add a tier",
+        "hint": "Up to {{max}} tiers: from the number of nights given, the discount is taken off the stay. The cleaning fee and the tourist tax do not change.",
+        "minNights": "Tier {{number}}: from how many nights",
+        "minNightsHint": "From {{min}} to {{max}} nights.",
+        "percentOff": "Tier {{number}}: discount in %",
+        "remove": "Remove tier {{number}}",
+        "removeShort": "Remove",
+        "title": "Discounts for long stays"
+      },
       "touristTax": {
         "found": "Tourist tax: we have the rate for {{city}}. It is not in the price: it is added to the booking.",
         "notYet": "Tourist tax: the rate for {{city}} is not available yet. It is not in the price: it is added to the booking once it is.",
@@ -12356,12 +12498,51 @@
         "label": "Weekend surcharge (%)"
       }
     },
+    "rooms": {
+      "add": "Add another room",
+      "addBed": "Add a kind of bed",
+      "addFirst": "List the rooms and the beds",
+      "bedCount": "How many beds: {{type}}",
+      "bedType": "Kind of bed",
+      "bedTypes": {
+        "Bunk": "Bunk bed",
+        "Crib": "Crib",
+        "Double": "Double bed",
+        "King": "King size",
+        "Queen": "Queen size",
+        "Single": "Single bed",
+        "SofaBed": "Sofa bed"
+      },
+      "derived": "Bedrooms and beds are worked out from this list.",
+      "hint": "Optional, but the channels ask for it: list the rooms and the beds of each. If you do, bedrooms and beds are worked out from here.",
+      "lastSaved": "The last room already saved can't be taken off: you can change it or add another one.",
+      "noBeds": "This room has no beds yet.",
+      "optionLabel": "{{number}}. {{type}}",
+      "remove": "Remove room {{number}}",
+      "removeBed": "Remove {{type}}",
+      "removeShort": "Remove",
+      "room": "Room {{number}}",
+      "title": "Rooms and beds",
+      "type": "What kind of room",
+      "types": {
+        "Bedroom": "Bedroom",
+        "LivingRoom": "Living room",
+        "Other": "Other room with beds",
+        "Studio": "Studio"
+      }
+    },
     "rules": {
+      "childrenOptions": {
+        "No": "Not suitable for children",
+        "OnRequest": "On request",
+        "Yes": "Welcome"
+      },
       "extraGuest": {
         "hint": "What you ask per night for each extra guest. Leave it empty if you do not accept extra guests. For now guests read it among the rules: it is not added to the price of the stay by itself.",
         "label": "Fee for each extra guest (€ per night)"
       },
       "house": {
+        "children": "Children",
         "parties": "Parties and events",
         "pets": "Pets",
         "smoking": "Smoking",
@@ -12493,6 +12674,16 @@
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
       },
+      "channels": {
+        "label": "Channels",
+        "purpose": "Choose where to publish the listing and check what is missing. You can also do it later.",
+        "title": "Publish on the channels"
+      },
+      "descriptions": {
+        "label": "Texts",
+        "purpose": "Title and description in Italian and in English: without them the channels do not publish. The other languages are optional.",
+        "title": "Tell about the house"
+      },
       "finish": {
         "label": "Activation",
         "purpose": "Link the calendars, add the CIN and the documents, then activate the property.",
@@ -12549,6 +12740,12 @@
         "required": "Choose the comune from the list."
       },
       "description": "The description can have at most 2,000 characters.",
+      "descriptions": {
+        "enDescription": "Write the description in English.",
+        "enTitle": "Write the title in English.",
+        "itDescription": "Write the description in Italian.",
+        "itTitle": "Write the title in Italian."
+      },
       "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
       "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
@@ -12559,10 +12756,26 @@
         "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
       },
       "nightlyRate": "Write the price in euros, from 1 to 100,000, numbers only: for example 135.",
+      "photos": {
+        "captionMax": "A caption can have at most 200 characters.",
+        "italianRequired": "Write the caption in Italian too: the English one alone is not enough."
+      },
       "postalCode": {
         "format": "An Italian postal code has 5 digits."
       },
       "quietHours": "Write both the start and the end of the quiet hours, or leave both empty.",
+      "rooms": {
+        "bedCount": "The beds of one kind are from 1 to 10.",
+        "max": "You can list at most 20 rooms.",
+        "noBed": "Add at least one bed in one of the rooms.",
+        "tooManyBeds": "The beds in all can be 100 at most."
+      },
+      "stayDiscounts": {
+        "duplicate": "Two tiers cannot start from the same number of nights.",
+        "max": "You can write at most 5 discount tiers.",
+        "minNights": "Write the nights as whole numbers, from 2 to 365.",
+        "percentOff": "Write the discount as a percentage, above 0 and up to 100, for example 10."
+      },
       "time": "Choose a time from the list.",
       "unit": {
         "max": "Floor and unit can have at most 30 characters."
@@ -15711,6 +15924,32 @@
     }
   },
   "status": {
+    "channel": {
+      "Accepted": {
+        "explain": "The channel manager has received the content and is passing it to the channel.",
+        "label": "Accepted"
+      },
+      "Draft": {
+        "explain": "The listing has not been sent to this channel yet.",
+        "label": "To publish"
+      },
+      "ManagedOnChannel": {
+        "explain": "The content of this channel is edited on the channel itself: CasaZen doesn't send it.",
+        "label": "Managed on the channel"
+      },
+      "Published": {
+        "explain": "The channel confirmed it: the listing is online with this content.",
+        "label": "Published"
+      },
+      "Sending": {
+        "explain": "We are sending the content to the channel manager.",
+        "label": "Sending"
+      },
+      "ToFix": {
+        "explain": "The channel didn't accept the content or something is missing: read the reason and fix it.",
+        "label": "To fix"
+      }
+    },
     "explainer": {
       "need": "To move to “{{next}}” you need:",
       "compactNeed": "To move to “{{next}}”:",

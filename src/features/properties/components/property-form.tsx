@@ -6,19 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CONTAINER_COLUMNS, PAGE_COLUMN } from '@/components/layout/page-columns';
 import {
   propertyFormSchema,
   longRentPropertyFormSchema,
-  COMMON_AMENITIES,
   DEFAULT_PROPERTY_TIMEZONE,
   propertyFormDefaults,
   toPropertyPayload,
 } from '../schemas/property.schema';
-import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
+import { AmenityChecklist } from './amenity-checklist';
 import type { CreatePropertyDto, Property } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { ComunePicker } from '@/components/shared/comune-picker';
@@ -389,14 +387,7 @@ export function PropertyForm({
             </CardHeader>
             {/* The columns follow the width of the card (it is half a page on a wide screen), not the one of the screen. */}
             <CardContent className="@container">
-              <div className="grid grid-cols-2 gap-4 @xl:grid-cols-3 @3xl:grid-cols-4">
-                {COMMON_AMENITIES.map((amenity) => (
-                  <div key={amenity} className="flex items-center space-x-2">
-                    <Checkbox id={`amenity-${amenity}`} checked={selectedAmenities.includes(amenity)} onCheckedChange={() => toggleAmenity(amenity)} />
-                    <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">{getAmenityLabel(amenity, t)}</Label>
-                  </div>
-                ))}
-              </div>
+              <AmenityChecklist selected={selectedAmenities} onToggle={toggleAmenity} />
             </CardContent>
           </Card>
         </div>

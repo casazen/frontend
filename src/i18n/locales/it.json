@@ -500,6 +500,10 @@
           "title": "Dati ISTAT in scadenza",
           "why": "I dati del periodo vanno inviati entro la scadenza."
         },
+        "ListingChangedOutside": {
+          "title": "Annuncio modificato sul canale",
+          "why": "Il contenuto di un canale è stato cambiato fuori da CasaZen: scegli quale versione tenere."
+        },
         "MessageToApprove": {
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
@@ -1282,30 +1286,6 @@
       "documentsLoadFailed": "Impossibile caricare i numeri dei documenti. Riprova.",
       "guestsLoadFailed": "Impossibile caricare i dati degli ospiti. Riprova."
     }
-  },
-  "amenity": {
-    "WiFi": "WiFi",
-    "AirConditioning": "Aria condizionata",
-    "Heating": "Riscaldamento",
-    "Kitchen": "Cucina",
-    "Washer": "Lavatrice",
-    "Dryer": "Asciugatrice",
-    "TV": "TV",
-    "FreeParking": "Parcheggio",
-    "Pool": "Piscina",
-    "HotTub": "Vasca idromassaggio",
-    "Gym": "Palestra",
-    "Elevator": "Ascensore",
-    "Balcony": "Balcone",
-    "Terrace": "Terrazza",
-    "Garden": "Giardino",
-    "BBQGrill": "Barbecue",
-    "Fireplace": "Camino",
-    "PetFriendly": "Pet friendly",
-    "SmokeDetector": "Rilevatore di fumo",
-    "FirstAidKit": "Kit di pronto soccorso",
-    "FireExtinguisher": "Estintore",
-    "CarbonMonoxideDetector": "Rilevatore CO2"
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
@@ -8418,6 +8398,46 @@
       }
     }
   },
+  "listingStatus": {
+    "channels": {
+      "airbnb_xml": "Airbnb",
+      "booking_xml": "Booking.com",
+      "expedia": "Expedia",
+      "homeaway": "Vrbo"
+    },
+    "fix": "Correggi",
+    "groups": {
+      "descriptions": "Descrizioni",
+      "property": "Dati dell'immobile",
+      "rooms": "Camere e letti"
+    },
+    "loadFailed": "Non riesco a leggere lo stato dei canali. Riprova tra poco.",
+    "missingText": {
+      "en_description": "La descrizione in inglese",
+      "en_title": "Il titolo in inglese",
+      "it_description": "La descrizione in italiano",
+      "it_title": "Il titolo in italiano"
+    },
+    "none": "Non ancora pubblicato su nessun canale.",
+    "outside": {
+      "back": "Indietro",
+      "changed": "Cambiato fuori da CasaZen: {{groups}}.",
+      "choose": "Scegli",
+      "confirmKeep": "Le modifiche fatte fuori da CasaZen andranno perse: {{fields}}. Continuare?",
+      "confirmTake": "Le tue modifiche in CasaZen andranno perse: {{fields}}. Continuare?",
+      "continue": "Continua",
+      "description": "Dopo l'ultimo invio qualcuno ha cambiato il contenuto direttamente sul canale. Non cambiamo nulla senza la tua scelta.",
+      "failed": "Non siamo riusciti a registrare la scelta. Riprova.",
+      "keep": "Tieni la versione di CasaZen",
+      "notice": "Qualcuno ha cambiato il contenuto direttamente su un canale: scegli quale versione tenere.",
+      "reread": "Scelta registrata, ma non riusciamo a rileggere i testi nuovi. Ricarica la pagina prima di modificarli, o i testi vecchi tornerebbero al loro posto.",
+      "take": "Prendi la nuova versione",
+      "takeLoses": "le descrizioni, le regole della casa e le indicazioni per arrivare scritte in CasaZen",
+      "takeNotPossible": "La nuova versione si può prendere solo quando sono cambiate le descrizioni: qui puoi tenere quella di CasaZen.",
+      "title": "Modificato fuori da CasaZen"
+    },
+    "syncDelayed": "Sincronizzazione in ritardo"
+  },
   "listView": {
     "board": {
       "count_one": "{{count}} elemento",
@@ -11239,6 +11259,7 @@
         "reactivate": "Riattiva",
         "requestService": "Richiedi intervento"
       },
+      "channelsUnknown": "Stato dei canali non ancora disponibile",
       "chips": {
         "active": "Attivi",
         "all": "Tutti",
@@ -11247,6 +11268,7 @@
         "todoHint": "Non possono ancora ricevere prenotazioni"
       },
       "columns": {
+        "channels": "Canali",
         "price": "Prezzo base",
         "property": "Immobile",
         "spaces": "Camere e ospiti",
@@ -11260,6 +11282,7 @@
       },
       "guestsCount_one": "{{count}} ospite",
       "guestsCount_other": "{{count}} ospiti",
+      "noChannels": "Non pubblicato",
       "noResults": {
         "description": "Prova a togliere un filtro o a cercare con il nome della città.",
         "title": "Nessun immobile con questi filtri"
@@ -11361,6 +11384,7 @@
       "fallbackTitle": "Immobile",
       "onSite": "Sul sito di prenotazione",
       "sections": {
+        "channels": "Canali",
         "data": "Dati dell'immobile",
         "pricing": "Prezzi"
       },
@@ -11995,12 +12019,8 @@
     "amenities": {
       "count_one": "Hai scelto {{count}} dotazione.",
       "count_other": "Hai scelto {{count}} dotazioni.",
-      "groups": {
-        "comfort": "Comfort",
-        "essentials": "Essenziali",
-        "other": "Altro",
-        "outdoor": "Esterni"
-      },
+      "loadFailed": "Non riesco a leggere l'elenco delle dotazioni. Riprova tra poco.",
+      "loading": "Carico le dotazioni…",
       "none": "Non hai ancora scelto nulla: puoi anche saltare e aggiungerle dopo.",
       "safety": {
         "backToQuick": "Torna alle domande rapide",
@@ -12018,6 +12038,14 @@
         "quickDescription": "Tre domande e un elenco da spuntare. Quello che sappiamo già lo precompiliamo noi.",
         "review": "Rivedi la scheda",
         "title": "Sicurezza"
+      },
+      "search": {
+        "found_one": "{{count}} dotazione trovata.",
+        "found_other": "{{count}} dotazioni trovate.",
+        "hint": "Scrivi una parola, in italiano o in inglese: per esempio «lavatrice».",
+        "label": "Cerca una dotazione",
+        "none": "Nessuna dotazione per «{{query}}». Prova con un'altra parola.",
+        "placeholder": "Per esempio lavatrice, piscina, wi-fi"
       }
     },
     "base": {
@@ -12057,6 +12085,7 @@
           "hint": "Conta ogni letto: il matrimoniale è 1",
           "label": "Letti"
         },
+        "fromRooms": "Calcolato dalle camere qui sotto",
         "maxGuests": {
           "hint": "Quante persone possono dormire",
           "label": "Ospiti massimi"
@@ -12076,6 +12105,86 @@
       "unit": {
         "hint": "Se nello stesso edificio hai più appartamenti, scrivi l'interno o la scala: ognuno deve averne uno diverso.",
         "label": "Piano e interno"
+      }
+    },
+    "channels": {
+      "cin": {
+        "choose": "Aggiungi il CIN o scegli «Lo inserisco dopo» per pubblicare.",
+        "later": "Lo inserisco dopo",
+        "laterChosen": "Va bene: pubblichiamo comunque. I canali che richiedono il CIN restano da correggere finché non lo aggiungi.",
+        "missing": "Il CIN non c'è ancora. I canali che lo richiedono resteranno da correggere finché non lo aggiungi (lo trovi nell'ultimo passo).",
+        "stays": "Il CIN resta in CasaZen: per ora non viene inviato a {{channels}}."
+      },
+      "completeness": "Completezza del contenuto: {{value}}%",
+      "fix": "Correggi: {{step}}",
+      "fixCin": "Correggi: CIN",
+      "incomplete": {
+        "title": "Prima di pubblicare servono questi testi"
+      },
+      "intro": "Qui vedi, canale per canale, a che punto è l'annuncio e cosa manca. Scegli dove pubblicare e premi «Pubblica».",
+      "lacks": "Manca qualcosa in:",
+      "loadFailed": "Non riesco a leggere lo stato dei canali. Riprova tra poco.",
+      "loading": "Carico i canali…",
+      "managed": "Contenuti gestiti su {{channel}}",
+      "mapping": {
+        "go": "Vai al collegamento dei canali",
+        "mustImport": "Gli annunci di questo immobile esistono già sul gestionale dei canali o sui portali: vanno importati e abbinati, non creati di nuovo.",
+        "unconfirmed": "Prima di pubblicare conferma o rifiuta l'abbinamento di questo immobile a un annuncio che esiste già sul gestionale dei canali."
+      },
+      "next": "Vai al riepilogo",
+      "noneChosen": "Scegli almeno un canale su cui pubblicare.",
+      "notPublished": "Non ancora pubblicato su questo canale.",
+      "outside": {
+        "choose": "Scegli",
+        "text": "Qualcuno ha cambiato il contenuto direttamente su un canale. Scegli quale versione tenere prima di pubblicare."
+      },
+      "publish": "Pubblica",
+      "publishFailed": "Non siamo riusciti ad avviare la pubblicazione. Riprova tra poco.",
+      "publishOn": "Pubblica su {{channel}}",
+      "started": "Invio avviato: qui sotto vedi il risultato di ogni canale appena arriva.",
+      "syncAlert": "Il canale non conferma l'annuncio da più di 24 ore."
+    },
+    "descriptions": {
+      "description": {
+        "label": "Descrizione ({{language}})"
+      },
+      "en": {
+        "hint": "Il titolo e la descrizione in inglese servono per pubblicare sui canali. Per ora il testo inglese lo scrivi tu."
+      },
+      "intro": "Per pubblicare sui canali servono il titolo e la descrizione in italiano e in inglese. Le altre lingue sono facoltative.",
+      "languages": {
+        "ca": "Catalano",
+        "de": "Tedesco",
+        "el": "Greco",
+        "en": "Inglese",
+        "es": "Spagnolo",
+        "fr": "Francese",
+        "it": "Italiano",
+        "ja": "Giapponese",
+        "nl": "Olandese",
+        "pt": "Portoghese",
+        "ro": "Rumeno",
+        "ru": "Russo",
+        "tr": "Turco",
+        "zh": "Cinese"
+      },
+      "origin": {
+        "AutoTranslated": "Tradotto automaticamente",
+        "ModifiedAfterTranslation": "Modificato dopo la traduzione",
+        "UserWritten": "Scritto da te"
+      },
+      "others": {
+        "empty": "Vuota",
+        "filled": "Compilata",
+        "hint": "Facoltative: i canali che parlano quelle lingue mostrano il tuo testo invece di un testo automatico.",
+        "title": "Altre lingue"
+      },
+      "tabs": {
+        "label": "Lingua del testo",
+        "problem": "Da correggere"
+      },
+      "title": {
+        "label": "Titolo ({{language}})"
       }
     },
     "done": {
@@ -12114,8 +12223,14 @@
       "saveFailed": "Non siamo riusciti a salvare l'immobile. Controlla i dati e riprova."
     },
     "exit": {
+      "kept": "Chiuso. Le risposte del primo passo restano qui: riapri «Aggiungi immobile» per continuare.",
       "saveAndClose": "Salva e chiudi",
       "saved": "Salvato. Lo trovi in Immobili, da completare."
+    },
+    "imported": {
+      "all": "Stai vedendo tutti i passi dell'annuncio.",
+      "only": "Questo annuncio è già sui canali: ti mostriamo solo i passi in cui manca qualcosa, i canali e l'attivazione.",
+      "showAll": "Mostra tutti i passi"
     },
     "last": {
       "activation": {
@@ -12157,13 +12272,17 @@
         "amenities": "Dotazioni e sicurezza",
         "base": "Dati base",
         "by": "entro le {{time}}",
+        "channels": "Canali",
+        "channelsFailed": "Non riesco a leggere lo stato dei canali.",
+        "descriptions": "Testi",
         "edit": "Modifica",
         "from": "dalle {{time}}",
         "labels": {
           "amenities": "Scelte",
           "cleaning": "Pulizia",
           "headline": "Titolo",
-          "house": "Fumare · animali · feste",
+          "headlineEn": "Titolo in inglese",
+          "house": "Fumare · animali · feste · bambini",
           "minNights": "Soggiorno minimo",
           "name": "Nome",
           "photos": "Foto",
@@ -12178,8 +12297,9 @@
         },
         "nights_one": "{{count}} notte",
         "nights_other": "{{count}} notti",
+        "notNow": "Non lo pubblichi ora",
         "notSaid": "Non indicato",
-        "photos": "Foto e annuncio",
+        "photos": "Foto",
         "photosCount_one": "{{count}} foto · la prima è la copertina",
         "photosCount_other": "{{count}} foto · la prima è la copertina",
         "photosNone": "Nessuna foto per ora (consigliate, non obbligatorie)",
@@ -12189,7 +12309,8 @@
         "rules": "Regole della casa",
         "safetyDone": "Scheda di sicurezza completa",
         "safetyOpen": "Scheda di sicurezza da completare",
-        "title": "Riepilogo"
+        "title": "Riepilogo",
+        "willPublish": "Lo pubblicherai"
       },
       "visibility": {
         "blocked": "Si attiva quando hai sistemato i punti segnati sopra.",
@@ -12208,6 +12329,17 @@
       "title": "Aggiungi immobile"
     },
     "photos": {
+      "details": {
+        "captionEn": "Didascalia in inglese",
+        "captionIt": "Didascalia in italiano",
+        "hint": "La didascalia descrive la foto a chi non la vede e ai canali; la camera dice dove è stata scattata. Sono facoltative.",
+        "noRooms": "Elenca prima le camere nel primo passo per scegliere la camera di una foto.",
+        "photo": "Foto {{index}}",
+        "room": "Camera",
+        "roomNone": "Nessuna camera",
+        "roomsFailed": "Non riesco a leggere le camere: riprova tra poco.",
+        "title": "Didascalie e camere"
+      },
       "dropzone": {
         "button": "Scegli le foto",
         "title": "Trascina qui le foto"
@@ -12216,9 +12348,9 @@
         "moved": "Foto {{index}} spostata in posizione {{position}} di {{total}}."
       },
       "listing": {
-        "description": "Il titolo e la descrizione che gli ospiti leggono sul tuo sito. Puoi scriverli adesso o più tardi.",
+        "description": "Il titolo e la descrizione in italiano: gli ospiti li leggono sul tuo sito e arrivano ai canali. Servono per pubblicare.",
         "headline": {
-          "hint": "Breve e concreto, fino a 60 caratteri. Se lo lasci vuoto si usa il nome dell'immobile.",
+          "hint": "Breve e concreto, fino a 60 caratteri.",
           "label": "Titolo"
         },
         "aiUnavailable": "L'AI ora non è disponibile: abbiamo composto il testo con i dati che hai inserito. Puoi riprovare tra poco.",
@@ -12346,6 +12478,16 @@
         "hint": "Vale per ogni notte. Senza un prezzo l'immobile resta «Da completare»: non si può attivare.",
         "label": "Prezzo base per notte (€)"
       },
+      "stayDiscounts": {
+        "add": "Aggiungi una fascia",
+        "hint": "Fino a {{max}} fasce: dal numero di notti indicato in poi, lo sconto si toglie dal soggiorno. Pulizie e tassa di soggiorno non cambiano.",
+        "minNights": "Fascia {{number}}: da quante notti",
+        "minNightsHint": "Da {{min}} a {{max}} notti.",
+        "percentOff": "Fascia {{number}}: sconto in %",
+        "remove": "Togli la fascia {{number}}",
+        "removeShort": "Togli",
+        "title": "Sconti per soggiorni lunghi"
+      },
       "touristTax": {
         "found": "Imposta di soggiorno: per {{city}} abbiamo la tariffa. Non è nel prezzo: si aggiunge alla prenotazione.",
         "notYet": "Imposta di soggiorno: la tariffa di {{city}} non è ancora disponibile. Non è nel prezzo: si aggiunge alla prenotazione quando c'è.",
@@ -12356,12 +12498,51 @@
         "label": "Supplemento weekend (%)"
       }
     },
+    "rooms": {
+      "add": "Aggiungi un'altra camera",
+      "addBed": "Aggiungi un tipo di letto",
+      "addFirst": "Elenca le camere e i letti",
+      "bedCount": "Quanti letti: {{type}}",
+      "bedType": "Tipo di letto",
+      "bedTypes": {
+        "Bunk": "Letto a castello",
+        "Crib": "Culla",
+        "Double": "Matrimoniale",
+        "King": "King size",
+        "Queen": "Queen size",
+        "Single": "Singolo",
+        "SofaBed": "Divano letto"
+      },
+      "derived": "Camere da letto e letti si calcolano da questo elenco.",
+      "hint": "Facoltativo, ma i canali lo chiedono: elenca le camere e i letti di ognuna. Se lo fai, camere da letto e letti si calcolano da qui.",
+      "lastSaved": "L'ultima camera già salvata non si può togliere: puoi cambiarla o aggiungerne un'altra.",
+      "noBeds": "Questa camera non ha ancora letti.",
+      "optionLabel": "{{number}}. {{type}}",
+      "remove": "Togli la camera {{number}}",
+      "removeBed": "Togli {{type}}",
+      "removeShort": "Togli",
+      "room": "Camera {{number}}",
+      "title": "Camere e letti",
+      "type": "Che stanza è",
+      "types": {
+        "Bedroom": "Camera da letto",
+        "LivingRoom": "Soggiorno",
+        "Other": "Altra stanza con letti",
+        "Studio": "Monolocale"
+      }
+    },
     "rules": {
+      "childrenOptions": {
+        "No": "Non adatto ai bambini",
+        "OnRequest": "Su richiesta",
+        "Yes": "Benvenuti"
+      },
       "extraGuest": {
         "hint": "Quanto chiedi a notte per ogni ospite in più. Lascia vuoto se non accetti ospiti in più. Per ora gli ospiti lo leggono tra le regole: non viene aggiunto da solo al prezzo del soggiorno.",
         "label": "Supplemento per ospite in più (€ a notte)"
       },
       "house": {
+        "children": "Bambini",
         "parties": "Feste ed eventi",
         "pets": "Animali",
         "smoking": "Fumare",
@@ -12493,6 +12674,16 @@
         "purpose": "Tipo, nome, indirizzo e spazi: bastano due minuti.",
         "title": "Che casa stai aggiungendo?"
       },
+      "channels": {
+        "label": "Canali",
+        "purpose": "Scegli dove pubblicare l'annuncio e controlla cosa manca. Puoi anche farlo più tardi.",
+        "title": "Pubblica sui canali"
+      },
+      "descriptions": {
+        "label": "Testi",
+        "purpose": "Titolo e descrizione in italiano e in inglese: senza, i canali non pubblicano. Le altre lingue sono facoltative.",
+        "title": "Racconta la casa"
+      },
       "finish": {
         "label": "Attivazione",
         "purpose": "Collega i calendari, aggiungi il CIN e i documenti, poi attiva l'immobile.",
@@ -12549,6 +12740,12 @@
         "required": "Scegli il comune dall'elenco."
       },
       "description": "La descrizione può avere al massimo 2.000 caratteri.",
+      "descriptions": {
+        "enDescription": "Scrivi la descrizione in inglese.",
+        "enTitle": "Scrivi il titolo in inglese.",
+        "itDescription": "Scrivi la descrizione in italiano.",
+        "itTitle": "Scrivi il titolo in italiano."
+      },
       "extraGuestFee": "Scrivi l'importo in euro, da 0 a 1.000, solo numeri: per esempio 15. Lascia vuoto se non accetti ospiti in più.",
       "houseRules": "Le altre regole possono avere al massimo 1000 caratteri.",
       "listingTitle": "Il titolo può avere al massimo 60 caratteri.",
@@ -12559,10 +12756,26 @@
         "min": "Scrivi almeno 3 lettere: per esempio «Trullo dei Mandorli»."
       },
       "nightlyRate": "Scrivi il prezzo in euro, da 1 a 100.000, solo numeri: per esempio 135.",
+      "photos": {
+        "captionMax": "La didascalia può avere al massimo 200 caratteri.",
+        "italianRequired": "Scrivi anche la didascalia in italiano: quella in inglese da sola non basta."
+      },
       "postalCode": {
         "format": "Il CAP italiano ha 5 cifre."
       },
       "quietHours": "Scrivi sia l'ora di inizio sia quella di fine del silenzio, o lasciale vuote tutte e due.",
+      "rooms": {
+        "bedCount": "I letti di un tipo sono da 1 a 10.",
+        "max": "Puoi elencare al massimo 20 camere.",
+        "noBed": "Aggiungi almeno un letto in una delle camere.",
+        "tooManyBeds": "I letti in tutto possono essere al massimo 100."
+      },
+      "stayDiscounts": {
+        "duplicate": "Due fasce non possono partire dalle stesse notti.",
+        "max": "Puoi scrivere al massimo 5 fasce di sconto.",
+        "minNights": "Scrivi le notti in numeri interi, da 2 a 365.",
+        "percentOff": "Scrivi lo sconto in percentuale, sopra 0 e fino a 100, per esempio 10."
+      },
       "time": "Scegli un orario dall'elenco.",
       "unit": {
         "max": "Piano e interno possono avere al massimo 30 caratteri."
@@ -15711,6 +15924,32 @@
     }
   },
   "status": {
+    "channel": {
+      "Accepted": {
+        "explain": "Il gestionale dei canali ha ricevuto i contenuti e li sta passando al canale.",
+        "label": "Preso in carico"
+      },
+      "Draft": {
+        "explain": "L'annuncio non è ancora stato inviato a questo canale.",
+        "label": "Da pubblicare"
+      },
+      "ManagedOnChannel": {
+        "explain": "I contenuti di questo canale si modificano sul canale stesso: CasaZen non li invia.",
+        "label": "Gestito sul canale"
+      },
+      "Published": {
+        "explain": "Il canale ha confermato: l'annuncio è online con questi contenuti.",
+        "label": "Pubblicato"
+      },
+      "Sending": {
+        "explain": "Stiamo mandando i contenuti al gestionale dei canali.",
+        "label": "In invio"
+      },
+      "ToFix": {
+        "explain": "Il canale non ha accettato i contenuti o manca qualcosa: guarda il motivo e correggi.",
+        "label": "Da correggere"
+      }
+    },
     "explainer": {
       "need": "Per passare a «{{next}}» serve:",
       "compactNeed": "Per passare a «{{next}}»:",

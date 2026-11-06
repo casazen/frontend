@@ -1,14 +1,14 @@
-import { getAmenityLabel } from '@/lib/i18n-labels';
+import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX } from '@/lib/listing-texts';
 import type { PropertyWizardValues } from './property-wizard-model';
 
-/**
- * Limits of the listing headline and description in the wizard: the ones of the API. The description was a short pitch of 600 characters
- * until the AI wrote it (a text of three or four paragraphs, up to about 1,200 characters, that the host then trims as they like).
- */
-export const LISTING_TITLE_MAX = 60;
-export const LISTING_DESCRIPTION_MAX = 2000;
+// The limits of the listing headline and description are the API's (`@/lib/listing-texts`); the description was a short pitch of 600
+// characters until the AI wrote it (a text of three or four paragraphs, up to about 1,200 characters, that the host then trims as they like).
+export { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX };
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/** The name of an amenity in the language of the page: the label of the catalog (`useAmenityLabels`). */
+type AmenityLabelOf = (amenity: string) => string;
 
 export type ListingTextInput = Pick<
   PropertyWizardValues,
@@ -40,7 +40,7 @@ function cut(text: string, max: number): string {
  * three amenities they chose. No copy that the data does not carry (nothing about the check-in being simple, the quiet or the view): a
  * sentence whose data is missing is left out, and the result always fits the limits of the fields.
  */
-export function suggestListingText(input: ListingTextInput, t: Translate): { title: string; description: string } {
+export function suggestListingText(input: ListingTextInput, t: Translate, amenityLabel: AmenityLabelOf): { title: string; description: string } {
   const type = input.accommodationType
     ? t(`propertyWizard.base.type.options.${input.accommodationType}`)
     : t('propertyWizard.suggest.typeFallback');
@@ -67,7 +67,7 @@ export function suggestListingText(input: ListingTextInput, t: Translate): { tit
   const area = input.areaSqm.trim();
   if (area !== '') sentences.push(t('propertyWizard.suggest.area', { area }));
 
-  const named = input.amenities.slice(0, NAMED_AMENITIES).map((amenity) => getAmenityLabel(amenity, t));
+  const named = input.amenities.slice(0, NAMED_AMENITIES).map(amenityLabel);
   if (named.length > 0) sentences.push(t('propertyWizard.suggest.amenities', { list: joinList(named, and) }));
 
   // Whole sentences only: if the text is too long the last sentences go, none is cut in the middle.

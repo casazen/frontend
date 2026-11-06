@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { IcalSettings } from '@/features/properties/components/ical-settings';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useProperty } from '@/queries/use-properties';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
 import { ActivationSection } from '../finish/activation-section';
@@ -51,6 +52,7 @@ export function FinishStep({
   const property = useProperty(propertyId, { fresh: true });
   const steps = activation?.steps;
   const stage = finishStage(activation);
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
 
   return (
     <>
@@ -77,7 +79,7 @@ export function FinishStep({
 
       <MissingSection steps={steps} failed={activationFailed} onRetry={onRetryActivation} property={property.data} refused={refused} />
 
-      <SummarySection property={property.data} steps={steps} />
+      <SummarySection property={property.data} steps={steps} showChannels={connectorOn} leftOutChannels={form.watch('skipChannels')} />
 
       <ActivationSection
         form={form}

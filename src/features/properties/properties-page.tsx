@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
@@ -7,10 +7,12 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { CinDeadlineBanner } from '@/features/cin';
 import { usePlanPagePath } from '@/hooks/use-billing-context';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getPlanLimitMessage, getPlanTierLabel, getPlanUpgradeCta } from '@/lib/i18n-labels';
 import { useCinCompliance } from '@/queries/use-cin';
+import { useListingStatusSummary } from '@/queries/use-listing-status';
 import { useActivateProperty, useDeleteProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import type { Property } from '@/types';
@@ -70,6 +72,13 @@ export function PropertiesPage() {
   const viewsScope = useListViewsScope();
   const canWrite = hasPermission('short-rent', 'property.write');
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+  // The state of each property on the channels (E02/F03/US01/T04): only where the channel manager is connected, the endpoint answers 404 otherwise.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
+  const summaries = useListingStatusSummary(connectorOn);
+  const channelSummaries = useMemo(
+    () => (connectorOn ? new Map((summaries.data ?? []).map((summary) => [summary.propertyId, summary])) : null),
+    [connectorOn, summaries.data],
+  );
 
   // Pausing and activating are dedicated actions (A2-05): never the generic PUT, so they can never fail on an unrelated required
   // field, and never set `isActive` (soft delete's own flag, PC-05). The mutations tell the person themselves how they went.
@@ -84,6 +93,9 @@ export function PropertiesPage() {
     onPause,
     onActivate,
     onDelete,
+    channelSummaries,
+    // Not «Non pubblicato» for a summary that is still loading or could not be read: the column says nothing is known.
+    channelsKnown: summaries.isSuccess,
   });
 
   // The backend decides whether it can go (409 with upcoming bookings / active leases): the mutation's own toast says why.
