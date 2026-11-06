@@ -122,6 +122,27 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
     vi.useRealTimers();
   });
 
+  // Permission / privacy: the buttons that record and delete a payment are the page's own reading of `payment.write` in short-rent, and
+  // they are offered to nobody when the payments are hidden (the server answers 403 to those calls, whatever the role says). The notice
+  // of the hidden payments shows exactly then; who may only read still sees the payments and their receipts.
+  it.each([
+    { name: 'WriterOfPayments', write: true, hidden: false, record: 1, remove: 1, payments: 1, notice: 0 },
+    { name: 'ReaderOfPayments', write: false, hidden: false, record: 0, remove: 0, payments: 1, notice: 0 },
+    { name: 'WriterWhoReachesSomePropertiesOnly', write: true, hidden: true, record: 0, remove: 0, payments: 0, notice: 1 },
+    { name: 'ReaderWhoReachesSomePropertiesOnly', write: false, hidden: true, record: 0, remove: 0, payments: 0, notice: 1 },
+  ])('Page_OffersOnlyWhatTheCallerMayDo_$name', async ({ write, hidden, record, remove, payments, notice }) => {
+    if (write) granted.add('short-rent:payment.write');
+    get.mockResolvedValue({ data: hidden ? partialSummary() : fullSummary() });
+
+    renderPage();
+
+    await screen.findByTestId('tourist-tax-results');
+    expect(screen.queryAllByTestId('tourist-tax-record')).toHaveLength(record);
+    expect(screen.queryAllByTestId('tourist-tax-delete')).toHaveLength(remove);
+    expect(screen.queryAllByTestId('tourist-tax-remittance')).toHaveLength(payments);
+    expect(screen.queryAllByTestId('tourist-tax-payments-hidden')).toHaveLength(notice);
+  });
+
   // Trust / privacy: a caller who reaches only some properties cannot see the payments, so the page must not say that none is recorded
   // (false, or a datum given away) nor explain the paid and balance columns that are not there. A caller who sees them is told as before.
   it.each([
