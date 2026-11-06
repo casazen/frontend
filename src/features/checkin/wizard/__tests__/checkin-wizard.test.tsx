@@ -482,14 +482,41 @@ describe('CheckInWizardPage', () => {
       fireEvent.change(within(first).getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
 
       await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
-      expect(vi.mocked(checkInWizardApi.setExemptions).mock.calls[0]).toEqual([
-        BOOKING_ID,
-        [
-          { position: 0, code: 'resident' },
-          { position: 1, code: null },
-        ],
-      ]);
+      // Only the guest the host changed goes: the API leaves the other positions as they are.
+      expect(vi.mocked(checkInWizardApi.setExemptions).mock.calls[0]).toEqual([BOOKING_ID, [{ position: 0, code: 'resident' }]]);
       await waitFor(() => expect(within(screen.getByTestId('tax-guest-0')).getByTestId('tax-guest-0-amount')).toHaveTextContent('0,00'));
+    });
+
+    it('taxStep_ExemptionWhoseReasonIsHidden_IsNeverSentBackAsNullWhenTheHostChoosesForAnotherGuest', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      // Guest 1 is exempt for a reason the person at the screen may not read (no `guest.read`): the API sends the kind and no code.
+      const tax = touristTax({
+        total: 4,
+        guests: [
+          { position: 0, nights: 2, taxableNights: 2, amount: 4, exemptionKind: 'None' },
+          { position: 1, nights: 2, taxableNights: 0, amount: 0, exemptionKind: 'Host' },
+        ],
+      });
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(
+        wizardState({
+          booking: { ...wizardState().booking, declaredGuests: 2 },
+          guests: [savedGuest(0, { type: 'HeadOfFamily', taxExemptionCode: null }), savedGuest(1, { type: 'FamilyMember', firstName: 'Luca', taxExemptionCode: null })],
+          tax,
+          suggestedStep: 'tax',
+        }),
+      );
+      vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(tax);
+      vi.mocked(checkInWizardApi.setExemptions).mockResolvedValue(tax);
+      renderWizard();
+
+      const hidden = await screen.findByTestId('tax-guest-1-hidden');
+      expect(hidden).toHaveTextContent('il motivo è visibile solo a chi può leggere');
+      expect(within(screen.getByTestId('tax-guest-1')).queryByRole('combobox')).not.toBeInTheDocument();
+
+      fireEvent.change(within(screen.getByTestId('tax-guest-0')).getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
+
+      await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
+      // Position 1 is not in the request: it would have cleared an exemption nobody at this screen can see.
+      expect(vi.mocked(checkInWizardApi.setExemptions).mock.calls[0]).toEqual([BOOKING_ID, [{ position: 0, code: 'resident' }]]);
     });
 
     it('taxStep_ChannelCollectedIt_SaysNothingToCollectAndKeepsTheAmounts', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {

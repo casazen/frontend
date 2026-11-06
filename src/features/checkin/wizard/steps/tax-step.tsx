@@ -10,7 +10,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
 import { useSetTouristTaxCollector, useSetTouristTaxExemptions, useStayTouristTax } from '@/queries/use-checkin-wizard';
 import type { CheckInWizardState, StayTouristTax, StayTouristTaxGuest, TouristTaxCollector } from '@/types/checkin-wizard.types';
-import { exemptionsOf, taxBreakdownOf, taxOutlook, type CheckInWizardValues } from '../lib/checkin-wizard-model';
+import { exemptionOf, taxBreakdownOf, taxOutlook, type CheckInWizardValues } from '../lib/checkin-wizard-model';
 import { TaxRateSubstep } from './tax-rate-substep';
 
 /** The reasons the host may choose have a plain-words label under the key the API gives (`touristTax.exemption.<code>`). */
@@ -154,8 +154,8 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
     const previous = form.getValues(path);
     form.setValue(path, code, { shouldDirty: false });
     setProblem(null);
-    // The whole list goes at once (a null code clears an exemption): what the server keeps is what the host sees.
-    setExemptions.mutate(exemptionsOf(form.getValues()), {
+    // Only this guest goes (a null code clears the exemption): the others, whose reason the host may not be allowed to see, stay as they are.
+    setExemptions.mutate(exemptionOf(index, code), {
       onError: (error) => {
         form.setValue(path, previous, { shouldDirty: false });
         setProblem(getProblemMessage(error, t) ?? t('checkin.wizard.tax.exemptionFailed'));

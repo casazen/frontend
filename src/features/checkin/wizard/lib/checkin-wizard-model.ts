@@ -17,6 +17,7 @@ import type {
   CheckInWizardGuest,
   CheckInWizardState,
   DocumentReadingFields,
+  GuestExemption,
   OctorateCheckInSendState,
   StayTouristTax,
 } from '@/types/checkin-wizard.types';
@@ -246,11 +247,12 @@ export function sortedIssues(issues: readonly CheckInIssue[]): CheckInIssue[] {
 export const CHECKIN_NOT_READY_CODE = 'checkin_not_ready';
 
 /**
- * The exemption of each guest of the form, for `PUT …/tourist-tax/exemptions`: the whole list at once (a null code clears one), so the
- * server never keeps an exemption the host removed on screen.
+ * The exemption the host just chose for one guest, for `PUT …/tourist-tax/exemptions` (a null code clears it). Only that position goes: the
+ * API changes the positions it is given and leaves the others as they are, so an exemption the host cannot see (its reason is shown only to
+ * who holds `guest.read`: it can reveal a health condition, art. 9 GDPR) is never sent back as null and never erased.
  */
-export function exemptionsOf(values: CheckInWizardValues): Array<{ position: number; code: string | null }> {
-  return values.guests.map((guest, position) => ({ position, code: guest.taxExemptionCode || null }));
+export function exemptionOf(position: number, code: string): GuestExemption[] {
+  return [{ position, code: code || null }];
 }
 
 /** The text of the line "guests in Octorate" of the result, from what the confirmation did. */

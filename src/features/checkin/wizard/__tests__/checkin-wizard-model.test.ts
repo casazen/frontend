@@ -10,7 +10,7 @@ import type {
 import {
   documentsReadyToSave,
   documentsStepSchema,
-  exemptionsOf,
+  exemptionOf,
   formValuesFromReading,
   guestValuesFromWizard,
   guestsSignature,
@@ -183,15 +183,9 @@ describe('what a save sends', () => {
     expect(guestsSignature(values, [])).not.toBe(before);
   });
 
-  it('exemptionsOf_EveryGuest_TheWholeListWithNullForNone', () => {
-    const values = wizardValuesFromState(
-      state({ booking: { ...state().booking, declaredGuests: 2 }, guests: [guest(0, { type: 'HeadOfFamily', taxExemptionCode: 'resident' }), guest(1, { type: 'FamilyMember' })] }),
-    );
-
-    expect(exemptionsOf(values)).toEqual([
-      { position: 0, code: 'resident' },
-      { position: 1, code: null },
-    ]);
+  it('exemptionOf_OneGuest_SendsOnlyThatPositionAndAnEmptyChoiceClearsIt', () => {
+    expect(exemptionOf(1, 'resident')).toEqual([{ position: 1, code: 'resident' }]);
+    expect(exemptionOf(0, '')).toEqual([{ position: 0, code: null }]);
   });
 });
 
