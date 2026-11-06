@@ -4,7 +4,6 @@ import { FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2, UserPlus } from 'lucide-react';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,7 +28,7 @@ import type { AlloggiatiCodeTable, StayGuestType } from '@/types/public-checkin.
 import {
   DOCUMENT_KINDS,
   MAX_STAY_GUESTS,
-  createStayGuestListSchema,
+  createStayGuestsFormSchema,
   followerTypeOf,
   guestFormPathOf,
   requiredStatisticalFields,
@@ -194,7 +193,7 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
     return { guests };
   }, [summary.guests, documentNumbers, savedGuests]);
 
-  const schema = useMemo(() => z.object({ guests: createStayGuestListSchema(statisticalFields) }), [statisticalFields]);
+  const schema = useMemo(() => createStayGuestsFormSchema(statisticalFields), [statisticalFields]);
   const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const { control, getValues, setValue, setError, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });

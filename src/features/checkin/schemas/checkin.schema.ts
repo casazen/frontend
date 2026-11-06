@@ -319,7 +319,11 @@ export function createStayGuestListSchema(required: readonly StatisticalGuestFie
 }
 
 /** Host form of the guests of a stay (`PUT /alloggiati/{bookingId}/stay-guests`). */
-export const stayGuestsFormSchema = z.object({ guests: createStayGuestListSchema() });
+export function createStayGuestsFormSchema(required: readonly StatisticalGuestField[] = []) {
+  return z.object({ guests: createStayGuestListSchema(required) });
+}
+
+export const stayGuestsFormSchema = createStayGuestsFormSchema();
 
 export type StayGuestsFormValues = z.input<typeof stayGuestsFormSchema>;
 
