@@ -169,7 +169,9 @@ export function GuestsEditor({ bookingId, form, onSaved }: GuestsEditorProps) {
     );
   }
 
-  if (state.isError || !state.data) {
+  // A read that fails again while the state is on screen (the page was focused again, a blip of the network) keeps what is there: the form
+  // the host is filling in is not replaced by an error.
+  if (!state.data) {
     return (
       <div className="space-y-2" data-testid="guests-editor-load-error">
         <p role="alert" className="text-sm text-destructive">

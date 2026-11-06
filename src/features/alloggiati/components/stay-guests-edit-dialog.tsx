@@ -137,7 +137,7 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('alloggiati.editGuests.loadingDocuments')}
           </div>
-        ) : saved.isError ? (
+        ) : saved.isError && !saved.data ? (
           <div className="space-y-2" data-testid="stay-guests-edit-load-error">
             <p className="text-sm text-destructive">
               {getProblemMessage(saved.error, t) ?? t('alloggiati.editGuests.guestsLoadFailed')}
@@ -146,7 +146,7 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
               {t('alloggiati.guestSummary.retry')}
             </Button>
           </div>
-        ) : withDocuments && numbers.isError && !numbersForbidden ? (
+        ) : withDocuments && numbers.isError && !numbers.data && !numbersForbidden ? (
           <div className="space-y-2" data-testid="stay-guests-edit-load-error">
             <p className="text-sm text-destructive">
               {getProblemMessage(numbers.error, t) ?? t('alloggiati.editGuests.documentsLoadFailed')}

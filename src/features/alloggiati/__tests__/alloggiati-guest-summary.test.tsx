@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { createElement } from 'react';
@@ -112,13 +112,14 @@ const summary: AlloggiatiGuestSummaryDto = {
 
 function renderSummary(canEdit = false, canRevealDocuments = false, canDownloadRecordFile = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
       createElement(AlloggiatiGuestSummary, { bookingId: BOOKING_ID, canEdit, canRevealDocuments, canDownloadRecordFile }),
     ),
   );
+  return { ...view, client };
 }
 
 function httpError(status: number, data?: unknown): AxiosError {
@@ -331,6 +332,26 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
 
     expect(await screen.findByTestId('stay-guests-edit-load-error')).toHaveTextContent('Impossibile caricare i dati degli ospiti');
     expect(screen.queryByTestId('stay-guests-edit-form')).not.toBeInTheDocument();
+  });
+
+  it('editGuests_WizardStateReadAgainFailsWhileTheFormIsOpen_KeepsTheFormAndWhatWasTyped', { timeout: 30_000 }, async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+    const view = renderSummary(true);
+    fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+    const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+    expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
+    fireEvent.change(dialog.getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+
+    // The page is focused again and the read of the guests of the wizard fails: the data are still there, and so is the form.
+    vi.mocked(checkInWizardApi.getState).mockRejectedValue(httpError(403, { code: 'forbidden' }));
+    await act(async () => {
+      await view.client.refetchQueries({ queryKey: ['checkin-wizard', BOOKING_ID] });
+    });
+
+    expect(screen.queryByTestId('stay-guests-edit-load-error')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stay-guests-edit-form')).toBeInTheDocument();
+    expect(dialog.getByLabelText(/^Luogo di rilascio/)).toHaveValue('Milano');
   });
 
   it('editGuests_HostWithoutGuestRead_ReentersTheNumberWithTheMaskedHint', { timeout: 30_000 }, async () => {
