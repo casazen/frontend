@@ -76,7 +76,10 @@ describe('OutsideChangeDialog (NF-27)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Prendi la nuova versione' }));
 
-    expect(screen.getByTestId('outside-change-confirm')).toHaveTextContent('Le tue modifiche in CasaZen andranno perse: i titoli e le descrizioni scritti in CasaZen. Continuare?');
+    // What the new version rewrites on the server: the descriptions, the house rules and the directions — not the titles.
+    expect(screen.getByTestId('outside-change-confirm')).toHaveTextContent(
+      'Le tue modifiche in CasaZen andranno perse: le descrizioni, le regole della casa e le indicazioni per arrivare scritte in CasaZen. Continuare?',
+    );
     expect(resolveMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('outside-change-continue'));
     await waitFor(() => expect(resolveMock).toHaveBeenCalledWith({ channelCode: 'airbnb_xml', choice: 'take' }));
