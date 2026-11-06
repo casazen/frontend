@@ -1243,10 +1243,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
   // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
   // consent and welcome pages) are public routes, not entries of this table, and are never behind the flag: an e-mail already sent keeps working.
+  // The pages ask `guest.read`, what the API behind them asks (`CrmController`): with `booking.read` the accountant, who has no `guest.read`,
+  // would see the entry and end on the no-access page.
   {
     path: '/app/short-rent/crm/guests',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
     navPlacement: 'secondary',
@@ -1257,7 +1259,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     path: '/app/short-rent/crm/guests/:id',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },

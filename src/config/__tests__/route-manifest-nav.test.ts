@@ -942,7 +942,9 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
     expect(crm.navPlacement).toBe('secondary');
     expect(crm.navParent).toBeUndefined();
     expect(crm.navGroup).toBeUndefined();
-    expect(crm.requiredPermissions).toEqual(['booking.read']);
+    // What the API behind the pages asks (`CrmController`: `guest.read`), for the list and for the detail: an entry the user opens must not end on a 403.
+    expect(crm.requiredPermissions).toEqual(['guest.read']);
+    expect(entryOf('/app/short-rent/crm/guests/:id').requiredPermissions).toEqual(['guest.read']);
 
     const on: Partial<FeatureFlags> = { crmMarketing: true };
     // After the queue of the guest verifications, before the settings of the org; the To do list stays the last.
@@ -954,8 +956,11 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
       '/app/short-rent/activities',
     ]);
     expect(paths(getContextNav('short-rent', allowAll, on, { withoutBottom: true }).more)).toContain('/app/short-rent/crm/guests');
-    // It asks what reading the bookings asks, and it is no tab of Prenotazioni any more.
-    expect(paths(getSecondaryNavEntries('short-rent', without('booking.read'), on))).not.toContain('/app/short-rent/crm/guests');
+    // It asks `guest.read`: the accountant (reads properties, bookings and payments, no guests) does not get an entry that would end on a 403.
+    expect(paths(getSecondaryNavEntries('short-rent', without('guest.read'), on))).not.toContain('/app/short-rent/crm/guests');
+    const accountant: PermissionPredicate = (_ctx, permission) => ['property.read', 'booking.read', 'payment.read'].includes(permission);
+    expect(paths(getSecondaryNavEntries('short-rent', accountant, on))).not.toContain('/app/short-rent/crm/guests');
+    // It is no tab of Prenotazioni any more.
     expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/guests', '/app/short-rent/reviews']);
     // The open CRM page highlights the CRM entry, not Prenotazioni.
     const entries = getNavMatchEntries('short-rent', allowAll, on);
