@@ -87,8 +87,8 @@ function AlertCard({ alert, busy, primaryActionIsThere, onDismiss, onRemind }: A
 
 function LiveAlertPopup({ userId, getAccessToken }: { userId: string; getAccessToken: () => Promise<string | undefined> }) {
   const { currentAlert, busy, dismissCurrent, remindCurrent } = useAlertSignalr({ userId, getAccessToken });
-  // A wizard is on screen while a `WizardShell` is mounted (it says so in the store). The alerts wait in the queue meanwhile, and
-  // the first of them shows when the person leaves the wizard.
+  // A wizard is on screen while a component that calls `useWizardOpenFlag` is mounted (`WizardShell`, and the flows with a frame of their
+  // own: it says so in the store). The alerts wait in the queue meanwhile, and the first of them shows when the person leaves the wizard.
   const wizardOpen = useUiStore((state) => state.openWizards > 0);
   const primaryActionIsThere = useUiStore((state) => state.mobilePrimaryVisible);
 

@@ -16,6 +16,7 @@ import { useFiscalTaxProfile, useUpdateFiscalTaxProfile } from '@/queries/use-fi
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import type { FiscalTaxProfile } from '@/api/fiscal.api';
 import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '@/features/fiscal/tax-profile-changes';
 
@@ -26,6 +27,8 @@ import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '
 export function FiscalWizardPage() {
   const { t } = useTranslation();
   const profile = useFiscalTaxProfile();
+  // The popup alerts wait in their queue while this page is on screen (ADR-025-R7): it has no `WizardShell`.
+  useWizardOpenFlag();
 
   return (
     <AppShell>

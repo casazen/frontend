@@ -29,9 +29,10 @@ interface UiState {
   mobilePrimaryVisible: boolean;
   setMobilePrimaryVisible: (visible: boolean) => void;
   /**
-   * How many `WizardShell`s are mounted (in practice one, but a count: the one that leaves must not say "no wizard" while another
-   * is still there). The popup alerts read it: while it is above zero they wait in their queue and nothing is drawn (ADR-025-R7).
-   * A path test would miss almost every wizard, which does not live under `/wizard/`. Not persisted.
+   * How many wizards are mounted (in practice one, but a count: the one that leaves must not say "no wizard" while another is still
+   * there). Each one raises it with `useWizardOpenFlag`: `WizardShell` does, and so do the flows that have a frame of their own. The
+   * popup alerts read it: while it is above zero they wait in their queue and nothing is drawn (ADR-025-R7). A path test would miss
+   * almost every wizard, which does not live under `/wizard/`. Not persisted.
    */
   openWizards: number;
   wizardOpened: () => void;

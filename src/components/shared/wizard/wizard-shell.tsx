@@ -22,6 +22,7 @@ import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
 import { useUiStore } from "@/store/ui-store";
+import { useWizardOpenFlag } from "@/store/use-wizard-open-flag";
 import type { WizardDraft } from "@/lib/wizard-draft";
 import { cn } from "@/lib/utils";
 import { WizardContext, type WizardContextValue } from "./wizard-context";
@@ -313,12 +314,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
 
   // While a wizard is mounted (the confirmation included) the popup alerts wait in their queue and are not drawn (ADR-025-R7). The
   // wizards do not share a path to test, so the shell says it: the popup reads the count in the store.
-  const wizardOpened = useUiStore((state) => state.wizardOpened);
-  const wizardClosed = useUiStore((state) => state.wizardClosed);
-  React.useEffect(() => {
-    wizardOpened();
-    return wizardClosed;
-  }, [wizardOpened, wizardClosed]);
+  useWizardOpenFlag();
 
   // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;

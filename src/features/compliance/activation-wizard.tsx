@@ -38,12 +38,15 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import type { ActivationBlocker, ComplianceActivationResult, ComplianceStepStatus } from '@/types/compliance.types';
 import type { CreatePropertyDto, Property } from '@/types';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import { useStepTexts } from './use-activation-step-texts';
 import { StepStatusIcon, StepIndicator, BlockerList, StepWarnings, StepBlockers, StepPanel } from './components/activation-progress';
 export function PropertyActivationWizard() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const propertyId = id!;
+  // The popup alerts wait in their queue while the activation is on screen, its loading included (ADR-025-R7): this page has no `WizardShell`.
+  useWizardOpenFlag();
 
   const propertyQuery = useProperty(propertyId, { fresh: true });
   const activationQuery = useComplianceActivation(propertyId);
