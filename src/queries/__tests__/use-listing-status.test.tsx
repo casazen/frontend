@@ -5,11 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ListingStatus } from '@/types';
 import { LISTING_SUMMARY_KEY, listingStatusKey, usePublishListing, useResolveOutsideChange, useListingStatus } from '../use-listing-status';
 
-const { api } = vi.hoisted(() => ({
+const { api, propertyApi, profileApi } = vi.hoisted(() => ({
   api: { getStatus: vi.fn(), getSummary: vi.fn(), publish: vi.fn(), resolveOutsideChange: vi.fn() },
+  propertyApi: { getById: vi.fn() },
+  profileApi: { get: vi.fn() },
 }));
 
 vi.mock('@/api/listing-status.api', () => ({ listingStatusApi: api }));
+vi.mock('@/api/properties.api', () => ({ propertiesApi: propertyApi }));
+vi.mock('@/api/site-profile.api', () => ({ siteProfileApi: profileApi }));
 
 const status = (...states: string[]): ListingStatus => ({
   propertyId: 'p1',
@@ -37,7 +41,7 @@ function setup() {
 
 describe('the status of the channels (E02/F03/US01/T04)', () => {
   beforeEach(() => {
-    for (const fn of Object.values(api)) fn.mockReset();
+    for (const fn of [...Object.values(api), propertyApi.getById, profileApi.get]) fn.mockReset();
   });
 
   it('useListingStatus_ARowIsSending_IsReadAgainEveryFiveSeconds_ElseNotAtAll', async () => {
@@ -92,6 +96,8 @@ describe('the status of the channels (E02/F03/US01/T04)', () => {
 
   it('useResolveOutsideChange_TheChoiceGoesToTheChannel_AndTheStatusAndThePropertyAreReadAgain', async () => {
     api.resolveOutsideChange.mockResolvedValue(undefined);
+    propertyApi.getById.mockResolvedValue({ id: 'p1' });
+    profileApi.get.mockResolvedValue({ propertyId: 'p1', translations: {} });
     const { client, Wrapper } = setup();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => useResolveOutsideChange('p1'), { wrapper: Wrapper });
@@ -103,5 +109,51 @@ describe('the status of the channels (E02/F03/US01/T04)', () => {
     expect(api.resolveOutsideChange).toHaveBeenCalledWith('p1', 'booking_xml', 'take');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: listingStatusKey('p1') });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['properties', 'p1'] });
+  });
+
+  it('useResolveOutsideChange_Take_GivesBackWhatTheServerHoldsNow_KeepReadsNothing', async () => {
+    api.resolveOutsideChange.mockResolvedValue(undefined);
+    propertyApi.getById.mockResolvedValue({ id: 'p1', description: 'Testo del canale', houseRules: 'Regole del canale' });
+    profileApi.get.mockResolvedValue({ propertyId: 'p1', translations: { en: { description: 'Text of the channel' } } });
+    const { Wrapper } = setup();
+    const { result } = renderHook(() => useResolveOutsideChange('p1'), { wrapper: Wrapper });
+
+    let taken: unknown;
+    await act(async () => {
+      taken = await result.current.mutateAsync({ channelCode: 'booking_xml', choice: 'take' });
+    });
+    expect(taken).toEqual({
+      adopted: {
+        property: { id: 'p1', description: 'Testo del canale', houseRules: 'Regole del canale' },
+        siteProfile: { propertyId: 'p1', translations: { en: { description: 'Text of the channel' } } },
+      },
+      rereadFailed: false,
+    });
+
+    propertyApi.getById.mockClear();
+    profileApi.get.mockClear();
+    let kept: unknown;
+    await act(async () => {
+      kept = await result.current.mutateAsync({ channelCode: 'booking_xml', choice: 'keep' });
+    });
+    expect(kept).toEqual({ adopted: null, rereadFailed: false });
+    expect(propertyApi.getById).not.toHaveBeenCalled();
+    expect(profileApi.get).not.toHaveBeenCalled();
+  });
+
+  it('useResolveOutsideChange_TakeThroughButTheTextsCannotBeRead_SaysSoAndDoesNotFail', async () => {
+    api.resolveOutsideChange.mockResolvedValue(undefined);
+    propertyApi.getById.mockRejectedValue(new Error('down'));
+    profileApi.get.mockResolvedValue({ propertyId: 'p1', translations: {} });
+    const { Wrapper } = setup();
+    const { result } = renderHook(() => useResolveOutsideChange('p1'), { wrapper: Wrapper });
+
+    let taken: unknown;
+    await act(async () => {
+      taken = await result.current.mutateAsync({ channelCode: 'booking_xml', choice: 'take' });
+    });
+
+    // The choice went through (it is not asked again); the caller is told the texts are not the ones on the server.
+    expect(taken).toEqual({ adopted: null, rereadFailed: true });
   });
 });

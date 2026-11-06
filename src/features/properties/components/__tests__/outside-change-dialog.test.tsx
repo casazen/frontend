@@ -24,16 +24,18 @@ const row = (channel: string, changedOutside: string[]): ListingChannelStatus =>
   changedOutside,
 });
 
-function open(rows: ListingChannelStatus[], onOpenChange = vi.fn()) {
-  render(<OutsideChangeDialog open onOpenChange={onOpenChange} propertyId="p1" rows={rows} />);
+function open(rows: ListingChannelStatus[], onOpenChange = vi.fn(), onAdopted = vi.fn()) {
+  render(<OutsideChangeDialog open onOpenChange={onOpenChange} propertyId="p1" rows={rows} onAdopted={onAdopted} />);
   return onOpenChange;
 }
+
+const NOTHING_ADOPTED = { adopted: null, rereadFailed: false };
 
 describe('OutsideChangeDialog (NF-27)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     resolveMock.mockReset();
-    resolveMock.mockResolvedValue(undefined);
+    resolveMock.mockResolvedValue(NOTHING_ADOPTED);
   });
 
   it('showsWhatChangedOnEachChannel_AndTheTwoChoices', () => {
@@ -78,6 +80,38 @@ describe('OutsideChangeDialog (NF-27)', () => {
     expect(resolveMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('outside-change-continue'));
     await waitFor(() => expect(resolveMock).toHaveBeenCalledWith({ channelCode: 'airbnb_xml', choice: 'take' }));
+  });
+
+  it('take_TellsTheFormWhatTheServerHoldsNow_KeepTellsItNothing', async () => {
+    const adopted = {
+      property: { id: 'p1', description: 'Testo del canale', houseRules: 'Regole del canale' },
+      siteProfile: { translations: { en: { description: 'Text of the channel' } } },
+    };
+    const onAdopted = vi.fn();
+    open([row('airbnb_xml', ['descriptions'])], vi.fn(), onAdopted);
+    resolveMock.mockResolvedValueOnce({ adopted, rereadFailed: false });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Prendi la nuova versione' }));
+    fireEvent.click(screen.getByTestId('outside-change-continue'));
+    await waitFor(() => expect(onAdopted).toHaveBeenCalledWith(adopted));
+
+    // «Tieni»: CasaZen's texts stay as they are, the form has nothing to start from again.
+    onAdopted.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Tieni la versione di CasaZen' }));
+    fireEvent.click(screen.getByTestId('outside-change-continue'));
+    await waitFor(() => expect(resolveMock).toHaveBeenCalledWith({ channelCode: 'airbnb_xml', choice: 'keep' }));
+    expect(onAdopted).not.toHaveBeenCalled();
+  });
+
+  it('take_TheTextsCannotBeReadAgain_SaysToReloadAndKeepsTheDialogOpen', async () => {
+    const onOpenChange = open([row('airbnb_xml', ['descriptions'])]);
+    resolveMock.mockResolvedValueOnce({ adopted: null, rereadFailed: true });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Prendi la nuova versione' }));
+    fireEvent.click(screen.getByTestId('outside-change-continue'));
+
+    expect(await screen.findByTestId('outside-change-reread')).toHaveTextContent('Ricarica la pagina prima di modificarli');
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 
   it('confirmation_Back_ChangesNothing', () => {

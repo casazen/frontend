@@ -8428,6 +8428,7 @@
       "description": "Dopo l'ultimo invio qualcuno ha cambiato il contenuto direttamente sul canale. Non cambiamo nulla senza la tua scelta.",
       "failed": "Non siamo riusciti a registrare la scelta. Riprova.",
       "keep": "Tieni la versione di CasaZen",
+      "reread": "Scelta registrata, ma non riusciamo a rileggere i testi nuovi. Ricarica la pagina prima di modificarli, o i testi vecchi tornerebbero al loro posto.",
       "take": "Prendi la nuova versione",
       "takeLoses": "i titoli e le descrizioni scritti in CasaZen",
       "takeNotPossible": "La nuova versione si può prendere solo quando sono cambiate le descrizioni: qui puoi tenere quella di CasaZen.",

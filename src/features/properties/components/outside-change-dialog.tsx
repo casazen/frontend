@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useResolveOutsideChange } from '@/queries/use-listing-status';
+import { useResolveOutsideChange, type AdoptedTexts } from '@/queries/use-listing-status';
 import type { ListingChannelStatus, OutsideChangeChoice } from '@/types';
 import { canTakeTheirs } from '../wizard/channels-model';
 import { useChannelName } from './channel-name';
@@ -15,6 +15,11 @@ interface OutsideChangeDialogProps {
   propertyId: string;
   /** The channels whose content changed outside CasaZen (`changedOutside` of their row). */
   rows: readonly ListingChannelStatus[];
+  /**
+   * Told what the server holds of the texts once the host took the descriptions of the channel manager («Prendi la nuova versione»): a
+   * form that edits them starts from these again, or its next save would send the old texts back over the ones just adopted.
+   */
+  onAdopted?: (adopted: AdoptedTexts) => void;
 }
 
 /** The choice the person is about to confirm: which channel and what they picked. */
@@ -29,12 +34,14 @@ interface Pending {
  * descriptions held by the channel manager (offered only when the descriptions are the only group that changed — the server refuses the rest).
  * Both ask first, and say what is lost.
  */
-export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows }: OutsideChangeDialogProps) {
+export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows, onAdopted }: OutsideChangeDialogProps) {
   const { t, i18n } = useTranslation();
   const channelName = useChannelName();
   const resolve = useResolveOutsideChange(propertyId);
   const [pending, setPending] = useState<Pending | null>(null);
   const [error, setError] = useState<unknown>(null);
+  /** The choice «Prendi la nuova versione» went through but the texts could not be read again: the page must be opened again to edit them. */
+  const [rereadFailed, setRereadFailed] = useState(false);
 
   // A group the server names and this version has no words for (a newer backend) is shown as it came, never as a raw key.
   const groupNames = (groups: readonly string[]) =>
@@ -44,6 +51,7 @@ export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows }: Ou
     if (!next) {
       setPending(null);
       setError(null);
+      setRereadFailed(false);
     }
     onOpenChange(next);
   };
@@ -51,9 +59,16 @@ export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows }: Ou
   const confirm = async () => {
     if (!pending) return;
     setError(null);
+    setRereadFailed(false);
     try {
-      await resolve.mutateAsync({ channelCode: pending.row.channel, choice: pending.choice });
+      const result = await resolve.mutateAsync({ channelCode: pending.row.channel, choice: pending.choice });
       setPending(null);
+      if (result.adopted) onAdopted?.(result.adopted);
+      // The texts of the form are the old ones until the page is opened again: it is said, and the dialog stays to say it.
+      if (result.rereadFailed) {
+        setRereadFailed(true);
+        return;
+      }
       // The last channel to be decided closes the dialog; the others stay for their own choice.
       if (rows.length <= 1) onOpenChange(false);
     } catch (failure) {
@@ -72,6 +87,12 @@ export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows }: Ou
         {error ? (
           <Alert variant="danger" data-testid="outside-change-error">
             {getProblemMessage(error, t) ?? t('listingStatus.outside.failed')}
+          </Alert>
+        ) : null}
+
+        {rereadFailed ? (
+          <Alert variant="warning" data-testid="outside-change-reread">
+            {t('listingStatus.outside.reread')}
           </Alert>
         ) : null}
 

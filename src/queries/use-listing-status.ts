@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { listingStatusApi } from '@/api/listing-status.api';
-import type { ListingPublishRequest, OutsideChangeChoice } from '@/types';
+import { propertiesApi } from '@/api/properties.api';
+import { siteProfileApi } from '@/api/site-profile.api';
+import type { ListingPublishRequest, OutsideChangeChoice, Property, SiteProfile } from '@/types';
 
 const PROPERTIES_KEY = 'properties';
 
@@ -55,12 +57,37 @@ export function usePublishListing(propertyId: string) {
   });
 }
 
+/** What the server holds of the texts after «Prendi la nuova versione» rewrote them: the property and its site profile, read again right after. */
+export interface AdoptedTexts {
+  property: Property;
+  siteProfile: SiteProfile;
+}
+
+/**
+ * How a choice about a change made outside CasaZen ended. For «take» the texts the channel manager held are on the server now and the
+ * form of the wizard still has the old ones: `adopted` carries what the server has, for the wizard to start its form from again (or its next
+ * save would send the old texts back over them). `rereadFailed` is a «take» that went through whose texts could not be read again.
+ */
+export interface OutsideChangeResult {
+  adopted: AdoptedTexts | null;
+  rereadFailed: boolean;
+}
+
 /** The choice about a change made outside CasaZen: keep CasaZen's version, or take the descriptions of the channel manager. */
 export function useResolveOutsideChange(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ channelCode, choice }: { channelCode: string; choice: OutsideChangeChoice }) =>
-      listingStatusApi.resolveOutsideChange(propertyId, channelCode, choice),
+    mutationFn: async ({ channelCode, choice }: { channelCode: string; choice: OutsideChangeChoice }): Promise<OutsideChangeResult> => {
+      await listingStatusApi.resolveOutsideChange(propertyId, channelCode, choice);
+      if (choice !== 'take') return { adopted: null, rereadFailed: false };
+      // The choice is made: a failure to read the texts again is told to the person (the form must not go on with the old ones), not hidden.
+      try {
+        const [property, siteProfile] = await Promise.all([propertiesApi.getById(propertyId), siteProfileApi.get(propertyId)]);
+        return { adopted: { property, siteProfile }, rereadFailed: false };
+      } catch {
+        return { adopted: null, rereadFailed: true };
+      }
+    },
     onSettled: () => {
       invalidateStatus(queryClient, propertyId);
       // «Prendi la nuova versione» writes the descriptions of the property: everything that reads it is read again.

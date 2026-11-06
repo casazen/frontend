@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isValidCin } from '@/lib/cin-format';
-import { useListingStatus, usePublishListing } from '@/queries/use-listing-status';
+import { useListingStatus, usePublishListing, type AdoptedTexts } from '@/queries/use-listing-status';
 import { useProperty } from '@/queries/use-properties';
 import { useChannelName } from '../../components/channel-name';
 import { OutsideChangeDialog } from '../../components/outside-change-dialog';
@@ -31,6 +31,8 @@ interface ChannelsStepProps {
   propertyId: string;
   /** Opens a step of the wizard: the «Correggi» of a channel goes to the step that lacks data. */
   goTo: (stepId: string) => void;
+  /** The host took the descriptions of the channel manager: the wizard starts the fields of its form from what the server holds now. */
+  onAdopted?: (adopted: AdoptedTexts) => void;
 }
 
 /** The texts a refused publication says are missing, by their code (`en.title`): the words the host knows them by. */
@@ -45,7 +47,7 @@ const KNOWN_TEXTS = new Set(['it.title', 'it.description', 'en.title', 'en.descr
  * channel does not hide the others. What a refusal says is answered here: the dialog of a change made outside CasaZen, the list of the
  * texts that are missing, the way to the mapping of the listing.
  */
-export function ChannelsStep({ form, propertyId, goTo }: ChannelsStepProps) {
+export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStepProps) {
   const { t } = useTranslation();
   const channelName = useChannelName();
   const status = useListingStatus(propertyId);
@@ -173,7 +175,7 @@ export function ChannelsStep({ form, propertyId, goTo }: ChannelsStepProps) {
         ) : null}
       </div>
 
-      <OutsideChangeDialog open={outsideOpen} onOpenChange={setOutsideOpen} propertyId={propertyId} rows={outsideRows} />
+      <OutsideChangeDialog open={outsideOpen} onOpenChange={setOutsideOpen} propertyId={propertyId} rows={outsideRows} onAdopted={onAdopted} />
     </>
   );
 }

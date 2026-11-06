@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, type UseFormReturn } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
@@ -17,6 +17,7 @@ import { clearWizardDraft } from '@/lib/wizard-draft';
 import { photoMetaSignature } from '@/lib/listing-photos';
 import { textDraftsChanged, textDraftsFromProfile } from '@/lib/listing-texts';
 import { usePropertyRooms, useSavePropertyRooms, useSaveStayDiscounts } from '@/queries/use-listing-data';
+import type { AdoptedTexts } from '@/queries/use-listing-status';
 import { usePlanUsage } from '@/queries/use-properties';
 import { useSaveListingTexts, useSavePhotoMeta } from '@/queries/use-site-profile';
 import { useCurrentUser, useEntitlement } from '@/queries/use-users';
@@ -28,6 +29,7 @@ import {
   EMPTY_LISTING_SEED,
   PROPERTY_ID_PARAM,
   SAVE_AND_CLOSE_SCHEMAS,
+  adoptableFieldsOf,
   amenitiesUpdatePayload,
   baseStepSchema,
   baseUpdatePayload,
@@ -277,6 +279,18 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     savedTexts.current = structuredClone(values.texts);
   };
 
+  // «Prendi la nuova versione» rewrote the Italian description, the house rules and the texts of the other languages on the server. The form
+  // starts from them again, and so does the record of what was last saved: the next «Avanti» on the texts or the rules (after a «Modifica»
+  // of the summary, or a step back) would otherwise send the old ones back over the ones just adopted (E02/F03/US01/T04, NF-27).
+  const adoptServerTexts = (form: UseFormReturn<PropertyWizardValues>, adopted: AdoptedTexts) => {
+    const fields = adoptableFieldsOf(adopted.property, adopted.siteProfile);
+    form.setValue('listingTitle', fields.listingTitle);
+    form.setValue('description', fields.description);
+    form.setValue('houseRules', fields.houseRules);
+    form.setValue('texts', fields.texts);
+    savedTexts.current = textDraftsFromProfile(adopted.siteProfile);
+  };
+
   const saveRules = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
     await saveProperty.mutateAsync({ id: propertyId, data: rulesUpdatePayload(values) });
@@ -398,7 +412,8 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
             // The host may go on without publishing: the property is saved and can be published from here later.
             optional: true,
             nextLabel: t('propertyWizard.channels.next'),
-            render: ({ form, goTo }) => (propertyId ? <ChannelsStep form={form} propertyId={propertyId} goTo={goTo} /> : null),
+            render: ({ form, goTo }) =>
+              propertyId ? <ChannelsStep form={form} propertyId={propertyId} goTo={goTo} onAdopted={(adopted) => adoptServerTexts(form, adopted)} /> : null,
           } satisfies WizardStep<PropertyWizardValues>,
         ]
       : []),

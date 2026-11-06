@@ -8428,6 +8428,7 @@
       "description": "Since the last publication someone changed the content directly on the channel. We change nothing without your choice.",
       "failed": "We couldn't record your choice. Try again.",
       "keep": "Keep CasaZen's version",
+      "reread": "Your choice is recorded, but we couldn't read the new texts again. Reload the page before editing them, or the old texts would take their place back.",
       "take": "Take the new version",
       "takeLoses": "the titles and descriptions written in CasaZen",
       "takeNotPossible": "The new version can be taken only when the descriptions changed: here you can keep CasaZen's.",

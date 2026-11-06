@@ -211,9 +211,11 @@ export const descriptionsStepSchema: StepSchema = z.object({
 
 /**
  * What «Salva e chiudi» checks on the descriptions step: the lengths only. The step asks for the four required texts before «Avanti» (the
- * channels take no listing without them), but leaving to finish later must not be refused: it saves what is there.
+ * channels take no listing without them), but leaving to finish later must not be refused: it saves what is there. It is also the whole
+ * schema of the step where the channel manager is not connected (the flag `octorateConnector` is off): the texts are then optional, as
+ * the title and the description of the photos step always were, and `WizardShell` does not ask for them again at the last button.
  */
-const descriptionsSaveSchema: StepSchema = z.object({
+export const descriptionsLengthsSchema: StepSchema = z.object({
   listingTitle: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
   description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
   texts: z.record(
@@ -226,7 +228,7 @@ const descriptionsSaveSchema: StepSchema = z.object({
 });
 
 /** The steps whose «Salva e chiudi» asks less than their «Avanti» does. */
-export const SAVE_AND_CLOSE_SCHEMAS: Partial<Record<string, StepSchema>> = { descriptions: descriptionsSaveSchema };
+export const SAVE_AND_CLOSE_SCHEMAS: Partial<Record<string, StepSchema>> = { descriptions: descriptionsLengthsSchema };
 
 /** An amount in euros as typed (a comma or a point for the cents): the number, or `null` when it is not one. */
 export function parseAmount(text: string): number | null {
@@ -365,11 +367,28 @@ function childrenPolicyOf(property: Property, siteProfile: SiteProfile | null): 
   return NEW_PROPERTY_DEFAULTS.childrenPolicy;
 }
 
+/** The fields of the form that «Prendi la nuova versione» can rewrite on the server: the headline, the description, the house rules and the texts of the other languages. */
+export type AdoptableFields = Pick<PropertyWizardValues, 'listingTitle' | 'description' | 'houseRules' | 'texts'>;
+
+/**
+ * Those fields as the server has them. One place for both the opening of the wizard and the moment after the host took the descriptions of
+ * the channel manager (the form then starts from them again, or its next save would send the old texts back, E02/F03/US01/T04, NF-27).
+ */
+export function adoptableFieldsOf(property: Pick<Property, 'listingTitle' | 'description' | 'houseRules'>, siteProfile: SiteProfile | null): AdoptableFields {
+  return {
+    listingTitle: property.listingTitle ?? '',
+    description: property.description ?? '',
+    houseRules: property.houseRules ?? '',
+    texts: textDraftsFromProfile(siteProfile),
+  };
+}
+
 /** The values the wizard opens with: a new property's defaults, or the property as the server has it. */
 export function wizardDefaults(property?: Property, seed: WizardListingSeed = EMPTY_LISTING_SEED): PropertyWizardValues {
   if (!property) return NEW_PROPERTY_DEFAULTS;
   const rooms = roomDraftsFromServer(seed.rooms);
   return {
+    ...adoptableFieldsOf(property, seed.siteProfile),
     accommodationType: property.accommodationType ?? '',
     name: property.name,
     address: property.address,
@@ -390,9 +409,6 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
     // Every amenity but the two the house rules decide: the catalog gives the host what to choose from, and one the property has that the
     // catalog does not know stays in the list (the step never takes away what it cannot show).
     amenities: property.amenities.filter((amenity) => !RULE_AMENITIES.includes(amenity)),
-    listingTitle: property.listingTitle ?? '',
-    description: property.description ?? '',
-    texts: textDraftsFromProfile(seed.siteProfile),
     checkInFrom: toHourMinute(property.checkInFrom) || NEW_PROPERTY_DEFAULTS.checkInFrom,
     checkOutBy: toHourMinute(property.checkOutBy) || NEW_PROPERTY_DEFAULTS.checkOutBy,
     // A property that never stated a rule starts from what its amenities already say (an old one may list PetFriendly): shown, never hidden.
@@ -404,7 +420,6 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
     quietHoursTo: toHourMinute(property.quietHoursTo),
     extraGuestFee: property.extraGuestFeePerNight != null ? String(property.extraGuestFeePerNight) : '',
     cancellationPolicyId: property.cancellationPolicyId ?? '',
-    houseRules: property.houseRules ?? '',
     nightlyRate: property.nightlyRate > 0 ? String(property.nightlyRate) : '',
     weekendSurcharge: (property.weekendSurchargePercent ?? 0) > 0 ? String(property.weekendSurchargePercent) : '',
     cleaningFee: property.cleaningFee > 0 ? String(property.cleaningFee) : '',
