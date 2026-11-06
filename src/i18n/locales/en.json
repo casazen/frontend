@@ -11257,6 +11257,7 @@
         "reactivate": "Reactivate",
         "requestService": "Request an intervention"
       },
+      "channelsUnknown": "Channel status not available yet",
       "chips": {
         "active": "Active",
         "all": "All",

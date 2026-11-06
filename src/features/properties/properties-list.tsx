@@ -8,7 +8,7 @@ import { propertyStatus, type PropertyStatus } from '@/lib/status-dictionary';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { ListingPropertySummary, Property } from '@/types';
-import { ChannelSummary } from './components/multi-channel-status';
+import { ChannelsCell } from './components/multi-channel-status';
 import { PropertyThumb } from './components/property-thumb';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import './components/property-drawer';
@@ -47,6 +47,11 @@ export interface PropertiesListOptions {
    * on the card. `null` or absent while the channel manager is not connected (the flag is off): then the list has no such column.
    */
   channelSummaries?: ReadonlyMap<string, ListingPropertySummary> | null;
+  /**
+   * The summary of the channels was read. While it loads, or when it could not be read, the column says nothing is known (a dash): a
+   * property that is missing from an unread summary is not a property that was never published. Default: read.
+   */
+  channelsKnown?: boolean;
 }
 
 /**
@@ -58,7 +63,7 @@ export interface PropertiesListOptions {
  * "on the site": they need what the property records do not carry (the list of what is missing for each property, the
  * bookings of the month, the host's own switch for the site), so they are not here and not made up.
  */
-export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries = null }: PropertiesListOptions) {
+export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries = null, channelsKnown = true }: PropertiesListOptions) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -78,15 +83,10 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
 
     const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : null);
 
-    /** The listing on the channels: the worst state, «Sincronizzazione in ritardo» and «Correggi». A property that was never published has no channel. */
-    const channelsOf = (property: Property) => {
-      const summary = channelSummaries?.get(property.id);
-      return summary ? (
-        <ChannelSummary propertyId={property.id} worstStatus={summary.worstStatus} syncAlert={summary.syncAlert} canWrite={canWrite} />
-      ) : (
-        <span className="text-foreground/70">{t('property.list.noChannels')}</span>
-      );
-    };
+    /** The listing on the channels: the worst state, «Sincronizzazione in ritardo» and «Correggi». A property that was never published has no channel; one whose summary is not read yet has none to tell. */
+    const channelsOf = (property: Property) => (
+      <ChannelsCell propertyId={property.id} summary={channelSummaries?.get(property.id)} known={channelsKnown} canWrite={canWrite} />
+    );
 
     /** The one thing to do about a property, by its state. */
     const primaryAction = (property: Property): ListRowAction | null => {
@@ -282,5 +282,5 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
       noResults: { title: t('property.list.noResults.title'), description: t('property.list.noResults.description') },
       countLabel: (count) => t('property.list.count', { count }),
     });
-  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries]);
+  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries, channelsKnown]);
 }

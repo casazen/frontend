@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n/config';
 import type { ListingChannelStatus } from '@/types';
-import { ChannelSummary, MultiChannelStatus } from '../multi-channel-status';
+import { ChannelSummary, ChannelsCell, MultiChannelStatus } from '../multi-channel-status';
 
 const { state } = vi.hoisted(() => ({
   state: { data: undefined as unknown, isLoading: false, isError: false },
@@ -66,6 +66,38 @@ describe('ChannelSummary (the property list)', () => {
       </MemoryRouter>,
     );
     expect(screen.queryByTestId('channel-fix')).not.toBeInTheDocument();
+  });
+});
+
+describe('ChannelsCell (the column «Canali» of the list)', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('it');
+  });
+
+  const cell = (props: { summary?: { propertyId: string; worstStatus: 'Published'; syncAlert: boolean }; known: boolean }) =>
+    render(
+      <MemoryRouter>
+        <ChannelsCell propertyId="p1" canWrite {...props} />
+      </MemoryRouter>,
+    );
+
+  it('theSummaryIsNotReadYet_OrCouldNotBeRead_SaysNothingIsKnown_NeverNonPubblicato', () => {
+    // While it loads, or after a failed read, the summary has no entry for anybody: that is not «never published».
+    cell({ known: false });
+
+    expect(screen.getByTestId('channels-unknown')).toHaveTextContent('Stato dei canali non ancora disponibile');
+    expect(screen.queryByText('Non pubblicato')).not.toBeInTheDocument();
+  });
+
+  it('theSummaryWasRead_AMissingPropertyIsNonPubblicato_APropertyWithAChannelShowsItsWorstState', () => {
+    const { unmount } = cell({ known: true });
+    expect(screen.getByText('Non pubblicato')).toBeInTheDocument();
+    expect(screen.queryByTestId('channels-unknown')).not.toBeInTheDocument();
+    unmount();
+
+    cell({ known: true, summary: { propertyId: 'p1', worstStatus: 'Published', syncAlert: false } });
+    expect(screen.getByTestId('channel-summary')).toHaveAttribute('data-status', 'Published');
+    expect(screen.queryByText('Non pubblicato')).not.toBeInTheDocument();
   });
 });
 

@@ -6,7 +6,7 @@ import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Button } from '@/components/ui/button';
 import { useListingStatus } from '@/queries/use-listing-status';
 import { cn } from '@/lib/utils';
-import type { ChannelPublishStatus } from '@/types';
+import type { ChannelPublishStatus, ListingPropertySummary } from '@/types';
 import { firstStepToFix } from '../wizard/channels-model';
 import { propertyWizardPath } from '../properties-paths';
 import { useChannelName } from './channel-name';
@@ -57,6 +57,36 @@ export function ChannelSummary({ propertyId, worstStatus, syncAlert, canWrite }:
         </Button>
       ) : null}
     </div>
+  );
+}
+
+interface ChannelsCellProps extends Pick<SummaryProps, 'propertyId' | 'canWrite'> {
+  /** The summary of the property, when it has a channel. */
+  summary: ListingPropertySummary | undefined;
+  /** The summary of the list was read: only then is «no summary» the answer «never published». While it loads, or when it could not be read, nothing is known. */
+  known: boolean;
+}
+
+/**
+ * The «Canali» cell of the list of the properties: the worst state of the channels of a property, «Non pubblicato» when the summary was
+ * read and the property is not in it, and a dash while the summary loads or cannot be read — never «Non pubblicato» for what is not known.
+ */
+export function ChannelsCell({ propertyId, summary, known, canWrite }: ChannelsCellProps) {
+  const { t } = useTranslation();
+
+  if (!known) {
+    return (
+      <span className="text-foreground/70" data-testid="channels-unknown">
+        <span aria-hidden="true">–</span>
+        <span className="sr-only">{t('property.list.channelsUnknown')}</span>
+      </span>
+    );
+  }
+
+  return summary ? (
+    <ChannelSummary propertyId={propertyId} worstStatus={summary.worstStatus} syncAlert={summary.syncAlert} canWrite={canWrite} />
+  ) : (
+    <span className="text-foreground/70">{t('property.list.noChannels')}</span>
   );
 }
 

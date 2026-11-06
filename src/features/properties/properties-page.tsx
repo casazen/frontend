@@ -94,6 +94,8 @@ export function PropertiesPage() {
     onActivate,
     onDelete,
     channelSummaries,
+    // Not «Non pubblicato» for a summary that is still loading or could not be read: the column says nothing is known.
+    channelsKnown: summaries.isSuccess,
   });
 
   // The backend decides whether it can go (409 with upcoming bookings / active leases): the mutation's own toast says why.

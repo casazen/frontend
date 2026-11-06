@@ -11257,6 +11257,7 @@
         "reactivate": "Riattiva",
         "requestService": "Richiedi intervento"
       },
+      "channelsUnknown": "Stato dei canali non ancora disponibile",
       "chips": {
         "active": "Attivi",
         "all": "Tutti",
