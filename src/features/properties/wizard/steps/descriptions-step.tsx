@@ -42,10 +42,12 @@ interface LanguageFieldsProps {
   language: ListingLanguage;
   /** The origins and the stored texts the server has, to tell what the save will make of what is typed. */
   profile: Parameters<typeof shownOrigin>[0];
+  /** The fields may be left empty: they say so. */
+  optional?: boolean;
 }
 
 /** The headline and the description in one language other than Italian. Errors sit on the field they are about. */
-function LanguageFields({ form, language, profile }: LanguageFieldsProps) {
+function LanguageFields({ form, language, profile, optional = false }: LanguageFieldsProps) {
   const { t } = useTranslation();
   const { register, watch, formState } = form;
   const typed = watch('texts')[language] ?? { title: '', description: '' };
@@ -59,6 +61,7 @@ function LanguageFields({ form, language, profile }: LanguageFieldsProps) {
           label={t('propertyWizard.descriptions.title.label', { language: languageName })}
           counter={`${typed.title.length}/${LISTING_TITLE_MAX}`}
           error={problems?.title}
+          optional={optional}
         >
           <Input autoComplete="off" lang={language} maxLength={LISTING_TITLE_MAX} {...register(`texts.${language}.title`)} />
         </Field>
@@ -69,6 +72,7 @@ function LanguageFields({ form, language, profile }: LanguageFieldsProps) {
           label={t('propertyWizard.descriptions.description.label', { language: languageName })}
           counter={`${typed.description.length}/${LISTING_DESCRIPTION_MAX}`}
           error={problems?.description}
+          optional={optional}
         >
           <Textarea rows={7} lang={language} {...register(`texts.${language}.description`)} />
         </Field>
@@ -81,6 +85,11 @@ function LanguageFields({ form, language, profile }: LanguageFieldsProps) {
 interface DescriptionsStepProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
+  /**
+   * The Italian and the English texts are required (where the channel manager is connected, the channels take no listing without them).
+   * Otherwise they may be left empty and the fields say so. Default: required.
+   */
+  required?: boolean;
 }
 
 /**
@@ -90,7 +99,7 @@ interface DescriptionsStepProps {
  * the columns of the property and carries the AI suggestion of «Il tuo annuncio»; the other languages are the site profile. A tab that has
  * a problem opens by itself, so the message and the field are where the host looks.
  */
-export function DescriptionsStep({ form, propertyId }: DescriptionsStepProps) {
+export function DescriptionsStep({ form, propertyId, required = true }: DescriptionsStepProps) {
   const { t } = useTranslation();
   const baseId = useId();
   const gallery = usePropertyPhotos(propertyId);
@@ -164,13 +173,13 @@ export function DescriptionsStep({ form, propertyId }: DescriptionsStepProps) {
         </div>
 
         <div id={panelId('it')} role="tabpanel" aria-labelledby={tabId('it')} hidden={selected !== 'it'} className="min-w-0 space-y-2">
-          <ListingTextCard form={form} propertyId={propertyId} photos={photos} />
+          <ListingTextCard form={form} propertyId={propertyId} photos={photos} optional={!required} />
           <OriginNote origin={typedItalian ? 'UserWritten' : null} testId="property-wizard-origin-it" />
         </div>
 
         <div id={panelId('en')} role="tabpanel" aria-labelledby={tabId('en')} hidden={selected !== 'en'} className="min-w-0 space-y-4">
           <p className="text-sm text-foreground/70">{t('propertyWizard.descriptions.en.hint')}</p>
-          <LanguageFields form={form} language="en" profile={profile.data} />
+          <LanguageFields form={form} language="en" profile={profile.data} optional={!required} />
         </div>
       </div>
 

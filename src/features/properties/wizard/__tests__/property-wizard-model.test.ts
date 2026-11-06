@@ -5,7 +5,9 @@ import {
   NEW_PROPERTY_DEFAULTS,
   WIZARD_STEP_IDS,
   amenitiesUpdatePayload,
+  adoptableFieldsOf,
   baseUpdatePayload,
+  descriptionsLengthsSchema,
   descriptionsStepSchema,
   descriptionsUpdatePayload,
   photosStepSchema,
@@ -162,6 +164,32 @@ describe('the steps of the wizard (NF-31, NF-37)', () => {
     // Other languages are optional, with the same limits.
     expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: '', description: '' } } }).success).toBe(true);
     expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: 'x'.repeat(61), description: '' } } }).success).toBe(false);
+  });
+
+  it('descriptionsLengthsSchema_WhereTheChannelManagerIsOff_EmptyTextsAreFine_OnlyTheLengthsAreChecked', () => {
+    // The whole schema of the step without the channel manager: the texts of the listing are optional, as they always were.
+    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS }).success).toBe(true);
+    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, listingTitle: 'x'.repeat(61) }).success).toBe(false);
+    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, description: 'x'.repeat(2001) }).success).toBe(false);
+    expect(
+      descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, texts: { ...NEW_PROPERTY_DEFAULTS.texts, fr: { title: 'x'.repeat(61), description: '' } } }).success,
+    ).toBe(false);
+  });
+
+  it('adoptableFieldsOf_TheFieldsTheChannelsVersionRewrites_AsTheServerHoldsThem', () => {
+    const property = { listingTitle: null, description: 'Testo del canale', houseRules: 'Regole del canale' };
+    const profile = { translations: { en: { title: 'Pool trullo', description: 'Text of the channel' } } } as never;
+
+    expect(adoptableFieldsOf(property, profile)).toMatchObject({
+      listingTitle: '',
+      description: 'Testo del canale',
+      houseRules: 'Regole del canale',
+      texts: { en: { title: 'Pool trullo', description: 'Text of the channel' }, fr: { title: '', description: '' } },
+    });
+    // The wizard opens on the same fields.
+    expect(wizardDefaults({ ...complete, amenities: [], bedrooms: 1, bathrooms: 1, ...property } as unknown as Property, { rooms: [], stayDiscounts: [], photoMeta: [], siteProfile: profile })).toMatchObject(
+      adoptableFieldsOf(property, profile),
+    );
   });
 
   it('descriptionsStepSchema_OnlySpacesAreNotAText', () => {

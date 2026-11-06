@@ -34,6 +34,7 @@ import {
   baseStepSchema,
   baseUpdatePayload,
   createPayload,
+  descriptionsLengthsSchema,
   descriptionsStepSchema,
   descriptionsUpdatePayload,
   photosStepSchema,
@@ -378,10 +379,13 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       label: t('propertyWizard.steps.descriptions.label'),
       title: t('propertyWizard.steps.descriptions.title'),
       purpose: t('propertyWizard.steps.descriptions.purpose'),
-      // Not optional: the Italian and the English headline and description are what a channel takes a listing with.
-      schema: descriptionsStepSchema,
+      // The Italian and the English headline and description are what a channel takes a listing with: required where the channel manager is
+      // connected. Where it is not (the production default) the step stays what the headline and the description of the photos step always
+      // were — optional, only their lengths checked, and not asked for again by `WizardShell` at the last button.
+      optional: !connectorOn,
+      schema: connectorOn ? descriptionsStepSchema : descriptionsLengthsSchema,
       beforeNext: saveDescriptions,
-      render: ({ form }) => (propertyId ? <DescriptionsStep form={form} propertyId={propertyId} /> : null),
+      render: ({ form }) => (propertyId ? <DescriptionsStep form={form} propertyId={propertyId} required={connectorOn} /> : null),
     },
     {
       id: 'rules',

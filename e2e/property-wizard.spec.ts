@@ -67,16 +67,11 @@ async function mockActivation(page: Page, state: ServerState): Promise<void> {
   });
 }
 
-/** Writes the title and the description in Italian and in English: the channels take no listing without them, so the step cannot be left. */
-async function writeTexts(page: Page): Promise<void> {
-  await page.getByLabel('Titolo', { exact: true }).fill('Casa Procedura');
-  await page.getByLabel('Descrizione', { exact: true }).fill('Appartamento di prova nel centro.');
-  await page.getByTestId('property-wizard-descriptions-tab-en').click();
-  await page.getByLabel('Titolo (Inglese)').fill('Procedure house');
-  await page.getByLabel('Descrizione (Inglese)').fill('A test apartment in the centre.');
-}
-
-/** Creates the property with the first step, leaves the optional ones, writes the texts, gives the rate and arrives at the last step. */
+/**
+ * Creates the property with the first step, leaves the optional ones, gives the rate and arrives at the last step. The channel manager is
+ * off here (the flag `octorateConnector` is, in the e2e, as in production): the texts of the listing are optional, as they always were, so
+ * the Italian headline is written and the English texts are left empty — «Continua» asks for nothing more.
+ */
 async function goToLastStep(page: Page): Promise<void> {
   await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'));
   const created = await createPropertyWithWizard(page, { name: 'Casa Procedura', address: 'Via Garibaldi 42', comune: 'Milano', postalCode: '20100' });
@@ -85,12 +80,8 @@ async function goToLastStep(page: Page): Promise<void> {
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', stepId);
     await page.getByTestId('wizard-skip').click();
   }
-  // The descriptions are not optional: without the four texts «Continua» names what is missing and stays.
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'descriptions');
-  await page.getByTestId('property-wizard-next').click();
-  await expect(page.getByTestId('wizard-error-summary')).toContainText('Scrivi il titolo in italiano.');
-  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'descriptions');
-  await writeTexts(page);
+  await page.getByLabel('Titolo', { exact: true }).fill('Casa Procedura');
   await page.getByTestId('property-wizard-next').click();
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'rules');
   await page.getByTestId('wizard-skip').click();

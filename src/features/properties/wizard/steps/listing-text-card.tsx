@@ -28,6 +28,8 @@ interface ListingTextCardProps {
   propertyId: string;
   /** The photos of the gallery as the host sees them, cover first: the AI looks at the first six. */
   photos: readonly string[];
+  /** The headline and the description may be left empty (where no channel manager is connected): the fields say so. */
+  optional?: boolean;
 }
 
 /**
@@ -38,7 +40,7 @@ interface ListingTextCardProps {
  * says what makes the text better (photos first) and the «?» what the AI uses. Both fields are required: the channels take no listing
  * without them.
  */
-export function ListingTextCard({ form, propertyId, photos }: ListingTextCardProps) {
+export function ListingTextCard({ form, propertyId, photos, optional = false }: ListingTextCardProps) {
   const { t } = useTranslation();
   const amenityLabel = useAmenityLabels();
   const [previous, setPrevious] = useState<{ listingTitle: string; description: string } | null>(null);
@@ -111,6 +113,7 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
 
       <Field
         label={t('propertyWizard.photos.listing.headline.label')}
+        optional={optional}
         hint={t('propertyWizard.photos.listing.headline.hint')}
         counter={`${titleLength}/${LISTING_TITLE_MAX}`}
         error={formState.errors.listingTitle}
@@ -120,6 +123,7 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
 
       <Field
         label={t('propertyWizard.photos.listing.text.label')}
+        optional={optional}
         counter={`${descriptionLength}/${LISTING_DESCRIPTION_MAX}`}
         error={formState.errors.description}
       >

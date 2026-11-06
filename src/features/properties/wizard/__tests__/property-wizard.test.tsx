@@ -95,9 +95,9 @@ const SEED: WizardListingSeed = {
   siteProfile: { translations: { en: { title: 'Old title', description: 'Old description written in CasaZen' } } } as unknown as WizardListingSeed['siteProfile'],
 };
 
-function open() {
+function open(search = '') {
   return render(
-    <MemoryRouter initialEntries={['/app/short-rent/properties/create']}>
+    <MemoryRouter initialEntries={[`/app/short-rent/properties/create${search}`]}>
       <Routes>
         <Route path="/app/short-rent/properties/create" element={<PropertyWizard />} />
         <Route path="/app/short-rent/properties" element={<p>Elenco immobili</p>} />
@@ -159,6 +159,47 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     flags.octorateConnector = true;
     open();
     expect(screen.getAllByText('Canali').length).toBeGreaterThan(0);
+  });
+
+  it('descriptions_TheTextsAreRequiredOnlyWhereTheChannelManagerIsConnected', () => {
+    // Not connected (the production default): the step can be left out, as the title and the description of the photos step always could.
+    const { unmount } = open('?step=descriptions');
+    expect(step()).toBe('descriptions');
+    expect(screen.getByTestId('wizard-skip')).toBeInTheDocument();
+    unmount();
+
+    // Connected: the channels take no listing without them, so the step cannot be skipped.
+    flags.octorateConnector = true;
+    open('?step=descriptions');
+    expect(step()).toBe('descriptions');
+    expect(screen.queryByTestId('wizard-skip')).not.toBeInTheDocument();
+  });
+
+  it('descriptionsEmpty_WithTheChannelManagerOff_AvantiAsksNothing_WithItOnItNamesWhatIsMissing', async () => {
+    // The wizard reopened on a property with no title and no description at all, at the step of the texts.
+    const empty = { ...PROPERTY, listingTitle: null, description: '', houseRules: null } as unknown as Property;
+    window.history.replaceState({}, '', '/app/short-rent/properties/create?propertyId=p1&step=descriptions');
+    const reopen = () =>
+      render(
+        <MemoryRouter initialEntries={['/app/short-rent/properties/create?propertyId=p1&step=descriptions']}>
+          <Routes>
+            <Route path="/app/short-rent/properties/create" element={<PropertyWizard property={empty} />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+    const { unmount } = reopen();
+    fireEvent.click(screen.getByTestId('property-wizard-next'));
+    await waitFor(() => expect(step()).toBe('rules'));
+    // Nothing was asked for, and the host's empty texts are saved as they are (the listing then uses the name).
+    expect(saveMock).toHaveBeenCalledWith({ id: 'p1', data: { listingTitle: null, description: '' } });
+    unmount();
+
+    flags.octorateConnector = true;
+    reopen();
+    fireEvent.click(screen.getByTestId('property-wizard-next'));
+    expect(await screen.findByTestId('wizard-error-summary')).toHaveTextContent('Scrivi il titolo in italiano.');
+    expect(step()).toBe('descriptions');
   });
 
   it('afterTheHostTookTheChannelsTexts_TheTextsAndTheRulesStepsDoNotSendTheOldOnesBack', async () => {
