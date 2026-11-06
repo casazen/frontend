@@ -111,6 +111,15 @@ function fillGuest(index: number, guest: GuestInput) {
   change(card, /^Cittadinanza/, 'Italia');
 }
 
+/**
+ * The form is on screen AND the page has started it from the guests on file. That effect runs after the first render of the context and
+ * replaces the cards of the guests (new keys): a card taken before it is detached, and what is typed on it never reaches the form.
+ */
+async function formReady() {
+  await screen.findByTestId('checkin-page');
+  await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Mario'));
+}
+
 async function goToDocuments() {
   fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
   await screen.findByTestId('stay-guest-0-document');
@@ -530,17 +539,20 @@ describe('CheckInPage', () => {
       const addBundle = vi.spyOn(i18n, 'addResourceBundle').mockImplementationOnce(() => {
         throw new Error('chunk');
       });
-      renderPage();
-      const select = (await screen.findByLabelText('Lingua')) as HTMLSelectElement;
+      try {
+        renderPage();
+        const select = (await screen.findByLabelText('Lingua')) as HTMLSelectElement;
 
-      fireEvent.change(select, { target: { value: 'de' } });
+        fireEvent.change(select, { target: { value: 'de' } });
 
-      expect(await screen.findByTestId('checkin-language-not-loaded')).toHaveTextContent('Non siamo riusciti a caricare questa lingua');
-      // The page is in the language it had, and the control, the voice of the screen reader and the texts agree on it.
-      expect(select.value).toBe('it');
-      expect(document.documentElement.lang).toBe('it');
-      expect(i18n.language).toBe('it');
-      addBundle.mockRestore();
+        expect(await screen.findByTestId('checkin-language-not-loaded')).toHaveTextContent('Non siamo riusciti a caricare questa lingua');
+        // The page is in the language it had, and the control, the voice of the screen reader and the texts agree on it.
+        expect(select.value).toBe('it');
+        expect(document.documentElement.lang).toBe('it');
+        expect(i18n.language).toBe('it');
+      } finally {
+        addBundle.mockRestore();
+      }
     });
 
     it('language_CompletedLink_StillChangesTheLanguageButSavesNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -555,9 +567,9 @@ describe('CheckInPage', () => {
 
     it('language_Choosing_AfterTypingKeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       let saved: (answer: { language: string }) => void = () => undefined;
-      vi.mocked(publicCheckinApi.setLanguage).mockImplementation(() => new Promise((resolve) => { saved = resolve; }));
+      vi.mocked(publicCheckinApi.setLanguage).mockImplementationOnce(() => new Promise((resolve) => { saved = resolve; }));
       renderPage();
-      await screen.findByTestId('checkin-page');
+      await formReady();
       fillGuest(0, { firstName: 'Giulia' });
 
       fireEvent.change(screen.getByLabelText('Lingua'), { target: { value: 'fr' } });
@@ -575,15 +587,19 @@ describe('CheckInPage', () => {
 
     it('prefill_ContextReadAgainWithTheSameGuests_KeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       const view = renderPage();
-      await screen.findByTestId('checkin-page');
+      await formReady();
       fillGuest(0, { firstName: 'Giulia' });
 
       // The session moved on (another `status`): a new object, the same guests on file.
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, status: 'Inviato' });
       await act(async () => {
         await view.client.refetchQueries({ queryKey: ['checkin', TOKEN] });
+        // The query client tells its observers on the next tick: let the page render the new context and run its effects.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
+      expect(publicCheckinApi.getContext).toHaveBeenCalledTimes(2);
       expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Giulia');
     });
 
