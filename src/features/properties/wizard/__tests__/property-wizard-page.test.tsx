@@ -78,6 +78,14 @@ describe('PropertyWizardPage: a listing that is already on the channels (NF-29)'
     expect(screen.getByTestId('property-wizard-imported')).toHaveTextContent('Stai vedendo tutti i passi');
   });
 
+  it('aCinThatIsMissing_IsFixedInTheLastStep_TheBaseTheServerFilesItUnderIsNotOpened', () => {
+    // The property of this test has no CIN. The channel is left to fix for it alone, and the server names `base` for it.
+    onChannels({ ...row('booking_xml', ['base']), status: 'ToFix', errorCode: 'listing_cin_missing' });
+    open();
+
+    expect(handedOver()).toEqual({ onlySteps: ['channels', 'finish'], initialStepId: 'channels' });
+  });
+
   it('theStepNamedInTheAddress_IsKept_TheListStaysTheSame', () => {
     open('?propertyId=p1&step=rules');
 

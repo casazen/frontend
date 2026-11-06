@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { AxiosError, AxiosHeaders } from 'axios';
 import { useForm } from 'react-hook-form';
 import { MemoryRouter } from 'react-router-dom';
@@ -112,6 +112,24 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     expect(goTo).toHaveBeenCalledWith('photos');
     fireEvent.click(screen.getByTestId('property-wizard-fix-booking_xml-descriptions'));
     expect(goTo).toHaveBeenCalledWith('descriptions');
+  });
+
+  it('cinMissing_CorreggiLeadsToTheLastStepWhereTheCinIs_NotToTheBaseTheServerFilesItUnder', () => {
+    state.cinCode = null;
+    withRows(row('booking_xml', { status: 'ToFix', completeness: 83, errorCode: 'listing_cin_missing', reason: 'Per questo canale serve un CIN valido.', missing: ['base'] }));
+    render(<Harness />);
+
+    expect(screen.queryByTestId('property-wizard-fix-booking_xml-base')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Correggi: CIN' }));
+    expect(goTo).toHaveBeenCalledWith('finish');
+
+    // With a valid CIN the same row points where the server says: the data of the property.
+    goTo.mockReset();
+    state.cinCode = 'IT058091C27G5FFZDZ';
+    cleanup();
+    render(<Harness />);
+    fireEvent.click(screen.getByTestId('property-wizard-fix-booking_xml-base'));
+    expect(goTo).toHaveBeenCalledWith('base');
   });
 
   it('managedOnTheChannel_SaysSoAndCannotBeChosen', () => {

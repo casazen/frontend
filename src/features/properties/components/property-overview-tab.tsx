@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FACT_LINK, Fact, Facts } from '@/features/bookings/components/booking-facts';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { isValidCin } from '@/lib/cin-format';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { PropertyDetailDto } from '@/types';
 import { PRICING_SECTION_ID } from '../lib/property-sheet';
@@ -118,7 +119,7 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
 
       {connectorOn ? (
         <PlainSection title={t('property.detail.sections.channels')}>
-          <MultiChannelStatus propertyId={property.id} canWrite={canWrite} />
+          <MultiChannelStatus propertyId={property.id} canWrite={canWrite} cinValid={isValidCin(property.cinCode)} />
         </PlainSection>
       ) : null}
 

@@ -41,15 +41,30 @@ export function selectedChannels(entries: readonly ChannelEntry[], leftOut: read
 
 const isWizardStep = (step: string): step is WizardStepId => (WIZARD_STEP_IDS as readonly string[]).includes(step);
 
-/** The steps of a row that lack data, in the order of the wizard, keeping only the ones this wizard has. */
-export function missingStepsOf(row: Pick<ListingChannelStatus, 'missing'>): WizardStepId[] {
-  const found = row.missing.filter(isWizardStep);
-  return WIZARD_STEP_IDS.filter((id) => found.includes(id));
+/** The code of a channel left to fix because the property has no valid CIN, and the step the server files the CIN under (the data of the property). */
+const CIN_MISSING_CODE = 'listing_cin_missing';
+
+/** The step where the wizard asks for the CIN: the last one (calendars, CIN, documents), not `base`. */
+export const CIN_STEP: WizardStepId = 'finish';
+
+/**
+ * The steps of a row that lack data, in the order of the wizard, keeping only the ones this wizard has. The server files the CIN under
+ * `base` (it is part of the data of the property) but the wizard asks for it in the last step: while the CIN is not valid (`cinValid`
+ * false; unknown = `undefined`, nothing changes) that step is among the ones to fix, and for a channel left to fix for the CIN alone it
+ * takes the place of `base`, which has nothing to correct.
+ */
+export function missingStepsOf(row: Pick<ListingChannelStatus, 'missing' | 'errorCode'>, cinValid?: boolean): WizardStepId[] {
+  const found = new Set(row.missing.filter(isWizardStep));
+  if (cinValid === false && found.has('base')) {
+    found.add(CIN_STEP);
+    if (row.errorCode === CIN_MISSING_CODE) found.delete('base');
+  }
+  return WIZARD_STEP_IDS.filter((id) => found.has(id));
 }
 
 /** The steps that lack data for any channel, in the order of the wizard. */
-export function missingSteps(status: ListingStatus | undefined): WizardStepId[] {
-  const found = new Set((status?.channels ?? []).flatMap((row) => missingStepsOf(row)));
+export function missingSteps(status: ListingStatus | undefined, cinValid?: boolean): WizardStepId[] {
+  const found = new Set((status?.channels ?? []).flatMap((row) => missingStepsOf(row, cinValid)));
   return WIZARD_STEP_IDS.filter((id) => found.has(id));
 }
 
@@ -58,15 +73,15 @@ export function missingSteps(status: ListingStatus | undefined): WizardStepId[] 
  * step (the check of an imported listing, NF-29). `null` when the property has no channel yet: there is nothing to check, the wizard is
  * the whole of it.
  */
-export function importedSteps(status: ListingStatus | undefined): WizardStepId[] | null {
+export function importedSteps(status: ListingStatus | undefined, cinValid?: boolean): WizardStepId[] | null {
   if (!status || status.channels.length === 0) return null;
-  const wanted = new Set<WizardStepId>([...missingSteps(status), 'channels', 'finish']);
+  const wanted = new Set<WizardStepId>([...missingSteps(status, cinValid), 'channels', 'finish']);
   return WIZARD_STEP_IDS.filter((id) => wanted.has(id));
 }
 
-/** Where the person fixes a channel: the first step that lacks data, or the channels when the row says no step. */
-export function firstStepToFix(status: ListingStatus | undefined): WizardStepId {
-  return missingSteps(status)[0] ?? 'channels';
+/** Where the person fixes a channel: the first step that lacks data (the last one for a CIN that is missing), or the channels when the row says no step. */
+export function firstStepToFix(status: ListingStatus | undefined, cinValid?: boolean): WizardStepId {
+  return missingSteps(status, cinValid)[0] ?? 'channels';
 }
 
 /** The groups of a change made outside CasaZen that «Prendi la nuova versione» can adopt: only the descriptions. */

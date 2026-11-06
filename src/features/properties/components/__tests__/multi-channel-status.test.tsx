@@ -179,6 +179,23 @@ describe('MultiChannelStatus (the sheet of the property)', () => {
     expect(screen.queryByTestId('multi-channel-outside')).not.toBeInTheDocument();
   });
 
+  it('correggi_ForACinThatIsMissing_OpensTheLastStepOfTheWizard', () => {
+    channels(row('booking_xml', { status: 'ToFix', errorCode: 'listing_cin_missing', missing: ['base'] }));
+    const { rerender } = render(
+      <MemoryRouter>
+        <MultiChannelStatus propertyId="p1" canWrite cinValid={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('multi-channel-fix')).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=p1&step=finish');
+
+    rerender(
+      <MemoryRouter>
+        <MultiChannelStatus propertyId="p1" canWrite cinValid />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('multi-channel-fix')).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=p1&step=base');
+  });
+
   it('syncAlert_ShowsTheLateSyncBadgeOnThatChannelOnly', () => {
     channels(row('booking_xml', { syncAlert: true }), row('airbnb_xml'));
     render(

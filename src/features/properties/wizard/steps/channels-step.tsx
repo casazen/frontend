@@ -16,6 +16,7 @@ import { useProperty } from '@/queries/use-properties';
 import { useChannelName } from '../../components/channel-name';
 import { OutsideChangeDialog } from '../../components/outside-change-dialog';
 import {
+  CIN_STEP,
   OCTORATE_MAPPING_PATH,
   channelEntries,
   missingStepsOf,
@@ -117,6 +118,7 @@ export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStep
               chosen={!leftOut.includes(entry.code)}
               onChoose={(checked) => toggle(entry.code, checked)}
               goTo={goTo}
+              cinValid={property.data ? cinValid : undefined}
             />
           ))}
         </ul>
@@ -202,13 +204,15 @@ interface ChannelCardProps {
   chosen: boolean;
   onChoose: (chosen: boolean) => void;
   goTo: (stepId: string) => void;
+  /** The CIN of the property is valid (`undefined` while it is not known): a CIN that is missing is fixed in the last step. */
+  cinValid: boolean | undefined;
 }
 
 /** One channel: its name and state, what it takes to be published, and the way to the steps that lack data. */
-function ChannelCard({ entry, name, chosen, onChoose, goTo }: ChannelCardProps) {
+function ChannelCard({ entry, name, chosen, onChoose, goTo, cinValid }: ChannelCardProps) {
   const { t } = useTranslation();
   const { row } = entry;
-  const missing = row ? missingStepsOf(row) : [];
+  const missing = row ? missingStepsOf(row, cinValid) : [];
 
   return (
     <li className="min-w-0 space-y-3 rounded-lg p-4 ring-1 ring-inset ring-border" data-testid={`property-wizard-channel-${entry.code}`} data-status={row?.status ?? 'Draft'}>
@@ -258,7 +262,7 @@ function ChannelCard({ entry, name, chosen, onChoose, goTo }: ChannelCardProps) 
           <div className="flex flex-wrap gap-2">
             {missing.map((step: WizardStepId) => (
               <Button key={step} type="button" size="sm" variant="outline" onClick={() => goTo(step)} data-testid={`property-wizard-fix-${entry.code}-${step}`}>
-                {t('propertyWizard.channels.fix', { step: t(`propertyWizard.steps.${step}.label`) })}
+                {step === CIN_STEP ? t('propertyWizard.channels.fixCin') : t('propertyWizard.channels.fix', { step: t(`propertyWizard.steps.${step}.label`) })}
               </Button>
             ))}
           </div>

@@ -95,6 +95,8 @@ export function ChannelsCell({ propertyId, summary, known, canWrite }: ChannelsC
 interface DetailProps {
   propertyId: string;
   canWrite: boolean;
+  /** The CIN of the property is valid: a CIN that is missing is fixed in the last step of the wizard, where «Correggi» leads. Unknown by default. */
+  cinValid?: boolean;
 }
 
 /**
@@ -103,7 +105,7 @@ interface DetailProps {
  * says so, the reason in simple words for a channel to fix and «Correggi», which opens the wizard at the first step that lacks data.
  * Nothing while the property was never published: there is nothing to tell.
  */
-export function MultiChannelStatus({ propertyId, canWrite }: DetailProps) {
+export function MultiChannelStatus({ propertyId, canWrite, cinValid }: DetailProps) {
   const { t } = useTranslation();
   const channelName = useChannelName();
   const status = useListingStatus(propertyId);
@@ -154,7 +156,7 @@ export function MultiChannelStatus({ propertyId, canWrite }: DetailProps) {
       ) : null}
       {canWrite && toFix ? (
         <Button asChild size="sm" variant="outline" className="min-h-11 md:min-h-0">
-          <Link to={propertyWizardPath(propertyId, firstStepToFix(status.data))} data-testid="multi-channel-fix">
+          <Link to={propertyWizardPath(propertyId, firstStepToFix(status.data, cinValid))} data-testid="multi-channel-fix">
             {t('listingStatus.fix')}
           </Link>
         </Button>

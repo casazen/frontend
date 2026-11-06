@@ -12117,6 +12117,7 @@
       },
       "completeness": "Completezza del contenuto: {{value}}%",
       "fix": "Correggi: {{step}}",
+      "fixCin": "Correggi: CIN",
       "incomplete": {
         "title": "Prima di pubblicare servono questi testi"
       },

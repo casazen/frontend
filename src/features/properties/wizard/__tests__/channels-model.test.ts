@@ -8,6 +8,7 @@ import {
   firstStepToFix,
   importedSteps,
   missingSteps,
+  missingStepsOf,
   publishProblemOf,
   selectedChannels,
 } from '../channels-model';
@@ -83,6 +84,30 @@ describe('the steps that lack data', () => {
   it('importedSteps_NoChannelYet_IsNull_TheWizardIsTheWholeOfIt', () => {
     expect(importedSteps(status())).toBeNull();
     expect(importedSteps(undefined)).toBeNull();
+  });
+
+  it('theCinThatIsMissing_IsFixedInTheLastStep_NotInTheBaseTheServerFilesItUnder', () => {
+    // A channel left to fix for the CIN alone: the server names `base` (the data of the property) but the CIN is asked for in the last step.
+    const cin = status(row('booking_xml', { status: 'ToFix', errorCode: 'listing_cin_missing', missing: ['base'] }));
+
+    expect(missingStepsOf(cin.channels[0]!, false)).toEqual(['finish']);
+    expect(firstStepToFix(cin, false)).toBe('finish');
+    expect(importedSteps(cin, false)).toEqual(['channels', 'finish']);
+
+    // The CIN is valid (or not known): the row says what it says, nothing is moved.
+    expect(missingStepsOf(cin.channels[0]!, true)).toEqual(['base']);
+    expect(missingStepsOf(cin.channels[0]!)).toEqual(['base']);
+    expect(firstStepToFix(cin, true)).toBe('base');
+    expect(importedSteps(cin, true)).toEqual(['base', 'channels', 'finish']);
+  });
+
+  it('theCinThatIsMissing_AndAnotherReasonForBase_ShowsBothSteps_AChannelWithoutBaseShowsNeither', () => {
+    // Left to fix for the photos while the CIN is missing as well: `base` may be the rooms or the CIN, so both can be reached.
+    const both = row('booking_xml', { status: 'ToFix', errorCode: 'listing_photos_below_minimum', missing: ['base', 'photos'] });
+    expect(missingStepsOf(both, false)).toEqual(['base', 'photos', 'finish']);
+
+    // No `base` named: the CIN is not what lacks, whatever the property says.
+    expect(missingStepsOf(row('booking_xml', { missing: ['photos'] }), false)).toEqual(['photos']);
   });
 });
 
