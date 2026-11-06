@@ -19279,7 +19279,20 @@
     "back": "Indietro",
     "cancel": "Annulla",
     "continueTo": "Continua: {{step}}",
+    "savedAt": "Salvato alle {{time}}",
+    "saveError": "Non riesco a salvare",
+    "saveRetry": "Riprova",
+    "saving": "Salvataggio…",
     "skip": "Salta questo passo",
+    "conflict": {
+      "confirmKeepMine": "Le tue modifiche sostituiranno la versione salvata altrove.",
+      "confirmTakeTheirs": "Le modifiche non salvate di questa scheda andranno perse.",
+      "description": "Questa bozza è stata salvata anche da un altro dispositivo o da un'altra scheda. Scegli quale versione tenere.",
+      "keepMine": "Mantieni le mie modifiche",
+      "serverSavedAt": "Versione salvata alle {{time}}",
+      "takeTheirs": "Usa la versione del server",
+      "title": "Conflitto di versione"
+    },
     "draft": {
       "resume": "Riprendi dal passo {{number}}",
       "resumeText": "Eri arrivato al passo {{current}} di {{total}}: «{{step}}».",
