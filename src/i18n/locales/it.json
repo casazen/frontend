@@ -9528,6 +9528,7 @@
           "other": "Canale {{code}}",
           "vrbo": "Vrbo"
         },
+        "channelsAfterLink": "I canali di questo annuncio compaiono dopo il collegamento.",
         "channelsOf": "Canali di {{name}}",
         "count_one": "Abbiamo trovato {{count}} annuncio nel tuo channel manager.",
         "count_other": "Abbiamo trovato {{count}} annunci nel tuo channel manager.",
@@ -9706,7 +9707,7 @@
       "steps": {
         "channels": {
           "label": "Canali trovati",
-          "purpose": "Ecco gli annunci del tuo channel manager e i canali su cui sono pubblicati. Per ora li leggiamo soltanto.",
+          "purpose": "Ecco gli annunci del tuo channel manager. Per ora li leggiamo soltanto: i canali di ogni annuncio compaiono dopo il collegamento.",
           "title": "Cosa abbiamo trovato"
         },
         "consent": {

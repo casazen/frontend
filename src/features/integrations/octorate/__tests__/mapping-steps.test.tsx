@@ -97,7 +97,7 @@ describe('channels found: what the channel manager holds (NF-28)', () => {
   it('OctorateChannelsFound_EachListing_ShowsItsOneStateInSimpleWordsAndItsChannelsWithTheirState', async () => {
     vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
       listing(),
-      listing({ octorateAccommodationId: 'acc-2', name: 'Casa Blu', status: 'Ambiguous', proposedProperty: null, channels: [] }),
+      listing({ octorateAccommodationId: 'acc-2', name: 'Casa Blu', status: 'Ambiguous', proposedProperty: null }),
       newListing(),
       linkedListing({
         octorateAccommodationId: 'acc-3',
@@ -107,21 +107,18 @@ describe('channels found: what the channel manager holds (NF-28)', () => {
           { channelId: '999', externalId: 'other-1', state: 'Pending' },
         ],
       }),
+      linkedListing({ octorateAccommodationId: 'acc-5', name: 'Villa Mare' }),
     ]);
     renderAt('channels');
 
     expect(await screen.findByTestId('octorate-channels-count', undefined, WAIT)).toHaveTextContent(
-      i18n.t('octorate.connect.channelsFound.count', { count: 4 }),
+      i18n.t('octorate.connect.channelsFound.count', { count: 5 }),
     );
 
     const proposed = within(screen.getByTestId('octorate-channels-listing-acc-1'));
     expect(proposed.getByTestId('octorate-listing-state-toConfirm')).toHaveTextContent(i18n.t('octorate.connect.channelsFound.state.toConfirm.label'));
-    expect(proposed.getByTestId('octorate-channel-142')).toHaveTextContent('Booking.com');
-    expect(proposed.getByTestId('octorate-channel-142')).toHaveTextContent(i18n.t('octorate.connect.channelsFound.onChannel.connected'));
-    expect(proposed.getByTestId('octorate-channel-274')).toHaveTextContent('Airbnb');
     const ambiguous = within(screen.getByTestId('octorate-channels-listing-acc-2'));
     expect(ambiguous.getByTestId('octorate-listing-state-toChoose')).toBeInTheDocument();
-    expect(ambiguous.getByText(i18n.t('octorate.connect.channelsFound.noChannels'))).toBeInTheDocument();
     expect(within(screen.getByTestId('octorate-channels-listing-acc-new')).getByTestId('octorate-listing-state-new')).toBeInTheDocument();
     const linked = within(screen.getByTestId('octorate-channels-listing-acc-3'));
     expect(linked.getByTestId('octorate-listing-state-linked')).toBeInTheDocument();
@@ -129,9 +126,47 @@ describe('channels found: what the channel manager holds (NF-28)', () => {
     // A channel CasaZen cannot name is shown by its code, and a state the channel manager reports that CasaZen does not know is "to check".
     expect(linked.getByTestId('octorate-channel-999')).toHaveTextContent(i18n.t('octorate.connect.channelsFound.channels.other', { code: '999' }));
     expect(linked.getByTestId('octorate-channel-999')).toHaveTextContent(i18n.t('octorate.connect.channelsFound.onChannel.other'));
+    // The channels the server read when the listing was linked, each with its state.
+    const both = within(screen.getByTestId('octorate-channels-listing-acc-5'));
+    expect(both.getByTestId('octorate-channel-142')).toHaveTextContent('Booking.com');
+    expect(both.getByTestId('octorate-channel-142')).toHaveTextContent(i18n.t('octorate.connect.channelsFound.onChannel.connected'));
+    expect(both.getByTestId('octorate-channel-274')).toHaveTextContent('Airbnb');
     // The channel manager is "your channel manager", never named (NF-12); nothing is sent by looking.
     expect(wizardText()).not.toMatch(/octorate/i);
     expect(octorateApi.refreshListings).not.toHaveBeenCalled();
+  });
+
+  it('OctorateChannelsFound_ListingNotLinkedYet_NeverSaysItIsOnNoChannelBecauseTheServerHasNotReadThemYet', async () => {
+    // The server reads the channels of a listing when a person confirms or imports it: until then the list is empty for every listing
+    // found, and "no channel" would be a claim nobody has checked.
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([
+      listing(),
+      listing({ octorateAccommodationId: 'acc-2', name: 'Casa Blu', status: 'Ambiguous', proposedProperty: null }),
+      newListing(),
+      listing({ octorateAccommodationId: 'acc-4', name: 'Casa Gialla', status: 'Rejected', proposedProperty: null }),
+      linkedListing({ octorateAccommodationId: 'acc-6', name: 'Mansarda', channels: [] }),
+    ]);
+    renderAt('channels');
+    await screen.findByTestId('octorate-channels-count', undefined, WAIT);
+
+    const never = i18n.t('octorate.connect.channelsFound.noChannels');
+    const later = i18n.t('octorate.connect.channelsFound.channelsAfterLink');
+    for (const id of ['acc-1', 'acc-2', 'acc-new']) {
+      const card = within(screen.getByTestId(`octorate-channels-listing-${id}`));
+      expect(card.getByText(later)).toBeInTheDocument();
+      expect(card.queryByText(never)).not.toBeInTheDocument();
+      expect(card.queryByTestId('octorate-channel-142')).not.toBeInTheDocument();
+    }
+    // A listing the host excluded is not going to be linked: nothing about channels.
+    const excluded = within(screen.getByTestId('octorate-channels-listing-acc-4'));
+    expect(excluded.getByTestId('octorate-listing-state-excluded')).toBeInTheDocument();
+    expect(excluded.queryByText(later)).not.toBeInTheDocument();
+    expect(excluded.queryByText(never)).not.toBeInTheDocument();
+    // Only a listing that is linked, and read, with no channel is on none.
+    const linked = within(screen.getByTestId('octorate-channels-listing-acc-6'));
+    expect(linked.getByText(never)).toBeInTheDocument();
+    expect(linked.queryByText(later)).not.toBeInTheDocument();
+    expect(screen.getAllByText(never)).toHaveLength(1);
   });
 
   it('OctorateChannelsFound_NothingStoredYet_ReadsTheChannelManagerOnceWithoutBeingAsked', async () => {

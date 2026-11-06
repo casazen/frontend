@@ -74,14 +74,21 @@ interface ChannelListProps {
 }
 
 /**
- * The channels a listing is on, each with its state where the channel manager reports one. A listing on no channel says so: it is a
- * listing the channel manager holds that is not connected to any portal yet.
+ * The channels a listing is on, each with its state where the channel manager reports one. The server reads the channels of a listing
+ * only when a person links it (confirm or import), so a listing found and not linked yet has none stored: that says nothing about the
+ * listing, and the card says when they will show instead of saying it is on none. Only a linked listing with no channel is on none; an
+ * excluded one says nothing about channels.
  */
 export function ChannelList({ listing }: ChannelListProps) {
   const { t } = useTranslation();
 
   if (listing.channels.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('octorate.connect.channelsFound.noChannels')}</p>;
+    if (listing.status === 'Rejected') return null;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {listing.status === 'Confirmed' ? t('octorate.connect.channelsFound.noChannels') : t('octorate.connect.channelsFound.channelsAfterLink')}
+      </p>
+    );
   }
 
   return (

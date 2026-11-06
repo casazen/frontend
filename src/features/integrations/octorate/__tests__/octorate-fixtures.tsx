@@ -36,7 +36,11 @@ export function connection(overrides: Partial<OctorateConnection> = {}): Octorat
   };
 }
 
-/** A listing found on the channel manager, as `GET api/octorate/properties` gives it: proposed to one property, on two channels, with one room. */
+/**
+ * A listing found on the channel manager, as `GET api/octorate/properties` gives it: proposed to one property, with one room and no
+ * channel. The server reads the channels of a listing only when a person confirms it or imports it, so a listing that is not confirmed
+ * never has any (`linkedListing` has them).
+ */
 export function listing(overrides: Partial<OctorateListing> = {}): OctorateListing {
   return {
     octorateAccommodationId: 'acc-1',
@@ -48,10 +52,7 @@ export function listing(overrides: Partial<OctorateListing> = {}): OctorateListi
     score: 92,
     proposedProperty: { id: 'prop-1', name: 'Casa Rosa', address: 'Via Roma 12', city: 'Milano' },
     candidates: [],
-    channels: [
-      { channelId: '142', externalId: 'booking-1', state: 'Connected' },
-      { channelId: '274', externalId: 'airbnb-1', state: 'Connected' },
-    ],
+    channels: [],
     rooms: [{ id: 'room-1', name: 'Doppia', maxGuests: 4 }],
     octorateProductId: null,
     offeredForImport: false,
@@ -65,9 +66,18 @@ export function newListing(overrides: Partial<OctorateListing> = {}): OctorateLi
   return listing({ octorateAccommodationId: 'acc-new', name: 'Casa Nuova', proposedProperty: null, offeredForImport: true, score: 0, ...overrides });
 }
 
-/** A listing already confirmed to a property. */
+/** A listing already confirmed to a property: the server has read its channels (Booking.com and Airbnb) and its room. */
 export function linkedListing(overrides: Partial<OctorateListing> = {}): OctorateListing {
-  return listing({ status: 'Confirmed', octorateProductId: 'room-1', confirmedAt: '2026-11-05T10:00:00Z', ...overrides });
+  return listing({
+    status: 'Confirmed',
+    octorateProductId: 'room-1',
+    confirmedAt: '2026-11-05T10:00:00Z',
+    channels: [
+      { channelId: '142', externalId: 'booking-1', state: 'Connected' },
+      { channelId: '274', externalId: 'airbnb-1', state: 'Connected' },
+    ],
+    ...overrides,
+  });
 }
 
 /** A property of the host, as `GET api/properties` gives it (only what the steps read). */

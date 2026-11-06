@@ -9528,6 +9528,7 @@
           "other": "Channel {{code}}",
           "vrbo": "Vrbo"
         },
+        "channelsAfterLink": "The channels of this listing show up once it is linked.",
         "channelsOf": "Channels of {{name}}",
         "count_one": "We found {{count}} listing in your channel manager.",
         "count_other": "We found {{count}} listings in your channel manager.",
@@ -9706,7 +9707,7 @@
       "steps": {
         "channels": {
           "label": "Channels found",
-          "purpose": "Here are the listings in your channel manager and the channels they are on. For now we only read them.",
+          "purpose": "Here are the listings in your channel manager. For now we only read them: the channels of each listing show up once it is linked.",
           "title": "What we found"
         },
         "consent": {
