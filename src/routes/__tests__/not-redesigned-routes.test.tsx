@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { matchRoutes } from 'react-router-dom';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { MARKETING_CONFIRM_PATH, UNSUBSCRIBE_PATH } from '@/lib/marketing-link-paths';
 import { supplierShowcasePath } from '@/features/supplier/lib/showcase-paths';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { isNotRedesignedMatch, NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
@@ -35,6 +36,9 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     '/checkin/abc123',
     '/rent/pay/installment-1',
     '/service/pay/payment-1',
+    // The pages the marketing e-mails link to (CRM-08, CRM-03) are pages of guests too.
+    UNSUBSCRIBE_PATH,
+    MARKETING_CONFIRM_PATH,
   ])('Route_%s_KeepsTheCurrentLook', (path) => {
     expect(matchRoutes(appRoutes, path), `${path} matches a route`).not.toBeNull();
     expect(notRedesigned(path)).toBe(true);

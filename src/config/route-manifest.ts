@@ -1245,21 +1245,32 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
-  // CRM guest profiles (NF-23, ADR-021): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // The CRM and marketing module (NF-23, NF-95, ADR-021, E07): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // It is unfinished, so every page of it is behind the flag `crmMarketing` (backend `CrmMarketing`): while the flag is off the entry is in
+  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is one of «Altro» (the main menu has its eight entries),
+  // right after the queue of the verifications of the guests; the pages of the epic hang from it as tabs (`navParent` set to its path), in
+  // this order: `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
+  // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
+  // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
+  // consent and welcome pages) are public routes, not entries of this table, and are never behind the flag: an e-mail already sent keeps working.
+  // The pages ask `guest.read`, what the API behind them asks (`CrmController`): with `booking.read` the accountant, who has no `guest.read`,
+  // would see the entry and end on the no-access page.
   {
     path: '/app/short-rent/crm/guests',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
-    navParent: '/app/short-rent/bookings',
-    navOrder: 2,
+    navPlacement: 'secondary',
+    navOrder: 30,
     icon: 'Users',
     component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
   },
   {
     path: '/app/short-rent/crm/guests/:id',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
