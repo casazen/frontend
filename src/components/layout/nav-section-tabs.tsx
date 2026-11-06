@@ -19,8 +19,8 @@ interface NavSectionTabsProps {
 
 /**
  * The pages of one section of the menu as tabs (UI-04a): an entry of the menu and the pages that hang from it (`navParent` in the
- * route manifest) share the same strip on top of each of them, so that the menu has one entry for what used to be many ("Ospiti",
- * "Recensioni" and "CRM" are tabs of "Prenotazioni"). It is drawn by `PageHeader`, so a page that has one shows it by itself; it is
+ * route manifest) share the same strip on top of each of them, so that the menu has one entry for what used to be many ("Ospiti" and
+ * "Recensioni" are tabs of "Prenotazioni"). It is drawn by `PageHeader`, so a page that has one shows it by itself; it is
  * read from the manifest, so a page that hangs from another shows up here without touching this file. A tab is there only for a
  * page the user may open, and nothing is drawn when the page is not in a section or has no other page in it.
  *

@@ -155,6 +155,22 @@ describe('public routes without Auth0 (SE-03)', () => {
     },
   );
 
+  // CRM-08, CRM-03: the pages the marketing e-mails link to. An e-mail already sent must keep working: no login, no flag provider (the
+  // module's flag is off while the flags load), no redirect. Without the fragment of the link the page says so.
+  it.each([
+    ['/unsubscribe', 'unsubscribe-page'],
+    ['/marketing/confirm', 'marketing-confirm-page'],
+  ])('MarketingEmailLink_%s_AnonymousVisitor_OpensThePageWithoutLoginOrFlag', async (path, testId) => {
+    const router = renderPublicApp(path);
+
+    const page = await screen.findByTestId(testId);
+    expect(page).toHaveAttribute('data-state', 'invalid');
+    expect(router.state.location.pathname).toBe(path);
+    expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
+    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it('PublicSeoPage_DefaultMode_ShowsCookieConsentBanner', async () => {
     localStorage.removeItem('casazen_cookie_consent');
     renderPublicApp('/p/affitti-brevi/lombardia/como');

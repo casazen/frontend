@@ -18,7 +18,7 @@ import {
   type PermissionPredicate,
   type RouteManifestEntry,
 } from '../route-manifest';
-import type { FeatureFlags } from '../feature-flags';
+import { DEFAULT_FEATURE_FLAGS, parseFeatureFlags, type FeatureFlags } from '../feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { NAV_ICONS } from '@/lib/nav-icons';
 import { resolveActiveNavEntry } from '@/lib/nav-active';
@@ -53,6 +53,7 @@ function userVariants(contextKey: AppContextKey) {
     ['flags off', {}],
     ['otaPartnerApi on', { otaPartnerApi: true }],
     ['agencyTier on', { agencyTier: true }],
+    ['crmMarketing on', { crmMarketing: true }],
   ];
   return predicates.flatMap(([userLabel, hasPermission]) =>
     flagSets.map(([flagLabel, features]) => ({ label: `${userLabel}, ${flagLabel}`, hasPermission, features })),
@@ -267,7 +268,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
   // The sections of the menus: an entry and, in tab order, the pages that hang from it. This is what keeps "Altro" short.
   const SECTIONS: Record<string, string[]> = {
-    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/crm/guests', '/app/short-rent/reviews'],
+    // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and no page hangs from it yet.
+    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/reviews'],
     '/app/short-rent/compliance': [
       '/app/short-rent/alloggiati',
       '/app/short-rent/alloggiati/reports',
@@ -298,7 +300,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
   };
-  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
+  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
     for (const [parent, pages] of Object.entries(SECTIONS)) {
@@ -380,12 +382,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
 describe('route-manifest sections as tabs (UI-04a)', () => {
   it('gives every page of a section the same tabs, the entry first', () => {
-    const bookings = [
-      '/app/short-rent/bookings',
-      '/app/short-rent/guests',
-      '/app/short-rent/crm/guests',
-      '/app/short-rent/reviews',
-    ];
+    const bookings = ['/app/short-rent/bookings', '/app/short-rent/guests', '/app/short-rent/reviews'];
     for (const page of bookings) expect(paths(getNavSection(page, allowAll)), page).toEqual(bookings);
 
     const payments = [
@@ -459,7 +456,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
   });
 
   it('puts the entry a page hangs from first in its tabs, for a user who may open every page', () => {
-    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
+    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));
       expect(tabs[0], entry.path).toBe(entry.navParent);
@@ -903,4 +900,72 @@ describe('route-manifest nav helpers', () => {
     expect(entry.requiredPermissions).toEqual(['admin.users.manage']);
     expect(entry.legacyPaths).toEqual(['/admin/suppliers/invite']);
   });
+});
+
+// E07/F06/US03/T01 (NF-95, AC-NF95-8): the CRM module is unfinished, so its entry and its pages exist only while the backend flag
+// `CrmMarketing` is on. The pages the e-mails link to are not in this table: they are public routes, never behind the flag.
+describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/T01)', () => {
+  const CRM_PATHS = ['/app/short-rent/crm/guests', '/app/short-rent/crm/guests/:id'];
+  const OTHER_FLAGS_ON: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
+
+  it('crm entries are hidden while crmMarketing is off', () => {
+    // Off by default and while the flags load or cannot be read; anything but `true` from the API is off too.
+    expect(DEFAULT_FEATURE_FLAGS.crmMarketing).toBe(false);
+    expect(parseFeatureFlags(undefined).crmMarketing).toBe(false);
+    expect(parseFeatureFlags({ crmMarketing: 'true' }).crmMarketing).toBe(false);
+    expect(parseFeatureFlags({ crmMarketing: true }).crmMarketing).toBe(true);
+
+    for (const path of CRM_PATHS) {
+      // Behind the flag: the route guard sends the address to the home of the area while it is off.
+      expect(entryOf(path).featureFlag, path).toBe('crmMarketing');
+      expect(isEntryFeatureEnabled(entryOf(path), undefined), path).toBe(false);
+      expect(isEntryFeatureEnabled(entryOf(path), { crmMarketing: false }), path).toBe(false);
+    }
+
+    // In no menu, no tab and not in "Altro", whoever the user is and whatever the other flags say.
+    const users = userVariants('short-rent').filter(({ label }) => label.endsWith('flags off'));
+    expect(users.length).toBeGreaterThan(5);
+    for (const { label, hasPermission } of users) {
+      for (const features of [undefined, {}, { crmMarketing: false }, OTHER_FLAGS_ON]) {
+        const where = `${label} with ${JSON.stringify(features)}`;
+        expect(paths(getNavMatchEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
+        expect(paths(getVisibleNavEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
+        expect(paths(getNavChildren('/app/short-rent/bookings', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
+      }
+    }
+    expect(getContextNav('short-rent', allowAll).more.map((entry) => entry.navKey)).not.toContain('nav.crm');
+  });
+
+  it('puts the CRM entry in "Altro" of short-rent once crmMarketing is on, as an entry of its own', () => {
+    const crm = entryOf('/app/short-rent/crm/guests');
+    expect(crm.navKey).toBe('nav.crm');
+    expect(crm.navPlacement).toBe('secondary');
+    expect(crm.navParent).toBeUndefined();
+    expect(crm.navGroup).toBeUndefined();
+    // What the API behind the pages asks (`CrmController`: `guest.read`), for the list and for the detail: an entry the user opens must not end on a 403.
+    expect(crm.requiredPermissions).toEqual(['guest.read']);
+    expect(entryOf('/app/short-rent/crm/guests/:id').requiredPermissions).toEqual(['guest.read']);
+
+    const on: Partial<FeatureFlags> = { crmMarketing: true };
+    // After the queue of the guest verifications, before the settings of the org; the To do list stays the last.
+    expect(paths(getSecondaryNavEntries('short-rent', allowAll, on))).toEqual([
+      '/app/short-rent/approval-queue',
+      '/app/short-rent/crm/guests',
+      '/app/short-rent/settings/organization',
+      '/app/short-rent/settings/invitations',
+      '/app/short-rent/activities',
+    ]);
+    expect(paths(getContextNav('short-rent', allowAll, on, { withoutBottom: true }).more)).toContain('/app/short-rent/crm/guests');
+    // It asks `guest.read`: the accountant (reads properties, bookings and payments, no guests) does not get an entry that would end on a 403.
+    expect(paths(getSecondaryNavEntries('short-rent', without('guest.read'), on))).not.toContain('/app/short-rent/crm/guests');
+    const accountant: PermissionPredicate = (_ctx, permission) => ['property.read', 'booking.read', 'payment.read'].includes(permission);
+    expect(paths(getSecondaryNavEntries('short-rent', accountant, on))).not.toContain('/app/short-rent/crm/guests');
+    // It is no tab of Prenotazioni any more.
+    expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/guests', '/app/short-rent/reviews']);
+    // The open CRM page highlights the CRM entry, not Prenotazioni.
+    const entries = getNavMatchEntries('short-rent', allowAll, on);
+    expect(resolveActiveNavEntry('/app/short-rent/crm/guests', entries)?.path).toBe('/app/short-rent/crm/guests');
+    expect(resolveActiveNavEntry('/app/short-rent/crm/guests/c1', entries)?.path).toBe('/app/short-rent/crm/guests');
+  });
+
 });

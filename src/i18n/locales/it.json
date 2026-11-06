@@ -9206,6 +9206,54 @@
       "verifyFailed": "Verifica non riuscita."
     }
   },
+  "marketing": {
+    "confirm": {
+      "action": "Conferma iscrizione",
+      "description": "Conferma che vuoi ricevere da questa struttura e-mail con novità e offerte. Puoi annullare l'iscrizione in qualsiasi momento: ogni messaggio ha il suo link.",
+      "done": {
+        "description": "Grazie. D'ora in poi potrai ricevere da questa struttura e-mail con novità e offerte. Se cambi idea, ogni messaggio ha il link per annullare l'iscrizione.",
+        "title": "Iscrizione confermata"
+      },
+      "expired": {
+        "description": "Questo link è più vecchio della sua validità. Usa un'e-mail più recente oppure chiedi alla struttura di mandartene una nuova.",
+        "title": "Il link è scaduto"
+      },
+      "invalid": {
+        "description": "Il link non è completo o è stato modificato. Riapri il link che trovi nell'e-mail, senza cambiarlo. Se hai già confermato, non devi fare altro.",
+        "title": "Il link non è valido"
+      },
+      "notFound": {
+        "description": "Non troviamo più questa iscrizione, quindi non c'è niente da confermare. Se vuoi ricevere le e-mail della struttura, chiedile di iscriverti di nuovo.",
+        "title": "Iscrizione non trovata"
+      },
+      "pageTitle": "Conferma iscrizione",
+      "retry": "Non siamo riusciti a completare l'operazione. Riprova tra qualche istante.",
+      "suppressed": {
+        "description": "Hai chiesto di non ricevere più le e-mail di questa struttura, quindi non abbiamo confermato nulla. Se vuoi tornare a riceverle, chiedile di iscriverti di nuovo.",
+        "title": "Iscrizione non confermata"
+      },
+      "title": "Confermi la tua iscrizione?"
+    },
+    "unsubscribe": {
+      "action": "Annulla iscrizione",
+      "description": "Se annulli l'iscrizione non riceverai più e-mail promozionali da questa struttura. Le comunicazioni su un soggiorno, come conferme e istruzioni di arrivo, potranno comunque arrivare.",
+      "done": {
+        "description": "Non riceverai più e-mail promozionali da questa struttura. Le comunicazioni su un soggiorno, come conferme e istruzioni di arrivo, potranno comunque arrivare.",
+        "title": "Iscrizione annullata"
+      },
+      "expired": {
+        "description": "Questo link è più vecchio della sua validità. Usa il link di un'e-mail più recente oppure scrivi alla struttura e chiedi di essere tolto dall'elenco.",
+        "title": "Il link è scaduto"
+      },
+      "invalid": {
+        "description": "Il link non è completo o è stato modificato. Riapri il link che trovi nell'e-mail, senza cambiarlo. Se hai già annullato l'iscrizione, non devi fare altro.",
+        "title": "Il link non è valido"
+      },
+      "pageTitle": "Annulla iscrizione",
+      "retry": "Non siamo riusciti a completare l'operazione. Riprova tra qualche istante.",
+      "title": "Vuoi annullare l'iscrizione?"
+    }
+  },
   "marketplace": {
     "title": "Marketplace",
     "description": "Fornitori vicino ai tuoi immobili, partner esterni e integrazioni.",
@@ -9497,6 +9545,10 @@
     "compliance": "Adempimenti",
     "complianceAudit": "Conformità",
     "crm": "CRM Ospiti",
+    "crmAutomations": "Automazioni",
+    "crmCampaigns": "Campagne",
+    "crmMerge": "Duplicati",
+    "crmSegments": "Pubblici",
     "demoEnvironment": "Ambiente demo",
     "collapse": "Comprimi menu",
     "expand": "Espandi menu",

@@ -77,6 +77,18 @@ describe('signup attribution (SE-03)', () => {
     expect(readPendingSignupAttribution(NOW)).toEqual(attribution);
   });
 
+  it('recordLandingTouch_PageOfAMarketingEmailLink_RecordsNothing', () => {
+    // The visit of a person who stops or confirms the marketing e-mails is no statistic about a visitor (NF-95), even with statistics allowed.
+    for (const pathname of ['/unsubscribe', '/marketing/confirm']) {
+      recordLandingTouch({ pathname, search: '?utm_source=newsletter', origin: ORIGIN }, 'https://mail.example.test/inbox');
+    }
+
+    expect(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY)).toBeNull();
+    // The next public page is the first of the visit, as if those pages had not been there.
+    recordLandingTouch({ pathname: '/p/affitti-brevi', search: '', origin: ORIGIN }, '');
+    expect(JSON.parse(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY) ?? 'null')).toMatchObject({ landingPath: '/p/affitti-brevi' });
+  });
+
   it('captureSignupAttribution_WithoutTouch_UsesTheLinkingPageOfThisSite', () => {
     const attribution = captureSignupAttribution(
       { pathname: '/signup', search: '?comune=../../etc', origin: ORIGIN },

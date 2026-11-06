@@ -1,3 +1,5 @@
+import { isMarketingLinkPath } from '@/lib/marketing-link-paths';
+
 /** Origins where Web Crypto / Auth0 SPA SDK are allowed (see auth0-spa-js FAQ). */
 export function isSecureAuth0Origin(location: Pick<Location, 'protocol' | 'hostname'> = window.location): boolean {
   if (location.protocol === 'https:') return true;
@@ -23,6 +25,8 @@ export function isPublicUnauthenticatedPath(pathname: string): boolean {
     path.startsWith('/service/pay/') ||
     // The simulated module of the service that prepares the contract (CF-SIM, test environments): public like the real one.
     path.startsWith('/guided-form') ||
+    // The pages the marketing e-mails link to (CRM-08, CRM-03): a person who only wants to stop the e-mails is not asked for an account.
+    isMarketingLinkPath(path) ||
     path.startsWith('/help/')
   );
 }

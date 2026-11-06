@@ -26,6 +26,11 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(isPublicUnauthenticatedPath('/guided-form')).toBe(true);
   });
 
+  it('matches the pages the marketing e-mails link to, which never load Auth0', () => {
+    expect(isPublicUnauthenticatedPath('/unsubscribe')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/marketing/confirm')).toBe(true);
+  });
+
   it('does not match host console routes', () => {
     expect(isPublicUnauthenticatedPath('/login')).toBe(false);
     expect(isPublicUnauthenticatedPath('/app/short-rent')).toBe(false);
