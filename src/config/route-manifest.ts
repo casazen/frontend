@@ -256,6 +256,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
+    // the list of reports (its row "Apri" leads here), in no menu and no tab; reading it asks for payments, and the buttons that write
+    // ask for `payment.write` inside the page.
+    path: '/app/short-rent/reports/tourist-tax',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-summary-page')).TouristTaxSummaryPage }),
+  },
+  {
     // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
     // answer of the host and the report to CasaZen. A tab of Prenotazioni, after the guests.
     path: '/app/short-rent/reviews',

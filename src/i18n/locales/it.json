@@ -13031,6 +13031,10 @@
         "description": "Notti e importo registrato, comune per comune e mese per mese.",
         "name": "Imposta di soggiorno"
       },
+      "touristTaxSummary": {
+        "description": "Comune per comune: quanto è dovuta, quanto hai versato e le ricevute. Qui registri anche i versamenti.",
+        "name": "Imposta di soggiorno: dovuta e versata"
+      },
       "withholding": {
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
@@ -13131,6 +13135,110 @@
       "placeholder": "Cerca un report"
     },
     "title": "Report",
+    "touristTax": {
+      "basis": "Dovuta: l'imposta registrata sui soggiorni con check-in nel periodo. Versata: i versamenti che hai registrato con periodo compreso nel periodo. Il saldo totale è la differenza dei due totali: quanto è dovuto a ogni comune lo dicono le righe.",
+      "basisHidden": "Dovuta: l'imposta registrata sui soggiorni con check-in nel periodo, sugli immobili a cui hai accesso.",
+      "caption": "Imposta di soggiorno per comune, dal {{from}} al {{to}}",
+      "columns": {
+        "actions": "Azioni",
+        "balance": "Saldo",
+        "comune": "Comune",
+        "owed": "Dovuta",
+        "paid": "Versata",
+        "status": "Stato",
+        "stays": "Soggiorni"
+      },
+      "csv": {
+        "download": "Scarica CSV"
+      },
+      "description": "Per ogni comune e periodo: l'imposta registrata sui soggiorni, quella che hai versato e le ricevute.",
+      "empty": "Nessun soggiorno con check-in in questo periodo e nessun versamento registrato.",
+      "emptyHidden": "Nessun soggiorno con check-in in questo periodo, sugli immobili a cui hai accesso.",
+      "error": "Impossibile caricare il riepilogo dell'imposta di soggiorno.",
+      "errors": {
+        "amountInvalid": "L'importo non è valido: scrivi un importo maggiore di zero con al massimo due decimali.",
+        "comuneUnknown": "Questo comune non risulta tra quelli dei tuoi immobili in Italia.",
+        "csvDownloadFailed": "Non è stato possibile scaricare il CSV. Riprova.",
+        "dateInFuture": "La data del versamento non può essere successiva a oggi.",
+        "dateInvalid": "Controlla la data: serve un giorno valido.",
+        "deleteFailed": "Non è stato possibile eliminare il versamento. Riprova.",
+        "paymentsNeedWholeOrg": "Il tuo accesso copre solo alcuni immobili: i versamenti riguardano tutta l'organizzazione e non puoi registrarli, aprirli o eliminarli.",
+        "periodInvalid": "Il periodo non è valido: l'ultimo giorno non può essere prima del primo e il periodo copre al massimo un anno.",
+        "receiptDownloadFailed": "Non è stato possibile scaricare la ricevuta. Riprova.",
+        "receiptInvalid": "La ricevuta deve essere un PDF, un JPEG o un PNG, non vuoto e di al massimo 10 MB.",
+        "receiptNotFound": "La ricevuta non c'è più: il file non è disponibile.",
+        "recordFailed": "Non è stato possibile registrare il versamento. Riprova.",
+        "remittanceNotFound": "Questo versamento non esiste più: ricarica la pagina.",
+        "reportInvalidFormat": "Il formato richiesto non è disponibile.",
+        "reportPeriodInvalid": "Il periodo non è valido: l'imposta di soggiorno copre al massimo un anno.",
+        "textTooLong": "Il riferimento o la nota sono troppo lunghi."
+      },
+      "incomplete": "Importo incompleto",
+      "incompleteNote_one": "{{count}} soggiorno non ha l'imposta registrata: l'importo dovuto può essere incompleto.",
+      "incompleteNote_other": "{{count}} soggiorni non hanno l'imposta registrata: l'importo dovuto può essere incompleto.",
+      "paymentsHidden": "Il tuo accesso copre solo alcuni immobili. Vedi l'imposta dovuta su quegli immobili; i versamenti appartengono a tutta l'organizzazione e non vengono mostrati.",
+      "record": {
+        "amountHint": "Scrivi l'importo come lo scrivi di solito, con la virgola o il punto: per esempio 125,50.",
+        "amountRead": "Lo leggo come {{amount}}.",
+        "balance": "Saldo da versare nel periodo: {{amount}}.",
+        "button": "Registra versamento",
+        "buttonFor": "Registra versamento: {{comune}}",
+        "description": "Segna quanto hai versato al comune e, se ce l'hai, allega la ricevuta.",
+        "fields": {
+          "amount": "Importo versato (€)",
+          "comune": "Comune",
+          "notes": "Note",
+          "paidOn": "Data del versamento",
+          "periodFrom": "Periodo pagato, dal",
+          "periodTo": "Periodo pagato, al",
+          "receipt": "Ricevuta",
+          "reference": "Riferimento"
+        },
+        "receiptHint": "PDF, JPEG o PNG, fino a 10 MB.",
+        "submit": "Registra versamento",
+        "success": "Versamento registrato.",
+        "title": "Registra un versamento a {{comune}}",
+        "validation": {
+          "amountInvalid": "Scrivi un importo maggiore di zero con al massimo due decimali.",
+          "comuneRequired": "Indica il comune.",
+          "notesTooLong": "La nota può avere al massimo 500 caratteri.",
+          "paidOnFuture": "La data del versamento non può essere successiva a oggi.",
+          "paidOnRequired": "Indica il giorno del versamento.",
+          "periodFromRequired": "Indica il primo giorno del periodo.",
+          "periodOrder": "L'ultimo giorno non può essere prima del primo.",
+          "periodToRequired": "Indica l'ultimo giorno del periodo.",
+          "periodTooLong": "Un versamento copre al massimo un anno.",
+          "receiptEmpty": "Il file è vuoto: scegli di nuovo la ricevuta.",
+          "receiptTooLarge": "La ricevuta può pesare al massimo 10 MB.",
+          "receiptType": "La ricevuta deve essere un PDF, un JPEG o un PNG.",
+          "referenceTooLong": "Il riferimento può avere al massimo 200 caratteri."
+        }
+      },
+      "remittances": {
+        "delete": {
+          "button": "Elimina",
+          "confirm": "Elimini il versamento di {{amount}} a {{comune}} del {{date}}? Anche la ricevuta viene eliminata e il saldo viene ricalcolato.",
+          "label": "Elimina: versamento di {{amount}} del {{date}}",
+          "success": "Versamento eliminato.",
+          "title": "Eliminare il versamento?"
+        },
+        "noReceipt": "Nessuna ricevuta",
+        "paidOn": "versato il {{date}}",
+        "period": "periodo dal {{from}} al {{to}}",
+        "receipt": "Scarica ricevuta",
+        "receiptLabel": "Scarica ricevuta: versamento di {{amount}} del {{date}}",
+        "reference": "rif. {{reference}}",
+        "title": "Versamenti a {{comune}}"
+      },
+      "status": {
+        "NothingOwed": "Nessun importo registrato",
+        "Overpaid": "Versata in più",
+        "Paid": "Versata",
+        "ToPay": "Da versare"
+      },
+      "title": "Imposta di soggiorno: dovuta e versata",
+      "total": "Totale"
+    },
     "type": {
       "financial": "Finanziario",
       "fiscal": "Fiscale",

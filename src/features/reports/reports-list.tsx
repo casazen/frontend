@@ -29,7 +29,7 @@ const typeCell = (type: ReportType, label: string) => {
 };
 
 /**
- * The eight reports of short rent (SR-10) as a unified list (UI-14) in `client` mode: fixed configuration, no call to the API.
+ * The nine reports of short rent (SR-10) as a unified list (UI-14) in `client` mode: fixed configuration, no call to the API.
  * Five columns at most: the report with its sentence, the period it suggests, the kind, the format. The action of a row is
  * "Scarica" (the dialog asks for the days and the format) or, for a report that already has its page (Alloggiati Web, the
  * payments statement), "Apri". The quick filters are the kinds: fiscal, operational, financial.

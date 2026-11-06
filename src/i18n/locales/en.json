@@ -13031,6 +13031,10 @@
         "description": "Nights and recorded amount, municipality by municipality and month by month.",
         "name": "Tourist tax"
       },
+      "touristTaxSummary": {
+        "description": "Municipality by municipality: what is owed, what you paid and the receipts. You also record payments here.",
+        "name": "Tourist tax: owed and paid"
+      },
       "withholding": {
         "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
         "name": "Portal withholdings"
@@ -13131,6 +13135,110 @@
       "placeholder": "Search a report"
     },
     "title": "Reports",
+    "touristTax": {
+      "basis": "Owed: the tax recorded on the stays that check in during the period. Paid: the payments you recorded whose period lies inside it. The total balance is the difference of the two totals: the rows say what is due to each municipality.",
+      "basisHidden": "Owed: the tax recorded on the stays that check in during the period, on the properties you have access to.",
+      "caption": "Tourist tax by municipality, from {{from}} to {{to}}",
+      "columns": {
+        "actions": "Actions",
+        "balance": "Balance",
+        "comune": "Municipality",
+        "owed": "Owed",
+        "paid": "Paid",
+        "status": "Status",
+        "stays": "Stays"
+      },
+      "csv": {
+        "download": "Download CSV"
+      },
+      "description": "For each municipality and period: the tax recorded on the stays, the tax you paid and the receipts.",
+      "empty": "No stay checks in during this period and no payment is recorded.",
+      "emptyHidden": "No stay checks in during this period on the properties you have access to.",
+      "error": "The tourist tax summary could not be loaded.",
+      "errors": {
+        "amountInvalid": "The amount is not valid: write an amount above zero with at most two decimals.",
+        "comuneUnknown": "This municipality is not among the municipalities of your properties in Italy.",
+        "csvDownloadFailed": "The CSV could not be downloaded. Try again.",
+        "dateInFuture": "The date of the payment cannot be after today.",
+        "dateInvalid": "Check the date: a valid day is needed.",
+        "deleteFailed": "The payment could not be deleted. Try again.",
+        "paymentsNeedWholeOrg": "Your access covers only some properties: payments belong to the whole organization, so you cannot record, open or delete them.",
+        "periodInvalid": "The period is not valid: the last day cannot be before the first and a period covers a year at most.",
+        "receiptDownloadFailed": "The receipt could not be downloaded. Try again.",
+        "receiptInvalid": "The receipt must be a PDF, a JPEG or a PNG, not empty and at most 10 MB.",
+        "receiptNotFound": "The receipt is gone: the file is not available.",
+        "recordFailed": "The payment could not be recorded. Try again.",
+        "remittanceNotFound": "This payment no longer exists: reload the page.",
+        "reportInvalidFormat": "The requested format is not available.",
+        "reportPeriodInvalid": "The period is not valid: the tourist tax covers a year at most.",
+        "textTooLong": "The reference or the note is too long."
+      },
+      "incomplete": "Amount incomplete",
+      "incompleteNote_one": "{{count}} stay has no tax recorded: the owed amount may be incomplete.",
+      "incompleteNote_other": "{{count}} stays have no tax recorded: the owed amount may be incomplete.",
+      "paymentsHidden": "Your access covers only some properties. You see the tax owed on those properties; payments belong to the whole organization and are not shown.",
+      "record": {
+        "amountHint": "Write the amount as you usually do, with a comma or a dot: for example 125.50.",
+        "amountRead": "Read as {{amount}}.",
+        "balance": "Balance to pay in the period: {{amount}}.",
+        "button": "Record payment",
+        "buttonFor": "Record payment: {{comune}}",
+        "description": "Note what you paid to the municipality and, if you have it, attach the receipt.",
+        "fields": {
+          "amount": "Amount paid (€)",
+          "comune": "Municipality",
+          "notes": "Notes",
+          "paidOn": "Date of payment",
+          "periodFrom": "Period paid, from",
+          "periodTo": "Period paid, to",
+          "receipt": "Receipt",
+          "reference": "Reference"
+        },
+        "receiptHint": "PDF, JPEG or PNG, up to 10 MB.",
+        "submit": "Record payment",
+        "success": "Payment recorded.",
+        "title": "Record a payment to {{comune}}",
+        "validation": {
+          "amountInvalid": "Write an amount above zero with at most two decimals.",
+          "comuneRequired": "Enter the municipality.",
+          "notesTooLong": "The note can have 500 characters at most.",
+          "paidOnFuture": "The date of the payment cannot be after today.",
+          "paidOnRequired": "Enter the day of the payment.",
+          "periodFromRequired": "Enter the first day of the period.",
+          "periodOrder": "The last day cannot be before the first.",
+          "periodToRequired": "Enter the last day of the period.",
+          "periodTooLong": "A payment covers a year at most.",
+          "receiptEmpty": "The file is empty: choose the receipt again.",
+          "receiptTooLarge": "The receipt can be 10 MB at most.",
+          "receiptType": "The receipt must be a PDF, a JPEG or a PNG.",
+          "referenceTooLong": "The reference can have 200 characters at most."
+        }
+      },
+      "remittances": {
+        "delete": {
+          "button": "Delete",
+          "confirm": "Delete the payment of {{amount}} to {{comune}} made on {{date}}? Its receipt is deleted too and the balance is worked out again.",
+          "label": "Delete: payment of {{amount}} on {{date}}",
+          "success": "Payment deleted.",
+          "title": "Delete this payment?"
+        },
+        "noReceipt": "No receipt",
+        "paidOn": "paid on {{date}}",
+        "period": "period from {{from}} to {{to}}",
+        "receipt": "Download receipt",
+        "receiptLabel": "Download receipt: payment of {{amount}} on {{date}}",
+        "reference": "ref. {{reference}}",
+        "title": "Payments to {{comune}}"
+      },
+      "status": {
+        "NothingOwed": "No amount recorded",
+        "Overpaid": "Overpaid",
+        "Paid": "Paid",
+        "ToPay": "To pay"
+      },
+      "title": "Tourist tax: owed and paid",
+      "total": "Total"
+    },
     "type": {
       "financial": "Financial",
       "fiscal": "Fiscal",
