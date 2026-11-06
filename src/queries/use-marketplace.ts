@@ -66,7 +66,8 @@ export function useMarketplaceActive(propertyId: string | undefined) {
  * The external partners of the catalog, by the service they work for (the guided request of home services offers them when the host goes
  * outside CasaZen). It reads the catalog without a property: a partner does not depend on one. Nothing is offered while the catalog
  * loads, when it fails, and when the person may not read it (a read they may not make would send them to the page of no access, out of
- * the request they are making): the guided request then behaves as when no partner covers the service.
+ * the request they are making): the guided request then behaves as when no partner covers the service. Whether a partner is of any use
+ * is the wizard's call, from the kinds of work it offers: a partner that lists none of them covers nothing.
  */
 export function usePartnersByServiceCategory() {
   const language = useMarketplaceLanguage();
@@ -85,5 +86,5 @@ export function usePartnersByServiceCategory() {
     [partners],
   );
 
-  return { partnersFor, hasPartners: partners.length > 0, isLoading: canRead && catalog.isPending };
+  return { partnersFor, isLoading: canRead && catalog.isPending };
 }

@@ -47,7 +47,18 @@ const CATALOG = {
     { id: 'ConnectedTools', unchangedFlow: false, entries: [] },
     { id: 'ChannelManagerFunctions', unchangedFlow: false, entries: [] },
     { id: 'HomeServices', unchangedFlow: true, entries: [] },
-    { id: 'Partners', unchangedFlow: false, entries: [partner('cleaners-one', ['cleaning']), partner('checkin-one', ['check-in']), partner('both-one', ['cleaning', 'maintenance'])] },
+    {
+      id: 'Partners',
+      unchangedFlow: false,
+      entries: [
+        partner('cleaners-one', ['cleaning']),
+        partner('checkin-one', ['check-in']),
+        partner('both-one', ['cleaning', 'maintenance']),
+        // Partners that list no service (an empty list, none at all): they are in the catalog and are returned for no kind of work.
+        partner('silent-one', []),
+        { ...partner('mute-one', []), serviceCategories: null },
+      ],
+    },
   ],
 };
 
@@ -228,7 +239,6 @@ describe('usePartnersByServiceCategory', () => {
     expect(result.current.partnersFor('maintenance').map((entry) => entry.code)).toEqual(['both-one']);
     expect(result.current.partnersFor('check-in').map((entry) => entry.code)).toEqual(['checkin-one']);
     expect(result.current.partnersFor('plumbing')).toEqual([]);
-    expect(result.current.hasPartners).toBe(true);
   });
 
   it('usePartnersByServiceCategory_WhileTheCatalogLoads_OffersNoneAndSaysItIsLoading', async () => {
@@ -236,7 +246,6 @@ describe('usePartnersByServiceCategory', () => {
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.partnersFor('cleaning')).toEqual([]);
-    expect(result.current.hasPartners).toBe(false);
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
   });
@@ -248,7 +257,6 @@ describe('usePartnersByServiceCategory', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.partnersFor('cleaning')).toEqual([]);
-    expect(result.current.hasPartners).toBe(false);
   });
 
   it('usePartnersByServiceCategory_PersonWhoMayNotReadTheCatalog_NeverAsksForIt', async () => {

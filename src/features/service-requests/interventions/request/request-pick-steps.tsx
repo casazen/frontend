@@ -36,6 +36,14 @@ function useWizardProperty(propertyId: string) {
   return (Array.isArray(properties.data) ? properties.data : []).find((candidate) => candidate.id === propertyId);
 }
 
+/**
+ * The kinds of work an external partner covers, among the ones the wizard offers: the tiles of the service step with the external channel.
+ * The channel is offered only when there is at least one, so that it never leads to a step with nothing to pick.
+ */
+function coveredByPartners(catalog: readonly string[], partnersFor: (serviceCategory: string) => readonly unknown[]): string[] {
+  return catalog.filter((code) => partnersFor(code).length > 0);
+}
+
 /* ---------------------------------------------------------------------------------------------------- ① Immobile */
 
 /** Step ①: the property the work is for. A request is for the house: a stay is a link the host may add at the end. */
@@ -95,9 +103,13 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
   const hasComune = !!property?.comuneIstatCode;
   const suppliers = useMarketplaceSuppliers({ propertyId: hasComune ? propertyId : undefined });
   const noNetwork = !hasComune || (suppliers.isSuccess && suppliers.data.items.length === 0);
-  // The external channel is offered while the catalog has partners (or is being read) and not when it has none: a way nobody can follow.
-  // The one the address names stays, so that the choice the wizard is on does not disappear under it.
-  const { hasPartners, isLoading: partnersLoading } = usePartnersByServiceCategory();
+  // The external channel is offered while a partner of the catalog covers a kind of work the wizard offers (or the catalog is being read)
+  // and not otherwise: a way nobody can follow. A partner that lists no such kind has no tile on the service step, so with it alone (and
+  // CasaZen out) the request would have no way out. The one the address names stays, so that the choice the wizard is on does not
+  // disappear under it.
+  const categories = useServiceCategories();
+  const { partnersFor, isLoading: partnersLoading } = usePartnersByServiceCategory();
+  const hasPartners = coveredByPartners(categories.data ?? [], partnersFor).length > 0;
   const partnersAhead = hasPartners || partnersLoading;
   const offerExternal = partnersAhead || channel === 'external';
 
@@ -178,7 +190,7 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
   if (categories.isPending) return <SkeletonLine lines={4} label={t('requestWizard.loading')} />;
 
   const catalog = categories.data ?? [];
-  const shown = channel === 'external' ? catalog.filter((code) => partnersFor(code).length > 0) : catalog;
+  const shown = channel === 'external' ? coveredByPartners(catalog, partnersFor) : catalog;
   const describe = (code: string): string | undefined => {
     if (channel === 'external') return partnersFor(code).map((partner) => partner.name).join(', ');
     if (suppliers.isPending && property?.comuneIstatCode) return undefined;

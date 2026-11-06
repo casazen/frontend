@@ -44,7 +44,6 @@ vi.mock('@/queries/use-marketplace', () => ({
     const partners = catalog.partners as MarketplaceCatalogEntry[];
     return {
       partnersFor: (category: string) => partners.filter((partner) => partner.serviceCategories?.includes(category)),
-      hasPartners: partners.length > 0,
       isLoading: catalog.loading,
     };
   },
@@ -340,6 +339,31 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
   });
+
+  // The kinds of work of this wizard are cleaning and plumbing. A partner counts only for one of them: the service step shows no other.
+  const PARTNERS_COVERING_NOTHING: Array<[string, string[] | null]> = [
+    ['NoServiceListed', null],
+    ['AnEmptyListOfServices', []],
+    ['OnlyAServiceTheWizardDoesNotOffer', ['pool']],
+  ];
+
+  it.each(PARTNERS_COVERING_NOTHING)(
+    'RequestInterventionPage_PartnerWith%s_TheExternalChannelIsNotOffered_AndNobodyIsSteeredToIt',
+    async (_name, serviceCategories) => {
+      // The catalog has a partner, but it covers none of the kinds of work the wizard offers: the service step would show no tile for the
+      // external channel, and with CasaZen out the host would be left with nothing to pick. It is as if the catalog had no partner.
+      catalog.partners = [{ ...cleaningPartner, serviceCategories }];
+      vi.mocked(fetchMarketplaceSuppliers).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+      renderPage(`propertyId=${PROPERTY_ID}`);
+
+      await stepIs('channel');
+      const note = await screen.findByTestId('request-no-network', undefined, WAIT);
+      expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+      expect(note).not.toHaveTextContent('partner');
+      expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
+      expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
+    },
+  );
 
   it('RequestInterventionPage_PartnersStillLoading_KeepsTheExternalChannelAndDoesNotSteerToItYet', async () => {
     catalog.partners = [];

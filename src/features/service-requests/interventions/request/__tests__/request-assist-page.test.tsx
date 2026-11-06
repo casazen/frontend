@@ -50,7 +50,6 @@ vi.mock('@/queries/use-marketplace', () => {
   return {
     usePartnersByServiceCategory: () => ({
       partnersFor: (category: string) => (category === 'cleaning' ? [partner] : []),
-      hasPartners: true,
       isLoading: false,
     }),
   };
