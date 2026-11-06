@@ -4,12 +4,17 @@ import type {
   AlloggiatiCodeList,
   BiometricVerificationResponse,
   PublicCheckInContextDto,
+  PublicCheckInLanguageResponse,
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
 
 export const publicCheckinApi = {
   getContext: (token: string) =>
     ApiClient.get<PublicCheckInContextDto>(`/public/checkin/${token}`, undefined, { public: true }),
+
+  /** Saves the language the guest chose on the page (`it`, `en`, `de`, `fr` or `es`); the page and the emails of the session use it. */
+  setLanguage: (token: string, language: string) =>
+    ApiClient.put<PublicCheckInLanguageResponse>(`/public/checkin/${token}/language`, { language }, { public: true }),
 
   submit: (token: string, data: PublicCheckInSubmitRequest) =>
     ApiClient.post<{ sessionId: string; message: string }>(`/public/checkin/${token}`, data, { public: true }),

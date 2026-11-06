@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { bookingsApi } from '@/api/bookings.api';
-import { CHECK_IN_LINK_EMAIL_ERRORS, type CheckInLinkResponse, type PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
+import {
+  CHECK_IN_LINK_EMAIL_ERRORS,
+  type CheckInLinkResponse,
+  type PublicCheckInContextDto,
+  type PublicCheckInSubmitRequest,
+} from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
@@ -34,11 +39,28 @@ export function useSubmitGuestCheckIn(token: string) {
     mutationFn: (data: PublicCheckInSubmitRequest) => publicCheckinApi.submit(token, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
-      toast.success(i18n.t('toast.checkInDataSaved'));
+      toast.success(i18n.t('checkin.toast.saved'));
     },
     onError: (error) => {
       if (isFieldValidationProblem(error)) return;
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInDataSaveFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.toast.saveFailed'));
+    },
+  });
+}
+
+/**
+ * Saves the language the guest chose on the page. Nothing is shown here: the page already changed language, and tells the guest only
+ * when the choice could not be saved. The context in the cache keeps the new language, so a reload of it does not undo the choice.
+ */
+export function useSetCheckInLanguage(token: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (language: string) => publicCheckinApi.setLanguage(token, language),
+    onSuccess: (saved) => {
+      queryClient.setQueryData<PublicCheckInContextDto>([CHECKIN_KEY, token], (context) =>
+        context ? { ...context, language: saved.language } : context,
+      );
     },
   });
 }

@@ -1276,7 +1276,8 @@
       "saved": "Ospiti del soggiorno aggiornati",
       "saveFailed": "Impossibile salvare gli ospiti. Riprova.",
       "loadingDocuments": "Caricamento dei documenti…",
-      "documentsLoadFailed": "Impossibile caricare i numeri dei documenti. Riprova."
+      "documentsLoadFailed": "Impossibile caricare i numeri dei documenti. Riprova.",
+      "guestsLoadFailed": "Impossibile caricare i dati degli ospiti. Riprova."
     }
   },
   "amenity": {
@@ -1621,7 +1622,17 @@
       "servicePaymentInFlight": "C’è già un pagamento in corso per questo importo: aspetta qualche istante.",
       "servicePaymentLinkInvalid": "Questo link di pagamento non è valido o è scaduto.",
       "servicePaymentNotPayable": "Questo pagamento non si può più pagare: potrebbe essere già saldato o ritirato.",
-      "servicePaymentSupplierNotReady": "Il professionista non può ricevere il pagamento in questo momento. Riprova più tardi."
+      "servicePaymentSupplierNotReady": "Il professionista non può ricevere il pagamento in questo momento. Riprova più tardi.",
+      "checkinNotReady": "Mancano ancora dei dati o ce ne sono di non validi: sistema i problemi elencati e conferma di nuovo.",
+      "noShowAlloggiatiSent": "La comunicazione alla Questura è già stata inviata: se serve, correggila sul portale Alloggiati Web.",
+      "noShowTooEarly": "Puoi segnare che l'ospite non è arrivato solo dal giorno del check-in.",
+      "taxCollectorNotApplicable": "Per questo soggiorno non serve indicare chi ha incassato l’imposta.",
+      "taxExemptionUnknown": "Questa esenzione non è valida.",
+      "taxGuestUnknown": "L'ospite indicato non fa parte del soggiorno.",
+      "taxNotCalculable": "L'imposta di soggiorno non si può ancora calcolare.",
+      "taxRateInvalid": "I valori dell’imposta non sono validi: controlla importo, età, notti e stagione.",
+      "taxRateOfficialExists": "Per questo comune esiste già un'aliquota ufficiale: non puoi inserirne un'altra.",
+      "taxRateSourceRequired": "Indica da dove viene l'importo."
     }
   },
   "appShell": {
@@ -2387,7 +2398,12 @@
         "title": "Aspetta il pagamento dell'ospite"
       },
       "whoGuest": "Tocca all'ospite",
-      "whoHost": "Tocca a te"
+      "whoHost": "Tocca a te",
+      "completeGuestData": {
+        "action": "Completa il check-in",
+        "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
+        "title": "Completa i dati degli ospiti"
+      }
     },
     "card": {
       "checkOutAction": "Check-out"
@@ -2908,6 +2924,26 @@
       "marketingEmail": {
         "required": "Inserisci l'indirizzo email per ricevere le comunicazioni",
         "invalid": "Inserisci un indirizzo email valido (massimo 255 caratteri)"
+      },
+      "documentExpiresOn": {
+        "beforeIssue": "La scadenza non può essere prima del rilascio",
+        "invalid": "Inserisci una data di scadenza valida"
+      },
+      "documentIssuedOn": {
+        "future": "La data di rilascio non può essere nel futuro",
+        "invalid": "Inserisci una data di rilascio valida (dal 1900 in poi)"
+      },
+      "educationLevel": {
+        "required": "Seleziona il titolo di studio"
+      },
+      "residenceProvince": {
+        "invalid": "Inserisci la sigla di due lettere (es. RM)"
+      },
+      "tourismType": {
+        "required": "Seleziona il motivo del viaggio"
+      },
+      "travelWay": {
+        "required": "Seleziona il mezzo usato per arrivare"
       }
     },
     "loading": "Caricamento check-in...",
@@ -3087,6 +3123,397 @@
         "emailFailed": "Nuovo link generato, ma l'email non è partita: {{reason}}. Copia il link e invialo all'ospite.",
         "generated": "Nuovo link generato: copialo e invialo all'ospite."
       }
+    },
+    "choose": "Seleziona",
+    "documentExpiresOn": {
+      "label": "Data di scadenza (facoltativo)"
+    },
+    "documentIssuedOn": {
+      "label": "Data di rilascio (facoltativo)"
+    },
+    "educationLevel": {
+      "label": "Titolo di studio *",
+      "none": "Nessun titolo",
+      "primary": "Licenza elementare",
+      "lower_secondary": "Licenza media",
+      "upper_secondary": "Diploma di scuola superiore",
+      "degree": "Laurea",
+      "postgraduate": "Titolo post-laurea"
+    },
+    "errors": {
+      "codeInvalid": "Il codice indicato non è valido.",
+      "codeUnknown": "Il codice indicato non è tra quelli degli elenchi ufficiali.",
+      "dateOfBirthInFuture": "La data di nascita non può essere nel futuro.",
+      "documentExpiresBeforeIssue": "La scadenza del documento non può essere prima del rilascio.",
+      "documentIssuedOnInvalid": "La data di rilascio non può essere nel futuro né prima del 1900.",
+      "documentNumberInvalid": "Il numero del documento può avere solo lettere e cifre, al massimo 20.",
+      "documentTypeInvalid": "Questo tipo di documento non è accettato: scegli passaporto, carta d'identità o patente.",
+      "fieldMaxLength": "Il testo è troppo lungo.",
+      "fieldRequired": "Campo obbligatorio.",
+      "genderInvalid": "Seleziona maschio o femmina: sono gli unici valori accettati da Alloggiati Web.",
+      "guestTypeInvalid": "Il tipo di ospite non è valido.",
+      "guestsCount": "Inserisci da 1 a 30 ospiti.",
+      "headWithoutMembers": "Aggiungi almeno un familiare o un membro del gruppo, oppure scegli «Ospiti singoli».",
+      "marketingConsentMinor": "Un minorenne non può dare il consenso alle comunicazioni promozionali.",
+      "marketingConsentUnavailable": "Il consenso alle comunicazioni promozionali non è disponibile per questo soggiorno.",
+      "marketingEmailInvalid": "Inserisci un indirizzo email valido (massimo 255 caratteri).",
+      "marketingEmailRequired": "Inserisci l'indirizzo email a cui ricevere le comunicazioni.",
+      "memberWithoutHead": "Un familiare o un membro del gruppo deve seguire il capofamiglia o il capogruppo.",
+      "network": "Non riusciamo a raggiungere il server: controlla la connessione e riprova.",
+      "provinceInvalid": "Inserisci la sigla della provincia, di due lettere (es. RM).",
+      "statisticalValueInvalid": "Il valore scelto non è tra quelli ammessi.",
+      "summary_one": "C'è 1 campo da controllare",
+      "summary_other": "Ci sono {{count}} campi da controllare",
+      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova."
+    },
+    "guestKind": {
+      "FamilyMember": "Familiare",
+      "GroupMember": "Membro del gruppo",
+      "HeadOfFamily": "Capofamiglia",
+      "HeadOfGroup": "Capogruppo",
+      "SingleGuest": "Ospite singolo"
+    },
+    "language": {
+      "label": "Lingua",
+      "names": {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano"
+      },
+      "notSaved": "Non siamo riusciti a salvare la lingua scelta: la pagina resta comunque in questa lingua."
+    },
+    "residence": {
+      "abroad": "All'estero",
+      "comune": "Comune di residenza",
+      "country": "Stato di residenza",
+      "hint": "Facoltativo: dove vive abitualmente l’ospite.",
+      "inItaly": "In Italia",
+      "label": "Residenza",
+      "province": "Provincia di residenza (due lettere)"
+    },
+    "toast": {
+      "saved": "Dati del check-in salvati.",
+      "saveFailed": "Non siamo riusciti a salvare i dati del check-in. Riprova."
+    },
+    "tourismType": {
+      "business": "Lavoro",
+      "holiday": "Vacanza",
+      "label": "Motivo del viaggio *",
+      "other": "Altro"
+    },
+    "travelWay": {
+      "bus": "Autobus",
+      "car": "Auto",
+      "label": "Mezzo usato per arrivare *",
+      "other": "Altro",
+      "plane": "Aereo",
+      "ship": "Nave",
+      "train": "Treno"
+    },
+    "wizard": {
+      "checks": {
+        "allGood": "Tutto a posto",
+        "allGoodText": "I dati degli ospiti bastano per procedere.",
+        "blockingText": "Finché non le sistemi non puoi proseguire.",
+        "blockingTitle_one": "C'è 1 cosa da sistemare",
+        "blockingTitle_other": "Ci sono {{count}} cose da sistemare",
+        "continueAnyway": "Prosegui comunque",
+        "fix": "Correggi",
+        "fixFor": "Correggi: {{problem}}",
+        "issue": {
+          "document_expired": "Il documento di {{guest}} scade prima dell'arrivo. Registra quello che l'ospite ha mostrato.",
+          "guest_code_missing": "Per {{guest}} manca il codice ufficiale di «{{field}}»: serve solo per il file Alloggiati.",
+          "guest_field_missing": "Per {{guest}} manca un dato: {{field}}.",
+          "guest_field_required": "La tua regione chiede, per {{guest}}, anche: {{field}}.",
+          "guests_count_mismatch": "La prenotazione indica {{declared}} ospiti e ne hai registrati {{registered}}: controlla che ci siano tutti.",
+          "noGuests": "Non c'è ancora nessun ospite registrato.",
+          "octorate_field_missing": "Per inviare {{guest}} a Octorate serve anche: {{field}}.",
+          "unknown": "C'è un dato da controllare per {{guest}}."
+        },
+        "warningsText": "Puoi sistemarle ora oppure proseguire comunque.",
+        "warningsTitle_one": "C'è 1 cosa da controllare",
+        "warningsTitle_other": "Ci sono {{count}} cose da controllare"
+      },
+      "confirmAndSend": "Conferma e invia",
+      "confirmFailed": "Non siamo riusciti a confermare il check-in. Controlla i dati e riprova.",
+      "description": "{{property}} · {{dates}}",
+      "documents": {
+        "checkText": "La lettura non è del tutto sicura: verifica ogni campo con il documento in mano.",
+        "checkTitle": "Controlla questi dati",
+        "conflict": "{{field}}: hai scritto «{{typed}}», la foto mostra «{{read}}».",
+        "conflictTitle": "La foto mostra dati diversi da quelli che hai scritto",
+        "filled": "Dalla foto abbiamo compilato: {{fields}}.",
+        "keepTyped": "Tieni i miei",
+        "none": "Nessun ospite ha bisogno del documento.",
+        "nothingRead": "Non siamo riusciti a leggere la foto: scrivi i dati a mano qui sotto.",
+        "photoAlt": "Anteprima della foto del documento, mostrata solo durante la lettura",
+        "photoButton": "Fotografa il documento",
+        "photoHint": "Facoltativo. La foto viene letta e poi eliminata: non viene salvata.",
+        "photoTooLarge": "La foto pesa troppo: il limite è 10 MB.",
+        "photoType": "Usa una foto JPEG o PNG.",
+        "readFailed": "Non siamo riusciti a leggere la foto. Scrivi i dati a mano qui sotto.",
+        "reading": "Lettura del documento…",
+        "usePhoto": "Usa i dati della foto"
+      },
+      "done": {
+        "correctionAfterSend": "I dati già inviati alla Questura potrebbero richiedere una correzione sul portale Alloggiati Web.",
+        "description": "Il check-in di {{guest}} è registrato.",
+        "manualGuide": "Apri la guida per la comunicazione sul portale Alloggiati Web",
+        "nextStep": "Prossimo passo",
+        "octorate": {
+          "failed": "Octorate non ha accettato gli ospiti: {{reason}}.",
+          "notActive": "Gli ospiti non sono stati inviati a Octorate: per questo soggiorno non c’è una comunicazione da fare.",
+          "notConnected": "Gli ospiti non sono stati inviati a Octorate: la prenotazione non è collegata, o il collegamento non è pronto.",
+          "nothingToSend": "Gli ospiti sono già su Octorate così come sono adesso.",
+          "partlyFailed": "Alcuni ospiti sono su Octorate, altri no: {{reason}}.",
+          "senderNotChannelManager": "Gli ospiti non sono stati inviati a Octorate: per questa struttura la comunicazione alla Questura non passa dal gestionale.",
+          "sent": "Gli ospiti sono stati inviati a Octorate."
+        },
+        "octorateError": {
+          "octorate_auth": "il collegamento con Octorate va rinnovato",
+          "octorate_conflict": "Octorate ha già dati diversi per questo ospite",
+          "octorate_guest_rejected": "Octorate ha rifiutato i dati dell'ospite",
+          "octorate_not_found": "Octorate non trova la prenotazione",
+          "octorate_rate_limited": "Octorate è occupato, riprova tra qualche minuto",
+          "octorate_server": "Octorate non risponde in questo momento",
+          "unknown": "motivo non indicato"
+        },
+        "police": {
+          "AlreadySent": "La comunicazione alla Questura è già stata fatta.",
+          "ChannelManagerSends": "Octorate invia la comunicazione alla Questura quando registri l'arrivo.",
+          "Manual": "La comunicazione alla Questura la fai tu sul portale Alloggiati Web.",
+          "NotApplicable": "Per questo soggiorno non c’è nessuna comunicazione alla Questura da fare."
+        },
+        "registerArrival": "Registra arrivo",
+        "retryFailed": "Non siamo riusciti a riprovare. Riprova tra poco.",
+        "retryNow": "Riprova adesso",
+        "retryText": "Puoi riprovare ora: confermiamo di nuovo il check-in.",
+        "retryTitle": "Qualcosa non è arrivato a Octorate",
+        "tax": {
+          "notSaved": "L'imposta di soggiorno non è stata salvata: {{reason}}.",
+          "saved": "Imposta di soggiorno salvata: {{amount}}.",
+          "savedNoAmount": "Imposta di soggiorno salvata."
+        },
+        "taxReason": {
+          "booking_not_active": "per questo soggiorno non è dovuta",
+          "tax_not_calculable": "non si può ancora calcolare (manca l'aliquota del comune o qualche dato)",
+          "unknown": "motivo non indicato"
+        },
+        "title": "Check-in registrato",
+        "toBooking": "Torna alla prenotazione",
+        "toCompliance": "Vai agli adempimenti"
+      },
+      "exitIncomplete": "Per salvare servono i dati completi degli ospiti e il documento dell'ospite singolo o del capofamiglia. Completali e riprova.",
+      "field": {
+        "birthComune": "Comune di nascita",
+        "birthCountry": "Stato di nascita",
+        "birthProvince": "Provincia di nascita",
+        "bornInItaly": "Luogo di nascita (Italia o estero)",
+        "citizenship": "Cittadinanza",
+        "dateOfBirth": "Data di nascita",
+        "documentExpiresOn": "Data di scadenza del documento",
+        "documentIssuePlace": "Luogo di rilascio del documento",
+        "documentNumber": "Numero del documento",
+        "documentType": "Tipo di documento",
+        "educationLevel": "Titolo di studio",
+        "firstName": "Nome",
+        "gender": "Sesso",
+        "guests": "Ospiti",
+        "lastName": "Cognome",
+        "residence": "Residenza",
+        "residenceComune": "Comune di residenza",
+        "residenceCountry": "Stato di residenza",
+        "tourismType": "Motivo del viaggio",
+        "travelWay": "Mezzo di trasporto",
+        "type": "Tipo di ospite",
+        "unknown": "un dato"
+      },
+      "guests": {
+        "save": "Salva ospiti",
+        "saveFailed": "Non siamo riusciti a salvare gli ospiti. Riprova."
+      },
+      "loadFailed": "Non riusciamo a caricare il check-in di questo soggiorno.",
+      "loading": "Caricamento del check-in…",
+      "noShow": {
+        "button": "L'ospite non è arrivato",
+        "cancel": "Annulla",
+        "confirm": "Segna come non arrivato",
+        "consequenceLate": "Se gli ospiti arrivano più tardi, registrando l’arrivo il segno viene tolto.",
+        "consequenceMark": "Il soggiorno viene segnato come «ospite non arrivato».",
+        "consequencePolice": "Per questo soggiorno non c’è nessuna comunicazione alla Questura da fare.",
+        "consequences": "Cosa succede",
+        "description": "Confermi che gli ospiti non sono arrivati?",
+        "failed": "Non siamo riusciti a segnare il soggiorno. Riprova.",
+        "title": "L'ospite non è arrivato"
+      },
+      "notExpected": {
+        "Inactive": {
+          "text": "Il check-in si fa su una prenotazione confermata: questa è ancora in attesa oppure è stata annullata.",
+          "title": "Per questa prenotazione non è previsto il check-in"
+        },
+        "NoShow": {
+          "text": "Hai segnato che gli ospiti non sono arrivati. Se arrivano più tardi, registra l'arrivo dalla prenotazione.",
+          "title": "Ospite non arrivato"
+        }
+      },
+      "notFound": "Prenotazione non trovata",
+      "retry": "Riprova",
+      "saveExit": "Salva ed esci",
+      "send": {
+        "blockedText": "Finché ci sono problemi non puoi inviare. Vai ai controlli per sistemarli.",
+        "blockedTitle": "Qualcosa blocca l'invio",
+        "blockingValue_one": "1 problema da risolvere",
+        "blockingValue_other": "{{count}} problemi da risolvere",
+        "documents": "Documenti",
+        "documentsValue": "Documento presente per {{done}} su {{total}}",
+        "guests": "Chi soggiorna",
+        "guestsValue_one": "1 ospite: {{names}}",
+        "guestsValue_other": "{{count}} ospiti: {{names}}",
+        "intro": "Controlla il riepilogo: non parte nulla finché non confermi.",
+        "noWarnings": "Nessun avviso",
+        "octorate": "Invio a Octorate",
+        "route": {
+          "channelManager": {
+            "long": "Il gestionale dei canali (Octorate) è il tuo mittente: quando confermi proviamo a mandare gli ospiti a Octorate, e sarà Octorate a inviare i dati alla Questura. Non devi fare altro.",
+            "short": "Octorate invia i dati alla Questura"
+          },
+          "channelManagerNotConnected": {
+            "long": "Il tuo mittente è Octorate, ma questa prenotazione non risulta collegata: non inviamo nulla a Octorate. La comunicazione alla Questura va fatta sul portale Alloggiati Web.",
+            "short": "Prenotazione non collegata a Octorate: non viene inviato nulla"
+          },
+          "senderCasaZen": {
+            "long": "Hai scelto CasaZen come mittente, ma CasaZen non invia ancora alla Questura. Per ora non mandiamo nulla a Octorate: la comunicazione si fa sul portale Alloggiati Web, e dopo la conferma ti mostriamo la guida.",
+            "short": "Per ora non viene inviato nulla a Octorate"
+          },
+          "senderManual": {
+            "long": "Il mittente sei tu: non mandiamo nulla a Octorate. La comunicazione alla Questura la fai sul portale Alloggiati Web, e dopo la conferma ti mostriamo la guida.",
+            "short": "Per ora non viene inviato nulla a Octorate"
+          }
+        },
+        "routeTitle": "Cosa viene inviato e come",
+        "tax": {
+          "channel": "Incassata dal canale: niente da incassare ({{amount}})",
+          "collectorNeeded": "Da indicare chi l'ha incassata",
+          "label": "Imposta di soggiorno",
+          "missingRate": "Manca l'aliquota del comune: non viene salvata",
+          "none": "Non disponibile",
+          "notCalculable": "Non ancora calcolabile",
+          "toCollect": "{{amount}} da incassare dagli ospiti"
+        },
+        "warnings": "Avvisi",
+        "warningsValue_one": "1 avviso",
+        "warningsValue_other": "{{count}} avvisi"
+      },
+      "steps": {
+        "checks": {
+          "help": "I problemi in rosso vanno risolti per poter proseguire; gli avvisi puoi lasciarli così.",
+          "label": "Controlli",
+          "purpose": "Prima di inviare, controlliamo che i dati bastino.",
+          "title": "Cosa manca o non torna"
+        },
+        "documents": {
+          "help": "Puoi fotografare il documento: CasaZen legge i dati e te li propone, e la foto non viene salvata. Se preferisci, scrivi i dati a mano.",
+          "label": "Documenti",
+          "purpose": "Serve il documento dell'ospite singolo o del capofamiglia o capogruppo.",
+          "title": "Documenti d'identità"
+        },
+        "guests": {
+          "help": "La legge (art. 109 TULPS) chiede i dati di tutti gli ospiti, minorenni compresi. Servono per la comunicazione alla Questura e, se la prenotazione è su Octorate, per inviare gli ospiti.",
+          "label": "Ospiti",
+          "purpose": "Controlla i dati di ogni ospite e completa quelli che mancano.",
+          "title": "Chi soggiorna"
+        },
+        "send": {
+          "help": "Non parte nulla finché non premi «Conferma e invia». Ogni blocco ha «Modifica» per tornare al passo giusto.",
+          "label": "Invio",
+          "purpose": "Ecco cosa succede quando confermi.",
+          "title": "Riepilogo prima dell'invio"
+        },
+        "tax": {
+          "help": "Ogni comune ha le sue regole: i minori sotto l'età fissata dal comune sono esenti da soli; per le altre esenzioni scegli tu il motivo. Se il canale l'ha già incassata, non devi incassarla di nuovo.",
+          "label": "Imposta di soggiorno",
+          "purpose": "Calcolata ospite per ospite, con le esenzioni.",
+          "title": "Imposta di soggiorno"
+        }
+      },
+      "tax": {
+        "breakdown": {
+          "cap": "Limite di notti",
+          "capApplied": "Applicato: {{taxable}} notti su {{nights}} sono soggette a imposta",
+          "capNotApplied": "Non applicato",
+          "exempt": "Ospiti esenti",
+          "guests": "Ospiti",
+          "nights": "Notti",
+          "rate": "Aliquota",
+          "ratePerNight": "{{amount}} a persona per notte ({{source}})",
+          "rateFrom": "Aliquota {{source}}",
+          "total": "Totale"
+        },
+        "breakdownTitle": "Riepilogo del soggiorno",
+        "channelCollectedText": "Il canale ha già incassato l'imposta ({{total}}) e la versa al comune: non devi incassarla di nuovo.",
+        "channelCollectedTitle": "Il canale l'ha incassata: niente da incassare",
+        "collectorChannel": "L'ha incassata il canale",
+        "collectorFailed": "Non siamo riusciti a salvare la tua risposta. Riprova.",
+        "collectorHost": "La incasso io in struttura",
+        "collectorQuestion": "Chi ha incassato l'imposta di soggiorno?",
+        "editRate": "Modifica l'imposta del tuo comune",
+        "enterRate": "Inserisci l'imposta del tuo comune",
+        "exemptByAge": "Esente per età (automatico)",
+        "exemptHidden": "Esente: il motivo è visibile solo a chi può leggere i dati degli ospiti.",
+        "exemptionFailed": "Non siamo riusciti a salvare l'esenzione. Riprova.",
+        "exemptionLabel": "Esenzione",
+        "intro": "Ecco quanto si paga, ospite per ospite.",
+        "loadFailed": "Non riusciamo a calcolare l'imposta di soggiorno.",
+        "missingRateText": "Non conosciamo l'aliquota del comune di questa struttura, quindi non mostriamo nessun importo. Inserisci tu l'imposta del tuo comune e la calcoliamo.",
+        "missingRateTitle": "Manca l'imposta del comune",
+        "nights": "Notti: {{nights}} · soggette a imposta: {{taxable}}",
+        "noAmount": "Importo non disponibile",
+        "noExemption": "Nessuna esenzione",
+        "notCalculable": {
+          "CategoryRequired": "L'imposta di questo comune dipende dalla categoria della struttura, che non è indicata: completa i dati della struttura.",
+          "ChildAgesRequired": "L'imposta di questo comune dipende dall'età dei minori: inserisci le date di nascita di tutti gli ospiti.",
+          "NightlyPriceRequired": "L'imposta di questo comune è una percentuale del prezzo della notte, che manca nella prenotazione.",
+          "RateUnavailable": "Non conosciamo l'aliquota di questo comune per le date del soggiorno."
+        },
+        "notCalculableTitle": "Per ora non si può calcolare",
+        "rateForm": {
+          "age": "Esenti i minori di (età) *",
+          "ageHint": "Gli ospiti più piccoli di questa età non pagano. Da 0 a 18.",
+          "ageInvalid": "Scrivi un'età intera da 0 a 18",
+          "cancel": "Annulla",
+          "intro": "Se il tuo comune non è tra quelli che conosciamo, inserisci l'imposta che applica. Resta tua: non la vede nessun altro.",
+          "introCity": "Inserisci l'imposta che applica {{city}}. Resta tua: non la vede nessun altro.",
+          "nights": "Massimo di notti tassate",
+          "nightsHint": "Facoltativo. Lascia vuoto se non c’è un limite.",
+          "nightsInvalid": "Scrivi un numero intero di notti, almeno 1",
+          "officialExists": "Per questo comune esiste già un'aliquota ufficiale: vale quella e non puoi inserirne un'altra.",
+          "rate": "Importo a persona per notte (€) *",
+          "rateInvalid": "Scrivi un importo da 0,01 a 50 euro",
+          "save": "Salva e ricalcola",
+          "saveFailed": "Non siamo riusciti a salvare l'imposta. Riprova.",
+          "seasonBoth": "Scrivi sia l'inizio sia la fine della stagione, oppure lascia vuoti tutti e due",
+          "seasonEnd": "Fine stagione (MM-GG)",
+          "seasonHint": "Facoltativo: se l'imposta vale solo in una stagione, scrivi mese e giorno (per esempio 04-01 e 10-31). Lascia vuoti tutti e due se vale tutto l'anno.",
+          "seasonInvalid": "Scrivi la data come mese-giorno, per esempio 04-01",
+          "seasonPlaceholder": "es. 04-01",
+          "seasonStart": "Inizio stagione (MM-GG)",
+          "source": "Da dove viene l'importo *",
+          "sourceHint": "Per esempio la pagina del comune, la delibera o l'ufficio tributi che te l'ha comunicato.",
+          "sourceRequired": "Indica da dove viene l'importo",
+          "sourceTooLong": "Scrivi al massimo 500 caratteri",
+          "title": "Inserisci l'imposta del tuo comune"
+        },
+        "rateSource": {
+          "HostDeclared": "inserita da te",
+          "None": "non disponibile",
+          "Official": "ufficiale del comune"
+        }
+      },
+      "title": "Check-in degli ospiti",
+      "toBooking": "Torna alla prenotazione",
+      "toBookings": "Vai alle prenotazioni"
     }
   },
   "cin": {
@@ -20055,6 +20482,16 @@
       "edit": "Modifica",
       "editField": "Modifica {{field}}",
       "empty": "Non indicato"
+    }
+  },
+  "touristTax": {
+    "exemption": {
+      "disability_companion": "Accompagnatore di una persona con disabilità",
+      "health_care": "Soggiorno per cure o motivi sanitari",
+      "host_family": "Familiare del gestore",
+      "other": "Altra esenzione prevista dal comune",
+      "public_service": "Forze dell’ordine o altro servizio pubblico in servizio",
+      "resident": "Residente nel comune"
     }
   }
 }

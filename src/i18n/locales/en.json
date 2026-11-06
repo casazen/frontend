@@ -1276,7 +1276,8 @@
       "saved": "Guests of the stay updated",
       "saveFailed": "Could not save the guests. Try again.",
       "loadingDocuments": "Loading the documents…",
-      "documentsLoadFailed": "Could not load the document numbers. Try again."
+      "documentsLoadFailed": "Could not load the document numbers. Try again.",
+      "guestsLoadFailed": "Could not load the guests’ data. Try again."
     }
   },
   "amenity": {
@@ -1621,7 +1622,17 @@
       "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
       "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
       "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
-      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later."
+      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later.",
+      "checkinNotReady": "Some data are still missing or not valid: fix the problems listed and confirm again.",
+      "noShowAlloggiatiSent": "The communication to the police has already been sent: if needed, correct it on the Alloggiati Web portal.",
+      "noShowTooEarly": "You can mark that the guest did not arrive only from the check-in day.",
+      "taxCollectorNotApplicable": "For this stay there is no need to say who collected the tax.",
+      "taxExemptionUnknown": "This exemption is not valid.",
+      "taxGuestUnknown": "The guest is not part of the stay.",
+      "taxNotCalculable": "The tourist tax cannot be worked out yet.",
+      "taxRateInvalid": "The values of the tax are not valid: check the amount, age, nights and season.",
+      "taxRateOfficialExists": "An official rate already exists for this municipality: you cannot enter another one.",
+      "taxRateSourceRequired": "Say where the amount comes from."
     }
   },
   "appShell": {
@@ -2387,7 +2398,12 @@
         "title": "Wait for the guest's payment"
       },
       "whoGuest": "The guest's turn",
-      "whoHost": "Your turn"
+      "whoHost": "Your turn",
+      "completeGuestData": {
+        "action": "Complete the check-in",
+        "body": "Some guest data are missing: you can enter them yourself now, step by step.",
+        "title": "Complete the guest data"
+      }
     },
     "card": {
       "checkOutAction": "Check Out"
@@ -2908,6 +2924,26 @@
       "marketingEmail": {
         "required": "Enter the email address to receive communications",
         "invalid": "Enter a valid email address (maximum 255 characters)"
+      },
+      "documentExpiresOn": {
+        "beforeIssue": "The expiry date cannot be before the issue date",
+        "invalid": "Enter a valid expiry date"
+      },
+      "documentIssuedOn": {
+        "future": "The issue date cannot be in the future",
+        "invalid": "Enter a valid issue date (1900 or later)"
+      },
+      "educationLevel": {
+        "required": "Select the education level"
+      },
+      "residenceProvince": {
+        "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "tourismType": {
+        "required": "Select the purpose of the trip"
+      },
+      "travelWay": {
+        "required": "Select how you travelled here"
       }
     },
     "loading": "Loading check-in...",
@@ -3087,6 +3123,397 @@
         "emailFailed": "New link generated, but the email did not leave: {{reason}}. Copy the link and send it to the guest.",
         "generated": "New link generated: copy it and send it to the guest."
       }
+    },
+    "choose": "Select",
+    "documentExpiresOn": {
+      "label": "Expiry date (optional)"
+    },
+    "documentIssuedOn": {
+      "label": "Issue date (optional)"
+    },
+    "educationLevel": {
+      "label": "Education level *",
+      "none": "No qualification",
+      "primary": "Primary school",
+      "lower_secondary": "Lower secondary school",
+      "upper_secondary": "Upper secondary school",
+      "degree": "University degree",
+      "postgraduate": "Postgraduate qualification"
+    },
+    "errors": {
+      "codeInvalid": "The code is not valid.",
+      "codeUnknown": "The code is not in the official lists.",
+      "dateOfBirthInFuture": "The date of birth cannot be in the future.",
+      "documentExpiresBeforeIssue": "The document cannot expire before it was issued.",
+      "documentIssuedOnInvalid": "The issue date cannot be in the future or before 1900.",
+      "documentNumberInvalid": "The document number can only have letters and digits, at most 20.",
+      "documentTypeInvalid": "This document type is not accepted: choose passport, identity card or driving licence.",
+      "fieldMaxLength": "The text is too long.",
+      "fieldRequired": "This field is required.",
+      "genderInvalid": "Select male or female: they are the only values Alloggiati Web accepts.",
+      "guestTypeInvalid": "The kind of guest is not valid.",
+      "guestsCount": "Enter from 1 to 30 guests.",
+      "headWithoutMembers": "Add at least one family or group member, or choose “Single guests”.",
+      "marketingConsentMinor": "A minor cannot agree to promotional communications.",
+      "marketingConsentUnavailable": "Consent to promotional communications is not available for this stay.",
+      "marketingEmailInvalid": "Enter a valid email address (maximum 255 characters).",
+      "marketingEmailRequired": "Enter the email address to receive communications.",
+      "memberWithoutHead": "A family or group member must follow the head of family or group.",
+      "network": "We cannot reach the server: check your connection and try again.",
+      "provinceInvalid": "Enter the two-letter code of the province (e.g. RM).",
+      "statisticalValueInvalid": "The value you chose is not one of the allowed ones.",
+      "summary_one": "1 field needs your attention",
+      "summary_other": "{{count}} fields need your attention",
+      "tooManyRequests": "Too many requests in a short time: wait a moment and try again."
+    },
+    "guestKind": {
+      "FamilyMember": "Family member",
+      "GroupMember": "Group member",
+      "HeadOfFamily": "Head of family",
+      "HeadOfGroup": "Head of group",
+      "SingleGuest": "Single guest"
+    },
+    "language": {
+      "label": "Language",
+      "names": {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano"
+      },
+      "notSaved": "We could not save your choice of language: the page stays in this language anyway."
+    },
+    "residence": {
+      "abroad": "Abroad",
+      "comune": "Municipality of residence",
+      "country": "Country of residence",
+      "hint": "Optional: where the guest usually lives.",
+      "inItaly": "In Italy",
+      "label": "Residence",
+      "province": "Province of residence (two letters)"
+    },
+    "toast": {
+      "saved": "Check-in details saved.",
+      "saveFailed": "We could not save the check-in details. Please try again."
+    },
+    "tourismType": {
+      "business": "Business",
+      "holiday": "Holiday",
+      "label": "Purpose of the trip *",
+      "other": "Other"
+    },
+    "travelWay": {
+      "bus": "Bus",
+      "car": "Car",
+      "label": "How you travelled here *",
+      "other": "Other",
+      "plane": "Plane",
+      "ship": "Ship",
+      "train": "Train"
+    },
+    "wizard": {
+      "checks": {
+        "allGood": "Everything is in place",
+        "allGoodText": "The data of the guests are enough to go on.",
+        "blockingText": "You cannot go on until they are fixed.",
+        "blockingTitle_one": "1 thing to fix",
+        "blockingTitle_other": "{{count}} things to fix",
+        "continueAnyway": "Continue anyway",
+        "fix": "Fix",
+        "fixFor": "Fix: {{problem}}",
+        "issue": {
+          "document_expired": "The document of {{guest}} expires before the arrival. Record what the guest showed.",
+          "guest_code_missing": "The official code of “{{field}}” is missing for {{guest}}: it is needed only for the Alloggiati file.",
+          "guest_field_missing": "A detail is missing for {{guest}}: {{field}}.",
+          "guest_field_required": "Your region also asks, for {{guest}}: {{field}}.",
+          "guests_count_mismatch": "The booking states {{declared}} guests and you recorded {{registered}}: check that everyone is there.",
+          "noGuests": "No guest is recorded yet.",
+          "octorate_field_missing": "To send {{guest}} to Octorate we also need: {{field}}.",
+          "unknown": "There is a detail to check for {{guest}}."
+        },
+        "warningsText": "You can fix them now or continue anyway.",
+        "warningsTitle_one": "1 thing to check",
+        "warningsTitle_other": "{{count}} things to check"
+      },
+      "confirmAndSend": "Confirm and send",
+      "confirmFailed": "We could not confirm the check-in. Check the data and try again.",
+      "description": "{{property}} · {{dates}}",
+      "documents": {
+        "checkText": "The reading is not entirely certain: check each field against the document.",
+        "checkTitle": "Check these data",
+        "conflict": "{{field}}: you wrote “{{typed}}”, the photo shows “{{read}}”.",
+        "conflictTitle": "The photo shows different data from what you wrote",
+        "filled": "We filled in from the photo: {{fields}}.",
+        "keepTyped": "Keep mine",
+        "none": "No guest needs a document.",
+        "nothingRead": "We could not read the photo: type the data by hand below.",
+        "photoAlt": "Preview of the photo of the document, shown only while it is read",
+        "photoButton": "Photograph the document",
+        "photoHint": "Optional. The photo is read and then thrown away: it is not saved.",
+        "photoTooLarge": "The photo is too big: the limit is 10 MB.",
+        "photoType": "Use a JPEG or PNG photo.",
+        "readFailed": "We could not read the photo. Type the data by hand below.",
+        "reading": "Reading the document…",
+        "usePhoto": "Use the data from the photo"
+      },
+      "done": {
+        "correctionAfterSend": "Data already sent to the police may need a correction on the Alloggiati portal.",
+        "description": "The check-in of {{guest}} is recorded.",
+        "manualGuide": "Open the guide to the communication on the Alloggiati Web portal",
+        "nextStep": "Next step",
+        "octorate": {
+          "failed": "Octorate did not take the guests: {{reason}}.",
+          "notActive": "The guests were not sent to Octorate: this stay owes no communication.",
+          "notConnected": "The guests were not sent to Octorate: the booking is not connected, or the connection is not ready.",
+          "nothingToSend": "The guests are already on Octorate as they are now.",
+          "partlyFailed": "Some guests are on Octorate, some are not: {{reason}}.",
+          "senderNotChannelManager": "The guests were not sent to Octorate: for this property the communication to the police does not go through the channel manager.",
+          "sent": "The guests were sent to Octorate."
+        },
+        "octorateError": {
+          "octorate_auth": "the connection to Octorate needs to be renewed",
+          "octorate_conflict": "Octorate already has different data for this guest",
+          "octorate_guest_rejected": "Octorate refused the data of the guest",
+          "octorate_not_found": "Octorate cannot find the booking",
+          "octorate_rate_limited": "Octorate is busy, try again in a few minutes",
+          "octorate_server": "Octorate is not answering right now",
+          "unknown": "reason not given"
+        },
+        "police": {
+          "AlreadySent": "The communication to the police has already been made.",
+          "ChannelManagerSends": "Octorate sends the communication to the police when you register the arrival.",
+          "Manual": "You make the communication to the police on the Alloggiati Web portal.",
+          "NotApplicable": "This stay owes no communication to the police."
+        },
+        "registerArrival": "Register arrival",
+        "retryFailed": "We could not try again. Try again in a moment.",
+        "retryNow": "Retry now",
+        "retryText": "You can try again now: we confirm the check-in once more.",
+        "retryTitle": "Something did not reach Octorate",
+        "tax": {
+          "notSaved": "The tourist tax was not saved: {{reason}}.",
+          "saved": "Tourist tax saved: {{amount}}.",
+          "savedNoAmount": "Tourist tax saved."
+        },
+        "taxReason": {
+          "booking_not_active": "it is not due for this stay",
+          "tax_not_calculable": "it cannot be calculated yet (the rate of the municipality or some data are missing)",
+          "unknown": "reason not given"
+        },
+        "title": "Check-in recorded",
+        "toBooking": "Back to the booking",
+        "toCompliance": "Go to the compliance page"
+      },
+      "exitIncomplete": "To save we need the complete data of the guests and the document of the single guest or head of family. Complete them and try again.",
+      "field": {
+        "birthComune": "Municipality of birth",
+        "birthCountry": "Country of birth",
+        "birthProvince": "Province of birth",
+        "bornInItaly": "Place of birth (Italy or abroad)",
+        "citizenship": "Citizenship",
+        "dateOfBirth": "Date of birth",
+        "documentExpiresOn": "Expiry date of the document",
+        "documentIssuePlace": "Place of issue of the document",
+        "documentNumber": "Document number",
+        "documentType": "Document type",
+        "educationLevel": "Education level",
+        "firstName": "First name",
+        "gender": "Gender",
+        "guests": "Guests",
+        "lastName": "Last name",
+        "residence": "Residence",
+        "residenceComune": "Municipality of residence",
+        "residenceCountry": "Country of residence",
+        "tourismType": "Purpose of the trip",
+        "travelWay": "How they travelled",
+        "type": "Kind of guest",
+        "unknown": "a detail"
+      },
+      "guests": {
+        "save": "Save guests",
+        "saveFailed": "We could not save the guests. Please try again."
+      },
+      "loadFailed": "We cannot load the check-in of this stay.",
+      "loading": "Loading the check-in…",
+      "noShow": {
+        "button": "The guest did not arrive",
+        "cancel": "Cancel",
+        "confirm": "Mark as not arrived",
+        "consequenceLate": "If the guests arrive later, registering the arrival removes the mark.",
+        "consequenceMark": "The stay is marked as “guest did not arrive”.",
+        "consequencePolice": "This stay owes no communication to the police.",
+        "consequences": "What happens",
+        "description": "Do you confirm that the guests did not arrive?",
+        "failed": "We could not mark the stay. Please try again.",
+        "title": "The guest did not arrive"
+      },
+      "notExpected": {
+        "Inactive": {
+          "text": "The check-in is done on a confirmed booking: this one is still waiting or has been cancelled.",
+          "title": "No check-in is expected for this booking"
+        },
+        "NoShow": {
+          "text": "You marked that the guests did not arrive. If they arrive later, register the arrival from the booking.",
+          "title": "Guest did not arrive"
+        }
+      },
+      "notFound": "Booking not found",
+      "retry": "Try again",
+      "saveExit": "Save and exit",
+      "send": {
+        "blockedText": "You cannot send while there are problems. Go to the checks to fix them.",
+        "blockedTitle": "Something is blocking the sending",
+        "blockingValue_one": "1 problem to fix",
+        "blockingValue_other": "{{count}} problems to fix",
+        "documents": "Documents",
+        "documentsValue": "Document recorded for {{done}} of {{total}}",
+        "guests": "Who stays",
+        "guestsValue_one": "1 guest: {{names}}",
+        "guestsValue_other": "{{count}} guests: {{names}}",
+        "intro": "Check the summary: nothing is sent until you confirm.",
+        "noWarnings": "No warnings",
+        "octorate": "Sent to Octorate",
+        "route": {
+          "channelManager": {
+            "long": "The channel manager (Octorate) is your sender: when you confirm we try to send the guests to Octorate, and Octorate sends the data to the police. You have nothing else to do.",
+            "short": "Octorate sends the data to the police"
+          },
+          "channelManagerNotConnected": {
+            "long": "Your sender is Octorate, but this booking does not appear to be connected: we send nothing to Octorate. The communication to the police is made on the Alloggiati Web portal.",
+            "short": "Booking not connected to Octorate: nothing is sent"
+          },
+          "senderCasaZen": {
+            "long": "You chose CasaZen as the sender, but CasaZen does not send to the police yet. For now we send nothing to Octorate: the communication is made on the Alloggiati Web portal, and after you confirm we show you the guide.",
+            "short": "For now nothing is sent to Octorate"
+          },
+          "senderManual": {
+            "long": "You are the sender: we send nothing to Octorate. You make the communication to the police on the Alloggiati Web portal, and after you confirm we show you the guide.",
+            "short": "For now nothing is sent to Octorate"
+          }
+        },
+        "routeTitle": "What is sent and how",
+        "tax": {
+          "channel": "Collected by the channel: nothing to collect ({{amount}})",
+          "collectorNeeded": "Still to say who collected it",
+          "label": "Tourist tax",
+          "missingRate": "The rate of the municipality is missing: it is not saved",
+          "none": "Not available",
+          "notCalculable": "Cannot be calculated yet",
+          "toCollect": "{{amount}} to collect from the guests"
+        },
+        "warnings": "Warnings",
+        "warningsValue_one": "1 warning",
+        "warningsValue_other": "{{count}} warnings"
+      },
+      "steps": {
+        "checks": {
+          "help": "Problems in red must be fixed before you can go on; warnings can stay as they are.",
+          "label": "Checks",
+          "purpose": "Before sending, we check that the data are enough.",
+          "title": "What is missing or does not add up"
+        },
+        "documents": {
+          "help": "You can photograph the document: CasaZen reads the data and proposes them, and the photo is not saved. If you prefer, type the data by hand.",
+          "label": "Documents",
+          "purpose": "We need the document of the single guest or of the head of family or group.",
+          "title": "Identity documents"
+        },
+        "guests": {
+          "help": "The law (art. 109 TULPS) requires the data of every guest, minors included. They are needed for the communication to the police and, if the booking is on Octorate, to send the guests.",
+          "label": "Guests",
+          "purpose": "Check the data of each guest and complete what is missing.",
+          "title": "Who is staying"
+        },
+        "send": {
+          "help": "Nothing is sent until you press “Confirm and send”. Each block has “Edit” to go back to the right step.",
+          "label": "Send",
+          "purpose": "Here is what happens when you confirm.",
+          "title": "Summary before sending"
+        },
+        "tax": {
+          "help": "Every municipality has its own rules: minors under the age set by the municipality are exempt on their own; for the other exemptions you choose the reason. If the channel has already collected it, you must not collect it again.",
+          "label": "Tourist tax",
+          "purpose": "Worked out guest by guest, with the exemptions.",
+          "title": "Tourist tax"
+        }
+      },
+      "tax": {
+        "breakdown": {
+          "cap": "Night limit",
+          "capApplied": "Applied: {{taxable}} of {{nights}} nights are taxable",
+          "capNotApplied": "Not applied",
+          "exempt": "Exempt guests",
+          "guests": "Guests",
+          "nights": "Nights",
+          "rate": "Rate",
+          "ratePerNight": "{{amount}} per person per night ({{source}})",
+          "rateFrom": "Rate {{source}}",
+          "total": "Total"
+        },
+        "breakdownTitle": "Summary of the stay",
+        "channelCollectedText": "The channel has already collected the tax ({{total}}) and pays it to the municipality: you must not collect it again.",
+        "channelCollectedTitle": "The channel collected it: nothing to collect",
+        "collectorChannel": "The channel collected it",
+        "collectorFailed": "We could not save your answer. Please try again.",
+        "collectorHost": "I collect it at the property",
+        "collectorQuestion": "Who collected the tourist tax?",
+        "editRate": "Edit the tax of your municipality",
+        "enterRate": "Enter your municipality tax",
+        "exemptByAge": "Exempt by age (automatic)",
+        "exemptHidden": "Exempt: the reason is visible only to who can read the data of the guests.",
+        "exemptionFailed": "We could not save the exemption. Please try again.",
+        "exemptionLabel": "Exemption",
+        "intro": "Here is what is paid, guest by guest.",
+        "loadFailed": "We cannot work out the tourist tax.",
+        "missingRateText": "We do not know the rate of the municipality of this property, so we show no amount. Enter the tax of your municipality and we work it out.",
+        "missingRateTitle": "The tax of the municipality is missing",
+        "nights": "Nights: {{nights}} · taxable: {{taxable}}",
+        "noAmount": "Amount not available",
+        "noExemption": "No exemption",
+        "notCalculable": {
+          "CategoryRequired": "The tax of this municipality depends on the category of the property, which is not set: complete the data of the property.",
+          "ChildAgesRequired": "The tax of this municipality depends on the age of the minors: enter the date of birth of all the guests.",
+          "NightlyPriceRequired": "The tax of this municipality is a percentage of the price of the night, which the booking lacks.",
+          "RateUnavailable": "We do not know the rate of this municipality for the dates of the stay."
+        },
+        "notCalculableTitle": "It cannot be worked out for now",
+        "rateForm": {
+          "age": "Guests under (age) are exempt *",
+          "ageHint": "Guests younger than this age do not pay. From 0 to 18.",
+          "ageInvalid": "Enter a whole age from 0 to 18",
+          "cancel": "Cancel",
+          "intro": "If your municipality is not one we know, enter the tax it applies. It stays yours: nobody else sees it.",
+          "introCity": "Enter the tax that {{city}} applies. It stays yours: nobody else sees it.",
+          "nights": "Maximum taxed nights",
+          "nightsHint": "Optional. Leave empty if there is no limit.",
+          "nightsInvalid": "Enter a whole number of nights, at least 1",
+          "officialExists": "An official rate already exists for this municipality: it applies and you cannot enter another one.",
+          "rate": "Amount per person per night (€) *",
+          "rateInvalid": "Enter an amount from 0.01 to 50 euros",
+          "save": "Save and recalculate",
+          "saveFailed": "We could not save the tax. Please try again.",
+          "seasonBoth": "Enter both the start and the end of the season, or leave both empty",
+          "seasonEnd": "End of season (MM-DD)",
+          "seasonHint": "Optional: if the tax applies only in one season, enter month and day (for example 04-01 and 10-31). Leave both empty if it applies all year.",
+          "seasonInvalid": "Enter the date as month-day, for example 04-01",
+          "seasonPlaceholder": "e.g. 04-01",
+          "seasonStart": "Start of season (MM-DD)",
+          "source": "Where the amount comes from *",
+          "sourceHint": "For example the page of the municipality, the resolution or the tax office that told you.",
+          "sourceRequired": "Say where the amount comes from",
+          "sourceTooLong": "Enter at most 500 characters",
+          "title": "Enter your municipality tax"
+        },
+        "rateSource": {
+          "HostDeclared": "entered by you",
+          "None": "not available",
+          "Official": "official of the municipality"
+        }
+      },
+      "title": "Guest check-in",
+      "toBooking": "Back to the booking",
+      "toBookings": "Go to the bookings"
     }
   },
   "cin": {
@@ -20055,6 +20482,16 @@
       "edit": "Edit",
       "editField": "Edit {{field}}",
       "empty": "Not provided"
+    }
+  },
+  "touristTax": {
+    "exemption": {
+      "disability_companion": "Companion of a person with a disability",
+      "health_care": "Stay for health or care reasons",
+      "host_family": "Family member of the manager",
+      "other": "Another exemption of the municipality",
+      "public_service": "Law enforcement or other public service on duty",
+      "resident": "Resident of the municipality"
     }
   }
 }
