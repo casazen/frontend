@@ -224,7 +224,8 @@ describe('where each answer goes', () => {
     await waitFor(() => {
       const draft = readWizardDraft(WIZARD_DRAFT_ID, SCOPE);
       expect(draft?.step).toBe('why');
-      expect(draft?.values).toEqual({ scenario: 'onOctorate' });
+      // The answer, and the decisions about the listings (none yet): both travel with the draft.
+      expect(draft?.values).toEqual({ scenario: 'onOctorate', decisions: [] });
     }, WAIT);
   });
 });

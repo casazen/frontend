@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { octorateApi } from '@/api/octorate.api';
+import { propertiesApi } from '@/api/properties.api';
+import { propertyIcalApi } from '@/api/property-ical.api';
 import { expectNoAxeViolations } from '@/test/axe';
 import { writeWizardDraft } from '@/lib/wizard-draft';
 import { OCTORATE_CONNECT_PATH } from '../octorate-callback';
@@ -23,8 +25,21 @@ vi.mock('@/queries/use-users', async (importOriginal) => ({
   useCurrentUser: () => ({ user: { id: 'user-1' }, org: { id: 'org-1' } }),
 }));
 vi.mock('@/api/octorate.api', () => ({
-  octorateApi: { getConnectionStatus: vi.fn(), startConnect: vi.fn(), completeConnect: vi.fn(), disconnect: vi.fn() },
+  octorateApi: {
+    getConnectionStatus: vi.fn(),
+    startConnect: vi.fn(),
+    completeConnect: vi.fn(),
+    disconnect: vi.fn(),
+    getFoundListings: vi.fn(),
+    refreshListings: vi.fn(),
+    confirmMapping: vi.fn(),
+    setMappingRoom: vi.fn(),
+    rejectMapping: vi.fn(),
+    importListing: vi.fn(),
+  },
 }));
+vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
+vi.mock('@/api/property-ical.api', () => ({ propertyIcalApi: { getFeeds: vi.fn() } }));
 
 // A whole wizard is rendered in these tests (and checked with axe): the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
@@ -35,6 +50,9 @@ const CALLBACK_URL = `${OCTORATE_CONNECT_PATH}?code=${CODE}&state=${STATE}`;
 /** The consent step, opened as the host does after the first two steps. */
 const CONSENT_STEP_URL = `${OCTORATE_CONNECT_PATH}?step=consent`;
 
+/** The main button of every step but the last: on the consent it sends the host to the channel manager, or on to the listings. */
+const nextButton = () => screen.getByTestId('octorate-connect-next');
+/** The main button of the last step, the summary. */
 const finishButton = () => screen.getByTestId('octorate-connect-finish');
 const wizardText = () => screen.getByTestId('octorate-connect-wizard');
 
@@ -47,7 +65,17 @@ function renderOnTheConsent() {
 /** The button of the consent step can be pressed: the state of the connection has been read. */
 async function readyToPress() {
   await onStep('consent');
-  await waitFor(() => expect(finishButton()).toBeEnabled(), WAIT);
+  await waitFor(() => expect(nextButton()).toBeEnabled(), WAIT);
+}
+
+/** From the consent of a connected channel manager to the summary, pressing "Continue" on each step. */
+async function toTheSummary() {
+  fireEvent.click(nextButton());
+  await onStep('channels');
+  fireEvent.click(nextButton());
+  await onStep('mapping');
+  fireEvent.click(nextButton());
+  await onStep('summary');
 }
 
 beforeEach(async () => {
@@ -57,6 +85,10 @@ beforeEach(async () => {
   vi.mocked(octorateApi.getConnectionStatus).mockResolvedValue(connection());
   vi.mocked(octorateApi.startConnect).mockResolvedValue({ authorizationUrl: CONSENT_URL });
   vi.mocked(octorateApi.completeConnect).mockResolvedValue({ status: 'Connected', environment: 'Test', propertyCount: 3 });
+  vi.mocked(octorateApi.getFoundListings).mockResolvedValue([]);
+  vi.mocked(octorateApi.refreshListings).mockResolvedValue([]);
+  vi.mocked(propertiesApi.getAll).mockResolvedValue([]);
+  vi.mocked(propertyIcalApi.getFeeds).mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -75,7 +107,7 @@ describe('the consent: from CasaZen to the channel manager', () => {
     expect(screen.getByText(i18n.t('octorate.connect.consent.steps.open'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('octorate.connect.consent.steps.signIn'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('octorate.connect.consent.steps.comeBack'))).toBeInTheDocument();
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.start'));
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.start'));
     // Looking at the consent starts nothing.
     expect(octorateApi.startConnect).not.toHaveBeenCalled();
     expect(octorateApi.completeConnect).not.toHaveBeenCalled();
@@ -103,13 +135,13 @@ describe('the consent: from CasaZen to the channel manager', () => {
     renderOnTheConsent();
     await readyToPress();
 
-    fireEvent.click(finishButton());
+    fireEvent.click(nextButton());
 
     await waitFor(() => expect(assign).toHaveBeenCalledWith(CONSENT_URL), WAIT);
     expect(octorateApi.startConnect).toHaveBeenCalledTimes(1);
     expect(octorateApi.completeConnect).not.toHaveBeenCalled();
-    // The page is being left: the wizard stays on the step, busy, and does not finish.
-    expect(finishButton()).toHaveAttribute('aria-busy', 'true');
+    // The page is being left: the wizard stays on the step, busy, and does not go on to the listings.
+    expect(nextButton()).toHaveAttribute('aria-busy', 'true');
     expect(wizardText()).toHaveAttribute('data-step', 'consent');
   });
 
@@ -120,7 +152,7 @@ describe('the consent: from CasaZen to the channel manager', () => {
     renderOnTheConsent();
     await readyToPress();
 
-    fireEvent.click(finishButton());
+    fireEvent.click(nextButton());
 
     expect(await screen.findByTestId('octorate-connect-finish-error', undefined, WAIT)).toHaveTextContent(i18n.t('octorate.connect.finishFailed'));
     expect(assign).not.toHaveBeenCalled();
@@ -133,7 +165,7 @@ describe('the consent: from CasaZen to the channel manager', () => {
     renderOnTheConsent();
     await readyToPress();
 
-    fireEvent.click(finishButton());
+    fireEvent.click(nextButton());
 
     expect(await screen.findByTestId('octorate-connect-finish-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.octorateConnectionNeedsWholeOrg'),
@@ -158,33 +190,36 @@ describe('the return from the channel manager: the same page, the same step', ()
     expect(currentLocation()).toBe(`${OCTORATE_CONNECT_PATH}?step=consent`);
     expect(currentLocation()).not.toContain(CODE);
     expect(currentLocation()).not.toContain(STATE);
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.finish'));
+    // The consent is done: the main button leads on to the listings that were found.
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.listings'));
     // Back from the consent the exchange answers; the state of the connection is not read a second time.
     expect(octorateApi.getConnectionStatus).not.toHaveBeenCalled();
     expect(octorateApi.startConnect).not.toHaveBeenCalled();
   });
 
-  it('OctorateConnectWizard_BackWithTheConsent_FinishesInTheConfirmationOfTheConnection', async () => {
+  it('OctorateConnectWizard_BackWithTheConsent_GoesOnToTheListingsInTheSameWizardAndFinishesInTheResult', async () => {
     renderWizard(CALLBACK_URL);
     await screen.findByTestId('octorate-consent-connected', undefined, WAIT);
-    await waitFor(() => expect(finishButton()).toBeEnabled(), WAIT);
+    await waitFor(() => expect(nextButton()).toBeEnabled(), WAIT);
 
+    await toTheSummary();
     fireEvent.click(finishButton());
 
-    expect(await screen.findByRole('heading', { level: 2, name: i18n.t('octorate.connect.consent.connected.title') }, WAIT)).toBeInTheDocument();
-    expect(screen.getByText(i18n.t('octorate.connect.consent.connected.found', { count: 3 }))).toBeInTheDocument();
-    expect(screen.getByTestId('wizard-done-primary')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 2, name: i18n.t('octorate.connect.done.title') }, WAIT)).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-done-primary')).toHaveTextContent(i18n.t('octorate.connect.done.checkImported'));
     expect(currentLocation()).toContain('step=fatto');
-    // Done once: the exchange of the code is not asked again.
+    // Done once: the exchange of the code is not asked again, and the host never left the wizard.
     expect(octorateApi.completeConnect).toHaveBeenCalledTimes(1);
+    expect(octorateApi.startConnect).not.toHaveBeenCalled();
   });
 
   it('OctorateConnectWizard_BackWithTheConsentAndNoDraft_StillKnowsTheAnswerToTheFirstQuestion', async () => {
     // The draft is gone (another tab, a cleared session): the consent proves the answer, so the wizard can finish.
     renderWizard(CALLBACK_URL);
     await screen.findByTestId('octorate-consent-connected', undefined, WAIT);
-    await waitFor(() => expect(finishButton()).toBeEnabled(), WAIT);
+    await waitFor(() => expect(nextButton()).toBeEnabled(), WAIT);
 
+    await toTheSummary();
     fireEvent.click(finishButton());
 
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
@@ -196,11 +231,23 @@ describe('the return from the channel manager: the same page, the same step', ()
     writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'consent', values: { scenario: null } });
     renderWizard(CALLBACK_URL);
     await screen.findByTestId('octorate-consent-connected', undefined, WAIT);
-    await waitFor(() => expect(finishButton()).toBeEnabled(), WAIT);
+    await waitFor(() => expect(nextButton()).toBeEnabled(), WAIT);
 
+    await toTheSummary();
     fireEvent.click(finishButton());
 
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('wizard-error-summary')).not.toBeInTheDocument();
+  });
+
+  it('OctorateConnectWizard_BackWithADraftWhoseDecisionsAreNotDecisions_DropsTheDraft', async () => {
+    // A draft is just data in the tab: decisions that are not a list of decisions are never used.
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'mapping', values: { scenario: 'onOctorate', decisions: 'not-a-list' } });
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=mapping`);
+
+    await onStep('mapping');
+
+    expect(await screen.findByTestId('octorate-mapping-step', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('wizard-error-summary')).not.toBeInTheDocument();
   });
 
@@ -213,10 +260,10 @@ describe('the return from the channel manager: the same page, the same step', ()
     expect(failed).toHaveTextContent(i18n.t('apiErrors.codes.octorateStateInvalid'));
     expect(currentLocation()).toBe(`${OCTORATE_CONNECT_PATH}?step=consent`);
     // The code is used once and the state is spent: the way on is a new consent, with the same button.
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
-    fireEvent.click(finishButton());
+    fireEvent.click(nextButton());
     await waitFor(() => expect(assign).toHaveBeenCalledWith(CONSENT_URL), WAIT);
     expect(octorateApi.completeConnect).toHaveBeenCalledTimes(1);
   });
@@ -238,7 +285,7 @@ describe('the return from the channel manager: the same page, the same step', ()
 
     expect(octorateApi.completeConnect).not.toHaveBeenCalled();
     expect(currentLocation()).toBe(`${OCTORATE_CONNECT_PATH}?step=consent`);
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
   });
 
   it('OctorateConnectWizard_BackWithACodeAndNoState_IsNotCompleted', async () => {
@@ -253,7 +300,7 @@ describe('the return from the channel manager: the same page, the same step', ()
 });
 
 describe('the state of the connection', () => {
-  it('OctorateConnectWizard_AlreadyConnected_SaysSoAndFinishesWithoutAskingTheConsentAgain', async () => {
+  it('OctorateConnectWizard_AlreadyConnected_SaysSoAndGoesOnToTheListingsWithoutAskingTheConsentAgain', async () => {
     vi.mocked(octorateApi.getConnectionStatus).mockResolvedValue(connection({ status: 'Connected' }));
     renderOnTheConsent();
     await onStep('consent');
@@ -261,9 +308,9 @@ describe('the state of the connection', () => {
     const connected = await screen.findByTestId('octorate-consent-connected', undefined, WAIT);
 
     expect(connected).toHaveTextContent(i18n.t('octorate.connect.consent.connected.already'));
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.finish'));
-    fireEvent.click(finishButton());
-    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.listings'));
+    fireEvent.click(nextButton());
+    await onStep('channels');
     expect(octorateApi.startConnect).not.toHaveBeenCalled();
     expect(octorateApi.completeConnect).not.toHaveBeenCalled();
   });
@@ -275,8 +322,8 @@ describe('the state of the connection', () => {
 
     expect(await screen.findByTestId('octorate-consent-attention', undefined, WAIT)).toHaveTextContent(i18n.t('octorate.connect.consent.attention.text'));
 
-    expect(finishButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
-    expect(finishButton()).toBeEnabled();
+    expect(nextButton()).toHaveTextContent(i18n.t('octorate.connect.consent.next.retry'));
+    expect(nextButton()).toBeEnabled();
   });
 
   it('OctorateConnectWizard_ConfirmationOpenedAgainWithoutAConnection_GoesBackToTheBeginning', async () => {
@@ -288,12 +335,13 @@ describe('the state of the connection', () => {
     expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();
   });
 
-  it('OctorateConnectWizard_ConfirmationOpenedAgainWithAConnection_ShowsItWithoutACount', async () => {
+  it('OctorateConnectWizard_ConfirmationOpenedAgainWithAConnection_ShowsTheResultAsTheServerHasIt', async () => {
     vi.mocked(octorateApi.getConnectionStatus).mockResolvedValue(connection({ status: 'Connected' }));
     renderWizard(`${OCTORATE_CONNECT_PATH}?step=fatto`);
 
-    expect(await screen.findByRole('heading', { level: 2, name: i18n.t('octorate.connect.consent.connected.title') }, WAIT)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 2, name: i18n.t('octorate.connect.done.title') }, WAIT)).toBeInTheDocument();
     expect(screen.getByTestId('wizard-done-primary')).toBeInTheDocument();
+    expect(octorateApi.getFoundListings).toHaveBeenCalled();
   });
 });
 

@@ -1,6 +1,7 @@
 import { z, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
 import { PROPERTY_CREATE_PATH } from '@/features/properties/properties-paths';
+import type { MappingDecision } from './mapping-model';
 
 /**
  * Where the listings of the host are today: the first question of the connect wizard (E02/F01/US01/T04, PO-01). Three answers that
@@ -18,6 +19,8 @@ export type InventoryScenario = (typeof INVENTORY_SCENARIOS)[number];
 export interface ConnectWizardValues {
   /** `null` until the host answers. */
   scenario: InventoryScenario | null;
+  /** What the host decided about the listings found on the channel manager (E02/F01/US02/T05): nothing is sent until the last button. */
+  decisions: MappingDecision[];
 }
 
 /**
