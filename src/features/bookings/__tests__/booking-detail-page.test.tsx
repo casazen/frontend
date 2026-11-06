@@ -131,6 +131,8 @@ beforeEach(async () => {
   vi.clearAllMocks();
   vi.mocked(serviceRequestsApi.fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
   vi.mocked(fetchServiceCategories).mockResolvedValue(['cleaning', 'maintenance']);
+  // The block "what happens now" of a confirmed stay also reads whether the guest data are complete (the wizard "Guest check-in").
+  vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
   await i18n.changeLanguage('it');
 });
 
@@ -259,6 +261,30 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('open-checkout-wizard')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_ConfirmedStayWithIncompleteGuestData_LeadsTheHostToTheCheckInWizard', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ status: 'Confirmed', checkInDate: stayDay(5), checkOutDate: stayDay(8) }),
+    );
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: false } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+
+    renderPage();
+
+    const link = await screen.findByTestId('booking-next-check-in-wizard', undefined, WAIT);
+    expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/check-in`);
+    expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completeGuestData');
+  });
+
+  it('BookingDetailPage_ConfirmedStayWithCompleteGuestData_DoesNotSendTheHostToTheWizard', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ status: 'Confirmed', checkInDate: stayDay(5), checkOutDate: stayDay(8) }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('booking-next-step', undefined, WAIT)).toHaveAttribute('data-next-step', 'allInOrder');
+    expect(screen.queryByTestId('booking-next-check-in-wizard')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_ConfirmedStayPastTheDepartureDay_OffersTheCheckOutWizard', async () => {

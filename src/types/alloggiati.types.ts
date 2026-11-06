@@ -4,6 +4,7 @@ import type { AlloggiatiCodeTable, StayGuestType } from './public-checkin.types'
 /**
  * State of an Alloggiati Web communication (CO-11, decision D6, ADR-015).
  * SentReceiptPending: sent successfully, awaiting receipt retrieval.
+ * NotDue: the guests never came (a no-show), so no communication is owed; the API derives it, no report holds it.
  */
 export type AlloggiatiWebStatus =
   | 'DaInviare'
@@ -12,7 +13,8 @@ export type AlloggiatiWebStatus =
   | 'Inviato'
   | 'SentReceiptPending'
   | 'Rifiutato'
-  | 'Errore';
+  | 'Errore'
+  | 'NotDue';
 
 export interface AlloggiatiStatusDto {
   bookingId: string;

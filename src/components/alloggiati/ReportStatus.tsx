@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
-import { AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { AlertCircle, Ban, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 export interface ReportStatusProps {
   /** Report status from the API. */
@@ -61,6 +61,10 @@ export function ReportStatus({
     Errore: {
       colors: 'bg-red-100 text-red-800 border-red-200',
       Icon: XCircle,
+    },
+    NotDue: {
+      colors: 'bg-gray-100 text-gray-700 border-gray-200',
+      Icon: Ban,
     },
   };
 

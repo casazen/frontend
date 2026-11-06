@@ -478,6 +478,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/bookings/:id/checkout'],
   },
   {
+    // The host wizard "Guest check-in" of a booking (NF-40): guests, documents, checks, tax and send. Opened from the "To do" item
+    // `StartCheckIn` and from the booking whose guest data are incomplete.
+    path: '/app/short-rent/bookings/:id/check-in',
+    context: 'short-rent',
+    requiredPermissions: ['booking.write'],
+    component: async () => ({
+      default: (await import('@/features/checkin/wizard/checkin-wizard')).CheckInWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/marketplace',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
