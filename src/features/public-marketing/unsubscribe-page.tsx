@@ -28,11 +28,11 @@ export function UnsubscribePage() {
   const link = useSignedFragment(LINK_FIELDS);
   const unsubscribe = useUnsubscribe();
 
-  // The unsubscribe endpoint never says `contact_not_found`; a link the server refuses for any other reason does not work.
+  // The unsubscribe endpoint never says `contact_not_found` nor `contact_suppressed`; a link the server refuses for any other reason does not work.
   const failure = unsubscribe.isError ? linkFailureOf(unsubscribe.error) : null;
   let state: UnsubscribeState = 'ask';
   if (unsubscribe.isSuccess) state = 'done';
-  else if (link === null || failure === 'invalid' || failure === 'notFound') state = 'invalid';
+  else if (link === null || failure === 'invalid' || failure === 'notFound' || failure === 'suppressed') state = 'invalid';
   else if (failure === 'expired') state = 'expired';
 
   const cards = {

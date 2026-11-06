@@ -75,6 +75,8 @@ describe('ConfirmPage (CRM-03)', () => {
     [422, 'link_expired', 'Il link è scaduto'],
     [422, 'invalid_signature', 'Il link non è valido'],
     [404, 'contact_not_found', 'Iscrizione non trovata'],
+    // The person opted out after the e-mail was sent: nothing is confirmed and the opt-out stands (409 of the API), so there is nothing to retry.
+    [409, 'contact_suppressed', 'Iscrizione non confermata'],
   ])('ConfirmPage_ServerAnswers_%s_%s_ExplainsInPlainWords', async (status, code, expectedTitle) => {
     post.mockRejectedValue(httpError(status, { code }));
     window.history.replaceState(null, '', `/marketing/confirm${FRAGMENT}`);
@@ -84,7 +86,21 @@ describe('ConfirmPage (CRM-03)', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: expectedTitle })).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(code);
+    // No way on and no «try again»: that link cannot work, and it was sent once.
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  it('ConfirmPage_OptedOut_SaysNothingWasConfirmedAndTheOptOutStands', async () => {
+    post.mockRejectedValue(httpError(409, { code: 'contact_suppressed' }));
+    window.history.replaceState(null, '', `/marketing/confirm${FRAGMENT}`);
+
+    renderPage();
+    fireEvent.click(confirmButton());
+
+    expect(await screen.findByText(/non abbiamo confermato nulla/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1, name: 'Iscrizione confermata' })).not.toBeInTheDocument();
   });
 
   it('ConfirmPage_NoFragment_SaysTheLinkIsNotValidAndAsksNothing', () => {

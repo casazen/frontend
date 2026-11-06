@@ -9228,6 +9228,10 @@
       },
       "pageTitle": "Confirm subscription",
       "retry": "We could not complete the request. Please try again in a moment.",
+      "suppressed": {
+        "description": "You asked not to receive e-mails from this property, so we have not confirmed anything. If you want to receive them again, ask the property to subscribe you.",
+        "title": "Subscription not confirmed"
+      },
       "title": "Confirm your subscription?"
     },
     "unsubscribe": {

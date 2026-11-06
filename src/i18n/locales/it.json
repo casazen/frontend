@@ -9228,6 +9228,10 @@
       },
       "pageTitle": "Conferma iscrizione",
       "retry": "Non siamo riusciti a completare l'operazione. Riprova tra qualche istante.",
+      "suppressed": {
+        "description": "Hai chiesto di non ricevere più le e-mail di questa struttura, quindi non abbiamo confermato nulla. Se vuoi tornare a riceverle, chiedile di iscriverti di nuovo.",
+        "title": "Iscrizione non confermata"
+      },
       "title": "Confermi la tua iscrizione?"
     },
     "unsubscribe": {
