@@ -340,6 +340,22 @@ describe('MarketplacePage · Scopri', () => {
     expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
   });
 
+  it.each([
+    ['TheCatalogHasNoPartner', () => catalogAnswer(catalog({ partners: [] }))],
+    ['TheCatalogIsLoading', () => catalogAnswer(undefined, { isPending: true })],
+    ['TheCatalogCannotBeRead', () => catalogAnswer(undefined, { isError: true })],
+  ])('MarketplacePage_Scopri_NoSupplierAround_%s_DoesNotPointToPartnersThatAreNotThere', async (_name, answer) => {
+    api.fetchMarketplaceSuppliers.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
+    hooks.catalog.mockReturnValue(answer());
+    renderAt(<MarketplacePage />);
+
+    // The sentence about the territory stays; the one that sends the person to the Partners group is there only when that group has cards.
+    const note = await screen.findByTestId('marketplace-no-network');
+    expect(note).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
+    expect(note).not.toHaveTextContent('partner');
+    expect(within(screen.getByTestId('marketplace-partners-section')).queryAllByRole('heading', { level: 3 })).toHaveLength(0);
+  });
+
   it('MarketplacePage_Scopri_OwnIntegrations_SayWhetherTheyAreOnAndLeadToTheirPage', async () => {
     api.getConnectStatus.mockResolvedValue(ACTIVE_STRIPE);
     renderAt(<MarketplacePage />);

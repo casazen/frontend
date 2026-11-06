@@ -167,6 +167,9 @@ function HomeServicesGroup({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const suppliers = useMarketplaceSuppliers({ propertyId });
   const catalog = useServiceCategories();
+  const marketplace = useMarketplaceCatalog(propertyId);
+  // The sentence that sends the person to the Partners group is there only when that group has cards to show (the same read as the group's).
+  const partnersBelow = (findMarketplaceGroup(marketplace.data, 'partners')?.entries.length ?? 0) > 0;
   const items = suppliers.data?.items ?? [];
   const counts = countByCategory(items);
 
@@ -182,7 +185,8 @@ function HomeServicesGroup({ propertyId }: { propertyId: string }) {
         <>
           {items.length === 0 ? (
             <p className="py-1 text-sm text-muted-foreground" role="status" data-testid="marketplace-no-network">
-              {t('marketplace.noNetwork')} {t('marketplace.noNetworkPartners')}
+              {t('marketplace.noNetwork')}
+              {partnersBelow ? ` ${t('marketplace.noNetworkPartners')}` : null}
             </p>
           ) : null}
           <ul role="list" className="grid list-none gap-3 pt-2 sm:grid-cols-2 xl:grid-cols-3" data-testid="marketplace-categories">
