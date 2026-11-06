@@ -7,6 +7,7 @@ import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import type { PendingAlert } from '@/types/alert';
 import {
   createRealtimeClient,
   createSignalrFactory,
@@ -101,18 +102,40 @@ interface Options {
    * The latest function is the one called, a new one does not reopen the channel.
    */
   onNewNotification?: (change: NotificationsChange) => void;
+  /**
+   * Called when a popup alert arrives (`alertReceived`, ADR-025), as the server sent it. The latest function is the one called, a
+   * new one does not reopen the channel.
+   */
+  onAlert?: (alert: PendingAlert) => void;
+  /**
+   * For a second user of the shared channel that wants only the alerts (the popup): the notifications cache is fed, and read again
+   * after a gap, by the bell's own use of this hook, once. Fed twice, the change would be applied by whichever of the two comes first,
+   * and the other would see the count already grown and miss that a notification is new (the pop-up of the bell would depend on the
+   * order in which the two were mounted).
+   */
+  alertsOnly?: boolean;
 }
 
 /**
  * Keeps the real-time channel of the notifications open while `enabled` and feeds the query cache from it (`applyNotificationsChange`).
  * Returns its state, which the bell uses to poll only while the socket is down.
  */
-export function useNotificationsRealtime({ enabled, userId, getAccessToken, client, onNewNotification }: Options): RealtimeState {
+export function useNotificationsRealtime({
+  enabled,
+  userId,
+  getAccessToken,
+  client,
+  onNewNotification,
+  onAlert,
+  alertsOnly = false,
+}: Options): RealtimeState {
   const queryClient = useQueryClient();
   const active = enabled && userId !== null;
   const onNewRef = useRef(onNewNotification);
+  const onAlertRef = useRef(onAlert);
   useEffect(() => {
     onNewRef.current = onNewNotification;
+    onAlertRef.current = onAlert;
   });
 
   useEffect(() => {
@@ -120,33 +143,39 @@ export function useNotificationsRealtime({ enabled, userId, getAccessToken, clie
     const channel = client ?? acquireShared(getAccessToken);
     let wasConnected = channel.getState() === 'connected';
     let hadGap = false;
-    const offChange = channel.onChange((change) => {
-      const before = queryClient.getQueryData<number>(UNREAD_COUNT_KEY);
-      applyNotificationsChange(queryClient, change);
-      // A new notification makes the count grow; reading one makes it fall. Without a count to compare with (still loading) it
-      // cannot be told, and a missing pop-up costs less than a wrong one: the badge shows the count either way.
-      if (change.type !== null && typeof before === 'number' && change.unreadCount > before) onNewRef.current?.(change);
-    });
-    const offState = channel.onState((state) => {
-      if (state === 'connected') {
-        // Events sent while it was down are lost: a reconnect (not the first connection) reads everything again.
-        if (hadGap) refreshAfterGap(queryClient);
-        hadGap = false;
-        wasConnected = true;
-      } else if (wasConnected) {
-        hadGap = true;
-      }
-    });
+    const offChange = alertsOnly
+      ? undefined
+      : channel.onChange((change) => {
+          const before = queryClient.getQueryData<number>(UNREAD_COUNT_KEY);
+          applyNotificationsChange(queryClient, change);
+          // A new notification makes the count grow; reading one makes it fall. Without a count to compare with (still loading) it
+          // cannot be told, and a missing pop-up costs less than a wrong one: the badge shows the count either way.
+          if (change.type !== null && typeof before === 'number' && change.unreadCount > before) onNewRef.current?.(change);
+        });
+    const offState = alertsOnly
+      ? undefined
+      : channel.onState((state) => {
+          if (state === 'connected') {
+            // Events sent while it was down are lost: a reconnect (not the first connection) reads everything again.
+            if (hadGap) refreshAfterGap(queryClient);
+            hadGap = false;
+            wasConnected = true;
+          } else if (wasConnected) {
+            hadGap = true;
+          }
+        });
+    const offAlert = channel.onAlert((alert) => onAlertRef.current?.(alert));
     channel.connect();
     return () => {
-      offChange();
-      offState();
+      offChange?.();
+      offState?.();
+      offAlert();
       if (client) client.disconnect();
       else releaseShared();
     };
     // `getAccessToken` is read when a connection opens, through `currentTokenGetter`: a new function must not reopen the channel.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, userId, client, queryClient]);
+  }, [active, userId, client, queryClient, alertsOnly]);
 
   const target = client ?? getShared();
   const subscribe = useCallback((listener: () => void) => target.onState(listener), [target]);

@@ -311,6 +311,15 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     return () => setMobilePrimaryVisible(false);
   }, [isDone, setMobilePrimaryVisible]);
 
+  // While a wizard is mounted (the confirmation included) the popup alerts wait in their queue and are not drawn (ADR-025-R7). The
+  // wizards do not share a path to test, so the shell says it: the popup reads the count in the store.
+  const wizardOpened = useUiStore((state) => state.wizardOpened);
+  const wizardClosed = useUiStore((state) => state.wizardClosed);
+  React.useEffect(() => {
+    wizardOpened();
+    return wizardClosed;
+  }, [wizardOpened, wizardClosed]);
+
   // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;
   React.useEffect(() => {

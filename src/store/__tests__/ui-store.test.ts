@@ -68,4 +68,28 @@ describe('ui store (UI-04a)', () => {
     expect(stored()?.state).toEqual({ sidebarCollapsed: true });
     useUiStore.getState().setMobilePrimaryVisible(false);
   });
+
+  it('UiStore_OpenWizards_CountsTheWizardsOnScreenSoThatOneLeavingDoesNotHideAnother', () => {
+    // The popup alerts wait while the count is above zero (ADR-025-R7).
+    const before = useUiStore.getState().openWizards;
+
+    useUiStore.getState().wizardOpened();
+    useUiStore.getState().wizardOpened();
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(before + 1);
+
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(before);
+  });
+
+  it('UiStore_OpenWizards_NeverGoesBelowZeroAndIsNeverKept', () => {
+    useUiStore.setState({ openWizards: 0 });
+
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(0);
+
+    useUiStore.getState().wizardOpened();
+    expect(stored()?.state).not.toHaveProperty('openWizards');
+    useUiStore.getState().wizardClosed();
+  });
 });

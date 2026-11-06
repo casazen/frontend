@@ -6,6 +6,7 @@ import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
 import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
+import { AlertPopup } from '@/components/shared/alert-popup';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
@@ -94,6 +95,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
         <RouteFocus mainRef={mainRef} />
         {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
         <DetailDrawerHost />
+        {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
+        <AlertPopup />
       </CommandPaletteProvider>
     </AppShellContext.Provider>
   );
