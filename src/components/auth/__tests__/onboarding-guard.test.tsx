@@ -83,7 +83,12 @@ function OnboardingProbe() {
 
 function WorkspaceProbe() {
   const location = useLocation();
-  return <p data-testid="workspace">workspace {location.pathname}</p>;
+  return (
+    <>
+      <p data-testid="workspace">workspace {location.pathname}</p>
+      <p data-testid="workspace-search">{location.search}</p>
+    </>
+  );
 }
 
 function renderGuard(path = '/app/short-rent/properties') {
@@ -161,6 +166,27 @@ describe('OnboardingGuard (PL-01)', () => {
     renderGuard('/app/short-rent/properties/create');
 
     expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/properties/create');
+  });
+
+  it('OnboardingGuard_HostWithoutPropertiesOnTheConnectWizard_OpensItAndLeavesTheCallbackInTheAddress', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        rentalType: 'ShortTerm',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        consentsAccepted: true,
+        hasProperties: false,
+      }),
+    );
+
+    // Who has the listings on the channel manager and none in CasaZen yet: the wizard, and the page the consent leads back to.
+    renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/integrations/octorate');
+    // The guard does not touch the answer of the channel manager: the wizard reads it and takes it out of the address.
+    expect(screen.getByTestId('workspace-search')).toHaveTextContent('?code=the-code&state=the-state');
   });
 
   it('OnboardingGuard_AdminWithoutProperties_DoesNotOpenTheFirstPropertyCreation', async () => {
