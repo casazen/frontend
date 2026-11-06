@@ -8,6 +8,7 @@ export type ReportId =
   | 'occupancy'
   | 'channels'
   | 'touristTax'
+  | 'touristTaxSummary'
   | 'annual'
   | 'withholding'
   | 'alloggiati'
@@ -38,7 +39,7 @@ interface PageSource {
 
 export type ReportSource = HostSource | FiscalSource | PageSource;
 
-/** One row of the page "Report": fixed configuration, eight of them. The words of each are `reports.items.<id>.*`. */
+/** One row of the page "Report": fixed configuration, nine of them. The words of each are `reports.items.<id>.*`. */
 export interface ReportDefinition {
   id: ReportId;
   type: ReportType;
@@ -57,12 +58,15 @@ export function isDownloadable(report: ReportDefinition): report is Downloadable
 }
 
 const ALLOGGIATI_PATH = '/app/short-rent/alloggiati';
+const TOURIST_TAX_SUMMARY_PATH = '/app/short-rent/reports/tourist-tax';
 
 export const REPORTS: readonly ReportDefinition[] = [
   { id: 'revenue', type: 'financial', suggested: 'thisMonth', source: { kind: 'host', report: 'revenue-by-property' }, formats: ['csv'] },
   { id: 'occupancy', type: 'operational', suggested: 'thisMonth', source: { kind: 'host', report: 'occupancy-by-property' }, formats: ['csv'] },
   { id: 'channels', type: 'operational', suggested: 'last3Months', source: { kind: 'host', report: 'bookings-by-channel' }, formats: ['csv'] },
   { id: 'touristTax', type: 'fiscal', suggested: 'last3Months', source: { kind: 'fiscal', report: 'touristTax' }, formats: ['csv', 'pdf'] },
+  // What is owed and what was paid, comune by comune, with the receipts: it has a page of its own, where the host also records a payment.
+  { id: 'touristTaxSummary', type: 'fiscal', suggested: null, source: { kind: 'page', href: () => TOURIST_TAX_SUMMARY_PATH }, formats: [] },
   { id: 'annual', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'annual' }, formats: ['csv', 'pdf'] },
   { id: 'withholding', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'withholding' }, formats: ['csv', 'pdf'] },
   { id: 'alloggiati', type: 'operational', suggested: null, source: { kind: 'page', href: () => ALLOGGIATI_PATH }, formats: [] },
