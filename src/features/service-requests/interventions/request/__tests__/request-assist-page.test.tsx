@@ -242,6 +242,25 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     expect(createServiceRequest).not.toHaveBeenCalled();
   });
 
+  it('RequestAssist_ExternalProposalForAServiceNoPartnerCovers_IsNotFollowed_AndSaysThereIsNoPartner', async () => {
+    // The catalog has a partner for the cleaning only: for the plumbing the proposal of the external channel leads to a step with nobody in it.
+    vi.mocked(serviceRequestAssistApi.assist).mockResolvedValue({ ...PLUMBING, channel: 'external', casazenSuppliers: 0 });
+    renderPage();
+
+    await describeTheJob();
+
+    const result = await screen.findByTestId('request-assist-result', undefined, WAIT);
+    expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('Un partner esterno');
+    // «Vedi i partner» is not offered and the card says why; the other two ways on are still there.
+    expect(screen.queryByTestId('request-assist-use')).not.toBeInTheDocument();
+    expect(within(result).getByTestId('request-assist-no-partners')).toHaveTextContent("non c'è ancora nessun servizio esterno");
+    expect(screen.getByTestId('request-assist-edit')).toBeInTheDocument();
+    expect(screen.getByTestId('request-assist-skip')).toBeInTheDocument();
+    // Nobody was taken to the partners: the wizard stays where it was, and nothing was sent.
+    expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
+    expect(createServiceRequest).not.toHaveBeenCalled();
+  });
+
   it('RequestAssist_Change_GoesBackToTheServices_AndAnotherChoiceTakesTheLineAway', async () => {
     renderPage();
     await describeTheJob();
