@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { listingTextApi, type ListingTextBasis } from '@/api/listing-text.api';
 import { getHttpStatus } from '@/lib/api-errors';
+import { useAmenityLabels } from '@/queries/use-amenity-catalog';
 import { describeBasis } from '../listing-text-basis';
 import { reducePhotosForAi } from '../photos/reduce-photo';
 import type { PropertyWizardValues } from '../property-wizard-model';
@@ -30,14 +31,16 @@ interface ListingTextCardProps {
 }
 
 /**
- * «Il tuo annuncio» (step 2 of «Aggiungi immobile»): the headline and the description, and «Suggerisci con l'AI», which asks the AI for a text
- * written from the photos of the gallery (reduced here, cover first), the comune and the data of the property. The text is the host's: it
- * replaces what is in the fields, «Annulla» brings back what was there before the first suggestion, «Rigenera» asks for another one. When
- * the AI cannot write it the text is composed from the data, as before, and the card says why. A tip says what makes the text better
- * (photos first) and the «?» what the AI uses.
+ * «Il tuo annuncio» (the Italian tab of the descriptions step of «Aggiungi immobile»): the headline and the description, and «Suggerisci con
+ * l'AI», which asks the AI for a text written from the photos of the gallery (reduced here, cover first), the comune and the data of the
+ * property. The text is the host's: it replaces what is in the fields, «Annulla» brings back what was there before the first suggestion,
+ * «Rigenera» asks for another one. When the AI cannot write it the text is composed from the data, as before, and the card says why. A tip
+ * says what makes the text better (photos first) and the «?» what the AI uses. Both fields are required: the channels take no listing
+ * without them.
  */
 export function ListingTextCard({ form, propertyId, photos }: ListingTextCardProps) {
   const { t } = useTranslation();
+  const amenityLabel = useAmenityLabels();
   const [previous, setPrevious] = useState<{ listingTitle: string; description: string } | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [busy, setBusy] = useState(false);
@@ -64,7 +67,7 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
         apply(answer.title, answer.description.slice(0, LISTING_DESCRIPTION_MAX));
         setOutcome({ kind: 'ai', basedOn: answer.basedOn, photosSent: reduced.length });
       } else {
-        const text = suggestListingText(values, t);
+        const text = suggestListingText(values, t, amenityLabel);
         apply(text.title, text.description);
         setOutcome({ kind: 'composed', aiAvailable: answer.reason !== 'ai_not_configured' });
       }
@@ -73,7 +76,7 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
       if (getHttpStatus(error) === 429) {
         setRateLimited(true);
       } else {
-        const text = suggestListingText(values, t);
+        const text = suggestListingText(values, t, amenityLabel);
         apply(text.title, text.description);
         setOutcome({ kind: 'composed', aiAvailable: true });
         setPrevious(before);
@@ -108,7 +111,6 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
 
       <Field
         label={t('propertyWizard.photos.listing.headline.label')}
-        optional
         hint={t('propertyWizard.photos.listing.headline.hint')}
         counter={`${titleLength}/${LISTING_TITLE_MAX}`}
         error={formState.errors.listingTitle}
@@ -118,7 +120,6 @@ export function ListingTextCard({ form, propertyId, photos }: ListingTextCardPro
 
       <Field
         label={t('propertyWizard.photos.listing.text.label')}
-        optional
         counter={`${descriptionLength}/${LISTING_DESCRIPTION_MAX}`}
         error={formState.errors.description}
       >

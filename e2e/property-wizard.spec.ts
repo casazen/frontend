@@ -67,15 +67,33 @@ async function mockActivation(page: Page, state: ServerState): Promise<void> {
   });
 }
 
-/** Creates the property with the first step, leaves the optional ones, gives the rate and arrives at the last step. */
+/** Writes the title and the description in Italian and in English: the channels take no listing without them, so the step cannot be left. */
+async function writeTexts(page: Page): Promise<void> {
+  await page.getByLabel('Titolo', { exact: true }).fill('Casa Procedura');
+  await page.getByLabel('Descrizione', { exact: true }).fill('Appartamento di prova nel centro.');
+  await page.getByTestId('property-wizard-descriptions-tab-en').click();
+  await page.getByLabel('Titolo (Inglese)').fill('Procedure house');
+  await page.getByLabel('Descrizione (Inglese)').fill('A test apartment in the centre.');
+}
+
+/** Creates the property with the first step, leaves the optional ones, writes the texts, gives the rate and arrives at the last step. */
 async function goToLastStep(page: Page): Promise<void> {
   await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'));
   const created = await createPropertyWithWizard(page, { name: 'Casa Procedura', address: 'Via Garibaldi 42', comune: 'Milano', postalCode: '20100' });
   expect(created.status()).toBe(201);
-  for (const stepId of ['photos', 'amenities', 'rules']) {
+  for (const stepId of ['photos', 'amenities']) {
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', stepId);
     await page.getByTestId('wizard-skip').click();
   }
+  // The descriptions are not optional: without the four texts «Continua» names what is missing and stays.
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'descriptions');
+  await page.getByTestId('property-wizard-next').click();
+  await expect(page.getByTestId('wizard-error-summary')).toContainText('Scrivi il titolo in italiano.');
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'descriptions');
+  await writeTexts(page);
+  await page.getByTestId('property-wizard-next').click();
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'rules');
+  await page.getByTestId('wizard-skip').click();
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'prices');
   await page.getByLabel('Prezzo base per notte').fill('135');
   await page.getByTestId('property-wizard-next').click();

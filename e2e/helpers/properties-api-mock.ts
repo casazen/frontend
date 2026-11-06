@@ -126,6 +126,8 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
     await route.fallback();
   });
 
+  await mockListingDataApi(page);
+
   await page.route('**/api/properties/*/detail', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -250,4 +252,80 @@ export async function mockPropertyIcalApi(page: Page): Promise<void> {
         : { exportUrl: 'https://casazen.example/ical/export/e2e-token.ics', blockCount: 0, feeds: [] };
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
+}
+
+const AMENITY_CATALOG = {
+  groups: [
+    { id: 'comfort', label: { it: 'Comfort', en: 'Comfort' } },
+    { id: 'kitchen', label: { it: 'Cucina', en: 'Kitchen' } },
+    { id: 'outdoor', label: { it: 'Esterni e posizione', en: 'Outdoors and location' } },
+  ],
+  amenities: [
+    { name: 'WiFi', icon: 'wifi', group: 'comfort', label: { it: 'Wi-Fi', en: 'Wi-Fi' } },
+    { name: 'Washer', icon: 'shirt', group: 'comfort', label: { it: 'Lavatrice', en: 'Washing machine' } },
+    { name: 'Kitchen', icon: 'utensils', group: 'kitchen', label: { it: 'Cucina', en: 'Kitchen' } },
+    { name: 'Pool', icon: 'waves', group: 'outdoor', label: { it: 'Piscina', en: 'Pool' } },
+  ],
+};
+
+/**
+ * The listing data the wizard reads and writes besides the property (NF-31, NF-32, NF-34, NF-35): the rooms, the length-of-stay discounts,
+ * the site profile with the texts of the other languages, the captions of the photos and the catalog of the amenities. Empty to begin
+ * with; what is saved is echoed back, as the server does. Without it the wizard cannot open on a property that exists.
+ */
+export async function mockListingDataApi(page: Page): Promise<void> {
+  const state = { rooms: [] as unknown[], discounts: [] as unknown[], translations: {} as Record<string, unknown> };
+  const json = (body: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  const propertyOf = (url: string) => new URL(url).pathname.match(/\/properties\/([^/]+)\//)?.[1] ?? '';
+
+  await page.route('**/api/public/amenities', (route) => route.fulfill(json(AMENITY_CATALOG)));
+
+  await page.route('**/api/properties/*/rooms', async (route) => {
+    if (route.request().method() === 'PUT') {
+      const body = route.request().postDataJSON() as { rooms: Array<{ id?: string | null; type: string; beds: unknown[] }> };
+      state.rooms = body.rooms.map((room, position) => ({ id: room.id ?? `room-${position + 1}`, position, type: room.type, beds: room.beds }));
+    }
+    await route.fulfill(json(state.rooms));
+  });
+
+  await page.route('**/api/properties/*/stay-discounts', async (route) => {
+    if (route.request().method() === 'PUT') state.discounts = (route.request().postDataJSON() as { discounts: unknown[] }).discounts;
+    await route.fulfill(json(state.discounts));
+  });
+
+  await page.route('**/api/properties/*/site-profile', async (route) => {
+    if (route.request().method() === 'PUT') state.translations = (route.request().postDataJSON() as { translations: Record<string, unknown> }).translations;
+    const origins = Object.fromEntries(
+      Object.entries(state.translations).flatMap(([language, texts]) => Object.keys(texts as object).map((field) => [`${language}.${field}`, 'UserWritten'])),
+    );
+    await route.fulfill(
+      json({
+        propertyId: propertyOf(route.request().url()),
+        floorLevel: null,
+        renovatedYear: null,
+        energyClass: null,
+        energyIndex: null,
+        areaKind: null,
+        childrenWelcome: null,
+        checkInTo: null,
+        videoUrl: null,
+        tourUrl: null,
+        zone: null,
+        near: null,
+        floorNote: null,
+        outdoorNote: null,
+        checkInMethod: null,
+        rulesNote: null,
+        highlights: [],
+        safetyNotes: [],
+        tags: [],
+        derivedTags: [],
+        translations: state.translations,
+        origins,
+        updatedAt: new Date(0).toISOString(),
+      }),
+    );
+  });
+
+  await page.route('**/api/properties/*/site-profile/photos', (route) => route.fulfill(json([])));
 }

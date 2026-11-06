@@ -1,13 +1,45 @@
 import { z, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
 import { isOpenBlocker } from '@/features/compliance/activation-wizard-model';
-import { ACCOMMODATION_TYPES } from '@/types';
-import type { AccommodationType, CreatePropertyDto, PartiesPolicy, PetsPolicy, Property, SmokingPolicy, UpdatePropertyDto } from '@/types';
+import {
+  LISTING_DESCRIPTION_MAX,
+  LISTING_TITLE_MAX,
+  emptyTextDrafts,
+  textDraftsFromProfile,
+  type ListingTextDraft,
+} from '@/lib/listing-texts';
+import { PHOTO_CAPTION_MAX, photoMetaDraftsFromServer, type PhotoMetaDraft } from '@/lib/listing-photos';
+import { ACCOMMODATION_TYPES, BED_TYPES, PROPERTY_ROOM_TYPES } from '@/types';
+import type {
+  AccommodationType,
+  ChildrenPolicy,
+  CreatePropertyDto,
+  PartiesPolicy,
+  PetsPolicy,
+  Property,
+  PropertyPhotoMeta,
+  PropertyRoom,
+  SiteProfile,
+  SmokingPolicy,
+  StayDiscountTier,
+  UpdatePropertyDto,
+} from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
 import { DEFAULT_PROPERTY_TIMEZONE } from '../schemas/property.schema';
+import {
+  MAX_BEDS_OF_A_KIND,
+  MAX_ROOMS,
+  MAX_TOTAL_BEDS,
+  MIN_TOTAL_BEDS,
+  bedroomCount,
+  roomDraftsFromServer,
+  totalBeds,
+  type RoomDraft,
+} from './rooms-model';
+import { MAX_STAY_DISCOUNTS, stayDiscountDraftsFromServer, stayDiscountProblem, type StayDiscountDraft } from './stay-discounts-model';
 
 /** The steps of «Aggiungi immobile», in order. The address carries the id (`?step=photos`), so a step can be linked to. */
-export const WIZARD_STEP_IDS = ['base', 'photos', 'amenities', 'rules', 'prices', 'finish'] as const;
+export const WIZARD_STEP_IDS = ['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'finish'] as const;
 export type WizardStepId = (typeof WIZARD_STEP_IDS)[number];
 
 /** Name of the query parameter that carries the property once it exists on the server (the end of the first step). */
@@ -31,23 +63,33 @@ export interface PropertyWizardValues {
   /** Optional: an Italian postal code, 5 digits. */
   postalCode: string;
   maxGuests: number;
+  /** Counters of the spaces; once the unit has a room they are read from the rooms (`rooms`) and the host does not type them. */
   bedrooms: number;
   beds: number;
   bathrooms: number;
   /** Optional, whole square metres; text because it is typed. */
   areaSqm: string;
-  // 2 · Foto e annuncio (the photos themselves are on the server, not in the form)
-  /** The headline of the listing; blank = the listing uses the name. */
-  listingTitle: string;
-  description: string;
+  /** The rooms with their beds (NF-34); empty = the host gave the counters only. At least one bed in all when there is a room. */
+  rooms: RoomDraft[];
+  // 2 · Foto (the photos themselves are on the server, not in the form)
+  /** The caption (Italian and English) and the room of the photos that have one (NF-32). */
+  photoMeta: PhotoMetaDraft[];
   // 3 · Dotazioni (the ones the host chooses here; PetFriendly and SmokingAllowed follow the house rules)
   amenities: string[];
-  // 4 · Regole. Times are `HH:mm`; blank = the host did not say.
+  // 4 · Descrizioni. Italian is the columns of the property, every other language the site profile (NF-31).
+  /** The headline of the listing in Italian (required to publish). */
+  listingTitle: string;
+  /** The description of the listing in Italian (required to publish). */
+  description: string;
+  /** The headline and the description in the other languages by language code; English is required to publish, the others are optional. */
+  texts: Record<string, ListingTextDraft>;
+  // 5 · Regole. Times are `HH:mm`; blank = the host did not say.
   checkInFrom: string;
   checkOutBy: string;
   smokingPolicy: SmokingPolicy | '';
   petsPolicy: PetsPolicy | '';
   partiesPolicy: PartiesPolicy | '';
+  childrenPolicy: ChildrenPolicy | '';
   /** Quiet hours come as a pair: both or none. */
   quietHoursFrom: string;
   quietHoursTo: string;
@@ -56,14 +98,16 @@ export interface PropertyWizardValues {
   /** One of the catalog; blank = none chosen (the refund then follows the default rule of the booking site). */
   cancellationPolicyId: string;
   houseRules: string;
-  // 5 · Prezzi. The amounts are typed, so they are text here and numbers in what is sent.
+  // 6 · Prezzi. The amounts are typed, so they are text here and numbers in what is sent.
   nightlyRate: string;
   /** Percent on the nights that start on a Friday or a Saturday; blank = none. */
   weekendSurcharge: string;
   cleaningFee: string;
   /** 1 = no minimum. */
   minNights: number;
-  // 6 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
+  /** The length-of-stay discounts, at most 5 (NF-35); a row left empty is not sent. */
+  stayDiscounts: StayDiscountDraft[];
+  // 7 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
   publishedOnSite: boolean;
 }
 
@@ -71,6 +115,28 @@ type StepSchema = ZodType<unknown, FieldValues>;
 
 /** A civic number, or «snc» (senza numero civico), somewhere in the address. */
 const CIVIC_NUMBER = /\d|\bsnc\b|\bs\.\s?n\.\s?c\.?/i;
+
+const roomSchema = z.object({
+  key: z.string(),
+  type: z.enum(PROPERTY_ROOM_TYPES),
+  beds: z
+    .array(z.object({ type: z.enum(BED_TYPES), count: z.number().int().min(1, 'propertyWizard.validation.rooms.bedCount').max(MAX_BEDS_OF_A_KIND, 'propertyWizard.validation.rooms.bedCount') }))
+    .max(BED_TYPES.length, 'propertyWizard.validation.rooms.bedCount'),
+});
+
+/**
+ * The rooms (NF-34): at most 20, and once there is a room at least one bed in all and no more than 100, as the API asks. An empty list is
+ * fine: the host gave the counters only.
+ */
+const roomsSchema = z
+  .array(roomSchema)
+  .max(MAX_ROOMS, 'propertyWizard.validation.rooms.max')
+  .superRefine((rooms, context) => {
+    if (rooms.length === 0) return;
+    const beds = totalBeds(rooms);
+    if (beds < MIN_TOTAL_BEDS) context.addIssue({ code: 'custom', message: 'propertyWizard.validation.rooms.noBed' });
+    else if (beds > MAX_TOTAL_BEDS) context.addIssue({ code: 'custom', message: 'propertyWizard.validation.rooms.tooManyBeds' });
+  });
 
 /** The limits are the ones of the API and of the form of today (`property.schema.ts`): whole numbers, a studio flat has 0 bedrooms. */
 export const baseStepSchema: StepSchema = z.object({
@@ -92,16 +158,73 @@ export const baseStepSchema: StepSchema = z.object({
   beds: z.number({ error: 'propertyWizard.validation.beds' }).int().min(1, 'propertyWizard.validation.beds').max(100, 'propertyWizard.validation.beds'),
   bathrooms: z.number({ error: 'propertyWizard.validation.bathrooms' }).int().min(1, 'propertyWizard.validation.bathrooms').max(50, 'propertyWizard.validation.bathrooms'),
   areaSqm: z.string().trim().regex(/^(\d{1,4})?$/, 'propertyWizard.validation.areaSqm').refine((value) => value === '' || Number(value) >= 1, 'propertyWizard.validation.areaSqm'),
+  rooms: roomsSchema,
 });
 
 /**
- * The headline and the description of the listing (step 2). The photos are optional, so is the text: blank is a valid answer. The limits are
- * the API's (`LISTING_TITLE_MAX`, `LISTING_DESCRIPTION_MAX`): the description the AI writes has three or four paragraphs.
+ * The photos (step 2). They are optional, so are their captions: blank is a valid answer. A caption in English needs the one in Italian
+ * (the API refuses it otherwise, 422 `property_site_profile_italian_required`), and none is longer than the API allows.
  */
 export const photosStepSchema: StepSchema = z.object({
-  listingTitle: z.string().trim().max(60, 'propertyWizard.validation.listingTitle'),
-  description: z.string().trim().max(2000, 'propertyWizard.validation.description'),
+  photoMeta: z.array(
+    z
+      .object({
+        url: z.string(),
+        altIt: z.string().trim().max(PHOTO_CAPTION_MAX, 'propertyWizard.validation.photos.captionMax'),
+        altEn: z.string().trim().max(PHOTO_CAPTION_MAX, 'propertyWizard.validation.photos.captionMax'),
+        roomId: z.string(),
+      })
+      .superRefine((photo, context) => {
+        if (photo.altEn.trim() !== '' && photo.altIt.trim() === '') {
+          context.addIssue({ code: 'custom', path: ['altIt'], message: 'propertyWizard.validation.photos.italianRequired' });
+        }
+      }),
+  ),
 });
+
+const listingTitleOf = (message: string) => z.string().trim().min(1, message).max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle');
+const listingTextOf = (message: string) => z.string().trim().min(1, message).max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description');
+
+/**
+ * The headline and the description of the listing (step 4, NF-31): Italian and English are both required — the channels will not take a
+ * listing without them — and say what is missing, one message for each. The other languages are optional and have the same limits.
+ */
+export const descriptionsStepSchema: StepSchema = z.object({
+  listingTitle: listingTitleOf('propertyWizard.validation.descriptions.itTitle'),
+  description: listingTextOf('propertyWizard.validation.descriptions.itDescription'),
+  texts: z
+    .object({
+      en: z.object({
+        title: listingTitleOf('propertyWizard.validation.descriptions.enTitle'),
+        description: listingTextOf('propertyWizard.validation.descriptions.enDescription'),
+      }),
+    })
+    .catchall(
+      z.object({
+        title: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
+        description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
+      }),
+    ),
+});
+
+/**
+ * What «Salva e chiudi» checks on the descriptions step: the lengths only. The step asks for the four required texts before «Avanti» (the
+ * channels take no listing without them), but leaving to finish later must not be refused: it saves what is there.
+ */
+const descriptionsSaveSchema: StepSchema = z.object({
+  listingTitle: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
+  description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
+  texts: z.record(
+    z.string(),
+    z.object({
+      title: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
+      description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
+    }),
+  ),
+});
+
+/** The steps whose «Salva e chiudi» asks less than their «Avanti» does. */
+export const SAVE_AND_CLOSE_SCHEMAS: Partial<Record<string, StepSchema>> = { descriptions: descriptionsSaveSchema };
 
 /** An amount in euros as typed (a comma or a point for the cents): the number, or `null` when it is not one. */
 export function parseAmount(text: string): number | null {
@@ -129,6 +252,7 @@ export const rulesStepSchema: StepSchema = z
     smokingPolicy: z.enum(['No', 'OutdoorsOnly', 'Yes']).or(z.literal('')),
     petsPolicy: z.enum(['No', 'OnRequest', 'Yes']).or(z.literal('')),
     partiesPolicy: z.enum(['No', 'OnRequest']).or(z.literal('')),
+    childrenPolicy: z.enum(['No', 'OnRequest', 'Yes']).or(z.literal('')),
     quietHoursFrom: time,
     quietHoursTo: time,
     extraGuestFee: amount(0, 1000, 'propertyWizard.validation.extraGuestFee'),
@@ -148,7 +272,8 @@ export const rulesStepSchema: StepSchema = z
 /**
  * The prices (step 5), with the limits of the API: the rate and the cleaning in euros (a rate of 0 is no rate, so one is asked for from
  * 1), the weekend surcharge from 0 to 100 percent, the minimum stay from 1 to 30 nights. Blank is allowed: a property without a rate is
- * saved and stays «Da completare» — the activation says so.
+ * saved and stays «Da completare» — the activation says so. The length-of-stay discounts (NF-35) are at most 5 tiers, each from 2 to 365
+ * nights with a percentage above 0 and at most 100, and no two with the same nights; a row left empty is not a tier.
  */
 export const pricesStepSchema: StepSchema = z.object({
   nightlyRate: amount(1, 100000, 'propertyWizard.validation.nightlyRate'),
@@ -159,6 +284,15 @@ export const pricesStepSchema: StepSchema = z.object({
     .int()
     .min(1, 'propertyWizard.validation.minNights')
     .max(30, 'propertyWizard.validation.minNights'),
+  stayDiscounts: z
+    .array(z.object({ minNights: z.string(), percentOff: z.string() }))
+    .max(MAX_STAY_DISCOUNTS, 'propertyWizard.validation.stayDiscounts.max')
+    .superRefine((drafts, context) => {
+      drafts.forEach((_draft, index) => {
+        const problem = stayDiscountProblem(drafts, index);
+        if (problem) context.addIssue({ code: 'custom', path: [index, problem.field], message: problem.message });
+      });
+    }),
 });
 
 /** What a new property starts from (the defaults of the design): the host changes them, nothing is asked twice. */
@@ -175,14 +309,18 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   beds: 3,
   bathrooms: 1,
   areaSqm: '',
+  rooms: [],
+  photoMeta: [],
+  amenities: [],
   listingTitle: '',
   description: '',
-  amenities: [],
+  texts: emptyTextDrafts(),
   checkInFrom: '15:00',
   checkOutBy: '10:00',
   smokingPolicy: 'No',
   petsPolicy: 'No',
   partiesPolicy: 'No',
+  childrenPolicy: 'Yes',
   quietHoursFrom: '',
   quietHoursTo: '',
   extraGuestFee: '',
@@ -192,6 +330,7 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   weekendSurcharge: '',
   cleaningFee: '',
   minNights: 1,
+  stayDiscounts: [],
   publishedOnSite: true,
 };
 
@@ -202,21 +341,31 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
 export const RULE_AMENITIES: readonly string[] = ['PetFriendly', 'SmokingAllowed'];
 
 /**
- * The 21 amenities the host chooses here, in four groups: the 22 of the form of today less `PetFriendly`, which follows the rules.
- * The groups are the product's own; the values are the exact names of the API's `PropertyAmenity`.
+ * The listing data the server already has for a property the wizard reopens on (`?propertyId=`): the rooms, the discounts, the texts of
+ * the other languages and the captions of the photos. The wizard starts from them; a property the wizard creates starts with none.
  */
-export const AMENITY_GROUPS: ReadonlyArray<{ id: 'essentials' | 'outdoor' | 'comfort' | 'other'; amenities: readonly string[] }> = [
-  { id: 'essentials', amenities: ['WiFi', 'AirConditioning', 'Heating', 'Kitchen', 'Washer', 'Dryer', 'TV'] },
-  { id: 'outdoor', amenities: ['FreeParking', 'Pool', 'HotTub', 'Balcony', 'Terrace', 'Garden', 'BBQGrill'] },
-  { id: 'comfort', amenities: ['Gym', 'Elevator', 'Fireplace'] },
-  { id: 'other', amenities: ['SmokeDetector', 'FirstAidKit', 'FireExtinguisher', 'CarbonMonoxideDetector'] },
-];
+export interface WizardListingSeed {
+  rooms: readonly PropertyRoom[];
+  stayDiscounts: readonly StayDiscountTier[];
+  siteProfile: SiteProfile | null;
+  photoMeta: readonly PropertyPhotoMeta[];
+}
 
-const CHOOSABLE_AMENITIES = new Set(AMENITY_GROUPS.flatMap((group) => group.amenities));
+/** What a property starts from when it has no listing data yet. */
+export const EMPTY_LISTING_SEED: WizardListingSeed = { rooms: [], stayDiscounts: [], siteProfile: null, photoMeta: [] };
+
+/** The rule about children of a property that never stated one: what its site profile already says (`childrenWelcome`), or the default of the design. */
+function childrenPolicyOf(property: Property, siteProfile: SiteProfile | null): ChildrenPolicy | '' {
+  if (property.childrenPolicy) return property.childrenPolicy;
+  if (siteProfile?.childrenWelcome === true) return 'Yes';
+  if (siteProfile?.childrenWelcome === false) return 'No';
+  return NEW_PROPERTY_DEFAULTS.childrenPolicy;
+}
 
 /** The values the wizard opens with: a new property's defaults, or the property as the server has it. */
-export function wizardDefaults(property?: Property): PropertyWizardValues {
+export function wizardDefaults(property?: Property, seed: WizardListingSeed = EMPTY_LISTING_SEED): PropertyWizardValues {
   if (!property) return NEW_PROPERTY_DEFAULTS;
+  const rooms = roomDraftsFromServer(seed.rooms);
   return {
     accommodationType: property.accommodationType ?? '',
     name: property.name,
@@ -227,20 +376,27 @@ export function wizardDefaults(property?: Property): PropertyWizardValues {
     postalCode: property.postalCode ?? '',
     // 0 = not set for a property that was never let for short stays: the counters start from the smallest valid value.
     maxGuests: Math.max(1, property.maxGuests),
-    bedrooms: property.bedrooms,
+    // With rooms the counters are the rooms' (the server sets them from the rooms at every save); without, the property's own.
+    bedrooms: rooms.length > 0 ? bedroomCount(rooms) : property.bedrooms,
     // A property that never stated its beds starts the counter from its bedrooms (one bed each, at least one): shown, never hidden.
-    beds: property.beds ?? Math.max(1, property.bedrooms),
+    beds: rooms.length > 0 ? totalBeds(rooms) : (property.beds ?? Math.max(1, property.bedrooms)),
     bathrooms: Math.max(1, property.bathrooms),
     areaSqm: property.areaSqm ? String(property.areaSqm) : '',
+    rooms,
+    photoMeta: photoMetaDraftsFromServer(seed.photoMeta),
+    // Every amenity but the two the house rules decide: the catalog gives the host what to choose from, and one the property has that the
+    // catalog does not know stays in the list (the step never takes away what it cannot show).
+    amenities: property.amenities.filter((amenity) => !RULE_AMENITIES.includes(amenity)),
     listingTitle: property.listingTitle ?? '',
     description: property.description ?? '',
-    amenities: property.amenities.filter((amenity) => CHOOSABLE_AMENITIES.has(amenity)),
+    texts: textDraftsFromProfile(seed.siteProfile),
     checkInFrom: toHourMinute(property.checkInFrom) || NEW_PROPERTY_DEFAULTS.checkInFrom,
     checkOutBy: toHourMinute(property.checkOutBy) || NEW_PROPERTY_DEFAULTS.checkOutBy,
     // A property that never stated a rule starts from what its amenities already say (an old one may list PetFriendly): shown, never hidden.
     smokingPolicy: property.smokingPolicy ?? (property.amenities.includes('SmokingAllowed') ? 'Yes' : NEW_PROPERTY_DEFAULTS.smokingPolicy),
     petsPolicy: property.petsPolicy ?? (property.amenities.includes('PetFriendly') ? 'Yes' : NEW_PROPERTY_DEFAULTS.petsPolicy),
     partiesPolicy: property.partiesPolicy ?? NEW_PROPERTY_DEFAULTS.partiesPolicy,
+    childrenPolicy: childrenPolicyOf(property, seed.siteProfile),
     quietHoursFrom: toHourMinute(property.quietHoursFrom),
     quietHoursTo: toHourMinute(property.quietHoursTo),
     extraGuestFee: property.extraGuestFeePerNight != null ? String(property.extraGuestFeePerNight) : '',
@@ -250,6 +406,7 @@ export function wizardDefaults(property?: Property): PropertyWizardValues {
     weekendSurcharge: (property.weekendSurchargePercent ?? 0) > 0 ? String(property.weekendSurchargePercent) : '',
     cleaningFee: property.cleaningFee > 0 ? String(property.cleaningFee) : '',
     minNights: property.minNights ?? 1,
+    stayDiscounts: stayDiscountDraftsFromServer(seed.stayDiscounts),
     publishedOnSite: property.publishedOnSite ?? true,
   };
 }
@@ -293,8 +450,11 @@ export function baseUpdatePayload(values: PropertyWizardValues): UpdatePropertyD
   return baseFields(values);
 }
 
-/** The headline and the description, saved by the photos step. A blank headline is cleared: the listing then uses the name. */
-export function photosUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
+/**
+ * The Italian headline and description, saved by the descriptions step into the columns of the property (the other languages go to the site
+ * profile). A blank headline is cleared: the listing then uses the name (the step does not let it be blank, a saved one is never left so).
+ */
+export function descriptionsUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const listingTitle = values.listingTitle.trim();
   return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim() };
 }
@@ -316,6 +476,7 @@ export function rulesUpdatePayload(values: PropertyWizardValues): UpdateProperty
   if (values.smokingPolicy) payload.smokingPolicy = values.smokingPolicy;
   if (values.petsPolicy) payload.petsPolicy = values.petsPolicy;
   if (values.partiesPolicy) payload.partiesPolicy = values.partiesPolicy;
+  if (values.childrenPolicy) payload.childrenPolicy = values.childrenPolicy;
   if (values.cancellationPolicyId) payload.cancellationPolicyId = values.cancellationPolicyId;
   return payload;
 }

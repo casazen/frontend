@@ -12,6 +12,8 @@ const { suggestApi, reducePhotos } = vi.hoisted(() => ({ suggestApi: vi.fn(), re
 
 vi.mock('@/api/listing-text.api', () => ({ listingTextApi: { suggest: suggestApi } }));
 vi.mock('../photos/reduce-photo', () => ({ reducePhotosForAi: reducePhotos }));
+// The card names the amenities in the fallback text with the labels of the catalog: here the name itself, the catalog is not under test.
+vi.mock('@/queries/use-amenity-catalog', () => ({ useAmenityLabels: () => (name: string) => name }));
 
 const basis = { photos: 2, comune: 'Como', province: 'CO', region: 'Lombardia', similarListings: 3, amenities: 0 };
 

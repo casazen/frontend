@@ -8,6 +8,7 @@ import { Qty } from '@/components/ui/qty';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
 import type { PropertyWizardValues } from '../property-wizard-model';
 import { AiPriceCard } from './ai-price-card';
+import { StayDiscountsEditor } from './stay-discounts-editor';
 
 interface PricesStepProps {
   form: UseFormReturn<PropertyWizardValues>;
@@ -44,8 +45,8 @@ function TouristTaxNote({ propertyId, city }: { propertyId: string; city: string
 }
 
 /**
- * Step 5 · «Quanto costa una notte?» (SR-07c): the base rate, the weekend surcharge (empty: none), the cleaning and the minimum stay.
- * No weekly discount and no «similar homes cost…» line of ours: there is no source for either. The one place that speaks of similar homes
+ * Step 6 · «Quanto costa una notte?» (SR-07c): the base rate, the weekend surcharge (empty: none), the cleaning, the minimum stay and the
+ * length-of-stay discounts (up to five tiers, NF-35). No «similar homes cost…» line of ours: there is no source for it. The one place that speaks of similar homes
  * is the card «Vuoi che calcoli io il prezzo con l'AI?» (WIZ-AI-PRICE), and only with what the server says it compared (at least three
  * homes published in the comune). The prices that apply on a given date are the Calendar's; here is the base they start from.
  */
@@ -83,6 +84,8 @@ export function PricesStep({ form, propertyId }: PricesStepProps) {
           </div>
         )}
       />
+
+      <StayDiscountsEditor form={form} />
 
       <TouristTaxNote propertyId={propertyId} city={form.getValues('city')} />
 

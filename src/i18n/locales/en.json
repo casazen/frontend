@@ -1279,30 +1279,6 @@
       "documentsLoadFailed": "Could not load the document numbers. Try again."
     }
   },
-  "amenity": {
-    "WiFi": "WiFi",
-    "AirConditioning": "Air Conditioning",
-    "Heating": "Heating",
-    "Kitchen": "Kitchen",
-    "Washer": "Washer",
-    "Dryer": "Dryer",
-    "TV": "TV",
-    "FreeParking": "Parking",
-    "Pool": "Pool",
-    "HotTub": "Hot Tub",
-    "Gym": "Gym",
-    "Elevator": "Elevator",
-    "Balcony": "Balcony",
-    "Terrace": "Terrace",
-    "Garden": "Garden",
-    "BBQGrill": "BBQ Grill",
-    "Fireplace": "Fireplace",
-    "PetFriendly": "Pet Friendly",
-    "SmokeDetector": "Smoke Detector",
-    "FirstAidKit": "First Aid Kit",
-    "FireExtinguisher": "Fire Extinguisher",
-    "CarbonMonoxideDetector": "Carbon Monoxide Detector"
-  },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
     "sessionExpired": "Your session has expired. Sign in again to continue.",
@@ -11564,12 +11540,8 @@
     "amenities": {
       "count_one": "You chose {{count}} amenity.",
       "count_other": "You chose {{count}} amenities.",
-      "groups": {
-        "comfort": "Comfort",
-        "essentials": "Essentials",
-        "other": "Other",
-        "outdoor": "Outdoors"
-      },
+      "loadFailed": "We couldn't read the list of amenities. Try again in a moment.",
+      "loading": "Loading the amenities…",
       "none": "You have not chosen anything yet: you can also skip this and add them later.",
       "safety": {
         "backToQuick": "Back to the quick questions",
@@ -11587,6 +11559,14 @@
         "quickDescription": "Three questions and a list to tick. What we already know, we fill in for you.",
         "review": "Review the sheet",
         "title": "Safety"
+      },
+      "search": {
+        "found_one": "{{count}} amenity found.",
+        "found_other": "{{count}} amenities found.",
+        "hint": "Type a word, in Italian or in English: for example \"washing machine\".",
+        "label": "Search for an amenity",
+        "none": "No amenity for \"{{query}}\". Try another word.",
+        "placeholder": "For example washing machine, pool, wi-fi"
       }
     },
     "base": {
@@ -11626,6 +11606,7 @@
           "hint": "Count every bed: a double bed is 1",
           "label": "Beds"
         },
+        "fromRooms": "Worked out from the rooms below",
         "maxGuests": {
           "hint": "How many people can sleep here",
           "label": "Maximum guests"
@@ -11645,6 +11626,49 @@
       "unit": {
         "hint": "If you have several apartments in the same building, write the unit or staircase: each one needs a different one.",
         "label": "Floor and unit"
+      }
+    },
+    "descriptions": {
+      "description": {
+        "label": "Description ({{language}})"
+      },
+      "en": {
+        "hint": "The title and the description in English are needed to publish on the channels. For now you write the English text yourself."
+      },
+      "intro": "To publish on the channels you need the title and the description in Italian and in English. The other languages are optional.",
+      "languages": {
+        "ca": "Catalan",
+        "de": "German",
+        "el": "Greek",
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "it": "Italian",
+        "ja": "Japanese",
+        "nl": "Dutch",
+        "pt": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "tr": "Turkish",
+        "zh": "Chinese"
+      },
+      "origin": {
+        "AutoTranslated": "Translated automatically",
+        "ModifiedAfterTranslation": "Edited after the translation",
+        "UserWritten": "Written by you"
+      },
+      "others": {
+        "empty": "Empty",
+        "filled": "Filled in",
+        "hint": "Optional: the channels that speak those languages show your text instead of an automatic one.",
+        "title": "Other languages"
+      },
+      "tabs": {
+        "label": "Language of the text",
+        "problem": "To fix"
+      },
+      "title": {
+        "label": "Title ({{language}})"
       }
     },
     "done": {
@@ -11726,13 +11750,15 @@
         "amenities": "Amenities and safety",
         "base": "Basics",
         "by": "by {{time}}",
+        "descriptions": "Texts",
         "edit": "Edit",
         "from": "from {{time}}",
         "labels": {
           "amenities": "Chosen",
           "cleaning": "Cleaning",
           "headline": "Headline",
-          "house": "Smoking · pets · parties",
+          "headlineEn": "Title in English",
+          "house": "Smoking · pets · parties · children",
           "minNights": "Minimum stay",
           "name": "Name",
           "photos": "Photos",
@@ -11748,7 +11774,7 @@
         "nights_one": "{{count}} night",
         "nights_other": "{{count}} nights",
         "notSaid": "Not stated",
-        "photos": "Photos and listing",
+        "photos": "Photos",
         "photosCount_one": "{{count}} photo · the first is the cover",
         "photosCount_other": "{{count}} photos · the first is the cover",
         "photosNone": "No photos for now (recommended, not required)",
@@ -11777,6 +11803,17 @@
       "title": "Add property"
     },
     "photos": {
+      "details": {
+        "captionEn": "Caption in English",
+        "captionIt": "Caption in Italian",
+        "hint": "The caption describes the photo to people who cannot see it and to the channels; the room says where it was taken. Both are optional.",
+        "noRooms": "List the rooms in the first step first, then you can choose the room of a photo.",
+        "photo": "Photo {{index}}",
+        "room": "Room",
+        "roomNone": "No room",
+        "roomsFailed": "We couldn't read the rooms: try again in a moment.",
+        "title": "Captions and rooms"
+      },
       "dropzone": {
         "button": "Choose photos",
         "title": "Drag your photos here"
@@ -11785,9 +11822,9 @@
         "moved": "Photo {{index}} moved to position {{position}} of {{total}}."
       },
       "listing": {
-        "description": "The headline and description guests read on your site. You can write them now or later.",
+        "description": "The title and the description in Italian: guests read them on your site and they go to the channels. They are needed to publish.",
         "headline": {
-          "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
+          "hint": "Short and concrete, up to 60 characters.",
           "label": "Headline"
         },
         "aiUnavailable": "The AI is not available right now: we put the text together from the details you entered. You can try again shortly.",
@@ -11915,6 +11952,16 @@
         "hint": "It applies to every night. Without a price the property stays “To complete”: it cannot be activated.",
         "label": "Base price per night (€)"
       },
+      "stayDiscounts": {
+        "add": "Add a tier",
+        "hint": "Up to {{max}} tiers: from the number of nights given, the discount is taken off the stay. The cleaning fee and the tourist tax do not change.",
+        "minNights": "Tier {{number}}: from how many nights",
+        "minNightsHint": "From {{min}} to {{max}} nights.",
+        "percentOff": "Tier {{number}}: discount in %",
+        "remove": "Remove tier {{number}}",
+        "removeShort": "Remove",
+        "title": "Discounts for long stays"
+      },
       "touristTax": {
         "found": "Tourist tax: we have the rate for {{city}}. It is not in the price: it is added to the booking.",
         "notYet": "Tourist tax: the rate for {{city}} is not available yet. It is not in the price: it is added to the booking once it is.",
@@ -11925,12 +11972,50 @@
         "label": "Weekend surcharge (%)"
       }
     },
+    "rooms": {
+      "add": "Add another room",
+      "addBed": "Add a kind of bed",
+      "addFirst": "List the rooms and the beds",
+      "bedCount": "How many beds: {{type}}",
+      "bedType": "Kind of bed",
+      "bedTypes": {
+        "Bunk": "Bunk bed",
+        "Crib": "Crib",
+        "Double": "Double bed",
+        "King": "King size",
+        "Queen": "Queen size",
+        "Single": "Single bed",
+        "SofaBed": "Sofa bed"
+      },
+      "derived": "Bedrooms and beds are worked out from this list.",
+      "hint": "Optional, but the channels ask for it: list the rooms and the beds of each. If you do, bedrooms and beds are worked out from here.",
+      "noBeds": "This room has no beds yet.",
+      "optionLabel": "{{number}}. {{type}}",
+      "remove": "Remove room {{number}}",
+      "removeBed": "Remove {{type}}",
+      "removeShort": "Remove",
+      "room": "Room {{number}}",
+      "title": "Rooms and beds",
+      "type": "What kind of room",
+      "types": {
+        "Bedroom": "Bedroom",
+        "LivingRoom": "Living room",
+        "Other": "Other room with beds",
+        "Studio": "Studio"
+      }
+    },
     "rules": {
+      "childrenOptions": {
+        "No": "Not suitable for children",
+        "OnRequest": "On request",
+        "Yes": "Welcome"
+      },
       "extraGuest": {
         "hint": "What you ask per night for each extra guest. Leave it empty if you do not accept extra guests. For now guests read it among the rules: it is not added to the price of the stay by itself.",
         "label": "Fee for each extra guest (€ per night)"
       },
       "house": {
+        "children": "Children",
         "parties": "Parties and events",
         "pets": "Pets",
         "smoking": "Smoking",
@@ -12062,6 +12147,11 @@
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
       },
+      "descriptions": {
+        "label": "Texts",
+        "purpose": "Title and description in Italian and in English: without them the channels do not publish. The other languages are optional.",
+        "title": "Tell about the house"
+      },
       "finish": {
         "label": "Activation",
         "purpose": "Link the calendars, add the CIN and the documents, then activate the property.",
@@ -12118,6 +12208,12 @@
         "required": "Choose the comune from the list."
       },
       "description": "The description can have at most 2,000 characters.",
+      "descriptions": {
+        "enDescription": "Write the description in English.",
+        "enTitle": "Write the title in English.",
+        "itDescription": "Write the description in Italian.",
+        "itTitle": "Write the title in Italian."
+      },
       "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
       "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
@@ -12128,10 +12224,26 @@
         "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
       },
       "nightlyRate": "Write the price in euros, from 1 to 100,000, numbers only: for example 135.",
+      "photos": {
+        "captionMax": "A caption can have at most 200 characters.",
+        "italianRequired": "Write the caption in Italian too: the English one alone is not enough."
+      },
       "postalCode": {
         "format": "An Italian postal code has 5 digits."
       },
       "quietHours": "Write both the start and the end of the quiet hours, or leave both empty.",
+      "rooms": {
+        "bedCount": "The beds of one kind are from 1 to 10.",
+        "max": "You can list at most 20 rooms.",
+        "noBed": "Add at least one bed in one of the rooms.",
+        "tooManyBeds": "The beds in all can be 100 at most."
+      },
+      "stayDiscounts": {
+        "duplicate": "Two tiers cannot start from the same number of nights.",
+        "max": "You can write at most 5 discount tiers.",
+        "minNights": "Write the nights as whole numbers, from 2 to 365.",
+        "percentOff": "Write the discount as a percentage, above 0 and up to 100, for example 10."
+      },
       "time": "Choose a time from the list.",
       "unit": {
         "max": "Floor and unit can have at most 30 characters."

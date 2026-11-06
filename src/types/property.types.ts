@@ -8,10 +8,11 @@ export type RentalMode = 'Short' | 'Long';
 export const ACCOMMODATION_TYPES = ['Apartment', 'HouseOrVilla', 'TrulloOrMasseria', 'LoftOrPenthouse', 'RoomOrSuite'] as const;
 export type AccommodationType = (typeof ACCOMMODATION_TYPES)[number];
 
-/** What the house rules say about smoking, pets and parties (SR-07a). */
+/** What the house rules say about smoking, pets, parties and children (SR-07a, NF-37). */
 export type SmokingPolicy = 'No' | 'OutdoorsOnly' | 'Yes';
 export type PetsPolicy = 'No' | 'OnRequest' | 'Yes';
 export type PartiesPolicy = 'No' | 'OnRequest';
+export type ChildrenPolicy = 'No' | 'OnRequest' | 'Yes';
 
 /** The one state of a short-stay property in the host's list (SR-07a): derived by the server, never worked out here. */
 export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
@@ -68,6 +69,8 @@ export interface Property {
   smokingPolicy?: SmokingPolicy | null;
   petsPolicy?: PetsPolicy | null;
   partiesPolicy?: PartiesPolicy | null;
+  /** The rule about children (NF-37), next to pets and smoking; `null` = the host never said. */
+  childrenPolicy?: ChildrenPolicy | null;
   quietHoursFrom?: string | null;
   quietHoursTo?: string | null;
   /** What the host asks per night for each extra guest, in euros; `null` = extra guests are not accepted. */
@@ -200,6 +203,7 @@ export interface CreatePropertyDto {
   smokingPolicy?: SmokingPolicy | null;
   petsPolicy?: PetsPolicy | null;
   partiesPolicy?: PartiesPolicy | null;
+  childrenPolicy?: ChildrenPolicy | null;
   quietHoursFrom?: string | null;
   quietHoursTo?: string | null;
   extraGuestFeePerNight?: number | null;

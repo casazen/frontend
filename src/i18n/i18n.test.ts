@@ -13,7 +13,6 @@ import {
   persistLocale,
   readPersistedLocale,
 } from '@/lib/i18n-labels';
-import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
@@ -208,7 +207,6 @@ describe('keys used in code', () => {
 
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
-      ...COMMON_AMENITIES.map((a) => `amenity.${a}`),
       // The explained states (UI-11): every state of the dictionary, typed against the enums, has its name and its sentence in both
       // languages, and its list of what is needed when it has a way forward (status.<kind>.<key>.*).
       ...Object.entries(STATUS_DICTIONARY).flatMap(([kind, states]) =>

@@ -15,6 +15,7 @@ import { longRentPropertyEditPath } from '../long-rent/paths';
 import { PROPERTIES_PATH } from '../properties-paths';
 import { PropertyWizard } from './property-wizard';
 import { PROPERTY_ID_PARAM, resumeStepFor } from './property-wizard-model';
+import { useWizardListingSeed } from './use-wizard-listing-seed';
 
 /** A property that cannot be opened: said with the reason the server gave, with the way back to the list always there. */
 function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
@@ -45,22 +46,26 @@ function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) 
 
 /**
  * The wizard reopened on a property (`?propertyId=`). The step it opens on, when the address names none, is the first that has a
- * blocker open, as the server tells it (`resumeStepFor`); a long-term property is not this wizard's: it goes to its own section.
+ * blocker open, as the server tells it (`resumeStepFor`); a long-term property is not this wizard's: it goes to its own section. It opens
+ * only once the listing data the server has (the rooms, the discounts, the translations, the captions of the photos) is there too: the
+ * form starts from it, and a form that started without it would take it away with the first save.
  */
 function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed: boolean }) {
   const { t } = useTranslation();
   const property = useProperty(propertyId, { fresh: true });
   // Not needed when the address already names a step (a link to «Aggiungi foto»): the wizard opens there at once.
   const activation = useComplianceActivation(stepNamed ? '' : propertyId);
+  const listing = useWizardListingSeed(propertyId, property.data !== undefined && property.data.rentalMode !== 'Long');
 
   if (property.isError && !property.data) return <LoadError error={property.error} onRetry={() => void property.refetch()} />;
-  if (!property.data || (!stepNamed && !activation.data && !activation.isError)) {
+  if (property.data?.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.data.id)} replace />;
+  if (listing.failed) return <LoadError error={listing.error} onRetry={listing.retry} />;
+  if (!property.data || !listing.seed || (!stepNamed && !activation.data && !activation.isError)) {
     return <LoadingScreen message={t('propertyWizard.page.loading')} className="h-auto flex-1" />;
   }
-  if (property.data.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.data.id)} replace />;
 
   const initialStepId = !stepNamed && activation.data ? resumeStepFor(property.data, activation.data.steps) : undefined;
-  return <PropertyWizard key={propertyId} property={property.data} initialStepId={initialStepId} />;
+  return <PropertyWizard key={propertyId} property={property.data} listing={listing.seed} initialStepId={initialStepId} />;
 }
 
 /**

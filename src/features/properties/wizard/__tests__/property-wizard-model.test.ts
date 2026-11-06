@@ -3,8 +3,12 @@ import type { Property } from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
 import {
   NEW_PROPERTY_DEFAULTS,
+  WIZARD_STEP_IDS,
   amenitiesUpdatePayload,
   baseUpdatePayload,
+  descriptionsStepSchema,
+  descriptionsUpdatePayload,
+  photosStepSchema,
   pricesStepSchema,
   pricesUpdatePayload,
   resumeStepFor,
@@ -65,6 +69,9 @@ describe('what the steps save', () => {
     ]);
     const reopened = wizardDefaults({ ...stored, name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1 } as Property);
     expect(reopened.amenities).toEqual(['WiFi', 'Garden']);
+    // The catalog decides what can be chosen, not a list of the wizard: an amenity the property has that the step does not show is kept.
+    const exotic = wizardDefaults({ ...stored, amenities: ['WiFi', 'Sauna', 'SomethingNew'], name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1 } as Property);
+    expect(exotic.amenities).toEqual(['WiFi', 'Sauna', 'SomethingNew']);
   });
 });
 
@@ -123,5 +130,98 @@ describe('what the rules and prices steps save', () => {
     expect(pricesStepSchema.safeParse({ ...answers, cleaningFee: '10001' }).success).toBe(false);
     expect(pricesStepSchema.safeParse({ ...answers, minNights: 31 }).success).toBe(false);
     expect(pricesStepSchema.safeParse({ ...answers, nightlyRate: '135,50', weekendSurcharge: '12.5', cleaningFee: '50', minNights: 30 }).success).toBe(true);
+  });
+});
+
+const PROPERTY = { name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1, amenities: [] } as unknown as Property;
+
+describe('the steps of the wizard (NF-31, NF-37)', () => {
+  it('stepIds_DescriptionsComesAfterTheAmenities_AndBeforeTheRules', () => {
+    expect(WIZARD_STEP_IDS).toEqual(['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'finish']);
+  });
+
+  it('descriptionsStepSchema_ItalianAndEnglishTitleAndDescription_AreAllRequiredAndEachIsNamed', () => {
+    const answers = { ...NEW_PROPERTY_DEFAULTS };
+
+    const refused = descriptionsStepSchema.safeParse(answers);
+    expect(refused.success).toBe(false);
+    expect(refused.error?.issues.map((issue) => issue.message).sort()).toEqual([
+      'propertyWizard.validation.descriptions.enDescription',
+      'propertyWizard.validation.descriptions.enTitle',
+      'propertyWizard.validation.descriptions.itDescription',
+      'propertyWizard.validation.descriptions.itTitle',
+    ]);
+
+    const filled = {
+      ...answers,
+      listingTitle: 'Trullo con piscina',
+      description: 'Un trullo tranquillo.',
+      texts: { ...answers.texts, en: { title: 'Trullo with pool', description: 'A quiet trullo.' } },
+    };
+    expect(descriptionsStepSchema.safeParse(filled).success).toBe(true);
+    // Other languages are optional, with the same limits.
+    expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: '', description: '' } } }).success).toBe(true);
+    expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: 'x'.repeat(61), description: '' } } }).success).toBe(false);
+  });
+
+  it('descriptionsStepSchema_OnlySpacesAreNotAText', () => {
+    const answers = { ...NEW_PROPERTY_DEFAULTS, listingTitle: '   ', description: ' ', texts: { ...NEW_PROPERTY_DEFAULTS.texts, en: { title: ' ', description: ' ' } } };
+
+    expect(descriptionsStepSchema.safeParse(answers).error?.issues).toHaveLength(4);
+  });
+
+  it('descriptionsUpdatePayload_TheItalianTextsGoToTheColumnsOfTheProperty', () => {
+    expect(descriptionsUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, listingTitle: ' Trullo con piscina ', description: ' Un trullo. ' })).toEqual({
+      listingTitle: 'Trullo con piscina',
+      description: 'Un trullo.',
+    });
+  });
+
+  it('photosStepSchema_AnEnglishCaptionWithoutTheItalianOne_IsRefusedOnTheItalianField', () => {
+    const photo = { url: 'https://cdn/a.jpg', altIt: '', altEn: 'Living room', roomId: '' };
+
+    const refused = photosStepSchema.safeParse({ photoMeta: [photo] });
+    expect(refused.success).toBe(false);
+    expect(refused.error?.issues[0]).toMatchObject({ path: ['photoMeta', 0, 'altIt'], message: 'propertyWizard.validation.photos.italianRequired' });
+    expect(photosStepSchema.safeParse({ photoMeta: [{ ...photo, altIt: 'Soggiorno' }] }).success).toBe(true);
+    expect(photosStepSchema.safeParse({ photoMeta: [] }).success).toBe(true);
+    expect(photosStepSchema.safeParse({ photoMeta: [{ ...photo, altIt: 'x'.repeat(201) }] }).success).toBe(false);
+  });
+
+  it('rulesUpdatePayload_TheChildrenRuleGoesWithTheOtherStructuredRules', () => {
+    expect(rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: 'OnRequest' })).toMatchObject({ childrenPolicy: 'OnRequest', petsPolicy: 'No' });
+    // A blank answer is left out (the stored rule stays), like the other policies.
+    expect(rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: '' })).not.toHaveProperty('childrenPolicy');
+    expect(rulesStepSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: 'Sometimes' }).success).toBe(false);
+  });
+
+  it('wizardDefaults_ChildrenRule_IsTheStoredOneThenWhatTheSiteProfileSaysThenTheDefault', () => {
+    const seed = (childrenWelcome: boolean | null) => ({ rooms: [], stayDiscounts: [], photoMeta: [], siteProfile: { childrenWelcome } as never });
+
+    expect(wizardDefaults({ ...PROPERTY, childrenPolicy: 'No' }, seed(true)).childrenPolicy).toBe('No');
+    expect(wizardDefaults(PROPERTY, seed(false)).childrenPolicy).toBe('No');
+    expect(wizardDefaults(PROPERTY, seed(true)).childrenPolicy).toBe('Yes');
+    expect(wizardDefaults(PROPERTY, seed(null)).childrenPolicy).toBe(NEW_PROPERTY_DEFAULTS.childrenPolicy);
+  });
+
+  it('wizardDefaults_TheListingDataOfTheServer_FillsTheFormSoTheFirstSaveTakesNothingAway', () => {
+    const defaults = wizardDefaults(PROPERTY, {
+      rooms: [],
+      stayDiscounts: [
+        { minNights: 7, percentOff: 10 },
+        { minNights: 28, percentOff: 22.5 },
+      ],
+      photoMeta: [{ url: 'https://cdn/a.jpg', alt: { it: 'Soggiorno', en: 'Living room' }, width: null, height: null, roomId: 'r1' }],
+      siteProfile: { childrenWelcome: null, translations: { en: { title: 'Trullo with pool', description: 'A quiet trullo.' }, fr: { title: 'Trullo avec piscine' } } } as never,
+    });
+
+    expect(defaults.stayDiscounts).toEqual([
+      { minNights: '7', percentOff: '10' },
+      { minNights: '28', percentOff: '22.5' },
+    ]);
+    expect(defaults.photoMeta).toEqual([{ url: 'https://cdn/a.jpg', altIt: 'Soggiorno', altEn: 'Living room', roomId: 'r1' }]);
+    expect(defaults.texts.en).toEqual({ title: 'Trullo with pool', description: 'A quiet trullo.' });
+    expect(defaults.texts.fr).toEqual({ title: 'Trullo avec piscine', description: '' });
+    expect(defaults.texts.de).toEqual({ title: '', description: '' });
   });
 });
