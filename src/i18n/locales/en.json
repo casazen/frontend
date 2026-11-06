@@ -1281,6 +1281,12 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
+      "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
+      "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
+      "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
+      "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
@@ -9471,6 +9477,103 @@
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
       "serviceRequestBackupClosed": "A request you were a backup for was closed."
+    }
+  },
+  "octorate": {
+    "connect": {
+      "consent": {
+        "attention": {
+          "text": "The connection with your channel manager is no longer valid. Connect it again to pick up where you left off.",
+          "title": "Your channel manager needs to be connected again"
+        },
+        "checking": "Checking the state of the connection...",
+        "completing": "We are completing the connection. Please keep this page open.",
+        "connected": {
+          "already": "Your channel manager is already connected to CasaZen.",
+          "found_one": "We found one property in your account.",
+          "found_other": "We found {{count}} properties in your account.",
+          "none": "We did not find any property in this account.",
+          "title": "Your channel manager is connected"
+        },
+        "denied": {
+          "text": "Your channel manager did not confirm the consent, so we connected nothing. You can try again whenever you like.",
+          "title": "Connection not completed"
+        },
+        "failed": {
+          "text": "We could not complete the connection. Nothing has changed: you can try again.",
+          "title": "The connection did not work"
+        },
+        "next": {
+          "finish": "Finish",
+          "retry": "Try connecting again",
+          "start": "Go to your channel manager"
+        },
+        "notes": "CasaZen never sees your password: you type it only on your channel manager's site. The consent covers all the properties you see in your channel manager account.",
+        "steps": {
+          "comeBack": "You come back here automatically and we tell you how many properties we found.",
+          "open": "Your channel manager's site opens, in this same tab.",
+          "signIn": "You sign in with your own credentials and authorize CasaZen."
+        },
+        "whatHappens": "What happens"
+      },
+      "consentExplanation": "We will connect your channel manager to CasaZen: we take you to its site to authorize CasaZen, then you come back here and we carry on together.",
+      "done": {
+        "confirm": "We change nothing on your listings without your confirmation.",
+        "reads": "From now on CasaZen can read your listings and your bookings from your channel manager.",
+        "toHome": "Back to the home page",
+        "toProperties": "Go to your properties"
+      },
+      "errors": {
+        "scenarioRequired": "Choose where your listings are today.",
+        "scenarioUnavailable": "This path is not available yet: choose another answer."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "Saved. You can pick up where you left off whenever you like."
+      },
+      "finishFailed": "We could not open your channel manager's site. Please try again in a moment.",
+      "page": {
+        "description": "A guided path, one step at a time. You can leave whenever you like and pick up where you left off."
+      },
+      "scenario": {
+        "legend": "Where are your listings today?",
+        "newInventory": {
+          "description": "Start from scratch: we create your first listing together.",
+          "title": "Not published yet"
+        },
+        "onOctorate": {
+          "description": "We connect them to CasaZen with one authorization, without recreating them.",
+          "title": "I'm already on Octorate"
+        },
+        "onOtas": {
+          "description": "We import the listings you already have, with their own codes, without publishing new ones.",
+          "soon": "Available soon: we will import the listings you already have, without publishing new ones.",
+          "title": "I'm already on the OTAs or on another channel manager"
+        }
+      },
+      "steps": {
+        "consent": {
+          "label": "Connection",
+          "purpose": "We take you to its site to give your consent, then you come back here.",
+          "title": "Connect your channel manager"
+        },
+        "scenario": {
+          "label": "Listings",
+          "purpose": "Pick the situation closest to yours and we take you down the right path.",
+          "title": "Where are your listings today?"
+        },
+        "why": {
+          "purpose": "What changes for you when your channels talk to CasaZen."
+        }
+      },
+      "title": "Connect your channels",
+      "why": {
+        "bookings": "Bookings from your channels show up in CasaZen, next to your direct ones.",
+        "calendars": "One calendar: the busy dates of all your channels come into CasaZen, to avoid double bookings.",
+        "prices": "Prices and availability are managed from one place, without opening every site.",
+        "safe": "Connecting changes nothing on your listings: CasaZen changes nothing without your confirmation."
+      },
+      "whyConnect": "Why connect"
     }
   },
   "onboarding": {

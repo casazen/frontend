@@ -4,6 +4,7 @@
  */
 export type FeatureFlagKey =
   | 'otaPartnerApi'
+  | 'octorateConnector'
   | 'aiSupplierDiscovery'
   | 'rliProvider'
   | 'eSignProvider'
@@ -19,6 +20,13 @@ export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   /** D10: Airbnb / Booking.com partner API in freeze. iCal is not behind this flag. */
   otaPartnerApi: false,
+  /**
+   * The channel manager connector (backend `OctorateConnector`, ADR-023, E02/F01), off until the sandbox is validated: on in the test
+   * environment only once the callback page is registered with the channel manager, unset in production. While it is off the wizard
+   * «Collega i tuoi canali» (`/app/short-rent/integrations/octorate`) does not exist: its address leads to the home of the area, and the
+   * backend answers 404 to every endpoint it reads.
+   */
+  octorateConnector: false,
   /**
    * D11: AI supplier discovery in freeze (backend `match-supplier` 404 while off). No UI reads it today: the web AI
    * match flow was unreachable and has been removed (FD-21); gate any new AI supplier UI on this flag.
