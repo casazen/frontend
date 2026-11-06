@@ -49,7 +49,8 @@ const BOOKING = 'Booking';
  * The addresses of the sketch of ADR-026 (`/check-in`, `/compliance/verification`, `/listings/{id}`, `/messages/{id}`, `/settings/channels`)
  * are not pages of the app: each action opens the nearest page that exists today, and the task that builds the screen it should open
  * replaces the entry:
- * - `StartCheckIn`: the tab Documenti of the booking, where the online check-in of the guests is sent and followed;
+ * - `StartCheckIn`: the host wizard "Guest check-in" of the booking (`/check-in`, E03/F01/US04/T02), or, for who may not write the booking,
+ *   the tab Documenti of the booking, where the online check-in of the guests is sent and followed;
  * - `VerifyIdentity`: the queue of the verifications, or the same tab for who may not decide them;
  * - `UploadAlloggiatiProof`, `UploadIstatProof`: the Alloggiati Web page, the summary of the adempimenti (ISTAT has no page of its own);
  * - `FixListingError`: the property named by the item (its listing is part of it), or the channels when the item names none;
@@ -65,7 +66,8 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
   StartCheckIn: {
-    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
+    route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING },
+    fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
   },
   CompleteCheckOut: {
     route: { path: '/app/short-rent/bookings/:id/checkout', target: 'entity', entityType: BOOKING },

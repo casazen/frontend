@@ -189,7 +189,8 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
 
     const [, alloggiati, checkIn] = cards();
     expect(within(alloggiati).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/alloggiati');
-    expect(within(checkIn).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/bookings/b-3?tab=guest');
+    // The check-in of a stay is done in the wizard of the booking (E03/F01/US04/T02).
+    expect(within(checkIn).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/bookings/b-3/check-in');
   });
 
   it('TodoListPage_ActionThisVersionDoesNotKnow_HasNoDoNowButStillCanBeClosed', () => {
