@@ -526,6 +526,31 @@ describe('summary: what will happen, before the import (NF-05)', () => {
     expect(octorateApi.confirmMapping).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(screen.getByTestId('octorate-result-acc-1')).toHaveAttribute('data-result', 'linked'), WAIT);
   });
+
+  it('OctorateSummary_ListingThatFailedThenLeftForLater_IsNotReportedAsFailedInTheResult', async () => {
+    vi.mocked(octorateApi.getFoundListings).mockResolvedValue([listing()]);
+    vi.mocked(octorateApi.confirmMapping).mockRejectedValue(axiosError(409, { code: 'octorate_mapping_property_taken' }));
+    renderAt('summary', [decision()]);
+    await screen.findByTestId('octorate-summary-step', undefined, WAIT);
+
+    fireEvent.click(finishButton());
+    await screen.findByTestId('octorate-summary-failed-acc-1', undefined, WAIT);
+    await screen.findByTestId('octorate-connect-finish-error', undefined, WAIT);
+
+    // The host goes back and leaves the listing for later: the plan has nothing to do for it any more.
+    fireEvent.click(screen.getByTestId('octorate-summary-fix'));
+    await onStep('mapping');
+    fireEvent.click(await screen.findByTestId('octorate-mapping-later-acc-1', undefined, WAIT));
+    await waitFor(() => expect(radio('later')).toBeChecked(), WAIT);
+    fireEvent.click(nextButton());
+    await onStep('summary');
+    fireEvent.click(finishButton());
+
+    // The old error is not the last word about it: the result says it is left for later, as it is.
+    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('octorate-result-acc-1')).toHaveAttribute('data-result', 'later'), WAIT);
+    expect(octorateApi.confirmMapping).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('result: what became of each listing and of the iCal calendars (NF-05)', () => {

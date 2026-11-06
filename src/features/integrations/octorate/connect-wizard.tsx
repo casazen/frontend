@@ -35,6 +35,7 @@ import {
   mergeOutcomes,
   readDecisions,
   runMappingPlan,
+  settleOutcomes,
   type ListingOutcome,
   type MappingProgress,
   type MappingRunner,
@@ -148,7 +149,9 @@ function ConnectWizard() {
       const done = await runMappingPlan(plan.actions, runner, (finished, total) => setProgress({ done: finished, total }));
       // The listings as they stand now, before the summary or the result reads them: no listing shows as it was before the run.
       if (done.length > 0) await fetchFoundListings(queryClient);
-      const all = mergeOutcomes(outcomes, done);
+      // A failure of an earlier run stands only while its listing has something to do again: one left for later since, or done
+      // somewhere else, is not reported as failed in the result.
+      const all = mergeOutcomes(settleOutcomes(outcomes, plan), done);
       setOutcomes(all);
       const failed = done.filter((outcome) => outcome.kind === 'failed').length;
       if (failed > 0) throw new MappingIncompleteError(failed);

@@ -368,6 +368,20 @@ export async function runMappingPlan(
   return outcomes;
 }
 
+/**
+ * The outcomes of the runs before this one, without the failures nobody waits on any more. A failure stands only while the plan still has
+ * something to do for its listing: one the host has since left for later, or that was done somewhere else, is not "failed" in the result
+ * with the error of a run that says nothing about it now. An import that went through is not forgotten.
+ */
+export function settleOutcomes(before: readonly ListingOutcome[], plan: Pick<MappingPlan, 'actions'>): ListingOutcome[] {
+  const waiting = new Set(plan.actions.map((action) => action.listingId));
+
+  return before.flatMap((outcome): ListingOutcome[] => {
+    if (outcome.kind !== 'failed' || waiting.has(outcome.listingId)) return [outcome];
+    return outcome.imported ? [{ listingId: outcome.listingId, kind: 'imported', imported: true }] : [];
+  });
+}
+
 /** The outcomes of a run laid over those of the runs before it: the last word about a listing wins, and an import is never forgotten. */
 export function mergeOutcomes(before: readonly ListingOutcome[], next: readonly ListingOutcome[]): ListingOutcome[] {
   const merged = new Map(before.map((outcome) => [outcome.listingId, outcome]));

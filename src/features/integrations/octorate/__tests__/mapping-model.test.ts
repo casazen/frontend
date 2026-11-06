@@ -13,6 +13,7 @@ import {
   resultRows,
   roomDecision,
   runMappingPlan,
+  settleOutcomes,
   type MappingDecision,
   type MappingRunner,
 } from '../mapping-model';
@@ -303,6 +304,27 @@ describe('doing it', () => {
 
     expect(merged.map((outcome) => `${outcome.listingId}:${outcome.kind}:${Boolean(outcome.imported)}`)).toEqual(['a:linked:false', 'b:room:true', 'c:linked:false']);
     expect(merged.find((outcome) => outcome.listingId === 'a')).not.toHaveProperty('error');
+  });
+
+  it('settleOutcomes_FailureOfAListingWithNothingLeftToDo_IsDroppedAndAnImportIsNotForgotten', () => {
+    const before = [
+      { listingId: 'waiting', kind: 'failed' as const, error: new Error('taken') },
+      { listingId: 'left-for-later', kind: 'failed' as const, error: new Error('taken') },
+      { listingId: 'room-set-elsewhere', kind: 'failed' as const, imported: true, error: new Error('room') },
+      { listingId: 'linked', kind: 'linked' as const },
+    ];
+
+    const settled = settleOutcomes(before, { actions: [{ kind: 'confirm', listingId: 'waiting', propertyId: 'prop-1', roomId: '' }] });
+
+    // The listing the host left for later has no action in the plan: its old error is not the last word about it.
+    expect(settled.map((outcome) => `${outcome.listingId}:${outcome.kind}`)).toEqual(['waiting:failed', 'room-set-elsewhere:imported', 'linked:linked']);
+    // The import went through: the result still says "imported", and not "linked", and the error of the room is gone.
+    expect(settled[1]).toEqual({ listingId: 'room-set-elsewhere', kind: 'imported', imported: true });
+    // The failure of a listing still waiting keeps its error.
+    expect(settled[0]).toBe(before[0]);
+    // The outcomes before are not touched.
+    expect(before).toHaveLength(4);
+    expect(settleOutcomes([], { actions: [] })).toEqual([]);
   });
 
   it('resultRows_ListingsAsTheServerHasThem_SayWhatBecameOfEachOne', () => {
