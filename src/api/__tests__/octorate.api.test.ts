@@ -61,3 +61,62 @@ describe('octorateApi (E02/F01 endpoints of api/octorate)', () => {
     expect(ApiClient.delete).toHaveBeenCalledWith('/octorate/connection');
   });
 });
+
+describe('octorateApi (E02/F01/US02 endpoints of the listings and their mapping)', () => {
+  it('getFoundListings_ReadsWhatIsStoredWithoutAskingTheChannelManager', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([]);
+
+    await octorateApi.getFoundListings();
+
+    expect(ApiClient.get).toHaveBeenCalledWith('/octorate/properties');
+  });
+
+  it('refreshListings_AsksToReadTheChannelManagerAgainWithNothingToSend', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce([]);
+
+    await octorateApi.refreshListings();
+
+    expect(ApiClient.post).toHaveBeenCalledWith('/octorate/properties/refresh');
+  });
+
+  it('confirmMapping_SendsThePropertyAndTheRoomOnlyWhenThereIsOne', async () => {
+    vi.mocked(ApiClient.put).mockResolvedValue(undefined);
+
+    await octorateApi.confirmMapping('acc-1', 'prop-1');
+    await octorateApi.confirmMapping('acc-1', 'prop-1', 'room-2');
+
+    expect(ApiClient.put).toHaveBeenNthCalledWith(1, '/octorate/mapping/acc-1', { propertyId: 'prop-1' });
+    expect(ApiClient.put).toHaveBeenNthCalledWith(2, '/octorate/mapping/acc-1', { propertyId: 'prop-1', octorateProductId: 'room-2' });
+  });
+
+  it('mappingEndpoints_AnIdThatIsNotPlain_TravelsEncodedInThePath', async () => {
+    vi.mocked(ApiClient.put).mockResolvedValue(undefined);
+    vi.mocked(ApiClient.delete).mockResolvedValue(undefined);
+    vi.mocked(ApiClient.post).mockResolvedValue({ propertyId: 'prop-9' });
+
+    await octorateApi.confirmMapping('a/b c', 'prop-1');
+    await octorateApi.rejectMapping('a/b c');
+    await octorateApi.importListing('a/b c');
+
+    expect(ApiClient.put).toHaveBeenCalledWith('/octorate/mapping/a%2Fb%20c', { propertyId: 'prop-1' });
+    expect(ApiClient.delete).toHaveBeenCalledWith('/octorate/mapping/a%2Fb%20c');
+    expect(ApiClient.post).toHaveBeenCalledWith('/octorate/mapping/a%2Fb%20c/import');
+  });
+
+  it('setMappingRoom_ChoosesTheRoomOfAListingThatIsConfirmed', async () => {
+    vi.mocked(ApiClient.put).mockResolvedValueOnce(undefined);
+
+    await octorateApi.setMappingRoom('acc-1', 'room-2');
+
+    expect(ApiClient.put).toHaveBeenCalledWith('/octorate/mapping/acc-1/room', { octorateProductId: 'room-2' });
+  });
+
+  it('importListing_CreatesTheCasazenPropertyOnlyAndAnswersItsId', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ propertyId: 'prop-9' });
+
+    const result = await octorateApi.importListing('acc-1');
+
+    expect(ApiClient.post).toHaveBeenCalledWith('/octorate/mapping/acc-1/import');
+    expect(result).toEqual({ propertyId: 'prop-9' });
+  });
+});
