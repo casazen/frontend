@@ -1312,6 +1312,15 @@
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
+      "octorateMappingAlreadyConfirmed": "This listing is already linked to a property.",
+      "octorateMappingLinkedToOtherProperty": "This listing has meanwhile been linked to another property. Go back: the list updates by itself.",
+      "octorateMappingNotConfirmed": "Before choosing the room, the listing has to be linked to a property.",
+      "octorateMappingNotFound": "We can no longer find this listing. Refresh the list and try again.",
+      "octorateMappingPropertyTaken": "This property is already linked to another listing. Go back and choose another one.",
+      "octorateMappingRefreshConflict": "The listings are already being updated. Try again in a moment.",
+      "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
+      "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
+      "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
@@ -9509,6 +9518,63 @@
   },
   "octorate": {
     "connect": {
+      "channelsFound": {
+        "capacity_one": "up to {{count}} guest",
+        "capacity_other": "up to {{count}} guests",
+        "channels": {
+          "airbnb": "Airbnb",
+          "booking": "Booking.com",
+          "expedia": "Expedia",
+          "other": "Channel {{code}}",
+          "vrbo": "Vrbo"
+        },
+        "channelsOf": "Channels of {{name}}",
+        "count_one": "We found {{count}} listing in your channel manager.",
+        "count_other": "We found {{count}} listings in your channel manager.",
+        "empty": {
+          "text": "There are no listings in your account, or they are not visible yet. Try again in a few minutes.",
+          "title": "We did not find any listings"
+        },
+        "loadFailed": "We cannot show the listings we found.",
+        "loading": "Loading the listings we found...",
+        "noChannels": "This listing is not connected to any channel yet.",
+        "notConnected": {
+          "action": "Back to the connection",
+          "text": "To see your listings, connect your channel manager first.",
+          "title": "Your channel manager is not connected yet"
+        },
+        "onChannel": {
+          "connected": "Connected",
+          "other": "To check"
+        },
+        "readFailed": "We could not read the listings from your channel manager. Please try again in a moment.",
+        "reading": "Reading the listings from your channel manager...",
+        "refresh": "Refresh the list",
+        "roomUnnamed": "Room {{id}}",
+        "state": {
+          "excluded": {
+            "hint": "You said it is not one of your properties.",
+            "label": "Left out"
+          },
+          "linked": {
+            "hint": "Linked to the property {{property}}.",
+            "label": "Linked"
+          },
+          "new": {
+            "hint": "We did not find a matching property in CasaZen: you can import it as a new one.",
+            "label": "New"
+          },
+          "toChoose": {
+            "hint": "It could be one of several properties: you will choose in the next step.",
+            "label": "To choose"
+          },
+          "toConfirm": {
+            "hint": "We think it is “{{property}}”: you confirm it in the next step.",
+            "label": "To confirm"
+          }
+        },
+        "unnamed": "Listing {{id}}"
+      },
       "consent": {
         "attention": {
           "text": "The connection with your channel manager is no longer valid. Connect it again to pick up where you left off.",
@@ -9532,7 +9598,7 @@
           "title": "The connection did not work"
         },
         "next": {
-          "finish": "Finish",
+          "listings": "See your listings",
           "retry": "Try connecting again",
           "start": "Go to your channel manager"
         },
@@ -9546,10 +9612,14 @@
       },
       "consentExplanation": "We will connect your channel manager to CasaZen: we take you to its site to authorize CasaZen, then you come back here and we carry on together.",
       "done": {
+        "checkImported": "Check your imported listings",
         "confirm": "We change nothing on your listings without your confirmation.",
+        "imported": "Imported properties start inactive and to be checked: look them over before you turn them on.",
+        "later": "The listings you left for later still need your confirmation: until you give it, CasaZen does not write to those properties.",
+        "loading": "Loading the result...",
         "reads": "From now on CasaZen can read your listings and your bookings from your channel manager.",
-        "toHome": "Back to the home page",
-        "toProperties": "Go to your properties"
+        "title": "Connection complete",
+        "toHome": "Back to the home page"
       },
       "errors": {
         "scenarioRequired": "Choose where your listings are today.",
@@ -9560,6 +9630,60 @@
         "saved": "Saved. You can pick up where you left off whenever you like."
       },
       "finishFailed": "We could not open your channel manager's site. Please try again in a moment.",
+      "finishLabel": "Confirm and finish",
+      "mapping": {
+        "alreadyLinked": "Already linked",
+        "choice": {
+          "confirm": "Confirm this property",
+          "import": "Import as a new property",
+          "importHint": "We create the property in CasaZen only, inactive and to be checked. We create nothing on your channels.",
+          "keepExcluded": "Keep it left out",
+          "later": "I'll do it later",
+          "laterBlocked": "It stays in your to-do list. Until you confirm it, CasaZen does not write to this property.",
+          "laterWaits": "Until you confirm it, CasaZen does not write to this property.",
+          "legend": "What do you want to do with {{name}}?",
+          "other": "Choose another property",
+          "pickExisting": "Choose a property you already have",
+          "reject": "It's not one of my properties",
+          "rejectHint": "We leave it out of the list and will not suggest it again."
+        },
+        "confirmAll_one": "Confirm the clear suggestion ({{count}})",
+        "confirmAll_other": "Confirm the clear suggestions ({{count}})",
+        "empty": "There are no listings to match. Go back and refresh the list.",
+        "errors": {
+          "propertyRequired": "Choose which property this listing is.",
+          "propertyTwice": "You chose this property for another listing too: a property matches only one listing.",
+          "roomRequired": "Choose which room this property is."
+        },
+        "intro": "For each listing, say which of your properties it is. We change nothing until you confirm in the summary.",
+        "linkedTo": "Linked to the property {{property}}.",
+        "listLabel": "Listings to match",
+        "loadFailed": "We cannot show the listings to match.",
+        "loading": "Loading the listings...",
+        "moreOptions": "More options",
+        "pick": {
+          "alreadyLinked": "already linked to another listing",
+          "chosenElsewhere": "chosen for another listing",
+          "label": "CasaZen property",
+          "likely": "Likely matches",
+          "loadFailed": "We cannot load your properties. Try again to be able to choose one.",
+          "loading": "Loading your properties...",
+          "others": "Your other properties",
+          "placeholder": "Choose a property"
+        },
+        "proposal": {
+          "ambiguous": "We have several similar properties: you choose the right one.",
+          "label": "We suggest",
+          "none": "We did not find a matching property in CasaZen."
+        },
+        "rejectedNote": "You had left this listing out: you can change your mind.",
+        "room": {
+          "chosen": "Room: {{room}}",
+          "hint": "In CasaZen a property is a single unit: choose which room of the listing it is.",
+          "placeholder": "Choose the room",
+          "question": "Which room is this property?"
+        }
+      },
       "page": {
         "description": "A guided path, one step at a time. You can leave whenever you like and pick up where you left off."
       },
@@ -9580,19 +9704,110 @@
         }
       },
       "steps": {
+        "channels": {
+          "label": "Channels found",
+          "purpose": "Here are the listings in your channel manager and the channels they are on. For now we only read them.",
+          "title": "What we found"
+        },
         "consent": {
           "label": "Connection",
           "purpose": "We take you to its site to give your consent, then you come back here.",
           "title": "Connect your channel manager"
+        },
+        "mapping": {
+          "label": "Matching",
+          "purpose": "For each listing, choose which CasaZen property it is. If you are not sure, you can decide later.",
+          "title": "Match the listings to your properties"
         },
         "scenario": {
           "label": "Listings",
           "purpose": "Pick the situation closest to yours and we take you down the right path.",
           "title": "Where are your listings today?"
         },
+        "summary": {
+          "label": "Summary",
+          "purpose": "Here is what happens when you confirm.",
+          "title": "Check and confirm"
+        },
         "why": {
           "purpose": "What changes for you when your channels talk to CasaZen."
         }
+      },
+      "summary": {
+        "explain": {
+          "ical": "If you already have an iCal calendar linked to a channel, at the end we tell you what to do.",
+          "imported": "An imported property is created in CasaZen inactive and to be checked. We create nothing on your channel manager or on the channels.",
+          "later": "The listings you leave for later still need your confirmation. Until you confirm them, CasaZen does not write to those properties.",
+          "reads": "After the connection CasaZen will be able to read the calendars and bookings of these properties from your channel manager.",
+          "safe": "We change nothing on your listings without your confirmation.",
+          "when": "It happens as soon as you confirm: each listing takes a moment.",
+          "where": "Your choices concern CasaZen: on your channel manager we create and change nothing."
+        },
+        "failed": {
+          "fix": "Fix it in the matching step",
+          "generic": "We could not complete everything. Check above and try again: the listings already done are not done twice.",
+          "title": "Some listings did not go through",
+          "unknown": "We could not complete this listing. Please try again in a moment."
+        },
+        "groups": {
+          "excluded": {
+            "label": "Left out of the list"
+          },
+          "imported": {
+            "label": "Imported as new properties"
+          },
+          "later": {
+            "label": "Left for later"
+          },
+          "linked": {
+            "label": "Linked to a property you already have"
+          },
+          "rooms": {
+            "label": "Room chosen"
+          }
+        },
+        "ical": {
+          "benefit": "This way the calendar comes from a single source and bookings are not duplicated.",
+          "intro": "Some properties already have an iCal calendar linked to a channel. Here is what happens to each one.",
+          "keeps": "{{channel}}: CasaZen keeps reading this channel's iCal calendar until your channel manager has read the calendar once. After that, the calendar will come from there and you can remove CasaZen's iCal link from the channel.",
+          "loadFailed": "We could not check the iCal calendars of some properties: you find them in “Channels and calendars”.",
+          "replaced": "{{channel}}: since {{date}} this channel's calendar comes from your channel manager. Remove CasaZen's iCal link in the settings of {{channel}}.",
+          "replacedNoDate": "{{channel}}: this channel's calendar now comes from your channel manager. Remove CasaZen's iCal link in the settings of {{channel}}.",
+          "title": "Your iCal calendars"
+        },
+        "linkedLine": "{{listing}} → {{property}}",
+        "loadFailed": "We cannot show the summary.",
+        "loading": "Preparing the summary...",
+        "nothing": "You have not chosen anything to link or import right now. The listings stay as they are and CasaZen does not write to your properties.",
+        "progress": "We are linking your listings: {{done}} of {{total}}.",
+        "result": {
+          "excluded": {
+            "badge": "Left out",
+            "text": "It is not one of your properties: we will not suggest it again."
+          },
+          "failed": {
+            "badge": "Did not work",
+            "text": "We could not complete this listing."
+          },
+          "imported": {
+            "badge": "Imported",
+            "text": "New property in CasaZen: {{property}}."
+          },
+          "later": {
+            "badge": "To do later",
+            "blocked": "Until you confirm it, CasaZen does not write to this property.",
+            "text": "It still needs your confirmation: you can do it whenever you like."
+          },
+          "linked": {
+            "badge": "Linked",
+            "text": "Linked to the property {{property}}."
+          },
+          "none": "There were no listings to show.",
+          "roomMissing": "The room is still missing: open this path again to choose it.",
+          "title": "Result for each listing"
+        },
+        "unknownProperty": "a property",
+        "withRoom": "room: {{room}}"
       },
       "title": "Connect your channels",
       "why": {

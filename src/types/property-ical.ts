@@ -21,6 +21,14 @@ export interface PropertyIcalFeed {
   /** Backend-localized text of `lastErrorCode`, used only when the frontend has no translation for the code. */
   lastError?: string | null;
   blockCount: number;
+  /**
+   * The channel manager replaces this feed (E02/F02/US01/T03, ADR-002): its mapping is confirmed and it read the calendar of the listing
+   * once. The feed and its blocks are kept, CasaZen stops importing it, and the host should remove CasaZen's iCal link in the settings of
+   * the channel. Absent while the backend does not send it yet: then the feed is still read.
+   */
+  deprecated?: boolean;
+  /** When the feed was replaced (UTC). */
+  deprecatedAt?: string | null;
 }
 
 export interface PropertyIcalStatus {

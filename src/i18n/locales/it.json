@@ -1312,6 +1312,15 @@
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
+      "octorateMappingAlreadyConfirmed": "Questo annuncio è già collegato a un immobile.",
+      "octorateMappingLinkedToOtherProperty": "Questo annuncio è già stato collegato a un altro immobile nel frattempo. Torna indietro: l'elenco si aggiorna da solo.",
+      "octorateMappingNotConfirmed": "Prima di scegliere la camera, l'annuncio va collegato a un immobile.",
+      "octorateMappingNotFound": "Non troviamo più questo annuncio. Aggiorna l'elenco e riprova.",
+      "octorateMappingPropertyTaken": "Questo immobile è già collegato a un altro annuncio. Torna indietro e scegline un altro.",
+      "octorateMappingRefreshConflict": "Gli annunci si stanno già aggiornando. Riprova tra qualche istante.",
+      "octorateNotConnected": "Il tuo channel manager non è collegato. Torna al collegamento e riprova.",
+      "octoratePropertyNotFound": "Non troviamo l'immobile scelto, oppure non hai accesso. Torna indietro e scegline un altro.",
+      "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
@@ -9509,6 +9518,63 @@
   },
   "octorate": {
     "connect": {
+      "channelsFound": {
+        "capacity_one": "fino a {{count}} ospite",
+        "capacity_other": "fino a {{count}} ospiti",
+        "channels": {
+          "airbnb": "Airbnb",
+          "booking": "Booking.com",
+          "expedia": "Expedia",
+          "other": "Canale {{code}}",
+          "vrbo": "Vrbo"
+        },
+        "channelsOf": "Canali di {{name}}",
+        "count_one": "Abbiamo trovato {{count}} annuncio nel tuo channel manager.",
+        "count_other": "Abbiamo trovato {{count}} annunci nel tuo channel manager.",
+        "empty": {
+          "text": "Nel tuo account non ci sono annunci, oppure non sono ancora visibili. Riprova tra qualche minuto.",
+          "title": "Non abbiamo trovato annunci"
+        },
+        "loadFailed": "Non riusciamo a mostrare gli annunci trovati.",
+        "loading": "Carico gli annunci trovati...",
+        "noChannels": "Questo annuncio non è ancora collegato a nessun canale.",
+        "notConnected": {
+          "action": "Torna al collegamento",
+          "text": "Per vedere i tuoi annunci serve prima collegare il tuo channel manager.",
+          "title": "Il tuo channel manager non è ancora collegato"
+        },
+        "onChannel": {
+          "connected": "Collegato",
+          "other": "Da verificare"
+        },
+        "readFailed": "Non siamo riusciti a leggere gli annunci dal tuo channel manager. Riprova tra qualche istante.",
+        "reading": "Leggo gli annunci dal tuo channel manager...",
+        "refresh": "Aggiorna l'elenco",
+        "roomUnnamed": "Camera {{id}}",
+        "state": {
+          "excluded": {
+            "hint": "Hai detto che non è un tuo immobile.",
+            "label": "Escluso"
+          },
+          "linked": {
+            "hint": "Collegato all'immobile {{property}}.",
+            "label": "Collegato"
+          },
+          "new": {
+            "hint": "Non abbiamo trovato un immobile uguale in CasaZen: puoi importarlo come nuovo.",
+            "label": "Nuovo"
+          },
+          "toChoose": {
+            "hint": "Potrebbe essere uno tra più immobili: sceglierai tu al passo dopo.",
+            "label": "Da scegliere"
+          },
+          "toConfirm": {
+            "hint": "Pensiamo sia «{{property}}»: lo confermi al passo dopo.",
+            "label": "Da confermare"
+          }
+        },
+        "unnamed": "Annuncio {{id}}"
+      },
       "consent": {
         "attention": {
           "text": "Il collegamento con il tuo channel manager non è più valido. Ricollegalo per ripartire.",
@@ -9532,7 +9598,7 @@
           "title": "Il collegamento non è riuscito"
         },
         "next": {
-          "finish": "Concludi",
+          "listings": "Vedi i tuoi annunci",
           "retry": "Riprova il collegamento",
           "start": "Vai al tuo channel manager"
         },
@@ -9546,10 +9612,14 @@
       },
       "consentExplanation": "Collegheremo il tuo channel manager a CasaZen: ti portiamo sul suo sito per autorizzare CasaZen, poi torni qui e continuiamo insieme.",
       "done": {
+        "checkImported": "Controlla i tuoi annunci importati",
         "confirm": "Non cambiamo nulla sui tuoi annunci senza la tua conferma.",
+        "imported": "Gli immobili importati nascono inattivi e da controllare: guardali prima di attivarli.",
+        "later": "Gli annunci lasciati per dopo restano da confermare: finché non lo fai, CasaZen non scrive su quegli immobili.",
+        "loading": "Carico il risultato...",
         "reads": "Da ora CasaZen può leggere i tuoi annunci e le tue prenotazioni dal tuo channel manager.",
-        "toHome": "Torna alla home",
-        "toProperties": "Vai ai tuoi immobili"
+        "title": "Collegamento completato",
+        "toHome": "Torna alla home"
       },
       "errors": {
         "scenarioRequired": "Scegli dove si trovano oggi i tuoi annunci.",
@@ -9560,6 +9630,60 @@
         "saved": "Salvato. Puoi riprendere da dove eri quando vuoi."
       },
       "finishFailed": "Non siamo riusciti ad aprire il sito del tuo channel manager. Riprova tra qualche istante.",
+      "finishLabel": "Conferma e concludi",
+      "mapping": {
+        "alreadyLinked": "Già collegati",
+        "choice": {
+          "confirm": "Conferma questo immobile",
+          "import": "Importa come nuovo immobile",
+          "importHint": "Creiamo l'immobile solo in CasaZen, inattivo e da controllare. Sui tuoi canali non creiamo niente.",
+          "keepExcluded": "Lascialo escluso",
+          "later": "Lo faccio dopo",
+          "laterBlocked": "Resta tra le cose da fare. Finché non lo confermi, CasaZen non scrive su questo immobile.",
+          "laterWaits": "Finché non lo confermi, CasaZen non scrive su questo immobile.",
+          "legend": "Cosa vuoi fare con {{name}}?",
+          "other": "Scegli un altro immobile",
+          "pickExisting": "Scegli un immobile che hai già",
+          "reject": "Non è un mio immobile",
+          "rejectHint": "Lo escludiamo dall'elenco e non te lo proporremo più."
+        },
+        "confirmAll_one": "Conferma la proposta chiara ({{count}})",
+        "confirmAll_other": "Conferma le proposte chiare ({{count}})",
+        "empty": "Non ci sono annunci da abbinare. Torna indietro e aggiorna l'elenco.",
+        "errors": {
+          "propertyRequired": "Scegli a quale immobile corrisponde questo annuncio.",
+          "propertyTwice": "Hai scelto questo immobile anche per un altro annuncio: un immobile corrisponde a un solo annuncio.",
+          "roomRequired": "Scegli quale camera è questo immobile."
+        },
+        "intro": "Per ogni annuncio dici a quale dei tuoi immobili corrisponde. Non cambiamo niente finché non confermi nel riepilogo.",
+        "linkedTo": "Collegato all'immobile {{property}}.",
+        "listLabel": "Annunci da abbinare",
+        "loadFailed": "Non riusciamo a mostrare gli annunci da abbinare.",
+        "loading": "Carico gli annunci...",
+        "moreOptions": "Altre opzioni",
+        "pick": {
+          "alreadyLinked": "già collegato a un altro annuncio",
+          "chosenElsewhere": "scelto per un altro annuncio",
+          "label": "Immobile di CasaZen",
+          "likely": "Possibili corrispondenze",
+          "loadFailed": "Non riusciamo a caricare i tuoi immobili. Riprova per poterne scegliere uno.",
+          "loading": "Carico i tuoi immobili...",
+          "others": "Altri tuoi immobili",
+          "placeholder": "Scegli un immobile"
+        },
+        "proposal": {
+          "ambiguous": "Abbiamo più immobili simili: scegli tu quello giusto.",
+          "label": "Proponiamo",
+          "none": "Non abbiamo trovato un immobile uguale in CasaZen."
+        },
+        "rejectedNote": "Avevi escluso questo annuncio: puoi ripensarci.",
+        "room": {
+          "chosen": "Camera: {{room}}",
+          "hint": "In CasaZen un immobile è una sola unità: scegli quale camera dell'annuncio gli corrisponde.",
+          "placeholder": "Scegli la camera",
+          "question": "Quale camera è questo immobile?"
+        }
+      },
       "page": {
         "description": "Un percorso guidato, un passo alla volta. Puoi uscire quando vuoi e riprendere da dove eri."
       },
@@ -9580,19 +9704,110 @@
         }
       },
       "steps": {
+        "channels": {
+          "label": "Canali trovati",
+          "purpose": "Ecco gli annunci del tuo channel manager e i canali su cui sono pubblicati. Per ora li leggiamo soltanto.",
+          "title": "Cosa abbiamo trovato"
+        },
         "consent": {
           "label": "Collegamento",
           "purpose": "Ti portiamo sul suo sito per dare il consenso, poi torni qui.",
           "title": "Collega il tuo channel manager"
+        },
+        "mapping": {
+          "label": "Abbinamento",
+          "purpose": "Per ogni annuncio scegli a quale immobile di CasaZen corrisponde. Se non sei sicuro, puoi decidere dopo.",
+          "title": "Abbina gli annunci ai tuoi immobili"
         },
         "scenario": {
           "label": "Annunci",
           "purpose": "Scegli la situazione più vicina alla tua: ti portiamo noi sul percorso giusto.",
           "title": "Dove si trovano oggi i tuoi annunci?"
         },
+        "summary": {
+          "label": "Riepilogo",
+          "purpose": "Ecco cosa succede quando confermi.",
+          "title": "Controlla e conferma"
+        },
         "why": {
           "purpose": "Cosa cambia per te quando i tuoi canali parlano con CasaZen."
         }
+      },
+      "summary": {
+        "explain": {
+          "ical": "Se hai già un calendario iCal collegato a un canale, alla fine ti diciamo cosa fare.",
+          "imported": "Un immobile importato nasce in CasaZen inattivo e da controllare. Sul tuo channel manager e sui canali non creiamo niente.",
+          "later": "Gli annunci lasciati per dopo restano da confermare. Finché non li confermi, CasaZen non scrive su quegli immobili.",
+          "reads": "Dopo il collegamento CasaZen potrà leggere calendari e prenotazioni di questi immobili dal tuo channel manager.",
+          "safe": "Non cambiamo niente sui tuoi annunci senza la tua conferma.",
+          "when": "Succede appena confermi: serve qualche istante per ogni annuncio.",
+          "where": "Le scelte riguardano CasaZen: sul tuo channel manager non creiamo né cambiamo niente."
+        },
+        "failed": {
+          "fix": "Correggi nell'abbinamento",
+          "generic": "Non siamo riusciti a completare tutto. Controlla qui sopra e riprova: gli annunci già fatti non vengono rifatti.",
+          "title": "Alcuni annunci non sono andati a buon fine",
+          "unknown": "Non siamo riusciti a completare questo annuncio. Riprova tra qualche istante."
+        },
+        "groups": {
+          "excluded": {
+            "label": "Esclusi dall'elenco"
+          },
+          "imported": {
+            "label": "Importati come nuovi immobili"
+          },
+          "later": {
+            "label": "Lasciati per dopo"
+          },
+          "linked": {
+            "label": "Collegati a un immobile che hai già"
+          },
+          "rooms": {
+            "label": "Camera scelta"
+          }
+        },
+        "ical": {
+          "benefit": "Così il calendario arriva da una sola fonte e le prenotazioni non si duplicano.",
+          "intro": "Alcuni immobili hanno già un calendario iCal collegato a un canale. Ecco cosa succede a ciascuno.",
+          "keeps": "{{channel}}: CasaZen continua a leggere il calendario iCal di questo canale finché il tuo channel manager non ha letto il calendario una prima volta. Dopo, il calendario arriverà da lì e potrai togliere il link iCal di CasaZen dal canale.",
+          "loadFailed": "Non siamo riusciti a controllare i calendari iCal di alcuni immobili: li trovi in «Canali e calendari».",
+          "replaced": "{{channel}}: dal {{date}} il calendario di questo canale arriva dal tuo channel manager. Togli il link iCal di CasaZen nelle impostazioni di {{channel}}.",
+          "replacedNoDate": "{{channel}}: ora il calendario di questo canale arriva dal tuo channel manager. Togli il link iCal di CasaZen nelle impostazioni di {{channel}}.",
+          "title": "I tuoi calendari iCal"
+        },
+        "linkedLine": "{{listing}} → {{property}}",
+        "loadFailed": "Non riusciamo a mostrare il riepilogo.",
+        "loading": "Preparo il riepilogo...",
+        "nothing": "Non hai scelto niente da collegare o importare ora. Gli annunci restano come sono e CasaZen non scrive sui tuoi immobili.",
+        "progress": "Stiamo collegando i tuoi annunci: {{done}} di {{total}}.",
+        "result": {
+          "excluded": {
+            "badge": "Escluso",
+            "text": "Non è uno dei tuoi immobili: non te lo proporremo più."
+          },
+          "failed": {
+            "badge": "Non riuscito",
+            "text": "Non siamo riusciti a completare questo annuncio."
+          },
+          "imported": {
+            "badge": "Importato",
+            "text": "Nuovo immobile in CasaZen: {{property}}."
+          },
+          "later": {
+            "badge": "Da fare dopo",
+            "blocked": "Finché non lo confermi, CasaZen non scrive su questo immobile.",
+            "text": "Resta da confermare: potrai farlo quando vuoi."
+          },
+          "linked": {
+            "badge": "Collegato",
+            "text": "Collegato all'immobile {{property}}."
+          },
+          "none": "Non c'erano annunci da mostrare.",
+          "roomMissing": "Manca ancora la camera: riapri questo percorso per sceglierla.",
+          "title": "Risultato per annuncio"
+        },
+        "unknownProperty": "un immobile",
+        "withRoom": "camera: {{room}}"
       },
       "title": "Collega i tuoi canali",
       "why": {
