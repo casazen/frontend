@@ -27,13 +27,19 @@ export function readOctorateCallback(params: URLSearchParams): OctorateCallback 
   return code ? { kind: 'refused' } : null;
 }
 
+/** The parameters without the ones the channel manager put in the address. A copy: the one it was given is not changed. */
+function withoutCallbackParams(params: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(params);
+  for (const name of CALLBACK_PARAMS) next.delete(name);
+  return next;
+}
+
 /**
  * The address once the callback was read: the code and the state are single-use secrets and do not stay in the address bar, in the
  * history or in a reload; `step` names the step the host comes back to, so that a reload or "back" lands on it.
  */
 export function withoutOctorateCallback(params: URLSearchParams): URLSearchParams {
-  const next = new URLSearchParams(params);
-  for (const name of CALLBACK_PARAMS) next.delete(name);
+  const next = withoutCallbackParams(params);
   next.set('step', CONSENT_STEP_ID);
   return next;
 }
@@ -46,4 +52,20 @@ export function withoutOctorateCallback(params: URLSearchParams): URLSearchParam
 export function isOctorateCallbackPath(pathname: string): boolean {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
   return path.toLowerCase() === OCTORATE_CONNECT_PATH;
+}
+
+/**
+ * The query string of a page for an address that lasts: the `returnTo` of a login (a history entry, and the state Auth0 keeps while the
+ * host signs in), the `from` of the onboarding (the state of the history), the reserved page that stays on screen. The wizard takes the
+ * code and the state out of its address only once it is mounted, but the guards come first: on the callback page the code, the state
+ * and the error are left out here, because a page that cannot use them (no session, the onboarding still to do, no permission) is not
+ * where they stay. The host who comes back after that gives the consent again. Any other page keeps its query string as it is: `code`
+ * and `state` are ordinary names elsewhere.
+ */
+export function searchWithoutOctorateCallback(pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+  if (!isOctorateCallbackPath(pathname) || !CALLBACK_PARAMS.some((name) => params.has(name))) return search;
+
+  const kept = withoutCallbackParams(params).toString();
+  return kept === '' ? '' : `?${kept}`;
 }

@@ -1,3 +1,5 @@
+import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
+
 /**
  * Path the app goes back to after an Auth0 login started with `login({ returnTo })` (carried in the
  * SDK `appState`, protected by its `state` check). Only a path of this origin is accepted: anything
@@ -13,7 +15,11 @@ export function safeReturnTo(value: unknown): string | null {
   return value;
 }
 
-/** Path, query and hash of a location: the `returnTo` that brings the user back to that page. */
+/**
+ * Path, query and hash of a location: the `returnTo` that brings the user back to that page. A `returnTo` lasts (a history entry, the
+ * state Auth0 keeps while the user signs in), so the single-use `code` and `state` of the callback of the channel manager are left out of
+ * it (see `searchWithoutOctorateCallback`).
+ */
 export function currentReturnTo(location: { pathname: string; search: string; hash: string }): string {
-  return `${location.pathname}${location.search}${location.hash}`;
+  return `${location.pathname}${searchWithoutOctorateCallback(location.pathname, location.search)}${location.hash}`;
 }

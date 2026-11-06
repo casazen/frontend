@@ -4,6 +4,7 @@ import {
   OCTORATE_CONNECT_PATH,
   isOctorateCallbackPath,
   readOctorateCallback,
+  searchWithoutOctorateCallback,
   withoutOctorateCallback,
 } from '../octorate-callback';
 
@@ -62,6 +63,38 @@ describe('withoutOctorateCallback (the secrets leave the address)', () => {
     withoutOctorateCallback(original);
 
     expect(original.toString()).toBe('code=the-code&state=the-state');
+  });
+});
+
+describe('searchWithoutOctorateCallback (the secrets do not go into an address that lasts)', () => {
+  it('searchWithoutOctorateCallback_CallbackPage_DropsTheCodeTheStateAndTheError', () => {
+    expect(searchWithoutOctorateCallback(OCTORATE_CONNECT_PATH, '?code=the-code&state=the-state')).toBe('');
+    expect(
+      searchWithoutOctorateCallback(
+        OCTORATE_CONNECT_PATH,
+        '?error=access_denied&error_description=No&error_uri=https%3A%2F%2Fx.test&state=the-state',
+      ),
+    ).toBe('');
+    // What else the address says stays; the page is the callback page whatever its case and trailing slash.
+    expect(searchWithoutOctorateCallback('/App/Short-Rent/Integrations/Octorate/', '?step=why&code=the-code&state=the-state')).toBe(
+      '?step=why',
+    );
+  });
+
+  it('searchWithoutOctorateCallback_AnyOtherPage_KeepsEveryParameter', () => {
+    // `code` and `state` are ordinary names elsewhere (a filter, a coupon): only the page of the callback is cleaned.
+    expect(searchWithoutOctorateCallback('/app/short-rent/bookings', '?state=confirmed&code=A1')).toBe('?state=confirmed&code=A1');
+    expect(searchWithoutOctorateCallback('/app/long-rent/integrations/octorate', '?code=the-code&state=the-state')).toBe(
+      '?code=the-code&state=the-state',
+    );
+    expect(searchWithoutOctorateCallback(`${OCTORATE_CONNECT_PATH}/more`, '?code=the-code&state=the-state')).toBe(
+      '?code=the-code&state=the-state',
+    );
+  });
+
+  it('searchWithoutOctorateCallback_CallbackPageWithoutAnAnswer_IsNotChanged', () => {
+    expect(searchWithoutOctorateCallback(OCTORATE_CONNECT_PATH, '')).toBe('');
+    expect(searchWithoutOctorateCallback(OCTORATE_CONNECT_PATH, '?step=why&note=a%20b')).toBe('?step=why&note=a%20b');
   });
 });
 

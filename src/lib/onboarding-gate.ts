@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
 
 export const ONBOARDING_PATH = '/onboarding';
 
@@ -36,7 +37,11 @@ export function openOnboardingAfterGate(
   }
 
   void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-  // `replace`: Back must not reopen the page that was refused.
-  void router.navigate(ONBOARDING_PATH, { replace: true, state: { from: `${pathname}${search}` } });
+  // `replace`: Back must not reopen the page that was refused. `from` stays in the history of the browser: the code and the state of the
+  // callback of the channel manager do not go along.
+  void router.navigate(ONBOARDING_PATH, {
+    replace: true,
+    state: { from: `${pathname}${searchWithoutOctorateCallback(pathname, search)}` },
+  });
   return true;
 }

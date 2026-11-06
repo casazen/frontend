@@ -189,6 +189,19 @@ describe('OnboardingGuard (PL-01)', () => {
     expect(screen.getByTestId('workspace-search')).toHaveTextContent('?code=the-code&state=the-state');
   });
 
+  it('OnboardingGuard_CallbackOfTheChannelManagerBeforeTheOnboarding_RemembersThePageWithoutTheCodeAndTheState', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ onboardingCompletedAt: '2026-06-16T12:00:00Z' }));
+
+    renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state&step=consent');
+
+    // The `from` stays in the history of the browser: the code and the state are single-use secrets and do not go along.
+    const onboarding = await screen.findByTestId('onboarding-page');
+    expect(onboarding).toHaveTextContent('onboarding from /app/short-rent/integrations/octorate?step=consent');
+    expect(onboarding).not.toHaveTextContent('the-code');
+    expect(onboarding).not.toHaveTextContent('the-state');
+  });
+
   it('OnboardingGuard_AdminWithoutProperties_DoesNotOpenTheFirstPropertyCreation', async () => {
     mockAuth({ roles: ['Admin'] });
     vi.mocked(UsersApi.getMe).mockResolvedValue(
