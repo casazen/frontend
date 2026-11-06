@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode, type RefObject } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { ChevronDown, X } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
@@ -159,20 +159,57 @@ function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; p
 }
 
 /**
+ * The inside of the drawer: the title, the card (or the state it is in) and its foot. It reads the entry, so it is mounted only while the
+ * drawer is open: a closed drawer asks for nothing.
+ */
+function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string; bodyRef: RefObject<HTMLDivElement | null> }) {
+  const { t } = useTranslation();
+  const { property } = useMarketplaceProperty();
+  const entry = useMarketplaceEntry(kind, code, property?.id);
+
+  const detail = entry.data;
+  // The card is not there for this person (a partner their plan or country does not allow, a code that does not exist): said as such.
+  const notAvailable = !detail && entry.isError && getHttpStatus(entry.error) === 404;
+
+  return (
+    <>
+      {/* `pr-16`: room for the close button, which is 44 px wide and sits over the right corner. */}
+      <div className="shrink-0 px-4 pb-3 pr-16 md:pb-4 md:pl-6 md:pr-16 md:pt-6">
+        <DialogTitle className="break-words text-lg leading-snug">{detail?.name ?? t('marketplace.detail.fallbackTitle')}</DialogTitle>
+      </div>
+      <div
+        ref={bodyRef}
+        tabIndex={-1}
+        data-testid="marketplace-entry-drawer-body"
+        className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain break-words px-4 pb-6 outline-none md:px-6"
+      >
+        {detail ? (
+          <EntryDetail detail={detail} />
+        ) : notAvailable ? (
+          <div role="status" className="space-y-1 py-4" data-testid="marketplace-entry-not-found">
+            <p className="font-semibold">{t('marketplace.detail.notFound')}</p>
+            <p className="text-sm text-foreground/70">{t('marketplace.detail.notFoundDescription')}</p>
+          </div>
+        ) : entry.isError ? (
+          <ErrorState title={t('marketplace.detail.loadError')} error={entry.error} onRetry={() => void entry.refetch()} testId="marketplace-entry-error" />
+        ) : (
+          <SkeletonLine lines={5} label={t('marketplace.detail.loading')} />
+        )}
+      </div>
+      {detail ? <EntryFooter detail={detail} propertyId={property?.id} /> : null}
+    </>
+  );
+}
+
+/**
  * One element, two shapes, as the detail drawer of the app (UI-15): a sheet from the bottom edge under `md`, a panel at the right from
  * `md` up. The focus is trapped inside; Esc, a press outside and the close button close it (the dialog tells the drawer, which takes the
  * parameter away); the focus goes back to the card that opened it.
  */
 function EntryPanel({ kind, code }: { kind: string; code: string }) {
   const { t } = useTranslation();
-  const { property } = useMarketplaceProperty();
-  const entry = useMarketplaceEntry(kind, code, property?.id);
   const bodyRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-
-  const detail = entry.data;
-  // The card is not there for this person (a partner their plan or country does not allow, a code that does not exist): said as such.
-  const notAvailable = !detail && entry.isError && getHttpStatus(entry.error) === 404;
 
   return (
     <DialogPortal>
@@ -198,30 +235,7 @@ function EntryPanel({ kind, code }: { kind: string; code: string }) {
         className="fixed z-50 flex flex-col bg-background text-foreground shadow-lg outline-none max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[92dvh] max-md:rounded-t-2xl max-md:border-t max-md:pb-[env(safe-area-inset-bottom)] md:inset-y-0 md:right-0 md:w-full md:max-w-xl md:border-l md:data-[state=open]:animate-in md:data-[state=open]:slide-in-from-right md:data-[state=open]:duration-300 md:data-[state=closed]:animate-out md:data-[state=closed]:slide-out-to-right md:data-[state=closed]:duration-200"
       >
         <SheetHandle className="md:hidden" onClose={() => closeRef.current?.click()} />
-        {/* `pr-16`: room for the close button, which is 44 px wide and sits over the right corner. */}
-        <div className="shrink-0 px-4 pb-3 pr-16 md:pb-4 md:pl-6 md:pr-16 md:pt-6">
-          <DialogTitle className="break-words text-lg leading-snug">{detail?.name ?? t('marketplace.detail.fallbackTitle')}</DialogTitle>
-        </div>
-        <div
-          ref={bodyRef}
-          tabIndex={-1}
-          data-testid="marketplace-entry-drawer-body"
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain break-words px-4 pb-6 outline-none md:px-6"
-        >
-          {detail ? (
-            <EntryDetail detail={detail} />
-          ) : notAvailable ? (
-            <div role="status" className="space-y-1 py-4" data-testid="marketplace-entry-not-found">
-              <p className="font-semibold">{t('marketplace.detail.notFound')}</p>
-              <p className="text-sm text-foreground/70">{t('marketplace.detail.notFoundDescription')}</p>
-            </div>
-          ) : entry.isError ? (
-            <ErrorState title={t('marketplace.detail.loadError')} error={entry.error} onRetry={() => void entry.refetch()} testId="marketplace-entry-error" />
-          ) : (
-            <SkeletonLine lines={5} label={t('marketplace.detail.loading')} />
-          )}
-        </div>
-        {detail ? <EntryFooter detail={detail} propertyId={property?.id} /> : null}
+        <EntryPanelContent kind={kind} code={code} bodyRef={bodyRef} />
         <DialogPrimitive.Close
           ref={closeRef}
           className="absolute right-2 top-1.5 flex size-11 items-center justify-center rounded-full opacity-70 transition-opacity hover:bg-muted hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:right-3 md:top-3"
