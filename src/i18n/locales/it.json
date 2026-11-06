@@ -3178,6 +3178,7 @@
     },
     "language": {
       "label": "Lingua",
+      "loadFailed": "Non siamo riusciti a caricare questa lingua: la pagina resta in quella di prima.",
       "names": {
         "de": "Deutsch",
         "en": "English",

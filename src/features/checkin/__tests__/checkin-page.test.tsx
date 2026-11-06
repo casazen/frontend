@@ -523,6 +523,26 @@ describe('CheckInPage', () => {
       expect(await screen.findByTestId('checkin-language-not-saved')).toHaveTextContent('No hemos podido guardar');
     });
 
+    it('language_TextsCannotBeLoaded_GoBackToThePreviousLanguageAndSayWhy', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.setLanguage).mockResolvedValue({ language: 'de' });
+      // The file of the language is not there yet and the network gives out while it is added.
+      i18n.removeResourceBundle('de', 'translation');
+      const addBundle = vi.spyOn(i18n, 'addResourceBundle').mockImplementationOnce(() => {
+        throw new Error('chunk');
+      });
+      renderPage();
+      const select = (await screen.findByLabelText('Lingua')) as HTMLSelectElement;
+
+      fireEvent.change(select, { target: { value: 'de' } });
+
+      expect(await screen.findByTestId('checkin-language-not-loaded')).toHaveTextContent('Non siamo riusciti a caricare questa lingua');
+      // The page is in the language it had, and the control, the voice of the screen reader and the texts agree on it.
+      expect(select.value).toBe('it');
+      expect(document.documentElement.lang).toBe('it');
+      expect(i18n.language).toBe('it');
+      addBundle.mockRestore();
+    });
+
     it('language_CompletedLink_StillChangesTheLanguageButSavesNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo' });
       renderPage();

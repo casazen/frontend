@@ -214,6 +214,7 @@
     },
     "language": {
       "label": "Sprache",
+      "loadFailed": "Diese Sprache konnte nicht geladen werden: Die Seite bleibt in der bisherigen Sprache.",
       "names": {
         "de": "Deutsch",
         "en": "English",

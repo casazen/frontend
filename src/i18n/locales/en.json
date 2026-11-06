@@ -3178,6 +3178,7 @@
     },
     "language": {
       "label": "Language",
+      "loadFailed": "We could not load this language: the page stays in the one it had.",
       "names": {
         "de": "Deutsch",
         "en": "English",

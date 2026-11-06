@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router-dom';
@@ -130,13 +130,19 @@ export function CheckInPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [languageNotSaved, setLanguageNotSaved] = useState(false);
+  const [languageNotLoaded, setLanguageNotLoaded] = useState(false);
   const [chosenLocale, setChosenLocale] = useState<GuestLocale | null>(null);
   const [focusRequest, setFocusRequest] = useState(0);
   const formElement = useRef<HTMLFormElement>(null);
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
   const locale = chosenLocale ?? resolveGuestLocale(context?.language);
-  useGuestPageLocale(locale);
+  // The texts of a language that cannot be loaded (the network): the page stays in the language it has and says so.
+  const keepLocale = useCallback((stayedIn: GuestLocale) => {
+    setChosenLocale(stayedIn);
+    setLanguageNotLoaded(true);
+  }, []);
+  useGuestPageLocale(locale, keepLocale);
   const sessionOpen = Boolean(context) && !context?.completed;
 
   // The statistical fields are asked only where the region requires them (data minimization): none while the page does not know.
@@ -187,6 +193,7 @@ export function CheckInPage() {
   const chooseLanguage = (next: GuestLocale) => {
     setChosenLocale(next);
     setLanguageNotSaved(false);
+    setLanguageNotLoaded(false);
     // Only an open session has a language to save: after the check-in, or with a wrong link, the choice is just for this page.
     if (sessionOpen) saveLanguage.mutate(next, { onError: () => setLanguageNotSaved(true) });
   };
@@ -266,6 +273,11 @@ export function CheckInPage() {
       {languageNotSaved && (
         <p role="status" className="text-right text-xs text-muted-foreground" data-testid="checkin-language-not-saved">
           {t('checkin.language.notSaved')}
+        </p>
+      )}
+      {languageNotLoaded && (
+        <p role="status" className="text-right text-xs text-muted-foreground" data-testid="checkin-language-not-loaded">
+          {t('checkin.language.loadFailed')}
         </p>
       )}
     </div>

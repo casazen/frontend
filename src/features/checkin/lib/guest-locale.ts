@@ -79,8 +79,11 @@ export async function ensureGuestLocale(locale: GuestLocale): Promise<void> {
  * instance changes language, and `<html lang>` follows, so that a screen reader and the browser pick the right voice and hyphenation. The
  * choice lives for the page only: nothing is written to the browser (the language the host chose for the app, `AppLocale`, stays
  * where it is), and when the page closes the app goes back to the language it had when the page opened.
+ *
+ * If the texts of the language cannot be loaded (the network), the page keeps the language it has, `<html lang>` says so, and `onLoadFailed`
+ * receives that language so the page can show it again and tell the guest. It must be stable (a `useCallback`): it is a dependency.
  */
-export function useGuestPageLocale(locale: GuestLocale): void {
+export function useGuestPageLocale(locale: GuestLocale, onLoadFailed?: (stayedIn: GuestLocale) => void): void {
   // The app's own instance, not the one `useTranslation` hands back: that one is a new object for each language, and an effect that
   // depends on it would run again (and undo) every time the language changes.
   const opened = useRef(i18n.language);
@@ -88,13 +91,20 @@ export function useGuestPageLocale(locale: GuestLocale): void {
   useEffect(() => {
     let current = true;
     document.documentElement.lang = locale;
-    void ensureGuestLocale(locale).then(() => {
-      if (current) void i18n.changeLanguage(locale);
-    });
+    ensureGuestLocale(locale)
+      .then(() => {
+        if (current) void i18n.changeLanguage(locale);
+      })
+      .catch(() => {
+        if (!current) return;
+        const stayedIn = resolveGuestLocale(i18n.language);
+        document.documentElement.lang = stayedIn;
+        onLoadFailed?.(stayedIn);
+      });
     return () => {
       current = false;
     };
-  }, [locale]);
+  }, [locale, onLoadFailed]);
 
   useEffect(() => {
     const appLanguage = opened.current;
