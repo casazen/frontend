@@ -105,7 +105,7 @@ export function initialStepOf(state: CheckInWizardState): CheckInWizardStepId {
 
 /** The request body of `PUT …/checkin-wizard/guests`: every guest, the exemption of the tourist tax as the host received it. */
 export function toGuestsPayload(values: CheckInWizardValues, statisticalFields: readonly StatisticalGuestField[]): StayGuestSubmit[] {
-  return values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true }));
+  return values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true, keepStatistical: true }));
 }
 
 /**

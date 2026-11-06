@@ -4,6 +4,7 @@ import { FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2, UserPlus } from 'lucide-react';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,12 +29,14 @@ import type { AlloggiatiCodeTable, StayGuestType } from '@/types/public-checkin.
 import {
   DOCUMENT_KINDS,
   MAX_STAY_GUESTS,
+  createStayGuestListSchema,
   followerTypeOf,
   guestFormPathOf,
+  requiredStatisticalFields,
   requiresDocument,
   stayGuestDefaults,
-  stayGuestsFormSchema,
   toStayGuestSubmit,
+  type StatisticalGuestField,
   type StayGuestFormValues,
   type StayGuestsFormValues,
 } from '@/features/checkin/schemas/checkin.schema';
@@ -119,6 +122,8 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
   const numbersForbidden = numbers.isError && getHttpStatus(numbers.error) === 403;
   // The fields the summary does not carry (residence, document dates, tourist tax exemption): read from the wizard of the booking.
   const saved = useCheckInWizardState(bookingId, open);
+  const requiredGuestFields = saved.data?.requiredGuestFields;
+  const statisticalFields = useMemo(() => requiredStatisticalFields(requiredGuestFields), [requiredGuestFields]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -156,6 +161,7 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
             summary={summary}
             documentNumbers={numbers.data}
             savedGuests={saved.data?.guests}
+            statisticalFields={statisticalFields}
             onDone={() => onOpenChange(false)}
           />
         )}
@@ -170,10 +176,12 @@ interface StayGuestsEditFormProps {
   documentNumbers: StayGuestDocumentNumberDto[] | undefined;
   /** The guests of the check-in wizard: the fields the summary does not carry. */
   savedGuests: CheckInWizardGuest[] | undefined;
+  /** The statistical fields the region requires (`requiredGuestFields` of the wizard): asked here too, and sent. */
+  statisticalFields: readonly StatisticalGuestField[];
   onDone: () => void;
 }
 
-function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, onDone }: StayGuestsEditFormProps) {
+function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, statisticalFields, onDone }: StayGuestsEditFormProps) {
   const { t } = useTranslation();
   const replace = useReplaceStayGuests(bookingId);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -186,7 +194,8 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
     return { guests };
   }, [summary.guests, documentNumbers, savedGuests]);
 
-  const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(stayGuestsFormSchema), defaultValues: initial });
+  const schema = useMemo(() => z.object({ guests: createStayGuestListSchema(statisticalFields) }), [statisticalFields]);
+  const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const { control, getValues, setValue, setError, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
   const guests = useWatch({ control, name: 'guests' });
@@ -210,8 +219,11 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
   const onSubmit = handleSubmit(async (values) => {
     setSaveError(null);
     try {
-      // The exemption of the tourist tax travels with the guest as it was received: the server takes the list as the whole truth.
-      await replace.mutateAsync(values.guests.map((guest) => toStayGuestSubmit(guest, { withTaxExemption: true })));
+      // The exemption of the tourist tax and the statistical fields travel with the guest as they were received: the server takes the
+      // list as the whole truth, so a save that left them out would erase them.
+      await replace.mutateAsync(
+        values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true, keepStatistical: true })),
+      );
       onDone();
     } catch (error) {
       const serverErrors = getServerFieldErrorsByPath(error, t('checkin.validation.invalidValue'));
@@ -236,6 +248,7 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
               index={index}
               arrivalDate={summary.arrivalDate}
               source={source}
+              requiredFields={statisticalFields}
               onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
               onRemove={index > 0 ? () => remove(index) : undefined}
             />

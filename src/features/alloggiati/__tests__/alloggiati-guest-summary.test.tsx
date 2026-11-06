@@ -317,6 +317,8 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       documentExpiresOn: '2030-05-09',
       taxExemptionCode: 'resident',
     });
+    // The statistical fields the guest holds travel back too, though no region asks for them: left out, the save would erase them.
+    expect(guests[1]).toMatchObject({ tourismType: 'holiday' });
   });
 
   it('editGuests_TheFieldsTheSummaryLacksCannotBeRead_NoFormThatCouldEraseThemIsOpened', async () => {

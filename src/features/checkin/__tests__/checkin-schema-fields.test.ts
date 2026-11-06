@@ -138,6 +138,17 @@ describe('what the guest page sends (NF-40)', () => {
     expect(body).not.toHaveProperty('educationLevel');
   });
 
+  it('toStayGuestSubmit_HostEntryHoldingAStatisticalField_SendsItBackSoASaveDoesNotEraseIt', () => {
+    const guest = validGuest({ tourismType: 'holiday' });
+
+    const body = toStayGuestSubmit(guest, { keepStatistical: true });
+    // What the guest has is sent back; what is empty and not required is not sent.
+    expect(body.tourismType).toBe('holiday');
+    expect(body).not.toHaveProperty('travelWay');
+    // The guest portal never sends back a field the region does not require.
+    expect(toStayGuestSubmit(guest)).not.toHaveProperty('tourismType');
+  });
+
   it('toStayGuestSubmit_StatisticalFieldTheRegionRequires_IsSentAndTheOthersAreNot', () => {
     const body = toStayGuestSubmit(validGuest({ tourismType: 'business', travelWay: 'train' }), { statisticalFields: ['tourismType'] });
 

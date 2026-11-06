@@ -478,6 +478,12 @@ export interface StayGuestSubmitOptions {
    * portal never sends it (it is the host's decision, and the server ignores it there).
    */
   withTaxExemption?: boolean;
+  /**
+   * The host's entries send back the statistical fields they received, even where the region does not require them, because the server
+   * takes the list as the whole truth and a save that left them out would erase them. The guest portal never has this: it sends only the
+   * fields the region requires.
+   */
+  keepStatistical?: boolean;
 }
 
 function textOrNull(value: string): string | null {
@@ -491,6 +497,9 @@ export function toStayGuestSubmit(values: StayGuestFormValues, options: StayGues
   const withDocument = requiresDocument(values.type);
   const residenceInItaly = values.residenceInItaly === 'yes' ? true : values.residenceInItaly === 'no' ? false : null;
   const statistical = options.statisticalFields ?? [];
+  // A required field is always sent (empty as null); a held one only where the host's entry sends back what it received.
+  const sends = (field: StatisticalGuestField) =>
+    statistical.includes(field) || (options.keepStatistical === true && textOrNull(values[field]) !== null);
   return {
     type: values.type,
     firstName: values.firstName.trim(),
@@ -518,9 +527,9 @@ export function toStayGuestSubmit(values: StayGuestFormValues, options: StayGues
     residenceProvince: residenceInItaly === true ? textOrNull(values.residenceProvince)?.toUpperCase() ?? null : null,
     residenceCountryName: residenceInItaly === false ? textOrNull(values.residenceCountryName) : null,
     residenceCountryCode: residenceInItaly === false ? values.residenceCountryCode : null,
-    ...(statistical.includes('tourismType') ? { tourismType: textOrNull(values.tourismType) } : {}),
-    ...(statistical.includes('travelWay') ? { travelWay: textOrNull(values.travelWay) } : {}),
-    ...(statistical.includes('educationLevel') ? { educationLevel: textOrNull(values.educationLevel) } : {}),
+    ...(sends('tourismType') ? { tourismType: textOrNull(values.tourismType) } : {}),
+    ...(sends('travelWay') ? { travelWay: textOrNull(values.travelWay) } : {}),
+    ...(sends('educationLevel') ? { educationLevel: textOrNull(values.educationLevel) } : {}),
     ...(options.withTaxExemption ? { taxExemptionCode: textOrNull(values.taxExemptionCode) } : {}),
   };
 }
