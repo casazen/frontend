@@ -41,3 +41,4 @@ export * from './routine.types';
 export * from './wire-transfer.types';
 export * from './access-code.types';
 export * from './octorate.types';
+export * from './marketplace';
