@@ -150,8 +150,14 @@ export function CheckInPage() {
   const { control, handleSubmit, setValue, setError, getValues, trigger, reset } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
 
+  // The form starts from what the server has on file (the guests and how many are declared) and is set again only when that changes: a
+  // new `context` object with the same data (a refetch, another field of the context) must never wipe what the guest has typed.
+  const startedFrom = useRef<string | null>(null);
   useEffect(() => {
     if (!context || context.completed) return;
+    const onFile = JSON.stringify([context.guests ?? null, context.declaredGuests ?? null]);
+    if (startedFrom.current === onFile) return;
+    startedFrom.current = onFile;
     reset({
       guests: initialStayGuests(context.guests, context.declaredGuests),
       marketingConsentEmail: false,

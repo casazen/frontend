@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeAll, beforeEach } from 'vitest';
-import { cleanup, configure, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -64,7 +64,7 @@ function httpError(status: number, data?: unknown): AxiosError {
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
@@ -75,6 +75,7 @@ function renderPage() {
       ),
     ),
   );
+  return { ...view, client };
 }
 
 function guestCard(index: number) {
@@ -530,6 +531,40 @@ describe('CheckInPage', () => {
 
       expect(await screen.findByText('Check-in bereits abgeschlossen')).toBeInTheDocument();
       expect(publicCheckinApi.setLanguage).not.toHaveBeenCalled();
+    });
+
+    it('language_Choosing_AfterTypingKeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      let saved: (answer: { language: string }) => void = () => undefined;
+      vi.mocked(publicCheckinApi.setLanguage).mockImplementation(() => new Promise((resolve) => { saved = resolve; }));
+      renderPage();
+      await screen.findByTestId('checkin-page');
+      fillGuest(0, { firstName: 'Giulia' });
+
+      fireEvent.change(screen.getByLabelText('Lingua'), { target: { value: 'fr' } });
+      expect(await screen.findByRole('heading', { name: 'Check-in des invités' })).toBeInTheDocument();
+      // The save answers: the page must not start the form again from what the server has on file.
+      await act(async () => {
+        saved({ language: 'fr' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(publicCheckinApi.setLanguage).toHaveBeenCalledWith(TOKEN, 'fr');
+      expect(guestCard(0).getByLabelText(/^Prénom/)).toHaveValue('Giulia');
+    });
+
+    it('prefill_ContextReadAgainWithTheSameGuests_KeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      const view = renderPage();
+      await screen.findByTestId('checkin-page');
+      fillGuest(0, { firstName: 'Giulia' });
+
+      // The session moved on (another `status`): a new object, the same guests on file.
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, status: 'Inviato' });
+      await act(async () => {
+        await view.client.refetchQueries({ queryKey: ['checkin', TOKEN] });
+      });
+
+      expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Giulia');
     });
 
     it('language_GermanKeyMissingFromTheSubsetFile_FallsBackToEnglish', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {

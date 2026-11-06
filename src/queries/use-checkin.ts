@@ -4,7 +4,6 @@ import { bookingsApi } from '@/api/bookings.api';
 import {
   CHECK_IN_LINK_EMAIL_ERRORS,
   type CheckInLinkResponse,
-  type PublicCheckInContextDto,
   type PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
@@ -50,18 +49,12 @@ export function useSubmitGuestCheckIn(token: string) {
 
 /**
  * Saves the language the guest chose on the page. Nothing is shown here: the page already changed language, and tells the guest only
- * when the choice could not be saved. The context in the cache keeps the new language, so a reload of it does not undo the choice.
+ * when the choice could not be saved. The context in the cache is left alone: the choice lives in the page (`chosenLocale`) and on the
+ * server, and a new `context` object would reset the form the guest is filling in.
  */
 export function useSetCheckInLanguage(token: string) {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (language: string) => publicCheckinApi.setLanguage(token, language),
-    onSuccess: (saved) => {
-      queryClient.setQueryData<PublicCheckInContextDto>([CHECKIN_KEY, token], (context) =>
-        context ? { ...context, language: saved.language } : context,
-      );
-    },
   });
 }
 
