@@ -20978,6 +20978,25 @@
       }
     }
   },
+  "bankTransfer": {
+    "title": "Bonifico con il conto collegato",
+    "open": "Bonifico con Stripe",
+    "hint": "Stripe apre la sua schermata per collegare il conto. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
+    "link": "Collega il conto",
+    "linkAnother": "Collega un altro conto",
+    "loadingAccounts": "Lettura dei conti collegati…",
+    "accountsLabel": "Conto",
+    "amount": "Importo",
+    "reference": "Causale",
+    "noReference": "La causale non è ancora arrivata con la scadenza. Puoi comunque avviare il bonifico.",
+    "start": "Avvia il bonifico",
+    "pending": "Bonifico avviato. La scadenza non è segnata come pagata: lo sarà quando Stripe conferma.",
+    "failed": "Non riesco a collegare il conto o ad avviare il bonifico.",
+    "stripeClosed": "Collegamento annullato.",
+    "loadError": "Non riesco a leggere i conti collegati.",
+    "noStripe": "Stripe non è disponibile in questo momento.",
+    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico»."
+  },
   "wizard": {
     "back": "Indietro",
     "cancel": "Annulla",

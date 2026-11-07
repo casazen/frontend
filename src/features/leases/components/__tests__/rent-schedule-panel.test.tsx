@@ -244,6 +244,16 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 
+  it('openInstallment_OffersStripeBesideTheOfflinePayment', async () => {
+    get.mockResolvedValue({ data: ledger() });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-stripe-inst-1')).toHaveTextContent('Bonifico con Stripe');
+    expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
+  });
+
   it('markPaid_DateAndNote_PostsTheOfflinePayment', async () => {
     get.mockResolvedValue({ data: ledger() });
     post.mockResolvedValue({ data: installment({ status: 'Paid', paidVia: 'Offline', paidOn: '2026-10-08' }) });

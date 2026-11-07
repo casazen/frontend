@@ -20978,6 +20978,25 @@
       }
     }
   },
+  "bankTransfer": {
+    "title": "Transfer from a linked account",
+    "open": "Pay with Stripe",
+    "hint": "Stripe opens its own screen to link the account. The due is not marked paid until Stripe confirms the transfer.",
+    "link": "Link the account",
+    "linkAnother": "Link another account",
+    "loadingAccounts": "Reading linked accounts…",
+    "accountsLabel": "Account",
+    "amount": "Amount",
+    "reference": "Reference",
+    "noReference": "This due has no reference yet. You can still start the transfer.",
+    "start": "Start the transfer",
+    "pending": "Transfer started. The due is not marked paid until Stripe confirms it.",
+    "failed": "The account could not be linked, or the transfer could not be started.",
+    "stripeClosed": "Linking was cancelled.",
+    "loadError": "The linked accounts could not be read.",
+    "noStripe": "Stripe is not available right now.",
+    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available."
+  },
   "wizard": {
     "back": "Back",
     "cancel": "Cancel",
