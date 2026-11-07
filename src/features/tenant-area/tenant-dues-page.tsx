@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDate } from '@/lib/utils';
-import { todayInRome } from '@/lib/stay-dates';
+import { todayInZurich } from '@/lib/stay-dates';
 import { useDeclareTransfer } from '@/queries/use-tenant-area';
 import type { TenantDue, TenantPaymentDeclaration } from '@/types';
 import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
@@ -101,7 +101,7 @@ function DeclarationForm({
   const { t } = useTranslation();
   const parts = rentBreakdown(due);
   const [amount, setAmount] = useState(String(due.bank?.amount ?? parts.residual));
-  const [transferDate, setTransferDate] = useState(todayInRome());
+  const [transferDate, setTransferDate] = useState(() => todayInZurich());
   const [bankReference, setBankReference] = useState('');
   const [note, setNote] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);

@@ -17,6 +17,19 @@ const ROME_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
+const ZURICH_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Zurich',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function calendarDate(format: Intl.DateTimeFormat, now: Date): string {
+  const parts = format.formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((piece) => piece.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
 function pad(value: number, length = 2): string {
   return String(value).padStart(length, '0');
 }
@@ -42,9 +55,15 @@ export function isStayDate(value: string): boolean {
 
 /** Calendar date (`YYYY-MM-DD`) of `now` in Europe/Rome. */
 export function todayInRome(now: Date = new Date()): string {
-  const parts = ROME_DATE_FORMAT.formatToParts(now);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('year')}-${part('month')}-${part('day')}`;
+  return calendarDate(ROME_DATE_FORMAT, now);
+}
+
+/**
+ * Calendar date (`YYYY-MM-DD`) of `now` in Europe/Zurich. A transfer date is this day, never the UTC day from
+ * `toISOString()`.
+ */
+export function todayInZurich(now: Date = new Date()): string {
+  return calendarDate(ZURICH_DATE_FORMAT, now);
 }
 
 /**

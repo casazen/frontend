@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { freezeClock } from '@/test/clock';
 import { TenantDuesPage } from '../tenant-dues-page';
 import { TenantMaintenanceDetailPage, TenantMaintenanceFormPage } from '../tenant-maintenance-pages';
 
@@ -77,9 +78,12 @@ describe('tenant area', () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it('shows the breakdown and the bank details, and a transfer declaration does not mark the installment paid', async () => {
+    // 23:30 UTC is already the next calendar day in Zurich. The default must not be the UTC date.
+    freezeClock('2026-01-15T23:30:00Z');
     get.mockResolvedValue({ data: area });
     post.mockResolvedValue({
       data: {
@@ -102,6 +106,7 @@ describe('tenant area', () => {
 
     fireEvent.click(screen.getByTestId('tenant-copy-reference'));
     await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith('CZ-2026-11-ABC'));
+    expect(screen.getByLabelText('Data del bonifico')).toHaveValue('2026-01-16');
 
     fireEvent.click(screen.getByTestId('tenant-declare-transfer'));
 
@@ -109,7 +114,7 @@ describe('tenant area', () => {
     const [url, body] = post.mock.calls[0];
     expect(url).toBe('/tenant-area/contracts/lease-1/dues/due-1/declarations');
     expect(url).not.toContain('mark-paid');
-    expect(body).toMatchObject({ amount: 1050, transferDate: expect.any(String) });
+    expect(body).toMatchObject({ amount: 1050, transferDate: '2026-01-16' });
     expect(await screen.findByTestId('tenant-declaration-status')).toHaveTextContent('Inviata');
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
     expect(screen.queryByText('Pagata')).not.toBeInTheDocument();
