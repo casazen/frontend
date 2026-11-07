@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { PAGE_COLUMNS } from '@/components/layout/page-columns';
+import { PAGE_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ProfileInfo } from './components/profile-info';
 import { OperatorTypeSection } from './components/operator-type-section';
+import { NotificationPreferencesLink } from './components/notification-preferences-link';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRoles } from '@/hooks/use-user-roles';
@@ -44,7 +45,11 @@ export function ProfilePage() {
 
         <div className={PAGE_COLUMNS}>
           <ProfileInfo user={profileUser} />
-          <OperatorTypeSection />
+          {/* The second column holds two sections that stack; «Notifiche» is also the second tab of the profile (under the title). */}
+          <div className={PAGE_COLUMN}>
+            <OperatorTypeSection />
+            <NotificationPreferencesLink />
+          </div>
         </div>
       </div>
     </AppShell>

@@ -42,4 +42,5 @@ export * from './wire-transfer.types';
 export * from './access-code.types';
 export * from './octorate.types';
 export * from './listing.types';
+export * from './notification-preferences.types';
 export * from './marketplace';
