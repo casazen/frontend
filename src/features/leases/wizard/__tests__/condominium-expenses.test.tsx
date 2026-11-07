@@ -82,6 +82,8 @@ describe('Condominium expenses on the contract wizard', () => {
     expect(body.get('preventivo')).toBe(preventivo);
     expect(post.mock.calls[0][0]).toBe('/long-rent/properties/prop-1/condominium-proposal');
     expect(await screen.findByTestId('lease-condominium-proposed')).toHaveTextContent('2026/2027');
+    expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
+    expect(post.mock.calls.filter((call) => (call[1] as { mode?: string } | undefined)?.mode === 'proposed')).toHaveLength(0);
   });
 
   it('saves a hand-typed amount to be settled at consuntivo', async () => {
@@ -101,6 +103,7 @@ describe('Condominium expenses on the contract wizard', () => {
         undefined,
       ),
     );
+    expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
   });
 
   it('treats a missing proposal as nothing loaded', async () => {

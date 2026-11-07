@@ -163,8 +163,6 @@ export function RentsPage() {
           amount={0}
           currency="EUR"
           reference=""
-          showManualTransfer
-          forLandlord={false}
         />
       ) : null}
 

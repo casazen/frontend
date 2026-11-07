@@ -7514,7 +7514,7 @@
     },
     "condominium": {
       "title": "Condominium expenses",
-      "intro": "If the property already has a fiscal year, we propose the amount to pay automatically. Payment is not handled here: the tenant pays from Rents, and the account for the condominium is linked in Payments.",
+      "intro": "If the property already has a fiscal year, we propose the amount to pay automatically. Payment is not handled here: the tenant pays from the tenant area, and the landlord links the condominium account on Rents.",
       "loading": "Reading the condominium expenses…",
       "loadError": "The condominium expenses could not be read.",
       "retry": "Try again",
@@ -7528,7 +7528,7 @@
       "manual": "Amount typed by hand (€ a month)",
       "manualHint": "Settled at the consuntivo.",
       "useManual": "Use the amount entered",
-      "saved": "On the contract: {{amount}} a month. Payment stays in Rents and in Payments.",
+      "saved": "On the contract: {{amount}} a month. The tenant pays from the tenant area. The landlord links the condominium account on Rents.",
       "saveError": "The condominium expenses could not be saved."
     },
     "title": "Create lease",

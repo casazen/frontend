@@ -94,6 +94,7 @@ describe('RentsPage: the import of the bank statement', () => {
 
     renderPage();
 
+    expect(await screen.findByTestId('condominium-bank-link')).not.toHaveTextContent('Ho effettuato il bonifico');
     const hint = await screen.findByTestId('rents-import-hint');
     expect(hint).toHaveTextContent('Hai ricevuto dei bonifici?');
     expect(screen.queryByTestId('bank-import-dialog')).not.toBeInTheDocument();

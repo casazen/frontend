@@ -173,6 +173,7 @@ describe('FinancialConnectionsTransfer', () => {
     });
 
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
     render(
       <QueryClientProvider client={client}>
         <I18nextProvider i18n={i18n}>
@@ -212,6 +213,7 @@ describe('FinancialConnectionsTransfer', () => {
       expect(post.mock.calls.some((call) => String(call[0]) === '/tenant-area/contracts/lease-1/dues/due-1/bank-link/payment')).toBe(true),
     );
     expect(post.mock.calls.some((call) => String(call[0]) === '/orgs/me/bank-links/payments')).toBe(false);
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tenant-area', 'lease-1'] }));
   });
 
   it('does not tell the landlord that the tenant declaration is on this screen', async () => {

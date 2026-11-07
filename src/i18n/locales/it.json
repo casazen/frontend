@@ -7514,7 +7514,7 @@
     },
     "condominium": {
       "title": "Spese condominiali",
-      "intro": "Se l'immobile ha già un esercizio, proponiamo l'importo da pagare in automatico. Il pagamento non si gestisce qui: il conduttore paga da Canoni e il conto per il condominio si collega in Pagamenti.",
+      "intro": "Se l'immobile ha già un esercizio, proponiamo l'importo da pagare in automatico. Il pagamento non si gestisce qui: il conduttore paga dall'area conduttore e il locatore collega il conto per il condominio in Canoni.",
       "loading": "Lettura delle spese condominiali…",
       "loadError": "Non riesco a leggere le spese condominiali.",
       "retry": "Riprova",
@@ -7528,7 +7528,7 @@
       "manual": "Importo a mano (€ al mese)",
       "manualHint": "Si conguaglia al consuntivo.",
       "useManual": "Usa l'importo inserito",
-      "saved": "Sul contratto: {{amount}} al mese. Il pagamento resta in Canoni e in Pagamenti.",
+      "saved": "Sul contratto: {{amount}} al mese. Il conduttore paga dall'area conduttore. Il locatore collega il conto per il condominio in Canoni.",
       "saveError": "Non riesco a salvare le spese condominiali."
     },
     "title": "Crea contratto",

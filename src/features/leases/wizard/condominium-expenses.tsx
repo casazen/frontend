@@ -27,6 +27,8 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   const [preventivo, setPreventivo] = useState<File | null>(null);
   const [manual, setManual] = useState('');
   const [savedAmount, setSavedAmount] = useState<number | null>(null);
+  /** A file calculation or a hand-typed amount is already saved. «Usa questo importo» would post `proposed` and drop the consuntivo settlement. */
+  const [savedWithoutProposal, setSavedWithoutProposal] = useState(false);
 
   if (propertyId.trim() === '') return null;
 
@@ -43,12 +45,14 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   async function acceptManual() {
     const amount = Number(manual.trim());
     const saved = await save.mutateAsync({ mode: 'manual', leaseId, amount, settleAtConsuntivo: true });
+    setSavedWithoutProposal(true);
     setSavedAmount(saved.amount);
   }
 
   async function calculateFromFiles() {
     if (!consuntivo || !preventivo) return;
     const saved = await calculate.mutateAsync({ leaseId, consuntivo, preventivo });
+    setSavedWithoutProposal(true);
     setSavedAmount(saved.amount);
   }
 
@@ -84,14 +88,16 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
                 })
               : t('leaseWizard.condominium.proposed', { amount: formatCurrency(shown.amount ?? 0, 'EUR') })}
           </p>
-          <Button
-            type="button"
-            loading={save.isPending}
-            onClick={() => void acceptProposed(shown.amount ?? 0)}
-            data-testid="lease-condominium-accept"
-          >
-            {t('leaseWizard.condominium.accept')}
-          </Button>
+          {savedWithoutProposal ? null : (
+            <Button
+              type="button"
+              loading={save.isPending}
+              onClick={() => void acceptProposed(shown.amount ?? 0)}
+              data-testid="lease-condominium-accept"
+            >
+              {t('leaseWizard.condominium.accept')}
+            </Button>
+          )}
         </div>
       ) : null}
 
