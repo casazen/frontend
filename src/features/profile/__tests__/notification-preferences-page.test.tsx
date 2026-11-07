@@ -44,8 +44,17 @@ function problem(status: number, data: Record<string, unknown>) {
   });
 }
 
-function renderPage() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+/** A client with the defaults of the app (`src/lib/query-client.ts`): what it read is fresh for 5 minutes and is not read again on mount. */
+function appLikeClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: 5 * 60 * 1000, refetchOnMount: false, refetchOnWindowFocus: true },
+      mutations: { retry: false },
+    },
+  });
+}
+
+function renderPage(client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[NOTIFICATION_PREFERENCES_PATH]}>
@@ -403,6 +412,39 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
 
       expect(await screen.findByTestId('notification-table')).toBeInTheDocument();
+    });
+
+    it('page_OpenedAgainWhileTheAppStillHasTheSettingsFresh_ReadsThemAgain', async () => {
+      // The app keeps what it read for 5 minutes and does not read again on mount: the page asks for the opposite, because a row is
+      // built from the settings and would write over a choice made on another device.
+      const client = appLikeClient();
+      const first = renderPage(client);
+      await screen.findByTestId('notification-table');
+      expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(1);
+      expect(switchOf('NewBooking', 'MobilePush')).toBeChecked();
+      first.unmount();
+
+      server = withChosen(server, 'NewBooking', ['CounterOnly']);
+      renderPage(client);
+
+      await waitFor(() => expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(switchOf('NewBooking', 'MobilePush')).not.toBeChecked());
+      expect(screen.queryByTestId('notification-default-NewBooking')).not.toBeInTheDocument();
+    });
+
+    it('page_WindowComesBack_ReadsTheSettingsAgainBeforeARowIsBuiltFromThem', async () => {
+      renderPage(appLikeClient());
+      await screen.findByTestId('notification-table');
+      expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(1);
+      expect(switchOf('NewBooking', 'MobilePush')).toBeChecked();
+
+      // A choice is changed on another device, and the person comes back to this window (TanStack Query listens to `visibilitychange`).
+      server = withChosen(server, 'NewBooking', ['CounterOnly']);
+      document.dispatchEvent(new Event('visibilitychange', { bubbles: true }));
+
+      await waitFor(() => expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(switchOf('NewBooking', 'MobilePush')).not.toBeChecked());
+      expect(screen.queryByTestId('notification-default-NewBooking')).not.toBeInTheDocument();
     });
 
     it('render_IsTheSecondTabOfTheProfile', async () => {
