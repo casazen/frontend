@@ -100,13 +100,24 @@ export function RentsPage() {
   const [stripeRow, setStripeRow] = useState<RentRegisterRow | null>(null);
   const [importing, setImporting] = useState(false);
   const recordRow = useCallback((row: RentRegisterRow) => setRecording({ row }), []);
+  // The register is loaded below, after this list. When it says Stripe can take the rent, render again so the menu can offer it.
+  const [onlinePaymentsAvailable, setOnlinePaymentsAvailable] = useState(false);
 
-  const list = useRentsList({ canManage, held, onRecord: recordRow, onRemind: setReminding, onStripePay: setStripeRow });
+  const list = useRentsList({
+    canManage,
+    held,
+    onRecord: recordRow,
+    onRemind: setReminding,
+    onStripePay: setStripeRow,
+    onlinePaymentsAvailable,
+  });
   const { state } = useListState(list);
   const status = rentStatusOfChip(state.chip);
 
   const register = useRentRegister({ month, status, page: state.page, pageSize: PAGE_SIZE });
   const data = register.data;
+  const paymentsOnline = data?.onlinePaymentsAvailable ?? false;
+  if (onlinePaymentsAvailable !== paymentsOnline) setOnlinePaymentsAvailable(paymentsOnline);
   const rows = data?.items ?? NO_ROWS;
   // The numbers belong to the month the server answered for (the rows of the last month stay a moment while the next one comes).
   const shownMonth = data && isRentMonth(data.month) ? data.month : month;

@@ -33,6 +33,8 @@ export interface RentsListOptions {
   onRemind: (row: RentRegisterRow) => void;
   /** Starts a Stripe transfer for the due. The manual declaration stays the primary action. */
   onStripePay?: (row: RentRegisterRow) => void;
+  /** The org's Stripe account can take the rent online. Without it the row does not offer the transfer. */
+  onlinePaymentsAvailable?: boolean;
 }
 
 /** The line under the state, with what is late in the one color of the row. */
@@ -57,7 +59,7 @@ function statusNoteLine(row: RentRegisterRow, t: TFunction, language: string, to
  */
 export function buildRentsList(t: TFunction, language: string, options: RentsListOptions): ListDefinition<RentRegisterRow> {
   const today = todayInRome();
-  const { canManage, held, onRecord, onRemind, onStripePay } = options;
+  const { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable = false } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
   const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
   const partOf = (row: RentRegisterRow, field: 'rent' | 'condominiumAdvance' | 'condominiumSettlement' | 'other' | 'paid' | 'residual') =>
@@ -171,7 +173,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         });
       }
       // The lease is the primary action of the rows that cannot be declared paid; for the others it is here.
-      if (canManage && isOpenInstallment(row.status) && onStripePay) {
+      if (canManage && onlinePaymentsAvailable && isOpenInstallment(row.status) && onStripePay) {
         entries.push({
           id: 'stripe',
           label: t('bankTransfer.open'),
@@ -224,9 +226,9 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
 /** The register in the words of the person; it follows the language and the actions that wait. */
 export function useRentsList(options: RentsListOptions): ListDefinition<RentRegisterRow> {
   const { t, i18n } = useTranslation();
-  const { canManage, held, onRecord, onRemind, onStripePay } = options;
+  const { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable = false } = options;
   return useMemo(
-    () => buildRentsList(t, i18n.language, { canManage, held, onRecord, onRemind, onStripePay }),
-    [t, i18n.language, canManage, held, onRecord, onRemind, onStripePay],
+    () => buildRentsList(t, i18n.language, { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable }),
+    [t, i18n.language, canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable],
   );
 }

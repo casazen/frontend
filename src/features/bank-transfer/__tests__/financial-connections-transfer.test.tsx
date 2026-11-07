@@ -5,7 +5,7 @@ import { I18nextProvider } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
-import { FinancialConnectionsTransfer } from '../financial-connections-transfer';
+import { FinancialConnectionsTransfer, StripeRentTransferDialog } from '../financial-connections-transfer';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn() }));
@@ -14,14 +14,14 @@ const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 const collect = vi.fn();
 
-function renderTransfer() {
+function renderTransfer(dueId = 'due-1') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <FinancialConnectionsTransfer
           leaseId="lease-1"
-          dueId="due-1"
+          dueId={dueId}
           amount={1050}
           currency="EUR"
           reference="CZ-2026-11-ABC"
@@ -29,6 +29,11 @@ function renderTransfer() {
       </I18nextProvider>
     </QueryClientProvider>,
   );
+}
+
+function sentKey(call: readonly unknown[]): string {
+  const config = call[2] as { headers?: Record<string, string> } | undefined;
+  return config?.headers?.['Idempotency-Key'] ?? '';
 }
 
 describe('FinancialConnectionsTransfer', () => {
@@ -84,5 +89,83 @@ describe('FinancialConnectionsTransfer', () => {
     expect(transferCall?.[2]).toEqual({ headers: { 'Idempotency-Key': expect.any(String) } });
     expect(await screen.findByTestId('stripe-transfer-pending')).toHaveTextContent('non è segnata come pagata');
     expect(screen.queryByText('Pagata')).not.toBeInTheDocument();
+  });
+
+  it('keeps one idempotency key for a double click, a lost answer, and reopening', async () => {
+    const account = { id: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
+    get.mockResolvedValue({ data: { accounts: [account] } });
+    const pending: { resolve: (value: unknown) => void; reject: (reason: unknown) => void }[] = [];
+    post.mockImplementation(
+      () =>
+        new Promise((resolve, reject) => {
+          pending.push({ resolve, reject });
+        }),
+    );
+
+    const view = renderTransfer('due-idem');
+    const start = await screen.findByTestId('stripe-start-transfer');
+    fireEvent.click(start);
+    fireEvent.click(start);
+
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    const key = sentKey(post.mock.calls[0]);
+    expect(key).not.toBe('');
+
+    pending[0].reject(new Error('lost'));
+    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('stripe-start-transfer'));
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(sentKey(post.mock.calls[1])).toBe(key);
+    pending[1].reject(new Error('lost'));
+    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
+
+    view.unmount();
+    renderTransfer('due-idem');
+    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(3));
+    expect(sentKey(post.mock.calls[2])).toBe(key);
+
+    pending[2].resolve({ data: { id: 'tr_1', status: 'Processing' } });
+    expect(await screen.findByTestId('stripe-transfer-pending')).toBeInTheDocument();
+  });
+
+  it('mints a new key after the bank refuses the transfer', async () => {
+    const account = { id: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
+    get.mockResolvedValue({ data: { accounts: [account] } });
+    post.mockResolvedValue({ data: { id: 'tr_failed', status: 'Failed' } });
+
+    renderTransfer('due-refused');
+    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
+    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
+    const first = sentKey(post.mock.calls[0]);
+
+    fireEvent.click(screen.getByTestId('stripe-start-transfer'));
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(sentKey(post.mock.calls[1])).not.toBe(first);
+  });
+
+  it('tells a landlord to record the payment instead of the tenant declaration', async () => {
+    get.mockResolvedValue({ data: { accounts: [] } });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <I18nextProvider i18n={i18n}>
+          <StripeRentTransferDialog
+            open
+            onOpenChange={() => {}}
+            leaseId="lease-1"
+            dueId="due-landlord"
+            amount={1050}
+            currency="EUR"
+            reference="CZ-2026-11-ABC"
+          />
+        </I18nextProvider>
+      </QueryClientProvider>,
+    );
+
+    const note = await screen.findByTestId('stripe-manual-stays');
+    expect(note).toHaveTextContent("registrare l'incasso");
+    expect(note).not.toHaveTextContent('Ho effettuato il bonifico');
   });
 });

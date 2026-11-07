@@ -20995,7 +20995,8 @@
     "stripeClosed": "Collegamento annullato.",
     "loadError": "Non riesco a leggere i conti collegati.",
     "noStripe": "Stripe non è disponibile in questo momento.",
-    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico»."
+    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico».",
+    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso."
   },
   "wizard": {
     "back": "Indietro",

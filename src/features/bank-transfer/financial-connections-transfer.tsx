@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTranslation } from 'react-i18next';
 import { Landmark } from 'lucide-react';
@@ -35,6 +35,29 @@ function newIdempotencyKey(): string {
   return `stripe-transfer-${Date.now()}`;
 }
 
+/**
+ * One key per due, kept across clicks and across closing the dialog (that remounts this form). The same key again does not
+ * start a second debit. A refused attempt is the only time a new key is minted, so the next press can be a new transfer.
+ */
+const transferKeys = new Map<string, string>();
+
+function dueKey(leaseId: string, dueId: string): string {
+  return `${leaseId}:${dueId}`;
+}
+
+function idempotencyKeyFor(leaseId: string, dueId: string): string {
+  const id = dueKey(leaseId, dueId);
+  const existing = transferKeys.get(id);
+  if (existing) return existing;
+  const created = newIdempotencyKey();
+  transferKeys.set(id, created);
+  return created;
+}
+
+function rotateIdempotencyKey(leaseId: string, dueId: string): void {
+  transferKeys.delete(dueKey(leaseId, dueId));
+}
+
 function accountLabel(account: FinancialConnectionsAccount): string {
   const tail = `···· ${account.last4}`;
   return account.displayName ? `${account.displayName} ${tail}` : `${account.institutionName} ${tail}`;
@@ -52,7 +75,8 @@ export function FinancialConnectionsTransfer({
   currency,
   reference,
   framed = true,
-}: FinancialConnectionsTransferProps & { framed?: boolean }) {
+  forLandlord = false,
+}: FinancialConnectionsTransferProps & { framed?: boolean; forLandlord?: boolean }) {
   const { t } = useTranslation();
   const accounts = useFinancialConnectionsAccounts();
   const session = useFinancialConnectionsSession();
@@ -60,6 +84,8 @@ export function FinancialConnectionsTransfer({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [awaiting, setAwaiting] = useState(false);
+  // `isPending` flips only after a render, so a second click in the same turn would pass it. This flips before the request.
+  const starting = useRef(false);
 
   const linked = accounts.data ?? [];
   const selected = linked.find((account) => account.id === selectedId) ?? linked[0];
@@ -87,7 +113,8 @@ export function FinancialConnectionsTransfer({
   }
 
   async function startTransfer() {
-    if (!selected || startBusy || amount <= 0) return;
+    if (!selected || starting.current || amount <= 0) return;
+    starting.current = true;
     setAwaiting(false);
     try {
       const started = await transfer.mutateAsync({
@@ -96,16 +123,21 @@ export function FinancialConnectionsTransfer({
           amount,
           reference,
         },
-        idempotencyKey: newIdempotencyKey(),
+        idempotencyKey: idempotencyKeyFor(leaseId, dueId),
       });
       if (!transferAwaitingConfirmation(started.status)) {
+        // The bank refused it: nothing was taken, and the same key would only replay that refusal.
+        rotateIdempotencyKey(leaseId, dueId);
         setLinkError(t('bankTransfer.failed'));
         return;
       }
       setLinkError(null);
       setAwaiting(true);
     } catch (error) {
+      // An answer that never came keeps the key, so the retry is the same transfer.
       setLinkError(getProblemMessage(error, t) ?? t('bankTransfer.failed'));
+    } finally {
+      starting.current = false;
     }
   }
 
@@ -177,7 +209,7 @@ export function FinancialConnectionsTransfer({
           </p>
         ) : null}
         <p className="text-foreground/70" data-testid="stripe-manual-stays">
-          {t('bankTransfer.manualStays')}
+          {forLandlord ? t('bankTransfer.manualStaysLandlord') : t('bankTransfer.manualStays')}
         </p>
     </div>
   );
@@ -212,7 +244,7 @@ export function StripeRentTransferDialog({ open, onOpenChange, ...transfer }: St
           <DialogTitle>{t('bankTransfer.title')}</DialogTitle>
           <DialogDescription>{t('bankTransfer.hint')}</DialogDescription>
         </DialogHeader>
-        {open ? <FinancialConnectionsTransfer {...transfer} framed={false} /> : null}
+        {open ? <FinancialConnectionsTransfer {...transfer} framed={false} forLandlord /> : null}
       </DialogContent>
     </Dialog>
   );

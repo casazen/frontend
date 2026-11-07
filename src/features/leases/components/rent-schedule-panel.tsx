@@ -437,14 +437,16 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                           {installment.paymentRequestedAt ? t('rent.resendLink') : t('rent.sendLink')}
                         </Button>
                       )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setStripeFor(installment)}
-                        data-testid={`rent-stripe-${installment.id}`}
-                      >
-                        {t('bankTransfer.open')}
-                      </Button>
+                      {ledger.onlinePaymentsAvailable && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStripeFor(installment)}
+                          data-testid={`rent-stripe-${installment.id}`}
+                        >
+                          {t('bankTransfer.open')}
+                        </Button>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => setMarkPaidFor(installment)}>
                         {t('rent.markPaid')}
                       </Button>

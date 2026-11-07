@@ -241,6 +241,7 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(within(notice).getByRole('link', { name: 'Vai a Pagamenti' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
     const row = screen.getByTestId('rent-installment');
     expect(within(row).queryByRole('button', { name: 'Invia link di pagamento' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 

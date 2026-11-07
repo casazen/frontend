@@ -62,4 +62,20 @@ describe('rent register composition columns', () => {
     expect(csv(installment, 'rent')).toBe('');
     expect(csv(installment, 'advance')).toBe('');
   });
+
+  it('offers the Stripe transfer only when the org can take the rent online', () => {
+    const open = row({ status: 'Scheduled' });
+    const options = {
+      canManage: true,
+      held: new Set<string>(),
+      onRecord: () => {},
+      onRemind: () => {},
+      onStripePay: () => {},
+    };
+    const offline = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: false });
+    const online = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: true });
+
+    expect(offline.menu?.(open)?.some((entry) => entry.id === 'stripe')).toBe(false);
+    expect(online.menu?.(open)?.some((entry) => entry.id === 'stripe')).toBe(true);
+  });
 });

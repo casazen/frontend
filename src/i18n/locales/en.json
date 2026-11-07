@@ -20995,7 +20995,8 @@
     "stripeClosed": "Linking was cancelled.",
     "loadError": "The linked accounts could not be read.",
     "noStripe": "Stripe is not available right now.",
-    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available."
+    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available.",
+    "manualStaysLandlord": "If you do not link an account, you can record the payment you received."
   },
   "wizard": {
     "back": "Back",
