@@ -73,10 +73,14 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
       </Card>
       {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : null}
       {declaration ? <DeclarationStatus declaration={declaration} /> : null}
-      {canDeclare ? <DeclarationForm due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} /> : null}
-      <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
-        {t('tenantArea.declaration.notPaid')}
-      </p>
+      {canDeclare ? (
+        <DeclarationForm key={due.id} due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
+      ) : null}
+      {canDeclare ? (
+        <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
+          {t('tenantArea.declaration.notPaid')}
+        </p>
+      ) : null}
     </div>
   );
 }

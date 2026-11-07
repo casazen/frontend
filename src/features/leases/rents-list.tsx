@@ -58,6 +58,8 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
   const { canManage, held, onRecord, onRemind } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
   const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
+  const partOf = (row: RentRegisterRow, field: 'rent' | 'condominiumAdvance' | 'condominiumSettlement' | 'other' | 'paid' | 'residual') =>
+    rentBreakdown(row)[field];
   const stateOf = (row: RentRegisterRow) => t(statusTextKey('rent', rentStatus(row), 'label'));
   const noteOf = (row: RentRegisterRow) => rentStatusNote(row, t, language, today);
 
@@ -95,12 +97,25 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
       },
       {
         id: 'amount',
-        label: t('rent.composition.label'),
+        label: t('longRentRents.columns.amount'),
         default: true,
         align: 'end',
         render: (row) => <RentComposition row={row} currency={row.currency} />,
         csv: (row) => rentBreakdown(row).total,
       },
+      ...(['rent', 'advance', 'settlement', 'other', 'paid', 'residual'] as const).map((id) => {
+        const field = id === 'advance' ? 'condominiumAdvance' : id === 'settlement' ? 'condominiumSettlement' : id;
+        return {
+          id,
+          label: t(`rent.composition.${id}`),
+          align: 'end' as const,
+          render: (row: RentRegisterRow) => {
+            const value = partOf(row, field);
+            return value === null ? '—' : formatCurrency(value, row.currency);
+          },
+          csv: (row: RentRegisterRow) => partOf(row, field) ?? '',
+        };
+      }),
       {
         id: 'status',
         label: t('longRentRents.columns.status'),

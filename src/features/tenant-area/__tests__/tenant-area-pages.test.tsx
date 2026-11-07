@@ -182,4 +182,33 @@ describe('tenant area', () => {
     expect(form.get('description')).toBe('Perdita importante');
     expect(toast.success).toHaveBeenCalled();
   });
+
+  it('resets the declaration when another due is opened', async () => {
+    const second = {
+      ...area.dues[0],
+      id: 'due-2',
+      amount: 200,
+      bank: { ...area.dues[0].bank, amount: 200, reference: 'CZ-DUE-2' },
+    };
+    get.mockResolvedValue({ data: { ...area, dues: [area.dues[0], second] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    const amount = await screen.findByLabelText('Importo del bonifico');
+    fireEvent.change(amount, { target: { value: '1' } });
+    fireEvent.click(screen.getByTestId('tenant-due-due-2'));
+
+    expect(await screen.findByLabelText('Importo del bonifico')).toHaveValue('200');
+    expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-DUE-2');
+  });
+
+  it.each(['Paid', 'Cancelled'])('does not offer a transfer declaration when the installment is %s', async (status) => {
+    get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], status }] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-due-detail')).toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-declaration-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-declaration-note')).not.toBeInTheDocument();
+  });
 });
