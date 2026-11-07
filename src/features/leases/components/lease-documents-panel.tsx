@@ -3,7 +3,8 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { leaseDocumentsApi, type LeaseDocumentKind } from '@/api/lease-documents.api';
+import { leaseDocumentsApi, type LeaseDocument, type LeaseDocumentKind } from '@/api/lease-documents.api';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ErrorState } from '@/components/shared/error-state';
@@ -46,6 +47,16 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       const blob = await leaseDocumentsApi.download(leaseId, id); saveBlobAs(blob, fileName);
     },
   });
+  const [pendingDelete, setPendingDelete] = useState<LeaseDocument | null>(null);
+  const remove = useMutation({
+    mutationFn: (documentId: string) => leaseDocumentsApi.remove(leaseId, documentId),
+    onSuccess: async () => {
+      setPendingDelete(null);
+      await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
+      void refreshReading();
+      void client.invalidateQueries({ queryKey: CF_SYNC_QUERY_KEY(leaseId) });
+    },
+  });
   const submit = async (event: FormEvent) => {
     event.preventDefault(); if (!documentReady(selection) || upload.isPending || preparing) return;
     setPreparing(true); setValidation(''); setSaved(false);
@@ -69,10 +80,33 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
               ? <p className="text-sm text-muted-foreground" data-testid="lease-document-contains">{t('leaseDocs.contains', { parts: recognizedParts(t, document.sections ?? []) })}</p>
               : null}
           </div>
-          <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={remove.isPending}
+              aria-label={t('cfDocuments.deleteNamed', { name: document.fileName })}
+              data-testid={`lease-document-delete-${document.id}`}
+              onClick={() => { remove.reset(); setPendingDelete(document); }}
+            >
+              {t('cfDocuments.delete')}
+            </Button>
+          </div>
         </li>)}
       </ul>
+      <ConfirmationDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => { if (!open) setPendingDelete(null); }}
+        title={t('cfDocuments.deleteTitle')}
+        description={t('cfDocuments.deleteDescription', { name: pendingDelete?.fileName ?? '' })}
+        confirmLabel={t('cfDocuments.deleteConfirm')}
+        variant="destructive"
+        isLoading={remove.isPending}
+        onConfirm={async () => { if (pendingDelete) await remove.mutateAsync(pendingDelete.id); }}
+      />
       {download.isError ? <ErrorState title={t('cfDocuments.downloadError')} error={download.error} /> : null}
+      {remove.isError ? <ErrorState title={t('cfDocuments.deleteError')} error={remove.error} /> : null}
       {canUpload ? <form onSubmit={submit} className="space-y-3">
         <div className="space-y-2"><Label htmlFor={`${formId}-kind`}>{t('cfDocuments.kind')}</Label>
           <select id={`${formId}-kind`} aria-describedby={`${formId}-kind-hint`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>
