@@ -246,7 +246,7 @@ describe('RentSchedulePanel (LT-06)', () => {
   });
 
   it('openInstallment_OffersStripeBesideTheOfflinePayment', async () => {
-    get.mockResolvedValue({ data: ledger() });
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'USD' })] }) });
 
     renderPanel();
 

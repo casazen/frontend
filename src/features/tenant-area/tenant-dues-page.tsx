@@ -12,7 +12,6 @@ import { todayInZurich } from '@/lib/stay-dates';
 import { useDeclareTransfer } from '@/queries/use-tenant-area';
 import type { TenantDue, TenantPaymentDeclaration } from '@/types';
 import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
-import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { TenantBankDetailsCard } from './tenant-bank-details';
 import { TenantGate } from './tenant-gate';
 import { tenantDuesPath } from './paths';
@@ -57,9 +56,7 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
   const declare = useDeclareTransfer(leaseId, due.id);
   const declaration = declare.data ?? due.declaration;
   const closed = due.status === 'Paid' || due.status === 'Cancelled';
-  const canPayWithStripe = due.status === 'Scheduled' || due.status === 'Failed';
   const canDeclare = !closed && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
-  const parts = rentBreakdown(due);
 
   return (
     <div className="space-y-4" data-testid="tenant-due-detail">
@@ -74,15 +71,6 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
           <RentComposition row={due} currency={due.currency} />
         </CardContent>
       </Card>
-      {canPayWithStripe ? (
-        <FinancialConnectionsTransfer
-          leaseId={leaseId}
-          dueId={due.id}
-          amount={due.bank?.amount ?? parts.residual}
-          currency={due.currency}
-          reference={due.bank?.reference ?? ''}
-        />
-      ) : null}
       {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : null}
       {declaration ? <DeclarationStatus declaration={declaration} /> : null}
       {canDeclare ? (

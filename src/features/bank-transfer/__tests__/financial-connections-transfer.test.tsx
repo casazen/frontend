@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { FinancialConnectionsTransfer, StripeRentTransferDialog } from '../financial-connections-transfer';
+import { resetStripeTransferAttempts } from '../transfer-attempt';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn() }));
@@ -14,159 +15,157 @@ const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 const collect = vi.fn();
 
-function renderTransfer(dueId = 'due-1') {
+const linked = { linked: true, accountId: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
+const unlinked = { linked: false, accountId: null, institutionName: null, last4: null, displayName: null };
+
+function renderOrg() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <FinancialConnectionsTransfer
+          mode="org"
           leaseId="lease-1"
-          dueId={dueId}
+          dueId="due-1"
           amount={1050}
-          currency="EUR"
+          currency="USD"
           reference="CZ-2026-11-ABC"
+          publishableKey="pk_test"
         />
       </I18nextProvider>
     </QueryClientProvider>,
   );
 }
 
-function sentKey(call: readonly unknown[]): string {
-  const config = call[2] as { headers?: Record<string, string> } | undefined;
-  return config?.headers?.['Idempotency-Key'] ?? '';
+function transferCalls() {
+  return post.mock.calls.filter((call) => String(call[0]).endsWith('/payments'));
+}
+
+function idempotencyKeyOf(call: unknown[]): string {
+  const options = call[2] as { headers: { 'Idempotency-Key': string } };
+  return options.headers['Idempotency-Key'];
 }
 
 describe('FinancialConnectionsTransfer', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     vi.mocked(loadStripe).mockResolvedValue({ collectFinancialConnectionsAccounts: collect } as never);
-    collect.mockResolvedValue({ financialConnectionsSession: { id: 'fcsess_1', accounts: [] } });
+    collect.mockResolvedValue({
+      financialConnectionsSession: { id: 'fcsess_1', accounts: [{ id: 'fca_1' }] },
+    });
+    get.mockResolvedValue({ data: unlinked });
   });
 
   afterEach(() => {
     cleanup();
+    resetStripeTransferAttempts();
+    get.mockReset();
+    post.mockReset();
     vi.clearAllMocks();
   });
 
-  it('opens Stripe’s screen, starts the transfer, and does not mark the due paid', async () => {
-    const account = { id: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
-    let reads = 0;
-    get.mockImplementation(() => {
-      reads += 1;
-      return Promise.resolve({ data: { accounts: reads === 1 ? [] : [account] } });
-    });
+  it('links with Stripe’s screen and starts the org debit without marking the due paid', async () => {
     post.mockImplementation((url: string) => {
-      if (String(url).endsWith('/session')) {
-        return Promise.resolve({ data: { clientSecret: 'fcsess_secret', publishableKey: 'pk_test' } });
+      const path = String(url);
+      if (path.endsWith('/sessions')) return Promise.resolve({ data: { sessionId: 'fcsess_1', clientSecret: 'fcsess_secret' } });
+      if (path.endsWith('/payments')) {
+        return Promise.resolve({
+          data: {
+            paymentId: 'pay-1',
+            paymentIntentId: 'pi_1',
+            clientSecret: null,
+            stripeStatus: 'succeeded',
+            paymentMethodType: 'us_bank_account',
+            dueSettled: false,
+          },
+        });
       }
-      return Promise.resolve({ data: { id: 'tr_1', status: 'Paid' } });
+      return Promise.resolve({ data: linked });
     });
 
-    renderTransfer();
+    renderOrg();
 
     expect(await screen.findByTestId('stripe-transfer-amount')).toHaveTextContent(/1\.?050,00/);
     expect(screen.getByTestId('stripe-transfer-reference')).toHaveTextContent('CZ-2026-11-ABC');
-    expect(screen.getByTestId('stripe-manual-stays')).toHaveTextContent('Ho effettuato il bonifico');
     expect(screen.queryByText('Accetta e continua')).not.toBeInTheDocument();
     expect(screen.queryByText('Pagata')).not.toBeInTheDocument();
+    expect(get).toHaveBeenCalledWith('/orgs/me/bank-links', expect.anything());
 
     fireEvent.click(screen.getByTestId('stripe-link-account'));
 
     await waitFor(() => expect(collect).toHaveBeenCalledWith({ clientSecret: 'fcsess_secret' }));
     expect(loadStripe).toHaveBeenCalledWith('pk_test');
-    expect(screen.queryByText('Accetta e continua')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/orgs/me/bank-links', { accountId: 'fca_1' }, undefined),
+    );
 
     fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
 
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
-    const transferCall = post.mock.calls.find((call) => String(call[0]).includes('stripe-transfer'));
-    expect(transferCall?.[0]).toBe('/leases/lease-1/dues/due-1/stripe-transfer');
-    expect(transferCall?.[1]).toEqual({
-      financialConnectionsAccountId: 'fca_1',
-      amount: 1050,
-      reference: 'CZ-2026-11-ABC',
+    await waitFor(() => expect(transferCalls()).toHaveLength(1));
+    expect(transferCalls()[0][0]).toBe('/orgs/me/bank-links/payments');
+    expect(transferCalls()[0][1]).toEqual({
+      amountCents: 105000,
+      currency: 'usd',
+      leaseId: 'lease-1',
+      installmentId: 'due-1',
     });
-    expect(transferCall?.[2]).toEqual({ headers: { 'Idempotency-Key': expect.any(String) } });
     expect(await screen.findByTestId('stripe-transfer-pending')).toHaveTextContent('non è segnata come pagata');
     expect(screen.queryByText('Pagata')).not.toBeInTheDocument();
   });
 
-  it('keeps one idempotency key for a double click, a lost answer, and reopening', async () => {
-    const account = { id: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
-    get.mockResolvedValue({ data: { accounts: [account] } });
-    const pending: { resolve: (value: unknown) => void; reject: (reason: unknown) => void }[] = [];
+  it('a second click and a remounted dialog send one payment with one key', async () => {
+    get.mockResolvedValue({ data: linked });
+    let finish: (value: { data: unknown }) => void = () => {};
     post.mockImplementation(
-      () =>
-        new Promise((resolve, reject) => {
-          pending.push({ resolve, reject });
+      (url: string) =>
+        new Promise((resolve) => {
+          if (String(url).endsWith('/payments')) finish = resolve;
+          else resolve({ data: {} });
         }),
     );
 
-    let view = renderTransfer('due-idem');
+    const first = renderOrg();
     const start = await screen.findByTestId('stripe-start-transfer');
     fireEvent.click(start);
     fireEvent.click(start);
+    await waitFor(() => expect(transferCalls()).toHaveLength(1));
+    const key = idempotencyKeyOf(transferCalls()[0]);
 
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
-    const key = sentKey(post.mock.calls[0]);
-    expect(key).not.toBe('');
-
-    view.unmount();
-    const duringFlight = renderTransfer('due-idem');
+    first.unmount();
+    const duringFlight = renderOrg();
     fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(transferCalls()).toHaveLength(1));
     duringFlight.unmount();
-    view = renderTransfer('due-idem');
 
-    await act(async () => {
-      pending[0].reject(new Error('lost'));
+    finish({
+      data: {
+        paymentId: 'pay-1',
+        paymentIntentId: 'pi_1',
+        clientSecret: null,
+        stripeStatus: 'processing',
+        paymentMethodType: 'us_bank_account',
+        dueSettled: false,
+      },
     });
-
-    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
-    expect(sentKey(post.mock.calls[1])).toBe(key);
-    pending[1].reject(new Error('lost'));
-    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
-
-    view.unmount();
-    renderTransfer('due-idem');
-    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(3));
-    expect(sentKey(post.mock.calls[2])).toBe(key);
-
-    pending[2].resolve({ data: { id: 'tr_1', status: 'Processing' } });
+    renderOrg();
     expect(await screen.findByTestId('stripe-transfer-pending')).toBeInTheDocument();
+    expect(transferCalls()).toHaveLength(1);
+    expect(idempotencyKeyOf(transferCalls()[0])).toBe(key);
   });
 
-  it('mints a new key after the bank refuses the transfer', async () => {
-    const account = { id: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null };
-    get.mockResolvedValue({ data: { accounts: [account] } });
-    post.mockResolvedValue({ data: { id: 'tr_failed', status: 'Failed' } });
-
-    renderTransfer('due-refused');
-    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
-    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
-    const first = sentKey(post.mock.calls[0]);
-
-    fireEvent.click(screen.getByTestId('stripe-start-transfer'));
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
-    expect(sentKey(post.mock.calls[1])).not.toBe(first);
-  });
-
-  it('tells a landlord to record the payment instead of the tenant declaration', async () => {
-    get.mockResolvedValue({ data: { accounts: [] } });
+  it('does not tell the landlord that the tenant declaration is on this screen', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     render(
       <QueryClientProvider client={client}>
         <I18nextProvider i18n={i18n}>
           <StripeRentTransferDialog
             open
-            onOpenChange={() => {}}
             leaseId="lease-1"
-            dueId="due-landlord"
+            dueId="due-1"
             amount={1050}
-            currency="EUR"
+            currency="USD"
             reference="CZ-2026-11-ABC"
+            onOpenChange={() => {}}
           />
         </I18nextProvider>
       </QueryClientProvider>,

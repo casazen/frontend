@@ -1,47 +1,71 @@
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
-import type {
-  FinancialConnectionsAccount,
-  FinancialConnectionsSession,
-  StripeRentTransfer,
-  StripeRentTransferInput,
-} from '@/types';
+import type { BankLinkAccount, BankLinkPaymentStarted, BankLinkSession, StartOrgBankLinkPayment } from '@/types';
 import { ApiClient } from './client';
 
-const SESSION_PATH = '/stripe/financial-connections/session';
-const ACCOUNTS_PATH = '/stripe/financial-connections/accounts';
+const ORG = '/orgs/me/bank-links';
 
 /**
- * Stripe Financial Connections for a rent due. The base URL already ends in `/api`, so these are
- * `POST /api/stripe/financial-connections/session`, `GET /api/stripe/financial-connections/accounts` and
- * `POST /api/leases/:leaseId/dues/:dueId/stripe-transfer`.
+ * Stripe Financial Connections on the paths the API actually exposes. The base URL already ends in `/api`.
+ * Starting a payment does not mark a due paid (`dueSettled` is false until a later read of the due).
  */
-export const financialConnectionsApi = {
-  /** Opens Stripe's own account-linking screen. No due is marked paid. */
-  createSession: async (): Promise<FinancialConnectionsSession> => parseSession(await ApiClient.post<unknown>(SESSION_PATH, {})),
+export const bankLinkApi = {
+  /** Landlord: Financial Connections client secret. */
+  createOrgSession: async (): Promise<BankLinkSession> => parseSession(await ApiClient.post<unknown>(`${ORG}/sessions`, {})),
 
-  /** Accounts already linked for the signed-in person. */
-  listAccounts: async (): Promise<FinancialConnectionsAccount[]> => parseAccounts(await ApiClient.get<unknown>(ACCOUNTS_PATH)),
+  /** Landlord: the account stored on the org, or `linked: false`. */
+  getOrgAccount: async (): Promise<BankLinkAccount> => parseAccount(await ApiClient.get<unknown>(ORG)),
+
+  /** Landlord: stores `fca_…` after Stripe.js returns it. */
+  attachOrgAccount: async (accountId: string): Promise<BankLinkAccount> =>
+    parseAccount(await ApiClient.post<unknown>(ORG, { accountId })),
 
   /**
-   * Starts a transfer for one open due. The same key again does not start a second one. The answer is not a payment:
-   * the due stays unpaid until Stripe confirms it and the due is read again.
+   * Landlord: USD debit of a rent due. The same `Idempotency-Key` is sent again for a retry of this attempt.
+   * An EUR due is refused with 422 `bank_link_debit_unavailable` and is not marked paid.
    */
-  startTransfer: async (leaseId: string, dueId: string, input: StripeRentTransferInput, idempotencyKey: string): Promise<StripeRentTransfer> =>
-    parseTransfer(
-      await ApiClient.post<unknown>(transferPath(leaseId, dueId), input, { headers: { 'Idempotency-Key': idempotencyKey } }),
+  startOrgPayment: async (input: StartOrgBankLinkPayment, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
+    parsePayment(
+      await ApiClient.post<unknown>(`${ORG}/payments`, input, { headers: { 'Idempotency-Key': idempotencyKey } }),
+    ),
+
+  /** Tenant of the payment link: Financial Connections client secret. The token is the access check. */
+  createRentSession: async (installmentId: string, token: string): Promise<BankLinkSession> =>
+    parseSession(
+      await ApiClient.post<unknown>(rentPath(installmentId, 'session'), { token }, { public: true }),
+    ),
+
+  /** Tenant: stores `fca_…` on that lease only. */
+  attachRentAccount: async (installmentId: string, token: string, accountId: string): Promise<BankLinkAccount> =>
+    parseAccount(
+      await ApiClient.post<unknown>(rentPath(installmentId), { token, accountId }, { public: true }),
+    ),
+
+  /** Tenant: debit of this installment. The amount is the due's. Starting it does not mark the due paid. */
+  startRentPayment: async (installmentId: string, token: string, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
+    parsePayment(
+      await ApiClient.post<unknown>(rentPath(installmentId, 'payment'), { token }, {
+        public: true,
+        headers: { 'Idempotency-Key': idempotencyKey },
+      }),
     ),
 };
 
-export function transferPath(leaseId: string, dueId: string): string {
-  return `/leases/${encodeURIComponent(leaseId)}/dues/${encodeURIComponent(dueId)}/stripe-transfer`;
+export function rentBankLinkPath(installmentId: string, action?: 'session' | 'payment'): string {
+  return rentPath(installmentId, action);
+}
+
+function rentPath(installmentId: string, action?: 'session' | 'payment'): string {
+  const base = `/public/rent-payments/${encodeURIComponent(installmentId)}/bank-link`;
+  return action ? `${base}/${action}` : base;
 }
 
 /**
- * How the screen talks about a transfer that was accepted. A `Paid` status in this answer is still "waiting": the due
- * itself is the only place that can say paid, and only after Stripe has confirmed it.
+ * The debit was accepted by the API. The due itself stays unpaid until a later read says Stripe confirmed it,
+ * including when `dueSettled` is unexpectedly true or the intent status is already `succeeded`.
  */
-export function transferAwaitingConfirmation(status: string): boolean {
-  return status !== 'Failed' && status !== 'Canceled' && status !== 'Cancelled';
+export function transferAwaitingConfirmation(started: Pick<BankLinkPaymentStarted, 'stripeStatus'>): boolean {
+  const status = started.stripeStatus;
+  return status !== 'canceled' && status !== 'requires_payment_method';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -63,31 +87,34 @@ function optionalText(record: Record<string, unknown>, key: string): string | nu
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
-function parseSession(data: unknown): FinancialConnectionsSession {
-  if (!isRecord(data)) fail(SESSION_PATH);
+function parseSession(data: unknown): BankLinkSession {
+  if (!isRecord(data)) fail(ORG);
   return {
-    clientSecret: text(data, 'clientSecret', SESSION_PATH),
-    publishableKey: text(data, 'publishableKey', SESSION_PATH),
+    sessionId: text(data, 'sessionId', ORG),
+    clientSecret: text(data, 'clientSecret', ORG),
+    publishableKey: optionalText(data, 'publishableKey'),
   };
 }
 
-function parseAccounts(data: unknown): FinancialConnectionsAccount[] {
-  if (!isRecord(data) || !Array.isArray(data.accounts)) fail(ACCOUNTS_PATH);
-  return data.accounts.map((item) => {
-    if (!isRecord(item)) fail(ACCOUNTS_PATH);
-    return {
-      id: text(item, 'id', ACCOUNTS_PATH),
-      institutionName: optionalText(item, 'institutionName') ?? 'Conto',
-      last4: text(item, 'last4', ACCOUNTS_PATH),
-      displayName: optionalText(item, 'displayName'),
-    };
-  });
+function parseAccount(data: unknown): BankLinkAccount {
+  if (!isRecord(data) || typeof data.linked !== 'boolean') fail(ORG);
+  return {
+    linked: data.linked,
+    accountId: optionalText(data, 'accountId'),
+    institutionName: optionalText(data, 'institutionName'),
+    last4: optionalText(data, 'last4'),
+    displayName: optionalText(data, 'displayName'),
+  };
 }
 
-function parseTransfer(data: unknown): StripeRentTransfer {
-  if (!isRecord(data)) fail('stripe-transfer');
+function parsePayment(data: unknown): BankLinkPaymentStarted {
+  if (!isRecord(data) || typeof data.dueSettled !== 'boolean') fail(`${ORG}/payments`);
   return {
-    id: optionalText(data, 'id'),
-    status: optionalText(data, 'status') ?? 'Processing',
+    paymentId: text(data, 'paymentId', `${ORG}/payments`),
+    paymentIntentId: text(data, 'paymentIntentId', `${ORG}/payments`),
+    clientSecret: optionalText(data, 'clientSecret'),
+    stripeStatus: text(data, 'stripeStatus', `${ORG}/payments`),
+    paymentMethodType: text(data, 'paymentMethodType', `${ORG}/payments`),
+    dueSettled: data.dueSettled,
   };
 }

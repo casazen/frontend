@@ -64,7 +64,8 @@ describe('rent register composition columns', () => {
   });
 
   it('offers the Stripe transfer only when the org can take the rent online', () => {
-    const open = row({ status: 'Scheduled' });
+    const euro = row({ status: 'Scheduled', currency: 'EUR' });
+    const dollar = row({ status: 'Scheduled', currency: 'USD' });
     const options = {
       canManage: true,
       held: new Set<string>(),
@@ -72,10 +73,13 @@ describe('rent register composition columns', () => {
       onRemind: () => {},
       onStripePay: () => {},
     };
+    const hasStripe = (list: ReturnType<typeof buildRentsList>, installment: RentRegisterRow) =>
+      list.menu?.(installment)?.some((entry) => entry !== 'separator' && entry.id === 'stripe') === true;
     const offline = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: false });
     const online = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: true });
 
-    expect(offline.menu?.(open)?.some((entry) => entry.id === 'stripe')).toBe(false);
-    expect(online.menu?.(open)?.some((entry) => entry.id === 'stripe')).toBe(true);
+    expect(hasStripe(offline, dollar)).toBe(false);
+    expect(hasStripe(online, euro)).toBe(false);
+    expect(hasStripe(online, dollar)).toBe(true);
   });
 });

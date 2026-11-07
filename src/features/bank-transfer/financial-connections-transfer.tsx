@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTranslation } from 'react-i18next';
 import { Landmark } from 'lucide-react';
+import { transferAwaitingConfirmation } from '@/api/financial-connections.api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,213 +14,248 @@ import {
 } from '@/components/ui/dialog';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
-import { transferAwaitingConfirmation } from '@/api/financial-connections.api';
 import {
-  useFinancialConnectionsAccounts,
-  useFinancialConnectionsSession,
-  useStartStripeRentTransfer,
+  useAttachOrgBankLink,
+  useAttachRentBankLink,
+  useCreateOrgBankLinkSession,
+  useCreateRentBankLinkSession,
+  useOrgBankLink,
+  useStartOrgBankLinkPayment,
+  useStartRentBankLinkPayment,
 } from '@/queries/use-financial-connections';
-import type { FinancialConnectionsAccount } from '@/types';
+import type { BankLinkAccount, BankLinkSession } from '@/types';
+import { toBankLinkCents } from './bank-link-currency';
+import {
+  beginStripeTransfer,
+  releaseAcceptedStripeTransfer,
+  settleStripeTransfer,
+  stripeTransferAttempt,
+  subscribeStripeTransferAttempts,
+} from './transfer-attempt';
 
 export interface FinancialConnectionsTransferProps {
+  /** Landlord uses the org bank-link. The tenant of a payment link uses the public rent-payment bank-link. */
+  mode: 'org' | 'public';
   leaseId: string;
   dueId: string;
   amount: number;
   currency: string;
-  /** Causale of the due. Sent with the transfer; an empty one is still sent so the API can keep its own. */
+  /** Shown on the screen. The API does not take a reference: the due is the installment id. */
   reference: string;
+  /** Payment-link token. Required for `mode: 'public'`. */
+  token?: string;
+  publishableKey?: string | null;
+  /** Used when neither the session nor the caller already has the platform publishable key. */
+  resolvePublishableKey?: () => Promise<string | null>;
+  /**
+   * The tenant due still shows the IBAN and “Ho effettuato il bonifico”. The landlord screens do not,
+   * so they leave this off.
+   */
+  showManualTransfer?: boolean;
+  forLandlord?: boolean;
+  /** The due already failed: the previous attempt is over and a new transfer may start. */
+  dueFailed?: boolean;
 }
 
-function newIdempotencyKey(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-  return `stripe-transfer-${Date.now()}`;
+function keyFromEnv(): string | null {
+  const value = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
+}
+
+async function publishableKeyFor(
+  session: BankLinkSession,
+  caller: string | null | undefined,
+  resolve?: () => Promise<string | null>,
+): Promise<string | null> {
+  const known = session.publishableKey || caller || keyFromEnv();
+  if (known && known.trim() !== '') return known.trim();
+  const resolved = (await resolve?.()) ?? null;
+  return resolved && resolved.trim() !== '' ? resolved.trim() : null;
+}
+
+function accountLabel(account: BankLinkAccount): string {
+  const tail = account.last4 ? `···· ${account.last4}` : '';
+  const name = account.displayName || account.institutionName || 'Conto';
+  return tail ? `${name} ${tail}` : name;
 }
 
 /**
- * One key per due, kept across clicks and across closing the dialog (that remounts this form). The same key again does not
- * start a second debit. A refused attempt is the only time a new key is minted, so the next press can be a new transfer.
- */
-const transferKeys = new Map<string, string>();
-/** Survives the dialog closing, which remounts the form and would otherwise drop the in-flight guard. */
-const transfersInFlight = new Set<string>();
-
-function dueKey(leaseId: string, dueId: string): string {
-  return `${leaseId}:${dueId}`;
-}
-
-function idempotencyKeyFor(leaseId: string, dueId: string): string {
-  const id = dueKey(leaseId, dueId);
-  const existing = transferKeys.get(id);
-  if (existing) return existing;
-  const created = newIdempotencyKey();
-  transferKeys.set(id, created);
-  return created;
-}
-
-function rotateIdempotencyKey(leaseId: string, dueId: string): void {
-  transferKeys.delete(dueKey(leaseId, dueId));
-}
-
-function accountLabel(account: FinancialConnectionsAccount): string {
-  const tail = `···· ${account.last4}`;
-  return account.displayName ? `${account.displayName} ${tail}` : `${account.institutionName} ${tail}`;
-}
-
-/**
- * Links a bank account with Stripe Financial Connections and starts a transfer for one open rent due.
- * Stripe draws the consent screen. This block never marks the due paid: that happens only when the due is read again
- * and the server says Stripe confirmed it.
+ * Links a bank account with Stripe Financial Connections and starts a USD debit for one open rent due.
+ * Stripe draws the consent screen. This block never marks the due paid.
  */
 export function FinancialConnectionsTransfer({
+  mode,
   leaseId,
   dueId,
   amount,
   currency,
   reference,
-  framed = true,
+  token,
+  publishableKey,
+  resolvePublishableKey,
+  showManualTransfer = false,
   forLandlord = false,
-}: FinancialConnectionsTransferProps & { framed?: boolean; forLandlord?: boolean }) {
+  dueFailed = false,
+}: FinancialConnectionsTransferProps) {
   const { t } = useTranslation();
-  const accounts = useFinancialConnectionsAccounts();
-  const session = useFinancialConnectionsSession();
-  const transfer = useStartStripeRentTransfer(leaseId, dueId);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const orgAccount = useOrgBankLink(mode === 'org');
+  const orgSession = useCreateOrgBankLinkSession();
+  const rentSession = useCreateRentBankLinkSession();
+  const attachOrg = useAttachOrgBankLink();
+  const attachRent = useAttachRentBankLink();
+  const startOrg = useStartOrgBankLinkPayment(leaseId);
+  const startRent = useStartRentBankLinkPayment();
+  const attempt = useSyncExternalStore(
+    subscribeStripeTransferAttempts,
+    () => stripeTransferAttempt(leaseId, dueId),
+    () => stripeTransferAttempt(leaseId, dueId),
+  );
+  const [attached, setAttached] = useState<BankLinkAccount | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
-  const [awaiting, setAwaiting] = useState(false);
-  // `isPending` flips only after a render, so a second click in the same turn would pass it. This flips before the request.
-  const starting = useRef(false);
+  const awaiting = attempt.phase === 'accepted';
+  const startBusy = attempt.phase === 'inflight';
 
-  const linked = accounts.data ?? [];
-  const selected = linked.find((account) => account.id === selectedId) ?? linked[0];
-  const linkBusy = session.isPending;
-  const startBusy = transfer.isPending;
+  useEffect(() => {
+    if (dueFailed) releaseAcceptedStripeTransfer(leaseId, dueId);
+  }, [dueFailed, leaseId, dueId]);
+
+  const stored = mode === 'org' ? orgAccount.data : undefined;
+  const account = attached?.linked ? attached : stored?.linked ? stored : attached;
+  const accountId = account?.linked ? account.accountId : null;
+  const linkBusy = orgSession.isPending || rentSession.isPending || attachOrg.isPending || attachRent.isPending;
 
   async function linkAccount() {
+    if (mode === 'public' && !token) return;
     setLinkError(null);
     try {
-      const created = await session.mutateAsync();
-      const stripe = await loadStripe(created.publishableKey);
+      const session = mode === 'org' ? await orgSession.mutateAsync() : await rentSession.mutateAsync({ installmentId: dueId, token: token ?? '' });
+      const key = await publishableKeyFor(session, publishableKey, resolvePublishableKey);
+      if (!key) {
+        setLinkError(t('bankTransfer.noStripe'));
+        return;
+      }
+      const stripe = await loadStripe(key);
       if (!stripe) {
         setLinkError(t('bankTransfer.noStripe'));
         return;
       }
-      const result = await stripe.collectFinancialConnectionsAccounts({ clientSecret: created.clientSecret });
+      const result = await stripe.collectFinancialConnectionsAccounts({ clientSecret: session.clientSecret });
       if (result.error) {
         setLinkError(result.error.message ?? t('bankTransfer.stripeClosed'));
         return;
       }
-      await accounts.refetch();
+      const linkedId = result.financialConnectionsSession?.accounts?.[0]?.id;
+      if (!linkedId) {
+        setLinkError(t('bankTransfer.stripeClosed'));
+        return;
+      }
+      const saved = mode === 'org'
+        ? await attachOrg.mutateAsync(linkedId)
+        : await attachRent.mutateAsync({ installmentId: dueId, token: token ?? '', accountId: linkedId });
+      setAttached(saved);
     } catch (error) {
       setLinkError(getProblemMessage(error, t) ?? t('bankTransfer.failed'));
     }
   }
 
   async function startTransfer() {
-    const id = dueKey(leaseId, dueId);
-    if (!selected || starting.current || transfersInFlight.has(id) || amount <= 0) return;
-    starting.current = true;
-    transfersInFlight.add(id);
-    setAwaiting(false);
+    if (!accountId || amount <= 0) return;
+    if (mode === 'public' && !token) return;
+    const idempotencyKey = beginStripeTransfer(leaseId, dueId);
+    if (!idempotencyKey) return;
+    setLinkError(null);
     try {
-      const started = await transfer.mutateAsync({
-        input: {
-          financialConnectionsAccountId: selected.id,
-          amount,
-          reference,
-        },
-        idempotencyKey: idempotencyKeyFor(leaseId, dueId),
-      });
-      if (!transferAwaitingConfirmation(started.status)) {
-        // The bank refused it: nothing was taken, and the same key would only replay that refusal.
-        rotateIdempotencyKey(leaseId, dueId);
+      const started = mode === 'org'
+        ? await startOrg.mutateAsync({
+            input: {
+              amountCents: toBankLinkCents(amount),
+              currency: currency.trim().toLowerCase(),
+              leaseId,
+              installmentId: dueId,
+            },
+            idempotencyKey,
+          })
+        : await startRent.mutateAsync({ installmentId: dueId, token: token ?? '', idempotencyKey });
+      if (!transferAwaitingConfirmation(started)) {
+        settleStripeTransfer(leaseId, dueId, 'failed');
         setLinkError(t('bankTransfer.failed'));
         return;
       }
-      setLinkError(null);
-      setAwaiting(true);
+      settleStripeTransfer(leaseId, dueId, 'accepted');
     } catch (error) {
-      // An answer that never came keeps the key, so the retry is the same transfer.
+      settleStripeTransfer(leaseId, dueId, 'retry');
       setLinkError(getProblemMessage(error, t) ?? t('bankTransfer.failed'));
-    } finally {
-      starting.current = false;
-      transfersInFlight.delete(id);
     }
   }
 
   const body = (
     <div className="space-y-3 text-sm" data-testid="stripe-bank-transfer">
-        <p className="text-foreground/70">{t('bankTransfer.hint')}</p>
-        <p data-testid="stripe-transfer-amount">
-          <span className="text-foreground/70">{t('bankTransfer.amount')}</span> {formatCurrency(amount, currency)}
+      <p className="text-foreground/70">{t('bankTransfer.hint')}</p>
+      <p data-testid="stripe-transfer-amount">
+        <span className="text-foreground/70">{t('bankTransfer.amount')}</span> {formatCurrency(amount, currency)}
+      </p>
+      {reference ? (
+        <p data-testid="stripe-transfer-reference">
+          <span className="text-foreground/70">{t('bankTransfer.reference')}</span> {reference}
         </p>
-        {reference ? (
-          <p data-testid="stripe-transfer-reference">
-            <span className="text-foreground/70">{t('bankTransfer.reference')}</span> {reference}
-          </p>
-        ) : (
-          <p className="text-foreground/70" data-testid="stripe-transfer-reference-missing">
-            {t('bankTransfer.noReference')}
-          </p>
-        )}
+      ) : (
+        <p className="text-foreground/70" data-testid="stripe-transfer-reference-missing">
+          {t('bankTransfer.noReference')}
+        </p>
+      )}
 
-        {accounts.isLoading ? <p className="text-muted-foreground">{t('bankTransfer.loadingAccounts')}</p> : null}
-        {accounts.isError ? (
-          <p className="text-destructive" role="alert" data-testid="stripe-accounts-error">
-            {getProblemMessage(accounts.error, t) ?? t('bankTransfer.loadError')}
-          </p>
-        ) : null}
+      {mode === 'org' && orgAccount.isLoading ? <p className="text-muted-foreground">{t('bankTransfer.loadingAccounts')}</p> : null}
+      {mode === 'org' && orgAccount.isError ? (
+        <p className="text-destructive" role="alert" data-testid="stripe-accounts-error">
+          {getProblemMessage(orgAccount.error, t) ?? t('bankTransfer.loadError')}
+        </p>
+      ) : null}
 
-        {linked.length > 0 ? (
-          <fieldset className="space-y-2">
-            <legend className="text-foreground/70">{t('bankTransfer.accountsLabel')}</legend>
-            {linked.map((account) => (
-              <label key={account.id} className="flex items-center gap-2" data-testid={`stripe-account-${account.id}`}>
-                <input
-                  type="radio"
-                  name={`stripe-account-${dueId}`}
-                  checked={selected?.id === account.id}
-                  onChange={() => setSelectedId(account.id)}
-                />
-                {accountLabel(account)}
-              </label>
-            ))}
-          </fieldset>
-        ) : null}
+      {accountId ? (
+        <p data-testid={`stripe-account-${accountId}`}>
+          <span className="text-foreground/70">{t('bankTransfer.accountsLabel')}</span> {account ? accountLabel(account) : accountId}
+        </p>
+      ) : null}
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant={linked.length > 0 ? 'outline' : 'default'}
-            loading={linkBusy}
-            onClick={() => void linkAccount()}
-            data-testid="stripe-link-account"
-          >
-            {linked.length > 0 ? t('bankTransfer.linkAnother') : t('bankTransfer.link')}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={accountId ? 'outline' : 'default'}
+          loading={linkBusy}
+          onClick={() => void linkAccount()}
+          data-testid="stripe-link-account"
+        >
+          {accountId ? t('bankTransfer.linkAnother') : t('bankTransfer.link')}
+        </Button>
+        {accountId && !awaiting ? (
+          <Button type="button" loading={startBusy} onClick={() => void startTransfer()} data-testid="stripe-start-transfer">
+            {t('bankTransfer.start')}
           </Button>
-          {selected && !awaiting ? (
-            <Button type="button" loading={startBusy} onClick={() => void startTransfer()} data-testid="stripe-start-transfer">
-              {t('bankTransfer.start')}
-            </Button>
-          ) : null}
-        </div>
+        ) : null}
+      </div>
 
-        {linkError ? (
-          <p className="text-destructive" role="alert" data-testid="stripe-transfer-error">
-            {linkError}
-          </p>
-        ) : null}
-        {awaiting ? (
-          <p role="status" data-testid="stripe-transfer-pending">
-            {t('bankTransfer.pending')}
-          </p>
-        ) : null}
+      {linkError ? (
+        <p className="text-destructive" role="alert" data-testid="stripe-transfer-error">
+          {linkError}
+        </p>
+      ) : null}
+      {awaiting ? (
+        <p role="status" data-testid="stripe-transfer-pending">
+          {t('bankTransfer.pending')}
+        </p>
+      ) : null}
+      {showManualTransfer ? (
         <p className="text-foreground/70" data-testid="stripe-manual-stays">
           {forLandlord ? t('bankTransfer.manualStaysLandlord') : t('bankTransfer.manualStays')}
         </p>
+      ) : null}
+      {forLandlord && !showManualTransfer ? (
+        <p className="text-foreground/70" data-testid="stripe-manual-stays">
+          {t('bankTransfer.manualStaysLandlord')}
+        </p>
+      ) : null}
     </div>
   );
-
-  if (!framed) return body;
 
   return (
     <Card>
@@ -234,12 +270,12 @@ export function FinancialConnectionsTransfer({
   );
 }
 
-interface StripeRentTransferDialogProps extends FinancialConnectionsTransferProps {
+interface StripeRentTransferDialogProps extends Omit<FinancialConnectionsTransferProps, 'mode' | 'forLandlord'> {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/** The same transfer, in a dialog, from a rent row the landlord already has open. */
+/** The landlord transfer, from a rent row. The tenant declaration is not on this screen. */
 export function StripeRentTransferDialog({ open, onOpenChange, ...transfer }: StripeRentTransferDialogProps) {
   const { t } = useTranslation();
   return (
@@ -249,7 +285,7 @@ export function StripeRentTransferDialog({ open, onOpenChange, ...transfer }: St
           <DialogTitle>{t('bankTransfer.title')}</DialogTitle>
           <DialogDescription>{t('bankTransfer.hint')}</DialogDescription>
         </DialogHeader>
-        {open ? <FinancialConnectionsTransfer {...transfer} framed={false} forLandlord /> : null}
+        {open ? <FinancialConnectionsTransfer {...transfer} mode="org" forLandlord /> : null}
       </DialogContent>
     </Dialog>
   );

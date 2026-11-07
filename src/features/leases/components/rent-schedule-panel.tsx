@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
 import { StripeRentTransferDialog } from '@/features/bank-transfer/financial-connections-transfer';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
@@ -437,7 +438,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                           {installment.paymentRequestedAt ? t('rent.resendLink') : t('rent.sendLink')}
                         </Button>
                       )}
-                      {ledger.onlinePaymentsAvailable && (
+                      {ledger.onlinePaymentsAvailable && bankLinkDebitAvailable(installment.currency) ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -446,7 +447,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                         >
                           {t('bankTransfer.open')}
                         </Button>
-                      )}
+                      ) : null}
                       <Button size="sm" variant="outline" onClick={() => setMarkPaidFor(installment)}>
                         {t('rent.markPaid')}
                       </Button>
@@ -466,6 +467,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
           amount={rentBreakdown(stripeFor).residual}
           currency={stripeFor.currency}
           reference={stripeFor.transfer?.reference ?? ''}
+          dueFailed={stripeFor.status === 'Failed'}
           onOpenChange={(next) => {
             if (!next) setStripeFor(null);
           }}

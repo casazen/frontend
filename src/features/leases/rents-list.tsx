@@ -7,6 +7,7 @@ import type { ListDefinition, ListMenuEntry } from '@/components/shared/list-vie
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { rentStatus, statusTextKey } from '@/lib/status-dictionary';
 import { todayInRome } from '@/lib/stay-dates';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
 import { formatCurrency } from '@/lib/utils';
 import type { RentRegisterRow } from '@/types';
 import { RentComposition } from './components/rent-composition';
@@ -173,7 +174,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         });
       }
       // The lease is the primary action of the rows that cannot be declared paid; for the others it is here.
-      if (canManage && onlinePaymentsAvailable && isOpenInstallment(row.status) && onStripePay) {
+      if (canManage && onlinePaymentsAvailable && bankLinkDebitAvailable(row.currency) && isOpenInstallment(row.status) && onStripePay) {
         entries.push({
           id: 'stripe',
           label: t('bankTransfer.open'),

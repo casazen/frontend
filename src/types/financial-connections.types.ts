@@ -1,32 +1,42 @@
-/** A bank account the signed-in person linked through Stripe Financial Connections. */
-export interface FinancialConnectionsAccount {
-  id: string;
-  institutionName: string;
-  last4: string;
+/**
+ * Bank link through Stripe Financial Connections.
+ * Landlord: `/orgs/me/bank-links`. Tenant of a payment link: `/public/rent-payments/:id/bank-link`.
+ * A due is paid only when a later read says Stripe confirmed it.
+ */
+
+/** `POST .../sessions`. Stripe.js opens its own screen with `clientSecret`. */
+export interface BankLinkSession {
+  sessionId: string;
+  clientSecret: string;
+  /** Present only when the API sends it. The session contract is the id and the client secret. */
+  publishableKey?: string | null;
+}
+
+/** `GET /orgs/me/bank-links` and the body of `POST /orgs/me/bank-links`. No IBAN. */
+export interface BankLinkAccount {
+  linked: boolean;
+  accountId: string | null;
+  institutionName: string | null;
+  last4: string | null;
   displayName: string | null;
 }
 
 /**
- * `POST /stripe/financial-connections/session`. Stripe.js opens its own consent screen with `clientSecret`
- * (`collectFinancialConnectionsAccounts`). CasaZen does not rebuild that screen.
+ * `POST /orgs/me/bank-links/payments` or the public `.../bank-link/payment`.
+ * `dueSettled` is false here: starting the debit does not pay the due.
  */
-export interface FinancialConnectionsSession {
-  clientSecret: string;
-  publishableKey: string;
+export interface BankLinkPaymentStarted {
+  paymentId: string;
+  paymentIntentId: string;
+  clientSecret: string | null;
+  stripeStatus: string;
+  paymentMethodType: string;
+  dueSettled: boolean;
 }
 
-/**
- * `POST /leases/:leaseId/dues/:dueId/stripe-transfer`. Starting it does not mean the due is paid: only a later read of
- * the due, after Stripe confirms, can say so.
- */
-export interface StripeRentTransfer {
-  id: string | null;
-  /** Whatever the API answered. `Paid` here is not applied to the due. */
-  status: string;
-}
-
-export interface StripeRentTransferInput {
-  financialConnectionsAccountId: string;
-  amount: number;
-  reference: string;
+export interface StartOrgBankLinkPayment {
+  amountCents: number;
+  currency: string;
+  leaseId: string;
+  installmentId: string;
 }

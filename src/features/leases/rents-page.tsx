@@ -234,6 +234,7 @@ export function RentsPage() {
           amount={rentBreakdown(stripeRow).residual}
           currency={stripeRow.currency}
           reference={stripeRow.transfer?.reference ?? ''}
+          dueFailed={stripeRow.status === 'Failed'}
           onOpenChange={(next) => {
             if (!next) setStripeRow(null);
           }}
