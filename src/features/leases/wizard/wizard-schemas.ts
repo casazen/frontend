@@ -14,11 +14,13 @@ const empty = (value: string) => value.trim() === '';
 
 const EMAIL = z.string().email();
 const AMOUNT = /^\d+(\.\d{1,2})?$/;
+const PHONE = /^\+[1-9]\d{7,14}$/;
 
 const party = z.object({
   fiscalCode: z.string().refine((value) => empty(value) || isValidFiscalCode(value), 'leaseWizard.validation.fiscalCode'),
   citizenship: z.string().refine((value) => empty(value) || /^[A-Za-z]{2}$/.test(value.trim()), 'leaseWizard.validation.citizenship'),
   contactEmail: z.string().refine((value) => empty(value) || EMAIL.safeParse(value.trim()).success, 'leaseWizard.validation.email'),
+  contactPhone: z.string().refine((value) => empty(value) || PHONE.test(value.replace(/[\s().-]/g, '')), 'leaseWizard.validation.phone'),
 });
 
 /** An amount written with at most two decimals (the field is a number input: the decimal point is a dot). */

@@ -137,6 +137,7 @@ export interface LeaseParty {
   lastName: string;
   fiscalCodeMasked: string;
   contactEmailMasked: string;
+  contactPhoneMasked?: string;
   isExtraEU: boolean;
   /** The day the landlord checked the identity document (LR-12): a date and nothing else, the document is never kept (decision LR-D3). */
   documentsVerifiedOn?: string | null;

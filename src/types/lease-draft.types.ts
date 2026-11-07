@@ -48,6 +48,7 @@ export interface LeaseDraftParty {
   citizenship?: string | null;
   residence?: string | null;
   contactEmail?: string | null;
+  contactPhone?: string | null;
 }
 
 /** What was typed in the data steps, exactly as typed (a wrong value is kept and reported in `flow`). */

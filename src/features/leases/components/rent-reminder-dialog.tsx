@@ -37,6 +37,7 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
   const { t } = useTranslation();
   const actions = useRentRegisterActions();
   const [note, setNote] = useState('');
+  const [preparingWhatsApp, setPreparingWhatsApp] = useState(false);
 
   const tenant = leaseTenantName(row, t);
   const parts = rentBreakdown(row);
@@ -58,6 +59,18 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
     // The same reminder is already on its way (the row says so too): tell, never a click that seems to do nothing.
     if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
+  }
+
+  async function sendWhatsApp() {
+    setPreparingWhatsApp(true);
+    try {
+      const text = note.trim();
+      const result = await actions.sendWhatsAppReminder(row.leaseId, row.id, text === '' ? undefined : text);
+      toast.success(t('longRentRents.reminder.whatsappSent', { count: result.recipientCount }));
+      onClose();
+    } finally {
+      setPreparingWhatsApp(false);
+    }
   }
 
   return (
@@ -142,9 +155,16 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
           <Button type="button" variant="outline" onClick={onClose}>
             {t('longRentRents.cancel')}
           </Button>
-          <Button type="button" onClick={send} data-testid="rent-reminder-send">
-            {t('longRentRents.reminder.submit')}
-          </Button>
+          {row.canWhatsAppRemind ? (
+            <Button type="button" variant="outline" onClick={sendWhatsApp} disabled={preparingWhatsApp}>
+              {t('longRentRents.reminder.whatsappSend')}
+            </Button>
+          ) : null}
+          {row.canRemind ? (
+            <Button type="button" onClick={send} data-testid="rent-reminder-send">
+              {t('longRentRents.reminder.submit')}
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>

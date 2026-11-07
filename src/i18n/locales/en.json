@@ -7222,6 +7222,7 @@
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
+      "contactPhone": "the phone number",
       "firstName": "the first name",
       "fiscalCode": "the fiscal code",
       "lastName": "the last name",
@@ -7327,6 +7328,8 @@
       "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
       "contactEmail": "Email",
       "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "contactPhone": "Phone number",
+      "contactPhoneHintTenant": "Include the international prefix: used to contact the tenant and prepare WhatsApp reminders.",
       "countriesEu": "European Union",
       "countriesOther": "Other countries",
       "firstName": "First name",
@@ -7563,6 +7566,7 @@
       "date": "Not a valid date",
       "deposit": "The deposit must be zero or more, with at most two decimals",
       "email": "Not a valid email address",
+      "phone": "Enter the number with its international prefix, for example +39 333 123 4567",
       "endAfterStart": "The end must be after the start",
       "fiscalCode": "Not a valid fiscal code or VAT number",
       "property": "Choose the property",
@@ -8316,6 +8320,7 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
+    "contactPhoneMasked": "Phone",
     "noParties": "No parties recorded.",
     "contractTypeLabel": {
       "Libero": "Free rent (4+4)",
@@ -9168,6 +9173,9 @@
       "sent_other": "Reminder sent to {{count}} tenants",
       "submit": "Send reminder",
       "title": "Send a reminder",
+      "whatsappSend": "Send via WhatsApp",
+      "whatsappSent_one": "WhatsApp reminder sent to {{count}} tenant",
+      "whatsappSent_other": "WhatsApp reminder sent to {{count}} tenants",
       "whoGetsIt": "The email goes to the tenants of the lease who have an email address; after it is sent we tell you how many."
     },
     "retry": "Retry",

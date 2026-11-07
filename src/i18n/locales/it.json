@@ -7222,6 +7222,7 @@
     "fields": {
       "citizenship": "la cittadinanza",
       "contactEmail": "l'email",
+      "contactPhone": "il numero di telefono",
       "firstName": "il nome",
       "fiscalCode": "il codice fiscale",
       "lastName": "il cognome",
@@ -7327,6 +7328,8 @@
       "companyNotice": "Un conduttore con un codice di 11 cifre è una società: la cedolare secca non è ammessa.",
       "contactEmail": "Email",
       "contactEmailHintTenant": "Serve solo per mandare il link di pagamento e i solleciti.",
+      "contactPhone": "Numero di telefono",
+      "contactPhoneHintTenant": "Con prefisso internazionale: serve per contattare il conduttore e preparare i promemoria su WhatsApp.",
       "countriesEu": "Unione europea",
       "countriesOther": "Altri Paesi",
       "firstName": "Nome",
@@ -7563,6 +7566,7 @@
       "date": "Data non valida",
       "deposit": "Il deposito deve essere zero o più, con al massimo due decimali",
       "email": "Indirizzo email non valido",
+      "phone": "Inserisci il numero con prefisso internazionale, per esempio +39 333 123 4567",
       "endAfterStart": "La fine deve essere dopo l'inizio",
       "fiscalCode": "Codice fiscale o partita IVA non valido",
       "property": "Scegli l'immobile",
@@ -8316,6 +8320,7 @@
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
     "contactEmailMasked": "Email di contatto",
+    "contactPhoneMasked": "Telefono",
     "noParties": "Nessuna parte registrata.",
     "contractTypeLabel": {
       "Libero": "Canone libero (4+4)",
@@ -9168,6 +9173,9 @@
       "sent_other": "Sollecito inviato a {{count}} conduttori",
       "submit": "Invia sollecito",
       "title": "Invia un sollecito",
+      "whatsappSend": "Invia via WhatsApp",
+      "whatsappSent_one": "Promemoria WhatsApp inviato a {{count}} conduttore",
+      "whatsappSent_other": "Promemoria WhatsApp inviato a {{count}} conduttori",
       "whoGetsIt": "L'email arriva ai conduttori del contratto che hanno un indirizzo email; dopo l'invio ti diciamo a quanti."
     },
     "retry": "Riprova",

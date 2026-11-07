@@ -162,7 +162,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         : { id: 'lease', label: t('longRentRents.actions.openLease'), href: rentLeasePath(row.leaseId) },
     menu: (row): readonly ListMenuEntry[] => {
       const entries: ListMenuEntry[] = [];
-      if (canManage && row.canRemind) {
+      if (canManage && (row.canRemind || row.canWhatsAppRemind)) {
         const waiting = held.has(reminderKey(row.id));
         entries.push({
           id: 'remind',

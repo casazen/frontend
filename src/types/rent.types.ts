@@ -188,6 +188,8 @@ export interface RentRegisterRow {
   amountPaid?: number | null;
   residual?: number | null;
   transfer?: RentTransferDetails | null;
+  hasTenantPhone?: boolean;
+  canWhatsAppRemind?: boolean;
 }
 
 /** `GET /long-rent/rents`. `month` is `yyyy-MM`. */
@@ -219,6 +221,13 @@ export interface RentReminderResult {
   reminderCount: number;
   recipientCount: number;
   includesPaymentLink: boolean;
+  nextReminderAllowedAt: string;
+}
+
+export interface RentWhatsAppReminder {
+  installmentId: string;
+  sentAt: string;
+  recipientCount: number;
   nextReminderAllowedAt: string;
 }
 
