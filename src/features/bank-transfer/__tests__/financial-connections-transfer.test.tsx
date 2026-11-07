@@ -153,6 +153,69 @@ describe('FinancialConnectionsTransfer', () => {
     expect(idempotencyKeyOf(transferCalls()[0])).toBe(key);
   });
 
+  it('links the tenant due so the tenant pays the landlord', async () => {
+    post.mockImplementation((url: string) => {
+      const path = String(url);
+      if (path.endsWith('/session')) return Promise.resolve({ data: { sessionId: 'fcsess_1', clientSecret: 'fcsess_secret' } });
+      if (path.endsWith('/payment')) {
+        return Promise.resolve({
+          data: {
+            paymentId: 'pay-1',
+            paymentIntentId: 'pi_1',
+            clientSecret: null,
+            stripeStatus: 'processing',
+            paymentMethodType: 'sepa_debit',
+            dueSettled: false,
+          },
+        });
+      }
+      return Promise.resolve({ data: linked });
+    });
+
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    render(
+      <QueryClientProvider client={client}>
+        <I18nextProvider i18n={i18n}>
+          <FinancialConnectionsTransfer
+            mode="tenant"
+            leaseId="lease-1"
+            dueId="due-1"
+            amount={1050}
+            currency="EUR"
+            reference="CZ-2026-11-ABC"
+            publishableKey="pk_test"
+            showManualTransfer
+          />
+        </I18nextProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByTestId('stripe-manual-stays')).toHaveTextContent('Ho effettuato il bonifico');
+    expect(get).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('stripe-link-account'));
+
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith(
+        '/tenant-area/contracts/lease-1/dues/due-1/bank-link/session',
+        {},
+        undefined,
+      ),
+    );
+    expect(post).not.toHaveBeenCalledWith('/orgs/me/bank-links/sessions', expect.anything(), expect.anything());
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/tenant-area/contracts/lease-1/dues/due-1/bank-link', { accountId: 'fca_1' }, undefined),
+    );
+
+    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
+
+    await waitFor(() =>
+      expect(post.mock.calls.some((call) => String(call[0]) === '/tenant-area/contracts/lease-1/dues/due-1/bank-link/payment')).toBe(true),
+    );
+    expect(post.mock.calls.some((call) => String(call[0]) === '/orgs/me/bank-links/payments')).toBe(false);
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tenant-area', 'lease-1'] }));
+  });
+
   it('does not tell the landlord that the tenant declaration is on this screen', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     render(

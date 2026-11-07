@@ -2814,6 +2814,12 @@
     "saved": "Document saved and attached to the lease.",
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
+    "delete": "Delete",
+    "deleteNamed": "Delete {{name}}",
+    "deleteTitle": "Delete this document?",
+    "deleteDescription": "“{{name}}” is removed from the contract. The other documents can still be downloaded.",
+    "deleteConfirm": "Delete",
+    "deleteError": "The document could not be deleted.",
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
@@ -7505,6 +7511,25 @@
         "legend": "Tax regime"
       },
       "rent": "Monthly rent (€)"
+    },
+    "condominium": {
+      "title": "Condominium expenses",
+      "intro": "If the property already has a fiscal year, we propose the amount to pay automatically. Payment is not handled here: the tenant pays from the tenant area, and the landlord links the condominium account on Rents.",
+      "loading": "Reading the condominium expenses…",
+      "loadError": "The condominium expenses could not be read.",
+      "retry": "Try again",
+      "proposedYear": "Fiscal year {{year}}: condominium expenses {{amount}} a month, to pay automatically.",
+      "proposed": "Condominium expenses {{amount}} a month, to pay automatically.",
+      "accept": "Use this amount",
+      "empty": "Nothing is loaded yet. Upload last year's consuntivo and the new year's preventivo, or type the amount by hand: it is settled at the consuntivo.",
+      "consuntivo": "Previous year's consuntivo",
+      "preventivo": "New year's preventivo",
+      "calculate": "Calculate the amount",
+      "manual": "Amount typed by hand (€ a month)",
+      "manualHint": "Settled at the consuntivo.",
+      "useManual": "Use the amount entered",
+      "saved": "On the contract: {{amount}} a month. The tenant pays from the tenant area. The landlord links the condominium account on Rents.",
+      "saveError": "The condominium expenses could not be saved."
     },
     "title": "Create lease",
     "transitory": {
@@ -21006,7 +21031,12 @@
     "loadError": "The linked accounts could not be read.",
     "noStripe": "Stripe is not available right now.",
     "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available.",
-    "manualStaysLandlord": "If you do not link an account, you can record the payment you received."
+    "manualStaysLandlord": "If you do not link an account, you can record the payment you received.",
+    "condo": {
+      "title": "Pay the condominium automatically",
+      "hint": "Link the account only to pay the condominium expenses automatically. Stripe offers Italian banks and the debit is in euros. This is not the rent payment.",
+      "linked": "Condominium expenses are paid automatically from this account."
+    }
   },
   "wizard": {
     "back": "Back",

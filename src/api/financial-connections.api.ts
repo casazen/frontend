@@ -20,8 +20,9 @@ export const bankLinkApi = {
     parseAccount(await ApiClient.post<unknown>(ORG, { accountId })),
 
   /**
-   * Landlord: USD debit of a rent due. The same `Idempotency-Key` is sent again for a retry of this attempt.
-   * An EUR due is refused with 422 `bank_link_debit_unavailable` and is not marked paid.
+   * Landlord: SEPA debit in euros from the linked Italian bank. The same `Idempotency-Key` is sent again for a retry
+   * of this attempt. A non-euro due is refused with 422 `bank_link_debit_unavailable` and is not marked paid.
+   * Leave `installmentId` empty when the debit is the condominium, not a rent due.
    */
   startOrgPayment: async (input: StartOrgBankLinkPayment, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
     parsePayment(
@@ -48,7 +49,33 @@ export const bankLinkApi = {
         headers: { 'Idempotency-Key': idempotencyKey },
       }),
     ),
+
+  /**
+   * Signed-in tenant of a due: Financial Connections client secret.
+   * `POST /tenant-area/contracts/:leaseId/dues/:dueId/bank-link/session`.
+   * This is the tenant paying the landlord, not the landlord paying the rent.
+   */
+  createTenantSession: async (leaseId: string, dueId: string): Promise<BankLinkSession> =>
+    parseSession(await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId, 'session'), {})),
+
+  /** Stores `fca_…` for this tenant due. */
+  attachTenantAccount: async (leaseId: string, dueId: string, accountId: string): Promise<BankLinkAccount> =>
+    parseAccount(await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId), { accountId })),
+
+  /** Debit of this due from the tenant's linked account. Starting it does not mark the due paid. */
+  startTenantPayment: async (leaseId: string, dueId: string, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
+    parsePayment(
+      await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId, 'payment'), {}, {
+        headers: { 'Idempotency-Key': idempotencyKey },
+      }),
+    ),
 };
+
+/** Tenant due bank link: the tenant pays the landlord. */
+export function tenantDueBankLinkPath(leaseId: string, dueId: string, action?: 'session' | 'payment'): string {
+  const base = `/tenant-area/contracts/${encodeURIComponent(leaseId)}/dues/${encodeURIComponent(dueId)}/bank-link`;
+  return action ? `${base}/${action}` : base;
+}
 
 export function rentBankLinkPath(installmentId: string, action?: 'session' | 'payment'): string {
   return rentPath(installmentId, action);
