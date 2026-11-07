@@ -2814,6 +2814,12 @@
     "saved": "Documento salvato e allegato al contratto.",
     "download": "Scarica",
     "downloadError": "Impossibile scaricare il documento.",
+    "delete": "Elimina",
+    "deleteNamed": "Elimina {{name}}",
+    "deleteTitle": "Eliminare questo documento?",
+    "deleteDescription": "«{{name}}» viene tolto dal contratto. Gli altri documenti si possono ancora scaricare.",
+    "deleteConfirm": "Elimina",
+    "deleteError": "Impossibile eliminare il documento.",
     "import": {
       "action": "Completa e importa il contratto",
       "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
@@ -7505,6 +7511,25 @@
         "legend": "Regime fiscale"
       },
       "rent": "Canone mensile (€)"
+    },
+    "condominium": {
+      "title": "Spese condominiali",
+      "intro": "Se l'immobile ha già un esercizio, proponiamo l'importo da pagare in automatico. Il pagamento non si gestisce qui: il conduttore paga da Canoni e il conto per il condominio si collega in Pagamenti.",
+      "loading": "Lettura delle spese condominiali…",
+      "loadError": "Non riesco a leggere le spese condominiali.",
+      "retry": "Riprova",
+      "proposedYear": "Esercizio {{year}}: spese condominiali {{amount}} al mese, da pagare in automatico.",
+      "proposed": "Spese condominiali {{amount}} al mese, da pagare in automatico.",
+      "accept": "Usa questo importo",
+      "empty": "Non c'è ancora un esercizio. Carica il consuntivo dell'anno precedente e il preventivo del nuovo anno, oppure scrivi l'importo a mano: si conguaglia al consuntivo.",
+      "consuntivo": "Consuntivo dell'anno precedente",
+      "preventivo": "Preventivo del nuovo anno",
+      "calculate": "Calcola l'importo",
+      "manual": "Importo a mano (€ al mese)",
+      "manualHint": "Si conguaglia al consuntivo.",
+      "useManual": "Usa l'importo inserito",
+      "saved": "Sul contratto: {{amount}} al mese. Il pagamento resta in Canoni e in Pagamenti.",
+      "saveError": "Non riesco a salvare le spese condominiali."
     },
     "title": "Crea contratto",
     "transitory": {
@@ -21006,7 +21031,12 @@
     "loadError": "Non riesco a leggere i conti collegati.",
     "noStripe": "Stripe non è disponibile in questo momento.",
     "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico».",
-    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso."
+    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso.",
+    "condo": {
+      "title": "Paga il condominio in automatico",
+      "hint": "Collega il conto solo per pagare le spese condominiali in automatico. Stripe propone le banche italiane e l'addebito è in euro. Non è il pagamento del canone.",
+      "linked": "Le spese condominiali si pagano in automatico da questo conto."
+    }
   },
   "wizard": {
     "back": "Indietro",

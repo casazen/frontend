@@ -17,11 +17,14 @@ import { formatCurrency } from '@/lib/utils';
 import {
   useAttachOrgBankLink,
   useAttachRentBankLink,
+  useAttachTenantBankLink,
   useCreateOrgBankLinkSession,
   useCreateRentBankLinkSession,
+  useCreateTenantBankLinkSession,
   useOrgBankLink,
   useStartOrgBankLinkPayment,
   useStartRentBankLinkPayment,
+  useStartTenantBankLinkPayment,
 } from '@/queries/use-financial-connections';
 import type { BankLinkAccount, BankLinkSession } from '@/types';
 import { toBankLinkCents } from './bank-link-currency';
@@ -34,8 +37,12 @@ import {
 } from './transfer-attempt';
 
 export interface FinancialConnectionsTransferProps {
-  /** Landlord uses the org bank-link. The tenant of a payment link uses the public rent-payment bank-link. */
-  mode: 'org' | 'public';
+  /**
+   * `org` is the landlord's account, used to pay the condominium.
+   * `public` is the tenant of a payment link.
+   * `tenant` is the signed-in tenant of a due: they pay the landlord, they do not pay the rent as the landlord.
+   */
+  mode: 'org' | 'public' | 'tenant';
   leaseId: string;
   dueId: string;
   amount: number;
@@ -57,6 +64,10 @@ export interface FinancialConnectionsTransferProps {
   dueFailed?: boolean;
   /** True once an account is linked, so the manual transfer can stay the fallback for the other case. */
   onLinkedChange?: (linked: boolean) => void;
+  /**
+   * Landlord only: link the account that pays the condominium. No rent due is debited from this screen.
+   */
+  linkOnly?: boolean;
 }
 
 function keyFromEnv(): string | null {
@@ -99,15 +110,19 @@ export function FinancialConnectionsTransfer({
   forLandlord = false,
   dueFailed = false,
   onLinkedChange,
+  linkOnly = false,
 }: FinancialConnectionsTransferProps) {
   const { t } = useTranslation();
   const orgAccount = useOrgBankLink(mode === 'org');
   const orgSession = useCreateOrgBankLinkSession();
   const rentSession = useCreateRentBankLinkSession();
+  const tenantSession = useCreateTenantBankLinkSession();
   const attachOrg = useAttachOrgBankLink();
   const attachRent = useAttachRentBankLink();
+  const attachTenant = useAttachTenantBankLink();
   const startOrg = useStartOrgBankLinkPayment(leaseId);
   const startRent = useStartRentBankLinkPayment();
+  const startTenant = useStartTenantBankLinkPayment();
   const attempt = useSyncExternalStore(
     subscribeStripeTransferAttempts,
     () => stripeTransferAttempt(leaseId, dueId),
@@ -125,7 +140,13 @@ export function FinancialConnectionsTransfer({
   const stored = mode === 'org' ? orgAccount.data : undefined;
   const account = attached?.linked ? attached : stored?.linked ? stored : attached;
   const accountId = account?.linked ? account.accountId : null;
-  const linkBusy = orgSession.isPending || rentSession.isPending || attachOrg.isPending || attachRent.isPending;
+  const linkBusy =
+    orgSession.isPending ||
+    rentSession.isPending ||
+    tenantSession.isPending ||
+    attachOrg.isPending ||
+    attachRent.isPending ||
+    attachTenant.isPending;
 
   useEffect(() => {
     onLinkedChange?.(!!accountId);
@@ -135,7 +156,12 @@ export function FinancialConnectionsTransfer({
     if (mode === 'public' && !token) return;
     setLinkError(null);
     try {
-      const session = mode === 'org' ? await orgSession.mutateAsync() : await rentSession.mutateAsync({ installmentId: dueId, token: token ?? '' });
+      const session =
+        mode === 'org'
+          ? await orgSession.mutateAsync()
+          : mode === 'tenant'
+            ? await tenantSession.mutateAsync({ leaseId, dueId })
+            : await rentSession.mutateAsync({ installmentId: dueId, token: token ?? '' });
       const key = await publishableKeyFor(session, publishableKey, resolvePublishableKey);
       if (!key) {
         setLinkError(t('bankTransfer.noStripe'));
@@ -156,9 +182,12 @@ export function FinancialConnectionsTransfer({
         setLinkError(t('bankTransfer.stripeClosed'));
         return;
       }
-      const saved = mode === 'org'
-        ? await attachOrg.mutateAsync(linkedId)
-        : await attachRent.mutateAsync({ installmentId: dueId, token: token ?? '', accountId: linkedId });
+      const saved =
+        mode === 'org'
+          ? await attachOrg.mutateAsync(linkedId)
+          : mode === 'tenant'
+            ? await attachTenant.mutateAsync({ leaseId, dueId, accountId: linkedId })
+            : await attachRent.mutateAsync({ installmentId: dueId, token: token ?? '', accountId: linkedId });
       setAttached(saved);
     } catch (error) {
       setLinkError(getProblemMessage(error, t) ?? t('bankTransfer.failed'));
@@ -172,17 +201,20 @@ export function FinancialConnectionsTransfer({
     if (!idempotencyKey) return;
     setLinkError(null);
     try {
-      const started = mode === 'org'
-        ? await startOrg.mutateAsync({
-            input: {
-              amountCents: toBankLinkCents(amount),
-              currency: currency.trim().toLowerCase(),
-              leaseId,
-              installmentId: dueId,
-            },
-            idempotencyKey,
-          })
-        : await startRent.mutateAsync({ installmentId: dueId, token: token ?? '', idempotencyKey });
+      const started =
+        mode === 'org'
+          ? await startOrg.mutateAsync({
+              input: {
+                amountCents: toBankLinkCents(amount),
+                currency: currency.trim().toLowerCase(),
+                leaseId,
+                installmentId: dueId,
+              },
+              idempotencyKey,
+            })
+          : mode === 'tenant'
+            ? await startTenant.mutateAsync({ leaseId, dueId, idempotencyKey })
+            : await startRent.mutateAsync({ installmentId: dueId, token: token ?? '', idempotencyKey });
       if (!transferAwaitingConfirmation(started)) {
         settleStripeTransfer(leaseId, dueId, 'failed');
         setLinkError(t('bankTransfer.failed'));
@@ -197,11 +229,13 @@ export function FinancialConnectionsTransfer({
 
   const body = (
     <div className="space-y-3 text-sm" data-testid="stripe-bank-transfer">
-      <p className="text-foreground/70">{t('bankTransfer.hint')}</p>
+      <p className="text-foreground/70">{linkOnly ? t('bankTransfer.condo.hint') : t('bankTransfer.hint')}</p>
+      {linkOnly ? null : (
       <p data-testid="stripe-transfer-amount">
         <span className="text-foreground/70">{t('bankTransfer.amount')}</span> {formatCurrency(amount, currency)}
       </p>
-      {reference ? (
+      )}
+      {linkOnly ? null : reference ? (
         <p data-testid="stripe-transfer-reference">
           <span className="text-foreground/70">{t('bankTransfer.reference')}</span> {reference}
         </p>
@@ -234,7 +268,7 @@ export function FinancialConnectionsTransfer({
         >
           {accountId ? t('bankTransfer.linkAnother') : t('bankTransfer.link')}
         </Button>
-        {accountId && !awaiting ? (
+        {accountId && !awaiting && !linkOnly ? (
           <Button type="button" loading={startBusy} onClick={() => void startTransfer()} data-testid="stripe-start-transfer">
             {t('bankTransfer.start')}
           </Button>
@@ -251,7 +285,10 @@ export function FinancialConnectionsTransfer({
           {t('bankTransfer.pending')}
         </p>
       ) : null}
-      {showManualTransfer ? (
+      {linkOnly && accountId ? (
+        <p data-testid="condo-autopay">{t('bankTransfer.condo.linked')}</p>
+      ) : null}
+      {showManualTransfer && !accountId ? (
         <p className="text-foreground/70" data-testid="stripe-manual-stays">
           {forLandlord ? t('bankTransfer.manualStaysLandlord') : t('bankTransfer.manualStays')}
         </p>
@@ -265,11 +302,11 @@ export function FinancialConnectionsTransfer({
   );
 
   return (
-    <Card>
+    <Card data-testid={linkOnly ? 'condominium-bank-link' : undefined}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Landmark className="h-4 w-4" aria-hidden="true" />
-          {t('bankTransfer.title')}
+          {linkOnly ? t('bankTransfer.condo.title') : t('bankTransfer.title')}
         </CardTitle>
       </CardHeader>
       <CardContent>{body}</CardContent>

@@ -78,7 +78,7 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
       </Card>
       {showStripe ? (
         <FinancialConnectionsTransfer
-          mode="org"
+          mode="tenant"
           leaseId={leaseId}
           dueId={due.id}
           amount={due.bank?.amount ?? rentBreakdown(due).residual}

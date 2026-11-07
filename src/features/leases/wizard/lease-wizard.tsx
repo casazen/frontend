@@ -371,7 +371,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   } else if (current === 2) {
     body = <PartiesStep />;
   } else if (current === 3) {
-    body = <TermsStep rules={rules} origin={draft.origin} />;
+    body = <TermsStep rules={rules} origin={draft.origin} leaseId={draft.id} />;
   } else if (current === 4) {
     body = <DatesStep rules={rules} origin={draft.origin} periodConflict={flow.periodConflict ?? null} />;
   } else if (current === SIGN_STEP) {

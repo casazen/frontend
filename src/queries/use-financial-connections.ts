@@ -66,3 +66,24 @@ export function useStartRentBankLinkPayment() {
     },
   });
 }
+
+export function useCreateTenantBankLinkSession() {
+  return useMutation({
+    mutationFn: ({ leaseId, dueId }: { leaseId: string; dueId: string }) => bankLinkApi.createTenantSession(leaseId, dueId),
+  });
+}
+
+export function useAttachTenantBankLink() {
+  return useMutation({
+    mutationFn: ({ leaseId, dueId, accountId }: { leaseId: string; dueId: string; accountId: string }) =>
+      bankLinkApi.attachTenantAccount(leaseId, dueId, accountId),
+  });
+}
+
+/** The tenant pays the landlord. The due stays unpaid until a later read says Stripe confirmed it. */
+export function useStartTenantBankLinkPayment() {
+  return useMutation({
+    mutationFn: ({ leaseId, dueId, idempotencyKey }: { leaseId: string; dueId: string; idempotencyKey: string }) =>
+      bankLinkApi.startTenantPayment(leaseId, dueId, idempotencyKey),
+  });
+}

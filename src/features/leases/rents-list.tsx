@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { CalendarDays, Euro, Landmark, Send, Wallet } from 'lucide-react';
+import { CalendarDays, Euro, Send, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
@@ -7,7 +7,6 @@ import type { ListDefinition, ListMenuEntry } from '@/components/shared/list-vie
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { rentStatus, statusTextKey } from '@/lib/status-dictionary';
 import { todayInRome } from '@/lib/stay-dates';
-import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
 import { formatCurrency } from '@/lib/utils';
 import type { RentRegisterRow } from '@/types';
 import { RentComposition } from './components/rent-composition';
@@ -32,10 +31,6 @@ export interface RentsListOptions {
   held: ReadonlySet<string>;
   onRecord: (row: RentRegisterRow) => void;
   onRemind: (row: RentRegisterRow) => void;
-  /** Starts a Stripe transfer for the due. The manual declaration stays the primary action. */
-  onStripePay?: (row: RentRegisterRow) => void;
-  /** The org's Stripe account can take the rent online. Without it the row does not offer the transfer. */
-  onlinePaymentsAvailable?: boolean;
 }
 
 /** The line under the state, with what is late in the one color of the row. */
@@ -60,7 +55,7 @@ function statusNoteLine(row: RentRegisterRow, t: TFunction, language: string, to
  */
 export function buildRentsList(t: TFunction, language: string, options: RentsListOptions): ListDefinition<RentRegisterRow> {
   const today = todayInRome();
-  const { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable = false } = options;
+  const { canManage, held, onRecord, onRemind } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
   const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
   const partOf = (row: RentRegisterRow, field: 'rent' | 'condominiumAdvance' | 'condominiumSettlement' | 'other' | 'paid' | 'residual') =>
@@ -173,16 +168,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
           testId: `rent-remind-${row.id}`,
         });
       }
-      // The lease is the primary action of the rows that cannot be declared paid; for the others it is here.
-      if (canManage && onlinePaymentsAvailable && bankLinkDebitAvailable(row.currency) && isOpenInstallment(row.status) && onStripePay) {
-        entries.push({
-          id: 'stripe',
-          label: t('bankTransfer.open'),
-          icon: Landmark,
-          onSelect: () => onStripePay(row),
-          testId: `rent-stripe-${row.id}`,
-        });
-      }
       if (canManage && isOpenInstallment(row.status)) {
         entries.push({ id: 'lease', label: t('longRentRents.actions.openLease'), href: rentLeasePath(row.leaseId) });
       }
@@ -227,9 +212,9 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
 /** The register in the words of the person; it follows the language and the actions that wait. */
 export function useRentsList(options: RentsListOptions): ListDefinition<RentRegisterRow> {
   const { t, i18n } = useTranslation();
-  const { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable = false } = options;
+  const { canManage, held, onRecord, onRemind } = options;
   return useMemo(
-    () => buildRentsList(t, i18n.language, { canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable }),
-    [t, i18n.language, canManage, held, onRecord, onRemind, onStripePay, onlinePaymentsAvailable],
+    () => buildRentsList(t, i18n.language, { canManage, held, onRecord, onRemind }),
+    [t, i18n.language, canManage, held, onRecord, onRemind],
   );
 }
