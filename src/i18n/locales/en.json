@@ -2405,7 +2405,8 @@
       "Expedia": "Expedia",
       "Vrbo": "Vrbo",
       "TripAdvisor": "Tripadvisor",
-      "Agoda": "Agoda"
+      "Agoda": "Agoda",
+      "OtherChannel": "Another portal"
     },
     "cancel": {
       "action": "Cancel booking",

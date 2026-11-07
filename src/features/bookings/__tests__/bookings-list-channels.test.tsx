@@ -6,7 +6,7 @@ import en from '@/i18n/locales/en.json';
 import { BOOKING_AMOUNT_SOURCES, type BookingChannel, type BookingListItem } from '@/types';
 import { useBookingsList } from '../bookings-list';
 import { AmountSourceTag, BookingSourceValue, OtaBadge } from '../components/booking-facts';
-import { CHANNEL_ICONS, bookingChannelName, channelOf } from '../lib/ota-stay';
+import { CHANNEL_ICONS, bookingChannelName, bookingChannelText, bookingSourceName, channelOf } from '../lib/ota-stay';
 
 const handlers = { accept: vi.fn(), arrival: vi.fn(), decline: vi.fn(), cancel: vi.fn(), sendLink: vi.fn() };
 
@@ -81,6 +81,34 @@ describe('booking list: channels', () => {
     expect(screen.queryByTestId('booking-ota-badge')).toBeNull();
   });
 
+  // A portal of the channel manager that has no channel of its own (`OtherChannel`): the API sends the name the channel manager gave it in
+  // `channelLabel`, and the booking is not a stay made from an iCal block.
+  it('BookingsList_PortalWithNoChannelOfItsOwn_IsToldByItsNameWithTheOtaBadgeAndNoIcalLine', () => {
+    renderChannelCell(item({ source: 'OtherChannel', channel: 'Other', otaSource: 'OtherChannel', channelLabel: 'Portale Mare' }));
+
+    const cell = screen.getByTestId('booking-source');
+    expect(cell).toHaveTextContent('Portale Mare');
+    expect(cell).not.toHaveTextContent('OtherChannel');
+    expect(cell).not.toHaveTextContent('iCal');
+    expect(screen.queryByTestId('booking-channel')).toBeNull();
+    expect(screen.getByTestId('booking-ota-badge')).toHaveTextContent('OTA');
+  });
+
+  it('BookingsList_PortalWithNoChannelOfItsOwnAndNoName_IsAnotherPortalAndNeverTheRawValue', () => {
+    renderChannelCell(item({ source: 'OtherChannel', channel: 'Other', otaSource: 'OtherChannel', channelLabel: null }));
+
+    expect(screen.getByTestId('booking-source')).toHaveTextContent('Altro portale');
+    expect(screen.getByTestId('booking-source')).not.toHaveTextContent('OtherChannel');
+  });
+
+  it('BookingsList_StayMadeFromAnIcalBlock_KeepsItsFeedLineAndIsNotNamedAfterTheFeed', () => {
+    renderChannelCell(item({ source: 'OtherChannel', channel: 'Other', icalFeedId: 'feed-1', channelLabel: 'camera 2' }));
+
+    expect(screen.getByTestId('booking-source').querySelector('span.break-words')).toHaveTextContent('Altro portale');
+    expect(screen.getByTestId('booking-channel')).toHaveTextContent('iCal · camera 2');
+    expect(screen.queryByTestId('booking-ota-badge')).toBeNull();
+  });
+
   it('BookingsList_ChannelFilter_OffersEveryChannelWithItsIconAndName', () => {
     const filter = listDefinition().filters?.find((candidate) => candidate.id === 'channel');
     if (!filter || filter.type !== 'multi' || typeof filter.options === 'function') throw new Error('the channel filter is a list of options');
@@ -134,19 +162,55 @@ describe('texts of the channels and of the sources', () => {
     expect(bookingChannelName('Kayak', t)).toBe('Kayak');
     expect(bookingChannelName('Direct', i18n.getFixedT('en'))).toBe('Booking site');
   });
+
+  it.each([
+    ['it', it_],
+    ['en', en],
+  ] as const)('locale_%s_ABookingFromAPortalWithNoChannelOfItsOwnHasAName', (_language, locale) => {
+    const sources = (locale as { booking: { source: Record<string, string> } }).booking.source;
+
+    expect(sources.OtherChannel.trim()).not.toBe('');
+  });
+
+  it('bookingSourceName_PortalWithNoChannelOfItsOwn_IsTheNameTheChannelManagerGaveIt', () => {
+    const t = i18n.getFixedT('it');
+    expect(bookingSourceName({ source: 'OtherChannel', channelLabel: 'Portale Mare' }, t)).toBe('Portale Mare');
+    expect(bookingSourceName({ source: 'OtherChannel', channelLabel: null }, t)).toBe('Altro portale');
+    expect(bookingSourceName({ source: 'OtherChannel' }, i18n.getFixedT('en'))).toBe('Another portal');
+    // The label of a feed is the label of the feed, never the name of the booking; any other source keeps the label of its source.
+    expect(bookingSourceName({ source: 'OtherChannel', icalFeedId: 'feed-1', channelLabel: 'camera 2' }, t)).toBe('Altro portale');
+    expect(bookingSourceName({ source: 'Airbnb', channelLabel: 'camera 2' }, t)).toBe('Airbnb');
+  });
+
+  it('bookingChannelText_OnlyAStayMadeFromAnIcalBlock_HasTheLine', () => {
+    const t = i18n.getFixedT('it');
+    expect(bookingChannelText({ icalFeedId: 'feed-1', channelLabel: 'camera 2' }, t)).toBe('iCal · camera 2');
+    expect(bookingChannelText({ icalFeedId: 'feed-1', channelLabel: null }, t)).toBe('Calendario iCal');
+    // A `channelLabel` with no feed is the name of a portal of the channel manager, not the label of a feed.
+    expect(bookingChannelText({ icalFeedId: null, channelLabel: 'Portale Mare' }, t)).toBeNull();
+    expect(bookingChannelText({}, t)).toBeNull();
+  });
 });
 
 describe('booking facts: channel and source of a figure', () => {
   it('BookingSourceValue_ChannelBooking_ShowsIconNameAndOtaBadge', () => {
-    render(<BookingSourceValue source="Vrbo" ota />);
+    render(<BookingSourceValue booking={item({ source: 'Vrbo', otaSource: 'Vrbo' })} />);
 
     expect(screen.getByTestId('booking-detail-source')).toHaveTextContent('Vrbo');
     expect(screen.getByTestId('booking-ota-badge')).toHaveTextContent('OTA');
     expect(document.querySelector('svg')).not.toBeNull();
   });
 
+  it('BookingSourceValue_PortalWithNoChannelOfItsOwn_ShowsTheNameTheChannelManagerGaveIt', () => {
+    render(<BookingSourceValue booking={item({ source: 'OtherChannel', otaSource: 'OtherChannel', channelLabel: 'Portale Mare' })} />);
+
+    expect(screen.getByTestId('booking-detail-source')).toHaveTextContent('Portale Mare');
+    expect(screen.getByTestId('booking-detail-source')).not.toHaveTextContent('OtherChannel');
+    expect(screen.getByTestId('booking-ota-badge')).toHaveTextContent('OTA');
+  });
+
   it('BookingSourceValue_BookingOfTheHost_HasNoOtaBadge', () => {
-    render(<BookingSourceValue source="Manual" ota={false} />);
+    render(<BookingSourceValue booking={item({ source: 'Manual', otaSource: null })} />);
 
     expect(screen.getByTestId('booking-detail-source')).toHaveTextContent('Manuale');
     expect(screen.queryByTestId('booking-ota-badge')).toBeNull();

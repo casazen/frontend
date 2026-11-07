@@ -2,10 +2,9 @@ import type { ReactNode } from 'react';
 import { CreditCard, Network, PenLine, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
-import { getBookingSourceLabel } from '@/lib/i18n-labels';
 import { cn } from '@/lib/utils';
-import { BOOKING_AMOUNT_SOURCES, type BookingAmountSource } from '@/types';
-import { CHANNEL_ICONS, channelOf } from '../lib/ota-stay';
+import { BOOKING_AMOUNT_SOURCES, type Booking, type BookingAmountSource } from '@/types';
+import { bookingSourceName, CHANNEL_ICONS, channelOf } from '../lib/ota-stay';
 
 /** How a link looks inside a fact: the accent of the area, underlined, and a 44 px row to tap on a phone. */
 export const FACT_LINK = 'inline-flex min-h-11 items-center break-all font-medium text-primary-text underline underline-offset-4 hover:no-underline md:min-h-0';
@@ -43,15 +42,18 @@ export function OtaBadge() {
   );
 }
 
-/** Where the booking came from, as the facts say it: the icon of its channel, its name and, for a channel booking, the "OTA" badge. */
-export function BookingSourceValue({ source, ota }: { source: string; ota: boolean }) {
+/**
+ * Where the booking came from, as the facts say it: the icon of its channel, its name (`bookingSourceName`: a portal with no source of
+ * its own is told by the name the channel manager gave it) and, for a channel booking (`otaSource`), the "OTA" badge.
+ */
+export function BookingSourceValue({ booking }: { booking: Pick<Booking, 'source' | 'icalFeedId' | 'channelLabel' | 'otaSource'> }) {
   const { t } = useTranslation();
-  const Icon = CHANNEL_ICONS[channelOf(source)];
+  const Icon = CHANNEL_ICONS[channelOf(booking.source)];
   return (
     <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
       <Icon className="size-4 shrink-0 text-foreground/70" aria-hidden="true" />
-      <span data-testid="booking-detail-source">{getBookingSourceLabel(source, t)}</span>
-      {ota ? <OtaBadge /> : null}
+      <span data-testid="booking-detail-source">{bookingSourceName(booking, t)}</span>
+      {booking.otaSource ? <OtaBadge /> : null}
     </span>
   );
 }

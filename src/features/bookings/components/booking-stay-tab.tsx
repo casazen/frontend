@@ -59,7 +59,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
           </Fact>
           {booking.source ? (
             <Fact label={t('booking.detailPage.source')}>
-              <BookingSourceValue source={booking.source} ota={!!booking.otaSource} />
+              <BookingSourceValue booking={booking} />
               {channelText ? (
                 <span className="block text-sm text-foreground/70" data-testid="booking-detail-channel">
                   {channelText}

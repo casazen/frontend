@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListMenuEntry, ListRowAction } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
-import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
+import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { BookingChannel, BookingListItem } from '@/types';
 import { OtaBadge } from './components/booking-facts';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/booking-list-query';
-import { bookingChannelName, bookingChannelText, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
+import { bookingChannelName, bookingChannelText, bookingSourceName, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 
 /** What the actions of a row do. The page owns them: some open a dialog, some call the API. */
@@ -95,7 +95,7 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           <Icon className="mt-0.5 size-4 shrink-0 text-foreground/70" aria-hidden="true" />
           <div className="min-w-0">
             <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="break-words">{getBookingSourceLabel(booking.source, t)}</span>
+              <span className="break-words">{bookingSourceName(booking, t)}</span>
               {booking.otaSource ? <OtaBadge /> : null}
             </span>
             {detail ? (
@@ -161,7 +161,7 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           ),
           csv: (booking) => `${stayDateOf(booking.checkInDate)} → ${stayDateOf(booking.checkOutDate)}`,
         },
-        { id: 'channel', label: t('booking.list.columns.channel'), default: true, render: channelCell, csv: (booking) => getBookingSourceLabel(booking.source, t) },
+        { id: 'channel', label: t('booking.list.columns.channel'), default: true, render: channelCell, csv: (booking) => bookingSourceName(booking, t) },
         {
           id: 'status',
           label: t('booking.list.columns.status'),
