@@ -75,6 +75,60 @@ export interface Booking {
   paymentState?: BookingPaymentState;
   /** Booking detail only: the money that came in; missing for who may not read payments (the collaborator). */
   paidAmount?: number | null;
+  /**
+   * The channel an imported booking comes from (the exact source: `Airbnb`, `Expedia`...); null for any other booking. The list and
+   * the facts mark such a booking with the "OTA" badge (ADR-033-R9). It is not an amount: whoever may not read payments gets it too.
+   */
+  otaSource?: string | null;
+  /**
+   * Booking detail only: the amounts the channel reported for an imported booking (ADR-033-R2). Missing for a booking that does not
+   * come from a channel and for who may not read payments, who gets the state without any amount.
+   */
+  otaAmounts?: BookingOtaAmounts | null;
+  /** Booking detail only, with `otaAmounts`: who collects the money of the booking. */
+  collection?: BookingCollection | null;
+  /** Booking detail only: where each figure comes from; a figure with no value has no entry. Missing for who may not read payments. */
+  amountSources?: BookingAmountSources | null;
+}
+
+/**
+ * The amounts a channel reported for an imported booking (ADR-033-R2). A figure the channel did not send is `null`, never 0: the
+ * commission, the net and the balance often are, until the channel fills the price breakdown.
+ */
+export interface BookingOtaAmounts {
+  commission: number | null;
+  /** What the host receives. */
+  net: number | null;
+  paid: number | null;
+  balance: number | null;
+  currency: string;
+}
+
+/** Who collects the money of a channel booking (NF-77); either flag is `null` when the channel did not say. */
+export interface BookingCollection {
+  /** True: the channel collects the payment. False: the host does. */
+  companyCollect: boolean | null;
+  /** True: the commission is already in the payments. */
+  commissionIncludedInPayments: boolean | null;
+}
+
+/**
+ * Where a figure of a booking comes from: Stripe for a direct booking, the channel manager for a channel booking, the host's own
+ * entry (cash and bank transfer) for a payment recorded by hand.
+ */
+export const BOOKING_AMOUNT_SOURCES = ['Stripe', 'ChannelManager', 'Manual'] as const;
+export type BookingAmountSource = (typeof BOOKING_AMOUNT_SOURCES)[number];
+
+/**
+ * `amountSources` of a booking: the source of the total, of what was paid, of the balance, of the commission and of the net; a figure
+ * that has no value has no entry (the API leaves it out), and a figure with no entry is drawn with no tag.
+ */
+export interface BookingAmountSources {
+  total?: BookingAmountSource;
+  commission?: BookingAmountSource;
+  net?: BookingAmountSource;
+  paid?: BookingAmountSource;
+  balance?: BookingAmountSource;
 }
 
 /**
@@ -92,8 +146,11 @@ export interface BookingEditability {
 /** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
 export type BookingListView = 'all' | 'toConfirm' | 'upcoming' | 'inProgress' | 'completed' | 'cancelled';
 
-/** Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. */
-export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Other';
+/**
+ * Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. The four portals
+ * after `BookingCom` have a value of their own (they used to be `Other`), and `Other` is what no value names.
+ */
+export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Expedia' | 'Vrbo' | 'TripAdvisor' | 'Agoda' | 'Other';
 
 /** How much of the total of a booking has come in. */
 export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
