@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Building2, CalendarDays, Check, Clock, DoorClosed, DoorOpen, Globe, House, Pencil, Plug, Send, Users, X, XCircle, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Check, Clock, DoorClosed, DoorOpen, Send, Users, X, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListMenuEntry, ListRowAction } from '@/components/shared/list-view/list-types';
@@ -8,9 +8,10 @@ import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels'
 import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { BookingChannel, BookingListItem } from '@/types';
+import { OtaBadge } from './components/booking-facts';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/booking-list-query';
-import { bookingChannelText, needsOtaReview } from './lib/ota-stay';
+import { bookingChannelName, bookingChannelText, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 
 /** What the actions of a row do. The page owns them: some open a dialog, some call the API. */
@@ -29,8 +30,9 @@ interface BookingsListOptions {
   handlers: BookingRowHandlers;
 }
 
-const CHANNELS: readonly BookingChannel[] = ['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Other'];
-const CHANNEL_ICONS: Record<BookingChannel, LucideIcon> = { Direct: Globe, Manual: Pencil, Airbnb: House, BookingCom: Building2, Other: Plug };
+// The filter names the channels the API tells apart (`BookingChannel`): the four portals have a value of their own, and `Other` no longer
+// holds them. Their icons are the ones of `CHANNEL_ICONS` (`lib/ota-stay.ts`), the same the facts of a booking draw.
+const CHANNELS: readonly BookingChannel[] = ['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'Other'];
 
 const guestName = (booking: BookingListItem) => `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim();
 const bookingPath = (booking: BookingListItem) => `${BOOKINGS_PATH}/${booking.id}`;
@@ -84,14 +86,18 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
       return null;
     };
 
+    /** The channel of a row: its icon and name and, for a booking the channel manager brought in (`otaSource`), the "OTA" badge (ADR-033-R9). */
     const channelCell = (booking: BookingListItem) => {
-      const Icon = CHANNEL_ICONS[booking.channel] ?? Plug;
+      const Icon = CHANNEL_ICONS[channelOf(booking.channel)];
       const detail = bookingChannelText(booking, t);
       return (
         <div className="flex min-w-0 items-start gap-2" data-testid="booking-source">
           <Icon className="mt-0.5 size-4 shrink-0 text-foreground/70" aria-hidden="true" />
           <div className="min-w-0">
-            <span className="break-words">{getBookingSourceLabel(booking.source, t)}</span>
+            <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="break-words">{getBookingSourceLabel(booking.source, t)}</span>
+              {booking.otaSource ? <OtaBadge /> : null}
+            </span>
             {detail ? (
               <span className="block break-words text-xs text-foreground/70" data-testid="booking-channel">
                 {detail}
@@ -220,7 +226,7 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           id: 'channel',
           type: 'multi',
           label: t('booking.list.filters.channel'),
-          options: CHANNELS.map((channel) => ({ value: channel, label: t(`booking.list.channels.${channel}`), icon: CHANNEL_ICONS[channel] })),
+          options: CHANNELS.map((channel) => ({ value: channel, label: bookingChannelName(channel, t), icon: CHANNEL_ICONS[channel] })),
         },
         { id: 'arrival', type: 'date', label: t('booking.list.filters.arrival') },
         {

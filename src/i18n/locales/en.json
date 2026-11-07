@@ -2030,6 +2030,7 @@
       "nights_other": "{{count}} nights",
       "noResultsDescription": "Try removing a filter, changing tab or searching by code.",
       "noResultsTitle": "No bookings match these filters",
+      "otaBadge": "OTA",
       "payment": {
         "None": "Not collected",
         "Paid": "Collected",
@@ -2258,6 +2259,11 @@
       "notEditable": "A cancelled booking cannot be changed.",
       "backToBooking": "Back to the booking"
     },
+    "amountSource": {
+      "ChannelManager": "Channel manager",
+      "Manual": "Entered by you",
+      "Stripe": "Stripe"
+    },
     "arrival": {
       "action": "Register arrival",
       "title": "Register arrival",
@@ -2441,6 +2447,17 @@
       },
       "guestNotified": "The guest will get a cancellation email, without the reason."
     },
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Booking site",
+      "Expedia": "Expedia",
+      "Manual": "Entered by hand",
+      "Other": "Other channels",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
     "requests": {
       "title": "Requests to approve",
       "description": "Bookings paid at the property: they are valid only if you accept them. Without an answer by the deadline the request expires and the dates become available again. While pending they are not sent to the portals through iCal.",
@@ -2482,6 +2499,21 @@
       "failed": "The booking could not be confirmed. Please try again.",
       "success": "Booking confirmed",
       "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
+    },
+    "otaAmounts": {
+      "balance": "Balance still to pay",
+      "collector": "Who collects",
+      "collectorChannel": "The channel collects the payment",
+      "collectorHost": "You collect the payment",
+      "commission": "Channel commission",
+      "commissionIncluded": "Already included",
+      "commissionNotIncluded": "Not included",
+      "commissionPayments": "Commission in the payments",
+      "net": "Net you receive",
+      "notAvailable": "Not available",
+      "paid": "Already paid",
+      "someMissing": "The channel did not send every figure: the ones that are missing are marked as not available.",
+      "title": "Amounts of the channel"
     },
     "otaStay": {
       "action": "Create OTA stay",

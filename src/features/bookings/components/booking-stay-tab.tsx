@@ -5,14 +5,13 @@ import { ReviewInvitePanel } from '@/features/reviews/components/review-invite-p
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { getBookingSourceLabel } from '@/lib/i18n-labels';
 import { formatStayDate } from '@/lib/stay-dates';
 import { formatDateTime } from '@/lib/utils';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import type { Booking } from '@/types';
 import { stayDateOf } from '../lib/booking-price';
 import { bookingChannelText } from '../lib/ota-stay';
-import { FACT_LINK, Fact, Facts } from './booking-facts';
+import { BookingSourceValue, FACT_LINK, Fact, Facts } from './booking-facts';
 
 interface BookingStayTabProps {
   booking: Booking;
@@ -60,7 +59,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
           </Fact>
           {booking.source ? (
             <Fact label={t('booking.detailPage.source')}>
-              <span data-testid="booking-detail-source">{getBookingSourceLabel(booking.source, t)}</span>
+              <BookingSourceValue source={booking.source} ota={!!booking.otaSource} />
               {channelText ? (
                 <span className="block text-sm text-foreground/70" data-testid="booking-detail-channel">
                   {channelText}

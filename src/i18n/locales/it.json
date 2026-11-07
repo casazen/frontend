@@ -2030,6 +2030,7 @@
       "nights_other": "{{count}} notti",
       "noResultsDescription": "Prova a togliere un filtro, a cambiare scheda o a cercare per codice.",
       "noResultsTitle": "Nessuna prenotazione con questi filtri",
+      "otaBadge": "OTA",
       "payment": {
         "None": "Non incassato",
         "Paid": "Incassato",
@@ -2258,6 +2259,11 @@
       "notEditable": "Una prenotazione annullata non si può modificare.",
       "backToBooking": "Torna alla prenotazione"
     },
+    "amountSource": {
+      "ChannelManager": "Channel manager",
+      "Manual": "Inserito da te",
+      "Stripe": "Stripe"
+    },
     "arrival": {
       "action": "Registra arrivo",
       "title": "Registra arrivo",
@@ -2441,6 +2447,17 @@
       },
       "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo."
     },
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Sito diretto",
+      "Expedia": "Expedia",
+      "Manual": "Inserita a mano",
+      "Other": "Altri canali",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
     "requests": {
       "title": "Richieste da approvare",
       "description": "Prenotazioni con pagamento in struttura: sono valide solo se le accetti. Senza risposta entro la scadenza la richiesta scade e le date tornano disponibili. Finché sono in attesa non vengono inviate ai portali tramite iCal.",
@@ -2482,6 +2499,21 @@
       "failed": "Impossibile confermare la prenotazione. Riprova.",
       "success": "Prenotazione confermata",
       "pendingNotice": "Questa prenotazione inserita da te è ancora in attesa: confermala per occupare le date e abilitare il check-in dell'ospite."
+    },
+    "otaAmounts": {
+      "balance": "Saldo ancora da pagare",
+      "collector": "Chi incassa",
+      "collectorChannel": "Il canale incassa il pagamento",
+      "collectorHost": "Incassi tu il pagamento",
+      "commission": "Commissione del canale",
+      "commissionIncluded": "Già inclusa",
+      "commissionNotIncluded": "Non inclusa",
+      "commissionPayments": "Commissione nei pagamenti",
+      "net": "Netto che ricevi",
+      "notAvailable": "Non disponibile",
+      "paid": "Già pagato",
+      "someMissing": "Il canale non ha comunicato tutte le cifre: quelle che mancano sono segnate come non disponibili.",
+      "title": "Importi del canale"
     },
     "otaStay": {
       "action": "Crea soggiorno OTA",
