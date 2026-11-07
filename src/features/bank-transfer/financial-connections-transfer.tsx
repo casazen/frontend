@@ -40,6 +40,8 @@ function newIdempotencyKey(): string {
  * start a second debit. A refused attempt is the only time a new key is minted, so the next press can be a new transfer.
  */
 const transferKeys = new Map<string, string>();
+/** Survives the dialog closing, which remounts the form and would otherwise drop the in-flight guard. */
+const transfersInFlight = new Set<string>();
 
 function dueKey(leaseId: string, dueId: string): string {
   return `${leaseId}:${dueId}`;
@@ -113,8 +115,10 @@ export function FinancialConnectionsTransfer({
   }
 
   async function startTransfer() {
-    if (!selected || starting.current || amount <= 0) return;
+    const id = dueKey(leaseId, dueId);
+    if (!selected || starting.current || transfersInFlight.has(id) || amount <= 0) return;
     starting.current = true;
+    transfersInFlight.add(id);
     setAwaiting(false);
     try {
       const started = await transfer.mutateAsync({
@@ -138,6 +142,7 @@ export function FinancialConnectionsTransfer({
       setLinkError(getProblemMessage(error, t) ?? t('bankTransfer.failed'));
     } finally {
       starting.current = false;
+      transfersInFlight.delete(id);
     }
   }
 

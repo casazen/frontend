@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
@@ -102,7 +102,7 @@ describe('FinancialConnectionsTransfer', () => {
         }),
     );
 
-    const view = renderTransfer('due-idem');
+    let view = renderTransfer('due-idem');
     const start = await screen.findByTestId('stripe-start-transfer');
     fireEvent.click(start);
     fireEvent.click(start);
@@ -111,10 +111,18 @@ describe('FinancialConnectionsTransfer', () => {
     const key = sentKey(post.mock.calls[0]);
     expect(key).not.toBe('');
 
-    pending[0].reject(new Error('lost'));
-    expect(await screen.findByTestId('stripe-transfer-error')).toBeInTheDocument();
+    view.unmount();
+    const duringFlight = renderTransfer('due-idem');
+    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    duringFlight.unmount();
+    view = renderTransfer('due-idem');
 
-    fireEvent.click(screen.getByTestId('stripe-start-transfer'));
+    await act(async () => {
+      pending[0].reject(new Error('lost'));
+    });
+
+    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
     await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
     expect(sentKey(post.mock.calls[1])).toBe(key);
     pending[1].reject(new Error('lost'));
