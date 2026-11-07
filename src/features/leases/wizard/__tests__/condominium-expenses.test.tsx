@@ -55,6 +55,8 @@ describe('Condominium expenses on the contract wizard', () => {
       ),
     );
     expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/120,00/);
+    expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(1);
   });
 
   it('calculates the amount from the previous-year consuntivo and the new-year preventivo', async () => {
@@ -103,6 +105,8 @@ describe('Condominium expenses on the contract wizard', () => {
         undefined,
       ),
     );
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    expect(screen.getByTestId('lease-condominium-proposed')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
   });
 

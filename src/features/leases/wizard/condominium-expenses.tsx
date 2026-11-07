@@ -27,8 +27,6 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   const [preventivo, setPreventivo] = useState<File | null>(null);
   const [manual, setManual] = useState('');
   const [savedAmount, setSavedAmount] = useState<number | null>(null);
-  /** A file calculation or a hand-typed amount is already saved. «Usa questo importo» would post `proposed` and drop the consuntivo settlement. */
-  const [savedWithoutProposal, setSavedWithoutProposal] = useState(false);
 
   if (propertyId.trim() === '') return null;
 
@@ -36,6 +34,8 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   const error = save.error ?? calculate.error;
   const shown = proposal.data;
   const ready = shown?.state === 'ready' && shown.amount !== null;
+  // A save is already on the contract, including the fiscal-year accept. Leaving the button up posts `proposed` again.
+  const amountOnContract = savedAmount !== null || save.isSuccess || calculate.isSuccess;
 
   async function acceptProposed(amount: number) {
     const saved = await save.mutateAsync({ mode: 'proposed', leaseId, amount });
@@ -45,14 +45,12 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   async function acceptManual() {
     const amount = Number(manual.trim());
     const saved = await save.mutateAsync({ mode: 'manual', leaseId, amount, settleAtConsuntivo: true });
-    setSavedWithoutProposal(true);
     setSavedAmount(saved.amount);
   }
 
   async function calculateFromFiles() {
     if (!consuntivo || !preventivo) return;
     const saved = await calculate.mutateAsync({ leaseId, consuntivo, preventivo });
-    setSavedWithoutProposal(true);
     setSavedAmount(saved.amount);
   }
 
@@ -88,7 +86,7 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
                 })
               : t('leaseWizard.condominium.proposed', { amount: formatCurrency(shown.amount ?? 0, 'EUR') })}
           </p>
-          {savedWithoutProposal ? null : (
+          {!amountOnContract ? (
             <Button
               type="button"
               loading={save.isPending}
@@ -97,7 +95,7 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
             >
               {t('leaseWizard.condominium.accept')}
             </Button>
-          )}
+          ) : null}
         </div>
       ) : null}
 
