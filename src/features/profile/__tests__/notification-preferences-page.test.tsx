@@ -164,6 +164,39 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       expect(switchOf('NewBooking', 'Email')).toBeChecked();
     });
 
+    it('switch_SecondOneMovedWhileTheFirstSaveIsOnItsWay_BuildsOnItAndTheRequestHasBothChanges', async () => {
+      const answers: Array<() => void> = [];
+      vi.mocked(notificationPreferencesApi.save).mockImplementation(
+        (request) =>
+          new Promise<NotificationPreferences>((resolve) => {
+            answers.push(() => resolve(applySave(request)));
+          }),
+      );
+      renderPage();
+      await screen.findByTestId('notification-table');
+
+      // A new booking is a push and the bell: the email goes on, and before the server has answered the push goes off.
+      fireEvent.click(switchOf('NewBooking', 'Email'));
+      await waitFor(() => expect(switchOf('NewBooking', 'Email')).toBeChecked());
+      fireEvent.click(switchOf('NewBooking', 'MobilePush'));
+      await waitFor(() => expect(switchOf('NewBooking', 'MobilePush')).not.toBeChecked());
+
+      // The second request starts from the first one (the email is still in it), not from what the server had before the first.
+      expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(notificationPreferencesApi.save).mock.calls.map(([request]) => request)).toEqual([
+        { events: [{ eventType: 'NewBooking', channels: ['MobilePush', 'Email', 'CounterOnly'] }] },
+        { events: [{ eventType: 'NewBooking', channels: ['Email', 'CounterOnly'] }] },
+      ]);
+      expect(switchOf('NewBooking', 'Email')).toBeChecked();
+      expect(switchOf('NewBooking', 'CounterOnly')).toBeChecked();
+
+      for (const answer of answers) answer();
+      await waitFor(() => expect(screen.getByTestId('notification-row-NewBooking')).not.toHaveAttribute('aria-busy'));
+      expect(switchOf('NewBooking', 'MobilePush')).not.toBeChecked();
+      expect(switchOf('NewBooking', 'Email')).toBeChecked();
+      expect(switchOf('NewBooking', 'CounterOnly')).toBeChecked();
+    });
+
     it('switch_LastChannelOfAnEventThatIsNotLegal_CanBeSwitchedOffAndNothingIsLeft', async () => {
       renderPage();
       await screen.findByTestId('notification-table');
@@ -237,6 +270,48 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       for (const [request] of vi.mocked(notificationPreferencesApi.save).mock.calls) {
         for (const event of request.events ?? []) expect(event.channels.length).toBeGreaterThan(0);
       }
+    });
+
+    it('legalDeadline_SwitchesMovedWhileTheFirstSaveIsOnItsWay_NeverLeaveItWithoutAChannelAndTheLastOneSendsNothing', async () => {
+      const answers: Array<() => void> = [];
+      vi.mocked(notificationPreferencesApi.save).mockImplementation(
+        (request) =>
+          new Promise<NotificationPreferences>((resolve) => {
+            answers.push(() => resolve(applySave(request)));
+          }),
+      );
+      renderPage();
+      await screen.findByTestId('notification-table');
+
+      // Three channels. The push goes off, then the email, and the server has answered neither.
+      fireEvent.click(switchOf('LegalDeadline', 'MobilePush'));
+      await waitFor(() => expect(switchOf('LegalDeadline', 'MobilePush')).not.toBeChecked());
+      fireEvent.click(switchOf('LegalDeadline', 'Email'));
+      await waitFor(() => expect(switchOf('LegalDeadline', 'Email')).not.toBeChecked());
+
+      // The row is built on what is being saved, so the bell is already the last channel: locked, on, with the sentence that says why.
+      const last = switchOf('LegalDeadline', 'CounterOnly');
+      expect(last).toBeDisabled();
+      expect(last).toBeChecked();
+      expect(last).toHaveAccessibleDescription(LEGAL_SENTENCE);
+      fireEvent.click(last);
+
+      // The second request carries both changes, the third click sends nothing, and no request is empty.
+      expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(2);
+      const requests = vi.mocked(notificationPreferencesApi.save).mock.calls.map(([request]) => request);
+      expect(requests).toEqual([
+        { events: [{ eventType: 'LegalDeadline', channels: ['Email', 'CounterOnly'] }] },
+        { events: [{ eventType: 'LegalDeadline', channels: ['CounterOnly'] }] },
+      ]);
+      for (const request of requests) {
+        for (const event of request.events ?? []) expect(event.channels.length).toBeGreaterThan(0);
+      }
+
+      for (const answer of answers) answer();
+      await waitFor(() => expect(screen.getByTestId('notification-row-LegalDeadline')).not.toHaveAttribute('aria-busy'));
+      expect(switchOf('LegalDeadline', 'CounterOnly')).toBeChecked();
+      expect(switchOf('LegalDeadline', 'CounterOnly')).toBeDisabled();
+      expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(2);
     });
 
     it('legalDeadline_ASetWithOnlyOneChannelFromTheStart_IsLockedToo', async () => {
