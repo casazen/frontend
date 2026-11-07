@@ -121,6 +121,24 @@ describe('BookingOtaAmounts', () => {
     expect(screen.getByTestId('booking-ota-commission')).toHaveAttribute('data-missing', 'true');
   });
 
+  it('BookingOtaAmounts_TotalOfZero_SaysNotAvailableWithoutASourceAndNeverZero', () => {
+    // The column of the total cannot be null: a channel that sent no price leaves the 0 of the column, and the API still gives the total
+    // the source "channel manager". The section does not draw that 0 as a figure.
+    render(<BookingOtaAmounts booking={channelBooking({ totalPrice: 0 })} />);
+
+    const section = within(screen.getByTestId('booking-ota-amounts'));
+    const total = section.getByTestId('booking-ota-total');
+    expect(total).toHaveAttribute('data-missing', 'true');
+    expect(total).toHaveTextContent('Non disponibile');
+    expect(total).not.toHaveTextContent('0');
+    // The total has no tag of its source, the four figures the channel did send keep theirs, and the section says one is missing.
+    expect(total.closest('div')?.querySelector('[data-testid="booking-amount-source"]')).toBeNull();
+    expect(section.getAllByTestId('booking-amount-source')).toHaveLength(4);
+    expect(section.getByTestId('booking-ota-some-missing')).toBeInTheDocument();
+    // A settled balance next to it stays a real 0.
+    expect(section.getByTestId('booking-ota-balance')).toHaveTextContent('0,00 €');
+  });
+
   it.each([
     [true, 'Il canale incassa il pagamento'],
     [false, 'Incassi tu il pagamento'],

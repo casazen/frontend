@@ -8,10 +8,18 @@ import { Amount, Fact, Facts } from './booking-facts';
 const isFigure = (value: number | null | undefined): value is number => typeof value === 'number' && Number.isFinite(value);
 
 /**
+ * The total of a channel booking. Its column cannot be null: when the channel did not send a price the API leaves the 0 of the column,
+ * and `amountSources.total` still says "channel manager". A total that is not above 0 is no figure the channel gave, so the section says
+ * "not available" (with no source) instead of "0,00 €".
+ */
+const totalOf = (booking: Booking): number | null => (isFigure(booking.totalPrice) && booking.totalPrice > 0 ? booking.totalPrice : null);
+
+/**
  * "Importi del canale" (NF-77, ADR-033-R8): what the channel says about the money of an imported booking, in plain words: the total,
  * the commission, what the host receives (the net), what is paid and what is left, the state of the payment and who collects. Every
  * figure says where it comes from (`amountSources`). The channel often does not send the commission, the net or the balance: a
- * figure that is missing says "not available" and is never drawn as 0, so a real 0 (a balance that is settled) stays distinct.
+ * figure that is missing says "not available" and is never drawn as 0, so a real 0 (a balance that is settled) stays distinct. The
+ * total is one of them when the channel sent no price (`totalOf`).
  *
  * It draws nothing for a booking without `otaAmounts`: not a channel booking, or the caller may not read payments, who gets the state
  * of the payment without any amount (the API leaves the amounts out for them).
@@ -27,7 +35,7 @@ export function BookingOtaAmounts({ booking }: { booking: Booking }) {
   const collection = booking.collection;
 
   const rows = [
-    { id: 'total', label: t('booking.detailPage.total'), value: booking.totalPrice, source: sources.total },
+    { id: 'total', label: t('booking.detailPage.total'), value: totalOf(booking), source: sources.total },
     { id: 'commission', label: t('booking.otaAmounts.commission'), value: amounts.commission, source: sources.commission },
     // The API names no source for the net: it is worked out from the commission, or from the total when the commission is missing.
     { id: 'net', label: t('booking.otaAmounts.net'), value: amounts.net, source: sources.net ?? sources.commission ?? sources.total },
