@@ -38,6 +38,16 @@ export const rentApi = {
     ApiClient.post<RentInstallment>(
       `/leases/${encodeURIComponent(leaseId)}/rent/installments/${encodeURIComponent(installmentId)}/payment-request`,
     ),
+
+  /**
+   * Sends one prepared budget or settlement. Called only after the landlord confirms the channel. Never from a page load.
+   * `POST /leases/:id/condominium-notices/:noticeId/send`.
+   */
+  sendCondominiumNotice: (leaseId: string, noticeId: string, channels: Array<'Email' | 'WhatsApp'>) =>
+    ApiClient.post<void>(
+      `/leases/${encodeURIComponent(leaseId)}/condominium-notices/${encodeURIComponent(noticeId)}/send`,
+      { channels },
+    ),
 };
 
 /**

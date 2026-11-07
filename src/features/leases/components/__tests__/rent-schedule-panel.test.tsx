@@ -128,6 +128,78 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(form.getByRole('button', { name: 'Genera lo scadenziario' })).toBeDisabled();
   });
 
+  it('render_WithoutComponents_ShowsTheCurrentTotalAndBlankParts', async () => {
+    get.mockResolvedValue({ data: ledger() });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-composition-total')).toHaveTextContent('950,00');
+    expect(within(row).getByTestId('rent-composition-rent')).toHaveTextContent('—');
+    expect(within(row).getByTestId('rent-composition-residual')).toHaveTextContent('950,00');
+  });
+
+  it('render_WithComponents_ShowsEachPartPaidAndResidual', async () => {
+    get.mockResolvedValue({
+      data: ledger({
+        installments: [
+          installment({
+            amount: 1050,
+            amountPaid: 0,
+            residual: 1050,
+            components: [
+              { kind: 'Rent', amount: 900 },
+              { kind: 'CondominiumAdvance', amount: 150 },
+              { kind: 'CondominiumSettlement', amount: 0 },
+              { kind: 'Other', amount: 0 },
+            ],
+          }),
+        ],
+      }),
+    });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-composition-rent')).toHaveTextContent(/900,00/);
+    expect(within(row).getByTestId('rent-composition-condominiumAdvance')).toHaveTextContent(/150,00/);
+    expect(within(row).getByTestId('rent-composition-condominiumSettlement')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-other')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-total')).toHaveTextContent(/1\.?050,00/);
+    expect(within(row).getByTestId('rent-composition-paid')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-residual')).toHaveTextContent(/1\.?050,00/);
+  });
+
+  it('manualNotice_StaysUntilTheLandlordConfirmsAChannel', async () => {
+    get.mockResolvedValue({
+      data: ledger({
+        manualNotices: [{ id: 'notice-1', kind: 'Budget', title: 'Preventivo 2026', recipientName: 'Giulia Verdi' }],
+      }),
+    });
+    post.mockResolvedValue({ data: undefined });
+
+    renderPanel();
+
+    expect(await screen.findByTestId('rent-manual-notices')).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('rent-notice-send-notice-1'));
+    const dialog = await screen.findByTestId('rent-notice-dialog');
+    expect(post).not.toHaveBeenCalled();
+    expect(within(dialog).getByTestId('rent-notice-confirm')).toBeDisabled();
+
+    fireEvent.click(within(dialog).getByLabelText('Email'));
+    fireEvent.click(within(dialog).getByTestId('rent-notice-confirm'));
+
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith(
+        '/leases/lease-1/condominium-notices/notice-1/send',
+        { channels: ['Email'] },
+        undefined,
+      ),
+    );
+  });
+
   it('render_Installments_ShowRealStatesOverdueAndHowTheyWerePaid', async () => {
     get.mockResolvedValue({
       data: ledger({
@@ -169,6 +241,27 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(within(notice).getByRole('link', { name: 'Vai a Pagamenti' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
     const row = screen.getByTestId('rent-installment');
     expect(within(row).queryByRole('button', { name: 'Invia link di pagamento' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
+  });
+
+  it('openInstallment_OffersStripeBesideTheOfflinePayment', async () => {
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'EUR' })] }) });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-stripe-inst-1')).toHaveTextContent('Bonifico con Stripe');
+    expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
+  });
+
+  it('usdInstallment_DoesNotOfferTheSepaDebit', async () => {
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'USD' })] }) });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).queryByTestId('rent-stripe-inst-1')).not.toBeInTheDocument();
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 

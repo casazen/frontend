@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
+import { StripeRentTransferDialog } from '@/features/bank-transfer/financial-connections-transfer';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -22,8 +24,11 @@ import {
   useSendRentPaymentRequest,
 } from '@/queries/use-rent';
 import type { ConfigureRentScheduleInput, RentCadence, RentInstallment, RentLedger } from '@/types';
+import { rentBreakdown } from '../lib/rent-breakdown';
 import { monthName, monthOfDate, trackFromMonths } from '../lib/rent-register';
 import { MarkRentPaidDialog } from './mark-rent-paid-dialog';
+import { RentComposition } from './rent-composition';
+import { RentManualNotices } from './rent-manual-notices';
 
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -201,6 +206,7 @@ function RentLedgerContent({
       )}
 
       {schedule && <InstallmentsTable leaseId={leaseId} ledger={ledger} />}
+      <RentManualNotices leaseId={leaseId} notices={ledger.manualNotices ?? []} />
     </div>
   );
 }
@@ -371,6 +377,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
   const { t } = useTranslation();
   const sendRequest = useSendRentPaymentRequest(leaseId);
   const [markPaidFor, setMarkPaidFor] = useState<RentInstallment | null>(null);
+  const [stripeFor, setStripeFor] = useState<RentInstallment | null>(null);
   const active = ledger.schedule?.isActive === true;
 
   if (ledger.installments.length === 0) {
@@ -388,7 +395,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
           <tr className="border-b text-left text-muted-foreground">
             <th className="py-2 pr-3 font-medium">{t('rent.columns.period')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.dueDate')}</th>
-            <th className="py-2 pr-3 font-medium">{t('rent.columns.amount')}</th>
+            <th className="py-2 pr-3 font-medium">{t('rent.composition.label')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.status')}</th>
             <th className="py-2 font-medium">{t('rent.columns.actions')}</th>
           </tr>
@@ -402,7 +409,9 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                   {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
                 </td>
                 <td className="py-2 pr-3">{formatDate(installment.dueDate)}</td>
-                <td className="py-2 pr-3">{formatCurrency(installment.amount, installment.currency)}</td>
+                <td className="py-2 pr-3">
+                  <RentComposition row={installment} currency={installment.currency} />
+                </td>
                 <td className="py-2 pr-3">
                   <div className="flex flex-wrap items-center gap-1">
                     <Badge variant={STATUS_VARIANT[installment.status]} data-testid="rent-installment-status">
@@ -429,6 +438,16 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                           {installment.paymentRequestedAt ? t('rent.resendLink') : t('rent.sendLink')}
                         </Button>
                       )}
+                      {ledger.onlinePaymentsAvailable && bankLinkDebitAvailable(installment.currency) ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStripeFor(installment)}
+                          data-testid={`rent-stripe-${installment.id}`}
+                        >
+                          {t('bankTransfer.open')}
+                        </Button>
+                      ) : null}
                       <Button size="sm" variant="outline" onClick={() => setMarkPaidFor(installment)}>
                         {t('rent.markPaid')}
                       </Button>
@@ -440,6 +459,20 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
           })}
         </tbody>
       </table>
+      {stripeFor ? (
+        <StripeRentTransferDialog
+          open
+          leaseId={leaseId}
+          dueId={stripeFor.id}
+          amount={rentBreakdown(stripeFor).residual}
+          currency={stripeFor.currency}
+          reference={stripeFor.transfer?.reference ?? ''}
+          dueFailed={stripeFor.status === 'Failed'}
+          onOpenChange={(next) => {
+            if (!next) setStripeFor(null);
+          }}
+        />
+      ) : null}
       <MarkRentPaidDialog
         leaseId={leaseId}
         installment={markPaidFor}

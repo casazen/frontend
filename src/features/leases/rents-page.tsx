@@ -14,11 +14,13 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { useLeases } from '@/queries/use-leases';
 import { useRentRegister } from '@/queries/use-rent-register';
 import type { RentRegisterPage, RentRegisterRow } from '@/types';
+import { StripeRentTransferDialog } from '@/features/bank-transfer/financial-connections-transfer';
 import { BankStatementImportDialog } from './components/bank-statement-import-dialog';
 import { RecordRentPaymentDialog } from './components/record-rent-payment-dialog';
 import { RentMonthPicker } from './components/rent-month-picker';
 import { RentReminderDialog } from './components/rent-reminder-dialog';
 import { BANK_IMPORT_KEY } from './lib/bank-import';
+import { rentBreakdown } from './lib/rent-breakdown';
 import { isRentMonth, monthName, monthOfDate, rentRegisterPath, rentStatusOfChip } from './lib/rent-register';
 import { useRentsList } from './rents-list';
 
@@ -95,15 +97,27 @@ export function RentsPage() {
 
   const [reminding, setReminding] = useState<RentRegisterRow | null>(null);
   const [recording, setRecording] = useState<{ row: RentRegisterRow | null } | null>(null);
+  const [stripeRow, setStripeRow] = useState<RentRegisterRow | null>(null);
   const [importing, setImporting] = useState(false);
   const recordRow = useCallback((row: RentRegisterRow) => setRecording({ row }), []);
+  // The register is loaded below, after this list. When it says Stripe can take the rent, render again so the menu can offer it.
+  const [onlinePaymentsAvailable, setOnlinePaymentsAvailable] = useState(false);
 
-  const list = useRentsList({ canManage, held, onRecord: recordRow, onRemind: setReminding });
+  const list = useRentsList({
+    canManage,
+    held,
+    onRecord: recordRow,
+    onRemind: setReminding,
+    onStripePay: setStripeRow,
+    onlinePaymentsAvailable,
+  });
   const { state } = useListState(list);
   const status = rentStatusOfChip(state.chip);
 
   const register = useRentRegister({ month, status, page: state.page, pageSize: PAGE_SIZE });
   const data = register.data;
+  const paymentsOnline = data?.onlinePaymentsAvailable ?? false;
+  if (onlinePaymentsAvailable !== paymentsOnline) setOnlinePaymentsAvailable(paymentsOnline);
   const rows = data?.items ?? NO_ROWS;
   // The numbers belong to the month the server answered for (the rows of the last month stay a moment while the next one comes).
   const shownMonth = data && isRentMonth(data.month) ? data.month : month;
@@ -209,6 +223,22 @@ export function RentsPage() {
 
       {recording ? (
         <RecordRentPaymentDialog key={recording.row?.id ?? 'choose'} row={recording.row ?? undefined} onClose={() => setRecording(null)} />
+      ) : null}
+
+      {stripeRow ? (
+        <StripeRentTransferDialog
+          key={stripeRow.id}
+          open
+          leaseId={stripeRow.leaseId}
+          dueId={stripeRow.id}
+          amount={rentBreakdown(stripeRow).residual}
+          currency={stripeRow.currency}
+          reference={stripeRow.transfer?.reference ?? ''}
+          dueFailed={stripeRow.status === 'Failed'}
+          onOpenChange={(next) => {
+            if (!next) setStripeRow(null);
+          }}
+        />
       ) : null}
 
       {importing ? <BankStatementImportDialog onClose={() => setImporting(false)} /> : null}

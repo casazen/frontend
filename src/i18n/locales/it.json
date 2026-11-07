@@ -1319,6 +1319,8 @@
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
+      "bankLinkDebitUnavailable": "Questo bonifico Stripe è disponibile per una scadenza in euro, da un conto italiano o europeo.",
+      "bankLinkNotLinked": "Collega prima il conto. Poi potrai avviare il bonifico.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
@@ -9159,6 +9161,10 @@
       "notePlaceholder": "Es. Ti chiedo il bonifico entro venerdì",
       "previewBodyDue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, è da pagare entro il {{date}} e non risulta ancora pagato.",
       "previewBodyOverdue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, era in scadenza il {{date}} e non risulta ancora pagato.",
+      "descriptionTotal": "{{tenant}} · {{property}}: totale di {{amount}}, scadenza {{date}}.",
+      "previewBodyComposed": "Ti ricordiamo che l'importo totale di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, è da pagare entro il {{date}} e non risulta ancora pagato. La composizione è sotto: non è tutto canone.",
+      "previewBodyComposedOverdue": "Ti ricordiamo che l'importo totale di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, era in scadenza il {{date}} e non risulta ancora pagato. La composizione è sotto: non è tutto canone.",
+      "previewTransfer": "Bonifico a {{holder}}, IBAN {{iban}}, importo {{amount}}, scadenza {{date}}, causale {{reference}}.",
       "previewLabel": "Anteprima dell'email",
       "previewSubject": "Oggetto: Promemoria canone di locazione - {{property}}, scadenza {{date}}",
       "previewWithLink": "L'email contiene il link per pagare online.",
@@ -13759,6 +13765,34 @@
       "amount": "Importo",
       "status": "Stato",
       "actions": "Azioni"
+    },
+    "composition": {
+      "label": "Composizione",
+      "rent": "Canone",
+      "advance": "Acconto condominiale",
+      "settlement": "Conguaglio",
+      "other": "Altri oneri",
+      "total": "Totale",
+      "paid": "Pagato",
+      "residual": "Residuo"
+    },
+    "notices": {
+      "title": "Preventivi e conguagli da inviare",
+      "hint": "L'invio parte solo quando lo confermi. CasaZen non spedisce un preventivo o un conguaglio da solo.",
+      "send": "Prepara l'invio",
+      "dialogTitle": "Invia «{{title}}»",
+      "dialogDescription": "Scegli il canale. Niente viene inviato finché non premi Invia.",
+      "channels": "Canali",
+      "confirm": "Invia",
+      "sent": "Invio registrato",
+      "kind": {
+        "Budget": "Preventivo",
+        "Settlement": "Conguaglio"
+      },
+      "channel": {
+        "Email": "Email",
+        "WhatsApp": "WhatsApp"
+      }
     },
     "status": {
       "Scheduled": "Da incassare",
@@ -20855,6 +20889,124 @@
       "paid": "Pagato"
     },
     "title": "Bonifici proprietari"
+  },
+  "tenantArea": {
+    "title": "Area conduttore",
+    "loading": "Caricamento…",
+    "loadError": "Non riesco a caricare la tua area.",
+    "noContracts": "Non hai un contratto attivo da consultare.",
+    "openContract": "Apri il contratto",
+    "nav": {
+      "label": "Sezioni",
+      "contracts": "Contratti",
+      "contract": "Contratto",
+      "dues": "Scadenze",
+      "documents": "Documenti",
+      "maintenance": "Manutenzione"
+    },
+    "contract": {
+      "term": "Dal {{from}} al {{to}}",
+      "openEnd": "data da definire",
+      "openDue": "Vedi la prossima scadenza"
+    },
+    "bank": {
+      "title": "Estremi per il bonifico",
+      "holder": "Intestatario",
+      "iban": "IBAN",
+      "amount": "Importo",
+      "due": "Scadenza",
+      "reference": "Causale",
+      "copy": "Copia la causale",
+      "copied": "Causale copiata"
+    },
+    "dues": {
+      "empty": "Nessuna scadenza.",
+      "period": "Dal {{from}} al {{to}}",
+      "status": {
+        "Scheduled": "Da pagare",
+        "Processing": "In verifica",
+        "Paid": "Pagata",
+        "Failed": "Non riuscito",
+        "Cancelled": "Annullata"
+      }
+    },
+    "declaration": {
+      "amount": "Importo del bonifico",
+      "date": "Data del bonifico",
+      "reference": "Riferimento (facoltativo)",
+      "note": "Nota (facoltativa)",
+      "receipt": "Ricevuta (facoltativa)",
+      "submit": "Ho effettuato il bonifico",
+      "sent": "Dichiarazione inviata. La rata non è ancora segnata come pagata.",
+      "failed": "Non riesco a registrare la dichiarazione.",
+      "notPaid": "La dichiarazione avvisa il gestore. Non segna la rata come pagata.",
+      "status": {
+        "Submitted": "Inviata",
+        "Verified": "Verificata",
+        "Rejected": "Respinta",
+        "Superseded": "Sostituita"
+      }
+    },
+    "documents": {
+      "empty": "Nessun documento condiviso.",
+      "download": "Scarica",
+      "failed": "Non riesco a scaricare il documento.",
+      "kind": {
+        "Budget": "Preventivo",
+        "Settlement": "Conguaglio",
+        "Statement": "Consuntivo",
+        "Report": "Resoconto",
+        "Other": "Documento"
+      }
+    },
+    "maintenance": {
+      "new": "Nuova richiesta",
+      "empty": "Nessuna richiesta.",
+      "category": "Categoria",
+      "urgency": "Urgenza",
+      "description": "Descrizione",
+      "attachments": "Allegati",
+      "submit": "Invia al gestore",
+      "sent": "Richiesta inviata al gestore.",
+      "failed": "Non riesco a inviare la richiesta.",
+      "sentToManager": "La richiesta va al gestore del contratto. Non assegni tu un fornitore.",
+      "emergencyNotImmediate": "Aprire la richiesta non significa che qualcuno stia già intervenendo.",
+      "submittedAt": "Inviata il {{date}}",
+      "urgencyLevel": {
+        "Normal": "Normale",
+        "High": "Alta",
+        "Emergency": "Emergenza"
+      },
+      "status": {
+        "Sent": "Inviata al gestore",
+        "InReview": "In valutazione",
+        "NeedsInfo": "Servono altre informazioni",
+        "Accepted": "Presa in carico dal gestore",
+        "InProgress": "In corso",
+        "Closed": "Chiusa",
+        "Rejected": "Non accettata"
+      }
+    }
+  },
+  "bankTransfer": {
+    "title": "Bonifico con il conto collegato",
+    "open": "Bonifico con Stripe",
+    "hint": "Stripe apre la sua schermata e propone le banche italiane. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
+    "link": "Collega il conto",
+    "linkAnother": "Collega un altro conto",
+    "loadingAccounts": "Lettura dei conti collegati…",
+    "accountsLabel": "Conto",
+    "amount": "Importo",
+    "reference": "Causale",
+    "noReference": "La causale non è ancora arrivata con la scadenza. Puoi comunque avviare il bonifico.",
+    "start": "Avvia il bonifico",
+    "pending": "Bonifico avviato. La scadenza non è segnata come pagata: lo sarà quando Stripe conferma.",
+    "failed": "Non riesco a collegare il conto o ad avviare il bonifico.",
+    "stripeClosed": "Collegamento annullato.",
+    "loadError": "Non riesco a leggere i conti collegati.",
+    "noStripe": "Stripe non è disponibile in questo momento.",
+    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico».",
+    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso."
   },
   "wizard": {
     "back": "Indietro",
