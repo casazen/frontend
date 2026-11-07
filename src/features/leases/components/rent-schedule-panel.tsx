@@ -24,6 +24,8 @@ import {
 import type { ConfigureRentScheduleInput, RentCadence, RentInstallment, RentLedger } from '@/types';
 import { monthName, monthOfDate, trackFromMonths } from '../lib/rent-register';
 import { MarkRentPaidDialog } from './mark-rent-paid-dialog';
+import { RentComposition } from './rent-composition';
+import { RentManualNotices } from './rent-manual-notices';
 
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -201,6 +203,7 @@ function RentLedgerContent({
       )}
 
       {schedule && <InstallmentsTable leaseId={leaseId} ledger={ledger} />}
+      <RentManualNotices leaseId={leaseId} notices={ledger.manualNotices ?? []} />
     </div>
   );
 }
@@ -388,7 +391,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
           <tr className="border-b text-left text-muted-foreground">
             <th className="py-2 pr-3 font-medium">{t('rent.columns.period')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.dueDate')}</th>
-            <th className="py-2 pr-3 font-medium">{t('rent.columns.amount')}</th>
+            <th className="py-2 pr-3 font-medium">{t('rent.composition.label')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.status')}</th>
             <th className="py-2 font-medium">{t('rent.columns.actions')}</th>
           </tr>
@@ -402,7 +405,9 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                   {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
                 </td>
                 <td className="py-2 pr-3">{formatDate(installment.dueDate)}</td>
-                <td className="py-2 pr-3">{formatCurrency(installment.amount, installment.currency)}</td>
+                <td className="py-2 pr-3">
+                  <RentComposition row={installment} currency={installment.currency} />
+                </td>
                 <td className="py-2 pr-3">
                   <div className="flex flex-wrap items-center gap-1">
                     <Badge variant={STATUS_VARIANT[installment.status]} data-testid="rent-installment-status">

@@ -10,7 +10,9 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useRentRegisterActions } from '@/queries/use-rent-register';
 import type { RentRegisterRow } from '@/types';
 import { leaseTenantName } from '../lib/lease-list-format';
+import { rentBreakdown } from '../lib/rent-breakdown';
 import { reminderKey } from '../lib/rent-register';
+import { RentComposition } from './rent-composition';
 
 /** The most the landlord can add to the e-mail (the server refuses a longer note). */
 const MAX_NOTE_LENGTH = 300;
@@ -37,7 +39,8 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
   const [note, setNote] = useState('');
 
   const tenant = leaseTenantName(row, t);
-  const amount = formatCurrency(row.amount, row.currency);
+  const parts = rentBreakdown(row);
+  const amount = formatCurrency(parts.total, row.currency);
   // The dates as the e-mail writes them.
   const dueDate = formatDate(row.dueDate);
 
@@ -63,7 +66,12 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
         <DialogHeader>
           <DialogTitle>{t('longRentRents.reminder.title')}</DialogTitle>
           <DialogDescription className="break-words">
-            {t('longRentRents.reminder.description', { tenant, property: row.propertyName, amount, date: dueDate })}
+            {t(parts.hasComponents ? 'longRentRents.reminder.descriptionTotal' : 'longRentRents.reminder.description', {
+              tenant,
+              property: row.propertyName,
+              amount,
+              date: dueDate,
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -72,15 +80,41 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
             <p className="font-medium">
               {t('longRentRents.reminder.previewSubject', { property: row.propertyName, date: dueDate })}
             </p>
-            <p>
-              {t(row.isOverdue ? 'longRentRents.reminder.previewBodyOverdue' : 'longRentRents.reminder.previewBodyDue', {
-                amount,
-                property: row.propertyName,
-                from: formatDate(row.periodStart),
-                to: formatDate(row.periodEnd),
-                date: dueDate,
-              })}
-            </p>
+            {parts.hasComponents ? (
+              <div data-testid="rent-reminder-composition">
+                <p>
+                  {t(row.isOverdue ? 'longRentRents.reminder.previewBodyComposedOverdue' : 'longRentRents.reminder.previewBodyComposed', {
+                    amount,
+                    property: row.propertyName,
+                    from: formatDate(row.periodStart),
+                    to: formatDate(row.periodEnd),
+                    date: dueDate,
+                  })}
+                </p>
+                <RentComposition row={row} currency={row.currency} />
+              </div>
+            ) : (
+              <p>
+                {t(row.isOverdue ? 'longRentRents.reminder.previewBodyOverdue' : 'longRentRents.reminder.previewBodyDue', {
+                  amount,
+                  property: row.propertyName,
+                  from: formatDate(row.periodStart),
+                  to: formatDate(row.periodEnd),
+                  date: dueDate,
+                })}
+              </p>
+            )}
+            {row.transfer ? (
+              <p data-testid="rent-reminder-transfer">
+                {t('longRentRents.reminder.previewTransfer', {
+                  holder: row.transfer.accountHolder,
+                  iban: row.transfer.iban,
+                  amount,
+                  date: dueDate,
+                  reference: row.transfer.reference,
+                })}
+              </p>
+            ) : null}
             <p className="text-foreground/70">
               {onlinePaymentsAvailable ? t('longRentRents.reminder.previewWithLink') : t('longRentRents.reminder.previewWithoutLink')}
             </p>

@@ -74,6 +74,7 @@ import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
 import { ownerPortalRoutes } from './ownerPortalRoutes';
+import { tenantAreaRoutes } from './tenantAreaRoutes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -383,6 +384,11 @@ export const appRoutes: RouteObject[] = [
   {
     element: <AuthProviderBoundary />,
     children: ownerPortalRoutes,
+  },
+  // Tenant area (CondoLedger phase 1B): the signed-in tenant, not the landlord console.
+  {
+    element: <AuthProviderBoundary />,
+    children: tenantAreaRoutes,
   },
   // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
   ...devRoutes,
