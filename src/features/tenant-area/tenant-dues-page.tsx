@@ -42,7 +42,7 @@ export function TenantDuesPage() {
           </li>
         ))}
       </ul>
-      {selected ? <TenantDueDetail leaseId={area.contract.id} due={selected} /> : null}
+      {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
     </div>
   );
 }
@@ -55,7 +55,8 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
   const { t } = useTranslation();
   const declare = useDeclareTransfer(leaseId, due.id);
   const declaration = declare.data ?? due.declaration;
-  const canDeclare = !declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded';
+  const closed = due.status === 'Paid' || due.status === 'Cancelled';
+  const canDeclare = !closed && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
 
   return (
     <div className="space-y-4" data-testid="tenant-due-detail">

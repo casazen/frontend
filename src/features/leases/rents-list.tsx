@@ -58,11 +58,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
   const { canManage, held, onRecord, onRemind } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
   const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
-  const compositionCsv = (row: RentRegisterRow) => {
-    const parts = rentBreakdown(row);
-    const cell = (value: number | null) => (value === null ? '' : String(value));
-    return [cell(parts.rent), cell(parts.condominiumAdvance), cell(parts.condominiumSettlement), cell(parts.other), parts.total, parts.paid, parts.residual].join(' ');
-  };
   const stateOf = (row: RentRegisterRow) => t(statusTextKey('rent', rentStatus(row), 'label'));
   const noteOf = (row: RentRegisterRow) => rentStatusNote(row, t, language, today);
 
@@ -104,7 +99,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         default: true,
         align: 'end',
         render: (row) => <RentComposition row={row} currency={row.currency} />,
-        csv: compositionCsv,
+        csv: (row) => rentBreakdown(row).total,
       },
       {
         id: 'status',
