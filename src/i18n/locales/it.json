@@ -7220,6 +7220,7 @@
     "fields": {
       "citizenship": "la cittadinanza",
       "contactEmail": "l'email",
+      "contactPhone": "il numero di telefono",
       "firstName": "il nome",
       "fiscalCode": "il codice fiscale",
       "lastName": "il cognome",

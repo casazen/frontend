@@ -7220,6 +7220,7 @@
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
+      "contactPhone": "the phone number",
       "firstName": "the first name",
       "fiscalCode": "the fiscal code",
       "lastName": "the last name",

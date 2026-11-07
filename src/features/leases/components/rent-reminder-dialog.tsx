@@ -9,7 +9,6 @@ import { holdForUndo } from '@/lib/hold-for-undo';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useRentRegisterActions } from '@/queries/use-rent-register';
 import type { RentRegisterRow } from '@/types';
-import { rentRegisterApi } from '@/api/rent.api';
 import { leaseTenantName } from '../lib/lease-list-format';
 import { reminderKey } from '../lib/rent-register';
 
@@ -63,7 +62,7 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
     setPreparingWhatsApp(true);
     try {
       const text = note.trim();
-      const result = await rentRegisterApi.sendWhatsAppReminder(row.id, text === '' ? undefined : text);
+      const result = await actions.sendWhatsAppReminder(row.leaseId, row.id, text === '' ? undefined : text);
       toast.success(t('longRentRents.reminder.whatsappSent', { count: result.recipientCount }));
       onClose();
     } finally {
@@ -127,9 +126,11 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
               {t('longRentRents.reminder.whatsappSend')}
             </Button>
           ) : null}
-          <Button type="button" onClick={send} data-testid="rent-reminder-send">
-            {t('longRentRents.reminder.submit')}
-          </Button>
+          {row.canRemind ? (
+            <Button type="button" onClick={send} data-testid="rent-reminder-send">
+              {t('longRentRents.reminder.submit')}
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>

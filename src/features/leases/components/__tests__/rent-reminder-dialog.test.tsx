@@ -120,7 +120,11 @@ describe('RentReminderDialog (LR-04b)', () => {
         nextReminderAllowedAt: '2026-10-25T09:00:00Z',
       },
     });
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
     renderDialog({ ...row('installment-c'), canRemind: false, hasTenantPhone: true, canWhatsAppRemind: true });
+
+    // A phone with no e-mail can send WhatsApp only: the e-mail action the server already refused stays hidden.
+    expect(screen.queryByRole('button', { name: 'Invia sollecito' })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Messaggio per il conduttore'), { target: { value: ' Grazie ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Invia via WhatsApp' }));
@@ -131,5 +135,9 @@ describe('RentReminderDialog (LR-04b)', () => {
       undefined,
     ));
     expect(toast.success).toHaveBeenCalledWith('Promemoria WhatsApp inviato a 1 conduttore');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['long-rent-rents'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['lease-rent', 'lease-1'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['leases'] });
+    invalidate.mockRestore();
   });
 });
