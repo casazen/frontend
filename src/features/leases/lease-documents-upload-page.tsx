@@ -10,9 +10,11 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useLeases } from '@/queries/use-leases';
 import { useCfPracticeLease } from '@/queries/use-concordatofacile';
+import type { CfSyncState } from '@/types/concordatofacile.types';
 import type { LeaseDetail } from '@/types';
 import { CfImportPanel } from './components/cf-import-panel';
 import { LeaseDocumentsPanel } from './components/lease-documents-panel';
+import { useCfCompletion } from './lib/cf-completion';
 import { isCfImportDraft, useCfDeliveredContract } from './lib/cf-import';
 import { LEASE_CONFIRMED_STATE, isLeaseConfirmed } from './lib/upload-link';
 
@@ -38,9 +40,22 @@ function ChooseLease({ practiceId }: { practiceId?: string }) {
  * The contract ConcordatoFacile delivered, once it is uploaded to the draft it was made for (CF-IMPORT): where the reading stands and
  * «Completa e importa il contratto». Nothing for any other lease, and nothing before a contract document is there.
  */
-function DeliveredContract({ lease }: { lease: LeaseDetail }) {
+function DeliveredContract({ lease, syncState }: { lease: LeaseDetail; syncState?: CfSyncState }) {
   const reading = useCfDeliveredContract(lease);
-  return reading ? <CfImportPanel leaseId={lease.id} reading={reading} /> : null;
+  return reading ? <CfImportPanel leaseId={lease.id} reading={reading} syncState={syncState} /> : null;
+}
+
+/**
+ * What the documents did to a lease of the guided service (CF-DONE), told where they were uploaded: the contract read and imported as
+ * signed (the receipt of the registration is the next file), or the registration declared and the procedure over. Nothing for a lease
+ * that is still a draft (the panel above says where the reading stands) and for any other lease.
+ */
+function ServiceOutcome({ lease }: { lease: LeaseDetail }) {
+  const { t } = useTranslation();
+  if (lease.isConcordatoFacileSource !== true) return null;
+  if (lease.status === 'Registered') return <Alert variant="success" data-testid="cf-documents-outcome">{t('cfDocuments.outcome.registered')}</Alert>;
+  if (lease.status === 'Signed') return <Alert variant="success" data-testid="cf-documents-outcome">{t('cfDocuments.outcome.signed')}</Alert>;
+  return null;
 }
 
 /**
@@ -63,6 +78,29 @@ function ConfirmLease({ lease, practiceId, onChooseOther }: { lease: LeaseDetail
 }
 
 /**
+ * The documents of a lease the person confirmed as the right one (CF-FIX-FU4). On a lease of the guided service (CF-DONE) an upload moves the
+ * lease on without leaving the page: the server reads the file into the draft and, once the practice allows it, imports the contract and
+ * declares the registration (`useCfCompletion`), and the page tells what became of the lease. It is only asked after the confirmation: a
+ * link from outside decides nothing on its own.
+ */
+function ConfirmedDocuments({ lease, practiceLine }: { lease: LeaseDetail; practiceLine?: string }) {
+  const { t } = useTranslation();
+  const completion = useCfCompletion(lease);
+  // On the draft ConcordatoFacile made, the contract uploaded is read and fills in the draft: the generic line («non modifica i dati del contratto») would be untrue.
+  const instructions = isCfImportDraft(lease) ? t('cfDocuments.import.instructions') : t('cfDocuments.instructions');
+  return <div className="space-y-6">
+    <h2 className="text-lg font-semibold">{lease.property?.name ?? t('cfDocuments.house')}</h2>
+    <p className="break-all text-sm text-muted-foreground">{t('cfDocuments.reference', { id: lease.id })}</p>
+    {practiceLine ? <p className="break-words text-sm text-muted-foreground" data-testid="cf-documents-practice">{practiceLine}</p> : null}
+    <Alert>{instructions}</Alert>
+    <ServiceOutcome lease={lease} />
+    <DeliveredContract lease={lease} syncState={completion.state} />
+    <LeaseDocumentsPanel leaseId={lease.id} canUpload />
+    <Link className="inline-block underline" to={`/app/long-rent/leases/${lease.id}`}>{t('cfDocuments.openLease')}</Link>
+  </div>;
+}
+
+/**
  * The documents of one lease. `practiceLine` says where the practice of the link stands in relation to it (when there is one);
  * `confirmed` is false for a contract the link decided (see `ConfirmLease`).
  */
@@ -74,17 +112,7 @@ function LeaseDocuments({ leaseId, practiceId, practiceLine, confirmed }: { leas
   if (lease.isError) return <ErrorState title={t('cfDocuments.leaseError')} error={lease.error} onRetry={() => void lease.refetch()} />;
   if (!lease.data.propertyId) return <Alert variant="danger">{t('cfDocuments.invalidLease')}</Alert>;
   if (!confirmed) return choosing ? <ChooseLease practiceId={practiceId} /> : <ConfirmLease lease={lease.data} practiceId={practiceId} onChooseOther={() => setChoosing(true)} />;
-  // On the draft ConcordatoFacile made, the contract uploaded is read and fills in the draft: the generic line («non modifica i dati del contratto») would be untrue.
-  const instructions = isCfImportDraft(lease.data) ? t('cfDocuments.import.instructions') : t('cfDocuments.instructions');
-  return <div className="space-y-6">
-    <h2 className="text-lg font-semibold">{lease.data.property?.name ?? t('cfDocuments.house')}</h2>
-    <p className="break-all text-sm text-muted-foreground">{t('cfDocuments.reference', { id: lease.data.id })}</p>
-    {practiceLine ? <p className="break-words text-sm text-muted-foreground" data-testid="cf-documents-practice">{practiceLine}</p> : null}
-    <Alert>{instructions}</Alert>
-    <DeliveredContract lease={lease.data} />
-    <LeaseDocumentsPanel leaseId={leaseId} canUpload />
-    <Link className="inline-block underline" to={`/app/long-rent/leases/${leaseId}`}>{t('cfDocuments.openLease')}</Link>
-  </div>;
+  return <ConfirmedDocuments lease={lease.data} practiceLine={practiceLine} />;
 }
 
 /**

@@ -9,7 +9,7 @@ import { useLongRentRules } from '@/queries/use-lease-draft';
 import { useRliAdvisory } from '@/queries/use-leases';
 import type { CedolareAdvisoryInput, LeaseDetail, LeaseStage } from '@/types';
 import { hasAttestation } from '../lib/lease-benefits';
-import { isPartnerDraft } from '../lib/lease-sheet';
+import { isServiceDraft } from '../lib/lease-sheet';
 import { LeaseOperations } from '../operations/lease-operations';
 import { useSheetOperations } from '../operations/use-sheet-operations';
 import { AdviceItem } from './advice-item';
@@ -39,8 +39,11 @@ interface LeaseGuideProps {
  */
 export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const { t, i18n } = useTranslation();
-  const partnerDraft = isPartnerDraft(lease);
-  const concordato = lease.contractType === 'Concordato' || lease.isConcordatoFacileSource === true;
+  // A draft of the guided service (the one made for it, or one whose data the server read from the documents it delivered, CF-DONE): its
+  // contract is not prepared in CasaZen, so the advice and the tools about preparing one are left out.
+  const partnerDraft = isServiceDraft(lease);
+  const viaService = lease.isConcordatoFacileSource === true;
+  const concordato = lease.contractType === 'Concordato' || viaService;
   const registered = lease.status === 'Registered';
   // The comparison of the two regimes means nothing without a rent, and a draft made for the guided service has none to compare.
   const hasRent = lease.monthlyRent > 0 && !partnerDraft;
@@ -57,8 +60,9 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const today = todayInRome();
   const ata = advisory.data?.ata;
   const imuApplicable = imu.data?.applicable;
-  // The attestation is a document of its own, or the contract file that holds it (CF-DOCS-REAL).
-  const attested = documents.data ? hasAttestation(documents.data) : undefined;
+  // The attestation is a document of its own, or the contract file that holds it (CF-DOCS-REAL); for the guided service, whose file holds
+  // both, any contract file uploaded (CF-DONE): the person is never asked to upload it again.
+  const attested = documents.data ? hasAttestation(documents.data, viaService) : undefined;
   const rulesData = rules.data;
   // The need of a transitory lease is the landlord's to confirm: the advice then leads to the window that prepares the letter (LR-OPS-1b).
   const confirmation = operations.data?.transitoryConfirmation;

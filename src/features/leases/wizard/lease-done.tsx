@@ -165,7 +165,8 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
     ledger: ledger.data,
     rules,
     apeMissing: imported && documents.isSuccess && !latestApeDocument(documents.data),
-    attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !hasAttestation(leaseDocuments.data),
+    // The guided service delivers the contract and its attestation in one file: any contract file uploaded to its lease holds it (CF-DONE).
+    attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !hasAttestation(leaseDocuments.data, lease.isConcordatoFacileSource === true),
     t,
     language: i18n.language,
   });

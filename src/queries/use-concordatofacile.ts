@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { ConcordatoFacileApi } from '@/api/concordatofacile.api';
 import { getProblemCode } from '@/lib/api-errors';
+import type { CfSyncState } from '@/types/concordatofacile.types';
 
 /** Query key for CF access state. */
 export const CF_ACCESS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'access', leaseId] as const;
@@ -147,6 +148,42 @@ export function useOpenCfForm(leaseId: string, { replace = false }: OpenCfFormOp
   }, [reset, queryClient, leaseId]);
 
   return mutation;
+}
+
+/** Query key for the sync of the lease of the guided service with its practice (CF-DONE). */
+export const CF_SYNC_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'sync', leaseId] as const;
+
+/** While the server reads the documents the sync is asked again this often (ms)... */
+export const CF_SYNC_POLL_MS = 3_000;
+/** ...at most this many times (about six minutes: the reading of a scanned contract is given four): then the person reloads. */
+export const CF_SYNC_POLL_LIMIT = 120;
+
+/** The states in which the server is still reading a document: the answer will change by itself. */
+const CF_SYNC_READING: readonly CfSyncState[] = ['ReadingContract', 'ReadingReceipt'];
+
+/**
+ * Moves the lease of the guided service along with its practice (CF-DONE, `POST …/concordatofacile/sync`). It is a query and not a
+ * mutation on purpose: it is asked when the sheet opens, again every few seconds while a document is being read, and again when a
+ * document is uploaded (whoever uploads invalidates {@link CF_SYNC_QUERY_KEY}); it never keeps an answer (`gcTime: 0`) because the
+ * answer is about what the server did a moment ago. It does not retry and does not ask again after a failure (403: the person may not
+ * sign or register; 404; a body that is not an answer): the sheet is the sheet it was. Use {@link useCfCompletion} in a screen.
+ */
+export function useCfSync(leaseId: string, { enabled }: { enabled: boolean }) {
+  return useQuery({
+    queryKey: CF_SYNC_QUERY_KEY(leaseId),
+    queryFn: () => ConcordatoFacileApi.sync(leaseId),
+    enabled: enabled && leaseId !== '',
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+    retry: false,
+    refetchInterval: (query) => {
+      if (query.state.status === 'error' || query.state.dataUpdateCount >= CF_SYNC_POLL_LIMIT) return false;
+      const state = query.state.data?.state;
+      return state !== undefined && CF_SYNC_READING.includes(state) ? CF_SYNC_POLL_MS : false;
+    },
+  });
 }
 
 /** Query key for the lease of a CF practice. */
