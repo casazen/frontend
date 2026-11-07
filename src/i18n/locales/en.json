@@ -9154,6 +9154,10 @@
       "notePlaceholder": "E.g. Please pay by bank transfer by Friday",
       "previewBodyDue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid.",
       "previewBodyOverdue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid.",
+      "descriptionTotal": "{{tenant}} · {{property}}: total of {{amount}}, due {{date}}.",
+      "previewBodyComposed": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewBodyComposedOverdue": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewTransfer": "Transfer to {{holder}}, IBAN {{iban}}, amount {{amount}}, due {{date}}, reference {{reference}}.",
       "previewLabel": "Preview of the email",
       "previewSubject": "Subject: Promemoria canone di locazione - {{property}}, scadenza {{date}} (the email is written in Italian)",
       "previewWithLink": "The email has the link to pay online.",
@@ -13751,6 +13755,34 @@
       "amount": "Amount",
       "status": "Status",
       "actions": "Actions"
+    },
+    "composition": {
+      "label": "Breakdown",
+      "rent": "Rent",
+      "advance": "Condominium advance",
+      "settlement": "Settlement",
+      "other": "Other charges",
+      "total": "Total",
+      "paid": "Paid",
+      "residual": "Residual"
+    },
+    "notices": {
+      "title": "Budgets and settlements to send",
+      "hint": "A send starts only when you confirm it. CasaZen does not send a budget or a settlement on its own.",
+      "send": "Prepare the send",
+      "dialogTitle": "Send “{{title}}”",
+      "dialogDescription": "Choose the channel. Nothing is sent until you press Send.",
+      "channels": "Channels",
+      "confirm": "Send",
+      "sent": "Send recorded",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement"
+      },
+      "channel": {
+        "Email": "Email",
+        "WhatsApp": "WhatsApp"
+      }
     },
     "status": {
       "Scheduled": "To collect",
@@ -20847,6 +20879,104 @@
       "paid": "Paid"
     },
     "title": "Owner Wire Transfers"
+  },
+  "tenantArea": {
+    "title": "Tenant area",
+    "loading": "Loading…",
+    "loadError": "The tenant area could not be loaded.",
+    "noContracts": "You have no active contract to open.",
+    "openContract": "Open the contract",
+    "nav": {
+      "label": "Sections",
+      "contracts": "Contracts",
+      "contract": "Contract",
+      "dues": "Dues",
+      "documents": "Documents",
+      "maintenance": "Maintenance"
+    },
+    "contract": {
+      "term": "From {{from}} to {{to}}",
+      "openEnd": "end date not set",
+      "openDue": "See the next due"
+    },
+    "bank": {
+      "title": "Bank transfer details",
+      "holder": "Account holder",
+      "iban": "IBAN",
+      "amount": "Amount",
+      "due": "Due date",
+      "reference": "Reference",
+      "copy": "Copy the reference",
+      "copied": "Reference copied"
+    },
+    "dues": {
+      "empty": "No dues.",
+      "period": "From {{from}} to {{to}}",
+      "status": {
+        "Scheduled": "To pay",
+        "Processing": "Being checked",
+        "Paid": "Paid",
+        "Failed": "Failed",
+        "Cancelled": "Cancelled"
+      }
+    },
+    "declaration": {
+      "amount": "Transfer amount",
+      "date": "Transfer date",
+      "reference": "Reference (optional)",
+      "note": "Note (optional)",
+      "receipt": "Receipt (optional)",
+      "submit": "I made the transfer",
+      "sent": "Declaration sent. The installment is not marked paid.",
+      "failed": "The declaration could not be saved.",
+      "notPaid": "The declaration tells the manager. It does not mark the installment paid.",
+      "status": {
+        "Submitted": "Submitted",
+        "Verified": "Verified",
+        "Rejected": "Rejected",
+        "Superseded": "Superseded"
+      }
+    },
+    "documents": {
+      "empty": "No shared documents.",
+      "download": "Download",
+      "failed": "The document could not be downloaded.",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement",
+        "Statement": "Statement",
+        "Report": "Report",
+        "Other": "Document"
+      }
+    },
+    "maintenance": {
+      "new": "New request",
+      "empty": "No requests.",
+      "category": "Category",
+      "urgency": "Urgency",
+      "description": "Description",
+      "attachments": "Attachments",
+      "submit": "Send to the manager",
+      "sent": "Request sent to the manager.",
+      "failed": "The request could not be sent.",
+      "sentToManager": "The request goes to the manager of the contract. You do not assign a supplier.",
+      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way.",
+      "submittedAt": "Sent on {{date}}",
+      "urgencyLevel": {
+        "Normal": "Normal",
+        "High": "High",
+        "Emergency": "Emergency"
+      },
+      "status": {
+        "Sent": "Sent to the manager",
+        "InReview": "Under review",
+        "NeedsInfo": "More information needed",
+        "Accepted": "Taken on by the manager",
+        "InProgress": "In progress",
+        "Closed": "Closed",
+        "Rejected": "Not accepted"
+      }
+    }
   },
   "wizard": {
     "back": "Back",

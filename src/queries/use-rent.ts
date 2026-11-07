@@ -78,6 +78,16 @@ export function useSendRentPaymentRequest(leaseId: string) {
   );
 }
 
+/** Explicit send of one budget or settlement. The mutation runs only when the landlord confirms. */
+export function useSendCondominiumNotice(leaseId: string) {
+  return useRentMutation(
+    leaseId,
+    ({ noticeId, channels }: { noticeId: string; channels: Array<'Email' | 'WhatsApp'> }) =>
+      rentApi.sendCondominiumNotice(leaseId, noticeId, channels),
+    'rent.notices.sent',
+  );
+}
+
 /** The tenant's payment page: the installment of the link (404 when the link is wrong or replaced). */
 export function usePublicRentPayment(installmentId: string, token: string, awaitingStripe = false) {
   return useQuery({

@@ -9,7 +9,9 @@ import { rentStatus, statusTextKey } from '@/lib/status-dictionary';
 import { todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { RentRegisterRow } from '@/types';
+import { RentComposition } from './components/rent-composition';
 import { leaseTenantName } from './lib/lease-list-format';
+import { rentBreakdown } from './lib/rent-breakdown';
 import {
   isOpenInstallment,
   lastReminderText,
@@ -55,7 +57,12 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
   const today = todayInRome();
   const { canManage, held, onRecord, onRemind } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
-  const amountOf = (row: RentRegisterRow) => formatCurrency(row.amount, row.currency);
+  const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
+  const compositionCsv = (row: RentRegisterRow) => {
+    const parts = rentBreakdown(row);
+    const cell = (value: number | null) => (value === null ? '' : String(value));
+    return [cell(parts.rent), cell(parts.condominiumAdvance), cell(parts.condominiumSettlement), cell(parts.other), parts.total, parts.paid, parts.residual].join(' ');
+  };
   const stateOf = (row: RentRegisterRow) => t(statusTextKey('rent', rentStatus(row), 'label'));
   const noteOf = (row: RentRegisterRow) => rentStatusNote(row, t, language, today);
 
@@ -93,11 +100,11 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
       },
       {
         id: 'amount',
-        label: t('longRentRents.columns.amount'),
+        label: t('rent.composition.label'),
         default: true,
         align: 'end',
-        render: (row) => <span className="whitespace-nowrap font-medium">{amountOf(row)}</span>,
-        csv: (row) => row.amount,
+        render: (row) => <RentComposition row={row} currency={row.currency} />,
+        csv: compositionCsv,
       },
       {
         id: 'status',
@@ -166,13 +173,18 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         status: <StatusBadge kind="rent" status={rentStatus(row)} />,
         meta: [
           { icon: CalendarDays, label: t('longRentRents.columns.due'), text: shortDay(row.dueDate, language) },
-          { icon: Wallet, label: t('longRentRents.columns.amount'), text: amountOf(row) },
+          { icon: Wallet, label: t('rent.composition.total'), text: amountOf(row) },
         ],
-        foot: note ? (
-          <p className={note.late ? 'break-words text-sm font-medium text-danger-foreground' : 'break-words text-sm text-foreground/70'}>
-            {note.text}
-          </p>
-        ) : undefined,
+        foot: (
+          <div className="space-y-2">
+            {note ? (
+              <p className={note.late ? 'break-words text-sm font-medium text-danger-foreground' : 'break-words text-sm text-foreground/70'}>
+                {note.text}
+              </p>
+            ) : null}
+            <RentComposition row={row} currency={row.currency} />
+          </div>
+        ),
       };
     },
     // With the sidebar open (from `lg`) five columns and a button do not fit under 1280 px: cards until then.
