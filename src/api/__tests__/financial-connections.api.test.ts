@@ -50,13 +50,13 @@ describe('bankLinkApi', () => {
     vi.mocked(ApiClient.post).mockResolvedValueOnce(started);
 
     const result = await bankLinkApi.startOrgPayment(
-      { amountCents: 105000, currency: 'usd', leaseId: 'lease-1', installmentId: 'due-1' },
+      { amountCents: 105000, currency: 'eur', leaseId: 'lease-1', installmentId: 'due-1' },
       'key-1',
     );
 
     expect(ApiClient.post).toHaveBeenCalledWith(
       '/orgs/me/bank-links/payments',
-      { amountCents: 105000, currency: 'usd', leaseId: 'lease-1', installmentId: 'due-1' },
+      { amountCents: 105000, currency: 'eur', leaseId: 'lease-1', installmentId: 'due-1' },
       { headers: { 'Idempotency-Key': 'key-1' } },
     );
     expect(result.dueSettled).toBe(false);

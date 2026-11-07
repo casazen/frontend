@@ -28,7 +28,7 @@ function renderOrg() {
           leaseId="lease-1"
           dueId="due-1"
           amount={1050}
-          currency="USD"
+          currency="EUR"
           reference="CZ-2026-11-ABC"
           publishableKey="pk_test"
         />
@@ -105,7 +105,7 @@ describe('FinancialConnectionsTransfer', () => {
     expect(transferCalls()[0][0]).toBe('/orgs/me/bank-links/payments');
     expect(transferCalls()[0][1]).toEqual({
       amountCents: 105000,
-      currency: 'usd',
+      currency: 'eur',
       leaseId: 'lease-1',
       installmentId: 'due-1',
     });
@@ -163,7 +163,7 @@ describe('FinancialConnectionsTransfer', () => {
             leaseId="lease-1"
             dueId="due-1"
             amount={1050}
-            currency="USD"
+            currency="EUR"
             reference="CZ-2026-11-ABC"
             onOpenChange={() => {}}
           />

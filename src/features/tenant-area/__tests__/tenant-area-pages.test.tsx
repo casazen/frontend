@@ -202,7 +202,7 @@ describe('tenant area', () => {
     expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-DUE-2');
   });
 
-  it('keeps the manual transfer for an euro due and does not offer the stripe debit', async () => {
+  it('keeps the manual transfer on an euro due until a bank account is linked', async () => {
     get.mockResolvedValue({ data: area });
 
     renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
@@ -210,8 +210,9 @@ describe('tenant area', () => {
     expect(await screen.findByTestId('tenant-bank')).toHaveTextContent('IT60X0542811101000000123456');
     expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-2026-11-ABC');
     expect(screen.getByTestId('tenant-declare-transfer')).toHaveTextContent('Ho effettuato il bonifico');
-    expect(screen.queryByTestId('stripe-bank-transfer')).not.toBeInTheDocument();
-    expect(screen.queryByText('Bonifico con Stripe')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stripe-link-account')).toHaveTextContent('Collega il conto');
+    expect(screen.getByText(/banche italiane/)).toBeInTheDocument();
+    expect(screen.queryByText('Accetta e continua')).not.toBeInTheDocument();
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
   });
 

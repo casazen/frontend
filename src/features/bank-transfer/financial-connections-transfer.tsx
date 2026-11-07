@@ -55,6 +55,8 @@ export interface FinancialConnectionsTransferProps {
   forLandlord?: boolean;
   /** The due already failed: the previous attempt is over and a new transfer may start. */
   dueFailed?: boolean;
+  /** True once an account is linked, so the manual transfer can stay the fallback for the other case. */
+  onLinkedChange?: (linked: boolean) => void;
 }
 
 function keyFromEnv(): string | null {
@@ -80,8 +82,8 @@ function accountLabel(account: BankLinkAccount): string {
 }
 
 /**
- * Links a bank account with Stripe Financial Connections and starts a USD debit for one open rent due.
- * Stripe draws the consent screen. This block never marks the due paid.
+ * Links a bank account with Stripe Financial Connections and starts a SEPA debit in euros.
+ * The session lists Italian banks. Stripe draws that screen. This block never marks the due paid.
  */
 export function FinancialConnectionsTransfer({
   mode,
@@ -96,6 +98,7 @@ export function FinancialConnectionsTransfer({
   showManualTransfer = false,
   forLandlord = false,
   dueFailed = false,
+  onLinkedChange,
 }: FinancialConnectionsTransferProps) {
   const { t } = useTranslation();
   const orgAccount = useOrgBankLink(mode === 'org');
@@ -123,6 +126,10 @@ export function FinancialConnectionsTransfer({
   const account = attached?.linked ? attached : stored?.linked ? stored : attached;
   const accountId = account?.linked ? account.accountId : null;
   const linkBusy = orgSession.isPending || rentSession.isPending || attachOrg.isPending || attachRent.isPending;
+
+  useEffect(() => {
+    onLinkedChange?.(!!accountId);
+  }, [accountId, onLinkedChange]);
 
   async function linkAccount() {
     if (mode === 'public' && !token) return;

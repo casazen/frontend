@@ -246,12 +246,22 @@ describe('RentSchedulePanel (LT-06)', () => {
   });
 
   it('openInstallment_OffersStripeBesideTheOfflinePayment', async () => {
-    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'USD' })] }) });
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'EUR' })] }) });
 
     renderPanel();
 
     const row = await screen.findByTestId('rent-installment');
     expect(within(row).getByTestId('rent-stripe-inst-1')).toHaveTextContent('Bonifico con Stripe');
+    expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
+  });
+
+  it('usdInstallment_DoesNotOfferTheSepaDebit', async () => {
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'USD' })] }) });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).queryByTestId('rent-stripe-inst-1')).not.toBeInTheDocument();
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 

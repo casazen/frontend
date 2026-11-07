@@ -1319,7 +1319,7 @@
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
-      "bankLinkDebitUnavailable": "Questo bonifico Stripe non è disponibile per una scadenza in euro. Usa gli estremi e il bonifico manuale.",
+      "bankLinkDebitUnavailable": "Questo bonifico Stripe è disponibile per una scadenza in euro, da un conto italiano o europeo.",
       "bankLinkNotLinked": "Collega prima il conto. Poi potrai avviare il bonifico.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
@@ -20983,7 +20983,7 @@
   "bankTransfer": {
     "title": "Bonifico con il conto collegato",
     "open": "Bonifico con Stripe",
-    "hint": "Stripe apre la sua schermata per collegare il conto. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
+    "hint": "Stripe apre la sua schermata e propone le banche italiane. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
     "link": "Collega il conto",
     "linkAnother": "Collega un altro conto",
     "loadingAccounts": "Lettura dei conti collegati…",

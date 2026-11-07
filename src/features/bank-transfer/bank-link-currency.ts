@@ -1,6 +1,6 @@
-/** ACH from a Financial Connections account is USD only. An EUR due is refused (`bank_link_debit_unavailable`). */
+/** SEPA Direct Debit from a linked Italian or EU account. The session lists Italian banks. Not a US account. */
 export function bankLinkDebitAvailable(currency: string | null | undefined): boolean {
-  return currency?.trim().toLowerCase() === 'usd';
+  return currency?.trim().toLowerCase() === 'eur';
 }
 
 /** Major units (the rest of the rent screens) to the cents the bank-link payment expects. */

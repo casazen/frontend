@@ -78,8 +78,8 @@ describe('rent register composition columns', () => {
     const offline = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: false });
     const online = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: true });
 
-    expect(hasStripe(offline, dollar)).toBe(false);
-    expect(hasStripe(online, euro)).toBe(false);
-    expect(hasStripe(online, dollar)).toBe(true);
+    expect(hasStripe(offline, euro)).toBe(false);
+    expect(hasStripe(online, dollar)).toBe(false);
+    expect(hasStripe(online, euro)).toBe(true);
   });
 });
