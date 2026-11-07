@@ -41,7 +41,7 @@ const channelBooking = (overrides: Partial<Booking> = {}): Booking =>
     paidAmount: 462,
     otaAmounts: { commission: 69.3, net: 392.7, paid: 462, balance: 0, currency: 'EUR' },
     collection: { companyCollect: true, commissionIncludedInPayments: true },
-    amountSources: { total: 'ChannelManager', commission: 'ChannelManager', paid: 'ChannelManager', balance: 'ChannelManager' },
+    amountSources: { total: 'ChannelManager', commission: 'ChannelManager', net: 'ChannelManager', paid: 'ChannelManager', balance: 'ChannelManager' },
     ...overrides,
   });
 
@@ -78,7 +78,7 @@ describe('BookingOtaAmounts', () => {
     expect(section.getByTestId('booking-ota-payment-state')).toHaveTextContent('Incassato');
     expect(section.getByTestId('booking-ota-collector')).toHaveTextContent('Il canale incassa il pagamento');
     expect(section.getByTestId('booking-ota-commission-included')).toHaveTextContent('Già inclusa');
-    // Every figure says where it comes from, in words and with an icon (never by color alone): the net is worked out from the commission.
+    // Every figure says where it comes from, in words and with an icon (never by color alone), the net with an entry of its own.
     const tags = section.getAllByTestId('booking-amount-source');
     expect(tags).toHaveLength(5);
     for (const tag of tags) {
@@ -110,6 +110,22 @@ describe('BookingOtaAmounts', () => {
     expect(section.getAllByTestId('booking-amount-source')).toHaveLength(2);
     expect(screen.getByTestId('booking-ota-amounts')).not.toHaveTextContent('0,00');
     expect(section.getByTestId('booking-ota-some-missing')).toBeInTheDocument();
+  });
+
+  it('BookingOtaAmounts_FigureWithNoEntryInTheSources_IsDrawnWithNoTag', () => {
+    // The tag of a figure is the entry of that figure and no other: a net with no `net` entry is not tagged with the source of the
+    // commission or of the total.
+    render(
+      <BookingOtaAmounts
+        booking={channelBooking({ amountSources: { total: 'ChannelManager', commission: 'ChannelManager', paid: 'ChannelManager', balance: 'ChannelManager' } })}
+      />,
+    );
+
+    const section = within(screen.getByTestId('booking-ota-amounts'));
+    const net = section.getByTestId('booking-ota-net');
+    expect(net).toHaveTextContent('392,70 €');
+    expect(net.closest('div')?.querySelector('[data-testid="booking-amount-source"]')).toBeNull();
+    expect(section.getAllByTestId('booking-amount-source')).toHaveLength(4);
   });
 
   it('BookingOtaAmounts_SettledBalance_IsAFigureOfZeroAndNotAMissingOne', () => {

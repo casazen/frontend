@@ -120,9 +120,8 @@ export const BOOKING_AMOUNT_SOURCES = ['Stripe', 'ChannelManager', 'Manual'] as 
 export type BookingAmountSource = (typeof BOOKING_AMOUNT_SOURCES)[number];
 
 /**
- * `amountSources` of a booking: the source of the total, of what was paid, of the balance and of the commission; a figure that has
- * no value has no entry. The API sends none for the net: a `net` entry is read if it ever comes, otherwise the net is shown with the
- * source of the commission it is worked out from, or of the total.
+ * `amountSources` of a booking: the source of the total, of what was paid, of the balance, of the commission and of the net; a figure
+ * that has no value has no entry (the API leaves it out), and a figure with no entry is drawn with no tag.
  */
 export interface BookingAmountSources {
   total?: BookingAmountSource;

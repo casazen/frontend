@@ -37,8 +37,7 @@ export function BookingOtaAmounts({ booking }: { booking: Booking }) {
   const rows = [
     { id: 'total', label: t('booking.detailPage.total'), value: totalOf(booking), source: sources.total },
     { id: 'commission', label: t('booking.otaAmounts.commission'), value: amounts.commission, source: sources.commission },
-    // The API names no source for the net: it is worked out from the commission, or from the total when the commission is missing.
-    { id: 'net', label: t('booking.otaAmounts.net'), value: amounts.net, source: sources.net ?? sources.commission ?? sources.total },
+    { id: 'net', label: t('booking.otaAmounts.net'), value: amounts.net, source: sources.net },
     { id: 'paid', label: t('booking.otaAmounts.paid'), value: amounts.paid, source: sources.paid },
     { id: 'balance', label: t('booking.otaAmounts.balance'), value: amounts.balance, source: sources.balance },
   ];
