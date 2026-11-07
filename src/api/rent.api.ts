@@ -14,6 +14,7 @@ import type {
   RentRegisterPage,
   RentRegisterParams,
   RentReminderResult,
+  RentWhatsAppReminder,
 } from '@/types';
 
 /** Recurring rent of a lease (LT-06): schedule, installments, payment requests and offline payments. */
@@ -57,6 +58,10 @@ export const rentRegisterApi = {
   /** Emails the tenants of one installment now, with the optional short note of the landlord. Never automatic: only when this is called. */
   sendReminder: (installmentId: string, note?: string) =>
     ApiClient.post<RentReminderResult>(`/long-rent/rents/${encodeURIComponent(installmentId)}/reminder`, note ? { note } : undefined),
+
+  /** Sends the approved template through the configured WhatsApp Business account. */
+  sendWhatsAppReminder: (installmentId: string, note?: string) =>
+    ApiClient.post<RentWhatsAppReminder>(`/long-rent/rents/${encodeURIComponent(installmentId)}/reminder/whatsapp`, note ? { note } : undefined),
 };
 
 /** Explicit multipart: the client's default JSON content type would serialize the FormData as JSON. */

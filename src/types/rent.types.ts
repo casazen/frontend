@@ -131,6 +131,8 @@ export interface RentRegisterRow {
   lastReminderAt: string | null;
   reminderCount: number;
   canRemind: boolean;
+  hasTenantPhone?: boolean;
+  canWhatsAppRemind?: boolean;
 }
 
 /** `GET /long-rent/rents`. `month` is `yyyy-MM`. */
@@ -162,6 +164,13 @@ export interface RentReminderResult {
   reminderCount: number;
   recipientCount: number;
   includesPaymentLink: boolean;
+  nextReminderAllowedAt: string;
+}
+
+export interface RentWhatsAppReminder {
+  installmentId: string;
+  sentAt: string;
+  recipientCount: number;
   nextReminderAllowedAt: string;
 }
 

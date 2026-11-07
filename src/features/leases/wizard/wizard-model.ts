@@ -47,6 +47,7 @@ export interface PartyRow {
   citizenship: string;
   residence: string;
   contactEmail: string;
+  contactPhone: string;
 }
 
 /** What the form holds for the whole wizard. Numbers are the text of the field. */
@@ -82,6 +83,7 @@ export function newPartyRow(from: Partial<Omit<PartyRow, 'key'>> = {}): PartyRow
     citizenship: '',
     residence: '',
     contactEmail: '',
+    contactPhone: '',
     ...from,
   };
 }
@@ -95,6 +97,7 @@ function rowFromServer(party: LeaseDraftParty): PartyRow {
     citizenship: party.citizenship ?? '',
     residence: party.residence ?? '',
     contactEmail: party.contactEmail ?? '',
+    contactPhone: party.contactPhone ?? '',
   });
 }
 
@@ -144,7 +147,7 @@ export function toWizardValues(values: LeaseDraftValues, defaults?: LandlordDefa
 
 /** A row nobody typed anything in: the server does not keep it either. */
 export function isBlankRow(row: PartyRow): boolean {
-  return [row.firstName, row.lastName, row.fiscalCode, row.citizenship, row.residence, row.contactEmail].every(
+  return [row.firstName, row.lastName, row.fiscalCode, row.citizenship, row.residence, row.contactEmail, row.contactPhone].every(
     (text) => text.trim() === '',
   );
 }
@@ -175,6 +178,7 @@ function partyEntry(row: PartyRow): Record<string, unknown> {
     citizenship: row.citizenship.trim().toUpperCase(),
     residence: row.residence.trim(),
     contactEmail: row.contactEmail.trim(),
+    contactPhone: row.contactPhone.trim().replace(/[\s().-]/g, ''),
   };
 }
 

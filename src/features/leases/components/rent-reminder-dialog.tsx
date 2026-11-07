@@ -9,6 +9,7 @@ import { holdForUndo } from '@/lib/hold-for-undo';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useRentRegisterActions } from '@/queries/use-rent-register';
 import type { RentRegisterRow } from '@/types';
+import { rentRegisterApi } from '@/api/rent.api';
 import { leaseTenantName } from '../lib/lease-list-format';
 import { reminderKey } from '../lib/rent-register';
 
@@ -35,6 +36,7 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
   const { t } = useTranslation();
   const actions = useRentRegisterActions();
   const [note, setNote] = useState('');
+  const [preparingWhatsApp, setPreparingWhatsApp] = useState(false);
 
   const tenant = leaseTenantName(row, t);
   const amount = formatCurrency(row.amount, row.currency);
@@ -55,6 +57,18 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
     // The same reminder is already on its way (the row says so too): tell, never a click that seems to do nothing.
     if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
+  }
+
+  async function sendWhatsApp() {
+    setPreparingWhatsApp(true);
+    try {
+      const text = note.trim();
+      const result = await rentRegisterApi.sendWhatsAppReminder(row.id, text === '' ? undefined : text);
+      toast.success(t('longRentRents.reminder.whatsappSent', { count: result.recipientCount }));
+      onClose();
+    } finally {
+      setPreparingWhatsApp(false);
+    }
   }
 
   return (
@@ -108,6 +122,11 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
           <Button type="button" variant="outline" onClick={onClose}>
             {t('longRentRents.cancel')}
           </Button>
+          {row.canWhatsAppRemind ? (
+            <Button type="button" variant="outline" onClick={sendWhatsApp} disabled={preparingWhatsApp}>
+              {t('longRentRents.reminder.whatsappSend')}
+            </Button>
+          ) : null}
           <Button type="button" onClick={send} data-testid="rent-reminder-send">
             {t('longRentRents.reminder.submit')}
           </Button>
