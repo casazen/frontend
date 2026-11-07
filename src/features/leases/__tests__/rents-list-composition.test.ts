@@ -62,4 +62,24 @@ describe('rent register composition columns', () => {
     expect(csv(installment, 'rent')).toBe('');
     expect(csv(installment, 'advance')).toBe('');
   });
+
+  it('offers the Stripe transfer only when the org can take the rent online', () => {
+    const euro = row({ status: 'Scheduled', currency: 'EUR' });
+    const dollar = row({ status: 'Scheduled', currency: 'USD' });
+    const options = {
+      canManage: true,
+      held: new Set<string>(),
+      onRecord: () => {},
+      onRemind: () => {},
+      onStripePay: () => {},
+    };
+    const hasStripe = (list: ReturnType<typeof buildRentsList>, installment: RentRegisterRow) =>
+      list.menu?.(installment)?.some((entry) => entry !== 'separator' && entry.id === 'stripe') === true;
+    const offline = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: false });
+    const online = buildRentsList(t, 'it', { ...options, onlinePaymentsAvailable: true });
+
+    expect(hasStripe(offline, euro)).toBe(false);
+    expect(hasStripe(online, dollar)).toBe(false);
+    expect(hasStripe(online, euro)).toBe(true);
+  });
 });

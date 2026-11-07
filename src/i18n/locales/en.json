@@ -1319,6 +1319,8 @@
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
+      "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
+      "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
@@ -20977,6 +20979,26 @@
         "Rejected": "Not accepted"
       }
     }
+  },
+  "bankTransfer": {
+    "title": "Transfer from a linked account",
+    "open": "Pay with Stripe",
+    "hint": "Stripe opens its own screen and offers Italian banks. The due is not marked paid until Stripe confirms the transfer.",
+    "link": "Link the account",
+    "linkAnother": "Link another account",
+    "loadingAccounts": "Reading linked accounts…",
+    "accountsLabel": "Account",
+    "amount": "Amount",
+    "reference": "Reference",
+    "noReference": "This due has no reference yet. You can still start the transfer.",
+    "start": "Start the transfer",
+    "pending": "Transfer started. The due is not marked paid until Stripe confirms it.",
+    "failed": "The account could not be linked, or the transfer could not be started.",
+    "stripeClosed": "Linking was cancelled.",
+    "loadError": "The linked accounts could not be read.",
+    "noStripe": "Stripe is not available right now.",
+    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available.",
+    "manualStaysLandlord": "If you do not link an account, you can record the payment you received."
   },
   "wizard": {
     "back": "Back",

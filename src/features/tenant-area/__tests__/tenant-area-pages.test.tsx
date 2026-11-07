@@ -202,6 +202,20 @@ describe('tenant area', () => {
     expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-DUE-2');
   });
 
+  it('keeps the manual transfer on an euro due until a bank account is linked', async () => {
+    get.mockResolvedValue({ data: area });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-bank')).toHaveTextContent('IT60X0542811101000000123456');
+    expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-2026-11-ABC');
+    expect(screen.getByTestId('tenant-declare-transfer')).toHaveTextContent('Ho effettuato il bonifico');
+    expect(screen.getByTestId('stripe-link-account')).toHaveTextContent('Collega il conto');
+    expect(screen.getByText(/banche italiane/)).toBeInTheDocument();
+    expect(screen.queryByText('Accetta e continua')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
+  });
+
   it.each(['Paid', 'Cancelled'])('does not offer a transfer declaration when the installment is %s', async (status) => {
     get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], status }] } });
 
@@ -209,6 +223,7 @@ describe('tenant area', () => {
 
     expect(await screen.findByTestId('tenant-due-detail')).toBeInTheDocument();
     expect(screen.queryByTestId('tenant-declaration-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('stripe-bank-transfer')).not.toBeInTheDocument();
     expect(screen.queryByTestId('tenant-declaration-note')).not.toBeInTheDocument();
   });
 });

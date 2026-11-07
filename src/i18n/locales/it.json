@@ -1319,6 +1319,8 @@
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
+      "bankLinkDebitUnavailable": "Questo bonifico Stripe è disponibile per una scadenza in euro, da un conto italiano o europeo.",
+      "bankLinkNotLinked": "Collega prima il conto. Poi potrai avviare il bonifico.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
@@ -20977,6 +20979,26 @@
         "Rejected": "Non accettata"
       }
     }
+  },
+  "bankTransfer": {
+    "title": "Bonifico con il conto collegato",
+    "open": "Bonifico con Stripe",
+    "hint": "Stripe apre la sua schermata e propone le banche italiane. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
+    "link": "Collega il conto",
+    "linkAnother": "Collega un altro conto",
+    "loadingAccounts": "Lettura dei conti collegati…",
+    "accountsLabel": "Conto",
+    "amount": "Importo",
+    "reference": "Causale",
+    "noReference": "La causale non è ancora arrivata con la scadenza. Puoi comunque avviare il bonifico.",
+    "start": "Avvia il bonifico",
+    "pending": "Bonifico avviato. La scadenza non è segnata come pagata: lo sarà quando Stripe conferma.",
+    "failed": "Non riesco a collegare il conto o ad avviare il bonifico.",
+    "stripeClosed": "Collegamento annullato.",
+    "loadError": "Non riesco a leggere i conti collegati.",
+    "noStripe": "Stripe non è disponibile in questo momento.",
+    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico».",
+    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso."
   },
   "wizard": {
     "back": "Indietro",

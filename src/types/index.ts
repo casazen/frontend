@@ -21,6 +21,7 @@ export * from './long-rent-property.types';
 export * from './long-rent-tenant.types';
 export * from './rent.types';
 export * from './tenant-area.types';
+export * from './financial-connections.types';
 export * from './admin.types';
 export * from './users.types';
 export * from './org.types';

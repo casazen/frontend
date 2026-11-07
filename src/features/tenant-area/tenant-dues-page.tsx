@@ -12,6 +12,8 @@ import { todayInZurich } from '@/lib/stay-dates';
 import { useDeclareTransfer } from '@/queries/use-tenant-area';
 import type { TenantDue, TenantPaymentDeclaration } from '@/types';
 import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
+import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { TenantBankDetailsCard } from './tenant-bank-details';
 import { TenantGate } from './tenant-gate';
 import { tenantDuesPath } from './paths';
@@ -57,6 +59,9 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
   const declaration = declare.data ?? due.declaration;
   const closed = due.status === 'Paid' || due.status === 'Cancelled';
   const canDeclare = !closed && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
+  const [bankLinked, setBankLinked] = useState(false);
+  const showStripe = (due.status === 'Scheduled' || due.status === 'Failed') && bankLinkDebitAvailable(due.currency);
+  const showManual = !bankLinked;
 
   return (
     <div className="space-y-4" data-testid="tenant-due-detail">
@@ -71,12 +76,24 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
           <RentComposition row={due} currency={due.currency} />
         </CardContent>
       </Card>
-      {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : null}
+      {showStripe ? (
+        <FinancialConnectionsTransfer
+          mode="org"
+          leaseId={leaseId}
+          dueId={due.id}
+          amount={due.bank?.amount ?? rentBreakdown(due).residual}
+          currency={due.currency}
+          reference={due.bank?.reference ?? ''}
+          showManualTransfer={showManual}
+          onLinkedChange={setBankLinked}
+        />
+      ) : null}
+      {showManual && due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : null}
       {declaration ? <DeclarationStatus declaration={declaration} /> : null}
-      {canDeclare ? (
+      {showManual && canDeclare ? (
         <DeclarationForm key={due.id} due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
       ) : null}
-      {canDeclare ? (
+      {showManual && canDeclare ? (
         <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
           {t('tenantArea.declaration.notPaid')}
         </p>
