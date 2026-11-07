@@ -1293,6 +1293,8 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
+      "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
@@ -9956,6 +9958,7 @@
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
+    "notificationPreferences": "Notifications",
     "plan": "Plan",
     "billing": "Billing",
     "bookings": "Bookings",
@@ -10062,6 +10065,64 @@
     "description": "The address is wrong or the page no longer exists.",
     "home": "Go to the home page",
     "guides": "Guides for hosts"
+  },
+  "notificationPreferences": {
+    "bellNote": "The bell is the icon at the top of the page: the number on it tells you how many things you have not read yet, without interrupting you.",
+    "channel": {
+      "browserPush": "Browser notification",
+      "counterOnly": "Bell",
+      "email": "Email",
+      "mobilePush": "Phone notification"
+    },
+    "channelUnavailable": "Not available yet",
+    "channelsHint": "Switch a channel on or off and your choice is saved by itself. Until you choose, the default applies.",
+    "channelsTitle": "How you want to be alerted",
+    "defaultBadge": "Default",
+    "description": "Choose how you want to be alerted about everything that happens. Your choices are only yours.",
+    "event": {
+      "aiDraftToApprove": "Reply to approve",
+      "bookingCancelled": "Booking cancelled",
+      "legalDeadline": "Legal deadline",
+      "newBooking": "New booking",
+      "newGuestMessage": "New guest message",
+      "scheduledMessageIssue": "Scheduled message problem",
+      "syncError": "Sync error",
+      "urgentGuestMessage": "Urgent message"
+    },
+    "eventColumn": "What happens",
+    "eventHint": {
+      "aiDraftToApprove": "CasaZen wrote a reply: it goes out only if you approve it.",
+      "bookingCancelled": "A guest or a booking portal cancels a stay.",
+      "legalDeadline": "Alloggiati Web, ISTAT and the other dates you cannot miss.",
+      "newBooking": "A booking arrives, from your site or from a booking portal.",
+      "newGuestMessage": "A guest writes to you.",
+      "scheduledMessageIssue": "An automatic message did not go out or needs you.",
+      "syncError": "A booking portal cannot exchange data with CasaZen.",
+      "urgentGuestMessage": "A guest writes about something that cannot wait."
+    },
+    "legalNeverOff": "Legal deadlines cannot be switched off completely: keep at least one channel on.",
+    "loadFailed": "We cannot load your notification settings.",
+    "loading": "Loading your notification settings…",
+    "profileLink": {
+      "action": "Manage notifications",
+      "description": "Choose how and when you want to be alerted about messages, bookings and deadlines.",
+      "title": "Notifications"
+    },
+    "quietHours": {
+      "description": "Times are Italian time. During these hours phone notifications and emails wait until the quiet time ends; the bell always updates.",
+      "end": "To",
+      "legalStillAlerts": "Legal deadlines still alert you, even during these hours.",
+      "none": "With the same start and end there are no quiet hours.",
+      "required": "Enter both the start and the end time.",
+      "save": "Save hours",
+      "start": "From",
+      "title": "Quiet hours"
+    },
+    "saveFailed": "We could not save your choice. Try again.",
+    "saved": "Settings saved.",
+    "switchLabel": "{{event}}: {{channel}}",
+    "tableCaption": "How you want to be alerted, event by event",
+    "title": "Notifications"
   },
   "notifications": {
     "bell": "Notifications",

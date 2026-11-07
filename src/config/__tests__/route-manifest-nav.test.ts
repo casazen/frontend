@@ -294,6 +294,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/settings/payments',
     ],
     '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
+    // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
+    '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
     '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines'],
     '/app/long-rent/rents': ['/app/long-rent/fiscal'],
     '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
@@ -313,7 +315,13 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     for (const entry of hanging) {
       const parent = entryOf(entry.navParent!);
       expect(parent.context, entry.path).toBe(entry.context);
-      expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
+      if (parent.path === profilePathForContext(parent.context)) {
+        // The one parent that is in no menu: the profile of the area, which the menu of the user leads to (below). Its pages are tabs of it.
+        expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
+        expect(parent.requiredPermissions, `${entry.path} hangs from ${parent.path}`).toEqual([]);
+      } else {
+        expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
+      }
       expect(parent.navParent, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
       // A page that hangs is in no menu and has no counter or place in the bar of its own.
       expect(entry.navPlacement, entry.path).toBeUndefined();
@@ -479,7 +487,9 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
       for (const entry of reachable) {
         const inMenu = visible.includes(entry.path);
         const hangsFromVisible = entry.navParent !== undefined && visible.includes(entry.navParent);
-        expect(inMenu || hangsFromVisible, `${entry.path} for ${contextKey} user with ${label}`).toBe(true);
+        // Or it is a tab of the profile of the area: the menu of the user leads there, and the profile asks no permission (checked above).
+        const hangsFromProfile = entry.navParent !== undefined && entry.navParent === profilePathForContext(contextKey);
+        expect(inMenu || hangsFromVisible || hangsFromProfile, `${entry.path} for ${contextKey} user with ${label}`).toBe(true);
       }
     }
   });

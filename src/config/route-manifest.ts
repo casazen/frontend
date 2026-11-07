@@ -1,5 +1,6 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { profilePathForContext } from '@/lib/profile-path';
 
 /**
  * The areas of the app. `account` is the customer's "Amministrazione" (decision D1): its context exists only for the people of
@@ -54,7 +55,9 @@ export interface RouteManifestEntry {
    * from is the highlighted one, and the entry and its pages are the tabs on top of each of them (`NavSectionTabs`, which
    * `PageHeader` draws in the rental areas; the other areas link to them from the page of the entry, `NavChildLinks`). This is how
    * the menu stays short: a section is one entry, its pages are tabs. A page that hangs from an entry the user cannot open takes
-   * a place in "Altro" itself, so no page the user may open is left without a way in.
+   * a place in "Altro" itself, so no page the user may open is left without a way in. The one other parent is the profile of the
+   * area (`profilePathForContext`), which is in no menu because the menu of the user leads to it and which anyone can open: its
+   * pages (Notifiche) are tabs of it and take no place in "Altro".
    */
   navParent?: string;
   /** Place (1..{@link MAX_BOTTOM_NAV_ENTRIES}) of a primary entry in the bottom bar of the phone (UI-04b draws the bar). */
@@ -700,6 +703,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-page')).ProfilePage }),
     legacyPaths: ['/profile'],
+  },
+  {
+    // Notifiche (E05/F03/US02, NF-65): how the user wants to be alerted, kind of event by kind of event, and the quiet hours. The second tab of
+    // Profilo: the page hangs from the profile, which the menu of the user leads to (`resolveNavEntries`: it is in no menu and not in "Altro").
+    // The settings are the user's own, so it asks no permission, and the API takes the user from the token.
+    path: '/app/short-rent/profile/notifications',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.notificationPreferences',
+    navParent: '/app/short-rent/profile',
+    navOrder: 1,
+    icon: 'Bell',
+    component: async () => ({
+      default: (await import('@/features/profile/notification-preferences-page')).NotificationPreferencesPage,
+    }),
   },
   {
     // Panoramica (LR-05): the home of the area, at its bare address. "Adesso" (the step of the landlord that cannot wait), the leases by
@@ -1615,11 +1633,16 @@ function resolveNavEntries(
   );
   const menuPaths = new Set(available.filter((entry) => entry.navPlacement !== undefined).map((entry) => entry.path));
 
+  // The profile of the area is no entry of a menu: the menu of the user leads to it, and nobody is without it (it asks no permission). The
+  // pages that hang from it (Notifiche) are its tabs, found from the profile itself, so they take no place in the menus or in "Altro".
+  const profilePath = profilePathForContext(contextKey);
+
   const menu: RouteManifestEntry[] = [];
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
     if (entry.navPlacement !== undefined) menu.push(entry);
     else if (entry.navParent !== undefined && menuPaths.has(entry.navParent)) hanging.push(entry);
+    else if (entry.navParent === profilePath) continue;
     else menu.push({ ...entry, navPlacement: 'secondary' });
   }
   return { menu: menu.sort(byMenuOrder), hanging: hanging.sort(byNavOrder) };
