@@ -4,6 +4,7 @@ import { TenantAreaShell } from '@/features/tenant-area/tenant-area-shell';
 import { TenantContractPage, TenantContractsPage } from '@/features/tenant-area/tenant-contract-page';
 import { TenantDocumentsPage } from '@/features/tenant-area/tenant-documents-page';
 import { TenantDuesPage } from '@/features/tenant-area/tenant-dues-page';
+import { TenantMaintenanceRequestPage } from '@/features/maintenance-requests/tenant-wizard';
 import {
   TenantMaintenanceDetailPage,
   TenantMaintenanceFormPage,
@@ -31,5 +32,13 @@ export const tenantAreaRoutes: RouteObject[] = [
       { path: 'contratti/:leaseId/manutenzione/nuova', element: <TenantMaintenanceFormPage /> },
       { path: 'contratti/:leaseId/manutenzione/:requestId', element: <TenantMaintenanceDetailPage /> },
     ],
+  },
+  {
+    path: '/portale-conduttore/contratti/:leaseId/richiesta-manutenzione',
+    element: (
+      <ProtectedRoute>
+        <TenantMaintenanceRequestPage />
+      </ProtectedRoute>
+    ),
   },
 ];

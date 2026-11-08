@@ -21141,5 +21141,88 @@
     "canoniLead": "The tenant does not pay from here.",
     "canoni": "Rents",
     "readonly": "Only someone who can create contracts links the account. The tenant pays from Rents."
+  },
+  "maintenanceRequest": {
+    "loading": "Loading…",
+    "loadError": "The requests could not be loaded",
+    "sendError": "The request could not be sent",
+    "decisionError": "The decision could not be saved",
+    "paymentError": "The payment could not be saved",
+    "stepOf": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Continue",
+    "what": {
+      "title": "What is broken?",
+      "hint": "Name the broken thing, in a few words.",
+      "label": "What is broken",
+      "placeholder": "Bathroom tap"
+    },
+    "urgency": {
+      "title": "How urgent is it?",
+      "hint": "Choose one level.",
+      "bassa": "Low",
+      "normale": "Normal",
+      "urgente": "Urgent",
+      "detail": {
+        "bassa": "It can wait",
+        "normale": "In the next few days",
+        "urgente": "It is needed soon"
+      }
+    },
+    "note": {
+      "title": "Add a note",
+      "hint": "What happened, and since when.",
+      "label": "Note",
+      "placeholder": "It has been dripping since last night"
+    },
+    "photo": {
+      "title": "A photo, if you have one",
+      "hint": "Optional. It helps the person who decides.",
+      "label": "Photo",
+      "none": "No photo",
+      "chosen": "Photo: {{name}}"
+    },
+    "confirm": {
+      "title": "Check and send",
+      "hint": "After you send it, the request stays waiting. You cannot approve it or pay it.",
+      "what": "Problem",
+      "urgency": "Urgency",
+      "note": "Note",
+      "photo": "Photo",
+      "submit": "Send the request"
+    },
+    "waiting": {
+      "kicker": "Request sent",
+      "title": "Waiting",
+      "body": "The request is with the landlord or the agency. You cannot approve it and you cannot pay it.",
+      "list": "See the requests"
+    },
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "paid": "Paid"
+    },
+    "list": {
+      "title": "Your requests",
+      "new": "New request"
+    },
+    "landlord": {
+      "title": "Maintenance requests",
+      "hint": "Approve or reject. Payment appears only after approval.",
+      "empty": "No request from the tenant.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reasonLabel": "Why are you rejecting it?",
+      "reasonPlaceholder": "Write the reason",
+      "confirmReject": "Confirm the rejection",
+      "cancelReject": "Cancel",
+      "pay": "Pay",
+      "pendingNote": "Waiting for your decision. Payment is not available yet.",
+      "approvedNote": "Approved. You can pay now.",
+      "rejectedNote": "Rejected. {{reason}}",
+      "paidNote": "Paid.",
+      "photo": "Attached photo: {{name}}"
+    }
   }
 }
