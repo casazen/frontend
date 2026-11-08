@@ -57,8 +57,9 @@ export function TenantContractPage() {
   const contract = useTenantContractPage();
   if (contract.status !== 'ready') return <TenantGate status={contract.status} error={contract.error} refetch={contract.refetch} />;
   const area = contract.area;
-  const openDue = area.dues.find((due) => due.status !== 'Paid' && due.status !== 'Cancelled');
-  const payable = openDue && rentBreakdown(openDue).residual > 0.01 ? openDue : undefined;
+  const openDues = area.dues.filter((due) => due.status !== 'Paid' && due.status !== 'Cancelled');
+  const payable = openDues.find((due) => rentBreakdown(due).residual > 0.01);
+  const openDue = openDues[0];
 
   return (
     <div className="space-y-4" data-testid="tenant-contract">

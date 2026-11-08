@@ -92,7 +92,7 @@ function TenantDueRow({ leaseId, due, current }: { leaseId: string; due: TenantD
     advance: t('rent.composition.advance'),
     settlement: t('rent.composition.settlement'),
   });
-  const open = !closedDue(due);
+  const late = !closedDue(due) && !settledDue(parts) && due.isOverdue;
 
   return (
     <li>
@@ -111,8 +111,10 @@ function TenantDueRow({ leaseId, due, current }: { leaseId: string; due: TenantD
         </span>
         <span className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-foreground/70">
           <span>{t(`tenantArea.dues.status.${dueStatusKey(due.status)}`)}</span>
-          {open && due.isOverdue ? (
-            <span className="font-medium text-danger-foreground">{t('tenantArea.dues.overdue')}</span>
+          {late ? (
+            <span className="font-medium text-danger-foreground" data-testid={`tenant-due-late-${due.id}`}>
+              {t('tenantArea.dues.overdue')}
+            </span>
           ) : null}
         </span>
         {line ? <span className="mt-1 block text-sm text-foreground/70">{line}</span> : null}
@@ -226,6 +228,7 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
             currency={due.currency}
             reference={due.bank?.reference ?? ''}
             showManualTransfer={showManual}
+            dueFailed={due.status === 'Failed'}
             onLinkedChange={setBankLinked}
           />
         </section>
