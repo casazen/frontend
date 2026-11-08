@@ -47,7 +47,9 @@ export function CodeTableInput({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const available = isListAvailable(source, list);
-  const shown = purpose === 'citizenship' ? citizenshipAdjective(name) : name;
+  // The adjective (Italiano) is what a chosen code shows. While the official list is open and no code
+  // is stored yet, keep the typed country (Italia): otherwise the field already reads as the list entry.
+  const shown = purpose === 'citizenship' && (!available || code) ? citizenshipAdjective(name) : name;
   const query = useDelayedValue(name.trim(), SEARCH_DELAY_MS);
   const search = useQuery({
     queryKey: ['alloggiati-codes', source.scope, list, purpose, query],

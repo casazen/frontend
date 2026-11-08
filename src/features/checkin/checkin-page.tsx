@@ -269,9 +269,13 @@ export function CheckInPage() {
         setScanMessage(t(scanReasonKey(result.reason)));
         return;
       }
-      let index = getValues('guests').findIndex((row) => !row.firstName.trim() && !row.lastName.trim());
-      if (index < 0 && getValues('guests').length < MAX_STAY_GUESTS) {
-        append(stayGuestDefaults(followerTypeOf(getValues('guests.0.type'))));
+      // The booker already has a name from the booking. A photo fills the first guest who still
+      // has no document number, then a guest with no name, and only then a new row.
+      const rows = getValues('guests');
+      let index = rows.findIndex((row) => requiresDocument(row.type) && !row.documentNumber.trim());
+      if (index < 0) index = rows.findIndex((row) => !row.firstName.trim() && !row.lastName.trim());
+      if (index < 0 && rows.length < MAX_STAY_GUESTS) {
+        append(stayGuestDefaults(followerTypeOf(rows[0].type)));
         index = getValues('guests').length - 1;
       }
       if (index < 0) {

@@ -1,4 +1,3 @@
-import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type {
   AlloggiatiCodeEntryDto,
@@ -26,14 +25,14 @@ export const publicCheckinApi = {
     ApiClient.get<AlloggiatiCodeEntryDto[]>(`/public/checkin/${token}/codes`, { list, q }, { public: true }),
 
   /** Reads one identity-document photo. The photo is not stored. */
-  readDocument: async (token: string, file: File) => {
+  readDocument: (token: string, file: File) => {
     const body = new FormData();
     body.append('file', file);
-    const response = await axios.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
+    // Explicit multipart: the client's default JSON content type would serialize the FormData as JSON.
+    return ApiClient.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
       public: true,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
   },
 
   /**
