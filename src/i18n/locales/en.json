@@ -7238,6 +7238,7 @@
         "fixed": "The file and the day of the signature cannot be corrected after it is added.",
         "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
         "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "fromReceipt": "Right after, we show the number and the date read from the receipt, for you to confirm.",
         "submit": "Add the contract",
         "title": "Add the signed contract?",
         "yes": "Right after, we ask you for the registration number and the receipt."
@@ -7255,6 +7256,11 @@
           "description": "It stays “Signed” and you will see the registration deadline.",
           "title": "No, or I don't know"
         },
+        "fromReceipt": "The receipt “{{name}}” says the contract is already registered. {{detail}}",
+        "fromReceiptCode": "Registration number {{code}}.",
+        "fromReceiptDate": "Registered on {{date}}.",
+        "fromReceiptDetail": "Registered on {{date}}, number {{code}}.",
+        "fromReceiptUnread": "You already uploaded the receipt “{{name}}”. The contract counts as registered: if we cannot read its number and date, we ask for them after it is added.",
         "required": "Answer this question.",
         "yes": {
           "description": "After adding it we ask for the number and the receipt.",
