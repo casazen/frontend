@@ -14,7 +14,6 @@ vi.mock('@/api/condominium-proposal.api', () => ({
   condominiumProposalApi: {
     propose: vi.fn(async () => null),
   },
-  isNothingLoaded: vi.fn(() => false),
 }));
 vi.mock('@/queries/use-properties', () => ({
   useProperties: vi.fn(() => ({ data: [], isLoading: false, isError: false, error: null, isFetching: false, refetch: vi.fn() })),

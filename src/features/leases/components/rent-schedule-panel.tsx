@@ -15,7 +15,6 @@ import { WorkspaceContext } from '@/contexts/workspace-context';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import {
   useConfigureRentSchedule,
   useDisableRentSchedule,
@@ -62,29 +61,6 @@ interface LeaseTerm {
  * The plan says from which month the rents are tracked and whether the tenants are written to by the daily job (LR-04a):
  * that one is off for a new plan, and on only when the landlord turns it on.
  */
-/**
- * The organisation account that pays the condominium (SEPA, euro). It is on Pagamenti even while the
- * contract is still a draft: linking it does not record a tenant payment, and it is not on Canoni.
- */
-function CondominiumBankLink({ leaseId }: { leaseId: string }) {
-  const workspace = useContext(WorkspaceContext);
-  const canLink = workspace ? workspace.hasPermission('long-rent', 'lease.create') : true;
-  if (!canLink) return null;
-  return (
-    <FinancialConnectionsTransfer
-      mode="org"
-      linkOnly
-      forLandlord
-      showManualTransfer
-      leaseId={leaseId}
-      dueId="condominium"
-      amount={0}
-      currency="EUR"
-      reference=""
-    />
-  );
-}
-
 export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: RentSchedulePanelProps) {
   const { t } = useTranslation();
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
@@ -92,7 +68,16 @@ export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: 
   return (
     <PlainSection title={t('rent.title')} data-testid="rent-schedule-panel" className="space-y-4">
       <p className="text-sm text-foreground/70">{t('rent.description')}</p>
-      <CondominiumBankLink leaseId={leaseId} />
+      <p className="text-sm text-foreground/70" data-testid="rent-not-on-contract">
+        {t('rent.notOnContract')}{' '}
+        <Link to="/app/long-rent/payments" className="font-medium underline">
+          {t('rent.openPayments')}
+        </Link>
+        {' · '}
+        <Link to="/app/long-rent/rents" className="font-medium underline">
+          {t('rent.openCanoni')}
+        </Link>
+      </p>
       {isLoading && (
         <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="rent-loading">
           <Loader2 className="h-4 w-4 animate-spin" />

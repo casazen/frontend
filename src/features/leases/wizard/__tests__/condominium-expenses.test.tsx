@@ -1,10 +1,11 @@
 import { AxiosError } from 'axios';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { condominiumExpenseKey } from '@/queries/use-condominium-proposal';
 import { CondominiumExpenses } from '../condominium-expenses';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
@@ -59,26 +60,19 @@ describe('Condominium expenses on the contract wizard', () => {
     post.mockReset();
   });
 
-  it('proposes the fiscal-year amount and does not post again when it is accepted', async () => {
-    post.mockResolvedValue({ data: proposal() });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
+  it('does not post an empty body when the step opens', async () => {
     renderExpenses();
 
-    expect(await screen.findByTestId('lease-condominium-proposed')).toHaveTextContent('2025/2026');
-    expect(screen.getByTestId('lease-condominium-proposed')).toHaveTextContent(/120,00/);
-    expect(screen.getByText('È una proposta, non un pagamento.')).toBeInTheDocument();
-    expect(screen.queryByTestId('lease-condominium-empty')).not.toBeInTheDocument();
-    expect(post).toHaveBeenCalledWith(PATH, {}, undefined);
-
-    fireEvent.click(screen.getByTestId('lease-condominium-accept'));
-
-    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/120,00/);
-    expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
-    expect(post).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('lease-condominium-empty')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-condominium-error')).not.toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('calculates the amount from the previous consuntivo and the new preventivo', async () => {
-    post.mockRejectedValueOnce(nothingLoaded());
     post.mockResolvedValue({
       data: proposal({
         source: 'Statements',
@@ -120,7 +114,6 @@ describe('Condominium expenses on the contract wizard', () => {
   });
 
   it('saves a hand-typed amount to be settled at consuntivo and does not drop that on a second click', async () => {
-    post.mockRejectedValueOnce(nothingLoaded());
     post.mockResolvedValue({
       data: proposal({
         source: 'Manual',
@@ -147,12 +140,12 @@ describe('Condominium expenses on the contract wizard', () => {
     expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
     expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-condominium-manual')).not.toBeInTheDocument();
-    expect(post).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post.mock.calls.some((call) => Object.keys((call[1] as object) ?? {}).length === 0)).toBe(false);
     expect(post.mock.calls.some((call) => (call[1] as { manualAmount?: number }).manualAmount === undefined && Object.keys((call[1] as object) ?? {}).length > 0)).toBe(false);
   });
 
   it('accepts an Italian comma amount, including thousands grouping', async () => {
-    post.mockRejectedValueOnce(nothingLoaded());
     post.mockResolvedValue({
       data: proposal({
         source: 'Manual',
@@ -186,7 +179,6 @@ describe('Condominium expenses on the contract wizard', () => {
   });
 
   it('keeps a settle-at-consuntivo choice when the step is opened again', async () => {
-    post.mockRejectedValueOnce(nothingLoaded());
     post.mockResolvedValue({
       data: proposal({
         source: 'Manual',
@@ -218,12 +210,53 @@ describe('Condominium expenses on the contract wizard', () => {
     expect(post).toHaveBeenCalledTimes(calls);
   });
 
-  it('treats a missing year as nothing loaded', async () => {
+  it('keeps settle-at-consuntivo after the step is gone longer than the default cache lifetime', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    post.mockResolvedValue({
+      data: proposal({
+        source: 'Manual',
+        installmentAmount: 80,
+        lastInstallmentAmount: 80,
+        annualAmount: 960,
+        previousConsuntivo: null,
+        preventivo: null,
+        settledAtConsuntivo: true,
+        periodId: null,
+        periodLabel: null,
+      }),
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+    });
+    const view = render(expenses(queryClient));
+
+    fireEvent.change(await screen.findByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    const calls = post.mock.calls.length;
+    expect(queryClient.getQueryCache().find({ queryKey: condominiumExpenseKey('lease-1') })?.gcTime).toBe(Infinity);
+
+    view.unmount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    });
+
+    render(expenses(queryClient));
+
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    expect(screen.getByText('Si conguaglia al consuntivo.')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-condominium-empty')).not.toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(calls);
+    expect(post.mock.calls.some((call) => Object.keys((call[1] as object) ?? {}).length === 0)).toBe(false);
+  });
+
+  it('treats a missing year as nothing loaded and does not ask the server', async () => {
     post.mockRejectedValue(nothingLoaded());
 
     renderExpenses();
 
     expect(await screen.findByTestId('lease-condominium-empty')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-condominium-error')).not.toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
   });
 });

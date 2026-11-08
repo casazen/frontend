@@ -10037,6 +10037,7 @@
     "revenue": "Ricavi",
     "reports": "Report",
     "longRentFiscal": "Report fiscale",
+    "longRentPayments": "Pagamenti",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
@@ -13784,6 +13785,9 @@
     "loadError": "Impossibile caricare lo scadenziario del canone.",
     "retry": "Riprova",
     "notSignedYet": "Lo scadenziario del canone si imposta quando il contratto è firmato da tutte le parti.",
+    "notOnContract": "Il pagamento non si fa su questo contratto.",
+    "openPayments": "Collega il conto su Pagamenti",
+    "openCanoni": "Il conduttore paga da Canoni",
     "onlineUnavailable": "Per chiedere al conduttore di pagare online collega un account Stripe abilitato agli incassi. Puoi comunque registrare i pagamenti ricevuti fuori da CasaZen.",
     "onlineUnavailableLink": "Impostazioni Stripe",
     "noTenantEmail": "Nessun conduttore ha un indirizzo email: il link di pagamento non può essere inviato.",
@@ -21130,5 +21134,12 @@
       "editField": "Modifica {{field}}",
       "empty": "Non indicato"
     }
+  },
+  "longRentPayments": {
+    "title": "Pagamenti",
+    "description": "Collega un conto SEPA in euro di una banca italiana per le spese condominiali. Puoi farlo anche prima della firma. Se non colleghi un conto, resta il bonifico manuale.",
+    "canoniLead": "Il conduttore non paga da qui.",
+    "canoni": "Canoni",
+    "readonly": "Solo chi può creare i contratti collega il conto. Il conduttore paga da Canoni."
   }
 }

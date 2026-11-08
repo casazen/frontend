@@ -297,7 +297,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
     '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
     '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines'],
-    '/app/long-rent/rents': ['/app/long-rent/fiscal'],
+    '/app/long-rent/rents': ['/app/long-rent/fiscal', '/app/long-rent/payments'],
     '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],

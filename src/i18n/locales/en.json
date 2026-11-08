@@ -10037,6 +10037,7 @@
     "revenue": "Revenue",
     "reports": "Reports",
     "longRentFiscal": "Tax report",
+    "longRentPayments": "Payments",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -13784,6 +13785,9 @@
     "loadError": "The rent schedule could not be loaded.",
     "retry": "Retry",
     "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
+    "notOnContract": "Payment is not done on this contract.",
+    "openPayments": "Link the account on Payments",
+    "openCanoni": "The tenant pays from Rents",
     "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
     "onlineUnavailableLink": "Stripe settings",
     "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
@@ -21130,5 +21134,12 @@
       "editField": "Edit {{field}}",
       "empty": "Not provided"
     }
+  },
+  "longRentPayments": {
+    "title": "Payments",
+    "description": "Link an Italian euro SEPA account for the condominium expenses. You can do it before the contract is signed. If you do not link an account, a manual transfer stays available.",
+    "canoniLead": "The tenant does not pay from here.",
+    "canoni": "Rents",
+    "readonly": "Only someone who can create contracts links the account. The tenant pays from Rents."
   }
 }

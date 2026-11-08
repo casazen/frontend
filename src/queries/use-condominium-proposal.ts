@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { condominiumProposalApi, isNothingLoaded } from '@/api/condominium-proposal.api';
+import { condominiumProposalApi } from '@/api/condominium-proposal.api';
 import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
 
 export const CONDOMINIUM_EXPENSE_KEY = 'lease-condominium-expense';
@@ -19,8 +19,10 @@ export function condominiumExpenseKey(leaseId: string) {
 }
 
 /**
- * Reads the expense already kept for this lease, or asks once whether a fiscal year can propose one.
- * A saved choice is returned as it is. The empty POST is not repeated: it is a write of a budget.
+ * The expense already kept for this lease. Opening the step does not call the server:
+ * `POST` with an empty body is a write of a budget and drops settle-at-consuntivo.
+ * The choice stays for the life of this draft in the app. The default cache lifetime would drop it
+ * when the step unmounts, and the next open would look empty.
  */
 export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
   const queryClient = useQueryClient();
@@ -30,16 +32,13 @@ export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
     queryFn: async (): Promise<CondominiumExpenseView> => {
       const cached = queryClient.getQueryData<CondominiumExpenseView>(key);
       if (cached?.saved) return cached;
-      try {
-        return { proposal: await condominiumProposalApi.propose(leaseId, {}), saved: null };
-      } catch (error) {
-        if (isNothingLoaded(error)) return { proposal: null, saved: null };
-        throw error;
-      }
+      return { proposal: null, saved: null };
     },
-    enabled,
+    enabled: enabled && leaseId.trim() !== '',
     retry: false,
     refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 
