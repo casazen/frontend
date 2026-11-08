@@ -5,7 +5,7 @@ import { tenantContractPath, tenantDocumentsPath, tenantDuesPath, tenantMaintena
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'rounded-md px-3 py-1.5 text-sm',
+    'inline-flex min-h-11 items-center rounded-md px-3 py-1.5 text-sm',
     isActive ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted',
   );
 
@@ -17,10 +17,10 @@ export function TenantAreaShell() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+        <div className="mx-auto flex max-w-3xl min-w-0 flex-col gap-3 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <p className="text-lg font-semibold">{t('tenantArea.title')}</p>
           {leaseId ? (
-            <nav aria-label={t('tenantArea.nav.label')} className="flex flex-wrap gap-1">
+            <nav aria-label={t('tenantArea.nav.label')} className="flex min-w-0 flex-wrap gap-1">
               <NavLink to={tenantContractPath(leaseId)} end className={linkClass}>
                 {t('tenantArea.nav.contract')}
               </NavLink>
@@ -41,7 +41,7 @@ export function TenantAreaShell() {
           )}
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-6">
+      <main className="mx-auto min-w-0 max-w-3xl px-4 py-6">
         <Outlet />
       </main>
     </div>

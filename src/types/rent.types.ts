@@ -22,6 +22,11 @@ export interface RentLedgerComponent {
   description?: string | null;
   competenceStart?: string | null;
   competenceEnd?: string | null;
+  /**
+   * Extraordinary lines stay off the tenant due until someone accepts them.
+   * Absent means the line is an ordinary charge.
+   */
+  accepted?: boolean;
 }
 
 /**

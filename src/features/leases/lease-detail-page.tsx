@@ -158,7 +158,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
       {/* One column under 780 px of room (measured on this box, not on the screen: the menu takes part of it). */}
       <div className="@container min-w-0">
         <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
-          <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB}>
+          <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB} selectTestId="lease-sheet-tabs">
             {tab === 'guida' && <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />}
             {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
             {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{serviceDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}

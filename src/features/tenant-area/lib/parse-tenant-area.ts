@@ -57,6 +57,7 @@ function componentsOf(value: unknown): RentLedgerComponent[] | null {
       kind: item.kind,
       amount: item.amount,
       description: optionalText(item, 'description'),
+      ...(item.accepted === true || item.accepted === false ? { accepted: item.accepted } : {}),
     });
   }
   return parts.length > 0 ? parts : null;
@@ -150,6 +151,7 @@ function documentOf(value: unknown, path: string): TenantDocument {
     name: text(value, 'name', path),
     kind: optionalText(value, 'kind') ?? 'Other',
     sharedAt: optionalText(value, 'sharedAt'),
+    ...(value.accepted === true || value.accepted === false ? { accepted: value.accepted } : {}),
   };
 }
 

@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { CalendarDays, Euro, Send, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import type { TFunction } from 'i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListDefinition, ListMenuEntry } from '@/components/shared/list-view/list-types';
@@ -185,13 +186,24 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
           { icon: Wallet, label: t('rent.composition.total'), text: amountOf(row) },
         ],
         foot: (
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             {note ? (
               <p className={note.late ? 'break-words text-sm font-medium text-danger-foreground' : 'break-words text-sm text-foreground/70'}>
                 {note.text}
               </p>
             ) : null}
             <RentComposition row={row} currency={row.currency} />
+            {canManage && (row.canRemind || row.canWhatsAppRemind) ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal"
+                data-testid={`rent-remind-card-${row.id}`}
+                onClick={() => onRemind(row)}
+              >
+                {held.has(reminderKey(row.id)) ? t('longRentRents.actions.reminding') : t('longRentRents.actions.remind')}
+              </Button>
+            ) : null}
           </div>
         ),
       };
