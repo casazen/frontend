@@ -39,22 +39,32 @@
         "required": "Bitte angeben, ob der Gast in Italien oder im Ausland geboren wurde"
       },
       "birthComune": {
-        "required": "Die Geburtsgemeinde ist erforderlich"
+        "required": "Die Geburtsgemeinde ist erforderlich",
+        "choose": "Wählen Sie die Geburtsgemeinde aus der Liste"
       },
       "birthProvince": {
-        "invalid": "Bitte das Zwei-Buchstaben-Kürzel eingeben (z. B. RM)"
+        "invalid": "Das ist kein italienisches Provinzkürzel (z. B. RM)"
       },
       "birthCountry": {
-        "required": "Das Geburtsland ist erforderlich"
+        "required": "Das Geburtsland ist erforderlich",
+        "choose": "Wählen Sie das Geburtsland aus der Liste"
       },
       "citizenship": {
-        "required": "Die Staatsangehörigkeit ist erforderlich"
+        "required": "Die Staatsangehörigkeit ist erforderlich",
+        "choose": "Wählen Sie die Staatsangehörigkeit aus der Liste (zum Beispiel Italiano)"
       },
       "label": {
         "maxLength": "Höchstens 100 Zeichen"
       },
       "documentIssuePlace": {
-        "required": "Der Ausstellungsort ist erforderlich"
+        "required": "Der Ausstellungsort ist erforderlich",
+        "choose": "Wählen Sie den Ausstellungsort aus der Liste"
+      },
+      "residenceComune": {
+        "choose": "Wählen Sie die Wohngemeinde aus der Liste"
+      },
+      "residenceCountry": {
+        "choose": "Wählen Sie das Wohnsitzland aus der Liste"
       },
       "type": {
         "memberWithoutHead": "Ein Familien- oder Gruppenmitglied muss auf das Familien- bzw. Gruppenoberhaupt folgen",
@@ -120,6 +130,16 @@
       "body": "[PLATZHALTER – der vollständige Hinweis wird vom Verantwortlichen bereitgestellt: Identität des Verantwortlichen, Zwecke, Rechtsgrundlagen, Empfänger (Polizei), Speicherdauer und Rechte der betroffenen Personen.]",
       "version": "Version des Hinweises: {{version}}"
     },
+    "stepScan": "Dokument",
+    "scanIntro": "Laden Sie zuerst ein Foto des Ausweises jedes Gastes hoch. Die Daten werden automatisch gelesen: Im nächsten Schritt prüfen und korrigieren Sie sie.",
+    "scanHint": "JPG, PNG oder WebP, höchstens 5 MB. Das Foto wird nicht gespeichert: Es dient nur zum Ausfüllen der Felder.",
+    "scanButton": "Foto aufnehmen oder hochladen",
+    "scanReading": "Dokument wird gelesen…",
+    "scanAnother": "Dokument eines weiteren Gastes hochladen",
+    "scanManual": "Daten von Hand eingeben",
+    "scanReadOk": "Daten gelesen für {{name}}. Prüfen Sie sie vor dem Senden.",
+    "scanUnread": "Das Dokument konnte nicht gelesen werden. Laden Sie ein anderes Foto hoch oder geben Sie die Daten von Hand ein.",
+    "scanUnavailable": "Das automatische Lesen ist gerade nicht verfügbar. Geben Sie die Daten von Hand ein.",
     "stepGuests": "Gäste",
     "guestsIntro": "Geben Sie alle Gäste an, die übernachten, auch Minderjährige: Das Gesetz (Art. 109 TULPS) verlangt die Daten jeder einzelnen Person. Ein Ausweisdokument wird nur vom Einzelgast, vom Familienoberhaupt oder vom Gruppenleiter benötigt.",
     "guestCountMismatch_one": "Die Buchung nennt {{count}} Gast: Prüfen Sie, ob Sie alle Personen eingetragen haben, die übernachten.",

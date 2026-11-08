@@ -39,22 +39,32 @@
         "required": "Indiquez si l'invité est né en Italie ou à l'étranger"
       },
       "birthComune": {
-        "required": "La commune de naissance est obligatoire"
+        "required": "La commune de naissance est obligatoire",
+        "choose": "Choisissez la commune de naissance dans la liste"
       },
       "birthProvince": {
-        "invalid": "Saisissez le code de deux lettres (p. ex. RM)"
+        "invalid": "Ce n'est pas un code de province italienne (p. ex. RM)"
       },
       "birthCountry": {
-        "required": "Le pays de naissance est obligatoire"
+        "required": "Le pays de naissance est obligatoire",
+        "choose": "Choisissez le pays de naissance dans la liste"
       },
       "citizenship": {
-        "required": "La nationalité est obligatoire"
+        "required": "La nationalité est obligatoire",
+        "choose": "Choisissez la nationalité dans la liste (par exemple Italiano)"
       },
       "label": {
         "maxLength": "100 caractères au maximum"
       },
       "documentIssuePlace": {
-        "required": "Le lieu de délivrance est obligatoire"
+        "required": "Le lieu de délivrance est obligatoire",
+        "choose": "Choisissez le lieu de délivrance dans la liste"
+      },
+      "residenceComune": {
+        "choose": "Choisissez la commune de résidence dans la liste"
+      },
+      "residenceCountry": {
+        "choose": "Choisissez le pays de résidence dans la liste"
       },
       "type": {
         "memberWithoutHead": "Un membre de la famille ou du groupe doit suivre le chef de famille ou le chef de groupe",
@@ -120,6 +130,16 @@
       "body": "[ESPACE RÉSERVÉ – l'information complète sera fournie par le responsable du traitement : identité du responsable, finalités, bases juridiques, destinataires (police), durée de conservation et droits des personnes concernées.]",
       "version": "Version de l'information : {{version}}"
     },
+    "stepScan": "Document",
+    "scanIntro": "Commencez par la photo du document de chaque personne. Les données sont lues automatiquement : vous les vérifiez à l'étape suivante.",
+    "scanHint": "JPG, PNG ou WebP, 5 Mo maximum. La photo n'est pas conservée : elle sert seulement à remplir les champs.",
+    "scanButton": "Prendre ou charger la photo",
+    "scanReading": "Lecture du document…",
+    "scanAnother": "Charger le document d'une autre personne",
+    "scanManual": "Saisir les données à la main",
+    "scanReadOk": "Données lues pour {{name}}. Vérifiez-les avant d'envoyer.",
+    "scanUnread": "Le document n'a pas pu être lu. Chargez une autre photo ou saisissez les données à la main.",
+    "scanUnavailable": "La lecture automatique n'est pas disponible pour le moment. Saisissez les données à la main.",
     "stepGuests": "Invités",
     "guestsIntro": "Saisissez tous les invités qui séjournent, mineurs compris : la loi (art. 109 TULPS) exige les données de chacun d'eux. Seul l'invité individuel, le chef de famille ou le chef de groupe doit fournir une pièce d'identité.",
     "guestCountMismatch_one": "La réservation indique {{count}} invité : vérifiez que vous avez saisi toutes les personnes qui séjournent.",

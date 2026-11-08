@@ -2923,22 +2923,32 @@
         "required": "Say whether the guest was born in Italy or abroad"
       },
       "birthComune": {
-        "required": "Municipality of birth is required"
+        "required": "Municipality of birth is required",
+        "choose": "Choose the municipality of birth from the list"
       },
       "birthProvince": {
-        "invalid": "Enter the two-letter code (e.g. RM)"
+        "invalid": "This is not an Italian province code (e.g. RM)"
       },
       "birthCountry": {
-        "required": "Country of birth is required"
+        "required": "Country of birth is required",
+        "choose": "Choose the country of birth from the list"
       },
       "citizenship": {
-        "required": "Citizenship is required"
+        "required": "Citizenship is required",
+        "choose": "Choose the citizenship from the list (for example Italiano)"
       },
       "label": {
         "maxLength": "At most 100 characters"
       },
       "documentIssuePlace": {
-        "required": "Place of issue is required"
+        "required": "Place of issue is required",
+        "choose": "Choose the place of issue from the list"
+      },
+      "residenceComune": {
+        "choose": "Choose the municipality of residence from the list"
+      },
+      "residenceCountry": {
+        "choose": "Choose the country of residence from the list"
       },
       "type": {
         "memberWithoutHead": "A family or group member must follow the head of family or group",
@@ -3039,6 +3049,16 @@
       "AlloggiatiInviato": "Alloggiati submitted",
       "Scaduto": "Expired"
     },
+    "stepScan": "Document",
+    "scanIntro": "Start by uploading a photo of each guest's identity document. The details are read automatically: you check and correct them on the next step.",
+    "scanHint": "JPG, PNG or WebP, up to 5 MB. The photo is not kept: it is only used to fill in the fields.",
+    "scanButton": "Take or upload a photo",
+    "scanReading": "Reading the document…",
+    "scanAnother": "Upload another guest's document",
+    "scanManual": "Enter the details by hand",
+    "scanReadOk": "Details read for {{name}}. Check them before sending.",
+    "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
+    "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
     "guestsIntro": "Enter every guest staying, minors included: the law (art. 109 TULPS) requires the data of each of them. Only the single guest, the head of family or the head of group needs an identity document.",
     "guestCountMismatch_one": "The booking states {{count}} guest: check that you entered everyone staying.",

@@ -169,6 +169,27 @@ export interface AlloggiatiCodeEntryDto {
   code: string;
   description: string;
   province?: string | null;
+  /** Citizenship adjective (Italiano). Absent for a place. */
+  citizenshipLabel?: string | null;
+}
+
+/** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
+export interface CheckInDocumentReadResult {
+  read: boolean;
+  reason?: string | null;
+  guest?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    gender?: string | null;
+    dateOfBirth?: string | null;
+    bornInItaly?: boolean | null;
+    birthPlace?: string | null;
+    birthProvince?: string | null;
+    citizenship?: string | null;
+    documentKind?: string | null;
+    documentNumber?: string | null;
+    issuePlace?: string | null;
+  } | null;
 }
 
 /** Delivery of the check-in link by email (API enum `GuestCheckInLinkEmailStatus`, CO-09). */
