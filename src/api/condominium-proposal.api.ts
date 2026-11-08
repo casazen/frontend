@@ -1,5 +1,4 @@
-import { isAxiosError } from 'axios';
-import { UnexpectedApiResponseError, getProblemCode } from '@/lib/api-errors';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import type { ProposeTenantExpense, TenantExpenseProposal, TenantExpenseSource } from '@/types/condominium-proposal.types';
 import { ApiClient } from './client';
 
@@ -14,14 +13,6 @@ export function condominiumExpensePath(leaseId: string): string {
 }
 
 const SOURCES: readonly TenantExpenseSource[] = ['FixedContract', 'ConfirmedBudget', 'Statements', 'Manual'];
-
-export function isNothingLoaded(error: unknown): boolean {
-  return (
-    isAxiosError(error) &&
-    error.response?.status === 422 &&
-    getProblemCode(error.response.data) === 'tenant_expense_proposal_invalid'
-  );
-}
 
 export const condominiumProposalApi = {
   propose: async (leaseId: string, body: ProposeTenantExpense): Promise<TenantExpenseProposal> =>
