@@ -1,23 +1,45 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Receipt } from 'lucide-react';
 import { RentComposition } from '@/features/leases/components/rent-composition';
+import { rentBreakdown, type RentBreakdown } from '@/features/leases/lib/rent-breakdown';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
+import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { formatDate } from '@/lib/utils';
+import { EmptyState } from '@/components/shared/empty-state';
+import { getProblemMessage } from '@/lib/api-errors';
+import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { todayInZurich } from '@/lib/stay-dates';
 import { useDeclareTransfer } from '@/queries/use-tenant-area';
 import type { TenantDue, TenantPaymentDeclaration } from '@/types';
-import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
-import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
-import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { TenantBankDetailsCard } from './tenant-bank-details';
 import { TenantGate } from './tenant-gate';
 import { tenantDuesPath } from './paths';
 import { useTenantContractPage } from './use-tenant-contract';
+
+/** Below one cent the due is settled: a credit that covers the installment is not a payment to start. */
+const CENT = 0.01;
+
+function notable(value: number | null): value is number {
+  return value !== null && Math.abs(value) >= CENT;
+}
+
+function closedDue(due: TenantDue): boolean {
+  return due.status === 'Paid' || due.status === 'Cancelled';
+}
+
+function settledDue(parts: RentBreakdown): boolean {
+  return parts.residual <= CENT;
+}
+
+function dueStatusKey(status: string): string {
+  return ['Scheduled', 'Processing', 'Paid', 'Failed', 'Cancelled'].includes(status) ? status : 'Scheduled';
+}
 
 export function TenantDuesPage() {
   const { t } = useTranslation();
@@ -26,42 +48,126 @@ export function TenantDuesPage() {
   if (page.status !== 'ready') return <TenantGate status={page.status} error={page.error} refetch={page.refetch} />;
   const area = page.area;
   const selected = dueId ? area.dues.find((due) => due.id === dueId) : undefined;
+  const next = area.dues.find((due) => {
+    if (closedDue(due)) return false;
+    return !settledDue(rentBreakdown(due));
+  });
 
   return (
     <div className="space-y-4" data-testid="tenant-dues">
-      <ul className="space-y-2">
-        {area.dues.length === 0 ? <li className="text-sm text-muted-foreground">{t('tenantArea.dues.empty')}</li> : null}
-        {area.dues.map((due) => (
-          <li key={due.id}>
-            <Link
-              to={tenantDuesPath(area.contract.id, due.id)}
-              className="block rounded-md border border-border p-3 hover:bg-muted"
-              data-testid={`tenant-due-${due.id}`}
-            >
-              <span className="font-medium">{formatDate(due.dueDate)}</span>
-              <span className="ml-2 text-sm text-foreground/70">{t(`tenantArea.dues.status.${dueStatusKey(due.status)}`)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <header className="space-y-1">
+        <h1 className="text-xl font-semibold">{t('tenantArea.dues.title')}</h1>
+        <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
+      </header>
+      {area.dues.length === 0 ? (
+        <div data-testid="tenant-dues-empty">
+          <EmptyState icon={Receipt} title={t('tenantArea.dues.emptyTitle')} description={t('tenantArea.dues.emptyDescription')} />
+        </div>
+      ) : (
+        <ul className="space-y-2" aria-label={t('tenantArea.dues.listLabel')}>
+          {area.dues.map((due) => (
+            <TenantDueRow key={due.id} leaseId={area.contract.id} due={due} current={selected?.id === due.id} />
+          ))}
+        </ul>
+      )}
+      {dueId && !selected ? (
+        <p role="alert" data-testid="tenant-due-missing" className="text-sm">
+          {t('tenantArea.dues.missing')}{' '}
+          <Link to={tenantDuesPath(area.contract.id)} className="font-medium text-primary underline underline-offset-2">
+            {t('tenantArea.dues.backToList')}
+          </Link>
+        </p>
+      ) : null}
+      {!selected && next ? <NextDue leaseId={area.contract.id} due={next} /> : null}
       {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
     </div>
   );
 }
 
-function dueStatusKey(status: string): string {
-  return ['Scheduled', 'Processing', 'Paid', 'Failed', 'Cancelled'].includes(status) ? status : 'Scheduled';
+function TenantDueRow({ leaseId, due, current }: { leaseId: string; due: TenantDue; current: boolean }) {
+  const { t } = useTranslation();
+  const parts = rentBreakdown(due);
+  const line = compositionLine(due, parts, {
+    rent: t('rent.composition.rent'),
+    advance: t('rent.composition.advance'),
+    settlement: t('rent.composition.settlement'),
+  });
+  const late = !closedDue(due) && !settledDue(parts) && due.isOverdue;
+
+  return (
+    <li>
+      <Link
+        to={tenantDuesPath(leaseId, due.id)}
+        aria-current={current ? 'page' : undefined}
+        className={cn(
+          'block rounded-md border p-3 hover:bg-muted',
+          current ? 'border-primary bg-muted' : 'border-border',
+        )}
+        data-testid={`tenant-due-${due.id}`}
+      >
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="font-medium">{formatDate(due.dueDate)}</span>
+          <span className="whitespace-nowrap font-medium">{formatCurrency(parts.residual, due.currency)}</span>
+        </span>
+        <span className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-foreground/70">
+          <span>{t(`tenantArea.dues.status.${dueStatusKey(due.status)}`)}</span>
+          {late ? (
+            <span className="font-medium text-danger-foreground" data-testid={`tenant-due-late-${due.id}`}>
+              {t('tenantArea.dues.overdue')}
+            </span>
+          ) : null}
+        </span>
+        {line ? <span className="mt-1 block text-sm text-foreground/70">{line}</span> : null}
+      </Link>
+    </li>
+  );
+}
+
+function compositionLine(
+  due: TenantDue,
+  parts: RentBreakdown,
+  labels: { rent: string; advance: string; settlement: string },
+): string | null {
+  const bits: string[] = [];
+  if (parts.rent !== null) bits.push(`${labels.rent} ${formatCurrency(parts.rent, due.currency)}`);
+  if (notable(parts.condominiumAdvance)) bits.push(`${labels.advance} ${formatCurrency(parts.condominiumAdvance, due.currency)}`);
+  if (notable(parts.condominiumSettlement)) bits.push(`${labels.settlement} ${formatCurrency(parts.condominiumSettlement, due.currency)}`);
+  return bits.length > 0 ? bits.join(' · ') : null;
+}
+
+function NextDue({ leaseId, due }: { leaseId: string; due: TenantDue }) {
+  const { t } = useTranslation();
+  const parts = rentBreakdown(due);
+  return (
+    <Card data-testid="tenant-next-due">
+      <CardHeader>
+        <CardTitle className="text-base">{t('tenantArea.dues.nextTitle')}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm">
+          {formatDate(due.dueDate)} · {formatCurrency(parts.residual, due.currency)}
+        </p>
+        <Button asChild>
+          <Link to={tenantDuesPath(leaseId, due.id)}>{t('tenantArea.dues.pay')}</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
 
 function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) {
   const { t } = useTranslation();
   const declare = useDeclareTransfer(leaseId, due.id);
   const declaration = declare.data ?? due.declaration;
-  const closed = due.status === 'Paid' || due.status === 'Cancelled';
-  const canDeclare = !closed && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
+  const parts = rentBreakdown(due);
+  const closed = closedDue(due);
+  const settled = settledDue(parts);
+  const canPay = !closed && !settled;
+  const canDeclare = canPay && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
   const [bankLinked, setBankLinked] = useState(false);
-  const showStripe = (due.status === 'Scheduled' || due.status === 'Failed') && bankLinkDebitAvailable(due.currency);
-  const showManual = !bankLinked;
+  const euro = bankLinkDebitAvailable(due.currency);
+  const showStripe = canPay && euro && (due.status === 'Scheduled' || due.status === 'Failed');
+  const showManual = canPay && !bankLinked;
 
   return (
     <div className="space-y-4" data-testid="tenant-due-detail">
@@ -72,31 +178,94 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <p data-testid="tenant-due-amount">
+            <span className="text-foreground/70">{t('tenantArea.dues.residual')}</span>{' '}
+            <span className="text-lg font-semibold">{formatCurrency(parts.residual, due.currency)}</span>
+          </p>
           <p data-testid="tenant-due-status">{t(`tenantArea.dues.status.${dueStatusKey(due.status)}`)}</p>
+          {canPay && due.isOverdue ? (
+            <p className="text-sm font-medium text-danger-foreground" data-testid="tenant-due-overdue">
+              {t('tenantArea.dues.overdue')}
+            </p>
+          ) : null}
+          {due.status === 'Failed' ? (
+            <p role="alert" className="text-sm" data-testid="tenant-due-failed">
+              {t('tenantArea.dues.failedHint')}
+            </p>
+          ) : null}
+          {due.status === 'Processing' ? (
+            <p className="text-sm text-foreground/70" data-testid="tenant-due-processing">
+              {t('tenantArea.dues.processingHint')}
+            </p>
+          ) : null}
           <RentComposition row={due} currency={due.currency} />
+          {notable(parts.condominiumAdvance) ? (
+            <p className="text-sm text-foreground/70" data-testid="tenant-advance-note">
+              {t('tenantArea.dues.advanceNote')}
+            </p>
+          ) : null}
+          {notable(parts.condominiumSettlement) ? (
+            <p className="text-sm text-foreground/70" data-testid="tenant-settlement-note">
+              {parts.condominiumSettlement > 0 ? t('tenantArea.dues.settlementDebt') : t('tenantArea.dues.settlementCredit')}
+            </p>
+          ) : null}
+          {settled && !closed ? (
+            <p data-testid="tenant-due-settled">{t('tenantArea.dues.inBalance')}</p>
+          ) : null}
         </CardContent>
       </Card>
       {showStripe ? (
-        <FinancialConnectionsTransfer
-          mode="tenant"
-          leaseId={leaseId}
-          dueId={due.id}
-          amount={due.bank?.amount ?? rentBreakdown(due).residual}
-          currency={due.currency}
-          reference={due.bank?.reference ?? ''}
-          showManualTransfer={showManual}
-          onLinkedChange={setBankLinked}
-        />
+        <section className="space-y-2" aria-labelledby="tenant-sepa-title" data-testid="tenant-sepa">
+          <h2 id="tenant-sepa-title" className="text-base font-semibold">
+            {t('tenantArea.dues.sepaTitle')}
+          </h2>
+          <p className="text-sm text-foreground/70">{t('tenantArea.dues.sepaHint')}</p>
+          <FinancialConnectionsTransfer
+            mode="tenant"
+            leaseId={leaseId}
+            dueId={due.id}
+            amount={due.bank?.amount ?? parts.residual}
+            currency={due.currency}
+            reference={due.bank?.reference ?? ''}
+            showManualTransfer={showManual}
+            dueFailed={due.status === 'Failed'}
+            onLinkedChange={setBankLinked}
+          />
+        </section>
       ) : null}
-      {showManual && due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : null}
-      {declaration ? <DeclarationStatus declaration={declaration} /> : null}
-      {showManual && canDeclare ? (
-        <DeclarationForm key={due.id} due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
-      ) : null}
-      {showManual && canDeclare ? (
-        <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
-          {t('tenantArea.declaration.notPaid')}
+      {canPay && !euro ? (
+        <p role="status" className="text-sm" data-testid="tenant-sepa-unavailable">
+          {t('tenantArea.dues.sepaEuroOnly')}
         </p>
+      ) : null}
+      {showManual ? (
+        <section className="space-y-3" aria-labelledby="tenant-manual-title" data-testid="tenant-manual">
+          <h2 id="tenant-manual-title" className="text-base font-semibold">
+            {t('tenantArea.dues.manualTitle')}
+          </h2>
+          <p className="text-sm text-foreground/70">{t('tenantArea.dues.manualHint')}</p>
+          {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : (
+            <p role="status" className="text-sm" data-testid="tenant-no-bank">
+              {t('tenantArea.dues.noBank')}
+            </p>
+          )}
+          {declaration ? <DeclarationStatus declaration={declaration} /> : null}
+          {declare.isError ? (
+            <p role="alert" className="text-sm text-destructive" data-testid="tenant-declaration-error">
+              {getProblemMessage(declare.error, t) ?? t('tenantArea.declaration.failed')}
+            </p>
+          ) : null}
+          {canDeclare ? (
+            <DeclarationForm key={due.id} due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
+          ) : null}
+          {canDeclare ? (
+            <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
+              {t('tenantArea.declaration.notPaid')}
+            </p>
+          ) : null}
+        </section>
+      ) : declaration ? (
+        <DeclarationStatus declaration={declaration} />
       ) : null}
     </div>
   );
@@ -105,9 +274,16 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
 function DeclarationStatus({ declaration }: { declaration: TenantPaymentDeclaration }) {
   const { t } = useTranslation();
   return (
-    <p data-testid="tenant-declaration-status" className="rounded-md border border-border px-3 py-2 text-sm">
-      {t(`tenantArea.declaration.status.${declaration.status}`)}
-    </p>
+    <div className="space-y-1">
+      <p data-testid="tenant-declaration-status" className="rounded-md border border-border px-3 py-2 text-sm">
+        {t(`tenantArea.declaration.status.${declaration.status}`)}
+      </p>
+      {declaration.status === 'Rejected' ? (
+        <p className="text-sm text-foreground/70" data-testid="tenant-declaration-rejected">
+          {t('tenantArea.declaration.rejectedHint')}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -148,7 +324,7 @@ function DeclarationForm({
     >
       <div className="space-y-1">
         <Label htmlFor="tenant-declaration-amount">{t('tenantArea.declaration.amount')}</Label>
-        <Input id="tenant-declaration-amount" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <Input id="tenant-declaration-amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
       </div>
       <div className="space-y-1">
         <Label htmlFor="tenant-declaration-date">{t('tenantArea.declaration.date')}</Label>

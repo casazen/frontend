@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { tenantAreaApi } from '@/api/tenant-area.api';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared/empty-state';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import { TenantGate } from './tenant-gate';
+import { tenantDuesPath } from './paths';
 import { useTenantContractPage } from './use-tenant-contract';
 
 export function TenantDocumentsPage() {
@@ -25,7 +28,14 @@ export function TenantDocumentsPage() {
   return (
     <div data-testid="tenant-documents">
       {area.documents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('tenantArea.documents.empty')}</p>
+        <div data-testid="tenant-documents-empty">
+          <EmptyState
+            icon={FileText}
+            title={t('tenantArea.documents.emptyTitle')}
+            description={t('tenantArea.documents.emptyDescription')}
+            action={{ label: t('tenantArea.documents.goToDues'), href: tenantDuesPath(area.contract.id) }}
+          />
+        </div>
       ) : (
         <ul className="space-y-2">
           {area.documents.map((document) => (

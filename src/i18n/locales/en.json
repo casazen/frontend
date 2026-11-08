@@ -20945,19 +20945,23 @@
     "loading": "Loading…",
     "loadError": "The tenant area could not be loaded.",
     "noContracts": "You have no active contract to open.",
+    "noContractsHint": "The contract appears here when the manager adds you. Rent is paid in the Rent section.",
     "openContract": "Open the contract",
     "nav": {
       "label": "Sections",
       "contracts": "Contracts",
       "contract": "Contract",
-      "dues": "Dues",
+      "dues": "Rent",
       "documents": "Documents",
       "maintenance": "Maintenance"
     },
     "contract": {
       "term": "From {{from}} to {{to}}",
       "openEnd": "end date not set",
-      "openDue": "See the next due"
+      "nextDue": "Next due",
+      "payDue": "Pay the due",
+      "openDue": "See the due",
+      "noPayment": "There is nothing to pay. Rent is in the Rent section, not on this page."
     },
     "bank": {
       "title": "Bank transfer details",
@@ -20970,13 +20974,35 @@
       "copied": "Reference copied"
     },
     "dues": {
-      "empty": "No dues.",
+      "title": "Rent",
+      "lead": "You pay the due here. Rent, condominium advance and settlement are already added together.",
+      "listLabel": "Dues",
+      "emptyTitle": "No dues",
+      "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
+      "nextTitle": "Next to pay",
+      "pay": "Pay this due",
+      "residual": "To pay",
+      "overdue": "Overdue",
+      "missing": "This due is not on the contract.",
+      "backToList": "Back to the dues",
+      "advanceNote": "The condominium advance is this month's share, already inside this due.",
+      "settlementDebt": "The settlement is an amount you owe and is added to this due.",
+      "settlementCredit": "The settlement is a credit and reduces what is left to pay.",
+      "inBalance": "This due is settled. There is nothing to pay.",
+      "processingHint": "The transfer is being checked. The due is not marked paid yet.",
+      "failedHint": "The last debit did not go through. You can try again with the linked account, or use a manual transfer.",
+      "sepaTitle": "SEPA debit in euros",
+      "sepaHint": "Link an account at an Italian bank. The debit is in euros. The due stays unpaid until the bank confirms.",
+      "sepaEuroOnly": "SEPA debit is in euros only. For this due, use a manual transfer.",
+      "manualTitle": "Manual transfer",
+      "manualHint": "If you do not link an account, use these details and then tell the manager.",
+      "noBank": "The transfer details are not available yet.",
       "period": "From {{from}} to {{to}}",
       "status": {
         "Scheduled": "To pay",
         "Processing": "Being checked",
         "Paid": "Paid",
-        "Failed": "Failed",
+        "Failed": "Debit failed",
         "Cancelled": "Cancelled"
       }
     },
@@ -20990,6 +21016,7 @@
       "sent": "Declaration sent. The installment is not marked paid.",
       "failed": "The declaration could not be saved.",
       "notPaid": "The declaration tells the manager. It does not mark the installment paid.",
+      "rejectedHint": "The declaration was rejected. You can send another one.",
       "status": {
         "Submitted": "Submitted",
         "Verified": "Verified",
@@ -20998,7 +21025,9 @@
       }
     },
     "documents": {
-      "empty": "No shared documents.",
+      "emptyTitle": "No shared documents",
+      "emptyDescription": "Budget, statement and settlement appear here when the manager shares them. Payment stays in Rent.",
+      "goToDues": "Go to rent",
       "download": "Download",
       "failed": "The document could not be downloaded.",
       "kind": {
