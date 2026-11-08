@@ -933,9 +933,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Pagamenti: the Italian euro SEPA account for the condominium. It is not on the contract, and it is open before signature.
+    // Linking is a write (`lease.create`), the same check Canoni uses. Who may only read the leases does not open this page.
     path: '/app/long-rent/payments',
     context: 'long-rent',
-    requiredPermissions: ['lease.read'],
+    requiredPermissions: ['lease.read', 'lease.create'],
     navKey: 'nav.longRentPayments',
     navParent: '/app/long-rent/rents',
     navOrder: 2,

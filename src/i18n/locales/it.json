@@ -21139,6 +21139,7 @@
     "title": "Pagamenti",
     "description": "Collega un conto SEPA in euro di una banca italiana per le spese condominiali. Puoi farlo anche prima della firma. Se non colleghi un conto, resta il bonifico manuale.",
     "canoniLead": "Il conduttore non paga da qui.",
-    "canoni": "Canoni"
+    "canoni": "Canoni",
+    "readonly": "Solo chi può creare i contratti collega il conto. Il conduttore paga da Canoni."
   }
 }

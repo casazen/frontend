@@ -21,6 +21,8 @@ export function condominiumExpenseKey(leaseId: string) {
 /**
  * The expense already kept for this lease. Opening the step does not call the server:
  * `POST` with an empty body is a write of a budget and drops settle-at-consuntivo.
+ * The choice stays for the life of this draft in the app. The default cache lifetime would drop it
+ * when the step unmounts, and the next open would look empty.
  */
 export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
   const queryClient = useQueryClient();
@@ -36,6 +38,7 @@ export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 

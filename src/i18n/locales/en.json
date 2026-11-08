@@ -21139,6 +21139,7 @@
     "title": "Payments",
     "description": "Link an Italian euro SEPA account for the condominium expenses. You can do it before the contract is signed. If you do not link an account, a manual transfer stays available.",
     "canoniLead": "The tenant does not pay from here.",
-    "canoni": "Rents"
+    "canoni": "Rents",
+    "readonly": "Only someone who can create contracts links the account. The tenant pays from Rents."
   }
 }

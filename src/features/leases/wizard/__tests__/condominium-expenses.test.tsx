@@ -1,10 +1,11 @@
 import { AxiosError } from 'axios';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { condominiumExpenseKey } from '@/queries/use-condominium-proposal';
 import { CondominiumExpenses } from '../condominium-expenses';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
@@ -57,6 +58,10 @@ describe('Condominium expenses on the contract wizard', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     post.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('does not post an empty body when the step opens', async () => {
@@ -203,6 +208,46 @@ describe('Condominium expenses on the contract wizard', () => {
     expect(screen.queryByTestId('lease-condominium-empty')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
     expect(post).toHaveBeenCalledTimes(calls);
+  });
+
+  it('keeps settle-at-consuntivo after the step is gone longer than the default cache lifetime', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    post.mockResolvedValue({
+      data: proposal({
+        source: 'Manual',
+        installmentAmount: 80,
+        lastInstallmentAmount: 80,
+        annualAmount: 960,
+        previousConsuntivo: null,
+        preventivo: null,
+        settledAtConsuntivo: true,
+        periodId: null,
+        periodLabel: null,
+      }),
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+    });
+    const view = render(expenses(queryClient));
+
+    fireEvent.change(await screen.findByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    const calls = post.mock.calls.length;
+    expect(queryClient.getQueryCache().find({ queryKey: condominiumExpenseKey('lease-1') })?.gcTime).toBe(Infinity);
+
+    view.unmount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    });
+
+    render(expenses(queryClient));
+
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    expect(screen.getByText('Si conguaglia al consuntivo.')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-condominium-empty')).not.toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(calls);
+    expect(post.mock.calls.some((call) => Object.keys((call[1] as object) ?? {}).length === 0)).toBe(false);
   });
 
   it('treats a missing year as nothing loaded and does not ask the server', async () => {
