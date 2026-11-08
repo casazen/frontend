@@ -1,34 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { condominiumProposalApi } from '@/api/condominium-proposal.api';
-import type { CondominiumAcceptedProposal, CondominiumManualProposal } from '@/types/condominium-proposal.types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { condominiumProposalApi, isNothingLoaded } from '@/api/condominium-proposal.api';
+import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
 
-export const CONDOMINIUM_PROPOSAL_KEY = 'condominium-proposal';
+export const CONDOMINIUM_EXPENSE_KEY = 'lease-condominium-expense';
 
-export function useCondominiumProposal(propertyId: string) {
+/** `null` when the property has no fiscal year yet (422 `tenant_expense_proposal_invalid`). */
+export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
   return useQuery({
-    queryKey: [CONDOMINIUM_PROPOSAL_KEY, propertyId],
-    queryFn: () => condominiumProposalApi.get(propertyId),
-    enabled: propertyId.trim() !== '',
+    queryKey: [CONDOMINIUM_EXPENSE_KEY, leaseId],
+    queryFn: async (): Promise<TenantExpenseProposal | null> => {
+      try {
+        return await condominiumProposalApi.propose(leaseId, {});
+      } catch (error) {
+        if (isNothingLoaded(error)) return null;
+        throw error;
+      }
+    },
+    enabled,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useSaveCondominiumProposal(propertyId: string) {
-  const queryClient = useQueryClient();
+export function useProposeCondominiumExpense(leaseId: string) {
   return useMutation({
-    mutationFn: (body: CondominiumAcceptedProposal | CondominiumManualProposal) => condominiumProposalApi.accept(propertyId, body),
-    onSuccess: (proposal) => {
-      queryClient.setQueryData([CONDOMINIUM_PROPOSAL_KEY, propertyId], proposal);
-    },
-  });
-}
-
-export function useCalculateCondominiumProposal(propertyId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { leaseId: string; consuntivo: File; preventivo: File }) =>
-      condominiumProposalApi.calculateFromFiles(propertyId, input.leaseId, input.consuntivo, input.preventivo),
-    onSuccess: (proposal) => {
-      queryClient.setQueryData([CONDOMINIUM_PROPOSAL_KEY, propertyId], proposal);
-    },
+    mutationFn: (body: ProposeTenantExpense) => condominiumProposalApi.propose(leaseId, body),
   });
 }

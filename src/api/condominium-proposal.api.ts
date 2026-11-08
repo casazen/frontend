@@ -1,67 +1,82 @@
 import { isAxiosError } from 'axios';
-import { UnexpectedApiResponseError } from '@/lib/api-errors';
-import type { CondominiumAcceptedProposal, CondominiumManualProposal, CondominiumProposal } from '@/types/condominium-proposal.types';
+import { UnexpectedApiResponseError, getProblemCode } from '@/lib/api-errors';
+import type { ProposeTenantExpense, TenantExpenseProposal, TenantExpenseSource } from '@/types/condominium-proposal.types';
 import { ApiClient } from './client';
 
 /**
- * Condominium expenses for the contract wizard.
- * `GET /long-rent/properties/:propertyId/condominium-proposal` proposes the amount when the property
- * already has a fiscal year. `POST` the same path accepts that amount, stores a hand-typed amount
- * (settled at consuntivo), or calculates one from the previous-year consuntivo and the new-year preventivo.
- * A missing resource (404) is an empty proposal: the wizard asks for the files or a hand-typed amount.
+ * The condominium expense of a draft lease.
+ * `POST /leases/:leaseId/draft/condominium-expense`.
+ * An empty body asks for the fiscal year already on the property.
+ * 422 `tenant_expense_proposal_invalid` means nothing is loaded yet.
  */
-export function condominiumProposalPath(propertyId: string): string {
-  return `/long-rent/properties/${encodeURIComponent(propertyId)}/condominium-proposal`;
+export function condominiumExpensePath(leaseId: string): string {
+  return `/leases/${encodeURIComponent(leaseId)}/draft/condominium-expense`;
 }
 
-const EMPTY: CondominiumProposal = { state: 'empty', fiscalYearLabel: null, amount: null, currency: 'EUR' };
+const SOURCES: readonly TenantExpenseSource[] = ['FixedContract', 'ConfirmedBudget', 'Statements', 'Manual'];
+
+export function isNothingLoaded(error: unknown): boolean {
+  return (
+    isAxiosError(error) &&
+    error.response?.status === 422 &&
+    getProblemCode(error.response.data) === 'tenant_expense_proposal_invalid'
+  );
+}
 
 export const condominiumProposalApi = {
-  get: async (propertyId: string): Promise<CondominiumProposal> => {
-    try {
-      return parseProposal(await ApiClient.get<unknown>(condominiumProposalPath(propertyId)));
-    } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 404) return EMPTY;
-      throw error;
-    }
-  },
-
-  accept: async (propertyId: string, body: CondominiumAcceptedProposal | CondominiumManualProposal): Promise<CondominiumProposal> =>
-    parseProposal(await ApiClient.post<unknown>(condominiumProposalPath(propertyId), body)),
-
-  /**
-   * Previous-year consuntivo and new-year preventivo. The answer is the amount calculated from those files.
-   */
-  calculateFromFiles: async (propertyId: string, leaseId: string, consuntivo: File, preventivo: File): Promise<CondominiumProposal> => {
-    const form = new FormData();
-    form.append('leaseId', leaseId);
-    form.append('consuntivo', consuntivo);
-    form.append('preventivo', preventivo);
-    return parseProposal(
-      await ApiClient.post<unknown>(condominiumProposalPath(propertyId), form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }),
-    );
-  },
+  propose: async (leaseId: string, body: ProposeTenantExpense): Promise<TenantExpenseProposal> =>
+    parseProposal(await ApiClient.post<unknown>(condominiumExpensePath(leaseId), body)),
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function parseProposal(data: unknown): CondominiumProposal {
-  const path = '/long-rent/properties/:propertyId/condominium-proposal';
+function money(value: unknown, allowZero: boolean): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return Number.NaN;
+  if (allowZero ? value < 0 : value <= 0) return Number.NaN;
+  return value;
+}
+
+function parseProposal(data: unknown): TenantExpenseProposal {
+  const path = '/leases/:leaseId/draft/condominium-expense';
   if (!isRecord(data)) throw new UnexpectedApiResponseError(path);
-  const state = data.state;
-  const currency = data.currency;
-  if ((state !== 'ready' && state !== 'empty') || currency !== 'EUR') throw new UnexpectedApiResponseError(path);
-  const label = data.fiscalYearLabel;
-  const fiscalYearLabel = typeof label === 'string' && label.trim() !== '' ? label : null;
-  const amount = data.amount;
-  if (state === 'empty') {
-    if (amount !== null && amount !== undefined) throw new UnexpectedApiResponseError(path);
-    return { state, fiscalYearLabel, amount: null, currency: 'EUR' };
+  const source = data.source;
+  if (typeof source !== 'string' || !SOURCES.includes(source as TenantExpenseSource)) throw new UnexpectedApiResponseError(path);
+  const installmentAmount = money(data.installmentAmount, false);
+  const lastInstallmentAmount = money(data.lastInstallmentAmount, false);
+  const annualAmount = money(data.annualAmount, false);
+  const installments = data.installments;
+  if (
+    installmentAmount === null ||
+    Number.isNaN(installmentAmount) ||
+    lastInstallmentAmount === null ||
+    Number.isNaN(lastInstallmentAmount) ||
+    annualAmount === null ||
+    Number.isNaN(annualAmount) ||
+    typeof installments !== 'number' ||
+    !Number.isInteger(installments) ||
+    installments <= 0 ||
+    typeof data.settledAtConsuntivo !== 'boolean'
+  ) {
+    throw new UnexpectedApiResponseError(path);
   }
-  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) throw new UnexpectedApiResponseError(path);
-  return { state, fiscalYearLabel, amount, currency: 'EUR' };
+  const previous = money(data.previousConsuntivo, true);
+  const preventivo = money(data.preventivo, false);
+  if (Number.isNaN(previous) || Number.isNaN(preventivo)) throw new UnexpectedApiResponseError(path);
+  const periodId = data.periodId;
+  const periodLabel = data.periodLabel;
+  return {
+    source: source as TenantExpenseSource,
+    installmentAmount,
+    lastInstallmentAmount,
+    installments,
+    annualAmount,
+    previousConsuntivo: previous,
+    preventivo,
+    settledAtConsuntivo: data.settledAtConsuntivo,
+    periodId: typeof periodId === 'string' && periodId.trim() !== '' ? periodId : null,
+    periodLabel: typeof periodLabel === 'string' && periodLabel.trim() !== '' ? periodLabel : null,
+  };
 }

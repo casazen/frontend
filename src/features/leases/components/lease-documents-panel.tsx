@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ErrorState } from '@/components/shared/error-state';
+import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import { DocumentPages } from '@/components/documents/document-pages';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
@@ -72,10 +73,10 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       <h2 id={formId} className="text-lg font-semibold">{t('cfDocuments.documentsTitle')}</h2>
       {documents.isPending ? <p role="status">{t('cfDocuments.loading')}</p> : null}
       {documents.isError ? <ErrorState title={t('cfDocuments.documentsError')} error={documents.error} onRetry={() => void documents.refetch()} /> : null}
-      {documents.data?.length === 0 ? <p>{t('cfDocuments.empty')}</p> : null}
+      {documents.data?.length === 0 ? <p className="text-sm text-muted-foreground" data-testid="lease-documents-empty">{t('cfDocuments.empty')}</p> : null}
       <ul className="space-y-3">
-        {documents.data?.map((document) => <li key={document.id} className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0"><p className="break-all">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p>
+        {documents.data?.map((document) => <li key={document.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
+          <div className="min-w-0"><p className="break-all font-medium">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p>
             {document.kind === 'Contract' && (document.sections?.length ?? 0) > 1
               ? <p className="text-sm text-muted-foreground" data-testid="lease-document-contains">{t('leaseDocs.contains', { parts: recognizedParts(t, document.sections ?? []) })}</p>
               : null}
@@ -84,7 +85,7 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
             <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
             <Button
               type="button"
-              variant="outline"
+              variant="danger-outline"
               disabled={remove.isPending}
               aria-label={t('cfDocuments.deleteNamed', { name: document.fileName })}
               data-testid={`lease-document-delete-${document.id}`}
@@ -104,9 +105,14 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
         variant="destructive"
         isLoading={remove.isPending}
         onConfirm={async () => { if (pendingDelete) await remove.mutateAsync(pendingDelete.id); }}
-      />
+      >
+        {remove.isError ? (
+          <p role="alert" className="text-sm text-destructive" data-testid="lease-document-delete-error">
+            {getProblemMessage(remove.error, t) ?? t('cfDocuments.deleteError')}
+          </p>
+        ) : null}
+      </ConfirmationDialog>
       {download.isError ? <ErrorState title={t('cfDocuments.downloadError')} error={download.error} /> : null}
-      {remove.isError ? <ErrorState title={t('cfDocuments.deleteError')} error={remove.error} /> : null}
       {canUpload ? <form onSubmit={submit} className="space-y-3">
         <div className="space-y-2"><Label htmlFor={`${formId}-kind`}>{t('cfDocuments.kind')}</Label>
           <select id={`${formId}-kind`} aria-describedby={`${formId}-kind-hint`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>

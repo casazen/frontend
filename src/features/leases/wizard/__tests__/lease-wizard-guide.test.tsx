@@ -12,10 +12,9 @@ import { toWizardValues } from '../wizard-model';
 vi.mock('@/api/leases.api', () => ({ leasesApi: { saveDraft: vi.fn(), getReview: vi.fn(), confirmReview: vi.fn() } }));
 vi.mock('@/api/condominium-proposal.api', () => ({
   condominiumProposalApi: {
-    get: vi.fn(async () => ({ state: 'empty', fiscalYearLabel: null, amount: null, currency: 'EUR' })),
-    accept: vi.fn(),
-    calculateFromFiles: vi.fn(),
+    propose: vi.fn(async () => null),
   },
+  isNothingLoaded: vi.fn(() => false),
 }));
 vi.mock('@/queries/use-properties', () => ({
   useProperties: vi.fn(() => ({ data: [], isLoading: false, isError: false, error: null, isFetching: false, refetch: vi.fn() })),

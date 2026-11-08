@@ -15,6 +15,7 @@ import { WorkspaceContext } from '@/contexts/workspace-context';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import {
   useConfigureRentSchedule,
   useDisableRentSchedule,
@@ -108,6 +109,7 @@ function RentLedgerContent({
   // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
   const workspace = useContext(WorkspaceContext);
   const canOpenPaymentsSettings = workspace ? workspace.hasPermission('short-rent', 'property.write') : true;
+  const canLinkCondominiumBank = workspace ? workspace.hasPermission('long-rent', 'lease.create') : true;
   const [editing, setEditing] = useState(false);
   const disable = useDisableRentSchedule(leaseId);
   const schedule = ledger.schedule;
@@ -124,6 +126,19 @@ function RentLedgerContent({
 
   return (
     <div className="space-y-4">
+      {canLinkCondominiumBank ? (
+        <FinancialConnectionsTransfer
+          mode="org"
+          linkOnly
+          forLandlord
+          showManualTransfer
+          leaseId={leaseId}
+          dueId="condominium"
+          amount={0}
+          currency="EUR"
+          reference=""
+        />
+      ) : null}
       {!ledger.onlinePaymentsAvailable && (
         <Alert variant="warning" data-testid="rent-online-unavailable">
           {t('rent.onlineUnavailable')}

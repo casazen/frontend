@@ -167,7 +167,12 @@ export function ConfirmationDialog({
   const resolvedConfirmLabel = confirmLabel ?? t('shared.confirm');
   const resolvedCancelLabel = cancelLabel ?? t('shared.cancel');
   const handleConfirm = async () => {
-    await onConfirm();
+    try {
+      await onConfirm();
+    } catch {
+      // The action failed. The dialog stays open so the caller can show why.
+      return;
+    }
     onOpenChange(false);
   };
 

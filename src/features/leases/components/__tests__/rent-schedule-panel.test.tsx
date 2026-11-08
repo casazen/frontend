@@ -238,7 +238,7 @@ describe('RentSchedulePanel (LT-06)', () => {
     renderPanel();
 
     const notice = await screen.findByTestId('rent-online-unavailable');
-    expect(within(notice).getByRole('link', { name: 'Vai a Pagamenti' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
+    expect(within(notice).getByRole('link', { name: 'Impostazioni Stripe' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
     const row = screen.getByTestId('rent-installment');
     expect(within(row).queryByRole('button', { name: 'Invia link di pagamento' })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
@@ -254,6 +254,8 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(within(row).queryByTestId('rent-stripe-inst-1')).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: 'Collega il conto' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('condominium-bank-link')).toHaveTextContent('euro');
+    expect(screen.getByTestId('condominium-bank-link')).toHaveTextContent('registrare');
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 
@@ -328,6 +330,6 @@ describe('RentSchedulePanel (LT-06)', () => {
 
     expect(await screen.findByRole('button', { name: /Genera lo scadenziario/ })).toBeInTheDocument();
     expect(screen.queryByTestId('rent-not-signed')).not.toBeInTheDocument();
-    expect(get).toHaveBeenCalledTimes(2);
+    expect(get.mock.calls.filter(([url]) => url === RENT_URL)).toHaveLength(2);
   });
 });
