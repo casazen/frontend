@@ -131,6 +131,14 @@ export default defineConfig({
           },
         },
         {
+          name: 'staging-tenant',
+          testMatch: '**/tenant-canoni-live.spec.ts',
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+          },
+        },
+        {
           name: 'staging-gj',
           // Real-API L3 only (the Golden Journey is the gj-l3 project on the ephemeral stack, FN-03)
           testMatch: [
@@ -157,6 +165,7 @@ export default defineConfig({
             '**/gj-l3/**',
             '**/*-l3.spec.ts',
             '**/prod-deploy-smoke.spec.ts',
+            '**/tenant-canoni-live.spec.ts',
           ],
           use: { ...devices['Desktop Chrome'] },
         },

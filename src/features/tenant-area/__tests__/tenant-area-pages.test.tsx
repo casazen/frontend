@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { freezeClock } from '@/test/clock';
+import { TenantContractPage } from '../tenant-contract-page';
+import { TenantDocumentsPage } from '../tenant-documents-page';
 import { TenantDuesPage } from '../tenant-dues-page';
 import { TenantMaintenanceDetailPage, TenantMaintenanceFormPage } from '../tenant-maintenance-pages';
 
@@ -56,7 +58,9 @@ function renderAt(path: string, element: ReactNode) {
       <I18nextProvider i18n={i18n}>
         <MemoryRouter initialEntries={[path]}>
           <Routes>
+            <Route path="/portale-conduttore/contratti/:leaseId" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/scadenze/:dueId?" element={element} />
+            <Route path="/portale-conduttore/contratti/:leaseId/documenti" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/manutenzione/nuova" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/manutenzione/:requestId" element={element} />
           </Routes>
@@ -225,5 +229,127 @@ describe('tenant area', () => {
     expect(screen.queryByTestId('tenant-declaration-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('stripe-bank-transfer')).not.toBeInTheDocument();
     expect(screen.queryByTestId('tenant-declaration-note')).not.toBeInTheDocument();
+  });
+
+  it('explains a condominium advance and a settlement credit, and keeps the due unpaid', async () => {
+    get.mockResolvedValue({
+      data: {
+        ...area,
+        dues: [
+          {
+            ...area.dues[0],
+            amount: 970,
+            residual: 970,
+            components: [
+              { kind: 'Rent', amount: 900 },
+              { kind: 'CondominiumAdvance', amount: 150 },
+              { kind: 'CondominiumSettlement', amount: -80 },
+            ],
+          },
+        ],
+      },
+    });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-advance-note')).toHaveTextContent('già dentro questa scadenza');
+    expect(screen.getByTestId('tenant-settlement-note')).toHaveTextContent('è un credito');
+    expect(screen.getByTestId('tenant-due-amount')).toHaveTextContent(/970,00/);
+    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
+    expect(screen.getByTestId('tenant-sepa')).toHaveTextContent('banche italiane');
+    expect(screen.getByTestId('tenant-manual')).toBeInTheDocument();
+  });
+
+  it('does not ask for a payment when the residual is settled', async () => {
+    get.mockResolvedValue({
+      data: {
+        ...area,
+        dues: [
+          {
+            ...area.dues[0],
+            amount: 0,
+            residual: 0,
+            components: [
+              { kind: 'Rent', amount: 100 },
+              { kind: 'CondominiumSettlement', amount: -100 },
+            ],
+          },
+        ],
+      },
+    });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-due-settled')).toHaveTextContent('Sei in pari');
+    expect(screen.queryByTestId('tenant-sepa')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-declaration-form')).not.toBeInTheDocument();
+  });
+
+  it('shows the failed debit and keeps SEPA and the manual transfer', async () => {
+    get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], status: 'Failed' }] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-due-failed')).toHaveTextContent('bonifico manuale');
+    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Addebito non riuscito');
+    expect(screen.getByTestId('stripe-link-account')).toBeInTheDocument();
+    expect(screen.getByTestId('tenant-declare-transfer')).toBeInTheDocument();
+  });
+
+  it('keeps SEPA off a due that is not in euro and shows the manual transfer', async () => {
+    get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], currency: 'CHF' }] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-sepa-unavailable')).toHaveTextContent('solo in euro');
+    expect(screen.queryByTestId('stripe-bank-transfer')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-manual')).toBeInTheDocument();
+  });
+
+  it('shows the declaration error and leaves the due unpaid', async () => {
+    get.mockResolvedValue({ data: area });
+    post.mockRejectedValue(new Error('down'));
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    fireEvent.click(await screen.findByTestId('tenant-declare-transfer'));
+
+    expect(await screen.findByTestId('tenant-declaration-error')).toHaveTextContent('Non riesco a registrare la dichiarazione');
+    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
+  });
+
+  it('uses an empty state when there is no due', async () => {
+    get.mockResolvedValue({ data: { ...area, dues: [] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-dues-empty')).toHaveTextContent('Nessuna scadenza');
+    expect(screen.queryByTestId('tenant-sepa')).not.toBeInTheDocument();
+  });
+
+  it('names the next amount on the contract and does not show the bank details', async () => {
+    get.mockResolvedValue({ data: area });
+
+    renderAt('/portale-conduttore/contratti/lease-1', <TenantContractPage />);
+
+    expect(await screen.findByTestId('tenant-contract-next')).toHaveTextContent('05/11/2026');
+    expect(screen.getByRole('link', { name: 'Paga la scadenza' })).toHaveAttribute(
+      'href',
+      '/portale-conduttore/contratti/lease-1/scadenze/due-1',
+    );
+    expect(screen.queryByTestId('tenant-bank')).not.toBeInTheDocument();
+    expect(screen.queryByText('IT60X0542811101000000123456')).not.toBeInTheDocument();
+  });
+
+  it('sends a tenant with no shared documents to the dues', async () => {
+    get.mockResolvedValue({ data: area });
+
+    renderAt('/portale-conduttore/contratti/lease-1/documenti', <TenantDocumentsPage />);
+
+    expect(await screen.findByTestId('tenant-documents-empty')).toHaveTextContent('conguaglio');
+    expect(screen.getByRole('link', { name: 'Vai ai canoni' })).toHaveAttribute(
+      'href',
+      '/portale-conduttore/contratti/lease-1/scadenze',
+    );
   });
 });

@@ -115,6 +115,16 @@ jobs:
           VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
           VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
 
+      - name: Tenant Canoni on the Railway test API
+        run: E2E_STAGING=1 npm run test:e2e -- --project=staging-tenant
+        env:
+          CI: true
+          E2E_STAGING: '1'
+          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
+          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
+
       - name: Golden Journey / L3 staging project
         run: E2E_STAGING=1 npm run test:e2e -- --project=staging-gj
         env:
