@@ -45,7 +45,6 @@ export function CodeTableInput({
   ...inputProps
 }: CodeTableInputProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const available = isListAvailable(source, list);
   const shown = purpose === 'citizenship' ? citizenshipAdjective(name) : name;
   const query = useDelayedValue(name.trim(), SEARCH_DELAY_MS);
@@ -57,7 +56,7 @@ export function CodeTableInput({
     enabled: query.length >= MIN_QUERY_LENGTH,
     staleTime: 5 * 60 * 1000,
   });
-  const entries = search.data ?? [];
+  const entries = Array.isArray(search.data) ? search.data : [];
   const listId = `${id}-listbox`;
 
   const choose = (value: string) => {
@@ -70,7 +69,7 @@ export function CodeTableInput({
   };
 
   return (
-    <div className="relative">
+    <div className="group relative">
       <Input
         id={id}
         name={id}
@@ -78,16 +77,15 @@ export function CodeTableInput({
         autoCorrect="off"
         spellCheck={false}
         role="combobox"
-        aria-expanded={open && entries.length > 0}
+        aria-expanded={entries.length > 0 && !code}
         aria-controls={listId}
         aria-autocomplete="list"
         value={shown}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
         onChange={(event) => choose(event.target.value)}
         {...inputProps}
       />
-      {open && entries.length > 0 && (
+      {/* Shown while the field is focused, including when the answer arrives after the focus. */}
+      {entries.length > 0 && !code && (
         <ul
           id={listId}
           role="listbox"
@@ -105,7 +103,6 @@ export function CodeTableInput({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
                     onValueChange({ name: entry.description, code: entry.code, province: entry.province ?? null });
-                    setOpen(false);
                   }}
                 >
                   {label}

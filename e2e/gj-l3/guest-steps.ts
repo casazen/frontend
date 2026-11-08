@@ -90,13 +90,13 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     await page.locator(`#guest-${i}-gender`).selectOption({ label: g.gender });
     await page.locator(`#guest-${i}-dateOfBirth`).fill(g.born);
     await page.locator(`#guest-${i}-bornInItaly`).selectOption({ label: 'In Italia' });
-    await chooseOfficialCode(page, `guest-${i}-birthComuneName`, 'ROMA', /ROMA/i);
+    await chooseOfficialCode(page, `guest-${i}-birthComuneName`, 'ROMA', /^ROMA \(/i);
     await chooseOfficialCode(page, `guest-${i}-citizenship`, 'ITALIA', /Ital/i);
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
   await pickHeadOfFamilyDocumentType(page);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
-  await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ROMA', /ROMA/i);
+  await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ROMA', /^ROMA \(/i);
   await page.getByRole('button', { name: 'Avanti' }).click();
   // Step 3 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
   // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
@@ -135,10 +135,10 @@ async function chooseOfficialCode(page: Page, id: string, query: string, option:
     },
     { timeout: 15_000 },
   );
-  await field.click();
+  await field.focus();
   await field.fill(query);
   await codes;
-  await field.click();
+  await field.focus();
   const choice = page.locator(`#${id}-listbox`).getByRole('option', { name: option });
   await expect(choice.first()).toBeVisible({ timeout: 15_000 });
   await choice.first().click();
