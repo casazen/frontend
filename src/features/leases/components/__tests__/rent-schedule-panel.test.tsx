@@ -99,6 +99,8 @@ describe('RentSchedulePanel (LT-06)', () => {
 
     expect(await screen.findByTestId('rent-not-signed')).toHaveTextContent('firmato da tutte le parti');
     expect(screen.queryByTestId('rent-schedule-form')).not.toBeInTheDocument();
+    expect(screen.getByTestId('condominium-bank-link')).toHaveTextContent('euro');
+    expect(screen.getByRole('button', { name: 'Collega il conto' })).toBeInTheDocument();
   });
 
   it('createSchedule_DefaultsLeftEmpty_SendsOnlyTheCadenceSoTheServerUsesTheLease', async () => {
@@ -311,8 +313,13 @@ describe('RentSchedulePanel (LT-06)', () => {
   it('render_LeaseGetsSigned_ReadsTheLedgerAgainAndOffersTheSchedule', async () => {
     // A7-29 (found by the e2e): the panel was rendered while the lease was a draft and kept "not signed yet" after the
     // landlord uploaded the signed contract, until a reload.
-    get.mockResolvedValueOnce({ data: ledger({ canConfigure: false, schedule: null, installments: [] }) });
-    get.mockResolvedValue({ data: ledger({ canConfigure: true, schedule: null, installments: [] }) });
+    let signed = false;
+    get.mockImplementation((url: string) => {
+      if (String(url).includes('bank-links')) return Promise.resolve({ data: { linked: false } });
+      return Promise.resolve({
+        data: ledger({ canConfigure: signed, schedule: null, installments: [] }),
+      });
+    });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     const tree = (status: string) => (
       <QueryClientProvider client={client}>
@@ -326,6 +333,7 @@ describe('RentSchedulePanel (LT-06)', () => {
     const view = render(tree('Draft'));
     expect(await screen.findByTestId('rent-not-signed')).toBeInTheDocument();
 
+    signed = true;
     view.rerender(tree('Signed'));
 
     expect(await screen.findByRole('button', { name: /Genera lo scadenziario/ })).toBeInTheDocument();

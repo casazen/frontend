@@ -28,15 +28,22 @@ function proposal(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function renderExpenses() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
-    <QueryClientProvider client={client}>
+function client() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+}
+
+function expenses(queryClient = client()) {
+  return (
+    <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <CondominiumExpenses propertyId="prop-1" leaseId="lease-1" />
       </I18nextProvider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
+}
+
+function renderExpenses() {
+  return render(expenses());
 }
 
 function nothingLoaded(): AxiosError {
@@ -142,6 +149,73 @@ describe('Condominium expenses on the contract wizard', () => {
     expect(screen.queryByTestId('lease-condominium-manual')).not.toBeInTheDocument();
     expect(post).toHaveBeenCalledTimes(2);
     expect(post.mock.calls.some((call) => (call[1] as { manualAmount?: number }).manualAmount === undefined && Object.keys((call[1] as object) ?? {}).length > 0)).toBe(false);
+  });
+
+  it('accepts an Italian comma amount, including thousands grouping', async () => {
+    post.mockRejectedValueOnce(nothingLoaded());
+    post.mockResolvedValue({
+      data: proposal({
+        source: 'Manual',
+        installmentAmount: 95.5,
+        lastInstallmentAmount: 95.5,
+        annualAmount: 1146,
+        previousConsuntivo: null,
+        preventivo: null,
+        settledAtConsuntivo: true,
+        periodId: null,
+        periodLabel: null,
+      }),
+    });
+
+    renderExpenses();
+
+    const manual = await screen.findByLabelText('Importo a mano (€ al mese)');
+    expect(screen.getByTestId('lease-condominium-manual')).toBeDisabled();
+    fireEvent.change(manual, { target: { value: '95,50' } });
+    expect(screen.getByTestId('lease-condominium-manual')).toBeEnabled();
+
+    fireEvent.change(screen.getByLabelText("Consuntivo dell'anno precedente (€)"), { target: { value: '1.234,50' } });
+    fireEvent.change(screen.getByLabelText('Preventivo del nuovo anno (€)'), { target: { value: '95,50' } });
+    expect(screen.getByTestId('lease-condominium-calculate')).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+
+    await waitFor(() =>
+      expect(post).toHaveBeenLastCalledWith(PATH, { cadence: 'Monthly', manualAmount: 95.5 }, undefined),
+    );
+  });
+
+  it('keeps a settle-at-consuntivo choice when the step is opened again', async () => {
+    post.mockRejectedValueOnce(nothingLoaded());
+    post.mockResolvedValue({
+      data: proposal({
+        source: 'Manual',
+        installmentAmount: 80,
+        lastInstallmentAmount: 80,
+        annualAmount: 960,
+        previousConsuntivo: null,
+        preventivo: null,
+        settledAtConsuntivo: true,
+        periodId: null,
+        periodLabel: null,
+      }),
+    });
+    const queryClient = client();
+    const view = render(expenses(queryClient));
+
+    fireEvent.change(await screen.findByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    const calls = post.mock.calls.length;
+
+    view.unmount();
+    render(expenses(queryClient));
+
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
+    expect(screen.getByText('Si conguaglia al consuntivo.')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-condominium-empty')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
+    expect(post).toHaveBeenCalledTimes(calls);
   });
 
   it('treats a missing year as nothing loaded', async () => {

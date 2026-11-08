@@ -62,6 +62,29 @@ interface LeaseTerm {
  * The plan says from which month the rents are tracked and whether the tenants are written to by the daily job (LR-04a):
  * that one is off for a new plan, and on only when the landlord turns it on.
  */
+/**
+ * The organisation account that pays the condominium (SEPA, euro). It is on Pagamenti even while the
+ * contract is still a draft: linking it does not record a tenant payment, and it is not on Canoni.
+ */
+function CondominiumBankLink({ leaseId }: { leaseId: string }) {
+  const workspace = useContext(WorkspaceContext);
+  const canLink = workspace ? workspace.hasPermission('long-rent', 'lease.create') : true;
+  if (!canLink) return null;
+  return (
+    <FinancialConnectionsTransfer
+      mode="org"
+      linkOnly
+      forLandlord
+      showManualTransfer
+      leaseId={leaseId}
+      dueId="condominium"
+      amount={0}
+      currency="EUR"
+      reference=""
+    />
+  );
+}
+
 export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: RentSchedulePanelProps) {
   const { t } = useTranslation();
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
@@ -69,6 +92,7 @@ export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: 
   return (
     <PlainSection title={t('rent.title')} data-testid="rent-schedule-panel" className="space-y-4">
       <p className="text-sm text-foreground/70">{t('rent.description')}</p>
+      <CondominiumBankLink leaseId={leaseId} />
       {isLoading && (
         <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="rent-loading">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -109,7 +133,6 @@ function RentLedgerContent({
   // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
   const workspace = useContext(WorkspaceContext);
   const canOpenPaymentsSettings = workspace ? workspace.hasPermission('short-rent', 'property.write') : true;
-  const canLinkCondominiumBank = workspace ? workspace.hasPermission('long-rent', 'lease.create') : true;
   const [editing, setEditing] = useState(false);
   const disable = useDisableRentSchedule(leaseId);
   const schedule = ledger.schedule;
@@ -126,19 +149,6 @@ function RentLedgerContent({
 
   return (
     <div className="space-y-4">
-      {canLinkCondominiumBank ? (
-        <FinancialConnectionsTransfer
-          mode="org"
-          linkOnly
-          forLandlord
-          showManualTransfer
-          leaseId={leaseId}
-          dueId="condominium"
-          amount={0}
-          currency="EUR"
-          reference=""
-        />
-      ) : null}
       {!ledger.onlinePaymentsAvailable && (
         <Alert variant="warning" data-testid="rent-online-unavailable">
           {t('rent.onlineUnavailable')}

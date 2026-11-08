@@ -5,68 +5,52 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
-import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
-import { useCondominiumExpenseProbe, useProposeCondominiumExpense } from '@/queries/use-condominium-proposal';
-
-const AMOUNT = /^\d+(\.\d{1,2})?$/;
-
-interface AcceptedExpense {
-  proposal: TenantExpenseProposal;
-  /** The body that produced this proposal. A later click sends this again, never a different mode. */
-  request: ProposeTenantExpense;
-}
+import type { ProposeTenantExpense } from '@/types/condominium-proposal.types';
+import {
+  useCondominiumExpenseProbe,
+  useProposeCondominiumExpense,
+  useRememberCondominiumExpense,
+} from '@/queries/use-condominium-proposal';
 
 /**
  * Condominium expenses on «Condizioni economiche».
- * A fiscal year already on the property proposes the monthly amount.
+ * A fiscal year already on the property proposes the monthly amount. That first read is not repeated
+ * once a choice is kept: an empty body would come back as a budget and drop settle-at-consuntivo.
  * With nothing loaded, the totals of the previous consuntivo and the new preventivo, or a hand-typed
- * amount, are sent. A hand-typed amount and the two statements are settled at consuntivo: the button
- * that follows sends that same request again. Paying, and the prior-year balance, are not done here.
+ * amount, are sent. Paying, and the prior-year balance, are not done here.
  */
 export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: string; leaseId: string }) {
   const { t } = useTranslation();
   const ready = propertyId.trim() !== '' && leaseId.trim() !== '';
   const probe = useCondominiumExpenseProbe(leaseId, ready);
   const save = useProposeCondominiumExpense(leaseId);
+  const remember = useRememberCondominiumExpense(leaseId);
   const [consuntivo, setConsuntivo] = useState('');
   const [preventivo, setPreventivo] = useState('');
   const [manual, setManual] = useState('');
-  const [accepted, setAccepted] = useState<AcceptedExpense | null>(null);
 
   if (!ready) return null;
 
   const pending = save.isPending;
-  const shown = accepted?.proposal ?? (probe.data === undefined ? null : probe.data);
-  const empty = probe.isSuccess && probe.data === null && accepted === null;
+  const saved = probe.data?.saved ?? null;
+  const shown = saved?.proposal ?? probe.data?.proposal ?? null;
+  const empty = probe.isSuccess && probe.data?.proposal === null && saved === null;
 
   async function propose(request: ProposeTenantExpense) {
-    const proposal = await save.mutateAsync(request);
-    setAccepted({ proposal, request });
+    await save.mutateAsync(request);
   }
 
-  async function acceptShown() {
-    if (!shown || accepted) return;
-    // A settled proposal must be repeated with the same numbers. An empty body would drop settleAtConsuntivo.
-    if (shown.settledAtConsuntivo && shown.source === 'Manual') {
-      await propose(manualRequest(shown.installmentAmount));
-      return;
-    }
-    if (shown.settledAtConsuntivo && shown.previousConsuntivo !== null && shown.preventivo !== null) {
-      await propose({
-        cadence: 'Monthly',
-        previousConsuntivo: shown.previousConsuntivo,
-        preventivo: shown.preventivo,
-      });
-      return;
-    }
-    setAccepted({ proposal: shown, request: {} });
+  function acceptShown() {
+    if (!shown || saved) return;
+    // The fiscal-year amount is already on screen. Keeping it must not POST {} again.
+    remember(shown, {});
   }
 
-  const consuntivoAmount = Number(consuntivo.trim());
-  const preventivoAmount = Number(preventivo.trim());
-  const manualAmount = Number(manual.trim());
-  const statementsValid = AMOUNT.test(consuntivo.trim()) && consuntivoAmount >= 0 && AMOUNT.test(preventivo.trim()) && preventivoAmount > 0;
-  const manualValid = AMOUNT.test(manual.trim()) && manualAmount > 0;
+  const consuntivoAmount = parseEuroAmount(consuntivo);
+  const preventivoAmount = parseEuroAmount(preventivo);
+  const manualAmount = parseEuroAmount(manual);
+  const statementsValid = consuntivoAmount !== null && consuntivoAmount >= 0 && preventivoAmount !== null && preventivoAmount > 0;
+  const manualValid = manualAmount !== null && manualAmount > 0;
 
   return (
     <section className="space-y-4 rounded-lg border border-border p-4" aria-labelledby="lw-condo-title" data-testid="lease-condominium-expenses">
@@ -105,12 +89,12 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
           <p className="text-sm text-muted-foreground">
             {shown.settledAtConsuntivo ? t('leaseWizard.condominium.settled') : t('leaseWizard.condominium.notPayment')}
           </p>
-          {accepted ? (
+          {saved ? (
             <p className="text-sm" role="status" data-testid="lease-condominium-saved">
               {t('leaseWizard.condominium.saved', { amount: formatCurrency(shown.installmentAmount, 'EUR') })}
             </p>
           ) : (
-            <Button type="button" loading={pending} onClick={() => void acceptShown()} data-testid="lease-condominium-accept">
+            <Button type="button" loading={pending} onClick={acceptShown} data-testid="lease-condominium-accept">
               {t('leaseWizard.condominium.accept')}
             </Button>
           )}
@@ -149,8 +133,8 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
             onClick={() =>
               void propose({
                 cadence: 'Monthly',
-                previousConsuntivo: consuntivoAmount,
-                preventivo: preventivoAmount,
+                previousConsuntivo: consuntivoAmount ?? 0,
+                preventivo: preventivoAmount ?? 0,
               })
             }
             data-testid="lease-condominium-calculate"
@@ -172,7 +156,7 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
             variant="outline"
             loading={pending}
             disabled={!manualValid || pending}
-            onClick={() => void propose(manualRequest(manualAmount))}
+            onClick={() => void propose(manualRequest(manualAmount ?? 0))}
             data-testid="lease-condominium-manual"
           >
             {t('leaseWizard.condominium.useManual')}
@@ -191,4 +175,24 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
 
 function manualRequest(amount: number): ProposeTenantExpense {
   return { cadence: 'Monthly', manualAmount: amount };
+}
+
+/**
+ * An amount typed in Italian: `95,50`, `1.234,50`, or a plain `95.50`.
+ * Dots are thousands separators when a comma is the decimal mark, or when every group after the first has three digits.
+ */
+function parseEuroAmount(raw: string): number | null {
+  const text = raw.trim().replace(/[\s\u00a0']/g, '');
+  if (text === '') return null;
+  let normalized = text;
+  if (text.includes(',')) {
+    if (!/^(?:\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:,\d{1,2})?)$/.test(text)) return null;
+    normalized = text.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
+    normalized = text.replace(/\./g, '');
+  } else if (!/^\d+(\.\d{1,2})?$/.test(text)) {
+    return null;
+  }
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : null;
 }
