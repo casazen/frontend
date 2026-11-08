@@ -22,11 +22,11 @@ export function TenantBankDetailsCard({ bank, currency }: { bank: TenantBankDeta
       <CardHeader>
         <CardTitle className="text-base">{t('tenantArea.bank.title')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm">
+      <CardContent className="space-y-2 break-words text-sm">
         <p>
           <span className="text-foreground/70">{t('tenantArea.bank.holder')}</span> {bank.accountHolder}
         </p>
-        <p>
+        <p className="break-all">
           <span className="text-foreground/70">{t('tenantArea.bank.iban')}</span> {bank.iban}
         </p>
         <p>
@@ -35,7 +35,7 @@ export function TenantBankDetailsCard({ bank, currency }: { bank: TenantBankDeta
         <p>
           <span className="text-foreground/70">{t('tenantArea.bank.due')}</span> {formatDate(bank.dueDate)}
         </p>
-        <p data-testid="tenant-bank-reference">
+        <p className="break-all" data-testid="tenant-bank-reference">
           <span className="text-foreground/70">{t('tenantArea.bank.reference')}</span> {bank.reference}
         </p>
         <Button type="button" variant="outline" size="sm" onClick={() => void copyReference()} data-testid="tenant-copy-reference">

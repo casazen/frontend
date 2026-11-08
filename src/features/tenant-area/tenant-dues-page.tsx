@@ -19,8 +19,11 @@ import { useDeclareTransfer } from '@/queries/use-tenant-area';
 import type { TenantDue, TenantPaymentDeclaration } from '@/types';
 import { TenantBankDetailsCard } from './tenant-bank-details';
 import { TenantGate } from './tenant-gate';
+import { withoutUnacceptedExtraordinary } from './lib/extraordinary';
 import { tenantDuesPath } from './paths';
 import { useTenantContractPage } from './use-tenant-contract';
+
+const PAY_BUTTON = 'h-auto min-h-11 w-full whitespace-normal sm:w-auto';
 
 /** Below one cent the due is settled: a credit that covers the installment is not a payment to start. */
 const CENT = 0.01;
@@ -47,8 +50,9 @@ export function TenantDuesPage() {
   const page = useTenantContractPage();
   if (page.status !== 'ready') return <TenantGate status={page.status} error={page.error} refetch={page.refetch} />;
   const area = page.area;
-  const selected = dueId ? area.dues.find((due) => due.id === dueId) : undefined;
-  const next = area.dues.find((due) => {
+  const dues = area.dues.map(withoutUnacceptedExtraordinary);
+  const selected = dueId ? dues.find((due) => due.id === dueId) : undefined;
+  const next = dues.find((due) => {
     if (closedDue(due)) return false;
     return !settledDue(rentBreakdown(due));
   });
@@ -59,13 +63,14 @@ export function TenantDuesPage() {
         <h1 className="text-xl font-semibold">{t('tenantArea.dues.title')}</h1>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
       </header>
-      {area.dues.length === 0 ? (
+      {dues.length > 0 ? <PaymentReport dues={dues} /> : null}
+      {dues.length === 0 ? (
         <div data-testid="tenant-dues-empty">
           <EmptyState icon={Receipt} title={t('tenantArea.dues.emptyTitle')} description={t('tenantArea.dues.emptyDescription')} />
         </div>
       ) : (
-        <ul className="space-y-2" aria-label={t('tenantArea.dues.listLabel')}>
-          {area.dues.map((due) => (
+        <ul className="min-w-0 space-y-2" aria-label={t('tenantArea.dues.listLabel')}>
+          {dues.map((due) => (
             <TenantDueRow key={due.id} leaseId={area.contract.id} due={due} current={selected?.id === due.id} />
           ))}
         </ul>
@@ -81,6 +86,37 @@ export function TenantDuesPage() {
       {!selected && next ? <NextDue leaseId={area.contract.id} due={next} /> : null}
       {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
     </div>
+  );
+}
+
+function PaymentReport({ dues }: { dues: TenantDue[] }) {
+  const { t } = useTranslation();
+  const currency = dues[0]?.currency ?? 'EUR';
+  const open = dues.filter((due) => !closedDue(due) && !settledDue(rentBreakdown(due)));
+  const paid = dues.filter((due) => due.status === 'Paid');
+  const openSum = open.reduce((total, due) => total + rentBreakdown(due).residual, 0);
+  const paidSum = paid.reduce((total, due) => total + rentBreakdown(due).paid, 0);
+
+  return (
+    <section aria-labelledby="tenant-report-title" data-testid="tenant-payment-report" className="grid min-w-0 grid-cols-2 gap-3">
+      <h2 id="tenant-report-title" className="sr-only">
+        {t('tenantArea.dues.reportTitle')}
+      </h2>
+      <div className="min-w-0 rounded-md border border-border p-3">
+        <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportOpen')}</p>
+        <p className="break-words text-lg font-semibold" data-testid="tenant-report-open">
+          {formatCurrency(openSum, currency)}
+        </p>
+        <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportCount', { count: open.length })}</p>
+      </div>
+      <div className="min-w-0 rounded-md border border-border p-3">
+        <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportPaid')}</p>
+        <p className="break-words text-lg font-semibold" data-testid="tenant-report-paid">
+          {formatCurrency(paidSum, currency)}
+        </p>
+        <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportCount', { count: paid.length })}</p>
+      </div>
+    </section>
   );
 }
 
@@ -100,14 +136,14 @@ function TenantDueRow({ leaseId, due, current }: { leaseId: string; due: TenantD
         to={tenantDuesPath(leaseId, due.id)}
         aria-current={current ? 'page' : undefined}
         className={cn(
-          'block rounded-md border p-3 hover:bg-muted',
+          'block min-w-0 rounded-md border p-3 hover:bg-muted',
           current ? 'border-primary bg-muted' : 'border-border',
         )}
         data-testid={`tenant-due-${due.id}`}
       >
-        <span className="flex items-baseline justify-between gap-3">
+        <span className="flex min-w-0 items-baseline justify-between gap-3">
           <span className="font-medium">{formatDate(due.dueDate)}</span>
-          <span className="whitespace-nowrap font-medium">{formatCurrency(parts.residual, due.currency)}</span>
+          <span className="shrink-0 font-medium">{formatCurrency(parts.residual, due.currency)}</span>
         </span>
         <span className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-foreground/70">
           <span>{t(`tenantArea.dues.status.${dueStatusKey(due.status)}`)}</span>
@@ -117,7 +153,7 @@ function TenantDueRow({ leaseId, due, current }: { leaseId: string; due: TenantD
             </span>
           ) : null}
         </span>
-        {line ? <span className="mt-1 block text-sm text-foreground/70">{line}</span> : null}
+        {line ? <span className="mt-1 block break-words text-sm text-foreground/70">{line}</span> : null}
       </Link>
     </li>
   );
@@ -147,7 +183,7 @@ function NextDue({ leaseId, due }: { leaseId: string; due: TenantDue }) {
         <p className="text-sm">
           {formatDate(due.dueDate)} · {formatCurrency(parts.residual, due.currency)}
         </p>
-        <Button asChild>
+        <Button asChild className={PAY_BUTTON}>
           <Link to={tenantDuesPath(leaseId, due.id)}>{t('tenantArea.dues.pay')}</Link>
         </Button>
       </CardContent>
@@ -308,7 +344,7 @@ function DeclarationForm({
 
   return (
     <form
-      className="space-y-3"
+      className="min-w-0 space-y-3"
       data-testid="tenant-declaration-form"
       onSubmit={(event) => {
         event.preventDefault();
@@ -322,17 +358,17 @@ function DeclarationForm({
         });
       }}
     >
-      <div className="space-y-1">
+      <div className="min-w-0 space-y-1">
         <Label htmlFor="tenant-declaration-amount">{t('tenantArea.declaration.amount')}</Label>
-        <Input id="tenant-declaration-amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <Input id="tenant-declaration-amount" className="w-full min-w-0 max-w-full" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
       </div>
-      <div className="space-y-1">
+      <div className="min-w-0 space-y-1">
         <Label htmlFor="tenant-declaration-date">{t('tenantArea.declaration.date')}</Label>
-        <Input id="tenant-declaration-date" type="date" value={transferDate} onChange={(event) => setTransferDate(event.target.value)} />
+        <Input id="tenant-declaration-date" className="w-full min-w-0 max-w-full" type="date" value={transferDate} onChange={(event) => setTransferDate(event.target.value)} />
       </div>
-      <div className="space-y-1">
+      <div className="min-w-0 space-y-1">
         <Label htmlFor="tenant-declaration-reference">{t('tenantArea.declaration.reference')}</Label>
-        <Input id="tenant-declaration-reference" value={bankReference} onChange={(event) => setBankReference(event.target.value)} />
+        <Input id="tenant-declaration-reference" className="w-full min-w-0 max-w-full" value={bankReference} onChange={(event) => setBankReference(event.target.value)} />
       </div>
       <div className="space-y-1">
         <Label htmlFor="tenant-declaration-note">{t('tenantArea.declaration.note')}</Label>
@@ -342,12 +378,13 @@ function DeclarationForm({
         <Label htmlFor="tenant-declaration-receipt">{t('tenantArea.declaration.receipt')}</Label>
         <Input
           id="tenant-declaration-receipt"
+          className="w-full min-w-0 max-w-full"
           type="file"
           accept="image/*,.pdf"
           onChange={(event) => setReceipt(event.target.files?.[0] ?? null)}
         />
       </div>
-      <Button type="submit" disabled={!valid || pending} data-testid="tenant-declare-transfer">
+      <Button type="submit" disabled={!valid || pending} className={PAY_BUTTON} data-testid="tenant-declare-transfer">
         {t('tenantArea.declaration.submit')}
       </Button>
     </form>

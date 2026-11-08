@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
+import { extraordinaryKept } from './lib/extraordinary';
 import { TenantGate } from './tenant-gate';
 import { tenantDuesPath } from './paths';
 import { useTenantContractPage } from './use-tenant-contract';
@@ -15,6 +16,7 @@ export function TenantDocumentsPage() {
   const page = useTenantContractPage();
   if (page.status !== 'ready') return <TenantGate status={page.status} error={page.error} refetch={page.refetch} />;
   const area = page.area;
+  const documents = area.documents.filter((document) => extraordinaryKept(document));
 
   async function download(documentId: string, name: string) {
     try {
@@ -27,7 +29,7 @@ export function TenantDocumentsPage() {
 
   return (
     <div data-testid="tenant-documents">
-      {area.documents.length === 0 ? (
+      {documents.length === 0 ? (
         <div data-testid="tenant-documents-empty">
           <EmptyState
             icon={FileText}
@@ -37,14 +39,18 @@ export function TenantDocumentsPage() {
           />
         </div>
       ) : (
-        <ul className="space-y-2">
-          {area.documents.map((document) => (
-            <li key={document.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3">
-              <span>
+        <ul className="min-w-0 space-y-2">
+          {documents.map((document) => (
+            <li
+              key={document.id}
+              className="flex min-w-0 flex-col gap-3 rounded-md border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
+              data-testid={`tenant-document-${document.kind}`}
+            >
+              <span className="min-w-0 break-words">
                 <span className="font-medium">{document.name}</span>
-                <span className="ml-2 text-sm text-foreground/70">{t(`tenantArea.documents.kind.${kindKey(document.kind)}`)}</span>
+                <span className="mt-1 block text-sm text-foreground/70 sm:mt-0 sm:ml-2 sm:inline">{t(`tenantArea.documents.kind.${kindKey(document.kind)}`)}</span>
               </span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void download(document.id, document.name)}>
+              <Button type="button" variant="outline" size="sm" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto" onClick={() => void download(document.id, document.name)}>
                 {t('tenantArea.documents.download')}
               </Button>
             </li>

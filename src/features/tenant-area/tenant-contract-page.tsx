@@ -9,6 +9,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
 import { useTenantContracts } from '@/queries/use-tenant-area';
 import type { TenantDue } from '@/types';
+import { withoutUnacceptedExtraordinary } from './lib/extraordinary';
 import { tenantContractPath, tenantDuesPath } from './paths';
 import { TenantGate } from './tenant-gate';
 import { useTenantContractPage } from './use-tenant-contract';
@@ -57,7 +58,7 @@ export function TenantContractPage() {
   const contract = useTenantContractPage();
   if (contract.status !== 'ready') return <TenantGate status={contract.status} error={contract.error} refetch={contract.refetch} />;
   const area = contract.area;
-  const openDues = area.dues.filter((due) => due.status !== 'Paid' && due.status !== 'Cancelled');
+  const openDues = area.dues.map(withoutUnacceptedExtraordinary).filter((due) => due.status !== 'Paid' && due.status !== 'Cancelled');
   const payable = openDues.find((due) => rentBreakdown(due).residual > 0.01);
   const openDue = openDues[0];
 
@@ -107,7 +108,7 @@ function NextPayment({ leaseId, due }: { leaseId: string; due: TenantDue }) {
         <p className="text-sm">
           {formatDate(due.dueDate)} · {formatCurrency(rentBreakdown(due).residual, due.currency)}
         </p>
-        <Button asChild>
+        <Button asChild className="h-auto min-h-11 w-full whitespace-normal sm:w-auto">
           <Link to={tenantDuesPath(leaseId, due.id)}>{t('tenantArea.contract.payDue')}</Link>
         </Button>
       </CardContent>

@@ -258,18 +258,19 @@ export function FinancialConnectionsTransfer({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Button
           type="button"
           variant={accountId ? 'outline' : 'default'}
           loading={linkBusy}
+          className="h-auto min-h-11 w-full whitespace-normal sm:w-auto"
           onClick={() => void linkAccount()}
           data-testid="stripe-link-account"
         >
           {accountId ? t('bankTransfer.linkAnother') : t('bankTransfer.link')}
         </Button>
         {accountId && !awaiting && !linkOnly ? (
-          <Button type="button" loading={startBusy} onClick={() => void startTransfer()} data-testid="stripe-start-transfer">
+          <Button type="button" loading={startBusy} className="h-auto min-h-11 w-full whitespace-normal sm:w-auto" onClick={() => void startTransfer()} data-testid="stripe-start-transfer">
             {t('bankTransfer.start')}
           </Button>
         ) : null}

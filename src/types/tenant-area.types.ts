@@ -82,6 +82,8 @@ export interface TenantDocument {
   name: string;
   kind: TenantDocumentKind | string;
   sharedAt: string | null;
+  /** Extraordinary documents stay hidden until someone accepts them. */
+  accepted?: boolean;
 }
 
 export interface TenantEmergencyContact {
