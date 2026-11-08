@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { todayInRome } from '@/lib/stay-dates';
+import { isItalianProvince } from '../components/italian-provinces';
 import type {
   AlloggiatiDocumentKind,
   AlloggiatiGender,
@@ -89,7 +90,6 @@ export const MAX_LABEL_LENGTH = 100;
 /** The oldest day a document can have been issued (the API refuses an earlier one). */
 const EARLIEST_DOCUMENT_DATE = '1900-01-01';
 
-const PROVINCE_PATTERN = /^[A-Za-z]{2}$/;
 const DOCUMENT_NUMBER_PATTERN = /^[A-Za-z0-9]+$/;
 const CALENDAR_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -99,6 +99,39 @@ export function requiresDocument(type: StayGuestType): boolean {
 }
 
 /** Kind of the guests added after the first one: members of the family or group, or other single guests. */
+/**
+ * When an official table is imported, a typed name without the chosen code is not accepted.
+ * Empty optional fields (the residence) stay empty.
+ */
+export function officialListIssues(
+  guests: readonly StayGuestFormValues[],
+  tables: readonly string[],
+): { index: number; field: 'citizenshipName' | 'birthComuneName' | 'birthCountryName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName'; message: string }[] {
+  const has = (table: string) => tables.includes(table);
+  const issues: { index: number; field: 'citizenshipName' | 'birthComuneName' | 'birthCountryName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName'; message: string }[] = [];
+  guests.forEach((guest, index) => {
+    if (has('Stati') && guest.citizenshipName.trim() && !guest.citizenshipCode) {
+      issues.push({ index, field: 'citizenshipName', message: 'checkin.validation.citizenship.choose' });
+    }
+    if (guest.bornInItaly === 'yes' && has('Comuni') && guest.birthComuneName.trim() && !guest.birthComuneCode) {
+      issues.push({ index, field: 'birthComuneName', message: 'checkin.validation.birthComune.choose' });
+    }
+    if (guest.bornInItaly === 'no' && has('Stati') && guest.birthCountryName.trim() && !guest.birthCountryCode) {
+      issues.push({ index, field: 'birthCountryName', message: 'checkin.validation.birthCountry.choose' });
+    }
+    if (requiresDocument(guest.type) && (has('Comuni') || has('Stati')) && guest.documentIssuePlaceName.trim() && !guest.documentIssuePlaceCode) {
+      issues.push({ index, field: 'documentIssuePlaceName', message: 'checkin.validation.documentIssuePlace.choose' });
+    }
+    if (guest.residenceInItaly === 'yes' && has('Comuni') && guest.residenceComuneName.trim() && !guest.residenceComuneCode) {
+      issues.push({ index, field: 'residenceComuneName', message: 'checkin.validation.residenceComune.choose' });
+    }
+    if (guest.residenceInItaly === 'no' && has('Stati') && guest.residenceCountryName.trim() && !guest.residenceCountryCode) {
+      issues.push({ index, field: 'residenceCountryName', message: 'checkin.validation.residenceCountry.choose' });
+    }
+  });
+  return issues;
+}
+
 export function followerTypeOf(leader: StayGuestType): StayGuestType {
   if (leader === 'HeadOfFamily') return 'FamilyMember';
   if (leader === 'HeadOfGroup') return 'GroupMember';
@@ -211,13 +244,13 @@ function addPersonalIssues(
   }
   if (guest.bornInItaly === 'yes') {
     if (!guest.birthComuneName.trim() && !guest.birthComuneCode) issue('birthComuneName', 'checkin.validation.birthComune.required');
-    if (!PROVINCE_PATTERN.test(guest.birthProvince.trim())) issue('birthProvince', 'checkin.validation.birthProvince.invalid');
+    if (!isItalianProvince(guest.birthProvince)) issue('birthProvince', 'checkin.validation.birthProvince.invalid');
   }
   if (guest.bornInItaly === 'no' && !guest.birthCountryName.trim() && !guest.birthCountryCode) {
     issue('birthCountryName', 'checkin.validation.birthCountry.required');
   }
   // The residence is optional: only its shape is checked (a province, when given, is two letters).
-  if (guest.residenceInItaly === 'yes' && guest.residenceProvince.trim() && !PROVINCE_PATTERN.test(guest.residenceProvince.trim())) {
+  if (guest.residenceInItaly === 'yes' && guest.residenceProvince.trim() && !isItalianProvince(guest.residenceProvince)) {
     issue('residenceProvince', 'checkin.validation.residenceProvince.invalid');
   }
   // A statistical field is asked only where the region requires it, and then it has to be chosen.

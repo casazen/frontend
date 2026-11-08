@@ -96,6 +96,9 @@ interface GuestInput {
 }
 
 function fillGuest(index: number, guest: GuestInput) {
+  if (!screen.queryByTestId(`stay-guest-${index}`) && screen.queryByTestId('checkin-document-step')) {
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+  }
   const card = guestCard(index);
   change(card, /^Nome/, guest.firstName);
   change(card, /^Cognome/, guest.lastName ?? 'Bianchi');
@@ -117,6 +120,9 @@ function fillGuest(index: number, guest: GuestInput) {
  */
 async function formReady() {
   await screen.findByTestId('checkin-page');
+  if (screen.queryByTestId('checkin-document-step')) {
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+  }
   await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Mario'));
 }
 
@@ -235,6 +241,8 @@ describe('CheckInPage', () => {
 
   it('genderSelect_openSession_offersOnlyAlloggiatiValues', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
     const select = guestCard(0).getByLabelText(/^Sesso/) as HTMLSelectElement;
@@ -249,6 +257,8 @@ describe('CheckInPage', () => {
       guests: [{ ...booker, firstName: '', lastName: '' }],
     });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
@@ -266,6 +276,8 @@ describe('CheckInPage', () => {
 
   it('bornInItaly_conditionalFields_comuneAndProvinceInItalyStateAbroad', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     const card = guestCard(0);
 
@@ -287,6 +299,8 @@ describe('CheckInPage', () => {
     });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-2');
 
     // The form starts with the declared guests: the head and two family members.
@@ -325,6 +339,8 @@ describe('CheckInPage', () => {
 
   it('addGuestAndStayKind_changesTheKindOfTheOtherGuests', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
     fireEvent.click(screen.getByTestId('checkin-add-guest'));
@@ -341,6 +357,8 @@ describe('CheckInPage', () => {
 
   it('next_familyWithOnlyTheHead_showsTheCompositionErrorOnTheKind', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     change(guestCard(0), /^Chi soggiorna/, 'HeadOfFamily');
     fillGuest(0, { firstName: 'Giulia' });
@@ -354,21 +372,29 @@ describe('CheckInPage', () => {
   it('codeTablesImported_choosingAnOfficialEntry_sendsItsCode', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, availableCodeTables: ['Comuni', 'Stati'] });
     // Synthetic entry (test data, not an official code).
-    vi.mocked(publicCheckinApi.searchCodes).mockResolvedValue([
-      { table: 'Comuni', code: '900000001', description: 'TEST Firenze', province: 'FI' },
-    ]);
+    vi.mocked(publicCheckinApi.searchCodes).mockImplementation(async (_token, list) => {
+      if (list === 'stati') return [{ table: 'Stati', code: '100000100', description: 'ITALIA', citizenshipLabel: 'Italiano' }];
+      if (list === 'comuni' || list === 'luoghi') return [{ table: 'Comuni', code: '900000001', description: 'TEST Firenze', province: 'FI' }];
+      return [];
+    });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     fillGuest(0, { firstName: 'Giulia', place: 'TE' });
 
     await waitFor(() => expect(publicCheckinApi.searchCodes).toHaveBeenCalledWith(TOKEN, 'comuni', 'TE'));
-    await screen.findByText((_, element) => element?.getAttribute('value') === 'TEST Firenze (FI)');
-    change(guestCard(0), /^Comune di nascita/, 'TEST Firenze (FI)');
+    fireEvent.focus(guestCard(0).getByLabelText(/^Comune di nascita/));
+    fireEvent.click(await screen.findByRole('option', { name: 'TEST Firenze (FI)' }));
     expect(await screen.findByTestId('guest-0-birthComuneName-code')).toHaveTextContent('900000001');
+    fireEvent.focus(guestCard(0).getByLabelText(/^Cittadinanza/));
+    fireEvent.click(await guestCard(0).findByRole('option', { name: 'Italiano' }));
 
     await goToDocuments();
     fillDocument(0);
+    fireEvent.focus(within(screen.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/));
+    fireEvent.click(await screen.findByRole('option', { name: 'TEST Firenze (FI)' }));
     await acceptAndSubmit();
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -460,6 +486,8 @@ describe('CheckInPage', () => {
       ],
     });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     await waitFor(() => expect(guestCard(0).getByLabelText(/^Sesso/)).toHaveValue('Male'));
 
@@ -481,6 +509,7 @@ describe('CheckInPage', () => {
       renderPage();
 
       expect(await screen.findByRole('heading', { name: 'Gäste-Check-in' })).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
       expect(screen.getByLabelText('Sprache')).toHaveValue('de');
       expect(document.documentElement.lang).toBe('de');
       expect(guestCard(0).getByLabelText(/^Vorname/)).toBeInTheDocument();
@@ -647,7 +676,9 @@ describe('CheckInPage', () => {
 
     it('statisticalFields_RegionDoesNotRequireThem_AreNotShown', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       renderPage();
-      await screen.findByTestId('stay-guest-0');
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
 
       expect(guestCard(0).queryByLabelText(/^Motivo del viaggio/)).not.toBeInTheDocument();
       expect(guestCard(0).queryByLabelText(/^Mezzo usato per arrivare/)).not.toBeInTheDocument();
@@ -658,7 +689,8 @@ describe('CheckInPage', () => {
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, requiredGuestFields: ['TourismType', 'TravelWay'] });
       vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
       renderPage();
-      await screen.findByTestId('checkin-page');
+      await screen.findByTestId('checkin-document-step');
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
       const card = guestCard(0);
       await waitFor(() => expect(card.getByLabelText(/^Motivo del viaggio/)).toBeInTheDocument());
       expect(card.queryByLabelText(/^Titolo di studio/)).not.toBeInTheDocument();
@@ -695,7 +727,9 @@ describe('CheckInPage', () => {
         ],
       });
       renderPage();
-      await screen.findByTestId('stay-guest-0');
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
 
       await waitFor(() => expect(guestCard(0).getByLabelText(/^Residenza/)).toHaveValue('no'));
       expect(guestCard(0).getByLabelText(/^Stato di residenza/)).toHaveValue('Francia');
@@ -723,6 +757,8 @@ describe('CheckInPage', () => {
       );
       renderPage();
       await screen.findByRole('heading', { name: 'Gäste-Check-in' });
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+      await screen.findByLabelText(/^Vorname/);
       const setField = (id: string, value: string) => fireEvent.change(window.document.getElementById(id)!, { target: { value } });
       setField('guest-0-firstName', 'Giulia');
       setField('guest-0-lastName', 'Bianchi');
@@ -730,7 +766,7 @@ describe('CheckInPage', () => {
       setField('guest-0-dateOfBirth', '1992-03-08');
       setField('guest-0-bornInItaly', 'no');
       setField('guest-0-birthCountryName', 'Francia');
-      setField('guest-0-citizenshipName', 'Italia');
+      setField('guest-0-citizenship', 'Italia');
       fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
       await screen.findByTestId('stay-guest-0-document');
       setField('guest-0-documentType', 'IdentityCard');
@@ -752,7 +788,9 @@ describe('CheckInPage', () => {
         guests: [{ ...booker, firstName: '', lastName: '' }],
       });
       renderPage();
-      await screen.findByTestId('stay-guest-0');
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
 
       fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
 

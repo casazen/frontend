@@ -2923,22 +2923,32 @@
         "required": "Indica se l'ospite è nato in Italia o all'estero"
       },
       "birthComune": {
-        "required": "Comune di nascita obbligatorio"
+        "required": "Comune di nascita obbligatorio",
+        "choose": "Scegli il comune di nascita dall'elenco"
       },
       "birthProvince": {
-        "invalid": "Inserisci la sigla di due lettere (es. RM)"
+        "invalid": "Sigla di provincia non valida (es. RM)"
       },
       "birthCountry": {
-        "required": "Stato di nascita obbligatorio"
+        "required": "Stato di nascita obbligatorio",
+        "choose": "Scegli lo stato di nascita dall'elenco"
       },
       "citizenship": {
-        "required": "Cittadinanza obbligatoria"
+        "required": "Cittadinanza obbligatoria",
+        "choose": "Scegli la cittadinanza dall'elenco (per esempio Italiano)"
       },
       "label": {
         "maxLength": "Al massimo 100 caratteri"
       },
       "documentIssuePlace": {
-        "required": "Luogo di rilascio obbligatorio"
+        "required": "Luogo di rilascio obbligatorio",
+        "choose": "Scegli il luogo di rilascio dall'elenco"
+      },
+      "residenceComune": {
+        "choose": "Scegli il comune di residenza dall'elenco"
+      },
+      "residenceCountry": {
+        "choose": "Scegli lo stato di residenza dall'elenco"
       },
       "type": {
         "memberWithoutHead": "Un familiare o un membro del gruppo deve seguire il capofamiglia o il capogruppo",
@@ -3039,6 +3049,16 @@
       "AlloggiatiInviato": "Alloggiati inviato",
       "Scaduto": "Scaduto"
     },
+    "stepScan": "Documento",
+    "scanIntro": "Per prima cosa carica la foto del documento di ogni ospite. I dati vengono letti in automatico: nel passo successivo li controlli e li correggi.",
+    "scanHint": "JPG, PNG o WebP, massimo 5 MB. La foto non viene conservata: serve solo a compilare i campi.",
+    "scanButton": "Scatta o carica la foto",
+    "scanReading": "Lettura del documento…",
+    "scanAnother": "Carica il documento di un altro ospite",
+    "scanManual": "Inserisci i dati a mano",
+    "scanReadOk": "Dati letti per {{name}}. Controllali prima di inviare.",
+    "scanUnread": "Non sono riuscito a leggere il documento. Puoi caricarne un altro o inserire i dati a mano.",
+    "scanUnavailable": "La lettura automatica non è disponibile in questo momento. Inserisci i dati a mano.",
     "stepGuests": "Ospiti",
     "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, compresi i minori: la legge (art. 109 TULPS) richiede i dati di ciascuno. Il documento serve solo all'ospite singolo, al capofamiglia o al capogruppo.",
     "guestCountMismatch_one": "La prenotazione indica {{count}} ospite: controlla di aver inserito tutte le persone che soggiornano.",
