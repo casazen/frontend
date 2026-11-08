@@ -1,6 +1,15 @@
 import '@testing-library/jest-dom';
 import i18n from '@/i18n/config';
 
+// Radix focus scope defers its unmount focus with setTimeout(0). If that timer fires after the
+// next test has replaced the window, dispatchEvent throws: the event is not an Event of the new
+// window, and vitest fails the run even when every test passed. Drain it while this window is current.
+// A test that still has fake timers owns that queue itself.
+afterEach(async () => {
+  if (vi.isFakeTimers()) return;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+});
+
 // Ensure i18n is initialized before any test renders.
 // i18next.init() is idempotent — calling it again after module-level init is a no-op.
 // Resources are statically imported in config.ts so this resolves synchronously.
