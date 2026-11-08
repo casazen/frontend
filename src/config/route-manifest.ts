@@ -818,6 +818,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/leases/:id'],
   },
   {
+    // Maintenance requests of one lease: the landlord or the agency approves or rejects, and pays only after approval.
+    // In no menu and not a tab of Contratti. The tenant uses /portale-conduttore/.../richiesta-manutenzione.
+    path: '/app/long-rent/leases/:id/manutenzione',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    component: async () => ({
+      default: (await import('@/features/maintenance-requests/landlord-page')).LandlordMaintenancePage,
+    }),
+  },
+  {
     // «Continua il contratto» (LR-06a): the wizard on a draft that exists on the server, the same from any device. It reads the rules
     // of the area (`lease.read`) and writes the draft (`lease.create`).
     path: '/app/long-rent/leases/:id/edit',

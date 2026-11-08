@@ -21141,5 +21141,88 @@
     "canoniLead": "Il conduttore non paga da qui.",
     "canoni": "Canoni",
     "readonly": "Solo chi può creare i contratti collega il conto. Il conduttore paga da Canoni."
+  },
+  "maintenanceRequest": {
+    "loading": "Caricamento…",
+    "loadError": "Non riesco a caricare le richieste",
+    "sendError": "Non riesco a inviare la richiesta",
+    "decisionError": "Non riesco a registrare la decisione",
+    "paymentError": "Non riesco a registrare il pagamento",
+    "stepOf": "Passo {{current}} di {{total}}",
+    "back": "Indietro",
+    "next": "Continua",
+    "what": {
+      "title": "Cosa non funziona?",
+      "hint": "Scrivi la cosa rotta, in poche parole.",
+      "label": "Cosa non funziona",
+      "placeholder": "Rubinetto del bagno"
+    },
+    "urgency": {
+      "title": "Quanto è urgente?",
+      "hint": "Scegli un solo livello.",
+      "bassa": "Bassa",
+      "normale": "Normale",
+      "urgente": "Urgente",
+      "detail": {
+        "bassa": "Può aspettare",
+        "normale": "Nei prossimi giorni",
+        "urgente": "Serve presto"
+      }
+    },
+    "note": {
+      "title": "Aggiungi una nota",
+      "hint": "Cosa è successo e da quando.",
+      "label": "Nota",
+      "placeholder": "Gocciola da ieri sera"
+    },
+    "photo": {
+      "title": "Una foto, se ce l'hai",
+      "hint": "È facoltativa. Aiuta chi deve decidere.",
+      "label": "Foto",
+      "none": "Nessuna foto",
+      "chosen": "Foto: {{name}}"
+    },
+    "confirm": {
+      "title": "Controlla e invia",
+      "hint": "Dopo l'invio la richiesta resta in attesa. Non puoi approvarla né pagarla.",
+      "what": "Guasto",
+      "urgency": "Urgenza",
+      "note": "Nota",
+      "photo": "Foto",
+      "submit": "Invia la richiesta"
+    },
+    "waiting": {
+      "kicker": "Richiesta inviata",
+      "title": "In attesa",
+      "body": "La richiesta è dal proprietario o dall'agenzia. Non puoi approvarla e non puoi pagarla.",
+      "list": "Vedi le richieste"
+    },
+    "status": {
+      "pending": "In attesa",
+      "approved": "Approvata",
+      "rejected": "Rifiutata",
+      "paid": "Pagata"
+    },
+    "list": {
+      "title": "Le tue richieste",
+      "new": "Nuova richiesta"
+    },
+    "landlord": {
+      "title": "Richieste di manutenzione",
+      "hint": "Approva o rifiuta. Il pagamento compare solo dopo l'approvazione.",
+      "empty": "Nessuna richiesta dal conduttore.",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "reasonLabel": "Perché la rifiuti?",
+      "reasonPlaceholder": "Scrivi il motivo, in italiano",
+      "confirmReject": "Conferma il rifiuto",
+      "cancelReject": "Annulla",
+      "pay": "Paga",
+      "pendingNote": "In attesa della tua decisione. Il pagamento non è ancora disponibile.",
+      "approvedNote": "Approvata. Ora puoi pagare.",
+      "rejectedNote": "Rifiutata. {{reason}}",
+      "paidNote": "Pagata.",
+      "photo": "Foto allegata: {{name}}"
+    }
   }
 }
