@@ -177,6 +177,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
     rowTone: (row) => (row.isOverdue && isOpenInstallment(row.status) ? 'urgent' : row.status === 'Paid' ? 'done' : undefined),
     card: (row) => {
       const note = noteOf(row);
+      const waiting = held.has(reminderKey(row.id));
       return {
         title: tenantOf(row),
         sub: row.propertyName,
@@ -199,9 +200,10 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
                 variant="outline"
                 className="h-auto min-h-11 w-full whitespace-normal"
                 data-testid={`rent-remind-card-${row.id}`}
+                disabled={waiting}
                 onClick={() => onRemind(row)}
               >
-                {held.has(reminderKey(row.id)) ? t('longRentRents.actions.reminding') : t('longRentRents.actions.remind')}
+                {waiting ? t('longRentRents.actions.reminding') : t('longRentRents.actions.remind')}
               </Button>
             ) : null}
           </div>
