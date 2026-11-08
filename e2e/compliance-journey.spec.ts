@@ -413,6 +413,8 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('checkin-page')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByRole('heading', { name: /Check-in ospite|Guest check-in/i })).toBeVisible();
       await expect(page.getByTestId('checkin-progress')).toBeVisible();
+      // The first step is the document photo. Typing the data skips it; Avanti appears on the next step.
+      await page.getByTestId('checkin-enter-manually').click();
 
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
       // CO-02: the document is asked again (the number on file is never sent back to the guest).
