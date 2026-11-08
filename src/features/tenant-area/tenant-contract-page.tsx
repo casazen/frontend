@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
-import { formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
 import { useTenantContracts } from '@/queries/use-tenant-area';
+import type { TenantDue } from '@/types';
 import { tenantContractPath, tenantDuesPath } from './paths';
-import { TenantBankDetailsCard } from './tenant-bank-details';
 import { TenantGate } from './tenant-gate';
 import { useTenantContractPage } from './use-tenant-contract';
 
@@ -22,9 +25,9 @@ export function TenantContractsPage() {
   const items = contracts.data ?? [];
   if (items.length === 0) {
     return (
-      <p data-testid="tenant-no-contracts" className="text-sm text-muted-foreground">
-        {t('tenantArea.noContracts')}
-      </p>
+      <div data-testid="tenant-no-contracts">
+        <EmptyState icon={FileText} title={t('tenantArea.noContracts')} description={t('tenantArea.noContractsHint')} />
+      </div>
     );
   }
 
@@ -54,7 +57,9 @@ export function TenantContractPage() {
   const contract = useTenantContractPage();
   if (contract.status !== 'ready') return <TenantGate status={contract.status} error={contract.error} refetch={contract.refetch} />;
   const area = contract.area;
-  const nextDue = area.dues.find((due) => due.status !== 'Paid' && due.status !== 'Cancelled') ?? area.dues[0];
+  const openDues = area.dues.filter((due) => due.status !== 'Paid' && due.status !== 'Cancelled');
+  const payable = openDues.find((due) => rentBreakdown(due).residual > 0.01);
+  const openDue = openDues[0];
 
   return (
     <div className="space-y-4" data-testid="tenant-contract">
@@ -75,13 +80,38 @@ export function TenantContractPage() {
           ) : null}
         </CardContent>
       </Card>
-      {nextDue?.bank ? <TenantBankDetailsCard bank={nextDue.bank} currency={nextDue.currency} /> : null}
-      {nextDue ? (
+      {payable ? (
+        <NextPayment leaseId={area.contract.id} due={payable} />
+      ) : openDue ? (
         <Button asChild variant="outline">
-          <Link to={tenantDuesPath(area.contract.id, nextDue.id)}>{t('tenantArea.contract.openDue')}</Link>
+          <Link to={tenantDuesPath(area.contract.id, openDue.id)}>{t('tenantArea.contract.openDue')}</Link>
         </Button>
-      ) : null}
+      ) : (
+        <p className="text-sm text-muted-foreground" data-testid="tenant-contract-no-payment">
+          {t('tenantArea.contract.noPayment')}
+        </p>
+      )}
     </div>
+  );
+}
+
+/** The contract names the next amount. The payment itself stays on Canoni. */
+function NextPayment({ leaseId, due }: { leaseId: string; due: TenantDue }) {
+  const { t } = useTranslation();
+  return (
+    <Card data-testid="tenant-contract-next">
+      <CardHeader>
+        <CardTitle className="text-base">{t('tenantArea.contract.nextDue')}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm">
+          {formatDate(due.dueDate)} · {formatCurrency(rentBreakdown(due).residual, due.currency)}
+        </p>
+        <Button asChild>
+          <Link to={tenantDuesPath(leaseId, due.id)}>{t('tenantArea.contract.payDue')}</Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

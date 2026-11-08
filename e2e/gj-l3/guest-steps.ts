@@ -76,9 +76,10 @@ export async function guestConfirmsEmail(page: Page, link: string): Promise<void
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
-/** Guest check-in portal (3 steps): two guests, the head of the family's identity document, the privacy notice and the submit. */
+/** Guest check-in portal: the document photo, then two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
+  await page.getByTestId('checkin-enter-manually').click();
   const guests = [
     { first: 'Giulia', gender: 'Femmina', born: '1990-05-12' },
     { first: 'Marco', gender: 'Maschio', born: '1988-03-02' },
@@ -89,14 +90,14 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     await page.locator(`#guest-${i}-gender`).selectOption({ label: g.gender });
     await page.locator(`#guest-${i}-dateOfBirth`).fill(g.born);
     await page.locator(`#guest-${i}-bornInItaly`).selectOption({ label: 'In Italia' });
-    await page.getByLabel('Comune di nascita').nth(i).fill('Roma');
+    await chooseOfficialCode(page, `guest-${i}-birthComuneName`, 'Roma', /Roma/i);
     await page.getByLabel('Provincia (sigla)').nth(i).fill('RM');
-    await page.locator(`#guest-${i}-citizenshipName`).fill('Italiana');
+    await chooseOfficialCode(page, `guest-${i}-citizenship`, 'Italia', /Itali/i);
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
   await pickHeadOfFamilyDocumentType(page);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
-  await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
+  await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'Roma', /Roma/i);
   await page.getByRole('button', { name: 'Avanti' }).click();
   // Step 3 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
   // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
@@ -110,27 +111,28 @@ const OFFICIAL_IDENTITY_CARD_QUERY = 'CARTA DI IDENTITA';
 const FALLBACK_SELECT_LABEL = "Carta d'identita'";
 
 /**
- * Head-of-family document type: native select of the local enum when the official table is not imported,
- * otherwise the CodeTableInput (input + datalist) of CO-12. After the Alloggiati seed the GJ stack has
- * DOCUMENTI, so selectOption on #guest-0-documentType fails ("Element is not a select").
+ * Head-of-family document type: native select when the official table is not imported, otherwise the
+ * suggestion list. After the Alloggiati seed the GJ stack has DOCUMENTI, so the row has to be chosen.
  */
 async function pickHeadOfFamilyDocumentType(page: Page): Promise<void> {
-  const field = page.locator('#guest-0-documentType');
+  await chooseOfficialCode(page, 'guest-0-documentType', OFFICIAL_IDENTITY_CARD_QUERY, /CARTA DI IDENTITA/i, FALLBACK_SELECT_LABEL);
+}
+
+/** Picks an official Alloggiati row when the list is imported. A plain select uses the fallback label. */
+async function chooseOfficialCode(page: Page, id: string, query: string, option: RegExp, selectLabel?: string): Promise<void> {
+  const field = page.locator(`#${id}`);
   await expect(field).toBeVisible();
-  const tag = await field.evaluate((el) => el.tagName.toLowerCase());
-  if (tag === 'select') {
-    await field.selectOption({ label: FALLBACK_SELECT_LABEL });
+  if ((await field.evaluate((el) => el.tagName.toLowerCase())) === 'select') {
+    await field.selectOption({ label: selectLabel ?? query });
     return;
   }
-
-  await field.fill(OFFICIAL_IDENTITY_CARD_QUERY);
-  const options = page.getByTestId('guest-0-documentType-options').locator('option');
-  await expect(options.first()).toBeAttached({ timeout: 15_000 });
-  const official = await options.evaluateAll((els) => {
-    const labels = els.map((el) => el.getAttribute('value') ?? '');
-    return labels.find((label) => /CARTA DI IDENTITA/i.test(label)) ?? labels[0] ?? '';
-  });
-  expect(official, 'official identity-card row from Alloggiati DOCUMENTI').toBeTruthy();
-  await field.fill(official);
-  await expect(page.getByTestId('guest-0-documentType-code')).toBeVisible();
+  await field.fill(query);
+  const choice = page.locator(`#${id}-listbox`).getByRole('option', { name: option });
+  try {
+    await expect(choice.first()).toBeVisible({ timeout: 8_000 });
+  } catch {
+    return;
+  }
+  await choice.first().click();
+  await expect(page.getByTestId(`${id}-code`)).toBeVisible();
 }

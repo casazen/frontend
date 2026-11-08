@@ -20940,19 +20940,23 @@
     "loading": "Caricamento…",
     "loadError": "Non riesco a caricare la tua area.",
     "noContracts": "Non hai un contratto attivo da consultare.",
+    "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I canoni si pagano nella sezione Canoni.",
     "openContract": "Apri il contratto",
     "nav": {
       "label": "Sezioni",
       "contracts": "Contratti",
       "contract": "Contratto",
-      "dues": "Scadenze",
+      "dues": "Canoni",
       "documents": "Documenti",
       "maintenance": "Manutenzione"
     },
     "contract": {
       "term": "Dal {{from}} al {{to}}",
       "openEnd": "data da definire",
-      "openDue": "Vedi la prossima scadenza"
+      "nextDue": "Prossima scadenza",
+      "payDue": "Paga la scadenza",
+      "openDue": "Vedi la scadenza",
+      "noPayment": "Non c'è nulla da pagare. I canoni stanno nella sezione Canoni, non su questa pagina."
     },
     "bank": {
       "title": "Estremi per il bonifico",
@@ -20965,13 +20969,35 @@
       "copied": "Causale copiata"
     },
     "dues": {
-      "empty": "Nessuna scadenza.",
+      "title": "Canoni",
+      "lead": "Qui paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.",
+      "listLabel": "Scadenze",
+      "emptyTitle": "Nessuna scadenza",
+      "emptyDescription": "Quando il gestore emette una rata, la trovi qui con l'importo da versare.",
+      "nextTitle": "Prossima da pagare",
+      "pay": "Paga questa scadenza",
+      "residual": "Da versare",
+      "overdue": "In ritardo",
+      "missing": "Questa scadenza non è nel contratto.",
+      "backToList": "Torna alle scadenze",
+      "advanceNote": "L'acconto condominiale è la quota del mese, già dentro questa scadenza.",
+      "settlementDebt": "Il conguaglio è un debito e si aggiunge a questa scadenza.",
+      "settlementCredit": "Il conguaglio è un credito e riduce quanto resta da pagare.",
+      "inBalance": "Sei in pari su questa scadenza. Non c'è nulla da versare.",
+      "processingHint": "Il bonifico è in verifica. La scadenza non risulta ancora pagata.",
+      "failedHint": "L'ultimo addebito non è andato a buon fine. Puoi riprovare con il conto collegato oppure usare il bonifico manuale.",
+      "sepaTitle": "Addebito SEPA in euro",
+      "sepaHint": "Collega un conto di una banca italiana. L'addebito è in euro. La scadenza resta da pagare finché la banca non conferma.",
+      "sepaEuroOnly": "L'addebito SEPA è solo in euro. Per questa scadenza usa il bonifico manuale.",
+      "manualTitle": "Bonifico manuale",
+      "manualHint": "Se non colleghi un conto, usa questi estremi e poi avvisa il gestore.",
+      "noBank": "Gli estremi del bonifico non sono ancora disponibili.",
       "period": "Dal {{from}} al {{to}}",
       "status": {
         "Scheduled": "Da pagare",
         "Processing": "In verifica",
         "Paid": "Pagata",
-        "Failed": "Non riuscito",
+        "Failed": "Addebito non riuscito",
         "Cancelled": "Annullata"
       }
     },
@@ -20985,6 +21011,7 @@
       "sent": "Dichiarazione inviata. La rata non è ancora segnata come pagata.",
       "failed": "Non riesco a registrare la dichiarazione.",
       "notPaid": "La dichiarazione avvisa il gestore. Non segna la rata come pagata.",
+      "rejectedHint": "La dichiarazione è stata respinta. Puoi inviarne un'altra.",
       "status": {
         "Submitted": "Inviata",
         "Verified": "Verificata",
@@ -20993,7 +21020,9 @@
       }
     },
     "documents": {
-      "empty": "Nessun documento condiviso.",
+      "emptyTitle": "Nessun documento condiviso",
+      "emptyDescription": "Preventivo, consuntivo e conguaglio compaiono qui quando il gestore li condivide. Il pagamento resta in Canoni.",
+      "goToDues": "Vai ai canoni",
       "download": "Scarica",
       "failed": "Non riesco a scaricare il documento.",
       "kind": {
