@@ -49,10 +49,12 @@ export function CodeTableInput({
   const available = isListAvailable(source, list);
   const shown = purpose === 'citizenship' ? citizenshipAdjective(name) : name;
   const query = useDelayedValue(name.trim(), SEARCH_DELAY_MS);
+  // The session may not list the imported tables. The codes endpoint is still the one that has them:
+  // an empty answer means nothing was imported, and a row can still be chosen.
   const search = useQuery({
     queryKey: ['alloggiati-codes', source.scope, list, purpose, query],
     queryFn: () => source.search(list, query),
-    enabled: available && query.length >= MIN_QUERY_LENGTH,
+    enabled: query.length >= MIN_QUERY_LENGTH,
     staleTime: 5 * 60 * 1000,
   });
   const entries = search.data ?? [];
@@ -113,7 +115,7 @@ export function CodeTableInput({
           })}
         </ul>
       )}
-      {available && code && (
+      {code && (
         <p className="text-xs text-muted-foreground" data-testid={`${id}-code`}>
           {t('checkin.codeSelected', { code })}
         </p>
