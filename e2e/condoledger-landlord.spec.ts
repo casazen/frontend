@@ -99,10 +99,14 @@ async function exercisePayments(page: Page): Promise<void> {
   if (!leaseId) throw new Error('Documenti did not stay on a lease, so Pagamenti cannot be checked.');
   await page.goto(`/app/long-rent/leases/${leaseId}?tab=pagamenti`);
   await expect(page.getByTestId('lease-tab-pagamenti')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+  await expect(page.getByTestId('rent-not-on-contract')).toBeVisible();
+  await page.getByRole('link', { name: 'Collega il conto su Pagamenti' }).click();
+  await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
   const bank = page.getByTestId('condominium-bank-link');
   await expect(bank).toBeVisible();
   await expect(bank).toContainText('euro');
   await expect(bank.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
   await expect(bank).toContainText('registrare');
-  await expect(page.getByTestId('rent-schedule-panel')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Canoni' })).toBeVisible();
 }

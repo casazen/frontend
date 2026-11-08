@@ -128,11 +128,7 @@ async function chooseOfficialCode(page: Page, id: string, query: string, option:
   }
   await field.fill(query);
   const choice = page.locator(`#${id}-listbox`).getByRole('option', { name: option });
-  try {
-    await expect(choice.first()).toBeVisible({ timeout: 8_000 });
-  } catch {
-    return;
-  }
+  await expect(choice.first()).toBeVisible({ timeout: 8_000 });
   await choice.first().click();
   await expect(page.getByTestId(`${id}-code`)).toBeVisible();
 }

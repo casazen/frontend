@@ -932,6 +932,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
   },
   {
+    // Pagamenti: the Italian euro SEPA account for the condominium. It is not on the contract, and it is open before signature.
+    path: '/app/long-rent/payments',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentPayments',
+    navParent: '/app/long-rent/rents',
+    navOrder: 2,
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/leases/landlord-payments-page')).LandlordPaymentsPage,
+    }),
+  },
+  {
     // In no menu: the menu of the user (header and phone sheet, `profilePathForContext`) leads here.
     path: '/app/long-rent/profile',
     context: 'long-rent',

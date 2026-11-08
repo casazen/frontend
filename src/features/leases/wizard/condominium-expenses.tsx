@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { formatCurrency } from '@/lib/utils';
 import type { ProposeTenantExpense } from '@/types/condominium-proposal.types';
 import {
@@ -15,7 +16,7 @@ import {
 /**
  * Condominium expenses on «Condizioni economiche».
  * A fiscal year already on the property proposes the monthly amount. That first read is not repeated
- * once a choice is kept: an empty body would come back as a budget and drop settle-at-consuntivo.
+ * Opening it does not POST an empty body: that write comes back as a budget and drops settle-at-consuntivo.
  * With nothing loaded, the totals of the previous consuntivo and the new preventivo, or a hand-typed
  * amount, are sent. Paying, and the prior-year balance, are not done here.
  */
@@ -28,6 +29,7 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   const [consuntivo, setConsuntivo] = useState('');
   const [preventivo, setPreventivo] = useState('');
   const [manual, setManual] = useState('');
+  const posting = useRef(false);
 
   if (!ready) return null;
 
@@ -37,7 +39,13 @@ export function CondominiumExpenses({ propertyId, leaseId }: { propertyId: strin
   const empty = probe.isSuccess && probe.data?.proposal === null && saved === null;
 
   async function propose(request: ProposeTenantExpense) {
-    await save.mutateAsync(request);
+    if (posting.current || pending || !requestHasFigures(request)) return;
+    posting.current = true;
+    try {
+      await save.mutateAsync(request);
+    } finally {
+      posting.current = false;
+    }
   }
 
   function acceptShown() {
@@ -177,22 +185,12 @@ function manualRequest(amount: number): ProposeTenantExpense {
   return { cadence: 'Monthly', manualAmount: amount };
 }
 
-/**
- * An amount typed in Italian: `95,50`, `1.234,50`, or a plain `95.50`.
- * Dots are thousands separators when a comma is the decimal mark, or when every group after the first has three digits.
- */
-function parseEuroAmount(raw: string): number | null {
-  const text = raw.trim().replace(/[\s\u00a0']/g, '');
-  if (text === '') return null;
-  let normalized = text;
-  if (text.includes(',')) {
-    if (!/^(?:\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:,\d{1,2})?)$/.test(text)) return null;
-    normalized = text.replace(/\./g, '').replace(',', '.');
-  } else if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
-    normalized = text.replace(/\./g, '');
-  } else if (!/^\d+(\.\d{1,2})?$/.test(text)) {
-    return null;
-  }
-  const amount = Number(normalized);
-  return Number.isFinite(amount) ? amount : null;
+/** A second click must not send `{}`: that body is a different mode and drops settle-at-consuntivo. */
+function requestHasFigures(request: ProposeTenantExpense): boolean {
+  return (
+    request.manualAmount !== undefined ||
+    request.preventivo !== undefined ||
+    request.previousConsuntivo !== undefined ||
+    request.contractualAdvance !== undefined
+  );
 }

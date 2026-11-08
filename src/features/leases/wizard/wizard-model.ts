@@ -1,3 +1,4 @@
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { addDays, nightsBetween } from '@/lib/stay-dates';
 import { normalizeFiscalCode } from '@/lib/fiscal-code';
 import type {
@@ -152,12 +153,11 @@ export function isBlankRow(row: PartyRow): boolean {
   );
 }
 
-/** The number written in a field, or `null` for none; `undefined` when what is written is not a number (the field is left out). */
+/** The amount written in a field, or `null` for none; `undefined` when it is not an amount (the field is left out). */
 function numberOf(text: string): number | null | undefined {
-  const trimmed = text.trim().replace(',', '.');
-  if (trimmed === '') return null;
-  const value = Number(trimmed);
-  return Number.isFinite(value) ? value : undefined;
+  if (text.trim() === '') return null;
+  const value = parseEuroAmount(text);
+  return value === null ? undefined : value;
 }
 
 /** What went to the server for the parties of a save: the keys of the rows sent, in order, so the ids of the answer find their rows. */
