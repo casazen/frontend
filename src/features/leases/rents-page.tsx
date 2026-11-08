@@ -14,7 +14,6 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { useLeases } from '@/queries/use-leases';
 import { useRentRegister } from '@/queries/use-rent-register';
 import type { RentRegisterPage, RentRegisterRow } from '@/types';
-import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { BankStatementImportDialog } from './components/bank-statement-import-dialog';
 import { RecordRentPaymentDialog } from './components/record-rent-payment-dialog';
 import { RentMonthPicker } from './components/rent-month-picker';
@@ -153,18 +152,6 @@ export function RentsPage() {
         }
         mobilePrimary="fab"
       />
-
-      {canManage ? (
-        <FinancialConnectionsTransfer
-          mode="org"
-          linkOnly
-          leaseId=""
-          dueId="condominium"
-          amount={0}
-          currency="EUR"
-          reference=""
-        />
-      ) : null}
 
       <RentMonthPicker month={month} currentMonth={currentMonth} onChange={goToMonth} />
 

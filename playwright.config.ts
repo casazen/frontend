@@ -16,6 +16,8 @@ const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
 /** Golden Journey L3 on the ephemeral stack (FN-03): `e2e/stack/up.sh` starts it, `e2e/gj-l3/` is the suite. */
 const isGjL3Run = process.env.E2E_GJ_L3 === '1';
 const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
+/** Landlord CondoLedger on the Vite app proxied to the Railway test API. */
+const isCondoLedgerRun = process.env.E2E_CONDOLEDGER === '1';
 
 /**
  * Auth0 tenant of a real-login run (E2E_LOCAL / E2E_STAGING): no default tenant in code (PL-11, A1-32). The test
@@ -45,7 +47,15 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: isGjL3Run
+  projects: isCondoLedgerRun
+    ? [
+        {
+          name: 'condoledger',
+          testMatch: '**/condoledger-landlord.spec.ts',
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ]
+    : isGjL3Run
     ? [
         {
           name: 'gj-l3',
@@ -122,6 +132,7 @@ export default defineConfig({
           testMatch: [
             '**/property-staging.spec.ts',
             '**/api-regression-smoke.spec.ts',
+            '**/condoledger-landlord.spec.ts',
           ],
           dependencies: ['setup'],
           use: {
@@ -165,6 +176,7 @@ export default defineConfig({
             '**/gj-l3/**',
             '**/*-l3.spec.ts',
             '**/prod-deploy-smoke.spec.ts',
+            '**/condoledger-landlord.spec.ts',
             '**/tenant-canoni-live.spec.ts',
           ],
           use: { ...devices['Desktop Chrome'] },
@@ -174,6 +186,23 @@ export default defineConfig({
   // The L3 stack is started by e2e/stack/up.sh (database, backend, mock services and Vite), not by Playwright.
   webServer: isDeploySmokeRun || isProdSmokeRun || isGjL3Run
     ? undefined
+    : isCondoLedgerRun
+    ? {
+        command: 'npx vite --host localhost --port 5173',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
+        env: {
+          VITE_HTTPS: '0',
+          VITE_DEMO_MODE: 'false',
+          VITE_API_BASE_URL: '/api',
+          E2E_API_PROXY_TARGET:
+            process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
+          VITE_AUTH0_DOMAIN: process.env.VITE_AUTH0_DOMAIN ?? '',
+          VITE_AUTH0_CLIENT_ID: process.env.VITE_AUTH0_CLIENT_ID ?? '',
+          VITE_AUTH0_AUDIENCE: process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
+        },
+      }
     : isLocalRun
     ? {
         // Bind localhost so Auth0 redirect_uri (window.location.origin) matches Allowed Callback URLs.

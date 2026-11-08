@@ -67,6 +67,18 @@ describe('Lease documents panel', () => {
 
     await waitFor(() => expect(leaseDocumentsApi.remove).toHaveBeenCalledWith('lease-1', 'doc-1'));
     expect(screen.getByRole('button', { name: 'Scarica' })).toBeInTheDocument();
+  });
+
+  it('keeps the dialog open and says why when the API refuses the delete', async () => {
+    vi.mocked(leaseDocumentsApi.remove).mockRejectedValue(new Error('refused'));
+    renderPanel();
+
+    fireEvent.click(await screen.findByTestId('lease-document-delete-doc-1'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Elimina' }));
+
+    expect(await screen.findByTestId('lease-document-delete-error')).toHaveTextContent('Impossibile eliminare il documento.');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('contratto.pdf')).toBeInTheDocument();
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });

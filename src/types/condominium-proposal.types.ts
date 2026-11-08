@@ -1,31 +1,37 @@
 /**
- * What the contract wizard reads and writes for condominium expenses.
- * One resource: `GET` and `POST /long-rent/properties/:propertyId/condominium-proposal`.
- * A fiscal year that can name an amount is `ready`. Nothing loaded is `empty`.
+ * Condominium expense the contract wizard proposes.
+ * `POST /leases/:leaseId/draft/condominium-expense`.
+ * A fiscal year already on the property answers from the confirmed budget.
+ * With nothing loaded the same call returns 422 `tenant_expense_proposal_invalid`
+ * until the previous consuntivo and the new preventivo, or a manual amount, are sent.
+ * The call does not start a payment and does not rewrite issued installments.
  */
 
-export type CondominiumProposalState = 'ready' | 'empty';
+export type TenantExpenseSource = 'FixedContract' | 'ConfirmedBudget' | 'Statements' | 'Manual';
 
-export interface CondominiumProposal {
-  state: CondominiumProposalState;
-  /** Label of the fiscal year, such as `2025/2026`, when the property has one. */
-  fiscalYearLabel: string | null;
-  /** Monthly condominium expense in euros. Null while nothing can be proposed. */
-  amount: number | null;
-  currency: 'EUR';
+export type RentExpenseCadence = 'Monthly' | 'Bimonthly' | 'Quarterly' | 'Semiannual';
+
+export interface TenantExpenseProposal {
+  source: TenantExpenseSource;
+  /** One installment, in euros. */
+  installmentAmount: number;
+  lastInstallmentAmount: number;
+  installments: number;
+  annualAmount: number;
+  previousConsuntivo: number | null;
+  preventivo: number | null;
+  /** True when the amount waits for the consuntivo. A later call must keep the same request. */
+  settledAtConsuntivo: boolean;
+  periodId: string | null;
+  periodLabel: string | null;
 }
 
-/** A hand-typed advance. The settlement waits for the consuntivo. */
-export interface CondominiumManualProposal {
-  mode: 'manual';
-  leaseId: string;
-  amount: number;
-  settleAtConsuntivo: true;
-}
-
-/** The amount the fiscal year already proposed, accepted onto this contract. */
-export interface CondominiumAcceptedProposal {
-  mode: 'proposed';
-  leaseId: string;
-  amount: number;
+/** Body of the proposal. Omit a field rather than sending null. */
+export interface ProposeTenantExpense {
+  advanceMode?: 'FixedContractAmount' | 'BudgetAllocation' | 'None' | 'NeedsReview';
+  contractualAdvance?: number;
+  cadence?: RentExpenseCadence;
+  previousConsuntivo?: number;
+  preventivo?: number;
+  manualAmount?: number;
 }
