@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canDecideMaintenance,
   canPayMaintenance,
+  maintenanceUrgencyWire,
   parseMaintenanceRequest,
   parseMaintenanceRequestList,
 } from '../model';
@@ -43,6 +44,15 @@ describe('maintenance request model', () => {
     expect(parseMaintenanceRequest({ id: 'b', status: 'rifiutata', rejectionReason: 'Non compete' })?.reason).toBe('Non compete');
     expect(parseMaintenanceRequest({ id: 'c', status: 'paid' })?.status).toBe('paid');
     expect(parseMaintenanceRequest({ status: 'pending' })).toBeNull();
+  });
+
+  it('sends the C# enum names and reads them back onto the Italian choices', () => {
+    expect(maintenanceUrgencyWire('bassa')).toBe('Normal');
+    expect(maintenanceUrgencyWire('normale')).toBe('High');
+    expect(maintenanceUrgencyWire('urgente')).toBe('Emergency');
+    expect(parseMaintenanceRequest({ id: 'n', urgency: 'Normal' })?.urgency).toBe('bassa');
+    expect(parseMaintenanceRequest({ id: 'h', urgency: 'High' })?.urgency).toBe('normale');
+    expect(parseMaintenanceRequest({ id: 'e', urgency: 'Emergency' })?.urgency).toBe('urgente');
   });
 
   it('lets only the landlord pay, and only after approval', () => {

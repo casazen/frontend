@@ -26,9 +26,24 @@ export interface CreateMaintenanceRequestInput {
   photo?: File | null;
 }
 
+/** C# `JsonStringEnumConverter` member names. The screen keeps bassa, normale, urgente. */
+export const MAINTENANCE_URGENCY_WIRE = {
+  bassa: 'Normal',
+  normale: 'High',
+  urgente: 'Emergency',
+} as const;
+
+export type MaintenanceUrgencyWire = (typeof MAINTENANCE_URGENCY_WIRE)[MaintenanceUrgency];
+
+export type MaintenanceDecision = 'Approved' | 'Rejected';
+
 export interface MaintenanceDecisionInput {
-  decision: 'approved' | 'rejected';
+  decision: MaintenanceDecision;
   reason?: string;
+}
+
+export function maintenanceUrgencyWire(urgency: MaintenanceUrgency): MaintenanceUrgencyWire {
+  return MAINTENANCE_URGENCY_WIRE[urgency];
 }
 
 function recordOf(value: unknown): Record<string, unknown> | null {
@@ -42,8 +57,9 @@ function textOf(value: unknown): string {
 
 export function parseMaintenanceUrgency(value: unknown): MaintenanceUrgency {
   const raw = textOf(value).toLowerCase();
-  if (raw === 'bassa' || raw === 'low') return 'bassa';
-  if (raw === 'urgente' || raw === 'urgent' || raw === 'high' || raw === 'emergency') return 'urgente';
+  if (raw === 'bassa' || raw === 'low' || raw === 'normal') return 'bassa';
+  if (raw === 'urgente' || raw === 'urgent' || raw === 'emergency') return 'urgente';
+  if (raw === 'normale' || raw === 'high') return 'normale';
   return 'normale';
 }
 

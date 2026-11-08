@@ -1,8 +1,10 @@
 import { ApiClient } from '@/api/client';
 import {
+  maintenanceUrgencyWire,
   parseMaintenanceRequest,
   parseMaintenanceRequestList,
   type CreateMaintenanceRequestInput,
+  type MaintenanceDecision,
   type MaintenanceDecisionInput,
   type MaintenanceRequest,
 } from './model';
@@ -13,6 +15,10 @@ function collectionPath(leaseId: string): string {
 
 function requestPath(leaseId: string, requestId: string): string {
   return `${collectionPath(leaseId)}/${encodeURIComponent(requestId)}`;
+}
+
+function decisionWire(decision: MaintenanceDecision): MaintenanceDecision {
+  return decision === 'Rejected' ? 'Rejected' : 'Approved';
 }
 
 function asRequest(value: unknown): MaintenanceRequest {
@@ -27,10 +33,11 @@ export const maintenanceRequestsApi = {
 
   create: async (leaseId: string, input: CreateMaintenanceRequestInput): Promise<MaintenanceRequest> => {
     const photo = input.photo ?? null;
+    const urgency = maintenanceUrgencyWire(input.urgency);
     if (photo) {
       const form = new FormData();
       form.append('what', input.what);
-      form.append('urgency', input.urgency);
+      form.append('urgency', urgency);
       form.append('note', input.note);
       form.append('photo', photo, photo.name);
       return asRequest(
@@ -42,7 +49,7 @@ export const maintenanceRequestsApi = {
     return asRequest(
       await ApiClient.post<unknown>(collectionPath(leaseId), {
         what: input.what,
-        urgency: input.urgency,
+        urgency,
         note: input.note,
       }),
     );
@@ -51,7 +58,7 @@ export const maintenanceRequestsApi = {
   decide: async (leaseId: string, requestId: string, input: MaintenanceDecisionInput): Promise<MaintenanceRequest> =>
     asRequest(
       await ApiClient.post<unknown>(`${requestPath(leaseId, requestId)}/decision`, {
-        decision: input.decision,
+        decision: decisionWire(input.decision),
         ...(input.reason ? { reason: input.reason } : {}),
       }),
     ),

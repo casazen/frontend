@@ -84,7 +84,22 @@ describe('tenant maintenance wizard', () => {
 
     const [url, body] = post.mock.calls[0];
     expect(url).toBe('/leases/lease-1/maintenance-requests');
-    expect(body).toEqual({ what: 'Rubinetto del bagno', urgency: 'normale', note: 'Gocciola da ieri' });
+    expect(body).toEqual({ what: 'Rubinetto del bagno', urgency: 'High', note: 'Gocciola da ieri' });
+  });
+
+  it('does not offer a second send when the list cache is still empty', async () => {
+    get.mockResolvedValue({ data: [] });
+    post.mockResolvedValue({ data: pending });
+    renderAt('/portale-conduttore/contratti/lease-1/richiesta-manutenzione', <TenantMaintenanceRequestPage />);
+
+    await fillWizard();
+    expect(await screen.findByTestId('maintenance-waiting')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('maintenance-see-requests'));
+
+    expect(screen.queryByTestId('maintenance-submit')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Controlla e invia' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('maintenance-tenant-status')).toHaveTextContent('In attesa');
+    expect(post).toHaveBeenCalledTimes(1);
   });
 
   it('keeps pay hidden when a request is already approved', async () => {
@@ -118,7 +133,7 @@ describe('landlord maintenance approval', () => {
         rows = [
           {
             ...current,
-            status: body.decision === 'rejected' ? 'rejected' : 'approved',
+            status: body.decision === 'Rejected' ? 'rejected' : 'approved',
             reason: body.reason ?? null,
           },
         ];
@@ -147,7 +162,7 @@ describe('landlord maintenance approval', () => {
     expect(screen.queryByTestId('maintenance-approve')).not.toBeInTheDocument();
     await waitFor(() => expect(post).toHaveBeenCalled());
     expect(post.mock.calls[0][0]).toBe('/leases/lease-1/maintenance-requests/mr-1/decision');
-    expect(post.mock.calls[0][1]).toEqual({ decision: 'approved' });
+    expect(post.mock.calls[0][1]).toEqual({ decision: 'Approved' });
     expect(toast.error).not.toHaveBeenCalled();
   });
 
@@ -164,7 +179,7 @@ describe('landlord maintenance approval', () => {
     expect(screen.getByTestId('maintenance-status')).toHaveTextContent('Rifiutata');
     expect(screen.queryByTestId('maintenance-pay')).not.toBeInTheDocument();
     expect(post.mock.calls[0][1]).toEqual({
-      decision: 'rejected',
+      decision: 'Rejected',
       reason: 'Non è un guasto a carico del proprietario.',
     });
   });

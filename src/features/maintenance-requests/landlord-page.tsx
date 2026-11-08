@@ -55,13 +55,13 @@ export function LandlordMaintenancePage() {
               }}
               onApprove={() => {
                 setRejectingId(null);
-                decide.mutate({ requestId: request.id, decision: { decision: 'approved' } });
+                decide.mutate({ requestId: request.id, decision: { decision: 'Approved' } });
               }}
               onReject={() => {
                 const text = reason.trim();
                 if (!text) return;
                 decide.mutate(
-                  { requestId: request.id, decision: { decision: 'rejected', reason: text } },
+                  { requestId: request.id, decision: { decision: 'Rejected', reason: text } },
                   {
                     onSuccess: () => {
                       setRejectingId(null);

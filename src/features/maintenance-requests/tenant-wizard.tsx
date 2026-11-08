@@ -36,15 +36,21 @@ export function TenantMaintenanceRequestPage() {
   const [sent, setSent] = useState<MaintenanceRequest | null>(null);
 
   const items = list.data ?? [];
-  const writing = phase === 'wizard' || (phase === 'browse' && !list.isLoading && !list.isError && items.length === 0);
+  const visible = sent && !items.some((item) => item.id === sent.id) ? [sent, ...items] : items;
+  // An empty cache after a send is not "there is nothing to show": the wizard must not come back filled.
+  const writing = phase === 'wizard' || (phase === 'browse' && !sent && !list.isLoading && !list.isError && items.length === 0);
 
-  function begin() {
+  function clearDraft() {
     setWhat('');
     setUrgency(null);
     setNote('');
     setPhoto(null);
-    setSent(null);
     setStep('what');
+  }
+
+  function begin() {
+    clearDraft();
+    setSent(null);
     setPhase('wizard');
   }
 
@@ -83,7 +89,7 @@ export function TenantMaintenanceRequestPage() {
       <WizardFrame>
         <h1 className="text-2xl font-semibold tracking-tight">{t('maintenanceRequest.list.title')}</h1>
         <ul className="mt-4 min-w-0 space-y-3">
-          {items.map((request) => (
+          {visible.map((request) => (
             <li key={request.id} className="min-w-0 rounded-xl border border-border p-4" data-testid={`maintenance-tenant-request-${request.id}`}>
               <p className="break-words font-medium">{request.what}</p>
               <p className="mt-1 text-sm" data-testid="maintenance-tenant-status">{t(`maintenanceRequest.status.${request.status}`)}</p>
@@ -129,6 +135,7 @@ export function TenantMaintenanceRequestPage() {
             { what: what.trim(), urgency, note: note.trim(), photo },
             {
               onSuccess: (request) => {
+                clearDraft();
                 setSent(request);
                 setPhase('sent');
               },

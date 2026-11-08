@@ -23,7 +23,8 @@ interface Row {
   createdAt: string;
 }
 
-async function mockMaintenanceRequests(page: Page, rows: Row[]): Promise<void> {
+async function mockMaintenanceRequests(page: Page, rows: Row[], posted: unknown[]): Promise<{ hideList: () => void; showList: () => void }> {
+  let hideList = false;
   await page.route(/\/api\/leases\/[^/]+\/maintenance-requests/, async (route) => {
     const request = route.request();
     const match = new URL(request.url()).pathname.match(
@@ -40,11 +41,12 @@ async function mockMaintenanceRequests(page: Page, rows: Row[]): Promise<void> {
       route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
     if (request.method() === 'GET' && !requestId) {
-      await fulfill(rows.filter((row) => row.leaseId === leaseId));
+      await fulfill(hideList ? [] : rows.filter((row) => row.leaseId === leaseId));
       return;
     }
     if (request.method() === 'POST' && !requestId) {
       const payload = request.postDataJSON() as { what: string; urgency: string; note: string };
+      posted.push(payload);
       const created: Row = {
         id: `mr-${rows.length + 1}`,
         leaseId,
@@ -66,8 +68,9 @@ async function mockMaintenanceRequests(page: Page, rows: Row[]): Promise<void> {
       return;
     }
     if (request.method() === 'POST' && action === 'decision') {
-      const payload = request.postDataJSON() as { decision: 'approved' | 'rejected'; reason?: string };
-      row.status = payload.decision === 'rejected' ? 'rejected' : 'approved';
+      const payload = request.postDataJSON() as { decision: 'Approved' | 'Rejected'; reason?: string };
+      posted.push(payload);
+      row.status = payload.decision === 'Rejected' ? 'rejected' : 'approved';
       row.reason = payload.reason ?? null;
       await fulfill(row);
       return;
@@ -84,6 +87,14 @@ async function mockMaintenanceRequests(page: Page, rows: Row[]): Promise<void> {
     }
     await route.fallback();
   });
+  return {
+    hideList: () => {
+      hideList = true;
+    },
+    showList: () => {
+      hideList = false;
+    },
+  };
 }
 
 async function expectNoHorizontalScroll(page: Page): Promise<void> {
@@ -139,7 +150,9 @@ test.describe('Maintenance request on a phone', () => {
 
   test('the tenant sends a request, the landlord pays only after approval, and a rejection hides pay', async ({ page }) => {
     const rows: Row[] = [];
-    await mockMaintenanceRequests(page, rows);
+    const posted: unknown[] = [];
+    const list = await mockMaintenanceRequests(page, rows, posted);
+    list.hideList();
 
     await page.goto(demoUrl(tenantMaintenanceRequestPath(LEASE), 'long-term'));
     await sendRequest(page, 'Rubinetto del bagno', 'Gocciola da ieri');
@@ -151,6 +164,13 @@ test.describe('Maintenance request on a phone', () => {
     await expect(page.getByTestId('maintenance-approve')).toHaveCount(0);
     await expectNoHorizontalScroll(page);
     await expectActionInView(page, page.getByTestId('maintenance-see-requests'));
+    await page.getByTestId('maintenance-see-requests').click();
+    await expect(page.getByTestId('maintenance-submit')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Controlla e invia' })).toHaveCount(0);
+    await expect(page.getByTestId('maintenance-tenant-request-mr-1')).toBeVisible();
+    expect(posted.filter((body) => body && typeof body === 'object' && 'what' in body)).toHaveLength(1);
+    expect(posted[0]).toMatchObject({ what: 'Rubinetto del bagno', urgency: 'High', note: 'Gocciola da ieri' });
+    list.showList();
 
     await page.goto(demoUrl(landlordMaintenancePath(LEASE), 'long-term'));
     const first = page.getByTestId('maintenance-request-mr-1');
@@ -195,5 +215,18 @@ test.describe('Maintenance request on a phone', () => {
     await expect(second.getByTestId('maintenance-reason')).toContainText('Non è un guasto a carico del proprietario.');
     await expect(page.getByTestId('maintenance-pay')).toHaveCount(0);
     await expectNoHorizontalScroll(page);
+    expect(posted).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ urgency: 'High', what: 'Rubinetto del bagno' }),
+        expect.objectContaining({ urgency: 'High', what: 'Caldaia spenta' }),
+        expect.objectContaining({ decision: 'Approved' }),
+        expect.objectContaining({ decision: 'Rejected', reason: 'Non è un guasto a carico del proprietario.' }),
+      ]),
+    );
+    for (const body of posted) {
+      const record = body as { urgency?: string; decision?: string };
+      if (record.urgency) expect(record.urgency).toMatch(/^(Normal|High|Emergency)$/);
+      if (record.decision) expect(record.decision).toMatch(/^(Approved|Rejected)$/);
+    }
   });
 });
