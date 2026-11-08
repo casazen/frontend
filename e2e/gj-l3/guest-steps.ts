@@ -76,9 +76,10 @@ export async function guestConfirmsEmail(page: Page, link: string): Promise<void
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
-/** Guest check-in portal (3 steps): two guests, the head of the family's identity document, the privacy notice and the submit. */
+/** Guest check-in portal: the document photo, then two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
+  await page.getByTestId('checkin-enter-manually').click();
   const guests = [
     { first: 'Giulia', gender: 'Femmina', born: '1990-05-12' },
     { first: 'Marco', gender: 'Maschio', born: '1988-03-02' },
