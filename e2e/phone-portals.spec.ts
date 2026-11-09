@@ -349,7 +349,11 @@ test.describe('Phone portals: tenant and landlord', () => {
       expect(linkBox).not.toBeNull();
       expect(linkBox!.x + linkBox!.width).toBeLessThanOrEqual(viewport.width + 1);
 
-      await page.getByTestId('long-rent-payments-canoni').click();
+      await page.getByTestId('long-rent-payments-contracts').click();
+      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+
+      // Canoni are no longer linked from Conto SEPA. The reminder still lives on the rent register.
+      await page.goto(demoUrl('/app/long-rent/rents', 'long-term'));
       await expect(page.getByTestId('rents-page')).toBeVisible();
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
       if (viewport.name === 'phone') await page.getByTestId('rent-remind-card-inst-1').click();

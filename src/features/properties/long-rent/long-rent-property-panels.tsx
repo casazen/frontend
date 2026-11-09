@@ -13,7 +13,7 @@ import { LandlordMaintenanceList } from '@/features/maintenance-requests/landlor
 import { useRentLedger } from '@/queries/use-rent';
 import type { usePropertyDocuments } from '@/queries/use-properties';
 import { formatCurrency } from '@/lib/utils';
-import { parseStayDate } from '@/lib/stay-dates';
+import { parseStayDate, todayInRome } from '@/lib/stay-dates';
 import type { LeaseSummary, Property, RentInstallment } from '@/types';
 import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
@@ -95,7 +95,7 @@ export function DocumentsPanel({ propertyId, documents }: { propertyId: string; 
 
 /**
  * Spese condominiali of this property. There is no condominium balance sheet, payment report or owner-to-condo charge
- * list yet: this section shows the acconto and conguaglio already on each contract's ledger, the preventivo and
+ * list yet: this section shows the current acconto and conguaglio on each contract's ledger, the preventivo and
  * conguaglio notices, and the two existing pages that come closest (the fiscal file, and the SEPA account in settings).
  * Canoni are not listed here.
  */
@@ -136,18 +136,38 @@ export function ExpensesPanel({ leases }: { leases: readonly LeaseSummary[] | un
   );
 }
 
-function condoParts(installments: readonly RentInstallment[]) {
-  let advance = 0;
-  let settlement = 0;
-  let seen = false;
-  for (const row of installments) {
-    const parts = rentBreakdown(row);
-    if (!parts.hasComponents) continue;
-    seen = true;
-    advance += parts.condominiumAdvance ?? 0;
-    settlement += parts.condominiumSettlement ?? 0;
-  }
-  return { seen, advance, settlement };
+const CONDO_KINDS = new Set(['CondominiumAdvance', 'CondominiumSettlement']);
+
+function hasCondoCharge(row: RentInstallment): boolean {
+  return (row.components ?? []).some((part) => CONDO_KINDS.has(part.kind));
+}
+
+function latestDue(rows: readonly RentInstallment[]): RentInstallment | undefined {
+  return [...rows].sort((a, b) => b.dueDate.localeCompare(a.dueDate) || b.periodEnd.localeCompare(a.periodEnd))[0];
+}
+
+function earliestDue(rows: readonly RentInstallment[]): RentInstallment | undefined {
+  return [...rows].sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.periodEnd.localeCompare(b.periodEnd))[0];
+}
+
+/**
+ * Acconto and conguaglio of the charge a landlord checks now. One installment, never the sum of the ledger, so a
+ * monthly advance stays that month's amount. Cancelled rows are ignored, and a paid row is used only when nothing
+ * is still open. The row is the open one that covers today, otherwise the latest open due, otherwise the next open
+ * one, otherwise the latest one still on the contract.
+ */
+function condoParts(installments: readonly RentInstallment[], today = todayInRome()) {
+  const charged = installments.filter((row) => row.status !== 'Cancelled' && hasCondoCharge(row));
+  const open = charged.filter((row) => row.status !== 'Paid');
+  const coversToday = (row: RentInstallment) => row.periodStart <= today && today <= row.periodEnd;
+  const current =
+    latestDue(open.filter(coversToday)) ??
+    latestDue(open.filter((row) => row.dueDate <= today)) ??
+    earliestDue(open.filter((row) => row.dueDate > today)) ??
+    latestDue(charged);
+  if (!current) return { seen: false, advance: 0, settlement: 0 };
+  const parts = rentBreakdown(current);
+  return { seen: true, advance: parts.condominiumAdvance ?? 0, settlement: parts.condominiumSettlement ?? 0 };
 }
 
 function CondoLease({ lease }: { lease: LeaseSummary }) {
