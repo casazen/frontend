@@ -141,7 +141,8 @@ describe('isNavEntryActive on the route manifest', () => {
     ['long-rent', '/app/long-rent/profile', undefined],
     ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/leases'],
     ['long-rent', '/app/long-rent/tenants/t1', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/rents'],
+    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/leases'],
+    ['long-rent', '/app/long-rent/payments', '/app/long-rent/payments'],
     ['long-rent', '/app/long-rent/leases', '/app/long-rent/leases'],
     // Contratti stays highlighted on the pages of a contract (it was not, as an "exact" entry).
     ['long-rent', '/app/long-rent/leases/new', '/app/long-rent/leases'],

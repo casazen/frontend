@@ -11,13 +11,13 @@ import { useDecideMaintenanceRequest, useMaintenanceRequests, usePayMaintenanceR
 /**
  * The landlord or the agency reads each request, approves or rejects it with a reason, and pays only after approval.
  * A pending request has no pay button. A rejection shows why, in Italian.
+ * The property sheet embeds the same list (`heading` off): the route keeps the page title.
  */
-export function LandlordMaintenancePage() {
+export function LandlordMaintenanceList({ leaseId, heading = false }: { leaseId: string; heading?: boolean }) {
   const { t } = useTranslation();
-  const { id = '' } = useParams();
-  const list = useMaintenanceRequests(id);
-  const decide = useDecideMaintenanceRequest(id);
-  const pay = usePayMaintenanceRequest(id);
+  const list = useMaintenanceRequests(leaseId);
+  const decide = useDecideMaintenanceRequest(leaseId);
+  const pay = usePayMaintenanceRequest(leaseId);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
 
@@ -31,10 +31,12 @@ export function LandlordMaintenancePage() {
   const items = list.data ?? [];
   return (
     <div className="min-w-0 max-w-full space-y-4 overflow-x-hidden" data-testid="maintenance-landlord">
-      <header className="min-w-0 space-y-1">
-        <h1 className="break-words text-2xl font-semibold tracking-tight">{t('maintenanceRequest.landlord.title')}</h1>
-        <p className="text-sm leading-6 text-foreground/70">{t('maintenanceRequest.landlord.hint')}</p>
-      </header>
+      {heading ? (
+        <header className="min-w-0 space-y-1">
+          <h1 className="break-words text-2xl font-semibold tracking-tight">{t('maintenanceRequest.landlord.title')}</h1>
+          <p className="text-sm leading-6 text-foreground/70">{t('maintenanceRequest.landlord.hint')}</p>
+        </header>
+      ) : null}
       {items.length === 0 ? <p className="text-sm text-foreground/70">{t('maintenanceRequest.landlord.empty')}</p> : null}
       <ul className="min-w-0 space-y-3">
         {items.map((request) => (
@@ -77,6 +79,11 @@ export function LandlordMaintenancePage() {
       </ul>
     </div>
   );
+}
+
+export function LandlordMaintenancePage() {
+  const { id = '' } = useParams();
+  return <LandlordMaintenanceList leaseId={id} heading />;
 }
 
 function RequestCard({

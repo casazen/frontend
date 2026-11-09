@@ -76,7 +76,7 @@ export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: 
         </Link>
         {' · '}
         <Link to="/app/long-rent/rents" className="font-medium underline">
-          {t('rent.openCanoni')}
+          {t('rent.openRegister')}
         </Link>
       </p>
       {isLoading && (

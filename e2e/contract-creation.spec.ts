@@ -357,14 +357,14 @@ test.describe('Contract creation, every type', () => {
 
     await page.getByTestId('lease-tab-pagamenti').click();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
-    await page.getByRole('link', { name: 'Collega il conto su Pagamenti' }).click();
+    await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
     await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
     const bank = page.getByTestId('condominium-bank-link');
     await expect(bank).toContainText('euro');
     await expect(bank.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
     await expect(bank.getByTestId('stripe-manual-stays')).toBeVisible();
-    await page.getByTestId('long-rent-payments-canoni').click();
-    await expect(page).toHaveURL(/\/app\/long-rent\/rents/);
+    await page.getByTestId('long-rent-payments-contracts').click();
+    await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
 
     await page.goto(demoUrl(`/app/long-rent/leases/${liberoId}?tab=documenti`, 'long-term'));
     await page.getByRole('link', { name: 'Carica i documenti in CasaZen' }).click();

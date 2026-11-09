@@ -752,15 +752,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/leases'],
   },
   {
-    // Canoni (LR-04b): the rent register of the month, next to the leases it comes from. Reading it asks what the leases ask.
+    // Canoni (LR-04b): the rent register of the month. It is not a menu entry: a canone exists only inside a contract,
+    // and the sheet of that contract opens it. This address stays for the register of every contract, linked from there.
     path: '/app/long-rent/rents',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.rents',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 3,
-    navBottom: 3,
     icon: 'Wallet',
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
   },
@@ -819,7 +816,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Maintenance requests of one lease: the landlord or the agency approves or rejects, and pays only after approval.
-    // In no menu and not a tab of Contratti. The tenant uses /portale-conduttore/.../richiesta-manutenzione.
+    // The same list is the Manutenzione section of the property. The tenant uses /portale-conduttore/.../richiesta-manutenzione.
     path: '/app/long-rent/leases/:id/manutenzione',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
@@ -864,8 +861,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.properties',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 3,
+    navBottom: 3,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
@@ -907,15 +904,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not). Fifth of the main menu: the bar of the phone holds four places, and since the Panoramica
-    // (LR-05) is the first of them, Interventi is behind "Altro" on the phone.
+    // hides the buttons from who may not). Fourth of the main menu, and the fourth place of the phone bar.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 5,
+    navOrder: 4,
+    navBottom: 4,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -931,25 +928,25 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. A tab of Canoni, the rents it is worked out from.
+    // the leases; the others find the reserved page. A tab of Contratti. It is not a condominium balance sheet.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentFiscal',
-    navParent: '/app/long-rent/rents',
-    navOrder: 1,
+    navParent: '/app/long-rent/leases',
+    navOrder: 3,
     icon: 'Receipt',
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
   },
   {
-    // Pagamenti: the Italian euro SEPA account for the condominium. It is not on the contract, and it is open before signature.
-    // Linking is a write (`lease.create`), the same check Canoni uses. Who may only read the leases does not open this page.
+    // Conto SEPA: the Italian euro bank-link session for condominium debits. It lives with the other settings of the area,
+    // not on the property and not on the contract. Linking is a write (`lease.create`). Who may only read the leases does not open it.
     path: '/app/long-rent/payments',
     context: 'long-rent',
     requiredPermissions: ['lease.read', 'lease.create'],
     navKey: 'nav.longRentPayments',
-    navParent: '/app/long-rent/rents',
-    navOrder: 2,
+    navPlacement: 'secondary',
+    navOrder: 35,
     icon: 'CreditCard',
     component: async () => ({
       default: (await import('@/features/leases/landlord-payments-page')).LandlordPaymentsPage,

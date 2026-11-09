@@ -52,12 +52,12 @@ test.describe('Canoni del conduttore on the Railway test API', () => {
       await see.click();
     } else {
       await expect(page.getByTestId('tenant-contract-no-payment')).toBeVisible();
-      await page.getByRole('link', { name: 'Canoni' }).click();
+      await page.getByRole('link', { name: 'Pagamenti' }).click();
       await expect(page.getByTestId('tenant-dues')).toBeVisible();
       return;
     }
 
-    await expect(page.getByRole('heading', { name: 'Canoni' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
     const detail = page.getByTestId('tenant-due-detail');
     if (!(await detail.isVisible())) {
       const next = page.getByRole('link', { name: 'Paga questa scadenza' });

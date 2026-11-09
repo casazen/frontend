@@ -6,8 +6,8 @@ import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial
 import { useWorkspace } from '@/hooks/use-workspace';
 
 /**
- * Pagamenti of the long-term area. The landlord links the Italian euro account that pays the condominium.
- * It does not need a signed contract. The tenant pays from Canoni. A manual transfer stays available.
+ * Conto SEPA of the long-term area, in the settings. The landlord links the Italian euro account that pays the condominium.
+ * It does not need a signed contract. Canoni stay on the contract. A manual transfer stays available.
  * Linking is a write (`lease.create`). Who may only read the leases does not get the button.
  */
 export function LandlordPaymentsPage() {
@@ -20,9 +20,9 @@ export function LandlordPaymentsPage() {
       <PageHeader title={t('longRentPayments.title')} description={t('longRentPayments.description')} crumbs="auto" />
       <div className={`${FOCUS_COLUMN} space-y-4`}>
         <p className="text-sm text-foreground/70">
-          {t('longRentPayments.canoniLead')}{' '}
-          <Link to="/app/long-rent/rents" className="font-medium underline" data-testid="long-rent-payments-canoni">
-            {t('longRentPayments.canoni')}
+          {t('longRentPayments.contractsLead')}{' '}
+          <Link to="/app/long-rent/leases" className="font-medium underline" data-testid="long-rent-payments-contracts">
+            {t('longRentPayments.contracts')}
           </Link>
         </p>
         {canLink ? (

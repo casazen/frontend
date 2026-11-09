@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
@@ -5,12 +6,25 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { Fact, Facts } from '@/features/bookings/components/booking-facts';
+import { RentManualNotices } from '@/features/leases/components/rent-manual-notices';
+import { leaseTenantName } from '@/features/leases/lib/lease-list-format';
+import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
+import { LandlordMaintenanceList } from '@/features/maintenance-requests/landlord-page';
+import { useRentLedger } from '@/queries/use-rent';
 import type { usePropertyDocuments } from '@/queries/use-properties';
-import type { LeaseSummary, Property } from '@/types';
+import { formatCurrency } from '@/lib/utils';
+import { parseStayDate } from '@/lib/stay-dates';
+import type { LeaseSummary, Property, RentInstallment } from '@/types';
 import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
 import { formatPropertyLocation } from '../property-location';
 import { LongRentPropertyLeases } from './long-rent-property-leases';
+import { longRentLeasePath } from './paths';
+
+const FISCAL_REPORT_PATH = '/app/long-rent/fiscal';
+const SEPA_ACCOUNT_PATH = '/app/long-rent/payments';
+
+const startedLast = (a: LeaseSummary, b: LeaseSummary) => parseStayDate(b.startDate).localeCompare(parseStayDate(a.startDate));
 
 /**
  * The panels of the tabs of the page of a long-term property (LR-07d), each one made of sections without a box. The fourth tab,
@@ -75,6 +89,149 @@ export function DocumentsPanel({ propertyId, documents }: { propertyId: string; 
     <div className="space-y-3">
       <ApeStatus hasApe={hasApe} />
       <PropertyDocumentsSection plain propertyId={propertyId} documents={documents.data} defaultUploadType="Ape" />
+    </div>
+  );
+}
+
+/**
+ * Spese condominiali of this property. There is no condominium balance sheet, payment report or owner-to-condo charge
+ * list yet: this section shows the acconto and conguaglio already on each contract's ledger, the preventivo and
+ * conguaglio notices, and the two existing pages that come closest (the fiscal file, and the SEPA account in settings).
+ * Canoni are not listed here.
+ */
+export function ExpensesPanel({ leases }: { leases: readonly LeaseSummary[] | undefined }) {
+  const { t } = useTranslation();
+  if (!leases) return null;
+  if (leases.length === 0) {
+    return (
+      <p className="text-sm text-foreground/70" data-testid="long-rent-property-expenses-empty">
+        {t('longRentProperties.expenses.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-8" data-testid="long-rent-property-expenses">
+      <p className="text-sm text-foreground/70">{t('longRentProperties.expenses.intro')}</p>
+      {[...leases].sort(startedLast).map((lease) => (
+        <CondoLease key={lease.id} lease={lease} />
+      ))}
+      <PlainSection title={t('longRentProperties.expenses.reportsTitle')}>
+        <p className="text-sm text-foreground/70">{t('longRentProperties.expenses.reportsBody')}</p>
+        <p className="text-sm">
+          <Link to={FISCAL_REPORT_PATH} className="font-medium underline" data-testid="long-rent-property-fiscal-report">
+            {t('longRentProperties.expenses.openReport')}
+          </Link>
+        </p>
+      </PlainSection>
+      <PlainSection title={t('longRentProperties.expenses.ownerPaymentsTitle')}>
+        <p className="text-sm text-foreground/70">{t('longRentProperties.expenses.ownerPaymentsBody')}</p>
+        <p className="text-sm">
+          <Link to={SEPA_ACCOUNT_PATH} className="font-medium underline" data-testid="long-rent-property-sepa">
+            {t('longRentProperties.expenses.openSepa')}
+          </Link>
+        </p>
+      </PlainSection>
+    </div>
+  );
+}
+
+function condoParts(installments: readonly RentInstallment[]) {
+  let advance = 0;
+  let settlement = 0;
+  let seen = false;
+  for (const row of installments) {
+    const parts = rentBreakdown(row);
+    if (!parts.hasComponents) continue;
+    seen = true;
+    advance += parts.condominiumAdvance ?? 0;
+    settlement += parts.condominiumSettlement ?? 0;
+  }
+  return { seen, advance, settlement };
+}
+
+function CondoLease({ lease }: { lease: LeaseSummary }) {
+  const { t } = useTranslation();
+  const ledger = useRentLedger(lease.id, lease.status);
+  const name = leaseTenantName(lease, t);
+  const parts = ledger.data ? condoParts(ledger.data.installments) : null;
+  const notices = ledger.data?.manualNotices ?? [];
+
+  return (
+    <PlainSection title={name} data-testid={`long-rent-property-condo-${lease.id}`}>
+      <div className="space-y-4">
+        <p className="text-sm">
+          <Link to={longRentLeasePath(lease.id)} className="font-medium underline">
+            {t('longRentProperties.expenses.openContract')}
+          </Link>
+        </p>
+        {ledger.isLoading ? <SkeletonLine lines={2} label={t('longRentProperties.expenses.loading')} /> : null}
+        {ledger.isError ? (
+          <ErrorState
+            testId={`long-rent-property-condo-error-${lease.id}`}
+            title={t('longRentProperties.expenses.loadError')}
+            error={ledger.error}
+            onRetry={() => void ledger.refetch()}
+          />
+        ) : null}
+        {parts ? (
+          <div className="space-y-2" data-testid={`long-rent-property-condo-situation-${lease.id}`}>
+            <h3 className="text-sm font-medium">{t('longRentProperties.expenses.situation')}</h3>
+            {parts.seen ? (
+              <ul className="space-y-1 text-sm">
+                <li>{t('longRentProperties.expenses.advance', { amount: formatCurrency(parts.advance, 'EUR') })}</li>
+                <li>{t('longRentProperties.expenses.settlement', { amount: formatCurrency(parts.settlement, 'EUR') })}</li>
+              </ul>
+            ) : (
+              <p className="text-sm text-foreground/70">{t('longRentProperties.expenses.noParts')}</p>
+            )}
+          </div>
+        ) : null}
+        {ledger.data ? (
+          <div className="space-y-2" data-testid={`long-rent-property-condo-report-${lease.id}`}>
+            <h3 className="text-sm font-medium">{t('longRentProperties.expenses.summary')}</h3>
+            {notices.length > 0 ? (
+              <RentManualNotices leaseId={lease.id} notices={notices} />
+            ) : (
+              <p className="text-sm text-foreground/70">{t('longRentProperties.expenses.noSummary')}</p>
+            )}
+            <p className="text-sm">
+              <Link to={`${longRentLeasePath(lease.id)}?tab=documenti`} className="font-medium underline">
+                {t('longRentProperties.expenses.openDocuments')}
+              </Link>
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </PlainSection>
+  );
+}
+
+/**
+ * Manutenzione of this property: the requests the tenant sent on each contract, the same list as
+ * `/app/long-rent/leases/:id/manutenzione`. No contract, no requests.
+ */
+export function MaintenancePanel({ leases }: { leases: readonly LeaseSummary[] | undefined }) {
+  const { t } = useTranslation();
+  if (!leases) return null;
+  if (leases.length === 0) {
+    return (
+      <p className="text-sm text-foreground/70" data-testid="long-rent-property-maintenance-empty">
+        {t('longRentProperties.maintenance.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-8" data-testid="long-rent-property-maintenance">
+      {[...leases].sort(startedLast).map((lease) => (
+        <section key={lease.id} className="space-y-3" aria-labelledby={`property-maintenance-${lease.id}`}>
+          <h2 id={`property-maintenance-${lease.id}`} className="text-base font-semibold">
+            {leaseTenantName(lease, t)}
+          </h2>
+          <LandlordMaintenanceList leaseId={lease.id} />
+        </section>
+      ))}
     </div>
   );
 }

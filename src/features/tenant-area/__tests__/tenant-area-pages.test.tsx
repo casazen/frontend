@@ -466,7 +466,7 @@ describe('tenant area', () => {
     renderAt('/portale-conduttore/contratti/lease-1/documenti', <TenantDocumentsPage />);
 
     expect(await screen.findByTestId('tenant-documents-empty')).toHaveTextContent('conguaglio');
-    expect(screen.getByRole('link', { name: 'Vai ai canoni' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Vai ai pagamenti' })).toHaveAttribute(
       'href',
       '/portale-conduttore/contratti/lease-1/scadenze',
     );
