@@ -43,7 +43,8 @@ function isNotDraft(error: unknown): boolean {
  * once. The registration is declared afterwards, with the declaration that already exists (step ⑧ opens it when the answer was yes).
  *
  * A receipt of the registration already uploaded to the draft answers the question: a receipt the Agenzia accepted means the contract is
- * registered, and its day and number fill the declaration; a discarded request means it is not. The person is not asked again.
+ * registered, and its day and number fill the declaration; a discarded request means it is not. The person is not asked again. The question
+ * stays hidden until the list of documents is known, and a choice made before that does not replace what the receipt says.
  */
 export function ImportStep({ leaseId, contractType, flush, uploaded = null, stipulaRead = null }: ImportStepProps) {
   const { t, i18n } = useTranslation();
@@ -62,7 +63,9 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const sending = useRef(false);
 
   // The receipt already among the documents of the draft, the latest one: it says whether the contract is registered.
+  // While the list is still loading there is no receipt to read, so the question is not asked and the import waits.
   const documents = useLeaseDocuments(leaseId);
+  const documentsPending = documents.isPending;
   const receiptDoc = [...(documents.data ?? [])].reverse().find((document) => document.kind === 'Registration') ?? null;
   const reading = useReceiptReading(leaseId, receiptDoc?.id ?? '');
   const read = reading.data?.state === 'Read' ? reading.data.receipt : null;
@@ -71,7 +74,8 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const receiptUnreadable = receiptDoc !== null && reading.isSuccess && !registeredByReceipt && !rejectedByReceipt;
   const awaitingReceipt = receiptDoc !== null && !reading.data && !reading.isError && (reading.isLoading || reading.isFetching);
   const decidedByReceipt = registeredByReceipt || rejectedByReceipt || receiptUnreadable;
-  const registered: Registered | null = rejectedByReceipt ? 'no' : (chosen ?? (registeredByReceipt || receiptUnreadable ? 'yes' : null));
+  // A receipt that has been read answers the question. A Yes or No chosen before that does not replace it.
+  const registered: Registered | null = decidedByReceipt ? (rejectedByReceipt ? 'no' : 'yes') : chosen;
 
   const stipulaFromReceipt = registeredByReceipt && read?.stipulationDate ? read.stipulationDate : null;
   const stipulaDate = typedDate ?? (stipulaRead || null) ?? stipulaFromReceipt ?? '';
@@ -99,7 +103,7 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
     setSubmitted(true);
     setFailure(null);
     if (!fileOk) return focus('lw-signedFile');
-    if (awaitingReceipt) return;
+    if (documentsPending || awaitingReceipt) return;
     if (!dateOk) return focus('lw-stipulaDate');
     if (registered === null) return focus('lw-registered');
     if (!(await flush())) return;
@@ -178,6 +182,10 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
               ? t('leaseWizard.import.registered.fromReceipt', { name: receiptDoc.fileName, detail: receiptDetail })
               : t('leaseWizard.import.registered.fromReceiptUnread', { name: receiptDoc.fileName })}
         </Alert>
+      ) : documentsPending ? (
+        <p role="status" className="text-sm text-muted-foreground" data-testid="lease-import-documents-loading">
+          {t('cfDocuments.loading')}
+        </p>
       ) : awaitingReceipt ? (
         <p role="status" className="text-sm text-muted-foreground" data-testid="lease-import-receipt-reading">
           {t('leaseDocs.receipt.reading')}

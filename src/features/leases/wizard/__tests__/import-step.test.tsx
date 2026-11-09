@@ -3,8 +3,9 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
-import { leaseDocumentsApi, type RegistrationReceiptReading } from '@/api/lease-documents.api';
+import { leaseDocumentsApi, type LeaseDocument, type RegistrationReceiptReading } from '@/api/lease-documents.api';
 import { leasesApi } from '@/api/leases.api';
+import { leaseDocumentsKey } from '@/queries/use-lease-documents';
 import { httpError } from '../../__tests__/lease-test-utils';
 import { ImportStep } from '../import-step';
 
@@ -19,9 +20,36 @@ function Where() {
   return <p data-testid="where">{`${location.pathname}${location.search} ${JSON.stringify(location.state)}`}</p>;
 }
 
+const registeredReceipt = (): RegistrationReceiptReading => ({
+  outcome: 'Registered',
+  code: 'TKM26T012345000AB',
+  number: '012345',
+  series: '3T',
+  registrationDate: '2026-09-21',
+  office: null,
+  annualRent: null,
+  start: null,
+  end: null,
+  stipulationDate: '2026-08-20',
+  typology: null,
+  cedolareSecca: null,
+  comune: null,
+  province: null,
+  warnings: [],
+});
+
+const receiptDocument: LeaseDocument = {
+  id: 'doc-r',
+  leaseId: 'lease-1',
+  kind: 'Registration',
+  fileName: 'ricevuta.pdf',
+  sizeBytes: 1200,
+  uploadedAt: '2026-09-21T10:00:00Z',
+};
+
 function renderStep() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={['/app/long-rent/leases/lease-1/edit?step=7']}>
         <Routes>
@@ -38,6 +66,7 @@ function renderStep() {
       </MemoryRouter>
     </QueryClientProvider>,
   );
+  return { ...view, client };
 }
 
 describe('ImportStep (LR-06b): the import of a signed contract cannot be taken back', () => {
@@ -63,7 +92,7 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
 
     fireEvent.change(screen.getByTestId('lease-import-file'), { target: { files: [pdf] } });
     fireEvent.change(screen.getByTestId('lease-import-date'), { target: { value: '2026-08-20' } });
-    fireEvent.click(screen.getByTestId('lease-registered-yes'));
+    fireEvent.click(await screen.findByTestId('lease-registered-yes'));
     fireEvent.click(screen.getByTestId('lease-import-submit'));
 
     // The consequences are written first, and nothing has gone to the server yet.
@@ -92,27 +121,13 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
 
   it('an uploaded registration receipt answers that the contract is registered and fills the day and the number', async () => {
     const pdf = new File(['%PDF-1.4 firmato'], 'contratto-firmato.pdf', { type: 'application/pdf' });
-    const receipt: RegistrationReceiptReading = {
-      outcome: 'Registered',
-      code: 'TKM26T012345000AB',
-      number: '012345',
-      series: '3T',
-      registrationDate: '2026-09-21',
-      office: null,
-      annualRent: null,
-      start: null,
-      end: null,
-      stipulationDate: '2026-08-20',
-      typology: null,
-      cedolareSecca: null,
-      comune: null,
-      province: null,
-      warnings: [],
-    };
-    vi.mocked(leaseDocumentsApi.list).mockResolvedValue([
-      { id: 'doc-r', leaseId: 'lease-1', kind: 'Registration', fileName: 'ricevuta.pdf', sizeBytes: 1200, uploadedAt: '2026-09-21T10:00:00Z' },
-    ]);
-    vi.mocked(leaseDocumentsApi.readReceipt).mockResolvedValue({ documentId: 'doc-r', kind: 'Registration', state: 'Read', receipt });
+    vi.mocked(leaseDocumentsApi.list).mockResolvedValue([receiptDocument]);
+    vi.mocked(leaseDocumentsApi.readReceipt).mockResolvedValue({
+      documentId: 'doc-r',
+      kind: 'Registration',
+      state: 'Read',
+      receipt: registeredReceipt(),
+    });
     vi.mocked(leasesApi.importSigned).mockResolvedValue({} as never);
     renderStep();
 
@@ -127,5 +142,63 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
     fireEvent.click(dialog.getByRole('button', { name: 'Inserisci il contratto' }));
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?step=8 {"declareRegistration":true}'));
     expect(leasesApi.importSigned).toHaveBeenCalledWith('lease-1', { stipulaDate: '2026-08-20', signedContract: pdf });
+  });
+
+  it('does not ask, and does not import, while the documents are still loading', async () => {
+    const pdf = new File(['%PDF-1.4 firmato'], 'contratto-firmato.pdf', { type: 'application/pdf' });
+    let resolveList: (documents: LeaseDocument[]) => void = () => {};
+    vi.mocked(leaseDocumentsApi.list).mockReturnValue(new Promise((resolve) => { resolveList = resolve; }));
+    vi.mocked(leaseDocumentsApi.readReceipt).mockResolvedValue({
+      documentId: 'doc-r',
+      kind: 'Registration',
+      state: 'Read',
+      receipt: registeredReceipt(),
+    });
+    vi.mocked(leasesApi.importSigned).mockResolvedValue({} as never);
+    renderStep();
+
+    fireEvent.change(screen.getByTestId('lease-import-file'), { target: { files: [pdf] } });
+    fireEvent.change(screen.getByTestId('lease-import-date'), { target: { value: '2026-08-20' } });
+    expect(screen.getByTestId('lease-import-documents-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-registered-no')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('lease-import-submit'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    resolveList([receiptDocument]);
+    expect(await screen.findByTestId('lease-import-registered-read')).toHaveTextContent('TKM26T012345000AB');
+    expect(screen.queryByTestId('lease-registered-no')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('lease-import-submit'));
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText(/letti dalla ricevuta/)).toBeInTheDocument();
+    fireEvent.click(dialog.getByRole('button', { name: 'Inserisci il contratto' }));
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?step=8 {"declareRegistration":true}'));
+  });
+
+  it('a No chosen before a registered receipt is read does not skip the declaration', async () => {
+    const pdf = new File(['%PDF-1.4 firmato'], 'contratto-firmato.pdf', { type: 'application/pdf' });
+    vi.mocked(leaseDocumentsApi.readReceipt).mockResolvedValue({
+      documentId: 'doc-r',
+      kind: 'Registration',
+      state: 'Read',
+      receipt: registeredReceipt(),
+    });
+    vi.mocked(leasesApi.importSigned).mockResolvedValue({} as never);
+    const { client } = renderStep();
+
+    fireEvent.change(screen.getByTestId('lease-import-file'), { target: { files: [pdf] } });
+    fireEvent.change(screen.getByTestId('lease-import-date'), { target: { value: '2026-08-20' } });
+    fireEvent.click(await screen.findByTestId('lease-registered-no'));
+
+    vi.mocked(leaseDocumentsApi.list).mockResolvedValue([receiptDocument]);
+    await client.invalidateQueries({ queryKey: leaseDocumentsKey('lease-1') });
+
+    expect(await screen.findByTestId('lease-import-registered-read')).toHaveTextContent('TKM26T012345000AB');
+    expect(screen.queryByTestId('lease-registered-no')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('lease-import-submit'));
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText(/letti dalla ricevuta/)).toBeInTheDocument();
+    fireEvent.click(dialog.getByRole('button', { name: 'Inserisci il contratto' }));
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?step=8 {"declareRegistration":true}'));
   });
 });
