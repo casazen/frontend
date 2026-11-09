@@ -7265,6 +7265,7 @@
         "fixed": "Il file e il giorno della firma non si possono correggere dopo l'inserimento.",
         "no": "Comparirà la scadenza di registrazione e, finché non dichiari la registrazione, CasaZen manda un promemoria per e-mail ai locatori che hanno indicato un indirizzo.",
         "signed": "Il contratto passa a «Firmato»: da quel momento non si può più modificare né eliminare.",
+        "fromReceipt": "Subito dopo ti mostriamo numero e data letti dalla ricevuta, da confermare.",
         "submit": "Inserisci il contratto",
         "title": "Inserire il contratto firmato?",
         "yes": "Subito dopo ti chiediamo il numero e la ricevuta della registrazione."
@@ -7282,6 +7283,11 @@
           "description": "Resta «Firmato» e vedrai la scadenza di registrazione.",
           "title": "No, o non lo so"
         },
+        "fromReceipt": "La ricevuta «{{name}}» dice che il contratto è già registrato. {{detail}}",
+        "fromReceiptCode": "Numero di registrazione {{code}}.",
+        "fromReceiptDate": "Registrazione del {{date}}.",
+        "fromReceiptDetail": "Registrazione del {{date}}, numero {{code}}.",
+        "fromReceiptUnread": "Hai già caricato la ricevuta «{{name}}». Il contratto risulta registrato: se non riusciamo a leggerne numero e data, te li chiediamo dopo l'inserimento.",
         "required": "Rispondi a questa domanda.",
         "yes": {
           "description": "Dopo l'inserimento ti chiediamo il numero e la ricevuta.",
