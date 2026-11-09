@@ -28,8 +28,8 @@ test.describe('CondoLedger landlord on the test app', () => {
     await expect(page.getByRole('heading', { name: 'Contratti' })).toBeVisible({ timeout: 60_000 });
 
     await openCondominiumStep(page);
-    await exerciseDocuments(page);
-    await exercisePayments(page);
+    const leaseId = await exerciseDocuments(page);
+    await exercisePayments(page, leaseId);
   });
 });
 
@@ -64,7 +64,7 @@ async function openCondominiumStep(page: Page): Promise<void> {
   }
 }
 
-async function exerciseDocuments(page: Page): Promise<void> {
+async function exerciseDocuments(page: Page): Promise<string> {
   const leaseId = page.url().match(/\/leases\/([^/]+)\/edit/)?.[1];
   if (!leaseId) throw new Error('The wizard did not open a lease, so Documenti cannot be checked.');
   await page.goto(`/app/long-rent/leases/${leaseId}?tab=documenti`);
@@ -74,6 +74,8 @@ async function exerciseDocuments(page: Page): Promise<void> {
   const upload = page.getByRole('link', { name: 'Carica i documenti in CasaZen' });
   if (await upload.isVisible()) {
     await upload.click();
+    // The documents tab opens /documents/upload?leaseId=…, so the contract id is no longer in the path.
+    await expect(page).toHaveURL(/\/documents\/upload\?/);
     await expect(page.getByTestId('lease-documents-panel')).toBeVisible();
     await page.locator('input[type="file"]').first().setInputFiles({
       name: 'prova-condoledger.pdf',
@@ -81,22 +83,21 @@ async function exerciseDocuments(page: Page): Promise<void> {
       buffer: Buffer.from('%PDF-1.1\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF'),
     });
     await page.getByRole('button', { name: 'Carica documento' }).click();
-    await expect(page.getByText('prova-condoledger.pdf')).toBeVisible({ timeout: 60_000 });
   }
 
-  const remove = page.getByRole('button', { name: /Elimina / }).first();
-  await expect(remove, 'An uploaded document must have a delete control next to Scarica').toBeVisible();
+  // The chosen file is named on the picker before the upload finishes. Wait for its delete control.
+  const remove = page.getByRole('button', { name: 'Elimina prova-condoledger.pdf' });
+  await expect(remove, 'An uploaded document must have a delete control next to Scarica').toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole('button', { name: 'Scarica' }).first()).toBeVisible();
   await remove.click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Eliminare questo documento?');
   await dialog.getByRole('button', { name: 'Elimina' }).click();
-  await expect(page.getByText('prova-condoledger.pdf')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Elimina prova-condoledger.pdf' })).toHaveCount(0);
+  return leaseId;
 }
 
-async function exercisePayments(page: Page): Promise<void> {
-  const leaseId = page.url().match(/\/leases\/([^/?]+)/)?.[1];
-  if (!leaseId) throw new Error('Documenti did not stay on a lease, so Pagamenti cannot be checked.');
+async function exercisePayments(page: Page, leaseId: string): Promise<void> {
   await page.goto(`/app/long-rent/leases/${leaseId}?tab=pagamenti`);
   await expect(page.getByTestId('lease-tab-pagamenti')).toBeVisible({ timeout: 60_000 });
   await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
