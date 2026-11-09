@@ -57,22 +57,3 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
-
-  e2e-l2:
-    name: E2E L2 (demo)
-    needs: e2e-l2-shard
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Every shard passed
-        env:
-          RESULT: ${{ needs.e2e-l2-shard.result }}
-        run: |
-          if [ "$RESULT" != "success" ]; then
-            echo "::error::E2E L2 shards: $RESULT"
-            exit 1
-          fi
-
-  
-          retention-days: 7
