@@ -100,9 +100,9 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(await screen.findByTestId('rent-not-signed')).toHaveTextContent('firmato da tutte le parti');
     expect(screen.queryByTestId('rent-schedule-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('condominium-bank-link')).not.toBeInTheDocument();
-    expect(screen.getByTestId('rent-not-on-contract')).toHaveTextContent('Pagamenti');
-    expect(screen.getByRole('link', { name: 'Collega il conto su Pagamenti' })).toHaveAttribute('href', '/app/long-rent/payments');
-    expect(screen.getByRole('link', { name: 'Il conduttore paga da Canoni' })).toHaveAttribute('href', '/app/long-rent/rents');
+    expect(screen.getByTestId('rent-not-on-contract')).toHaveTextContent('conto SEPA');
+    expect(screen.getByRole('link', { name: 'Apri il conto SEPA' })).toHaveAttribute('href', '/app/long-rent/payments');
+    expect(screen.getByRole('link', { name: 'Registro di tutti i canoni' })).toHaveAttribute('href', '/app/long-rent/rents');
   });
 
   it('createSchedule_DefaultsLeftEmpty_SendsOnlyTheCadenceSoTheServerUsesTheLease', async () => {
@@ -259,7 +259,7 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: 'Collega il conto' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('condominium-bank-link')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Collega il conto su Pagamenti' })).toHaveAttribute('href', '/app/long-rent/payments');
+    expect(screen.getByRole('link', { name: 'Apri il conto SEPA' })).toHaveAttribute('href', '/app/long-rent/payments');
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 

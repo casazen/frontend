@@ -80,7 +80,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
     renderAt('/app/long-rent/tenants');
 
-    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze']);
+    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze', 'Report fiscale']);
   });
 
   it('NavSectionTabs_EnglishUi_UsesTheEnglishNames', async () => {

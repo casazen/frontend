@@ -189,7 +189,7 @@ test.describe('Phone portals: tenant and landlord', () => {
       await fits(page, 'tenant-contract-next');
       await pay.click();
 
-      await expect(page.getByRole('heading', { name: 'Canoni' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
       await expect(page.getByTestId('tenant-report-open')).toContainText('970,00');
       await expect(page.getByTestId('tenant-report-paid')).toContainText('900,00');
       await expect(page.getByTestId('tenant-advance-note')).toContainText('acconto condominiale');
@@ -326,10 +326,10 @@ test.describe('Phone portals: tenant and landlord', () => {
       await expect(page.getByTestId('lease-sheet')).toBeVisible();
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
 
-      if (viewport.name === 'phone') await page.getByTestId('lease-sheet-tabs').selectOption({ label: 'Pagamenti' });
+      if (viewport.name === 'phone') await page.getByTestId('lease-sheet-tabs').selectOption({ label: 'Canoni' });
       else await page.getByTestId('lease-tab-pagamenti').click();
 
-      await expect(page.getByTestId('rent-not-on-contract')).toContainText('non si fa su questo contratto');
+      await expect(page.getByTestId('rent-not-on-contract')).toContainText('conto SEPA');
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
       const markPaid = page.getByRole('button', { name: 'Segna come pagata' }).first();
       await markPaid.scrollIntoViewIfNeeded();
@@ -341,7 +341,7 @@ test.describe('Phone portals: tenant and landlord', () => {
       const scroll = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(scroll).toBeLessThanOrEqual(1);
 
-      await page.getByRole('link', { name: 'Collega il conto su Pagamenti' }).click();
+      await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
       await expect(page.getByTestId('long-rent-payments')).toBeVisible();
       await expect(page.getByTestId('condominium-bank-link')).toContainText('euro');
       await expect(page.getByTestId('stripe-link-account')).toBeVisible();
@@ -349,7 +349,11 @@ test.describe('Phone portals: tenant and landlord', () => {
       expect(linkBox).not.toBeNull();
       expect(linkBox!.x + linkBox!.width).toBeLessThanOrEqual(viewport.width + 1);
 
-      await page.getByTestId('long-rent-payments-canoni').click();
+      await page.getByTestId('long-rent-payments-contracts').click();
+      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+
+      // Canoni are no longer linked from Conto SEPA. The reminder still lives on the rent register.
+      await page.goto(demoUrl('/app/long-rent/rents', 'long-term'));
       await expect(page.getByTestId('rents-page')).toBeVisible();
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
       if (viewport.name === 'phone') await page.getByTestId('rent-remind-card-inst-1').click();

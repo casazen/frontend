@@ -77,7 +77,7 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 
 /**
  * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
- * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
+ * (Guida, Dati, Documenti, Canoni, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
  * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
@@ -120,7 +120,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
     { value: 'guida', label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
     { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
     { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
-    { value: 'pagamenti', label: t('leaseSheet.tabs.payments'), testId: 'lease-tab-pagamenti' },
+    { value: 'pagamenti', label: t('leaseSheet.tabs.canoni'), testId: 'lease-tab-pagamenti' },
     { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
   ];
 

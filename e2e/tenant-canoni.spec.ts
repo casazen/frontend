@@ -85,7 +85,7 @@ test('the tenant pays the due, with the advance and the settlement, from Canoni'
   await expect(page.getByText('IT60X0542811101000000123456')).toHaveCount(0);
   await page.getByRole('link', { name: 'Paga la scadenza' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Canoni' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
   await expect(page.getByTestId('tenant-due-detail')).toBeVisible();
   await expect(page.getByTestId('tenant-advance-note')).toContainText('acconto condominiale');
   await expect(page.getByTestId('tenant-settlement-note')).toContainText('credito');
@@ -102,8 +102,8 @@ test('the tenant pays the due, with the advance and the settlement, from Canoni'
 
   await page.getByRole('link', { name: 'Documenti' }).click();
   await expect(page.getByTestId('tenant-documents-empty')).toContainText('conguaglio');
-  await page.getByRole('link', { name: 'Vai ai canoni' }).click();
-  await expect(page.getByRole('heading', { name: 'Canoni' })).toBeVisible();
+  await page.getByRole('link', { name: 'Vai ai pagamenti' }).click();
+  await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
 });
 
 test('a due with nothing left to pay does not open SEPA or the manual transfer', async ({ page }) => {
@@ -146,5 +146,5 @@ test('the tenant area shows the load error and retries', async ({ page }) => {
   await expect(page.getByTestId('tenant-error')).toContainText('Non riesco a caricare', { timeout: 15_000 });
   ready = true;
   await page.getByRole('button', { name: 'Riprova' }).click();
-  await expect(page.getByRole('heading', { name: 'Canoni' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
 });

@@ -69,7 +69,7 @@ describe('Pagamenti of the long-term landlord', () => {
     await i18n.changeLanguage('it');
   });
 
-  it('requires lease.create, the same write as Canoni, and lease.read so it stays under Canoni', () => {
+  it('requires lease.create and lease.read, and lives in the settings as Conto SEPA', () => {
     expect(ROUTE_MANIFEST.find((route) => route.path === PATH)?.requiredPermissions).toEqual(['lease.read', 'lease.create']);
   });
 

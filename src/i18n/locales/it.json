@@ -7096,13 +7096,14 @@
       "explain": "Cosa significa questo stato",
       "serviceDraft": "Il contratto lo prepara il servizio guidato: qui segui la pratica e non devi compilare nulla. Questa bozza passa a «Registrato» da sola quando la pratica è conclusa e hai caricato i documenti che ricevi: li leggiamo e compiliamo noi i dati."
     },
-    "tabs": {
-      "data": "Dati",
-      "deadlines": "Scadenze",
-      "documents": "Documenti",
-      "label": "Sezioni del contratto",
-      "payments": "Pagamenti"
-    },
+      "tabs": {
+        "canoni": "Canoni",
+        "data": "Dati",
+        "deadlines": "Scadenze",
+        "documents": "Documenti",
+        "label": "Sezioni del contratto",
+        "payments": "Pagamenti"
+      },
     "toDefine": "Da definire"
   },
   "leaseWizard": {
@@ -7534,7 +7535,7 @@
     },
     "condominium": {
       "title": "Spese condominiali",
-      "intro": "Se l'immobile ha già un esercizio, proponiamo l'importo. Il pagamento non si fa qui: il conduttore paga da Canoni e tu colleghi il conto per il condominio nella scheda Pagamenti, in euro. Le spese straordinarie restano a parte e non diventano un addebito. Le rate già emesse restano come sono.",
+      "intro": "Facoltativo: puoi continuare senza compilare questo riquadro. Se l'immobile ha già un esercizio, proponiamo l'importo. Il pagamento non si fa qui: i canoni stanno nel contratto e il conto per il condominio è in Impostazioni, Conto SEPA. Le spese straordinarie restano a parte e non diventano un addebito. Le rate già emesse restano come sono.",
       "loading": "Lettura delle spese condominiali…",
       "loadError": "Non riesco a leggere le spese condominiali.",
       "retry": "Riprova",
@@ -7553,7 +7554,7 @@
       "manual": "Importo a mano (€ al mese)",
       "manualHint": "Si conguaglia al consuntivo. Le rate già emesse non cambiano.",
       "useManual": "Usa l'importo inserito",
-      "saved": "Proposta registrata: {{amount}} al mese. Il pagamento si fa dalla scheda Pagamenti.",
+      "saved": "Proposta registrata: {{amount}} al mese. I canoni si vedono nel contratto.",
       "saveError": "Non riesco a salvare le spese condominiali."
     },
     "title": "Crea contratto",
@@ -8941,9 +8942,34 @@
         "contracts": "Contratti",
         "data": "Dati",
         "documents": "Documenti",
+        "expenses": "Spese condominiali",
+        "maintenance": "Manutenzione",
         "requests": "Interventi"
       },
       "tabsLabel": "Sezioni dell’immobile"
+    },
+    "expenses": {
+      "advance": "Acconto condominiale: {{amount}}",
+      "empty": "Senza un contratto non ci sono spese condominiali. I canoni compaiono solo dentro un contratto.",
+      "intro": "Qui c'è la situazione condominiale dell'immobile. I canoni restano nel contratto.",
+      "loadError": "Non riesco a leggere le spese condominiali di questo contratto.",
+      "loading": "Lettura delle spese condominiali…",
+      "noParts": "Le rate di questo contratto non hanno ancora un acconto o un conguaglio.",
+      "noSummary": "Non c'è un resoconto dei versamenti del proprietario verso il condominio. I preventivi e i conguagli da inviare al conduttore compaiono qui quando ci sono.",
+      "openContract": "Apri il contratto",
+      "openDocuments": "Documenti del contratto",
+      "openReport": "Apri il report fiscale",
+      "openSepa": "Apri il conto SEPA",
+      "ownerPaymentsBody": "Non c'è un elenco di addebiti del proprietario verso il condominio. Il conto da cui partono è il Conto SEPA, nelle impostazioni.",
+      "ownerPaymentsTitle": "Pagamenti del proprietario",
+      "reportsBody": "Non c'è un bilancio condominiale da scaricare. Il file disponibile è il report fiscale dei canoni.",
+      "reportsTitle": "Report scaricabili",
+      "settlement": "Conguaglio: {{amount}}",
+      "situation": "Situazione",
+      "summary": "Resoconto"
+    },
+    "maintenance": {
+      "empty": "Senza un contratto non ci sono richieste di manutenzione."
     },
     "drawer": {
       "ape": "APE",
@@ -10037,7 +10063,7 @@
     "revenue": "Ricavi",
     "reports": "Report",
     "longRentFiscal": "Report fiscale",
-    "longRentPayments": "Pagamenti",
+    "longRentPayments": "Conto SEPA",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
@@ -13785,9 +13811,10 @@
     "loadError": "Impossibile caricare lo scadenziario del canone.",
     "retry": "Riprova",
     "notSignedYet": "Lo scadenziario del canone si imposta quando il contratto è firmato da tutte le parti.",
-    "notOnContract": "Il pagamento non si fa su questo contratto.",
-    "openPayments": "Collega il conto su Pagamenti",
+    "notOnContract": "Il canone di questo contratto è qui. Il conto per gli addebiti verso il condominio è nelle impostazioni.",
+    "openPayments": "Apri il conto SEPA",
     "openCanoni": "Il conduttore paga da Canoni",
+    "openRegister": "Registro di tutti i canoni",
     "onlineUnavailable": "Per chiedere al conduttore di pagare online collega un account Stripe abilitato agli incassi. Puoi comunque registrare i pagamenti ricevuti fuori da CasaZen.",
     "onlineUnavailableLink": "Impostazioni Stripe",
     "noTenantEmail": "Nessun conduttore ha un indirizzo email: il link di pagamento non può essere inviato.",
@@ -20949,13 +20976,13 @@
     "loading": "Caricamento…",
     "loadError": "Non riesco a caricare la tua area.",
     "noContracts": "Non hai un contratto attivo da consultare.",
-    "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I canoni si pagano nella sezione Canoni.",
+    "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I pagamenti stanno nella sezione Pagamenti.",
     "openContract": "Apri il contratto",
     "nav": {
       "label": "Sezioni",
       "contracts": "Contratti",
       "contract": "Contratto",
-      "dues": "Canoni",
+      "dues": "Pagamenti",
       "documents": "Documenti",
       "maintenance": "Manutenzione"
     },
@@ -20965,7 +20992,7 @@
       "nextDue": "Prossima scadenza",
       "payDue": "Paga la scadenza",
       "openDue": "Vedi la scadenza",
-      "noPayment": "Non c'è nulla da pagare. I canoni stanno nella sezione Canoni, non su questa pagina."
+      "noPayment": "Non c'è nulla da pagare. Lo stato dei pagamenti sta nella sezione Pagamenti, non su questa pagina."
     },
     "bank": {
       "title": "Estremi per il bonifico",
@@ -20978,8 +21005,8 @@
       "copied": "Causale copiata"
     },
     "dues": {
-      "title": "Canoni",
-      "lead": "Qui paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.",
+      "title": "Pagamenti",
+      "lead": "Qui vedi se hai pagato tutto e paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.",
       "listLabel": "Scadenze",
       "emptyTitle": "Nessuna scadenza",
       "emptyDescription": "Quando il gestore emette una rata, la trovi qui con l'importo da versare.",
@@ -21035,8 +21062,8 @@
     },
     "documents": {
       "emptyTitle": "Nessun documento condiviso",
-      "emptyDescription": "Preventivo, consuntivo e conguaglio compaiono qui quando il gestore li condivide. Il pagamento resta in Canoni.",
-      "goToDues": "Vai ai canoni",
+      "emptyDescription": "Preventivo, consuntivo e conguaglio compaiono qui quando il gestore li condivide. Il pagamento resta in Pagamenti.",
+      "goToDues": "Vai ai pagamenti",
       "download": "Scarica",
       "failed": "Non riesco a scaricare il documento.",
       "kind": {
@@ -21141,11 +21168,11 @@
     }
   },
   "longRentPayments": {
-    "title": "Pagamenti",
-    "description": "Collega un conto SEPA in euro di una banca italiana per le spese condominiali. Puoi farlo anche prima della firma. Se non colleghi un conto, resta il bonifico manuale.",
-    "canoniLead": "Il conduttore non paga da qui.",
-    "canoni": "Canoni",
-    "readonly": "Solo chi può creare i contratti collega il conto. Il conduttore paga da Canoni."
+    "title": "Conto SEPA",
+    "description": "Collega un conto in euro di una banca italiana. Gli addebiti delle spese condominiali partono da qui. Non è il pagamento del canone. Puoi collegarlo anche prima della firma. Se non colleghi un conto, resta il bonifico manuale.",
+    "contractsLead": "I canoni stanno nel contratto.",
+    "contracts": "Apri i contratti",
+    "readonly": "Solo chi può creare i contratti collega il conto."
   },
   "maintenanceRequest": {
     "loading": "Caricamento…",

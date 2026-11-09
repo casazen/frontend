@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
@@ -198,13 +198,26 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
     expect(tabs).toEqual([
       i18n.t('longRentProperties.detail.tabs.contracts'),
+      i18n.t('longRentProperties.detail.tabs.expenses'),
+      i18n.t('longRentProperties.detail.tabs.maintenance'),
       i18n.t('longRentProperties.detail.tabs.documents'),
       i18n.t('longRentProperties.detail.tabs.requests'),
       i18n.t('longRentProperties.detail.tabs.data'),
     ]);
     expect(screen.getByTestId('long-rent-property-leases-empty')).toBeInTheDocument();
     expect(screen.queryByTestId('long-rent-ape-status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: i18n.t('nav.rents') })).not.toBeInTheDocument();
     view.unmount();
+
+    renderAt('/app/long-rent/properties/prop-1?tab=expenses');
+    expect(screen.getByTestId('long-rent-property-expenses-empty')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: i18n.t('nav.rents') })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('condominium-bank-link')).not.toBeInTheDocument();
+    cleanup();
+
+    renderAt('/app/long-rent/properties/prop-1?tab=maintenance');
+    expect(screen.getByTestId('long-rent-property-maintenance-empty')).toBeInTheDocument();
+    cleanup();
 
     // Its supplier requests are for the property (SU-07, D2).
     renderAt('/app/long-rent/properties/prop-1?tab=requests');

@@ -21,7 +21,7 @@ import { useModeChangeMenuItems } from '../mode/use-mode-entry';
 import { formatPropertyLocation } from '../property-location';
 import { leaseOfRow } from './long-rent-property-format';
 import { LongRentPropertyNextStep } from './long-rent-property-next-step';
-import { ContractsPanel, DataPanel, DocumentsPanel } from './long-rent-property-panels';
+import { ContractsPanel, DataPanel, DocumentsPanel, ExpensesPanel, MaintenancePanel } from './long-rent-property-panels';
 import { longRentPropertyPanelOf, longRentPropertyPanels, type LongRentPropertyPanel } from './long-rent-property-sheet';
 import { longRentPropertyRows } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
@@ -50,10 +50,10 @@ function PropertyDetailSkeleton({ label }: { label: string }) {
 /**
  * `/app/long-rent/properties/:id`: one long-term property (LR-07d). The header says what it is and where, with its state and the
  * menu "⋯" of the other actions; under it the one highlighted block, read from its leases (who lives there, for how much and until
- * when, or the lease to make), and then the tabs Contratti, Documenti (the APE the lease needs), Interventi (the requests to
- * suppliers) and Dati (the place and the cadastral ones), each made of sections without a box. The tab is in the address
- * (`?tab=`). The leases are asked of who may read them; without them the page works, has no tab of contracts and says nothing about
- * who lives there.
+ * when, or the lease to make), and then the sections of the sheet. Contratti, Spese condominiali and Manutenzione are the
+ * three of the property; Documenti (the APE), Interventi and Dati stay beside them. Canoni are not here: they open from the
+ * contract. The tab is in the address (`?tab=`). The leases are asked of who may read them; without that permission the page
+ * has none of the three sections that read them.
  */
 export function LongRentPropertyDetailPage() {
   const { t } = useTranslation();
@@ -155,6 +155,8 @@ export function LongRentPropertyDetailPage() {
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
         {panel === 'contracts' && <ContractsPanel leases={leases.data} />}
+        {panel === 'expenses' && <ExpensesPanel leases={leases.data} />}
+        {panel === 'maintenance' && <MaintenancePanel leases={leases.data} />}
         {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}
         {panel === 'requests' && <LongRentServiceRequests propertyId={property.id} />}
         {panel === 'data' && <DataPanel property={property} />}

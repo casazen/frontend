@@ -9,7 +9,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted',
   );
 
-/** The tenant portal: one contract at a time, no organisation menu. */
+/** The tenant portal: one contract at a time, no organisation menu. Pagamenti is the one place the tenant checks what is paid. */
 export function TenantAreaShell() {
   const { t } = useTranslation();
   const { leaseId } = useParams();

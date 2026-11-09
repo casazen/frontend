@@ -7097,6 +7097,7 @@
       "serviceDraft": "The guided service prepares this contract: here you follow the practice and there is nothing for you to fill in. This draft becomes “Registered” on its own once the practice is concluded and you have uploaded the documents you receive: we read them and fill in the data."
     },
     "tabs": {
+      "canoni": "Rent",
       "data": "Details",
       "deadlines": "Deadlines",
       "documents": "Documents",
@@ -7534,7 +7535,7 @@
     },
     "condominium": {
       "title": "Condominium expenses",
-      "intro": "If the property already has a fiscal year, we propose the amount. Payment is not done here: the tenant pays from Rents, and you link the condominium account on the Payments tab, in euro. Extraordinary expenses stay separate and are not charged. Installments already issued stay as they are.",
+      "intro": "Optional: you can continue without filling this in. If the property already has a fiscal year, we propose the amount. Payment is not done here: rent is on the contract, and the condominium account is in Settings, SEPA account. Extraordinary expenses stay separate and are not charged. Installments already issued stay as they are.",
       "loading": "Reading the condominium expenses…",
       "loadError": "The condominium expenses could not be read.",
       "retry": "Try again",
@@ -7553,7 +7554,7 @@
       "manual": "Amount typed by hand (€ a month)",
       "manualHint": "Settled at the consuntivo. Installments already issued do not change.",
       "useManual": "Use the amount entered",
-      "saved": "Proposal kept: {{amount}} a month. Payment is on the Payments tab.",
+      "saved": "Proposal kept: {{amount}} a month. Rent is on the contract.",
       "saveError": "The condominium expenses could not be saved."
     },
     "title": "Create lease",
@@ -8941,9 +8942,34 @@
         "contracts": "Contracts",
         "data": "Details",
         "documents": "Documents",
+        "expenses": "Condominium expenses",
+        "maintenance": "Maintenance requests",
         "requests": "Maintenance"
       },
       "tabsLabel": "Sections of the property"
+    },
+    "expenses": {
+      "advance": "Condominium advance: {{amount}}",
+      "empty": "Without a contract there are no condominium expenses. Rent appears only inside a contract.",
+      "intro": "This is the condominium situation of the property. Rent stays on the contract.",
+      "loadError": "The condominium expenses of this contract could not be read.",
+      "loading": "Reading the condominium expenses…",
+      "noParts": "The installments of this contract do not have an advance or a settlement yet.",
+      "noSummary": "There is no payment report of what the owner paid the condominium. Budgets and settlements to send to the tenant appear here when there are any.",
+      "openContract": "Open the contract",
+      "openDocuments": "Contract documents",
+      "openReport": "Open the tax report",
+      "openSepa": "Open the SEPA account",
+      "ownerPaymentsBody": "There is no list of charges from the owner to the condominium. The account they leave from is the SEPA account, in settings.",
+      "ownerPaymentsTitle": "Owner payments",
+      "reportsBody": "There is no condominium balance sheet to download. The file that exists is the tax report of the rent.",
+      "reportsTitle": "Reports to download",
+      "settlement": "Settlement: {{amount}}",
+      "situation": "Situation",
+      "summary": "Summary"
+    },
+    "maintenance": {
+      "empty": "Without a contract there are no maintenance requests."
     },
     "drawer": {
       "ape": "APE",
@@ -10037,7 +10063,7 @@
     "revenue": "Revenue",
     "reports": "Reports",
     "longRentFiscal": "Tax report",
-    "longRentPayments": "Payments",
+    "longRentPayments": "SEPA account",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -13785,9 +13811,10 @@
     "loadError": "The rent schedule could not be loaded.",
     "retry": "Retry",
     "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
-    "notOnContract": "Payment is not done on this contract.",
-    "openPayments": "Link the account on Payments",
+    "notOnContract": "The rent of this contract is here. The account for condominium debits is in settings.",
+    "openPayments": "Open the SEPA account",
     "openCanoni": "The tenant pays from Rents",
+    "openRegister": "Register of every rent",
     "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
     "onlineUnavailableLink": "Stripe settings",
     "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
@@ -20949,13 +20976,13 @@
     "loading": "Loading…",
     "loadError": "The tenant area could not be loaded.",
     "noContracts": "You have no active contract to open.",
-    "noContractsHint": "The contract appears here when the manager adds you. Rent is paid in the Rent section.",
+    "noContractsHint": "The contract appears here when the manager adds you. Payments are in the Payments section.",
     "openContract": "Open the contract",
     "nav": {
       "label": "Sections",
       "contracts": "Contracts",
       "contract": "Contract",
-      "dues": "Rent",
+      "dues": "Payments",
       "documents": "Documents",
       "maintenance": "Maintenance"
     },
@@ -20965,7 +20992,7 @@
       "nextDue": "Next due",
       "payDue": "Pay the due",
       "openDue": "See the due",
-      "noPayment": "There is nothing to pay. Rent is in the Rent section, not on this page."
+      "noPayment": "There is nothing to pay. Payment status is in Payments, not on this page."
     },
     "bank": {
       "title": "Bank transfer details",
@@ -20978,8 +21005,8 @@
       "copied": "Reference copied"
     },
     "dues": {
-      "title": "Rent",
-      "lead": "You pay the due here. Rent, condominium advance and settlement are already added together.",
+      "title": "Payments",
+      "lead": "Here you see whether you have paid everything, and you pay the due. Rent, condominium advance and settlement are already added together.",
       "listLabel": "Dues",
       "emptyTitle": "No dues",
       "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
@@ -21035,8 +21062,8 @@
     },
     "documents": {
       "emptyTitle": "No shared documents",
-      "emptyDescription": "Budget, statement and settlement appear here when the manager shares them. Payment stays in Rent.",
-      "goToDues": "Go to rent",
+      "emptyDescription": "Budget, statement and settlement appear here when the manager shares them. Payment stays in Payments.",
+      "goToDues": "Go to payments",
       "download": "Download",
       "failed": "The document could not be downloaded.",
       "kind": {
@@ -21141,11 +21168,11 @@
     }
   },
   "longRentPayments": {
-    "title": "Payments",
-    "description": "Link an Italian euro SEPA account for the condominium expenses. You can do it before the contract is signed. If you do not link an account, a manual transfer stays available.",
-    "canoniLead": "The tenant does not pay from here.",
-    "canoni": "Rents",
-    "readonly": "Only someone who can create contracts links the account. The tenant pays from Rents."
+    "title": "SEPA account",
+    "description": "Link an Italian euro account. Condominium debits leave from here. This is not the rent payment. You can link it before the contract is signed. If you do not link an account, a manual transfer stays available.",
+    "contractsLead": "Rent is on the contract.",
+    "contracts": "Open the contracts",
+    "readonly": "Only someone who can create contracts links the account."
   },
   "maintenanceRequest": {
     "loading": "Loading…",
