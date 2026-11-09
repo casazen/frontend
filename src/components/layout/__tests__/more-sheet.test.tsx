@@ -139,14 +139,14 @@ describe('MoreSheet (UI-04b)', () => {
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {
-      // A role that reads the leases and not the properties: the four places of the bar hold what it can open, so behind "Altro"
-      // there is only "Altro" (for the others, Interventi, which asks for the properties, is a main entry beyond the bar).
+      // A role that reads the leases and not the properties: the bar holds what it can open, so behind "Altro"
+      // there is only "Altro". Interventi asks for the properties. Conto SEPA stays, because linking the account asks for the leases.
       arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read');
       renderSheet('long-rent', '/app/long-rent/leases');
 
       open();
 
-      expect(tiles(sheet())).toEqual(['Organizzazione']);
+      expect(tiles(sheet())).toEqual(['Organizzazione', 'Conto SEPA']);
       // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();
