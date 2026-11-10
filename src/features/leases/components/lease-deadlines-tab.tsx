@@ -25,10 +25,12 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
   // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
   const providerFilingAvailable = checklist?.providerFilingAvailable === true;
 
-  const returnedFromCheckout = searchParams.get('registrationCheckout') === 'success' && providerFilingAvailable;
-  const closeDelega = (open: boolean) => {
+  const checkoutSucceeded = searchParams.get('registrationCheckout') === 'success';
+  const dialogOpen = delegaOpen || (checkoutSucceeded && providerFilingAvailable);
+
+  const handleDelegaOpenChange = (open: boolean) => {
     setDelegaOpen(open);
-    if (!open && searchParams.has('registrationCheckout')) {
+    if (!open && checkoutSucceeded) {
       const next = new URLSearchParams(searchParams);
       next.delete('registrationCheckout');
       setSearchParams(next, { replace: true });
@@ -46,7 +48,7 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
     } catch {
       // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
     }
-    closeDelega(false);
+    handleDelegaOpenChange(false);
   };
 
   const startCheckout = async () => {
@@ -80,8 +82,8 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
       />
       {providerFilingAvailable && !lease.isConcordatoFacileSource && checklist && (
         <DelegaCaptureDialog
-          open={delegaOpen || returnedFromCheckout}
-          onOpenChange={closeDelega}
+          open={dialogOpen}
+          onOpenChange={handleDelegaOpenChange}
           tosVersion={checklist.tosVersion}
           attestationText={checklist.attestationText}
           isSubmitting={triggerRegistration.isPending}
