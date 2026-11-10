@@ -73,7 +73,7 @@ async function mockContractApi(page: Page): Promise<ContractApi> {
   );
   await page.route('**/api/long-rent/rules', (route) => json(route, RULES));
   await page.route('**/api/long-rent/landlord-defaults', (route) => json(route, {}));
-  await page.route('**/api/orgs/me/bank-links**', (route) => json(route, { linked: false }));
+  await page.route('**/api/long-rent/condominiums/manual-payments**', (route) => json(route, []));
   await page.route('**/api/properties/*/documents**', (route) => json(route, []));
 
   await page.route(/\/api\/leases(\/.*)?(\?.*)?$/, async (route) => {
@@ -332,6 +332,7 @@ test.describe('Contract creation, every type', () => {
 
     await page.getByTestId('lease-wizard-next').click();
     await expect(page).toHaveURL(/step=4/);
+    await expect(page.locator('#lw-startDate')).toBeVisible();
     await page.getByTestId('lease-wizard-back').click();
     await expect(page).toHaveURL(/step=3/);
     await expect(expenses.getByTestId('lease-condominium-saved')).toContainText('95,50');
