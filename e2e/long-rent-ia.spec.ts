@@ -6,7 +6,7 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 /**
  * Affitti lunghi: Contratti, Spese condominiali and Manutenzione on the property;
- * Canoni only inside a contract; Conto SEPA only in settings; Pagamenti in the tenant portal.
+ * Canoni only inside a contract; manual condominium payments in settings; Pagamenti in the tenant portal.
  */
 const PROPERTY_ID = 'prop-lr-ia';
 const LEASE_ID = 'lease-ia-1';
@@ -37,7 +37,7 @@ test.describe('Long-rent information architecture', () => {
     await resetE2eStorage(page, 'it');
   });
 
-  test('property sections, canoni on the contract, and SEPA in settings', async ({ page }) => {
+  test('property sections, canoni on the contract, and manual condominium payments in settings', async ({ page }) => {
     await mockPropertiesApi(page, [
       buildCreatedProperty({
         id: PROPERTY_ID,
@@ -110,9 +110,9 @@ test.describe('Long-rent information architecture', () => {
     await page.route(`**/api/leases/${LEASE_ID}/maintenance-requests`, async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
     });
-    await page.route('**/api/orgs/me/bank-links**', async (route) => {
+    await page.route('**/api/long-rent/condominiums/manual-payments**', async (route) => {
       if (route.request().method() === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ linked: false }) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
         return;
       }
       await route.fallback();
@@ -151,10 +151,10 @@ test.describe('Long-rent information architecture', () => {
     await expect(page.getByTestId('rent-schedule-panel')).toBeVisible();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
 
-    await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
+    await page.getByRole('link', { name: 'Apri le spese condominiali' }).click();
     await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Conto SEPA' })).toBeVisible();
-    await expect(page.getByTestId('condominium-bank-link')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Spese condominiali' })).toBeVisible();
+    await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+    await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
   });
 });

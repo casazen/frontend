@@ -357,12 +357,11 @@ test.describe('Contract creation, every type', () => {
 
     await page.getByTestId('lease-tab-pagamenti').click();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
-    await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
+    await page.getByRole('link', { name: 'Apri le spese condominiali' }).click();
     await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
-    const bank = page.getByTestId('condominium-bank-link');
-    await expect(bank).toContainText('euro');
-    await expect(bank.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
-    await expect(bank.getByTestId('stripe-manual-stays')).toBeVisible();
+    await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
+    await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Collega il conto' })).toHaveCount(0);
     await page.getByTestId('long-rent-payments-contracts').click();
     await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
 

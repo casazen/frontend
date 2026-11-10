@@ -427,7 +427,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     renderPage();
 
     const panel = await registrationPanel();
-    await waitFor(() => expect(panel.getByRole('button', { name: "Riprova l'invio al provider" })).toBeInTheDocument());
+    await waitFor(() => expect(panel.getByRole('button', { name: /Paga e registra con OpenAPI/ })).toBeInTheDocument());
     expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('Registrazione non riuscita');
     const alert = panel.getByRole('alert');
     expect(alert).toHaveTextContent('Il contratto NON è registrato');
@@ -486,9 +486,8 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     mockApi(() => signedLease(), checklist({ providerFilingAvailable: true }));
     post.mockRejectedValue(httpError(502, { code: 'rli_provider_failed' }));
 
-    renderPage();
-    const panel = await registrationPanel();
-    fireEvent.click(await panel.findByRole('button', { name: 'Invia tramite provider (con delega)' }));
+    renderPage('?tab=scadenze&registrationCheckout=success');
+    await registrationPanel();
     fireEvent.click(await screen.findByRole('checkbox'));
     const leaseLoadsBefore = get.mock.calls.filter(([url]) => url === '/leases/lease-1').length;
     fireEvent.click(screen.getByRole('button', { name: 'Autorizza e invia' }));
