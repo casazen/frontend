@@ -19,6 +19,7 @@ export function useTenantContract(leaseId: string) {
     queryKey: [TENANT_AREA_KEY, leaseId],
     queryFn: () => tenantAreaApi.getContract(leaseId),
     enabled: !!leaseId,
+    refetchInterval: (query) => query.state.data?.dues.some(due => due.status === 'Processing') ? 3_000 : false,
   });
 }
 

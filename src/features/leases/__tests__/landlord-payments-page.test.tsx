@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -65,12 +65,13 @@ describe('Pagamenti of the long-term landlord', () => {
   beforeEach(async () => {
     permissions.clear();
     get.mockReset();
-    get.mockResolvedValue({ data: { linked: false } });
+    vi.mocked(axios.post).mockReset();
+    get.mockResolvedValue({ data: [] });
     await i18n.changeLanguage('it');
   });
 
-  it('requires lease.create and lease.read, and lives in the settings as Conto SEPA', () => {
-    expect(ROUTE_MANIFEST.find((route) => route.path === PATH)?.requiredPermissions).toEqual(['lease.read', 'lease.create']);
+  it('requires property.read to list manual condominium dues', () => {
+    expect(ROUTE_MANIFEST.find((route) => route.path === PATH)?.requiredPermissions).toEqual(['property.read']);
   });
 
   it('does not let a viewer open the page or click Collega il conto', () => {
@@ -84,15 +85,16 @@ describe('Pagamenti of the long-term landlord', () => {
     expect(get).not.toHaveBeenCalled();
   });
 
-  it('shows the Italian euro link before signature to who can create a lease', async () => {
-    permissions.add('lease.read');
-    permissions.add('lease.create');
-
+  it('records only a confirmed home banking payment and never starts Stripe', async () => {
+    permissions.add('lease.read'); permissions.add('lease.create'); permissions.add('property.write'); permissions.add('property.read');
+    get.mockResolvedValue({ data: [{ id: 'due-1', name: 'Via Roma', label: 'Novembre', dueDate: '2026-11-30', amount: 150, paid: false }] });
+    vi.mocked(axios.post).mockResolvedValue({ data: null });
     renderPage();
-
-    expect(await screen.findByTestId('condominium-bank-link')).toHaveTextContent('euro');
-    expect(screen.getByRole('button', { name: 'Collega il conto' })).toBeInTheDocument();
-    expect(screen.getByTestId('stripe-manual-stays')).toBeInTheDocument();
-    expect(screen.queryByTestId('reserved-page')).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Segna come pagato' }));
+    expect(axios.post).not.toHaveBeenCalled();
+    expect(screen.getByText(/già pagato 150,00/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma pagamento effettuato' }));
+    await waitFor(() => expect(axios.post).toHaveBeenCalledWith('/long-rent/condominiums/manual-payments/due-1/mark-paid', {}, undefined));
+    expect(screen.queryByRole('button', { name: 'Collega il conto' })).not.toBeInTheDocument();
   });
 });
