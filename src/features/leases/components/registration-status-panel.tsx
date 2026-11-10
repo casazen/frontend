@@ -1,6 +1,6 @@
 import { saveBlobAs } from '@/lib/file-download';
 import { useState } from 'react';
-import { Clock, Download, ExternalLink, FileCheck2, Loader2, Send } from 'lucide-react';
+import { Clock, CreditCard, Download, ExternalLink, FileCheck2, Loader2, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PlainSection } from '@/components/shared/calm';
@@ -32,6 +32,8 @@ interface RegistrationStatusPanelProps {
   providerFilingAvailable: boolean;
   onSubmitToProvider?: () => void;
   isSubmittingToProvider?: boolean;
+  onStartCheckout?: () => void;
+  isStartingCheckout?: boolean;
   /**
    * The contract was prepared by the guided service (`isConcordatoFacileSource`, CF-END): the service registers it, so the panel gives no
    * steps to register it oneself and no way to send it to a provider (that would be a second registration); it says who registers and
@@ -55,6 +57,8 @@ export function RegistrationStatusPanel({
   providerFilingAvailable,
   onSubmitToProvider,
   isSubmittingToProvider,
+  onStartCheckout,
+  isStartingCheckout,
   viaService = false,
 }: RegistrationStatusPanelProps) {
   const { t } = useTranslation();
@@ -131,17 +135,17 @@ export function RegistrationStatusPanel({
                 {viaService ? t('leaseRound.service.declare') : t('leases.rli.declareManual')}
               </Button>
               {canUseProvider && (
-                <Button variant="outline" onClick={onSubmitToProvider} disabled={isSubmittingToProvider}>
-                  {isSubmittingToProvider ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('leases.rli.submitting')}
-                    </>
+                <Button variant="outline" onClick={onStartCheckout ?? onSubmitToProvider} disabled={isSubmittingToProvider || isStartingCheckout}>
+                  {isStartingCheckout ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reindirizzamento al pagamento…</>
+                  ) : onStartCheckout ? (
+                    <><CreditCard className="mr-2 h-4 w-4" />Paga e registra con OpenAPI (€32,90 + IVA)</>
                   ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      {t(state === 'failed' ? 'leases.rli.retryProvider' : 'leases.rli.submit')}
-                    </>
+                    isSubmittingToProvider ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('leases.rli.submitting')}</>
+                    ) : (
+                      <><Send className="mr-2 h-4 w-4" />{t(state === 'failed' ? 'leases.rli.retryProvider' : 'leases.rli.submit')}</>
+                    )
                   )}
                 </Button>
               )}

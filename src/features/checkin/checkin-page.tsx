@@ -15,6 +15,7 @@ import {
   followerTypeOf,
   guestFormPathOf,
   initialStayGuests,
+  officialListIssues,
   requiredStatisticalFields,
   requiresDocument,
   stayGuestDefaults,
@@ -24,20 +25,25 @@ import {
   type StayGuestFormValues,
 } from './schemas/checkin.schema';
 import { StayGuestDocumentFields, StayGuestPersonalFields } from './components/stay-guest-fields';
+import { DocumentReadStep } from './components/document-read-step';
 import { LanguageSwitcher } from './components/language-switcher';
-import type { CodeTableSource } from './components/code-table';
+import { isListAvailable, type CodeTableSource } from './components/code-table';
 import { offeredGuestLocales, resolveGuestLocale, useGuestPageLocale, type GuestLocale } from './lib/guest-locale';
 import { guestProblemMessage, translateGuestServerCode } from './lib/guest-errors';
-import { getHttpStatus } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getServerFieldErrorsByPath } from '@/lib/server-validation-errors';
 import { CheckCircle2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
-import type { StayGuestType } from '@/types/public-checkin.types';
+import type { AlloggiatiCodeList, CheckInDocumentReadResult, StayGuestType } from '@/types/public-checkin.types';
 import { ConsentStep } from './ConsentStep';
 
 type FormPath = FieldPath<PublicCheckInFormValues>;
 
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
+
+function scanReasonKey(reason?: string | null): string {
+  return reason === 'unavailable' || reason === 'budget' ? 'checkin.scanUnavailable' : 'checkin.scanUnread';
+}
 
 /** Fields of each guest checked before leaving the first step (personal data). */
 const PERSONAL_FIELDS = [
@@ -133,6 +139,9 @@ export function CheckInPage() {
   const [languageNotLoaded, setLanguageNotLoaded] = useState(false);
   const [chosenLocale, setChosenLocale] = useState<GuestLocale | null>(null);
   const [focusRequest, setFocusRequest] = useState(0);
+  const [readingDocument, setReadingDocument] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [documentsRead, setDocumentsRead] = useState(0);
   const formElement = useRef<HTMLFormElement>(null);
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
@@ -209,9 +218,10 @@ export function CheckInPage() {
 
   const stepPaths = (currentStep: number): FormPath[] => {
     const current = getValues('guests');
-    if (currentStep === 1) return personalPaths(current, statisticalFields);
-    if (currentStep === 2) return documentPaths(current);
-    return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
+    if (currentStep === 2) return personalPaths(current, statisticalFields);
+    if (currentStep === 3) return documentPaths(current);
+    if (currentStep === 4) return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
+    return [];
   };
 
   // A failed attempt asks for the focus on the first field in error and for the announcement of how many there are.
@@ -219,8 +229,88 @@ export function CheckInPage() {
   const problemCount = countFieldErrors(form.formState.errors);
 
   const goNext = async () => {
-    if (await trigger(stepPaths(step))) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+    if (step === 1) {
+      setStep(2);
+      return;
+    }
+    const extra = officialListIssues(getValues('guests'), context?.availableCodeTables ?? []).filter((issue) =>
+      step === 2 ? issue.field !== 'documentIssuePlaceName' : issue.field === 'documentIssuePlaceName',
+    );
+    const valid = await trigger(stepPaths(step));
+    extra.forEach((issue) => setError(`guests.${issue.index}.${issue.field}`, { type: 'official', message: issue.message }));
+    if (valid && extra.length === 0) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
     else reportProblems();
+  };
+
+  const bindOfficial = async (
+    index: number,
+    list: AlloggiatiCodeList,
+    query: string | null | undefined,
+    nameField: 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentIssuePlaceName',
+    codeField: 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentIssuePlaceCode',
+  ) => {
+    if (!query || !isListAvailable(codeSource, list)) return;
+    const entries = await codeSource.search(list, query).catch(() => []);
+    const norm = (value: string) => value.trim().toLocaleLowerCase('it');
+    const hit = entries.find((entry) => norm(entry.description) === norm(query) || (entry.citizenshipLabel != null && norm(entry.citizenshipLabel) === norm(query)));
+    if (!hit) return;
+    setValue(`guests.${index}.${nameField}`, hit.description, { shouldDirty: true });
+    setValue(`guests.${index}.${codeField}`, hit.code, { shouldDirty: true });
+    if (hit.province && nameField === 'birthComuneName') setValue(`guests.${index}.birthProvince`, hit.province, { shouldDirty: true });
+  };
+
+  const readDocument = async (file: File) => {
+    setReadingDocument(true);
+    setScanMessage(null);
+    try {
+      const result = await publicCheckinApi.readDocument(token, file);
+      const guest: CheckInDocumentReadResult['guest'] = result.guest;
+      if (!result.read || !guest) {
+        setScanMessage(t(scanReasonKey(result.reason)));
+        return;
+      }
+      let index = getValues('guests').findIndex((row) => !row.firstName.trim() && !row.lastName.trim());
+      if (index < 0 && getValues('guests').length < MAX_STAY_GUESTS) {
+        append(stayGuestDefaults(followerTypeOf(getValues('guests.0.type'))));
+        index = getValues('guests').length - 1;
+      }
+      if (index < 0) {
+        setScanMessage(t('checkin.scanUnread'));
+        return;
+      }
+      const write = (field: keyof StayGuestFormValues, value: string | null | undefined) => {
+        if (value) setValue(`guests.${index}.${field}`, value, { shouldDirty: true });
+      };
+      write('firstName', guest.firstName);
+      write('lastName', guest.lastName);
+      if (guest.gender === 'Male' || guest.gender === 'Female') write('gender', guest.gender);
+      write('dateOfBirth', guest.dateOfBirth);
+      if (guest.bornInItaly === true) {
+        setValue(`guests.${index}.bornInItaly`, 'yes', { shouldDirty: true });
+        write('birthComuneName', guest.birthPlace);
+        write('birthProvince', guest.birthProvince);
+      } else if (guest.bornInItaly === false) {
+        setValue(`guests.${index}.bornInItaly`, 'no', { shouldDirty: true });
+        write('birthCountryName', guest.birthPlace);
+      }
+      write('citizenshipName', guest.citizenship);
+      if (guest.documentKind === 'Passport' || guest.documentKind === 'IdentityCard' || guest.documentKind === 'DriversLicense') {
+        write('documentType', guest.documentKind);
+      }
+      write('documentNumber', guest.documentNumber);
+      write('documentIssuePlaceName', guest.issuePlace);
+      if (guest.bornInItaly === true) await bindOfficial(index, 'comuni', guest.birthPlace, 'birthComuneName', 'birthComuneCode');
+      if (guest.bornInItaly === false) await bindOfficial(index, 'stati', guest.birthPlace, 'birthCountryName', 'birthCountryCode');
+      await bindOfficial(index, 'stati', guest.citizenship, 'citizenshipName', 'citizenshipCode');
+      await bindOfficial(index, 'luoghi', guest.issuePlace, 'documentIssuePlaceName', 'documentIssuePlaceCode');
+      setDocumentsRead((count) => count + 1);
+      const who = `${guest.firstName ?? ''} ${guest.lastName ?? ''}`.trim();
+      setScanMessage(t('checkin.scanReadOk', { name: who || t('checkin.guestHeading', { index: index + 1 }) }));
+    } catch (error) {
+      setScanMessage(getProblemMessage(error, t) ?? t('checkin.scanUnread'));
+    } finally {
+      setReadingDocument(false);
+    }
   };
 
   const onSubmit = handleSubmit(
@@ -247,7 +337,7 @@ export function CheckInPage() {
           .filter((entry): entry is { path: FormPath; message: string } => entry.path !== null);
         invalid.forEach(({ path, message }) => setError(path, { type: 'server', message }));
 
-        const firstInvalidStep = [1, 2, 3].find((candidate) => {
+        const firstInvalidStep = [2, 3, 4].find((candidate) => {
           const paths = stepPaths(candidate);
           return invalid.some(({ path }) => paths.includes(path));
         });
@@ -341,27 +431,38 @@ export function CheckInPage() {
           )}
         </div>
         <div className="flex justify-center gap-2" data-testid="checkin-progress">
-          {[1, 2, 3].map((n) => (
+          {[1, 2, 3, 4].map((n) => (
             <div key={n} className={`h-2 w-16 rounded-full ${n <= step ? 'bg-primary' : 'bg-muted'}`} />
           ))}
         </div>
         <Card>
           <CardHeader>
             <CardTitle>
-              {step === 1 && t('checkin.stepGuests')}
-              {step === 2 && t('checkin.stepDocument')}
-              {step === 3 && t('checkin.stepConsents')}
+              {step === 1 && t('checkin.stepScan')}
+              {step === 2 && t('checkin.stepGuests')}
+              {step === 3 && t('checkin.stepDocument')}
+              {step === 4 && t('checkin.stepConsents')}
             </CardTitle>
             <CardDescription>{t('checkin.stepOf', { step, total: TOTAL_STEPS })}</CardDescription>
           </CardHeader>
           <CardContent>
             <FormProvider {...form}>
-              <form ref={formElement} onSubmit={onSubmit} className="space-y-4" data-testid="guest-data-form">
+              <form ref={formElement} onSubmit={onSubmit} autoComplete="off" className="space-y-4" data-testid="guest-data-form">
                 {/* A new element each time, so a second failed attempt is announced again. */}
                 <p key={focusRequest} role="status" className="sr-only" data-testid="checkin-announcement">
                   {focusRequest > 0 && problemCount > 0 ? t('checkin.errors.summary', { count: problemCount }) : null}
                 </p>
                 {step === 1 && (
+                  <DocumentReadStep
+                    reading={readingDocument}
+                    message={scanMessage}
+                    readCount={documentsRead}
+                    onFile={(file) => { void readDocument(file); }}
+                    onManual={() => setStep(2)}
+                    onContinue={() => setStep(2)}
+                  />
+                )}
+                {step === 2 && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
                     {fields.length !== declaredGuests && (
@@ -388,7 +489,7 @@ export function CheckInPage() {
                     )}
                   </div>
                 )}
-                {step === 2 && (
+                {step === 3 && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
                     {leaders.map(({ field, index }) => (
@@ -396,7 +497,7 @@ export function CheckInPage() {
                     ))}
                   </div>
                 )}
-                {step === 3 && (
+                {step === 4 && (
                   <ConsentStep
                     privacyNoticeVersion={context.privacyNoticeVersion}
                     marketingConsentVersion={context.marketingConsentVersion}
@@ -407,6 +508,7 @@ export function CheckInPage() {
                     {submitError}
                   </p>
                 )}
+                {step > 1 && (
                 <div className="flex justify-between pt-4">
                   <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
@@ -423,6 +525,7 @@ export function CheckInPage() {
                     </Button>
                   )}
                 </div>
+                )}
               </form>
             </FormProvider>
           </CardContent>

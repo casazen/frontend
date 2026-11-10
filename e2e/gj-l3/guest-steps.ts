@@ -76,27 +76,32 @@ export async function guestConfirmsEmail(page: Page, link: string): Promise<void
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
-/** Guest check-in portal (3 steps): two guests, the head of the family's identity document, the privacy notice and the submit. */
+/** Guest check-in portal: the document photo, then two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
+  await page.getByTestId('checkin-enter-manually').click();
   const guests = [
     { first: 'Giulia', gender: 'Femmina', born: '1990-05-12' },
     { first: 'Marco', gender: 'Maschio', born: '1988-03-02' },
   ];
+  // Guest 0's ROMA and ITALIA answers stay fresh for five minutes, so guest 1 does not ask again.
+  const seenCodes = new Map<string, unknown[]>();
   for (const [i, g] of guests.entries()) {
     await page.locator(`#guest-${i}-firstName`).fill(g.first);
     await page.locator(`#guest-${i}-lastName`).fill('Bianchi');
     await page.locator(`#guest-${i}-gender`).selectOption({ label: g.gender });
     await page.locator(`#guest-${i}-dateOfBirth`).fill(g.born);
     await page.locator(`#guest-${i}-bornInItaly`).selectOption({ label: 'In Italia' });
-    await page.getByLabel('Comune di nascita').nth(i).fill('Roma');
-    await page.getByLabel('Provincia (sigla)').nth(i).fill('RM');
-    await page.locator(`#guest-${i}-citizenshipName`).fill('Italiana');
+    const birth = await chooseOfficialCode(page, `guest-${i}-birthComuneName`, 'ROMA', /^ROMA\b/i, undefined, seenCodes);
+    // An empty comuni list leaves the typed Roma and does not fill the province. Born in Italy needs one.
+    if (birth === 'empty') await page.locator(`#guest-${i}-birthProvince`).fill('RM');
+    await chooseOfficialCode(page, `guest-${i}-citizenship`, 'ITALIA', /Ital/i, undefined, seenCodes);
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
-  await pickHeadOfFamilyDocumentType(page);
+  await pickHeadOfFamilyDocumentType(page, seenCodes);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
-  await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
+  // Place of issue searches comuni and states. The golden-journey seed has Stati, not Comuni, so the official row is Italia.
+  await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ITALIA', /^ITALIA\b/i, undefined, seenCodes);
   await page.getByRole('button', { name: 'Avanti' }).click();
   // Step 3 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
   // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
@@ -110,27 +115,70 @@ const OFFICIAL_IDENTITY_CARD_QUERY = 'CARTA DI IDENTITA';
 const FALLBACK_SELECT_LABEL = "Carta d'identita'";
 
 /**
- * Head-of-family document type: native select of the local enum when the official table is not imported,
- * otherwise the CodeTableInput (input + datalist) of CO-12. After the Alloggiati seed the GJ stack has
- * DOCUMENTI, so selectOption on #guest-0-documentType fails ("Element is not a select").
+ * Head-of-family document type: native select when the official table is not imported, otherwise the
+ * suggestion list. After the Alloggiati seed the GJ stack has DOCUMENTI, so the row has to be chosen.
  */
-async function pickHeadOfFamilyDocumentType(page: Page): Promise<void> {
-  const field = page.locator('#guest-0-documentType');
-  await expect(field).toBeVisible();
-  const tag = await field.evaluate((el) => el.tagName.toLowerCase());
-  if (tag === 'select') {
-    await field.selectOption({ label: FALLBACK_SELECT_LABEL });
-    return;
-  }
+async function pickHeadOfFamilyDocumentType(page: Page, seenCodes: Map<string, unknown[]>): Promise<void> {
+  await chooseOfficialCode(page, 'guest-0-documentType', OFFICIAL_IDENTITY_CARD_QUERY, /CARTA DI IDENTITA/i, FALLBACK_SELECT_LABEL, seenCodes);
+}
 
-  await field.fill(OFFICIAL_IDENTITY_CARD_QUERY);
-  const options = page.getByTestId('guest-0-documentType-options').locator('option');
-  await expect(options.first()).toBeAttached({ timeout: 15_000 });
-  const official = await options.evaluateAll((els) => {
-    const labels = els.map((el) => el.getAttribute('value') ?? '');
-    return labels.find((label) => /CARTA DI IDENTITA/i.test(label)) ?? labels[0] ?? '';
-  });
-  expect(official, 'official identity-card row from Alloggiati DOCUMENTI').toBeTruthy();
-  await field.fill(official);
-  await expect(page.getByTestId('guest-0-documentType-code')).toBeVisible();
+/** Same field on the next guest shares one codes answer. The guest index is not part of the key. */
+function seenCodeKey(id: string, query: string): string {
+  return `${id.replace(/guest-\d+-/, '')}:${query.toUpperCase()}`;
+}
+
+/**
+ * Picks an official Alloggiati row when the list is imported. A plain select uses the fallback label.
+ * `empty` means the typed name stayed because the table answered with nothing.
+ */
+async function chooseOfficialCode(
+  page: Page,
+  id: string,
+  query: string,
+  option: RegExp,
+  selectLabel?: string,
+  seenCodes?: Map<string, unknown[]>,
+): Promise<'empty' | 'chosen' | 'select'> {
+  const field = page.locator(`#${id}`);
+  await expect(field).toBeVisible();
+  if ((await field.evaluate((el) => el.tagName.toLowerCase())) === 'select') {
+    await field.selectOption({ label: selectLabel ?? query });
+    return 'select';
+  }
+  const cacheKey = seenCodeKey(id, query);
+  const alreadySeen = seenCodes?.has(cacheKey) === true;
+  // Official descriptions are uppercase (ROMA, ITALIA, CARTA DI IDENTITA). The list opens while the
+  // field is focused and closes on blur, so the search is waited for and the field is focused again.
+  // A query already answered for this check-in is not requested again (staleTime five minutes),
+  // including when that answer was an empty list.
+  let rows: unknown[];
+  if (alreadySeen) {
+    await field.focus();
+    await field.fill(query);
+    rows = seenCodes?.get(cacheKey) ?? [];
+  } else {
+    const codes = page.waitForResponse(
+      (res) => {
+        if (res.request().method() !== 'GET' || !res.url().includes('/codes')) return false;
+        const url = decodeURIComponent(res.url()).replace(/\+/g, ' ');
+        return url.toUpperCase().includes(query.toUpperCase());
+      },
+      { timeout: 15_000 },
+    );
+    await field.focus();
+    await field.fill(query);
+    const response = await codes;
+    const body = await response.json().catch(() => []);
+    rows = Array.isArray(body) ? body : [];
+    seenCodes?.set(cacheKey, rows);
+  }
+  // A table that was not imported answers []. The typed name stays. A table that was imported
+  // (Stati, Documenti on the golden-journey stack) has a row, and that row is chosen.
+  if (rows.length === 0) return 'empty';
+  await field.focus();
+  const choice = page.locator(`#${id}-listbox`).getByRole('option', { name: option });
+  await expect(choice.first()).toBeVisible({ timeout: 15_000 });
+  await choice.first().click();
+  await expect(page.getByTestId(`${id}-code`)).toBeVisible();
+  return 'chosen';
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { FieldValues } from 'react-hook-form';
 import { isValidFiscalCode } from '@/lib/fiscal-code';
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { isStayDate } from '@/lib/stay-dates';
 import type { DataStep } from './wizard-model';
 
@@ -13,19 +14,22 @@ import type { DataStep } from './wizard-model';
 const empty = (value: string) => value.trim() === '';
 
 const EMAIL = z.string().email();
-const AMOUNT = /^\d+(\.\d{1,2})?$/;
+const PHONE = /^\+[1-9]\d{7,14}$/;
 
 const party = z.object({
   fiscalCode: z.string().refine((value) => empty(value) || isValidFiscalCode(value), 'leaseWizard.validation.fiscalCode'),
   citizenship: z.string().refine((value) => empty(value) || /^[A-Za-z]{2}$/.test(value.trim()), 'leaseWizard.validation.citizenship'),
   contactEmail: z.string().refine((value) => empty(value) || EMAIL.safeParse(value.trim()).success, 'leaseWizard.validation.email'),
+  contactPhone: z.string().refine((value) => empty(value) || PHONE.test(value.replace(/[\s().-]/g, '')), 'leaseWizard.validation.phone'),
 });
 
-/** An amount written with at most two decimals (the field is a number input: the decimal point is a dot). */
+/** An amount in Italian (`95,50`, `1.234,50`) or with a dot (`95.50`). */
 const amount = (positive: boolean, message: string) =>
   z.string().refine((value) => {
     const text = value.trim();
-    return text === '' || (AMOUNT.test(text) && (!positive || Number(text) > 0));
+    if (text === '') return true;
+    const parsed = parseEuroAmount(text);
+    return parsed !== null && (!positive || parsed > 0);
   }, message);
 
 const day = (message: string) => z.string().refine((value) => empty(value) || isStayDate(value), message);

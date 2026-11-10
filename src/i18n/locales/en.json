@@ -1323,6 +1323,8 @@
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
+      "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
+      "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
@@ -2816,6 +2818,12 @@
     "saved": "Document saved and attached to the lease.",
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
+    "delete": "Delete",
+    "deleteNamed": "Delete {{name}}",
+    "deleteTitle": "Delete this document?",
+    "deleteDescription": "“{{name}}” is removed from the contract. The other documents can still be downloaded.",
+    "deleteConfirm": "Delete",
+    "deleteError": "The document could not be deleted.",
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
@@ -2919,22 +2927,32 @@
         "required": "Say whether the guest was born in Italy or abroad"
       },
       "birthComune": {
-        "required": "Municipality of birth is required"
+        "required": "Municipality of birth is required",
+        "choose": "Choose the municipality of birth from the list"
       },
       "birthProvince": {
-        "invalid": "Enter the two-letter code (e.g. RM)"
+        "invalid": "This is not an Italian province code (e.g. RM)"
       },
       "birthCountry": {
-        "required": "Country of birth is required"
+        "required": "Country of birth is required",
+        "choose": "Choose the country of birth from the list"
       },
       "citizenship": {
-        "required": "Citizenship is required"
+        "required": "Citizenship is required",
+        "choose": "Choose the citizenship from the list (for example Italiano)"
       },
       "label": {
         "maxLength": "At most 100 characters"
       },
       "documentIssuePlace": {
-        "required": "Place of issue is required"
+        "required": "Place of issue is required",
+        "choose": "Choose the place of issue from the list"
+      },
+      "residenceComune": {
+        "choose": "Choose the municipality of residence from the list"
+      },
+      "residenceCountry": {
+        "choose": "Choose the country of residence from the list"
       },
       "type": {
         "memberWithoutHead": "A family or group member must follow the head of family or group",
@@ -3035,6 +3053,16 @@
       "AlloggiatiInviato": "Alloggiati submitted",
       "Scaduto": "Expired"
     },
+    "stepScan": "Document",
+    "scanIntro": "Start by uploading a photo of each guest's identity document. The details are read automatically: you check and correct them on the next step.",
+    "scanHint": "JPG, PNG or WebP, up to 5 MB. The photo is not kept: it is only used to fill in the fields.",
+    "scanButton": "Take or upload a photo",
+    "scanReading": "Reading the document…",
+    "scanAnother": "Upload another guest's document",
+    "scanManual": "Enter the details by hand",
+    "scanReadOk": "Details read for {{name}}. Check them before sending.",
+    "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
+    "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
     "guestsIntro": "Enter every guest staying, minors included: the law (art. 109 TULPS) requires the data of each of them. Only the single guest, the head of family or the head of group needs an identity document.",
     "guestCountMismatch_one": "The booking states {{count}} guest: check that you entered everyone staying.",
@@ -7335,6 +7363,7 @@
       "serviceDraft": "The guided service prepares this contract: here you follow the practice and there is nothing for you to fill in. This draft becomes “Registered” on its own once the practice is concluded and you have uploaded the documents you receive: we read them and fill in the data."
     },
     "tabs": {
+      "canoni": "Rent",
       "data": "Details",
       "deadlines": "Deadlines",
       "documents": "Documents",
@@ -7486,6 +7515,7 @@
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
+      "contactPhone": "the phone number",
       "firstName": "the first name",
       "fiscalCode": "the fiscal code",
       "lastName": "the last name",
@@ -7501,6 +7531,7 @@
         "fixed": "The file and the day of the signature cannot be corrected after it is added.",
         "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
         "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "fromReceipt": "Right after, we show the number and the date read from the receipt, for you to confirm.",
         "submit": "Add the contract",
         "title": "Add the signed contract?",
         "yes": "Right after, we ask you for the registration number and the receipt."
@@ -7518,6 +7549,11 @@
           "description": "It stays “Signed” and you will see the registration deadline.",
           "title": "No, or I don't know"
         },
+        "fromReceipt": "The receipt “{{name}}” says the contract is already registered. {{detail}}",
+        "fromReceiptCode": "Registration number {{code}}.",
+        "fromReceiptDate": "Registered on {{date}}.",
+        "fromReceiptDetail": "Registered on {{date}}, number {{code}}.",
+        "fromReceiptUnread": "You already uploaded the receipt “{{name}}”. The contract counts as registered: if we cannot read its number and date, we ask for them after it is added.",
         "required": "Answer this question.",
         "yes": {
           "description": "After adding it we ask for the number and the receipt.",
@@ -7591,6 +7627,8 @@
       "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
       "contactEmail": "Email",
       "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "contactPhone": "Phone number",
+      "contactPhoneHintTenant": "Include the international prefix: used to contact the tenant and prepare WhatsApp reminders.",
       "countriesEu": "European Union",
       "countriesOther": "Other countries",
       "firstName": "First name",
@@ -7767,6 +7805,30 @@
       },
       "rent": "Monthly rent (€)"
     },
+    "condominium": {
+      "title": "Condominium expenses",
+      "intro": "Optional: you can continue without filling this in. If the property already has a fiscal year, we propose the amount. Payment is not done here: rent is on the contract, and the condominium account is in Settings, SEPA account. Extraordinary expenses stay separate and are not charged. Installments already issued stay as they are.",
+      "loading": "Reading the condominium expenses…",
+      "loadError": "The condominium expenses could not be read.",
+      "retry": "Try again",
+      "proposedYear": "Fiscal year {{year}}: {{amount}} a month.",
+      "proposed": "{{amount}} a month.",
+      "lastInstallment": "The last installment is {{amount}}: the cents of the year are kept.",
+      "settled": "Settled at the consuntivo.",
+      "notPayment": "This is a proposal, not a payment.",
+      "accept": "Use this amount",
+      "empty": "Nothing is loaded yet. Enter the total of last year's consuntivo and of the new year's preventivo, or a monthly amount: it is settled at the consuntivo.",
+      "limits": "An administrator PDF is not recorded from this step. We do not read a scan without text, line items, suppliers, millesimi, payments, the prior-year balance or the installment plan. The prior-year balance is not set here.",
+      "consuntivo": "Previous year's consuntivo (€)",
+      "preventivo": "New year's preventivo (€)",
+      "calculate": "Calculate the amount",
+      "or": "Or",
+      "manual": "Amount typed by hand (€ a month)",
+      "manualHint": "Settled at the consuntivo. Installments already issued do not change.",
+      "useManual": "Use the amount entered",
+      "saved": "Proposal kept: {{amount}} a month. Rent is on the contract.",
+      "saveError": "The condominium expenses could not be saved."
+    },
     "title": "Create lease",
     "transitory": {
       "documentation": {
@@ -7827,6 +7889,7 @@
       "date": "Not a valid date",
       "deposit": "The deposit must be zero or more, with at most two decimals",
       "email": "Not a valid email address",
+      "phone": "Enter the number with its international prefix, for example +39 333 123 4567",
       "endAfterStart": "The end must be after the start",
       "fiscalCode": "Not a valid fiscal code or VAT number",
       "property": "Choose the property",
@@ -8580,6 +8643,7 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
+    "contactPhoneMasked": "Phone",
     "noParties": "No parties recorded.",
     "contractTypeLabel": {
       "Libero": "Free rent (4+4)",
@@ -9150,9 +9214,34 @@
         "contracts": "Contracts",
         "data": "Details",
         "documents": "Documents",
+        "expenses": "Condominium expenses",
+        "maintenance": "Maintenance requests",
         "requests": "Maintenance"
       },
       "tabsLabel": "Sections of the property"
+    },
+    "expenses": {
+      "advance": "Condominium advance: {{amount}}",
+      "empty": "Without a contract there are no condominium expenses. Rent appears only inside a contract.",
+      "intro": "This is the condominium situation of the property. Rent stays on the contract.",
+      "loadError": "The condominium expenses of this contract could not be read.",
+      "loading": "Reading the condominium expenses…",
+      "noParts": "The installments of this contract do not have an advance or a settlement yet.",
+      "noSummary": "There is no payment report of what the owner paid the condominium. Budgets and settlements to send to the tenant appear here when there are any.",
+      "openContract": "Open the contract",
+      "openDocuments": "Contract documents",
+      "openReport": "Open the tax report",
+      "openSepa": "Open the SEPA account",
+      "ownerPaymentsBody": "There is no list of charges from the owner to the condominium. The account they leave from is the SEPA account, in settings.",
+      "ownerPaymentsTitle": "Owner payments",
+      "reportsBody": "There is no condominium balance sheet to download. The file that exists is the tax report of the rent.",
+      "reportsTitle": "Reports to download",
+      "settlement": "Settlement: {{amount}}",
+      "situation": "Situation",
+      "summary": "Summary"
+    },
+    "maintenance": {
+      "empty": "Without a contract there are no maintenance requests."
     },
     "drawer": {
       "ape": "APE",
@@ -9420,6 +9509,10 @@
       "notePlaceholder": "E.g. Please pay by bank transfer by Friday",
       "previewBodyDue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid.",
       "previewBodyOverdue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid.",
+      "descriptionTotal": "{{tenant}} · {{property}}: total of {{amount}}, due {{date}}.",
+      "previewBodyComposed": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewBodyComposedOverdue": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewTransfer": "Transfer to {{holder}}, IBAN {{iban}}, amount {{amount}}, due {{date}}, reference {{reference}}.",
       "previewLabel": "Preview of the email",
       "previewSubject": "Subject: Promemoria canone di locazione - {{property}}, scadenza {{date}} (the email is written in Italian)",
       "previewWithLink": "The email has the link to pay online.",
@@ -9428,6 +9521,9 @@
       "sent_other": "Reminder sent to {{count}} tenants",
       "submit": "Send reminder",
       "title": "Send a reminder",
+      "whatsappSend": "Send via WhatsApp",
+      "whatsappSent_one": "WhatsApp reminder sent to {{count}} tenant",
+      "whatsappSent_other": "WhatsApp reminder sent to {{count}} tenants",
       "whoGetsIt": "The email goes to the tenants of the lease who have an email address; after it is sent we tell you how many."
     },
     "retry": "Retry",
@@ -10239,6 +10335,7 @@
     "revenue": "Revenue",
     "reports": "Reports",
     "longRentFiscal": "Tax report",
+    "longRentPayments": "SEPA account",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -13986,8 +14083,12 @@
     "loadError": "The rent schedule could not be loaded.",
     "retry": "Retry",
     "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
+    "notOnContract": "The rent of this contract is here. The account for condominium debits is in settings.",
+    "openPayments": "Open the SEPA account",
+    "openCanoni": "The tenant pays from Rents",
+    "openRegister": "Register of every rent",
     "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
-    "onlineUnavailableLink": "Go to Payments",
+    "onlineUnavailableLink": "Stripe settings",
     "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
     "summary": "{{cadence}} installment of {{amount}}, due on day {{day}}.",
     "edit": "Edit",
@@ -14017,6 +14118,34 @@
       "amount": "Amount",
       "status": "Status",
       "actions": "Actions"
+    },
+    "composition": {
+      "label": "Breakdown",
+      "rent": "Rent",
+      "advance": "Condominium advance",
+      "settlement": "Settlement",
+      "other": "Other charges",
+      "total": "Total",
+      "paid": "Paid",
+      "residual": "Residual"
+    },
+    "notices": {
+      "title": "Budgets and settlements to send",
+      "hint": "A send starts only when you confirm it. CasaZen does not send a budget or a settlement on its own.",
+      "send": "Prepare the send",
+      "dialogTitle": "Send “{{title}}”",
+      "dialogDescription": "Choose the channel. Nothing is sent until you press Send.",
+      "channels": "Channels",
+      "confirm": "Send",
+      "sent": "Send recorded",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement"
+      },
+      "channel": {
+        "Email": "Email",
+        "WhatsApp": "WhatsApp"
+      }
     },
     "status": {
       "Scheduled": "To collect",
@@ -21114,6 +21243,163 @@
     },
     "title": "Owner Wire Transfers"
   },
+  "tenantArea": {
+    "title": "Tenant area",
+    "loading": "Loading…",
+    "loadError": "The tenant area could not be loaded.",
+    "noContracts": "You have no active contract to open.",
+    "noContractsHint": "The contract appears here when the manager adds you. Payments are in the Payments section.",
+    "openContract": "Open the contract",
+    "nav": {
+      "label": "Sections",
+      "contracts": "Contracts",
+      "contract": "Contract",
+      "dues": "Payments",
+      "documents": "Documents",
+      "maintenance": "Maintenance"
+    },
+    "contract": {
+      "term": "From {{from}} to {{to}}",
+      "openEnd": "end date not set",
+      "nextDue": "Next due",
+      "payDue": "Pay the due",
+      "openDue": "See the due",
+      "noPayment": "There is nothing to pay. Payment status is in Payments, not on this page."
+    },
+    "bank": {
+      "title": "Bank transfer details",
+      "holder": "Account holder",
+      "iban": "IBAN",
+      "amount": "Amount",
+      "due": "Due date",
+      "reference": "Reference",
+      "copy": "Copy the reference",
+      "copied": "Reference copied"
+    },
+    "dues": {
+      "title": "Payments",
+      "lead": "Here you see whether you have paid everything, and you pay the due. Rent, condominium advance and settlement are already added together.",
+      "listLabel": "Dues",
+      "emptyTitle": "No dues",
+      "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
+      "nextTitle": "Next to pay",
+      "pay": "Pay this due",
+      "residual": "To pay",
+      "overdue": "Overdue",
+      "missing": "This due is not on the contract.",
+      "backToList": "Back to the dues",
+      "advanceNote": "The condominium advance is this month's share, already inside this due.",
+      "settlementDebt": "The settlement is an amount you owe and is added to this due.",
+      "settlementCredit": "The settlement is a credit and reduces what is left to pay.",
+      "inBalance": "This due is settled. There is nothing to pay.",
+      "processingHint": "The transfer is being checked. The due is not marked paid yet.",
+      "failedHint": "The last debit did not go through. You can try again with the linked account, or use a manual transfer.",
+      "sepaTitle": "SEPA debit in euros",
+      "sepaHint": "Link an account at an Italian bank. The debit is in euros. The due stays unpaid until the bank confirms.",
+      "sepaEuroOnly": "SEPA debit is in euros only. For this due, use a manual transfer.",
+      "reportTitle": "Payment report",
+      "reportOpen": "Still to pay",
+      "reportPaid": "Paid",
+      "reportCount_one": "{{count}} due",
+      "reportCount_other": "{{count}} dues",
+      "manualTitle": "Manual transfer",
+      "manualHint": "If you do not link an account, use these details and then tell the manager.",
+      "noBank": "The transfer details are not available yet.",
+      "period": "From {{from}} to {{to}}",
+      "status": {
+        "Scheduled": "To pay",
+        "Processing": "Being checked",
+        "Paid": "Paid",
+        "Failed": "Debit failed",
+        "Cancelled": "Cancelled"
+      }
+    },
+    "declaration": {
+      "amount": "Transfer amount",
+      "date": "Transfer date",
+      "reference": "Reference (optional)",
+      "note": "Note (optional)",
+      "receipt": "Receipt (optional)",
+      "submit": "I made the transfer",
+      "sent": "Declaration sent. The installment is not marked paid.",
+      "failed": "The declaration could not be saved.",
+      "notPaid": "The declaration tells the manager. It does not mark the installment paid.",
+      "rejectedHint": "The declaration was rejected. You can send another one.",
+      "status": {
+        "Submitted": "Submitted",
+        "Verified": "Verified",
+        "Rejected": "Rejected",
+        "Superseded": "Superseded"
+      }
+    },
+    "documents": {
+      "emptyTitle": "No shared documents",
+      "emptyDescription": "Budget, statement and settlement appear here when the manager shares them. Payment stays in Payments.",
+      "goToDues": "Go to payments",
+      "download": "Download",
+      "failed": "The document could not be downloaded.",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement",
+        "Statement": "Statement",
+        "Report": "Report",
+        "Other": "Document"
+      }
+    },
+    "maintenance": {
+      "new": "New request",
+      "empty": "No requests.",
+      "category": "Category",
+      "urgency": "Urgency",
+      "description": "Description",
+      "attachments": "Attachments",
+      "submit": "Send to the manager",
+      "sent": "Request sent to the manager.",
+      "failed": "The request could not be sent.",
+      "sentToManager": "The request goes to the manager of the contract. You do not assign a supplier.",
+      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way.",
+      "submittedAt": "Sent on {{date}}",
+      "urgencyLevel": {
+        "Normal": "Normal",
+        "High": "High",
+        "Emergency": "Emergency"
+      },
+      "status": {
+        "Sent": "Sent to the manager",
+        "InReview": "Under review",
+        "NeedsInfo": "More information needed",
+        "Accepted": "Taken on by the manager",
+        "InProgress": "In progress",
+        "Closed": "Closed",
+        "Rejected": "Not accepted"
+      }
+    }
+  },
+  "bankTransfer": {
+    "title": "Transfer from a linked account",
+    "open": "Pay with Stripe",
+    "hint": "Stripe opens its own screen and offers Italian banks. The due is not marked paid until Stripe confirms the transfer.",
+    "link": "Link the account",
+    "linkAnother": "Link another account",
+    "loadingAccounts": "Reading linked accounts…",
+    "accountsLabel": "Account",
+    "amount": "Amount",
+    "reference": "Reference",
+    "noReference": "This due has no reference yet. You can still start the transfer.",
+    "start": "Start the transfer",
+    "pending": "Transfer started. The due is not marked paid until Stripe confirms it.",
+    "failed": "The account could not be linked, or the transfer could not be started.",
+    "stripeClosed": "Linking was cancelled.",
+    "loadError": "The linked accounts could not be read.",
+    "noStripe": "Stripe is not available right now.",
+    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available.",
+    "manualStaysLandlord": "If you do not link an account, you can record the payment you received.",
+    "condo": {
+      "title": "Pay the condominium automatically",
+      "hint": "Link the account only to pay the condominium expenses automatically. Stripe offers Italian banks and the debit is in euros. This is not the rent payment.",
+      "linked": "Condominium expenses are paid automatically from this account."
+    }
+  },
   "wizard": {
     "back": "Back",
     "cancel": "Cancel",
@@ -21151,6 +21437,96 @@
       "edit": "Edit",
       "editField": "Edit {{field}}",
       "empty": "Not provided"
+    }
+  },
+  "longRentPayments": {
+    "title": "SEPA account",
+    "description": "Link an Italian euro account. Condominium debits leave from here. This is not the rent payment. You can link it before the contract is signed. If you do not link an account, a manual transfer stays available.",
+    "contractsLead": "Rent is on the contract.",
+    "contracts": "Open the contracts",
+    "readonly": "Only someone who can create contracts links the account."
+  },
+  "maintenanceRequest": {
+    "loading": "Loading…",
+    "loadError": "The requests could not be loaded",
+    "sendError": "The request could not be sent",
+    "decisionError": "The decision could not be saved",
+    "paymentError": "The payment could not be saved",
+    "stepOf": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Continue",
+    "what": {
+      "title": "What is broken?",
+      "hint": "Name the broken thing, in a few words.",
+      "label": "What is broken",
+      "placeholder": "Bathroom tap"
+    },
+    "urgency": {
+      "title": "How urgent is it?",
+      "hint": "Choose one level.",
+      "bassa": "Low",
+      "normale": "Normal",
+      "urgente": "Urgent",
+      "detail": {
+        "bassa": "It can wait",
+        "normale": "In the next few days",
+        "urgente": "It is needed soon"
+      }
+    },
+    "note": {
+      "title": "Add a note",
+      "hint": "What happened, and since when.",
+      "label": "Note",
+      "placeholder": "It has been dripping since last night"
+    },
+    "photo": {
+      "title": "A photo, if you have one",
+      "hint": "Optional. It helps the person who decides.",
+      "label": "Photo",
+      "none": "No photo",
+      "chosen": "Photo: {{name}}"
+    },
+    "confirm": {
+      "title": "Check and send",
+      "hint": "After you send it, the request stays waiting. You cannot approve it or pay it.",
+      "what": "Problem",
+      "urgency": "Urgency",
+      "note": "Note",
+      "photo": "Photo",
+      "submit": "Send the request"
+    },
+    "waiting": {
+      "kicker": "Request sent",
+      "title": "Waiting",
+      "body": "The request is with the landlord or the agency. You cannot approve it and you cannot pay it.",
+      "list": "See the requests"
+    },
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "paid": "Paid"
+    },
+    "list": {
+      "title": "Your requests",
+      "new": "New request"
+    },
+    "landlord": {
+      "title": "Maintenance requests",
+      "hint": "Approve or reject. Payment appears only after approval.",
+      "empty": "No request from the tenant.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reasonLabel": "Why are you rejecting it?",
+      "reasonPlaceholder": "Write the reason",
+      "confirmReject": "Confirm the rejection",
+      "cancelReject": "Cancel",
+      "pay": "Pay",
+      "pendingNote": "Waiting for your decision. Payment is not available yet.",
+      "approvedNote": "Approved. You can pay now.",
+      "rejectedNote": "Rejected. {{reason}}",
+      "paidNote": "Paid.",
+      "photo": "Attached photo: {{name}}"
     }
   }
 }

@@ -39,22 +39,32 @@
         "required": "Indique si el huésped nació en Italia o en el extranjero"
       },
       "birthComune": {
-        "required": "El municipio de nacimiento es obligatorio"
+        "required": "El municipio de nacimiento es obligatorio",
+        "choose": "Elija el municipio de nacimiento de la lista"
       },
       "birthProvince": {
-        "invalid": "Introduzca el código de dos letras (p. ej. RM)"
+        "invalid": "No es un código de provincia italiana (p. ej. RM)"
       },
       "birthCountry": {
-        "required": "El país de nacimiento es obligatorio"
+        "required": "El país de nacimiento es obligatorio",
+        "choose": "Elija el país de nacimiento de la lista"
       },
       "citizenship": {
-        "required": "La nacionalidad es obligatoria"
+        "required": "La nacionalidad es obligatoria",
+        "choose": "Elija la nacionalidad de la lista (por ejemplo Italiano)"
       },
       "label": {
         "maxLength": "Máximo 100 caracteres"
       },
       "documentIssuePlace": {
-        "required": "El lugar de expedición es obligatorio"
+        "required": "El lugar de expedición es obligatorio",
+        "choose": "Elija el lugar de expedición de la lista"
+      },
+      "residenceComune": {
+        "choose": "Elija el municipio de residencia de la lista"
+      },
+      "residenceCountry": {
+        "choose": "Elija el país de residencia de la lista"
       },
       "type": {
         "memberWithoutHead": "Un familiar o miembro del grupo debe ir después del cabeza de familia o del jefe de grupo",
@@ -120,6 +130,16 @@
       "body": "[MARCADOR DE POSICIÓN – el aviso completo lo facilitará el responsable del tratamiento: identidad del responsable, finalidades, bases jurídicas, destinatarios (policía), plazo de conservación y derechos de los interesados.]",
       "version": "Versión del aviso: {{version}}"
     },
+    "stepScan": "Documento",
+    "scanIntro": "Empiece con la foto del documento de cada huésped. Los datos se leen solos: en el paso siguiente los revisa y los corrige.",
+    "scanHint": "JPG, PNG o WebP, máximo 5 MB. La foto no se guarda: solo sirve para rellenar los campos.",
+    "scanButton": "Hacer o cargar la foto",
+    "scanReading": "Leyendo el documento…",
+    "scanAnother": "Cargar el documento de otro huésped",
+    "scanManual": "Introducir los datos a mano",
+    "scanReadOk": "Datos leídos de {{name}}. Revíselos antes de enviar.",
+    "scanUnread": "No he podido leer el documento. Cargue otra foto o introduzca los datos a mano.",
+    "scanUnavailable": "La lectura automática no está disponible ahora. Introduzca los datos a mano.",
     "stepGuests": "Huéspedes",
     "guestsIntro": "Introduzca a todos los huéspedes que se alojan, menores incluidos: la ley (art. 109 TULPS) exige los datos de cada uno. Solo el huésped individual, el cabeza de familia o el jefe de grupo necesita un documento de identidad.",
     "guestCountMismatch_one": "La reserva indica {{count}} huésped: compruebe que ha introducido a todas las personas que se alojan.",

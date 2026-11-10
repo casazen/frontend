@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { toast } from 'sonner';
@@ -109,5 +109,35 @@ describe('RentReminderDialog (LR-04b)', () => {
     expect(post).toHaveBeenCalledTimes(1);
     expect(post).toHaveBeenCalledWith('/long-rent/rents/installment-b/reminder', { note: 'Grazie' }, undefined);
     expect(toast.success).toHaveBeenCalledWith('Sollecito inviato a 2 conduttori');
+  });
+
+  it('phoneOnly_SendsTheWhatsAppTemplateWithoutAnEmailAddress', async () => {
+    post.mockResolvedValue({
+      data: {
+        installmentId: 'installment-c',
+        sentAt: '2026-10-24T09:00:00Z',
+        recipientCount: 1,
+        nextReminderAllowedAt: '2026-10-25T09:00:00Z',
+      },
+    });
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+    renderDialog({ ...row('installment-c'), canRemind: false, hasTenantPhone: true, canWhatsAppRemind: true });
+
+    // A phone with no e-mail can send WhatsApp only: the e-mail action the server already refused stays hidden.
+    expect(screen.queryByRole('button', { name: 'Invia sollecito' })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Messaggio per il conduttore'), { target: { value: ' Grazie ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Invia via WhatsApp' }));
+
+    await waitFor(() => expect(post).toHaveBeenCalledWith(
+      '/long-rent/rents/installment-c/reminder/whatsapp',
+      { note: 'Grazie' },
+      undefined,
+    ));
+    expect(toast.success).toHaveBeenCalledWith('Promemoria WhatsApp inviato a 1 conduttore');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['long-rent-rents'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['lease-rent', 'lease-1'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['leases'] });
+    invalidate.mockRestore();
   });
 });

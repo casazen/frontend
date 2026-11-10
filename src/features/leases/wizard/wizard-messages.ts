@@ -6,7 +6,7 @@ import type { LeaseNeed } from '@/types';
 type Translate = TFunction;
 type Exists = Pick<I18nInstance, 'exists' | 'language'>;
 
-const FIELDS = new Set(['firstName', 'lastName', 'fiscalCode', 'citizenship', 'residence', 'contactEmail']);
+const FIELDS = new Set(['firstName', 'lastName', 'fiscalCode', 'citizenship', 'residence', 'contactEmail', 'contactPhone']);
 
 function amountOf(value: unknown): string | undefined {
   return typeof value === 'number' ? formatCurrency(value) : undefined;

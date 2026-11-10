@@ -1323,6 +1323,8 @@
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
+      "bankLinkDebitUnavailable": "Questo bonifico Stripe è disponibile per una scadenza in euro, da un conto italiano o europeo.",
+      "bankLinkNotLinked": "Collega prima il conto. Poi potrai avviare il bonifico.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
@@ -2816,6 +2818,12 @@
     "saved": "Documento salvato e allegato al contratto.",
     "download": "Scarica",
     "downloadError": "Impossibile scaricare il documento.",
+    "delete": "Elimina",
+    "deleteNamed": "Elimina {{name}}",
+    "deleteTitle": "Eliminare questo documento?",
+    "deleteDescription": "«{{name}}» viene tolto dal contratto. Gli altri documenti si possono ancora scaricare.",
+    "deleteConfirm": "Elimina",
+    "deleteError": "Impossibile eliminare il documento.",
     "import": {
       "action": "Completa e importa il contratto",
       "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
@@ -2919,22 +2927,32 @@
         "required": "Indica se l'ospite è nato in Italia o all'estero"
       },
       "birthComune": {
-        "required": "Comune di nascita obbligatorio"
+        "required": "Comune di nascita obbligatorio",
+        "choose": "Scegli il comune di nascita dall'elenco"
       },
       "birthProvince": {
-        "invalid": "Inserisci la sigla di due lettere (es. RM)"
+        "invalid": "Sigla di provincia non valida (es. RM)"
       },
       "birthCountry": {
-        "required": "Stato di nascita obbligatorio"
+        "required": "Stato di nascita obbligatorio",
+        "choose": "Scegli lo stato di nascita dall'elenco"
       },
       "citizenship": {
-        "required": "Cittadinanza obbligatoria"
+        "required": "Cittadinanza obbligatoria",
+        "choose": "Scegli la cittadinanza dall'elenco (per esempio Italiano)"
       },
       "label": {
         "maxLength": "Al massimo 100 caratteri"
       },
       "documentIssuePlace": {
-        "required": "Luogo di rilascio obbligatorio"
+        "required": "Luogo di rilascio obbligatorio",
+        "choose": "Scegli il luogo di rilascio dall'elenco"
+      },
+      "residenceComune": {
+        "choose": "Scegli il comune di residenza dall'elenco"
+      },
+      "residenceCountry": {
+        "choose": "Scegli lo stato di residenza dall'elenco"
       },
       "type": {
         "memberWithoutHead": "Un familiare o un membro del gruppo deve seguire il capofamiglia o il capogruppo",
@@ -3035,6 +3053,16 @@
       "AlloggiatiInviato": "Alloggiati inviato",
       "Scaduto": "Scaduto"
     },
+    "stepScan": "Documento",
+    "scanIntro": "Per prima cosa carica la foto del documento di ogni ospite. I dati vengono letti in automatico: nel passo successivo li controlli e li correggi.",
+    "scanHint": "JPG, PNG o WebP, massimo 5 MB. La foto non viene conservata: serve solo a compilare i campi.",
+    "scanButton": "Scatta o carica la foto",
+    "scanReading": "Lettura del documento…",
+    "scanAnother": "Carica il documento di un altro ospite",
+    "scanManual": "Inserisci i dati a mano",
+    "scanReadOk": "Dati letti per {{name}}. Controllali prima di inviare.",
+    "scanUnread": "Non sono riuscito a leggere il documento. Puoi caricarne un altro o inserire i dati a mano.",
+    "scanUnavailable": "La lettura automatica non è disponibile in questo momento. Inserisci i dati a mano.",
     "stepGuests": "Ospiti",
     "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, compresi i minori: la legge (art. 109 TULPS) richiede i dati di ciascuno. Il documento serve solo all'ospite singolo, al capofamiglia o al capogruppo.",
     "guestCountMismatch_one": "La prenotazione indica {{count}} ospite: controlla di aver inserito tutte le persone che soggiornano.",
@@ -7334,13 +7362,14 @@
       "explain": "Cosa significa questo stato",
       "serviceDraft": "Il contratto lo prepara il servizio guidato: qui segui la pratica e non devi compilare nulla. Questa bozza passa a «Registrato» da sola quando la pratica è conclusa e hai caricato i documenti che ricevi: li leggiamo e compiliamo noi i dati."
     },
-    "tabs": {
-      "data": "Dati",
-      "deadlines": "Scadenze",
-      "documents": "Documenti",
-      "label": "Sezioni del contratto",
-      "payments": "Pagamenti"
-    },
+      "tabs": {
+        "canoni": "Canoni",
+        "data": "Dati",
+        "deadlines": "Scadenze",
+        "documents": "Documenti",
+        "label": "Sezioni del contratto",
+        "payments": "Pagamenti"
+      },
     "toDefine": "Da definire"
   },
   "leaseWizard": {
@@ -7486,6 +7515,7 @@
     "fields": {
       "citizenship": "la cittadinanza",
       "contactEmail": "l'email",
+      "contactPhone": "il numero di telefono",
       "firstName": "il nome",
       "fiscalCode": "il codice fiscale",
       "lastName": "il cognome",
@@ -7501,6 +7531,7 @@
         "fixed": "Il file e il giorno della firma non si possono correggere dopo l'inserimento.",
         "no": "Comparirà la scadenza di registrazione e, finché non dichiari la registrazione, CasaZen manda un promemoria per e-mail ai locatori che hanno indicato un indirizzo.",
         "signed": "Il contratto passa a «Firmato»: da quel momento non si può più modificare né eliminare.",
+        "fromReceipt": "Subito dopo ti mostriamo numero e data letti dalla ricevuta, da confermare.",
         "submit": "Inserisci il contratto",
         "title": "Inserire il contratto firmato?",
         "yes": "Subito dopo ti chiediamo il numero e la ricevuta della registrazione."
@@ -7518,6 +7549,11 @@
           "description": "Resta «Firmato» e vedrai la scadenza di registrazione.",
           "title": "No, o non lo so"
         },
+        "fromReceipt": "La ricevuta «{{name}}» dice che il contratto è già registrato. {{detail}}",
+        "fromReceiptCode": "Numero di registrazione {{code}}.",
+        "fromReceiptDate": "Registrazione del {{date}}.",
+        "fromReceiptDetail": "Registrazione del {{date}}, numero {{code}}.",
+        "fromReceiptUnread": "Hai già caricato la ricevuta «{{name}}». Il contratto risulta registrato: se non riusciamo a leggerne numero e data, te li chiediamo dopo l'inserimento.",
         "required": "Rispondi a questa domanda.",
         "yes": {
           "description": "Dopo l'inserimento ti chiediamo il numero e la ricevuta.",
@@ -7591,6 +7627,8 @@
       "companyNotice": "Un conduttore con un codice di 11 cifre è una società: la cedolare secca non è ammessa.",
       "contactEmail": "Email",
       "contactEmailHintTenant": "Serve solo per mandare il link di pagamento e i solleciti.",
+      "contactPhone": "Numero di telefono",
+      "contactPhoneHintTenant": "Con prefisso internazionale: serve per contattare il conduttore e preparare i promemoria su WhatsApp.",
       "countriesEu": "Unione europea",
       "countriesOther": "Altri Paesi",
       "firstName": "Nome",
@@ -7767,6 +7805,30 @@
       },
       "rent": "Canone mensile (€)"
     },
+    "condominium": {
+      "title": "Spese condominiali",
+      "intro": "Facoltativo: puoi continuare senza compilare questo riquadro. Se l'immobile ha già un esercizio, proponiamo l'importo. Il pagamento non si fa qui: i canoni stanno nel contratto e il conto per il condominio è in Impostazioni, Conto SEPA. Le spese straordinarie restano a parte e non diventano un addebito. Le rate già emesse restano come sono.",
+      "loading": "Lettura delle spese condominiali…",
+      "loadError": "Non riesco a leggere le spese condominiali.",
+      "retry": "Riprova",
+      "proposedYear": "Esercizio {{year}}: {{amount}} al mese.",
+      "proposed": "{{amount}} al mese.",
+      "lastInstallment": "L'ultima rata è {{amount}}: i centesimi dell'anno non si perdono.",
+      "settled": "Si conguaglia al consuntivo.",
+      "notPayment": "È una proposta, non un pagamento.",
+      "accept": "Usa questo importo",
+      "empty": "Non c'è ancora un esercizio. Indica il totale del consuntivo dell'anno precedente e del preventivo del nuovo anno, oppure un importo al mese: si conguaglia al consuntivo.",
+      "limits": "Un PDF dell'amministratore non si registra da questo passo. Non leggiamo una scansione senza testo, le singole voci, i fornitori, i millesimi, i pagamenti, il saldo dell'anno precedente né il piano delle rate. Il saldo dell'anno precedente non si imposta qui.",
+      "consuntivo": "Consuntivo dell'anno precedente (€)",
+      "preventivo": "Preventivo del nuovo anno (€)",
+      "calculate": "Calcola l'importo",
+      "or": "Oppure",
+      "manual": "Importo a mano (€ al mese)",
+      "manualHint": "Si conguaglia al consuntivo. Le rate già emesse non cambiano.",
+      "useManual": "Usa l'importo inserito",
+      "saved": "Proposta registrata: {{amount}} al mese. I canoni si vedono nel contratto.",
+      "saveError": "Non riesco a salvare le spese condominiali."
+    },
     "title": "Crea contratto",
     "transitory": {
       "documentation": {
@@ -7827,6 +7889,7 @@
       "date": "Data non valida",
       "deposit": "Il deposito deve essere zero o più, con al massimo due decimali",
       "email": "Indirizzo email non valido",
+      "phone": "Inserisci il numero con prefisso internazionale, per esempio +39 333 123 4567",
       "endAfterStart": "La fine deve essere dopo l'inizio",
       "fiscalCode": "Codice fiscale o partita IVA non valido",
       "property": "Scegli l'immobile",
@@ -8580,6 +8643,7 @@
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
     "contactEmailMasked": "Email di contatto",
+    "contactPhoneMasked": "Telefono",
     "noParties": "Nessuna parte registrata.",
     "contractTypeLabel": {
       "Libero": "Canone libero (4+4)",
@@ -9150,9 +9214,34 @@
         "contracts": "Contratti",
         "data": "Dati",
         "documents": "Documenti",
+        "expenses": "Spese condominiali",
+        "maintenance": "Manutenzione",
         "requests": "Interventi"
       },
       "tabsLabel": "Sezioni dell’immobile"
+    },
+    "expenses": {
+      "advance": "Acconto condominiale: {{amount}}",
+      "empty": "Senza un contratto non ci sono spese condominiali. I canoni compaiono solo dentro un contratto.",
+      "intro": "Qui c'è la situazione condominiale dell'immobile. I canoni restano nel contratto.",
+      "loadError": "Non riesco a leggere le spese condominiali di questo contratto.",
+      "loading": "Lettura delle spese condominiali…",
+      "noParts": "Le rate di questo contratto non hanno ancora un acconto o un conguaglio.",
+      "noSummary": "Non c'è un resoconto dei versamenti del proprietario verso il condominio. I preventivi e i conguagli da inviare al conduttore compaiono qui quando ci sono.",
+      "openContract": "Apri il contratto",
+      "openDocuments": "Documenti del contratto",
+      "openReport": "Apri il report fiscale",
+      "openSepa": "Apri il conto SEPA",
+      "ownerPaymentsBody": "Non c'è un elenco di addebiti del proprietario verso il condominio. Il conto da cui partono è il Conto SEPA, nelle impostazioni.",
+      "ownerPaymentsTitle": "Pagamenti del proprietario",
+      "reportsBody": "Non c'è un bilancio condominiale da scaricare. Il file disponibile è il report fiscale dei canoni.",
+      "reportsTitle": "Report scaricabili",
+      "settlement": "Conguaglio: {{amount}}",
+      "situation": "Situazione",
+      "summary": "Resoconto"
+    },
+    "maintenance": {
+      "empty": "Senza un contratto non ci sono richieste di manutenzione."
     },
     "drawer": {
       "ape": "APE",
@@ -9420,6 +9509,10 @@
       "notePlaceholder": "Es. Ti chiedo il bonifico entro venerdì",
       "previewBodyDue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, è da pagare entro il {{date}} e non risulta ancora pagato.",
       "previewBodyOverdue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, era in scadenza il {{date}} e non risulta ancora pagato.",
+      "descriptionTotal": "{{tenant}} · {{property}}: totale di {{amount}}, scadenza {{date}}.",
+      "previewBodyComposed": "Ti ricordiamo che l'importo totale di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, è da pagare entro il {{date}} e non risulta ancora pagato. La composizione è sotto: non è tutto canone.",
+      "previewBodyComposedOverdue": "Ti ricordiamo che l'importo totale di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, era in scadenza il {{date}} e non risulta ancora pagato. La composizione è sotto: non è tutto canone.",
+      "previewTransfer": "Bonifico a {{holder}}, IBAN {{iban}}, importo {{amount}}, scadenza {{date}}, causale {{reference}}.",
       "previewLabel": "Anteprima dell'email",
       "previewSubject": "Oggetto: Promemoria canone di locazione - {{property}}, scadenza {{date}}",
       "previewWithLink": "L'email contiene il link per pagare online.",
@@ -9428,6 +9521,9 @@
       "sent_other": "Sollecito inviato a {{count}} conduttori",
       "submit": "Invia sollecito",
       "title": "Invia un sollecito",
+      "whatsappSend": "Invia via WhatsApp",
+      "whatsappSent_one": "Promemoria WhatsApp inviato a {{count}} conduttore",
+      "whatsappSent_other": "Promemoria WhatsApp inviato a {{count}} conduttori",
       "whoGetsIt": "L'email arriva ai conduttori del contratto che hanno un indirizzo email; dopo l'invio ti diciamo a quanti."
     },
     "retry": "Riprova",
@@ -10239,6 +10335,7 @@
     "revenue": "Ricavi",
     "reports": "Report",
     "longRentFiscal": "Report fiscale",
+    "longRentPayments": "Conto SEPA",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
@@ -13986,8 +14083,12 @@
     "loadError": "Impossibile caricare lo scadenziario del canone.",
     "retry": "Riprova",
     "notSignedYet": "Lo scadenziario del canone si imposta quando il contratto è firmato da tutte le parti.",
+    "notOnContract": "Il canone di questo contratto è qui. Il conto per gli addebiti verso il condominio è nelle impostazioni.",
+    "openPayments": "Apri il conto SEPA",
+    "openCanoni": "Il conduttore paga da Canoni",
+    "openRegister": "Registro di tutti i canoni",
     "onlineUnavailable": "Per chiedere al conduttore di pagare online collega un account Stripe abilitato agli incassi. Puoi comunque registrare i pagamenti ricevuti fuori da CasaZen.",
-    "onlineUnavailableLink": "Vai a Pagamenti",
+    "onlineUnavailableLink": "Impostazioni Stripe",
     "noTenantEmail": "Nessun conduttore ha un indirizzo email: il link di pagamento non può essere inviato.",
     "summary": "Rata {{cadence}} di {{amount}}, in scadenza il giorno {{day}}.",
     "edit": "Modifica",
@@ -14017,6 +14118,34 @@
       "amount": "Importo",
       "status": "Stato",
       "actions": "Azioni"
+    },
+    "composition": {
+      "label": "Composizione",
+      "rent": "Canone",
+      "advance": "Acconto condominiale",
+      "settlement": "Conguaglio",
+      "other": "Altri oneri",
+      "total": "Totale",
+      "paid": "Pagato",
+      "residual": "Residuo"
+    },
+    "notices": {
+      "title": "Preventivi e conguagli da inviare",
+      "hint": "L'invio parte solo quando lo confermi. CasaZen non spedisce un preventivo o un conguaglio da solo.",
+      "send": "Prepara l'invio",
+      "dialogTitle": "Invia «{{title}}»",
+      "dialogDescription": "Scegli il canale. Niente viene inviato finché non premi Invia.",
+      "channels": "Canali",
+      "confirm": "Invia",
+      "sent": "Invio registrato",
+      "kind": {
+        "Budget": "Preventivo",
+        "Settlement": "Conguaglio"
+      },
+      "channel": {
+        "Email": "Email",
+        "WhatsApp": "WhatsApp"
+      }
     },
     "status": {
       "Scheduled": "Da incassare",
@@ -21114,6 +21243,163 @@
     },
     "title": "Bonifici proprietari"
   },
+  "tenantArea": {
+    "title": "Area conduttore",
+    "loading": "Caricamento…",
+    "loadError": "Non riesco a caricare la tua area.",
+    "noContracts": "Non hai un contratto attivo da consultare.",
+    "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I pagamenti stanno nella sezione Pagamenti.",
+    "openContract": "Apri il contratto",
+    "nav": {
+      "label": "Sezioni",
+      "contracts": "Contratti",
+      "contract": "Contratto",
+      "dues": "Pagamenti",
+      "documents": "Documenti",
+      "maintenance": "Manutenzione"
+    },
+    "contract": {
+      "term": "Dal {{from}} al {{to}}",
+      "openEnd": "data da definire",
+      "nextDue": "Prossima scadenza",
+      "payDue": "Paga la scadenza",
+      "openDue": "Vedi la scadenza",
+      "noPayment": "Non c'è nulla da pagare. Lo stato dei pagamenti sta nella sezione Pagamenti, non su questa pagina."
+    },
+    "bank": {
+      "title": "Estremi per il bonifico",
+      "holder": "Intestatario",
+      "iban": "IBAN",
+      "amount": "Importo",
+      "due": "Scadenza",
+      "reference": "Causale",
+      "copy": "Copia la causale",
+      "copied": "Causale copiata"
+    },
+    "dues": {
+      "title": "Pagamenti",
+      "lead": "Qui vedi se hai pagato tutto e paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.",
+      "listLabel": "Scadenze",
+      "emptyTitle": "Nessuna scadenza",
+      "emptyDescription": "Quando il gestore emette una rata, la trovi qui con l'importo da versare.",
+      "nextTitle": "Prossima da pagare",
+      "pay": "Paga questa scadenza",
+      "residual": "Da versare",
+      "overdue": "In ritardo",
+      "missing": "Questa scadenza non è nel contratto.",
+      "backToList": "Torna alle scadenze",
+      "advanceNote": "L'acconto condominiale è la quota del mese, già dentro questa scadenza.",
+      "settlementDebt": "Il conguaglio è un debito e si aggiunge a questa scadenza.",
+      "settlementCredit": "Il conguaglio è un credito e riduce quanto resta da pagare.",
+      "inBalance": "Sei in pari su questa scadenza. Non c'è nulla da versare.",
+      "processingHint": "Il bonifico è in verifica. La scadenza non risulta ancora pagata.",
+      "failedHint": "L'ultimo addebito non è andato a buon fine. Puoi riprovare con il conto collegato oppure usare il bonifico manuale.",
+      "sepaTitle": "Addebito SEPA in euro",
+      "sepaHint": "Collega un conto di una banca italiana. L'addebito è in euro. La scadenza resta da pagare finché la banca non conferma.",
+      "sepaEuroOnly": "L'addebito SEPA è solo in euro. Per questa scadenza usa il bonifico manuale.",
+      "reportTitle": "Resoconto dei pagamenti",
+      "reportOpen": "Ancora da pagare",
+      "reportPaid": "Pagate",
+      "reportCount_one": "{{count}} scadenza",
+      "reportCount_other": "{{count}} scadenze",
+      "manualTitle": "Bonifico manuale",
+      "manualHint": "Se non colleghi un conto, usa questi estremi e poi avvisa il gestore.",
+      "noBank": "Gli estremi del bonifico non sono ancora disponibili.",
+      "period": "Dal {{from}} al {{to}}",
+      "status": {
+        "Scheduled": "Da pagare",
+        "Processing": "In verifica",
+        "Paid": "Pagata",
+        "Failed": "Addebito non riuscito",
+        "Cancelled": "Annullata"
+      }
+    },
+    "declaration": {
+      "amount": "Importo del bonifico",
+      "date": "Data del bonifico",
+      "reference": "Riferimento (facoltativo)",
+      "note": "Nota (facoltativa)",
+      "receipt": "Ricevuta (facoltativa)",
+      "submit": "Ho effettuato il bonifico",
+      "sent": "Dichiarazione inviata. La rata non è ancora segnata come pagata.",
+      "failed": "Non riesco a registrare la dichiarazione.",
+      "notPaid": "La dichiarazione avvisa il gestore. Non segna la rata come pagata.",
+      "rejectedHint": "La dichiarazione è stata respinta. Puoi inviarne un'altra.",
+      "status": {
+        "Submitted": "Inviata",
+        "Verified": "Verificata",
+        "Rejected": "Respinta",
+        "Superseded": "Sostituita"
+      }
+    },
+    "documents": {
+      "emptyTitle": "Nessun documento condiviso",
+      "emptyDescription": "Preventivo, consuntivo e conguaglio compaiono qui quando il gestore li condivide. Il pagamento resta in Pagamenti.",
+      "goToDues": "Vai ai pagamenti",
+      "download": "Scarica",
+      "failed": "Non riesco a scaricare il documento.",
+      "kind": {
+        "Budget": "Preventivo",
+        "Settlement": "Conguaglio",
+        "Statement": "Consuntivo",
+        "Report": "Resoconto",
+        "Other": "Documento"
+      }
+    },
+    "maintenance": {
+      "new": "Nuova richiesta",
+      "empty": "Nessuna richiesta.",
+      "category": "Categoria",
+      "urgency": "Urgenza",
+      "description": "Descrizione",
+      "attachments": "Allegati",
+      "submit": "Invia al gestore",
+      "sent": "Richiesta inviata al gestore.",
+      "failed": "Non riesco a inviare la richiesta.",
+      "sentToManager": "La richiesta va al gestore del contratto. Non assegni tu un fornitore.",
+      "emergencyNotImmediate": "Aprire la richiesta non significa che qualcuno stia già intervenendo.",
+      "submittedAt": "Inviata il {{date}}",
+      "urgencyLevel": {
+        "Normal": "Normale",
+        "High": "Alta",
+        "Emergency": "Emergenza"
+      },
+      "status": {
+        "Sent": "Inviata al gestore",
+        "InReview": "In valutazione",
+        "NeedsInfo": "Servono altre informazioni",
+        "Accepted": "Presa in carico dal gestore",
+        "InProgress": "In corso",
+        "Closed": "Chiusa",
+        "Rejected": "Non accettata"
+      }
+    }
+  },
+  "bankTransfer": {
+    "title": "Bonifico con il conto collegato",
+    "open": "Bonifico con Stripe",
+    "hint": "Stripe apre la sua schermata e propone le banche italiane. La scadenza non risulta pagata finché Stripe non conferma il bonifico.",
+    "link": "Collega il conto",
+    "linkAnother": "Collega un altro conto",
+    "loadingAccounts": "Lettura dei conti collegati…",
+    "accountsLabel": "Conto",
+    "amount": "Importo",
+    "reference": "Causale",
+    "noReference": "La causale non è ancora arrivata con la scadenza. Puoi comunque avviare il bonifico.",
+    "start": "Avvia il bonifico",
+    "pending": "Bonifico avviato. La scadenza non è segnata come pagata: lo sarà quando Stripe conferma.",
+    "failed": "Non riesco a collegare il conto o ad avviare il bonifico.",
+    "stripeClosed": "Collegamento annullato.",
+    "loadError": "Non riesco a leggere i conti collegati.",
+    "noStripe": "Stripe non è disponibile in questo momento.",
+    "manualStays": "Se non colleghi un conto, restano gli estremi e «Ho effettuato il bonifico».",
+    "manualStaysLandlord": "Se non colleghi un conto, puoi registrare l'incasso.",
+    "condo": {
+      "title": "Paga il condominio in automatico",
+      "hint": "Collega il conto solo per pagare le spese condominiali in automatico. Stripe propone le banche italiane e l'addebito è in euro. Non è il pagamento del canone.",
+      "linked": "Le spese condominiali si pagano in automatico da questo conto."
+    }
+  },
   "wizard": {
     "back": "Indietro",
     "cancel": "Annulla",
@@ -21151,6 +21437,96 @@
       "edit": "Modifica",
       "editField": "Modifica {{field}}",
       "empty": "Non indicato"
+    }
+  },
+  "longRentPayments": {
+    "title": "Conto SEPA",
+    "description": "Collega un conto in euro di una banca italiana. Gli addebiti delle spese condominiali partono da qui. Non è il pagamento del canone. Puoi collegarlo anche prima della firma. Se non colleghi un conto, resta il bonifico manuale.",
+    "contractsLead": "I canoni stanno nel contratto.",
+    "contracts": "Apri i contratti",
+    "readonly": "Solo chi può creare i contratti collega il conto."
+  },
+  "maintenanceRequest": {
+    "loading": "Caricamento…",
+    "loadError": "Non riesco a caricare le richieste",
+    "sendError": "Non riesco a inviare la richiesta",
+    "decisionError": "Non riesco a registrare la decisione",
+    "paymentError": "Non riesco a registrare il pagamento",
+    "stepOf": "Passo {{current}} di {{total}}",
+    "back": "Indietro",
+    "next": "Continua",
+    "what": {
+      "title": "Cosa non funziona?",
+      "hint": "Scrivi la cosa rotta, in poche parole.",
+      "label": "Cosa non funziona",
+      "placeholder": "Rubinetto del bagno"
+    },
+    "urgency": {
+      "title": "Quanto è urgente?",
+      "hint": "Scegli un solo livello.",
+      "bassa": "Bassa",
+      "normale": "Normale",
+      "urgente": "Urgente",
+      "detail": {
+        "bassa": "Può aspettare",
+        "normale": "Nei prossimi giorni",
+        "urgente": "Serve presto"
+      }
+    },
+    "note": {
+      "title": "Aggiungi una nota",
+      "hint": "Cosa è successo e da quando.",
+      "label": "Nota",
+      "placeholder": "Gocciola da ieri sera"
+    },
+    "photo": {
+      "title": "Una foto, se ce l'hai",
+      "hint": "È facoltativa. Aiuta chi deve decidere.",
+      "label": "Foto",
+      "none": "Nessuna foto",
+      "chosen": "Foto: {{name}}"
+    },
+    "confirm": {
+      "title": "Controlla e invia",
+      "hint": "Dopo l'invio la richiesta resta in attesa. Non puoi approvarla né pagarla.",
+      "what": "Guasto",
+      "urgency": "Urgenza",
+      "note": "Nota",
+      "photo": "Foto",
+      "submit": "Invia la richiesta"
+    },
+    "waiting": {
+      "kicker": "Richiesta inviata",
+      "title": "In attesa",
+      "body": "La richiesta è dal proprietario o dall'agenzia. Non puoi approvarla e non puoi pagarla.",
+      "list": "Vedi le richieste"
+    },
+    "status": {
+      "pending": "In attesa",
+      "approved": "Approvata",
+      "rejected": "Rifiutata",
+      "paid": "Pagata"
+    },
+    "list": {
+      "title": "Le tue richieste",
+      "new": "Nuova richiesta"
+    },
+    "landlord": {
+      "title": "Richieste di manutenzione",
+      "hint": "Approva o rifiuta. Il pagamento compare solo dopo l'approvazione.",
+      "empty": "Nessuna richiesta dal conduttore.",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "reasonLabel": "Perché la rifiuti?",
+      "reasonPlaceholder": "Scrivi il motivo, in italiano",
+      "confirmReject": "Conferma il rifiuto",
+      "cancelReject": "Annulla",
+      "pay": "Paga",
+      "pendingNote": "In attesa della tua decisione. Il pagamento non è ancora disponibile.",
+      "approvedNote": "Approvata. Ora puoi pagare.",
+      "rejectedNote": "Rifiutata. {{reason}}",
+      "paidNote": "Pagata.",
+      "photo": "Foto allegata: {{name}}"
     }
   }
 }

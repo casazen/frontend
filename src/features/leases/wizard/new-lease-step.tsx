@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
@@ -35,6 +35,7 @@ export function NewLeaseStep({
   const create = useCreateLeaseDraft();
   const [propertyId, setPropertyId] = useState(defaultPropertyId ?? '');
   const [pressed, setPressed] = useState(0);
+  const started = useRef(false);
 
   const steps = visibleSteps(emptyFlow(origin), registeredSteps(origin));
   const entries = steps.map((step) => ({
@@ -51,10 +52,14 @@ export function NewLeaseStep({
       focusProperty();
       return;
     }
+    // A second click must not create another contract, or save the type a second time as a different step.
+    if (started.current) return;
+    started.current = true;
     try {
       const leaseId = await create.mutateAsync({ propertyId, origin, contractType });
       navigate(leaseEditPath(leaseId, 2), { replace: true });
     } catch {
+      started.current = false;
       // useCreateLeaseDraft.onError says why; the property stays chosen to try again.
     }
   };

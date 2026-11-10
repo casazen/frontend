@@ -244,18 +244,19 @@ export function StayGuestPersonalFields({
         )}
 
         <div className="space-y-2">
-          <Label htmlFor={id('citizenshipName')}>{t('checkin.citizenship')}</Label>
+          <Label htmlFor={`guest-${index}-citizenship`}>{t('checkin.citizenship')}</Label>
           <CodeTableInput
-            id={id('citizenshipName')}
+            id={`guest-${index}-citizenship`}
+            purpose="citizenship"
             list="stati"
             source={source}
             name={guest.citizenshipName}
             code={guest.citizenshipCode}
             aria-invalid={!!errorOf('citizenshipName')}
-            aria-describedby={`${id('citizenshipName')}-error`}
+            aria-describedby={`guest-${index}-citizenship-error`}
             onValueChange={(value) => setCoded('citizenshipName', 'citizenshipCode', value)}
           />
-          <FormFieldError id={`${id('citizenshipName')}-error`} error={errorOf('citizenshipName')} />
+          <FormFieldError id={`guest-${index}-citizenship-error`} error={errorOf('citizenshipName')} />
         </div>
 
         <div className="space-y-2">

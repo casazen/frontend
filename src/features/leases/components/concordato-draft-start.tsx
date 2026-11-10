@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
@@ -35,21 +35,24 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
   const propertyId = chosen ?? (defaultPropertyId && properties.some((property) => property.id === defaultPropertyId) ? defaultPropertyId : '');
   const createDraft = useCreateCfDraft();
   const [pressed, setPressed] = useState(0);
+  const started = useRef(false);
   const focusProperty = () => document.getElementById(selectId)?.focus();
 
   const create = async () => {
-    if (createDraft.isPending) return;
+    if (started.current || createDraft.isPending) return;
     // Pressable with no house chosen (LR-WIZ-1): the focus goes to the list and the line under it says what is missing.
     if (!propertyId) {
       setPressed((count) => count + 1);
       focusProperty();
       return;
     }
+    started.current = true;
     try {
       const draft = await createDraft.mutateAsync(propertyId);
       // Replaced, not pushed: "back" from the sheet of the contract must not land on this form again.
       navigate(`/app/long-rent/leases/${draft.id}`, { replace: true });
     } catch {
+      started.current = false;
       // useCreateCfDraft.onError says why; the property stays chosen to try again (the server gives back the draft it made).
     }
   };

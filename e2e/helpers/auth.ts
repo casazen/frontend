@@ -1,6 +1,31 @@
 import type { Page } from '@playwright/test';
 import { requireE2eCredentials } from './env';
 
+/** True once Auth0 has written a token, or the signed-in app (area picker, shell, onboarding) is on screen. */
+function sessionIsReady(): boolean {
+  if (document.querySelector('[data-testid="app-ready"], [data-testid="onboarding-consents-step"]')) return true;
+  if (/Da dove vuoi iniziare/i.test(document.body?.innerText ?? '')) return true;
+  for (const store of [localStorage, sessionStorage]) {
+    for (const key of Object.keys(store)) {
+      if ((store.getItem(key) ?? '').includes('access_token')) return true;
+    }
+  }
+  return false;
+}
+
+/** Auth0, or a session that is already on this browser. Neither wait is left running after the answer. */
+async function waitForAuth0OrSession(page: Page): Promise<'auth0' | 'session' | 'neither'> {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    if (/auth0\.com/i.test(page.url())) return 'auth0';
+    if (await page.evaluate(sessionIsReady).catch(() => false)) return 'session';
+    await page.waitForTimeout(250);
+  }
+  if (/auth0\.com/i.test(page.url())) return 'auth0';
+  if (await page.evaluate(sessionIsReady).catch(() => false)) return 'session';
+  return 'neither';
+}
+
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
@@ -15,11 +40,13 @@ export async function loginViaAuth0(page: Page): Promise<void> {
     consoleLogs.push(`[PAGE_ERROR] ${err.message}`);
   });
 
-  // `/login` has no page of its own: the address sends the browser straight to Auth0.
+  // `/login` has no page of its own. A signed-out browser is sent straight to Auth0. A browser that already
+  // has the staging project's saved session is sent to the area picker: that is a session, not a failed redirect.
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  try {
-    await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
-  } catch {
+
+  const arrived = await waitForAuth0OrSession(page);
+  if (arrived === 'session') return;
+  if (arrived === 'neither') {
     await page.screenshot({ path: 'test-results/login-debug.png' });
     const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
     const title = await page.title().catch(() => '(no title)');
@@ -104,6 +131,18 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   await finalSubmit.click();
 
   await page.waitForURL((url) => !url.hostname.includes('auth0.com'), { timeout: 60_000 });
+  // Leaving the Auth0 hostname is the callback, not a session. Navigating again before the token
+  // is stored drops the code and the next protected page shows the login button.
+  try {
+    await page.waitForFunction(sessionIsReady, undefined, { timeout: 60_000 });
+  } catch {
+    await page.screenshot({ path: 'test-results/login-session-debug.png', fullPage: true }).catch(() => undefined);
+    const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
+    const consoleDump = consoleLogs.length > 0 ? ` Console errors: ${consoleLogs.join(' | ')}` : '';
+    throw new Error(
+      `Auth0 returned without a session. URL: "${page.url()}". Body preview: "${bodyText.slice(0, 300)}".${consoleDump}`,
+    );
+  }
 }
 
 export async function readAccessToken(page: Page): Promise<string | null> {

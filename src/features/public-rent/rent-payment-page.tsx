@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
+import { publicRentApi } from '@/api/rent.api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
+import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
 import { StripeIntentPayment } from '@/features/public-booking/components/stripe-intent-payment';
 import {
   clientStatusFromRedirect,
@@ -167,6 +170,19 @@ function PaymentContent({ payment, token, clientStatus, onSubmitted }: PaymentCo
           {paymentError}
         </p>
       )}
+      {bankLinkDebitAvailable(payment.currency) ? (
+        <FinancialConnectionsTransfer
+          mode="public"
+          leaseId={payment.installmentId}
+          dueId={payment.installmentId}
+          amount={payment.amount}
+          currency={payment.currency}
+          reference=""
+          token={token}
+          publishableKey={session.data?.publishableKey}
+          resolvePublishableKey={async () => (await publicRentApi.createPaymentSession(payment.installmentId, token)).publishableKey}
+        />
+      ) : null}
       {session.data ? (
         <StripeIntentPayment
           mode="payment"

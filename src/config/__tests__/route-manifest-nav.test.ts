@@ -103,14 +103,15 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getPrimaryNavEntries('long-rent', allowAll))).toEqual([
       '/app/long-rent',
       '/app/long-rent/leases',
-      '/app/long-rent/rents',
       '/app/long-rent/properties',
       '/app/long-rent/service-requests',
     ]);
-    // Inquilini and Scadenze are tabs of Contratti, the fiscal report a tab of Canoni; Profilo is in the menu of the user.
+    // Inquilini, Scadenze and the fiscal report are tabs of Contratti. Canoni open from a contract.
+    // Conto SEPA is with the settings. Profilo is in the menu of the user.
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
+      '/app/long-rent/payments',
     ]);
 
     // The menu of the supplier is built page by page up to seven entries (Home, Richieste, Agenda e disponibilità, Servizi e
@@ -296,8 +297,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
     // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
     '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
-    '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines'],
-    '/app/long-rent/rents': ['/app/long-rent/fiscal'],
+    '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/fiscal'],
     '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
@@ -403,7 +403,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     for (const page of payments) expect(paths(getNavSection(page, allowAll)), page).toEqual(payments);
 
     // The same strip in the other rental area.
-    const leases = ['/app/long-rent/leases', '/app/long-rent/tenants', '/app/long-rent/deadlines'];
+    const leases = ['/app/long-rent/leases', '/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/fiscal'];
     for (const page of leases) expect(paths(getNavSection(page, allowAll)), page).toEqual(leases);
   });
 

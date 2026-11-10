@@ -8,33 +8,36 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { classifyFiscalCode } from '@/lib/fiscal-code';
 import { getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { formatCurrency } from '@/lib/utils';
 import { LEASE_TAX_REGIMES, type LeaseOrigin, type LongRentRules } from '@/types';
+import { CondominiumExpenses } from './condominium-expenses';
 import { ContractTypeCards } from './contract-type-cards';
 import { ReadMark } from './reading-marks';
 import { WhyAsk } from './why-ask';
 import { TRANSITORY_NEED_MAX_LENGTH, TRANSITORY_PARTIES, makesItsNeed, type WizardValues } from './wizard-model';
 
 /**
- * Step ③ «Condizioni economiche» (LR-06a): the type, the tax regime, the rent and the deposit. The limit of the deposit is the server's
- * (`rules.depositMaxRents`) and is told live from the rent typed; nothing is written here as a figure of law. The deposit is asked for
- * («0 se non c'è») on a contract made in CasaZen, because its model prints it (LR-DEP), and is optional on one already signed. No
- * frequency and day of payment, no expenses, no ISTAT: the plan of the rents is set up later, once the contract is in force.
+ * Step ③ «Condizioni economiche» (LR-06a): the type, the tax regime, the rent, the deposit and the condominium expenses.
+ * The limit of the deposit is the server's (`rules.depositMaxRents`) and is told live from the rent typed; nothing is written
+ * here as a figure of law. The deposit is asked for («0 se non c'è») on a contract made in CasaZen, because its model prints
+ * it (LR-DEP), and is optional on one already signed. No frequency and day of payment, no ISTAT: the plan of the rents is set
+ * up later, once the contract is in force. The condominium amount is proposed or typed here; paying it is not.
  *
  * A transitory contract made in CasaZen also states the need that justifies its short term (TR, D.M. 16/01/2017 art. 2 c. 4): who has it,
  * the landlord or the tenant, and what it is. The documents that prove it are asked at step ④, with the term that decides whether they
  * are needed.
  */
-export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: LeaseOrigin }) {
+export function TermsStep({ rules, origin, leaseId }: { rules: LongRentRules; origin: LeaseOrigin; leaseId: string }) {
   const { t } = useTranslation();
   const { control, register, setValue, formState } = useFormContext<WizardValues>();
-  const [contractType, taxRegime, rentText, depositText, tenants, transitoryParty, transitoryNeed] = useWatch({
+  const [contractType, taxRegime, rentText, depositText, tenants, transitoryParty, transitoryNeed, propertyId] = useWatch({
     control,
-    name: ['contractType', 'taxRegime', 'monthlyRent', 'securityDeposit', 'tenants', 'transitoryParty', 'transitoryNeed'],
+    name: ['contractType', 'taxRegime', 'monthlyRent', 'securityDeposit', 'tenants', 'transitoryParty', 'transitoryNeed', 'propertyId'],
   });
 
-  const rent = Number(rentText);
-  const deposit = Number(depositText);
+  const rent = parseEuroAmount(rentText) ?? Number.NaN;
+  const deposit = parseEuroAmount(depositText) ?? Number.NaN;
   const maxRents = rules.depositMaxRents;
   const maxDeposit = rent > 0 ? rent * maxRents : null;
   const maxText = maxDeposit === null ? '' : formatCurrency(maxDeposit);
@@ -125,7 +128,7 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
             example={t('leaseWizardGuide.fields.rent.example')}
             error={formState.errors.monthlyRent}
           >
-            <Input id="lw-monthlyRent" type="number" inputMode="decimal" step="0.01" min="0" {...register('monthlyRent')} />
+            <Input id="lw-monthlyRent" inputMode="decimal" autoComplete="off" {...register('monthlyRent')} />
           </Field>
           <ReadMark step={3} fields={['monthlyRent']} name="monthlyRent" />
         </div>
@@ -137,12 +140,14 @@ export function TermsStep({ rules, origin }: { rules: LongRentRules; origin: Lea
             example={t('leaseWizardGuide.fields.deposit.example')}
             error={depositTooHigh ? t('leaseWizard.terms.depositTooHigh', { max: maxRents, amount: maxText }) : formState.errors.securityDeposit}
           >
-            <Input id="lw-securityDeposit" type="number" inputMode="decimal" step="0.01" min="0" {...register('securityDeposit')} />
+            <Input id="lw-securityDeposit" inputMode="decimal" autoComplete="off" {...register('securityDeposit')} />
           </Field>
           <ReadMark step={3} fields={['securityDeposit']} name="securityDeposit" />
           <WhyAsk>{t('leaseWizardGuide.fields.deposit.why')}</WhyAsk>
         </div>
       </div>
+
+      <CondominiumExpenses propertyId={propertyId} leaseId={leaseId} />
     </div>
   );
 }
