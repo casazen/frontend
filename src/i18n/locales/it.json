@@ -1293,6 +1293,10 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "documentIssuanceNotAvailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
+      "fiscalSettingsNeedWholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti.",
+      "issuerFieldInvalid": "Uno dei dati di chi emette non è valido. Controlla i campi e riprova.",
+      "issuerProfileIncomplete": "Per far emettere i documenti a CasaZen mancano alcuni dati. Controlla i passaggi e riprova.",
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
       "notificationLegalChannelRequired": "Le scadenze di legge non possono restare senza un canale: lascia attivo almeno un canale.",
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
@@ -5074,6 +5078,268 @@
     },
     "list": {
       "title": "Immobili"
+    }
+  },
+  "fiscalDocuments": {
+    "issuer": {
+      "address": {
+        "city": {
+          "example": "Milano",
+          "label": "Comune"
+        },
+        "civic": {
+          "label": "Numero civico"
+        },
+        "postalCode": {
+          "hint": "Il codice di avviamento postale: 5 cifre.",
+          "label": "CAP"
+        },
+        "province": {
+          "hint": "La sigla di due lettere.",
+          "label": "Provincia"
+        },
+        "street": {
+          "example": "Via Roma",
+          "label": "Via o piazza"
+        }
+      },
+      "card": {
+        "action": "Imposta",
+        "description": "Scegli chi emette i documenti fiscali dei tuoi soggiorni: il tuo channel manager, CasaZen o il tuo commercialista.",
+        "title": "Come emetti i documenti"
+      },
+      "data": {
+        "defaultSeries": {
+          "hint": "Le lettere che stanno davanti al numero del documento. Se la lasci vuota usiamo l’anno.",
+          "label": "Serie dei numeri"
+        },
+        "fatturaPaRegimeCode": {
+          "hint": "Se la lasci vuota usiamo il codice del tuo regime.",
+          "label": "Codice del regime nella fattura elettronica"
+        },
+        "fiscalCode": {
+          "hint": "Serve per le ricevute. Lo salviamo nel tuo profilo fiscale.",
+          "label": "Codice fiscale"
+        },
+        "issuerPec": {
+          "hint": "Solo se ricevi le fatture elettroniche sulla tua PEC (posta elettronica certificata).",
+          "label": "PEC"
+        },
+        "issuerSdiRecipientCode": {
+          "hint": "Sono 7 lettere o cifre. Solo se ricevi le fatture elettroniche con un canale tuo.",
+          "label": "Codice destinatario del tuo canale"
+        },
+        "legalName": {
+          "hint": "La ragione sociale, oppure nome e cognome.",
+          "label": "Nome sui documenti"
+        },
+        "moreOptions": "Altre opzioni",
+        "moreOptionsHint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
+        "onRecord": {
+          "fiscalCode": "Codice fiscale {{value}}, dal tuo profilo fiscale.",
+          "vatNumber": "Partita IVA {{value}}, dal tuo profilo fiscale."
+        },
+        "vatNumber": {
+          "hint": "Sono 11 cifre. La salviamo nel tuo profilo fiscale.",
+          "label": "Partita IVA"
+        }
+      },
+      "description": "Dicci chi emette i documenti fiscali dei tuoi soggiorni e che documento serve al tuo regime. Ti bastano pochi minuti.",
+      "done": {
+        "rule": {
+          "invoice": "Per il tuo regime il documento è una fattura elettronica.",
+          "receipt": "Per il tuo regime il documento è una ricevuta in PDF."
+        },
+        "title": "Abbiamo salvato come emetti i documenti",
+        "toFiscal": "Torna al regime fiscale",
+        "toHome": "Vai alla home"
+      },
+      "effects": {
+        "accountant": {
+          "issues": "CasaZen non emette documenti per le tue prenotazioni: se ne occupa il tuo commercialista."
+        },
+        "casazen": {
+          "direct": "CasaZen emette i documenti solo per le prenotazioni dirette: quelle del tuo sito e quelle che inserisci tu.",
+          "portals": "Per le prenotazioni che arrivano dai portali CasaZen non emette mai documenti: per ogni prenotazione c’è un solo emittente.",
+          "ruleUnconfirmed": "Finché il tipo di documento e l’IVA del tuo regime non sono confermati, CasaZen non emette nessun documento."
+        },
+        "change": "Puoi cambiare questa scelta quando vuoi.",
+        "noSdi": "CasaZen non invia nulla al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate).",
+        "octorate": {
+          "issues": "I documenti li emette il tuo channel manager: CasaZen non ne emette.",
+          "oneIssuer": "Per ogni prenotazione c’è un solo emittente: dove emette il tuo channel manager, CasaZen non emette mai."
+        },
+        "sdi": {
+          "available": "CasaZen può inviare le fatture elettroniche al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate).",
+          "notAvailable": "L’invio al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate) non è ancora disponibile: il file XML lo scarichi tu."
+        }
+      },
+      "errors": {
+        "addressCivic": "Il numero civico può avere al massimo 20 caratteri.",
+        "addressStreet": "Scrivi la via o la piazza.",
+        "casazenUnavailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
+        "city": "Scrivi il comune.",
+        "defaultSeries": "La serie può avere lettere, cifre e i segni . _ / - (al massimo 20 caratteri).",
+        "fatturaPaRegimeCode": "Il codice del regime ha al massimo 4 lettere o cifre, per esempio RF01.",
+        "fiscalCode": "Il codice fiscale ha 16 caratteri (11 cifre per una società).",
+        "hasVatNumber": "Rispondi: hai una partita IVA?",
+        "issuerPec": "Scrivi un indirizzo PEC valido, per esempio nome@pec.it.",
+        "issuerSdiRecipientCode": "Il codice destinatario ha 7 lettere o cifre.",
+        "legalName": "Scrivi il nome che compare sui documenti (al massimo 200 caratteri).",
+        "modeRequired": "Scegli chi emette i documenti.",
+        "octorateUnavailable": "Il tuo channel manager non è collegato: scegli un’altra risposta.",
+        "postalCode": "Il CAP ha 5 cifre.",
+        "province": "La provincia è la sigla di due lettere, per esempio MI.",
+        "regime": "Scegli il tuo regime.",
+        "vatNumber": "La partita IVA ha 11 cifre.",
+        "vatRegime": "Scegli il regime che applichi."
+      },
+      "example": {
+        "heading": "Esempio di documento",
+        "issuedTo": "Il nome e i dati dell’ospite",
+        "note": "È solo un esempio: il tipo di documento e l’IVA definitivi li conferma il tuo commercialista.",
+        "PrivatePerson": {
+          "issuedBy": "Il tuo nome e il tuo codice fiscale",
+          "title": "Ricevuta",
+          "vat": "Nessuna IVA"
+        },
+        "rows": {
+          "issuedBy": "Emesso da",
+          "issuedTo": "Intestato a",
+          "stay": "Soggiorno",
+          "vat": "IVA"
+        },
+        "stay": "Date e numero di notti, con l’importo",
+        "VatFlatRate": {
+          "issuedBy": "Il tuo nome o la tua ragione sociale e la tua partita IVA",
+          "title": "Fattura elettronica",
+          "vat": "Senza IVA, con la dicitura del regime forfettario"
+        },
+        "VatOrdinary": {
+          "issuedBy": "Il tuo nome o la tua ragione sociale e la tua partita IVA",
+          "title": "Fattura elettronica",
+          "vat": "IVA indicata sul documento"
+        }
+      },
+      "exit": {
+        "saveAndExit": "Salva ed esci",
+        "saved": "Risposte salvate in questo browser. Non è cambiato nulla finché non confermi."
+      },
+      "finishLabel": "Conferma e salva",
+      "help": {
+        "address": "Scrivi l’indirizzo di chi emette i documenti, come deve comparire sul documento.",
+        "button": "Aiuto",
+        "issuer": "Il nome sui documenti è quello di chi li emette: la ragione sociale, oppure nome e cognome. Le altre opzioni di solito non servono.",
+        "regime": "Il regime dice che documento serve: una ricevuta per un privato, una fattura elettronica se hai una partita IVA. Se non sei sicuro, chiedilo al tuo commercialista.",
+        "summary": "Controlla le risposte: «Modifica» torna al passo giusto. Non cambia nulla finché non confermi.",
+        "supportGeneric": "Hai ancora dubbi? Contatta il supporto CasaZen.",
+        "supportWithEmail": "Hai ancora dubbi? Scrivi al supporto:",
+        "title": "Come emetti i documenti?",
+        "who": "Per ogni prenotazione i documenti li emette una sola persona: il tuo channel manager, CasaZen (solo per le prenotazioni dirette) oppure il tuo commercialista. Scegli quello che usi già."
+      },
+      "labels": {
+        "mode": {
+          "Accountant": "Il tuo commercialista",
+          "CasaZenDirectOnly": "CasaZen, solo per le prenotazioni dirette",
+          "Octorate": "Il tuo channel manager"
+        },
+        "regime": {
+          "PrivatePerson": "Privato, senza partita IVA",
+          "VatFlatRate": "Partita IVA, regime forfettario",
+          "VatOrdinary": "Partita IVA, regime ordinario"
+        }
+      },
+      "loadError": "Non riusciamo a caricare come emetti i documenti.",
+      "loading": "Carico le tue impostazioni…",
+      "regime": {
+        "hasVatNumber": {
+          "legend": "Hai una partita IVA?",
+          "no": {
+            "description": "Affitti come privato, senza partita IVA.",
+            "title": "No, sono un privato"
+          },
+          "yes": {
+            "description": "Affitti come attività, con una partita IVA.",
+            "title": "Sì, ho una partita IVA"
+          }
+        },
+        "vatRegime": {
+          "flatRate": {
+            "description": "Fatturi senza IVA, con le regole del regime agevolato.",
+            "title": "Regime forfettario"
+          },
+          "hint": "Non sei sicuro? Chiedilo al tuo commercialista.",
+          "legend": "Che regime applichi?",
+          "ordinary": {
+            "description": "Applichi l’IVA come le altre attività.",
+            "title": "Regime ordinario"
+          }
+        }
+      },
+      "saved": "Come emetti i documenti è stato salvato",
+      "saveFailed": "Non siamo riusciti a salvare. Riprova tra un attimo.",
+      "steps": {
+        "address": {
+          "label": "Indirizzo",
+          "purpose": "L’indirizzo di chi emette, come deve comparire sul documento.",
+          "title": "L’indirizzo sui documenti"
+        },
+        "issuer": {
+          "label": "Dati",
+          "purpose": "Controlla il nome sui documenti. Abbiamo già compilato quello che sappiamo.",
+          "title": "I tuoi dati sui documenti"
+        },
+        "regime": {
+          "label": "Regime",
+          "purpose": "Due domande semplici: poi ti mostriamo il documento del tuo regime.",
+          "title": "Che regime hai?"
+        },
+        "summary": {
+          "label": "Riepilogo",
+          "purpose": "Ecco cosa succederà. Non cambia nulla finché non confermi.",
+          "title": "Controlla e conferma"
+        },
+        "who": {
+          "label": "Chi emette",
+          "purpose": "Scegli una sola risposta: per ogni prenotazione c’è un solo emittente.",
+          "title": "Chi emette i documenti?"
+        }
+      },
+      "summary": {
+        "effects": "Cosa succederà",
+        "items": {
+          "address": "Indirizzo",
+          "fiscalCode": "Codice fiscale",
+          "name": "Nome sui documenti",
+          "regime": "Regime",
+          "vatNumber": "Partita IVA",
+          "who": "Chi emette"
+        },
+        "problems": {
+          "fix": "Correggi",
+          "fixStep": "Correggi: {{step}}",
+          "title": "Prima di confermare, correggi questo"
+        }
+      },
+      "title": "Come emetti i documenti?",
+      "who": {
+        "accountant": {
+          "description": "CasaZen non emette documenti: restano a lui.",
+          "title": "Se ne occupa il commercialista"
+        },
+        "casazen": {
+          "description": "CasaZen emette i documenti delle prenotazioni del tuo sito e di quelle che inserisci tu, mai di quelle che arrivano dai portali.",
+          "title": "CasaZen emette i documenti (solo per le prenotazioni dirette)",
+          "unavailable": "Non ancora disponibile: in questo momento CasaZen non emette documenti."
+        },
+        "channelManager": {
+          "description": "CasaZen non emette nulla: i documenti li emette il tuo channel manager.",
+          "title": "Il tuo channel manager emette i documenti",
+          "unavailable": "Non ancora disponibile: il tuo channel manager non è collegato a CasaZen."
+        },
+        "legend": "Chi emette i documenti dei tuoi soggiorni?",
+        "recommended": "Consigliato"
+      }
     }
   },
   "guestCancellation": {

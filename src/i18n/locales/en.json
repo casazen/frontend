@@ -1293,6 +1293,10 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
+      "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
+      "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
+      "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
@@ -5074,6 +5078,268 @@
     },
     "list": {
       "title": "Properties"
+    }
+  },
+  "fiscalDocuments": {
+    "issuer": {
+      "address": {
+        "city": {
+          "example": "Milan",
+          "label": "Town or city"
+        },
+        "civic": {
+          "label": "Street number"
+        },
+        "postalCode": {
+          "hint": "The postal code (CAP): 5 digits.",
+          "label": "Postal code"
+        },
+        "province": {
+          "hint": "The two-letter abbreviation.",
+          "label": "Province"
+        },
+        "street": {
+          "example": "Via Roma",
+          "label": "Street or square"
+        }
+      },
+      "card": {
+        "action": "Set up",
+        "description": "Choose who issues the fiscal documents of your stays: your channel manager, CasaZen or your accountant.",
+        "title": "How you issue documents"
+      },
+      "data": {
+        "defaultSeries": {
+          "hint": "The letters before the number of the document. If you leave it empty we use the year.",
+          "label": "Number series"
+        },
+        "fatturaPaRegimeCode": {
+          "hint": "If you leave it empty we use the code of your regime.",
+          "label": "Regime code in the electronic invoice"
+        },
+        "fiscalCode": {
+          "hint": "It is needed for receipts. We save it in your tax profile.",
+          "label": "Fiscal code"
+        },
+        "issuerPec": {
+          "hint": "Only if you receive electronic invoices on your PEC (certified e-mail).",
+          "label": "PEC"
+        },
+        "issuerSdiRecipientCode": {
+          "hint": "It is 7 letters or digits. Only if you receive electronic invoices through a channel of your own.",
+          "label": "Recipient code of your channel"
+        },
+        "legalName": {
+          "hint": "The company name, or first and last name.",
+          "label": "Name on the documents"
+        },
+        "moreOptions": "More options",
+        "moreOptionsHint": "They are usually not needed: if you do not know what they are, leave them empty.",
+        "onRecord": {
+          "fiscalCode": "Fiscal code {{value}}, from your tax profile.",
+          "vatNumber": "VAT number {{value}}, from your tax profile."
+        },
+        "vatNumber": {
+          "hint": "It is 11 digits. We save it in your tax profile.",
+          "label": "VAT number"
+        }
+      },
+      "description": "Tell us who issues the fiscal documents of your stays and which document your regime needs. It only takes a few minutes.",
+      "done": {
+        "rule": {
+          "invoice": "For your regime the document is an electronic invoice.",
+          "receipt": "For your regime the document is a PDF receipt."
+        },
+        "title": "We saved how you issue documents",
+        "toFiscal": "Back to the fiscal regime",
+        "toHome": "Go to the home"
+      },
+      "effects": {
+        "accountant": {
+          "issues": "CasaZen does not issue documents for your bookings: your accountant takes care of it."
+        },
+        "casazen": {
+          "direct": "CasaZen issues documents only for direct bookings: the ones of your site and the ones you enter yourself.",
+          "portals": "For bookings that come from the portals CasaZen never issues documents: each booking has only one issuer.",
+          "ruleUnconfirmed": "Until the type of document and the VAT of your regime are confirmed, CasaZen does not issue any document."
+        },
+        "change": "You can change this choice whenever you like.",
+        "noSdi": "CasaZen sends nothing to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency).",
+        "octorate": {
+          "issues": "Your channel manager issues the documents: CasaZen does not issue any.",
+          "oneIssuer": "Each booking has only one issuer: where your channel manager issues, CasaZen never does."
+        },
+        "sdi": {
+          "available": "CasaZen can send electronic invoices to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency).",
+          "notAvailable": "Sending to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency) is not available yet: you download the XML file yourself."
+        }
+      },
+      "errors": {
+        "addressCivic": "The street number can have 20 characters at most.",
+        "addressStreet": "Write the street or square.",
+        "casazenUnavailable": "CasaZen does not issue documents yet: choose another answer.",
+        "city": "Write the town or city.",
+        "defaultSeries": "The series can have letters, digits and the signs . _ / - (20 characters at most).",
+        "fatturaPaRegimeCode": "The regime code has 4 letters or digits at most, for example RF01.",
+        "fiscalCode": "The fiscal code has 16 characters (11 digits for a company).",
+        "hasVatNumber": "Answer: do you have a VAT number?",
+        "issuerPec": "Write a valid PEC address, for example name@pec.it.",
+        "issuerSdiRecipientCode": "The recipient code has 7 letters or digits.",
+        "legalName": "Write the name that appears on the documents (200 characters at most).",
+        "modeRequired": "Choose who issues the documents.",
+        "octorateUnavailable": "Your channel manager is not connected: choose another answer.",
+        "postalCode": "The postal code has 5 digits.",
+        "province": "The province is the two-letter abbreviation, for example MI.",
+        "regime": "Choose your regime.",
+        "vatNumber": "The VAT number has 11 digits.",
+        "vatRegime": "Choose the regime you apply."
+      },
+      "example": {
+        "heading": "Example of a document",
+        "issuedTo": "The name and details of the guest",
+        "note": "It is only an example: the final type of document and VAT are confirmed by your accountant.",
+        "PrivatePerson": {
+          "issuedBy": "Your name and your fiscal code",
+          "title": "Receipt",
+          "vat": "No VAT"
+        },
+        "rows": {
+          "issuedBy": "Issued by",
+          "issuedTo": "Issued to",
+          "stay": "Stay",
+          "vat": "VAT"
+        },
+        "stay": "Dates and number of nights, with the amount",
+        "VatFlatRate": {
+          "issuedBy": "Your name or company name and your VAT number",
+          "title": "Electronic invoice",
+          "vat": "No VAT, with the wording of the flat-rate regime"
+        },
+        "VatOrdinary": {
+          "issuedBy": "Your name or company name and your VAT number",
+          "title": "Electronic invoice",
+          "vat": "VAT shown on the document"
+        }
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "Answers saved in this browser. Nothing has changed until you confirm."
+      },
+      "finishLabel": "Confirm and save",
+      "help": {
+        "address": "Write the address of whoever issues the documents, as it must appear on the document.",
+        "button": "Help",
+        "issuer": "The name on the documents is the one of whoever issues them: the company name, or first and last name. The other options are usually not needed.",
+        "regime": "The regime says which document is needed: a receipt for a private person, an electronic invoice if you have a VAT number. If you are not sure, ask your accountant.",
+        "summary": "Check your answers: “Edit” goes back to the right step. Nothing changes until you confirm.",
+        "supportGeneric": "Still in doubt? Contact CasaZen support.",
+        "supportWithEmail": "Still in doubt? Write to support:",
+        "title": "How do you issue documents?",
+        "who": "For each booking only one party issues the documents: your channel manager, CasaZen (for direct bookings only) or your accountant. Choose the one you already use."
+      },
+      "labels": {
+        "mode": {
+          "Accountant": "Your accountant",
+          "CasaZenDirectOnly": "CasaZen, for direct bookings only",
+          "Octorate": "Your channel manager"
+        },
+        "regime": {
+          "PrivatePerson": "Private person, no VAT number",
+          "VatFlatRate": "VAT number, flat-rate regime",
+          "VatOrdinary": "VAT number, ordinary regime"
+        }
+      },
+      "loadError": "We cannot load how you issue documents.",
+      "loading": "Loading your settings…",
+      "regime": {
+        "hasVatNumber": {
+          "legend": "Do you have a VAT number?",
+          "no": {
+            "description": "You rent as a private person, with no VAT number.",
+            "title": "No, I am a private person"
+          },
+          "yes": {
+            "description": "You rent as a business, with a VAT number.",
+            "title": "Yes, I have a VAT number"
+          }
+        },
+        "vatRegime": {
+          "flatRate": {
+            "description": "You invoice without VAT, under the rules of the simplified regime.",
+            "title": "Flat-rate regime"
+          },
+          "hint": "Not sure? Ask your accountant.",
+          "legend": "Which regime do you apply?",
+          "ordinary": {
+            "description": "You apply VAT like other businesses.",
+            "title": "Ordinary regime"
+          }
+        }
+      },
+      "saved": "How you issue documents has been saved",
+      "saveFailed": "We could not save. Try again in a moment.",
+      "steps": {
+        "address": {
+          "label": "Address",
+          "purpose": "The address of whoever issues, as it must appear on the document.",
+          "title": "The address on the documents"
+        },
+        "issuer": {
+          "label": "Details",
+          "purpose": "Check the name on the documents. We have already filled in what we know.",
+          "title": "Your details on the documents"
+        },
+        "regime": {
+          "label": "Regime",
+          "purpose": "Two simple questions: then we show you the document of your regime.",
+          "title": "Which regime do you have?"
+        },
+        "summary": {
+          "label": "Summary",
+          "purpose": "Here is what will happen. Nothing changes until you confirm.",
+          "title": "Check and confirm"
+        },
+        "who": {
+          "label": "Who issues",
+          "purpose": "Choose one answer: each booking has only one issuer.",
+          "title": "Who issues the documents?"
+        }
+      },
+      "summary": {
+        "effects": "What will happen",
+        "items": {
+          "address": "Address",
+          "fiscalCode": "Fiscal code",
+          "name": "Name on the documents",
+          "regime": "Regime",
+          "vatNumber": "VAT number",
+          "who": "Who issues"
+        },
+        "problems": {
+          "fix": "Fix",
+          "fixStep": "Fix: {{step}}",
+          "title": "Before you confirm, fix this"
+        }
+      },
+      "title": "How do you issue documents?",
+      "who": {
+        "accountant": {
+          "description": "CasaZen does not issue documents: they stay with your accountant.",
+          "title": "My accountant takes care of it"
+        },
+        "casazen": {
+          "description": "CasaZen issues the documents of the bookings of your site and the ones you enter yourself, never the ones that come from the portals.",
+          "title": "CasaZen issues the documents (direct bookings only)",
+          "unavailable": "Not available yet: right now CasaZen does not issue documents."
+        },
+        "channelManager": {
+          "description": "CasaZen issues nothing: your channel manager issues the documents.",
+          "title": "Your channel manager issues the documents",
+          "unavailable": "Not available yet: your channel manager is not connected to CasaZen."
+        },
+        "legend": "Who issues the documents of your stays?",
+        "recommended": "Recommended"
+      }
     }
   },
   "guestCancellation": {
