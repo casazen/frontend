@@ -1,5 +1,9 @@
 import { expect, test } from './test';
 
+test.beforeEach(async ({ page }) => {
+  await page.route('https://js.stripe.com/**', async route => route.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.Stripe = function () { return { _registerWrapper: function () {} }; };' }));
+});
+
 const LEASE = 'lease-1';
 const DUE = 'due-1';
 

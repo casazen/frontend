@@ -179,6 +179,7 @@ function stripeStub() {
 test.describe('Phone portals: tenant and landlord', () => {
   test.beforeEach(async ({ page }) => {
     await pinE2eLocale(page, 'it');
+    await page.route('https://js.stripe.com/**', async route => route.fulfill({ status: 200, contentType: 'application/javascript', body: stripeStub() }));
   });
 
   for (const viewport of VIEWPORTS) {
