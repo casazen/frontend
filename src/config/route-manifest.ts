@@ -939,11 +939,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
   },
   {
-    // Conto SEPA: the Italian euro bank-link session for condominium debits. It lives with the other settings of the area,
-    // not on the property and not on the contract. Linking is a write (`lease.create`). Who may only read the leases does not open it.
+    // Condominium payments are made externally; this page lists reminders and records manual settlement.
     path: '/app/long-rent/payments',
     context: 'long-rent',
-    requiredPermissions: ['lease.read', 'lease.create'],
+    requiredPermissions: ['property.read'],
     navKey: 'nav.longRentPayments',
     navPlacement: 'secondary',
     navOrder: 35,

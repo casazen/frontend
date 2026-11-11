@@ -348,6 +348,9 @@ export type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavai
 
 /** `POST /public/rent-payments/:id` with the token of the link: what the tenant sees, no personal data. */
 export interface PublicRentPayment {
+  components?: RentLedgerComponent[];
+  transactionFee?: number;
+  totalAmount?: number;
   installmentId: string;
   propertyName: string;
   landlordName: string;

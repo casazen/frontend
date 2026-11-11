@@ -885,6 +885,7 @@ describe('route-manifest nav helpers', () => {
       '/app/long-rent/service-requests',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
+      '/app/long-rent/payments',
     ]);
     // Profilo is no entry of the menu: for a user the area gives nothing, `getFirstOpenablePage` leads to it.
     const nothing = getVisibleNavEntries('long-rent', (_ctx, permission) => !permission);

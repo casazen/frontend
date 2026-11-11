@@ -102,12 +102,10 @@ async function exercisePayments(page: Page, leaseId: string): Promise<void> {
   await expect(page.getByTestId('lease-tab-pagamenti')).toBeVisible({ timeout: 60_000 });
   await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
   await expect(page.getByTestId('rent-not-on-contract')).toBeVisible();
-  await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
+  await page.getByRole('link', { name: 'Apri le spese condominiali' }).click();
   await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
-  const bank = page.getByTestId('condominium-bank-link');
-  await expect(bank).toBeVisible();
-  await expect(bank).toContainText('euro');
-  await expect(bank.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
-  await expect(bank).toContainText('registrare');
+  await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
+  await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Collega il conto' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Apri i contratti' })).toBeVisible();
 }
