@@ -9,6 +9,7 @@ import { useActivations, useStartActivation } from '@/queries/use-marketplace';
 import {
   ACTIVATION_STEP,
   CHANNEL_REFUSAL_CODE,
+  hasAccessStep,
   isAccessComplete,
   missingAccess,
   problemCodeOf,
@@ -69,6 +70,7 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
   const hotelIds = useWatch({ control, name: 'hotelIds' }) ?? {};
   const start = useStartActivation();
   const { kind, code, requirements, plans } = context;
+  const accessStep = hasAccessStep(requirements);
   const name = context.channelName ?? t('marketplace.activation.thisChannel');
 
   const activationIds = propertyIds.map((propertyId) => plans.get(propertyId)?.activationId ?? null);
@@ -145,7 +147,7 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
           const error = failures.get(propertyId);
           const code = problemCodeOf(error);
           const refused = code === CHANNEL_REFUSAL_CODE;
-          const fixAt = state === 'needsAccess' ? ACTIVATION_STEP.access : stepToFix(code);
+          const fixAt = state === 'needsAccess' ? ACTIVATION_STEP.access : stepToFix(code, accessStep);
           const canFix = fixAt === ACTIVATION_STEP.access || fixAt === ACTIVATION_STEP.property;
           const reason = state === 'failed' ? (translateErrorCode(code, t) ?? getProblemMessage(error, t) ?? t('marketplace.activation.connection.failed.generic')) : null;
 
@@ -180,7 +182,8 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
                       {t(fixAt === ACTIVATION_STEP.property ? 'marketplace.activation.connection.fixProperty' : 'marketplace.activation.connection.fix')}
                     </Button>
                   ) : null}
-                  {(state === 'failed' && !refused) || state === 'unconfirmed' ? (
+                  {/* A refusal of the channel is corrected at the access step; where the portal has none there is nothing to correct, and the way on is to try again. */}
+                  {(state === 'failed' && (!refused || !canFix)) || state === 'unconfirmed' ? (
                     <Button
                       type="button"
                       size="sm"

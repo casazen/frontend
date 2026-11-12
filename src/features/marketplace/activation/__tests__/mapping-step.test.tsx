@@ -94,6 +94,29 @@ describe('the mapping step: the rooms of the channel', () => {
     expect(saveActivationMapping).toHaveBeenCalledWith('act-1', [{ channelRoomId: 'room-1', productId: 'prod-1' }]);
   });
 
+  it('MappingStep_RoomMappedAlreadyOnTheChannelManager_HasNoDoNotLinkChoiceAndSaysItCanOnlyBeChanged', async () => {
+    givenTheRoomsOfTheChannel([
+      channelRoom({ channelRoomId: 'room-1', name: 'Camera doppia', mappedProductId: 'prod-2', proposedProductId: 'prod-1' }),
+      channelRoom({ channelRoomId: 'room-2', name: 'Suite', mappedProductId: null, proposedProductId: 'prod-2' }),
+    ]);
+    renderActivation(MAPPING_URL);
+    await screen.findByTestId('activation-room-prop-1-room-1', {}, WAIT);
+
+    // The mapping that exists is the choice, and the save cannot remove one: «do not link» is offered only for the room that is not mapped.
+    expect(select('room-1')).toHaveValue('prod-2');
+    expect(Array.from(select('room-1').options).map((option) => option.value)).toEqual(['', 'prod-1', 'prod-2']);
+    expect(Array.from(select('room-2').options).map((option) => option.value)).toEqual(['', 'prod-1', 'prod-2', '__skip__']);
+    expect(screen.getAllByText(i18n.t('marketplace.activation.mapping.alreadyLinked'))).toHaveLength(1);
+
+    fireEvent.click(primaryButton());
+
+    await onStep('activate');
+    expect(saveActivationMapping).toHaveBeenCalledWith('act-1', [
+      { channelRoomId: 'room-1', productId: 'prod-2' },
+      { channelRoomId: 'room-2', productId: 'prod-2' },
+    ]);
+  });
+
   it('MappingStep_MoreThanFiveRooms_ShowsFiveAtATimeWithShowMoreForTheRest', async () => {
     const rooms = Array.from({ length: 7 }, (_, index) => channelRoom({ channelRoomId: `room-${index + 1}`, name: `Camera ${index + 1}`, proposedProductId: 'prod-1' }));
     givenTheRoomsOfTheChannel(rooms);

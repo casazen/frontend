@@ -98,10 +98,10 @@ function LocationProbe() {
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 }
 
-/** The wizard on its own route, with the pages it can lead to marked. */
+/** The wizard on its own route, with the pages it can lead to marked. It gives back what `render` gives, and the client of the queries the wizard runs on. */
 export function renderActivation(url: string = ACTIVATION_PATH) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const rendered = render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={[url]}>
@@ -116,6 +116,8 @@ export function renderActivation(url: string = ACTIVATION_PATH) {
       </QueryClientProvider>
     </I18nextProvider>,
   );
+
+  return { ...rendered, client };
 }
 
 /** The address the router is at now, path and query. */

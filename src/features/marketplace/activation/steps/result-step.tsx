@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { translateErrorCode } from '@/lib/api-errors';
 import { MARKETPLACE_MINE_PATH, marketplaceHref } from '../../lib/marketplace-paths';
 import {
+  hasAccessStep,
   propertyNameOf,
   resultCounts,
   stepToFix,
@@ -64,7 +65,7 @@ export function ResultStep({ context, outcomes, exitPath, onFix }: ResultStepPro
           <ul className="space-y-3" role="list" data-testid="activation-result-list">
             {outcomes.map((outcome) => {
               const toFix = outcome.status === 'ToFix';
-              const target = stepToFix(outcome.errorCode);
+              const target = stepToFix(outcome.errorCode, hasAccessStep(context.requirements));
               return (
                 <li key={outcome.propertyId} className="min-w-0 space-y-2 rounded-lg border p-4" data-testid={`activation-result-${outcome.propertyId}`} data-status={outcome.status}>
                   <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">

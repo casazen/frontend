@@ -10823,6 +10823,8 @@
           "allDone": "Consent has been given for all the chosen properties.",
           "done": "Consent given for {{property}}",
           "loading": "Checking where you are…",
+          "notGiven": "Your channel manager does not show the consent for “{{property}}” on {{name}} yet. Give it on its panel, then press “Check again”, or ask for help.",
+          "recheck": "Check again",
           "title": "Consent to access {{name}}",
           "unavailable": "This step is not available yet: the consent is given on the panel of your channel manager. We will let you know as soon as it is.",
           "waiting": "The consent for {{property}} comes next"
@@ -10911,6 +10913,7 @@
         "working": "Import in progress"
       },
       "mapping": {
+        "alreadyLinked": "Already linked in your channel manager: you can change it here, not unlink it.",
         "choose": "Choose the room",
         "fixConnection": "Back to the connection",
         "leftOut_one": "{{count}} room cannot be managed by CasaZen and is left out.",
@@ -10953,7 +10956,8 @@
         "portalUnknown": "This channel is not available to you.",
         "retry": "Try again",
         "selected_one": "{{count}} property chosen",
-        "selected_other": "{{count}} properties chosen"
+        "selected_other": "{{count}} properties chosen",
+        "unread": "We could not read the status of: {{names}}. Try again to see them in the list."
       },
       "result": {
         "close": "Close",
@@ -11080,11 +11084,13 @@
         "nextStep": "Next step: check the request among the active ones.",
         "notYet": "The module does not show up in the license yet: we keep checking.",
         "nowActive": "The module shows up in the license: the function is active.",
+        "over": "The request for {{name}} is over. You can find the status of the function among the active ones.",
         "seeActive": "Go to the active ones",
         "statusLabel": "Status",
         "title": {
           "active": "The function is active",
           "none": "No request recorded",
+          "over": "The request is over",
           "requested": "Request recorded",
           "toFix": "The function is no longer in the license"
         },

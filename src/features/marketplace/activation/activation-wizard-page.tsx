@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { findPanelStep, isPanelStepDone } from '@/lib/onboarding-panel';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import {
+  activationReadOf,
   cachedActivation,
   fetchActivationMapping,
   fetchActivationPlan,
@@ -25,7 +26,7 @@ import type { MarketplaceActivationPlan, MarketplaceConnectionKind } from '@/typ
 import { SaveAndExit, WizardFrame } from '../components/wizard-frame';
 import { parseMarketplaceEntry } from '../lib/marketplace-entry';
 import { MARKETPLACE_PATH, MARKETPLACE_PROPERTY_PARAM } from '../lib/marketplace-paths';
-import { useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
+import { draftOfThePropertyOf, useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
 import {
   ACTIVATION_DRAFT_VERSION,
   ACTIVATION_STEP,
@@ -39,6 +40,7 @@ import {
   missingAccess,
   outcomeOfFailure,
   outcomeOfState,
+  panelAccessStatus,
   problemCodeOf,
   requirementsOf,
   roomChoices,
@@ -47,6 +49,7 @@ import {
   type ActivationOutcome,
   type ActivationStepId,
   type ActivationWizardValues,
+  type PanelAccessStatus,
   type PortalCredentials,
 } from './activation-wizard-model';
 import { AccessStep, type PanelAccess, type PanelAvailability } from './steps/access-step';
@@ -122,6 +125,8 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const requirements = firstPlan ? requirementsOf(firstPlan.requirements) : null;
   const channelName = firstPlan?.name ?? null;
   const planError = plans.size === 0 ? (planQueries.find((query) => query.isError)?.error ?? null) : null;
+  // A plan that could not be read leaves its property out of the lists: it is told with the way to read it again, never dropped without a word.
+  const unreadProperties = propertyIds.filter((propertyId, index) => planQueries[index]?.isError === true && !plans.has(propertyId));
 
   const context: ActivationContext = {
     kind,
@@ -133,6 +138,7 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
     plans,
     plansPending: planQueries.some((query) => query.isPending),
     planError,
+    unreadProperties,
     onRetry: () => {
       void propertiesQuery.refetch();
       planQueries.forEach((query) => void query.refetch());
@@ -144,11 +150,25 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const needsPanel = requirements?.panelAccess === true;
   const panelSteps = usePanelSteps(undefined, { enabled: needsPanel && panelAvailability === 'ready' });
   const panel: PanelAccess = { availability: panelAvailability, steps: panelSteps.data };
-  const panelDone = (propertyId: string) => isPanelStepDone(findPanelStep(panelSteps.data, { kind: 'channelAccess', propertyId, channelCode: code }));
+  // What the access step read of the activations (`panelAccessDone`) is in the cache of the wizard; the step tells the page when it read, so that «Continua» follows it.
+  const [, noteActivationsRead] = useReducer((count: number) => count + 1, 0);
 
   const requestedPropertyId = searchParams.get(MARKETPLACE_PROPERTY_PARAM);
   const name = channelName ?? t('marketplace.activation.thisChannel');
   const activationIdOf = (propertyId: string) => plans.get(propertyId)?.activationId ?? null;
+  /**
+   * Where the access on the panel stands for a property: the channel manager's word where its activation exists (it is what the import and the activation go by), else the
+   * guided step. A step the person confirmed before the connection existed is not the access given against what the channel manager says.
+   */
+  const panelAccessOf = (propertyId: string): PanelAccessStatus => {
+    const read = activationReadOf(queryClient, activationIdOf(propertyId));
+    return panelAccessStatus({
+      hasActivation: read.hasActivation,
+      panelAccessDone: read.state?.panelAccessDone,
+      reading: read.reading,
+      stepDone: isPanelStepDone(findPanelStep(panelSteps.data, { kind: 'channelAccess', propertyId, channelCode: code })),
+    });
+  };
   /** The activation of a property for a button that acts on it: from the plan read, or from a new read, so that a plan not read yet is never taken for «no activation». */
   const resolveActivationId = async (propertyId: string): Promise<string | null> =>
     activationIdOf(propertyId) ?? (await fetchActivationPlan(queryClient, kind, code, propertyId)).activationId;
@@ -211,7 +231,7 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       title: t('marketplace.activation.steps.access.title', { name }),
       purpose: t('marketplace.activation.steps.access.purpose'),
       // The access on the panel is done by the person there and seen by CasaZen: until every chosen property has it, the wizard waits.
-      nextDisabled: needsPanel && (panelAvailability !== 'ready' || !values.propertyIds.every(panelDone)),
+      nextDisabled: needsPanel && (panelAvailability !== 'ready' || !values.propertyIds.every((propertyId) => panelAccessOf(propertyId) === 'given')),
       beforeNext: (answers) => {
         const missing = missingAccess(requirements ?? requirementsOf([]), answers.propertyIds, answers.hotelIds, credentials);
         if (!isAccessComplete(missing)) {
@@ -228,6 +248,7 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
           showErrors={showAccessErrors}
           panel={panel}
           onSaveAndExit={leave}
+          onActivationsRead={noteActivationsRead}
           onChoose={() => goTo(ACTIVATION_STEP.property)}
         />
       ),
@@ -358,7 +379,7 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
         steps={stepsFor(ACTIVATION_WIZARD_DEFAULTS)}
         stepsFor={stepsFor}
         defaultValues={restart ?? { ...ACTIVATION_WIZARD_DEFAULTS, propertyIds: requestedPropertyId ? [requestedPropertyId] : [] }}
-        draft={{ version: ACTIVATION_DRAFT_VERSION }}
+        draft={{ version: ACTIVATION_DRAFT_VERSION, accept: draftOfThePropertyOf(requestedPropertyId) }}
         finishLabel={t('marketplace.activation.activate.finish', { name })}
         finishFailedMessage={failedMessage}
         onFinish={activateAll}

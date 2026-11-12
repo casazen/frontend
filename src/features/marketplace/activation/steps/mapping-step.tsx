@@ -14,6 +14,7 @@ import {
   ACTIVATION_STEP,
   MAPPING_PAGE_SIZE,
   SKIP_ROOM,
+  hasAccessStep,
   mappingProblem,
   problemCodeOf,
   propertyNameOf,
@@ -42,6 +43,8 @@ interface MappingSectionProps {
   query: UseQueryResult<MarketplaceActivationMapping>;
   overrides: Readonly<Record<string, string>>;
   showErrors: boolean;
+  /** The portal has an access step: a problem about the access can lead back to it. */
+  accessStep: boolean;
   onChange: (channelRoomId: string, productId: string) => void;
   onFix: (step: ActivationStepId) => void;
 }
@@ -50,7 +53,7 @@ interface MappingSectionProps {
  * The rooms of the channel of one property (E09/F02/US04/T02, UX-04): one row for each room, with the room CasaZen proposes already chosen, a select to change it and the
  * choice that says the room is not one of the property's. About five rows at a time and «Mostra altre» for the rest: one topic on the screen, not a table of twenty rooms.
  */
-function MappingSection({ propertyId, propertyName, planRead, activationId, query, overrides, showErrors, onChange, onFix }: MappingSectionProps) {
+function MappingSection({ propertyId, propertyName, planRead, activationId, query, overrides, showErrors, accessStep, onChange, onFix }: MappingSectionProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const [visible, setVisible] = useState(MAPPING_PAGE_SIZE);
@@ -84,7 +87,7 @@ function MappingSection({ propertyId, propertyName, planRead, activationId, quer
     );
   } else if (query.isError) {
     const code = problemCodeOf(query.error);
-    const fixAt = stepToFix(code);
+    const fixAt = stepToFix(code, accessStep);
     body = (
       <Alert
         variant="danger"
@@ -133,11 +136,13 @@ function MappingSection({ propertyId, propertyName, planRead, activationId, quer
           {manageable.slice(0, visible).map((room) => {
             const choice = choices[room.channelRoomId] ?? '';
             const proposed = overrides[room.channelRoomId] === undefined && room.mappedProductId === null && room.proposedProductId !== null && room.proposedProductId === choice;
+            // The save adds or changes mappings and removes none: a room that is mapped already can be changed here, and «do not link» is not offered for it (it would be told and ignored).
+            const linked = room.mappedProductId !== null;
             return (
               <li key={room.channelRoomId} className="min-w-0">
                 <Field
                   label={roomLabel(room)}
-                  hint={proposed ? t('marketplace.activation.mapping.proposed') : undefined}
+                  hint={proposed ? t('marketplace.activation.mapping.proposed') : linked ? t('marketplace.activation.mapping.alreadyLinked') : undefined}
                   error={showErrors && choice === '' ? t('marketplace.activation.mapping.undecided') : undefined}
                 >
                   <Select value={choice} onChange={(event) => onChange(room.channelRoomId, event.target.value)} data-testid={`activation-room-${propertyId}-${room.channelRoomId}`}>
@@ -147,7 +152,7 @@ function MappingSection({ propertyId, propertyName, planRead, activationId, quer
                         {product.name ?? product.productId}
                       </option>
                     ))}
-                    <option value={SKIP_ROOM}>{t('marketplace.activation.mapping.skip')}</option>
+                    {linked ? null : <option value={SKIP_ROOM}>{t('marketplace.activation.mapping.skip')}</option>}
                   </Select>
                 </Field>
               </li>
@@ -231,6 +236,7 @@ export function MappingStep({ context, overrides, onChange, showErrors, onFix, o
           query={mappings[index]}
           overrides={overrides[propertyId] ?? {}}
           showErrors={showErrors}
+          accessStep={hasAccessStep(context.requirements)}
           onChange={(channelRoomId, productId) => onChange(propertyId, channelRoomId, productId)}
           onFix={onFix}
         />

@@ -165,6 +165,8 @@ export function useActivationPlans(kind: MarketplaceConnectionKind, code: string
       queryFn: () => getActivationPlan(kind, code, propertyId),
       staleTime: 0,
       refetchOnMount: 'always' as const,
+      // One read for each property of the host: the window gaining the focus (the person is back from the panel of the channel manager) does not ask for all of them again.
+      refetchOnWindowFocus: false,
     })),
   });
 }
@@ -205,6 +207,25 @@ export function useActivations(ids: ReadonlyArray<string | null | undefined>) {
 /** The state of an activation as the last step gave it (nothing is asked): what a button that decides whether the wizard goes on reads. `undefined` when no step has given it. */
 export function cachedActivation(queryClient: QueryClient, id: string | null | undefined): MarketplaceActivationState | undefined {
   return id ? queryClient.getQueryData<MarketplaceActivationState>(activationKey(id)) : undefined;
+}
+
+/**
+ * How the read of an activation stands (nothing is asked): the state it gave, and whether it is being read now or its read has not begun. A read that failed has no state
+ * and is not going on. What the page reads, without a hook, of what a step of the wizard has asked.
+ */
+export function activationReadOf(
+  queryClient: QueryClient,
+  id: string | null | undefined,
+): { hasActivation: boolean; state: MarketplaceActivationState | undefined; reading: boolean } {
+  if (!id) return { hasActivation: false, state: undefined, reading: false };
+  const query = queryClient.getQueryState<MarketplaceActivationState>(activationKey(id));
+
+  return { hasActivation: true, state: query?.data, reading: query === undefined || query.fetchStatus === 'fetching' };
+}
+
+/** Reads the state of an activation again, whatever its age: «Check again» of the access step, and a guided step that has just been done. */
+export function refreshActivation(queryClient: QueryClient, id: string): Promise<void> {
+  return queryClient.refetchQueries({ queryKey: activationKey(id), exact: true });
 }
 
 /**

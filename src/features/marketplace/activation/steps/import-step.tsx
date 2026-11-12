@@ -10,6 +10,7 @@ import { isImportRequested, useActivationMappings, useImportActivation } from '@
 import {
   ACTIVATION_STEP,
   IMPORT_ITEMS,
+  hasAccessStep,
   importItemState,
   problemCodeOf,
   propertyNameOf,
@@ -132,7 +133,7 @@ export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepPr
           const readError = requested && mappings[index]?.isError && !roomsIn ? mappings[index].error : null;
           const error = importError ?? readError;
           const code = problemCodeOf(error);
-          const fixAt = activationId === null ? ACTIVATION_STEP.connection : stepToFix(code);
+          const fixAt = activationId === null ? ACTIVATION_STEP.connection : stepToFix(code, hasAccessStep(context.requirements));
           const canFix = fixAt === ACTIVATION_STEP.access || fixAt === ACTIVATION_STEP.connection || fixAt === ACTIVATION_STEP.property;
           const problem =
             activationId === null

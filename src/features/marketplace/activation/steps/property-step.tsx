@@ -11,7 +11,7 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import type { MarketplaceActivationStatus, Property } from '@/types';
 import { CHANNELS_PAGE_PATH } from '../../lib/marketplace-paths';
 import { WIZARD_LINK_CLASS } from '../../components/wizard-frame';
-import { problemCodeOf, propertyAvailability, type ActivationContext, type ActivationWizardValues } from '../activation-wizard-model';
+import { problemCodeOf, propertyAvailability, propertyNameOf, type ActivationContext, type ActivationWizardValues } from '../activation-wizard-model';
 
 /** The words of a status: the ones of the cards of the marketplace (a request that waits and an activation that is not finished are both «In attesa»). */
 const STATUS_TEXT: Readonly<Record<MarketplaceActivationStatus, string | null>> = {
@@ -175,6 +175,21 @@ export function PropertyStep({ context }: PropertyStepProps) {
       {cannotStart ? (
         <Alert variant="warning" data-testid="activation-not-creatable">
           {t('marketplace.activation.property.notCreatable', { name })}
+        </Alert>
+      ) : null}
+
+      {/* A plan that could not be read leaves its property in neither list: it is told, with the way to read it again, and never dropped in silence. */}
+      {context.unreadProperties.length > 0 ? (
+        <Alert
+          variant="warning"
+          data-testid="activation-unread"
+          action={
+            <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={context.onRetry} data-testid="activation-unread-retry">
+              {t('marketplace.activation.property.retry')}
+            </Button>
+          }
+        >
+          {t('marketplace.activation.property.unread', { names: context.unreadProperties.map((id) => propertyNameOf(properties, id) ?? id).join(', ') })}
         </Alert>
       ) : null}
 

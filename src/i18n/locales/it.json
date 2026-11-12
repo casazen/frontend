@@ -10823,6 +10823,8 @@
           "allDone": "Il consenso è stato dato per tutti gli immobili scelti.",
           "done": "Consenso dato per {{property}}",
           "loading": "Controllo a che punto sei…",
+          "notGiven": "Il tuo channel manager non mostra ancora il consenso per «{{property}}» su {{name}}. Daglielo dal suo pannello e poi premi «Controlla di nuovo», oppure chiedi aiuto.",
+          "recheck": "Controlla di nuovo",
           "title": "Consenso all'accesso a {{name}}",
           "unavailable": "Questo passaggio non è ancora disponibile: il consenso si dà sul pannello del tuo channel manager. Ti avvisiamo appena si può.",
           "waiting": "Il consenso per {{property}} viene dopo"
@@ -10911,6 +10913,7 @@
         "working": "Importazione in corso"
       },
       "mapping": {
+        "alreadyLinked": "Già collegata nel tuo channel manager: da qui la puoi cambiare, non scollegare.",
         "choose": "Scegli la camera",
         "fixConnection": "Torna al collegamento",
         "leftOut_one": "{{count}} camera non si può gestire da CasaZen e resta fuori.",
@@ -10953,7 +10956,8 @@
         "portalUnknown": "Questo canale non è disponibile per te.",
         "retry": "Riprova",
         "selected_one": "{{count}} immobile scelto",
-        "selected_other": "{{count}} immobili scelti"
+        "selected_other": "{{count}} immobili scelti",
+        "unread": "Non siamo riusciti a leggere lo stato di: {{names}}. Riprova per vederli nell'elenco."
       },
       "result": {
         "close": "Chiudi",
@@ -11080,11 +11084,13 @@
         "nextStep": "Prossimo passo: controlla la richiesta tra gli attivi.",
         "notYet": "Il modulo non compare ancora nella licenza: continuiamo a controllare.",
         "nowActive": "Il modulo compare nella licenza: la funzione è attiva.",
+        "over": "La richiesta di {{name}} è finita. Trovi lo stato della funzione tra gli attivi.",
         "seeActive": "Vai agli attivi",
         "statusLabel": "Stato",
         "title": {
           "active": "La funzione è attiva",
           "none": "Nessuna richiesta registrata",
+          "over": "La richiesta è finita",
           "requested": "Richiesta registrata",
           "toFix": "La funzione non risulta più nella licenza"
         },

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { getActivation, getActivationMapping, getActivationPlan, importActivation, startActivation } from '@/api/marketplace.api';
 import { propertiesApi } from '@/api/properties.api';
@@ -86,6 +87,23 @@ function bothChosenOn(step: string) {
 }
 
 const row = (propertyId: string) => screen.getByTestId(`activation-connection-${propertyId}`);
+
+const SECRET_USERNAME = 'host-login-4711';
+const SECRET_PASSWORD = 'Pa$$-4711-secret';
+
+/** The error of axios for a request the server refused: the request that failed is in `config.data`, as axios keeps it (the body of the start holds the access data). */
+function axiosErrorOfRequest(status: number, data: unknown, request: unknown): AxiosError {
+  const config = { headers: new AxiosHeaders(), data: JSON.stringify(request) } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data, statusText: '', headers: {}, config });
+}
+
+/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
+function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'string') return value.includes(secret);
+  if (typeof value !== 'object' || value === null || seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some((item) => holds(item, secret, seen));
+}
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -184,6 +202,47 @@ describe('the connection step: what goes wrong', () => {
     await onStep('access');
     // The access data is still there to be corrected (it is forgotten only once the connection is made).
     expect(screen.getByTestId('activation-username')).toHaveValue('ana');
+  });
+
+  it('ConnectionStep_StartThatFails_LeavesNoAccessDataInTheCacheOfTheMutationsNorInWhatTheStepKeeps', async () => {
+    givenTheHost({ requirements: ['credentials'] });
+    // The error of axios carries the request that failed, and the body of the start holds the username and the password.
+    vi.mocked(startActivation).mockImplementation(async (request) => {
+      throw axiosErrorOfRequest(502, { code: 'octorate_partner_failed' }, request);
+    });
+    const { client } = renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=access`);
+
+    fireEvent.change(await screen.findByTestId('activation-username', {}, WAIT), { target: { value: SECRET_USERNAME } });
+    fireEvent.change(screen.getByTestId('activation-password'), { target: { value: SECRET_PASSWORD } });
+    fireEvent.click(primaryButton());
+
+    // The channel refuses: the person is told, and the data they typed is still there to be corrected.
+    expect(await screen.findByTestId('activation-connection-prop-1-problem', {}, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.octoratePartnerFailed'));
+    expect(startActivation).toHaveBeenCalledWith(expect.objectContaining({ username: SECRET_USERNAME, password: SECRET_PASSWORD }));
+    // What the cache of the mutations keeps of the failed start is the failure without its request.
+    const mutations = () => client.getMutationCache().getAll();
+    expect(mutations().some((mutation) => holds(mutation.state, SECRET_PASSWORD) || holds(mutation.state, SECRET_USERNAME))).toBe(false);
+
+    // And once the step is left, the failed mutation goes at once: it is not kept for the minutes a mutation is kept by default.
+    cleanup();
+    await waitFor(() => expect(mutations().filter((mutation) => mutation.state.status === 'error')).toHaveLength(0), WAIT);
+    expect(mutations().some((mutation) => holds(mutation.state, SECRET_PASSWORD))).toBe(false);
+  });
+
+  it('ConnectionStep_PortalThatAsksForNothingAndTheChannelRefuses_HasNoFixToAnAccessStepItDoesNotHaveAndCanBeTriedAgain', async () => {
+    givenTheHost({ requirements: [] });
+    vi.mocked(startActivation).mockRejectedValueOnce(axiosError(502, { code: 'octorate_partner_failed' }));
+    vi.mocked(importActivation).mockReturnValue(new Promise(() => undefined));
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=connection`);
+
+    const problem = await screen.findByTestId('activation-connection-prop-1-problem', {}, WAIT);
+    expect(problem).toHaveTextContent(i18n.t('marketplace.activation.connection.failed.refused', { name: 'Booking.com' }));
+    // There is no access step for this portal, so there is nothing to correct there: no Fix that would lead nowhere, and «Riprova» is the way on.
+    expect(screen.queryByTestId('activation-connection-prop-1-fix')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('activation-connection-prop-1-retry'));
+
+    await onStep('import');
+    expect(startActivation).toHaveBeenCalledTimes(2);
   });
 
   it('ConnectionStep_PropertyWithoutItsAccessData_AsksForItAgainInsteadOfCallingTheServer', async () => {

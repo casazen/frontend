@@ -12,12 +12,14 @@ import {
   activationWizardId,
   asksForAccess,
   connectionKindOfSlug,
+  hasAccessStep,
   importItemState,
   isAccessComplete,
   mappingProblem,
   missingAccess,
   outcomeOfFailure,
   outcomeOfState,
+  panelAccessStatus,
   problemCodeOf,
   propertyAvailability,
   requirementsOf,
@@ -27,6 +29,7 @@ import {
   selectableChoice,
   startRequestFor,
   stepToFix,
+  type PanelAccessEvidence,
 } from '../activation-wizard-model';
 
 function refusal(status: number, data: unknown): AxiosError {
@@ -161,6 +164,25 @@ describe('a problem and the step it leads back to', () => {
     expect(stepToFix(code)).toBe(step);
   });
 
+  it.each([['octorate_partner_failed'], ['marketplace_panel_access_pending'], ['marketplace_credentials_required'], ['connection_not_enabled'], ['connection_disabled'], ['d6_channel_failed']])(
+    'stepToFix_%sOnAPortalWithNoAccessStep_NeverLeadsToTheAccess_ItIsTriedAgainFromTheLastStep',
+    (code) => {
+      expect(stepToFix(code, false)).toBe('activate');
+    },
+  );
+
+  it('stepToFix_ProblemThatIsNotAboutTheAccess_IsTheSameWhetherOrNotThePortalHasAnAccessStep', () => {
+    expect(stepToFix('marketplace_mapping_required', false)).toBe('mapping');
+    expect(stepToFix('connection_missing', false)).toBe('connection');
+    expect(stepToFix('marketplace_property_not_linked', false)).toBe('property');
+  });
+
+  it('hasAccessStep_PortalThatAsksForNothing_HasNone_AndWhileNothingIsReadTheStepStays', () => {
+    expect(hasAccessStep(requirementsOf([]))).toBe(false);
+    expect(hasAccessStep(requirementsOf(['credentials']))).toBe(true);
+    expect(hasAccessStep(null)).toBe(true);
+  });
+
   it('problemCodeOf_AnswerOfTheServer_IsItsCode', () => {
     expect(problemCodeOf(refusal(409, { code: 'marketplace_panel_access_pending' }))).toBe('marketplace_panel_access_pending');
     expect(problemCodeOf(refusal(502, 'a page of a proxy'))).toBeNull();
@@ -215,6 +237,15 @@ describe('the mapping of the rooms', () => {
     expect(roomChoices(rooms, { r1: 'p-suite', r3: SKIP_ROOM })).toEqual({ r1: 'p-suite', r2: 'p-suite', r3: SKIP_ROOM });
   });
 
+  it('roomChoices_RoomThatIsMappedAlready_IsNeverSkipped_TheSaveCannotRemoveAMapping', () => {
+    const mapped = room({ channelRoomId: 'r1', mappedProductId: 'p-doppia', proposedProductId: 'p-suite' });
+
+    // A skip that gets here anyway leaves the mapping as it is; a change to another product still counts.
+    expect(roomChoices([mapped], { r1: SKIP_ROOM })).toEqual({ r1: 'p-doppia' });
+    expect(roomChoices([mapped], { r1: 'p-suite' })).toEqual({ r1: 'p-suite' });
+    expect(roomChoices([room({ channelRoomId: 'r2' })], { r2: SKIP_ROOM })).toEqual({ r2: SKIP_ROOM });
+  });
+
   it('roomChoices_RoomTheChannelManagerCannotManage_IsNeverMapped', () => {
     expect(roomChoices([room({ channelRoomId: 'r1', manageable: false, proposedProductId: 'p1' })], { r1: 'p1' })).toEqual({});
   });
@@ -231,6 +262,42 @@ describe('the mapping of the rooms', () => {
   it('mappingProblem_ARoomWithoutADecision_StopsTheSave', () => {
     expect(mappingProblem({ r1: 'p1', r2: '' })).toBe('undecided');
     expect(mappingProblem({ r1: 'p1', r2: SKIP_ROOM })).toBeNull();
+  });
+});
+
+describe('the access on the panel of the channel manager', () => {
+  const evidence = (overrides: Partial<PanelAccessEvidence> = {}): PanelAccessEvidence => ({
+    hasActivation: true,
+    panelAccessDone: undefined,
+    reading: false,
+    stepDone: false,
+    ...overrides,
+  });
+
+  it('panelAccessStatus_ChannelManagerShowsTheAccess_IsGivenWhateverTheGuidedStep', () => {
+    expect(panelAccessStatus(evidence({ panelAccessDone: true, stepDone: false }))).toBe('given');
+    expect(panelAccessStatus(evidence({ panelAccessDone: true, stepDone: true }))).toBe('given');
+  });
+
+  it('panelAccessStatus_GuidedStepDoneButTheChannelManagerDoesNotShowTheAccess_IsNotGivenNeverGiven', () => {
+    expect(panelAccessStatus(evidence({ panelAccessDone: false, stepDone: true }))).toBe('notGiven');
+  });
+
+  it('panelAccessStatus_NeitherTheGuidedStepNorTheChannelManager_IsStillToDo', () => {
+    expect(panelAccessStatus(evidence({ panelAccessDone: false, stepDone: false }))).toBe('toDo');
+  });
+
+  it('panelAccessStatus_ActivationBeingRead_IsReadingNeverGivenOnTheWordOfAnOldRead', () => {
+    expect(panelAccessStatus(evidence({ reading: true, stepDone: true }))).toBe('reading');
+    expect(panelAccessStatus(evidence({ reading: true, panelAccessDone: true, stepDone: true }))).toBe('reading');
+  });
+
+  it('panelAccessStatus_NoActivationYetOrItCannotBeRead_TheGuidedStepIsAllThereIs', () => {
+    // The first pass: nothing exists that the channel manager could be asked about.
+    expect(panelAccessStatus(evidence({ hasActivation: false, stepDone: true }))).toBe('given');
+    expect(panelAccessStatus(evidence({ hasActivation: false, stepDone: false }))).toBe('toDo');
+    // A read that failed has no word to give.
+    expect(panelAccessStatus(evidence({ panelAccessDone: undefined, reading: false, stepDone: true }))).toBe('given');
   });
 });
 

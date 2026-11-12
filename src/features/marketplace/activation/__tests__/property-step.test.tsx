@@ -4,7 +4,7 @@ import i18n from '@/i18n/config';
 import { getActivationPlan } from '@/api/marketplace.api';
 import { propertiesApi } from '@/api/properties.api';
 import { CHANNELS_PAGE_PATH } from '../../lib/marketplace-paths';
-import { readWizardDraft } from '@/lib/wizard-draft';
+import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
 import { ACTIVATION_PATH, SCOPE, WAIT, WIZARD_DRAFT_ID, axiosError, currentLocation, onStep, plan, primaryButton, property, renderActivation } from './activation-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -55,6 +55,28 @@ describe('the first step: which properties', () => {
     await waitFor(() => expect(screen.getByTestId('activation-property-count')).toHaveTextContent(i18n.t('marketplace.activation.property.selected', { count: 2 })), WAIT);
   });
 
+  it('PropertyStep_PlanOfOnePropertyThatCouldNotBeRead_IsToldWithRetryAndTheOthersAreStillThere', async () => {
+    givenProperties();
+    let failing = true;
+    vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) => {
+      if (propertyId === 'prop-2' && failing) throw axiosError(500, { title: 'Server error' });
+      return plan({ propertyId });
+    });
+    renderActivation(ACTIVATION_PATH);
+
+    // The property whose plan was not read does not vanish: it is named, with the way to read it again; the one that was read is in the list.
+    const notice = await screen.findByTestId('activation-unread', {}, WAIT);
+    expect(notice).toHaveTextContent(i18n.t('marketplace.activation.property.unread', { names: 'Casa Azzurra' }));
+    expect(screen.getByTestId('activation-property-prop-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('activation-property-prop-2')).not.toBeInTheDocument();
+
+    failing = false;
+    fireEvent.click(screen.getByTestId('activation-unread-retry'));
+
+    expect(await screen.findByTestId('activation-property-prop-2', {}, WAIT)).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('activation-unread')).not.toBeInTheDocument(), WAIT);
+  });
+
   it('PropertyStep_TheOnlyLinkedProperty_IsChosenForThePerson', async () => {
     givenProperties([ROSA]);
     renderActivation(ACTIVATION_PATH);
@@ -68,6 +90,27 @@ describe('the first step: which properties', () => {
 
     await waitFor(() => expect(screen.getByTestId('activation-property-prop-2')).toBeChecked(), WAIT);
     expect(screen.getByTestId('activation-property-prop-1')).not.toBeChecked();
+  });
+
+  it('PropertyStep_DraftOfTheTabThatDoesNotNameThePropertyOfTheAddress_IsDroppedSoTheWizardOpensOnTheOneThePersonCameFor', async () => {
+    givenProperties();
+    // The draft that an earlier visit left in this tab names another property.
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'property', values: { propertyIds: ['prop-1'], hotelIds: {} } });
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-2`);
+
+    await waitFor(() => expect(screen.getByTestId('activation-property-prop-2')).toBeChecked(), WAIT);
+    expect(screen.getByTestId('activation-property-prop-1')).not.toBeChecked();
+    expect(screen.getByTestId('activation-property-count')).toHaveTextContent(i18n.t('marketplace.activation.property.selected', { count: 1 }));
+  });
+
+  it('PropertyStep_DraftOfTheTabThatNamesThePropertyOfTheAddress_IsKeptWithEverythingItHolds', async () => {
+    givenProperties();
+    // The person comes back (from the panel of the channel manager, from «Salva ed esci») to the properties they had chosen.
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'property', values: { propertyIds: ['prop-1', 'prop-2'], hotelIds: {} } });
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-2&step=property`);
+
+    await waitFor(() => expect(screen.getByTestId('activation-property-prop-2')).toBeChecked(), WAIT);
+    expect(screen.getByTestId('activation-property-prop-1')).toBeChecked();
   });
 
   it('PropertyStep_PropertyOfTheAddressThatIsNotLinked_IsTakenOutOfTheChoiceAndNotChosenInSilence', async () => {

@@ -58,6 +58,39 @@ export function connectionKindOfSlug(slug: string | undefined): MarketplaceConne
   }
 }
 
+/**
+ * Where the access on the panel of the channel manager stands for one property. `given`: it is. `toDo`: the guided step is still to do. `notGiven`: the person said the
+ * guided step was done, and the channel manager does not show the access (the step cannot be done again: it is told, with a new check and help). `reading`: the
+ * channel manager is being asked.
+ */
+export type PanelAccessStatus = 'given' | 'toDo' | 'notGiven' | 'reading';
+
+/** What is known of the access on the panel for one property. */
+export interface PanelAccessEvidence {
+  /** The activation of the property exists: there is a connection the channel manager can be asked about. */
+  hasActivation: boolean;
+  /** What the channel manager says of the access (`panelAccessDone` of the state of the activation); `undefined` when it was not read or could not be. */
+  panelAccessDone: boolean | undefined;
+  /** The activation is being read (or its read has not begun). */
+  reading: boolean;
+  /** The guided step of the panel is done (seen by CasaZen, or confirmed by the person). */
+  stepDone: boolean;
+}
+
+/**
+ * The access on the panel for one property. Where the activation exists the channel manager's word is the proof (`panelAccessDone`, which the import and the activation
+ * go by: they refuse with `marketplace_panel_access_pending` without it): a guided step that the person confirmed before the connection existed is only their word, and is
+ * never shown as given against it. Where there is no activation to ask about (the first pass), or it cannot be read, the guided step is all there is.
+ */
+export function panelAccessStatus(evidence: PanelAccessEvidence): PanelAccessStatus {
+  if (evidence.hasActivation && evidence.reading) return 'reading';
+  if (evidence.hasActivation && evidence.panelAccessDone !== undefined) {
+    if (evidence.panelAccessDone) return 'given';
+    return evidence.stepDone ? 'notGiven' : 'toDo';
+  }
+  return evidence.stepDone ? 'given' : 'toDo';
+}
+
 /** What the portal asks of the person, one flag for each thing (the plan sends them as codes, in the order of the wizard). */
 export type ActivationRequirements = Readonly<Record<MarketplaceActivationRequirement, boolean>>;
 
@@ -76,12 +109,17 @@ export function asksForAccess(requirements: ActivationRequirements): boolean {
 }
 
 /**
- * The steps the portal needs, in order. A portal that asks for nothing skips the access step. While what the portal asks is not known yet (nothing was
- * read) the step stays in the list, so that the list does not lose a step under the person when the answer comes.
+ * True when the wizard has an access step for the portal: the portal asks the person for something, or what it asks is not known yet (nothing was read: the step
+ * stays in the list, so that the list does not lose a step under the person when the answer comes).
  */
+export function hasAccessStep(requirements: ActivationRequirements | null): boolean {
+  return requirements === null || asksForAccess(requirements);
+}
+
+/** The steps the portal needs, in order. A portal that asks for nothing skips the access step. */
 export function activationStepIds(requirements: ActivationRequirements | null): ActivationStepId[] {
   const steps: ActivationStepId[] = [ACTIVATION_STEP.property];
-  if (requirements === null || asksForAccess(requirements)) steps.push(ACTIVATION_STEP.access);
+  if (hasAccessStep(requirements)) steps.push(ACTIVATION_STEP.access);
   steps.push(ACTIVATION_STEP.connection, ACTIVATION_STEP.import, ACTIVATION_STEP.mapping, ACTIVATION_STEP.activate);
   return steps;
 }
@@ -161,10 +199,11 @@ export function problemCodeOf(error: unknown): string | null {
 
 /**
  * The step a problem leads back to, by its code: the one where the person can change what is wrong. A refusal of the channel, an access that is not
- * given and a connection that is not enabled are about the access; a connection that is gone starts again; a mapping that is empty or wrong is the
- * mapping; anything else is tried again from the last step.
+ * given and a connection that is not enabled are about the access (a portal that asks for nothing has no access step to go back to: there is nothing to correct,
+ * and the step says «try again», as for any other problem); a connection that is gone starts again; a mapping that is empty or wrong is the mapping; anything
+ * else is tried again from the last step.
  */
-export function stepToFix(code: string | null | undefined): ActivationStepId {
+export function stepToFix(code: string | null | undefined, accessStep = true): ActivationStepId {
   switch (code) {
     case 'octorate_partner_failed':
     case 'd6_channel_failed':
@@ -172,7 +211,7 @@ export function stepToFix(code: string | null | undefined): ActivationStepId {
     case 'marketplace_credentials_required':
     case 'connection_not_enabled':
     case 'connection_disabled':
-      return ACTIVATION_STEP.access;
+      return accessStep ? ACTIVATION_STEP.access : ACTIVATION_STEP.activate;
     case 'connection_missing':
     case 'marketplace_connection_missing':
     case 'marketplace_connection_exists':
@@ -244,13 +283,16 @@ export const SKIP_ROOM = '__skip__';
 /**
  * What the person decided for each room of the channel, over what the server proposes. A room the person changed (`overrides`) is as they said; else
  * the product it is mapped to now; else the proposal of CasaZen; else nothing yet (`''`). A room the channel manager cannot manage is left out: it
- * is never mapped.
+ * is never mapped. A room that is mapped already is never «skipped»: the save only adds or changes mappings, it removes none, so that choice would be
+ * told and then ignored (the screen does not offer it, and a skip that gets here anyway leaves the room as it is).
  */
 export function roomChoices(rooms: readonly MarketplaceChannelRoom[], overrides: Readonly<Record<string, string>>): Record<string, string> {
   const choices: Record<string, string> = {};
   for (const room of rooms) {
     if (!room.manageable) continue;
-    choices[room.channelRoomId] = overrides[room.channelRoomId] ?? room.mappedProductId ?? room.proposedProductId ?? '';
+    const override = overrides[room.channelRoomId];
+    const decided = override === SKIP_ROOM && room.mappedProductId !== null ? undefined : override;
+    choices[room.channelRoomId] = decided ?? room.mappedProductId ?? room.proposedProductId ?? '';
   }
   return choices;
 }
@@ -288,6 +330,8 @@ export interface ActivationContext {
   plansPending: boolean;
   /** The first error of a read of a plan (the connection to the channel manager is missing, the portal is unknown...), or `null`. */
   planError: unknown;
+  /** The properties whose plan could not be read (a read that failed, not one that is still going on) while the plans of others were: they are told, never dropped. */
+  unreadProperties: readonly string[];
   /** Reads the properties and the plans again. */
   onRetry: () => void;
 }
