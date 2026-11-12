@@ -3,6 +3,7 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import type { MarketplaceActivationState, MarketplaceChannelRoom } from '@/types';
 import {
   ACTIVATION_STEP,
+  IMPORT_ITEMS,
   NO_CREDENTIALS,
   SKIP_ROOM,
   activationPanelResume,
@@ -11,6 +12,7 @@ import {
   activationWizardId,
   asksForAccess,
   connectionKindOfSlug,
+  importItemState,
   isAccessComplete,
   mappingProblem,
   missingAccess,
@@ -180,6 +182,28 @@ describe('a problem and the step it leads back to', () => {
     const outcomes = [outcomeOfState('a', state()), outcomeOfFailure('b', 'octorate_partner_failed'), outcomeOfFailure('c', null)];
 
     expect(resultCounts(outcomes)).toEqual({ active: 1, toFix: 2 });
+  });
+});
+
+describe('the import: what can be said of each part', () => {
+  it('importItemState_RoomsArrived_AreTheOnlyPartEverShownAsDone', () => {
+    const arrived = { starting: false, requested: true, roomsIn: true };
+
+    expect(importItemState('rooms', arrived)).toBe('done');
+    // The server cannot say how far the reservations and the calendar are: asked is as far as the screen goes.
+    expect(importItemState('reservations', arrived)).toBe('requested');
+    expect(importItemState('calendar', arrived)).toBe('requested');
+  });
+
+  it('importItemState_NothingAskedYet_IsQueuedThenStartingAndRoomsAwaitedOnceAsked', () => {
+    expect(IMPORT_ITEMS.map((item) => importItemState(item, { starting: false, requested: false, roomsIn: false }))).toEqual(['queued', 'queued', 'queued']);
+    expect(IMPORT_ITEMS.map((item) => importItemState(item, { starting: true, requested: false, roomsIn: false }))).toEqual(['starting', 'starting', 'starting']);
+    expect(IMPORT_ITEMS.map((item) => importItemState(item, { starting: false, requested: true, roomsIn: false }))).toEqual(['waiting', 'requested', 'requested']);
+  });
+
+  it('importItemState_RoomsInBeforeTheImportWasAsked_AreStillOnlyDoneForTheRoomsOfThisSession', () => {
+    // A mapping that already has rooms (a connection that came with them) does not make the reservations and the calendar «done».
+    expect(importItemState('reservations', { starting: false, requested: false, roomsIn: true })).toBe('queued');
   });
 });
 
