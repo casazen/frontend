@@ -1,4 +1,5 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { ONBOARDING_ROUTES } from './onboarding-routes';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { profilePathForContext } from '@/lib/profile-path';
 
@@ -1586,6 +1587,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'supplierOnlinePayments',
     component: async () => ({ default: (await import('@/features/supplier/earnings/supplier-earnings-page')).SupplierEarningsPage }),
   },
+  // The pages of the activation with Octorate (epic E10), behind the flag `octorateOnboarding`: see `onboarding-routes.ts`.
+  ...ONBOARDING_ROUTES,
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
