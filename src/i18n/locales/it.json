@@ -11505,6 +11505,100 @@
       "notAvailable": "Non disponibile",
       "open": "Da fare"
     },
+    "summary": {
+      "activate": {
+        "action": "Attiva",
+        "text": "Accendi i flussi che sono pronti. Quello che non è pronto resta in Da fare e lo ritrovi qui.",
+        "title": "Attiva"
+      },
+      "activation": {
+        "activated_one": "attivato su {{count}} immobile",
+        "activated_other": "attivato su {{count}} immobili",
+        "close": "Chiudi",
+        "confirm": "Conferma",
+        "description": "Scegli i flussi: prima di accendere ti diciamo su quanti immobili.",
+        "edit": "Modifica",
+        "error": "Non è stato possibile attivare. Riprova.",
+        "flowCounts": "{{ready}} pronti · {{notReady}} da completare",
+        "flows": "Flussi da attivare",
+        "lacks": "manca: {{what}}",
+        "loadError": "Non è stato possibile leggere cosa è pronto.",
+        "loading": "Controllo cosa è pronto...",
+        "nextDone": "Tutto quello che era pronto è attivo. Torna al piano per vedere cosa resta.",
+        "nextTodo": "Quello che non è pronto è in Da fare.",
+        "resultDescription": "Ecco cosa è successo, flusso per flusso.",
+        "resultTitle": "Fatto",
+        "stayInTodo_one": "{{count}} immobile non è pronto e resta in Da fare",
+        "stayInTodo_other": "{{count}} immobili non sono pronti e restano in Da fare",
+        "title": "Vuoi attivare?",
+        "toPlan": "Torna al piano",
+        "toTodo": "Vai a Da fare",
+        "willActivate_one": "Si attiva su {{count}} immobile",
+        "willActivate_other": "Si attiva su {{count}} immobili"
+      },
+      "adminOnly": "Per attivare serve l'amministratore dell'organizzazione.",
+      "description": "Controlla dove sta ogni flusso su ogni immobile, fai la prova finale e accendi quelli pronti.",
+      "filters": {
+        "allFlows": "Tutti i flussi",
+        "allStates": "Tutti gli stati",
+        "flow": "Flusso",
+        "search": "Cerca un immobile",
+        "state": "Stato"
+      },
+      "prerequisites": {
+        "cin": "il CIN",
+        "connection": "il collegamento",
+        "content": "i contenuti dell'annuncio",
+        "mapping": "l'abbinamento degli annunci",
+        "singleSender": "chi invia Alloggiati Web e ISTAT",
+        "taxRate": "l'imposta di soggiorno"
+      },
+      "strip": {
+        "counts": "{{active}} attivi · {{toComplete}} da completare · {{notAvailable}} non disponibili",
+        "label": "I sei flussi",
+        "noCounts": "Conteggio non disponibile"
+      },
+      "table": {
+        "caption": "Stato di ogni flusso su ogni immobile",
+        "empty": "Non ci sono immobili da mostrare.",
+        "loadError": "Non è stato possibile caricare lo stato degli immobili.",
+        "loading": "Carico gli immobili...",
+        "noData": "—",
+        "noMatch": "Nessun immobile corrisponde a questi filtri.",
+        "property": "Immobile",
+        "title": "Dove sei, immobile per immobile"
+      },
+      "title": "Riepilogo e attivazione"
+    },
+    "test": {
+      "description": "Facciamo passare una prenotazione importata di recente per tutti i flussi, in sola lettura.",
+      "error": "Non è stato possibile fare la prova. Riprova.",
+      "noBooking": "Questo immobile non ha ancora una prenotazione importata su cui fare la prova.",
+      "noEffect": "Nessun effetto: non viene inviato nulla",
+      "outcomes": {
+        "fail": "non va",
+        "pass": "va bene",
+        "skipped": "non controllato"
+      },
+      "propertiesError": "Non è stato possibile caricare gli immobili.",
+      "property": "Immobile della prova",
+      "reasons": {
+        "booking_not_active": "La prenotazione non richiede la comunicazione alla Polizia.",
+        "booking_status_unmapped": "Lo stato della prenotazione non corrisponde tra CasaZen e il channel manager.",
+        "channel_content_to_fix": "Un canale ha rifiutato i contenuti dell'annuncio.",
+        "channel_states_missing": "L'immobile non è su nessun canale.",
+        "content_managed_on_channel": "Il contenuto è gestito sul canale: CasaZen non invia niente.",
+        "guest_data_missing": "I dati degli ospiti non sono ancora completi: di solito arrivano con il check-in.",
+        "not_applicable": "L'immobile è fuori dall'Italia: non c'è niente da comunicare.",
+        "not_provided": "Questo flusso non è ancora disponibile.",
+        "ota_amounts_missing": "Mancano gli importi della prenotazione, cioè la commissione e quanto ha pagato l'ospite.",
+        "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT.",
+        "unknown": "Controlla questo flusso."
+      },
+      "resultLabel": "Risultato della prova, flusso per flusso",
+      "run": "Fai la prova finale",
+      "title": "Prova finale"
+    },
     "title": "Inizia con CasaZen"
   },
   "org": {

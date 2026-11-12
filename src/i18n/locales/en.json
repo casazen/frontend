@@ -11505,6 +11505,100 @@
       "notAvailable": "Not available",
       "open": "To do"
     },
+    "summary": {
+      "activate": {
+        "action": "Activate",
+        "text": "Switch on the flows that are ready. What is not ready stays in To do and you find it here again.",
+        "title": "Activate"
+      },
+      "activation": {
+        "activated_one": "activated on {{count}} property",
+        "activated_other": "activated on {{count}} properties",
+        "close": "Close",
+        "confirm": "Confirm",
+        "description": "Choose the flows: before switching on we tell you for how many properties.",
+        "edit": "Edit",
+        "error": "We could not activate. Try again.",
+        "flowCounts": "{{ready}} ready · {{notReady}} to complete",
+        "flows": "Flows to activate",
+        "lacks": "missing: {{what}}",
+        "loadError": "We could not read what is ready.",
+        "loading": "Checking what is ready...",
+        "nextDone": "Everything that was ready is active. Go back to the plan to see what is left.",
+        "nextTodo": "What is not ready is in To do.",
+        "resultDescription": "Here is what happened, flow by flow.",
+        "resultTitle": "Done",
+        "stayInTodo_one": "{{count}} property is not ready and stays in To do",
+        "stayInTodo_other": "{{count}} properties are not ready and stay in To do",
+        "title": "Do you want to activate?",
+        "toPlan": "Back to the plan",
+        "toTodo": "Go to To do",
+        "willActivate_one": "It switches on for {{count}} property",
+        "willActivate_other": "It switches on for {{count}} properties"
+      },
+      "adminOnly": "The organization administrator is needed to activate.",
+      "description": "Check where each flow stands on each property, run the final test and switch on the ones that are ready.",
+      "filters": {
+        "allFlows": "All flows",
+        "allStates": "All states",
+        "flow": "Flow",
+        "search": "Search for a property",
+        "state": "State"
+      },
+      "prerequisites": {
+        "cin": "the CIN",
+        "connection": "the connection",
+        "content": "the content of the listing",
+        "mapping": "the matching of the listings",
+        "singleSender": "who sends Alloggiati Web and ISTAT",
+        "taxRate": "the tourist tax"
+      },
+      "strip": {
+        "counts": "{{active}} active · {{toComplete}} to complete · {{notAvailable}} not available",
+        "label": "The six flows",
+        "noCounts": "Counts not available"
+      },
+      "table": {
+        "caption": "State of each flow on each property",
+        "empty": "There are no properties to show.",
+        "loadError": "We could not load the state of the properties.",
+        "loading": "Loading the properties...",
+        "noData": "—",
+        "noMatch": "No property matches these filters.",
+        "property": "Property",
+        "title": "Where you stand, property by property"
+      },
+      "title": "Summary and activation"
+    },
+    "test": {
+      "description": "We pass a recently imported booking through all the flows, read only.",
+      "error": "We could not run the test. Try again.",
+      "noBooking": "This property has no imported booking yet to run the test on.",
+      "noEffect": "No effect: nothing is sent",
+      "outcomes": {
+        "fail": "does not work",
+        "pass": "works",
+        "skipped": "not checked"
+      },
+      "propertiesError": "We could not load the properties.",
+      "property": "Property of the test",
+      "reasons": {
+        "booking_not_active": "The booking does not require a communication to the Police.",
+        "booking_status_unmapped": "The state of the booking does not match between CasaZen and the channel manager.",
+        "channel_content_to_fix": "A channel refused the content of the listing.",
+        "channel_states_missing": "The property is on no channel.",
+        "content_managed_on_channel": "The content is managed on the channel: CasaZen sends nothing.",
+        "guest_data_missing": "The guest data are not complete yet: they usually come with the check-in.",
+        "not_applicable": "The property is outside Italy: there is nothing to communicate.",
+        "not_provided": "This flow is not available yet.",
+        "ota_amounts_missing": "The amounts of the booking are missing, that is the commission and what the guest paid.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications is missing.",
+        "unknown": "Check this flow."
+      },
+      "resultLabel": "Result of the test, flow by flow",
+      "run": "Run the final test",
+      "title": "Final test"
+    },
     "title": "Start with CasaZen"
   },
   "org": {

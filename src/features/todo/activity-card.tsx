@@ -60,6 +60,7 @@ const BOOKING = 'Booking';
 const PANEL_STEP = 'OnboardingPanelStep';
 const ONBOARDING_PART = 'OnboardingPart';
 const ASSIST_REQUEST = 'OnboardingAssistRequest';
+const ONBOARDING_FLOW = 'OnboardingFlow';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -80,7 +81,7 @@ const ASSIST_REQUEST = 'OnboardingAssistRequest';
  * - `ResumeWizard`: the activation of the property, the wizard that is resumed by property, and the steps of the activation of CasaZen with Octorate
  *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
  *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
- *   complete opens the summary of the activation (T03).
+ *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
  * for the page of a booking): `ReplyToMessage` may be about a message thread and `ApproveAiDraft` about a queue item, whose ids are not a
@@ -123,6 +124,7 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/onboarding/panel', onlyFor: [PANEL_STEP], entityParam: 'step' },
     fallback: [
       { path: '/app/short-rent/onboarding', onlyFor: [ONBOARDING_PART, ASSIST_REQUEST] },
+      { path: '/app/short-rent/onboarding/summary', onlyFor: [ONBOARDING_FLOW] },
       { path: '/app/short-rent/properties/:id/activation', target: 'property' },
     ],
   },
