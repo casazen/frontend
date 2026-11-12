@@ -14944,6 +14944,7 @@
       "offersWhatsApp": "WhatsApp",
       "offersWhatsAppNeedsPhone": "Type your phone number above first to choose WhatsApp.",
       "phoneHint": "Only to organise your arrival.",
+      "phoneHintOffers": "To organise your arrival and, if you choose WhatsApp, for the offers.",
       "softOptInNotice": "{{name}} will use this e-mail address to send you offers on stays similar to the one you are booking. You can object at any time, free of charge: every message has a link to unsubscribe.",
       "whoTitle": "Who is booking"
     },

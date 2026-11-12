@@ -14944,6 +14944,7 @@
       "offersWhatsApp": "WhatsApp",
       "offersWhatsAppNeedsPhone": "Scrivi prima il tuo numero di telefono, qui sopra, per scegliere WhatsApp.",
       "phoneHint": "Solo per organizzare l'arrivo.",
+      "phoneHintOffers": "Per organizzare l'arrivo e, se scegli WhatsApp, per le offerte.",
       "softOptInNotice": "{{name}} userà questo indirizzo e-mail per mandarti offerte su soggiorni simili a quello che prenoti. Puoi opporti in ogni momento, gratis: ogni messaggio ha il link per annullare l'iscrizione.",
       "whoTitle": "Chi prenota"
     },

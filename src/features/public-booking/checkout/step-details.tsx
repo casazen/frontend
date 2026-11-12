@@ -83,6 +83,8 @@ export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVe
   // The WhatsApp box needs a number: until one is typed it cannot be ticked (a box already ticked stays free, so it can be unticked).
   const phoneTyped = (watched.phone ?? '').trim() !== '';
   const whatsAppError = translateValidationMessage(errors.offersWhatsApp?.message, t, i18n);
+  // The number is only for the arrival, until the guest chooses to be written to on WhatsApp with it: the hint says both.
+  const phoneHint = offersVersion ? t('publicCheckout.details.phoneHintOffers') : t('publicCheckout.details.phoneHint');
 
   const from = shortTime(property.checkInFrom);
   const to = shortTime(property.checkInTo);
@@ -136,7 +138,7 @@ export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVe
             ) : null}
           </div>
           <div className="co-row">
-            <Field label={t('publicBooking.phone')} hint={t('publicCheckout.details.phoneHint')} optional error={errors.phone}>
+            <Field label={t('publicBooking.phone')} hint={phoneHint} optional error={errors.phone}>
               {/* A number typed or cleared changes what the WhatsApp box may do: its message is checked again at once, not at the next press. */}
               <Input
                 id="phone"
