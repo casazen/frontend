@@ -21,15 +21,18 @@ export function crmGuestKey(id: string) {
 
 /**
  * One page of the CRM profiles (NF-88, ADR-021), narrowed by the server to the properties the caller reaches. The list changes on
- * other screens (the tags and the contacts of a profile, a merge), and the query client does not read again on mount, so a visit of
- * the list does; the rows of the last page stay on the screen, dimmed, until those of the next one arrive.
+ * other screens, some of which know nothing of it: the tags and the contacts of a profile, a merge, and a consent withdrawn or a guest
+ * erased in the privacy tab of the guest record. The query client does not read again on mount, and `true` would still skip a read
+ * less than five minutes old (the staleTime of the client), leaving "reachable" on a guest who has just withdrawn the consent; so every
+ * visit of the list reads again (`'always'`, as the profile and the proposals do). The rows of the last page stay on the screen,
+ * dimmed, until those of the next one arrive.
  */
 export function useGuestCrmProfiles(params?: CrmProfileListParams) {
   return useQuery({
     queryKey: [...CRM_GUESTS_KEY, params],
     queryFn: () => CrmApi.getGuests(params),
     placeholderData: keepPreviousData,
-    refetchOnMount: true,
+    refetchOnMount: 'always',
   });
 }
 
