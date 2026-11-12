@@ -276,7 +276,7 @@
           "legend": "À qui la facture doit-elle être établie ?"
         },
         "more": {
-          "hint": "En général, ils ne servent pas : si vous ne savez pas ce que c'est, laissez-les vides.",
+          "hint": "En général, elles ne servent pas : si vous ne savez pas ce que c'est, laissez-les vides.",
           "label": "Autres options"
         },
         "name": {
