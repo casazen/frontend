@@ -3,6 +3,9 @@ name: CI
 # Required gate for every PR and push to develop/main: lint, typecheck, unit tests (vitest), build.
 # Mark the "CI / Lint, typecheck, unit tests, build" check as required in branch protection
 # (steps: backend/docs/runbooks/ci-frontend.md).
+#
+# Shape (CI speed-up): the static checks and the unit tests run as parallel jobs (the unit tests split in 3 vitest shards),
+# and the check `Lint, typecheck, unit tests, build` is the job that waits for all of them. Same checks, same commands.
 
 on:
   pull_request:
@@ -19,9 +22,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  verify:
-    name: Lint, typecheck, unit tests, build
-    runs-on: ubuntu-latest
+  static:
+    name: Lint, typecheck, dead code, build
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -44,8 +47,48 @@ jobs:
       - name: Dead code (knip)
         run: npm run knip
 
-      - name: Unit tests (vitest)
-        run: npm test
-
       - name: Build
         run: npm run build
+
+  # `vitest --shard=i/N` gives every test file to exactly one shard, so the shards together run the whole suite.
+  unit:
+    name: Unit tests (vitest) shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (vitest)
+        run: npm test -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+  # The required check: it keeps the name it always had. Green only when the static job and every vitest shard are green
+  # (a skipped or cancelled job is not a pass).
+  verify:
+    name: Lint, typecheck, unit tests, build
+    needs: [static, unit]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Static checks and every unit test shard passed
+        env:
+          STATIC_RESULT: ${{ needs.static.result }}
+          UNIT_RESULT: ${{ needs.unit.result }}
+        run: |
+          echo "Static checks: $STATIC_RESULT; unit test shards: $UNIT_RESULT"
+          if [ "$STATIC_RESULT" != "success" ] || [ "$UNIT_RESULT" != "success" ]; then
+            echo "::error::CI failed: static checks $STATIC_RESULT, unit test shards $UNIT_RESULT"
+            exit 1
+          fi

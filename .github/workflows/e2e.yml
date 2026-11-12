@@ -18,16 +18,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # The L2 suite split in three shards that run in parallel (one job was 13 minutes). The check
-  # "E2E L2 (demo)" is the job below that waits for the three.
+  # The L2 suite split in parallel shards (one job was 13 minutes): `playwright --shard=i/N` gives every test to exactly one
+  # shard. To change the number of shards change the matrix list only: the name and the command follow it.
   e2e-l2-shard:
-    name: E2E L2 (demo) shard ${{ matrix.shard }}/3
+    name: E2E L2 (demo) shard ${{ matrix.shard }}/${{ strategy.job-total }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
@@ -44,8 +44,8 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install chromium
 
-      - name: Run L2 demo suite (shard ${{ matrix.shard }}/3)
-        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
+      - name: Run L2 demo suite (shard ${{ matrix.shard }}/${{ strategy.job-total }})
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         env:
           CI: true
 
