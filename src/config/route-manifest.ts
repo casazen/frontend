@@ -1283,6 +1283,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'MessageSquare',
     component: async () => ({ default: (await import('@/features/messages/inbox-page')).InboxPage }),
   },
+  {
+    // One conversation (E05/F02/US03/T02, NF-61/63/64): the messages in the middle, the booking and the link to the guest beside them, the
+    // box that answers; from a very wide screen the inbox is the third column. In no menu: the rows of the list and of the Home lead
+    // here. It asks `booking.read`, like the list; answering asks `booking.write` inside the page. The key of the conversation is the one the
+    // server gave (`ota:…`, `direct:…`), escaped in the address.
+    path: '/app/short-rent/messages/:threadKey',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/messages/thread-page')).ThreadPage }),
+  },
   // Guests
   {
     // Ospiti: the second tab of Prenotazioni, after the messages.

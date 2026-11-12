@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -85,6 +85,7 @@ interface InboxFiltersProps {
  */
 export function InboxFilters({ state, onChange, properties, compact = false }: InboxFiltersProps) {
   const { t } = useTranslation();
+  const commitSearch = useCallback((q: string) => onChange({ q }), [onChange]);
   // What the button «Azzera i filtri» takes away: the booking has its own way out, below.
   const narrowed = state.channel !== null || state.propertyId !== null || state.q !== '';
   const views: SegmentedOption<InboxView>[] = [
@@ -99,7 +100,7 @@ export function InboxFilters({ state, onChange, properties, compact = false }: I
 
       <div className={cn('grid grid-cols-1 gap-3', !compact && 'sm:grid-cols-2')}>
         <div className={cn(!compact && properties.length < 2 && 'sm:col-span-2')}>
-          <InboxSearch value={state.q} onCommit={(q) => onChange({ q })} />
+          <InboxSearch value={state.q} onCommit={commitSearch} />
         </div>
         <Select
           size="sm"
