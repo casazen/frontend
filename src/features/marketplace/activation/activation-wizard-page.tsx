@@ -197,7 +197,11 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
           throw new StepBlockedError('A property that is not linked to the channel manager cannot be chosen');
         }
       },
-      nextDisabled: context.planError !== null || [...plans.values()].some((plan) => !plan.creatable),
+      // The plan of a chosen property that is still being read says nothing yet: the button waits for it (it would answer «not linked» to a property it knows nothing about).
+      nextDisabled:
+        context.planError !== null ||
+        [...plans.values()].some((plan) => !plan.creatable) ||
+        (context.plansPending && values.propertyIds.some((propertyId) => !plans.has(propertyId))),
       render: () => <PropertyStep context={context} />,
     };
 
