@@ -321,11 +321,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
-    // Approval queue (NF-06): items requiring human decision before execution. In "Altro", the entry of the queues of decisions:
-    // the verifications of the guests are its other tab.
+    // Approval queue (NF-06, NF-68): items requiring human decision before execution: the drafts of messages, the campaigns, the texts of the AI.
+    // In "Altro", the entry of the queues of decisions: the verifications of the guests are its other tab. Deciding asks its own permission,
+    // `approval.decide` (the owner, the administrators and the property managers; not the collaborator or the accountant), the one the API asks
+    // for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['property.write'],
+    requiredPermissions: ['approval.decide'],
     navKey: 'nav.approvalQueue',
     navPlacement: 'secondary',
     navOrder: 29,
@@ -1363,6 +1365,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
+  },
+  {
+    // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
+    // last tab of the CRM (after the audiences, the campaigns and the automations). The API lists them for `guest.read` but merges and
+    // dismisses for `guest.write`, and the page is for deciding, so it asks `guest.write`.
+    path: '/app/short-rent/crm/merge',
+    context: 'short-rent',
+    requiredPermissions: ['guest.write'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmMerge',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 4,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/crm/merge/merge-page')).MergePage }),
   },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
   // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
