@@ -495,7 +495,12 @@ describe('CasaZen issues: the data and the address of the issuer', () => {
   });
 
   it('IssuerWizard_SdiWithAChannel_TheSummaryDoesNotSayItIsMissing', async () => {
-    const saved = completedSetting({ sdi: { providerConfigured: true, providerName: 'Intermediary' } });
+    // A VAT number gives an electronic invoice: the sentence about the SDI is the one of a regime like this.
+    const saved = completedSetting({
+      regime: 'VatOrdinary',
+      issuer: { ...completedSetting().issuer, vatNumber: '99999999999', fiscalCode: undefined },
+      sdi: { providerConfigured: true, providerName: 'Intermediary' },
+    });
     vi.mocked(getIssuerSettings).mockResolvedValue(saved);
     renderWizard();
     await onStep('who');
@@ -504,6 +509,20 @@ describe('CasaZen issues: the data and the address of the issuer', () => {
     const effects = screen.getByTestId('fiscal-issuer-effects');
     expect(within(effects).getByText(text('fiscalDocuments.issuer.effects.sdi.available'))).toBeInTheDocument();
     expect(within(effects).queryByText(text('fiscalDocuments.issuer.effects.sdi.notAvailable'))).not.toBeInTheDocument();
+  });
+
+  it('IssuerWizard_Casazen_APrivatePersonIsToldAboutTheReceiptAndNeverAboutAnXmlFile', async () => {
+    // The document of a private person is a receipt: whether the SDI has a channel or not, there is no file to download or to send.
+    vi.mocked(getIssuerSettings).mockResolvedValue(completedSetting());
+    renderWizard();
+    await onStep('who');
+    await throughTo('summary', ['regime', 'issuer', 'address', 'summary']);
+
+    const effects = screen.getByTestId('fiscal-issuer-effects');
+    expect(within(effects).getByText(text('fiscalDocuments.issuer.effects.casazen.receipt'))).toBeInTheDocument();
+    expect(within(effects).queryByText(text('fiscalDocuments.issuer.effects.sdi.notAvailable'))).not.toBeInTheDocument();
+    expect(within(effects).queryByText(text('fiscalDocuments.issuer.effects.sdi.available'))).not.toBeInTheDocument();
+    expect(effects.textContent).not.toMatch(/XML.*scarichi/i);
   });
 });
 
@@ -759,7 +778,9 @@ describe('loading, the address opened again and accessibility', () => {
 
   it('IssuerWizard_English_TheWizardAndTheConfirmationHaveTheirWords', async () => {
     await i18n.changeLanguage('en');
-    vi.mocked(getIssuerSettings).mockResolvedValue(completedSetting());
+    vi.mocked(getIssuerSettings).mockResolvedValue(
+      completedSetting({ regime: 'VatOrdinary', issuer: { ...completedSetting().issuer, vatNumber: '99999999999', fiscalCode: undefined } }),
+    );
     renderWizard();
     await onStep('who');
 

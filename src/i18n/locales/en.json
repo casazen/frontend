@@ -5189,6 +5189,7 @@
         "casazen": {
           "direct": "CasaZen issues documents only for direct bookings: the ones of your site and the ones you enter yourself.",
           "portals": "For bookings that come from the portals CasaZen never issues documents: each booking has only one issuer.",
+          "receipt": "For your regime the document is a receipt, not an electronic invoice: there is no XML file and nothing is sent to the Sistema di Interscambio (SDI).",
           "ruleUnconfirmed": "Until the type of document and the VAT of your regime are confirmed, CasaZen does not issue any document."
         },
         "change": "You can change this choice whenever you like.",

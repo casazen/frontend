@@ -5189,6 +5189,7 @@
         "casazen": {
           "direct": "CasaZen emette i documenti solo per le prenotazioni dirette: quelle del tuo sito e quelle che inserisci tu.",
           "portals": "Per le prenotazioni che arrivano dai portali CasaZen non emette mai documenti: per ogni prenotazione c’è un solo emittente.",
+          "receipt": "Per il tuo regime il documento è una ricevuta, non una fattura elettronica: non c’è nessun file XML e non si invia nulla al Sistema di Interscambio (SDI).",
           "ruleUnconfirmed": "Finché il tipo di documento e l’IVA del tuo regime non sono confermati, CasaZen non emette nessun documento."
         },
         "change": "Puoi cambiare questa scelta quando vuoi.",

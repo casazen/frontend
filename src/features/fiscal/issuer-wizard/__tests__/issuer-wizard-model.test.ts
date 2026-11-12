@@ -408,15 +408,62 @@ describe('the words', () => {
     }
   });
 
-  it('IssuerWizardCopy_Effects_CasazenSaysTheSdiIsNotThereYetAndThatNothingIsIssuedUntilTheRuleIsConfirmed', () => {
+  it('IssuerWizardCopy_Effects_CasazenWithAVatNumberSaysTheSdiIsNotThereYetAndThatNothingIsIssuedUntilTheRuleIsConfirmed', () => {
     const t = i18n.getFixedT('it');
 
-    const lines = effectsOf(t, { mode: 'CasaZenDirectOnly', regime: 'PrivatePerson', settings: settings({ sdi: { providerConfigured: false } }) });
+    const lines = effectsOf(t, { mode: 'CasaZenDirectOnly', regime: 'VatFlatRate', settings: settings({ sdi: { providerConfigured: false } }) });
 
     expect(lines).toContain(t('fiscalDocuments.issuer.effects.sdi.notAvailable'));
     expect(lines).toContain(t('fiscalDocuments.issuer.effects.casazen.ruleUnconfirmed'));
     expect(lines).toContain(t('fiscalDocuments.issuer.effects.casazen.portals'));
+    expect(lines).not.toContain(t('fiscalDocuments.issuer.effects.casazen.receipt'));
     expect(lines.join(' ')).not.toMatch(/octorate/i);
+  });
+
+  it('IssuerWizardCopy_Effects_APrivatePersonHasAReceiptAndNothingToSendToTheSdi', () => {
+    const t = i18n.getFixedT('it');
+
+    // Whether or not the SDI has a channel: there is no electronic invoice for this regime, so «you download the XML» would be false.
+    for (const sdi of [{ providerConfigured: false }, { providerConfigured: true }]) {
+      const lines = effectsOf(t, { mode: 'CasaZenDirectOnly', regime: 'PrivatePerson', settings: settings({ sdi }) });
+
+      expect(lines).toContain(t('fiscalDocuments.issuer.effects.casazen.receipt'));
+      expect(lines).not.toContain(t('fiscalDocuments.issuer.effects.sdi.notAvailable'));
+      expect(lines).not.toContain(t('fiscalDocuments.issuer.effects.sdi.available'));
+      expect(lines).toContain(t('fiscalDocuments.issuer.effects.casazen.ruleUnconfirmed'));
+    }
+    expect(effectsOf(t, { mode: 'CasaZenDirectOnly', regime: null, settings: settings() })).not.toContain(
+      t('fiscalDocuments.issuer.effects.sdi.notAvailable'),
+    );
+  });
+
+  it('IssuerWizardCopy_Effects_TheRuleOfTheRegimeDecidesWhenTheServerHasIt', () => {
+    const t = i18n.getFixedT('it');
+    const rule = (documentKind: 'Invoice' | 'Receipt') => ({
+      documentKind,
+      configured: true,
+      invoiceTypeCode: 'TD01',
+      creditNoteTypeCode: 'TD04',
+      seriesPattern: '{year}',
+    });
+
+    // The accountant decided that a private person gets an invoice: the file is there, and so is the sentence about the SDI.
+    const invoice = effectsOf(t, {
+      mode: 'CasaZenDirectOnly',
+      regime: 'PrivatePerson',
+      settings: settings({ regime: 'PrivatePerson', rule: rule('Invoice') }),
+    });
+    expect(invoice).toContain(t('fiscalDocuments.issuer.effects.sdi.notAvailable'));
+    expect(invoice).not.toContain(t('fiscalDocuments.issuer.effects.casazen.receipt'));
+
+    // And a VAT number whose document is a receipt has no file to send either.
+    const receipt = effectsOf(t, {
+      mode: 'CasaZenDirectOnly',
+      regime: 'VatOrdinary',
+      settings: settings({ regime: 'VatOrdinary', rule: rule('Receipt') }),
+    });
+    expect(receipt).toContain(t('fiscalDocuments.issuer.effects.casazen.receipt'));
+    expect(receipt).not.toContain(t('fiscalDocuments.issuer.effects.sdi.notAvailable'));
   });
 
   it('IssuerWizardCopy_Effects_WithAChannelAndAConfirmedRuleThoseTwoSentencesGo', () => {
