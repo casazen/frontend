@@ -100,20 +100,41 @@ describe('InvoiceDataSubstep - what the host sees', () => {
     expect(screen.getByTestId('invoice-data-substep-cancel')).toHaveTextContent('Annulla');
   });
 
-  it('substep_AboutFiveThingsAtATime_TheRareOnesAreUnderMoreOptions', async () => {
+  // AC-NF04-1: about five things at a time. The server asks no address (see `done_NoAddressAtAll_...`), so the screen holds only what identifies
+  // the recipient: the kind, the name and the fiscal code (the VAT number too for a company), and the rest is under «Altre opzioni».
+  it('substep_AboutFiveThingsAtATime_OnlyWhatIdentifiesTheRecipientIsInViewAndTheRestIsUnderMoreOptions', async () => {
     renderSubstep();
     await ready();
 
     const more = screen.getByTestId('invoice-data-more') as HTMLDetailsElement;
     expect(more.open).toBe(false);
-    // Visible without opening anything: the kind, the name, the fiscal code and the address.
-    for (const name of ['name', 'fiscalCode', 'addressStreet', 'addressCivic', 'postalCode', 'city', 'province']) {
-      expect(more.contains(field(name))).toBe(false);
+    const inView = () =>
+      within(screen.getByTestId('invoice-data-fields'))
+        .getAllByRole('textbox')
+        .filter((box) => !more.contains(box))
+        .map((box) => box.id);
+    // A person: two boxes (and the choice of the kind).
+    expect(inView()).toEqual(['invoice-data-name', 'invoice-data-fiscalCode']);
+    // Under «Altre opzioni»: the address, the country, the VAT number of a person, the code of the recipient and the PEC.
+    for (const name of ['addressStreet', 'addressCivic', 'postalCode', 'city', 'province', 'countryCode', 'vatNumber', 'sdiRecipientCode', 'pec']) {
+      expect(more.contains(field(name)), name).toBe(true);
     }
-    // Under «Altre opzioni»: the country, the code of the recipient, the PEC and (for a person) the VAT number.
-    for (const name of ['countryCode', 'sdiRecipientCode', 'pec', 'vatNumber']) {
-      expect(more.contains(screen.getByTestId(`invoice-data-${name}`))).toBe(true);
-    }
+
+    // A company: three boxes, the VAT number in front of the fiscal code.
+    fireEvent.click(screen.getByTestId('invoice-data-kind-Company'));
+    expect(inView()).toEqual(['invoice-data-name', 'invoice-data-vatNumber', 'invoice-data-fiscalCode']);
+  });
+
+  it('substep_DataWithAnAddress_OpensTheOptionsSoTheAddressTheChannelManagerGaveIsInView', async () => {
+    vi.mocked(getInvoiceData).mockResolvedValue(
+      invoiceData({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE, addressStreet: 'Via Roma', city: 'Roma', source: 'Octorate' }),
+    );
+    renderSubstep();
+    await ready();
+
+    expect((screen.getByTestId('invoice-data-more') as HTMLDetailsElement).open).toBe(true);
+    expect(field('addressStreet').value).toBe('Via Roma');
+    expect(field('city').value).toBe('Roma');
   });
 
   it('substep_TheDifficultFields_SayWhyTheyAreAskedAndShowAnExample', async () => {
@@ -201,6 +222,42 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
 
     expect(screen.queryByText(/Il codice fiscale non è valido/)).not.toBeInTheDocument();
     expect(field('fiscalCode')).not.toHaveAttribute('aria-invalid');
+  });
+
+  // The server asks no address: `InvoiceDataFormats.Validate` checks only what is written and answers 422 for nothing but a recipient that is not
+  // identified. That is why the address is under «Altre opzioni»: a save without one is made as it is, with no problem on any field.
+  it('done_NoAddressAtAll_IsSavedAsItIsBecauseTheServerAsksNone', async () => {
+    const { onDone } = renderSubstep();
+    await ready();
+    type('name', 'Mario Rossi');
+    type('fiscalCode', FISCAL_CODE);
+
+    done();
+
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    expect(saveInvoiceData).toHaveBeenCalledWith(
+      BOOKING,
+      expect.objectContaining({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE, addressStreet: '', addressCivic: '', postalCode: '', city: '', province: '' }),
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect((screen.getByTestId('invoice-data-more') as HTMLDetailsElement).open).toBe(false);
+  });
+
+  it('done_AnAddressProblem_OpensTheOptionsAndTakesTheFocusToTheField', async () => {
+    renderSubstep();
+    await ready();
+    type('name', 'Mario Rossi');
+    type('fiscalCode', FISCAL_CODE);
+    type('postalCode', '12');
+    expect((screen.getByTestId('invoice-data-more') as HTMLDetailsElement).open).toBe(false);
+
+    done();
+
+    expect(await screen.findByText(/In Italia il CAP ha 5 cifre/)).toBeInTheDocument();
+    expect((screen.getByTestId('invoice-data-more') as HTMLDetailsElement).open).toBe(true);
+    expect(field('postalCode')).toHaveAttribute('aria-invalid', 'true');
+    await waitFor(() => expect(field('postalCode')).toHaveFocus());
+    expect(saveInvoiceData).not.toHaveBeenCalled();
   });
 
   it('done_ValidDataTypedByTheHost_IsSavedNormalizedAndTheSubstepCloses', async () => {

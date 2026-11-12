@@ -948,6 +948,51 @@ describe('CheckInPage', () => {
       expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
     });
 
+    // AC-NF04-1: about five fields at a time. The server asks no address (a «yes» with a name and a fiscal code is complete for it), so the step
+    // holds only what identifies the guest and the address is under «Altre opzioni».
+    it('invoiceStep_AYes_ShowsOnlyWhatIdentifiesTheGuestAndKeepsTheAddressUnderMoreOptions', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+
+      const more = screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement;
+      expect(more.open).toBe(false);
+      const inView = within(screen.getByTestId('checkin-invoice-fields'))
+        .getAllByRole('textbox')
+        .filter((box) => !more.contains(box))
+        .map((box) => box.id);
+      expect(inView).toEqual(['checkin-invoice-name', 'checkin-invoice-fiscalCode']);
+      for (const name of ['addressStreet', 'addressCivic', 'postalCode', 'city', 'province']) expect(more.contains(field(name)), name).toBe(true);
+    });
+
+    it('invoiceStep_NoAddress_IsAcceptedAndSentWithoutOneBecauseTheServerAsksNone', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload.invoice).toEqual({ needInvoice: true, recipientKind: 'Guest', countryCode: 'IT', name: 'Mario Rossi', fiscalCode: FISCAL_CODE });
+    });
+
+    it('invoiceStep_AnAddressProblem_OpensTheOptionsAndStopsOnTheField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      type('postalCode', '12');
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(false);
+
+      next();
+
+      expect(await screen.findByText(/In Italia il CAP ha 5 cifre/)).toBeInTheDocument();
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(true);
+      expect(field('postalCode')).toHaveAttribute('aria-invalid', 'true');
+      await waitFor(() => expect(field('postalCode')).toHaveFocus());
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+    });
+
     it('invoiceStep_EveryFormatIsCheckedOnItsFieldWithTheSharedRules', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       await toInvoiceStep();
       fireEvent.click(screen.getByTestId('checkin-invoice-yes'));

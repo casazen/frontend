@@ -276,7 +276,7 @@
           "legend": "¿A nombre de quién debe emitirse la factura?"
         },
         "more": {
-          "hint": "Normalmente no hacen falta: si no sabe qué son, déjelas en blanco.",
+          "hint": "La dirección es opcional. Las demás opciones normalmente no hacen falta: si no sabe qué son, déjelas en blanco.",
           "label": "Más opciones"
         },
         "name": {

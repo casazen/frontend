@@ -276,7 +276,7 @@
           "legend": "À qui la facture doit-elle être établie ?"
         },
         "more": {
-          "hint": "En général, elles ne servent pas : si vous ne savez pas ce que c'est, laissez-les vides.",
+          "hint": "L'adresse est facultative. Pour les autres options, en général elles ne servent pas : si vous ne savez pas à quoi elles servent, laissez-les vides.",
           "label": "Autres options"
         },
         "name": {

@@ -3421,7 +3421,7 @@
           "legend": "A chi va intestata la fattura?"
         },
         "more": {
-          "hint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
+          "hint": "L'indirizzo è facoltativo. Le altre opzioni di solito non servono: se non sai cosa sono, lasciale vuote.",
           "label": "Altre opzioni"
         },
         "name": {
@@ -6802,7 +6802,7 @@
         "legend": "A chi intestare la fattura?"
       },
       "more": {
-        "hint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
+        "hint": "L'indirizzo è facoltativo. Le altre opzioni di solito non servono: se non sai cosa sono, lasciale vuote.",
         "label": "Altre opzioni"
       },
       "name": {

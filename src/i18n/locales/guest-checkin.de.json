@@ -276,7 +276,7 @@
           "legend": "Auf wen soll die Rechnung ausgestellt werden?"
         },
         "more": {
-          "hint": "Meist werden sie nicht benötigt: Wenn Sie nicht wissen, was sie sind, lassen Sie sie leer.",
+          "hint": "Die Adresse ist freiwillig. Die übrigen Optionen werden meist nicht benötigt: Wenn Sie nicht wissen, was sie sind, lassen Sie sie leer.",
           "label": "Weitere Optionen"
         },
         "name": {

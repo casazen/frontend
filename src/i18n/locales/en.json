@@ -3421,7 +3421,7 @@
           "legend": "Who should the invoice be made out to?"
         },
         "more": {
-          "hint": "You usually do not need them: if you do not know what they are, leave them empty.",
+          "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
           "label": "More options"
         },
         "name": {
@@ -6802,7 +6802,7 @@
         "legend": "Who is the invoice for?"
       },
       "more": {
-        "hint": "You usually do not need them: if you do not know what they are, leave them empty.",
+        "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
         "label": "More options"
       },
       "name": {

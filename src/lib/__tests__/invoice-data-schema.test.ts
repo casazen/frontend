@@ -59,6 +59,16 @@ describe('validateInvoiceData - who must be identified', () => {
     expect(failuresOf({ recipientKind: 'Company', name: 'Rossi S.r.l.' })).toEqual([{ field: 'vatNumber', code: 'invoice_data_recipient_required' }]);
   });
 
+  // The server asks no address (`InvoiceDataFormats.Validate`: only what is written is checked, and nothing but the identification of the recipient
+  // makes a 422), so the screens keep the address under «More options».
+  it('validateInvoiceData_NoAddressAtAll_IsValidForEveryKindOfRecipientBecauseTheServerAsksNone', () => {
+    expect(failuresOf({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE })).toEqual([]);
+    expect(failuresOf({ recipientKind: 'Company', name: 'Rossi S.r.l.', vatNumber: VAT_NUMBER })).toEqual([]);
+    expect(failuresOf({ countryCode: 'DE', name: 'Hans Meier' })).toEqual([]);
+    // Part of an address is not an address that is wrong: only what is written is checked.
+    expect(failuresOf({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' })).toEqual([]);
+  });
+
   it('validateInvoiceData_OutsideItaly_NeedsNeitherAFiscalCodeNorAVatNumber', () => {
     expect(failuresOf({ countryCode: 'DE', name: 'Hans Meier' })).toEqual([]);
     expect(failuresOf({ countryCode: 'FR', recipientKind: 'Company', name: 'Dupont SA' })).toEqual([]);
