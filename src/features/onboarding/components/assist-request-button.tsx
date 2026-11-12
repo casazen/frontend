@@ -29,6 +29,8 @@ interface AssistRequestButtonProps {
   label?: 'doItForMe' | 'needHelp';
   /** The line that says where the request stands and the link to «Da fare»: one on a page is enough. */
   showStatus?: boolean;
+  /** «Fallo per me» is the default action of the screen (a host with new properties: CasaZen support does the step, PO-19). */
+  primary?: boolean;
 }
 
 /**
@@ -37,7 +39,7 @@ interface AssistRequestButtonProps {
  * item. A second request while one is open is the one that exists: it is shown as such (409 `assist_request_already_open`), never as a failure.
  * An organization administrator's action: the page offers it to nobody else.
  */
-export function AssistRequestButton({ part, context, propertyId, channelCode, label = 'doItForMe', showStatus = true }: AssistRequestButtonProps) {
+export function AssistRequestButton({ part, context, propertyId, channelCode, label = 'doItForMe', showStatus = true, primary = false }: AssistRequestButtonProps) {
   const { t } = useTranslation();
   const noteId = useId();
   const requests = useAssistRequests();
@@ -75,7 +77,7 @@ export function AssistRequestButton({ part, context, propertyId, channelCode, la
     <div className="min-w-0 space-y-2">
       <Button
         type="button"
-        variant="outline"
+        variant={primary ? 'default' : 'outline'}
         className={TOUCH_TARGET}
         onClick={ask}
         loading={request.isPending}

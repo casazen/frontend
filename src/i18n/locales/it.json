@@ -11164,8 +11164,50 @@
       "error": "Non è stato possibile salvare. Riprova tra poco.",
       "saved": "Salvato. Quello che resta lo trovi in Da fare."
     },
+    "flows": {
+      "names": {
+        "Bookings": "Prenotazioni",
+        "CheckInCompliance": "Check-in e adempimenti",
+        "Documents": "Documenti fiscali",
+        "Listings": "Annunci sui canali",
+        "Messages": "Messaggi",
+        "Reports": "Report"
+      },
+      "states": {
+        "active": "Attivo",
+        "notAvailable": "Non disponibile",
+        "toComplete": "Da completare"
+      }
+    },
     "help": {
       "action": "Aiuto"
+    },
+    "launch": {
+      "backToPlan": "Torna al piano",
+      "entry": {
+        "continue": "Continua",
+        "hint": "Scegli la tua situazione per continuare.",
+        "loading": "Carico la tua risposta..."
+      },
+      "panelLabel": "Apri il passo",
+      "properties": {
+        "empty": "Non ci sono immobili da mostrare.",
+        "istat": "ISTAT",
+        "loadError": "Non è stato possibile caricare gli immobili.",
+        "loading": "Carico gli immobili...",
+        "next": "Pagina successiva",
+        "noMatch": "Nessun immobile corrisponde alla ricerca.",
+        "page": "Pagina {{page}} di {{pages}} · {{total}} immobili",
+        "pages": "Pagine degli immobili",
+        "police": "Polizia di Stato",
+        "previous": "Pagina precedente",
+        "search": "Cerca un immobile",
+        "title": "Immobili: {{flow}}"
+      },
+      "unavailable": {
+        "reason": "La procedura guidata di questo passo non è ancora pronta: la trovi qui appena lo è. Intanto puoi tornare al piano.",
+        "title": "Non ancora disponibile"
+      }
     },
     "listLabel": "I passi per attivare CasaZen",
     "loadError": "Non è stato possibile caricare il piano.",
@@ -11338,6 +11380,11 @@
         "elapsed_other": "In attesa da {{count}} minuti"
       }
     },
+    "part": {
+      "description": "Che cosa fa questo passo e dove ti porta.",
+      "needsTitle": "Cosa ti serve",
+      "statusLabel": "Stato del passo"
+    },
     "parts": {
       "activation": {
         "title": "Riepilogo e attivazione",
@@ -11429,6 +11476,22 @@
       "no_property": "Non ci sono ancora immobili da configurare.",
       "not_provided": "Questo passo non è ancora disponibile.",
       "price_missing": "Manca il prezzo base di almeno un immobile.",
+      "property": {
+        "channel_content_to_fix": "Un canale ha rifiutato i contenuti dell'annuncio: vanno corretti.",
+        "cin_missing_or_invalid": "Il CIN di questo immobile manca o non è valido.",
+        "connection_lost": "Il collegamento con il channel manager non funziona più: va rifatto.",
+        "connection_missing": "Il tuo channel manager non è ancora collegato.",
+        "content_managed_on_channel": "Il contenuto è gestito sul canale.",
+        "flow_not_activated": "È tutto pronto: manca solo l'attivazione.",
+        "mapping_unavailable": "Ora non riusciamo a leggere l'abbinamento. Riprova tra poco.",
+        "mapping_unconfirmed": "L'annuncio non è ancora abbinato a questo immobile: va confermato.",
+        "not_provided": "Questa funzione non è ancora disponibile.",
+        "property_inactive": "Questo immobile non è attivo.",
+        "property_long_rent": "Questo immobile è in affitto lungo: qui non serve.",
+        "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per questo immobile.",
+        "tax_rate_missing": "Manca l'imposta di soggiorno del comune di questo immobile.",
+        "unknown": "C'è ancora qualcosa da completare."
+      },
       "required_part_not_done": "Prima completa: {{parts}}.",
       "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per almeno un immobile.",
       "tax_rate_missing": "Manca l'imposta di soggiorno del comune di almeno un immobile.",

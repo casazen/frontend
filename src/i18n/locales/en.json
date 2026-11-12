@@ -11164,8 +11164,50 @@
       "error": "We could not save. Try again shortly.",
       "saved": "Saved. What is left is in your to-do list."
     },
+    "flows": {
+      "names": {
+        "Bookings": "Bookings",
+        "CheckInCompliance": "Check-in and compliance",
+        "Documents": "Fiscal documents",
+        "Listings": "Listings on the channels",
+        "Messages": "Messages",
+        "Reports": "Reports"
+      },
+      "states": {
+        "active": "Active",
+        "notAvailable": "Not available",
+        "toComplete": "To complete"
+      }
+    },
     "help": {
       "action": "Help"
+    },
+    "launch": {
+      "backToPlan": "Back to the plan",
+      "entry": {
+        "continue": "Continue",
+        "hint": "Choose your situation to continue.",
+        "loading": "Loading your answer..."
+      },
+      "panelLabel": "Open the step",
+      "properties": {
+        "empty": "There are no properties to show.",
+        "istat": "ISTAT",
+        "loadError": "We could not load the properties.",
+        "loading": "Loading the properties...",
+        "next": "Next page",
+        "noMatch": "No property matches the search.",
+        "page": "Page {{page}} of {{pages}} · {{total}} properties",
+        "pages": "Pages of the properties",
+        "police": "State Police",
+        "previous": "Previous page",
+        "search": "Search for a property",
+        "title": "Properties: {{flow}}"
+      },
+      "unavailable": {
+        "reason": "The guided procedure of this step is not ready yet: you find it here as soon as it is. In the meantime you can go back to the plan.",
+        "title": "Not available yet"
+      }
     },
     "listLabel": "The steps to activate CasaZen",
     "loadError": "We could not load the plan.",
@@ -11338,6 +11380,11 @@
         "elapsed_other": "Waiting for {{count}} minutes"
       }
     },
+    "part": {
+      "description": "What this step does and where it takes you.",
+      "needsTitle": "What you need",
+      "statusLabel": "Status of the step"
+    },
     "parts": {
       "activation": {
         "title": "Summary and activation",
@@ -11429,6 +11476,22 @@
       "no_property": "There are no properties to set up yet.",
       "not_provided": "This step is not available yet.",
       "price_missing": "At least one property has no base price.",
+      "property": {
+        "channel_content_to_fix": "A channel refused the content of the listing: it has to be fixed.",
+        "cin_missing_or_invalid": "The CIN of this property is missing or not valid.",
+        "connection_lost": "The connection with the channel manager no longer works: it has to be made again.",
+        "connection_missing": "Your channel manager is not connected yet.",
+        "content_managed_on_channel": "The content is managed on the channel.",
+        "flow_not_activated": "Everything is ready: only the activation is missing.",
+        "mapping_unavailable": "We cannot read the matching right now. Try again shortly.",
+        "mapping_unconfirmed": "The listing is not matched to this property yet: it has to be confirmed.",
+        "not_provided": "This function is not available yet.",
+        "property_inactive": "This property is not active.",
+        "property_long_rent": "This property is a long-term rental: it is not needed here.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications for this property is missing.",
+        "tax_rate_missing": "The tourist tax of this property's municipality is missing.",
+        "unknown": "There is still something to complete."
+      },
       "required_part_not_done": "Complete first: {{parts}}.",
       "sender_missing": "Nobody is set to send the Alloggiati Web and ISTAT communications of at least one property.",
       "tax_rate_missing": "The tourist tax of the comune of at least one property is missing.",

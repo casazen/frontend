@@ -92,6 +92,8 @@ export interface PanelStepTarget {
   kind: PanelStepKind;
   propertyId?: string | null;
   channelCode?: string | null;
+  /** CasaZen support does the step by default («Fallo per me» first): the host who has new properties (PO-19). */
+  assist?: boolean;
 }
 
 /** The address of the page of a step, `/app/short-rent/onboarding/panel/police?propertyId=…`: the query carries ids only, never a person or a credential. */
@@ -99,6 +101,7 @@ export function panelStepPath(target: PanelStepTarget): string {
   const query = new URLSearchParams();
   if (target.propertyId) query.set('propertyId', target.propertyId);
   if (target.channelCode) query.set('channelCode', target.channelCode);
+  if (target.assist) query.set('assist', '1');
   const search = query.toString();
   return `${PANEL_STEP_PATH}/${SLUG_BY_KIND[target.kind]}${search ? `?${search}` : ''}`;
 }

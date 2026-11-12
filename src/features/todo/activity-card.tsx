@@ -34,6 +34,13 @@ export interface TodoRoute {
    * immobile» reopened on a property): a page that does not take the id in its path. Like `target: 'property'`, it needs an item that names one.
    */
   propertyParam?: string;
+  /**
+   * The kinds of entity an item must be about for this route to apply: several kinds of item share one action (`ResumeWizard` is the wizard of a
+   * property and every step of the activation with Octorate), and each opens its own page. An item of another kind skips the route.
+   */
+  onlyFor?: readonly string[];
+  /** The name of the parameter of the address that carries the id of the entity the item is about (`step` of a guided step of the panel), for a page that finds the rest from it. */
+  entityParam?: string;
 }
 
 export interface TodoActionTarget {
@@ -48,6 +55,11 @@ export interface TodoActionTarget {
 
 /** The `entityType` the server sends for an item about a booking. */
 const BOOKING = 'Booking';
+
+/** The `entityType` of the items of the activation with Octorate: a guided step of the panel, a part of the plan, a «Fallo per me» request. */
+const PANEL_STEP = 'OnboardingPanelStep';
+const ONBOARDING_PART = 'OnboardingPart';
+const ASSIST_REQUEST = 'OnboardingAssistRequest';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -65,7 +77,10 @@ const BOOKING = 'Booking';
  *   channel and what to fix are told (E02/F03/US01/T04); for who may not write the properties the page of the property, and the channels
  *   when the item names none;
  * - `ReplyToMessage`, `ApproveAiDraft`: the tab Messaggi of the booking, or the queue of the approvals;
- * - `ResumeWizard`: the activation of the property, the one wizard that is resumed by property today.
+ * - `ResumeWizard`: the activation of the property, the wizard that is resumed by property, and the steps of the activation of CasaZen with Octorate
+ *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
+ *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
+ *   complete opens the summary of the activation (T03).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
  * for the page of a booking): `ReplyToMessage` may be about a message thread and `ApproveAiDraft` about a queue item, whose ids are not a
@@ -105,7 +120,11 @@ export const ACTION_ROUTE_MAP = {
     fallback: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'messages' },
   },
   ResumeWizard: {
-    route: { path: '/app/short-rent/properties/:id/activation', target: 'property' },
+    route: { path: '/app/short-rent/onboarding/panel', onlyFor: [PANEL_STEP], entityParam: 'step' },
+    fallback: [
+      { path: '/app/short-rent/onboarding', onlyFor: [ONBOARDING_PART, ASSIST_REQUEST] },
+      { path: '/app/short-rent/properties/:id/activation', target: 'property' },
+    ],
   },
   ReconnectChannel: {
     route: { path: '/app/short-rent/channels' },
@@ -137,6 +156,7 @@ function entityOf(route: TodoRoute, activity: TodoRouteSubject): string | null {
 }
 
 function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?: PermissionPredicate): string | null {
+  if (route.onlyFor && !route.onlyFor.includes(activity.entityType)) return null;
   const entry = getManifestEntry(route.path);
   if (!entry) return null;
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) return null;
@@ -153,6 +173,10 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
     const id = propertyOf(activity);
     if (!id) return null;
     query.set(route.propertyParam, id);
+  }
+  if (route.entityParam) {
+    if (!usable(activity.entityId)) return null;
+    query.set(route.entityParam, activity.entityId);
   }
   if (route.tab && route.tab !== 'details') query.set('tab', route.tab);
   for (const [name, value] of Object.entries(route.search ?? {})) query.set(name, value);

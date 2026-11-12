@@ -106,6 +106,8 @@ export function OnboardingPanelStepPage() {
   const part = panelPartOf(kind);
   const propertyId = searchParams.get('propertyId')?.trim() || null;
   const channelCode = kind === 'channelAccess' ? searchParams.get('channelCode')?.trim() || null : null;
+  // «Fallo per me» first: the part page sends the host who has new properties here (PO-19), where CasaZen support does the panel step.
+  const assistFirst = searchParams.get('assist') === '1';
   const isAdmin = isOrgBillingAdmin(contexts);
 
   function saveAndExit() {
@@ -147,6 +149,7 @@ export function OnboardingPanelStepPage() {
           propertyId={propertyId}
           channelCode={channelCode}
           cameFromPanel={callback.returned}
+          assistFirst={assistFirst}
           onRecovered={() => navigate(partPath(part))}
           onSaveAndExit={saveAndExit}
         />

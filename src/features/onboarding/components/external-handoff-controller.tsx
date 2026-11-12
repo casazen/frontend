@@ -43,6 +43,8 @@ interface ExternalHandoffControllerProps {
   assist: ReactNode;
   /** «Mi serve aiuto»: the way out of the question of a result CasaZen cannot read. */
   help?: ReactNode;
+  /** «Fallo per me» comes first, as the default action, and the panel is the alternative (a host with new properties: CasaZen support does the step). */
+  assistFirst?: boolean;
 }
 
 /** Whole minutes since an instant, never negative. */
@@ -82,6 +84,7 @@ export function ExternalHandoffController({
   onSaveAndExit,
   assist,
   help,
+  assistFirst = false,
 }: ExternalHandoffControllerProps) {
   const { t } = useTranslation();
   const headingId = useId();
@@ -181,8 +184,9 @@ export function ExternalHandoffController({
           </>
         ) : null}
 
+        {assistFirst && phase !== 'recovered' && phase !== 'assist' ? assist : null}
         {phase === 'explain' || phase === 'started' || phase === 'waiting' || phase === 'notValid' ? (
-          <Button type="button" className={TOUCH_TARGET} onClick={onOpen} loading={opening} iconRight={<ExternalLink />} data-testid="panel-step-open">
+          <Button type="button" variant={assistFirst ? 'outline' : 'default'} className={TOUCH_TARGET} onClick={onOpen} loading={opening} iconRight={<ExternalLink />} data-testid="panel-step-open">
             {openLabel}
           </Button>
         ) : null}
@@ -192,7 +196,7 @@ export function ExternalHandoffController({
         <Button type="button" variant="ghost" className={TOUCH_TARGET} onClick={onSaveAndExit} data-testid="panel-step-save-exit">
           {t('onboardingPlan.panel.actions.saveExit')}
         </Button>
-        {assist}
+        {assistFirst && phase !== 'recovered' && phase !== 'assist' ? null : assist}
       </div>
     </section>
   );

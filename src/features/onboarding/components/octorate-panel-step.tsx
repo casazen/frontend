@@ -65,6 +65,8 @@ interface OctoratePanelStepProps {
   resume?: Pick<StartPanelStepRequest, 'resumeWizardType' | 'resumeDraftEntityId' | 'resumeStepCode'>;
   /** The person is back from a panel that sent them to CasaZen (`redirectCallback`): the step they were on is followed to its end by itself. */
   cameFromPanel?: boolean;
+  /** CasaZen support does the step by default: «Fallo per me» is the main action and the panel the alternative (PO-19). */
+  assistFirst?: boolean;
   /** The step is done (seen by CasaZen, or confirmed): the next step of CasaZen. It runs once, by itself, for a step that was open in this visit. */
   onRecovered?: () => void;
   /** «Salva ed esci»: the step stays as it is (its «Da fare» is already there). */
@@ -81,7 +83,7 @@ interface OctoratePanelStepProps {
  * The page of CasaZen the person comes back to is the same step: the state is the server's, so a reload, «Salva ed esci», a closed window or the
  * «Da fare» of the step lead to the same screen. The channel manager is «il tuo channel manager» (UX-12): its name is not on this screen.
  */
-export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, resume, cameFromPanel = false, onRecovered, onSaveAndExit }: OctoratePanelStepProps) {
+export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, resume, cameFromPanel = false, assistFirst = false, onRecovered, onSaveAndExit }: OctoratePanelStepProps) {
   const { t } = useTranslation();
   const textKind = panelTextKind(kind);
   const target = { kind, propertyId, channelCode };
@@ -154,7 +156,8 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
       }}
       onContinue={() => onRecovered?.()}
       onSaveAndExit={onSaveAndExit}
-      assist={<AssistRequestButton part={panelPartOf(kind)} context={panelAssistContext(kind)} propertyId={propertyId} channelCode={channelCode} />}
+      assistFirst={assistFirst}
+      assist={<AssistRequestButton part={panelPartOf(kind)} context={panelAssistContext(kind)} propertyId={propertyId} channelCode={channelCode} primary={assistFirst} />}
       help={
         <AssistRequestButton
           part={panelPartOf(kind)}
