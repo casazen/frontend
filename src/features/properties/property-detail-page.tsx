@@ -33,6 +33,7 @@ import { PropertyNextStep } from './components/property-next-step';
 import { PropertyOtaSummary } from './components/property-ota-summary';
 import { PropertyOverviewTab } from './components/property-overview-tab';
 import { PropertyPhotoManager } from './components/property-photo-manager';
+import { WelcomeQrCard } from './components/welcome-qr-card';
 import { PRICING_SECTION_ID, propertyPanelOf, type PropertyPanel } from './lib/property-sheet';
 import { longRentPropertyPath } from './long-rent/paths';
 import { ScheduledChangeNotice } from './mode/components/scheduled-change-notice';
@@ -85,7 +86,7 @@ export function PropertyDetailPage() {
   const activateProperty = useActivateProperty();
   const deleteProperty = useDeleteProperty();
   // OTA partner API in freeze (D10): the calendars tab keeps only the iCal calendars while the flag is off.
-  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const { otaPartnerApi: otaEnabled, crmMarketing: crmEnabled } = useFeatureFlags().flags;
   const { hasPermission } = useWorkspace();
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('short-rent', id);
@@ -226,7 +227,11 @@ export function PropertyDetailPage() {
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
           {panel === 'info' && (
-            <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+            <div className="space-y-8">
+              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+              {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
+              {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+            </div>
           )}
           {panel === 'photos' && <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canWrite} />}
           {panel === 'activity' && (

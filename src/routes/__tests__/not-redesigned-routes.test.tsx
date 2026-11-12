@@ -39,6 +39,8 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     // The pages the marketing e-mails link to (CRM-08, CRM-03) are pages of guests too.
     UNSUBSCRIBE_PATH,
     MARKETING_CONFIRM_PATH,
+    // The welcome page behind the QR code in a house (CRM-03) too.
+    '/benvenuto/TEST-benvenuto-villa-lago',
   ])('Route_%s_KeepsTheCurrentLook', (path) => {
     expect(matchRoutes(appRoutes, path), `${path} matches a route`).not.toBeNull();
     expect(notRedesigned(path)).toBe(true);

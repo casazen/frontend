@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { buildHostSiteRoutes } from './host-site-routes';
 import { createHostSiteWindow } from './host-site-window';
 import { getHostSite } from '@/lib/host-site';
-import { MARKETING_CONFIRM_PATH, UNSUBSCRIBE_PATH } from '@/lib/marketing-link-paths';
+import { MARKETING_CONFIRM_PATH, UNSUBSCRIBE_PATH, WELCOME_PATH } from '@/lib/marketing-link-paths';
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
@@ -49,6 +49,7 @@ import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { ConfirmPage } from '@/features/public-marketing/confirm-page';
 import { UnsubscribePage } from '@/features/public-marketing/unsubscribe-page';
+import { WelcomePage } from '@/features/public-marketing/welcome-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
@@ -359,6 +360,13 @@ export const appRoutes: RouteObject[] = [
     // The link of the double opt-in e-mail (CRM-03, NF-90): `/marketing/confirm#contactId=…&expiresAt=…&signature=…`. Public in the same way.
     path: MARKETING_CONFIRM_PATH,
     element: <ConfirmPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The page behind the QR code a host prints for a house (CRM-03, NF-90): `/benvenuto/{token}`. A guest's page (no sign-in, no menu, not
+    // indexed, no analytics), never behind the `crmMarketing` flag: a code already printed must keep working. The random token is the only proof.
+    path: WELCOME_PATH,
+    element: <WelcomePage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
