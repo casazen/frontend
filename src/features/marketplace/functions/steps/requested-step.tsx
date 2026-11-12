@@ -50,13 +50,16 @@ export function RequestedStep({ context, propertyId, exitPath }: RequestedStepPr
   const name = mine?.name ?? context.entry?.name ?? t('marketplace.licensed.thisFunction');
   const checked = refresh.isSuccess && !refresh.isPending;
   const refused = refresh.isError ? (getProblemMessage(refresh.error, t) ?? t('marketplace.licensed.requested.checkFailed')) : null;
+  // The screen is opened again (a reload) with no property in the address and no answer to remember: the license of no property can be read, so nothing is said of the state
+  // of the request (it is never «not requested» for want of reading it) and the person is led to where the state is.
+  const over = propertyId === '';
 
   return (
     <div data-testid="licensed-requested">
       <WizardDone
-        title={t(TITLE_TEXT[phase])}
+        title={over ? t('marketplace.licensed.requested.title.over') : t(TITLE_TEXT[phase])}
         description={name}
-        lead={phase === 'requested' ? t('marketplace.licensed.requested.lead') : undefined}
+        lead={over ? t('marketplace.licensed.requested.over', { name }) : phase === 'requested' ? t('marketplace.licensed.requested.lead') : undefined}
         whatNext={[
           { text: t('marketplace.licensed.requested.whatNext.daily'), icon: CalendarClock },
           { text: t('marketplace.licensed.requested.whatNext.checkNow'), icon: ListChecks },
@@ -65,12 +68,14 @@ export function RequestedStep({ context, propertyId, exitPath }: RequestedStepPr
         secondary={{ label: t('marketplace.licensed.requested.later'), to: exitPath }}
       >
         <div className="min-w-0 space-y-4 rounded-lg border p-4" data-testid="licensed-requested-status">
-          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-medium">{t('marketplace.licensed.requested.statusLabel')}</span>
-            <Badge variant={phase === 'active' ? 'success' : phase === 'toFix' ? 'destructive' : 'warning'} data-testid="licensed-requested-badge" data-phase={phase}>
-              {t(STATUS_TEXT[phase])}
-            </Badge>
-          </div>
+          {over ? null : (
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-medium">{t('marketplace.licensed.requested.statusLabel')}</span>
+              <Badge variant={phase === 'active' ? 'success' : phase === 'toFix' ? 'destructive' : 'warning'} data-testid="licensed-requested-badge" data-phase={phase}>
+                {t(STATUS_TEXT[phase])}
+              </Badge>
+            </div>
+          )}
 
           {propertyId ? (
             <Button

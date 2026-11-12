@@ -13,7 +13,7 @@ import type { MarketplaceFunction } from '@/types';
 import { SaveAndExit, WizardFrame } from '../components/wizard-frame';
 import { parseMarketplaceEntry } from '../lib/marketplace-entry';
 import { MARKETPLACE_PATH, MARKETPLACE_PROPERTY_PARAM } from '../lib/marketplace-paths';
-import { useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
+import { draftOfThePropertyOf, useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
 import {
   LICENSED_DRAFT_VERSION,
   LICENSED_REQUEST_DEFAULTS,
@@ -139,7 +139,7 @@ function LicensedRequestWizard({ moduleCode }: { moduleCode: string }) {
         id={licensedWizardId(moduleCode)}
         steps={stepsFor()}
         defaultValues={{ ...LICENSED_REQUEST_DEFAULTS, propertyId: requestedPropertyId }}
-        draft={{ version: LICENSED_DRAFT_VERSION }}
+        draft={{ version: LICENSED_DRAFT_VERSION, accept: draftOfThePropertyOf(requestedPropertyId) }}
         finishLabel={t('marketplace.licensed.ask.finish')}
         finishFailedMessage={alreadyOn ? t('marketplace.licensed.ask.alreadyOn') : t('marketplace.licensed.errors.requestFailed')}
         onFinish={recordRequest}

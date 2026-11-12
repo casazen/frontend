@@ -7,9 +7,11 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import i18n from '@/i18n/config';
 import { getLicensedFunctions, getMarketplaceEntry, refreshLicensedFunctions, requestLicensedFunction } from '@/api/marketplace.api';
 import { propertiesApi } from '@/api/properties.api';
+import { writeWizardDraft } from '@/lib/wizard-draft';
 import type { MarketplaceEntryDetail, MarketplaceFunction, MarketplaceFunctionList, Property } from '@/types';
 import { CHANNELS_PAGE_PATH, MARKETPLACE_MINE_PATH, MARKETPLACE_PATH } from '../../lib/marketplace-paths';
 import { LicensedRequestWizardPage } from '../licensed-request-wizard-page';
+import { licensedWizardId } from '../licensed-request-model';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/queries/use-users', async (importOriginal) => ({
@@ -29,6 +31,8 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
+/** The user and the organization the draft of the wizard belongs to (the test mocks `useCurrentUser` with the same ones). */
+const SCOPE = { userId: 'user-1', orgId: 'org-1' };
 const PATH = '/app/short-rent/marketplace/request/chat';
 const RETURN_TO = '/app/short-rent/somewhere-else';
 const GUIDANCE = 'Buongiorno, vorrei attivare la funzione «Chat con gli ospiti» sulla struttura «Casa Rosa». Potete aggiungerla alla licenza? Grazie.';
@@ -208,6 +212,29 @@ describe('the property and the request', () => {
     expect(requestLicensedFunction).not.toHaveBeenCalled();
   });
 
+  it('Wizard_DraftOfTheTabForAnotherPropertyThanTheOneOfTheAddress_IsDroppedSoTheRequestGoesToThePropertyThePersonCameFor', async () => {
+    givenTheHost({ properties: [ROSA, AZZURRA] });
+    // The draft that an earlier visit left in this tab names another property.
+    writeWizardDraft(licensedWizardId('chat'), SCOPE, { step: 'ask', values: { propertyId: 'prop-2' } });
+    vi.mocked(requestLicensedFunction).mockResolvedValue(entry({ status: 'Requested', isDeclared: true }));
+    renderWizard(`${PATH}?propertyId=prop-1&step=ask`);
+    await screen.findByTestId('licensed-guidance', {}, WAIT);
+
+    fireEvent.click(primaryButton());
+
+    await onStep('fatto');
+    expect(requestLicensedFunction).toHaveBeenCalledTimes(1);
+    expect(requestLicensedFunction).toHaveBeenCalledWith('chat', 'prop-1', 'it');
+  });
+
+  it('Wizard_DraftOfTheTabForThePropertyOfTheAddress_IsKept', async () => {
+    givenTheHost({ properties: [ROSA, AZZURRA] });
+    writeWizardDraft(licensedWizardId('chat'), SCOPE, { step: 'property', values: { propertyId: 'prop-2' } });
+    renderWizard(`${PATH}?propertyId=prop-2&step=property`);
+
+    await waitFor(() => expect(screen.getByTestId('licensed-property-prop-2')).toBeChecked(), WAIT);
+  });
+
   it('PropertyStep_TheOnlyProperty_IsChosenForThePerson', async () => {
     givenTheHost();
     renderWizard(`${PATH}?step=property`);
@@ -311,6 +338,21 @@ describe('the result', () => {
     fireEvent.click(screen.getByTestId('licensed-check-now'));
 
     expect(await screen.findByTestId('licensed-check-error', {}, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.octorateUnavailable'));
+  });
+
+  it('RequestedStep_OpenedAgainWithNoPropertyInTheAddress_SaysNothingOfTheStateOfTheRequestAndLeadsToWhereItIs', async () => {
+    givenTheHost();
+    renderWizard(`${PATH}?step=fatto`);
+
+    // No property: no license can be read, so the screen does not say «no request recorded» of a request that may well have been recorded.
+    const result = await screen.findByTestId('licensed-requested', {}, WAIT);
+    expect(result).toHaveTextContent(i18n.t('marketplace.licensed.requested.title.over'));
+    expect(result).not.toHaveTextContent(i18n.t('marketplace.licensed.requested.title.none'));
+    expect(screen.queryByTestId('licensed-requested-badge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('licensed-check-now')).not.toBeInTheDocument();
+    expect(getLicensedFunctions).not.toHaveBeenCalled();
+    // The way to the state of the function is still there.
+    expect(screen.getByTestId('licensed-see-active')).toBeInTheDocument();
   });
 
   it('RequestedStep_DoneAndLater_BothGoBackToTheValidReturnTo', async () => {
