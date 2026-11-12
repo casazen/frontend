@@ -6827,7 +6827,7 @@
     "section": {
       "add": "Aggiungi i dati",
       "edit": "Controlla o modifica",
-      "empty": "Nessun dato di fatturazione. Aggiungili se l'ospite vuole la fattura.",
+      "empty": "Nessun dato di fatturazione per questa prenotazione.",
       "kind": {
         "Company": "Fattura per un'azienda.",
         "Guest": "Fattura per una persona."
@@ -6840,7 +6840,7 @@
       },
       "readOnly": "Solo chi gestisce i pagamenti può modificarli.",
       "requested": "L'ospite ha chiesto la fattura al check-in.",
-      "requestedNoData": "L'ospite ha chiesto la fattura al check-in, ma non ha scritto i suoi dati. Aggiungili tu.",
+      "requestedNoData": "L'ospite ha chiesto la fattura al check-in, ma non ha scritto i suoi dati.",
       "title": "Dati di fatturazione"
     },
     "source": {

@@ -6827,7 +6827,7 @@
     "section": {
       "add": "Add the data",
       "edit": "Check or change",
-      "empty": "No invoice data yet. Add them if the guest wants an invoice.",
+      "empty": "No invoice data for this booking yet.",
       "kind": {
         "Company": "Invoice for a company.",
         "Guest": "Invoice for a person."
@@ -6840,7 +6840,7 @@
       },
       "readOnly": "Only people who manage payments can change them.",
       "requested": "The guest asked for an invoice at check-in.",
-      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data. Add them yourself.",
+      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data.",
       "title": "Invoice data"
     },
     "source": {
