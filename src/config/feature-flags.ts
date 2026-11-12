@@ -5,6 +5,7 @@
 export type FeatureFlagKey =
   | 'otaPartnerApi'
   | 'octorateConnector'
+  | 'octorateOnboarding'
   | 'aiSupplierDiscovery'
   | 'rliProvider'
   | 'eSignProvider'
@@ -28,6 +29,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * backend answers 404 to every endpoint it reads.
    */
   octorateConnector: false,
+  /**
+   * The activation of CasaZen with Octorate (backend `OctorateOnboarding`, epic E10), off until the product owner turns it on: the plan
+   * «Inizia con CasaZen» of eleven parts, the connected path on the home and the next step offered at the end of a wizard, the status
+   * of the six flows and the bulk configuration of an agency. While it is off the plan page (`/app/short-rent/onboarding`) does not
+   * exist (its address leads to the home of the area), the home and the wizards show nothing of the path, and the backend answers 404 to
+   * every endpoint of the epic but the checklist of the activation.
+   */
+  octorateOnboarding: false,
   /**
    * D11: AI supplier discovery in freeze (backend `match-supplier` 404 while off). No UI reads it today: the web AI
    * match flow was unreachable and has been removed (FD-21); gate any new AI supplier UI on this flag.

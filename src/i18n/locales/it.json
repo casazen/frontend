@@ -10055,6 +10055,7 @@
     "properties": "Immobili",
     "profile": "Profilo",
     "notificationPreferences": "Notifiche",
+    "onboardingPlan": "Inizia con CasaZen",
     "plan": "Piano",
     "billing": "Fatturazione",
     "bookings": "Prenotazioni",
@@ -10664,6 +10665,130 @@
     "readDocument": "Leggi il documento",
     "documentInPreparation": "testo in preparazione",
     "readSubprocessors": "Vedi l'elenco completo dei sub-responsabili"
+  },
+  "onboardingPlan": {
+    "actions": {
+      "doNow": "Fai ora",
+      "group": "Uscita e aiuto",
+      "later": "Lo faccio dopo",
+      "resume": "Riprendi"
+    },
+    "defer": {
+      "adminOnly": "Per posticipare serve l'amministratore dell'organizzazione.",
+      "confirm": "Conferma",
+      "description": "«{{part}}» finisce in Da fare, con un promemoria.",
+      "error": "Non è stato possibile rimandare questo passo. Riprova.",
+      "legend": "Quando vuoi il promemoria?",
+      "notDeferrable": "Serve per i passi successivi.",
+      "options": {
+        "evening": "Stasera alle 20:00",
+        "nextWeek": "Tra una settimana, alle 09:00",
+        "tomorrow": "Domani alle 09:00"
+      },
+      "title": "Quando te lo ricordiamo?",
+      "toast": "Lo trovi in Da fare"
+    },
+    "description": "Un solo percorso, da zero a tutto attivo.",
+    "empty": "Non c'è ancora niente da mostrare qui.",
+    "exit": {
+      "action": "Salva ed esci",
+      "error": "Non è stato possibile salvare. Riprova tra poco.",
+      "saved": "Salvato. Quello che resta lo trovi in Da fare."
+    },
+    "help": {
+      "action": "Aiuto"
+    },
+    "listLabel": "I passi per attivare CasaZen",
+    "loadError": "Non è stato possibile caricare il piano.",
+    "loading": "Caricamento del piano...",
+    "needs": {
+      "alloggiatiCredentials": "Le credenziali di Alloggiati Web, con la chiave del web service",
+      "fiscalData": "I dati fiscali di chi emette i documenti",
+      "istatCredentials": "Le credenziali ISTAT della tua regione",
+      "lockCode": "Il codice della serratura o della cassetta delle chiavi",
+      "otaAccess": "L'accesso ai tuoi account sui portali di prenotazione, come Airbnb e Booking.com"
+    },
+    "needsPanel": {
+      "intro": "Tienili a portata di mano: ti guidiamo noi, un passo alla volta.",
+      "title": "Cosa ti serve"
+    },
+    "parts": {
+      "activation": {
+        "title": "Riepilogo e attivazione",
+        "what": "Controlla tutto, fai la prova finale e accendi i flussi."
+      },
+      "channels": {
+        "title": "I tuoi canali",
+        "what": "Collega ogni portale, abbina gli annunci e importa prenotazioni e calendari."
+      },
+      "compliance": {
+        "title": "Adempimenti",
+        "what": "Chi invia Alloggiati Web e ISTAT, imposta di soggiorno e CIN."
+      },
+      "fiscalDocuments": {
+        "title": "Documenti fiscali",
+        "what": "Chi li emette, il regime fiscale e i dati di chi li emette."
+      },
+      "identification": {
+        "title": "Identificazione e accesso",
+        "what": "Verifica degli ospiti, testi di consenso, codice della serratura e QR da stampare."
+      },
+      "listings": {
+        "title": "Controlla gli annunci",
+        "what": "Controlla i contenuti importati da ogni canale: ti chiediamo solo quello che manca."
+      },
+      "messagesAi": {
+        "title": "Messaggi e AI",
+        "what": "Preferenze di avviso, modi di scrivere agli ospiti e messaggi programmati."
+      },
+      "octorateConnection": {
+        "title": "Collega Octorate",
+        "what": "Dai il consenso al tuo account Octorate, oppure fai creare lì i tuoi immobili."
+      },
+      "partners": {
+        "title": "Servizi collegati",
+        "what": "Se vuoi, collega i servizi del marketplace."
+      },
+      "pricesRules": {
+        "title": "Prezzi e regole",
+        "what": "Prezzo base, listini, restrizioni e condizioni."
+      },
+      "properties": {
+        "title": "I tuoi immobili",
+        "what": "Abbina gli immobili di Octorate a quelli di CasaZen, o crea quelli che mancano."
+      }
+    },
+    "progress": "{{done}} di {{total}}",
+    "reasons": {
+      "access_code_missing": "Manca il codice di accesso di almeno un immobile.",
+      "channel_content_to_fix": "Un canale ha rifiutato i contenuti di un annuncio: vanno corretti.",
+      "channels_missing": "Almeno un immobile non è ancora su nessun canale.",
+      "cin_missing_or_invalid": "Il CIN di almeno un immobile manca o non è valido.",
+      "connection_lost": "Il collegamento con Octorate non funziona più: va rifatto.",
+      "connection_missing": "Non hai ancora collegato Octorate.",
+      "existing_ota_import_incomplete": "Stiamo ancora leggendo gli annunci che hai già sui portali.",
+      "flows_incomplete": "C'è ancora qualcosa da completare in uno dei flussi di un immobile.",
+      "identification_off": "L'identificazione degli ospiti non è attiva in questa installazione.",
+      "inventory_scenario_missing": "Dicci prima se i tuoi immobili sono già su Octorate, sui portali o nuovi.",
+      "mapping_unavailable": "Ora non riusciamo a leggere gli abbinamenti con Octorate. Riprova tra poco.",
+      "mapping_unconfirmed": "Manca la conferma dell'abbinamento tra gli annunci di Octorate e i tuoi immobili.",
+      "no_property": "Non ci sono ancora immobili da configurare.",
+      "not_provided": "Questo passo non è ancora disponibile.",
+      "price_missing": "Manca il prezzo base di almeno un immobile.",
+      "required_part_not_done": "Prima completa: {{parts}}.",
+      "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per almeno un immobile.",
+      "tax_rate_missing": "Manca l'imposta di soggiorno del comune di almeno un immobile.",
+      "unknown": "Questo passo non è ancora completato."
+    },
+    "states": {
+      "blocked": "In attesa",
+      "deferred": "Rimandato",
+      "deferredUntil": "Rimandato al {{date}}",
+      "done": "Fatto",
+      "notAvailable": "Non disponibile",
+      "open": "Da fare"
+    },
+    "title": "Inizia con CasaZen"
   },
   "org": {
     "tier": {
