@@ -276,7 +276,8 @@ async function fillParties(page: Page) {
 
 async function openSheet(page: Page, leaseId: string) {
   if (page.url().includes('step=7')) {
-    await page.getByTestId('nav-group-everyday').getByRole('link', { name: 'Contratti' }).click();
+    // The legacy list remains routable, but Contracts is no longer a menu destination.
+    await page.goto(demoUrl('/app/long-rent/leases', 'long-term'));
   } else {
     await page.getByTestId('lease-wizard-save').click();
   }
