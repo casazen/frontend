@@ -239,6 +239,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Come emetti i documenti?» (E06/F02/US02/T03, FIS-02, NF-82): who issues the fiscal documents of the organization and which document its
+    // regime needs. A guided flow opened from a card of the fiscal page, in no menu and no tab. It changes the setting of the whole
+    // organization, so it asks `property.write`, as the backend does for the save (which also needs `payment.read` and the whole organization:
+    // the wizard says so when the server refuses).
+    path: '/app/short-rent/fiscal/issuer',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/fiscal/issuer-wizard/issuer-wizard-page')).IssuerWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/fiscal/reports',
     context: 'short-rent',
     requiredPermissions: ['property.read'],

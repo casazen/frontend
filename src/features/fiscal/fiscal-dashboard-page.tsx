@@ -12,6 +12,7 @@ import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer
 import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property-item';
 import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
+import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
@@ -206,6 +207,19 @@ export function FiscalDashboardPage() {
           </div>
         ) : data ? (
           <FiscalOverview snapshot={data} canWrite={canWrite} pending={assign.isPending} onAssign={assignRegime} />
+        ) : null}
+
+        {/* Who issues the fiscal documents of the organization: a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
+        {canWrite ? (
+          <PlainSection
+            title={t('fiscalDocuments.issuer.card.title')}
+            actionLabel={t('fiscalDocuments.issuer.card.action')}
+            href={ISSUER_PATH}
+            actionTestId="fiscal-issuer-card-cta"
+            data-testid="fiscal-issuer-card"
+          >
+            <p className="text-sm text-foreground/70">{t('fiscalDocuments.issuer.card.description')}</p>
+          </PlainSection>
         ) : null}
 
         <FiscalDisclaimer />
