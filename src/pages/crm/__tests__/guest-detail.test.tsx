@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { CrmApi } from '@/api/crm.api';
+import { crmGuestKey } from '@/queries/crm';
 import type { CrmProfileDetail } from '@/types/crm.types';
 import GuestDetail from '../GuestDetail';
 
@@ -111,8 +112,7 @@ function problem(status: number, code?: string): AxiosError {
   return new AxiosError(code ?? 'error', String(status), undefined, undefined, response);
 }
 
-function renderDetail(id = PROFILE) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function renderDetail(id = PROFILE, client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
@@ -216,6 +216,34 @@ describe('GuestDetail: one CRM profile read by its id (E07/F01/US04/T02)', () =>
     expect(screen.getByText(i18n.t('crm.detail.notFound.description'))).toBeInTheDocument();
     expect(screen.getByRole('link', { name: i18n.t('crm.detail.backToList') })).toHaveAttribute('href', '/app/short-rent/crm/guests');
     expect(screen.queryByTestId('crm-profile')).not.toBeInTheDocument();
+  });
+
+  it('GuestDetail_TheProfileWentAfterThePageHadReadIt_IsNotFoundAndNeverTheOldPage', async () => {
+    // The profile was merged into another (or the caller lost its reach) after the page read it: the query keeps its last data when the
+    // next read fails, and that old page, with its tags and its confirmation request, must not stay on the screen.
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(crmGuestKey(PROFILE), detail());
+    vi.mocked(CrmApi.getGuest).mockRejectedValue(problem(404, 'crm_profile_not_found'));
+
+    renderDetail(PROFILE, client);
+
+    expect(await screen.findByText(i18n.t('crm.detail.notFound.title'))).toBeInTheDocument();
+    expect(CrmApi.getGuest).toHaveBeenCalledWith(PROFILE);
+    expect(screen.queryByTestId('crm-profile')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-tags-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-contacts-section')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('crm.detail.backToList') })).toHaveAttribute('href', '/app/short-rent/crm/guests');
+  });
+
+  it('GuestDetail_AServerErrorAfterThePageHadReadTheProfile_IsAnErrorAndNotNotFound', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(crmGuestKey(PROFILE), detail());
+    vi.mocked(CrmApi.getGuest).mockRejectedValue(problem(500));
+
+    renderDetail(PROFILE, client);
+
+    expect(await screen.findByText(i18n.t('crm.detail.loadError'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('crm.detail.notFound.title'))).not.toBeInTheDocument();
   });
 
   it('GuestDetail_AServerError_IsNeverShownAsNotFoundAndCanBeRetried', async () => {

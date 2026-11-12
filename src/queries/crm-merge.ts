@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { CrmMergeApi } from '@/api/crm-merge.api';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
-import { CRM_GUEST_KEY, CRM_GUESTS_KEY, CRM_KEY } from '@/queries/crm';
+import { CRM_GUEST_KEY, CRM_GUESTS_KEY, CRM_KEY, crmGuestKey } from '@/queries/crm';
 
 /** Proposals in a page of the merge screen. */
 export const MERGE_PAGE_SIZE = 20;
@@ -32,16 +32,18 @@ function readProposalsAgain(queryClient: QueryClient) {
 /**
  * Merges the two profiles of a proposal into the one the host keeps (`POST api/crm/merge-candidates/{id}/merge`). A merge changes the
  * list of the profiles (one is gone), the profiles themselves (the survivor has the other's stays and contacts) and the proposals, so all
- * three are read again. 409 `crm_merge_not_proposed` (already decided), 404 `crm_merge_candidate_not_found` and 422
+ * three are read again, and what the app had read of the profile that went is dropped (its page is "not found" from now on, and must
+ * not come back from the cache). 409 `crm_merge_not_proposed` (already decided), 404 `crm_merge_candidate_not_found` and 422
  * `crm_merge_survivor_invalid` are told in plain words, and nothing is claimed done.
  */
 export function useMergeProfiles() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ candidateId, survivorProfileId }: { candidateId: string; survivorProfileId: string }) =>
+    mutationFn: ({ candidateId, survivorProfileId }: { candidateId: string; survivorProfileId: string; discardedProfileId: string }) =>
       CrmMergeApi.merge(candidateId, survivorProfileId),
-    onSuccess: () => {
+    onSuccess: (_result, { discardedProfileId }) => {
+      queryClient.removeQueries({ queryKey: crmGuestKey(discardedProfileId), exact: true });
       void queryClient.invalidateQueries({ queryKey: CRM_GUESTS_KEY });
       void queryClient.invalidateQueries({ queryKey: CRM_GUEST_KEY });
       toast.success(i18n.t('crm.merge.mergeDone'));

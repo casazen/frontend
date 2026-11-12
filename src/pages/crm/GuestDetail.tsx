@@ -162,8 +162,11 @@ export default function GuestDetail() {
     return <ProfileSkeleton label={t('crm.detail.loading')} />;
   }
 
-  // An API error is never shown as "not found": only a 404 is.
-  if (isError && getHttpStatus(error) !== 404) {
+  // An API error is never shown as "not found": only a 404 is. And a 404 is "not found" even when the page still holds the profile it read
+  // before (a query keeps its last data when the next read fails): the profile was merged into another (what goes stays as a tombstone),
+  // or the caller lost its reach. The old page must not stay on the screen, with controls that can only fail.
+  const notFound = isError && getHttpStatus(error) === 404;
+  if (isError && !notFound) {
     return (
       <div className="min-w-0 space-y-6">
         <PageHeader crumbs="auto" title={t('crm.detail.fallbackTitle')} />
@@ -172,7 +175,7 @@ export default function GuestDetail() {
     );
   }
 
-  if (!profile) {
+  if (!profile || notFound) {
     return (
       <div className="min-w-0 space-y-6">
         <PageHeader crumbs="auto" title={t('crm.detail.fallbackTitle')} />

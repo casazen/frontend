@@ -156,7 +156,10 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
         confirmDisabled={survivor === null}
         isLoading={merge.isPending}
         onConfirm={async () => {
-          if (survivor !== null) await merge.mutateAsync({ candidateId: candidate.id, survivorProfileId: survivor });
+          if (survivor === null) return;
+          // The other profile of the pair goes: the page of the profile that goes must not come back from what the app has read.
+          const discardedProfileId = survivor === profileA.id ? profileB.id : profileA.id;
+          await merge.mutateAsync({ candidateId: candidate.id, survivorProfileId: survivor, discardedProfileId });
         }}
       >
         <ChoiceGroup legend={t('crm.merge.dialog.legend')} legendVisible minCardWidth={14}>
