@@ -25,8 +25,9 @@ export type NavPlacement = 'primary' | 'secondary';
  * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
  * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
  * `activities` is the number of the urgent items of the "To do" list (`GET api/me/activities/count`, ADR-026-R12), in red too.
+ * `messages` is the number of the guests' messages the host has not read, in all the conversations (`GET api/messages/unread?includeOta=true`).
  */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities';
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
 export const MAX_PRIMARY_NAV_ENTRIES = 8;
@@ -68,7 +69,10 @@ export interface RouteManifestEntry {
    * its counter are read together).
    */
   navBarKey?: string;
-  /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
+  /**
+   * Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). A page that hangs from an
+   * entry ({@link navParent}) is in no menu: its counter, if it has one (the messages not read yet), is on its tab (`NavSectionTabs`).
+   */
   navCount?: NavCountKey;
   isDefault?: boolean;
   /**
@@ -1263,15 +1267,31 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/marketing-page')).MarketingPage }),
     legacyPaths: ['/admin/marketing'],
   },
+  // Messages (E05/F02/US03, NF-61)
+  {
+    // Messaggi: every conversation with the guests, the ones of the channels and the direct ones, "Da rispondere" first, with the number of the
+    // messages not read yet on its tab. The first tab of Prenotazioni after the bookings. The main menu has its eight entries (UI-04a), so
+    // the page hangs from the entry of the bookings like the guests and the reviews do. The server shows each user only the conversations
+    // its scope reaches (HostScope); reading asks `booking.read`, and answering asks `booking.write` inside the page.
+    path: '/app/short-rent/messages',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.messages',
+    navParent: '/app/short-rent/bookings',
+    navOrder: 1,
+    navCount: 'messages',
+    icon: 'MessageSquare',
+    component: async () => ({ default: (await import('@/features/messages/inbox-page')).InboxPage }),
+  },
   // Guests
   {
-    // Ospiti: the first tab of Prenotazioni after the bookings.
+    // Ospiti: the second tab of Prenotazioni, after the messages.
     path: '/app/short-rent/guests',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     navKey: 'nav.guests',
     navParent: '/app/short-rent/bookings',
-    navOrder: 1,
+    navOrder: 2,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
   },

@@ -10048,6 +10048,66 @@
     "enterHint": "Invio per inviare, Maiusc+Invio per andare a capo.",
     "counter": "{{count}}/{{max}}"
   },
+  "messages": {
+    "channel": {
+      "airbnb": "Airbnb",
+      "booking": "Booking.com",
+      "direct": "Diretto",
+      "expedia": "Expedia",
+      "vrbo": "Vrbo"
+    },
+    "empty": {
+      "all": "Non ci sono ancora conversazioni",
+      "allHint": "Appena un ospite ti scrive, dal tuo sito o da un canale, la trovi qui.",
+      "noMatch": "Nessuna conversazione trovata",
+      "noMatchHint": "Prova con un'altra ricerca o togli un filtro.",
+      "showAll": "Mostra tutte le conversazioni",
+      "toRespond": "Nessun messaggio a cui rispondere",
+      "toRespondHint": "Quando un ospite scrive, la conversazione compare qui.",
+      "unread": "Non hai messaggi da leggere",
+      "unreadHint": "Hai letto tutti i messaggi dei tuoi ospiti."
+    },
+    "filter": {
+      "all": "Tutte",
+      "booking": "Solo una prenotazione",
+      "bookingClear": "Mostra tutte le conversazioni",
+      "channel": "Canale",
+      "channelAll": "Tutti i canali",
+      "clear": "Azzera i filtri",
+      "label": "Conversazioni da mostrare",
+      "property": "Immobile",
+      "propertyAll": "Tutti gli immobili",
+      "toRespond": "Da rispondere",
+      "unread": "Non lette"
+    },
+    "inbox": {
+      "description": "Tutte le conversazioni con i tuoi ospiti, quelle dei canali e quelle dirette, in un unico elenco.",
+      "listLabel": "Conversazioni",
+      "loading": "Carico le conversazioni…",
+      "noSelection": {
+        "description": "La leggi qui, con la prenotazione accanto, e rispondi senza uscire da CasaZen.",
+        "title": "Scegli una conversazione"
+      },
+      "title": "Messaggi"
+    },
+    "loadError": "Non riesco a caricare i messaggi.",
+    "search": {
+      "label": "Cerca una conversazione",
+      "placeholder": "Cerca per ospite, codice o immobile"
+    },
+    "thread": {
+      "archived": "Archiviata",
+      "closed": "Chiusa",
+      "fileOnly": "Solo un allegato",
+      "request": "Richiesta",
+      "sender": {
+        "assistant": "Assistente CasaZen",
+        "guest": "Ospite",
+        "you": "Tu"
+      },
+      "unassigned": "Immobile da collegare"
+    }
+  },
   "nav": {
     "accountHome": "Home",
     "people": "Persone",
@@ -10090,6 +10150,7 @@
     "suppliers": "Fornitori",
     "trustedSuppliers": "Fornitori fidati",
     "guests": "Ospiti",
+    "messages": "Messaggi",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "ai": "Configurazione AI",
@@ -10147,7 +10208,9 @@
       "compliance_one": "{{count}} adempimento con rischio di sanzione",
       "compliance_other": "{{count}} adempimenti con rischio di sanzione",
       "activities_one": "{{count}} attività urgente",
-      "activities_other": "{{count}} attività urgenti"
+      "activities_other": "{{count}} attività urgenti",
+      "messages_one": "{{count}} messaggio da leggere",
+      "messages_other": "{{count}} messaggi da leggere"
     },
     "activities": "Attività",
     "inviteQr": "QR di invito",

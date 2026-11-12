@@ -10048,6 +10048,66 @@
     "enterHint": "Enter to send, Shift+Enter for a new line.",
     "counter": "{{count}}/{{max}}"
   },
+  "messages": {
+    "channel": {
+      "airbnb": "Airbnb",
+      "booking": "Booking.com",
+      "direct": "Direct",
+      "expedia": "Expedia",
+      "vrbo": "Vrbo"
+    },
+    "empty": {
+      "all": "No conversations yet",
+      "allHint": "As soon as a guest writes to you, from your site or a channel, you will find the conversation here.",
+      "noMatch": "No conversation found",
+      "noMatchHint": "Try another search or remove a filter.",
+      "showAll": "Show all conversations",
+      "toRespond": "Nothing to respond to",
+      "toRespondHint": "When a guest writes, the conversation shows up here.",
+      "unread": "No messages to read",
+      "unreadHint": "You have read every message from your guests."
+    },
+    "filter": {
+      "all": "All",
+      "booking": "One booking only",
+      "bookingClear": "Show all conversations",
+      "channel": "Channel",
+      "channelAll": "All channels",
+      "clear": "Clear filters",
+      "label": "Conversations to show",
+      "property": "Property",
+      "propertyAll": "All properties",
+      "toRespond": "To respond",
+      "unread": "Unread"
+    },
+    "inbox": {
+      "description": "Every conversation with your guests, from the channels and direct, in one list.",
+      "listLabel": "Conversations",
+      "loading": "Loading conversations…",
+      "noSelection": {
+        "description": "Read it here with the booking beside it, and answer without leaving CasaZen.",
+        "title": "Choose a conversation"
+      },
+      "title": "Messages"
+    },
+    "loadError": "Messages could not be loaded.",
+    "search": {
+      "label": "Search conversations",
+      "placeholder": "Search by guest, code or property"
+    },
+    "thread": {
+      "archived": "Archived",
+      "closed": "Closed",
+      "fileOnly": "Only an attachment",
+      "request": "Request",
+      "sender": {
+        "assistant": "CasaZen assistant",
+        "guest": "Guest",
+        "you": "You"
+      },
+      "unassigned": "Property to link"
+    }
+  },
   "nav": {
     "accountHome": "Home",
     "people": "People",
@@ -10090,6 +10150,7 @@
     "suppliers": "Suppliers",
     "trustedSuppliers": "Trusted Suppliers",
     "guests": "Guests",
+    "messages": "Messages",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "ai": "AI configuration",
@@ -10147,7 +10208,9 @@
       "compliance_one": "{{count}} duty with a risk of penalty",
       "compliance_other": "{{count}} duties with a risk of penalty",
       "activities_one": "{{count}} urgent task",
-      "activities_other": "{{count}} urgent tasks"
+      "activities_other": "{{count}} urgent tasks",
+      "messages_one": "{{count}} unread message",
+      "messages_other": "{{count}} unread messages"
     },
     "activities": "Activities",
     "inviteQr": "Invite QR codes",
