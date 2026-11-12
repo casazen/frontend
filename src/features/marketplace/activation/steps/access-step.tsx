@@ -163,7 +163,7 @@ function PanelAccessSection({ context, propertyIds, panel, onSaveAndExit, onActi
     );
   }
 
-  const statuses = propertyIds.map((propertyId, index) =>
+  const statuses = propertyIds.map((_, index) =>
     panelAccessStatus({
       hasActivation: activationIds[index] !== null,
       panelAccessDone: reads[index]?.data?.panelAccessDone,
