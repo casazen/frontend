@@ -161,6 +161,25 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(item)).toBe(`/app/short-rent/properties/${PROPERTY_ID}/activation`);
   });
 
+  it('todoActionRoute_ItemsOfTheActivationWithOctorate_OpenTheirOwnPageNotTheWizardOfAProperty', () => {
+    const STEP_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+    const item = (entityType: string, overrides: Partial<{ entityId: string; propertyId: string | null }> = {}) =>
+      itemFor('ResumeWizard', { entityType, entityId: STEP_ID, propertyId: PROPERTY_ID, ...overrides });
+    const everything = permissions(['property.read', 'property.write']);
+
+    // A guided step of the panel finds its kind from the id of the step (the item knows the step, not its kind); its property does not take it to the activation of the property.
+    expect(todoActionRoute(item('OnboardingPanelStep'), everything)).toBe(`/app/short-rent/onboarding/panel?step=${STEP_ID}`);
+    // A part put off or left half way, and a «Fallo per me» request, know the id of a stored row and no part: the plan, where the part that is open is highlighted.
+    expect(todoActionRoute(item('OnboardingPart', { propertyId: null }), everything)).toBe('/app/short-rent/onboarding');
+    expect(todoActionRoute(item('OnboardingAssistRequest', { propertyId: null }), everything)).toBe('/app/short-rent/onboarding');
+    // A flow to complete opens the summary of the activation (readable by whoever reads the properties).
+    expect(todoActionRoute(item('OnboardingFlow', { propertyId: null }), permissions(['property.read']))).toBe('/app/short-rent/onboarding/summary');
+    // The panel steps are written: a reader is not sent to a page that would refuse them.
+    expect(todoActionRoute(item('OnboardingPanelStep'), permissions(['property.read']))).toBeNull();
+    // Everything else about a property still opens its activation.
+    expect(todoActionRoute(item('Property'), everything)).toBe(`/app/short-rent/properties/${PROPERTY_ID}/activation`);
+  });
+
   it('todoActionRoute_ItemWithoutTheIdThePageNeeds_ReturnsNullNeverAHalfBuiltAddress', () => {
     expect(todoActionRoute(itemFor('ReviewBooking', { entityId: NO_ID }))).toBeNull();
     expect(todoActionRoute(itemFor('ResumeWizard', { entityType: 'Draft', entityId: NO_ID, propertyId: null }))).toBeNull();

@@ -8,6 +8,9 @@ export const OCTORATE_CONNECT_PATH = '/app/short-rent/integrations/octorate';
 /** The step of the wizard the callback belongs to: the host leaves from it and comes back to it. */
 export const CONSENT_STEP_ID = 'consent';
 
+/** The step of the wizard where the OTAs of the existing listings are chosen and given their access: where a guided step of a channel access comes back to. */
+export const EXISTING_CHANNELS_STEP_ID = 'existing-channels';
+
 /** What the channel manager puts in the address of the callback (RFC 6749, 4.1.2). */
 const CALLBACK_PARAMS = ['code', 'state', 'error', 'error_description', 'error_uri'] as const;
 

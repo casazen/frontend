@@ -14,7 +14,7 @@ import { useFoundListings, useIcalFeedsOfProperties, useShortRentProperties } fr
 import type { OctorateListing } from '@/types';
 import type { PropertyIcalFeed, PropertyIcalFeedChannel } from '@/types/property-ical';
 import type { ConnectWizardValues } from './inventory-scenario';
-import { listingName, roomName } from './listing-labels';
+import { channelName, listingName, roomName } from './listing-labels';
 import { StepNotice, StepProblem } from './listing-parts';
 import {
   MAPPING_STEP_ID,
@@ -51,6 +51,8 @@ interface ConnectSummaryStepProps {
   phase: ConnectPhase;
   /** Back to the consent, for the host who got here without a connection (a draft taken up again, an address typed by hand). */
   onBackToConsent: () => void;
+  /** The listings come from the import of the ones that already exist on OTAs: the summary says they keep their codes and that nothing is published. */
+  existing?: boolean;
 }
 
 /**
@@ -64,7 +66,7 @@ interface ConnectSummaryStepProps {
  * After a run that did not do everything, the listings that failed are listed here with the reason in the words of the app, and a link
  * to fix them: the ones that were done stay done (they are not listings to do any more), so running again only does the rest.
  */
-export function ConnectSummaryStep({ progress, failures, phase, onBackToConsent }: ConnectSummaryStepProps) {
+export function ConnectSummaryStep({ progress, failures, phase, onBackToConsent, existing = false }: ConnectSummaryStepProps) {
   const { t } = useTranslation();
   const connected = phase === 'connected';
   const listings = useFoundListings({ enabled: connected });
@@ -170,6 +172,7 @@ export function ConnectSummaryStep({ progress, failures, phase, onBackToConsent 
   // reads afterwards and what to do about the iCal calendars, what stays for later.
   const explain = [
     touchesCasazen ? `${t('octorate.connect.summary.explain.where')} ${t('octorate.connect.summary.explain.when')}` : null,
+    existing ? t('octorate.connect.existing.summary.preserved') : null,
     importedLines.length > 0 ? t('octorate.connect.summary.explain.imported') : null,
     readsChannels ? `${t('octorate.connect.summary.explain.reads')} ${t('octorate.connect.summary.explain.ical')}` : null,
     laterLines.length > 0 ? t('octorate.connect.summary.explain.later') : null,
@@ -279,6 +282,13 @@ function ResultListingRow({ row }: { row: ResultRow }) {
       <div className="min-w-0">
         <p className="break-words font-medium">{listingName(listing, t)}</p>
         {detail ? <p className="break-words text-muted-foreground">{detail}</p> : null}
+        {(kind === 'linked' || kind === 'imported') && listing.channels.length > 0 ? (
+          <p className="break-words text-muted-foreground" data-testid={`octorate-result-${listing.octorateAccommodationId}-ids`}>
+            {t('octorate.connect.summary.result.ids', {
+              ids: listing.channels.map((channel) => `${channelName(channel.channelId, t)}: ${channel.externalId}`).join(', '),
+            })}
+          </p>
+        ) : null}
         {blocked ? <p className="break-words text-muted-foreground">{t('octorate.connect.summary.result.later.blocked')}</p> : null}
         {(kind === 'linked' || kind === 'imported') && missesItsRoom(listing) ? (
           <p className="break-words text-muted-foreground">{t('octorate.connect.summary.result.roomMissing')}</p>
