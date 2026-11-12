@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EXISTING_CHANNELS_STEP_ID, OCTORATE_CONNECT_PATH } from '@/features/integrations/octorate/octorate-callback';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import {
@@ -25,10 +26,27 @@ import { ONBOARDING_PLAN_PATH, partPath } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { useCompletePanelStepCallback, usePanelSteps } from '@/queries/use-onboarding-panel-step';
+import type { OnboardingPartKey, PanelStep } from '@/types/onboarding.types';
 import { OctoratePanelStep } from './components/octorate-panel-step';
 
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
+
+/** What the server stores as the step of the wizard a channel access comes back to when the connect wizard of the existing listings started it (backend `ResumeStepCode`). */
+const EXISTING_INVENTORY_ACCESS_RESUME = 'existingInventoryAccess';
+
+/**
+ * Where a guided step goes on once it is done: back to the point of the wizard that started it, if the server stored one (the access to a channel started by
+ * the connect wizard of the existing listings comes back to its channels, where the answer, the channels and the import are the draft of the wizard), and
+ * otherwise to the part of the plan it belongs to. The page is reached from the plan, from «Da fare» and from another device as well, and the person is led
+ * back to where they were, not to the plan.
+ */
+function pathAfter(step: PanelStep | undefined, part: OnboardingPartKey): string {
+  const resume = step?.resume;
+  return resume?.wizardType === 'OnboardingActivation' && resume.stepCode === EXISTING_INVENTORY_ACCESS_RESUME
+    ? `${OCTORATE_CONNECT_PATH}?step=${EXISTING_CHANNELS_STEP_ID}`
+    : partPath(part);
+}
 
 /**
  * The end of a panel that sends the person back to CasaZen (`?step=<id>&state=<state>`): the state is taken out of the address at once and sent
@@ -151,7 +169,7 @@ export function OnboardingPanelStepPage() {
           channelCode={channelCode}
           cameFromPanel={callback.returned}
           assistFirst={assistFirst}
-          onRecovered={() => navigate(partPath(part))}
+          onRecovered={(done) => navigate(pathAfter(done, part))}
           onSaveAndExit={saveAndExit}
         />
       </>

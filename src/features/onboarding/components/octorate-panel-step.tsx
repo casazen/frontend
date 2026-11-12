@@ -67,8 +67,11 @@ interface OctoratePanelStepProps {
   cameFromPanel?: boolean;
   /** CasaZen support does the step by default: «Fallo per me» is the main action and the panel the alternative (PO-19). */
   assistFirst?: boolean;
-  /** The step is done (seen by CasaZen, or confirmed): the next step of CasaZen. It runs once, by itself, for a step that was open in this visit. */
-  onRecovered?: () => void;
+  /**
+   * The step is done (seen by CasaZen, or confirmed): the next step of CasaZen, which the step itself may name (`resume`, the point of a wizard the server
+   * stored when the wizard started it). It runs once, by itself, for a step that was open in this visit.
+   */
+  onRecovered?: (step: PanelStep | undefined) => void;
   /** «Salva ed esci»: the step stays as it is (its «Da fare» is already there). */
   onSaveAndExit: () => void;
 }
@@ -132,8 +135,8 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
     // CasaZen saw the connection: the window it opened has done its job, and the person is taken on, with nothing to press.
     closeWindow();
     toast.success(t('onboardingPlan.panel.state.recovered.toast'));
-    onRecovered?.();
-  }, [phase, closeWindow, onRecovered, t]);
+    onRecovered?.(step);
+  }, [phase, closeWindow, onRecovered, step, t]);
 
   const openError = handoff.error ? (getProblemMessage(handoff.error, t) ?? t('onboardingPlan.panel.errors.open')) : null;
   const confirmError = confirmStep.isError ? (getProblemMessage(confirmStep.error, t) ?? t('onboardingPlan.panel.errors.confirm')) : null;
@@ -154,7 +157,7 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
       onConfirm={() => {
         if (stepId) confirmStep.mutate(stepId);
       }}
-      onContinue={() => onRecovered?.()}
+      onContinue={() => onRecovered?.(step)}
       onSaveAndExit={onSaveAndExit}
       assistFirst={assistFirst}
       assist={<AssistRequestButton part={panelPartOf(kind)} context={panelAssistContext(kind)} propertyId={propertyId} channelCode={channelCode} primary={assistFirst} />}

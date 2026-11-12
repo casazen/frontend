@@ -60,7 +60,7 @@ import {
   type MappingProgress,
   type MappingRunner,
 } from './mapping-model';
-import { CONSENT_STEP_ID } from './octorate-callback';
+import { CONSENT_STEP_ID, EXISTING_CHANNELS_STEP_ID } from './octorate-callback';
 import { useOctorateConnect } from './use-octorate-connect';
 import { WhyConnectStep } from './why-connect-step';
 
@@ -70,7 +70,6 @@ const WIZARD_ID = 'octorate-connect';
 const SCENARIO_STEP_ID = 'scenario';
 const WHY_STEP_ID = 'why';
 const MIXED_STEP_ID = 'mixed';
-const EXISTING_CHANNELS_STEP_ID = 'existing-channels';
 const EXISTING_IMPORT_STEP_ID = 'existing-import';
 const NEW_STEP_ID = 'new';
 

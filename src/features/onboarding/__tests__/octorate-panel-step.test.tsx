@@ -284,6 +284,32 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(onboardingApi.confirmPanelStep).not.toHaveBeenCalled();
     });
 
+    it('OctoratePanelStep_AccessToAChannelStartedByTheWizard_GoesBackToTheStepOfTheWizardAndNotToThePart', async () => {
+      // The step the connect wizard of the existing listings started: the server stored the point it comes back to, and the person reaches the page from «Da fare».
+      server = panelStep({
+        kind: 'channelAccess',
+        propertyId: null,
+        channelCode: 'booking_xml',
+        instructionsKey: 'panelChannelAccess',
+        resume: { wizardType: 'OnboardingActivation', draftEntityId: 'batch-1', stepCode: 'existingInventoryAccess' },
+      });
+      const { win } = fakeWindow();
+      vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);
+      renderPage('/app/short-rent/onboarding/panel/channel-access?channelCode=booking_xml');
+      await screen.findByTestId('panel-step-open');
+      press('panel-step-open');
+      await waitFor(() => expect(phase()).toBe('waiting'));
+
+      // The access is seen when the person is back: CasaZen goes on where the wizard was (its draft holds the answer, the channels and the import), not to the plan.
+      server = { ...server, status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null };
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+
+      expect(await screen.findByTestId('arrived')).toHaveTextContent('/app/short-rent/integrations/octorate?step=existing-channels');
+      expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('channels'));
+    });
+
     it('OctoratePanelStep_ResultCasaZenCannotTell_AsksTheQuestionOnlyAfterTheWindowClosedAndNeverBefore', async () => {
       const { win } = await openPanel();
 
