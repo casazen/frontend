@@ -4676,6 +4676,7 @@
       "loadError": "We cannot load the guest profiles",
       "mergeProposal": "Possible duplicate",
       "mergeProposalHint": "Another profile may be the same person: you will find it among the duplicates to review.",
+      "mergeProposalHintReadOnly": "Another profile may be the same person: whoever can edit the guests decides on it.",
       "moreTags_one": "+{{count}} more",
       "moreTags_other": "+{{count}} more",
       "noMatch": {

@@ -4676,6 +4676,7 @@
       "loadError": "Non riusciamo a caricare i profili degli ospiti",
       "mergeProposal": "Possibile duplicato",
       "mergeProposalHint": "Un altro profilo potrebbe essere la stessa persona: lo trovi tra i duplicati da rivedere.",
+      "mergeProposalHintReadOnly": "Un altro profilo potrebbe essere la stessa persona: a deciderlo è chi può modificare gli ospiti.",
       "moreTags_one": "+{{count}} altro",
       "moreTags_other": "+{{count}} altri",
       "noMatch": {

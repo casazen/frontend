@@ -11,6 +11,7 @@ import { contactStateOf } from '@/features/crm/profiles/contact-state';
 import { ContactStateBadge } from '@/features/crm/profiles/contact-state-badge';
 import { useProfileFilters } from '@/features/crm/profiles/profile-filter-state';
 import { ProfileFilters } from '@/features/crm/profiles/profile-filters';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { cn } from '@/lib/utils';
 import { useGuestCrmProfiles } from '@/queries/crm';
 import type { CrmProfileListItem } from '@/types/crm.types';
@@ -43,13 +44,18 @@ function ProfileName({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** A mark on a profile that a person has to look at: a merge proposal waits for a decision. */
+/**
+ * A mark on a profile that a person has to look at: a merge proposal waits for a decision. The page of the duplicates is for who may
+ * write the guests (`guest.write`): to who may only read them the mark says the same without sending them to a page they cannot open.
+ */
 function MergeMark() {
   const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const canDecide = hasPermission('short-rent', 'guest.write');
   return (
     <span
       data-testid="crm-merge-mark"
-      title={t('crm.list.mergeProposalHint')}
+      title={canDecide ? t('crm.list.mergeProposalHint') : t('crm.list.mergeProposalHintReadOnly')}
       className={cn('inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset', STATUS_TONE_CLASSES.warning)}
     >
       <GitMerge className="size-3.5 shrink-0" aria-hidden="true" />

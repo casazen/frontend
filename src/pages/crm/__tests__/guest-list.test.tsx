@@ -12,6 +12,10 @@ import GuestList from '../GuestList';
 vi.mock('@/api/crm.api', () => ({
   CrmApi: { getGuests: vi.fn() },
 }));
+const permissions = vi.hoisted(() => ({ canWrite: true }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permissions.canWrite || permission !== 'guest.write' }),
+}));
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, description }: { title: string; description?: string }) =>
     createElement('div', null, createElement('h1', null, title), description ? createElement('p', null, description) : null),
@@ -67,6 +71,7 @@ const lastAsked = () => vi.mocked(CrmApi.getGuests).mock.calls.at(-1)?.[0];
 describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    permissions.canWrite = true;
     vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile()]));
     await i18n.changeLanguage('it');
   });
@@ -121,6 +126,41 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     expect(table.getAllByTestId('crm-merge-mark')).toHaveLength(1);
     const marked = table.getByTestId(`crm-profile-row-${ROSSI}`);
     expect(within(marked).getByText(i18n.t('crm.list.mergeProposal'))).toBeInTheDocument();
+  });
+
+  it('GuestList_TheMarkOfAProposal_PointsToTheDuplicatesForWhoMayDecideThem', async () => {
+    vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile({ hasMergeProposal: true })]));
+
+    renderList();
+
+    const mark = within(await findTable()).getByTestId('crm-merge-mark');
+    expect(mark).toHaveAttribute('title', i18n.t('crm.list.mergeProposalHint'));
+    expect(mark.getAttribute('title')).toMatch(/duplicati/);
+  });
+
+  it('GuestList_TheMarkOfAProposal_DoesNotSendWhoMayOnlyReadToAPageTheyCannotOpen', async () => {
+    permissions.canWrite = false;
+    vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile({ hasMergeProposal: true })]));
+
+    renderList();
+
+    // The mark is there (a profile with a duplicate is worth a look), and says who decides; the page of the duplicates is not named.
+    const mark = within(await findTable()).getByTestId('crm-merge-mark');
+    expect(mark).toHaveAttribute('title', i18n.t('crm.list.mergeProposalHintReadOnly'));
+    expect(mark.getAttribute('title')).not.toMatch(/duplicati/);
+    expect(within(mark).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it.each(['it', 'en'])('GuestList_TheTwoHintsOfTheMark_ExistInBothLanguagesAndOnlyTheFirstNamesTheDuplicates (%s)', async (language) => {
+    await i18n.changeLanguage(language);
+
+    const decide = i18n.t('crm.list.mergeProposalHint');
+    const readOnly = i18n.t('crm.list.mergeProposalHintReadOnly');
+
+    expect(readOnly).not.toBe('crm.list.mergeProposalHintReadOnly');
+    expect(readOnly).not.toBe(decide);
+    expect(decide).toMatch(/duplicat/i);
+    expect(readOnly).not.toMatch(/duplicat/i);
   });
 
   it('GuestList_ARow_OpensTheProfile', async () => {
