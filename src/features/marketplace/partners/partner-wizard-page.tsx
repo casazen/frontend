@@ -62,7 +62,8 @@ function PartnerWizard({ code }: { code: string }) {
   const leave = useWizardLeave(exitPath, t('marketplace.partnerFlow.exit.saved'));
   const { user, org } = useCurrentUser();
   const declare = useDeclarePartner();
-  const [siteProblem, setSiteProblem] = useState(false);
+  // What a failure that has no message of its own is: the address of the site, or the declaration.
+  const [failing, setFailing] = useState<'site' | 'declare'>('declare');
 
   const propertyId = searchParams.get(MARKETPLACE_PROPERTY_PARAM) ?? undefined;
   const briefQuery = usePartnerBrief(code, propertyId);
@@ -105,7 +106,7 @@ function PartnerWizard({ code }: { code: string }) {
       beforeNext: async (values) => {
         const site = httpsUrlOrNull(briefQuery.data?.websiteUrl);
         if (!site) {
-          setSiteProblem(true);
+          setFailing('site');
           throw new StepBlockedError('The address of the partner is not an https address');
         }
         saveDraftAtWelcomeBack(values);
@@ -142,9 +143,12 @@ function PartnerWizard({ code }: { code: string }) {
         defaultValues={partnerDefaults()}
         draft={{ version: PARTNER_DRAFT_VERSION }}
         finishLabel={t('marketplace.partnerFlow.welcomeBack.yes')}
-        finishFailedMessage={siteProblem ? t('marketplace.partnerFlow.errors.siteAddress') : t('marketplace.partnerFlow.errors.declareFailed')}
+        finishFailedMessage={failing === 'site' ? t('marketplace.partnerFlow.errors.siteAddress') : t('marketplace.partnerFlow.errors.declareFailed')}
         // «Sì, l'ho completata»: the declaration, for the property of the address (none is the whole organization) and the day the person gave.
-        onFinish={(values) => declare.mutateAsync({ code, propertyId, declaredOn: values.declaredOn })}
+        onFinish={(values) => {
+          setFailing('declare');
+          return declare.mutateAsync({ code, propertyId, declaredOn: values.declaredOn });
+        }}
         onExit={() => navigate(exitPath)}
         aboveFooter={
           // «Non ancora» is the way out that keeps the point where the person is: on the step that asks the question it is the wizard's own «Salva ed esci».
