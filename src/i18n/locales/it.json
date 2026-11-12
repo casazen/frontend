@@ -4452,6 +4452,127 @@
     }
   },
   "crm": {
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Sito diretto",
+      "Expedia": "Expedia",
+      "Local": "Locale",
+      "Manual": "Inserita a mano",
+      "OtherChannel": "Altro portale",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
+    "filters": {
+      "channel": {
+        "all": "Tutti i canali",
+        "label": "Prenotato su"
+      },
+      "clear": "Azzera i filtri",
+      "country": {
+        "label": "Paese",
+        "placeholder": "Es. IT"
+      },
+      "email": {
+        "any": "Indifferente",
+        "label": "Raggiungibile via e-mail",
+        "reachable": "Sì, posso scrivergli",
+        "unreachable": "No, non posso scrivergli"
+      },
+      "language": {
+        "all": "Tutte le lingue",
+        "label": "Lingua"
+      },
+      "minStays": {
+        "any": "Qualsiasi",
+        "label": "Soggiorni",
+        "option_one": "Almeno {{count}} soggiorno",
+        "option_other": "Almeno {{count}} soggiorni"
+      },
+      "panel": {
+        "button": "Filtri",
+        "buttonActive": "Filtri ({{active}})"
+      },
+      "region": "Cerca e filtra i profili",
+      "search": {
+        "hint": "Scrivi una parte del nome, oppure l'e-mail o il telefono per intero.",
+        "label": "Cerca un ospite",
+        "placeholder": "Nome, e-mail o telefono"
+      },
+      "sort": {
+        "label": "Ordina per",
+        "lastStay": "Ultimo soggiorno",
+        "name": "Nome (A-Z)",
+        "spend": "Spesa più alta",
+        "stays": "Più soggiorni"
+      },
+      "tag": {
+        "label": "Tag",
+        "placeholder": "Es. VIP"
+      }
+    },
+    "list": {
+      "channels": "Canali di prenotazione",
+      "columns": {
+        "channels": "Canali",
+        "email": "E-mail",
+        "guest": "Ospite",
+        "lastStay": "Ultimo soggiorno",
+        "spend": "Spesa",
+        "stays": "Soggiorni"
+      },
+      "count_one": "{{count}} profilo",
+      "count_other": "{{count}} profili",
+      "description": "I tuoi ospiti, con i loro soggiorni e la possibilità di scrivergli. Vedi solo chi ha soggiornato negli immobili a cui hai accesso.",
+      "empty": {
+        "description": "I profili arrivano con le prenotazioni: quando un ospite soggiorna da te, lo trovi qui.",
+        "title": "Ancora nessun ospite"
+      },
+      "label": "Profili degli ospiti",
+      "lastStay": "ultimo soggiorno {{date}}",
+      "loadError": "Non riusciamo a caricare i profili degli ospiti",
+      "mergeProposal": "Possibile duplicato",
+      "mergeProposalHint": "Un altro profilo potrebbe essere la stessa persona: lo trovi tra i duplicati da rivedere.",
+      "moreTags_one": "+{{count}} altro",
+      "moreTags_other": "+{{count}} altri",
+      "noMatch": {
+        "action": "Azzera i filtri",
+        "description": "Prova con meno filtri o con un'altra ricerca.",
+        "title": "Nessun profilo corrisponde ai filtri"
+      },
+      "noName": "Ospite senza nome",
+      "staysCount_one": "{{count}} soggiorno",
+      "staysCount_other": "{{count}} soggiorni",
+      "tags": "Tag",
+      "title": "CRM Ospiti"
+    },
+    "state": {
+      "consent": {
+        "hint": "L'ospite ha dato il consenso e ha confermato il suo indirizzo e-mail: puoi scrivergli per novità e offerte.",
+        "label": "Raggiungibile, con consenso"
+      },
+      "noContact": {
+        "hint": "Non c'è un indirizzo e-mail a cui scrivere: manca l'indirizzo, oppure è stato lasciato senza alcun permesso di usarlo.",
+        "label": "Nessun contatto"
+      },
+      "serviceOnly": {
+        "hint": "Puoi scrivergli solo per il soggiorno (conferme, istruzioni di arrivo, fattura), non per novità e offerte. Succede con gli indirizzi dei portali e con chi non ha dato il consenso.",
+        "label": "Solo servizio"
+      },
+      "softOptIn": {
+        "hint": "Ha prenotato direttamente da te: puoi proporgli servizi simili a quelli già acquistati, e ogni messaggio ha il link per annullare l'iscrizione.",
+        "label": "Raggiungibile, cliente diretto"
+      },
+      "toConfirm": {
+        "hint": "Ha dato il consenso ma non ha ancora confermato il suo indirizzo e-mail (o ha chiesto di non riceverne più). Per ora non puoi scrivergli per novità e offerte: apri il profilo per vedere come stanno le cose.",
+        "label": "Da confermare"
+      },
+      "unsubscribed": {
+        "hint": "Ha chiesto di non ricevere più e-mail promozionali, quindi non puoi scrivergli per novità e offerte. I messaggi sul soggiorno possono comunque arrivare.",
+        "label": "Iscrizione annullata"
+      }
+    },
     "actions": "Azioni",
     "backToList": "Torna all'elenco",
     "consent": "Consensi",

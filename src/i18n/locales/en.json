@@ -4452,6 +4452,127 @@
     }
   },
   "crm": {
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Direct site",
+      "Expedia": "Expedia",
+      "Local": "Booked locally",
+      "Manual": "Entered by hand",
+      "OtherChannel": "Another portal",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
+    "filters": {
+      "channel": {
+        "all": "All channels",
+        "label": "Booked on"
+      },
+      "clear": "Clear the filters",
+      "country": {
+        "label": "Country",
+        "placeholder": "E.g. IT"
+      },
+      "email": {
+        "any": "Any",
+        "label": "Reachable by e-mail",
+        "reachable": "Yes, I can write to them",
+        "unreachable": "No, I cannot write to them"
+      },
+      "language": {
+        "all": "All languages",
+        "label": "Language"
+      },
+      "minStays": {
+        "any": "Any",
+        "label": "Stays",
+        "option_one": "At least {{count}} stay",
+        "option_other": "At least {{count}} stays"
+      },
+      "panel": {
+        "button": "Filters",
+        "buttonActive": "Filters ({{active}})"
+      },
+      "region": "Search and filter the profiles",
+      "search": {
+        "hint": "Type a part of the name, or the whole e-mail address or phone number.",
+        "label": "Search for a guest",
+        "placeholder": "Name, e-mail or phone"
+      },
+      "sort": {
+        "label": "Sort by",
+        "lastStay": "Latest stay",
+        "name": "Name (A-Z)",
+        "spend": "Highest spend",
+        "stays": "Most stays"
+      },
+      "tag": {
+        "label": "Tag",
+        "placeholder": "E.g. VIP"
+      }
+    },
+    "list": {
+      "channels": "Booking channels",
+      "columns": {
+        "channels": "Channels",
+        "email": "E-mail",
+        "guest": "Guest",
+        "lastStay": "Latest stay",
+        "spend": "Spend",
+        "stays": "Stays"
+      },
+      "count_one": "{{count}} profile",
+      "count_other": "{{count}} profiles",
+      "description": "Your guests, with their stays and whether you can write to them. You only see who stayed at the properties you have access to.",
+      "empty": {
+        "description": "Profiles come with the bookings: when a guest stays with you, you will find them here.",
+        "title": "No guests yet"
+      },
+      "label": "Guest profiles",
+      "lastStay": "latest stay {{date}}",
+      "loadError": "We cannot load the guest profiles",
+      "mergeProposal": "Possible duplicate",
+      "mergeProposalHint": "Another profile may be the same person: you will find it among the duplicates to review.",
+      "moreTags_one": "+{{count}} more",
+      "moreTags_other": "+{{count}} more",
+      "noMatch": {
+        "action": "Clear the filters",
+        "description": "Try fewer filters or another search.",
+        "title": "No profile matches the filters"
+      },
+      "noName": "Guest without a name",
+      "staysCount_one": "{{count}} stay",
+      "staysCount_other": "{{count}} stays",
+      "tags": "Tags",
+      "title": "Guest CRM"
+    },
+    "state": {
+      "consent": {
+        "hint": "The guest gave their consent and confirmed their e-mail address: you can write to them about news and offers.",
+        "label": "Reachable, with consent"
+      },
+      "noContact": {
+        "hint": "There is no e-mail address to write to: either there is none, or it was left without any permission to use it.",
+        "label": "No contact"
+      },
+      "serviceOnly": {
+        "hint": "You can write to them only about their stay (confirmations, arrival instructions, invoices), not about news and offers. This is the case for the addresses of booking portals and for guests who gave no consent.",
+        "label": "Service only"
+      },
+      "softOptIn": {
+        "hint": "They booked directly with you: you may offer them services similar to those they bought, and every message carries a link to unsubscribe.",
+        "label": "Reachable, direct customer"
+      },
+      "toConfirm": {
+        "hint": "They gave their consent but have not confirmed their e-mail address yet (or they asked not to receive e-mails any more). For now you cannot write to them about news and offers: open the profile to see which.",
+        "label": "To confirm"
+      },
+      "unsubscribed": {
+        "hint": "They asked not to receive promotional e-mails any more, so you cannot write to them about news and offers. Messages about a stay can still reach them.",
+        "label": "Unsubscribed"
+      }
+    },
     "actions": "Actions",
     "backToList": "Back to list",
     "consent": "Consents",
