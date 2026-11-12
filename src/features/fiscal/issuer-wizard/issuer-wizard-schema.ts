@@ -1,6 +1,7 @@
 import { z, type RefinementCtx, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
-import { FISCAL_CODE, PARTITA_IVA, compactIdentifier } from '@/features/fiscal/tax-profile-changes';
+import { PARTITA_IVA, compactIdentifier } from '@/features/fiscal/tax-profile-changes';
+import { isValidFiscalCode } from '@/lib/fiscal-code';
 import {
   DOCUMENT_ISSUER_MODES,
   type DocumentIssuerMode,
@@ -229,7 +230,9 @@ export function issuerStepSchema(onRecord: IssuerIdentityOnRecord): StepSchema {
 
       const regime = regimeOfAnswers(value);
       if (regime === 'PrivatePerson' && !onRecord.fiscalCode) {
-        check(context, FISCAL_CODE.test(compactIdentifier(value.fiscalCode).toUpperCase()), 'fiscalCode', ISSUER_ERROR_KEYS.fiscalCode);
+        // The server checks the fiscal code with its check character (`ItalianFiscalCode`); `isValidFiscalCode` is its mirror, so a slip of the pen
+        // stops here, on the field, and not at the last button.
+        check(context, isValidFiscalCode(value.fiscalCode), 'fiscalCode', ISSUER_ERROR_KEYS.fiscalCode);
       }
       if (regimeHasVatNumber(regime) && !onRecord.vatNumber) {
         check(context, PARTITA_IVA.test(compactIdentifier(value.vatNumber)), 'vatNumber', ISSUER_ERROR_KEYS.vatNumber);

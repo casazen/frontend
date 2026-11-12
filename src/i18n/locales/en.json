@@ -5209,7 +5209,7 @@
         "city": "Write the town or city.",
         "defaultSeries": "The series can have letters, digits and the signs . _ / - (20 characters at most).",
         "fatturaPaRegimeCode": "The regime code has 4 letters or digits at most, for example RF01.",
-        "fiscalCode": "The fiscal code has 16 characters (11 digits for a company).",
+        "fiscalCode": "The fiscal code is not valid: check the 16 characters (or the 11 digits of a company) again.",
         "hasVatNumber": "Answer: do you have a VAT number?",
         "issuerPec": "Write a valid PEC address, for example name@pec.it.",
         "issuerSdiRecipientCode": "The recipient code has 7 letters or digits.",

@@ -473,6 +473,27 @@ describe('CasaZen issues: the data and the address of the issuer', () => {
     expect(wizard()).toHaveAttribute('data-step', 'issuer');
   });
 
+  it('IssuerWizard_Casazen_AFiscalCodeWithAWrongCheckCharacterStopsOnItsFieldNotAtTheLastButton', async () => {
+    renderWizard();
+    await onStep('who');
+    fireEvent.click(screen.getByTestId('fiscal-issuer-mode-CasaZenDirectOnly'));
+    await goTo('regime');
+    fireEvent.click(screen.getByTestId('fiscal-issuer-vat-no'));
+    await goTo('issuer');
+
+    // Sixteen characters of the right shape whose last one is not the check character: the server would refuse it, so the field does first.
+    type('fiscal-issuer-fiscal-code', 'RSSMRA80A01H501X');
+    fireEvent.click(next());
+
+    await expectProblem('fiscalDocuments.issuer.errors.fiscalCode');
+    expect(screen.getByTestId('fiscal-issuer-fiscal-code')).toHaveAttribute('aria-invalid', 'true');
+    expect(wizard()).toHaveAttribute('data-step', 'issuer');
+    expect(fiscalApi.putTaxProfile).not.toHaveBeenCalled();
+
+    type('fiscal-issuer-fiscal-code', 'rssmra80a01h501u');
+    await goTo('address');
+  });
+
   it('IssuerWizard_SdiWithAChannel_TheSummaryDoesNotSayItIsMissing', async () => {
     const saved = completedSetting({ sdi: { providerConfigured: true, providerName: 'Intermediary' } });
     vi.mocked(getIssuerSettings).mockResolvedValue(saved);

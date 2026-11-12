@@ -371,6 +371,19 @@ describe('the checks of the steps', () => {
     expect(messagesOf(asked, casazenValues({ hasVatNumber: 'no', vatRegime: null, fiscalCode: 'RSSMRA80A01H501U' }))).toEqual({});
   });
 
+  it('IssuerWizardSchema_Issuer_AFiscalCodeIsCheckedWithItsCheckCharacterAsTheServerDoes', () => {
+    const asked = issuerStepSchema({ vatNumber: false, fiscalCode: false });
+    const privatePerson = (fiscalCode: string) => casazenValues({ hasVatNumber: 'no', vatRegime: null, vatNumber: '', fiscalCode });
+
+    // The right shape with a wrong check character (or check digit) passes a regular expression, and the server refuses it at the last button.
+    expect(messagesOf(asked, privatePerson('RSSMRA80A01H501X'))).toEqual({ fiscalCode: ISSUER_ERROR_KEYS.fiscalCode });
+    expect(messagesOf(asked, privatePerson('12345678901'))).toEqual({ fiscalCode: ISSUER_ERROR_KEYS.fiscalCode });
+    expect(messagesOf(asked, privatePerson(''))).toEqual({ fiscalCode: ISSUER_ERROR_KEYS.fiscalCode });
+    // As the server takes it: spaces and lower case do not matter, and the 11 digits of a company are a fiscal code with their check digit.
+    expect(messagesOf(asked, privatePerson(' rssmra80a01h501u '))).toEqual({});
+    expect(messagesOf(asked, privatePerson('12345678903'))).toEqual({});
+  });
+
   it('IssuerWizardSchema_Address_ItalianPostalCodeAndProvinceHaveTheirShape', () => {
     const values = (overrides: Partial<IssuerWizardValues>) => casazenValues(overrides);
 

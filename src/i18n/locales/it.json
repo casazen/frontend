@@ -5209,7 +5209,7 @@
         "city": "Scrivi il comune.",
         "defaultSeries": "La serie può avere lettere, cifre e i segni . _ / - (al massimo 20 caratteri).",
         "fatturaPaRegimeCode": "Il codice del regime ha al massimo 4 lettere o cifre, per esempio RF01.",
-        "fiscalCode": "Il codice fiscale ha 16 caratteri (11 cifre per una società).",
+        "fiscalCode": "Il codice fiscale non è valido: ricontrolla i 16 caratteri (o le 11 cifre di una società).",
         "hasVatNumber": "Rispondi: hai una partita IVA?",
         "issuerPec": "Scrivi un indirizzo PEC valido, per esempio nome@pec.it.",
         "issuerSdiRecipientCode": "Il codice destinatario ha 7 lettere o cifre.",
