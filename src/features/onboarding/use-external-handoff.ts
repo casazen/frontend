@@ -100,6 +100,9 @@ export function useExternalHandoff({ start, onTrigger, watching }: UseExternalHa
         navigatePanelWindow(opened, started.panelUrl);
         windowRef.current = opened;
         setLaunched(true);
+        // The person is on the panel from now on. The `blur` of the window that opened it comes before the step is stored (the listeners are attached only
+        // while the step is followed), so it cannot be waited for: without this the `focus` of the person's return would be taken for nothing.
+        leftRef.current = true;
       } else {
         // Stored, not opened: the step waits where the person left it.
         windowRef.current = null;

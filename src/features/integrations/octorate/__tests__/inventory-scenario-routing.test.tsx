@@ -578,11 +578,8 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
     await waitFor(() => expect(screen.getByTestId('existing-channel-booking_xml')).toHaveAttribute('data-state', 'waiting'), WAIT);
     expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', 'existing-channels');
 
-    // The person comes back to the tab: one check, and CasaZen has seen the access. Nothing is pressed.
+    // The person comes back to the tab (no `blur` is sent: the one of the click came before the step was followed): one check, and CasaZen has seen the access. Nothing is pressed.
     vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Verified', status: 'ImportingRooms' })]));
-    act(() => {
-      window.dispatchEvent(new Event('blur'));
-    });
     act(() => {
       window.dispatchEvent(new Event('focus'));
     });
@@ -604,6 +601,7 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
 
     // The person comes back to the tab and the check could not tell: only now the host is asked, and the word is theirs.
     vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NeedsConfirmation' })]));
+    // (A page that was reloaded did not open the window: it saw the person leave and come back, so both events are sent.)
     act(() => {
       window.dispatchEvent(new Event('blur'));
     });
@@ -612,6 +610,32 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
     });
     fireEvent.click(await screen.findByTestId('existing-channel-booking_xml-confirm', undefined, WAIT));
 
+    await waitFor(() => expect(octorateApi.confirmChannelAccess).toHaveBeenCalledWith('batch-1', 'booking_xml'), WAIT);
+  });
+
+  it('OctorateConnectWizard_ExistingChannels_TheChecksRunOutBeforeThePersonIsBack_TheQuestionComesWhenTheyAre', async () => {
+    const { win } = fakeWindow();
+    vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);
+    vi.mocked(octorateApi.createExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NotStarted', status: 'Draft' })]));
+    vi.mocked(octorateApi.startChannelAccess).mockResolvedValue({ channelCode: 'booking_xml', alreadyComplete: false, handoffMode: 'managedWindow', panelUrl: PANEL_URL });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Waiting' })]));
+    vi.mocked(octorateApi.confirmChannelAccess).mockResolvedValue(batch([channel({ accessState: 'Confirmed', status: 'ImportingRooms' })]));
+    await toTheOtaChannels();
+    fireEvent.click(await screen.findByTestId('existing-channel-choice-booking_xml', undefined, WAIT));
+    fireEvent.click(screen.getByTestId('existing-channel-booking_xml-open'));
+    await waitFor(() => expect(screen.getByTestId('existing-channel-booking_xml')).toHaveAttribute('data-state', 'waiting'), WAIT);
+
+    // The server runs out of checks while the person is still on the panel (the step reads the batch by itself while it waits): the state comes first.
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NeedsConfirmation' })]));
+    await waitFor(() => expect(screen.getByTestId('existing-channel-booking_xml')).toHaveAttribute('data-state', 'needsConfirmation'), { timeout: 10_000 });
+    // The person has not come back: nothing is asked of them yet.
+    expect(screen.queryByTestId('existing-channel-booking_xml-confirm')).not.toBeInTheDocument();
+
+    // They come back, after the state: now the question is there (the tab coming to the front is still watched), and the word is theirs.
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    fireEvent.click(await screen.findByTestId('existing-channel-booking_xml-confirm', undefined, WAIT));
     await waitFor(() => expect(octorateApi.confirmChannelAccess).toHaveBeenCalledWith('batch-1', 'booking_xml'), WAIT);
   });
 
@@ -682,9 +706,6 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
     fireEvent.click(screen.getByTestId('existing-channel-booking_xml-open'));
     await waitFor(() => expect(octorateApi.startChannelAccess).toHaveBeenCalledTimes(2), WAIT);
     vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NeedsConfirmation' })]));
-    act(() => {
-      window.dispatchEvent(new Event('blur'));
-    });
     act(() => {
       window.dispatchEvent(new Event('focus'));
     });

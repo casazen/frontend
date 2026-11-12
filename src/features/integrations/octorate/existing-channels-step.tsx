@@ -63,7 +63,9 @@ function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: Chan
       return { handoffMode: started.handoffMode, panelUrl: started.panelUrl, alreadyComplete: started.alreadyComplete };
     },
     onTrigger: onCheck,
-    watching: view === 'waiting' || view === 'verifying',
+    // Also while the answer is «Da confermare»: the checks can run out while the person is still on the panel, and what tells that they are back (the tab
+    // coming to the front, the window closing) is what lets the question «Hai completato...?» appear.
+    watching: view === 'waiting' || view === 'verifying' || view === 'needsConfirmation',
   });
 
   const problem = handoff.error ? (getProblemMessage(handoff.error, t) ?? t('octorate.connect.existing.channels.openFailed')) : null;

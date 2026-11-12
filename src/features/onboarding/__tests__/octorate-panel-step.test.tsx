@@ -269,11 +269,9 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_VerifiedStatusAfterTheTabComesBack_AdvancesByItselfAndClosesTheWindow', async () => {
       const { win } = await openPanel();
 
-      // The person leaves for the panel and comes back to the tab: one check is asked, and the server has seen the connection.
+      // The person is on the panel from the moment the window is sent to it (the `blur` of the click came before the step was followed, and is not waited
+      // for); they come back to the tab: one check is asked, and the server has seen the connection.
       server = panelStep({ status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null });
-      act(() => {
-        window.dispatchEvent(new Event('blur'));
-      });
       act(() => {
         window.dispatchEvent(new Event('focus'));
       });
