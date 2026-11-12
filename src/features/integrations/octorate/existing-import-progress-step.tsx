@@ -111,15 +111,30 @@ export function ExistingImportProgressStep({ onAdvance }: ExistingImportProgress
   const catalog = useOtaChannelChoices();
   const batch = useExistingInventoryBatch(batchId, { poll: isImporting });
   const run = useRunExistingInventory();
-  const { mutate: startRun, isPending: running } = run;
+  const { mutate: startRun, isPending: running, isError: runFailed } = run;
 
   // The import starts by itself once, when a channel has its access and its rooms are not in yet; a channel that stopped is run again by «Riprova».
+  // A start that fails (the network, the timeout, 409 `existing_inventory_access_pending`) leaves the channel where it was, which is not «stopped»: it is
+  // armed again, but not asked again by itself while the failure stands (it would be asked for ever), and «Riprova» asks it.
   const started = useRef(false);
   useEffect(() => {
-    if (!batchId || started.current || running || !shouldStartRun(batch.data)) return;
+    if (!batchId || started.current || running || runFailed || !shouldStartRun(batch.data)) return;
     started.current = true;
-    startRun({ batchId });
-  }, [batchId, batch.data, running, startRun]);
+    startRun(
+      { batchId },
+      {
+        onError: () => {
+          started.current = false;
+        },
+      },
+    );
+  }, [batchId, batch.data, running, runFailed, startRun]);
+  // What the person asks is not asked again by itself.
+  const ask = (retryUnknown?: readonly string[]) => {
+    if (!batchId) return;
+    started.current = true;
+    startRun({ batchId, retryUnknown });
+  };
 
   // Reached the mapping while this visit watched the import: the wizard goes on by itself.
   const sawWorking = useRef(false);
@@ -153,9 +168,14 @@ export function ExistingImportProgressStep({ onAdvance }: ExistingImportProgress
         </Alert>
       ) : null}
       {run.isError ? (
-        <Alert variant="danger" data-testid="existing-progress-run-error">
-          {getProblemMessage(run.error, t) ?? t('octorate.connect.existing.errors.unknown')}
-        </Alert>
+        <div className="flex flex-col items-start gap-2" data-testid="existing-progress-run-failed">
+          <Alert variant="danger" data-testid="existing-progress-run-error">
+            {getProblemMessage(run.error, t) ?? t('octorate.connect.existing.errors.unknown')}
+          </Alert>
+          <Button type="button" size="sm" className={TOUCH_TARGET} onClick={() => ask()} data-testid="existing-progress-run-retry">
+            {t('octorate.connect.existing.progress.retry')}
+          </Button>
+        </div>
       ) : null}
 
       {batch.data ? (
@@ -166,7 +186,7 @@ export function ExistingImportProgressStep({ onAdvance }: ExistingImportProgress
               channel={channel}
               name={nameOf(channel.channelCode)}
               running={running}
-              onRetry={(retryUnknown) => startRun({ batchId, retryUnknown })}
+              onRetry={(retryUnknown) => ask(retryUnknown)}
             />
           ))}
         </ul>

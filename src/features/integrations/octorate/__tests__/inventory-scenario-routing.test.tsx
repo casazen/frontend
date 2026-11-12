@@ -22,7 +22,7 @@ import {
   type PortfolioGroup,
 } from '../inventory-scenario';
 import { OCTORATE_CONNECT_PATH } from '../octorate-callback';
-import { SCOPE, WAIT, WIZARD_DRAFT_ID, connection, currentLocation, onStep, property, renderWizard } from './octorate-fixtures';
+import { SCOPE, WAIT, WIZARD_DRAFT_ID, axiosError, connection, currentLocation, onStep, property, renderWizard } from './octorate-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/queries/use-users', async (importOriginal) => ({
@@ -744,6 +744,38 @@ describe('«Fallo per me» in the wizard: for the administrator and with the fla
     await toTheChannelsAndOneThatStopped();
 
     expectNothingOfTheAssistIsAskedNorShown();
+  });
+});
+
+describe('the existing listings: the progress of the import (E02/F01/US03/T02, D6)', () => {
+  /** The step of the import with one channel whose access is given and whose rooms are not in yet: the step starts the import by itself. */
+  async function toTheImport() {
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-import', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Verified', status: 'AwaitingChannelAccess' })]));
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-import`);
+    await onStep('existing-import');
+  }
+
+  it('OctorateConnectWizard_ImportThatFailsToStart_SaysWhyAndRiprovaAsksAgainOnceNeverInALoop', async () => {
+    vi.mocked(octorateApi.runExistingInventoryBatch)
+      .mockRejectedValueOnce(axiosError(409, { code: 'existing_inventory_access_pending' }))
+      .mockResolvedValue(batch([channel({ accessState: 'Verified', status: 'AwaitingMapping' })]));
+    await toTheImport();
+
+    // The start the step makes by itself fails: the person is told why and has «Riprova» (no dead end), and the step does not ask again by itself.
+    expect(await screen.findByTestId('existing-progress-run-error', undefined, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.existingInventoryAccessPending'));
+    expect(screen.getByTestId('existing-progress-run-retry')).toHaveTextContent(i18n.t('octorate.connect.existing.progress.retry'));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    });
+    expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(1);
+
+    // «Riprova» asks once more: the import gets to the mapping and the wizard goes on by itself.
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Verified', status: 'AwaitingMapping' })]));
+    fireEvent.click(screen.getByTestId('existing-progress-run-retry'));
+    await waitFor(() => expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(2), WAIT);
+    await onStep('mapping');
+    expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(2);
   });
 });
 
