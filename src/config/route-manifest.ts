@@ -742,11 +742,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
+    // Contracts are managed from the property's Contracts tab, not a separate menu entry.
+    // Keep this route for existing links and the area-wide tenant, deadline and fiscal pages.
     navKey: 'nav.leases',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
     legacyPaths: ['/leases'],
@@ -862,7 +860,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navGroup: 'portfolio',
     navPlacement: 'primary',
     navOrder: 3,
-    navBottom: 3,
+    navBottom: 2,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
@@ -912,7 +910,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navGroup: 'portfolio',
     navPlacement: 'primary',
     navOrder: 4,
-    navBottom: 4,
+    navBottom: 3,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,

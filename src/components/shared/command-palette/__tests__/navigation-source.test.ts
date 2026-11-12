@@ -113,11 +113,10 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
     const italian = pagesOf(makeContext({ areas: ['long-rent'], locale: 'it' }));
     const english = pagesOf(makeContext({ areas: ['long-rent'], locale: 'en' }));
 
-    expect(italian.find((entry) => entry.to === '/app/long-rent/leases')?.label).toBe('Contratti');
-    expect(english.find((entry) => entry.to === '/app/long-rent/leases')?.label).toBe('Leases');
-    // The words that find a page are in the language too.
-    expect(italian.find((entry) => entry.to === '/app/long-rent/leases')?.keywords).toContain('inquilini');
-    expect(english.find((entry) => entry.to === '/app/long-rent/leases')?.keywords).toContain('tenants');
+    expect(italian.find((entry) => entry.to === '/app/long-rent/properties')?.label).toBe('Immobili');
+    expect(english.find((entry) => entry.to === '/app/long-rent/properties')?.label).toBe('Properties');
+    expect(italian.some((entry) => entry.to === '/app/long-rent/leases')).toBe(false);
+    expect(english.some((entry) => entry.to === '/app/long-rent/leases')).toBe(false);
   });
 
   it('NavigationSource_APageWithOtherWords_CarriesThemAsKeywordsNotAsLabel', () => {

@@ -74,6 +74,16 @@ describe('ContextSidebar (UI-04a)', () => {
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
+  it('keeps contracts inside the property instead of a sidebar destination', () => {
+    arrange(['long-rent']);
+    renderSidebar('long-rent', '/app/long-rent/properties');
+
+    expect(screen.getByRole('link', { name: 'Immobili' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('link', { name: 'Contratti' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
+    expect(screen.queryByRole('link', { name: 'Contratti' })).not.toBeInTheDocument();
+  });
+
   it('ContextSidebar_SeveralAreas_HasTheAreaSwitcherInsteadOfTheIconTabs', () => {
     arrange(['short-rent', 'long-rent', 'supplier']);
     renderSidebar('short-rent');
