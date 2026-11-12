@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { octorateApi } from '@/api/octorate.api';
+import { onboardingApi } from '@/api/onboarding.api';
 import { propertiesApi } from '@/api/properties.api';
 import { listingStatusApi } from '@/api/listing-status.api';
 import { getMarketplaceCatalog } from '@/api/marketplace.api';
@@ -62,8 +63,21 @@ vi.mock('@/api/wizard-draft.api', () => ({
   },
 }));
 
+// «Fallo per me» belongs to the organization administrator and to the flag `octorateOnboarding`: who is asking and which flags are on are set by each test.
+vi.mock('@/api/onboarding.api', () => ({ onboardingApi: { listAssistRequests: vi.fn(), requestAssist: vi.fn() } }));
+const session = vi.hoisted(() => ({
+  contexts: [] as Array<{ contextKey: string; roleKey: string }>,
+  flags: { octorateOnboarding: true },
+}));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: session.contexts }) }));
+vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: session.flags, isLoading: false }) }));
+
 // A whole wizard is rendered in these tests (and checked with axe): the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
+
+/** The owner of the organization (the administrator of the steps of the activation) and a property manager, who opens the wizard with `ota.write` and is not one. */
+const OWNER = [{ contextKey: 'short-rent', roleKey: 'property_owner' }];
+const PROPERTY_MANAGER = [{ contextKey: 'short-rent', roleKey: 'property_manager' }];
 
 const PANEL_URL = 'https://panel.channel-manager.test/';
 
@@ -127,6 +141,9 @@ beforeEach(async () => {
   vi.clearAllMocks();
   sessionStorage.clear();
   await i18n.changeLanguage('it');
+  session.contexts = OWNER;
+  session.flags = { octorateOnboarding: true };
+  vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([]);
   vi.mocked(octorateApi.getConnectionStatus).mockResolvedValue(connection({ status: 'Connected' }));
   vi.mocked(octorateApi.getFoundListings).mockResolvedValue([]);
   vi.mocked(octorateApi.refreshListings).mockResolvedValue([]);
@@ -680,6 +697,53 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
     expect(propertiesApi.create).not.toHaveBeenCalled();
     expect(listingStatusApi.publish).not.toHaveBeenCalled();
     expect(octorateApi.importListing).not.toHaveBeenCalled();
+  });
+});
+
+describe('«Fallo per me» in the wizard: for the administrator and with the flag (E10/F03/US02/T01, E02/F01/US03/T02)', () => {
+  /** The step of the channels with one channel waiting for its access and one that stopped: where the button is, for whoever may have it. */
+  async function toTheChannelsAndOneThatStopped() {
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-channels', values: { scenario: 'onOtas', channels: ['booking_xml', 'airbnb_xml'], batchId: 'batch-1' } });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(
+      batch([
+        channel({ channelCode: 'booking_xml', accessState: 'Waiting' }),
+        channel({ channelCode: 'airbnb_xml', accessState: 'NotValid', status: 'NeedsAttention', errorCode: 'channel_access_not_valid' }),
+      ]),
+    );
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-channels`);
+    await onStep('existing-channels');
+    await waitFor(() => expect(screen.getByTestId('existing-channel-airbnb_xml')).toHaveAttribute('data-state', 'error'), WAIT);
+  }
+
+  /** The wizard works as ever; what is not there is the button, and with it the endpoint that answers 403 to anyone but the administrator (a read: the app would send the person to the no-access page). */
+  function expectNothingOfTheAssistIsAskedNorShown() {
+    expect(screen.getByTestId('existing-channel-booking_xml-open')).toBeInTheDocument();
+    expect(screen.getByTestId('existing-channel-airbnb_xml-open')).toBeInTheDocument();
+    expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
+    expect(onboardingApi.listAssistRequests).not.toHaveBeenCalled();
+    expect(onboardingApi.requestAssist).not.toHaveBeenCalled();
+  }
+
+  it('OctorateConnectWizard_Administrator_HasForMeOnEveryChannelThatIsNotConnected', async () => {
+    await toTheChannelsAndOneThatStopped();
+
+    expect(within(screen.getByTestId('existing-channel-booking_xml')).getByTestId('assist-request-button')).toBeInTheDocument();
+    expect(within(screen.getByTestId('existing-channel-airbnb_xml')).getByTestId('assist-request-button')).toBeInTheDocument();
+    await waitFor(() => expect(onboardingApi.listAssistRequests).toHaveBeenCalled(), WAIT);
+  });
+
+  it('OctorateConnectWizard_PropertyManagerWithOtaWrite_HasNoForMeAndNothingIsReadOrWrittenForIt', async () => {
+    session.contexts = PROPERTY_MANAGER;
+    await toTheChannelsAndOneThatStopped();
+
+    expectNothingOfTheAssistIsAskedNorShown();
+  });
+
+  it('OctorateConnectWizard_FlagOnboardingOff_IsAsItWasAndNothingOfTheAssistIsAsked', async () => {
+    session.flags = { octorateOnboarding: false };
+    await toTheChannelsAndOneThatStopped();
+
+    expectNothingOfTheAssistIsAskedNorShown();
   });
 });
 

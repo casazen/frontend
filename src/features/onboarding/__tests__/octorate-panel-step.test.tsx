@@ -34,6 +34,8 @@ vi.mock('@/components/layout/page-header', () => ({
     createElement('div', null, createElement('h1', null, title), description ? createElement('p', null, description) : null, action),
 }));
 vi.mock('@/queries/use-properties', () => ({ useProperty: () => ({ data: { name: 'Casa del Mare' } }) }));
+// The page is behind the flag: «Fallo per me» is there while it is on.
+vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true }, isLoading: false }) }));
 
 const workspace = vi.hoisted(() => ({
   contexts: [] as Array<{ contextKey: string; roleKey: string }>,

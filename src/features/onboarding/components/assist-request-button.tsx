@@ -5,8 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TODO_LIST_PATH } from '@/features/todo/lib/todo-model';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { findOpenAssist } from '@/lib/onboarding-panel';
+import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useAssistRequests, useRequestAssist } from '@/queries/use-onboarding-assist';
 import type { AssistRequestContext, OnboardingPartKey } from '@/types/onboarding.types';
 
@@ -37,9 +40,20 @@ interface AssistRequestButtonProps {
  * «Fallo per me» (UX-15, NF-107, AC-NF107-5): asks CasaZen support to do the step, and is on screen for as long as the step is. It asks the server
  * with the part and the property; the request then shows where it stands (requested, in progress, done) with a link to «Da fare», where it has its
  * item. A second request while one is open is the one that exists: it is shown as such (409 `assist_request_already_open`), never as a failure.
- * An organization administrator's action: the page offers it to nobody else.
+ *
+ * An organization administrator's action, and only while the flag `octorateOnboarding` is on: the endpoints answer 403 (`OrgBillingAdmin`) to anyone
+ * else, which on a read sends the person to the no-access page, and 404 while the flag is off. So the button is not there for anyone else, and
+ * nothing is read or written for them: the screens that hold it (the guided step, the connect wizard that anyone with `ota.write` opens) stay as
+ * they are without it.
  */
-export function AssistRequestButton({ part, context, propertyId, channelCode, label = 'doItForMe', showStatus = true, primary = false }: AssistRequestButtonProps) {
+export function AssistRequestButton(props: AssistRequestButtonProps) {
+  const { contexts } = useWorkspace();
+  const { flags } = useFeatureFlags();
+
+  return flags.octorateOnboarding && isOrgBillingAdmin(contexts) ? <AssistRequest {...props} /> : null;
+}
+
+function AssistRequest({ part, context, propertyId, channelCode, label = 'doItForMe', showStatus = true, primary = false }: AssistRequestButtonProps) {
   const { t } = useTranslation();
   const noteId = useId();
   const requests = useAssistRequests();
