@@ -19,12 +19,18 @@ import {
   type EditFields,
 } from '@/features/approvals/lib/approval-model';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { useEditItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
+import type { useEditItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 interface ApprovalEditDialogProps {
   /** The item to edit; `null` while the dialog is closed. */
   item: ApprovalQueueItem | null;
+  /**
+   * The mutations belong to the page, not to the dialog: the host may close the dialog (the X, Esc, a tap outside) while a request goes on, and the callbacks of
+   * the request must still run (the decision written below, the failure on the card), and the page must keep its buttons waiting until it is over.
+   */
+  edit: ReturnType<typeof useEditItem>;
+  saveAndApprove: ReturnType<typeof useSaveAndApproveItem>;
   onClose: () => void;
   /** «Save and approve» went through: the item as the API answered it, with what the approval did. */
   onApproved: (item: ApprovalQueueItem) => void;
@@ -37,7 +43,7 @@ interface ApprovalEditDialogProps {
  * keeps a campaign as the subject, a blank line and the body). The original stays visible above the field and can be put back; «Save» keeps the edit
  * for later and «Save and approve» approves it in one step, so what goes out is the edited text.
  */
-export function ApprovalEditDialog({ item, onClose, onApproved, onApproveFailed }: ApprovalEditDialogProps) {
+export function ApprovalEditDialog({ item, edit, saveAndApprove, onClose, onApproved, onApproveFailed }: ApprovalEditDialogProps) {
   return (
     <Dialog
       open={item !== null}
@@ -45,19 +51,27 @@ export function ApprovalEditDialog({ item, onClose, onApproved, onApproveFailed 
         if (!open) onClose();
       }}
     >
-      {item ? <EditDialogBody key={item.id} item={item} onClose={onClose} onApproved={onApproved} onApproveFailed={onApproveFailed} /> : null}
+      {item ? (
+        <EditDialogBody
+          key={item.id}
+          item={item}
+          edit={edit}
+          saveAndApprove={saveAndApprove}
+          onClose={onClose}
+          onApproved={onApproved}
+          onApproveFailed={onApproveFailed}
+        />
+      ) : null}
     </Dialog>
   );
 }
 
-function EditDialogBody({ item, onClose, onApproved, onApproveFailed }: Omit<ApprovalEditDialogProps, 'item'> & { item: ApprovalQueueItem }) {
+function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApproveFailed }: Omit<ApprovalEditDialogProps, 'item'> & { item: ApprovalQueueItem }) {
   const { t } = useTranslation();
   const [initial] = useState<EditFields>(() => editFieldsOf(item, finalTextOf(item)));
   const [fields, setFields] = useState<EditFields>(initial);
   const [attempted, setAttempted] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
-  const edit = useEditItem();
-  const saveAndApprove = useSaveAndApproveItem();
 
   const busy = edit.isPending || saveAndApprove.isPending;
   const campaign = isCampaign(item);

@@ -6,12 +6,17 @@ import { Field } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import { REJECTION_REASON_MAX_LENGTH, itemIsGone } from '@/features/approvals/lib/approval-model';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { useRejectItem } from '@/queries/approvalQueue';
+import type { useRejectItem } from '@/queries/approvalQueue';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 interface ApprovalRejectDialogProps {
   /** The item to reject; `null` while the dialog is closed. */
   item: ApprovalQueueItem | null;
+  /**
+   * The mutation belongs to the page, not to the dialog: the host may close the dialog (the X, Esc, a tap outside) while the request goes on, and the rejection
+   * must still be written below with its reason, and the page must keep its buttons waiting until it is over.
+   */
+  reject: ReturnType<typeof useRejectItem>;
   onClose: () => void;
   /** The item was rejected: it as the API answered it, with the reason it saved. */
   onRejected: (item: ApprovalQueueItem) => void;
@@ -21,7 +26,7 @@ interface ApprovalRejectDialogProps {
  * Reject an item (AC-NF68-3): the reason is mandatory (at most 500 characters), is saved on the item and is shown on the page afterwards. An empty reason
  * is not sent: the field says so. The API stays the judge (422 `approval_rejection_reason_required`).
  */
-export function ApprovalRejectDialog({ item, onClose, onRejected }: ApprovalRejectDialogProps) {
+export function ApprovalRejectDialog({ item, reject, onClose, onRejected }: ApprovalRejectDialogProps) {
   return (
     <Dialog
       open={item !== null}
@@ -29,16 +34,15 @@ export function ApprovalRejectDialog({ item, onClose, onRejected }: ApprovalReje
         if (!open) onClose();
       }}
     >
-      {item ? <RejectDialogBody key={item.id} item={item} onClose={onClose} onRejected={onRejected} /> : null}
+      {item ? <RejectDialogBody key={item.id} item={item} reject={reject} onClose={onClose} onRejected={onRejected} /> : null}
     </Dialog>
   );
 }
 
-function RejectDialogBody({ item, onClose, onRejected }: Omit<ApprovalRejectDialogProps, 'item'> & { item: ApprovalQueueItem }) {
+function RejectDialogBody({ item, reject, onClose, onRejected }: Omit<ApprovalRejectDialogProps, 'item'> & { item: ApprovalQueueItem }) {
   const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const rejectItem = useRejectItem();
 
   const length = reason.trim().length;
 
@@ -52,7 +56,7 @@ function RejectDialogBody({ item, onClose, onRejected }: Omit<ApprovalRejectDial
       return;
     }
 
-    rejectItem.mutate(
+    reject.mutate(
       { id: item.id, data: { reason: reason.trim() } },
       {
         onSuccess: (rejected) => {
@@ -87,14 +91,14 @@ function RejectDialogBody({ item, onClose, onRejected }: Omit<ApprovalRejectDial
             setError(null);
           }}
           rows={4}
-          disabled={rejectItem.isPending}
+          disabled={reject.isPending}
         />
       </Field>
       <DialogFooter className="gap-2 sm:gap-0">
-        <Button type="button" variant="outline" onClick={onClose} disabled={rejectItem.isPending}>
+        <Button type="button" variant="outline" onClick={onClose} disabled={reject.isPending}>
           {t('shared.cancel')}
         </Button>
-        <Button type="button" variant="destructive" onClick={confirm} loading={rejectItem.isPending}>
+        <Button type="button" variant="destructive" onClick={confirm} loading={reject.isPending}>
           {t('approval.action.reject')}
         </Button>
       </DialogFooter>

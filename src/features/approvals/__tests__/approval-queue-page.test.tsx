@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AxiosError } from 'axios';
@@ -72,6 +72,17 @@ function approved(of: ApprovalQueueItem, overrides: Partial<ApprovalQueueItem> =
 
 function httpError(status: number, data: Record<string, unknown>): AxiosError {
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
+}
+
+/** A promise the test settles by hand: the request that is still going on while the host does something else. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }
 
 function renderPage() {
@@ -510,6 +521,131 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Questo elemento è già stato deciso o è scaduto. L'elenco si aggiorna da solo."));
       await waitFor(() => expect(screen.queryByTestId('approval-reject-dialog')).toBeNull());
       expect(screen.queryByTestId('approval-decided')).toBeNull();
+    });
+  });
+
+  // The host may close a dialog (the X, Esc, a tap outside) while its request goes on: the request does not stop, so the page must not lose its outcome,
+  // and nothing else of the queue may start a second decision meanwhile.
+  describe('a decision that goes on after its dialog is closed', () => {
+    const closeTheDialogWithEscape = () => fireEvent.keyDown(document.body, { key: 'Escape' });
+
+    it('ApprovalQueuePage_SaveAndApproveGoesOnAfterTheDialogIsClosed_KeepsEveryButtonWaitingAndWritesTheDecisionBelow', async () => {
+      const draft = item();
+      const edited = { ...draft, editedContentText: 'Il check-in è dalle 16.' };
+      const approval = deferred<ApprovalQueueItem>();
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValueOnce([draft, CAMPAIGN]).mockResolvedValue([CAMPAIGN]);
+      vi.mocked(approvalQueueApi.edit).mockResolvedValue(edited);
+      vi.mocked(approvalQueueApi.approve).mockReturnValue(approval.promise);
+      renderPage();
+      await screen.findAllByTestId('approval-item');
+
+      fireEvent.click(within(cardOf('draft-1')).getByRole('button', { name: 'Modifica' }));
+      const dialog = within(await screen.findByTestId('approval-edit-dialog'));
+      fireEvent.change(dialog.getByLabelText('Testo'), { target: { value: 'Il check-in è dalle 16.' } });
+      fireEvent.click(dialog.getByRole('button', { name: 'Salva e approva' }));
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1));
+
+      closeTheDialogWithEscape();
+      await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
+
+      // «Approva e invia» (and every other button of the queue) waits: no second approval can start while the first one is in flight.
+      for (const card of cards()) {
+        for (const button of within(card).getAllByRole('button')) expect(button).toBeDisabled();
+      }
+      fireEvent.click(within(cardOf('draft-1')).getByRole('button', { name: 'Approva e invia' }));
+      expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        approval.resolve(approved(edited, { originActionResult: 'Sent' }));
+      });
+
+      // The outcome is written below although the dialog that started it is gone, and the buttons are back.
+      expect(await screen.findByTestId('approval-decided-outcome')).toHaveTextContent("Messaggio inviato all'ospite.");
+      await waitFor(() => expect(screen.getAllByTestId('approval-item')).toHaveLength(1));
+      expect(within(screen.getByTestId('approval-item')).getByRole('button', { name: 'Approva' })).toBeEnabled();
+    });
+
+    it('ApprovalQueuePage_ApprovalFailsAfterTheDialogIsClosed_PutsTheFailureOnTheCardWithARetry', async () => {
+      const draft = item();
+      const approval = deferred<ApprovalQueueItem>();
+      // The list as the mock gives it carries no failure saved on the item: only the answer of the request can put the reason on the card.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft]);
+      vi.mocked(approvalQueueApi.edit).mockResolvedValue({ ...draft, editedContentText: 'Dalle 16.' });
+      vi.mocked(approvalQueueApi.approve).mockReturnValue(approval.promise);
+      renderPage();
+      await screen.findByTestId('approval-item');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+      const dialog = within(await screen.findByTestId('approval-edit-dialog'));
+      fireEvent.change(dialog.getByLabelText('Testo'), { target: { value: 'Dalle 16.' } });
+      fireEvent.click(dialog.getByRole('button', { name: 'Salva e approva' }));
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1));
+
+      closeTheDialogWithEscape();
+      await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
+
+      await act(async () => {
+        approval.reject(httpError(409, { code: 'approval_origin_action_failed', originActionError: 'octorate_request_rejected' }));
+      });
+
+      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('Il tuo channel manager non ha accettato il messaggio.');
+      expect(screen.getByRole('button', { name: 'Riprova' })).toBeEnabled();
+      expect(screen.queryByTestId('approval-decided')).toBeNull();
+    });
+
+    it('ApprovalQueuePage_SaveGoesOnAfterTheDialogIsClosed_KeepsEveryButtonWaitingUntilItIsSaved', async () => {
+      const draft = item();
+      const saving = deferred<ApprovalQueueItem>();
+      vi.mocked(approvalQueueApi.edit).mockReturnValue(saving.promise);
+      renderPage();
+      await screen.findAllByTestId('approval-item');
+
+      fireEvent.click(within(cardOf('draft-1')).getByRole('button', { name: 'Modifica' }));
+      const dialog = within(await screen.findByTestId('approval-edit-dialog'));
+      fireEvent.change(dialog.getByLabelText('Testo'), { target: { value: 'Dalle 16.' } });
+      fireEvent.click(dialog.getByRole('button', { name: 'Salva' }));
+      await waitFor(() => expect(approvalQueueApi.edit).toHaveBeenCalledWith('draft-1', 'Dalle 16.'));
+
+      closeTheDialogWithEscape();
+      await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
+      expect(within(cardOf('draft-1')).getByRole('button', { name: 'Approva e invia' })).toBeDisabled();
+      expect(within(cardOf('campaign-1')).getByRole('button', { name: 'Modifica' })).toBeDisabled();
+      expect(within(cardOf('routine-1')).getByRole('button', { name: 'Rifiuta' })).toBeDisabled();
+
+      await act(async () => {
+        saving.resolve({ ...draft, editedContentText: 'Dalle 16.' });
+      });
+
+      await waitFor(() => expect(within(cardOf('draft-1')).getByRole('button', { name: 'Approva e invia' })).toBeEnabled());
+      expect(toast.success).toHaveBeenCalledWith('Modifica salvata');
+    });
+
+    it('ApprovalQueuePage_RejectGoesOnAfterTheDialogIsClosed_KeepsEveryButtonWaitingAndStillShowsTheReasonBelow', async () => {
+      const draft = item();
+      const rejection = deferred<ApprovalQueueItem>();
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValueOnce([draft, CAMPAIGN]).mockResolvedValue([CAMPAIGN]);
+      vi.mocked(approvalQueueApi.reject).mockReturnValue(rejection.promise);
+      renderPage();
+      await screen.findAllByTestId('approval-item');
+
+      fireEvent.click(within(cardOf('draft-1')).getByRole('button', { name: 'Rifiuta' }));
+      const dialog = within(await screen.findByTestId('approval-reject-dialog'));
+      fireEvent.change(dialog.getByLabelText('Motivo del rifiuto'), { target: { value: 'Non è il tono giusto.' } });
+      fireEvent.click(dialog.getByRole('button', { name: 'Rifiuta' }));
+      await waitFor(() => expect(approvalQueueApi.reject).toHaveBeenCalledWith('draft-1', { reason: 'Non è il tono giusto.' }));
+
+      closeTheDialogWithEscape();
+      await waitFor(() => expect(screen.queryByTestId('approval-reject-dialog')).toBeNull());
+      expect(within(cardOf('campaign-1')).getByRole('button', { name: 'Approva' })).toBeDisabled();
+      expect(within(cardOf('draft-1')).getByRole('button', { name: 'Approva e invia' })).toBeDisabled();
+
+      await act(async () => {
+        rejection.resolve({ ...draft, status: 'Rejected', rejectionReason: 'Non è il tono giusto.' });
+      });
+
+      // The reason is on the page afterwards even though the dialog that asked for it was closed before the answer.
+      expect(await screen.findByTestId('approval-decided-reason')).toHaveTextContent('Non è il tono giusto.');
+      await waitFor(() => expect(within(cardOf('campaign-1')).getByRole('button', { name: 'Approva' })).toBeEnabled());
     });
   });
 });

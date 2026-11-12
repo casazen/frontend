@@ -10,7 +10,7 @@ import { ApprovalEditDialog } from '@/features/approvals/components/approval-edi
 import { ApprovalItemCard } from '@/features/approvals/components/approval-item-card';
 import { ApprovalRejectDialog } from '@/features/approvals/components/approval-reject-dialog';
 import { FILTERABLE_TYPES, approvalTypeLabel, originActionErrorOf } from '@/features/approvals/lib/approval-model';
-import { useApproveItem, usePendingApprovals } from '@/queries/approvalQueue';
+import { useApproveItem, useEditItem, usePendingApprovals, useRejectItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 const matchesType = (item: ApprovalQueueItem, typeFilter: string) => typeFilter === 'all' || item.itemType === typeFilter;
@@ -24,6 +24,11 @@ export function ApprovalQueuePage() {
   const { t } = useTranslation();
   const { data: items, isLoading, error } = usePendingApprovals();
   const approveItem = useApproveItem();
+  // The edit and the rejection are started from their dialogs but live here, with the approval: a dialog closed while its request goes on (the X, Esc, a
+  // tap outside) would take the callbacks of the request with it, and the decision would be written neither below nor on the card.
+  const editItem = useEditItem();
+  const saveAndApproveItem = useSaveAndApproveItem();
+  const rejectItem = useRejectItem();
 
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
@@ -35,7 +40,9 @@ export function ApprovalQueuePage() {
 
   const filteredItems = useMemo(() => (items ?? []).filter((item) => matchesType(item, typeFilter)), [items, typeFilter]);
 
-  const busy = approveItem.isPending;
+  // One decision at a time, wherever it was started (the card, the dialog of the edit, the dialog of the rejection), also when its dialog has been closed:
+  // while it goes on every button of the queue waits, so an approval cannot be sent twice at once.
+  const busy = approveItem.isPending || editItem.isPending || saveAndApproveItem.isPending || rejectItem.isPending;
   const approvingId = approveItem.isPending ? approveItem.variables : undefined;
 
   const clearFailure = (id: string) => {
@@ -127,8 +134,15 @@ export function ApprovalQueuePage() {
         )}
       </div>
 
-      <ApprovalEditDialog item={editing} onClose={() => setEditing(null)} onApproved={noteDecided} onApproveFailed={noteFailure} />
-      <ApprovalRejectDialog item={rejecting} onClose={() => setRejecting(null)} onRejected={noteDecided} />
+      <ApprovalEditDialog
+        item={editing}
+        edit={editItem}
+        saveAndApprove={saveAndApproveItem}
+        onClose={() => setEditing(null)}
+        onApproved={noteDecided}
+        onApproveFailed={noteFailure}
+      />
+      <ApprovalRejectDialog item={rejecting} reject={rejectItem} onClose={() => setRejecting(null)} onRejected={noteDecided} />
     </>
   );
 }
