@@ -106,6 +106,28 @@ describe('StepDetails consents (NF-90)', () => {
     expect(lastDetails(onChange)).toMatchObject({ offersEmail: false, offersWhatsApp: false, phone: '' });
   });
 
+  it('StepDetails_WhatsAppTickedOnANumberWithoutItsCountry_IsRefusedOnTheBoxUntilThePrefixIsTyped', async () => {
+    const { onChange, onNext } = renderStep();
+    const phone = screen.getByLabelText(/Telefono/);
+    // The hint of the phone asks for the prefix from the start, because the number may serve the WhatsApp offers.
+    expect(screen.getByText(/prefisso internazionale/)).toBeInTheDocument();
+
+    fireEvent.change(phone, { target: { value: '333 1234567' } });
+    fireEvent.click(whatsappBox());
+    fireEvent.click(screen.getByTestId('checkout-next'));
+
+    // The server would put its own calling code in front of it and record the consent for somebody else's number.
+    expect(await screen.findByTestId('checkout-offers-whatsapp-error')).toHaveTextContent('con il prefisso internazionale');
+    await waitFor(() => expect(whatsappBox()).toHaveAttribute('aria-invalid', 'true'));
+    expect(onNext).not.toHaveBeenCalled();
+
+    fireEvent.change(phone, { target: { value: '+39 333 1234567' } });
+    await waitFor(() => expect(screen.queryByTestId('checkout-offers-whatsapp-error')).not.toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('checkout-next'));
+    await waitFor(() => expect(onNext).toHaveBeenCalledTimes(1));
+    expect(lastDetails(onChange)).toMatchObject({ offersWhatsApp: true, phone: '+39 333 1234567' });
+  });
+
   it('StepDetails_TickedBoxes_AreKeptInTheDraftAsTheGuestTicksThem', () => {
     const { onChange } = renderStep();
 

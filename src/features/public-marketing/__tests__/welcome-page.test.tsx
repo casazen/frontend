@@ -152,6 +152,48 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     expect(body).not.toHaveProperty('email');
   });
 
+  it('WelcomePage_WhatsAppOnANumberWithoutItsCountry_IsRefusedAndNothingIsSentUntilThePrefixIsTyped', async () => {
+    submitConsent.mockResolvedValue({ confirmationSent: true });
+    renderPage();
+    await screen.findByTestId('welcome-form');
+    // The hint of the phone asks for the prefix before anything is typed.
+    expect(screen.getByText(/prefisso internazionale/)).toBeInTheDocument();
+
+    // The server puts its own calling code in front of such a number: the consent would be recorded for somebody else's phone.
+    type('welcome-email', EMAIL);
+    type('welcome-phone', '333 1234567');
+    tick('welcome-consent-whatsapp');
+    tick('welcome-adult');
+    fireEvent.click(field('welcome-submit'));
+
+    expect(await screen.findByTestId('welcome-whatsapp-error')).toHaveTextContent('con il prefisso internazionale');
+    expect(submitConsent).not.toHaveBeenCalled();
+
+    type('welcome-phone', '0039 333 1234567');
+    fireEvent.click(field('welcome-submit'));
+
+    await waitFor(() => expect(submitConsent).toHaveBeenCalledTimes(1));
+    expect(submitConsent.mock.calls[0][1]).toMatchObject({ phone: '0039 333 1234567', consentWhatsApp: true });
+  });
+
+  it('WelcomePage_NumberWithoutItsCountryButOnlyTheEmailBox_IsNotRefusedAndTheNumberIsNotSent', async () => {
+    submitConsent.mockResolvedValue({ confirmationSent: true });
+    renderPage();
+    await screen.findByTestId('welcome-form');
+
+    // No consent is given on the number, so no prefix is asked and the number does not leave the page.
+    type('welcome-email', EMAIL);
+    type('welcome-phone', '333 1234567');
+    tick('welcome-consent-email');
+    tick('welcome-adult');
+    fireEvent.click(field('welcome-submit'));
+
+    await waitFor(() => expect(submitConsent).toHaveBeenCalledTimes(1));
+    const [, body] = submitConsent.mock.calls[0];
+    expect(body).not.toHaveProperty('phone');
+    expect(body).toMatchObject({ email: EMAIL, consentEmail: true, consentWhatsApp: false });
+  });
+
   it('WelcomePage_TextChangedWhileReading_ShowsTheNewVersionUntickedAndAsksAgain', async () => {
     getPage.mockResolvedValueOnce(PAGE).mockResolvedValue({ ...PAGE, marketingConsentVersion: '2026-12-v2' });
     submitConsent.mockRejectedValue(httpError(409, { code: 'welcome_consent_outdated' }));

@@ -198,6 +198,33 @@ describe('GuestMarketingSection (NF-90)', () => {
     });
   });
 
+  it('GuestMarketingSection_BookingWithNoNumber_AsksForOneWithItsCountryAndSendsTheOneTyped', async () => {
+    get.mockResolvedValue(marketing({ whatsapp: { state: 'none', maskedPhone: null } }));
+    save.mockResolvedValue(marketing({ whatsapp: { state: 'confirmed', maskedPhone: '+39******567' } }));
+    renderSection();
+    await screen.findByTestId('guest-marketing-whatsapp');
+
+    fireEvent.click(whatsappSwitch());
+    const phone = await screen.findByTestId('guest-marketing-phone');
+    expect(screen.getByTestId('guest-marketing-whatsapp')).toHaveTextContent('prefisso internazionale');
+    fireEvent.change(phone, { target: { value: ' 333 1234567 ' } });
+    fireEvent.click(screen.getByTestId('guest-marketing-save'));
+
+    // The server puts its own calling code in front of a number that does not say its country: nothing is sent, the field says why.
+    expect(await screen.findByText(/con il prefisso internazionale, per esempio \+39 333 1234567/)).toBeInTheDocument();
+    expect(save).not.toHaveBeenCalled();
+
+    fireEvent.change(phone, { target: { value: ' +39 333 1234567 ' } });
+    fireEvent.click(screen.getByTestId('guest-marketing-save'));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save).toHaveBeenCalledWith(SESSION.accessToken, CODE, {
+      consentVersion: '2026-11-v1',
+      language: 'it',
+      whatsapp: { enabled: true, phone: '+39 333 1234567' },
+    });
+  });
+
   it('GuestMarketingSection_SwitchOff_AsksFirstThatItIsFinalThenAsksTheServerToWithdrawTheChannel', async () => {
     get.mockResolvedValue(marketing({ email: { state: 'confirmed', maskedAddress: 'g***@e***.com', canResend: false } }));
     save.mockResolvedValue(marketing({ email: { state: 'withdrawn', maskedAddress: 'g***@e***.com', canResend: false } }));

@@ -1,3 +1,4 @@
+import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
 import type { CreateDirectBookingPayload, PaymentOption } from '@/types';
 
@@ -192,7 +193,11 @@ export function buildBookingPayload({
     ...(requests ? { specialRequests: requests.slice(0, SPECIAL_REQUESTS_MAX) } : {}),
     ...(details.arrival ? { expectedArrivalTime: details.arrival } : {}),
     ...(marketingConsentVersion
-      ? { marketingConsentEmail: details.offersEmail, marketingConsentWhatsApp: details.offersWhatsApp && phone !== '' }
+      ? {
+          marketingConsentEmail: details.offersEmail,
+          // WhatsApp only on a number that says its country: the server puts its own calling code in front of any other.
+          marketingConsentWhatsApp: details.offersWhatsApp && phone !== '' && hasInternationalPrefix(phone),
+        }
       : {}),
     ...(softOptInNoticeVersion ? { softOptInNoticeVersion } : {}),
   };

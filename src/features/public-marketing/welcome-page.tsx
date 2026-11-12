@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { isValidPhone } from '@/features/public-booking/checkout/details-schema';
+import { hasInternationalPrefix, isValidPhone } from '@/features/public-booking/checkout/details-schema';
 import { translateValidationMessage } from '@/i18n/validation-message';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { useSeoMeta } from '@/lib/seo-meta';
@@ -30,7 +30,7 @@ const CONSENT_OUTDATED_CODE = 'welcome_consent_outdated';
 /**
  * What the guest types and ticks. The messages are i18n keys that `Field` translates. The e-mail is asked from the start (the confirmation
  * goes there); the phone only when WhatsApp is chosen. The rules are the API's (`WelcomeConsentService`): of age, at least one channel, and a
- * number for WhatsApp. Nothing is ticked at the start.
+ * number for WhatsApp, which must say its country (`+` or `00`). Nothing is ticked at the start.
  */
 const welcomeFormSchema = z
   .object({
@@ -55,6 +55,10 @@ const welcomeFormSchema = z
     }
     if (values.consentWhatsApp && values.phone === '') {
       context.addIssue({ code: 'custom', path: ['consentWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPhone' });
+    } else if (values.consentWhatsApp && isValidPhone(values.phone) && !hasInternationalPrefix(values.phone)) {
+      // The server puts its own calling code in front of a number that does not say its country (`+` or `00`): the consent would be for a
+      // stranger's number. A number that is not a number at all is told on the phone field.
+      context.addIssue({ code: 'custom', path: ['consentWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPrefix' });
     }
     if (!values.adultConfirmed) {
       context.addIssue({ code: 'custom', path: ['adultConfirmed'], message: 'marketing.welcome.errors.adultRequired' });

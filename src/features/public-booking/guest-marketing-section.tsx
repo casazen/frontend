@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { useGuestMarketing, useResendMarketingConfirmation, useSaveGuestMarketing } from '@/queries/use-guest-marketing';
 import type { GuestBookingDetails, GuestSession } from '@/types';
@@ -176,6 +177,8 @@ function GuestMarketing({ session, code }: GuestMarketingProps) {
   const wantWhatsapp = whatsappOffered && ticked.whatsapp;
   const addressMissing = wantEmail && needsAddress && address.trim() === '';
   const phoneMissing = wantWhatsapp && needsPhone && phone.trim() === '';
+  // The server puts its own calling code in front of a number that does not say its country (`+` or `00`): the consent would be for a stranger's number.
+  const phoneWithoutPrefix = wantWhatsapp && needsPhone && phone.trim() !== '' && !hasInternationalPrefix(phone);
 
   const clearTicks = () => {
     setTicked({ email: false, whatsapp: false });
@@ -188,7 +191,7 @@ function GuestMarketing({ session, code }: GuestMarketingProps) {
     event.preventDefault();
     if (version === null || (!wantEmail && !wantWhatsapp)) return;
     setAttempted(true);
-    if (addressMissing || phoneMissing) return;
+    if (addressMissing || phoneMissing || phoneWithoutPrefix) return;
     save.mutate(
       {
         consentVersion: version,
@@ -336,7 +339,13 @@ function GuestMarketing({ session, code }: GuestMarketingProps) {
                 <Field
                   label={t('publicBooking.guestMarketing.phoneLabel')}
                   hint={t('publicBooking.guestMarketing.phoneHint')}
-                  error={attempted && phoneMissing ? t('publicBooking.guestMarketing.phoneRequired') : undefined}
+                  error={
+                    attempted && phoneMissing
+                      ? t('publicBooking.guestMarketing.phoneRequired')
+                      : attempted && phoneWithoutPrefix
+                        ? t('publicBooking.validation.whatsAppNeedsPrefix')
+                        : undefined
+                  }
                 >
                   <Input
                     id="guest-marketing-phone"

@@ -98,6 +98,17 @@ describe('buildBookingPayload', () => {
     expect(buildBookingPayload({ ...stay, draft: noPhone, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(false);
   });
 
+  it('buildBookingPayload_WhatsAppTickedOnANumberThatDoesNotSayItsCountry_NeverSendsTheConsent', () => {
+    // The form refuses this too; the server would put its own calling code in front of the number and record the consent for a stranger's phone.
+    const national = { ...draft, details: { ...draft.details, phone: '333 1234567', offersEmail: true, offersWhatsApp: true } };
+    const international = { ...draft, details: { ...draft.details, phone: '0039 333 1234567', offersWhatsApp: true } };
+
+    const nationalPayload = buildBookingPayload({ ...stay, draft: national, marketingConsentVersion: '2026-10' });
+    expect(nationalPayload.marketingConsentWhatsApp).toBe(false);
+    expect(nationalPayload.marketingConsentEmail).toBe(true);
+    expect(buildBookingPayload({ ...stay, draft: international, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(true);
+  });
+
   it('buildBookingPayload_SoftOptInNotice_SendsItsVersionOnlyWhenTheSiteHasOne', () => {
     expect(buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: '2026-11' }).softOptInNoticeVersion).toBe('2026-11');
     for (const version of [null, undefined, '']) {
