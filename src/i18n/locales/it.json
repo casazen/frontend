@@ -1586,6 +1586,24 @@
       "concordatofacileAlreadyPurchased": "Per questo contratto il modulo guidato risulta già pagato o attivato: non serve pagare di nuovo. Se l'accesso non compare subito, riprova tra qualche istante.",
       "guestMessageTextInvalid": "Scrivi un messaggio: non può essere vuoto né più lungo di 2000 caratteri.",
       "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova.",
+      "approvalEditInvalid": "Il testo non è valido: un messaggio non può essere vuoto né più lungo di 2000 caratteri; una campagna ha bisogno dell'oggetto e del testo.",
+      "approvalItemNotFound": "Questo elemento non c'è più, oppure non è tra quelli che puoi gestire. L'elenco si aggiorna da solo.",
+      "approvalItemNotPending": "Questo elemento è già stato deciso o è scaduto. L'elenco si aggiorna da solo.",
+      "approvalOriginActionFailed": "L'azione collegata non è andata a buon fine: l'elemento resta in attesa e puoi riprovare.",
+      "approvalRejectionReasonRequired": "Scrivi il motivo del rifiuto (al massimo 500 caratteri).",
+      "approvalSendAttemptsExhausted": "Il canale ha rifiutato questo messaggio più volte. Rifiuta la bozza oppure scrivi la risposta a mano nella conversazione.",
+      "campaignNotPendingApproval": "La campagna non è più in attesa di approvazione: è già stata approvata o è tornata in bozza.",
+      "channelRuleViolation": "Prima della prenotazione il canale non permette di scrivere link, indirizzi e-mail o numeri di telefono: toglili dal testo e riprova.",
+      "chatNotLicensed": "La licenza del tuo channel manager non include la chat con gli ospiti: il messaggio non si può inviare da qui.",
+      "crmMarketingDisabled": "Le campagne non sono ancora attive per la tua organizzazione: l'approvazione resta in attesa.",
+      "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: il messaggio non è stato inviato.",
+      "messageTextInvalid": "Il messaggio non può essere vuoto né più lungo di 2000 caratteri: modificalo e riprova.",
+      "octorateChatNotSendable": "Il canale non permette più di scrivere in questa conversazione.",
+      "octorateMessageError": "Il canale non ha accettato il messaggio.",
+      "octorateRateLimited": "Il tuo channel manager ha ricevuto troppe richieste: riprova tra qualche minuto.",
+      "octorateRequestRejected": "Il tuo channel manager non ha accettato il messaggio.",
+      "threadKeyInvalid": "La conversazione di questa bozza non c'è più.",
+      "threadNotFound": "La conversazione di questa bozza non c'è più.",
       "leaseAlreadyTerminated": "Questo contratto è già terminato.",
       "leaseBusy": "Il contratto è occupato da un'altra operazione. Riprova tra qualche secondo.",
       "leaseNoticeAlreadyRecorded": "Per questo contratto c'è già una disdetta registrata.",
@@ -1649,24 +1667,80 @@
   "approval": {
     "action": {
       "approve": "Approva",
+      "approveAndSend": "Approva e invia",
       "approved": "Elemento approvato",
       "approveFailed": "Impossibile approvare l'elemento",
+      "edit": "Modifica",
+      "edited": "Modifica salvata",
+      "editFailed": "Impossibile salvare la modifica",
+      "executed": {
+        "already": "Era già approvato: non è stato inviato di nuovo.",
+        "campaign": "Campagna approvata e programmata.",
+        "campaignApproved": "Campagna approvata. Non ha ancora una data di invio: programmala dalle campagne.",
+        "message": "Messaggio inviato all'ospite.",
+        "messageQueued": "Messaggio preso in carico dal tuo channel manager: sarà lui a inviarlo all'ospite.",
+        "messageVerify": "Non sappiamo se il canale ha ricevuto il messaggio: controllalo nella conversazione prima di scriverlo di nuovo.",
+        "none": "Approvato. Non c'era nessuna azione collegata da eseguire."
+      },
+      "originFailed": "Non è stato possibile completare l'approvazione: l'elemento resta in attesa.",
+      "originFailedHint": "Puoi riprovare, oppure modificare il testo e approvarlo di nuovo.",
+      "originUnknown": "Qualcosa non ha funzionato. Riprova tra poco.",
       "reject": "Rifiuta",
       "rejected": "Elemento rifiutato",
-      "rejectFailed": "Impossibile rifiutare l'elemento"
+      "rejectFailed": "Impossibile rifiutare l'elemento",
+      "retry": "Riprova",
+      "save": "Salva",
+      "saveAndApprove": "Salva e approva"
     },
     "ai_generated": "Generato da AI",
+    "confidence": {
+      "high": "alta",
+      "label": "Affidabilità: {{level}} ({{percent}}%)",
+      "low": "bassa, controllala bene"
+    },
     "content": "Contenuto",
+    "contentEdited": "Testo modificato da te",
+    "contentShowOriginal": "Mostra il testo originale",
+    "decided": {
+      "reason": "Motivo",
+      "title": "Decisi adesso"
+    },
     "dialog": {
       "reasonLabel": "Motivo del rifiuto",
       "reasonPlaceholder": "Descrivi il motivo per cui rifiuti questo elemento…",
       "rejectDescription": "Specifica il motivo per cui rifiuti questo elemento. Il motivo sarà registrato.",
       "rejectTitle": "Rifiuta elemento"
     },
+    "edit": {
+      "bodyLabel": "Testo della campagna",
+      "campaignHint": "Il testo dell'email, sotto l'oggetto.",
+      "description": "Cambia il testo prima di decidere. L'originale resta qui sotto.",
+      "descriptionCampaign": "Cambia l'oggetto e il testo della campagna prima di approvarla. L'originale resta qui sotto.",
+      "descriptionMessage": "Cambia il messaggio prima che parta verso l'ospite. L'originale resta qui sotto.",
+      "error": {
+        "bodyRequired": "Scrivi il testo della campagna.",
+        "empty": "Scrivi il testo.",
+        "subjectOneLine": "L'oggetto deve stare su una riga.",
+        "subjectRequired": "Scrivi l'oggetto della campagna.",
+        "subjectTooLong": "L'oggetto è troppo lungo: al massimo {{max}} caratteri.",
+        "tooLong": "Il testo è troppo lungo: al massimo {{max}} caratteri."
+      },
+      "invalid": "Il testo non è valido: un messaggio non può essere vuoto né più lungo di 2000 caratteri; una campagna ha bisogno dell'oggetto e del testo.",
+      "original": "Testo originale",
+      "restore": "Ripristina l'originale",
+      "subjectLabel": "Oggetto",
+      "textLabel": "Testo",
+      "title": "Modifica il testo"
+    },
+    "edited": "Modificato",
     "expires": "Scade",
     "filter": {
       "allTypes": "Tutti i tipi",
       "type": "Tipo"
+    },
+    "hint": {
+      "campaign": "Approvandola, la campagna viene approvata e, se ha già una data di invio, programmata.",
+      "messageDraft": "Approvandola, il messaggio parte verso l'ospite. Puoi modificarlo prima."
     },
     "queue": {
       "description": "Elementi in attesa di approvazione prima dell'esecuzione",
@@ -1677,15 +1751,42 @@
       "loading": "Caricamento coda di approvazione…",
       "title": "Coda di approvazione"
     },
+    "reject": {
+      "reasonRequired": "Scrivi il motivo del rifiuto.",
+      "reasonTooLong": "Il motivo è troppo lungo: al massimo {{max}} caratteri."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellazione o rimborso",
+      "check_in_time": "Orario di check-in",
+      "complaint": "Reclamo",
+      "directions": "Come arrivare",
+      "discount_request": "Richiesta di sconto",
+      "early_arrival_or_late_checkout": "Arrivo anticipato o check-out in ritardo",
+      "emergency": "Emergenza",
+      "invoice_request": "Richiesta di fattura",
+      "label": "Situazione",
+      "malfunction": "Guasto o problema",
+      "noise": "Rumore",
+      "other": "Altro",
+      "parking": "Parcheggio",
+      "pets": "Animali",
+      "thank_you": "Ringraziamento",
+      "wifi": "Wi-Fi"
+    },
     "status": {
       "approved": "Approvato",
       "expired": "Scaduto",
       "pending": "In attesa",
       "rejected": "Rifiutato"
     },
+    "thread": {
+      "open": "Apri la conversazione"
+    },
     "type": {
       "aiText": "Testo AI",
       "campaign": "Campagna",
+      "messageDraft": "Bozza di messaggio",
+      "other": "Altro",
       "routine": "Routine"
     }
   },

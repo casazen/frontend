@@ -104,7 +104,7 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   });
 
   it('todoActionRoute_WithTheWritePermissions_OpensThePageOfTheAction', () => {
-    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decide']);
+    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decide', 'approval.decide']);
 
     for (const action of R6_ACTIONS) {
       expect(todoActionRoute(itemFor(action), everything), action).toBe(EXPECTED[action]);
@@ -120,7 +120,10 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('StartCheckIn'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     // The queue of the verifications is decided by who holds `verification.decide`: the others find the documents of the stay.
     expect(todoActionRoute(itemFor('VerifyIdentity'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
-    // The queue of the approvals is `property.write`: the others find the messages of the stay.
+    // The queue of the approvals is decided by who holds `approval.decide`: the others find the messages of the stay.
+    expect(todoActionRoute(itemFor('ApproveAiDraft'), permissions(['property.read', 'property.write', 'booking.read', 'booking.write']))).toBe(
+      `/app/short-rent/bookings/${BOOKING_ID}?tab=messages`,
+    );
     expect(todoActionRoute(itemFor('ApproveAiDraft'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=messages`);
   });
 

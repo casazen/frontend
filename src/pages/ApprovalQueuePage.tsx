@@ -1,227 +1,134 @@
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePendingApprovals, useApproveItem, useRejectItem } from '@/queries/approvalQueue';
+import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { AlertCircle, Sparkles } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
-import { useState, useMemo } from 'react';
 import { Select } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { format, parseISO } from 'date-fns';
-import { it, enUS } from 'date-fns/locale';
+import { ApprovalDecidedList } from '@/features/approvals/components/approval-decided-list';
+import { ApprovalEditDialog } from '@/features/approvals/components/approval-edit-dialog';
+import { ApprovalItemCard } from '@/features/approvals/components/approval-item-card';
+import { ApprovalRejectDialog } from '@/features/approvals/components/approval-reject-dialog';
+import { FILTERABLE_TYPES, approvalTypeLabel, originActionErrorOf } from '@/features/approvals/lib/approval-model';
+import { useApproveItem, usePendingApprovals } from '@/queries/approvalQueue';
+import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
+const matchesType = (item: ApprovalQueueItem, typeFilter: string) => typeFilter === 'all' || item.itemType === typeFilter;
+
+/**
+ * The queue of the items that wait for a decision (NF-06, NF-68): the drafts of messages the assistant wrote, the campaigns, the texts of the AI. Each item
+ * is read, edited, approved or rejected here; approving runs what the item was waiting for and says what it did, a failed action keeps the item open with a
+ * retry, and a rejection keeps its reason. The page asks `approval.decide` (the route). A new item shows up within a minute without a reload.
+ */
 export function ApprovalQueuePage() {
-  const { t, i18n: i18nInstance } = useTranslation();
-  const locale = i18nInstance.language === 'it' ? it : enUS;
+  const { t } = useTranslation();
   const { data: items, isLoading, error } = usePendingApprovals();
+  const approveItem = useApproveItem();
 
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string>('');
-  const [rejectReason, setRejectReason] = useState('');
+  const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
+  const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
+  // The queue lists only what waits: what was decided here stays below, quiet, until the page is left.
+  const [decided, setDecided] = useState<ApprovalQueueItem[]>([]);
+  // Why the last approval of an item failed (the code of its action), until the next try.
+  const [failures, setFailures] = useState<Record<string, string>>({});
 
-  const approveItem = useApproveItem();
-  const rejectItem = useRejectItem();
+  const filteredItems = useMemo(() => (items ?? []).filter((item) => matchesType(item, typeFilter)), [items, typeFilter]);
 
-  const filteredItems = useMemo(() => {
-    if (!items) return [];
+  const busy = approveItem.isPending;
+  const approvingId = approveItem.isPending ? approveItem.variables : undefined;
 
-    let filtered = [...items];
-
-    // Filter by type
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter((item) => item.itemType === typeFilter);
-    }
-
-    return filtered;
-  }, [items, typeFilter]);
-
-  const handleApprove = (id: string) => {
-    approveItem.mutate(id);
+  const clearFailure = (id: string) => {
+    setFailures((current) => {
+      if (!(id in current)) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
   };
 
-  const handleRejectClick = (id: string) => {
-    setSelectedItemId(id);
-    setShowRejectDialog(true);
+  const noteFailure = (id: string, code: string) => setFailures((current) => ({ ...current, [id]: code }));
+
+  const noteDecided = (item: ApprovalQueueItem) => {
+    clearFailure(item.id);
+    setDecided((current) => [item, ...current.filter((candidate) => candidate.id !== item.id)]);
   };
 
-  const handleRejectConfirm = () => {
-    if (!rejectReason.trim()) {
-      return;
-    }
-    rejectItem.mutate(
-      {
-        id: selectedItemId,
-        data: { reason: rejectReason },
+  const handleApprove = (item: ApprovalQueueItem) => {
+    clearFailure(item.id);
+    approveItem.mutate(item.id, {
+      onSuccess: noteDecided,
+      onError: (failure) => {
+        const code = originActionErrorOf(failure);
+        if (code !== undefined) noteFailure(item.id, code);
       },
-      {
-        onSuccess: () => {
-          setShowRejectDialog(false);
-          setRejectReason('');
-          setSelectedItemId('');
-        },
-      }
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return format(parseISO(dateString), 'PPp', { locale });
-    } catch {
-      return dateString;
-    }
+    });
   };
 
   if (isLoading) {
     return <LoadingScreen message={t('approval.queue.loading')} />;
   }
 
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
-          {t('approval.queue.loadError')}
-        </Alert>
-      </div>
-    );
-  }
+  // A reading that failed while the list is on the screen (the minute poll) leaves the list as it is: only a page with nothing to show is an error,
+  // and it keeps its title and its tabs, so that the other queue of decisions is still one click away.
+  const loadFailed = Boolean(error) && !items;
+  const waiting = items ?? [];
 
   return (
     <>
       <div className="container mx-auto space-y-6 px-4 py-8">
         <PageHeader title={t('approval.queue.title')} description={t('approval.queue.description')} />
 
-        <div className="flex flex-wrap gap-4">
-          <div className="w-full sm:w-64">
-            <label htmlFor="type-filter" className="text-sm font-medium mb-2 block">
-              {t('approval.filter.type')}
-            </label>
-            <Select id="type-filter" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="all">{t('approval.filter.allTypes')}</option>
-              <option value="Campaign">{t('approval.type.campaign')}</option>
-              <option value="Routine">{t('approval.type.routine')}</option>
-              <option value="AiText">{t('approval.type.aiText')}</option>
-            </Select>
-          </div>
-        </div>
-
-        {filteredItems.length === 0 ? (
-          <Alert variant="info" title={t('approval.queue.emptyTitle')} icon={AlertCircle}>
-            {items && items.length > 0
-              ? t('approval.queue.emptyFiltered')
-              : t('approval.queue.emptyQueue')}
+        {loadFailed ? (
+          <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
+            {t('approval.queue.loadError')}
           </Alert>
         ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => (
-              <Card key={item.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        {item.itemType}
-                        {item.isAiGenerated && (
-                          <Badge variant="secondary" className="flex items-center gap-1">
-                            <Sparkles className="h-3 w-3" />
-                            {t('approval.ai_generated')}
-                          </Badge>
-                        )}
-                      </CardTitle>
-                      <CardDescription>
-                        {t('approval.status.pending')} • {t('approval.expires')}: {formatDate(item.expiresAt)}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="font-medium text-sm text-muted-foreground">
-                      {t('approval.content')}
-                    </div>
-                    <div className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap">
-                      {item.contentText}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleApprove(item.id)}
-                      disabled={approveItem.isPending}
-                    >
-                      {t('approval.action.approve')}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRejectClick(item.id)}
-                      disabled={rejectItem.isPending}
-                    >
-                      {t('approval.action.reject')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <>
+            <div className="flex flex-wrap gap-4">
+              <div className="w-full sm:w-64">
+                <label htmlFor="type-filter" className="mb-2 block text-sm font-medium">
+                  {t('approval.filter.type')}
+                </label>
+                <Select id="type-filter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                  <option value="all">{t('approval.filter.allTypes')}</option>
+                  {FILTERABLE_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {approvalTypeLabel(type, t)}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+
+            {filteredItems.length === 0 ? (
+              <Alert variant="info" title={t('approval.queue.emptyTitle')} icon={AlertCircle}>
+                {waiting.length > 0 ? t('approval.queue.emptyFiltered') : t('approval.queue.emptyQueue')}
+              </Alert>
+            ) : (
+              <div className="space-y-4">
+                {filteredItems.map((item) => (
+                  <ApprovalItemCard
+                    key={item.id}
+                    item={item}
+                    failureCode={failures[item.id]}
+                    busy={busy}
+                    approving={approvingId === item.id}
+                    onApprove={handleApprove}
+                    onEdit={setEditing}
+                    onReject={setRejecting}
+                  />
+                ))}
+              </div>
+            )}
+
+            <ApprovalDecidedList items={decided.filter((item) => matchesType(item, typeFilter))} />
+          </>
         )}
       </div>
 
-      {/* Reject Dialog */}
-      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('approval.dialog.rejectTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('approval.dialog.rejectDescription')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reject-reason">{t('approval.dialog.reasonLabel')}</Label>
-              <Textarea
-                id="reject-reason"
-                placeholder={t('approval.dialog.reasonPlaceholder')}
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowRejectDialog(false);
-                setRejectReason('');
-                setSelectedItemId('');
-              }}
-              disabled={rejectItem.isPending}
-            >
-              {t('shared.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectConfirm}
-              disabled={rejectItem.isPending || !rejectReason.trim()}
-            >
-              {t('approval.action.reject')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ApprovalEditDialog item={editing} onClose={() => setEditing(null)} onApproved={noteDecided} onApproveFailed={noteFailure} />
+      <ApprovalRejectDialog item={rejecting} onClose={() => setRejecting(null)} onRejected={noteDecided} />
     </>
   );
 }
