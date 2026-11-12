@@ -63,14 +63,16 @@ interface TextFilterProps {
   value: string;
   onCommit: (text: string) => void;
   placeholder?: string;
+  /** What the filter finds, under the field. */
+  hint?: string;
   maxLength?: number;
 }
 
 /** A text filter of the panel (country, tag). */
-function TextFilter({ label, value, onCommit, placeholder, maxLength }: TextFilterProps) {
+function TextFilter({ label, value, onCommit, placeholder, hint, maxLength }: TextFilterProps) {
   const { draft, setDraft, flush } = useCommittedText(value, onCommit);
   return (
-    <Field label={label}>
+    <Field label={label} hint={hint}>
       <Input
         value={draft}
         placeholder={placeholder}
@@ -141,6 +143,7 @@ function FilterPanel({ id, filters, onChange }: FilterPanelProps) {
         label={t('crm.filters.country.label')}
         value={filters.country}
         placeholder={t('crm.filters.country.placeholder')}
+        hint={t('crm.filters.country.hint')}
         maxLength={100}
         onCommit={(country) => onChange({ country }, { replace: true })}
       />

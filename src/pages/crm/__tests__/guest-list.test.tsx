@@ -256,6 +256,16 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     expect(box).toHaveAccessibleDescription(i18n.t('crm.filters.search.hint'));
   });
 
+  it.each(['it', 'en'])('GuestList_TheCountryFilter_SaysItWantsTheIsoCodeBecauseItFindsTheExactValueSaved (%s)', async (language) => {
+    await i18n.changeLanguage(language);
+    renderList('/app/short-rent/crm/guests?country=IT');
+    await findTable();
+
+    const hint = i18n.t('crm.filters.country.hint');
+    expect(hint).toMatch(/ISO/);
+    expect(screen.getByLabelText(i18n.t('crm.filters.country.label'))).toHaveAccessibleDescription(hint);
+  });
+
   it('GuestList_AFilter_IsInTheAddressAndGoesBackToTheFirstPage', async () => {
     vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile()], 45, 3));
     renderList('/app/short-rent/crm/guests?page=3&sort=spend');

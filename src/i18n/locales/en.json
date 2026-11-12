@@ -4613,6 +4613,7 @@
       },
       "clear": "Clear the filters",
       "country": {
+        "hint": "Write the two-letter ISO code (IT, DE, FR…): the filter looks for the exact value saved on the profile.",
         "label": "Country",
         "placeholder": "E.g. IT"
       },
