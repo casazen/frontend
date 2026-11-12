@@ -195,6 +195,59 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     expect(box).toHaveValue('mario ');
   });
 
+  it.each(['mario.rossi@example.it', '+39 333 1234567'])('GuestList_ASearchBy_%s_GoesToTheServerAndNeverToTheAddress', async (text) => {
+    renderList('/app/short-rent/crm/guests?sort=spend');
+    await findTable();
+    const box = screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') });
+
+    fireEvent.change(box, { target: { value: text } });
+
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: text, page: 1, sort: 'spend' }));
+    // The rest of the view is in the address; the e-mail address or the phone number is not (history of the browser, shared link).
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/app\/short-rent\/crm\/guests\?sort=spend$/);
+    expect(box).toHaveValue(text);
+  });
+
+  it('GuestList_ASearchByEmailThenAName_WritesOnlyTheNameToTheAddress', async () => {
+    renderList('/app/short-rent/crm/guests?sort=spend');
+    await findTable();
+    const box = screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') });
+    fireEvent.change(box, { target: { value: 'mario.rossi@example.it' } });
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario.rossi@example.it' }));
+
+    fireEvent.change(box, { target: { value: 'rossi' } });
+
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'rossi' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('?sort=spend&q=rossi');
+  });
+
+  it('GuestList_ASearchByEmailAndAnotherPage_StaysOnTheSearchAndOutOfTheAddress', async () => {
+    vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile()], 45));
+    renderList();
+    await findTable();
+    fireEvent.change(screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') }), { target: { value: 'mario.rossi@example.it' } });
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario.rossi@example.it', page: 1 }));
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('listView.pagination.next') }));
+
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario.rossi@example.it', page: 2 }));
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/app\/short-rent\/crm\/guests\?page=2$/);
+  });
+
+  it('GuestList_ClearTheFilters_AlsoForgetsASearchByEmail', async () => {
+    renderList();
+    await findTable();
+    const box = screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') });
+    fireEvent.change(box, { target: { value: 'mario.rossi@example.it' } });
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario.rossi@example.it' }));
+
+    // The search is on, so the way out is there even though the address has nothing.
+    fireEvent.click(await screen.findByTestId('crm-filters-clear'));
+
+    await waitFor(() => expect(box).toHaveValue(''));
+    await waitFor(() => expect(lastAsked()?.search).toBeUndefined());
+  });
+
   it('GuestList_TheSearchBox_SaysWhatItFindsInTheHint', async () => {
     renderList();
     await findTable();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyProfileFilters, readProfileFilters, toListParams } from '../profile-filter-state';
+import { applyProfileFilters, looksLikeContact, readProfileFilters, toListParams } from '../profile-filter-state';
 
 const read = (query: string) => readProfileFilters(new URLSearchParams(query));
 
@@ -77,6 +77,36 @@ describe('the state of the list of CRM profiles lives in the address (E07/F01/US
 
     expect(next.get('detail')).toBe('booking:3f2a');
     expect(next.get('q')).toBe('new');
+  });
+
+  it.each([
+    ['an e-mail address', 'mario.rossi@example.it', true],
+    ['the start of an e-mail address that has its at sign', 'mario@', true],
+    ['a phone number with the prefix', '+39 333 1234567', true],
+    ['a phone number with separators', '(0831) 55.12.34', true],
+    ['a name', 'Mario Rossi', false],
+    ['the start of a name', 'ros', false],
+    ['the first digits of a number', '3331', false],
+    ['nothing', '   ', false],
+  ])('looksLikeContact_%s_Is%s', (_name, text, expected) => {
+    expect(looksLikeContact(text)).toBe(expected);
+  });
+
+  it.each(['mario.rossi@example.it', '+39 333 1234567'])('applyProfileFilters_ASearchBy_%s_IsNeverWrittenToTheAddress', (text) => {
+    const next = applyProfileFilters(new URLSearchParams('channel=Airbnb&sort=spend&page=3'), { search: text });
+
+    // The rest of the state stays in the address and the list goes back to the first page; the personal data are not in it.
+    expect(next.toString()).toBe('channel=Airbnb&sort=spend');
+    expect(next.toString()).not.toContain('rossi');
+    expect(next.toString()).not.toContain('1234567');
+  });
+
+  it('applyProfileFilters_ASearchByEmailAfterAName_TakesTheNameAwayAndWritesNothing', () => {
+    expect(applyProfileFilters(new URLSearchParams('q=rossi&channel=Airbnb'), { search: 'anna.verdi@example.it' }).toString()).toBe('channel=Airbnb');
+  });
+
+  it('applyProfileFilters_ASearchByName_IsWrittenToTheAddressAsItWas', () => {
+    expect(applyProfileFilters(new URLSearchParams('page=2'), { search: ' Mario Rossi ' }).toString()).toBe('q=Mario+Rossi');
   });
 
   it('toListParams_TheEmailFilter_IsTrueFalseOrNotAsked', () => {

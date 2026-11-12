@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CRM_CHANNELS } from '@/features/crm/lib/crm-labels';
 import type { CrmProfileListParams, CrmProfileSort } from '@/types/crm.types';
@@ -75,13 +75,26 @@ function setText(params: URLSearchParams, key: string, value: string) {
   else params.delete(key);
 }
 
+/** From this many digits a text is taken for a phone number: a name has none, and the start of a number with fewer is nothing to protect. */
+const DIGITS_OF_A_PHONE = 5;
+
+/**
+ * Whether a search text is an e-mail address or a phone number (or the start of one that has most of it): the personal data a host looks
+ * a guest up by, which the server finds by the whole value. Such a text is never written to the address (`?q=`), where it would stay in
+ * the history of the browser and in the link the host shares: it stays in the state of the page and goes only to the query of the API.
+ */
+export function looksLikeContact(text: string): boolean {
+  return text.includes('@') || (text.match(/\d/g) ?? []).length >= DIGITS_OF_A_PHONE;
+}
+
 /**
  * The address after a change: what the patch says is written (or, for the default, taken away), what is not the list's (`detail` of the
  * drawer of the shell) is left alone, and a change of anything but the page goes back to the first page.
  */
 export function applyProfileFilters(current: URLSearchParams, patch: ProfileFilterPatch): URLSearchParams {
   const next = new URLSearchParams(current);
-  if (patch.search !== undefined) setText(next, 'q', patch.search);
+  // A search that is an e-mail address or a phone number is not written (and one that was there is taken away): see `looksLikeContact`.
+  if (patch.search !== undefined) setText(next, 'q', looksLikeContact(patch.search) ? '' : patch.search);
   if (patch.country !== undefined) setText(next, 'country', patch.country);
   if (patch.language !== undefined) setText(next, 'language', patch.language);
   if (patch.channel !== undefined) setText(next, 'channel', patch.channel);
@@ -140,20 +153,33 @@ function activeFilterCount(filters: ProfileFilterState): number {
 /**
  * The state of the list of profiles, which lives in the address (`useSearchParams`) so that a view can be reloaded, shared and left with
  * the Back button. Every change goes back to the first page, and each one is a step of the history, except a text being typed, which
- * replaces the step it is in (`replace`): Back leaves the search as it was, not one letter at a time.
+ * replaces the step it is in (`replace`): Back leaves the search as it was, not one letter at a time. The one thing that does not live
+ * in the address is a search by e-mail address or phone number (`looksLikeContact`): personal data stay out of the history and of the
+ * links, so that search is kept in the state of the page and does not survive a reload.
  */
 export function useProfileFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const filters = useMemo(() => readProfileFilters(searchParams), [searchParams]);
+  // A search by e-mail address or phone number is not in the address (`looksLikeContact`): it is kept here, in the state of the page, and
+  // goes to the API from here. A search the address has wins over it (Back to an earlier view of the list).
+  const [contactSearch, setContactSearch] = useState('');
+  const filters = useMemo(() => {
+    const read = readProfileFilters(searchParams);
+    return read.search === '' && contactSearch !== '' ? { ...read, search: contactSearch } : read;
+  }, [searchParams, contactSearch]);
   const params = useMemo(() => toListParams(filters), [filters]);
   const activeCount = activeFilterCount(filters);
 
   const change = useCallback(
-    (patch: ProfileFilterPatch, options?: { replace?: boolean }) =>
-      setSearchParams((current) => applyProfileFilters(current, patch), { replace: options?.replace }),
+    (patch: ProfileFilterPatch, options?: { replace?: boolean }) => {
+      if (patch.search !== undefined) setContactSearch(looksLikeContact(patch.search) ? patch.search.trim() : '');
+      setSearchParams((current) => applyProfileFilters(current, patch), { replace: options?.replace });
+    },
     [setSearchParams],
   );
-  const clear = useCallback(() => setSearchParams((current) => withoutFilters(current)), [setSearchParams]);
+  const clear = useCallback(() => {
+    setContactSearch('');
+    setSearchParams((current) => withoutFilters(current));
+  }, [setSearchParams]);
   /** The query string of the list on another page: for a link that replaces the address when the page asked for is not there any more. */
   const searchOfPage = useCallback((page: number) => applyProfileFilters(searchParams, { page }).toString(), [searchParams]);
 
