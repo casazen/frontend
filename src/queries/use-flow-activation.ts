@@ -78,12 +78,14 @@ export interface NotActivated {
   unmet: OnboardingPrerequisiteKey[];
 }
 
-/** What the activation did for one flow: how many properties it switched on and the ones it did not. */
+/** What the activation did for one flow: how many properties it switched on, the ones it did not and, if it stopped half way, what stopped it. */
 export interface FlowActivationSummary {
   flow: OnboardingFlowKey;
   activated: number;
   alreadyActive: number;
   notActivated: NotActivated[];
+  /** What stopped the flow (the network, the server): `null` when it went through. What it switched on before that stays on, and is counted above. */
+  failure: unknown;
 }
 
 /** The properties whose flow has every prerequisite and waits only for the activation (`flow_not_activated`), by name, whatever the number of pages. */
@@ -100,7 +102,8 @@ async function readyProperties(flow: OnboardingFlowKey): Promise<Array<{ propert
  * Switches on the flows the host ticked, for the properties that are ready (E10/F03/US02/T03, NF-104 part 11): for each flow it reads the properties that
  * wait only for the activation and names them to the server in calls of at most 500; the server checks the prerequisites of each one again, so a
  * property that is not ready (any more) stays as it is and comes back in `notActivated` with what it lacks. A flow with nothing ready is not called.
- * What is not ready is kept in «Da fare» by the server. Organization administrator only.
+ * A flow that fails does not stop the others and does not hide what was switched on: its summary carries what stopped it (`failure`) with the properties
+ * done before. What is not ready is kept in «Da fare» by the server. Organization administrator only.
  */
 export function useActivateReady() {
   const queryClient = useQueryClient();
@@ -109,12 +112,20 @@ export function useActivateReady() {
     mutationFn: async (flows: readonly OnboardingFlowKey[]): Promise<FlowActivationSummary[]> => {
       const summaries: FlowActivationSummary[] = [];
       for (const flow of flows) {
-        const ready = await readyProperties(flow);
-        const names = new Map(ready.map((property) => [property.propertyId, property.name]));
         const outcomes: FlowActivationOutcome[] = [];
-        for (let start = 0; start < ready.length; start += MAX_PER_CALL) {
-          const chunk = ready.slice(start, start + MAX_PER_CALL).map((property) => property.propertyId);
-          outcomes.push(...(await onboardingApi.activateFlow(flow, chunk)).outcomes);
+        let names = new Map<string, string>();
+        let failure: unknown = null;
+        try {
+          const ready = await readyProperties(flow);
+          names = new Map(ready.map((property) => [property.propertyId, property.name]));
+          for (let start = 0; start < ready.length; start += MAX_PER_CALL) {
+            const chunk = ready.slice(start, start + MAX_PER_CALL).map((property) => property.propertyId);
+            outcomes.push(...(await onboardingApi.activateFlow(flow, chunk)).outcomes);
+          }
+        } catch (error) {
+          // A flow that stops does not take the others with it, and what it (and the flows before it) switched on stays on: the result says both,
+          // flow by flow, instead of an error that hides what was done.
+          failure = error;
         }
         summaries.push({
           flow,
@@ -123,6 +134,7 @@ export function useActivateReady() {
           notActivated: outcomes
             .filter((outcome) => outcome.outcome !== 'activated' && outcome.outcome !== 'alreadyActive')
             .map((outcome) => ({ propertyId: outcome.propertyId, name: names.get(outcome.propertyId) ?? outcome.propertyId, unmet: outcome.unmetPrerequisites ?? [] })),
+          failure,
         });
       }
       return summaries;

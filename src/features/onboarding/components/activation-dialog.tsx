@@ -143,6 +143,7 @@ export function ActivationDialog({ open, onOpenChange }: ActivationDialogProps) 
 function ActivationResult({ result }: { result: readonly FlowActivationSummary[] }) {
   const { t } = useTranslation();
   const left = result.reduce((sum, flow) => sum + flow.notActivated.length, 0);
+  const stopped = result.filter((flow) => flow.failure !== null).length;
 
   return (
     <div className="space-y-4" data-testid="activation-result">
@@ -154,6 +155,11 @@ function ActivationResult({ result }: { result: readonly FlowActivationSummary[]
               {': '}
               {t('onboardingPlan.summary.activation.activated', { count: flow.activated })}
             </p>
+            {flow.failure !== null ? (
+              <p role="alert" className="break-words text-danger-foreground" data-testid={`activation-failed-${flow.flow}`}>
+                {t('onboardingPlan.summary.activation.flowFailed')} {getProblemMessage(flow.failure, t)}
+              </p>
+            ) : null}
             {flow.notActivated.length > 0 ? (
               <ul className="list-disc space-y-0.5 pl-5 text-foreground/70" role="list">
                 {flow.notActivated.map((property) => (
@@ -170,14 +176,20 @@ function ActivationResult({ result }: { result: readonly FlowActivationSummary[]
         ))}
       </ul>
       <p className="rounded-md bg-muted p-3 text-sm" data-testid="activation-next-step">
-        {left > 0 ? t('onboardingPlan.summary.activation.nextTodo') : t('onboardingPlan.summary.activation.nextDone')}{' '}
-        <Link
-          to={left > 0 ? TODO_LIST_PATH : ONBOARDING_PLAN_PATH}
-          className="inline-flex min-h-11 items-center font-medium text-primary-text underline underline-offset-4"
-          data-testid="activation-next-link"
-        >
-          {t(left > 0 ? 'onboardingPlan.summary.activation.toTodo' : 'onboardingPlan.summary.activation.toPlan')}
-        </Link>
+        {stopped > 0 ? (
+          t('onboardingPlan.summary.activation.nextRetry')
+        ) : (
+          <>
+            {left > 0 ? t('onboardingPlan.summary.activation.nextTodo') : t('onboardingPlan.summary.activation.nextDone')}{' '}
+            <Link
+              to={left > 0 ? TODO_LIST_PATH : ONBOARDING_PLAN_PATH}
+              className="inline-flex min-h-11 items-center font-medium text-primary-text underline underline-offset-4"
+              data-testid="activation-next-link"
+            >
+              {t(left > 0 ? 'onboardingPlan.summary.activation.toTodo' : 'onboardingPlan.summary.activation.toPlan')}
+            </Link>
+          </>
+        )}
       </p>
     </div>
   );

@@ -314,6 +314,42 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       expect(within(result).getByTestId('activation-next-step')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.nextTodo'));
       expect(within(result).getByTestId('activation-next-link')).toHaveAttribute('href', '/app/short-rent/activities');
     });
+
+    it('ActivationDialog_AFlowThatFailsMidWay_KeepsWhatTheOthersSwitchedOnAndSaysWhichOneStoppedAndWhy', async () => {
+      vi.mocked(onboardingApi.bulkProgress).mockResolvedValue(progress({ Listings: 1, Bookings: 1 }));
+      // Both flows have a property that waits only for the activation when the dialog reads them.
+      vi.mocked(onboardingApi.getFlowProperties).mockImplementation((flow, query) => {
+        if ((flow === 'Listings' || flow === 'Bookings') && query?.state === 'toComplete' && query.pageSize === 100) {
+          return Promise.resolve({ items: [row(flow, P1, 'Casa del Mare', { state: 'toComplete', reason: 'flow_not_activated', action: 'activate' })], totalCount: 1, page: 1, pageSize: 100 });
+        }
+        return Promise.resolve(answer(flow, query?.state));
+      });
+      // The first flow goes through and is switched on on the server; the next one is refused.
+      vi.mocked(onboardingApi.activateFlow).mockImplementation((flow) =>
+        flow === 'Listings'
+          ? Promise.resolve({ flow, outcomes: [{ propertyId: P1, outcome: 'activated', unmetPrerequisites: [], reason: null }] })
+          : Promise.reject(problemError(409, { detail: 'Il servizio ha rifiutato la richiesta.' })),
+      );
+      renderPage();
+      await screen.findByTestId('flow-table');
+      fireEvent.click(screen.getByTestId('summary-activate'));
+      const dialog = await screen.findByTestId('activation-dialog');
+      await waitFor(() => expect(within(dialog).getByTestId('activation-confirm')).toBeEnabled());
+
+      fireEvent.click(within(dialog).getByTestId('activation-confirm'));
+
+      const result = await within(dialog).findByTestId('activation-result');
+      // What the flow before it switched on is in the result: an error does not hide it.
+      expect(onboardingApi.activateFlow).toHaveBeenCalledTimes(2);
+      expect(within(result).getByTestId('activation-result-Listings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.activated', { count: 1 }));
+      expect(within(result).queryByTestId('activation-failed-Listings')).not.toBeInTheDocument();
+      // The flow that stopped says so, with the reason the server gave, and nothing of it is counted as done.
+      expect(within(result).getByTestId('activation-result-Bookings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.activated', { count: 0 }));
+      expect(within(result).getByTestId('activation-failed-Bookings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.flowFailed'));
+      expect(within(result).getByTestId('activation-failed-Bookings')).toHaveTextContent('Il servizio ha rifiutato la richiesta.');
+      expect(within(result).getByTestId('activation-next-step')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.nextRetry'));
+      expect(within(dialog).queryByTestId('activation-error')).not.toBeInTheDocument();
+    });
   });
 
   it('OnboardingSummaryPage_Page_HasNoViolationThatAxeCanFindWithoutABrowser', async () => {
