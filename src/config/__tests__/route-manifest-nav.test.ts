@@ -215,6 +215,8 @@ describe('route-manifest main menu (UI-04a)', () => {
       // The urgent items of the To do list (NF-07, ADR-026-R12), from `GET api/me/activities/count`.
       ['/app/short-rent/activities', 'activities'],
       ['/app/short-rent/bookings', 'bookingRequests'],
+      // The messages of the guests not read yet (NF-61), from `GET api/messages/unread?includeOta=true`: on its tab of Prenotazioni.
+      ['/app/short-rent/messages', 'messages'],
       ['/app/supplier/inbox', 'supplierRequests'],
     ]);
   });
@@ -272,7 +274,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
   // The sections of the menus: an entry and, in tab order, the pages that hang from it. This is what keeps "Altro" short.
   const SECTIONS: Record<string, string[]> = {
     // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and no page hangs from it yet.
-    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/reviews'],
+    // Messaggi (NF-61) is the first tab after the bookings, then the guests and the reviews.
+    '/app/short-rent/bookings': ['/app/short-rent/messages', '/app/short-rent/guests', '/app/short-rent/reviews'],
     '/app/short-rent/compliance': [
       '/app/short-rent/alloggiati',
       '/app/short-rent/alloggiati/reports',
@@ -329,11 +332,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
       }
       expect(parent.navParent, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
-      // A page that hangs is in no menu and has no counter or place in the bar of its own.
+      // A page that hangs is in no menu and has no place in the bar of its own. A counter it may have, and it is on its tab (`NavSectionTabs`):
+      // the messages not read yet on «Messaggi».
       expect(entry.navPlacement, entry.path).toBeUndefined();
       expect(entry.navGroup, entry.path).toBeUndefined();
       expect(entry.navBottom, entry.path).toBeUndefined();
-      expect(entry.navCount, entry.path).toBeUndefined();
+      if (entry.navCount) expect(entry.path).toBe('/app/short-rent/messages');
     }
   });
 
@@ -396,7 +400,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
 describe('route-manifest sections as tabs (UI-04a)', () => {
   it('gives every page of a section the same tabs, the entry first', () => {
-    const bookings = ['/app/short-rent/bookings', '/app/short-rent/guests', '/app/short-rent/reviews'];
+    const bookings = ['/app/short-rent/bookings', '/app/short-rent/messages', '/app/short-rent/guests', '/app/short-rent/reviews'];
     for (const page of bookings) expect(paths(getNavSection(page, allowAll)), page).toEqual(bookings);
 
     const payments = [
@@ -978,7 +982,7 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
     const accountant: PermissionPredicate = (_ctx, permission) => ['property.read', 'booking.read', 'payment.read'].includes(permission);
     expect(paths(getSecondaryNavEntries('short-rent', accountant, on))).not.toContain('/app/short-rent/crm/guests');
     // It is no tab of Prenotazioni any more.
-    expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/guests', '/app/short-rent/reviews']);
+    expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/messages', '/app/short-rent/guests', '/app/short-rent/reviews']);
     // The open CRM page highlights the CRM entry, not Prenotazioni.
     const entries = getNavMatchEntries('short-rent', allowAll, on);
     expect(resolveActiveNavEntry('/app/short-rent/crm/guests', entries)?.path).toBe('/app/short-rent/crm/guests');

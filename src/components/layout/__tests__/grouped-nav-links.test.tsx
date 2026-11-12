@@ -224,7 +224,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       renderNav('/app/short-rent');
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
-      for (const name of ['Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Profilo']) {
+      for (const name of ['Messaggi', 'Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Profilo']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
     });
@@ -255,6 +255,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it.each([
+      ['/app/short-rent/messages', 'Prenotazioni'],
       ['/app/short-rent/guests', 'Prenotazioni'],
       ['/app/short-rent/reviews', 'Prenotazioni'],
       ['/app/short-rent/payments/revenue', 'Incassi'],

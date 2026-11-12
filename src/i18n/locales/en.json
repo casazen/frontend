@@ -10358,6 +10358,190 @@
     "enterHint": "Enter to send, Shift+Enter for a new line.",
     "counter": "{{count}}/{{max}}"
   },
+  "messages": {
+    "actions": {
+      "anonymized": "The guest's data was erased at their request.",
+      "cannotReply": "You cannot answer this conversation.",
+      "mappingNotConfirmed": "You can read this conversation but not answer it: the listing is not linked to one of your properties yet.",
+      "readOnly": "You can read the messages, but you do not have permission to answer.",
+      "threadClosed": "The conversation is closed: no more messages can be written."
+    },
+    "attachment": {
+      "download": "Download the attachment",
+      "error": "I cannot open the attachment. Try again in a moment.",
+      "fileName": "Attachment",
+      "imageAlt": "Image attached to the message",
+      "loading": "Loading the attachment…",
+      "unavailable": "Attachment no longer available"
+    },
+    "bookingCard": {
+      "balance": "Still to pay",
+      "children_one": "including {{count}} child",
+      "children_other": "including {{count}} children",
+      "commission": "Channel commission",
+      "guest": "Guest",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "hide": "Hide the booking",
+      "net": "Net for you",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noAmounts": "The amounts are not available yet.",
+      "none": "There is no booking yet: this is a request. When the guest books, you will find it here.",
+      "open": "Open the booking",
+      "openProfile": "Open the guest profile",
+      "paid": "Already paid",
+      "people": "People",
+      "show": "Show the booking",
+      "source": "From: {{source}}",
+      "sourceLabel": "Source",
+      "stay": "Stay",
+      "title": "Booking",
+      "total": "Total"
+    },
+    "channel": {
+      "airbnb": "Airbnb",
+      "booking": "Booking.com",
+      "direct": "Direct",
+      "expedia": "Expedia",
+      "vrbo": "Vrbo"
+    },
+    "composer": {
+      "label": "Message for the guest",
+      "language": "Language of the translation",
+      "machineTranslated": "Machine translated",
+      "offline": "You are offline: you can send the message when you are back online.",
+      "placeholder": "Write your answer…",
+      "send": "Send",
+      "templates": "Templates",
+      "translate": "Translate"
+    },
+    "contact": {
+      "directFirst": "You can write first: the guest receives the message on the page of their booking.",
+      "emailIntro": "This channel has no chat. You can write to the guest by e-mail through CasaZen: you do not see their address and we do not keep it.",
+      "emailPlaceholder": "Write the message for the guest…",
+      "error": "I cannot check how to reach the guest.",
+      "hasThread": "There is already a conversation with this guest.",
+      "loading": "Checking how you can reach the guest…",
+      "needsVerification": "We do not know yet whether the message went out. Check in a moment before writing it again.",
+      "noChannel": "For this booking CasaZen has no way to write to the guest.",
+      "openThread": "Open the conversation",
+      "reason": {
+        "mappingNotConfirmed": "The listing is not linked to one of your properties yet: for now you cannot write to the guest from here.",
+        "noConversation": "This booking has no conversation yet and there is no other way to write to the guest.",
+        "notConnected": "The link to the channels is not active: you cannot write to the guest from here.",
+        "other": "For now you cannot write to the guest from CasaZen.",
+        "threadClosed": "The conversation is closed: no more messages can be written."
+      },
+      "sent": "Message sent by e-mail.",
+      "title": "Write to the guest",
+      "unavailable": "The channel does not give us this guest's e-mail: write to them from the channel.",
+      "writeByEmail": "Write by e-mail"
+    },
+    "empty": {
+      "all": "No conversations yet",
+      "allHint": "As soon as a guest writes to you, from your site or a channel, you will find the conversation here.",
+      "noMatch": "No conversation found",
+      "noMatchHint": "Try another search or remove a filter.",
+      "showAll": "Show all conversations",
+      "toRespond": "Nothing to respond to",
+      "toRespondHint": "When a guest writes, the conversation shows up here.",
+      "unread": "No messages to read",
+      "unreadHint": "You have read every message from your guests."
+    },
+    "filter": {
+      "all": "All",
+      "booking": "One booking only",
+      "bookingClear": "Show all conversations",
+      "channel": "Channel",
+      "channelAll": "All channels",
+      "clear": "Clear filters",
+      "label": "Conversations to show",
+      "property": "Property",
+      "propertyAll": "All properties",
+      "toRespond": "To respond",
+      "unread": "Unread"
+    },
+    "inbox": {
+      "description": "Every conversation with your guests, from the channels and direct, in one list.",
+      "listLabel": "Conversations",
+      "loading": "Loading conversations…",
+      "noSelection": {
+        "description": "Read it here with the booking beside it, and answer without leaving CasaZen.",
+        "title": "Choose a conversation"
+      },
+      "title": "Messages"
+    },
+    "loadError": "Messages could not be loaded.",
+    "problem": {
+      "generic": "It did not work. Try again.",
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
+      "rateLimited_one": "Too many messages: try again in {{count}} minute.",
+      "rateLimited_other": "Too many messages: try again in {{count}} minutes.",
+      "textInvalid": "Write a message that is not empty and has at most 2000 characters.",
+      "threadClosed": "The conversation is closed: no more messages can be written.",
+      "tooManyRequests": "Too many messages in a short time: try again in a moment."
+    },
+    "request": {
+      "noContacts": "Before the booking the channel does not allow links, e-mail addresses or phone numbers: remove them from the message."
+    },
+    "search": {
+      "label": "Search conversations",
+      "placeholder": "Search by guest, code or property"
+    },
+    "state": {
+      "check": "Check",
+      "edit": "Edit",
+      "error": "Not sent",
+      "errorHint": "The channel did not accept the message.",
+      "needsVerification": "Needs checking",
+      "needsVerificationHint": "We cannot tell whether the channel received it. Check before writing it again.",
+      "retry": "Try again",
+      "sending": "Sending",
+      "sent": "Sent"
+    },
+    "template": {
+      "channel": "Channel templates",
+      "channelEmpty": "The channel has no templates for this conversation.",
+      "channelHint": "They are read only: you copy them into the message and change them as you like.",
+      "channelUnavailable": "The channel templates are not available right now.",
+      "empty": "You have no message templates yet.",
+      "loadError": "I cannot load the templates.",
+      "loading": "Loading the templates…",
+      "mine": "Your templates",
+      "renderError": "I cannot prepare the template for this conversation.",
+      "tooLong": "With the template the message is over {{max}} characters: shorten the text and try again."
+    },
+    "thread": {
+      "archived": "Archived",
+      "backToList": "Back to the messages",
+      "closed": "Closed",
+      "earlier": "You see the latest messages of the conversation here.",
+      "empty": "No messages yet. Write first.",
+      "fileOnly": "Only an attachment",
+      "loadError": "I cannot load the conversation.",
+      "loading": "Loading the conversation…",
+      "logLabel": "Messages with {{name}}",
+      "notFound": "Conversation not found",
+      "notFoundHint": "The address is not right, or the conversation is not one of your properties'.",
+      "refreshError": "I cannot refresh the conversation: what you see may not be the latest message.",
+      "request": "Request",
+      "sender": {
+        "assistant": "CasaZen assistant",
+        "guest": "Guest",
+        "you": "You"
+      },
+      "title": "Conversation",
+      "translate": "Translate",
+      "unassigned": "Property to link"
+    },
+    "translate": {
+      "error": "I cannot translate right now. Try again.",
+      "hide": "Hide the translation",
+      "unavailable": "Translation is not available at the moment.",
+      "use": "Use the translation"
+    }
+  },
   "nav": {
     "accountHome": "Home",
     "people": "People",
@@ -10401,6 +10585,7 @@
     "suppliers": "Suppliers",
     "trustedSuppliers": "Trusted Suppliers",
     "guests": "Guests",
+    "messages": "Messages",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "ai": "AI configuration",
@@ -10458,7 +10643,9 @@
       "compliance_one": "{{count}} duty with a risk of penalty",
       "compliance_other": "{{count}} duties with a risk of penalty",
       "activities_one": "{{count}} urgent task",
-      "activities_other": "{{count}} urgent tasks"
+      "activities_other": "{{count}} urgent tasks",
+      "messages_one": "{{count}} unread message",
+      "messages_other": "{{count}} unread messages"
     },
     "activities": "Activities",
     "inviteQr": "Invite QR codes",

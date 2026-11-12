@@ -121,6 +121,8 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
     ['short-rent', '/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
     ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/vetrina'],
+    ['short-rent', '/app/short-rent/messages', '/app/short-rent/bookings'],
+    ['short-rent', '/app/short-rent/messages/ota%3A6f1c9a52-1111-4222-8333-944455556666', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/guests', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/bookings'],
     // The CRM (behind its flag) is an entry of "Altro" of its own, not a tab of Prenotazioni.

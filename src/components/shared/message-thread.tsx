@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,13 +29,20 @@ export interface ThreadItem {
   status?: 'sending' | 'failed';
 }
 
-interface MessageThreadProps {
-  items: ThreadItem[];
+interface MessageThreadProps<T extends ThreadItem = ThreadItem> {
+  items: T[];
   /** Accessible name of the log. */
   label: string;
   emptyText: string;
   /** Sends a message that failed again (the same one, with the same key). */
   onRetry?: (id: string) => void;
+  /**
+   * Draws an item itself, where the bubble has more than text (the state of delivery of a message of a channel, its file, its translation: the
+   * hub of the messages). The log around it, and what it does with the scroll, stay the same.
+   */
+  renderItem?: (item: T) => ReactNode;
+  /** Classes added to the log, for a page that gives it more room than the 20 rem of a drawer (`max-h-[60vh]`). */
+  className?: string;
 }
 
 /**
@@ -43,7 +50,7 @@ interface MessageThreadProps {
  * and the host's screens show the same thread with the same component. It keeps the newest message in view when the reader was at the
  * bottom, and leaves the scroll alone when the reader scrolled up; it never takes the focus.
  */
-export function MessageThread({ items, label, emptyText, onRetry }: MessageThreadProps) {
+export function MessageThread<T extends ThreadItem = ThreadItem>({ items, label, emptyText, onRetry, renderItem, className }: MessageThreadProps<T>) {
   const { t, i18n } = useTranslation();
   const logRef = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
@@ -65,13 +72,15 @@ export function MessageThread({ items, label, emptyText, onRetry }: MessageThrea
         const log = event.currentTarget;
         atBottom.current = log.scrollHeight - log.scrollTop - log.clientHeight < 48;
       }}
-      className="max-h-80 min-h-24 space-y-3 overflow-y-auto rounded-md border bg-muted/30 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={cn('max-h-80 min-h-24 space-y-3 overflow-y-auto rounded-md border bg-muted/30 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
       data-testid="message-thread"
     >
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyText}</p>
       ) : (
-        items.map((item) => (
+        items.map((item) => renderItem ? (
+          <Fragment key={item.id}>{renderItem(item)}</Fragment>
+        ) : (
           <div
             key={item.id}
             className={cn('flex flex-col gap-1', item.mine ? 'items-end' : 'items-start')}

@@ -19,6 +19,7 @@ const PILL_COLOR: Record<NavCountKey, string> = {
   supplierRequests: 'bg-primary text-primary-foreground',
   compliance: 'bg-destructive text-destructive-foreground',
   activities: 'bg-destructive text-destructive-foreground',
+  messages: 'bg-primary text-primary-foreground',
 };
 
 /**
