@@ -423,6 +423,10 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
 
+      // «Ti serve la fattura?» (FIS-01) is optional: the guest goes on without an answer and nothing about the invoice is sent.
+      await expect(page.getByTestId('checkin-invoice-step')).toBeVisible();
+      await page.getByRole('button', { name: /Avanti|Next/i }).click();
+
       // The last step shows the privacy notice first: moving to it must not submit the form.
       await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
       await expect(page.getByTestId('checkin-success')).toHaveCount(0);

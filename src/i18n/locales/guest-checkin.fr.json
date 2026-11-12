@@ -232,6 +232,89 @@
       "HeadOfGroup": "Chef de groupe",
       "SingleGuest": "Invité individuel"
     },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "Ville",
+          "civic": "Numéro",
+          "legend": "Adresse",
+          "postalCode": "Code postal",
+          "province": "Province",
+          "street": "Rue"
+        },
+        "country": {
+          "label": "Pays de l'adresse",
+          "why": "Si l'adresse n'est pas en Italie, choisissez le pays : le code fiscal et le numéro de TVA ne sont alors pas nécessaires."
+        },
+        "errors": {
+          "countryInvalid": "Choisissez un pays dans la liste.",
+          "fiscalCodeInvalid": "Le code fiscal (codice fiscale) n'est pas valide : vérifiez les 16 caractères (personne) ou les 11 chiffres (entreprise).",
+          "fiscalCodeRequired": "Saisissez le code fiscal (codice fiscale) : il est nécessaire pour établir la facture.",
+          "kindInvalid": "Choisissez à qui la facture est établie.",
+          "pecInvalid": "L'adresse PEC n'est pas valide : vérifiez l'arobase et le domaine.",
+          "postalCodeInvalid": "En Italie, le code postal comporte 5 chiffres. Si l'adresse est à l'étranger, choisissez le pays sous « Autres options ».",
+          "provinceInvalid": "La province s'écrit avec 2 lettres, par exemple RM.",
+          "recipientCodeInvalid": "Le code destinataire comporte 7 lettres ou chiffres.",
+          "tooLong": "Ce texte est trop long.",
+          "vatNumberInvalid": "Le numéro de TVA (partita IVA) n'est pas valide : vérifiez les 11 chiffres.",
+          "vatNumberRequired": "Saisissez le numéro de TVA (partita IVA) ou le code fiscal."
+        },
+        "example": "Exemple :",
+        "fiscalCode": {
+          "label": "Code fiscal (codice fiscale)",
+          "why": "Pourquoi nous le demandons : le gestionnaire du logement en a besoin pour émettre la facture. Pour une entreprise, le numéro de TVA suffit."
+        },
+        "kind": {
+          "Company": {
+            "description": "Une société ou un professionnel avec un numéro de TVA.",
+            "title": "Une entreprise"
+          },
+          "Guest": {
+            "description": "Un particulier, en général vous.",
+            "title": "Une personne"
+          },
+          "legend": "À qui la facture doit-elle être établie ?"
+        },
+        "more": {
+          "hint": "En général, ils ne servent pas : si vous ne savez pas ce que c'est, laissez-les vides.",
+          "label": "Autres options"
+        },
+        "name": {
+          "Company": "Raison sociale",
+          "Guest": "Prénom et nom"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Pourquoi nous le demandons : seulement si la facture doit être envoyée à une adresse PEC (courriel certifié)."
+        },
+        "sdiRecipientCode": {
+          "label": "Code destinataire",
+          "why": "Pourquoi nous le demandons : c'est le code avec lequel une entreprise reçoit les factures électroniques. Il comporte 7 lettres ou chiffres : si vous ne le connaissez pas, laissez-le vide."
+        },
+        "vatNumber": {
+          "label": "Numéro de TVA (partita IVA)",
+          "why": "Pourquoi nous le demandons : il est nécessaire pour établir une facture à une entreprise ou à un professionnel."
+        }
+      },
+      "fieldsHint": "Si vous saisissez vos données, le code fiscal est nécessaire (ou le numéro de TVA pour une entreprise). Si vous ne les avez pas maintenant, laissez tout vide : le gestionnaire du logement vous les demandera.",
+      "intro": "Facultatif : vous pouvez passer cette étape. Si vous avez besoin d'une facture, indiquez à qui l'établir : le gestionnaire du logement en a besoin pour émettre le document.",
+      "no": {
+        "description": "Continuez : le check-in ne change pas.",
+        "title": "Non, merci"
+      },
+      "onFile": {
+        "body": "Le gestionnaire du logement les a déjà. Si quelque chose a changé, vous pouvez les envoyer de nouveau : il les vérifiera.",
+        "keep": "Garder celles que nous avons",
+        "replace": "Envoyer d'autres données",
+        "title": "Nous avons déjà vos données de facturation"
+      },
+      "question": "Avez-vous besoin d'une facture ?",
+      "title": "Avez-vous besoin d'une facture ?",
+      "yes": {
+        "description": "Indiquez à qui l'établir. Si vous n'avez pas les données maintenant, le gestionnaire du logement vous les demandera.",
+        "title": "Oui, j'ai besoin d'une facture"
+      }
+    },
     "language": {
       "label": "Langue",
       "loadFailed": "Nous n'avons pas pu charger cette langue : la page reste dans la langue précédente.",

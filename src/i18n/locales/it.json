@@ -3377,6 +3377,89 @@
       "HeadOfGroup": "Capogruppo",
       "SingleGuest": "Ospite singolo"
     },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "Città",
+          "civic": "Civico",
+          "legend": "Indirizzo",
+          "postalCode": "CAP",
+          "province": "Provincia",
+          "street": "Via o piazza"
+        },
+        "country": {
+          "label": "Paese dell'indirizzo",
+          "why": "Se l'indirizzo non è in Italia, scegli il paese: in quel caso codice fiscale e partita IVA non servono."
+        },
+        "errors": {
+          "countryInvalid": "Scegli un paese dall'elenco.",
+          "fiscalCodeInvalid": "Il codice fiscale non è valido: controlla i 16 caratteri (persona) o le 11 cifre (azienda).",
+          "fiscalCodeRequired": "Scrivi il codice fiscale: serve per intestare la fattura.",
+          "kindInvalid": "Scegli a chi intestare la fattura.",
+          "pecInvalid": "L'indirizzo PEC non è valido: controlla la chiocciola e il dominio.",
+          "postalCodeInvalid": "In Italia il CAP ha 5 cifre. Se l'indirizzo è all'estero, scegli il paese in «Altre opzioni».",
+          "provinceInvalid": "La provincia si scrive con 2 lettere, per esempio RM.",
+          "recipientCodeInvalid": "Il codice destinatario ha 7 lettere o cifre.",
+          "tooLong": "Questo testo è troppo lungo.",
+          "vatNumberInvalid": "La partita IVA non è valida: controlla le 11 cifre.",
+          "vatNumberRequired": "Scrivi la partita IVA oppure il codice fiscale."
+        },
+        "example": "Esempio:",
+        "fiscalCode": {
+          "label": "Codice fiscale",
+          "why": "Perché lo chiediamo: il gestore della struttura ne ha bisogno per emettere la fattura. Per un'azienda basta la partita IVA."
+        },
+        "kind": {
+          "Company": {
+            "description": "Una società o un professionista con partita IVA.",
+            "title": "Un'azienda"
+          },
+          "Guest": {
+            "description": "Un privato, di solito tu.",
+            "title": "Una persona"
+          },
+          "legend": "A chi va intestata la fattura?"
+        },
+        "more": {
+          "hint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
+          "label": "Altre opzioni"
+        },
+        "name": {
+          "Company": "Ragione sociale",
+          "Guest": "Nome e cognome"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Perché lo chiediamo: serve solo se la fattura va inviata a una PEC (posta elettronica certificata)."
+        },
+        "sdiRecipientCode": {
+          "label": "Codice destinatario",
+          "why": "Perché lo chiediamo: è il codice con cui un'azienda riceve le fatture elettroniche. Sono 7 lettere o cifre: se non lo sai, lascialo vuoto."
+        },
+        "vatNumber": {
+          "label": "Partita IVA",
+          "why": "Perché lo chiediamo: serve a intestare la fattura a un'azienda o a un professionista."
+        }
+      },
+      "fieldsHint": "Se scrivi i tuoi dati, serve il codice fiscale (o la partita IVA per un'azienda). Se ora non li hai, lascia tutto vuoto: li chiederà il gestore della struttura.",
+      "intro": "Facoltativo: puoi saltare questo passaggio. Se ti serve la fattura, dicci a chi intestarla: il gestore della struttura ne ha bisogno per emettere il documento.",
+      "no": {
+        "description": "Vai avanti: il check-in non cambia.",
+        "title": "No, grazie"
+      },
+      "onFile": {
+        "body": "Il gestore della struttura li ha già. Se qualcosa è cambiato, puoi inviarli di nuovo: li controllerà.",
+        "keep": "Tieni quelli che abbiamo",
+        "replace": "Invia dati diversi",
+        "title": "Abbiamo già i tuoi dati di fatturazione"
+      },
+      "question": "Ti serve la fattura?",
+      "title": "Ti serve la fattura?",
+      "yes": {
+        "description": "Scrivi a chi intestarla. Se ora non hai i dati, te li chiederà il gestore della struttura.",
+        "title": "Sì, mi serve la fattura"
+      }
+    },
     "language": {
       "label": "Lingua",
       "loadFailed": "Non siamo riusciti a caricare questa lingua: la pagina resta in quella di prima.",
@@ -12984,6 +13067,7 @@
         "steps": [
           "Apri Pagamenti o il dettaglio della prenotazione per controllare importi e stato. Distingui un pagamento in attesa da uno riuscito e verifica l’esito di un eventuale rimborso.",
           "Le modalità disponibili dipendono dalla configurazione dell’organizzazione e del sito di prenotazione. Non considerare un pagamento ricevuto solo perché esiste una prenotazione o è stata inviata una richiesta.",
+          "Nella scheda Pagamento della prenotazione trovi i Dati di fatturazione: a chi va intestata la fattura e da dove arrivano i dati (dal tuo channel manager, dall’ospite al check-in, modificati da te). Controlli o correggi i dati dal pulsante della sezione; chi non gestisce i pagamenti li legge senza poterli cambiare. L’ospite può chiedere la fattura nel check-in e scrivere i suoi dati: se li lasci vuoti, aggiungili tu.",
           "Per le prenotazioni dirette compatibili, apri la conversazione dal dettaglio e invia il messaggio all’ospite. La conversazione resta scrivibile fino al settimo giorno dopo il check-out; dopo diventa di sola lettura.",
           "La conversazione non è una chat in tempo reale e non invia risposte automatiche. Non inviare dati di carte, IBAN o documenti nel testo."
         ]

@@ -232,6 +232,89 @@
       "HeadOfGroup": "Gruppenleiter",
       "SingleGuest": "Einzelgast"
     },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "Ort",
+          "civic": "Hausnummer",
+          "legend": "Adresse",
+          "postalCode": "Postleitzahl",
+          "province": "Provinz",
+          "street": "Straße"
+        },
+        "country": {
+          "label": "Land der Adresse",
+          "why": "Liegt die Adresse nicht in Italien, wählen Sie das Land: Dann werden Steuernummer und Umsatzsteuer-ID nicht benötigt."
+        },
+        "errors": {
+          "countryInvalid": "Wählen Sie ein Land aus der Liste.",
+          "fiscalCodeInvalid": "Die Steuernummer (codice fiscale) ist ungültig: Prüfen Sie die 16 Zeichen (Person) oder die 11 Ziffern (Firma).",
+          "fiscalCodeRequired": "Geben Sie die Steuernummer (codice fiscale) an: Sie wird für die Rechnung benötigt.",
+          "kindInvalid": "Wählen Sie, auf wen die Rechnung ausgestellt wird.",
+          "pecInvalid": "Die PEC-Adresse ist ungültig: Prüfen Sie das @-Zeichen und die Domain.",
+          "postalCodeInvalid": "In Italien hat die Postleitzahl 5 Ziffern. Liegt die Adresse im Ausland, wählen Sie das Land unter „Weitere Optionen“.",
+          "provinceInvalid": "Die Provinz wird mit 2 Buchstaben geschrieben, zum Beispiel RM.",
+          "recipientCodeInvalid": "Der Empfängercode hat 7 Buchstaben oder Ziffern.",
+          "tooLong": "Dieser Text ist zu lang.",
+          "vatNumberInvalid": "Die Umsatzsteuer-ID (partita IVA) ist ungültig: Prüfen Sie die 11 Ziffern.",
+          "vatNumberRequired": "Geben Sie die Umsatzsteuer-ID (partita IVA) oder die Steuernummer an."
+        },
+        "example": "Beispiel:",
+        "fiscalCode": {
+          "label": "Steuernummer (codice fiscale)",
+          "why": "Warum wir fragen: Der Vermieter braucht sie, um die Rechnung auszustellen. Für eine Firma genügt die Umsatzsteuer-ID."
+        },
+        "kind": {
+          "Company": {
+            "description": "Eine Firma oder ein Freiberufler mit Umsatzsteuer-ID.",
+            "title": "Eine Firma"
+          },
+          "Guest": {
+            "description": "Eine Privatperson, meist Sie selbst.",
+            "title": "Eine Person"
+          },
+          "legend": "Auf wen soll die Rechnung ausgestellt werden?"
+        },
+        "more": {
+          "hint": "Meist werden sie nicht benötigt: Wenn Sie nicht wissen, was sie sind, lassen Sie sie leer.",
+          "label": "Weitere Optionen"
+        },
+        "name": {
+          "Company": "Firmenname",
+          "Guest": "Vor- und Nachname"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Warum wir fragen: nur wenn die Rechnung an eine PEC-Adresse (zertifizierte E-Mail) gehen soll."
+        },
+        "sdiRecipientCode": {
+          "label": "Empfängercode",
+          "why": "Warum wir fragen: Mit diesem Code empfängt eine Firma elektronische Rechnungen. Er hat 7 Buchstaben oder Ziffern: Wenn Sie ihn nicht kennen, lassen Sie ihn leer."
+        },
+        "vatNumber": {
+          "label": "Umsatzsteuer-ID (partita IVA)",
+          "why": "Warum wir fragen: Sie wird benötigt, um die Rechnung auf eine Firma oder einen Freiberufler auszustellen."
+        }
+      },
+      "fieldsHint": "Wenn Sie Ihre Daten angeben, wird die Steuernummer benötigt (bei einer Firma die Umsatzsteuer-ID). Haben Sie sie gerade nicht, lassen Sie alles leer: Der Vermieter fragt später danach.",
+      "intro": "Freiwillig: Sie können diesen Schritt überspringen. Wenn Sie eine Rechnung benötigen, geben Sie an, auf wen sie ausgestellt werden soll: Der Vermieter braucht das, um das Dokument auszustellen.",
+      "no": {
+        "description": "Weiter: Der Check-in bleibt unverändert.",
+        "title": "Nein, danke"
+      },
+      "onFile": {
+        "body": "Der Vermieter hat sie schon. Hat sich etwas geändert, können Sie sie erneut senden: Der Vermieter prüft sie.",
+        "keep": "Vorhandene Daten behalten",
+        "replace": "Andere Daten senden",
+        "title": "Wir haben Ihre Rechnungsdaten bereits"
+      },
+      "question": "Benötigen Sie eine Rechnung?",
+      "title": "Benötigen Sie eine Rechnung?",
+      "yes": {
+        "description": "Geben Sie an, auf wen sie ausgestellt wird. Haben Sie die Daten gerade nicht, fragt der Vermieter später danach.",
+        "title": "Ja, ich benötige eine Rechnung"
+      }
+    },
     "language": {
       "label": "Sprache",
       "loadFailed": "Diese Sprache konnte nicht geladen werden: Die Seite bleibt in der bisherigen Sprache.",

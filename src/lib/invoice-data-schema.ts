@@ -275,6 +275,19 @@ export function invoiceFieldErrorsOf(failures: readonly InvoiceDataFailure[]): I
   return errors;
 }
 
+/**
+ * The failure of each field from the errors of a form library, which keeps the message of each field: here the code of the failure, as the schema
+ * and a 422 of the server both write it. A message that is no code of the invoice data (written by something else) is left out.
+ */
+export function invoiceFieldErrorsOfForm(errors: Partial<Record<InvoiceDataField, { message?: string } | undefined>> | undefined): InvoiceDataFieldErrors {
+  const failures: InvoiceDataFieldErrors = {};
+  for (const field of INVOICE_DATA_FIELDS) {
+    const message = errors?.[field]?.message;
+    if (isErrorCode(message)) failures[field] = message;
+  }
+  return failures;
+}
+
 /** The failures of a Zod error of the schema above (the path is the field, the message the code). */
 export function invoiceFailuresOfZod(error: z.ZodError): InvoiceDataFailure[] {
   return error.issues.flatMap((issue) => {
