@@ -10506,6 +10506,7 @@
     "properties": "Properties",
     "profile": "Profile",
     "notificationPreferences": "Notifications",
+    "onboardingPlan": "Start with CasaZen",
     "plan": "Plan",
     "billing": "Billing",
     "bookings": "Bookings",
@@ -11118,6 +11119,174 @@
     "readDocument": "Read the document",
     "documentInPreparation": "text being prepared",
     "readSubprocessors": "See the full list of subprocessors"
+  },
+  "onboardingPlan": {
+    "actions": {
+      "doNow": "Do it now",
+      "group": "Exit and help",
+      "later": "I'll do it later",
+      "resume": "Resume"
+    },
+    "defer": {
+      "adminOnly": "Only the organization administrator can postpone a step.",
+      "confirm": "Confirm",
+      "description": "\"{{part}}\" goes to your to-do list, with a reminder.",
+      "error": "We could not postpone this step. Try again.",
+      "legend": "When do you want the reminder?",
+      "notDeferrable": "It is needed for the next steps.",
+      "options": {
+        "evening": "This evening at 8:00 pm",
+        "nextWeek": "In a week, at 9:00 am",
+        "tomorrow": "Tomorrow at 9:00 am"
+      },
+      "title": "When should we remind you?",
+      "toast": "You'll find it in your to-do list"
+    },
+    "description": "One path, from zero to everything active.",
+    "empty": "There is nothing to show here yet.",
+    "exit": {
+      "action": "Save and exit",
+      "error": "We could not save. Try again shortly.",
+      "saved": "Saved. What is left is in your to-do list."
+    },
+    "help": {
+      "action": "Help"
+    },
+    "listLabel": "The steps to activate CasaZen",
+    "loadError": "We could not load the plan.",
+    "loading": "Loading the plan...",
+    "needs": {
+      "alloggiatiCredentials": "Your Alloggiati Web credentials, with the web service key",
+      "fiscalData": "The fiscal data of whoever issues the documents",
+      "istatCredentials": "The ISTAT credentials of your region",
+      "lockCode": "The code of the lock or of the key box",
+      "otaAccess": "Access to your accounts on the booking portals, such as Airbnb and Booking.com"
+    },
+    "needsPanel": {
+      "intro": "Keep them at hand: we guide you one step at a time.",
+      "title": "What you need"
+    },
+    "nextStep": {
+      "continue": "Continue",
+      "kicker": "Next step",
+      "later": "Later",
+      "laterDone": "Done: you will find it in your to-do list.",
+      "laterError": "We could not put it in your to-do list. Try again.",
+      "laterToast": "You'll find it in your to-do list",
+      "why": {
+        "checkInCompliance": "Online check-in and legal obligations spare you fines and phone calls.",
+        "checkListings": "So you know the listings on the channels are complete.",
+        "connectChannels": "So the bookings and calendars of your channels reach CasaZen.",
+        "fiscalDocuments": "Decide who issues the fiscal documents of the bookings.",
+        "messagesAi": "Choose how and when to write to your guests.",
+        "pricesCalendar": "Prices and rules are set once and apply to every channel."
+      }
+    },
+    "parts": {
+      "activation": {
+        "title": "Summary and activation",
+        "what": "Check everything, run the final test and switch the flows on."
+      },
+      "channels": {
+        "title": "Your channels",
+        "what": "Connect each portal, match the listings and import bookings and calendars."
+      },
+      "compliance": {
+        "title": "Legal obligations",
+        "what": "Who sends Alloggiati Web and ISTAT, tourist tax and CIN."
+      },
+      "fiscalDocuments": {
+        "title": "Fiscal documents",
+        "what": "Who issues them, the tax regime and the issuer data."
+      },
+      "identification": {
+        "title": "Identification and access",
+        "what": "Guest verification, consent texts, lock code and the QR to print."
+      },
+      "listings": {
+        "title": "Check your listings",
+        "what": "Check the content imported from each channel: we only ask for what is missing."
+      },
+      "messagesAi": {
+        "title": "Messages and AI",
+        "what": "Alert preferences, how to write to guests and scheduled messages."
+      },
+      "octorateConnection": {
+        "title": "Connect Octorate",
+        "what": "Give consent to your Octorate account, or have your properties created there."
+      },
+      "partners": {
+        "title": "Connected services",
+        "what": "If you like, connect the services of the marketplace."
+      },
+      "pricesRules": {
+        "title": "Prices and rules",
+        "what": "Base price, rate plans, restrictions and conditions."
+      },
+      "properties": {
+        "title": "Your properties",
+        "what": "Match the Octorate properties to the CasaZen ones, or create the missing ones."
+      }
+    },
+    "path": {
+      "all": "All steps",
+      "continue": "Continue",
+      "next": "Next: {{step}}",
+      "progress": "{{done}} of {{total}}",
+      "progressLabel": "Progress of the path",
+      "steps": {
+        "checkInCompliance": {
+          "title": "Online check-in and legal obligations"
+        },
+        "checkListings": {
+          "title": "Check your listings"
+        },
+        "connectChannels": {
+          "title": "Connect your channels"
+        },
+        "fiscalDocuments": {
+          "title": "Fiscal documents"
+        },
+        "messagesAi": {
+          "title": "Messages and AI"
+        },
+        "pricesCalendar": {
+          "title": "Prices and calendar"
+        }
+      },
+      "title": "Start with CasaZen"
+    },
+    "progress": "{{done}} of {{total}}",
+    "reasons": {
+      "access_code_missing": "At least one property has no access code yet.",
+      "channel_content_to_fix": "A channel rejected the content of a listing: it needs to be fixed.",
+      "channels_missing": "At least one property is not on any channel yet.",
+      "cin_missing_or_invalid": "The CIN of at least one property is missing or not valid.",
+      "connection_lost": "The connection with Octorate no longer works: it needs to be made again.",
+      "connection_missing": "You have not connected Octorate yet.",
+      "existing_ota_import_incomplete": "We are still reading the listings you already have on the portals.",
+      "flows_incomplete": "Something is still to complete in one of the flows of a property.",
+      "identification_off": "Guest identification is not switched on in this installation.",
+      "inventory_scenario_missing": "Tell us first whether your properties are already on Octorate, on the portals, or new.",
+      "mapping_unavailable": "We cannot read the matches with Octorate right now. Try again shortly.",
+      "mapping_unconfirmed": "The match between the listings on Octorate and your properties is not confirmed yet.",
+      "no_property": "There are no properties to set up yet.",
+      "not_provided": "This step is not available yet.",
+      "price_missing": "At least one property has no base price.",
+      "required_part_not_done": "Complete first: {{parts}}.",
+      "sender_missing": "Nobody is set to send the Alloggiati Web and ISTAT communications of at least one property.",
+      "tax_rate_missing": "The tourist tax of the comune of at least one property is missing.",
+      "unknown": "This step is not complete yet."
+    },
+    "states": {
+      "blocked": "Waiting",
+      "deferred": "Postponed",
+      "deferredUntil": "Postponed to {{date}}",
+      "done": "Done",
+      "notAvailable": "Not available",
+      "open": "To do"
+    },
+    "title": "Start with CasaZen"
   },
   "org": {
     "tier": {
