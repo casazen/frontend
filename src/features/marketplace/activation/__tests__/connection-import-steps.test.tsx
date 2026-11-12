@@ -208,6 +208,23 @@ describe('the connection step: what goes wrong', () => {
     await onStep('connection');
   });
 
+  it('ConnectionStep_ChannelManagerDoesNotShowTheConnectionYet_IsSaidAndCanBeTriedAgainNeverWaitedForInSilence', async () => {
+    givenTheHost();
+    vi.mocked(startActivation).mockResolvedValueOnce(state({ connectionFound: false, connectionStatus: null }));
+    vi.mocked(importActivation).mockReturnValue(new Promise(() => undefined));
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=connection`);
+
+    expect(await screen.findByTestId('activation-connection-prop-1-unconfirmed', {}, WAIT)).toHaveTextContent(i18n.t('marketplace.activation.connection.unconfirmed'));
+    expect(row('prop-1')).toHaveAttribute('data-state', 'unconfirmed');
+    // It is not asked again by itself, and the wizard does not go on.
+    expect(startActivation).toHaveBeenCalledTimes(1);
+    await onStep('connection');
+
+    fireEvent.click(screen.getByTestId('activation-connection-prop-1-retry'));
+    await onStep('import');
+    expect(startActivation).toHaveBeenCalledTimes(2);
+  });
+
   it('ConnectionStep_FailureOfTheServerThatIsNotARefusal_CanBeTriedAgain', async () => {
     givenTheHost();
     vi.mocked(startActivation).mockRejectedValueOnce(axiosError(502, { code: 'octorate_unavailable' }));

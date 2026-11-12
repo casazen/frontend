@@ -4,7 +4,8 @@ import i18n from '@/i18n/config';
 import { getActivationPlan } from '@/api/marketplace.api';
 import { propertiesApi } from '@/api/properties.api';
 import { CHANNELS_PAGE_PATH } from '../../lib/marketplace-paths';
-import { ACTIVATION_PATH, WAIT, axiosError, currentLocation, onStep, plan, primaryButton, property, renderActivation } from './activation-fixtures';
+import { readWizardDraft } from '@/lib/wizard-draft';
+import { ACTIVATION_PATH, SCOPE, WAIT, WIZARD_DRAFT_ID, axiosError, currentLocation, onStep, plan, primaryButton, property, renderActivation } from './activation-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/queries/use-users', async (importOriginal) => ({
@@ -67,6 +68,20 @@ describe('the first step: which properties', () => {
 
     await waitFor(() => expect(screen.getByTestId('activation-property-prop-2')).toBeChecked(), WAIT);
     expect(screen.getByTestId('activation-property-prop-1')).not.toBeChecked();
+  });
+
+  it('PropertyStep_PropertyOfTheAddressThatIsNotLinked_IsTakenOutOfTheChoiceAndNotChosenInSilence', async () => {
+    givenProperties([ROSA, AZZURRA, property('prop-3', 'Casa Verde')], ['prop-3']);
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-3`);
+
+    // The property of the address cannot be chosen: it is not shown as chosen and is not counted, and the step does not go on with it.
+    await screen.findByTestId('activation-not-linked-prop-3', {}, WAIT);
+    await waitFor(() => expect(screen.getByTestId('activation-property-count')).toHaveTextContent(i18n.t('marketplace.activation.property.selected', { count: 0 })), WAIT);
+    // It is also gone from the answers of the wizard (the draft says so), not only from the screen.
+    await waitFor(() => expect(readWizardDraft(WIZARD_DRAFT_ID, SCOPE)?.values.propertyIds).toEqual([]), WAIT);
+    fireEvent.click(primaryButton());
+    expect((await screen.findAllByText(i18n.t('marketplace.activation.errors.noProperty'), {}, WAIT)).length).toBeGreaterThan(0);
+    await onStep('property');
   });
 
   it('PropertyStep_ContinueWithNoPropertyChosen_StaysAndAsksForOne', async () => {

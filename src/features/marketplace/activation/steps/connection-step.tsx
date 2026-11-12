@@ -26,7 +26,7 @@ import { ChoosePropertyFirst } from './choose-property-first';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-type RowState = 'queued' | 'running' | 'done' | 'needsAccess' | 'failed';
+type RowState = 'queued' | 'running' | 'done' | 'needsAccess' | 'failed' | 'unconfirmed';
 
 /** The words of each state; the keys are written out so that the test of the locale files finds a missing translation. */
 const STATE_TEXT: Readonly<Record<RowState, string>> = {
@@ -35,9 +35,10 @@ const STATE_TEXT: Readonly<Record<RowState, string>> = {
   done: 'marketplace.activation.connection.state.done',
   needsAccess: 'marketplace.activation.connection.state.needsAccess',
   failed: 'marketplace.activation.connection.state.failed',
+  unconfirmed: 'marketplace.activation.connection.state.unconfirmed',
 };
 
-const ROW_ICON = { queued: Circle, running: Loader2, done: CheckCircle2, needsAccess: AlertTriangle, failed: AlertTriangle } as const;
+const ROW_ICON = { queued: Circle, running: Loader2, done: CheckCircle2, needsAccess: AlertTriangle, failed: AlertTriangle, unconfirmed: AlertTriangle } as const;
 
 interface ConnectionStepProps {
   context: ActivationContext;
@@ -79,7 +80,7 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
   // Nothing starts before the plan of each chosen property was read, and the state of the activations that exist.
   const ready = requirements !== null && propertyIds.every((propertyId, index) => plans.has(propertyId) && (activationIds[index] === null || !states[index].isPending));
 
-  const { running, failures, retry, ran } = useSequentialRun({
+  const { running, failures, retry, ran, settled } = useSequentialRun({
     ids: propertyIds,
     ready,
     isDone: (propertyId) => connectedAt(propertyIds.indexOf(propertyId)) || lacksAccess(propertyId),
@@ -129,6 +130,8 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
     if (connectedAt(index)) return 'done';
     if (failures.has(propertyId)) return 'failed';
     if (running === propertyId) return 'running';
+    // Asked, and the channel manager does not show the connection yet (its list may lag, or the connection is gone): said, never waited for in silence.
+    if (settled.has(propertyId)) return 'unconfirmed';
     return lacksAccess(propertyId) ? 'needsAccess' : 'queued';
   };
 
@@ -164,15 +167,20 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
                 </div>
               ) : null}
               {state === 'needsAccess' ? <p className="text-sm">{t('marketplace.activation.connection.needsAccess')}</p> : null}
+              {state === 'unconfirmed' ? (
+                <p className="text-sm" role="alert" data-testid={`activation-connection-${propertyId}-unconfirmed`}>
+                  {t('marketplace.activation.connection.unconfirmed')}
+                </p>
+              ) : null}
 
-              {state === 'failed' || state === 'needsAccess' ? (
+              {state === 'failed' || state === 'needsAccess' || state === 'unconfirmed' ? (
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   {canFix ? (
                     <Button type="button" size="sm" className={TOUCH_TARGET} onClick={() => onFix(fixAt)} data-testid={`activation-connection-${propertyId}-fix`}>
                       {t(fixAt === ACTIVATION_STEP.property ? 'marketplace.activation.connection.fixProperty' : 'marketplace.activation.connection.fix')}
                     </Button>
                   ) : null}
-                  {state === 'failed' && !refused ? (
+                  {(state === 'failed' && !refused) || state === 'unconfirmed' ? (
                     <Button
                       type="button"
                       size="sm"

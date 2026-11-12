@@ -19,6 +19,8 @@ interface SequentialRun {
   failures: ReadonlyMap<string, unknown>;
   /** Runs a failed item once more (and, after it, the ones that wait). */
   retry: (id: string) => void;
+  /** The items whose run has ended in this visit, whether it worked or not: what tells «not yet tried» from «tried, and the server does not show it». */
+  settled: ReadonlySet<string>;
   /** This visit has run something (it worked or it failed): what a step that goes on by itself waits for, so that a visit that only finds the work done does not jump forward. */
   ran: boolean;
 }
@@ -34,11 +36,11 @@ interface SequentialRun {
 export function useSequentialRun({ ids, ready, isDone, run }: SequentialRunOptions): SequentialRun {
   const tried = useRef(new Set<string>());
   const [failures, setFailures] = useState<ReadonlyMap<string, unknown>>(() => new Map());
-  const [ran, setRan] = useState(false);
+  const [settled, setSettled] = useState<ReadonlySet<string>>(() => new Set());
   const { mutate, isPending, variables } = useMutation({
     mutationFn: run,
     onError: (error, id) => setFailures((previous) => new Map(previous).set(id, error)),
-    onSettled: () => setRan(true),
+    onSettled: (_data, _error, id) => setSettled((previous) => new Set(previous).add(id)),
   });
 
   useEffect(() => {
@@ -51,6 +53,11 @@ export function useSequentialRun({ ids, ready, isDone, run }: SequentialRunOptio
 
   const retry = (id: string) => {
     tried.current.delete(id);
+    setSettled((previous) => {
+      const next = new Set(previous);
+      next.delete(id);
+      return next;
+    });
     setFailures((previous) => {
       const next = new Map(previous);
       next.delete(id);
@@ -58,5 +65,5 @@ export function useSequentialRun({ ids, ready, isDone, run }: SequentialRunOptio
     });
   };
 
-  return { running: isPending ? (variables ?? null) : null, failures, retry, ran };
+  return { running: isPending ? (variables ?? null) : null, failures, retry, settled, ran: settled.size > 0 };
 }

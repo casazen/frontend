@@ -85,7 +85,7 @@ interface PropertyStepProps {
  */
 export function PropertyStep({ context }: PropertyStepProps) {
   const { t } = useTranslation();
-  const { control, setValue, formState } = useFormContext<ActivationWizardValues>();
+  const { control, setValue, getValues, formState } = useFormContext<ActivationWizardValues>();
   const chosen = useWatch({ control, name: 'propertyIds' }) ?? [];
   const { properties, plans, channelName } = context;
   const name = channelName ?? t('marketplace.activation.thisChannel');
@@ -97,6 +97,22 @@ export function PropertyStep({ context }: PropertyStepProps) {
     const plan = plans.get(property.id);
     if (plan) (propertyAvailability(plan) === 'ready' ? linked : notLinked).push(property);
   }
+
+  const linkedIds = new Set(linked.map((property) => property.id));
+
+  // A property that cannot be chosen (its plan says it is not linked, or it is no longer in the list: an address or a draft that is older than the list) is taken out of
+  // the choice once the plans are read, so that the person is never asked to uncheck what they cannot see.
+  const staleChoice = context.propertiesStatus === 'ready' && !context.plansPending ? chosen.filter((id) => !linkedIds.has(id)) : [];
+  const staleKey = staleChoice.join('|');
+  useEffect(() => {
+    if (staleKey === '') return;
+    const stale = staleKey.split('|');
+    setValue(
+      'propertyIds',
+      getValues('propertyIds').filter((id) => !stale.includes(id)),
+      { shouldDirty: true },
+    );
+  }, [staleKey, setValue, getValues]);
 
   // With one property that can be chosen and none chosen yet, CasaZen chooses it (UX-04: fill in what it knows). Once: the person may take it away.
   const preselected = useRef(false);
@@ -140,6 +156,7 @@ export function PropertyStep({ context }: PropertyStepProps) {
   if (context.planError) return <PlanProblem context={context} />;
 
   const cannotStart = [...plans.values()].some((plan) => !plan.creatable);
+  const validChoice = chosen.filter((id) => linkedIds.has(id));
 
   const toggle = (propertyId: string, on: boolean) => {
     const next = on ? [...chosen.filter((id) => id !== propertyId), propertyId] : chosen.filter((id) => id !== propertyId);
@@ -194,7 +211,7 @@ export function PropertyStep({ context }: PropertyStepProps) {
 
       {linked.length > 0 ? (
         <p className="text-sm text-muted-foreground" role="status" data-testid="activation-property-count">
-          {t('marketplace.activation.property.selected', { count: chosen.length })}
+          {t('marketplace.activation.property.selected', { count: validChoice.length })}
         </p>
       ) : null}
 

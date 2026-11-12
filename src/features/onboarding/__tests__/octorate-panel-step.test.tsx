@@ -310,6 +310,32 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('channels'));
     });
 
+    it('OctoratePanelStep_AccessToAChannelStartedByTheActivationWizardOfTheMarketplace_GoesBackToItsAccessStepForThePropertyAndTheChannel', async () => {
+      // The step the activation wizard of the marketplace started: the server stored the point it comes back to (named, never carried).
+      server = panelStep({
+        kind: 'channelAccess',
+        propertyId: PROPERTY_ID,
+        channelCode: '142',
+        instructionsKey: 'panelChannelAccess',
+        resume: { wizardType: 'OnboardingActivation', draftEntityId: null, stepCode: 'marketplaceActivationChannel' },
+      });
+      const { win } = fakeWindow();
+      vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);
+      renderPage(`/app/short-rent/onboarding/panel/channel-access?propertyId=${PROPERTY_ID}&channelCode=142`);
+      await screen.findByTestId('panel-step-open');
+      press('panel-step-open');
+      await waitFor(() => expect(phase()).toBe('waiting'));
+
+      server = { ...server, status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null };
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+
+      // The person is led back to the wizard where they were, at the step of the access: not to the part of the plan.
+      expect(await screen.findByTestId('arrived')).toHaveTextContent(`/app/short-rent/marketplace/activate/channel/142?propertyId=${PROPERTY_ID}&step=access`);
+      expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('channels'));
+    });
+
     it('OctoratePanelStep_ResultCasaZenCannotTell_AsksTheQuestionOnlyAfterTheWindowClosedAndNeverBefore', async () => {
       const { win } = await openPanel();
 

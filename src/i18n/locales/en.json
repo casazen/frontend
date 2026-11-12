@@ -10863,8 +10863,10 @@
           "failed": "Not connected",
           "needsAccess": "Details missing",
           "queued": "Waiting",
-          "running": "Connecting…"
+          "running": "Connecting…",
+          "unconfirmed": "Not confirmed yet"
         },
+        "unconfirmed": "Your channel manager does not show the connection yet. Try again in a moment.",
         "working": "Creating the connection"
       },
       "description": "We guide you step by step. You can leave whenever you like with “Save and exit” and pick up where you left off.",

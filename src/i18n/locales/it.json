@@ -10863,8 +10863,10 @@
           "failed": "Non collegato",
           "needsAccess": "Mancano i dati",
           "queued": "In attesa",
-          "running": "Collego…"
+          "running": "Collego…",
+          "unconfirmed": "Non ancora confermato"
         },
+        "unconfirmed": "Il tuo channel manager non mostra ancora il collegamento. Riprova tra poco.",
         "working": "Sto creando il collegamento"
       },
       "description": "Ti accompagniamo passo dopo passo. Puoi uscire quando vuoi con «Salva ed esci» e riprendere da dove eri.",

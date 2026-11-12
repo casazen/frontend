@@ -186,7 +186,8 @@ export function fetchActivationPlan(queryClient: QueryClient, kind: MarketplaceC
 
 /**
  * The state of each activation given (`GET /api/marketplace/activations/{id}`, one read for each; `null` for a property that has none yet): as the channel manager
- * says it, read again every time a step opens and trusted for a while after a step of this wizard has given it. The window gaining the focus does not ask again.
+ * says it, read again when a step opens (unless a step of this wizard gave it a moment ago: that is trusted for a while, the channel manager's list may lag behind a create).
+ * The window gaining the focus does not ask again.
  */
 export function useActivations(ids: ReadonlyArray<string | null | undefined>) {
   return useQueries({
@@ -195,7 +196,7 @@ export function useActivations(ids: ReadonlyArray<string | null | undefined>) {
       queryFn: () => getActivation(id ?? ''),
       enabled: !!id,
       staleTime: ACTIVATION_FRESH_MS,
-      refetchOnMount: 'always' as const,
+      refetchOnMount: true,
       refetchOnWindowFocus: false,
     })),
   });
