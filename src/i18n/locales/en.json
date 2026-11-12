@@ -1293,6 +1293,11 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "assistContextInvalid": "This help request is not about a step we can do for you.",
+      "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
+      "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
+      "channelAccessNotValid": "The access to the portal is not valid: open it again and retry.",
+      "channelConnectionNotFound": "The access is given but we cannot find the portal's connection: check the panel.",
       "crmConfirmationLimitReached": "You have already sent the maximum number of confirmation requests to this address.",
       "crmConfirmationNotRequired": "This contact needs no confirmation: it has no consent to confirm, or it is already confirmed.",
       "crmContactNotFound": "We cannot find this contact any more, or it is not among the properties you have access to.",
@@ -1302,16 +1307,38 @@
       "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
       "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
       "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
+      "d6ChannelFailed": "The portal had a problem: try again shortly.",
+      "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
+      "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
       "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
+      "existingInventoryAccessPending": "No portal has its access yet: finish the step on the panel first.",
+      "existingInventoryChannelNotSupported": "One of the chosen portals is not available for the import.",
+      "existingInventoryChannelsRequired": "Choose at least one portal.",
+      "existingInventoryGroupNotFound": "This group does not exist.",
+      "existingInventoryGroupScenarioMismatch": "The group holds properties in a different situation.",
+      "existingInventoryMappingPending": "First decide for each listing: confirm, import, exclude or leave for later.",
+      "existingInventoryNeedsWholeOrg": "To import the whole inventory you need to be able to see all the properties of the organization.",
+      "existingInventoryNotReady": "The listings have not been imported yet.",
+      "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
+      "existingInventoryTooManyChannels": "You chose too many portals at once.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
+      "inventoryGroupRequired": "The name of the group is missing.",
+      "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
+      "inventoryIntentChangeRefused": "You cannot move to new listings: there is already an import or a mapping for this property.",
+      "inventoryIntentConflict": "Someone changed the same answer in the meantime: try again.",
+      "inventoryIntentDuplicate": "A property is listed twice.",
+      "inventoryScenarioInvalid": "This situation does not exist.",
       "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
       "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
+      "mappingRefreshConflict": "We were already reading the listings: try again in a moment.",
       "marketingConfirmationUnavailable": "We cannot queue the confirmation e-mail. Try again in a few moments.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
+      "octorateExistingInventoryMustImport": "This property already exists on the portals: it has to be imported and matched, not created again.",
       "octorateMappingAlreadyConfirmed": "This listing is already linked to a property.",
       "octorateMappingLinkedToOtherProperty": "This listing has meanwhile been linked to another property. Go back: the list updates by itself.",
       "octorateMappingNotConfirmed": "Before choosing the room, the listing has to be linked to a property.",
@@ -1319,11 +1346,26 @@
       "octorateMappingPropertyTaken": "This property is already linked to another listing. Go back and choose another one.",
       "octorateMappingRefreshConflict": "The listings are already being updated. Try again in a moment.",
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
+      "octorateNotFound": "The channel manager cannot find this listing.",
+      "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
+      "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
+      "octorateRequestRejected": "The channel manager refused the request.",
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
+      "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
+      "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
+      "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
+      "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
+      "panelStepChannelInvalid": "The channel of this step is not valid.",
+      "panelStepKindInvalid": "This kind of step does not exist.",
+      "panelStepNotFound": "This step no longer exists or is not yours.",
+      "panelStepNotValid": "The last check found the connection not valid: open the panel again and retry.",
+      "panelStepResumeInvalid": "We could not save where to resume from. Try again.",
+      "panelStepStateInvalid": "The return from the panel is no longer valid: open the panel again.",
+      "panelStepVerificationRequired": "CasaZen has to check the connection first: wait for the check and try again.",
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
@@ -1332,6 +1374,7 @@
       "noOrgContext": "Your account is not linked to any organization.",
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "reservationImportIncomplete": "We did not read all the reservations: try again.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
       "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
       "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
@@ -1596,6 +1639,24 @@
       "concordatofacileAlreadyPurchased": "The guided form is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
       "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
+      "approvalEditInvalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "approvalItemNotFound": "This item is no longer there, or it is not one you can manage. The list updates on its own.",
+      "approvalItemNotPending": "This item has already been decided or has expired. The list updates on its own.",
+      "approvalOriginActionFailed": "The linked action did not go through: the item stays in the queue and you can try again.",
+      "approvalRejectionReasonRequired": "Write the reason for the rejection (500 characters at most).",
+      "approvalSendAttemptsExhausted": "The channel refused this message several times. Reject the draft or write the answer by hand in the conversation.",
+      "campaignNotPendingApproval": "The campaign is no longer waiting for approval: it was already approved or went back to a draft.",
+      "channelRuleViolation": "Before the booking the channel does not allow links, e-mail addresses or phone numbers: remove them from the text and try again.",
+      "chatNotLicensed": "The license of your channel manager does not include chat with guests: the message cannot be sent from here.",
+      "crmMarketingDisabled": "Campaigns are not active for your organization yet: the approval stays in the queue.",
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
+      "messageTextInvalid": "The message cannot be empty or longer than 2000 characters: edit it and try again.",
+      "octorateChatNotSendable": "The channel no longer lets you write in this conversation.",
+      "octorateMessageError": "The channel did not accept the message.",
+      "octorateRateLimited": "Your channel manager received too many requests: try again in a few minutes.",
+      "octorateRequestRejected": "Your channel manager did not accept the message.",
+      "threadKeyInvalid": "The conversation of this draft is no longer there.",
+      "threadNotFound": "The conversation of this draft is no longer there.",
       "leaseAlreadyTerminated": "This lease has already ended.",
       "leaseBusy": "The lease is busy with another operation. Try again in a few seconds.",
       "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
@@ -1659,24 +1720,80 @@
   "approval": {
     "action": {
       "approve": "Approve",
+      "approveAndSend": "Approve and send",
       "approved": "Item approved",
       "approveFailed": "Failed to approve item",
+      "edit": "Edit",
+      "edited": "Edit saved",
+      "editFailed": "Could not save the edit",
+      "executed": {
+        "already": "It was already approved: nothing was sent again.",
+        "campaign": "Campaign approved and scheduled.",
+        "campaignApproved": "Campaign approved. It has no send date yet: schedule it from the campaigns.",
+        "message": "Message sent to the guest.",
+        "messageQueued": "Your channel manager has the message and will send it to the guest.",
+        "messageVerify": "We do not know whether the channel received the message: check the conversation before you write it again.",
+        "none": "Approved. There was no action linked to run."
+      },
+      "originFailed": "The approval could not be completed: the item stays in the queue.",
+      "originFailedHint": "You can try again, or edit the text and approve it again.",
+      "originUnknown": "Something went wrong. Try again in a moment.",
       "reject": "Reject",
       "rejected": "Item rejected",
-      "rejectFailed": "Failed to reject item"
+      "rejectFailed": "Failed to reject item",
+      "retry": "Try again",
+      "save": "Save",
+      "saveAndApprove": "Save and approve"
     },
     "ai_generated": "AI Generated",
+    "confidence": {
+      "high": "high",
+      "label": "Confidence: {{level}} ({{percent}}%)",
+      "low": "low, check it carefully"
+    },
     "content": "Content",
+    "contentEdited": "Text as you edited it",
+    "contentShowOriginal": "Show the original text",
+    "decided": {
+      "reason": "Reason",
+      "title": "Just decided"
+    },
     "dialog": {
       "reasonLabel": "Rejection reason",
       "reasonPlaceholder": "Describe why you are rejecting this item…",
       "rejectDescription": "Specify the reason for rejecting this item. The reason will be logged.",
       "rejectTitle": "Reject item"
     },
+    "edit": {
+      "bodyLabel": "Campaign text",
+      "campaignHint": "The body of the email, under the subject line.",
+      "description": "Change the text before you decide. The original stays below.",
+      "descriptionCampaign": "Change the subject line and the text of the campaign before you approve it. The original stays below.",
+      "descriptionMessage": "Change the message before it goes to the guest. The original stays below.",
+      "error": {
+        "bodyRequired": "Write the text of the campaign.",
+        "empty": "Write the text.",
+        "subjectOneLine": "The subject line must fit on one line.",
+        "subjectRequired": "Write the subject line of the campaign.",
+        "subjectTooLong": "The subject line is too long: {{max}} characters at most.",
+        "tooLong": "The text is too long: {{max}} characters at most."
+      },
+      "invalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "original": "Original text",
+      "restore": "Restore the original",
+      "subjectLabel": "Subject line",
+      "textLabel": "Text",
+      "title": "Edit the text"
+    },
+    "edited": "Edited",
     "expires": "Expires",
     "filter": {
       "allTypes": "All types",
       "type": "Type"
+    },
+    "hint": {
+      "campaign": "When you approve it, the campaign is approved and, if it already has a send date, scheduled.",
+      "messageDraft": "When you approve it, the message goes to the guest. You can edit it first."
     },
     "queue": {
       "description": "Items awaiting approval before execution",
@@ -1687,15 +1804,42 @@
       "loading": "Loading approval queue…",
       "title": "Approval Queue"
     },
+    "reject": {
+      "reasonRequired": "Write the reason for the rejection.",
+      "reasonTooLong": "The reason is too long: {{max}} characters at most."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellation or refund",
+      "check_in_time": "Check-in time",
+      "complaint": "Complaint",
+      "directions": "Directions",
+      "discount_request": "Discount request",
+      "early_arrival_or_late_checkout": "Early arrival or late check-out",
+      "emergency": "Emergency",
+      "invoice_request": "Invoice request",
+      "label": "Situation",
+      "malfunction": "Malfunction or problem",
+      "noise": "Noise",
+      "other": "Other",
+      "parking": "Parking",
+      "pets": "Pets",
+      "thank_you": "Thank you",
+      "wifi": "Wi-Fi"
+    },
     "status": {
       "approved": "Approved",
       "expired": "Expired",
       "pending": "Pending",
       "rejected": "Rejected"
     },
+    "thread": {
+      "open": "Open the conversation"
+    },
     "type": {
       "aiText": "AI Text",
       "campaign": "Campaign",
+      "messageDraft": "Message draft",
+      "other": "Other",
       "routine": "Routine"
     }
   },
@@ -11117,6 +11261,7 @@
           "title": "The connection did not work"
         },
         "next": {
+          "channels": "Choose the portals",
           "listings": "See your listings",
           "retry": "Try connecting again",
           "start": "Go to your channel manager"
@@ -11141,8 +11286,101 @@
         "toHome": "Back to the home page"
       },
       "errors": {
+        "mixedConflict": "A property cannot be in two different situations: take it out of one.",
+        "mixedTwoSituations": "Choose at least two situations.",
+        "scenarioChangeConfirm": "Confirm that you understood before moving to new listings.",
+        "scenarioChangeRefused": "You cannot move to new listings: there is already an import or there are matched listings.",
         "scenarioRequired": "Choose where your listings are today.",
         "scenarioUnavailable": "This path is not available yet: choose another answer."
+      },
+      "existing": {
+        "channels": {
+          "batchFailed": "We could not prepare the import. Try again.",
+          "blocked": "The browser blocked the window. Allow pop-ups for this site and try again: your progress is saved.",
+          "confirmFailed": "We could not confirm. Try again.",
+          "confirmNo": "No, open it again",
+          "confirmQuestion": "Did you complete the access and see the portal as Activated?",
+          "confirmYes": "Yes, I did",
+          "connect": "Connect on Octorate",
+          "credentials": "You enter the portal credentials only on Octorate or on the portal itself, never in CasaZen.",
+          "legend": "The portals where you already have listings",
+          "listLabel": "The chosen portals and their connection",
+          "loadFailed": "We could not load the list of portals.",
+          "none": "Choose at least one portal.",
+          "notValid": "The access does not look valid: open the panel again and retry.",
+          "openFailed": "We could not open the panel. Try again.",
+          "reopen": "Open the panel again",
+          "state": {
+            "connected": "Connected",
+            "error": "Error",
+            "needsConfirmation": "To confirm",
+            "notStarted": "To connect",
+            "verifying": "Checking",
+            "waiting": "Waiting for the login"
+          },
+          "waiting": "I am waiting for your access on the panel: as soon as I see it, I go on by myself."
+        },
+        "errors": {
+          "accessPending": "No portal has its access yet: finish the step on the panel first.",
+          "notInYet": "The listings have not arrived yet: wait for the import to finish.",
+          "unknown": "The import stopped on this portal. Try again or ask for help."
+        },
+        "mapping": {
+          "note": "For each imported listing you can confirm the proposed property, choose another one or import it as a CasaZen property: this last choice only creates the management record in CasaZen and does not create any new listing on the portal. You can leave the ambiguous ones for later: they stay blocked for writing."
+        },
+        "new": {
+          "action": "Create the new listings",
+          "text": "You create the properties that are not published yet yourself, in the guided procedure: CasaZen does not create them by itself.",
+          "title": "New listings"
+        },
+        "progress": {
+          "atMapping": "The listings have arrived: now you match them to your properties.",
+          "completed": "Import completed.",
+          "counts": "Found {{found}} · matched {{confirmed}} · to decide {{pending}}",
+          "loadFailed": "We could not read the state of the import.",
+          "loading": "Reading the state of the import...",
+          "noBatch": {
+            "text": "Choose the portals and give the access in the previous step.",
+            "title": "Import not started"
+          },
+          "retry": "Try again",
+          "retryUnknown": "I checked the panel: ask again",
+          "sequenceLabel": "Steps of the import of {{channel}}",
+          "state": {
+            "attention": "needs your attention",
+            "current": "in progress",
+            "done": "done",
+            "pending": "to do"
+          },
+          "steps": {
+            "calendar": "Calendar",
+            "connected": "Connection completed",
+            "mapping": "Matching",
+            "reservations": "Reservations",
+            "rooms": "Listings and rooms"
+          },
+          "working": "Import in progress..."
+        },
+        "result": {
+          "counts": "Connected {{connected}} · left for later {{leftForLater}} · failed {{failed}}",
+          "migrationNote": "Reviews, ranking and history depend on the migration the portal itself makes: CasaZen does not promise them.",
+          "status": {
+            "AwaitingChannelAccess": "Waiting for the access",
+            "AwaitingMapping": "To match",
+            "Completed": "Connected",
+            "Draft": "To start",
+            "Failed": "Failed",
+            "ImportingCalendar": "Importing the calendar",
+            "ImportingReservations": "Importing the reservations",
+            "ImportingRooms": "Importing listings and rooms",
+            "MarkingConnected": "Connecting",
+            "NeedsAttention": "Needs your attention"
+          },
+          "title": "Listings imported from the portals"
+        },
+        "summary": {
+          "preserved": "The imported listings keep the codes they already have on the portals: we do not publish new ones."
+        }
       },
       "exit": {
         "saveAndExit": "Save and exit",
@@ -11202,11 +11440,53 @@
           "question": "Which room is this property?"
         }
       },
+      "mixed": {
+        "conflictLine": "«{{property}}» is in more than one situation: take it out of one.",
+        "conflictTitle": "A property is in two situations",
+        "counts": "{{groups}} situations · {{properties}} properties chosen",
+        "groupCount_one": "{{count}} property in this situation",
+        "groupCount_other": "{{count}} properties in this situation",
+        "groups": {
+          "newInventory": {
+            "description": "They do not exist on the portals yet: we create them together, only when you decide.",
+            "none": "No property chosen: you add them later.",
+            "title": "Not published yet"
+          },
+          "onOctorate": {
+            "description": "They are already on your Octorate account: we connect them with an authorization.",
+            "none": "No property chosen: we find them with the authorization.",
+            "title": "Already on Octorate"
+          },
+          "onOtas": {
+            "description": "They already exist on the portals: we import the listings with their codes, without publishing new ones.",
+            "none": "No property chosen: the listings we import become CasaZen properties.",
+            "title": "Already on OTAs or in another system"
+          }
+        },
+        "loadFailed": "We could not load your properties.",
+        "rest": "The properties you do not choose here stay as they are."
+      },
       "page": {
         "description": "A guided path, one step at a time. You can leave whenever you like and pick up where you left off."
       },
       "scenario": {
+        "change": {
+          "ack": "I understand: I want to create new listings",
+          "refused": "An import has already started or listings are matched to your properties. To avoid duplicates, you cannot move to new listings here.",
+          "refusedTitle": "It cannot be changed now",
+          "text": "Before, you said your listings already exist. If you choose «not published yet» CasaZen will create new ones on Octorate and on the OTAs: it is not a way to recover from an import.",
+          "title": "You are changing your answer"
+        },
+        "confirm": {
+          "mixed": "You will say which properties are in each situation: each follows its own road and at the end the summary puts them together.",
+          "newInventory": "CasaZen will create new listings on Octorate and on the OTAs you choose. Choose this road only if the listings do not exist yet.",
+          "onOctorate": "We will connect your Octorate account to CasaZen with an authorization and match the listings we find to your properties.",
+          "onOtas": "CasaZen will import the listings you already have on the OTAs and keep their codes. It will not publish replacement listings."
+        },
         "legend": "Where are your listings today?",
+        "mixed": {
+          "title": "I have a mixed situation"
+        },
         "newInventory": {
           "description": "Start from scratch: we create your first listing together.",
           "title": "Not published yet"
@@ -11232,10 +11512,32 @@
           "purpose": "We take you to its site to give your consent, then you come back here.",
           "title": "Connect your channel manager"
         },
+        "existingChannels": {
+          "label": "Portals",
+          "next": "Import the listings",
+          "purpose": "Choose the portals and give the access to each one from the panel of your channel manager: CasaZen stays here and follows you.",
+          "title": "Which portals are your listings on?"
+        },
+        "existingImport": {
+          "label": "Import",
+          "next": "Go to the matching",
+          "purpose": "We read the listings, the rooms, the reservations and the calendars: we publish nothing.",
+          "title": "We import your listings"
+        },
         "mapping": {
           "label": "Matching",
           "purpose": "For each listing, choose which CasaZen property it is. If you are not sure, you can decide later.",
           "title": "Match the listings to your properties"
+        },
+        "mixed": {
+          "label": "Situation",
+          "purpose": "For each situation say which properties are in it. The others stay as they are.",
+          "title": "What is your situation?"
+        },
+        "new": {
+          "label": "New listings",
+          "purpose": "We take you to the guided procedure to create the property.",
+          "title": "We create your new listings"
         },
         "scenario": {
           "label": "Listings",
@@ -11312,6 +11614,7 @@
             "badge": "Did not work",
             "text": "We could not complete this listing."
           },
+          "ids": "Codes kept: {{ids}}",
           "imported": {
             "badge": "Imported",
             "text": "New property in CasaZen: {{property}}."
@@ -11452,8 +11755,50 @@
       "error": "We could not save. Try again shortly.",
       "saved": "Saved. What is left is in your to-do list."
     },
+    "flows": {
+      "names": {
+        "Bookings": "Bookings",
+        "CheckInCompliance": "Check-in and compliance",
+        "Documents": "Fiscal documents",
+        "Listings": "Listings on the channels",
+        "Messages": "Messages",
+        "Reports": "Reports"
+      },
+      "states": {
+        "active": "Active",
+        "notAvailable": "Not available",
+        "toComplete": "To complete"
+      }
+    },
     "help": {
       "action": "Help"
+    },
+    "launch": {
+      "backToPlan": "Back to the plan",
+      "entry": {
+        "continue": "Continue",
+        "hint": "Choose your situation to continue.",
+        "loading": "Loading your answer..."
+      },
+      "panelLabel": "Open the step",
+      "properties": {
+        "empty": "There are no properties to show.",
+        "istat": "ISTAT",
+        "loadError": "We could not load the properties.",
+        "loading": "Loading the properties...",
+        "next": "Next page",
+        "noMatch": "No property matches the search.",
+        "page": "Page {{page}} of {{pages}} · {{total}} properties",
+        "pages": "Pages of the properties",
+        "police": "State Police",
+        "previous": "Previous page",
+        "search": "Search for a property",
+        "title": "Properties: {{flow}}"
+      },
+      "unavailable": {
+        "reason": "The guided procedure of this step is not ready yet: you find it here as soon as it is. In the meantime you can go back to the plan.",
+        "title": "Not available yet"
+      }
     },
     "listLabel": "The steps to activate CasaZen",
     "loadError": "We could not load the plan.",
@@ -11484,6 +11829,152 @@
         "messagesAi": "Choose how and when to write to your guests.",
         "pricesCalendar": "Prices and rules are set once and apply to every channel."
       }
+    },
+    "panel": {
+      "actions": {
+        "confirmNo": "No, open it again",
+        "confirmYes": "Yes, continue",
+        "continue": "Continue",
+        "open": "Open the panel",
+        "reopen": "Open the panel again",
+        "retryOpen": "Try to open it again",
+        "saveExit": "Save and exit"
+      },
+      "adminOnly": "The organization administrator does this step.",
+      "assist": {
+        "action": {
+          "doItForMe": "Do it for me",
+          "needHelp": "I need help"
+        },
+        "error": "We could not send the request. Try again in a moment.",
+        "note": "CasaZen support takes care of it: you also find it in To do.",
+        "status": {
+          "Cancelled": "Request cancelled",
+          "Done": "Done: CasaZen support took care of it",
+          "InProgress": "In progress: CasaZen support is working on it",
+          "Requested": "Request sent to CasaZen support"
+        },
+        "todoLink": "See it in To do"
+      },
+      "channelAccess": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The channels section with the portal to connect",
+          "3": "The login page of the portal, where you enter your credentials",
+          "4": "The list of the channels with the Activated status"
+        },
+        "description": "The access to the portal is given from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check that you logged in to the portal with the right credentials and that the channel shows «Activated», then open the panel again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the channels section and choose the portal to connect.",
+          "3": "Log in to the portal with your credentials: you enter them only there, never in CasaZen.",
+          "4": "Check that the channel shows «Activated»."
+        },
+        "title": "Give access to the channel"
+      },
+      "channelMissing": "The channel to give access to is missing. Go back to the plan and start again from there.",
+      "context": {
+        "channel": "Channel:",
+        "property": "Property:"
+      },
+      "errors": {
+        "callback": "We could not verify the connection when you came back from the panel. Open the panel again.",
+        "confirm": "We could not confirm. Try again.",
+        "load": "We could not load the step.",
+        "open": "We could not open the panel. Try again."
+      },
+      "explain": {
+        "credentialsNote": "You enter your credentials only in the panel and on the portals' sites: never in CasaZen.",
+        "instructionsTitle": "What you will do in the panel",
+        "needTitle": "Keep at hand"
+      },
+      "istat": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The ISTAT section of the panel",
+          "3": "The fields for the ISTAT credentials of your region",
+          "4": "The connection test button and the Activated status"
+        },
+        "description": "The connection with the ISTAT of your region is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the ISTAT credentials of your region, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the ISTAT section, the tourism statistics of your region.",
+          "3": "Enter the ISTAT credentials of your region.",
+          "4": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the ISTAT of your region"
+      },
+      "page": {
+        "backToPlan": "Back to the plan",
+        "resumeTitle": "Resume the step"
+      },
+      "police": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The State Police section of the panel",
+          "3": "The fields for the Alloggiati Web credentials and the web service key",
+          "4": "The list of the rooms with the room number to enter",
+          "5": "The connection test button and the Activated status"
+        },
+        "description": "The connection with Alloggiati Web is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the Alloggiati Web credentials, the web service key and the room number of each room, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the State Police section (Alloggiati Web).",
+          "3": "Enter the Alloggiati Web credentials and the web service key.",
+          "4": "Enter the Alloggiati Web room number for each room.",
+          "5": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the State Police"
+      },
+      "returning": "Checking the connection...",
+      "started": {
+        "alert": "The browser blocked the panel window. Allow pop-ups for this site and try again: you will start again from here."
+      },
+      "state": {
+        "assist": {
+          "body": "You asked for help: as soon as the step is done you see it here and in To do.",
+          "title": "CasaZen support is on it"
+        },
+        "explain": {
+          "body": "We open the panel you need and CasaZen stays here to follow the connection.",
+          "title": "We open the panel for you"
+        },
+        "notValid": {
+          "body": "CasaZen checked and the connection is not valid yet.",
+          "title": "The connection does not show as active yet"
+        },
+        "recovered": {
+          "body": "CasaZen verified the connection: you go on from here.",
+          "title": "Connection successful",
+          "toast": "Connection verified"
+        },
+        "started": {
+          "body": "Your progress is saved, but the panel did not open.",
+          "title": "Allow it to open and try again"
+        },
+        "unverifiable": {
+          "body": "We cannot see it from here. If you see «Activated» in the panel, confirm; otherwise open the panel again or ask for help.",
+          "title": "Did you complete the connection and see the Activated status?"
+        },
+        "waiting": {
+          "body": "Complete the steps in the panel window: as soon as CasaZen sees the connection active, it takes you on by itself. There is nothing else to press.",
+          "title": "I am waiting for the connection"
+        }
+      },
+      "waiting": {
+        "checking": "checking",
+        "elapsedNow": "Just opened",
+        "elapsed_one": "Waiting for {{count}} minute",
+        "elapsed_other": "Waiting for {{count}} minutes"
+      }
+    },
+    "part": {
+      "description": "What this step does and where it takes you.",
+      "needsTitle": "What you need",
+      "statusLabel": "Status of the step"
     },
     "parts": {
       "activation": {
@@ -11576,6 +12067,22 @@
       "no_property": "There are no properties to set up yet.",
       "not_provided": "This step is not available yet.",
       "price_missing": "At least one property has no base price.",
+      "property": {
+        "channel_content_to_fix": "A channel refused the content of the listing: it has to be fixed.",
+        "cin_missing_or_invalid": "The CIN of this property is missing or not valid.",
+        "connection_lost": "The connection with the channel manager no longer works: it has to be made again.",
+        "connection_missing": "Your channel manager is not connected yet.",
+        "content_managed_on_channel": "The content is managed on the channel.",
+        "flow_not_activated": "Everything is ready: only the activation is missing.",
+        "mapping_unavailable": "We cannot read the matching right now. Try again shortly.",
+        "mapping_unconfirmed": "The listing is not matched to this property yet: it has to be confirmed.",
+        "not_provided": "This function is not available yet.",
+        "property_inactive": "This property is not active.",
+        "property_long_rent": "This property is a long-term rental: it is not needed here.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications for this property is missing.",
+        "tax_rate_missing": "The tourist tax of this property's municipality is missing.",
+        "unknown": "There is still something to complete."
+      },
       "required_part_not_done": "Complete first: {{parts}}.",
       "sender_missing": "Nobody is set to send the Alloggiati Web and ISTAT communications of at least one property.",
       "tax_rate_missing": "The tourist tax of the comune of at least one property is missing.",
@@ -11588,6 +12095,102 @@
       "done": "Done",
       "notAvailable": "Not available",
       "open": "To do"
+    },
+    "summary": {
+      "activate": {
+        "action": "Activate",
+        "text": "Switch on the flows that are ready. What is not ready stays in To do and you find it here again.",
+        "title": "Activate"
+      },
+      "activation": {
+        "activated_one": "activated on {{count}} property",
+        "activated_other": "activated on {{count}} properties",
+        "close": "Close",
+        "confirm": "Confirm",
+        "description": "Choose the flows: before switching on we tell you for how many properties.",
+        "edit": "Edit",
+        "error": "We could not activate. Try again.",
+        "flowCounts": "{{ready}} ready · {{notReady}} to complete",
+        "flowFailed": "This flow could not be completed: what was already switched on stays on.",
+        "flows": "Flows to activate",
+        "lacks": "missing: {{what}}",
+        "loadError": "We could not read what is ready.",
+        "loading": "Checking what is ready...",
+        "nextDone": "Everything that was ready is active. Go back to the plan to see what is left.",
+        "nextRetry": "Some flows were not completed. Close and try again: what is already on does not change.",
+        "nextTodo": "What is not ready is in To do.",
+        "resultDescription": "Here is what happened, flow by flow.",
+        "resultTitle": "Done",
+        "stayInTodo_one": "{{count}} property is not ready and stays in To do",
+        "stayInTodo_other": "{{count}} properties are not ready and stay in To do",
+        "title": "Do you want to activate?",
+        "toPlan": "Back to the plan",
+        "toTodo": "Go to To do",
+        "willActivate_one": "It switches on for {{count}} property",
+        "willActivate_other": "It switches on for {{count}} properties"
+      },
+      "adminOnly": "The organization administrator is needed to activate.",
+      "description": "Check where each flow stands on each property, run the final test and switch on the ones that are ready.",
+      "filters": {
+        "allFlows": "All flows",
+        "allStates": "All states",
+        "flow": "Flow",
+        "search": "Search for a property",
+        "state": "State"
+      },
+      "prerequisites": {
+        "cin": "the CIN",
+        "connection": "the connection",
+        "content": "the content of the listing",
+        "mapping": "the matching of the listings",
+        "singleSender": "who sends Alloggiati Web and ISTAT",
+        "taxRate": "the tourist tax"
+      },
+      "strip": {
+        "counts": "{{active}} active · {{toComplete}} to complete · {{notAvailable}} not available",
+        "label": "The six flows",
+        "noCounts": "Counts not available"
+      },
+      "table": {
+        "caption": "State of each flow on each property",
+        "empty": "There are no properties to show.",
+        "loadError": "We could not load the state of the properties.",
+        "loading": "Loading the properties...",
+        "noData": "—",
+        "noMatch": "No property matches these filters.",
+        "property": "Property",
+        "title": "Where you stand, property by property"
+      },
+      "title": "Summary and activation"
+    },
+    "test": {
+      "description": "We pass a recently imported booking through all the flows, read only.",
+      "error": "We could not run the test. Try again.",
+      "noBooking": "This property has no imported booking yet to run the test on.",
+      "noEffect": "No effect: nothing is sent",
+      "outcomes": {
+        "fail": "does not work",
+        "pass": "works",
+        "skipped": "not checked"
+      },
+      "propertiesError": "We could not load the properties.",
+      "property": "Property of the test",
+      "reasons": {
+        "booking_not_active": "The booking does not require a communication to the Police.",
+        "booking_status_unmapped": "The state of the booking does not match between CasaZen and the channel manager.",
+        "channel_content_to_fix": "A channel refused the content of the listing.",
+        "channel_states_missing": "The property is on no channel.",
+        "content_managed_on_channel": "The content is managed on the channel: CasaZen sends nothing.",
+        "guest_data_missing": "The guest data are not complete yet: they usually come with the check-in.",
+        "not_applicable": "The property is outside Italy: there is nothing to communicate.",
+        "not_provided": "This flow is not available yet.",
+        "ota_amounts_missing": "The amounts of the booking are missing, that is the commission and what the guest paid.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications is missing.",
+        "unknown": "Check this flow."
+      },
+      "resultLabel": "Result of the test, flow by flow",
+      "run": "Run the final test",
+      "title": "Final test"
     },
     "title": "Start with CasaZen"
   },

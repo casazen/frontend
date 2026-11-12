@@ -40,6 +40,15 @@ vi.mock('@/api/octorate.api', () => ({
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
 vi.mock('@/api/property-ical.api', () => ({ propertyIcalApi: { getFeeds: vi.fn() } }));
+// The draft of the wizard is also kept on the server (ADR-024): nothing is stored there in these tests, the browser copy is what they read.
+vi.mock('@/api/wizard-draft.api', () => ({
+  WIZARD_DRAFTS_KEY: ['wizard-drafts'],
+  wizardDraftApi: {
+    get: vi.fn().mockResolvedValue(null),
+    save: vi.fn().mockResolvedValue({ status: 'saved', version: 1, lastSavedAt: '2026-11-10T10:00:00Z' }),
+    remove: vi.fn().mockResolvedValue(undefined),
+  },
+}));
 
 // A whole wizard is rendered in these tests (and checked with axe): the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });

@@ -44,7 +44,8 @@ describe('route manifest: the connect wizard of the channel manager (E02/F01/US0
     expect(entry && isEntryFeatureEnabled(entry, undefined)).toBe(false);
   });
 
-  it('RouteManifest_ConnectWizard_LoadsAPageThatIsAComponent', async () => {
+  // The first import of the page pulls in the whole wizard (its steps, the import of the existing listings, the guided panel): slow on a loaded machine, hence the room.
+  it('RouteManifest_ConnectWizard_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async () => {
     const page = await entry?.component();
 
     expect(typeof page?.default).toBe('function');
