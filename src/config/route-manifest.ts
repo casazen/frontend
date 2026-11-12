@@ -1124,6 +1124,42 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
+    // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
+    // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
+    // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the
+    // org billing administrator like the other pages of the agency's money. In "Altro": the main menu of the area is at its limit.
+    path: '/app/account/owner-close',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.ownerClose',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
+  },
+  {
+    // One version of the statement of an owner (E06/F05/US02/T04): the formula, every line with its source, what changed since the version before, the
+    // payouts and the withholding evidence, the invoices linked from the external fiscal system. In no menu: «Chiusura mensile» leads here.
+    path: '/app/account/owner-close/versions/:versionId',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owner-accounting/statement-detail-page')).StatementDetailPage }),
+  },
+  {
+    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109): the fiscal profile masked, the mandate, the rule set with the accountant's approval, what the
+    // activation still misses. In no menu: the month-end close and its anomalies lead here.
+    path: '/app/account/owners/:ownerId/financial',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owners/owner-financial-profile-page')).OwnerFinancialProfilePage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
