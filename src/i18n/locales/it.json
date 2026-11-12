@@ -4689,6 +4689,71 @@
       "tags": "Tag",
       "title": "CRM Ospiti"
     },
+    "merge": {
+      "card": {
+        "label": "Possibile duplicato: {{a}} e {{b}}",
+        "merge": "Unisci",
+        "mergeAria": "Unisci {{a}} e {{b}}",
+        "notSame": "Non sono la stessa persona",
+        "notSameAria": "Non sono la stessa persona: {{a}} e {{b}}"
+      },
+      "count_one": "{{count}} proposta da rivedere",
+      "count_other": "{{count}} proposte da rivedere",
+      "description": "CasaZen ha trovato ospiti che potrebbero essere la stessa persona. Non unisce mai nulla da solo: decidi tu.",
+      "dialog": {
+        "confirm": "Unisci i profili",
+        "consent": "Nessun consenso cambia: ogni contatto resta com'è, con la sua base e la sua conferma.",
+        "description": "Scegli il profilo da tenere: l'altro non comparirà più negli elenchi.",
+        "final": "Non si può annullare.",
+        "history": "Lo storico e i contatti dell'altro profilo passano a quello che tieni.",
+        "legend": "Quale profilo vuoi tenere?",
+        "stays_one": "{{count}} soggiorno",
+        "stays_other": "{{count}} soggiorni",
+        "title": "Unisci i due profili"
+      },
+      "dismiss": {
+        "confirm": "Sì, sono persone diverse",
+        "description": "CasaZen non ti riproporrà più questa coppia. Nessun profilo cambia.",
+        "title": "Sono due persone diverse?"
+      },
+      "dismissDone": "Fatto: questa coppia non ti verrà più riproposta.",
+      "dismissError": "Non siamo riusciti a salvare la tua decisione. Riprova tra qualche istante.",
+      "empty": {
+        "action": "Vai ai profili",
+        "description": "Quando CasaZen trova due ospiti che potrebbero essere la stessa persona, li vedi qui e decidi tu.",
+        "title": "Nessun duplicato da rivedere"
+      },
+      "label": "Possibili duplicati",
+      "likelihood": {
+        "likely": "Probabilmente la stessa persona",
+        "possible": "Forse la stessa persona",
+        "veryLikely": "Molto probabilmente la stessa persona"
+      },
+      "loadError": "Non riusciamo a caricare i possibili duplicati",
+      "loading": "Caricamento dei possibili duplicati…",
+      "mergeDone": "Profili uniti.",
+      "mergeError": "Non siamo riusciti a unire i profili. Riprova tra qualche istante.",
+      "profile": {
+        "contacts": "Contatti",
+        "country": "Paese",
+        "lastStay": "Ultimo soggiorno",
+        "noContacts": "Nessun contatto",
+        "noName": "Ospite senza nome",
+        "noStay": "Nessun soggiorno",
+        "position": "Profilo {{position}}",
+        "properties": "Immobili",
+        "stays": "Soggiorni"
+      },
+      "reasons": {
+        "sameEmail": "Hanno lo stesso indirizzo e-mail.",
+        "sameNameBirth": "Hanno lo stesso nome e la stessa data di nascita.",
+        "sameNameSameProperty": "Hanno lo stesso nome e hanno soggiornato nello stesso immobile.",
+        "samePhone": "Hanno lo stesso numero di telefono.",
+        "title": "Perché li abbiamo accostati",
+        "unknown": "Hanno altri elementi in comune."
+      },
+      "title": "Possibili duplicati"
+    },
     "state": {
       "consent": {
         "hint": "L'ospite ha dato il consenso e ha confermato il suo indirizzo e-mail: puoi scrivergli per novità e offerte.",

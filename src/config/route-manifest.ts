@@ -1352,6 +1352,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },
+  {
+    // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
+    // last tab of the CRM (after the audiences, the campaigns and the automations). The API lists them for `guest.read` but merges and
+    // dismisses for `guest.write`, and the page is for deciding, so it asks `guest.write`.
+    path: '/app/short-rent/crm/merge',
+    context: 'short-rent',
+    requiredPermissions: ['guest.write'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmMerge',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 4,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/crm/merge/merge-page')).MergePage }),
+  },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
   // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
   {

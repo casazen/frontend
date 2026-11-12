@@ -4689,6 +4689,71 @@
       "tags": "Tags",
       "title": "Guest CRM"
     },
+    "merge": {
+      "card": {
+        "label": "Possible duplicate: {{a}} and {{b}}",
+        "merge": "Merge",
+        "mergeAria": "Merge {{a}} and {{b}}",
+        "notSame": "They are not the same person",
+        "notSameAria": "They are not the same person: {{a}} and {{b}}"
+      },
+      "count_one": "{{count}} proposal to review",
+      "count_other": "{{count}} proposals to review",
+      "description": "CasaZen found guests who may be the same person. It never merges anything by itself: you decide.",
+      "dialog": {
+        "confirm": "Merge the profiles",
+        "consent": "No consent changes: every contact stays as it is, with its basis and its confirmation.",
+        "description": "Choose the profile to keep: the other one will no longer show in your lists.",
+        "final": "This cannot be undone.",
+        "history": "The history and the contacts of the other profile move to the one you keep.",
+        "legend": "Which profile do you want to keep?",
+        "stays_one": "{{count}} stay",
+        "stays_other": "{{count}} stays",
+        "title": "Merge the two profiles"
+      },
+      "dismiss": {
+        "confirm": "Yes, they are different people",
+        "description": "CasaZen will not propose this pair again. No profile changes.",
+        "title": "Are they two different people?"
+      },
+      "dismissDone": "Done: this pair will not be proposed to you again.",
+      "dismissError": "We could not save your decision. Try again in a few moments.",
+      "empty": {
+        "action": "Go to the profiles",
+        "description": "When CasaZen finds two guests who may be the same person, you will see them here and decide.",
+        "title": "No duplicates to review"
+      },
+      "label": "Possible duplicates",
+      "likelihood": {
+        "likely": "Likely the same person",
+        "possible": "Possibly the same person",
+        "veryLikely": "Very likely the same person"
+      },
+      "loadError": "We cannot load the possible duplicates",
+      "loading": "Loading the possible duplicates…",
+      "mergeDone": "Profiles merged.",
+      "mergeError": "We could not merge the profiles. Try again in a few moments.",
+      "profile": {
+        "contacts": "Contacts",
+        "country": "Country",
+        "lastStay": "Latest stay",
+        "noContacts": "No contact",
+        "noName": "Guest without a name",
+        "noStay": "No stay",
+        "position": "Profile {{position}}",
+        "properties": "Properties",
+        "stays": "Stays"
+      },
+      "reasons": {
+        "sameEmail": "They share the same e-mail address.",
+        "sameNameBirth": "They have the same name and the same date of birth.",
+        "sameNameSameProperty": "They have the same name and stayed at the same property.",
+        "samePhone": "They share the same phone number.",
+        "title": "Why we put them together",
+        "unknown": "They have other things in common."
+      },
+      "title": "Possible duplicates"
+    },
     "state": {
       "consent": {
         "hint": "The guest gave their consent and confirmed their e-mail address: you can write to them about news and offers.",
