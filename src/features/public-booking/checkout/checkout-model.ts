@@ -1,3 +1,4 @@
+import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
 import type { CreateDirectBookingPayload, PaymentOption } from '@/types';
 
@@ -23,8 +24,10 @@ export interface DetailsValues {
   country: string;
   /** `HH:mm`, `late` (after the check-in window) or empty (not said). Only a note for the host. */
   arrival: string;
-  /** The optional «send me offers» box: never ticked for the guest. */
-  offers: boolean;
+  /** The optional «E-mail» box for offers (NF-90): never ticked for the guest. */
+  offersEmail: boolean;
+  /** The optional «WhatsApp» box for offers (NF-90): never ticked for the guest, and it needs a phone number. */
+  offersWhatsApp: boolean;
 }
 
 /** Everything the guest has chosen and typed across the three steps, kept while they move between them. */
@@ -39,7 +42,16 @@ export interface CheckoutDraft {
   consent: boolean;
 }
 
-export const EMPTY_DETAILS: DetailsValues = { firstName: '', lastName: '', email: '', phone: '', country: '', arrival: '', offers: false };
+export const EMPTY_DETAILS: DetailsValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  country: '',
+  arrival: '',
+  offersEmail: false,
+  offersWhatsApp: false,
+};
 
 export const EMPTY_DRAFT: CheckoutDraft = {
   mode: 'instant',
@@ -134,14 +146,18 @@ interface BookingPayloadInput {
   /** The ages when every child has one and the tax asks for them; else nothing. */
   childrenAges?: number[];
   draft: CheckoutDraft;
-  /** The version of the offers consent the site carries: the box exists, and its answer is sent, only when there is one. */
+  /** The version of the offers consent the site carries: the two boxes exist, and their answers are sent, only when there is one. */
   marketingConsentVersion?: string | null;
+  /** The version of the soft opt-in notice the site carries: the notice is shown, and its version sent back, only when there is one. */
+  softOptInNoticeVersion?: string | null;
 }
 
 /**
  * The body of the booking, as the API takes it. The stay and the amounts are not decided here: the server prices the same stay again
- * and charges its own total. The consent to the privacy notice is the one of the checkout (given in the last step); the one to the
- * offers is sent only when the site has a text for it, and is whatever the guest chose (never preselected).
+ * and charges its own total. The consent to the privacy notice is the one of the checkout (given in the last step); the ones to the
+ * offers, one per channel (NF-90), are sent only when the site has a text for them, and are whatever the guest chose (never preselected;
+ * WhatsApp never without the phone number it needs). The single `marketingConsent` of before is no longer sent. The soft opt-in notice
+ * (art. 130 c. 4) is not a consent: only the version the page showed goes back, and only when the site has one.
  */
 export function buildBookingPayload({
   propertyId,
@@ -153,6 +169,7 @@ export function buildBookingPayload({
   childrenAges,
   draft,
   marketingConsentVersion,
+  softOptInNoticeVersion,
 }: BookingPayloadInput): CreateDirectBookingPayload {
   const { details } = draft;
   const phone = details.phone.trim();
@@ -175,6 +192,13 @@ export function buildBookingPayload({
     paymentOption: paymentOptionOf(draft.mode, draft.pay),
     ...(requests ? { specialRequests: requests.slice(0, SPECIAL_REQUESTS_MAX) } : {}),
     ...(details.arrival ? { expectedArrivalTime: details.arrival } : {}),
-    ...(marketingConsentVersion ? { marketingConsent: details.offers } : {}),
+    ...(marketingConsentVersion
+      ? {
+          marketingConsentEmail: details.offersEmail,
+          // WhatsApp only on a number that says its country: the server puts its own calling code in front of any other.
+          marketingConsentWhatsApp: details.offersWhatsApp && phone !== '' && hasInternationalPrefix(phone),
+        }
+      : {}),
+    ...(softOptInNoticeVersion ? { softOptInNoticeVersion } : {}),
   };
 }

@@ -29,6 +29,8 @@ describe('isPublicUnauthenticatedPath', () => {
   it('matches the pages the marketing e-mails link to, which never load Auth0', () => {
     expect(isPublicUnauthenticatedPath('/unsubscribe')).toBe(true);
     expect(isPublicUnauthenticatedPath('/marketing/confirm')).toBe(true);
+    // The welcome page behind the QR code in a house (CRM-03): a guest who only scanned it is not asked for an account either.
+    expect(isPublicUnauthenticatedPath('/benvenuto/TEST-benvenuto-villa-lago')).toBe(true);
   });
 
   it('does not match host console routes', () => {

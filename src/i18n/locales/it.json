@@ -1458,6 +1458,20 @@
       "directBookingConsentRequired": "Per prenotare devi acconsentire al trattamento dei dati personali.",
       "directBookingConsentOutdated": "L'informativa sul trattamento dei dati è stata aggiornata: ricarica la pagina e acconsenti di nuovo.",
       "directBookingInvalidPaymentOption": "Metodo di pagamento non valido.",
+      "directBookingMarketingConsentUnavailable": "Il testo per ricevere le offerte non è più disponibile: ricarica la pagina e riprova.",
+      "directBookingSoftOptInNoticeOutdated": "L'informazione sulle offerte è stata aggiornata: ricarica la pagina, leggila e riprova.",
+      "directBookingWhatsappRequiresPhone": "Per ricevere le offerte su WhatsApp serve il tuo numero di telefono: scrivilo e riprova.",
+      "guestMarketingConsentOutdated": "Il testo del consenso è stato aggiornato: leggilo di nuovo e ripeti la tua scelta.",
+      "guestMarketingConsentUnavailable": "In questo momento non possiamo salvare la tua scelta: riprova più tardi.",
+      "guestMarketingEmailInvalid": "Scrivi un indirizzo e-mail corretto: quello della prenotazione non si può usare per le offerte.",
+      "guestMarketingPhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
+      "welcomeAdultRequired": "Per continuare devi dichiarare di avere almeno 18 anni.",
+      "welcomeChannelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
+      "welcomeConsentOutdated": "Il testo del consenso è stato aggiornato: leggilo di nuovo e conferma la tua scelta.",
+      "welcomeConsentUnavailable": "In questo momento non possiamo raccogliere la tua scelta: riprova più tardi.",
+      "welcomeEmailInvalid": "Controlla l'indirizzo e-mail: non sembra corretto.",
+      "welcomeLinkInvalid": "Questa pagina non è più attiva.",
+      "welcomePhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
       "onsiteRequestLinkInvalid": "Link di conferma non valido: apri il link ricevuto via email.",
       "onsiteRequestExpired": "La richiesta è scaduta: le date sono tornate disponibili. Puoi inviare una nuova richiesta.",
       "onsiteRequestNotPending": "La richiesta non è più in attesa: è già stata accettata, rifiutata o annullata.",
@@ -10548,6 +10562,47 @@
       "pageTitle": "Annulla iscrizione",
       "retry": "Non siamo riusciti a completare l'operazione. Riprova tra qualche istante.",
       "title": "Vuoi annullare l'iscrizione?"
+    },
+    "welcome": {
+      "adultLabel": "Ho almeno 18 anni",
+      "consentText": "Scegliendo un canale acconsenti a ricevere da {{host}} comunicazioni promozionali (novità e offerte) su quel canale. Puoi cambiare idea in ogni momento: ogni messaggio ha il link per annullare l'iscrizione.",
+      "consentVersion": "Facoltativo. Versione del testo: {{version}}",
+      "description": "Ti dà il benvenuto {{host}}. Se vuoi, lasciaci un contatto per ricevere novità e offerte: è facoltativo e non cambia il tuo soggiorno.",
+      "done": {
+        "description": "Se l'indirizzo è corretto, ti arriva un messaggio con un link per confermare la tua scelta. Finché non confermi, non ti scriviamo.",
+        "title": "Controlla la tua e-mail per confermare"
+      },
+      "doneWhatsApp": {
+        "description": "Non devi fare altro.",
+        "title": "Grazie, abbiamo ricevuto la tua scelta"
+      },
+      "emailChannel": "E-mail",
+      "emailHint": "Serve solo se scegli l'e-mail: ti scriviamo qui per farti confermare la scelta.",
+      "errors": {
+        "adultRequired": "Per continuare conferma di avere almeno 18 anni.",
+        "channelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
+        "generic": "Non siamo riusciti a inviare la tua scelta. Riprova tra qualche istante."
+      },
+      "inactive": {
+        "description": "Il codice che hai inquadrato non è più valido. Chiedi alla struttura di mostrartene uno nuovo.",
+        "title": "Questa pagina non è attiva"
+      },
+      "legend": "Come vuoi ricevere novità e offerte di {{host}}?",
+      "loadError": {
+        "description": "Controlla la connessione e riprova.",
+        "hint": "Non siamo riusciti ad aprire la pagina.",
+        "retry": "Riprova",
+        "title": "Non riusciamo ad aprire la pagina"
+      },
+      "loading": "Un momento…",
+      "pageTitle": "Benvenuto",
+      "phoneHint": "Serve solo se scegli WhatsApp: scrivilo con il prefisso internazionale, per esempio +39.",
+      "privacyNotice": "Come vengono trattati i tuoi dati è spiegato nell'<privacy>informativa privacy</privacy>.",
+      "submit": "Invia la mia scelta",
+      "title": "Benvenuto a {{property}}",
+      "welcomeOnly": "Ti dà il benvenuto {{host}}. Buon soggiorno!",
+      "whatsAppChannel": "WhatsApp",
+      "whatsAppNeedsPhone": "Scrivi prima il tuo numero di telefono per scegliere WhatsApp."
     }
   },
   "marketplace": {
@@ -13108,7 +13163,34 @@
         "data": "Dati dell'immobile",
         "pricing": "Prezzi"
       },
-      "tabsLabel": "Sezioni dell'immobile"
+      "tabsLabel": "Sezioni dell'immobile",
+      "welcomeQr": {
+        "copied": "Copiato",
+        "copy": "Copia",
+        "copyFailed": "Non siamo riusciti a copiare: seleziona l'indirizzo e copialo a mano.",
+        "create": "Crea il QR",
+        "createFailed": "Non siamo riusciti a creare il QR. Riprova tra qualche istante.",
+        "description": "Stampa il cartello e mettilo in casa: chi lo inquadra può lasciarti un contatto e scegliere se ricevere le tue offerte. Per l'ospite è facoltativo e non cambia il suo soggiorno.",
+        "linkLabel": "Indirizzo della pagina di benvenuto",
+        "loadError": "Non riusciamo a leggere il QR di benvenuto.",
+        "loading": "Leggo il QR di benvenuto…",
+        "noAddress": "Il QR esiste, ma qui l'indirizzo pubblico del sito non è configurato: non possiamo mostrartelo.",
+        "none": "Per questa casa non c'è ancora un QR di benvenuto.",
+        "popupBlocked": "Il browser ha bloccato la finestra di stampa: consentila e riprova.",
+        "print": "Stampa il cartello",
+        "qrAlt": "QR della pagina di benvenuto di {{name}}",
+        "renew": "Crea un nuovo QR",
+        "renewConfirm": "Sì, crea un nuovo QR",
+        "renewConsequence": "Chi inquadra il vecchio cartello vedrà che la pagina non è attiva, finché non lo sostituisci.",
+        "renewDescription": "Il QR che hai stampato smetterà di funzionare subito. Dovrai stampare il cartello nuovo e sostituirlo in casa.",
+        "renewDone": "Nuovo QR creato: stampa il cartello e sostituisci il vecchio.",
+        "renewFailed": "Non siamo riusciti a creare il nuovo QR. Il cartello che hai stampato funziona ancora: riprova tra qualche istante.",
+        "renewTitle": "Creare un nuovo QR?",
+        "retry": "Riprova",
+        "signLine": "Inquadra il codice per lasciarci un contatto e ricevere novità e offerte. È facoltativo.",
+        "signTitle": "Benvenuto!",
+        "title": "QR di benvenuto"
+      }
     },
     "info": {
       "timezone": "Fuso orario",
@@ -14601,6 +14683,8 @@
       "emailRequired": "Inserisci l'indirizzo email",
       "emailInvalid": "Inserisci un indirizzo email valido",
       "phoneInvalid": "Inserisci un numero di telefono valido: da 6 a 15 cifre, con + iniziale facoltativo",
+      "whatsAppNeedsPhone": "Per ricevere le offerte su WhatsApp scrivi il tuo numero di telefono.",
+      "whatsAppNeedsPrefix": "Per ricevere le offerte su WhatsApp scrivi il numero con il prefisso internazionale, per esempio +39 333 1234567.",
       "countryRequired": "Seleziona il paese di residenza"
     },
     "touristTaxIncluded": "Tassa di soggiorno (inclusa nel totale)",
@@ -14760,6 +14844,53 @@
       "hostContactNoName": "Per qualsiasi domanda contatta l'host:",
       "hostContactDirectly": "Per qualsiasi domanda contatta direttamente l'host della struttura."
     },
+    "guestMarketing": {
+      "addressHint": "L'indirizzo della prenotazione non si può usare per le offerte (per esempio è un indirizzo temporaneo del portale): scrivi qui quello che usi davvero.",
+      "addressLabel": "Il tuo indirizzo e-mail",
+      "addressRequired": "Scrivi l'indirizzo e-mail su cui vuoi ricevere le offerte.",
+      "channels": {
+        "email": "E-mail",
+        "whatsapp": "WhatsApp"
+      },
+      "consentText": "Scegliendo un canale acconsenti a ricevere dalla struttura comunicazioni promozionali (novità e offerte) su quel canale. Puoi cambiare idea in ogni momento: ogni messaggio ha il link per annullare l'iscrizione.",
+      "consentVersion": "Facoltativo. Versione del testo: {{version}}",
+      "intro": "Scegli se vuoi ricevere novità e offerte dalla struttura. È facoltativo e non cambia la tua prenotazione.",
+      "loadError": "Non riusciamo a leggere le tue scelte. Riprova tra qualche istante.",
+      "loading": "Carico le tue scelte…",
+      "phoneHint": "Il numero su cui vuoi ricevere i messaggi, con il prefisso internazionale, per esempio +39.",
+      "phoneLabel": "Il tuo numero di telefono",
+      "phoneRequired": "Scrivi il numero di telefono su cui vuoi ricevere le offerte.",
+      "resend": "Invia di nuovo la conferma",
+      "resendDone": "Ti abbiamo mandato di nuovo il messaggio: controlla la tua e-mail, anche nella posta indesiderata.",
+      "resendError": "Non siamo riusciti a mandare il messaggio. Riprova tra qualche istante.",
+      "resendNothing": "Non abbiamo mandato nulla: ne hai già chiesti da poco. Riprova tra qualche minuto.",
+      "retry": "Riprova",
+      "save": "Salva le mie scelte",
+      "saveError": "Non siamo riusciti a salvare la tua scelta. Riprova tra qualche istante.",
+      "state": {
+        "confirmed": "Confermato",
+        "none": "Non iscritto",
+        "pending": "Da confermare",
+        "serviceOnly": "Non iscritto",
+        "softOptIn": "Ricevi offerte su soggiorni simili",
+        "withdrawn": "Annullato"
+      },
+      "stateDetail": {
+        "confirmed": "Riceverai novità e offerte della struttura.",
+        "pending": "Ti abbiamo scritto per chiederti di confermare: apri il link nel messaggio. Finché non confermi, non ti scriviamo.",
+        "serviceOnly": "Usiamo questo contatto solo per il tuo soggiorno, mai per le offerte.",
+        "softOptIn": "Ti scriviamo perché hai prenotato direttamente dalla struttura. Puoi opporti in ogni momento, gratis.",
+        "withdrawn": "Hai scelto di non ricevere più offerte: non ti scriviamo. La scelta è definitiva."
+      },
+      "title": "Offerte e novità",
+      "withdraw": "Non voglio ricevere offerte",
+      "withdrawConfirm": "Sì, non voglio più offerte",
+      "withdrawConsequence": "Le comunicazioni sul tuo soggiorno, come conferme e istruzioni di arrivo, continuano ad arrivare.",
+      "withdrawDescription": "Non ti scriveremo più per le offerte su {{channel}}. Da qui non si può tornare indietro.",
+      "withdrawFinal": "La scelta è definitiva: non ti scriviamo più per le offerte e da qui non si può tornare indietro.",
+      "withdrawLabel": "Non voglio ricevere offerte su {{channel}}",
+      "withdrawTitle": "Non vuoi più ricevere offerte?"
+    },
     "guestMessages": {
       "title": "Messaggi",
       "intro": "Scrivi all'host per qualsiasi cosa riguardi il soggiorno. Ti avvisiamo per e-mail quando risponde.",
@@ -14813,9 +14944,14 @@
       "emailHint": "Ti mandiamo qui la conferma e il link per il check-in online.",
       "emailUse": "Usa {{email}}",
       "next": "Continua: pagamento",
-      "offers": "Voglio ricevere le offerte di {{name}}.",
+      "offersEmail": "E-mail",
       "offersHint": "Puoi cancellarti quando vuoi.",
+      "offersLegend": "Vuoi ricevere le offerte di {{name}}?",
+      "offersWhatsApp": "WhatsApp",
+      "offersWhatsAppNeedsPhone": "Scrivi prima il tuo numero di telefono, qui sopra, per scegliere WhatsApp.",
       "phoneHint": "Solo per organizzare l'arrivo.",
+      "phoneHintOffers": "Per organizzare l'arrivo e, se scegli WhatsApp, per le offerte: scrivilo con il prefisso internazionale, per esempio +39.",
+      "softOptInNotice": "{{name}} userà questo indirizzo e-mail per mandarti offerte su soggiorni simili a quello che prenoti. Puoi opporti in ogni momento, gratis: ogni messaggio ha il link per annullare l'iscrizione.",
       "whoTitle": "Chi prenota"
     },
     "leads": {

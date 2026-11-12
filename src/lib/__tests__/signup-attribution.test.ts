@@ -79,7 +79,7 @@ describe('signup attribution (SE-03)', () => {
 
   it('recordLandingTouch_PageOfAMarketingEmailLink_RecordsNothing', () => {
     // The visit of a person who stops or confirms the marketing e-mails is no statistic about a visitor (NF-95), even with statistics allowed.
-    for (const pathname of ['/unsubscribe', '/marketing/confirm']) {
+    for (const pathname of ['/unsubscribe', '/marketing/confirm', '/benvenuto/TEST-benvenuto-villa-lago']) {
       recordLandingTouch({ pathname, search: '?utm_source=newsletter', origin: ORIGIN }, 'https://mail.example.test/inbox');
     }
 

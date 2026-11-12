@@ -101,6 +101,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           childrenAges: ready.quote.touristTax.ageRulesApply ? completeChildrenAges(ages) : undefined,
           draft: { ...draft, pay },
           marketingConsentVersion: org.marketingConsentVersion,
+          softOptInNoticeVersion: org.softOptInNoticeVersion,
         }),
       );
       savePendingCheckout({

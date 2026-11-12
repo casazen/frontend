@@ -33,6 +33,8 @@ export const DISALLOWED_PATHS = [
   '/checkin/',
   // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
   '/invite/',
+  // The welcome page behind the QR code a host prints for a house (CRM-03): its address carries the secret of the link, in the path.
+  '/benvenuto/',
   '/login',
   '/book/*/my-bookings',
   // The results of a booking site for a stay (DB-07c): every search is its own address, none is worth a place in the index.

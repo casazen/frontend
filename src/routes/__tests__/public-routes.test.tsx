@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import type { SeoPagePublic } from '@/types/seo.types';
@@ -75,6 +75,16 @@ vi.mock('@/queries/use-legal', () => ({
     isFetching: false,
     refetch: vi.fn(),
   }),
+}));
+// CRM-03: the welcome page behind the QR code reads what it shows from the API; here only whether its address opens, without login or flag.
+vi.mock('@/api/welcome.api', () => ({
+  welcomeApi: {
+    getLink: vi.fn(),
+    createLink: vi.fn(),
+    rotateLink: vi.fn(),
+    getPage: vi.fn(() => Promise.resolve({ orgName: 'Villa Rosa Srl', propertyName: 'Villa Lago', marketingConsentVersion: '2026-11-v1' })),
+    submitConsent: vi.fn(),
+  },
 }));
 
 import { PublicAppProviders } from '@/contexts/auth-bridge';
@@ -155,16 +165,18 @@ describe('public routes without Auth0 (SE-03)', () => {
     },
   );
 
-  // CRM-08, CRM-03: the pages the marketing e-mails link to. An e-mail already sent must keep working: no login, no flag provider (the
-  // module's flag is off while the flags load), no redirect. Without the fragment of the link the page says so.
+  // CRM-08, CRM-03: the pages the marketing e-mails link to, and the one behind the QR code a host prints for a house. An e-mail already sent
+  // and a code already printed must keep working: no login, no flag provider (the module's flag is off while the flags load), no redirect.
+  // Without the fragment of the link the e-mail pages say so; the welcome page reads its text from the API and asks for the consent.
   it.each([
-    ['/unsubscribe', 'unsubscribe-page'],
-    ['/marketing/confirm', 'marketing-confirm-page'],
-  ])('MarketingEmailLink_%s_AnonymousVisitor_OpensThePageWithoutLoginOrFlag', async (path, testId) => {
+    ['/unsubscribe', 'unsubscribe-page', 'invalid'],
+    ['/marketing/confirm', 'marketing-confirm-page', 'invalid'],
+    ['/benvenuto/TEST-benvenuto-villa-lago', 'welcome-page', 'ask'],
+  ])('MarketingEmailLink_%s_AnonymousVisitor_OpensThePageWithoutLoginOrFlag', async (path, testId, state) => {
     const router = renderPublicApp(path);
 
-    const page = await screen.findByTestId(testId);
-    expect(page).toHaveAttribute('data-state', 'invalid');
+    await screen.findByTestId(testId);
+    await waitFor(() => expect(screen.getByTestId(testId)).toHaveAttribute('data-state', state));
     expect(router.state.location.pathname).toBe(path);
     expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
     expect(assign).not.toHaveBeenCalled();

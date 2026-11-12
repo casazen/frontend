@@ -110,6 +110,7 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
               values={draft.details}
               onChange={setDetails}
               offersVersion={org.marketingConsentVersion}
+              softOptInNoticeVersion={org.softOptInNoticeVersion}
               siteName={org.displayName}
               onBack={() => goTo(1)}
               onNext={() => goTo(3)}

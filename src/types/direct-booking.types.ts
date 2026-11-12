@@ -29,8 +29,18 @@ export interface CreateDirectBookingPayload {
   childrenAges?: number[];
   /** When the guest thinks they will arrive: `HH:mm` or `late`. Only a note for the host (DB-03b); left out when they do not say. */
   expectedArrivalTime?: string;
-  /** The guest ticked the optional «send me offers» box. Only sent when the site has a version of its text (`marketingConsentVersion`). */
-  marketingConsent?: boolean;
+  /**
+   * The guest ticked the optional «E-mail» box for offers (NF-90). Sent (`false` when left unticked) only when the site has a version of the
+   * consent text (`marketingConsentVersion`); the old single `marketingConsent` is no longer sent.
+   */
+  marketingConsentEmail?: boolean;
+  /** The guest ticked the optional «WhatsApp» box for offers; same rule as `marketingConsentEmail`, and it needs the phone number of the guest (422 without). */
+  marketingConsentWhatsApp?: boolean;
+  /**
+   * The version of the soft opt-in notice the page showed (the `softOptInNoticeVersion` of the public org): sent only when the site has one.
+   * It is a notice, not a consent: the guest ticks nothing for it.
+   */
+  softOptInNoticeVersion?: string;
 }
 
 /** Body of `POST /public/bookings/quote`: the stay to price before booking. */

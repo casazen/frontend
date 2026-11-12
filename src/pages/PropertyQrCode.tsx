@@ -1,52 +1,15 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import QRCode from 'qrcode';
 import { toast } from 'sonner';
 import { Download, Printer, QrCode } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { openQrPrintSheet, useQrDataUrl } from '@/lib/qr-print-sheet';
 
-const QR_SIZE_PX = 640;
-
-/** PNG (data URL) of the QR of `url`; error correction M: it still scans when printed small or a bit worn. */
-function useQrDataUrl(url: string): string | null {
-  const [dataUrl, setDataUrl] = useState<{ url: string; image: string } | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 2, width: QR_SIZE_PX }).then((image) => {
-      if (!cancelled) setDataUrl({ url, image });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-  return dataUrl?.url === url ? dataUrl.image : null;
-}
-
-/** Opens a clean page with the QR code and the instructions, and prints it. */
+/** Opens a clean page with the QR code and the instructions, and prints it; says so when the browser blocked the window. */
 function printSheet(title: string, instructions: string, image: string, popupBlocked: string) {
-  const sheet = window.open('', '_blank', 'width=720,height=900');
-  if (!sheet) {
-    toast.error(popupBlocked);
-    return;
-  }
-  const doc = sheet.document;
-  doc.title = title;
-  doc.body.style.cssText = 'font-family: system-ui, sans-serif; text-align: center; margin: 48px;';
-  const heading = doc.createElement('h1');
-  heading.textContent = title;
-  heading.style.cssText = 'font-size: 32px; margin-bottom: 16px;';
-  const instructionsP = doc.createElement('p');
-  instructionsP.textContent = instructions;
-  instructionsP.style.cssText = 'font-size: 18px; color: #444; margin-bottom: 32px;';
-  const img = doc.createElement('img');
-  img.src = image;
-  img.alt = title;
-  img.style.cssText = 'width: 480px; height: 480px; margin: 0 auto; display: block;';
-  doc.body.append(heading, instructionsP, img);
-  img.onload = () => sheet.print();
+  if (!openQrPrintSheet({ title, lines: [instructions], image })) toast.error(popupBlocked);
 }
 
 /**
