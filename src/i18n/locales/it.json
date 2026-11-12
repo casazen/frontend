@@ -10569,11 +10569,15 @@
       "consentVersion": "Facoltativo. Versione del testo: {{version}}",
       "description": "Ti dà il benvenuto {{host}}. Se vuoi, lasciaci un contatto per ricevere novità e offerte: è facoltativo e non cambia il tuo soggiorno.",
       "done": {
-        "description": "Se l'indirizzo è corretto, ti arriva un messaggio con un link per confermare la tua scelta. Finché non confermi, non ti scriviamo. Se hai scelto solo WhatsApp, non devi fare altro.",
+        "description": "Se l'indirizzo è corretto, ti arriva un messaggio con un link per confermare la tua scelta. Finché non confermi, non ti scriviamo.",
         "title": "Controlla la tua e-mail per confermare"
       },
+      "doneWhatsApp": {
+        "description": "Non devi fare altro.",
+        "title": "Grazie, abbiamo ricevuto la tua scelta"
+      },
       "emailChannel": "E-mail",
-      "emailHint": "Ti scriviamo qui per farti confermare la scelta.",
+      "emailHint": "Serve solo se scegli l'e-mail: ti scriviamo qui per farti confermare la scelta.",
       "errors": {
         "adultRequired": "Per continuare conferma di avere almeno 18 anni.",
         "channelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",

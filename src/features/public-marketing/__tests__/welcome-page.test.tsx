@@ -152,6 +152,60 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     expect(body).not.toHaveProperty('email');
   });
 
+  it('WelcomePage_OnlyWhatsAppTicked_NeedsNoAddressAndTheEndSaysNothingAboutAnEmail', async () => {
+    submitConsent.mockResolvedValue({ confirmationSent: true });
+    renderPage();
+    await screen.findByTestId('welcome-form');
+
+    // The API reads the address only with the E-mail box: a guest who wants WhatsApp only is not asked for one (data minimisation).
+    type('welcome-phone', PHONE);
+    tick('welcome-consent-whatsapp');
+    tick('welcome-adult');
+    fireEvent.click(field('welcome-submit'));
+
+    await waitFor(() => expect(submitConsent).toHaveBeenCalledTimes(1));
+    expect(submitConsent).toHaveBeenCalledWith(TOKEN, {
+      phone: PHONE,
+      consentEmail: false,
+      consentWhatsApp: true,
+      adultConfirmed: true,
+      consentVersion: '2026-11-v1',
+      language: 'it',
+    });
+    // No e-mail was asked for, so none is promised: the end does not say «controlla la tua e-mail» (and does not depend on the server's answer).
+    expect(await screen.findByRole('heading', { level: 1, name: 'Grazie, abbiamo ricevuto la tua scelta' })).toBeInTheDocument();
+    expect(screen.getByTestId('welcome-page')).toHaveAttribute('data-state', 'done');
+    expect(screen.getByTestId('welcome-page')).not.toHaveTextContent(/e-mail/i);
+  });
+
+  it('WelcomePage_EmailBoxTickedWithoutAValidAddress_IsRefusedOnTheAddressUntilTheBoxIsOffOrTheAddressIsRight', async () => {
+    submitConsent.mockResolvedValue({ confirmationSent: true });
+    renderPage();
+    await screen.findByTestId('welcome-form');
+
+    tick('welcome-consent-email');
+    tick('welcome-adult');
+    fireEvent.click(field('welcome-submit'));
+    expect(await screen.findByText('Inserisci l\'indirizzo email')).toBeInTheDocument();
+    expect(submitConsent).not.toHaveBeenCalled();
+
+    type('welcome-email', 'mario@');
+    expect(await screen.findByText('Inserisci un indirizzo email valido')).toBeInTheDocument();
+    expect(submitConsent).not.toHaveBeenCalled();
+
+    // The address is needed only with this box: with the E-mail box off (and WhatsApp on) its message goes away and the choice goes through.
+    type('welcome-phone', PHONE);
+    tick('welcome-consent-whatsapp');
+    tick('welcome-consent-email');
+    await waitFor(() => expect(screen.queryByText('Inserisci un indirizzo email valido')).not.toBeInTheDocument());
+    fireEvent.click(field('welcome-submit'));
+
+    await waitFor(() => expect(submitConsent).toHaveBeenCalledTimes(1));
+    const [, body] = submitConsent.mock.calls[0];
+    expect(body).not.toHaveProperty('email');
+    expect(body).toMatchObject({ phone: PHONE, consentEmail: false, consentWhatsApp: true });
+  });
+
   it('WelcomePage_WhatsAppOnANumberWithoutItsCountry_IsRefusedAndNothingIsSentUntilThePrefixIsTyped', async () => {
     submitConsent.mockResolvedValue({ confirmationSent: true });
     renderPage();

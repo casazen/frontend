@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { House, Link2Off, Loader2, MailCheck, WifiOff } from 'lucide-react';
+import { Check, House, Link2Off, Loader2, MailCheck, WifiOff } from 'lucide-react';
 import { z } from 'zod';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { Alert } from '@/components/ui/alert';
@@ -28,18 +28,14 @@ const PHONE_MAX_LENGTH = 40;
 const CONSENT_OUTDATED_CODE = 'welcome_consent_outdated';
 
 /**
- * What the guest types and ticks. The messages are i18n keys that `Field` translates. The e-mail is asked from the start (the confirmation
- * goes there); the phone only when WhatsApp is chosen. The rules are the API's (`WelcomeConsentService`): of age, at least one channel, and a
- * number for WhatsApp, which must say its country (`+` or `00`). Nothing is ticked at the start.
+ * What the guest types and ticks. The messages are i18n keys that `Field` translates. The e-mail is needed only with the E-mail box (the
+ * confirmation goes there, and the API reads the address only then: data minimisation), the phone only with the WhatsApp box. The rules are
+ * the API's (`WelcomeConsentService`): of age, at least one channel, and a number for WhatsApp, which must say its country (`+` or `00`).
+ * Nothing is ticked at the start.
  */
 const welcomeFormSchema = z
   .object({
-    email: z
-      .string()
-      .trim()
-      .min(1, 'publicBooking.validation.emailRequired')
-      .max(EMAIL_MAX_LENGTH)
-      .regex(z.regexes.email, 'publicBooking.validation.emailInvalid'),
+    email: z.string().trim().max(EMAIL_MAX_LENGTH),
     phone: z
       .string()
       .trim()
@@ -52,6 +48,12 @@ const welcomeFormSchema = z
   .superRefine((values, context) => {
     if (!values.consentEmail && !values.consentWhatsApp) {
       context.addIssue({ code: 'custom', path: ['consentEmail'], message: 'marketing.welcome.errors.channelRequired' });
+    }
+    // A guest who only wants WhatsApp types no address: it would be asked for nothing and never sent.
+    if (values.consentEmail && values.email === '') {
+      context.addIssue({ code: 'custom', path: ['email'], message: 'publicBooking.validation.emailRequired' });
+    } else if (values.consentEmail && !z.regexes.email.test(values.email)) {
+      context.addIssue({ code: 'custom', path: ['email'], message: 'publicBooking.validation.emailInvalid' });
     }
     if (values.consentWhatsApp && values.phone === '') {
       context.addIssue({ code: 'custom', path: ['consentWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPhone' });
@@ -122,7 +124,7 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
 
   return (
     <form onSubmit={(event) => void send(event)} noValidate className="space-y-5 text-left" data-testid="welcome-form">
-      <Field label={t('publicBooking.email')} hint={t('marketing.welcome.emailHint')} error={errors.email}>
+      <Field label={t('publicBooking.email')} hint={t('marketing.welcome.emailHint')} optional error={errors.email}>
         <Input
           id="welcome-email"
           type="email"
@@ -155,7 +157,11 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
                 id="welcome-consent-email"
                 ref={field.ref}
                 checked={field.value}
-                onCheckedChange={(checked) => field.onChange(checked === true)}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked === true);
+                  // The address is needed only with this box: a message already on it is checked again at once, not at the next press.
+                  if (errors.email) void trigger('email');
+                }}
                 aria-describedby={channelError ? 'welcome-channels-error' : undefined}
                 data-testid="welcome-consent-email"
               />
@@ -254,8 +260,9 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
  * `/benvenuto/:token`: the page a guest reaches by scanning the QR code in the apartment (E07/F04/US02/T02, NF-90, CRM-03). It welcomes the guest
  * with the names of the property and of the host; when the consent text has a version it also asks for an e-mail address, an optional phone
  * number, the channels the guest wants to be written to on (two boxes, never ticked, WhatsApp only with a number) and a declaration of age,
- * with the text of the consent and its version. Whatever the server answers to the consent, the page says the same thing, «controlla la tua
- * e-mail», so it can never be used to learn who is already a customer. A code that is unknown or was replaced says the page is not active.
+ * with the text of the consent and its version (the address only with the E-mail box). Whatever the server answers to the consent, the page says
+ * the same thing, «controlla la tua e-mail» (or, for a guest who chose WhatsApp only, that the choice was received), so it can never be used to
+ * learn who is already a customer. A code that is unknown or was replaced says the page is not active.
  * Public and never behind the CRM flag (a code already printed must keep working), not indexed, with no menu and no analytics.
  */
 export function WelcomePage() {
@@ -285,12 +292,16 @@ export function WelcomePage() {
   }
 
   const names = { property: page.data?.propertyName ?? '', host: page.data?.orgName ?? '' };
+  // The words of the end depend on what the guest chose (no e-mail to check for who chose WhatsApp only), never on what the server answered.
+  const confirmedByEmail = submit.variables?.consentEmail === true;
   const cards = {
     inactive: { tone: 'broken', icon: Link2Off, title: t('marketing.welcome.inactive.title'), description: t('marketing.welcome.inactive.description') },
     error: { tone: 'broken', icon: WifiOff, title: t('marketing.welcome.loadError.title'), description: t('marketing.welcome.loadError.description') },
     welcome: { tone: 'ask', icon: House, title: t('marketing.welcome.title', names), description: t('marketing.welcome.welcomeOnly', names) },
     ask: { tone: 'ask', icon: House, title: t('marketing.welcome.title', names), description: t('marketing.welcome.description', names) },
-    done: { tone: 'done', icon: MailCheck, title: t('marketing.welcome.done.title'), description: t('marketing.welcome.done.description') },
+    done: confirmedByEmail
+      ? { tone: 'done', icon: MailCheck, title: t('marketing.welcome.done.title'), description: t('marketing.welcome.done.description') }
+      : { tone: 'done', icon: Check, title: t('marketing.welcome.doneWhatsApp.title'), description: t('marketing.welcome.doneWhatsApp.description') },
   } as const;
 
   return (

@@ -10569,11 +10569,15 @@
       "consentVersion": "Optional. Text version: {{version}}",
       "description": "{{host}} welcomes you. If you like, leave us a contact to receive news and offers: it is optional and changes nothing about your stay.",
       "done": {
-        "description": "If the address is correct, you will get a message with a link to confirm your choice. Until you confirm, we will not write to you. If you only chose WhatsApp, there is nothing else to do.",
+        "description": "If the address is correct, you will get a message with a link to confirm your choice. Until you confirm, we will not write to you.",
         "title": "Check your e-mail to confirm"
       },
+      "doneWhatsApp": {
+        "description": "There is nothing else to do.",
+        "title": "Thank you, we received your choice"
+      },
       "emailChannel": "E-mail",
-      "emailHint": "We write here so you can confirm your choice.",
+      "emailHint": "Only needed if you choose e-mail: we write here so you can confirm your choice.",
       "errors": {
         "adultRequired": "To continue, confirm that you are at least 18 years old.",
         "channelRequired": "Choose at least one channel: e-mail or WhatsApp.",
