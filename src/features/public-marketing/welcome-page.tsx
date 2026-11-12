@@ -1,8 +1,8 @@
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
-import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Link, useParams } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import { Check, House, Link2Off, Loader2, MailCheck, WifiOff } from 'lucide-react';
 import { z } from 'zod';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
@@ -13,6 +13,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { hasInternationalPrefix, isValidPhone } from '@/features/public-booking/checkout/details-schema';
+import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 import { translateValidationMessage } from '@/i18n/validation-message';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { useSeoMeta } from '@/lib/seo-meta';
@@ -214,6 +215,14 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
           {t('marketing.welcome.consentVersion', { version })}
         </p>
       </fieldset>
+
+      {/* The page collects an address and a number from a person who may not have booked: the privacy notice is one click away before anything is sent. */}
+      <p className="text-xs leading-relaxed text-muted-foreground" data-testid="welcome-privacy">
+        <Trans
+          i18nKey="marketing.welcome.privacyNotice"
+          components={{ privacy: <Link to={LEGAL_DOCUMENT_PATHS.privacy} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2" /> }}
+        />
+      </p>
 
       <div className="space-y-1.5">
         <Controller

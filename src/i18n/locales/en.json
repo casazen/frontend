@@ -10597,6 +10597,7 @@
       "loading": "One moment…",
       "pageTitle": "Welcome",
       "phoneHint": "Only needed if you choose WhatsApp: type it with the international prefix, for example +39.",
+      "privacyNotice": "How your data is handled is explained in the <privacy>privacy notice</privacy>.",
       "submit": "Send my choice",
       "title": "Welcome to {{property}}",
       "welcomeOnly": "{{host}} welcomes you. Enjoy your stay!",

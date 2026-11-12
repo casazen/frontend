@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
@@ -73,6 +73,18 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     type('welcome-phone', PHONE);
     expect(field('welcome-consent-whatsapp')).toBeEnabled();
     expect(isTicked('welcome-consent-whatsapp')).toBe(false);
+  });
+
+  it('WelcomePage_Form_LinksToThePrivacyNoticeBeforeAnythingIsSent', async () => {
+    renderPage();
+    const form = await screen.findByTestId('welcome-form');
+
+    // The page collects an address and a number: the notice opens beside the form, in a new tab, so what was typed is not lost.
+    const link = within(form).getByRole('link', { name: 'informativa privacy' });
+    expect(link).toHaveAttribute('href', '/legale/privacy');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
+    expect(submitConsent).not.toHaveBeenCalled();
   });
 
   it('WelcomePage_SubmitWithoutTheDeclarationOfAge_IsRefusedAndNothingIsSent', async () => {

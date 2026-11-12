@@ -10597,6 +10597,7 @@
       "loading": "Un momento…",
       "pageTitle": "Benvenuto",
       "phoneHint": "Serve solo se scegli WhatsApp: scrivilo con il prefisso internazionale, per esempio +39.",
+      "privacyNotice": "Come vengono trattati i tuoi dati è spiegato nell'<privacy>informativa privacy</privacy>.",
       "submit": "Invia la mia scelta",
       "title": "Benvenuto a {{property}}",
       "welcomeOnly": "Ti dà il benvenuto {{host}}. Buon soggiorno!",
