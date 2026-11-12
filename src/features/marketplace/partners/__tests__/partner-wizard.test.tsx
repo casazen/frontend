@@ -111,7 +111,11 @@ beforeEach(async () => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
+
+/** The event the browser fires when it shows a page: `persisted` is true for one it brings back from its cache as it was left. */
+const pageShow = (persisted: boolean) => Object.assign(new Event('pageshow'), { persisted });
 
 describe('the first step: what to prepare', () => {
   it('PrepareStep_Opens_ShowsThePropertyDataWithACopyButtonForEachFieldAndTheChecklist', async () => {
@@ -191,6 +195,26 @@ describe('the hand-off to the partner', () => {
     renderWizard(`${PATH}?propertyId=prop-1`);
     fireEvent.click(await screen.findByTestId('wizard-draft-resume', {}, WAIT));
     await onStep('welcome-back');
+  });
+
+  it('HandoffStep_PageBroughtBackFromTheCacheOfTheBrowser_IsReadAgainSoThatTheButtonOfTheQuestionWorks', async () => {
+    givenThePartner();
+    const reload = vi.fn();
+    vi.stubGlobal('location', { ...window.location, reload });
+    renderWizard(`${PATH}?propertyId=prop-1&step=handoff`);
+    await screen.findByTestId('partner-handoff-step', {}, WAIT);
+
+    fireEvent.click(primaryButton());
+    await waitFor(() => expect(openPartnerSite).toHaveBeenCalledTimes(1), WAIT);
+    await onStep('welcome-back');
+    // The page is on its way out and the button that sent it there waits for ever: a page the browser brings back as it was left would keep «Sì, l'ho completata» busy.
+    expect(primaryButton()).toHaveAttribute('aria-busy', 'true');
+
+    // A normal load of the page says nothing; the page that comes back from the cache is read again (its address is already the one of «Bentornato»).
+    window.dispatchEvent(pageShow(false));
+    expect(reload).not.toHaveBeenCalled();
+    window.dispatchEvent(pageShow(true));
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   it('HandoffStep_AddressThatIsNotHttps_IsNeverOpened', async () => {

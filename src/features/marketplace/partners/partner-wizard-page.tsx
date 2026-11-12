@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Store } from 'lucide-react';
@@ -64,6 +64,16 @@ function PartnerWizard({ code }: { code: string }) {
   const declare = useDeclarePartner();
   // What a failure that has no message of its own is: the address of the site, or the declaration.
   const [failing, setFailing] = useState<'site' | 'declare'>('declare');
+
+  // Back from the partner's site with the «back» button, the browser may bring this page back as it was left: the button that went there is still busy (the promise it
+  // waits on never ends) and «Sì, l'ho completata» would stay out of reach. The address is already the one of «Bentornato», so reading the page again puts it right.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
 
   const propertyId = searchParams.get(MARKETPLACE_PROPERTY_PARAM) ?? undefined;
   const briefQuery = usePartnerBrief(code, propertyId);
