@@ -63,6 +63,12 @@ export function TenantDuesPage() {
         <h1 className="text-xl font-semibold">{t('tenantArea.dues.title')}</h1>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
       </header>
+      {(area.condominiumReports ?? []).map(report => <section key={report.id} className="space-y-2 rounded-md border p-4" data-testid="tenant-condominium-report">
+        <h2 className="font-semibold">{t('condoBook.tenantReport', { year: report.periodLabel })}</h2>
+        <p>{t('condoBook.tenantReportAmounts', { final: formatCurrency(report.recoverable, 'EUR'), advances: formatCurrency(report.advances, 'EUR'), prior: formatCurrency(report.prior, 'EUR'), balance: formatCurrency(report.balance, 'EUR') })}</p>
+        <p className="text-sm">{t('condoBook.tenantAdjustment')}</p>
+        {dues.filter(due => due.periodStart > report.periodEnd && due.components?.some(c => c.kind === 'CondominiumAdvance' && c.description?.includes('conguaglio esercizio precedente'))).slice(0, 1).map(due => <p key={due.id} className="font-medium">{t('condoBook.tenantNewAmount', { date: formatDate(due.periodStart), advance: formatCurrency(rentBreakdown(due).condominiumAdvance ?? 0, due.currency), total: formatCurrency(due.amount, due.currency) })}</p>)}
+      </section>)}
       <TenantSepaSettings leaseId={area.contract.id} />
       {dues.length > 0 ? <PaymentReport dues={dues} /> : null}
       {dues.length === 0 ? (

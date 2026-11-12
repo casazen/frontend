@@ -15,6 +15,10 @@ export function condominiumExpensePath(leaseId: string): string {
 const SOURCES: readonly TenantExpenseSource[] = ['FixedContract', 'ConfirmedBudget', 'Statements', 'Manual'];
 
 export const condominiumProposalApi = {
+  saved: async (leaseId: string): Promise<TenantExpenseProposal | null> => {
+    const result = await ApiClient.get<unknown>(condominiumExpensePath(leaseId));
+    return result == null ? null : parseProposal(result);
+  },
   propose: async (leaseId: string, body: ProposeTenantExpense): Promise<TenantExpenseProposal> =>
     parseProposal(await ApiClient.post<unknown>(condominiumExpensePath(leaseId), body)),
 };

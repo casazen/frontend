@@ -97,7 +97,11 @@ export interface TenantEmergency {
 }
 
 /** `GET /tenant-area/contracts/:leaseId`: only this contract and its property. */
+export interface TenantCondominiumReport {
+  id: string; periodLabel: string; periodEnd: string; recoverable: number; advances: number; prior: number; balance: number;
+}
 export interface TenantContractArea {
+  condominiumReports?: TenantCondominiumReport[];
   contract: TenantContract;
   property: TenantProperty;
   dues: TenantDue[];
