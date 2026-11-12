@@ -14839,7 +14839,7 @@
       "hostContactDirectly": "Per qualsiasi domanda contatta direttamente l'host della struttura."
     },
     "guestMarketing": {
-      "addressHint": "L'indirizzo con cui hai prenotato è un indirizzo temporaneo del portale: scrivi qui quello che usi davvero.",
+      "addressHint": "L'indirizzo della prenotazione non si può usare per le offerte (per esempio è un indirizzo temporaneo del portale): scrivi qui quello che usi davvero.",
       "addressLabel": "Il tuo indirizzo e-mail",
       "addressRequired": "Scrivi l'indirizzo e-mail su cui vuoi ricevere le offerte.",
       "channels": {

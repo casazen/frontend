@@ -46,8 +46,8 @@ interface GuestMarketingSectionProps {
  * change it, under the booking of "Le mie prenotazioni" (the {@link GuestAreaSlot} hooks it in, after the messages). Per channel it says where
  * the choice stands (not subscribed, to confirm, confirmed, offers on similar stays, unsubscribed) with the address or number masked; the
  * switches «E-mail» and «WhatsApp» start off, whatever the guest did elsewhere, and exist only when the server has a version of the consent
- * text, which is shown with it; an address (or a number) is asked for when the booking has none that can be used (the forward address of a
- * booking channel); a consent waiting for its confirmation can be asked for again; and «Non voglio ricevere offerte» withdraws a channel,
+ * text, which is shown with it; an address (or a number) is asked for when the booking has none to show or the server refused the one it has
+ * (the forward address of a booking channel); a consent waiting for its confirmation can be asked for again; and «Non voglio ricevere offerte» withdraws a channel,
  * after saying that it is final. Nothing is shown for a booking whose choices answer 404. Everything is read with the session of the guest, so it
  * never shows another guest's data.
  */
@@ -76,8 +76,6 @@ function ChannelRow({ channel, name, state, masked, canTurnOn, ticked, busy, onT
   const { t } = useTranslation();
   const switchId = useId();
   const stateText = STATES[state];
-  // The address of a contact used for the stay only is the forward address of a booking channel: no use showing it, even masked.
-  const shownValue = state === 'service_only' ? null : masked;
   const active = ACTIVE_STATES.includes(state);
 
   return (
@@ -91,9 +89,11 @@ function ChannelRow({ channel, name, state, masked, canTurnOn, ticked, busy, onT
           ) : (
             <p className="text-sm font-medium">{name}</p>
           )}
-          {shownValue ? (
+          {/* Always shown, whatever the state: `service_only` is also what the server gives to a real address or number the stay was booked
+              with, and the guest must see which one the offers would go to before switching the channel on. */}
+          {masked ? (
             <p className="break-all font-mono text-xs text-muted-foreground" data-testid={`guest-marketing-${channel}-value`}>
-              {shownValue}
+              {masked}
             </p>
           ) : null}
         </div>
@@ -165,8 +165,10 @@ function GuestMarketing({ session, code }: GuestMarketingProps) {
   };
 
   const refusedWith = (problemCode: string) => isAxiosError(save.error) && getProblemCode(save.error.response?.data) === problemCode;
-  // An address is asked for when the booking has no real one (the forward address of a channel, or none), or the server refused the one used.
-  const needsAddress = data !== undefined && (data.email.maskedAddress === null || data.email.state === 'service_only' || refusedWith(EMAIL_INVALID_CODE));
+  // An address is asked for only when the booking has none the server can show (`maskedAddress` null: no real address, and none typed before),
+  // or the server refused the one it has (422: an OTA forward address, which the answer cannot tell apart from a real one). Never from the
+  // state: `service_only` also holds real addresses, and the server ignores a typed address when the booking has a real one.
+  const needsAddress = data !== undefined && (data.email.maskedAddress === null || refusedWith(EMAIL_INVALID_CODE));
   const needsPhone = data !== undefined && (data.whatsapp.maskedPhone === null || refusedWith(PHONE_INVALID_CODE));
   const emailOffered = version !== null && data !== undefined && OFFERABLE_STATES.includes(data.email.state);
   const whatsappOffered = version !== null && data !== undefined && OFFERABLE_STATES.includes(data.whatsapp.state);

@@ -14839,7 +14839,7 @@
       "hostContactDirectly": "For any question contact the host of the property directly."
     },
     "guestMarketing": {
-      "addressHint": "The address you booked with is a temporary address of the booking channel: type here the one you really use.",
+      "addressHint": "The address of the booking cannot be used for offers (for example, it is a temporary address of the booking channel): type here the one you really use.",
       "addressLabel": "Your e-mail address",
       "addressRequired": "Type the e-mail address where you want to receive the offers.",
       "channels": {

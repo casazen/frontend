@@ -102,16 +102,17 @@ describe('GuestMarketingSection (NF-90)', () => {
     expect(screen.getByTestId('guest-marketing-resend')).toBeInTheDocument();
   });
 
-  it('GuestMarketingSection_BookingWithOnlyAForwardAddress_AsksForAnAddressAndSendsTheOneTyped', async () => {
-    get.mockResolvedValue(marketing({ email: { state: 'service_only', maskedAddress: 'a***@g***.example', canResend: false } }));
+  it('GuestMarketingSection_BookingWithNoAddressToShow_AsksForAnAddressAndSendsTheOneTyped', async () => {
+    // No address the server can show (the booking has none that is real and the guest never typed one): `maskedAddress` is null.
+    get.mockResolvedValue(marketing({ email: { state: 'none', maskedAddress: null, canResend: false } }));
     save.mockResolvedValue(marketing({ email: { state: 'pending', maskedAddress: 'g***@e***.com', canResend: true } }));
     renderSection();
     await screen.findByTestId('guest-marketing-email');
 
-    // The forward address is no use for offers: it is not even shown, and a contact for the stay is not a subscription.
     expect(screen.queryByTestId('guest-marketing-email-value')).not.toBeInTheDocument();
     fireEvent.click(emailSwitch());
     const address = await screen.findByTestId('guest-marketing-address');
+    expect(screen.getByTestId('guest-marketing-email')).toHaveTextContent('non si può usare per le offerte');
     fireEvent.click(screen.getByTestId('guest-marketing-save'));
 
     // No address, no consent: the field says so and nothing is sent.
@@ -123,6 +124,74 @@ describe('GuestMarketingSection (NF-90)', () => {
 
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     expect(save).toHaveBeenCalledWith(SESSION.accessToken, CODE, {
+      consentVersion: '2026-11-v1',
+      language: 'it',
+      email: { enabled: true, address: 'giulia@example.com' },
+    });
+  });
+
+  it('GuestMarketingSection_ServiceOnlyWithARealAddressAndNumber_ShowsThemMaskedAndAsksForNothing', async () => {
+    // «Service only» is also the state of a real address and number of the booking (a direct booking with no notice, a manual one, the
+    // check-in): the server uses them, and ignores an address typed beside a real one. So nothing is asked and both are shown.
+    get.mockResolvedValue(
+      marketing({
+        email: { state: 'service_only', maskedAddress: 'g***@e***.com', canResend: false },
+        whatsapp: { state: 'service_only', maskedPhone: '+39******567' },
+      }),
+    );
+    save.mockResolvedValue(
+      marketing({
+        email: { state: 'pending', maskedAddress: 'g***@e***.com', canResend: true },
+        whatsapp: { state: 'confirmed', maskedPhone: '+39******567' },
+      }),
+    );
+    renderSection();
+    await screen.findByTestId('guest-marketing-email');
+
+    // Where the offers would go is visible before the switch is turned on, for both channels.
+    expect(screen.getByTestId('guest-marketing-email-value')).toHaveTextContent('g***@e***.com');
+    expect(screen.getByTestId('guest-marketing-whatsapp-value')).toHaveTextContent('+39******567');
+    fireEvent.click(emailSwitch());
+    fireEvent.click(whatsappSwitch());
+    expect(screen.queryByTestId('guest-marketing-address')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('guest-marketing-phone')).not.toBeInTheDocument();
+    expect(screen.getByTestId('guest-marketing-email')).not.toHaveTextContent('temporaneo del portale');
+    fireEvent.click(screen.getByTestId('guest-marketing-save'));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save).toHaveBeenCalledWith(SESSION.accessToken, CODE, {
+      consentVersion: '2026-11-v1',
+      language: 'it',
+      email: { enabled: true },
+      whatsapp: { enabled: true },
+    });
+  });
+
+  it('GuestMarketingSection_ForwardAddressRefusedByTheServer_AsksForAnAddressAfterTheRefusalAndSendsTheOneTyped', async () => {
+    // The answer cannot tell an OTA forward address from a real one: the server says it with a 422, and only then the address is asked for.
+    get.mockResolvedValue(marketing({ email: { state: 'service_only', maskedAddress: 'a***@g***.example', canResend: false } }));
+    save
+      .mockRejectedValueOnce(httpError(422, { code: 'guest_marketing_email_invalid' }))
+      .mockResolvedValue(marketing({ email: { state: 'pending', maskedAddress: 'g***@e***.com', canResend: true } }));
+    renderSection();
+    await screen.findByTestId('guest-marketing-email');
+
+    fireEvent.click(emailSwitch());
+    expect(screen.queryByTestId('guest-marketing-address')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('guest-marketing-save'));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save).toHaveBeenNthCalledWith(1, SESSION.accessToken, CODE, { consentVersion: '2026-11-v1', language: 'it', email: { enabled: true } });
+    expect(await screen.findByTestId('guest-marketing-save-error')).toHaveTextContent('Scrivi un indirizzo e-mail corretto');
+    const address = await screen.findByTestId('guest-marketing-address');
+    // The switch stays on: the guest only has to type the address.
+    expect(emailSwitch()).toHaveAttribute('aria-checked', 'true');
+
+    fireEvent.change(address, { target: { value: 'giulia@example.com' } });
+    fireEvent.click(screen.getByTestId('guest-marketing-save'));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(save).toHaveBeenNthCalledWith(2, SESSION.accessToken, CODE, {
       consentVersion: '2026-11-v1',
       language: 'it',
       email: { enabled: true, address: 'giulia@example.com' },
