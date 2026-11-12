@@ -10712,6 +10712,22 @@
       "intro": "Tienili a portata di mano: ti guidiamo noi, un passo alla volta.",
       "title": "Cosa ti serve"
     },
+    "nextStep": {
+      "continue": "Continua",
+      "kicker": "Prossimo passo",
+      "later": "Più tardi",
+      "laterDone": "Fatto: lo trovi in Da fare.",
+      "laterError": "Non è stato possibile metterlo in Da fare. Riprova.",
+      "laterToast": "Lo trovi in Da fare",
+      "why": {
+        "checkInCompliance": "Il check-in online e gli adempimenti ti evitano sanzioni e telefonate.",
+        "checkListings": "Così sai che gli annunci sui canali sono completi.",
+        "connectChannels": "Così prenotazioni e calendari dei tuoi canali arrivano in CasaZen.",
+        "fiscalDocuments": "Stabilisci chi emette i documenti fiscali delle prenotazioni.",
+        "messagesAi": "Scegli come e quando scrivere ai tuoi ospiti.",
+        "pricesCalendar": "Prezzi e regole si impostano una volta sola e valgono su tutti i canali."
+      }
+    },
     "parts": {
       "activation": {
         "title": "Riepilogo e attivazione",
@@ -10757,6 +10773,34 @@
         "title": "I tuoi immobili",
         "what": "Abbina gli immobili di Octorate a quelli di CasaZen, o crea quelli che mancano."
       }
+    },
+    "path": {
+      "all": "Tutti i passi",
+      "continue": "Continua",
+      "next": "Prossimo: {{step}}",
+      "progress": "{{done}} di {{total}}",
+      "progressLabel": "Avanzamento del percorso",
+      "steps": {
+        "checkInCompliance": {
+          "title": "Check-in online e adempimenti"
+        },
+        "checkListings": {
+          "title": "Controlla gli annunci"
+        },
+        "connectChannels": {
+          "title": "Collega i canali"
+        },
+        "fiscalDocuments": {
+          "title": "Documenti fiscali"
+        },
+        "messagesAi": {
+          "title": "Messaggi e AI"
+        },
+        "pricesCalendar": {
+          "title": "Prezzi e calendario"
+        }
+      },
+      "title": "Inizia con CasaZen"
     },
     "progress": "{{done}} di {{total}}",
     "reasons": {

@@ -6,9 +6,12 @@ import {
   ONBOARDING_PART_KEYS,
   ONBOARDING_PART_REASONS,
   ONBOARDING_PART_STATES,
+  ONBOARDING_PATH_STEP_CODES,
   type OnboardingPart,
   type OnboardingPartKey,
+  type OnboardingPathStep,
 } from '@/types/onboarding.types';
+import { path, part, pathStep } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import { LATE_EVENING_UTC, withBrowserTimeZone } from '@/test/clock';
 import {
   ONBOARDING_PART_ICONS,
@@ -17,35 +20,25 @@ import {
   firstOpenPart,
   isOnboardingNeedCode,
   isOnboardingPartKey,
+  isPathIncomplete,
   knownNeeds,
   knownParts,
+  knownPathSteps,
   needKey,
+  nextPathStep,
+  nextStepWhyKey,
   normalizePartState,
   partPath,
   partTitleKey,
   partWhatKey,
   partsWaitedFor,
+  pathProgress,
+  pathStepTitleKey,
   reasonKey,
   stateKey,
+  stepAfterPart,
+  stepTargetPart,
 } from '../onboarding-parts';
-
-function part(code: OnboardingPartKey, overrides: Partial<OnboardingPart> = {}): OnboardingPart {
-  return {
-    code,
-    order: ONBOARDING_PART_KEYS.indexOf(code) + 1,
-    state: 'open',
-    reason: null,
-    done: 0,
-    total: 0,
-    requires: [],
-    deferrable: true,
-    needs: [],
-    remindAt: null,
-    assist: null,
-    launchTarget: 'connect',
-    ...overrides,
-  };
-}
 
 type Tree = { [key: string]: string | Tree };
 
@@ -207,6 +200,124 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
   });
 });
 
+describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
+  const codes = (steps: readonly OnboardingPathStep[]) => steps.map((step) => step.code);
+
+  it('KnownPathSteps_AStepNobodyKnowsOrWithNoKnownPart_IsLeftOutAndTheRestIsInOrder', () => {
+    const unknown = { ...pathStep('messagesAi'), code: 'timeTravel' as OnboardingPathStep['code'] };
+    const leadsNowhere = pathStep('fiscalDocuments', 'open', { parts: ['somethingNew' as OnboardingPartKey] });
+    const mixed = pathStep('connectChannels', 'open', { parts: ['somethingNew' as OnboardingPartKey, 'properties'] });
+
+    const known = knownPathSteps({ steps: [pathStep('pricesCalendar'), unknown, leadsNowhere, mixed, pathStep('pricesCalendar')] });
+
+    expect(codes(known)).toEqual(['connectChannels', 'pricesCalendar']);
+    // The parts of a step are reduced to the ones the app knows.
+    expect(known[0].parts).toEqual(['properties']);
+  });
+
+  it.each([undefined, null, {}, { steps: null }])('KnownPathSteps_NoPath_%j_IsEmpty', (value) => {
+    expect(knownPathSteps(value as never)).toEqual([]);
+  });
+
+  it('IsPathIncomplete_WhileOneStepIsVisible_AndComplete_WhenNoneIs', () => {
+    expect(isPathIncomplete(knownPathSteps(path({ connectChannels: 'done' })))).toBe(true);
+    const complete = Object.fromEntries(ONBOARDING_PATH_STEP_CODES.map((code) => [code, 'done'])) as Parameters<typeof path>[0];
+    expect(isPathIncomplete(knownPathSteps(path(complete)))).toBe(false);
+    // A step nobody provides is not something to do either.
+    expect(isPathIncomplete(knownPathSteps(path({ ...complete, messagesAi: 'notAvailable' })))).toBe(false);
+  });
+
+  it('PathProgress_CountsTheStepsDoneOverTheStepsThatApply', () => {
+    expect(pathProgress(knownPathSteps(path({ connectChannels: 'done', checkListings: 'done' })))).toEqual({ done: 2, total: 6 });
+    // A step the server says is not available can never be done: it does not keep the bar from its end.
+    expect(pathProgress(knownPathSteps(path({ connectChannels: 'done', messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' })))).toEqual({ done: 1, total: 4 });
+    expect(pathProgress([])).toEqual({ done: 0, total: 0 });
+  });
+
+  describe('nextPathStep: the step the server names', () => {
+    it('TheStepNamedInNext_WhenItIsVisible', () => {
+      const given = path({ connectChannels: 'done' });
+
+      expect(nextPathStep(given, knownPathSteps(given))?.code).toBe('checkListings');
+    });
+
+    it('NoStepNamed_NothingIsProposedBecauseTheHostPutOffWhatIsLeft', () => {
+      const given = path({ connectChannels: 'deferred', checkListings: 'deferred' }, null);
+
+      expect(nextPathStep(given, knownPathSteps(given))).toBeNull();
+    });
+
+    it('AStepThisVersionDoesNotKnow_FallsBackToTheFirstOneThatCanBeProposed', () => {
+      const given = { ...path({ connectChannels: 'deferred' }), next: 'timeTravel' as never };
+
+      expect(nextPathStep(given, knownPathSteps(given))?.code).toBe('checkListings');
+    });
+  });
+
+  describe('stepAfterPart: the one step to suggest at the end of a wizard', () => {
+    it('IsTheStepAfterTheOneTheWizardBelongsTo', () => {
+      const steps = knownPathSteps(path({ connectChannels: 'done' }));
+
+      expect(stepAfterPart(steps, 'listings')?.code).toBe('pricesCalendar');
+      expect(stepAfterPart(steps, 'pricesRules')?.code).toBe('checkInCompliance');
+    });
+
+    it('NeverSuggestsTheStepTheHostHasJustBeenThrough_EvenWhenItIsNotDoneYet', () => {
+      const steps = knownPathSteps(path());
+
+      expect(stepAfterPart(steps, 'listings')?.code).not.toBe('checkListings');
+      expect(stepAfterPart(steps, 'channels')?.code).toBe('checkListings');
+    });
+
+    it('SkipsAStepThatIsDoneNotAvailableOrPutOff', () => {
+      const steps = knownPathSteps(path({ connectChannels: 'done', checkListings: 'done', pricesCalendar: 'deferred', checkInCompliance: 'notAvailable' }));
+
+      expect(stepAfterPart(steps, 'listings')?.code).toBe('messagesAi');
+    });
+
+    it('NothingAfter_GoesBackToTheFirstStepThatIsStillToDo', () => {
+      const steps = knownPathSteps(path({ checkListings: 'done', pricesCalendar: 'done', checkInCompliance: 'done', messagesAi: 'done' }));
+
+      expect(stepAfterPart(steps, 'fiscalDocuments')?.code).toBe('connectChannels');
+    });
+
+    it('AWizardOutsideTheSteps_IsFollowedByTheFirstStepToDo', () => {
+      const steps = knownPathSteps(path({ connectChannels: 'done' }));
+
+      expect(stepAfterPart(steps, 'identification')?.code).toBe('checkListings');
+      expect(stepAfterPart(steps, 'activation')?.code).toBe('checkListings');
+    });
+
+    it('NothingLeftToSuggest_IsNull', () => {
+      // Only the step of the wizard itself is left, or everything else is put off.
+      expect(stepAfterPart(knownPathSteps(path({ checkListings: 'done', pricesCalendar: 'done', checkInCompliance: 'done', messagesAi: 'done', fiscalDocuments: 'done', connectChannels: 'done' })), 'listings')).toBeNull();
+      const onlyCurrent = knownPathSteps(path({ connectChannels: 'done', pricesCalendar: 'done', checkInCompliance: 'done', messagesAi: 'done', fiscalDocuments: 'done' }));
+      expect(stepAfterPart(onlyCurrent, 'listings')).toBeNull();
+    });
+  });
+
+  describe('stepTargetPart: the part a step opens', () => {
+    const connect = pathStep('connectChannels');
+
+    it('IsTheFirstPartOfTheStepThatIsStillToDo', () => {
+      const parts = [part('octorateConnection', { state: 'done' }), part('properties'), part('channels', { state: 'blocked' })];
+
+      expect(stepTargetPart(connect, parts)).toBe('properties');
+    });
+
+    it('SkipsPartsThatAreDoneOrNotAvailable', () => {
+      const parts = [part('octorateConnection', { state: 'notAvailable' }), part('properties', { state: 'done' }), part('channels', { state: 'deferred' })];
+
+      expect(stepTargetPart(connect, parts)).toBe('channels');
+    });
+
+    it('WithoutThePlan_OrWhenNothingIsLeft_IsTheFirstPartOfTheStep', () => {
+      expect(stepTargetPart(connect, [])).toBe('octorateConnection');
+      expect(stepTargetPart(connect, [part('octorateConnection', { state: 'done' }), part('properties', { state: 'done' }), part('channels', { state: 'done' })])).toBe('octorateConnection');
+    });
+  });
+});
+
 describe('the words of the plan, in both languages', () => {
   describe.each([
     ['it', itLocale],
@@ -236,6 +347,18 @@ describe('the words of the plan, in both languages', () => {
     it('TheMenuEntryAndTheThreeMomentsOfAReminderHaveTheirText', () => {
       expect(text('nav.onboardingPlan')).toEqual(expect.any(String));
       for (const choice of ['evening', 'tomorrow', 'nextWeek']) expect(text(`onboardingPlan.defer.options.${choice}`)).toEqual(expect.any(String));
+    });
+
+    it('EveryStepOfThePathHasItsNameAndTheLineThatSaysWhyItIsTheNextOne', () => {
+      for (const code of ONBOARDING_PATH_STEP_CODES) {
+        expect(text(pathStepTitleKey(code)), pathStepTitleKey(code)).toEqual(expect.any(String));
+        expect(text(nextStepWhyKey(code)), nextStepWhyKey(code)).toEqual(expect.any(String));
+      }
+    });
+
+    it('TheCardOfThePathAndTheSuggestionAtTheEndOfAWizardHaveTheirText', () => {
+      for (const key of ['title', 'progress', 'progressLabel', 'next', 'continue', 'all']) expect(text(`onboardingPlan.path.${key}`), key).toEqual(expect.any(String));
+      for (const key of ['kicker', 'continue', 'later', 'laterToast', 'laterDone', 'laterError']) expect(text(`onboardingPlan.nextStep.${key}`), key).toEqual(expect.any(String));
     });
   });
 

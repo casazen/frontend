@@ -34,6 +34,7 @@ const FLAGS_OFF: FeatureFlags = {
   supplierRequestBackups: false,
   agencyTier: false,
   crmMarketing: false,
+  octorateOnboarding: false,
 };
 const FLAGS_ON: FeatureFlags = {
   otaPartnerApi: true,
@@ -46,6 +47,7 @@ const FLAGS_ON: FeatureFlags = {
   supplierRequestBackups: true,
   agencyTier: true,
   crmMarketing: true,
+  octorateOnboarding: true,
 };
 
 function permissionsOf(context: AppContextKey): string[] {

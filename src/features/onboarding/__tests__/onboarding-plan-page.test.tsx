@@ -4,15 +4,15 @@ import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { AxiosError, AxiosHeaders } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
-import { ONBOARDING_PART_KEYS, type OnboardingPart, type OnboardingPartKey, type OnboardingPlan } from '@/types/onboarding.types';
+import { ONBOARDING_PART_KEYS, type OnboardingPart, type OnboardingPartKey } from '@/types/onboarding.types';
 import { partPath, partTitleKey } from '@/lib/onboarding-parts';
 import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock } from '@/test/clock';
 import { OnboardingPlanPage } from '../onboarding-plan-page';
+import { COLLABORATOR, OWNER, part, plan, problemError } from './onboarding-fixtures';
 
 vi.mock('@/api/onboarding.api', () => ({
   onboardingApi: { getPlan: vi.fn(), deferPart: vi.fn(), exitPart: vi.fn(), resumePart: vi.fn(), getStatus: vi.fn(), getPath: vi.fn() },
@@ -41,59 +41,6 @@ vi.mock('@/config/support.config', () => ({
     },
   },
 }));
-
-const OWNER = [{ contextKey: 'short-rent', roleKey: 'property_owner' }];
-const COLLABORATOR = [{ contextKey: 'short-rent', roleKey: 'collaborator' }];
-
-function part(code: OnboardingPartKey, overrides: Partial<OnboardingPart> = {}): OnboardingPart {
-  return {
-    code,
-    order: ONBOARDING_PART_KEYS.indexOf(code) + 1,
-    state: 'open',
-    reason: null,
-    done: 0,
-    total: 0,
-    requires: [],
-    deferrable: true,
-    needs: [],
-    remindAt: null,
-    assist: null,
-    launchTarget: 'connect',
-    ...overrides,
-  };
-}
-
-/**
- * A host a little way in: Octorate is connected, the properties are half matched (the part to do now), what hangs from them waits, and the
- * three parts nobody provides yet are not available. The other open part (identification) is one the host may put off.
- */
-function plan(overrides: Partial<Record<OnboardingPartKey, Partial<OnboardingPart>>> = {}): OnboardingPlan {
-  const base: Record<OnboardingPartKey, OnboardingPart> = {
-    octorateConnection: part('octorateConnection', { state: 'done', done: 1, total: 1, deferrable: false }),
-    properties: part('properties', { reason: 'mapping_unconfirmed', done: 1, total: 3, requires: ['octorateConnection'], deferrable: false }),
-    channels: part('channels', { state: 'blocked', reason: 'required_part_not_done', requires: ['properties'], deferrable: false }),
-    listings: part('listings', { state: 'blocked', reason: 'required_part_not_done', requires: ['channels'] }),
-    pricesRules: part('pricesRules', { state: 'blocked', reason: 'required_part_not_done', requires: ['properties'] }),
-    compliance: part('compliance', { state: 'blocked', reason: 'required_part_not_done', requires: ['properties'] }),
-    identification: part('identification', { reason: 'access_code_missing', done: 0, total: 2 }),
-    messagesAi: part('messagesAi', { state: 'notAvailable', reason: 'not_provided' }),
-    fiscalDocuments: part('fiscalDocuments', { state: 'notAvailable', reason: 'not_provided' }),
-    partners: part('partners', { state: 'notAvailable', reason: 'not_provided' }),
-    activation: part('activation', { state: 'blocked', reason: 'required_part_not_done', requires: ['octorateConnection', 'properties'] }),
-  };
-  const parts = ONBOARDING_PART_KEYS.map((code) => ({ ...base[code], ...overrides[code] }));
-  return {
-    parts,
-    needs: ['alloggiatiCredentials', 'istatCredentials', 'fiscalData', 'otaAccess', 'lockCode'],
-    path: { code: 'start-with-casazen', steps: [], next: null },
-    activated: false,
-  };
-}
-
-function problemError(status: number, body: Record<string, unknown>): AxiosError {
-  const config = { headers: new AxiosHeaders() };
-  return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, ...body } });
-}
 
 function Arrived() {
   return <p data-testid="arrived">{useLocation().pathname}</p>;

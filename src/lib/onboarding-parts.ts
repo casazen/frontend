@@ -4,11 +4,15 @@ import {
   ONBOARDING_PART_KEYS,
   ONBOARDING_PART_REASONS,
   ONBOARDING_PART_STATES,
+  ONBOARDING_PATH_STEP_CODES,
   type OnboardingNeedCode,
   type OnboardingPart,
   type OnboardingPartKey,
   type OnboardingPartReason,
   type OnboardingPartState,
+  type OnboardingPath,
+  type OnboardingPathStep,
+  type OnboardingPathStepCode,
   type OnboardingPlan,
 } from '@/types/onboarding.types';
 
@@ -121,6 +125,88 @@ export function firstOpenPart(parts: readonly OnboardingPart[]): OnboardingPart 
 export function partsWaitedFor(part: OnboardingPart, parts: readonly OnboardingPart[]): OnboardingPart[] {
   const required = Array.isArray(part.requires) ? part.requires : [];
   return parts.filter((candidate) => required.includes(candidate.code) && normalizePartState(candidate.state) !== 'done');
+}
+
+/** The title of a step of the path «Inizia con CasaZen» («Controlla gli annunci») and the line that says why it is the next one. */
+export const pathStepTitleKey = (code: OnboardingPathStepCode) => `onboardingPlan.path.steps.${code}.title`;
+export const nextStepWhyKey = (code: OnboardingPathStepCode) => `onboardingPlan.nextStep.why.${code}`;
+
+const PATH_STEP_CODES: ReadonlySet<string> = new Set(ONBOARDING_PATH_STEP_CODES);
+
+/**
+ * The steps of the connected path this version of the app knows, in the order of the path (UX-10). A step it does not know has no text to
+ * show, and one with no part this version knows leads nowhere: both are left out, never shown as a bare key. A step sent twice counts once.
+ * The parts of a step are reduced to the ones the app knows.
+ */
+export function knownPathSteps(path: Pick<OnboardingPath, 'steps'> | null | undefined): OnboardingPathStep[] {
+  const steps = path?.steps;
+  if (!Array.isArray(steps)) return [];
+  const seen = new Set<string>();
+  const known: OnboardingPathStep[] = [];
+  for (const step of steps) {
+    if (!step || !PATH_STEP_CODES.has(step.code) || seen.has(step.code)) continue;
+    const parts = Array.isArray(step.parts) ? step.parts.filter(isOnboardingPartKey) : [];
+    if (parts.length === 0) continue;
+    seen.add(step.code);
+    known.push({ ...step, parts, state: normalizePartState(step.state) });
+  }
+  return known.sort((a, b) => a.order - b.order);
+}
+
+/** The path is incomplete while there is something to do in one of its steps: the server marks such a step `visible`. Once none is, the path is complete. */
+export function isPathIncomplete(steps: readonly OnboardingPathStep[]): boolean {
+  return steps.some((step) => step.visible === true);
+}
+
+/**
+ * How far the host is: the steps that are done, over the steps that apply. A step the server says is not available (nobody provides its parts
+ * yet) can never be done, so it is not counted: «2 di 4», never a bar that cannot reach its end.
+ */
+export function pathProgress(steps: readonly OnboardingPathStep[]): { done: number; total: number } {
+  const applying = steps.filter((step) => step.state !== 'notAvailable');
+  return { done: applying.filter((step) => step.state === 'done').length, total: applying.length };
+}
+
+/** A step the host can be pointed at: there is something to do in it and they did not put it off (`next` of the path skips such a step too). */
+function isProposable(step: OnboardingPathStep): boolean {
+  return step.visible === true && step.state !== 'deferred';
+}
+
+/**
+ * The step to do next: the one the server names in `next`. When that is a step this version does not know, the first step that can be
+ * proposed; when the server names none (the host put off every step that is left) there is none, and nothing is proposed again at once.
+ */
+export function nextPathStep(path: Pick<OnboardingPath, 'next'> | null | undefined, steps: readonly OnboardingPathStep[]): OnboardingPathStep | null {
+  const named = path?.next;
+  if (!named) return null;
+  return steps.find((step) => step.code === named && step.visible === true) ?? (PATH_STEP_CODES.has(named) ? null : (steps.find(isProposable) ?? null));
+}
+
+/**
+ * The one step to suggest at the end of the wizard of `currentPart` (UX-10, AC-NF10-2): a step that can be proposed, never the one the
+ * wizard belongs to (the host has just been through it), and the first one after it in the path; when none comes after it, the first one that
+ * can be proposed (an earlier step the host left). A wizard that is not a part of any step (the identification, the partners) is followed
+ * by the first step to do. Null when there is nothing to suggest.
+ */
+export function stepAfterPart(steps: readonly OnboardingPathStep[], currentPart: OnboardingPartKey): OnboardingPathStep | null {
+  const current = steps.find((step) => step.parts.includes(currentPart));
+  const candidates = steps.filter((step) => step.code !== current?.code && isProposable(step));
+  return candidates.find((step) => (current ? step.order > current.order : true)) ?? candidates[0] ?? null;
+}
+
+/**
+ * The part a step opens and puts off: the first of its parts that is neither done nor not available, which only the plan can tell. Without
+ * the plan (or with no such part) the first part of the step.
+ */
+export function stepTargetPart(step: OnboardingPathStep, parts: readonly OnboardingPart[]): OnboardingPartKey {
+  const byCode = new Map(parts.map((part) => [part.code, part] as const));
+  const toDo = step.parts.find((code) => {
+    const part = byCode.get(code);
+    if (!part) return false;
+    const state = normalizePartState(part.state);
+    return state !== 'done' && state !== 'notAvailable';
+  });
+  return toDo ?? step.parts[0];
 }
 
 /** When a deferral is reminded: this evening, tomorrow morning or in a week (Europe/Rome). */

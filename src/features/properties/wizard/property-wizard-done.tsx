@@ -5,6 +5,7 @@ import { WizardDone } from '@/components/shared/wizard/wizard-done';
 import { Button } from '@/components/ui/button';
 import { isOpenBlocker } from '@/features/compliance/activation-wizard-model';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
+import { WizardNextStep } from '@/features/onboarding/components/wizard-next-step';
 import { useProperty } from '@/queries/use-properties';
 import { fixTargetFor } from './finish/finish-model';
 import { PROPERTIES_PATH, PROPERTY_CREATE_PATH, propertyCalendarPath, propertyWizardPath } from '../properties-paths';
@@ -58,6 +59,7 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
             </Button>
           </div>
         )}
+        <WizardNextStep currentPart="listings" />
       </WizardDone>
     );
   }
@@ -95,6 +97,7 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
           ))}
         </ul>
       ) : null}
+      <WizardNextStep currentPart="listings" />
     </WizardDone>
   );
 }

@@ -10712,6 +10712,22 @@
       "intro": "Keep them at hand: we guide you one step at a time.",
       "title": "What you need"
     },
+    "nextStep": {
+      "continue": "Continue",
+      "kicker": "Next step",
+      "later": "Later",
+      "laterDone": "Done: you will find it in your to-do list.",
+      "laterError": "We could not put it in your to-do list. Try again.",
+      "laterToast": "You'll find it in your to-do list",
+      "why": {
+        "checkInCompliance": "Online check-in and legal obligations spare you fines and phone calls.",
+        "checkListings": "So you know the listings on the channels are complete.",
+        "connectChannels": "So the bookings and calendars of your channels reach CasaZen.",
+        "fiscalDocuments": "Decide who issues the fiscal documents of the bookings.",
+        "messagesAi": "Choose how and when to write to your guests.",
+        "pricesCalendar": "Prices and rules are set once and apply to every channel."
+      }
+    },
     "parts": {
       "activation": {
         "title": "Summary and activation",
@@ -10757,6 +10773,34 @@
         "title": "Your properties",
         "what": "Match the Octorate properties to the CasaZen ones, or create the missing ones."
       }
+    },
+    "path": {
+      "all": "All steps",
+      "continue": "Continue",
+      "next": "Next: {{step}}",
+      "progress": "{{done}} of {{total}}",
+      "progressLabel": "Progress of the path",
+      "steps": {
+        "checkInCompliance": {
+          "title": "Online check-in and legal obligations"
+        },
+        "checkListings": {
+          "title": "Check your listings"
+        },
+        "connectChannels": {
+          "title": "Connect your channels"
+        },
+        "fiscalDocuments": {
+          "title": "Fiscal documents"
+        },
+        "messagesAi": {
+          "title": "Messages and AI"
+        },
+        "pricesCalendar": {
+          "title": "Prices and calendar"
+        }
+      },
+      "title": "Start with CasaZen"
     },
     "progress": "{{done}} of {{total}}",
     "reasons": {
