@@ -23,7 +23,7 @@ jobs:
   e2e-l2-shard:
     name: E2E L2 (demo) shard ${{ matrix.shard }}/${{ strategy.job-total }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
