@@ -566,6 +566,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The guided request of a function of the channel manager's license (E09/F02/US04/T03, MKT-03, PO-12, D21): CasaZen cannot switch a module of the license on, so the
+    // wizard prepares the request and records it as Requested until the license shows the module. In no menu: the cards and the detail of the function lead here. Same
+    // permission and flag as the activation: the license is read from, and the request is recorded for, the connected channel manager.
+    path: '/app/short-rent/marketplace/request/:moduleCode',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/functions/licensed-request-wizard-page')).LicensedRequestWizardPage,
+    }),
+  },
+  {
     // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
     // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',

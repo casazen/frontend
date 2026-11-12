@@ -319,6 +319,18 @@ export function useLicensedFunctions(propertyId: string | null | undefined, opti
   });
 }
 
+/**
+ * The functions of the license of the property as the server has them now: the step that decides whether the request can go on reads them, and a property that has
+ * no confirmed listing (or an organization that is not connected) is the refusal that read throws.
+ */
+export function fetchLicensedFunctions(queryClient: QueryClient, propertyId: string, language: MarketplaceLanguage): Promise<MarketplaceFunctionList> {
+  return queryClient.fetchQuery({
+    queryKey: licensedFunctionsKey(propertyId, language),
+    queryFn: () => getLicensedFunctions(propertyId, language),
+    staleTime: 0,
+  });
+}
+
 /** What a read or a request of the license leaves behind: the list of the property is the one the server gave, and the pages of the marketplace read again. */
 function rememberFunctions(queryClient: QueryClient, list: MarketplaceFunctionList, language: MarketplaceLanguage): void {
   queryClient.setQueryData(licensedFunctionsKey(list.propertyId, language), list);

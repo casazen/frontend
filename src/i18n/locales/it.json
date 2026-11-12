@@ -1427,6 +1427,8 @@
       "marketplaceConnectionExists": "Questo immobile ha già un collegamento a questo canale nel tuo channel manager, creato fuori da CasaZen. Toglilo da lì e riprova.",
       "marketplaceConnectionMissing": "Il collegamento non c'è più sul channel manager: torna al passo «Collegamento».",
       "marketplaceCredentialsRequired": "Per questo canale servono i dati di accesso: torna al passo «Accesso».",
+      "marketplaceFunctionAlreadyActive": "La tua licenza mostra già questa funzione come attiva: non serve chiederla.",
+      "marketplaceFunctionUnknown": "Questa funzione non è tra quelle della licenza.",
       "marketplaceMappingInvalid": "Una delle camere scelte non è valida. Torna indietro e scegli di nuovo.",
       "marketplaceMappingRequired": "Collega almeno una camera del canale.",
       "marketplaceOctorateNotConnected": "Il tuo channel manager non è collegato a CasaZen. Collegalo e riprova.",
@@ -10898,6 +10900,117 @@
       "thisChannel": "questo canale",
       "title": "Attiva {{name}}",
       "titleGeneric": "Attiva un'integrazione"
+    },
+    "licensed": {
+      "ask": {
+        "after": "Quando hai fatto la richiesta, premi «Ho fatto la richiesta»: la funzione risulta «Richiesta» finché non compare nella tua licenza.",
+        "alreadyOn": "La licenza mostra già questa funzione come attiva: non serve chiederla.",
+        "alreadyRequested": "Hai già registrato questa richiesta. Puoi rileggere il testo o andare avanti.",
+        "copied": "Testo copiato",
+        "copy": "Copia il testo",
+        "copyFailed": "Non riesco a copiare il testo: selezionalo e copialo a mano.",
+        "explain": "CasaZen non può attivare questa funzione: fa parte della licenza del tuo channel manager e la chiedi tu. Ti prepariamo il testo.",
+        "finish": "Ho fatto la richiesta",
+        "loading": "Preparo il testo della richiesta…",
+        "textLabel": "Testo della richiesta al channel manager",
+        "toFix": "Questa funzione non risulta più nella licenza: puoi chiederla di nuovo con lo stesso testo.",
+        "unknownFunction": "Questa funzione non è tra quelle della licenza."
+      },
+      "backToMarketplace": "Torna al Marketplace",
+      "chooseFirst": {
+        "action": "Scegli l'immobile",
+        "text": "Prima scegli l'immobile per cui chiedere la funzione."
+      },
+      "description": "Ti spieghiamo la funzione e prepariamo la richiesta per il tuo channel manager.",
+      "errors": {
+        "noProperty": "Scegli un immobile.",
+        "requestFailed": "Non siamo riusciti a registrare la richiesta. Riprova tra poco."
+      },
+      "exit": {
+        "saveAndExit": "Salva ed esci",
+        "saved": "Abbiamo salvato a che punto sei: riprendi quando vuoi dal Marketplace."
+      },
+      "function": {
+        "alreadyActive": "La tua licenza mostra già questa funzione come attiva per questo immobile.",
+        "audience": "Per chi è",
+        "cost": "Quanto costa",
+        "costUnknown": "Non specificato",
+        "license": "La tua licenza",
+        "loading": "Carico la scheda…",
+        "loadingLicense": "Leggo la tua licenza…",
+        "noRoomLicense": "Senza una licenza per camera non pubblichiamo prezzi e disponibilità.",
+        "notRead": "non ancora letto",
+        "plan": "Piano",
+        "readAt": "Letta il {{time}}",
+        "rooms": "Camere comprese",
+        "whatItDoes": "Cosa fa"
+      },
+      "notFound": {
+        "text": "Questo indirizzo non porta a una funzione del tuo channel manager.",
+        "title": "Funzione non trovata"
+      },
+      "problem": {
+        "generic": "Non riesco a leggere la tua licenza. Riprova tra poco.",
+        "notConnected": "Il tuo channel manager non è ancora collegato a CasaZen.",
+        "notConnectedLink": "Collega il channel manager",
+        "notLinked": "Questo immobile non è ancora collegato al tuo channel manager: la licenza è di ogni immobile.",
+        "notLinkedLink": "Collega gli immobili",
+        "retry": "Riprova"
+      },
+      "property": {
+        "legend": "Immobile per cui chiedere la funzione",
+        "loadError": "Non riesco a caricare i tuoi immobili.",
+        "loading": "Carico i tuoi immobili…",
+        "none": "Non hai ancora immobili in Affitti brevi: la licenza è di ogni immobile."
+      },
+      "requested": {
+        "checkFailed": "Non riesco a leggere la licenza ora. Riprova tra poco.",
+        "checkNow": "Controlla ora",
+        "done": "Fatto",
+        "later": "Più tardi",
+        "lead": "Abbiamo registrato la tua richiesta. La funzione resta «Richiesta» finché non compare nella tua licenza.",
+        "nextStep": "Prossimo passo: controlla la richiesta tra gli attivi.",
+        "notYet": "Il modulo non compare ancora nella licenza: continuiamo a controllare.",
+        "nowActive": "Il modulo compare nella licenza: la funzione è attiva.",
+        "seeActive": "Vai agli attivi",
+        "statusLabel": "Stato",
+        "title": {
+          "active": "La funzione è attiva",
+          "none": "Nessuna richiesta registrata",
+          "requested": "Richiesta registrata",
+          "toFix": "La funzione non risulta più nella licenza"
+        },
+        "whatNext": {
+          "checkNow": "Se vuoi saperlo subito, premi «Controlla ora».",
+          "daily": "Controlliamo la tua licenza ogni giorno e portiamo la scheda su «Attivo» quando il modulo compare."
+        }
+      },
+      "status": {
+        "active": "Attiva",
+        "notActive": "Non attiva",
+        "requested": "Richiesta",
+        "toFix": "Da correggere"
+      },
+      "steps": {
+        "ask": {
+          "label": "Richiesta",
+          "purpose": "Ti prepariamo il testo da mandare al tuo channel manager.",
+          "title": "Chiedi «{{name}}»"
+        },
+        "function": {
+          "label": "Funzione",
+          "purpose": "Cosa fa, per chi è e cosa dice la tua licenza.",
+          "title": "Cos'è «{{name}}»"
+        },
+        "property": {
+          "label": "Immobile",
+          "purpose": "Una funzione fa parte della licenza di un immobile.",
+          "title": "Per quale immobile?"
+        }
+      },
+      "thisFunction": "questa funzione",
+      "title": "Richiedi «{{name}}»",
+      "titleGeneric": "Richiedi una funzione"
     },
     "status": {
       "Active": "Attivo",

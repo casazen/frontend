@@ -1427,6 +1427,8 @@
       "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
       "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
       "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
+      "marketplaceFunctionAlreadyActive": "Your license already shows this function as active: there is no need to ask for it.",
+      "marketplaceFunctionUnknown": "This function is not one of the license.",
       "marketplaceMappingInvalid": "One of the chosen rooms is not valid. Go back and choose again.",
       "marketplaceMappingRequired": "Link at least one room of the channel.",
       "marketplaceOctorateNotConnected": "Your channel manager is not connected to CasaZen. Connect it and try again.",
@@ -10898,6 +10900,117 @@
       "thisChannel": "this channel",
       "title": "Activate {{name}}",
       "titleGeneric": "Activate an integration"
+    },
+    "licensed": {
+      "ask": {
+        "after": "When you have made the request, press “I made the request”: the function stays “Requested” until it shows up in your license.",
+        "alreadyOn": "Your license already shows this function as active: there is no need to ask for it.",
+        "alreadyRequested": "You have already recorded this request. You can read the text again or go on.",
+        "copied": "Text copied",
+        "copy": "Copy the text",
+        "copyFailed": "We could not copy the text: select it and copy it by hand.",
+        "explain": "CasaZen cannot switch this function on: it is part of your channel manager's license and you ask for it. We prepare the text for you.",
+        "finish": "I made the request",
+        "loading": "Preparing the text of the request…",
+        "textLabel": "Text of the request to the channel manager",
+        "toFix": "This function is no longer in your license: you can ask for it again with the same text.",
+        "unknownFunction": "This function is not one of the license."
+      },
+      "backToMarketplace": "Back to the Marketplace",
+      "chooseFirst": {
+        "action": "Choose the property",
+        "text": "First choose the property to ask the function for."
+      },
+      "description": "We explain the function and prepare the request for your channel manager.",
+      "errors": {
+        "noProperty": "Choose a property.",
+        "requestFailed": "We could not record the request. Try again in a moment."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "function": {
+        "alreadyActive": "Your license already shows this function as active for this property.",
+        "audience": "Who it is for",
+        "cost": "What it costs",
+        "costUnknown": "Not specified",
+        "license": "Your license",
+        "loading": "Loading the card…",
+        "loadingLicense": "Reading your license…",
+        "noRoomLicense": "Without a license per room we do not publish prices or availability.",
+        "notRead": "not read yet",
+        "plan": "Plan",
+        "readAt": "Read on {{time}}",
+        "rooms": "Rooms included",
+        "whatItDoes": "What it does"
+      },
+      "notFound": {
+        "text": "This address does not lead to a function of your channel manager.",
+        "title": "Function not found"
+      },
+      "problem": {
+        "generic": "We could not read your license. Try again in a moment.",
+        "notConnected": "Your channel manager is not connected to CasaZen yet.",
+        "notConnectedLink": "Connect the channel manager",
+        "notLinked": "This property is not linked to your channel manager yet: the license belongs to each property.",
+        "notLinkedLink": "Link your properties",
+        "retry": "Try again"
+      },
+      "property": {
+        "legend": "Property to ask the function for",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: the license belongs to each property."
+      },
+      "requested": {
+        "checkFailed": "We could not read the license right now. Try again in a moment.",
+        "checkNow": "Check now",
+        "done": "Done",
+        "later": "Later",
+        "lead": "We recorded your request. The function stays “Requested” until it shows up in your license.",
+        "nextStep": "Next step: check the request among the active ones.",
+        "notYet": "The module does not show up in the license yet: we keep checking.",
+        "nowActive": "The module shows up in the license: the function is active.",
+        "seeActive": "Go to the active ones",
+        "statusLabel": "Status",
+        "title": {
+          "active": "The function is active",
+          "none": "No request recorded",
+          "requested": "Request recorded",
+          "toFix": "The function is no longer in the license"
+        },
+        "whatNext": {
+          "checkNow": "If you want to know right away, press “Check now”.",
+          "daily": "We check your license every day and switch the card to “Active” when the module shows up."
+        }
+      },
+      "status": {
+        "active": "Active",
+        "notActive": "Not active",
+        "requested": "Requested",
+        "toFix": "To fix"
+      },
+      "steps": {
+        "ask": {
+          "label": "Request",
+          "purpose": "We prepare the text to send to your channel manager.",
+          "title": "Ask for “{{name}}”"
+        },
+        "function": {
+          "label": "Function",
+          "purpose": "What it does, who it is for and what your license says.",
+          "title": "What “{{name}}” is"
+        },
+        "property": {
+          "label": "Property",
+          "purpose": "A function is part of the license of a property.",
+          "title": "For which property?"
+        }
+      },
+      "thisFunction": "this function",
+      "title": "Request “{{name}}”",
+      "titleGeneric": "Request a function"
     },
     "status": {
       "Active": "Active",
