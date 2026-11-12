@@ -1,3 +1,5 @@
+import type { InvoiceDataText, InvoiceRecipientKind } from './invoice-data.types';
+
 export type GuestCheckInSessionStatus =
   | 'Inviato'
   | 'InCompilazione'
@@ -97,6 +99,14 @@ export interface PublicCheckInContextDto {
   language?: string;
   /** The languages the guest can choose. Open session only. */
   supportedLanguages?: string[];
+  /**
+   * The answer to «Ti serve la fattura?» is already yes (FIS-01, E06/F02/US01/T03): the step starts with the question answered. Open session only.
+   * The invoice data itself is write-only from this page (the link is anonymous): the page never receives a fiscal code, a VAT number, an address or
+   * a PEC, only this flag and `hasInvoiceData`.
+   */
+  invoiceRequested?: boolean;
+  /** The booking already has the data of an invoice recipient (the host wrote it, or the channel manager had it); never its content. Open session only. */
+  hasInvoiceData?: boolean;
 }
 
 /** Answer of `PUT /public/checkin/{token}/language`: the language now saved on the session. */
@@ -149,6 +159,17 @@ export interface StayGuestSubmit {
 }
 
 /**
+ * The «Ti serve la fattura?» block of the check-in (API DTO `PublicCheckInInvoiceDto`, FIS-01, E06/F02/US01/T03): sent only for a «yes». Everything
+ * but `needInvoice` is optional and write-only, a text the guest left empty is not sent, and the server checks the formats as a whole (422
+ * `invoice_data_*` with the `field`, nothing saved, the check-in included). The kind of recipient and the country go with the texts, never
+ * alone: a block with only a kind would ask for an identification the guest was not asked for.
+ */
+export interface PublicCheckInInvoiceRequest extends InvoiceDataText {
+  needInvoice: boolean;
+  recipientKind?: InvoiceRecipientKind;
+}
+
+/**
  * Body of `POST /public/checkin/{token}` (API DTO `PublicCheckInSubmitRequest`). No consent for the Alloggiati
  * registration (legal obligation, CO-15): only the optional marketing consent, offered when the context has its version.
  * NF-05 adds per-channel consent with a separate marketing email.
@@ -161,6 +182,11 @@ export interface PublicCheckInSubmitRequest {
   marketingConsentWhatsApp: boolean;
   /** Marketing email address (required when any channel is ticked, NF-05). */
   marketingEmail?: string | null;
+  /**
+   * The optional answer to «Ti serve la fattura?» (FIS-01): present only when the guest said yes. A guest who skips the step, or says no, sends no
+   * block at all, and the check-in is never blocked by it.
+   */
+  invoice?: PublicCheckInInvoiceRequest;
 }
 
 /** One entry of an official Alloggiati table. */

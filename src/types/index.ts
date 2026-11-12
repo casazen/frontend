@@ -48,4 +48,5 @@ export * from './listing.types';
 export * from './notification-preferences.types';
 export * from './message-hub.types';
 export * from './fiscal-issuer.types';
+export * from './invoice-data.types';
 export * from './marketplace';

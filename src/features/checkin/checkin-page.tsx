@@ -12,8 +12,10 @@ import { publicCheckinApi } from '@/api/checkin.api';
 import {
   MAX_STAY_GUESTS,
   createPublicCheckInFormSchema,
+  emptyInvoiceStep,
   followerTypeOf,
   guestFormPathOf,
+  initialInvoiceStep,
   initialStayGuests,
   officialListIssues,
   requiredStatisticalFields,
@@ -26,20 +28,35 @@ import {
 } from './schemas/checkin.schema';
 import { StayGuestDocumentFields, StayGuestPersonalFields } from './components/stay-guest-fields';
 import { DocumentReadStep } from './components/document-read-step';
+import { InvoiceStep } from './components/invoice-step';
 import { LanguageSwitcher } from './components/language-switcher';
 import { isListAvailable, type CodeTableSource } from './components/code-table';
 import { offeredGuestLocales, resolveGuestLocale, useGuestPageLocale, type GuestLocale } from './lib/guest-locale';
 import { guestProblemMessage, translateGuestServerCode } from './lib/guest-errors';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { readInvoiceDataProblems } from '@/lib/invoice-data-schema';
 import { getServerFieldErrorsByPath } from '@/lib/server-validation-errors';
 import { CheckCircle2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
+import { INVOICE_DATA_FIELDS } from '@/types/invoice-data.types';
 import type { AlloggiatiCodeList, CheckInDocumentReadResult, StayGuestType } from '@/types/public-checkin.types';
 import { ConsentStep } from './ConsentStep';
 
 type FormPath = FieldPath<PublicCheckInFormValues>;
 
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
-const TOTAL_STEPS = 4;
+
+/**
+ * The steps of the page, in order: the photo of the document, the guests, the document, the invoice (FIS-01, optional) and the consents. The
+ * invoice step comes after everything the guests say about themselves and before the privacy notice, which stays the last thing the guest reads
+ * before sending.
+ */
+const STEP_SCAN = 1;
+const STEP_GUESTS = 2;
+const STEP_DOCUMENT = 3;
+const STEP_INVOICE = 4;
+const STEP_CONSENTS = 5;
+const STEPS = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_INVOICE, STEP_CONSENTS] as const;
+const TOTAL_STEPS = STEPS.length;
 
 function scanReasonKey(reason?: string | null): string {
   return reason === 'unavailable' || reason === 'budget' ? 'checkin.scanUnavailable' : 'checkin.scanUnread';
@@ -84,6 +101,9 @@ function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
   );
 }
 
+/** The fields of the invoice step checked before leaving it: the answer and the data of a «yes» (nothing of it is checked for a «no» or no answer). */
+const INVOICE_PATHS: FormPath[] = ['invoice.answer', ...INVOICE_DATA_FIELDS.map((field) => `invoice.${field}` as const)];
+
 /** Server error path → the form path that shows it, or null when the form has no such field. */
 function toFormPath(path: string, guestCount: number): FormPath | null {
   if (path === 'marketingConsentEmail') return 'marketingConsentEmail';
@@ -108,6 +128,7 @@ function countFieldErrors(errors: FieldErrors | undefined): number {
 function emptyForm(): PublicCheckInFormValues {
   return {
     guests: [stayGuestDefaults('SingleGuest')],
+    invoice: emptyInvoiceStep(),
     marketingConsentEmail: false,
     marketingConsentWhatsApp: false,
     marketingEmail: '',
@@ -132,7 +153,7 @@ export function CheckInPage() {
   const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const saveLanguage = useSetCheckInLanguage(token);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<number>(STEP_SCAN);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [languageNotSaved, setLanguageNotSaved] = useState(false);
@@ -166,7 +187,9 @@ export function CheckInPage() {
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
 
   // The form starts from what the server has on file (the guests and how many are declared) and is set again only when that changes: a
-  // new `context` object with the same data (a refetch, another field of the context) must never wipe what the guest has typed.
+  // new `context` object with the same data (a refetch, another field of the context) must never wipe what the guest has typed. The invoice
+  // step starts with the guest's «yes» when the booking has it (the flags of the context, never the data), and is not part of that key: the
+  // flags do not change while the guest fills in the form.
   const startedFrom = useRef<string | null>(null);
   useEffect(() => {
     if (!context || context.completed) return;
@@ -175,6 +198,7 @@ export function CheckInPage() {
     startedFrom.current = onFile;
     reset({
       guests: initialStayGuests(context.guests, context.declaredGuests),
+      invoice: initialInvoiceStep(context),
       marketingConsentEmail: false,
       marketingConsentWhatsApp: false,
       marketingEmail: '',
@@ -218,9 +242,10 @@ export function CheckInPage() {
 
   const stepPaths = (currentStep: number): FormPath[] => {
     const current = getValues('guests');
-    if (currentStep === 2) return personalPaths(current, statisticalFields);
-    if (currentStep === 3) return documentPaths(current);
-    if (currentStep === 4) return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
+    if (currentStep === STEP_GUESTS) return personalPaths(current, statisticalFields);
+    if (currentStep === STEP_DOCUMENT) return documentPaths(current);
+    if (currentStep === STEP_INVOICE) return INVOICE_PATHS;
+    if (currentStep === STEP_CONSENTS) return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
     return [];
   };
 
@@ -229,13 +254,17 @@ export function CheckInPage() {
   const problemCount = countFieldErrors(form.formState.errors);
 
   const goNext = async () => {
-    if (step === 1) {
-      setStep(2);
+    if (step === STEP_SCAN) {
+      setStep(STEP_GUESTS);
       return;
     }
-    const extra = officialListIssues(getValues('guests'), context?.availableCodeTables ?? []).filter((issue) =>
-      step === 2 ? issue.field !== 'documentIssuePlaceName' : issue.field === 'documentIssuePlaceName',
-    );
+    // The official lists belong to the two steps of the guests; the invoice step has none (and is never in the way of the check-in without a reason).
+    const extra =
+      step === STEP_GUESTS || step === STEP_DOCUMENT
+        ? officialListIssues(getValues('guests'), context?.availableCodeTables ?? []).filter((issue) =>
+            step === STEP_GUESTS ? issue.field !== 'documentIssuePlaceName' : issue.field === 'documentIssuePlaceName',
+          )
+        : [];
     const valid = await trigger(stepPaths(step));
     extra.forEach((issue) => setError(`guests.${issue.index}.${issue.field}`, { type: 'official', message: issue.message }));
     if (valid && extra.length === 0) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
@@ -326,6 +355,17 @@ export function CheckInPage() {
           return;
         }
 
+        // The invoice block the server refused (422 `invoice_data_*`, FIS-01): nothing was saved, the check-in included. The guest goes back to the
+        // invoice step with the error on each field the server names, in the words of the page, and everything typed is still in the form.
+        const invoiceProblems = readInvoiceDataProblems(error);
+        if (invoiceProblems.length > 0) {
+          invoiceProblems.forEach(({ field, code }) => setError(`invoice.${field}`, { type: 'server', message: code }));
+          setStep(STEP_INVOICE);
+          setSubmitError(t('checkin.fixHighlightedFields'));
+          reportProblems();
+          return;
+        }
+
         const current = getValues('guests');
         // The 400 carries the key of each message (`codes`): the page writes it in its own language, and shows the message of the server
         // only for a key it does not know.
@@ -337,7 +377,7 @@ export function CheckInPage() {
           .filter((entry): entry is { path: FormPath; message: string } => entry.path !== null);
         invalid.forEach(({ path, message }) => setError(path, { type: 'server', message }));
 
-        const firstInvalidStep = [2, 3, 4].find((candidate) => {
+        const firstInvalidStep = [STEP_GUESTS, STEP_DOCUMENT, STEP_CONSENTS].find((candidate) => {
           const paths = stepPaths(candidate);
           return invalid.some(({ path }) => paths.includes(path));
         });
@@ -431,17 +471,18 @@ export function CheckInPage() {
           )}
         </div>
         <div className="flex justify-center gap-2" data-testid="checkin-progress">
-          {[1, 2, 3, 4].map((n) => (
+          {STEPS.map((n) => (
             <div key={n} className={`h-2 w-16 rounded-full ${n <= step ? 'bg-primary' : 'bg-muted'}`} />
           ))}
         </div>
         <Card>
           <CardHeader>
             <CardTitle>
-              {step === 1 && t('checkin.stepScan')}
-              {step === 2 && t('checkin.stepGuests')}
-              {step === 3 && t('checkin.stepDocument')}
-              {step === 4 && t('checkin.stepConsents')}
+              {step === STEP_SCAN && t('checkin.stepScan')}
+              {step === STEP_GUESTS && t('checkin.stepGuests')}
+              {step === STEP_DOCUMENT && t('checkin.stepDocument')}
+              {step === STEP_INVOICE && t('checkin.invoice.title')}
+              {step === STEP_CONSENTS && t('checkin.stepConsents')}
             </CardTitle>
             <CardDescription>{t('checkin.stepOf', { step, total: TOTAL_STEPS })}</CardDescription>
           </CardHeader>
@@ -452,17 +493,17 @@ export function CheckInPage() {
                 <p key={focusRequest} role="status" className="sr-only" data-testid="checkin-announcement">
                   {focusRequest > 0 && problemCount > 0 ? t('checkin.errors.summary', { count: problemCount }) : null}
                 </p>
-                {step === 1 && (
+                {step === STEP_SCAN && (
                   <DocumentReadStep
                     reading={readingDocument}
                     message={scanMessage}
                     readCount={documentsRead}
                     onFile={(file) => { void readDocument(file); }}
-                    onManual={() => setStep(2)}
-                    onContinue={() => setStep(2)}
+                    onManual={() => setStep(STEP_GUESTS)}
+                    onContinue={() => setStep(STEP_GUESTS)}
                   />
                 )}
-                {step === 2 && (
+                {step === STEP_GUESTS && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
                     {fields.length !== declaredGuests && (
@@ -489,7 +530,7 @@ export function CheckInPage() {
                     )}
                   </div>
                 )}
-                {step === 3 && (
+                {step === STEP_DOCUMENT && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
                     {leaders.map(({ field, index }) => (
@@ -497,7 +538,8 @@ export function CheckInPage() {
                     ))}
                   </div>
                 )}
-                {step === 4 && (
+                {step === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}
+                {step === STEP_CONSENTS && (
                   <ConsentStep
                     privacyNoticeVersion={context.privacyNoticeVersion}
                     marketingConsentVersion={context.marketingConsentVersion}
@@ -508,9 +550,9 @@ export function CheckInPage() {
                     {submitError}
                   </p>
                 )}
-                {step > 1 && (
+                {step > STEP_SCAN && (
                 <div className="flex justify-between pt-4">
-                  <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
+                  <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(STEP_SCAN, s - 1))} disabled={step === STEP_SCAN}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
                   {step < TOTAL_STEPS ? (

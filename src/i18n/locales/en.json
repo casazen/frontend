@@ -1476,6 +1476,20 @@
       "directBookingConsentRequired": "To book you must consent to the processing of your personal data.",
       "directBookingConsentOutdated": "The privacy notice has been updated: reload the page and give your consent again.",
       "directBookingInvalidPaymentOption": "Invalid payment method.",
+      "directBookingMarketingConsentUnavailable": "The text to receive offers is no longer available: reload the page and try again.",
+      "directBookingSoftOptInNoticeOutdated": "The information about offers has been updated: reload the page, read it and try again.",
+      "directBookingWhatsappRequiresPhone": "To receive offers on WhatsApp we need your phone number: type it and try again.",
+      "guestMarketingConsentOutdated": "The text of the consent has been updated: read it again and repeat your choice.",
+      "guestMarketingConsentUnavailable": "We cannot save your choice right now: please try again later.",
+      "guestMarketingEmailInvalid": "Type a correct e-mail address: the one of the booking cannot be used for offers.",
+      "guestMarketingPhoneInvalid": "Check the phone number: it does not look right.",
+      "welcomeAdultRequired": "To continue you must declare that you are at least 18 years old.",
+      "welcomeChannelRequired": "Choose at least one channel: e-mail or WhatsApp.",
+      "welcomeConsentOutdated": "The text of the consent has been updated: read it again and confirm your choice.",
+      "welcomeConsentUnavailable": "We cannot collect your choice right now: please try again later.",
+      "welcomeEmailInvalid": "Check the e-mail address: it does not look right.",
+      "welcomeLinkInvalid": "This page is no longer active.",
+      "welcomePhoneInvalid": "Check the phone number: it does not look right.",
       "onsiteRequestLinkInvalid": "Invalid confirmation link: open the link you received by email.",
       "onsiteRequestExpired": "The request has expired: the dates are available again. You can send a new request.",
       "onsiteRequestNotPending": "The request is no longer pending: it has already been accepted, declined or cancelled.",
@@ -3397,6 +3411,89 @@
       "HeadOfFamily": "Head of family",
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
+    },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "City",
+          "civic": "Number",
+          "legend": "Address",
+          "postalCode": "Postal code",
+          "province": "Province",
+          "street": "Street"
+        },
+        "country": {
+          "label": "Country of the address",
+          "why": "If the address is not in Italy, choose the country: then the fiscal code and the VAT number are not needed."
+        },
+        "errors": {
+          "countryInvalid": "Choose a country from the list.",
+          "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+          "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+          "kindInvalid": "Choose who the invoice is for.",
+          "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+          "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+          "provinceInvalid": "The province is written with 2 letters, for example RM.",
+          "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+          "tooLong": "This text is too long.",
+          "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+          "vatNumberRequired": "Write the VAT number or the fiscal code."
+        },
+        "example": "Example:",
+        "fiscalCode": {
+          "label": "Fiscal code",
+          "why": "Why we ask: the property manager needs it to issue the invoice. For a company the VAT number is enough."
+        },
+        "kind": {
+          "Company": {
+            "description": "A company or a professional with a VAT number.",
+            "title": "A company"
+          },
+          "Guest": {
+            "description": "A private person, usually you.",
+            "title": "A person"
+          },
+          "legend": "Who should the invoice be made out to?"
+        },
+        "more": {
+          "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+          "label": "More options"
+        },
+        "name": {
+          "Company": "Company name",
+          "Guest": "Name and surname"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Why we ask: only if the invoice has to be sent to a PEC address (certified e-mail)."
+        },
+        "sdiRecipientCode": {
+          "label": "Recipient code",
+          "why": "Why we ask: it is the code a company receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+        },
+        "vatNumber": {
+          "label": "VAT number",
+          "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+        }
+      },
+      "fieldsHint": "If you write your data, the fiscal code is needed (or the VAT number for a company). If you do not have them now, leave everything empty: the property manager will ask you.",
+      "intro": "Optional: you can skip this step. If you need an invoice, tell us who to make it out to: the property manager needs it to issue the document.",
+      "no": {
+        "description": "Go on: the check-in does not change.",
+        "title": "No, thanks"
+      },
+      "onFile": {
+        "body": "The property manager already has them. If something has changed, you can send them again: they will check them.",
+        "keep": "Keep the ones we have",
+        "replace": "Send different data",
+        "title": "We already have your invoice data"
+      },
+      "question": "Do you need an invoice?",
+      "title": "Do you need an invoice?",
+      "yes": {
+        "description": "Write who to make it out to. If you do not have the data now, the property manager will ask you.",
+        "title": "Yes, I need an invoice"
+      }
     },
     "language": {
       "label": "Language",
@@ -6695,6 +6792,106 @@
     },
     "useAnother": "Use another account",
     "useSameEmail": "Sign in with the address the invitation was sent to."
+  },
+  "invoiceData": {
+    "fields": {
+      "address": {
+        "city": "City",
+        "civic": "Number",
+        "legend": "Address",
+        "postalCode": "Postal code",
+        "province": "Province",
+        "street": "Street"
+      },
+      "country": {
+        "label": "Country of the address",
+        "why": "If the address is abroad, choose the country: then the fiscal code and the VAT number are not required."
+      },
+      "errors": {
+        "countryInvalid": "Choose a country from the list.",
+        "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+        "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+        "kindInvalid": "Choose who the invoice is for.",
+        "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+        "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+        "provinceInvalid": "The province is written with 2 letters, for example RM.",
+        "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+        "tooLong": "This text is too long.",
+        "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+        "vatNumberRequired": "Write the VAT number or the fiscal code."
+      },
+      "example": "Example:",
+      "fiscalCode": {
+        "label": "Fiscal code",
+        "why": "Why we ask: it is needed to make out the invoice. For a company the VAT number is enough."
+      },
+      "kind": {
+        "Company": {
+          "description": "A company or a professional with a VAT number.",
+          "title": "A company"
+        },
+        "Guest": {
+          "description": "A private person: usually the guest.",
+          "title": "A person"
+        },
+        "legend": "Who is the invoice for?"
+      },
+      "more": {
+        "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+        "label": "More options"
+      },
+      "name": {
+        "Company": "Company name",
+        "Guest": "Name and surname"
+      },
+      "pec": {
+        "label": "PEC",
+        "why": "Why we ask: only if the recipient receives invoices on their PEC (certified e-mail)."
+      },
+      "sdiRecipientCode": {
+        "label": "Recipient code",
+        "why": "Why we ask: it is the code the recipient receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+      },
+      "vatNumber": {
+        "label": "VAT number",
+        "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+      }
+    },
+    "retry": "Try again",
+    "saved": "Invoice data saved.",
+    "section": {
+      "add": "Add the data",
+      "edit": "Check or change",
+      "empty": "No invoice data for this booking yet.",
+      "kind": {
+        "Company": "Invoice for a company.",
+        "Guest": "Invoice for a person."
+      },
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the invoice data…",
+      "missing": {
+        "fiscalCode": "The fiscal code is missing: it is needed to issue the invoice.",
+        "vatNumber": "The VAT number or the fiscal code is missing: it is needed to issue the invoice."
+      },
+      "readOnly": "Only people who manage payments can change them.",
+      "requested": "The guest asked for an invoice at check-in.",
+      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data.",
+      "title": "Invoice data"
+    },
+    "source": {
+      "CheckIn": "Data written by the guest at check-in.",
+      "Host": "Data edited by you.",
+      "Octorate": "Data that came from your channel manager."
+    },
+    "substep": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "intro": "Check the data and correct what is wrong: the invoice will be made out as you write it here.",
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the data…",
+      "saveFailed": "We could not save the data. Try again.",
+      "title": "Who to invoice"
+    }
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -10569,6 +10766,47 @@
       "pageTitle": "Unsubscribe",
       "retry": "We could not complete the request. Please try again in a moment.",
       "title": "Do you want to unsubscribe?"
+    },
+    "welcome": {
+      "adultLabel": "I am at least 18 years old",
+      "consentText": "By choosing a channel you agree to receive promotional messages (news and offers) from {{host}} on that channel. You can change your mind at any time: every message has a link to unsubscribe.",
+      "consentVersion": "Optional. Text version: {{version}}",
+      "description": "{{host}} welcomes you. If you like, leave us a contact to receive news and offers: it is optional and changes nothing about your stay.",
+      "done": {
+        "description": "If the address is correct, you will get a message with a link to confirm your choice. Until you confirm, we will not write to you.",
+        "title": "Check your e-mail to confirm"
+      },
+      "doneWhatsApp": {
+        "description": "There is nothing else to do.",
+        "title": "Thank you, we received your choice"
+      },
+      "emailChannel": "E-mail",
+      "emailHint": "Only needed if you choose e-mail: we write here so you can confirm your choice.",
+      "errors": {
+        "adultRequired": "To continue, confirm that you are at least 18 years old.",
+        "channelRequired": "Choose at least one channel: e-mail or WhatsApp.",
+        "generic": "We could not send your choice. Please try again in a moment."
+      },
+      "inactive": {
+        "description": "The code you scanned is no longer valid. Ask the property to show you a new one.",
+        "title": "This page is not active"
+      },
+      "legend": "How would you like to receive news and offers from {{host}}?",
+      "loadError": {
+        "description": "Check your connection and try again.",
+        "hint": "We could not open the page.",
+        "retry": "Try again",
+        "title": "We cannot open the page"
+      },
+      "loading": "One moment…",
+      "pageTitle": "Welcome",
+      "phoneHint": "Only needed if you choose WhatsApp: type it with the international prefix, for example +39.",
+      "privacyNotice": "How your data is handled is explained in the <privacy>privacy notice</privacy>.",
+      "submit": "Send my choice",
+      "title": "Welcome to {{property}}",
+      "welcomeOnly": "{{host}} welcomes you. Enjoy your stay!",
+      "whatsAppChannel": "WhatsApp",
+      "whatsAppNeedsPhone": "Type your phone number first to choose WhatsApp."
     }
   },
   "marketplace": {
@@ -13325,6 +13563,7 @@
         "steps": [
           "Open Payments or the booking to check amounts and status. Distinguish pending from successful payments and verify any refund outcome.",
           "Available methods depend on your organisation and booking site configuration. A booking or payment request alone does not prove payment was received.",
+          "In the Payment tab of the booking you find the Invoice data: who the invoice is made out to and where the data comes from (your channel manager, the guest at check-in, edited by you). Check or correct the data with the button of the section; people who do not manage payments can read it but not change it. The guest can ask for an invoice at check-in and write their data: if they leave it empty, add it yourself.",
           "For supported direct bookings, open the conversation from the booking to message the guest. It remains writable through the seventh day after check-out, then becomes read-only.",
           "The conversation is not a real-time chat and does not send automatic replies. Do not send card information, bank account numbers or identity documents in message text."
         ]
@@ -13549,7 +13788,34 @@
         "data": "Property details",
         "pricing": "Prices"
       },
-      "tabsLabel": "Sections of the property"
+      "tabsLabel": "Sections of the property",
+      "welcomeQr": {
+        "copied": "Copied",
+        "copy": "Copy",
+        "copyFailed": "We could not copy it: select the address and copy it by hand.",
+        "create": "Create the QR",
+        "createFailed": "We could not create the QR. Please try again in a moment.",
+        "description": "Print the sign and put it in the house: whoever scans it can leave you a contact and choose whether to receive your offers. It is optional for the guest and changes nothing about their stay.",
+        "linkLabel": "Address of the welcome page",
+        "loadError": "We cannot read the welcome QR.",
+        "loading": "Reading the welcome QR…",
+        "noAddress": "The QR exists, but the public address of the site is not set up here: we cannot show it to you.",
+        "none": "This house has no welcome QR yet.",
+        "popupBlocked": "Your browser blocked the print window: allow it and try again.",
+        "print": "Print the sign",
+        "qrAlt": "QR code of the welcome page of {{name}}",
+        "renew": "Create a new QR",
+        "renewConfirm": "Yes, create a new QR",
+        "renewConsequence": "Anyone who scans the old sign will see that the page is not active, until you replace it.",
+        "renewDescription": "The QR you printed will stop working right away. You will have to print the new sign and replace it in the house.",
+        "renewDone": "New QR created: print the sign and replace the old one.",
+        "renewFailed": "We could not create the new QR. The one you printed still works: please try again in a moment.",
+        "renewTitle": "Create a new QR?",
+        "retry": "Try again",
+        "signLine": "Scan the code to leave us a contact and receive news and offers. It is optional.",
+        "signTitle": "Welcome!",
+        "title": "Welcome QR"
+      }
     },
     "info": {
       "timezone": "Timezone",
@@ -15042,6 +15308,8 @@
       "emailRequired": "Enter your email address",
       "emailInvalid": "Enter a valid email address",
       "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
+      "whatsAppNeedsPhone": "To receive offers on WhatsApp, type your phone number.",
+      "whatsAppNeedsPrefix": "To receive offers on WhatsApp, type the number with the international prefix, for example +39 333 1234567.",
       "countryRequired": "Select your country of residence"
     },
     "touristTaxIncluded": "Tourist tax (included in the total)",
@@ -15201,6 +15469,53 @@
       "hostContactNoName": "For any question contact the host:",
       "hostContactDirectly": "For any question contact the host of the property directly."
     },
+    "guestMarketing": {
+      "addressHint": "The address of the booking cannot be used for offers (for example, it is a temporary address of the booking channel): type here the one you really use.",
+      "addressLabel": "Your e-mail address",
+      "addressRequired": "Type the e-mail address where you want to receive the offers.",
+      "channels": {
+        "email": "E-mail",
+        "whatsapp": "WhatsApp"
+      },
+      "consentText": "By choosing a channel you agree to receive promotional messages (news and offers) from the property on that channel. You can change your mind at any time: every message has a link to unsubscribe.",
+      "consentVersion": "Optional. Text version: {{version}}",
+      "intro": "Choose whether you want to receive news and offers from the property. It is optional and changes nothing about your booking.",
+      "loadError": "We cannot read your choices. Please try again in a moment.",
+      "loading": "Loading your choices…",
+      "phoneHint": "The number where you want to receive the messages, with the international prefix, for example +39.",
+      "phoneLabel": "Your phone number",
+      "phoneRequired": "Type the phone number where you want to receive the offers.",
+      "resend": "Send the confirmation again",
+      "resendDone": "We sent the message again: check your e-mail, spam folder included.",
+      "resendError": "We could not send the message. Please try again in a moment.",
+      "resendNothing": "We sent nothing: you asked for it a moment ago. Try again in a few minutes.",
+      "retry": "Try again",
+      "save": "Save my choices",
+      "saveError": "We could not save your choice. Please try again in a moment.",
+      "state": {
+        "confirmed": "Confirmed",
+        "none": "Not subscribed",
+        "pending": "To confirm",
+        "serviceOnly": "Not subscribed",
+        "softOptIn": "You receive offers on similar stays",
+        "withdrawn": "Unsubscribed"
+      },
+      "stateDetail": {
+        "confirmed": "You will receive news and offers from the property.",
+        "pending": "We wrote to you to ask you to confirm: open the link in the message. Until you confirm, we will not write to you.",
+        "serviceOnly": "We use this contact for your stay only, never for offers.",
+        "softOptIn": "We write to you because you booked directly with the property. You can object at any time, free of charge.",
+        "withdrawn": "You chose not to receive offers any more: we will not write to you. This choice is final."
+      },
+      "title": "Offers and news",
+      "withdraw": "I do not want offers",
+      "withdrawConfirm": "Yes, I do not want offers",
+      "withdrawConsequence": "Messages about your stay, like confirmations and arrival instructions, will keep coming.",
+      "withdrawDescription": "We will not write to you any more about offers on {{channel}}. You cannot go back from here.",
+      "withdrawFinal": "The choice is final: we will not write to you any more about offers, and you cannot go back from here.",
+      "withdrawLabel": "I do not want offers on {{channel}}",
+      "withdrawTitle": "Do you no longer want offers?"
+    },
     "guestMessages": {
       "title": "Messages",
       "intro": "Write to the host about anything to do with your stay. We email you when they reply.",
@@ -15254,9 +15569,14 @@
       "emailHint": "We send the confirmation and the link for the online check-in here.",
       "emailUse": "Use {{email}}",
       "next": "Continue: payment",
-      "offers": "I'd like to receive the offers of {{name}}.",
+      "offersEmail": "E-mail",
       "offersHint": "You can unsubscribe at any time.",
+      "offersLegend": "Would you like to receive the offers of {{name}}?",
+      "offersWhatsApp": "WhatsApp",
+      "offersWhatsAppNeedsPhone": "Type your phone number above first to choose WhatsApp.",
       "phoneHint": "Only to organise your arrival.",
+      "phoneHintOffers": "To organise your arrival and, if you choose WhatsApp, for the offers: type it with the international prefix, for example +39.",
+      "softOptInNotice": "{{name}} will use this e-mail address to send you offers on stays similar to the one you are booking. You can object at any time, free of charge: every message has a link to unsubscribe.",
       "whoTitle": "Who is booking"
     },
     "leads": {

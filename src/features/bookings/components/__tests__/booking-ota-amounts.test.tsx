@@ -10,6 +10,12 @@ vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: () => true }),
 }));
 
+// Under the amounts the tab shows «Dati di fatturazione» (FIS-01), which reads its own data: not what these tests are about, so it is kept off the network.
+vi.mock('@/api/invoice-data.api', () => ({
+  getInvoiceData: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000002', invoiceRequested: false }),
+  saveInvoiceData: vi.fn(),
+}));
+
 const booking = (overrides: Partial<Booking> = {}): Booking => ({
   id: 'b0c1d2e3-0000-4000-8000-000000000002',
   propertyId: 'property-1',

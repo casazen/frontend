@@ -34,6 +34,11 @@ vi.mock('@/api/service-requests.api', () => ({
   markLongRentServiceRequestPaid: vi.fn(),
 }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: vi.fn() }));
+// The tab Pagamento shows «Dati di fatturazione» (FIS-01), which reads its own data: kept off the network here.
+vi.mock('@/api/invoice-data.api', () => ({
+  getInvoiceData: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', invoiceRequested: false }),
+  saveInvoiceData: vi.fn(),
+}));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: () => true }),
 }));

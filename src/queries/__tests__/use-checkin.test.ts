@@ -6,10 +6,12 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { useResendCheckInLink } from '../use-checkin';
+import { useResendCheckInLink, useSubmitGuestCheckIn } from '../use-checkin';
 import { bookingsApi } from '@/api/bookings.api';
+import { publicCheckinApi } from '@/api/checkin.api';
 
 vi.mock('@/api/bookings.api');
+vi.mock('@/api/checkin.api', () => ({ publicCheckinApi: { getContext: vi.fn(), submit: vi.fn(), setLanguage: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function httpError(status: number, data?: unknown): AxiosError {
@@ -56,6 +58,35 @@ describe('useResendCheckInLink onError (A9-09 FE)', () => {
     await resendAndFail(httpError(500, { detail: 'System.NullReferenceException at ...' }));
 
     expect(toast.error).toHaveBeenCalledWith(i18n.t('checkin.resendError'));
+  });
+});
+
+describe('useSubmitGuestCheckIn onError (FIS-01)', () => {
+  async function submitAndFail(error: unknown) {
+    vi.mocked(publicCheckinApi.submit).mockRejectedValueOnce(error);
+    const { result } = renderHook(() => useSubmitGuestCheckIn('tok-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ guests: [], marketingConsentEmail: false, marketingConsentWhatsApp: false });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  }
+
+  it('onError_invoiceBlockRefused_ShowsNoToastBecauseThePageShowsItOnTheFieldsInItsLanguage', async () => {
+    await submitAndFail(
+      httpError(422, {
+        code: 'invoice_data_pec_invalid',
+        field: 'pec',
+        errors: [{ field: 'pec', code: 'invoice_data_pec_invalid' }],
+      }),
+    );
+
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('onError_AnyOther422_IsStillShownToTheGuest', async () => {
+    await submitAndFail(httpError(422, { code: 'checkin_rule', detail: 'Questo soggiorno non accetta il check-in online.' }));
+
+    expect(toast.error).toHaveBeenCalledWith('Questo soggiorno non accetta il check-in online.');
   });
 });
 

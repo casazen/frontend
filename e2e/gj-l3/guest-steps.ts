@@ -103,7 +103,10 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   // Place of issue searches comuni and states. The golden-journey seed has Stati, not Comuni, so the official row is Italia.
   await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ITALIA', /^ITALIA\b/i, undefined, seenCodes);
   await page.getByRole('button', { name: 'Avanti' }).click();
-  // Step 3 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
+  // Step 4 is «Ti serve la fattura?» (FIS-01): optional, so the guest goes on without an answer and nothing about the invoice is sent.
+  await expect(page.getByTestId('checkin-invoice-step')).toBeVisible();
+  await page.getByRole('button', { name: 'Avanti' }).click();
+  // Step 5 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
   // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
   await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
   await page.getByTestId('checkin-submit').click();
