@@ -27,8 +27,9 @@ interface WizardNextStepProps {
 }
 
 /**
- * The end of a wizard of the path «Inizia con CasaZen» (UX-10, AC-NF10-2): ONE card with the next logical step (its name and one line on why)
- * and two buttons. «Continua» opens the part of that step that is still to do; «Più tardi» puts it in «Da fare» (the server leaves a reminder
+ * The end of a wizard of the path «Inizia con CasaZen» (UX-10, AC-NF10-2): ONE card with the next logical step (its name and one line on why),
+ * a step that can be done now (one that waits for another part is not suggested: the part it waits for is the one to do), and two buttons.
+ * «Continua» opens the part of that step that is still to do; «Più tardi» puts it in «Da fare» (the server leaves a reminder
  * for tomorrow at 09:00), says where it went with a toast and a line, and never suggests anything else: the step after it waits for the host
  * to come back to the path.
  *
@@ -65,8 +66,9 @@ export function WizardNextStep({ currentPart }: WizardNextStepProps) {
 
   const parts = knownParts(plan.data);
   const target = stepTargetPart(suggested, parts);
-  const part = parts.find((candidate) => candidate.code === target);
-  if (!part) return null;
+  // No part to open: the plan says everything that is left of the step waits for another part (it changed since the path was read).
+  const part = target ? parts.find((candidate) => candidate.code === target) : undefined;
+  if (!target || !part) return null;
 
   function later() {
     if (!part) return;

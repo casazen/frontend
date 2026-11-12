@@ -52,21 +52,46 @@ export function pathStep(code: OnboardingPathStepCode, state: OnboardingPartStat
   };
 }
 
+/** The steps that hang from the connection and the properties (the first step): the parts they are made of require the properties. */
+const STEPS_THAT_WAIT_FOR_THE_CONNECTION: readonly OnboardingPathStepCode[] = ['checkListings', 'pricesCalendar', 'checkInCompliance'];
+
 /**
- * The connected path with the state of each step (open when not given). `next` is what the server names: by default the first step that is
- * visible and not put off, as the backend works it out; pass `null` or a code to say otherwise.
+ * The connected path with the state of each step. A step not given is `open`, except the listings, the prices and the compliance while the
+ * first step (connection, properties, channels) is not done: they wait for the properties, so they are `blocked`, as the plan of `plan()` says
+ * and as the server derives it. `next` is what the server names: by default the first step that is visible and not put off, as the backend
+ * works it out; pass `null` or a code to say otherwise.
  */
 export function path(states: Partial<Record<OnboardingPathStepCode, OnboardingPartState>> = {}, next?: OnboardingPathStepCode | null): OnboardingPath {
-  const steps = ONBOARDING_PATH_STEP_CODES.map((code) => pathStep(code, states[code] ?? 'open'));
+  const connected = states.connectChannels === 'done';
+  const steps = ONBOARDING_PATH_STEP_CODES.map((code) => {
+    const waits = !connected && STEPS_THAT_WAIT_FOR_THE_CONNECTION.includes(code);
+    return pathStep(code, states[code] ?? (waits ? 'blocked' : 'open'));
+  });
   const named = next === undefined ? (steps.find((step) => step.visible && step.state !== 'deferred')?.code ?? null) : next;
   return { code: 'start-with-casazen', steps, next: named };
 }
 
 /**
- * A host a little way in: Octorate is connected, the properties are half matched (the part to do now, one another part needs), what hangs from
- * them waits, and the three parts nobody provides yet are not available. `overrides` changes parts by code.
+ * The path the server derives from the parts of a plan (`OnboardingPlanService.PathOf`): a step is not available when none of its parts is
+ * provided, done when every part is done or not available, otherwise it has the state of its first part that is neither; it is visible while
+ * there is something to do in it; `next` is the first visible step that was not put off.
  */
-export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<OnboardingPart>>> = {}, pathOverride: OnboardingPath = path()): OnboardingPlan {
+export function pathOfParts(parts: readonly OnboardingPart[]): OnboardingPath {
+  const stateOf = new Map(parts.map((candidate) => [candidate.code, candidate.state] as const));
+  const steps = ONBOARDING_PATH_STEP_CODES.map((code) => {
+    const states = STEP_PARTS[code].map((key) => stateOf.get(key) ?? 'notAvailable');
+    const toDo = states.find((state) => state !== 'done' && state !== 'notAvailable');
+    return pathStep(code, states.every((state) => state === 'notAvailable') ? 'notAvailable' : (toDo ?? 'done'));
+  });
+  return { code: 'start-with-casazen', steps, next: steps.find((step) => step.visible && step.state !== 'deferred')?.code ?? null };
+}
+
+/**
+ * A host a little way in: Octorate is connected, the properties are half matched (the part to do now, one another part needs), what hangs from
+ * them waits, and the three parts nobody provides yet are not available. `overrides` changes parts by code. The path is the one the server
+ * derives from the parts (`pathOfParts`), so the two agree; a test that wants another one passes it.
+ */
+export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<OnboardingPart>>> = {}, pathOverride?: OnboardingPath): OnboardingPlan {
   const base: Record<OnboardingPartKey, OnboardingPart> = {
     octorateConnection: part('octorateConnection', { state: 'done', done: 1, total: 1, deferrable: false }),
     properties: part('properties', { reason: 'mapping_unconfirmed', done: 1, total: 3, requires: ['octorateConnection'], deferrable: false }),
@@ -80,10 +105,11 @@ export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<Onboar
     partners: part('partners', { state: 'notAvailable', reason: 'not_provided' }),
     activation: part('activation', { state: 'blocked', reason: 'required_part_not_done', requires: ['octorateConnection', 'properties'] }),
   };
+  const parts = ONBOARDING_PART_KEYS.map((code) => ({ ...base[code], ...overrides[code] }));
   return {
-    parts: ONBOARDING_PART_KEYS.map((code) => ({ ...base[code], ...overrides[code] })),
+    parts,
     needs: ['alloggiatiCredentials', 'istatCredentials', 'fiscalData', 'otaAccess', 'lockCode'],
-    path: pathOverride,
+    path: pathOverride ?? pathOfParts(parts),
     activated: false,
   };
 }

@@ -248,9 +248,16 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     });
 
     it('AStepThisVersionDoesNotKnow_FallsBackToTheFirstOneThatCanBeProposed', () => {
-      const given = { ...path({ connectChannels: 'deferred' }), next: 'timeTravel' as never };
+      const given = { ...path({ connectChannels: 'deferred', checkListings: 'open' }), next: 'timeTravel' as never };
 
       expect(nextPathStep(given, knownPathSteps(given))?.code).toBe('checkListings');
+    });
+
+    it('AStepThisVersionDoesNotKnow_FallbackSkipsTheStepsThatWaitForAnotherPart', () => {
+      // The connection is put off, so the listings, the prices and the compliance wait for the properties: the first step that can be done is the messages.
+      const given = { ...path({ connectChannels: 'deferred' }), next: 'timeTravel' as never };
+
+      expect(nextPathStep(given, knownPathSteps(given))?.code).toBe('messagesAi');
     });
   });
 
@@ -266,7 +273,34 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
       const steps = knownPathSteps(path());
 
       expect(stepAfterPart(steps, 'listings')?.code).not.toBe('checkListings');
-      expect(stepAfterPart(steps, 'channels')?.code).toBe('checkListings');
+      expect(stepAfterPart(steps, 'channels')?.code).not.toBe('connectChannels');
+      // The listings are the next step once the connection is done.
+      expect(stepAfterPart(knownPathSteps(path({ connectChannels: 'done' })), 'channels')?.code).toBe('checkListings');
+    });
+
+    it('SkipsAStepThatWaitsForAnotherPart_TheConnectionComesBeforeTheStepsThatHangFromIt', () => {
+      // A property is added before the connection is complete: the listings, the prices and the compliance wait for the properties (`blocked`).
+      const steps = knownPathSteps(path({ messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' }));
+      expect(steps.filter((step) => step.state === 'blocked').map((step) => step.code)).toEqual(['checkListings', 'pricesCalendar', 'checkInCompliance']);
+
+      // Not «Prezzi e calendario», which is after the listings in the path and cannot be done yet: the step that is left to do, the connection.
+      expect(stepAfterPart(steps, 'listings')?.code).toBe('connectChannels');
+      expect(stepAfterPart(steps, 'pricesRules')?.code).toBe('connectChannels');
+    });
+
+    it('SkipsAStepThatWaitsForAnotherPart_WhateverComesAfterItInThePath', () => {
+      // The messages can be done now: they are suggested, the blocked steps between are not.
+      const steps = knownPathSteps(path({ fiscalDocuments: 'notAvailable' }));
+
+      expect(stepAfterPart(steps, 'listings')?.code).toBe('messagesAi');
+    });
+
+    it('NothingButStepsThatWait_IsNull', () => {
+      const steps = knownPathSteps(
+        path({ connectChannels: 'blocked', checkListings: 'open', pricesCalendar: 'blocked', checkInCompliance: 'blocked', messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' }),
+      );
+
+      expect(stepAfterPart(steps, 'listings')).toBeNull();
     });
 
     it('SkipsAStepThatIsDoneNotAvailableOrPutOff', () => {
@@ -309,6 +343,20 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
       const parts = [part('octorateConnection', { state: 'notAvailable' }), part('properties', { state: 'done' }), part('channels', { state: 'deferred' })];
 
       expect(stepTargetPart(connect, parts)).toBe('channels');
+    });
+
+    it('SkipsThePartsThatWaitForAnotherPart_TheFirstOneThatCanBeDoneNowIsOpened', () => {
+      const parts = [part('octorateConnection', { state: 'done' }), part('properties', { state: 'blocked' }), part('channels', { state: 'open' })];
+
+      expect(stepTargetPart(connect, parts)).toBe('channels');
+    });
+
+    it('OnlyPartsThatWaitAreLeft_IsNullBecauseThereIsNothingToOpen', () => {
+      // The properties are not provided, so the channels, which need them, wait for good: no part to open (a link would lead nowhere useful).
+      const parts = [part('octorateConnection', { state: 'done' }), part('properties', { state: 'notAvailable', reason: 'mapping_unavailable' }), part('channels', { state: 'blocked' })];
+
+      expect(stepTargetPart(connect, parts)).toBeNull();
+      expect(stepTargetPart(pathStep('checkListings'), [part('listings', { state: 'blocked' })])).toBeNull();
     });
 
     it('WithoutThePlan_OrWhenNothingIsLeft_IsTheFirstPartOfTheStep', () => {

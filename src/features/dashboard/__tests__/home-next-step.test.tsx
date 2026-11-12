@@ -76,8 +76,11 @@ describe('HomeNextStep: the path or the next step of the checklist, never both (
     workspace.contexts = OWNER;
     flags.octorateOnboarding = true;
     vi.mocked(onboardingApi.getStatus).mockReset().mockResolvedValue(STATUS);
+    // The connection is done: the listings, the prices and the compliance, which hang from the properties, can be done now.
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path({ connectChannels: 'done' }));
-    vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(plan());
+    vi.mocked(onboardingApi.getPlan)
+      .mockReset()
+      .mockResolvedValue(plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'open' }, compliance: { state: 'open' } }));
   });
 
   afterEach(() => cleanup());

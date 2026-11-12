@@ -167,9 +167,13 @@ export function pathProgress(steps: readonly OnboardingPathStep[]): { done: numb
   return { done: applying.filter((step) => step.state === 'done').length, total: applying.length };
 }
 
-/** A step the host can be pointed at: there is something to do in it and they did not put it off (`next` of the path skips such a step too). */
+/**
+ * A step the host can be pointed at: there is something to do in it, they did not put it off (`next` of the path skips such a step too) and
+ * it does not wait for another part. A `blocked` step is visible on the server (it is still to do) but cannot be done now: the plan page gives
+ * its part no way in, so a card that suggested it would lead nowhere useful, while the part it waits for is the one to do.
+ */
 function isProposable(step: OnboardingPathStep): boolean {
-  return step.visible === true && step.state !== 'deferred';
+  return step.visible === true && step.state !== 'deferred' && step.state !== 'blocked';
 }
 
 /**
@@ -183,10 +187,11 @@ export function nextPathStep(path: Pick<OnboardingPath, 'next'> | null | undefin
 }
 
 /**
- * The one step to suggest at the end of the wizard of `currentPart` (UX-10, AC-NF10-2): a step that can be proposed, never the one the
- * wizard belongs to (the host has just been through it), and the first one after it in the path; when none comes after it, the first one that
- * can be proposed (an earlier step the host left). A wizard that is not a part of any step (the identification, the partners) is followed
- * by the first step to do. Null when there is nothing to suggest.
+ * The one step to suggest at the end of the wizard of `currentPart` (UX-10, AC-NF10-2): a step that can be proposed (to do, not put off and
+ * not waiting for another part), never the one the wizard belongs to (the host has just been through it), and the first one after it in the
+ * path; when none comes after it, the first one that can be proposed (an earlier step the host left: a host who adds a property before the
+ * connection is complete is pointed at the connection, not at the steps that wait for it). A wizard that is not a part of any step (the
+ * identification, the partners) is followed by the first step to do. Null when there is nothing to suggest.
  */
 export function stepAfterPart(steps: readonly OnboardingPathStep[], currentPart: OnboardingPartKey): OnboardingPathStep | null {
   const current = steps.find((step) => step.parts.includes(currentPart));
@@ -195,18 +200,26 @@ export function stepAfterPart(steps: readonly OnboardingPathStep[], currentPart:
 }
 
 /**
- * The part a step opens and puts off: the first of its parts that is neither done nor not available, which only the plan can tell. Without
- * the plan (or with no such part) the first part of the step.
+ * The part a step opens and puts off: the first of its parts that is still to do and can be done now, which only the plan can tell: not done,
+ * not available and not `blocked` (a part that waits for another one has no way in on the plan page either). Null when what is left of the
+ * step are only parts that wait: there is nothing to open, and a link would lead nowhere useful. Without the plan (or when it holds nothing
+ * of the step: everything done or not available) the first part of the step.
  */
-export function stepTargetPart(step: OnboardingPathStep, parts: readonly OnboardingPart[]): OnboardingPartKey {
+export function stepTargetPart(step: OnboardingPathStep, parts: readonly OnboardingPart[]): OnboardingPartKey | null {
   const byCode = new Map(parts.map((part) => [part.code, part] as const));
-  const toDo = step.parts.find((code) => {
+  let waiting = false;
+  for (const code of step.parts) {
     const part = byCode.get(code);
-    if (!part) return false;
+    if (!part) continue;
     const state = normalizePartState(part.state);
-    return state !== 'done' && state !== 'notAvailable';
-  });
-  return toDo ?? step.parts[0];
+    if (state === 'done' || state === 'notAvailable') continue;
+    if (state === 'blocked') {
+      waiting = true;
+      continue;
+    }
+    return code;
+  }
+  return waiting ? null : step.parts[0];
 }
 
 /** When a deferral is reminded: this evening, tomorrow morning or in a week (Europe/Rome). */

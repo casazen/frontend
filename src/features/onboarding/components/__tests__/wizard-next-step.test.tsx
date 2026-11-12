@@ -54,11 +54,11 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
     await i18n.changeLanguage('it');
     workspace.contexts = OWNER;
     flags.octorateOnboarding = true;
-    // The host has just finished the listings (the step «Controlla gli annunci»); the connection is done, the prices are next.
-    vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path(done('connectChannels')));
-    vi.mocked(onboardingApi.getPlan)
-      .mockReset()
-      .mockResolvedValue(plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'open' } }));
+    // The host has just finished the listings (the step «Controlla gli annunci»); the connection is done, the prices are next. The path is the one
+    // the server derives from that plan.
+    const connected = plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'open' }, compliance: { state: 'open' } });
+    vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(connected.path);
+    vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(connected);
     vi.mocked(onboardingApi.deferPart).mockReset().mockResolvedValue({ code: 'pricesRules', state: 'deferred', remindAt: '2026-11-13T08:00:00Z', todoId: 'todo-1' });
     vi.mocked(onboardingApi.exitPart).mockReset().mockResolvedValue({ code: 'properties', state: 'open', remindAt: '2026-11-13T08:00:00Z', todoId: 'todo-2' });
     vi.mocked(toast.success).mockReset();
@@ -91,9 +91,51 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
       expect(card.textContent).not.toContain(stepTitle('checkListings'));
     });
 
+    it('Suggestion_ConnectionNotCompleteYet_IsTheConnectionAndNotAStepThatWaitsForIt', async () => {
+      // A property is added before the connection is complete: the listings, the prices and the compliance wait for the properties (`blocked`).
+      const early = plan();
+      expect(early.path.steps.filter((step) => step.state === 'blocked').map((step) => step.code)).toEqual(['checkListings', 'pricesCalendar', 'checkInCompliance']);
+      vi.mocked(onboardingApi.getPath).mockResolvedValue(early.path);
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(early);
+      renderSuggestion('listings');
+
+      const card = await screen.findByTestId('wizard-next-step');
+
+      // Not «Prezzi e calendario» (the next step in the path, which cannot be done yet): «Collega i canali», through the part that is left of it.
+      expect(within(card).getByRole('heading', { level: 3 })).toHaveTextContent(stepTitle('connectChannels'));
+      expect(within(card).getByRole('heading', { level: 3 })).toHaveTextContent('Collega i canali');
+      expect(card.textContent).not.toContain(stepTitle('pricesCalendar'));
+      expect(within(card).getByTestId('wizard-next-step-continue')).toHaveAttribute('href', '/app/short-rent/onboarding/parts/properties');
+    });
+
+    it('Suggestion_EverythingThatIsLeftWaitsForAnotherPart_RendersNothingRatherThanADeadEnd', async () => {
+      vi.mocked(onboardingApi.getPath).mockResolvedValue(
+        path({ connectChannels: 'blocked', checkListings: 'open', pricesCalendar: 'blocked', checkInCompliance: 'blocked', messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' }),
+      );
+      const { container, client } = renderSuggestion('listings');
+
+      await waitFor(() => expect(onboardingApi.getPath).toHaveBeenCalled());
+      await settled(client);
+
+      expect(container).toBeEmptyDOMElement();
+      expect(onboardingApi.getPlan).not.toHaveBeenCalled();
+    });
+
+    it('Suggestion_ThePlanSaysThePartsOfTheStepWait_RendersNothingBecauseThereIsNoPartToOpen', async () => {
+      // The path was read before the plan and something changed in between: the step is still «to do», but its only part waits now.
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'blocked' } }));
+      const { container, client } = renderSuggestion('listings');
+
+      await waitFor(() => expect(onboardingApi.getPlan).toHaveBeenCalled());
+      await settled(client);
+
+      expect(container).toBeEmptyDOMElement();
+    });
+
     it('Suggestion_StepMadeOfSeveralParts_OpensThePartThatIsLeft', async () => {
-      vi.mocked(onboardingApi.getPath).mockResolvedValue(path());
-      vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan());
+      const early = plan();
+      vi.mocked(onboardingApi.getPath).mockResolvedValue(early.path);
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(early);
       renderSuggestion('identification');
 
       const card = await screen.findByTestId('wizard-next-step');
@@ -147,8 +189,9 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
     });
 
     it('Later_PartThatAnotherPartNeeds_IsLeftWithExitBecauseItCannotBeDeferred', async () => {
-      vi.mocked(onboardingApi.getPath).mockResolvedValue(path());
-      vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan());
+      const early = plan();
+      vi.mocked(onboardingApi.getPath).mockResolvedValue(early.path);
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(early);
       renderSuggestion('identification');
 
       fireEvent.click(await screen.findByRole('button', { name: i18n.t('onboardingPlan.nextStep.later') }));
