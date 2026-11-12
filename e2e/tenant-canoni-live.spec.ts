@@ -73,7 +73,7 @@ test.describe('Canoni del conduttore on the Railway test API', () => {
     await expect(sepa.or(manual).or(settled).or(foreign)).toBeVisible();
     if (await sepa.isVisible()) {
       await expect(sepa).toContainText('euro');
-      await expect(page.getByTestId('stripe-link-account')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Paga con SEPA' })).toBeVisible();
     }
     if (await manual.isVisible()) {
       await expect(page.getByTestId('tenant-manual')).toContainText('Bonifico manuale');

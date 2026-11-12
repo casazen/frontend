@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
-import { loadStripe } from '@stripe/stripe-js';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { resetStripeTransferAttempts } from '@/features/bank-transfer/transfer-attempt';
@@ -17,7 +16,9 @@ import { TenantMaintenanceDetailPage, TenantMaintenanceFormPage } from '../tenan
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn() }));
+vi.mock('@/features/public-booking/components/stripe-intent-payment', () => ({
+  StripeIntentPayment: () => <div data-testid="sepa-payment-form" />,
+}));
 
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
@@ -210,7 +211,7 @@ describe('tenant area', () => {
     expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-DUE-2');
   });
 
-  it('keeps the manual transfer on an euro due until a bank account is linked', async () => {
+  it('always keeps manual transfer alongside SEPA', async () => {
     get.mockResolvedValue({ data: area });
 
     renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
@@ -218,8 +219,8 @@ describe('tenant area', () => {
     expect(await screen.findByTestId('tenant-bank')).toHaveTextContent('IT60X0542811101000000123456');
     expect(screen.getByTestId('tenant-bank-reference')).toHaveTextContent('CZ-2026-11-ABC');
     expect(screen.getByTestId('tenant-declare-transfer')).toHaveTextContent('Ho effettuato il bonifico');
-    expect(screen.getByTestId('stripe-link-account')).toHaveTextContent('Collega il conto');
-    expect(screen.getByText(/banche italiane/)).toBeInTheDocument();
+    expect(screen.getByTestId('tenant-sepa-payment')).toHaveTextContent('1051,00');
+    expect(screen.queryByTestId('stripe-link-account')).not.toBeInTheDocument();
     expect(screen.queryByText('Accetta e continua')).not.toBeInTheDocument();
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
   });
@@ -260,7 +261,8 @@ describe('tenant area', () => {
     expect(screen.getByTestId('tenant-settlement-note')).toHaveTextContent('è un credito');
     expect(screen.getByTestId('tenant-due-amount')).toHaveTextContent(/970,00/);
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
-    expect(screen.getByTestId('tenant-sepa')).toHaveTextContent('banche italiane');
+    expect(screen.getByTestId('tenant-sepa')).toHaveTextContent('IBAN');
+    expect(screen.getByTestId('tenant-sepa-payment')).toHaveTextContent('971,00');
     expect(screen.getByTestId('tenant-manual')).toBeInTheDocument();
   });
 
@@ -296,7 +298,7 @@ describe('tenant area', () => {
 
     expect(await screen.findByTestId('tenant-due-failed')).toHaveTextContent('bonifico manuale');
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Addebito non riuscito');
-    expect(screen.getByTestId('stripe-link-account')).toBeInTheDocument();
+    expect(screen.getByTestId('tenant-sepa-payment')).toBeInTheDocument();
     expect(screen.getByTestId('tenant-declare-transfer')).toBeInTheDocument();
   });
 
@@ -345,80 +347,21 @@ describe('tenant area', () => {
     expect(screen.queryByText('IT60X0542811101000000123456')).not.toBeInTheDocument();
   });
 
-  it('retries a failed euro SEPA debit with a new key and a manual declaration does not mark the due paid', async () => {
-    const collect = vi.fn().mockResolvedValue({
-      financialConnectionsSession: { id: 'fcsess_1', accounts: [{ id: 'fca_1' }] },
-    });
-    vi.mocked(loadStripe).mockResolvedValue({ collectFinancialConnectionsAccounts: collect } as never);
-
-    const failed = { ...area, dues: [{ ...area.dues[0], status: 'Failed' }] };
-    let debitAccepted = false;
-    get.mockImplementation(() => Promise.resolve({ data: debitAccepted ? failed : area }));
-    post.mockImplementation((url: string) => {
-      const path = String(url);
-      if (path.endsWith('/session')) {
-        return Promise.resolve({ data: { sessionId: 'fcsess_1', clientSecret: 'fcsess_secret', publishableKey: 'pk_test' } });
-      }
-      if (path.endsWith('/payment')) {
-        debitAccepted = true;
-        return Promise.resolve({
-          data: {
-            paymentId: 'pay-1',
-            paymentIntentId: 'pi_1',
-            clientSecret: null,
-            stripeStatus: 'processing',
-            paymentMethodType: 'sepa_debit',
-            dueSettled: false,
-          },
-        });
-      }
-      if (path.endsWith('/declarations')) {
-        return Promise.resolve({
-          data: {
-            id: 'decl-1',
-            status: 'Submitted',
-            amount: 1050,
-            transferDate: '2026-11-04',
-            submittedAt: '2026-11-04T10:00:00Z',
-            bankReference: null,
-          },
-        });
-      }
-      return Promise.resolve({
-        data: { linked: true, accountId: 'fca_1', institutionName: 'Banca Test', last4: '6789', displayName: null },
-      });
-    });
-
+  it('starts SEPA from the selected due and a manual declaration never marks it paid', async () => {
+    get.mockResolvedValue({ data: area });
+    post.mockImplementation((url: string) => Promise.resolve({ data: String(url).endsWith('/declarations') ? {
+      id: 'decl-1', status: 'Submitted', amount: 1050, transferDate: '2026-11-04', submittedAt: '2026-11-04T10:00:00Z', bankReference: null,
+    } : { clientSecret: 'pi_secret', publishableKey: 'pk_test', stripeAccountId: 'acct_landlord' } }));
     renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
-
     fireEvent.click(await screen.findByTestId('tenant-declare-transfer'));
     expect(await screen.findByTestId('tenant-declaration-status')).toHaveTextContent('Inviata');
     expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
-    const declaration = post.mock.calls.find((call) => String(call[0]).endsWith('/declarations'));
-    expect(String(declaration?.[0])).toBe('/tenant-area/contracts/lease-1/dues/due-1/declarations');
-    expect(String(declaration?.[0])).not.toContain('mark-paid');
-    await waitFor(() => expect(get.mock.calls.length).toBeGreaterThanOrEqual(2));
-
-    fireEvent.click(await screen.findByTestId('stripe-link-account'));
-    fireEvent.click(await screen.findByTestId('stripe-start-transfer'));
-    await waitFor(() => expect(post.mock.calls.filter((call) => String(call[0]).endsWith('/payment'))).toHaveLength(1));
-
-    expect(await screen.findByTestId('tenant-due-status')).toHaveTextContent('Addebito non riuscito');
-    const retry = await screen.findByTestId('stripe-start-transfer');
-    fireEvent.click(retry);
-
-    await waitFor(() => {
-      const payments = post.mock.calls.filter((call) => String(call[0]).endsWith('/payment'));
-      expect(payments).toHaveLength(2);
-    });
-    const payments = post.mock.calls.filter((call) => String(call[0]).endsWith('/payment'));
-    const keys = payments.map((call) => (call[2] as { headers: { 'Idempotency-Key': string } }).headers['Idempotency-Key']);
-    expect(keys[0]).toBeTruthy();
-    expect(keys[1]).toBeTruthy();
-    expect(keys[0]).not.toBe(keys[1]);
-    expect(payments.every((call) => !String(call[0]).includes('mark-paid'))).toBe(true);
-    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Addebito non riuscito');
-    expect(screen.queryByText('Pagata')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Paga con SEPA' }));
+    expect(await screen.findByTestId('sepa-payment-form')).toBeInTheDocument();
+    expect(post.mock.calls.some(call => String(call[0]) === '/tenant-area/contracts/lease-1/dues/due-1/sepa/payment-session')).toBe(true);
+    expect(post.mock.calls.some(call => String(call[0]).includes('bank-link') || String(call[0]).includes('mark-paid'))).toBe(false);
+    expect(screen.getByTestId('tenant-manual')).toBeInTheDocument();
+    expect(screen.getByTestId('tenant-due-status')).toHaveTextContent('Da pagare');
   });
 
   it('points the contract at the later due that still has a residual and does not call a balanced due late', async () => {

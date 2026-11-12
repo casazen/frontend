@@ -754,11 +754,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
+    // Contracts are managed from the property's Contracts tab, not a separate menu entry.
+    // Keep this route for existing links and the area-wide tenant, deadline and fiscal pages.
     navKey: 'nav.leases',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
     legacyPaths: ['/leases'],
@@ -874,7 +872,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navGroup: 'portfolio',
     navPlacement: 'primary',
     navOrder: 3,
-    navBottom: 3,
+    navBottom: 2,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
@@ -924,7 +922,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navGroup: 'portfolio',
     navPlacement: 'primary',
     navOrder: 4,
-    navBottom: 4,
+    navBottom: 3,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -951,11 +949,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
   },
   {
-    // Conto SEPA: the Italian euro bank-link session for condominium debits. It lives with the other settings of the area,
-    // not on the property and not on the contract. Linking is a write (`lease.create`). Who may only read the leases does not open it.
+    // Condominium payments are made externally; this page lists reminders and records manual settlement.
     path: '/app/long-rent/payments',
     context: 'long-rent',
-    requiredPermissions: ['lease.read', 'lease.create'],
+    requiredPermissions: ['property.read'],
     navKey: 'nav.longRentPayments',
     navPlacement: 'secondary',
     navOrder: 35,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { LeaseDetail } from '@/types';
 import { useRliChecklist, useTriggerRegistration } from '@/queries/use-leases';
@@ -25,14 +25,17 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
   // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
   const providerFilingAvailable = checklist?.providerFilingAvailable === true;
 
-  useEffect(() => {
-    if (searchParams.get('registrationCheckout') === 'success' && providerFilingAvailable) {
-      setDelegaOpen(true);
+  const checkoutSucceeded = searchParams.get('registrationCheckout') === 'success';
+  const dialogOpen = delegaOpen || (checkoutSucceeded && providerFilingAvailable);
+
+  const handleDelegaOpenChange = (open: boolean) => {
+    setDelegaOpen(open);
+    if (!open && checkoutSucceeded) {
       const next = new URLSearchParams(searchParams);
       next.delete('registrationCheckout');
       setSearchParams(next, { replace: true });
     }
-  }, [providerFilingAvailable, searchParams, setSearchParams]);
+  };
 
   // The mutation reports its own errors (toast with the server's reason): only swallow the rejection.
   const handleDelegaConfirm = async (payload: { tosVersion: string; attestationAccepted: boolean }) => {
@@ -45,7 +48,7 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
     } catch {
       // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
     }
-    setDelegaOpen(false);
+    handleDelegaOpenChange(false);
   };
 
   const startCheckout = async () => {
@@ -79,8 +82,8 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
       />
       {providerFilingAvailable && !lease.isConcordatoFacileSource && checklist && (
         <DelegaCaptureDialog
-          open={delegaOpen}
-          onOpenChange={setDelegaOpen}
+          open={dialogOpen}
+          onOpenChange={handleDelegaOpenChange}
           tosVersion={checklist.tosVersion}
           attestationText={checklist.attestationText}
           isSubmitting={triggerRegistration.isPending}

@@ -5,7 +5,7 @@ import { Receipt } from 'lucide-react';
 import { RentComposition } from '@/features/leases/components/rent-composition';
 import { rentBreakdown, type RentBreakdown } from '@/features/leases/lib/rent-breakdown';
 import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
-import { FinancialConnectionsTransfer } from '@/features/bank-transfer/financial-connections-transfer';
+import { TenantSepaSettings, TenantSepaPayment } from './tenant-sepa';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -63,6 +63,7 @@ export function TenantDuesPage() {
         <h1 className="text-xl font-semibold">{t('tenantArea.dues.title')}</h1>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
       </header>
+      <TenantSepaSettings leaseId={area.contract.id} />
       {dues.length > 0 ? <PaymentReport dues={dues} /> : null}
       {dues.length === 0 ? (
         <div data-testid="tenant-dues-empty">
@@ -200,10 +201,10 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
   const settled = settledDue(parts);
   const canPay = !closed && !settled;
   const canDeclare = canPay && (!declaration || declaration.status === 'Rejected' || declaration.status === 'Superseded');
-  const [bankLinked, setBankLinked] = useState(false);
+
   const euro = bankLinkDebitAvailable(due.currency);
   const showStripe = canPay && euro && (due.status === 'Scheduled' || due.status === 'Failed');
-  const showManual = canPay && !bankLinked;
+  const showManual = canPay;
 
   return (
     <div className="space-y-4" data-testid="tenant-due-detail">
@@ -256,17 +257,7 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
             {t('tenantArea.dues.sepaTitle')}
           </h2>
           <p className="text-sm text-foreground/70">{t('tenantArea.dues.sepaHint')}</p>
-          <FinancialConnectionsTransfer
-            mode="tenant"
-            leaseId={leaseId}
-            dueId={due.id}
-            amount={due.bank?.amount ?? parts.residual}
-            currency={due.currency}
-            reference={due.bank?.reference ?? ''}
-            showManualTransfer={showManual}
-            dueFailed={due.status === 'Failed'}
-            onLinkedChange={setBankLinked}
-          />
+          <TenantSepaPayment leaseId={leaseId} dueId={due.id} amount={parts.residual} currency={due.currency} />
         </section>
       ) : null}
       {canPay && !euro ? (

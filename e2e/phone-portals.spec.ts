@@ -115,7 +115,12 @@ async function mockTenant(
 ) {
   await page.route((url) => url.pathname.startsWith('/api/tenant-area/contracts/'), async (route) => {
     const url = route.request().url();
-    if (url.includes('/bank-link')) {
+    if (url.endsWith('/sepa') && route.request().method() === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ authorized: true, automaticEnabled: false,
+        canAuthorize: true, canManage: true, authorizationUntil: '2027-12-31', blockedFrom: '2028-01-01', transactionFee: 1 }) });
+      return;
+    }
+    if (url.includes('/sepa')) {
       if (bank) {
         await bank(route);
         return;
@@ -162,8 +167,9 @@ async function mockTenant(
 function stripeStub() {
   return `window.Stripe = function () {
     return {
-      collectFinancialConnectionsAccounts: async function () {
-        return { financialConnectionsSession: { accounts: [{ id: 'fca_demo' }] } };
+      confirmSepaDebitPayment: async function () {
+        window.__sepaConfirmations = (window.__sepaConfirmations || 0) + 1;
+        return { paymentIntent: { status: 'processing' } };
       },
       _registerWrapper: function () {},
     };
@@ -173,6 +179,7 @@ function stripeStub() {
 test.describe('Phone portals: tenant and landlord', () => {
   test.beforeEach(async ({ page }) => {
     await pinE2eLocale(page, 'it');
+    await page.route('https://js.stripe.com/**', async route => route.fulfill({ status: 200, contentType: 'application/javascript', body: stripeStub() }));
   });
 
   for (const viewport of VIEWPORTS) {
@@ -196,8 +203,8 @@ test.describe('Phone portals: tenant and landlord', () => {
       await expect(page.getByTestId('tenant-settlement-note')).toContainText('credito');
       await expect(page.getByText('Facciata non confermata')).toHaveCount(0);
       await expect(page.getByText('400,00')).toHaveCount(0);
-      await expect(page.getByTestId('stripe-link-account')).toHaveText('Collega il conto');
-      await fits(page, 'stripe-link-account');
+      await expect(page.getByTestId('tenant-sepa-payment')).toContainText('971,00');
+      await fits(page, 'tenant-sepa-payment');
 
       await page.getByTestId('tenant-declare-transfer').click();
       await expect(page.getByTestId('tenant-declaration-status')).toContainText('Inviata');
@@ -215,81 +222,41 @@ test.describe('Phone portals: tenant and landlord', () => {
       await fits(page, 'tenant-maintenance');
     });
 
-    test(`tenant SEPA stops without a sandbox session on ${viewport.name}`, async ({ page }) => {
+    test(`tenant keeps manual payment when SEPA is unavailable on ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       const payments: string[] = [];
-      await mockTenant(page, [openDue], documents, async (route) => {
-        payments.push(`${route.request().method()} ${route.request().url()}`);
-        if (route.request().url().endsWith('/session')) {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ sessionId: 'fcsess_1', clientSecret: 'secret', publishableKey: null }),
-          });
-          return;
-        }
-        await route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+      await mockTenant(page, [openDue], documents, async route => {
+        payments.push(route.request().url());
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ title: 'SEPA non disponibile' }) });
       });
-
       await page.goto(`/portale-conduttore/contratti/${LEASE}/scadenze/${DUE}`);
-      await page.getByTestId('stripe-link-account').click();
-      await expect(page.getByTestId('stripe-transfer-error')).toContainText('Stripe non è disponibile');
-      expect(payments.some((call) => call.includes('/payment'))).toBe(false);
+      await page.getByRole('button', { name: 'Paga con SEPA' }).click();
+      await expect(page.getByTestId('tenant-sepa-payment').getByRole('alert')).toBeVisible();
+      expect(payments.some(call => call.endsWith('/sepa/payment-session'))).toBe(true);
+      await expect(page.getByTestId('tenant-manual')).toBeVisible();
       await expect(page.getByTestId('tenant-due-status')).toContainText('Da pagare');
     });
 
-    test(`a failed SEPA debit retries with a new idempotency key on ${viewport.name}`, async ({ page }) => {
+    test(`a saved mandate still requires manual confirmation on ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      const keys: string[] = [];
-      await page.route('https://js.stripe.com/**', async (route) => {
-        await route.fulfill({ status: 200, contentType: 'application/javascript', body: stripeStub() });
+      await page.route('https://js.stripe.com/**', async route => route.fulfill({ status: 200, contentType: 'application/javascript', body: stripeStub() }));
+      await mockTenant(page, [{ ...openDue, status: 'Failed' }], documents, async route => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+          clientSecret: 'pi_secret', publishableKey: 'pk_test_demo', stripeAccountId: '', useSavedMandate: true,
+        }) });
       });
-      await mockTenant(page, [{ ...openDue, status: 'Failed', isOverdue: true }], documents, async (route) => {
-        const url = route.request().url();
-        if (url.endsWith('/session')) {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ sessionId: 'fcsess_1', clientSecret: 'secret', publishableKey: 'pk_test_demo' }),
-          });
-          return;
-        }
-        if (url.endsWith('/payment')) {
-          keys.push(route.request().headers()['idempotency-key'] ?? '');
-          const failed = keys.length === 1;
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              paymentId: failed ? 'pay-1' : 'pay-2',
-              paymentIntentId: failed ? 'pi_1' : 'pi_2',
-              clientSecret: null,
-              stripeStatus: failed ? 'requires_payment_method' : 'processing',
-              paymentMethodType: 'sepa_debit',
-              dueSettled: false,
-            }),
-          });
-          return;
-        }
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ linked: true, accountId: 'fca_demo', displayName: 'Banca Demo', last4: '1234' }),
-        });
-      });
-
       await page.goto(`/portale-conduttore/contratti/${LEASE}/scadenze/${DUE}`);
-      await expect(page.getByTestId('tenant-due-failed')).toContainText('non è andato a buon fine');
-      await page.getByTestId('stripe-link-account').click();
-      await page.getByTestId('stripe-start-transfer').click();
-      await expect(page.getByTestId('stripe-transfer-error')).toBeVisible();
-      await page.getByTestId('stripe-start-transfer').click();
-      await expect(page.getByTestId('stripe-transfer-pending')).toContainText('non è segnata come pagata');
-      expect(keys).toHaveLength(2);
-      expect(keys[0]).not.toBe('');
-      expect(keys[1]).not.toBe(keys[0]);
+      await page.getByRole('button', { name: 'Paga con SEPA' }).click();
+      const confirmation = page.getByRole('button', { name: /Conferma pagamento di/ });
+      await expect(confirmation).toBeVisible();
+      expect(await page.evaluate(() => (window as unknown as { __sepaConfirmations?: number }).__sepaConfirmations ?? 0)).toBe(0);
+      await confirmation.click();
+      await expect(page.getByTestId('tenant-sepa-payment')).toContainText('Pagamento in elaborazione');
+      expect(await page.evaluate(() => (window as unknown as { __sepaConfirmations?: number }).__sepaConfirmations)).toBe(1);
+      await expect(page.getByTestId('tenant-manual')).toBeVisible();
       await expect(page.getByTestId('tenant-due-status')).not.toContainText('Pagata');
     });
+
   }
 
   test('empty dues and a load error stay in Italian', async ({ page }) => {
@@ -329,7 +296,7 @@ test.describe('Phone portals: tenant and landlord', () => {
       if (viewport.name === 'phone') await page.getByTestId('lease-sheet-tabs').selectOption({ label: 'Canoni' });
       else await page.getByTestId('lease-tab-pagamenti').click();
 
-      await expect(page.getByTestId('rent-not-on-contract')).toContainText('conto SEPA');
+      await expect(page.getByTestId('rent-not-on-contract')).toContainText('registro delle spese condominiali');
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
       const markPaid = page.getByRole('button', { name: 'Segna come pagata' }).first();
       await markPaid.scrollIntoViewIfNeeded();
@@ -341,11 +308,13 @@ test.describe('Phone portals: tenant and landlord', () => {
       const scroll = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(scroll).toBeLessThanOrEqual(1);
 
-      await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
+      await page.getByRole('link', { name: 'Apri le spese condominiali' }).click();
       await expect(page.getByTestId('long-rent-payments')).toBeVisible();
-      await expect(page.getByTestId('condominium-bank-link')).toContainText('euro');
-      await expect(page.getByTestId('stripe-link-account')).toBeVisible();
-      const linkBox = await page.getByTestId('stripe-link-account').boundingBox();
+      await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
+      await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+      const manualPaid = page.getByRole('button', { name: 'Segna come pagato', exact: true });
+      await expect(manualPaid).toBeVisible();
+      const linkBox = await manualPaid.boundingBox();
       expect(linkBox).not.toBeNull();
       expect(linkBox!.x + linkBox!.width).toBeLessThanOrEqual(viewport.width + 1);
 
@@ -480,9 +449,9 @@ async function mockLandlord(page: Page) {
       }),
     });
   });
-  await page.route((url) => url.pathname.startsWith('/api/orgs/me/bank-links'), async (route) => {
+  await page.route((url) => url.pathname.startsWith('/api/long-rent/condominiums/manual-payments'), async (route) => {
     if (route.request().method() === 'GET') {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ linked: false }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'condo-1', name: 'Via Roma', label: 'Novembre', dueDate: '2026-11-30', amount: 150, paid: false }]) });
       return;
     }
     await route.fallback();

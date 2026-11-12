@@ -1,5 +1,9 @@
 import { expect, test } from './test';
 
+test.beforeEach(async ({ page }) => {
+  await page.route('https://js.stripe.com/**', async route => route.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.Stripe = function () { return { _registerWrapper: function () {} }; };' }));
+});
+
 const LEASE = 'lease-1';
 const DUE = 'due-1';
 
@@ -90,8 +94,9 @@ test('the tenant pays the due, with the advance and the settlement, from Canoni'
   await expect(page.getByTestId('tenant-advance-note')).toContainText('acconto condominiale');
   await expect(page.getByTestId('tenant-settlement-note')).toContainText('credito');
   await expect(page.getByTestId('tenant-due-overdue')).toContainText('In ritardo');
-  await expect(page.getByTestId('tenant-sepa')).toContainText('banche italiane');
-  await expect(page.getByTestId('stripe-link-account')).toHaveText('Collega il conto');
+  await expect(page.getByTestId('tenant-sepa')).toContainText('IBAN');
+  await expect(page.getByTestId('tenant-sepa-payment')).toContainText('971,00');
+  await expect(page.getByRole('button', { name: 'Paga con SEPA' })).toBeVisible();
   await expect(page.getByTestId('tenant-manual')).toBeVisible();
   await expect(page.getByTestId('tenant-bank-reference')).toContainText('CZ-2026-11-ABC');
 

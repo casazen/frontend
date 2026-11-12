@@ -73,7 +73,7 @@ async function mockContractApi(page: Page): Promise<ContractApi> {
   );
   await page.route('**/api/long-rent/rules', (route) => json(route, RULES));
   await page.route('**/api/long-rent/landlord-defaults', (route) => json(route, {}));
-  await page.route('**/api/orgs/me/bank-links**', (route) => json(route, { linked: false }));
+  await page.route('**/api/long-rent/condominiums/manual-payments**', (route) => json(route, []));
   await page.route('**/api/properties/*/documents**', (route) => json(route, []));
 
   await page.route(/\/api\/leases(\/.*)?(\?.*)?$/, async (route) => {
@@ -276,7 +276,8 @@ async function fillParties(page: Page) {
 
 async function openSheet(page: Page, leaseId: string) {
   if (page.url().includes('step=7')) {
-    await page.getByTestId('nav-group-everyday').getByRole('link', { name: 'Contratti' }).click();
+    // Use the wizard's return link; Contracts is no longer a sidebar destination.
+    await page.getByRole('link', { name: 'Torna a Contratti', exact: true }).click();
   } else {
     await page.getByTestId('lease-wizard-save').click();
   }
@@ -332,6 +333,7 @@ test.describe('Contract creation, every type', () => {
 
     await page.getByTestId('lease-wizard-next').click();
     await expect(page).toHaveURL(/step=4/);
+    await expect(page.locator('#lw-startDate')).toBeVisible();
     await page.getByTestId('lease-wizard-back').click();
     await expect(page).toHaveURL(/step=3/);
     await expect(expenses.getByTestId('lease-condominium-saved')).toContainText('95,50');
@@ -357,12 +359,11 @@ test.describe('Contract creation, every type', () => {
 
     await page.getByTestId('lease-tab-pagamenti').click();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
-    await page.getByRole('link', { name: 'Apri il conto SEPA' }).click();
+    await page.getByRole('link', { name: 'Apri le spese condominiali' }).click();
     await expect(page).toHaveURL(/\/app\/long-rent\/payments$/);
-    const bank = page.getByTestId('condominium-bank-link');
-    await expect(bank).toContainText('euro');
-    await expect(bank.getByRole('button', { name: 'Collega il conto' })).toBeVisible();
-    await expect(bank.getByTestId('stripe-manual-stays')).toBeVisible();
+    await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
+    await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Collega il conto' })).toHaveCount(0);
     await page.getByTestId('long-rent-payments-contracts').click();
     await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
 
@@ -452,7 +453,9 @@ test.describe('Contract creation, every type', () => {
     await page.locator('#lw-securityDeposit').fill('0');
     await choose(page, 'lease-regime-CedolareSecca');
     await page.getByTestId('lease-wizard-next').click();
+    await expect(page).toHaveURL(/step=4/);
     await page.getByTestId('lease-wizard-back').click();
+    await expect(page).toHaveURL(/step=3/);
     await choose(page, 'lease-type-Concordato');
     await page.getByTestId('lease-wizard-next').click();
     await page.locator('#lw-startDate').fill('2027-02-01');
