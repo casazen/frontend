@@ -39,7 +39,7 @@ export function OnboardingSummaryPage() {
       <div className={cn(FOCUS_COLUMN, 'space-y-8')} data-testid="onboarding-summary-page">
         <PageHeader title={t('onboardingPlan.summary.title')} description={t('onboardingPlan.summary.description')} />
 
-        <FlowStatusTable initialFlow={requestedFlow(searchParams.get('flow'))} />
+        <FlowStatusTable initialFlow={requestedFlow(searchParams.get('flow'))} onActivate={isAdmin ? () => setActivating(true) : undefined} />
 
         {isAdmin ? (
           <>

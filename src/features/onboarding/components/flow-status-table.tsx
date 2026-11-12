@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ErrorState } from '@/components/shared/error-state';
@@ -28,14 +28,19 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 interface FlowCellProps {
   status: FlowPropertyStatus | undefined;
   flow: OnboardingFlowKey;
+  onActivate?: () => void;
 }
 
 /**
  * One flow on one property: the state with a tint, an icon and words (UX-09), the reason in plain words when it is not active, and, when something the
  * host does fixes it, «Fai ora»: the action code of the status becomes a launch target resolved against the manifest with the property (a page that is
  * not registered shows «Non ancora disponibile», never a dead link). «Non disponibile» says why (for example the content is managed on the channel).
+ *
+ * The one action that is done on this very page is the activation (the property waits only for it): its «page» is the summary itself, so a link would do
+ * nothing. It is a button that opens the activation dialog for the organization administrator, who is the one who activates (`onActivate`), and there is
+ * nothing to press for anyone else: the page tells them who activates.
  */
-function FlowCell({ status, flow }: FlowCellProps) {
+function FlowCell({ status, flow, onActivate }: FlowCellProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   if (!status) return <span className="text-sm text-foreground/70">{t('onboardingPlan.summary.table.noData')}</span>;
@@ -43,25 +48,36 @@ function FlowCell({ status, flow }: FlowCellProps) {
   const state = normalizeFlowState(status.state);
   const reason = reasonOf(status);
   const action = state === 'toComplete' ? launchTargetForAction(status.action) : null;
-  const launch = action ? resolveLaunchTarget(action.target, action.focus, status.propertyId, hasPermission) : null;
+  const activation = action !== null && status.action === 'activate';
+  const launch = action && !activation ? resolveLaunchTarget(action.target, action.focus, status.propertyId, hasPermission) : null;
+  const doNow = `${t('onboardingPlan.actions.doNow')}: ${status.name} · ${t(flowNameKey(flow))}`;
+
+  let doing: ReactNode = null;
+  if (activation) {
+    doing = onActivate ? (
+      <Button type="button" size="sm" className={TOUCH_TARGET} onClick={onActivate} aria-label={doNow} data-testid={`flow-cell-${status.propertyId}-${flow}-activate`}>
+        {t('onboardingPlan.actions.doNow')}
+      </Button>
+    ) : null;
+  } else if (action) {
+    doing = launch ? (
+      <Button asChild size="sm" className={TOUCH_TARGET}>
+        <Link to={launch.to} aria-label={doNow} data-testid={`flow-cell-${status.propertyId}-${flow}-do`}>
+          {t('onboardingPlan.actions.doNow')}
+        </Link>
+      </Button>
+    ) : (
+      <span className="block text-sm text-foreground/70" data-testid={`flow-cell-${status.propertyId}-${flow}-unavailable`}>
+        {t('onboardingPlan.launch.unavailable.title')}
+      </span>
+    );
+  }
 
   return (
     <div className="min-w-0 space-y-1.5" data-testid={`flow-cell-${status.propertyId}-${flow}`} data-state={state}>
       <FlowStateBadge state={state} />
       {reason ? <p className="break-words text-sm">{t(flowReasonKey(reason))}</p> : null}
-      {action ? (
-        launch ? (
-          <Button asChild size="sm" className={TOUCH_TARGET}>
-            <Link to={launch.to} aria-label={`${t('onboardingPlan.actions.doNow')}: ${status.name} · ${t(flowNameKey(flow))}`} data-testid={`flow-cell-${status.propertyId}-${flow}-do`}>
-              {t('onboardingPlan.actions.doNow')}
-            </Link>
-          </Button>
-        ) : (
-          <span className="block text-sm text-foreground/70" data-testid={`flow-cell-${status.propertyId}-${flow}-unavailable`}>
-            {t('onboardingPlan.launch.unavailable.title')}
-          </span>
-        )
-      ) : null}
+      {doing}
     </div>
   );
 }
@@ -69,6 +85,8 @@ function FlowCell({ status, flow }: FlowCellProps) {
 interface FlowStatusTableProps {
   /** A flow to start on (the target of the «Da fare» of a flow): the table opens on that flow's properties that are still to complete. */
   initialFlow?: OnboardingFlowKey | null;
+  /** Opens the activation dialog: given only to the organization administrator, who activates. Without it a property that waits only for the activation has no button. */
+  onActivate?: () => void;
 }
 
 /**
@@ -77,7 +95,7 @@ interface FlowStatusTableProps {
  * where the flow stands on the property in colour, icon and words. The strip and two filters (a flow, and a state of that flow) narrow it down to the
  * properties of one flow, which is what the «Da fare» of a flow opens on. Everyone who can read the properties reads it.
  */
-export function FlowStatusTable({ initialFlow = null }: FlowStatusTableProps) {
+export function FlowStatusTable({ initialFlow = null, onActivate }: FlowStatusTableProps) {
   const { t } = useTranslation();
   const [flow, setFlow] = useState<OnboardingFlowKey | 'all'>(initialFlow ?? 'all');
   const [state, setState] = useState<OnboardingFlowState | 'all'>(initialFlow ? 'toComplete' : 'all');
@@ -151,7 +169,7 @@ export function FlowStatusTable({ initialFlow = null }: FlowStatusTableProps) {
                 </th>
                 {shown.map((key) => (
                   <td key={key} className="min-w-44 px-3 py-3">
-                    <FlowCell status={statusOf(key, row.propertyId)} flow={key} />
+                    <FlowCell status={statusOf(key, row.propertyId)} flow={key} onActivate={onActivate} />
                   </td>
                 ))}
               </tr>

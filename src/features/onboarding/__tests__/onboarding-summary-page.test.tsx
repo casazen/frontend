@@ -142,8 +142,9 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       expect(cell(P2, 'Bookings')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.mapping_unconfirmed'));
       expect(screen.getByTestId(`flow-cell-${P2}-Bookings-do`)).toHaveAttribute('href', '/app/short-rent/integrations/octorate?step=mapping');
       expect(screen.getByTestId(`flow-cell-${P2}-Listings-do`)).toHaveAttribute('href', `/app/short-rent/properties/${P2}/edit`);
-      // The action «activate» is the summary itself.
-      expect(screen.getByTestId(`flow-cell-${P1}-Bookings-do`)).toHaveAttribute('href', '/app/short-rent/onboarding/summary');
+      // The action «activate» is done on this very page: for the administrator a button, not a link to the page they are on.
+      expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-do`)).not.toBeInTheDocument();
+      expect(screen.getByTestId(`flow-cell-${P1}-Bookings-activate`).tagName).toBe('BUTTON');
       // Not available: the why, no button.
       expect(cell(P1, 'Documents')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.content_managed_on_channel'));
       expect(within(cell(P1, 'Documents')).queryByRole('link')).not.toBeInTheDocument();
@@ -157,6 +158,32 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
 
       expect(await screen.findByTestId(`flow-cell-${P2}-Listings-unavailable`)).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
       expect(screen.queryByTestId(`flow-cell-${P2}-Listings-do`)).not.toBeInTheDocument();
+    });
+
+    it('FlowStatusTable_PropertyThatWaitsOnlyForTheActivation_OpensTheActivationDialogForTheAdministrator', async () => {
+      renderPage();
+      await screen.findByTestId('flow-table');
+      expect(screen.queryByTestId('activation-dialog')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId(`flow-cell-${P1}-Bookings-activate`));
+
+      // The dialog of the activation, as from the button of the page: the summary before the action, nothing done yet.
+      const dialog = await screen.findByTestId('activation-dialog');
+      expect(within(dialog).getByTestId('activation-confirm')).toBeInTheDocument();
+      expect(onboardingApi.activateFlow).not.toHaveBeenCalled();
+    });
+
+    it('FlowStatusTable_PropertyThatWaitsOnlyForTheActivation_HasNoButtonForWhoIsNotTheAdministrator', async () => {
+      workspace.contexts = COLLABORATOR;
+      renderPage();
+
+      await screen.findByTestId('flow-table');
+      // The reason is told, and who activates is told below the table; nothing to press, and no link to the page the person is on.
+      expect(cell(P1, 'Bookings')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.flow_not_activated'));
+      expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-activate`)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-do`)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-unavailable`)).not.toBeInTheDocument();
+      expect(screen.getByTestId('summary-admin-only')).toBeInTheDocument();
     });
 
     it('FlowStatusTable_Strip_ShowsTheCountsOfEachFlowAndNarrowsTheTableToThatFlow', async () => {
