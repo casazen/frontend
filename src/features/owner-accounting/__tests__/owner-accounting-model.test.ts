@@ -112,6 +112,28 @@ describe('the month: groups, anomalies, percentage', () => {
     ]);
   });
 
+  it('anIssueOfAPropertyToldTwiceByTheServer_IsCountedAndShownOnce_AndStillHoldsBackEveryOwner', () => {
+    const gap = (ownerId: string | null) => issue('ownership_share_gap', { ownerId, propertyId: 'p-1' });
+    const month = readiness(
+      [
+        ownerReadiness({ ownerId: 'a', latestStatus: 'Draft', issues: [gap('a')] }),
+        ownerReadiness({ ownerId: 'b', latestStatus: 'Draft', issues: [gap('b'), issue('fx_missing', { ownerId: 'b' })] }),
+        ownerReadiness({ ownerId: 'c', latestStatus: 'Draft' }),
+      ],
+      [gap(null)],
+    );
+
+    // The gap is one anomaly of the month (told under the month), plus the exchange rate of «b»: two lines, two anomalies.
+    expect(groupAnomalies(month).map((group) => [group.ownerId, group.code])).toEqual([
+      ['b', 'fx_missing'],
+      [null, 'ownership_share_gap'],
+    ]);
+    const summary = summarize(month);
+    expect(summary).toMatchObject({ blocking: 2, orgBlocking: 1, owners: 3 });
+    // The owners of the property are held back all the same: only «c» is ready.
+    expect(summary).toMatchObject({ ready: 1, percent: 33 });
+  });
+
   it('actionForIssue_EveryKnownCodeHasAWayToResolveIt_AndNoneResolvesItself', () => {
     const kinds = Object.fromEntries(ISSUE_CODES.map((code) => [code, actionForIssue(issue(code, { sourceId: 'p-1' })).kind]));
 

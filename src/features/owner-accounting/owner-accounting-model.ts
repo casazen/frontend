@@ -120,6 +120,12 @@ export function anomaliesOf(issues: readonly OwnerReadinessIssue[]): OwnerReadin
 
 export const blockingAnomalies = (issues: readonly OwnerReadinessIssue[]): OwnerReadinessIssue[] => anomaliesOf(issues).filter((issue) => issue.blocking);
 
+/**
+ * The same fact as the server tells it twice: an issue of a property that no owner is credited for is listed under the month, and again under every
+ * owner of that property (it holds back each of their statements). A person counts and reads it once.
+ */
+const issueKey = (issue: OwnerReadinessIssue): string => `${issue.code}|${issue.propertyId ?? ''}|${issue.sourceId ?? ''}`;
+
 export interface CloseSummary {
   owners: number;
   /** Owners with no blocking anomaly. */
@@ -139,6 +145,7 @@ export interface CloseSummary {
 /** What the page says at the top: how many statements are ready to go on, and how many anomalies stop the others. */
 export function summarize(readiness: OwnerCloseReadiness): CloseSummary {
   const groups: Record<OwnerGroup, number> = { toPrepare: 0, toVerify: 0, approved: 0, published: 0 };
+  const toldOfTheMonth = new Set(readiness.issues.map(issueKey));
   let ready = 0;
   let closed = 0;
   let blocking = 0;
@@ -146,10 +153,12 @@ export function summarize(readiness: OwnerCloseReadiness): CloseSummary {
   for (const owner of readiness.owners) {
     groups[groupOf(owner.latestStatus)] += 1;
     if (owner.status === 'Closed') closed += 1;
-    const own = blockingAnomalies(owner.issues).length;
-    if (own === 0) ready += 1;
-    blocking += own;
-    warnings += anomaliesOf(owner.issues).length - own;
+    // An issue of a property holds back the owner (not ready) even though it is counted once, under the month.
+    const anomalies = anomaliesOf(owner.issues);
+    if (!anomalies.some((issue) => issue.blocking)) ready += 1;
+    const own = anomalies.filter((issue) => !toldOfTheMonth.has(issueKey(issue)));
+    blocking += own.filter((issue) => issue.blocking).length;
+    warnings += own.filter((issue) => !issue.blocking).length;
   }
   const orgBlocking = readiness.issues.filter((issue) => issue.blocking).length;
   const owners = readiness.owners.length;
@@ -168,7 +177,7 @@ export interface AnomalyGroup {
   issue: OwnerReadinessIssue;
 }
 
-/** The anomalies of the month as lines a person reads: one for each owner and code, the blocking ones first. */
+/** The anomalies of the month as lines a person reads: one for each owner and code, the blocking ones first, an issue of a property only once. */
 export function groupAnomalies(readiness: OwnerCloseReadiness): AnomalyGroup[] {
   const groups = new Map<string, AnomalyGroup>();
   const add = (ownerId: string | null, issue: OwnerReadinessIssue) => {
@@ -177,8 +186,11 @@ export function groupAnomalies(readiness: OwnerCloseReadiness): AnomalyGroup[] {
     if (known) known.count += 1;
     else groups.set(key, { key, ownerId, code: issue.code, blocking: issue.blocking, count: 1, issue });
   };
+  const toldOfTheMonth = new Set(readiness.issues.map(issueKey));
   for (const issue of readiness.issues) add(null, issue);
-  for (const owner of readiness.owners) for (const issue of anomaliesOf(owner.issues)) add(owner.ownerId, issue);
+  for (const owner of readiness.owners) {
+    for (const issue of anomaliesOf(owner.issues)) if (!toldOfTheMonth.has(issueKey(issue))) add(owner.ownerId, issue);
+  }
   return [...groups.values()].sort((a, b) => Number(b.blocking) - Number(a.blocking) || a.code.localeCompare(b.code) || (a.ownerId ?? '').localeCompare(b.ownerId ?? ''));
 }
 
