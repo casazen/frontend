@@ -87,6 +87,23 @@ export function proposedRegimeCode(regime: DocumentRegime | null): string {
 }
 
 /**
+ * What the field of the regime code becomes when the answers of the regime lead to `regime`, or `null` when it stays as it is. The code the
+ * accountant chose (the override saved on the setting) belongs to the regime it was chosen for, so it must not go on the documents of another
+ * one: while the answers lead anywhere else the field the person never touched is emptied (the server then takes the code of the regime), and
+ * it comes back when they lead to the saved regime again. A code the person wrote is theirs and is never touched.
+ */
+export function regimeCodeFollowing(
+  current: string,
+  regime: DocumentRegime | null,
+  saved: Pick<FiscalDocumentSettings, 'regime' | 'issuer'>,
+): string | null {
+  const override = saved.issuer.fatturaPaRegimeCode;
+  if (!override) return null;
+  if (regime === saved.regime) return current.trim() === '' ? override : null;
+  return current.trim().toUpperCase() === override.trim().toUpperCase() ? '' : null;
+}
+
+/**
  * What the wizard starts from: the setting as the server has it, and what CasaZen knows besides (the name of the organization for the name on
  * the documents, the tax profile for the VAT number and the fiscal code). Someone who already has a VAT number on record has answered the
  * first question of the regime. The person confirms rather than types.

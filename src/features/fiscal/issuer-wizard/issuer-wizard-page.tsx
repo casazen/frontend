@@ -111,7 +111,7 @@ function IssuerWizard({ settings }: IssuerWizardProps) {
       title: t('fiscalDocuments.issuer.steps.regime.title'),
       purpose: t('fiscalDocuments.issuer.steps.regime.purpose'),
       schema: regimeStepSchema,
-      render: () => <RegimeStep />,
+      render: () => <RegimeStep settings={settings} />,
     },
     [ISSUER_STEPS.issuer]: {
       id: ISSUER_STEPS.issuer,

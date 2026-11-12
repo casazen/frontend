@@ -383,6 +383,75 @@ describe('CasaZen issues: the data and the address of the issuer', () => {
     expect(fiscalApi.putTaxProfile).not.toHaveBeenCalled();
   });
 
+  describe('the regime code the accountant chose belongs to its regime', () => {
+    // RF05 was chosen for the ordinary regime; the VAT number is on record, so the data step asks nothing else.
+    const savedWithACode = () =>
+      completedSetting({
+        regime: 'VatOrdinary',
+        issuer: { ...completedSetting().issuer, vatNumber: '99999999999', fiscalCode: undefined, fatturaPaRegimeCode: 'RF05' },
+      });
+
+    async function toTheRegimeStep() {
+      const saved = savedWithACode();
+      vi.mocked(getIssuerSettings).mockResolvedValueOnce(saved).mockResolvedValue({ ...saved, confirmedAt: '2026-11-10T10:00:00Z' });
+      renderWizard();
+      await onStep('who');
+      await goTo('regime');
+    }
+
+    async function confirmFromTheDataStep() {
+      await throughTo('summary', ['address', 'summary']);
+      fireEvent.click(finish());
+      await waitFor(() => expect(saveIssuerSettings).toHaveBeenCalledTimes(1), WAIT);
+      return vi.mocked(saveIssuerSettings).mock.calls[0][0];
+    }
+
+    it('IssuerWizard_Casazen_TheCodeOfTheOldRegimeIsNotSentForTheNewOne', async () => {
+      await toTheRegimeStep();
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-regime-flatRate'));
+      await goTo('issuer');
+
+      // The field says what goes on the documents: nothing of the old regime, so the server takes the code of the new one.
+      expect(screen.getByTestId('fiscal-issuer-regime-code')).toHaveValue('');
+      expect(screen.getByTestId('fiscal-issuer-more-options')).not.toHaveAttribute('open');
+      await goTo('address');
+      await goTo('summary');
+      expect(within(screen.getByTestId('fiscal-issuer-summary-step')).queryByText('RF05')).not.toBeInTheDocument();
+      fireEvent.click(finish());
+
+      await waitFor(() => expect(saveIssuerSettings).toHaveBeenCalledTimes(1), WAIT);
+      const request = vi.mocked(saveIssuerSettings).mock.calls[0][0];
+      expect(request).toMatchObject({ mode: 'CasaZenDirectOnly', regime: 'VatFlatRate', confirmed: true });
+      expect(request.issuer?.fatturaPaRegimeCode).toBeUndefined();
+    });
+
+    it('IssuerWizard_Casazen_TheCodeComesBackWhenTheAnswersLeadBackToItsRegime', async () => {
+      await toTheRegimeStep();
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-regime-flatRate'));
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-no'));
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-yes'));
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-regime-ordinary'));
+      await goTo('issuer');
+
+      expect(screen.getByTestId('fiscal-issuer-regime-code')).toHaveValue('RF05');
+      expect(screen.getByTestId('fiscal-issuer-more-options')).toHaveAttribute('open');
+      const request = await confirmFromTheDataStep();
+      expect(request).toMatchObject({ regime: 'VatOrdinary' });
+      expect(request.issuer?.fatturaPaRegimeCode).toBe('RF05');
+    });
+
+    it('IssuerWizard_Casazen_ACodeTheyWriteForTheNewRegimeIsTheirs', async () => {
+      await toTheRegimeStep();
+      fireEvent.click(screen.getByTestId('fiscal-issuer-vat-regime-flatRate'));
+      await goTo('issuer');
+      type('fiscal-issuer-regime-code', 'rf19');
+
+      const request = await confirmFromTheDataStep();
+      expect(request).toMatchObject({ regime: 'VatFlatRate' });
+      expect(request.issuer?.fatturaPaRegimeCode).toBe('RF19');
+    });
+  });
+
   it('IssuerWizard_Casazen_TheChecksOfTheStepAreOnTheFieldsAndTheStepStays', async () => {
     renderWizard();
     await onStep('who');

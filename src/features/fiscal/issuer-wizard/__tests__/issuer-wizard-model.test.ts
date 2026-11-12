@@ -14,6 +14,7 @@ import {
   issuesOf,
   modeFromValues,
   proposedRegimeCode,
+  regimeCodeFollowing,
   stepIdsFor,
   taxProfileAddition,
   toSaveRequest,
@@ -220,6 +221,33 @@ describe('what the last button sends', () => {
 
   it('IssuerWizardModel_SaveRequest_NoChoiceIsNoRequest', () => {
     expect(toSaveRequest(casazenValues({ mode: null }), settings())).toBeNull();
+  });
+});
+
+describe('the regime code follows the regime', () => {
+  // An accountant chose RF05 for the ordinary regime: the field of the options starts from it.
+  const saved = completedSetting({ regime: 'VatOrdinary', issuer: { ...completedSetting().issuer, fatturaPaRegimeCode: 'RF05' } });
+
+  it('IssuerWizardModel_RegimeCode_TheSavedCodeIsEmptiedWhenTheAnswersLeadToAnotherRegime', () => {
+    expect(regimeCodeFollowing('RF05', 'VatFlatRate', saved)).toBe('');
+    expect(regimeCodeFollowing(' rf05 ', 'PrivatePerson', saved)).toBe('');
+    // Between the two questions the answers lead to no regime yet: the code is not carried over to whatever comes next either.
+    expect(regimeCodeFollowing('RF05', null, saved)).toBe('');
+  });
+
+  it('IssuerWizardModel_RegimeCode_TheSavedCodeComesBackWithItsRegimeAndACodeTheyWroteIsNeverTouched', () => {
+    expect(regimeCodeFollowing('', 'VatOrdinary', saved)).toBe('RF05');
+    // Already there, or a code of their own: nothing to do, in either direction.
+    expect(regimeCodeFollowing('RF05', 'VatOrdinary', saved)).toBeNull();
+    expect(regimeCodeFollowing('RF02', 'VatOrdinary', saved)).toBeNull();
+    expect(regimeCodeFollowing('RF02', 'VatFlatRate', saved)).toBeNull();
+  });
+
+  it('IssuerWizardModel_RegimeCode_WithNoSavedCodeThereIsNothingToFollow', () => {
+    const none = completedSetting({ regime: 'VatOrdinary' });
+
+    expect(regimeCodeFollowing('', 'VatFlatRate', none)).toBeNull();
+    expect(regimeCodeFollowing('', 'VatOrdinary', none)).toBeNull();
   });
 });
 
