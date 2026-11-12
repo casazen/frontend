@@ -64,16 +64,26 @@ function toastApproveFailed(error: unknown): void {
 }
 
 /**
+ * How long a reading of the queue counts as fresh. The app keeps the data of a query fresh for five minutes, which would show the list of the last visit
+ * without the item put in the queue meanwhile (the notifications are listened to only while the queue is on the screen): here a reading is fresh for half a
+ * minute, like the ones of the hub of messages, so that the window coming back to the front reads again when it matters.
+ */
+export const APPROVAL_QUEUE_STALE_MS = 30_000;
+
+/**
  * Pending approval items within the caller's organization and the properties of its reach (AC-NF06-1), oldest first. The list changes when
- * operators work on it elsewhere and when the assistant puts a draft in it, so it is read again on every visit, every minute while the page
- * is visible (not while the tab is hidden), when the window comes back to the front and when the in-app notifications change (AC-NF68-4).
+ * operators work on it elsewhere and when the assistant puts a draft in it, so it is read again at every visit (`refetchOnMount: 'always'`: `true` would
+ * read only data that is stale, and the list of the last visit, up to five minutes old, would be shown without the new item), every minute while the page
+ * is visible (not while the tab is hidden), when the window comes back to the front and its reading is older than {@link APPROVAL_QUEUE_STALE_MS}, and
+ * when the in-app notifications change (AC-NF68-4).
  */
 export function usePendingApprovals() {
   useRefetchOnNotificationsChange();
   return useQuery({
     queryKey: PENDING_KEY,
     queryFn: () => approvalQueueApi.getPending(),
-    refetchOnMount: true,
+    staleTime: APPROVAL_QUEUE_STALE_MS,
+    refetchOnMount: 'always',
     refetchInterval: APPROVAL_QUEUE_POLL_MS,
     refetchOnWindowFocus: true,
   });

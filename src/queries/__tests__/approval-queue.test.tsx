@@ -6,9 +6,11 @@ import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { approvalQueueApi } from '@/api/approvalQueue.api';
 import i18n from '@/i18n/config';
+import { queryClient as appQueryClient } from '@/lib/query-client';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import {
   APPROVAL_QUEUE_POLL_MS,
+  APPROVAL_QUEUE_STALE_MS,
   useApproveItem,
   useEditItem,
   usePendingApprovals,
@@ -82,8 +84,30 @@ describe('the hooks of the approval queue (NF-68)', () => {
       expect(APPROVAL_QUEUE_POLL_MS).toBe(60_000);
       // Not while the tab is hidden: the poll pauses by itself.
       expect(options.refetchIntervalInBackground).toBeFalsy();
-      expect(options.refetchOnMount).toBe(true);
+      // `true` would read on a visit only data that is stale, and the app keeps data fresh for five minutes: every visit reads, and a reading is fresh for half a minute.
+      expect(options.refetchOnMount).toBe('always');
+      expect(options.staleTime).toBe(APPROVAL_QUEUE_STALE_MS);
+      expect(APPROVAL_QUEUE_STALE_MS).toBeLessThanOrEqual(30_000);
       expect(options.refetchOnWindowFocus).toBe(true);
+    });
+
+    it('usePendingApprovals_ReopenedWithinTheFiveMinutesTheAppKeepsDataFresh_ReadsTheQueueAgainAtOnceAndShowsTheNewItem', async () => {
+      // The options of the real client of the app (five minutes of freshness, no read on mount unless asked): a client with no staleTime would hide the case.
+      const client = new QueryClient({ defaultOptions: appQueryClient.getDefaultOptions() });
+      expect(client.getDefaultOptions().queries?.staleTime).toBe(5 * 60 * 1000);
+      const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+
+      const firstVisit = renderHook(() => usePendingApprovals(), { wrapper });
+      await waitFor(() => expect(firstVisit.result.current.data?.map((queued) => queued.id)).toEqual(['a1']));
+      firstVisit.unmount();
+
+      // While the host was on another page an item was put in the queue: nobody was listening to the notifications, and the last reading is a minute old.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item(), item({ id: 'new-one' })]);
+      const secondVisit = renderHook(() => usePendingApprovals(), { wrapper });
+
+      // The visit reads the queue at once: it does not show the list of the last visit until the next minute.
+      await waitFor(() => expect(secondVisit.result.current.data?.map((queued) => queued.id)).toEqual(['a1', 'new-one']));
+      expect(approvalQueueApi.getPending).toHaveBeenCalledTimes(2);
     });
 
     it('usePendingApprovals_ANewItemIsPutInTheQueue_ShowsUpWithinAMinuteWithoutAReload', async () => {
