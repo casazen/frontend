@@ -69,11 +69,15 @@ export function contactChannelLabel(t: TFunction, channel: string): string {
 }
 
 /**
- * Whether the contact may be written to for marketing, as one sentence: that it may, or why it may not. A reason the app does not know
- * yet still gets a sentence that says it may not.
+ * Whether the contact may be written to for marketing, as one sentence: the reason when there is one, else that it may. The reason comes
+ * first because `marketable` alone does not say it: the server sends `marketable: true` AND `channel_not_available` for a WhatsApp or
+ * phone number with the guest's consent (the consent is there, but nothing of CasaZen sends on that channel yet), and "you can write to
+ * them" would be false. A reason the app does not know yet still gets a sentence that says it may not.
  */
 export function reachabilitySentence(t: TFunction, contact: Pick<CrmContact, 'marketable' | 'reachabilityReason'>): string {
-  if (contact.marketable) return t('crm.contacts.reachability.marketable');
-  const known = REASONS.find((entry) => entry.reason === contact.reachabilityReason);
-  return t(known ? known.sentenceKey : 'crm.contacts.reachability.unknown');
+  if (contact.reachabilityReason) {
+    const known = REASONS.find((entry) => entry.reason === contact.reachabilityReason);
+    return t(known ? known.sentenceKey : 'crm.contacts.reachability.unknown');
+  }
+  return t(contact.marketable ? 'crm.contacts.reachability.marketable' : 'crm.contacts.reachability.unknown');
 }
