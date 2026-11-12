@@ -1338,6 +1338,7 @@
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
       "octorateNotFound": "The channel manager cannot find this listing.",
       "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
+      "octoratePartnerFailed": "The channel did not accept the request (invalid access or channel not reachable): check the access details and try again later.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
       "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
       "octorateRequestRejected": "The channel manager refused the request.",
@@ -1412,6 +1413,18 @@
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
+      "marketplaceActivationNotFound": "We cannot find this activation any more. Start again from the Marketplace.",
+      "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
+      "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
+      "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
+      "marketplaceMappingInvalid": "One of the chosen rooms is not valid. Go back and choose again.",
+      "marketplaceMappingRequired": "Link at least one room of the channel.",
+      "marketplaceOctorateNotConnected": "Your channel manager is not connected to CasaZen. Connect it and try again.",
+      "marketplacePanelAccessPending": "First give the consent on the panel of your channel manager.",
+      "marketplacePortalNotCreatable": "This channel cannot be connected from CasaZen.",
+      "marketplacePortalUnknown": "This channel is not available to you.",
+      "marketplacePropertyNotFound": "We cannot find the property, or you have no access to it.",
+      "marketplacePropertyNotLinked": "The property is not linked to your channel manager yet.",
       "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
@@ -1599,6 +1612,9 @@
       "rentTrackFromInvalid": "The day to track the rents from cannot be after the end of the lease.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
       "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
+      "connectionDisabled": "The connection is switched off on the channel manager: switch it on again from its panel, then come back here.",
+      "connectionMissing": "The connection is no longer on the channel manager (it may have been removed): start the activation of the channel again.",
+      "connectionNotEnabled": "The channel manager does not show the connection as working yet: check the access to the channel and try again.",
       "consentsIncomplete": "To come in you have to accept all the required documents.",
       "invitationDailyLimitReached": "You have already sent many invitations in the last 24 hours. Try again tomorrow.",
       "invitationEmailMismatch": "This invitation is for another address: sign in with the one it was sent to.",
@@ -10310,21 +10326,93 @@
         }
       },
       "activate": {
-        "finish": "Activate {{name}}"
+        "finish": "Activate {{name}}",
+        "intro": "Read what will happen again. If something is not right, go back with “Edit”.",
+        "summary": "We will connect {{name}} to “{{property}}”: bookings and availability will flow both ways.",
+        "when": "It can take up to 30 minutes before {{name}} shows everything. After the activation CasaZen checks the connection every 30 minutes."
       },
       "chooseFirst": {
         "action": "Choose properties",
         "text": "First choose the properties to connect."
       },
+      "connection": {
+        "failed": {
+          "generic": "We could not create the connection. Try again in a moment.",
+          "refused": "{{name}} refused the connection"
+        },
+        "fix": "Fix the access details",
+        "fixProperty": "Change the properties",
+        "intro": "We create the connection with {{name}} in your channel manager, one property at a time.",
+        "needsAccess": "To connect this property we need the access details: we ask for them again for your safety.",
+        "planError": "We could not read the state of some properties. Try again.",
+        "retry": "Try again",
+        "state": {
+          "done": "Connected",
+          "failed": "Not connected",
+          "needsAccess": "Details missing",
+          "queued": "Waiting",
+          "running": "Connecting…"
+        },
+        "working": "Creating the connection"
+      },
       "description": "We guide you step by step. You can leave whenever you like with “Save and exit” and pick up where you left off.",
       "errors": {
         "accessIncomplete": "Some access details are missing: fill them in to continue.",
+        "connectionNotReady": "The connection is not ready yet: look at the list above.",
+        "mappingNone": "Link at least one room of the channel to continue.",
+        "mappingSave": "We could not save the rooms. Try again in a moment.",
+        "mappingUndecided": "For every room choose the matching one or “Do not link this room”.",
         "noProperty": "Choose at least one property.",
-        "propertyNotLinked": "One of the chosen properties is not linked to your channel manager yet: take it out of your choice."
+        "propertyNotLinked": "One of the chosen properties is not linked to your channel manager yet: take it out of your choice.",
+        "roomsNotIn": "The rooms of the channel have not arrived yet: we keep checking."
       },
       "exit": {
         "saveAndExit": "Save and exit",
         "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "import": {
+        "allIn": "The rooms of the channel are in: on to the matching.",
+        "failed": "We could not start the import.",
+        "fixAccess": "Fix the access details",
+        "fixConnection": "Back to the connection",
+        "fixProperty": "Change the properties",
+        "intro": "Your channel manager imports the rooms, the reservations and the calendar of {{name}}. A few minutes are usually enough, sometimes more.",
+        "items": {
+          "calendar": "Calendar",
+          "reservations": "Reservations",
+          "rooms": "Rooms"
+        },
+        "leave": "You can leave with “Save and exit”: the import goes on by itself in your channel manager.",
+        "noConnection": "This property has no connection yet: go back to the “Connection” step.",
+        "readError": "We could not read the rooms of the channel.",
+        "reading": "Reading the state of the property…",
+        "retry": "Try again",
+        "state": {
+          "done": "arrived",
+          "queued": "not started",
+          "requested": "request sent",
+          "starting": "starting…",
+          "waiting": "waiting for your channel manager"
+        },
+        "working": "Import in progress"
+      },
+      "mapping": {
+        "choose": "Choose the room",
+        "fixConnection": "Back to the connection",
+        "leftOut_one": "{{count}} room cannot be managed by CasaZen and is left out.",
+        "leftOut_other": "{{count}} rooms cannot be managed by CasaZen and are left out.",
+        "loading": "Reading the rooms of the channel…",
+        "next": "Save and continue",
+        "noConnection": "This property has no connection yet.",
+        "noRooms": "Your channel manager has not brought the rooms of the channel yet: we keep checking.",
+        "noneMapped": "Link at least one room of the channel.",
+        "proposed": "Suggested by CasaZen: you can change it.",
+        "readError": "We could not read the rooms of the channel.",
+        "retry": "Check again",
+        "showMore_one": "Show one more room",
+        "showMore_other": "Show {{count}} more rooms",
+        "skip": "Do not link this room",
+        "undecided": "Choose a room or “Do not link this room”."
       },
       "notFound": {
         "back": "Back to the Marketplace",
@@ -10353,11 +10441,49 @@
         "selected_one": "{{count}} property chosen",
         "selected_other": "{{count}} properties chosen"
       },
+      "result": {
+        "close": "Close",
+        "counts": "{{name}}: {{active}} active, {{toFix}} to fix",
+        "fix": "Fix",
+        "over": "The activation of {{name}} is over. You can see the state of every integration among the active ones.",
+        "reason": "We could not activate it. Try again.",
+        "seeActive": "Check it among the active ones",
+        "title": {
+          "allActive": "Activation complete",
+          "allToFix": "We could not activate",
+          "over": "The activation is over",
+          "some": "Activation almost complete"
+        },
+        "whatNext": {
+          "checks": "CasaZen checks the connection every 30 minutes.",
+          "todo": "If something is wrong, we tell you in “To do”."
+        }
+      },
       "steps": {
         "access": {
           "label": "Access",
           "purpose": "We only ask for what this channel needs.",
           "title": "What it takes to connect {{name}}"
+        },
+        "activate": {
+          "label": "Activation",
+          "purpose": "Read what will happen again, then activate.",
+          "title": "Check and activate"
+        },
+        "connection": {
+          "label": "Connection",
+          "purpose": "CasaZen creates the connection in your channel manager. A few seconds are usually enough.",
+          "title": "Connecting {{name}}"
+        },
+        "import": {
+          "label": "Import",
+          "purpose": "Your channel manager brings the rooms, the reservations and the calendar of the channel here.",
+          "title": "Bringing the data of the channel here"
+        },
+        "mapping": {
+          "label": "Rooms",
+          "purpose": "For each room of the channel choose the matching room.",
+          "title": "Match the rooms"
         },
         "property": {
           "label": "Properties",

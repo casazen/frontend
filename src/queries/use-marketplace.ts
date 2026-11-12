@@ -20,6 +20,7 @@ import {
 } from '@/api/marketplace.api';
 import { useWorkspace } from '@/hooks/use-workspace';
 import type {
+  MarketplaceActivationMapping,
   MarketplaceActivationPlan,
   MarketplaceActivationState,
   MarketplaceCatalogEntry,
@@ -168,19 +169,41 @@ export function useActivationPlans(kind: MarketplaceConnectionKind, code: string
   });
 }
 
+/** How long the state a step has just given is trusted: the channel manager's list may lag behind what it was just told, and each read is a call to it. */
+const ACTIVATION_FRESH_MS = 30_000;
+
 /**
- * The state of an activation, as the channel manager says it (`GET /api/marketplace/activations/{id}`: each read is a call to it, so the window
- * gaining the focus does not ask again). Nothing is asked until the activation is known.
+ * The plan of the portal for one property as it is now: the one read a moment ago, or a new read. The activation of a property is looked for here by a button that
+ * acts on it, which must not take a plan that has not been read yet for «there is no activation».
  */
-export function useActivation(id: string | null | undefined) {
-  return useQuery({
-    queryKey: activationKey(id ?? ''),
-    queryFn: () => getActivation(id ?? ''),
-    enabled: !!id,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: false,
+export function fetchActivationPlan(queryClient: QueryClient, kind: MarketplaceConnectionKind, code: string, propertyId: string): Promise<MarketplaceActivationPlan> {
+  return queryClient.fetchQuery({
+    queryKey: activationPlanKey(kind, code, propertyId),
+    queryFn: () => getActivationPlan(kind, code, propertyId),
+    staleTime: ACTIVATION_FRESH_MS,
   });
+}
+
+/**
+ * The state of each activation given (`GET /api/marketplace/activations/{id}`, one read for each; `null` for a property that has none yet): as the channel manager
+ * says it, read again every time a step opens and trusted for a while after a step of this wizard has given it. The window gaining the focus does not ask again.
+ */
+export function useActivations(ids: ReadonlyArray<string | null | undefined>) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: activationKey(id ?? ''),
+      queryFn: () => getActivation(id ?? ''),
+      enabled: !!id,
+      staleTime: ACTIVATION_FRESH_MS,
+      refetchOnMount: 'always' as const,
+      refetchOnWindowFocus: false,
+    })),
+  });
+}
+
+/** The state of an activation as the last step gave it (nothing is asked): what a button that decides whether the wizard goes on reads. `undefined` when no step has given it. */
+export function cachedActivation(queryClient: QueryClient, id: string | null | undefined): MarketplaceActivationState | undefined {
+  return id ? queryClient.getQueryData<MarketplaceActivationState>(activationKey(id)) : undefined;
 }
 
 /**
@@ -217,20 +240,38 @@ export function isImportRequested(queryClient: QueryClient, id: string): boolean
 }
 
 /**
- * The rooms of the channel with the proposal of CasaZen for each, and the products of the listing (`GET .../mapping`). `pollUntilRooms` reads again
- * until the channel manager has brought the rooms of the channel (the import is asynchronous there).
+ * The rooms of the channel with the proposal of CasaZen for each, and the products of the listing, for each activation given (`GET .../mapping`, two calls to
+ * the channel manager each). `enabled` is asked for each: a property whose import was not asked has nothing to read. `pollUntilRooms` reads again until the
+ * channel manager has brought the rooms of the channel (the import is asynchronous there).
  */
-export function useActivationMapping(id: string | null | undefined, options: { enabled?: boolean; pollUntilRooms?: boolean } = {}) {
-  const { enabled = true, pollUntilRooms = false } = options;
+export function useActivationMappings(entries: ReadonlyArray<{ id: string | null | undefined; enabled?: boolean }>, options: { pollUntilRooms?: boolean } = {}) {
+  const { pollUntilRooms = false } = options;
 
-  return useQuery({
-    queryKey: activationMappingKey(id ?? ''),
-    queryFn: () => getActivationMapping(id ?? ''),
-    enabled: !!id && enabled,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: false,
-    refetchInterval: pollUntilRooms ? (query) => (query.state.data && query.state.data.channelRooms.length > 0 ? false : MAPPING_POLL_MS) : false,
+  return useQueries({
+    queries: entries.map(({ id, enabled = true }) => ({
+      queryKey: activationMappingKey(id ?? ''),
+      queryFn: () => getActivationMapping(id ?? ''),
+      enabled: !!id && enabled,
+      staleTime: 0,
+      refetchOnMount: 'always' as const,
+      refetchOnWindowFocus: false,
+      refetchInterval: pollUntilRooms
+        ? (query: { state: { data: MarketplaceActivationMapping | undefined } }) =>
+            query.state.data && query.state.data.channelRooms.length > 0 ? false : MAPPING_POLL_MS
+        : false,
+    })),
+  });
+}
+
+/**
+ * The mapping as the channel manager has it right now (`fresh`), or as the step on screen read it a moment ago: the wizard decides what to save, or whether the
+ * rooms are in, from this and not from a guess.
+ */
+export function fetchActivationMapping(queryClient: QueryClient, id: string, options: { fresh?: boolean } = {}): Promise<MarketplaceActivationMapping> {
+  return queryClient.fetchQuery({
+    queryKey: activationMappingKey(id),
+    queryFn: () => getActivationMapping(id),
+    staleTime: options.fresh ? 0 : MAPPING_POLL_MS,
   });
 }
 

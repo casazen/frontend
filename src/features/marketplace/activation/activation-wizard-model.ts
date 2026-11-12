@@ -180,9 +180,35 @@ export function stepToFix(code: string | null | undefined): ActivationStepId {
     case 'marketplace_mapping_required':
     case 'marketplace_mapping_invalid':
       return ACTIVATION_STEP.mapping;
+    case 'marketplace_property_not_linked':
+    case 'marketplace_property_not_found':
+    case 'marketplace_portal_not_creatable':
+    case 'marketplace_portal_unknown':
+    case 'marketplace_octorate_not_connected':
+      return ACTIVATION_STEP.property;
     default:
       return ACTIVATION_STEP.activate;
   }
+}
+
+/** The refusal of the channel itself (the channel manager's 550): told as «the channel refused the connection», never as an error of CasaZen. */
+export const CHANNEL_REFUSAL_CODE = 'octorate_partner_failed';
+
+/** The three imports the channel manager makes for a channel, in the order they are asked. */
+export const IMPORT_ITEMS = ['rooms', 'reservations', 'calendar'] as const;
+export type ImportItem = (typeof IMPORT_ITEMS)[number];
+
+/** Where one import stands for the screen: not asked yet, being asked, asked (and done by the channel manager on its own), the rooms awaited, the rooms arrived. */
+export type ImportItemState = 'queued' | 'starting' | 'requested' | 'waiting' | 'done';
+
+/**
+ * What CasaZen can say of one import. Only the rooms can be seen to arrive (the mapping read gives them), so only the rooms are ever `done`; the reservations and the
+ * calendar are `requested` once asked, and never shown as finished: the server cannot be asked how far they are.
+ */
+export function importItemState(item: ImportItem, progress: { starting: boolean; requested: boolean; roomsIn: boolean }): ImportItemState {
+  if (item === 'rooms' && progress.roomsIn) return 'done';
+  if (progress.requested) return item === 'rooms' ? 'waiting' : 'requested';
+  return progress.starting ? 'starting' : 'queued';
 }
 
 /** How an activation ended for a property in the last step: Active, or To fix with the code of what is wrong. */
@@ -208,6 +234,9 @@ export function resultCounts(outcomes: readonly ActivationOutcome[]): { active: 
   const active = outcomes.filter((outcome) => outcome.status === 'Active').length;
   return { active, toFix: outcomes.length - active };
 }
+
+/** How many rooms are shown at a time in the mapping (UX-04: one topic, about five things on screen). */
+export const MAPPING_PAGE_SIZE = 5;
 
 /** The choice of a channel room that says it is not one of the property's: it is left out of the mapping. */
 export const SKIP_ROOM = '__skip__';

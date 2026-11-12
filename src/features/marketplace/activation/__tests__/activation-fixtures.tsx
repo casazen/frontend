@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
-import type { MarketplaceActivationPlan, Property } from '@/types';
+import type { MarketplaceActivationMapping, MarketplaceActivationPlan, MarketplaceActivationState, MarketplaceChannelRoom, Property } from '@/types';
 import { CHANNELS_PAGE_PATH, MARKETPLACE_PATH } from '../../lib/marketplace-paths';
 import { ActivationWizardPage } from '../activation-wizard-page';
 import { activationWizardId } from '../activation-wizard-model';
@@ -42,6 +42,42 @@ export function plan(overrides: Partial<MarketplaceActivationPlan> = {}): Market
     activationId: null,
     activationStatus: null,
     ...overrides,
+  };
+}
+
+/** The state of an activation, as the server gives it after a step. */
+export function state(overrides: Partial<MarketplaceActivationState> = {}): MarketplaceActivationState {
+  return {
+    activationId: 'act-1',
+    kind: 'Channel',
+    code: CHANNEL_CODE,
+    propertyId: 'prop-1',
+    status: 'Pending',
+    connectionFound: true,
+    connectionStatus: 'WAITING',
+    panelAccessDone: true,
+    lastSyncedAt: null,
+    lastErrorCode: null,
+    connectionLastUpdate: null,
+    ...overrides,
+  };
+}
+
+/** A room of the channel, with the proposal of CasaZen. */
+export function channelRoom(overrides: Partial<MarketplaceChannelRoom> = {}): MarketplaceChannelRoom {
+  return { channelRoomId: 'room-1', name: 'Camera doppia', rateName: null, manageable: true, mappedProductId: null, proposedProductId: 'prod-1', ...overrides };
+}
+
+/** The mapping of an activation: the rooms of the channel and the two products of the listing they can be mapped to. */
+export function mapping(rooms: MarketplaceChannelRoom[] = [channelRoom()], activationId = 'act-1'): MarketplaceActivationMapping {
+  return {
+    activationId,
+    propertyProductId: null,
+    channelRooms: rooms,
+    products: [
+      { productId: 'prod-1', name: 'Doppia' },
+      { productId: 'prod-2', name: 'Suite' },
+    ],
   };
 }
 

@@ -1338,6 +1338,7 @@
       "octorateNotConnected": "Il tuo channel manager non è collegato. Torna al collegamento e riprova.",
       "octorateNotFound": "Il channel manager non trova questo annuncio.",
       "octoratePanelUrlMissing": "L'indirizzo del pannello non è ancora configurato. Contatta il supporto.",
+      "octoratePartnerFailed": "Il canale non ha accettato la richiesta (accesso non valido o canale non raggiungibile): controlla i dati di accesso e riprova più tardi.",
       "octoratePropertyNotFound": "Non troviamo l'immobile scelto, oppure non hai accesso. Torna indietro e scegline un altro.",
       "octorateRateLimited": "Troppe richieste al channel manager: riprova tra qualche minuto.",
       "octorateRequestRejected": "Il channel manager ha rifiutato la richiesta.",
@@ -1412,6 +1413,18 @@
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",
       "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
+      "marketplaceActivationNotFound": "Non troviamo più questa attivazione. Ricomincia dal Marketplace.",
+      "marketplaceConnectionExists": "Questo immobile ha già un collegamento a questo canale nel tuo channel manager, creato fuori da CasaZen. Toglilo da lì e riprova.",
+      "marketplaceConnectionMissing": "Il collegamento non c'è più sul channel manager: torna al passo «Collegamento».",
+      "marketplaceCredentialsRequired": "Per questo canale servono i dati di accesso: torna al passo «Accesso».",
+      "marketplaceMappingInvalid": "Una delle camere scelte non è valida. Torna indietro e scegli di nuovo.",
+      "marketplaceMappingRequired": "Collega almeno una camera del canale.",
+      "marketplaceOctorateNotConnected": "Il tuo channel manager non è collegato a CasaZen. Collegalo e riprova.",
+      "marketplacePanelAccessPending": "Prima dai il consenso sul pannello del tuo channel manager.",
+      "marketplacePortalNotCreatable": "Questo canale non si può collegare da CasaZen.",
+      "marketplacePortalUnknown": "Questo canale non è disponibile per te.",
+      "marketplacePropertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
+      "marketplacePropertyNotLinked": "L'immobile non è ancora collegato al tuo channel manager.",
       "memberCannotOnboard": "Fai già parte di un'organizzazione come collaboratore: non puoi attivare un nuovo account né cambiare il tuo ruolo. Se ti serve un altro ruolo, chiedilo al titolare dell'organizzazione.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",
@@ -1599,6 +1612,9 @@
       "rentTrackFromInvalid": "Il giorno da cui tracciare i canoni non può essere dopo la fine del contratto.",
       "hostInviteQuotaExceeded": "Hai raggiunto il limite di inviti di oggi. Riprova domani.",
       "hostEmailTaken": "Questa email ha già un account su CasaZen: non serve invitarla.",
+      "connectionDisabled": "Il collegamento è spento sul channel manager: riaccendilo dal suo pannello, poi torna qui.",
+      "connectionMissing": "Il collegamento non risulta più sul channel manager (potrebbe essere stato rimosso): ricomincia l'attivazione del canale.",
+      "connectionNotEnabled": "Il channel manager non mostra ancora il collegamento come funzionante: controlla l'accesso al canale e riprova.",
       "consentsIncomplete": "Per entrare devi accettare tutti i documenti obbligatori.",
       "invitationDailyLimitReached": "Hai già mandato tanti inviti nelle ultime 24 ore. Riprova domani.",
       "invitationEmailMismatch": "Questo invito è per un altro indirizzo: accedi con quello a cui è arrivato.",
@@ -10310,21 +10326,93 @@
         }
       },
       "activate": {
-        "finish": "Attiva {{name}}"
+        "finish": "Attiva {{name}}",
+        "intro": "Rileggi cosa succederà. Se qualcosa non va, torna indietro con «Modifica».",
+        "summary": "Collegheremo {{name}} a «{{property}}»: prenotazioni e disponibilità passeranno nei due sensi.",
+        "when": "Può richiedere fino a 30 minuti prima che {{name}} mostri tutto. Dopo l'attivazione CasaZen controlla il collegamento ogni 30 minuti."
       },
       "chooseFirst": {
         "action": "Scegli gli immobili",
         "text": "Prima scegli gli immobili da collegare."
       },
+      "connection": {
+        "failed": {
+          "generic": "Non siamo riusciti a creare il collegamento. Riprova tra poco.",
+          "refused": "{{name}} ha rifiutato il collegamento"
+        },
+        "fix": "Correggi i dati di accesso",
+        "fixProperty": "Cambia gli immobili",
+        "intro": "Creiamo il collegamento con {{name}} nel tuo channel manager, un immobile alla volta.",
+        "needsAccess": "Per collegare questo immobile servono i dati di accesso: li chiediamo di nuovo per sicurezza.",
+        "planError": "Non riesco a leggere lo stato di alcuni immobili. Riprova.",
+        "retry": "Riprova",
+        "state": {
+          "done": "Collegato",
+          "failed": "Non collegato",
+          "needsAccess": "Mancano i dati",
+          "queued": "In attesa",
+          "running": "Collego…"
+        },
+        "working": "Sto creando il collegamento"
+      },
       "description": "Ti accompagniamo passo dopo passo. Puoi uscire quando vuoi con «Salva ed esci» e riprendere da dove eri.",
       "errors": {
         "accessIncomplete": "Mancano alcuni dati di accesso: compilali per continuare.",
+        "connectionNotReady": "Il collegamento non è ancora pronto: guarda l'elenco qui sopra.",
+        "mappingNone": "Collega almeno una camera del canale per continuare.",
+        "mappingSave": "Non siamo riusciti a salvare le camere. Riprova tra poco.",
+        "mappingUndecided": "Per ogni camera scegli quella corrispondente oppure «Non collegare questa camera».",
         "noProperty": "Scegli almeno un immobile.",
-        "propertyNotLinked": "Uno degli immobili scelti non è ancora collegato al tuo channel manager: toglilo dalla scelta."
+        "propertyNotLinked": "Uno degli immobili scelti non è ancora collegato al tuo channel manager: toglilo dalla scelta.",
+        "roomsNotIn": "Le camere del canale non sono ancora arrivate: ricontrolliamo da soli."
       },
       "exit": {
         "saveAndExit": "Salva ed esci",
         "saved": "Abbiamo salvato a che punto sei: riprendi quando vuoi dal Marketplace."
+      },
+      "import": {
+        "allIn": "Le camere del canale sono arrivate: passiamo all'abbinamento.",
+        "failed": "Non siamo riusciti ad avviare l'importazione.",
+        "fixAccess": "Correggi i dati di accesso",
+        "fixConnection": "Torna al collegamento",
+        "fixProperty": "Cambia gli immobili",
+        "intro": "Il tuo channel manager importa le camere, le prenotazioni e il calendario di {{name}}. Di solito bastano pochi minuti, a volte di più.",
+        "items": {
+          "calendar": "Calendario",
+          "reservations": "Prenotazioni",
+          "rooms": "Camere"
+        },
+        "leave": "Puoi uscire con «Salva ed esci»: l'importazione continua da sola nel tuo channel manager.",
+        "noConnection": "Questo immobile non ha ancora il collegamento: torna al passo «Collegamento».",
+        "readError": "Non riesco a leggere le camere del canale.",
+        "reading": "Leggo lo stato dell'immobile…",
+        "retry": "Riprova",
+        "state": {
+          "done": "arrivate",
+          "queued": "da avviare",
+          "requested": "richiesta inviata",
+          "starting": "avvio…",
+          "waiting": "in attesa del tuo channel manager"
+        },
+        "working": "Importazione in corso"
+      },
+      "mapping": {
+        "choose": "Scegli la camera",
+        "fixConnection": "Torna al collegamento",
+        "leftOut_one": "{{count}} camera non si può gestire da CasaZen e resta fuori.",
+        "leftOut_other": "{{count}} camere non si possono gestire da CasaZen e restano fuori.",
+        "loading": "Leggo le camere del canale…",
+        "next": "Salva e continua",
+        "noConnection": "Questo immobile non ha ancora il collegamento.",
+        "noRooms": "Il tuo channel manager non ha ancora portato le camere del canale: ricontrolliamo da soli.",
+        "noneMapped": "Collega almeno una camera del canale.",
+        "proposed": "Proposta di CasaZen: puoi cambiarla.",
+        "readError": "Non riesco a leggere le camere del canale.",
+        "retry": "Controlla di nuovo",
+        "showMore_one": "Mostra un'altra camera",
+        "showMore_other": "Mostra altre {{count}} camere",
+        "skip": "Non collegare questa camera",
+        "undecided": "Scegli una camera oppure «Non collegare questa camera»."
       },
       "notFound": {
         "back": "Torna al Marketplace",
@@ -10353,11 +10441,49 @@
         "selected_one": "{{count}} immobile scelto",
         "selected_other": "{{count}} immobili scelti"
       },
+      "result": {
+        "close": "Chiudi",
+        "counts": "{{name}}: {{active}} attivi, {{toFix}} da correggere",
+        "fix": "Correggi",
+        "over": "L'attivazione di {{name}} è finita. Trovi lo stato di ogni integrazione tra gli attivi.",
+        "reason": "Non siamo riusciti ad attivarlo. Riprova.",
+        "seeActive": "Controlla tra gli attivi",
+        "title": {
+          "allActive": "Attivazione completata",
+          "allToFix": "Non siamo riusciti ad attivare",
+          "over": "L'attivazione è finita",
+          "some": "Attivazione quasi completata"
+        },
+        "whatNext": {
+          "checks": "CasaZen controlla il collegamento ogni 30 minuti.",
+          "todo": "Se qualcosa non va, te lo segnaliamo in «Da fare»."
+        }
+      },
       "steps": {
         "access": {
           "label": "Accesso",
           "purpose": "Ti chiediamo solo ciò che serve a questo canale.",
           "title": "Cosa serve per collegare {{name}}"
+        },
+        "activate": {
+          "label": "Attivazione",
+          "purpose": "Rileggi cosa succederà, poi attiva.",
+          "title": "Controlla e attiva"
+        },
+        "connection": {
+          "label": "Collegamento",
+          "purpose": "CasaZen crea il collegamento nel tuo channel manager. Di solito bastano pochi secondi.",
+          "title": "Colleghiamo {{name}}"
+        },
+        "import": {
+          "label": "Importazione",
+          "purpose": "Il tuo channel manager porta qui camere, prenotazioni e calendario del canale.",
+          "title": "Portiamo qui i dati del canale"
+        },
+        "mapping": {
+          "label": "Camere",
+          "purpose": "Per ogni camera del canale scegli la camera corrispondente.",
+          "title": "Abbina le camere"
         },
         "property": {
           "label": "Immobili",
