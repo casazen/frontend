@@ -10281,6 +10281,94 @@
         "title": "Sales channels"
       }
     },
+    "activation": {
+      "access": {
+        "credentialsNote": "We use the username and password once, to connect the channel. CasaZen does not keep them.",
+        "hotelId": {
+          "hint": "You can find it in your account on {{name}}.",
+          "label": "ID of “{{property}}” on {{name}}",
+          "required": "Enter the ID of the property on this channel."
+        },
+        "loading": "Checking what this channel needs…",
+        "nothing": "Nothing else is needed to connect {{name}}: you can go on.",
+        "panel": {
+          "allDone": "Consent has been given for all the chosen properties.",
+          "done": "Consent given for {{property}}",
+          "loading": "Checking where you are…",
+          "title": "Consent to access {{name}}",
+          "unavailable": "This step is not available yet: the consent is given on the panel of your channel manager. We will let you know as soon as it is.",
+          "waiting": "The consent for {{property}} comes next"
+        },
+        "password": {
+          "label": "Password on {{name}}",
+          "required": "Enter the password."
+        },
+        "sameForAll": "The username and password are used for all the chosen properties: if some of them use a different login, activate those separately.",
+        "username": {
+          "label": "Username on {{name}}",
+          "required": "Enter the username."
+        }
+      },
+      "activate": {
+        "finish": "Activate {{name}}"
+      },
+      "chooseFirst": {
+        "action": "Choose properties",
+        "text": "First choose the properties to connect."
+      },
+      "description": "We guide you step by step. You can leave whenever you like with “Save and exit” and pick up where you left off.",
+      "errors": {
+        "accessIncomplete": "Some access details are missing: fill them in to continue.",
+        "noProperty": "Choose at least one property.",
+        "propertyNotLinked": "One of the chosen properties is not linked to your channel manager yet: take it out of your choice."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "notFound": {
+        "back": "Back to the Marketplace",
+        "text": "This address does not lead to a channel or a tool of the Marketplace.",
+        "title": "Integration not found"
+      },
+      "property": {
+        "legend": "Properties to connect",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: add one to connect {{name}}.",
+        "notConnected": {
+          "link": "Connect your channel manager",
+          "text": "To activate {{name}} your channel manager has to be connected to CasaZen.",
+          "title": "Connect your channel manager first"
+        },
+        "notCreatable": "{{name}} cannot be connected from CasaZen right now.",
+        "notLinked": {
+          "item": "isn't linked to your channel manager yet.",
+          "link": "Link your properties",
+          "title": "Not linked yet"
+        },
+        "planError": "We could not read what {{name}} needs. Try again in a moment.",
+        "portalUnknown": "This channel is not available to you.",
+        "retry": "Try again",
+        "selected_one": "{{count}} property chosen",
+        "selected_other": "{{count}} properties chosen"
+      },
+      "steps": {
+        "access": {
+          "label": "Access",
+          "purpose": "We only ask for what this channel needs.",
+          "title": "What it takes to connect {{name}}"
+        },
+        "property": {
+          "label": "Properties",
+          "purpose": "Choose the properties to connect to {{name}}: we activate them one at a time.",
+          "title": "Which properties do you want to connect?"
+        }
+      },
+      "thisChannel": "this channel",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate an integration"
+    },
     "status": {
       "Active": "Active",
       "NotActive": "Not active",

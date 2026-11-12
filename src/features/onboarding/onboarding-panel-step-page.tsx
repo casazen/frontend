@@ -10,6 +10,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EXISTING_CHANNELS_STEP_ID, OCTORATE_CONNECT_PATH } from '@/features/integrations/octorate/octorate-callback';
+import { activationResumePath } from '@/features/marketplace/activation/activation-wizard-model';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import {
@@ -43,9 +44,11 @@ const EXISTING_INVENTORY_ACCESS_RESUME = 'existingInventoryAccess';
  */
 function pathAfter(step: PanelStep | undefined, part: OnboardingPartKey): string {
   const resume = step?.resume;
-  return resume?.wizardType === 'OnboardingActivation' && resume.stepCode === EXISTING_INVENTORY_ACCESS_RESUME
-    ? `${OCTORATE_CONNECT_PATH}?step=${EXISTING_CHANNELS_STEP_ID}`
-    : partPath(part);
+  if (resume?.wizardType === 'OnboardingActivation' && resume.stepCode === EXISTING_INVENTORY_ACCESS_RESUME) {
+    return `${OCTORATE_CONNECT_PATH}?step=${EXISTING_CHANNELS_STEP_ID}`;
+  }
+  // The access to a channel started by the activation wizard of the marketplace (E09/F02/US04) goes back to its access step, for the property and the channel.
+  return activationResumePath(step) ?? partPath(part);
 }
 
 /**

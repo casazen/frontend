@@ -552,6 +552,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
   },
   {
+    // The guided activation of a sales channel or a connected tool through the channel manager (E09/F02/US04/T01, MKT-03, NF-56): `channel` or `tool` and the
+    // code of the portal in the catalog. In no menu: the cards of the marketplace and the Active tab lead here, with the property and where to come back to
+    // in the query. It writes the connection, so it asks `ota.write` and the channel manager's flag, as the backend does.
+    path: '/app/short-rent/marketplace/activate/:kind/:code',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/activation/activation-wizard-page')).ActivationWizardPage,
+    }),
+  },
+  {
     // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
     // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',

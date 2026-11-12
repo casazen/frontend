@@ -10281,6 +10281,94 @@
         "title": "Canali di vendita"
       }
     },
+    "activation": {
+      "access": {
+        "credentialsNote": "Usiamo il nome utente e la password una sola volta, per collegare il canale. CasaZen non li conserva.",
+        "hotelId": {
+          "hint": "Lo trovi nel tuo account su {{name}}.",
+          "label": "Identificativo di «{{property}}» su {{name}}",
+          "required": "Scrivi l'identificativo dell'immobile su questo canale."
+        },
+        "loading": "Controllo cosa serve per questo canale…",
+        "nothing": "Per collegare {{name}} non serve altro: puoi andare avanti.",
+        "panel": {
+          "allDone": "Il consenso è stato dato per tutti gli immobili scelti.",
+          "done": "Consenso dato per {{property}}",
+          "loading": "Controllo a che punto sei…",
+          "title": "Consenso all'accesso a {{name}}",
+          "unavailable": "Questo passaggio non è ancora disponibile: il consenso si dà sul pannello del tuo channel manager. Ti avvisiamo appena si può.",
+          "waiting": "Il consenso per {{property}} viene dopo"
+        },
+        "password": {
+          "label": "Password su {{name}}",
+          "required": "Scrivi la password."
+        },
+        "sameForAll": "Il nome utente e la password valgono per tutti gli immobili scelti: se alcuni usano un accesso diverso, attivali a parte.",
+        "username": {
+          "label": "Nome utente su {{name}}",
+          "required": "Scrivi il nome utente."
+        }
+      },
+      "activate": {
+        "finish": "Attiva {{name}}"
+      },
+      "chooseFirst": {
+        "action": "Scegli gli immobili",
+        "text": "Prima scegli gli immobili da collegare."
+      },
+      "description": "Ti accompagniamo passo dopo passo. Puoi uscire quando vuoi con «Salva ed esci» e riprendere da dove eri.",
+      "errors": {
+        "accessIncomplete": "Mancano alcuni dati di accesso: compilali per continuare.",
+        "noProperty": "Scegli almeno un immobile.",
+        "propertyNotLinked": "Uno degli immobili scelti non è ancora collegato al tuo channel manager: toglilo dalla scelta."
+      },
+      "exit": {
+        "saveAndExit": "Salva ed esci",
+        "saved": "Abbiamo salvato a che punto sei: riprendi quando vuoi dal Marketplace."
+      },
+      "notFound": {
+        "back": "Torna al Marketplace",
+        "text": "Questo indirizzo non porta a un canale o a uno strumento del Marketplace.",
+        "title": "Integrazione non trovata"
+      },
+      "property": {
+        "legend": "Immobili da collegare",
+        "loadError": "Non riesco a caricare i tuoi immobili.",
+        "loading": "Carico i tuoi immobili…",
+        "none": "Non hai ancora immobili in Affitti brevi: aggiungine uno per collegare {{name}}.",
+        "notConnected": {
+          "link": "Collega il channel manager",
+          "text": "Per attivare {{name}} il tuo channel manager deve essere collegato a CasaZen.",
+          "title": "Prima collega il tuo channel manager"
+        },
+        "notCreatable": "{{name}} non si può collegare da CasaZen in questo momento.",
+        "notLinked": {
+          "item": "non è ancora collegato al tuo channel manager.",
+          "link": "Collega gli immobili",
+          "title": "Non ancora collegati"
+        },
+        "planError": "Non riesco a leggere cosa serve per {{name}}. Riprova tra poco.",
+        "portalUnknown": "Questo canale non è disponibile per te.",
+        "retry": "Riprova",
+        "selected_one": "{{count}} immobile scelto",
+        "selected_other": "{{count}} immobili scelti"
+      },
+      "steps": {
+        "access": {
+          "label": "Accesso",
+          "purpose": "Ti chiediamo solo ciò che serve a questo canale.",
+          "title": "Cosa serve per collegare {{name}}"
+        },
+        "property": {
+          "label": "Immobili",
+          "purpose": "Scegli gli immobili da collegare a {{name}}: li attiviamo uno alla volta.",
+          "title": "Quali immobili vuoi collegare?"
+        }
+      },
+      "thisChannel": "questo canale",
+      "title": "Attiva {{name}}",
+      "titleGeneric": "Attiva un'integrazione"
+    },
     "status": {
       "Active": "Attivo",
       "NotActive": "Non attivo",
