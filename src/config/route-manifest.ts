@@ -1,5 +1,6 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { profilePathForContext } from '@/lib/profile-path';
 
 /**
  * The areas of the app. `account` is the customer's "Amministrazione" (decision D1): its context exists only for the people of
@@ -54,7 +55,9 @@ export interface RouteManifestEntry {
    * from is the highlighted one, and the entry and its pages are the tabs on top of each of them (`NavSectionTabs`, which
    * `PageHeader` draws in the rental areas; the other areas link to them from the page of the entry, `NavChildLinks`). This is how
    * the menu stays short: a section is one entry, its pages are tabs. A page that hangs from an entry the user cannot open takes
-   * a place in "Altro" itself, so no page the user may open is left without a way in.
+   * a place in "Altro" itself, so no page the user may open is left without a way in. The one other parent is the profile of the
+   * area (`profilePathForContext`), which is in no menu because the menu of the user leads to it and which anyone can open: its
+   * pages (Notifiche) are tabs of it and take no place in "Altro".
    */
   navParent?: string;
   /** Place (1..{@link MAX_BOTTOM_NAV_ENTRIES}) of a primary entry in the bottom bar of the phone (UI-04b draws the bar). */
@@ -478,6 +481,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/bookings/:id/checkout'],
   },
   {
+    // The host wizard "Guest check-in" of a booking (NF-40): guests, documents, checks, tax and send. Opened from the "To do" item
+    // `StartCheckIn` and from the booking whose guest data are incomplete.
+    path: '/app/short-rent/bookings/:id/check-in',
+    context: 'short-rent',
+    requiredPermissions: ['booking.write'],
+    component: async () => ({
+      default: (await import('@/features/checkin/wizard/checkin-wizard')).CheckInWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/marketplace',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
@@ -692,6 +705,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/profile'],
   },
   {
+    // Notifiche (E05/F03/US02, NF-65): how the user wants to be alerted, kind of event by kind of event, and the quiet hours. The second tab of
+    // Profilo: the page hangs from the profile, which the menu of the user leads to (`resolveNavEntries`: it is in no menu and not in "Altro").
+    // The settings are the user's own, so it asks no permission, and the API takes the user from the token.
+    path: '/app/short-rent/profile/notifications',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.notificationPreferences',
+    navParent: '/app/short-rent/profile',
+    navOrder: 1,
+    icon: 'Bell',
+    component: async () => ({
+      default: (await import('@/features/profile/notification-preferences-page')).NotificationPreferencesPage,
+    }),
+  },
+  {
     // Panoramica (LR-05): the home of the area, at its bare address. "Adesso" (the step of the landlord that cannot wait), the leases by
     // group, the rent of the month and the next dates. Reading it asks what the leases ask; a role that cannot read them opens the
     // first page of the area it can open instead of the reserved page (`homeWhenDenied`), as the bare address did before.
@@ -714,25 +742,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
+    // Contracts are managed from the property's Contracts tab, not a separate menu entry.
+    // Keep this route for existing links and the area-wide tenant, deadline and fiscal pages.
     navKey: 'nav.leases',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
     legacyPaths: ['/leases'],
   },
   {
-    // Canoni (LR-04b): the rent register of the month, next to the leases it comes from. Reading it asks what the leases ask.
+    // Canoni (LR-04b): the rent register of the month. It is not a menu entry: a canone exists only inside a contract,
+    // and the sheet of that contract opens it. This address stays for the register of every contract, linked from there.
     path: '/app/long-rent/rents',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.rents',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 3,
-    navBottom: 3,
     icon: 'Wallet',
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
   },
@@ -790,6 +813,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/leases/:id'],
   },
   {
+    // Maintenance requests of one lease: the landlord or the agency approves or rejects, and pays only after approval.
+    // The same list is the Manutenzione section of the property. The tenant uses /portale-conduttore/.../richiesta-manutenzione.
+    path: '/app/long-rent/leases/:id/manutenzione',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    component: async () => ({
+      default: (await import('@/features/maintenance-requests/landlord-page')).LandlordMaintenancePage,
+    }),
+  },
+  {
     // «Continua il contratto» (LR-06a): the wizard on a draft that exists on the server, the same from any device. It reads the rules
     // of the area (`lease.read`) and writes the draft (`lease.create`).
     path: '/app/long-rent/leases/:id/edit',
@@ -826,8 +859,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.properties',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 3,
+    navBottom: 2,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
@@ -869,15 +902,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not). Fifth of the main menu: the bar of the phone holds four places, and since the Panoramica
-    // (LR-05) is the first of them, Interventi is behind "Altro" on the phone.
+    // hides the buttons from who may not). Fourth of the main menu, and the fourth place of the phone bar.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 5,
+    navOrder: 4,
+    navBottom: 3,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -893,15 +926,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. A tab of Canoni, the rents it is worked out from.
+    // the leases; the others find the reserved page. A tab of Contratti. It is not a condominium balance sheet.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentFiscal',
-    navParent: '/app/long-rent/rents',
-    navOrder: 1,
+    navParent: '/app/long-rent/leases',
+    navOrder: 3,
     icon: 'Receipt',
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
+  },
+  {
+    // Condominium payments are made externally; this page lists reminders and records manual settlement.
+    path: '/app/long-rent/payments',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.longRentPayments',
+    navPlacement: 'secondary',
+    navOrder: 35,
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/leases/landlord-payments-page')).LandlordPaymentsPage,
+    }),
   },
   {
     // In no menu: the menu of the user (header and phone sheet, `profilePathForContext`) leads here.
@@ -1235,21 +1281,32 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
-  // CRM guest profiles (NF-23, ADR-021): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // The CRM and marketing module (NF-23, NF-95, ADR-021, E07): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // It is unfinished, so every page of it is behind the flag `crmMarketing` (backend `CrmMarketing`): while the flag is off the entry is in
+  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is one of «Altro» (the main menu has its eight entries),
+  // right after the queue of the verifications of the guests; the pages of the epic hang from it as tabs (`navParent` set to its path), in
+  // this order: `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
+  // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
+  // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
+  // consent and welcome pages) are public routes, not entries of this table, and are never behind the flag: an e-mail already sent keeps working.
+  // The pages ask `guest.read`, what the API behind them asks (`CrmController`): with `booking.read` the accountant, who has no `guest.read`,
+  // would see the entry and end on the no-access page.
   {
     path: '/app/short-rent/crm/guests',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
-    navParent: '/app/short-rent/bookings',
-    navOrder: 2,
+    navPlacement: 'secondary',
+    navOrder: 30,
     icon: 'Users',
     component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
   },
   {
     path: '/app/short-rent/crm/guests/:id',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
@@ -1594,11 +1651,16 @@ function resolveNavEntries(
   );
   const menuPaths = new Set(available.filter((entry) => entry.navPlacement !== undefined).map((entry) => entry.path));
 
+  // The profile of the area is no entry of a menu: the menu of the user leads to it, and nobody is without it (it asks no permission). The
+  // pages that hang from it (Notifiche) are its tabs, found from the profile itself, so they take no place in the menus or in "Altro".
+  const profilePath = profilePathForContext(contextKey);
+
   const menu: RouteManifestEntry[] = [];
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
     if (entry.navPlacement !== undefined) menu.push(entry);
     else if (entry.navParent !== undefined && menuPaths.has(entry.navParent)) hanging.push(entry);
+    else if (entry.navParent === profilePath) continue;
     else menu.push({ ...entry, navPlacement: 'secondary' });
   }
   return { menu: menu.sort(byMenuOrder), hanging: hanging.sort(byNavOrder) };

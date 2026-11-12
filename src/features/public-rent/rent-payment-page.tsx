@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RentComposition } from '@/features/leases/components/rent-composition';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
@@ -113,8 +114,12 @@ function PaymentContent({ payment, token, clientStatus, onSubmitted }: PaymentCo
       </dd>
       <dt className="text-muted-foreground">{t('rentPayment.dueDate')}</dt>
       <dd className="font-medium">{formatDate(payment.dueDate)}</dd>
-      <dt className="text-muted-foreground">{t('rentPayment.amount')}</dt>
-      <dd className="text-lg font-semibold">{formatCurrency(payment.amount, payment.currency)}</dd>
+      <dt className="text-muted-foreground">{t('tenantSepa.installment')}</dt>
+      <dd>{formatCurrency(payment.amount, payment.currency)}</dd>
+      <dt className="text-muted-foreground">{t('tenantSepa.feeLabel')}</dt>
+      <dd>{formatCurrency(payment.transactionFee ?? 1, payment.currency)}</dd>
+      <dt className="text-muted-foreground">{t('tenantSepa.total')}</dt>
+      <dd className="text-lg font-semibold">{formatCurrency(payment.totalAmount ?? payment.amount + 1, payment.currency)}</dd>
     </dl>
   );
 
@@ -157,6 +162,7 @@ function PaymentContent({ payment, token, clientStatus, onSubmitted }: PaymentCo
   return (
     <div className="space-y-4">
       {summary}
+      <RentComposition row={payment} currency={payment.currency} />
       {failed && (
         <p className="text-sm text-destructive" role="alert" data-testid="rent-payment-failed">
           {t('rentPayment.failed')}
@@ -189,7 +195,7 @@ function PaymentContent({ payment, token, clientStatus, onSubmitted }: PaymentCo
           )}
           <Button className="w-full" onClick={() => session.mutate()} disabled={session.isPending} data-testid="rent-payment-start">
             {session.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t('rentPayment.payNow', { amount: formatCurrency(payment.amount, payment.currency) })}
+            {t('rentPayment.payNow', { amount: formatCurrency(payment.totalAmount ?? payment.amount + 1, payment.currency) })}
           </Button>
           <p className="text-xs text-muted-foreground">{t('rentPayment.stripeNotice')}</p>
         </div>

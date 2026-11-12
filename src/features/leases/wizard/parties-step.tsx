@@ -121,6 +121,15 @@ function PartyGroup({ list }: { list: PartyList }) {
               >
                 <Input id={id('contactEmail')} type="email" autoComplete="off" {...register(`${list}.${index}.contactEmail`)} />
               </Field>
+              <Field
+                label={t('leaseWizard.parties.contactPhone')}
+                optional
+                hint={role === 'tenant' ? t('leaseWizard.parties.contactPhoneHintTenant') : undefined}
+                error={rowErrors?.contactPhone}
+                className="sm:col-span-2"
+              >
+                <Input id={id('contactPhone')} type="tel" inputMode="tel" autoComplete="tel" placeholder="+39 333 123 4567" {...register(`${list}.${index}.contactPhone`)} />
+              </Field>
             </div>
             {fields.length > 1 ? (
               <Button type="button" variant="ghost" size="sm" className="max-sm:min-h-11" onClick={() => remove(index)} aria-label={t(`leaseWizard.parties.${role}.remove`, { n: index + 1 })}>
@@ -150,7 +159,7 @@ function PartyGroup({ list }: { list: PartyList }) {
 /**
  * Step ② «Parti» (LR-06a): who lets and who rents. The landlord starts from the data the server suggests; a tenant can be a person or a
  * company (an 11-digit code), and with a company the cedolare secca is not allowed (LR-D11): the notice is immediate, the stop is in
- * the review. No telephone, no IBAN, no birth date, no identity document, no invitation of the tenant: only what the contract needs.
+ * the review. E-mail and phone are optional communication channels; no IBAN, birth date or identity document is stored here.
  */
 export function PartiesStep() {
   const { t } = useTranslation();

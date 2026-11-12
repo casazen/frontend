@@ -64,7 +64,11 @@ function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
             </p>
             <p>
               <span className="text-foreground/70">{t('leases.contactEmailMasked')}: </span>
-              {party.contactEmailMasked}
+              {party.contactEmailMasked || '—'}
+            </p>
+            <p>
+              <span className="text-foreground/70">{t('leases.contactPhoneMasked')}: </span>
+              {party.contactPhoneMasked || '—'}
             </p>
           </div>
         </li>

@@ -7,7 +7,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { AlloggiatiStatusBadge } from './alloggiati-status-badge';
 import { AlloggiatiGuestSummary } from './alloggiati-guest-summary';
 import { MarkSentManuallyButton } from './resend-button';
-import { formatRomeDateTime, isAlloggiatiSent } from '../alloggiati-status.utils';
+import { formatRomeDateTime, isAlloggiatiNotDue, isAlloggiatiSent } from '../alloggiati-status.utils';
 
 interface AlloggiatiBookingPanelProps {
   bookingId: string;
@@ -50,47 +50,55 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
             <AlloggiatiStatusBadge status={status.status} isOverdue={status.isOverdue} />
           </div>
 
-          {!isAlloggiatiSent(status.status) && (
-            <div className="text-sm" data-testid="booking-alloggiati-deadline">
-              <span className="text-muted-foreground">{t('alloggiati.deadline')}: </span>
-              {formatRomeDateTime(status.deadlineAt, i18n.language)}
-              <span className="text-muted-foreground">
-                {' '}
-                ({t(status.isShortStay ? 'alloggiati.shortStayTerm' : 'alloggiati.ordinaryTerm')})
-              </span>
-            </div>
-          )}
+          {isAlloggiatiNotDue(status.status) ? (
+            <p className="text-sm text-muted-foreground" data-testid="booking-alloggiati-not-due">
+              {t('alloggiati.notDueNotice')}
+            </p>
+          ) : (
+            <>
+              {!isAlloggiatiSent(status.status) && (
+                <div className="text-sm" data-testid="booking-alloggiati-deadline">
+                  <span className="text-muted-foreground">{t('alloggiati.deadline')}: </span>
+                  {formatRomeDateTime(status.deadlineAt, i18n.language)}
+                  <span className="text-muted-foreground">
+                    {' '}
+                    ({t(status.isShortStay ? 'alloggiati.shortStayTerm' : 'alloggiati.ordinaryTerm')})
+                  </span>
+                </div>
+              )}
 
-          {status.status === 'DaInviareManualmente' && (
-            <Alert variant="warning" data-testid="alloggiati-manual-notice">
-              {t('alloggiati.manualNotice')}
-            </Alert>
-          )}
-          {status.status === 'DaInviare' && (
-            <p className="text-sm text-muted-foreground">{t('alloggiati.waitingArrivalNotice')}</p>
-          )}
-          {status.status === 'InviatoManualmente' && (
-            <p className="text-sm text-muted-foreground">{t('alloggiati.declaredNotice')}</p>
-          )}
-          {status.status === 'Inviato' && status.confirmationNumber && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
-              {status.confirmationNumber}
-            </div>
-          )}
-          {(status.status === 'Errore' || status.status === 'Rifiutato') && (
-            <p className="text-sm text-destructive">{t(`alloggiati.failureNotice.${status.status}`)}</p>
-          )}
-          {!status.dataComplete && (
-            <p className="text-sm text-destructive">{t('booking.detailPage.incompleteGuestData')}</p>
-          )}
+              {status.status === 'DaInviareManualmente' && (
+                <Alert variant="warning" data-testid="alloggiati-manual-notice">
+                  {t('alloggiati.manualNotice')}
+                </Alert>
+              )}
+              {status.status === 'DaInviare' && (
+                <p className="text-sm text-muted-foreground">{t('alloggiati.waitingArrivalNotice')}</p>
+              )}
+              {status.status === 'InviatoManualmente' && (
+                <p className="text-sm text-muted-foreground">{t('alloggiati.declaredNotice')}</p>
+              )}
+              {status.status === 'Inviato' && status.confirmationNumber && (
+                <div className="text-sm">
+                  <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
+                  {status.confirmationNumber}
+                </div>
+              )}
+              {(status.status === 'Errore' || status.status === 'Rifiutato') && (
+                <p className="text-sm text-destructive">{t(`alloggiati.failureNotice.${status.status}`)}</p>
+              )}
+              {!status.dataComplete && (
+                <p className="text-sm text-destructive">{t('booking.detailPage.incompleteGuestData')}</p>
+              )}
 
-          <MarkSentManuallyButton
-            bookingId={bookingId}
-            status={status.status}
-            checkInDate={checkInDate}
-            reportedAt={status.reportedAt}
-          />
+              <MarkSentManuallyButton
+                bookingId={bookingId}
+                status={status.status}
+                checkInDate={checkInDate}
+                reportedAt={status.reportedAt}
+              />
+            </>
+          )}
         </>
       )}
 

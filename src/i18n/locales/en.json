@@ -500,6 +500,10 @@
           "title": "ISTAT data deadline",
           "why": "The data of the period must be sent by the deadline."
         },
+        "ListingChangedOutside": {
+          "title": "Listing changed on the channel",
+          "why": "A channel's content was changed outside CasaZen: choose which version to keep."
+        },
         "MessageToApprove": {
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
@@ -1139,6 +1143,7 @@
       "errore": "Error",
       "inviato": "Sent (receipt)",
       "inviato_manualmente": "Sent manually",
+      "not_due": "Not due",
       "overdue": "Overdue",
       "pending": "Pending",
       "rifiutato": "Rejected",
@@ -1150,6 +1155,7 @@
       "DaInviareManualmente": "To send manually",
       "InviatoManualmente": "Sent manually",
       "Inviato": "Sent (receipt)",
+      "NotDue": "Not due",
       "Rifiutato": "Rejected",
       "Errore": "Error",
       "SentReceiptPending": "Sent, receipt pending"
@@ -1168,6 +1174,7 @@
       "Errore": "Error while preparing the communication: send it on the Questura portal.",
       "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
     },
+    "notDueNotice": "The guests did not arrive: no communication to the police is due for this stay.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
     "summaryError": "Unable to load the Alloggiati communications.",
     "markSentManually": "Mark as sent manually",
@@ -1276,32 +1283,9 @@
       "saved": "Guests of the stay updated",
       "saveFailed": "Could not save the guests. Try again.",
       "loadingDocuments": "Loading the documents…",
-      "documentsLoadFailed": "Could not load the document numbers. Try again."
+      "documentsLoadFailed": "Could not load the document numbers. Try again.",
+      "guestsLoadFailed": "Could not load the guests’ data. Try again."
     }
-  },
-  "amenity": {
-    "WiFi": "WiFi",
-    "AirConditioning": "Air Conditioning",
-    "Heating": "Heating",
-    "Kitchen": "Kitchen",
-    "Washer": "Washer",
-    "Dryer": "Dryer",
-    "TV": "TV",
-    "FreeParking": "Parking",
-    "Pool": "Pool",
-    "HotTub": "Hot Tub",
-    "Gym": "Gym",
-    "Elevator": "Elevator",
-    "Balcony": "Balcony",
-    "Terrace": "Terrace",
-    "Garden": "Garden",
-    "BBQGrill": "BBQ Grill",
-    "Fireplace": "Fireplace",
-    "PetFriendly": "Pet Friendly",
-    "SmokeDetector": "Smoke Detector",
-    "FirstAidKit": "First Aid Kit",
-    "FireExtinguisher": "Fire Extinguisher",
-    "CarbonMonoxideDetector": "Carbon Monoxide Detector"
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
@@ -1309,6 +1293,8 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
+      "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
@@ -1333,6 +1319,8 @@
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
+      "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
+      "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
@@ -1621,7 +1609,17 @@
       "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
       "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
       "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
-      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later."
+      "servicePaymentSupplierNotReady": "The professional cannot receive the payment right now. Try again later.",
+      "checkinNotReady": "Some data are still missing or not valid: fix the problems listed and confirm again.",
+      "noShowAlloggiatiSent": "The communication to the police has already been sent: if needed, correct it on the Alloggiati Web portal.",
+      "noShowTooEarly": "You can mark that the guest did not arrive only from the check-in day.",
+      "taxCollectorNotApplicable": "For this stay there is no need to say who collected the tax.",
+      "taxExemptionUnknown": "This exemption is not valid.",
+      "taxGuestUnknown": "The guest is not part of the stay.",
+      "taxNotCalculable": "The tourist tax cannot be worked out yet.",
+      "taxRateInvalid": "The values of the tax are not valid: check the amount, age, nights and season.",
+      "taxRateOfficialExists": "An official rate already exists for this municipality: you cannot enter another one.",
+      "taxRateSourceRequired": "Say where the amount comes from."
     }
   },
   "appShell": {
@@ -2036,6 +2034,7 @@
       "nights_other": "{{count}} nights",
       "noResultsDescription": "Try removing a filter, changing tab or searching by code.",
       "noResultsTitle": "No bookings match these filters",
+      "otaBadge": "OTA",
       "payment": {
         "None": "Not collected",
         "Paid": "Collected",
@@ -2264,6 +2263,11 @@
       "notEditable": "A cancelled booking cannot be changed.",
       "backToBooking": "Back to the booking"
     },
+    "amountSource": {
+      "ChannelManager": "Channel manager",
+      "Manual": "Entered by you",
+      "Stripe": "Stripe"
+    },
     "arrival": {
       "action": "Register arrival",
       "title": "Register arrival",
@@ -2345,6 +2349,11 @@
       "completed": {
         "title": "The stay is over"
       },
+      "completeGuestData": {
+        "action": "Complete the check-in",
+        "body": "Some guest data are missing: you can enter them yourself now, step by step.",
+        "title": "Complete the guest data"
+      },
       "confirmManual": {
         "title": "Confirm the booking"
       },
@@ -2400,7 +2409,8 @@
       "Expedia": "Expedia",
       "Vrbo": "Vrbo",
       "TripAdvisor": "Tripadvisor",
-      "Agoda": "Agoda"
+      "Agoda": "Agoda",
+      "OtherChannel": "Another portal"
     },
     "cancel": {
       "action": "Cancel booking",
@@ -2441,6 +2451,17 @@
         "noRefund": "No refund requested."
       },
       "guestNotified": "The guest will get a cancellation email, without the reason."
+    },
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Booking site",
+      "Expedia": "Expedia",
+      "Manual": "Entered by hand",
+      "Other": "Other channels",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
     },
     "requests": {
       "title": "Requests to approve",
@@ -2483,6 +2504,21 @@
       "failed": "The booking could not be confirmed. Please try again.",
       "success": "Booking confirmed",
       "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
+    },
+    "otaAmounts": {
+      "balance": "Balance still to pay",
+      "collector": "Who collects",
+      "collectorChannel": "The channel collects the payment",
+      "collectorHost": "You collect the payment",
+      "commission": "Channel commission",
+      "commissionIncluded": "Already included",
+      "commissionNotIncluded": "Not included",
+      "commissionPayments": "Commission in the payments",
+      "net": "Net you receive",
+      "notAvailable": "Not available",
+      "paid": "Already paid",
+      "someMissing": "The channel did not send every figure: the ones that are missing are marked as not available.",
+      "title": "Amounts of the channel"
     },
     "otaStay": {
       "action": "Create OTA stay",
@@ -2778,6 +2814,12 @@
     "saved": "Document saved and attached to the lease.",
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
+    "delete": "Delete",
+    "deleteNamed": "Delete {{name}}",
+    "deleteTitle": "Delete this document?",
+    "deleteDescription": "“{{name}}” is removed from the contract. The other documents can still be downloaded.",
+    "deleteConfirm": "Delete",
+    "deleteError": "The document could not be deleted.",
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
@@ -2881,22 +2923,32 @@
         "required": "Say whether the guest was born in Italy or abroad"
       },
       "birthComune": {
-        "required": "Municipality of birth is required"
+        "required": "Municipality of birth is required",
+        "choose": "Choose the municipality of birth from the list"
       },
       "birthProvince": {
-        "invalid": "Enter the two-letter code (e.g. RM)"
+        "invalid": "This is not an Italian province code (e.g. RM)"
       },
       "birthCountry": {
-        "required": "Country of birth is required"
+        "required": "Country of birth is required",
+        "choose": "Choose the country of birth from the list"
       },
       "citizenship": {
-        "required": "Citizenship is required"
+        "required": "Citizenship is required",
+        "choose": "Choose the citizenship from the list (for example Italiano)"
       },
       "label": {
         "maxLength": "At most 100 characters"
       },
       "documentIssuePlace": {
-        "required": "Place of issue is required"
+        "required": "Place of issue is required",
+        "choose": "Choose the place of issue from the list"
+      },
+      "residenceComune": {
+        "choose": "Choose the municipality of residence from the list"
+      },
+      "residenceCountry": {
+        "choose": "Choose the country of residence from the list"
       },
       "type": {
         "memberWithoutHead": "A family or group member must follow the head of family or group",
@@ -2908,6 +2960,26 @@
       "marketingEmail": {
         "required": "Enter the email address to receive communications",
         "invalid": "Enter a valid email address (maximum 255 characters)"
+      },
+      "documentExpiresOn": {
+        "beforeIssue": "The expiry date cannot be before the issue date",
+        "invalid": "Enter a valid expiry date"
+      },
+      "documentIssuedOn": {
+        "future": "The issue date cannot be in the future",
+        "invalid": "Enter a valid issue date (1900 or later)"
+      },
+      "educationLevel": {
+        "required": "Select the education level"
+      },
+      "residenceProvince": {
+        "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "tourismType": {
+        "required": "Select the purpose of the trip"
+      },
+      "travelWay": {
+        "required": "Select how you travelled here"
       }
     },
     "loading": "Loading check-in...",
@@ -2977,6 +3049,16 @@
       "AlloggiatiInviato": "Alloggiati submitted",
       "Scaduto": "Expired"
     },
+    "stepScan": "Document",
+    "scanIntro": "Start by uploading a photo of each guest's identity document. The details are read automatically: you check and correct them on the next step.",
+    "scanHint": "JPG, PNG or WebP, up to 5 MB. The photo is not kept: it is only used to fill in the fields.",
+    "scanButton": "Take or upload a photo",
+    "scanReading": "Reading the document…",
+    "scanAnother": "Upload another guest's document",
+    "scanManual": "Enter the details by hand",
+    "scanReadOk": "Details read for {{name}}. Check them before sending.",
+    "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
+    "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
     "guestsIntro": "Enter every guest staying, minors included: the law (art. 109 TULPS) requires the data of each of them. Only the single guest, the head of family or the head of group needs an identity document.",
     "guestCountMismatch_one": "The booking states {{count}} guest: check that you entered everyone staying.",
@@ -3087,6 +3169,398 @@
         "emailFailed": "New link generated, but the email did not leave: {{reason}}. Copy the link and send it to the guest.",
         "generated": "New link generated: copy it and send it to the guest."
       }
+    },
+    "choose": "Select",
+    "documentExpiresOn": {
+      "label": "Expiry date (optional)"
+    },
+    "documentIssuedOn": {
+      "label": "Issue date (optional)"
+    },
+    "educationLevel": {
+      "label": "Education level *",
+      "none": "No qualification",
+      "primary": "Primary school",
+      "lower_secondary": "Lower secondary school",
+      "upper_secondary": "Upper secondary school",
+      "degree": "University degree",
+      "postgraduate": "Postgraduate qualification"
+    },
+    "errors": {
+      "codeInvalid": "The code is not valid.",
+      "codeUnknown": "The code is not in the official lists.",
+      "dateOfBirthInFuture": "The date of birth cannot be in the future.",
+      "documentExpiresBeforeIssue": "The document cannot expire before it was issued.",
+      "documentIssuedOnInvalid": "The issue date cannot be in the future or before 1900.",
+      "documentNumberInvalid": "The document number can only have letters and digits, at most 20.",
+      "documentTypeInvalid": "This document type is not accepted: choose passport, identity card or driving licence.",
+      "fieldMaxLength": "The text is too long.",
+      "fieldRequired": "This field is required.",
+      "genderInvalid": "Select male or female: they are the only values Alloggiati Web accepts.",
+      "guestTypeInvalid": "The kind of guest is not valid.",
+      "guestsCount": "Enter from 1 to 30 guests.",
+      "headWithoutMembers": "Add at least one family or group member, or choose “Single guests”.",
+      "marketingConsentMinor": "A minor cannot agree to promotional communications.",
+      "marketingConsentUnavailable": "Consent to promotional communications is not available for this stay.",
+      "marketingEmailInvalid": "Enter a valid email address (maximum 255 characters).",
+      "marketingEmailRequired": "Enter the email address to receive communications.",
+      "memberWithoutHead": "A family or group member must follow the head of family or group.",
+      "network": "We cannot reach the server: check your connection and try again.",
+      "provinceInvalid": "Enter the two-letter code of the province (e.g. RM).",
+      "statisticalValueInvalid": "The value you chose is not one of the allowed ones.",
+      "summary_one": "1 field needs your attention",
+      "summary_other": "{{count}} fields need your attention",
+      "tooManyRequests": "Too many requests in a short time: wait a moment and try again."
+    },
+    "guestKind": {
+      "FamilyMember": "Family member",
+      "GroupMember": "Group member",
+      "HeadOfFamily": "Head of family",
+      "HeadOfGroup": "Head of group",
+      "SingleGuest": "Single guest"
+    },
+    "language": {
+      "label": "Language",
+      "loadFailed": "We could not load this language: the page stays in the one it had.",
+      "names": {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano"
+      },
+      "notSaved": "We could not save your choice of language: the page stays in this language anyway."
+    },
+    "residence": {
+      "abroad": "Abroad",
+      "comune": "Municipality of residence",
+      "country": "Country of residence",
+      "hint": "Optional: where the guest usually lives.",
+      "inItaly": "In Italy",
+      "label": "Residence",
+      "province": "Province of residence (two letters)"
+    },
+    "toast": {
+      "saved": "Check-in details saved.",
+      "saveFailed": "We could not save the check-in details. Please try again."
+    },
+    "tourismType": {
+      "business": "Business",
+      "holiday": "Holiday",
+      "label": "Purpose of the trip *",
+      "other": "Other"
+    },
+    "travelWay": {
+      "bus": "Bus",
+      "car": "Car",
+      "label": "How you travelled here *",
+      "other": "Other",
+      "plane": "Plane",
+      "ship": "Ship",
+      "train": "Train"
+    },
+    "wizard": {
+      "checks": {
+        "allGood": "Everything is in place",
+        "allGoodText": "The data of the guests are enough to go on.",
+        "blockingText": "You cannot go on until they are fixed.",
+        "blockingTitle_one": "1 thing to fix",
+        "blockingTitle_other": "{{count}} things to fix",
+        "continueAnyway": "Continue anyway",
+        "fix": "Fix",
+        "fixFor": "Fix: {{problem}}",
+        "issue": {
+          "document_expired": "The document of {{guest}} expires before the arrival. Record what the guest showed.",
+          "guest_code_missing": "The official code of “{{field}}” is missing for {{guest}}: it is needed only for the Alloggiati file.",
+          "guest_field_missing": "A detail is missing for {{guest}}: {{field}}.",
+          "guest_field_required": "Your region also asks, for {{guest}}: {{field}}.",
+          "guests_count_mismatch": "The booking states {{declared}} guests and you recorded {{registered}}: check that everyone is there.",
+          "noGuests": "No guest is recorded yet.",
+          "octorate_field_missing": "To send {{guest}} to Octorate we also need: {{field}}.",
+          "unknown": "There is a detail to check for {{guest}}."
+        },
+        "warningsText": "You can fix them now or continue anyway.",
+        "warningsTitle_one": "1 thing to check",
+        "warningsTitle_other": "{{count}} things to check"
+      },
+      "confirmAndSend": "Confirm and send",
+      "confirmFailed": "We could not confirm the check-in. Check the data and try again.",
+      "description": "{{property}} · {{dates}}",
+      "documents": {
+        "checkText": "The reading is not entirely certain: check each field against the document.",
+        "checkTitle": "Check these data",
+        "conflict": "{{field}}: you wrote “{{typed}}”, the photo shows “{{read}}”.",
+        "conflictTitle": "The photo shows different data from what you wrote",
+        "filled": "We filled in from the photo: {{fields}}.",
+        "keepTyped": "Keep mine",
+        "none": "No guest needs a document.",
+        "nothingRead": "We could not read the photo: type the data by hand below.",
+        "photoAlt": "Preview of the photo of the document, shown only while it is read",
+        "photoButton": "Photograph the document",
+        "photoHint": "Optional. The photo is read and then thrown away: it is not saved.",
+        "photoTooLarge": "The photo is too big: the limit is 10 MB.",
+        "photoType": "Use a JPEG or PNG photo.",
+        "readFailed": "We could not read the photo. Type the data by hand below.",
+        "reading": "Reading the document…",
+        "usePhoto": "Use the data from the photo"
+      },
+      "done": {
+        "correctionAfterSend": "Data already sent to the police may need a correction on the Alloggiati portal.",
+        "description": "The check-in of {{guest}} is recorded.",
+        "manualGuide": "Open the guide to the communication on the Alloggiati Web portal",
+        "nextStep": "Next step",
+        "octorate": {
+          "failed": "Octorate did not take the guests: {{reason}}.",
+          "notActive": "The guests were not sent to Octorate: this stay owes no communication.",
+          "notConnected": "The guests were not sent to Octorate: the booking is not connected, or the connection is not ready.",
+          "nothingToSend": "The guests are already on Octorate as they are now.",
+          "partlyFailed": "Some guests are on Octorate, some are not: {{reason}}.",
+          "senderNotChannelManager": "The guests were not sent to Octorate: for this property the communication to the police does not go through the channel manager.",
+          "sent": "The guests were sent to Octorate."
+        },
+        "octorateError": {
+          "octorate_auth": "the connection to Octorate needs to be renewed",
+          "octorate_conflict": "Octorate already has different data for this guest",
+          "octorate_guest_rejected": "Octorate refused the data of the guest",
+          "octorate_not_found": "Octorate cannot find the booking",
+          "octorate_rate_limited": "Octorate is busy, try again in a few minutes",
+          "octorate_server": "Octorate is not answering right now",
+          "unknown": "reason not given"
+        },
+        "police": {
+          "AlreadySent": "The communication to the police has already been made.",
+          "ChannelManagerSends": "Octorate sends the communication to the police when you register the arrival.",
+          "Manual": "You make the communication to the police on the Alloggiati Web portal.",
+          "NotApplicable": "This stay owes no communication to the police."
+        },
+        "registerArrival": "Register arrival",
+        "retryFailed": "We could not try again. Try again in a moment.",
+        "retryNow": "Retry now",
+        "retryText": "You can try again now: we confirm the check-in once more.",
+        "retryTitle": "Something did not reach Octorate",
+        "tax": {
+          "notSaved": "The tourist tax was not saved: {{reason}}.",
+          "saved": "Tourist tax saved: {{amount}}.",
+          "savedNoAmount": "Tourist tax saved."
+        },
+        "taxReason": {
+          "booking_not_active": "it is not due for this stay",
+          "tax_not_calculable": "it cannot be calculated yet (the rate of the municipality or some data are missing)",
+          "unknown": "reason not given"
+        },
+        "title": "Check-in recorded",
+        "toBooking": "Back to the booking",
+        "toCompliance": "Go to the compliance page"
+      },
+      "exitIncomplete": "To save we need the complete data of the guests and the document of the single guest or head of family. Complete them and try again.",
+      "field": {
+        "birthComune": "Municipality of birth",
+        "birthCountry": "Country of birth",
+        "birthProvince": "Province of birth",
+        "bornInItaly": "Place of birth (Italy or abroad)",
+        "citizenship": "Citizenship",
+        "dateOfBirth": "Date of birth",
+        "documentExpiresOn": "Expiry date of the document",
+        "documentIssuePlace": "Place of issue of the document",
+        "documentNumber": "Document number",
+        "documentType": "Document type",
+        "educationLevel": "Education level",
+        "firstName": "First name",
+        "gender": "Gender",
+        "guests": "Guests",
+        "lastName": "Last name",
+        "residence": "Residence",
+        "residenceComune": "Municipality of residence",
+        "residenceCountry": "Country of residence",
+        "tourismType": "Purpose of the trip",
+        "travelWay": "How they travelled",
+        "type": "Kind of guest",
+        "unknown": "a detail"
+      },
+      "guests": {
+        "save": "Save guests",
+        "saveFailed": "We could not save the guests. Please try again."
+      },
+      "loadFailed": "We cannot load the check-in of this stay.",
+      "loading": "Loading the check-in…",
+      "noShow": {
+        "button": "The guest did not arrive",
+        "cancel": "Cancel",
+        "confirm": "Mark as not arrived",
+        "consequenceLate": "If the guests arrive later, registering the arrival removes the mark.",
+        "consequenceMark": "The stay is marked as “guest did not arrive”.",
+        "consequencePolice": "This stay owes no communication to the police.",
+        "consequences": "What happens",
+        "description": "Do you confirm that the guests did not arrive?",
+        "failed": "We could not mark the stay. Please try again.",
+        "title": "The guest did not arrive"
+      },
+      "notExpected": {
+        "Inactive": {
+          "text": "The check-in is done on a confirmed booking: this one is still waiting or has been cancelled.",
+          "title": "No check-in is expected for this booking"
+        },
+        "NoShow": {
+          "text": "You marked that the guests did not arrive. If they arrive later, register the arrival from the booking.",
+          "title": "Guest did not arrive"
+        }
+      },
+      "notFound": "Booking not found",
+      "retry": "Try again",
+      "saveExit": "Save and exit",
+      "send": {
+        "blockedText": "You cannot send while there are problems. Go to the checks to fix them.",
+        "blockedTitle": "Something is blocking the sending",
+        "blockingValue_one": "1 problem to fix",
+        "blockingValue_other": "{{count}} problems to fix",
+        "documents": "Documents",
+        "documentsValue": "Document recorded for {{done}} of {{total}}",
+        "guests": "Who stays",
+        "guestsValue_one": "1 guest: {{names}}",
+        "guestsValue_other": "{{count}} guests: {{names}}",
+        "intro": "Check the summary: nothing is sent until you confirm.",
+        "noWarnings": "No warnings",
+        "octorate": "Sent to Octorate",
+        "route": {
+          "channelManager": {
+            "long": "The channel manager (Octorate) is your sender: when you confirm we try to send the guests to Octorate, and Octorate sends the data to the police. You have nothing else to do.",
+            "short": "Octorate sends the data to the police"
+          },
+          "channelManagerNotConnected": {
+            "long": "Your sender is Octorate, but this booking does not appear to be connected: we send nothing to Octorate. The communication to the police is made on the Alloggiati Web portal.",
+            "short": "Booking not connected to Octorate: nothing is sent"
+          },
+          "senderCasaZen": {
+            "long": "You chose CasaZen as the sender, but CasaZen does not send to the police yet. For now we send nothing to Octorate: the communication is made on the Alloggiati Web portal, and after you confirm we show you the guide.",
+            "short": "For now nothing is sent to Octorate"
+          },
+          "senderManual": {
+            "long": "You are the sender: we send nothing to Octorate. You make the communication to the police on the Alloggiati Web portal, and after you confirm we show you the guide.",
+            "short": "For now nothing is sent to Octorate"
+          }
+        },
+        "routeTitle": "What is sent and how",
+        "tax": {
+          "channel": "Collected by the channel: nothing to collect ({{amount}})",
+          "collectorNeeded": "Still to say who collected it",
+          "label": "Tourist tax",
+          "missingRate": "The rate of the municipality is missing: it is not saved",
+          "none": "Not available",
+          "notCalculable": "Cannot be calculated yet",
+          "toCollect": "{{amount}} to collect from the guests"
+        },
+        "warnings": "Warnings",
+        "warningsValue_one": "1 warning",
+        "warningsValue_other": "{{count}} warnings"
+      },
+      "steps": {
+        "checks": {
+          "help": "Problems in red must be fixed before you can go on; warnings can stay as they are.",
+          "label": "Checks",
+          "purpose": "Before sending, we check that the data are enough.",
+          "title": "What is missing or does not add up"
+        },
+        "documents": {
+          "help": "You can photograph the document: CasaZen reads the data and proposes them, and the photo is not saved. If you prefer, type the data by hand.",
+          "label": "Documents",
+          "purpose": "We need the document of the single guest or of the head of family or group.",
+          "title": "Identity documents"
+        },
+        "guests": {
+          "help": "The law (art. 109 TULPS) requires the data of every guest, minors included. They are needed for the communication to the police and, if the booking is on Octorate, to send the guests.",
+          "label": "Guests",
+          "purpose": "Check the data of each guest and complete what is missing.",
+          "title": "Who is staying"
+        },
+        "send": {
+          "help": "Nothing is sent until you press “Confirm and send”. Each block has “Edit” to go back to the right step.",
+          "label": "Send",
+          "purpose": "Here is what happens when you confirm.",
+          "title": "Summary before sending"
+        },
+        "tax": {
+          "help": "Every municipality has its own rules: minors under the age set by the municipality are exempt on their own; for the other exemptions you choose the reason. If the channel has already collected it, you must not collect it again.",
+          "label": "Tourist tax",
+          "purpose": "Worked out guest by guest, with the exemptions.",
+          "title": "Tourist tax"
+        }
+      },
+      "tax": {
+        "breakdown": {
+          "cap": "Night limit",
+          "capApplied": "Applied: {{taxable}} of {{nights}} nights are taxable",
+          "capNotApplied": "Not applied",
+          "exempt": "Exempt guests",
+          "guests": "Guests",
+          "nights": "Nights",
+          "rate": "Rate",
+          "rateFrom": "Rate {{source}}",
+          "ratePerNight": "{{amount}} per person per night ({{source}})",
+          "total": "Total"
+        },
+        "breakdownTitle": "Summary of the stay",
+        "channelCollectedText": "The channel has already collected the tax ({{total}}) and pays it to the municipality: you must not collect it again.",
+        "channelCollectedTitle": "The channel collected it: nothing to collect",
+        "collectorChannel": "The channel collected it",
+        "collectorFailed": "We could not save your answer. Please try again.",
+        "collectorHost": "I collect it at the property",
+        "collectorQuestion": "Who collected the tourist tax?",
+        "editRate": "Edit the tax of your municipality",
+        "enterRate": "Enter your municipality tax",
+        "exemptByAge": "Exempt by age (automatic)",
+        "exemptHidden": "Exempt: the reason is visible only to who can read the data of the guests.",
+        "exemptionFailed": "We could not save the exemption. Please try again.",
+        "exemptionLabel": "Exemption",
+        "intro": "Here is what is paid, guest by guest.",
+        "loadFailed": "We cannot work out the tourist tax.",
+        "missingRateText": "We do not know the rate of the municipality of this property, so we show no amount. Enter the tax of your municipality and we work it out.",
+        "missingRateTitle": "The tax of the municipality is missing",
+        "nights": "Nights: {{nights}} · taxable: {{taxable}}",
+        "noAmount": "Amount not available",
+        "noExemption": "No exemption",
+        "notCalculable": {
+          "CategoryRequired": "The tax of this municipality depends on the category of the property, which is not set: complete the data of the property.",
+          "ChildAgesRequired": "The tax of this municipality depends on the age of the minors: enter the date of birth of all the guests.",
+          "NightlyPriceRequired": "The tax of this municipality is a percentage of the price of the night, which the booking lacks.",
+          "RateUnavailable": "We do not know the rate of this municipality for the dates of the stay."
+        },
+        "notCalculableTitle": "It cannot be worked out for now",
+        "rateForm": {
+          "age": "Guests under (age) are exempt *",
+          "ageHint": "Guests younger than this age do not pay. From 0 to 18.",
+          "ageInvalid": "Enter a whole age from 0 to 18",
+          "cancel": "Cancel",
+          "intro": "If your municipality is not one we know, enter the tax it applies. It stays yours: nobody else sees it.",
+          "introCity": "Enter the tax that {{city}} applies. It stays yours: nobody else sees it.",
+          "nights": "Maximum taxed nights",
+          "nightsHint": "Optional. Leave empty if there is no limit.",
+          "nightsInvalid": "Enter a whole number of nights, at least 1",
+          "officialExists": "An official rate already exists for this municipality: it applies and you cannot enter another one.",
+          "rate": "Amount per person per night (€) *",
+          "rateInvalid": "Enter an amount from 0.01 to 50 euros",
+          "save": "Save and recalculate",
+          "saveFailed": "We could not save the tax. Please try again.",
+          "seasonBoth": "Enter both the start and the end of the season, or leave both empty",
+          "seasonEnd": "End of season (MM-DD)",
+          "seasonHint": "Optional: if the tax applies only in one season, enter month and day (for example 04-01 and 10-31). Leave both empty if it applies all year.",
+          "seasonInvalid": "Enter the date as month-day, for example 04-01",
+          "seasonPlaceholder": "e.g. 04-01",
+          "seasonStart": "Start of season (MM-DD)",
+          "source": "Where the amount comes from *",
+          "sourceHint": "For example the page of the municipality, the resolution or the tax office that told you.",
+          "sourceRequired": "Say where the amount comes from",
+          "sourceTooLong": "Enter at most 500 characters",
+          "title": "Enter your municipality tax"
+        },
+        "rateSource": {
+          "HostDeclared": "entered by you",
+          "None": "not available",
+          "Official": "official of the municipality"
+        }
+      },
+      "title": "Guest check-in",
+      "toBooking": "Back to the booking",
+      "toBookings": "Go to the bookings"
     }
   },
   "cin": {
@@ -6623,6 +7097,7 @@
       "serviceDraft": "The guided service prepares this contract: here you follow the practice and there is nothing for you to fill in. This draft becomes “Registered” on its own once the practice is concluded and you have uploaded the documents you receive: we read them and fill in the data."
     },
     "tabs": {
+      "canoni": "Rent",
       "data": "Details",
       "deadlines": "Deadlines",
       "documents": "Documents",
@@ -6774,6 +7249,7 @@
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
+      "contactPhone": "the phone number",
       "firstName": "the first name",
       "fiscalCode": "the fiscal code",
       "lastName": "the last name",
@@ -6789,6 +7265,7 @@
         "fixed": "The file and the day of the signature cannot be corrected after it is added.",
         "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
         "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "fromReceipt": "Right after, we show the number and the date read from the receipt, for you to confirm.",
         "submit": "Add the contract",
         "title": "Add the signed contract?",
         "yes": "Right after, we ask you for the registration number and the receipt."
@@ -6806,6 +7283,11 @@
           "description": "It stays “Signed” and you will see the registration deadline.",
           "title": "No, or I don't know"
         },
+        "fromReceipt": "The receipt “{{name}}” says the contract is already registered. {{detail}}",
+        "fromReceiptCode": "Registration number {{code}}.",
+        "fromReceiptDate": "Registered on {{date}}.",
+        "fromReceiptDetail": "Registered on {{date}}, number {{code}}.",
+        "fromReceiptUnread": "You already uploaded the receipt “{{name}}”. The contract counts as registered: if we cannot read its number and date, we ask for them after it is added.",
         "required": "Answer this question.",
         "yes": {
           "description": "After adding it we ask for the number and the receipt.",
@@ -6879,6 +7361,8 @@
       "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
       "contactEmail": "Email",
       "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "contactPhone": "Phone number",
+      "contactPhoneHintTenant": "Include the international prefix: used to contact the tenant and prepare WhatsApp reminders.",
       "countriesEu": "European Union",
       "countriesOther": "Other countries",
       "firstName": "First name",
@@ -7055,6 +7539,30 @@
       },
       "rent": "Monthly rent (€)"
     },
+    "condominium": {
+      "title": "Condominium expenses",
+      "intro": "Optional: you can continue without filling this in. If the property already has a fiscal year, we propose the amount. Payment is not done here: rent is on the contract, and the condominium account is in Settings, SEPA account. Extraordinary expenses stay separate and are not charged. Installments already issued stay as they are.",
+      "loading": "Reading the condominium expenses…",
+      "loadError": "The condominium expenses could not be read.",
+      "retry": "Try again",
+      "proposedYear": "Fiscal year {{year}}: {{amount}} a month.",
+      "proposed": "{{amount}} a month.",
+      "lastInstallment": "The last installment is {{amount}}: the cents of the year are kept.",
+      "settled": "Settled at the consuntivo.",
+      "notPayment": "This is a proposal, not a payment.",
+      "accept": "Use this amount",
+      "empty": "Nothing is loaded yet. Enter the total of last year's consuntivo and of the new year's preventivo, or a monthly amount: it is settled at the consuntivo.",
+      "limits": "An administrator PDF is not recorded from this step. We do not read a scan without text, line items, suppliers, millesimi, payments, the prior-year balance or the installment plan. The prior-year balance is not set here.",
+      "consuntivo": "Previous year's consuntivo (€)",
+      "preventivo": "New year's preventivo (€)",
+      "calculate": "Calculate the amount",
+      "or": "Or",
+      "manual": "Amount typed by hand (€ a month)",
+      "manualHint": "Settled at the consuntivo. Installments already issued do not change.",
+      "useManual": "Use the amount entered",
+      "saved": "Proposal kept: {{amount}} a month. Rent is on the contract.",
+      "saveError": "The condominium expenses could not be saved."
+    },
     "title": "Create lease",
     "transitory": {
       "documentation": {
@@ -7115,6 +7623,7 @@
       "date": "Not a valid date",
       "deposit": "The deposit must be zero or more, with at most two decimals",
       "email": "Not a valid email address",
+      "phone": "Enter the number with its international prefix, for example +39 333 123 4567",
       "endAfterStart": "The end must be after the start",
       "fiscalCode": "Not a valid fiscal code or VAT number",
       "property": "Choose the property",
@@ -7868,6 +8377,7 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
+    "contactPhoneMasked": "Phone",
     "noParties": "No parties recorded.",
     "contractTypeLabel": {
       "Libero": "Free rent (4+4)",
@@ -7986,6 +8496,46 @@
         "ai": "AI text generation"
       }
     }
+  },
+  "listingStatus": {
+    "channels": {
+      "airbnb_xml": "Airbnb",
+      "booking_xml": "Booking.com",
+      "expedia": "Expedia",
+      "homeaway": "Vrbo"
+    },
+    "fix": "Fix",
+    "groups": {
+      "descriptions": "Descriptions",
+      "property": "Property details",
+      "rooms": "Rooms and beds"
+    },
+    "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+    "missingText": {
+      "en_description": "The description in English",
+      "en_title": "The title in English",
+      "it_description": "The description in Italian",
+      "it_title": "The title in Italian"
+    },
+    "none": "Not published on any channel yet.",
+    "outside": {
+      "back": "Back",
+      "changed": "Changed outside CasaZen: {{groups}}.",
+      "choose": "Choose",
+      "confirmKeep": "The changes made outside CasaZen will be lost: {{fields}}. Continue?",
+      "confirmTake": "Your changes in CasaZen will be lost: {{fields}}. Continue?",
+      "continue": "Continue",
+      "description": "Since the last publication someone changed the content directly on the channel. We change nothing without your choice.",
+      "failed": "We couldn't record your choice. Try again.",
+      "keep": "Keep CasaZen's version",
+      "notice": "Someone changed the content directly on a channel: choose which version stays.",
+      "reread": "Your choice is recorded, but we couldn't read the new texts again. Reload the page before editing them, or the old texts would take their place back.",
+      "take": "Take the new version",
+      "takeLoses": "the descriptions, the house rules and the directions written in CasaZen",
+      "takeNotPossible": "The new version can be taken only when the descriptions changed: here you can keep CasaZen's.",
+      "title": "Changed outside CasaZen"
+    },
+    "syncDelayed": "Sync delayed"
   },
   "listView": {
     "board": {
@@ -8398,9 +8948,34 @@
         "contracts": "Contracts",
         "data": "Details",
         "documents": "Documents",
+        "expenses": "Condominium expenses",
+        "maintenance": "Maintenance requests",
         "requests": "Maintenance"
       },
       "tabsLabel": "Sections of the property"
+    },
+    "expenses": {
+      "advance": "Condominium advance: {{amount}}",
+      "empty": "Without a contract there are no condominium expenses. Rent appears only inside a contract.",
+      "intro": "This is the condominium situation of the property. Rent stays on the contract.",
+      "loadError": "The condominium expenses of this contract could not be read.",
+      "loading": "Reading the condominium expenses…",
+      "noParts": "The installments of this contract do not have an advance or a settlement yet.",
+      "noSummary": "There is no payment report of what the owner paid the condominium. Budgets and settlements to send to the tenant appear here when there are any.",
+      "openContract": "Open the contract",
+      "openDocuments": "Contract documents",
+      "openReport": "Open the tax report",
+      "openSepa": "Open the SEPA account",
+      "ownerPaymentsBody": "Pay condominium expenses through your home banking, then use “Mark as paid” in the condominium payment register in settings.",
+      "ownerPaymentsTitle": "Owner payments",
+      "reportsBody": "There is no condominium balance sheet to download. The file that exists is the tax report of the rent.",
+      "reportsTitle": "Reports to download",
+      "settlement": "Settlement: {{amount}}",
+      "situation": "Situation",
+      "summary": "Summary"
+    },
+    "maintenance": {
+      "empty": "Without a contract there are no maintenance requests."
     },
     "drawer": {
       "ape": "APE",
@@ -8668,6 +9243,10 @@
       "notePlaceholder": "E.g. Please pay by bank transfer by Friday",
       "previewBodyDue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid.",
       "previewBodyOverdue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid.",
+      "descriptionTotal": "{{tenant}} · {{property}}: total of {{amount}}, due {{date}}.",
+      "previewBodyComposed": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewBodyComposedOverdue": "The tenant is reminded that the total of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid. The breakdown is below: it is not all rent.",
+      "previewTransfer": "Transfer to {{holder}}, IBAN {{iban}}, amount {{amount}}, due {{date}}, reference {{reference}}.",
       "previewLabel": "Preview of the email",
       "previewSubject": "Subject: Promemoria canone di locazione - {{property}}, scadenza {{date}} (the email is written in Italian)",
       "previewWithLink": "The email has the link to pay online.",
@@ -8676,6 +9255,9 @@
       "sent_other": "Reminder sent to {{count}} tenants",
       "submit": "Send reminder",
       "title": "Send a reminder",
+      "whatsappSend": "Send via WhatsApp",
+      "whatsappSent_one": "WhatsApp reminder sent to {{count}} tenant",
+      "whatsappSent_other": "WhatsApp reminder sent to {{count}} tenants",
       "whoGetsIt": "The email goes to the tenants of the lease who have an email address; after it is sent we tell you how many."
     },
     "retry": "Retry",
@@ -9206,6 +9788,54 @@
       "verifyFailed": "Verification failed."
     }
   },
+  "marketing": {
+    "confirm": {
+      "action": "Confirm subscription",
+      "description": "Confirm that you want to receive e-mails with news and offers from this property. You can unsubscribe at any time: every message has its own link.",
+      "done": {
+        "description": "Thank you. From now on you may receive e-mails with news and offers from this property. If you change your mind, every message has a link to unsubscribe.",
+        "title": "Subscription confirmed"
+      },
+      "expired": {
+        "description": "This link is older than it is valid for. Use a more recent e-mail, or ask the property to send you a new one.",
+        "title": "The link has expired"
+      },
+      "invalid": {
+        "description": "The link is incomplete or has been changed. Open the link in the e-mail again, without changing it. If you have already confirmed, there is nothing else to do.",
+        "title": "The link is not valid"
+      },
+      "notFound": {
+        "description": "We can no longer find this subscription, so there is nothing to confirm. If you want to receive the property's e-mails, ask them to subscribe you again.",
+        "title": "Subscription not found"
+      },
+      "pageTitle": "Confirm subscription",
+      "retry": "We could not complete the request. Please try again in a moment.",
+      "suppressed": {
+        "description": "You asked not to receive e-mails from this property, so we have not confirmed anything. If you want to receive them again, ask the property to subscribe you.",
+        "title": "Subscription not confirmed"
+      },
+      "title": "Confirm your subscription?"
+    },
+    "unsubscribe": {
+      "action": "Unsubscribe",
+      "description": "If you unsubscribe you will no longer receive promotional e-mails from this property. Messages about a stay, such as confirmations and arrival instructions, may still be sent.",
+      "done": {
+        "description": "You will no longer receive promotional e-mails from this property. Messages about a stay, such as confirmations and arrival instructions, may still be sent.",
+        "title": "You are unsubscribed"
+      },
+      "expired": {
+        "description": "This link is older than it is valid for. Use the link in a more recent e-mail, or write to the property and ask to be removed from the list.",
+        "title": "The link has expired"
+      },
+      "invalid": {
+        "description": "The link is incomplete or has been changed. Open the link in the e-mail again, without changing it. If you have already unsubscribed, there is nothing else to do.",
+        "title": "The link is not valid"
+      },
+      "pageTitle": "Unsubscribe",
+      "retry": "We could not complete the request. Please try again in a moment.",
+      "title": "Do you want to unsubscribe?"
+    }
+  },
   "marketplace": {
     "title": "Marketplace",
     "description": "Suppliers near your properties, external partners and integrations.",
@@ -9424,6 +10054,7 @@
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
+    "notificationPreferences": "Notifications",
     "plan": "Plan",
     "billing": "Billing",
     "bookings": "Bookings",
@@ -9438,6 +10069,7 @@
     "revenue": "Revenue",
     "reports": "Reports",
     "longRentFiscal": "Tax report",
+    "longRentPayments": "Condominium payments",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -9497,6 +10129,10 @@
     "compliance": "Compliance",
     "complianceAudit": "Compliance audit",
     "crm": "Guest CRM",
+    "crmAutomations": "Automations",
+    "crmCampaigns": "Campaigns",
+    "crmMerge": "Duplicates",
+    "crmSegments": "Audiences",
     "demoEnvironment": "Demo environment",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
@@ -9526,6 +10162,64 @@
     "description": "The address is wrong or the page no longer exists.",
     "home": "Go to the home page",
     "guides": "Guides for hosts"
+  },
+  "notificationPreferences": {
+    "bellNote": "The bell is the icon at the top of the page: the number on it tells you how many things you have not read yet, without interrupting you.",
+    "channel": {
+      "browserPush": "Browser notification",
+      "counterOnly": "Bell",
+      "email": "Email",
+      "mobilePush": "Phone notification"
+    },
+    "channelUnavailable": "Not available yet",
+    "channelsHint": "Switch a channel on or off and your choice is saved by itself. Until you choose, the default applies.",
+    "channelsTitle": "How you want to be alerted",
+    "defaultBadge": "Default",
+    "description": "Choose how you want to be alerted about everything that happens. Your choices are only yours.",
+    "event": {
+      "aiDraftToApprove": "Reply to approve",
+      "bookingCancelled": "Booking cancelled",
+      "legalDeadline": "Legal deadline",
+      "newBooking": "New booking",
+      "newGuestMessage": "New guest message",
+      "scheduledMessageIssue": "Scheduled message problem",
+      "syncError": "Sync error",
+      "urgentGuestMessage": "Urgent message"
+    },
+    "eventColumn": "What happens",
+    "eventHint": {
+      "aiDraftToApprove": "CasaZen wrote a reply: it goes out only if you approve it.",
+      "bookingCancelled": "A guest or a booking portal cancels a stay.",
+      "legalDeadline": "Alloggiati Web, ISTAT and the other dates you cannot miss.",
+      "newBooking": "A booking arrives, from your site or from a booking portal.",
+      "newGuestMessage": "A guest writes to you.",
+      "scheduledMessageIssue": "An automatic message did not go out or needs you.",
+      "syncError": "A booking portal cannot exchange data with CasaZen.",
+      "urgentGuestMessage": "A guest writes about something that cannot wait."
+    },
+    "legalNeverOff": "Legal deadlines cannot be switched off completely: keep at least one channel on.",
+    "loadFailed": "We cannot load your notification settings.",
+    "loading": "Loading your notification settings…",
+    "profileLink": {
+      "action": "Manage notifications",
+      "description": "Choose how and when you want to be alerted about messages, bookings and deadlines.",
+      "title": "Notifications"
+    },
+    "quietHours": {
+      "description": "Times are Italian time. During these hours phone notifications and emails wait until the quiet time ends; the bell always updates.",
+      "end": "To",
+      "legalStillAlerts": "Legal deadlines still alert you, even during these hours.",
+      "none": "With the same start and end there are no quiet hours.",
+      "required": "Enter both the start and the end time.",
+      "save": "Save hours",
+      "start": "From",
+      "title": "Quiet hours"
+    },
+    "saveFailed": "We could not save your choice. Try again.",
+    "saved": "Settings saved.",
+    "switchLabel": "{{event}}: {{channel}}",
+    "tableCaption": "How you want to be alerted, event by event",
+    "title": "Notifications"
   },
   "notifications": {
     "bell": "Notifications",
@@ -10756,6 +11450,7 @@
         "reactivate": "Reactivate",
         "requestService": "Request an intervention"
       },
+      "channelsUnknown": "Channel status not available yet",
       "chips": {
         "active": "Active",
         "all": "All",
@@ -10764,6 +11459,7 @@
         "todoHint": "They cannot receive bookings yet"
       },
       "columns": {
+        "channels": "Channels",
         "price": "Base price",
         "property": "Property",
         "spaces": "Rooms and guests",
@@ -10777,6 +11473,7 @@
       },
       "guestsCount_one": "{{count}} guest",
       "guestsCount_other": "{{count}} guests",
+      "noChannels": "Not published",
       "noResults": {
         "description": "Try removing a filter or searching by the name of the city.",
         "title": "No property matches these filters"
@@ -10878,6 +11575,7 @@
       "fallbackTitle": "Property",
       "onSite": "On the booking site",
       "sections": {
+        "channels": "Channels",
         "data": "Property details",
         "pricing": "Prices"
       },
@@ -11512,12 +12210,8 @@
     "amenities": {
       "count_one": "You chose {{count}} amenity.",
       "count_other": "You chose {{count}} amenities.",
-      "groups": {
-        "comfort": "Comfort",
-        "essentials": "Essentials",
-        "other": "Other",
-        "outdoor": "Outdoors"
-      },
+      "loadFailed": "We couldn't read the list of amenities. Try again in a moment.",
+      "loading": "Loading the amenities…",
       "none": "You have not chosen anything yet: you can also skip this and add them later.",
       "safety": {
         "backToQuick": "Back to the quick questions",
@@ -11535,6 +12229,14 @@
         "quickDescription": "Three questions and a list to tick. What we already know, we fill in for you.",
         "review": "Review the sheet",
         "title": "Safety"
+      },
+      "search": {
+        "found_one": "{{count}} amenity found.",
+        "found_other": "{{count}} amenities found.",
+        "hint": "Type a word, in Italian or in English: for example \"washing machine\".",
+        "label": "Search for an amenity",
+        "none": "No amenity for \"{{query}}\". Try another word.",
+        "placeholder": "For example washing machine, pool, wi-fi"
       }
     },
     "base": {
@@ -11574,6 +12276,7 @@
           "hint": "Count every bed: a double bed is 1",
           "label": "Beds"
         },
+        "fromRooms": "Worked out from the rooms below",
         "maxGuests": {
           "hint": "How many people can sleep here",
           "label": "Maximum guests"
@@ -11593,6 +12296,86 @@
       "unit": {
         "hint": "If you have several apartments in the same building, write the unit or staircase: each one needs a different one.",
         "label": "Floor and unit"
+      }
+    },
+    "channels": {
+      "cin": {
+        "choose": "Add the CIN or choose \"I'll add it later\" to publish.",
+        "later": "I'll add it later",
+        "laterChosen": "Fine: we publish anyway. The channels that ask for the CIN stay to fix until you add it.",
+        "missing": "The CIN is not there yet. The channels that ask for it will stay to fix until you add it (you find it in the last step).",
+        "stays": "The CIN stays in CasaZen: for now it is not sent to {{channels}}."
+      },
+      "completeness": "Completeness of the content: {{value}}%",
+      "fix": "Fix: {{step}}",
+      "fixCin": "Fix: CIN",
+      "incomplete": {
+        "title": "These texts are needed before you publish"
+      },
+      "intro": "Here you see, channel by channel, how far the listing is and what is missing. Choose where to publish and press \"Publish\".",
+      "lacks": "Something is missing in:",
+      "loadFailed": "We couldn't read the state of the channels. Try again in a moment.",
+      "loading": "Loading the channels…",
+      "managed": "Content managed on {{channel}}",
+      "mapping": {
+        "go": "Go to the channel connection",
+        "mustImport": "The listings of this property already exist on the channel manager or on the portals: they are imported and matched, not created again.",
+        "unconfirmed": "Before you publish, confirm or reject the match of this property with a listing that already exists on the channel manager."
+      },
+      "next": "Go to the summary",
+      "noneChosen": "Choose at least one channel to publish to.",
+      "notPublished": "Not published on this channel yet.",
+      "outside": {
+        "choose": "Choose",
+        "text": "Someone changed the content directly on a channel. Choose which version to keep before you publish."
+      },
+      "publish": "Publish",
+      "publishFailed": "We couldn't start the publication. Try again in a moment.",
+      "publishOn": "Publish on {{channel}}",
+      "started": "Sending started: below you see the result of each channel as soon as it arrives.",
+      "syncAlert": "The channel has not confirmed the listing for more than 24 hours."
+    },
+    "descriptions": {
+      "description": {
+        "label": "Description ({{language}})"
+      },
+      "en": {
+        "hint": "The title and the description in English are needed to publish on the channels. For now you write the English text yourself."
+      },
+      "intro": "To publish on the channels you need the title and the description in Italian and in English. The other languages are optional.",
+      "languages": {
+        "ca": "Catalan",
+        "de": "German",
+        "el": "Greek",
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "it": "Italian",
+        "ja": "Japanese",
+        "nl": "Dutch",
+        "pt": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "tr": "Turkish",
+        "zh": "Chinese"
+      },
+      "origin": {
+        "AutoTranslated": "Translated automatically",
+        "ModifiedAfterTranslation": "Edited after the translation",
+        "UserWritten": "Written by you"
+      },
+      "others": {
+        "empty": "Empty",
+        "filled": "Filled in",
+        "hint": "Optional: the channels that speak those languages show your text instead of an automatic one.",
+        "title": "Other languages"
+      },
+      "tabs": {
+        "label": "Language of the text",
+        "problem": "To fix"
+      },
+      "title": {
+        "label": "Title ({{language}})"
       }
     },
     "done": {
@@ -11631,8 +12414,14 @@
       "saveFailed": "We could not save the property. Check the data and try again."
     },
     "exit": {
+      "kept": "Closed. The answers of the first step stay here: open \"Add property\" again to go on.",
       "saveAndClose": "Save and close",
       "saved": "Saved. You will find it in Properties, to complete."
+    },
+    "imported": {
+      "all": "You are seeing all the steps of the listing.",
+      "only": "This listing is already on the channels: we only show the steps where something is missing, the channels and the activation.",
+      "showAll": "Show all steps"
     },
     "last": {
       "activation": {
@@ -11674,13 +12463,17 @@
         "amenities": "Amenities and safety",
         "base": "Basics",
         "by": "by {{time}}",
+        "channels": "Channels",
+        "channelsFailed": "We couldn't read the state of the channels.",
+        "descriptions": "Texts",
         "edit": "Edit",
         "from": "from {{time}}",
         "labels": {
           "amenities": "Chosen",
           "cleaning": "Cleaning",
           "headline": "Headline",
-          "house": "Smoking · pets · parties",
+          "headlineEn": "Title in English",
+          "house": "Smoking · pets · parties · children",
           "minNights": "Minimum stay",
           "name": "Name",
           "photos": "Photos",
@@ -11695,8 +12488,9 @@
         },
         "nights_one": "{{count}} night",
         "nights_other": "{{count}} nights",
+        "notNow": "You're not publishing it now",
         "notSaid": "Not stated",
-        "photos": "Photos and listing",
+        "photos": "Photos",
         "photosCount_one": "{{count}} photo · the first is the cover",
         "photosCount_other": "{{count}} photos · the first is the cover",
         "photosNone": "No photos for now (recommended, not required)",
@@ -11706,7 +12500,8 @@
         "rules": "House rules",
         "safetyDone": "Safety sheet complete",
         "safetyOpen": "Safety sheet to complete",
-        "title": "Summary"
+        "title": "Summary",
+        "willPublish": "You'll publish it"
       },
       "visibility": {
         "blocked": "It turns on when you have fixed the points marked above.",
@@ -11725,6 +12520,17 @@
       "title": "Add property"
     },
     "photos": {
+      "details": {
+        "captionEn": "Caption in English",
+        "captionIt": "Caption in Italian",
+        "hint": "The caption describes the photo to people who cannot see it and to the channels; the room says where it was taken. Both are optional.",
+        "noRooms": "List the rooms in the first step first, then you can choose the room of a photo.",
+        "photo": "Photo {{index}}",
+        "room": "Room",
+        "roomNone": "No room",
+        "roomsFailed": "We couldn't read the rooms: try again in a moment.",
+        "title": "Captions and rooms"
+      },
       "dropzone": {
         "button": "Choose photos",
         "title": "Drag your photos here"
@@ -11733,9 +12539,9 @@
         "moved": "Photo {{index}} moved to position {{position}} of {{total}}."
       },
       "listing": {
-        "description": "The headline and description guests read on your site. You can write them now or later.",
+        "description": "The title and the description in Italian: guests read them on your site and they go to the channels. They are needed to publish.",
         "headline": {
-          "hint": "Short and concrete, up to 60 characters. If you leave it empty, the property's name is used.",
+          "hint": "Short and concrete, up to 60 characters.",
           "label": "Headline"
         },
         "aiUnavailable": "The AI is not available right now: we put the text together from the details you entered. You can try again shortly.",
@@ -11863,6 +12669,16 @@
         "hint": "It applies to every night. Without a price the property stays “To complete”: it cannot be activated.",
         "label": "Base price per night (€)"
       },
+      "stayDiscounts": {
+        "add": "Add a tier",
+        "hint": "Up to {{max}} tiers: from the number of nights given, the discount is taken off the stay. The cleaning fee and the tourist tax do not change.",
+        "minNights": "Tier {{number}}: from how many nights",
+        "minNightsHint": "From {{min}} to {{max}} nights.",
+        "percentOff": "Tier {{number}}: discount in %",
+        "remove": "Remove tier {{number}}",
+        "removeShort": "Remove",
+        "title": "Discounts for long stays"
+      },
       "touristTax": {
         "found": "Tourist tax: we have the rate for {{city}}. It is not in the price: it is added to the booking.",
         "notYet": "Tourist tax: the rate for {{city}} is not available yet. It is not in the price: it is added to the booking once it is.",
@@ -11873,12 +12689,51 @@
         "label": "Weekend surcharge (%)"
       }
     },
+    "rooms": {
+      "add": "Add another room",
+      "addBed": "Add a kind of bed",
+      "addFirst": "List the rooms and the beds",
+      "bedCount": "How many beds: {{type}}",
+      "bedType": "Kind of bed",
+      "bedTypes": {
+        "Bunk": "Bunk bed",
+        "Crib": "Crib",
+        "Double": "Double bed",
+        "King": "King size",
+        "Queen": "Queen size",
+        "Single": "Single bed",
+        "SofaBed": "Sofa bed"
+      },
+      "derived": "Bedrooms and beds are worked out from this list.",
+      "hint": "Optional, but the channels ask for it: list the rooms and the beds of each. If you do, bedrooms and beds are worked out from here.",
+      "lastSaved": "The last room already saved can't be taken off: you can change it or add another one.",
+      "noBeds": "This room has no beds yet.",
+      "optionLabel": "{{number}}. {{type}}",
+      "remove": "Remove room {{number}}",
+      "removeBed": "Remove {{type}}",
+      "removeShort": "Remove",
+      "room": "Room {{number}}",
+      "title": "Rooms and beds",
+      "type": "What kind of room",
+      "types": {
+        "Bedroom": "Bedroom",
+        "LivingRoom": "Living room",
+        "Other": "Other room with beds",
+        "Studio": "Studio"
+      }
+    },
     "rules": {
+      "childrenOptions": {
+        "No": "Not suitable for children",
+        "OnRequest": "On request",
+        "Yes": "Welcome"
+      },
       "extraGuest": {
         "hint": "What you ask per night for each extra guest. Leave it empty if you do not accept extra guests. For now guests read it among the rules: it is not added to the price of the stay by itself.",
         "label": "Fee for each extra guest (€ per night)"
       },
       "house": {
+        "children": "Children",
         "parties": "Parties and events",
         "pets": "Pets",
         "smoking": "Smoking",
@@ -12010,6 +12865,16 @@
         "purpose": "Type, name, address and spaces: two minutes are enough.",
         "title": "What property are you adding?"
       },
+      "channels": {
+        "label": "Channels",
+        "purpose": "Choose where to publish the listing and check what is missing. You can also do it later.",
+        "title": "Publish on the channels"
+      },
+      "descriptions": {
+        "label": "Texts",
+        "purpose": "Title and description in Italian and in English: without them the channels do not publish. The other languages are optional.",
+        "title": "Tell about the house"
+      },
       "finish": {
         "label": "Activation",
         "purpose": "Link the calendars, add the CIN and the documents, then activate the property.",
@@ -12066,6 +12931,12 @@
         "required": "Choose the comune from the list."
       },
       "description": "The description can have at most 2,000 characters.",
+      "descriptions": {
+        "enDescription": "Write the description in English.",
+        "enTitle": "Write the title in English.",
+        "itDescription": "Write the description in Italian.",
+        "itTitle": "Write the title in Italian."
+      },
       "extraGuestFee": "Write the amount in euros, from 0 to 1,000, numbers only: for example 15. Leave it empty if you do not accept extra guests.",
       "houseRules": "The other rules can have at most 1000 characters.",
       "listingTitle": "The headline can have at most 60 characters.",
@@ -12076,10 +12947,26 @@
         "min": "Write at least 3 letters: for example “Trullo dei Mandorli”."
       },
       "nightlyRate": "Write the price in euros, from 1 to 100,000, numbers only: for example 135.",
+      "photos": {
+        "captionMax": "A caption can have at most 200 characters.",
+        "italianRequired": "Write the caption in Italian too: the English one alone is not enough."
+      },
       "postalCode": {
         "format": "An Italian postal code has 5 digits."
       },
       "quietHours": "Write both the start and the end of the quiet hours, or leave both empty.",
+      "rooms": {
+        "bedCount": "The beds of one kind are from 1 to 10.",
+        "max": "You can list at most 20 rooms.",
+        "noBed": "Add at least one bed in one of the rooms.",
+        "tooManyBeds": "The beds in all can be 100 at most."
+      },
+      "stayDiscounts": {
+        "duplicate": "Two tiers cannot start from the same number of nights.",
+        "max": "You can write at most 5 discount tiers.",
+        "minNights": "Write the nights as whole numbers, from 2 to 365.",
+        "percentOff": "Write the discount as a percentage, above 0 and up to 100, for example 10."
+      },
       "time": "Choose a time from the list.",
       "unit": {
         "max": "Floor and unit can have at most 30 characters."
@@ -12930,8 +13817,12 @@
     "loadError": "The rent schedule could not be loaded.",
     "retry": "Retry",
     "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
+    "notOnContract": "The rent for this contract is shown here. The condominium payment register is in settings: pay through your home banking, then mark the installment as paid.",
+    "openPayments": "Open the SEPA account",
+    "openCanoni": "The tenant pays from Rents",
+    "openRegister": "Register of every rent",
     "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
-    "onlineUnavailableLink": "Go to Payments",
+    "onlineUnavailableLink": "Stripe settings",
     "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
     "summary": "{{cadence}} installment of {{amount}}, due on day {{day}}.",
     "edit": "Edit",
@@ -12961,6 +13852,34 @@
       "amount": "Amount",
       "status": "Status",
       "actions": "Actions"
+    },
+    "composition": {
+      "label": "Breakdown",
+      "rent": "Rent",
+      "advance": "Condominium advance",
+      "settlement": "Settlement",
+      "other": "Other charges",
+      "total": "Total",
+      "paid": "Paid",
+      "residual": "Residual"
+    },
+    "notices": {
+      "title": "Budgets and settlements to send",
+      "hint": "A send starts only when you confirm it. CasaZen does not send a budget or a settlement on its own.",
+      "send": "Prepare the send",
+      "dialogTitle": "Send “{{title}}”",
+      "dialogDescription": "Choose the channel. Nothing is sent until you press Send.",
+      "channels": "Channels",
+      "confirm": "Send",
+      "sent": "Send recorded",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement"
+      },
+      "channel": {
+        "Email": "Email",
+        "WhatsApp": "WhatsApp"
+      }
     },
     "status": {
       "Scheduled": "To collect",
@@ -15228,6 +16147,32 @@
     }
   },
   "status": {
+    "channel": {
+      "Accepted": {
+        "explain": "The channel manager has received the content and is passing it to the channel.",
+        "label": "Accepted"
+      },
+      "Draft": {
+        "explain": "The listing has not been sent to this channel yet.",
+        "label": "To publish"
+      },
+      "ManagedOnChannel": {
+        "explain": "The content of this channel is edited on the channel itself: CasaZen doesn't send it.",
+        "label": "Managed on the channel"
+      },
+      "Published": {
+        "explain": "The channel confirmed it: the listing is online with this content.",
+        "label": "Published"
+      },
+      "Sending": {
+        "explain": "We are sending the content to the channel manager.",
+        "label": "Sending"
+      },
+      "ToFix": {
+        "explain": "The channel didn't accept the content or something is missing: read the reason and fix it.",
+        "label": "To fix"
+      }
+    },
     "explainer": {
       "need": "To move to “{{next}}” you need:",
       "compactNeed": "To move to “{{next}}”:",
@@ -15767,6 +16712,10 @@
       "Inviato": {
         "label": "Sent (receipt)",
         "explain": "The communication was transmitted and has the receipt of the portal."
+      },
+      "NotDue": {
+        "label": "Not due",
+        "explain": "The guests did not arrive: no communication to the police is due for this stay."
       },
       "Rifiutato": {
         "label": "Rejected",
@@ -19815,6 +20764,16 @@
     "undoFailed": "Could not undo this.",
     "commitFailed": "Could not complete the action."
   },
+  "touristTax": {
+    "exemption": {
+      "disability_companion": "Companion of a person with a disability",
+      "health_care": "Stay for health or care reasons",
+      "host_family": "Family member of the manager",
+      "other": "Another exemption of the municipality",
+      "public_service": "Law enforcement or other public service on duty",
+      "resident": "Resident of the municipality"
+    }
+  },
   "touristTaxRules": {
     "perPersonPerNight": "{{amount}} per person per night",
     "percent": "{{percent}}% of the price per person per night",
@@ -20018,6 +20977,163 @@
     },
     "title": "Owner Wire Transfers"
   },
+  "tenantArea": {
+    "title": "Tenant area",
+    "loading": "Loading…",
+    "loadError": "The tenant area could not be loaded.",
+    "noContracts": "You have no active contract to open.",
+    "noContractsHint": "The contract appears here when the manager adds you. Payments are in the Payments section.",
+    "openContract": "Open the contract",
+    "nav": {
+      "label": "Sections",
+      "contracts": "Contracts",
+      "contract": "Contract",
+      "dues": "Payments",
+      "documents": "Documents",
+      "maintenance": "Maintenance"
+    },
+    "contract": {
+      "term": "From {{from}} to {{to}}",
+      "openEnd": "end date not set",
+      "nextDue": "Next due",
+      "payDue": "Pay the due",
+      "openDue": "See the due",
+      "noPayment": "There is nothing to pay. Payment status is in Payments, not on this page."
+    },
+    "bank": {
+      "title": "Bank transfer details",
+      "holder": "Account holder",
+      "iban": "IBAN",
+      "amount": "Amount",
+      "due": "Due date",
+      "reference": "Reference",
+      "copy": "Copy the reference",
+      "copied": "Reference copied"
+    },
+    "dues": {
+      "title": "Payments",
+      "lead": "Here you see whether you have paid everything, and you pay the due. Rent, condominium advance and settlement are already added together.",
+      "listLabel": "Dues",
+      "emptyTitle": "No dues",
+      "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
+      "nextTitle": "Next to pay",
+      "pay": "Pay this due",
+      "residual": "To pay",
+      "overdue": "Overdue",
+      "missing": "This due is not on the contract.",
+      "backToList": "Back to the dues",
+      "advanceNote": "The condominium advance is this month's share, already inside this due.",
+      "settlementDebt": "The settlement is an amount you owe and is added to this due.",
+      "settlementCredit": "The settlement is a credit and reduces what is left to pay.",
+      "inBalance": "This due is settled. There is nothing to pay.",
+      "processingHint": "The transfer is being checked. The due is not marked paid yet.",
+      "failedHint": "The last debit did not go through. You can try again with the linked account, or use a manual transfer.",
+      "sepaTitle": "SEPA debit in euros",
+      "sepaHint": "Enter your IBAN and confirm the SEPA mandate with Stripe. Manual bank transfers are always available.",
+      "sepaEuroOnly": "SEPA debit is in euros only. For this due, use a manual transfer.",
+      "reportTitle": "Payment report",
+      "reportOpen": "Still to pay",
+      "reportPaid": "Paid",
+      "reportCount_one": "{{count}} due",
+      "reportCount_other": "{{count}} dues",
+      "manualTitle": "Manual transfer",
+      "manualHint": "If you do not link an account, use these details and then tell the manager.",
+      "noBank": "The transfer details are not available yet.",
+      "period": "From {{from}} to {{to}}",
+      "status": {
+        "Scheduled": "To pay",
+        "Processing": "Being checked",
+        "Paid": "Paid",
+        "Failed": "Debit failed",
+        "Cancelled": "Cancelled"
+      }
+    },
+    "declaration": {
+      "amount": "Transfer amount",
+      "date": "Transfer date",
+      "reference": "Reference (optional)",
+      "note": "Note (optional)",
+      "receipt": "Receipt (optional)",
+      "submit": "I made the transfer",
+      "sent": "Declaration sent. The installment is not marked paid.",
+      "failed": "The declaration could not be saved.",
+      "notPaid": "The declaration tells the manager. It does not mark the installment paid.",
+      "rejectedHint": "The declaration was rejected. You can send another one.",
+      "status": {
+        "Submitted": "Submitted",
+        "Verified": "Verified",
+        "Rejected": "Rejected",
+        "Superseded": "Superseded"
+      }
+    },
+    "documents": {
+      "emptyTitle": "No shared documents",
+      "emptyDescription": "Budget, statement and settlement appear here when the manager shares them. Payment stays in Payments.",
+      "goToDues": "Go to payments",
+      "download": "Download",
+      "failed": "The document could not be downloaded.",
+      "kind": {
+        "Budget": "Budget",
+        "Settlement": "Settlement",
+        "Statement": "Statement",
+        "Report": "Report",
+        "Other": "Document"
+      }
+    },
+    "maintenance": {
+      "new": "New request",
+      "empty": "No requests.",
+      "category": "Category",
+      "urgency": "Urgency",
+      "description": "Description",
+      "attachments": "Attachments",
+      "submit": "Send to the manager",
+      "sent": "Request sent to the manager.",
+      "failed": "The request could not be sent.",
+      "sentToManager": "The request goes to the manager of the contract. You do not assign a supplier.",
+      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way.",
+      "submittedAt": "Sent on {{date}}",
+      "urgencyLevel": {
+        "Normal": "Normal",
+        "High": "High",
+        "Emergency": "Emergency"
+      },
+      "status": {
+        "Sent": "Sent to the manager",
+        "InReview": "Under review",
+        "NeedsInfo": "More information needed",
+        "Accepted": "Taken on by the manager",
+        "InProgress": "In progress",
+        "Closed": "Closed",
+        "Rejected": "Not accepted"
+      }
+    }
+  },
+  "bankTransfer": {
+    "title": "Transfer from a linked account",
+    "open": "Pay with Stripe",
+    "hint": "Stripe opens its own screen and offers Italian banks. The due is not marked paid until Stripe confirms the transfer.",
+    "link": "Link the account",
+    "linkAnother": "Link another account",
+    "loadingAccounts": "Reading linked accounts…",
+    "accountsLabel": "Account",
+    "amount": "Amount",
+    "reference": "Reference",
+    "noReference": "This due has no reference yet. You can still start the transfer.",
+    "start": "Start the transfer",
+    "pending": "Transfer started. The due is not marked paid until Stripe confirms it.",
+    "failed": "The account could not be linked, or the transfer could not be started.",
+    "stripeClosed": "Linking was cancelled.",
+    "loadError": "The linked accounts could not be read.",
+    "noStripe": "Stripe is not available right now.",
+    "manualStays": "If you do not link an account, the bank details and “I made the transfer” stay available.",
+    "manualStaysLandlord": "If you do not link an account, you can record the payment you received.",
+    "condo": {
+      "title": "Pay the condominium automatically",
+      "hint": "Link the account only to pay the condominium expenses automatically. Stripe offers Italian banks and the debit is in euros. This is not the rent payment.",
+      "linked": "Condominium expenses are paid automatically from this account."
+    }
+  },
   "wizard": {
     "back": "Back",
     "cancel": "Cancel",
@@ -20056,5 +21172,131 @@
       "editField": "Edit {{field}}",
       "empty": "Not provided"
     }
+  },
+  "longRentPayments": {
+    "title": "Condominium payments",
+    "description": "Link an Italian euro account. Condominium debits leave from here. This is not the rent payment. You can link it before the contract is signed. If you do not link an account, a manual transfer stays available.",
+    "contractsLead": "Rent is on the contract.",
+    "contracts": "Open the contracts",
+    "readonly": "Only someone who can create contracts links the account."
+  },
+  "maintenanceRequest": {
+    "loading": "Loading…",
+    "loadError": "The requests could not be loaded",
+    "sendError": "The request could not be sent",
+    "decisionError": "The decision could not be saved",
+    "paymentError": "The payment could not be saved",
+    "stepOf": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Continue",
+    "what": {
+      "title": "What is broken?",
+      "hint": "Name the broken thing, in a few words.",
+      "label": "What is broken",
+      "placeholder": "Bathroom tap"
+    },
+    "urgency": {
+      "title": "How urgent is it?",
+      "hint": "Choose one level.",
+      "bassa": "Low",
+      "normale": "Normal",
+      "urgente": "Urgent",
+      "detail": {
+        "bassa": "It can wait",
+        "normale": "In the next few days",
+        "urgente": "It is needed soon"
+      }
+    },
+    "note": {
+      "title": "Add a note",
+      "hint": "What happened, and since when.",
+      "label": "Note",
+      "placeholder": "It has been dripping since last night"
+    },
+    "photo": {
+      "title": "A photo, if you have one",
+      "hint": "Optional. It helps the person who decides.",
+      "label": "Photo",
+      "none": "No photo",
+      "chosen": "Photo: {{name}}"
+    },
+    "confirm": {
+      "title": "Check and send",
+      "hint": "After you send it, the request stays waiting. You cannot approve it or pay it.",
+      "what": "Problem",
+      "urgency": "Urgency",
+      "note": "Note",
+      "photo": "Photo",
+      "submit": "Send the request"
+    },
+    "waiting": {
+      "kicker": "Request sent",
+      "title": "Waiting",
+      "body": "The request is with the landlord or the agency. You cannot approve it and you cannot pay it.",
+      "list": "See the requests"
+    },
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "paid": "Paid"
+    },
+    "list": {
+      "title": "Your requests",
+      "new": "New request"
+    },
+    "landlord": {
+      "title": "Maintenance requests",
+      "hint": "Approve or reject. Payment appears only after approval.",
+      "empty": "No request from the tenant.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reasonLabel": "Why are you rejecting it?",
+      "reasonPlaceholder": "Write the reason",
+      "confirmReject": "Confirm the rejection",
+      "cancelReject": "Cancel",
+      "pay": "Pay",
+      "pendingNote": "Waiting for your decision. Payment is not available yet.",
+      "approvedNote": "Approved. You can pay now.",
+      "rejectedNote": "Rejected. {{reason}}",
+      "paidNote": "Paid.",
+      "photo": "Attached photo: {{name}}"
+    }
+  },
+  "tenantSepa": {
+    "title": "SEPA rent payments",
+    "explanation": "Authorize the mandate with Stripe, then choose monthly automatic collection separately. Manual payment is always available from the portal or the landlord’s reminder.",
+    "loading": "Loading authorization…",
+    "duration": "Contract until {{until}}. New debits blocked from {{from}}.",
+    "renewal": "Authorization follows valid contract renewals: 2 years for 3+2 and 4 years for 4+4. Notice prevents extension.",
+    "fee": "Fee per payment: {{amount}}, added to rent and condominium expenses.",
+    "expired": "Debits are unavailable for this contract.",
+    "otherHolder": "The mandate is managed by the other tenant who authorized it.",
+    "automaticOn": "Monthly automatic payment enabled. Arrears before activation are never automatically collected.",
+    "manualOn": "Manual payment: confirm each installment before collection.",
+    "disableAutomatic": "Disable automatic payments",
+    "enableAutomatic": "Enable monthly automatic payments",
+    "confirmMandate": "Authorize SEPA mandate",
+    "chooseMode": "Mandate saved. Choose how to pay upcoming installments.",
+    "manual": "Keep manual payments",
+    "authorize": "Authorize mandate with Stripe",
+    "error": "The operation failed. Try again or contact your landlord.",
+    "installment": "Rent and condominium expenses",
+    "feeLabel": "CasaZen fee",
+    "total": "Total debit",
+    "processing": "Payment processing. The installment is paid only after confirmation from Stripe.",
+    "confirmPayment": "Confirm payment of {{amount}}",
+    "pay": "Pay with SEPA"
+  },
+  "condoManual": {
+    "title": "Condominium expenses",
+    "description": "Pay through your home banking and record the payment here.",
+    "reminder": "An email reminder is sent within five days before the due date. CasaZen never initiates the payment.",
+    "empty": "No condominium installments configured.",
+    "paid": "Paid",
+    "markPaid": "Mark as paid",
+    "confirm": "Have you already paid {{amount}} through your home banking?",
+    "confirmPaid": "Confirm payment made",
+    "cancel": "Cancel"
   }
 }

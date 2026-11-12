@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -24,6 +25,8 @@ import {
 import type { ConfigureRentScheduleInput, RentCadence, RentInstallment, RentLedger } from '@/types';
 import { monthName, monthOfDate, trackFromMonths } from '../lib/rent-register';
 import { MarkRentPaidDialog } from './mark-rent-paid-dialog';
+import { RentComposition } from './rent-composition';
+import { RentManualNotices } from './rent-manual-notices';
 
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -66,6 +69,16 @@ export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: 
   return (
     <PlainSection title={t('rent.title')} data-testid="rent-schedule-panel" className="space-y-4">
       <p className="text-sm text-foreground/70">{t('rent.description')}</p>
+      <p className="text-sm text-foreground/70" data-testid="rent-not-on-contract">
+        {t('rent.notOnContract')}{' '}
+        <Link to="/app/long-rent/payments" className="font-medium underline">
+          {t('rent.openPayments')}
+        </Link>
+        {' · '}
+        <Link to="/app/long-rent/rents" className="font-medium underline">
+          {t('rent.openRegister')}
+        </Link>
+      </p>
       {isLoading && (
         <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="rent-loading">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -201,6 +214,7 @@ function RentLedgerContent({
       )}
 
       {schedule && <InstallmentsTable leaseId={leaseId} ledger={ledger} />}
+      <RentManualNotices leaseId={leaseId} notices={ledger.manualNotices ?? []} />
     </div>
   );
 }
@@ -367,11 +381,46 @@ const STATUS_VARIANT: Record<RentInstallment['status'], BadgeProps['variant']> =
   Cancelled: 'secondary',
 };
 
-function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentLedger }) {
+function InstallmentActions({
+  leaseId,
+  ledger,
+  installment,
+  onMarkPaid,
+}: {
+  leaseId: string;
+  ledger: RentLedger;
+  installment: RentInstallment;
+  onMarkPaid: (installment: RentInstallment) => void;
+}) {
   const { t } = useTranslation();
   const sendRequest = useSendRentPaymentRequest(leaseId);
-  const [markPaidFor, setMarkPaidFor] = useState<RentInstallment | null>(null);
   const active = ledger.schedule?.isActive === true;
+  const open = installment.status === 'Scheduled' || installment.status === 'Failed';
+  if (!open || !active) return null;
+  return (
+    <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
+      {ledger.onlinePaymentsAvailable && ledger.hasTenantEmail && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-auto min-h-11 w-full whitespace-normal sm:w-auto"
+          onClick={() => sendRequest.mutate(installment.id)}
+          disabled={sendRequest.isPending}
+        >
+          {installment.paymentRequestedAt ? t('rent.resendLink') : t('rent.sendLink')}
+        </Button>
+      )}
+      <Button size="sm" variant="outline" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto" onClick={() => onMarkPaid(installment)}>
+        {t('rent.markPaid')}
+      </Button>
+    </div>
+  );
+}
+
+function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentLedger }) {
+  const { t } = useTranslation();
+  const isPhone = useMediaQuery(PHONE_QUERY);
+  const [markPaidFor, setMarkPaidFor] = useState<RentInstallment | null>(null);
 
   if (ledger.installments.length === 0) {
     return (
@@ -381,28 +430,70 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
     );
   }
 
+  const dialog = (
+    <MarkRentPaidDialog
+      leaseId={leaseId}
+      installment={markPaidFor}
+      onOpenChange={(next) => {
+        if (!next) setMarkPaidFor(null);
+      }}
+    />
+  );
+
+  if (isPhone) {
+    return (
+      <div className="min-w-0">
+        <ul className="space-y-3" data-testid="rent-installments">
+          {ledger.installments.map((installment) => (
+            <li key={installment.id} className="min-w-0 space-y-2 rounded-md border border-border p-3" data-testid="rent-installment">
+              <p className="break-words text-sm">
+                {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
+              </p>
+              <p className="text-sm text-foreground/70">{formatDate(installment.dueDate)}</p>
+              <RentComposition row={installment} currency={installment.currency} />
+              <div className="flex flex-wrap items-center gap-1">
+                <Badge variant={STATUS_VARIANT[installment.status]} data-testid="rent-installment-status">
+                  {t(`rent.status.${installment.status}`)}
+                </Badge>
+                {installment.isOverdue && (
+                  <Badge variant="warning" data-testid="rent-installment-overdue">
+                    {t('rent.overdue')}
+                  </Badge>
+                )}
+              </div>
+              <InstallmentDetail installment={installment} />
+              <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />
+            </li>
+          ))}
+        </ul>
+        {dialog}
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
+    <div className="min-w-0">
+      <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="rent-installments">
         <thead>
           <tr className="border-b text-left text-muted-foreground">
             <th className="py-2 pr-3 font-medium">{t('rent.columns.period')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.dueDate')}</th>
-            <th className="py-2 pr-3 font-medium">{t('rent.columns.amount')}</th>
+            <th className="py-2 pr-3 font-medium">{t('rent.composition.label')}</th>
             <th className="py-2 pr-3 font-medium">{t('rent.columns.status')}</th>
-            <th className="py-2 font-medium">{t('rent.columns.actions')}</th>
+            <th className="sticky right-0 bg-card py-2 font-medium">{t('rent.columns.actions')}</th>
           </tr>
         </thead>
         <tbody>
-          {ledger.installments.map((installment) => {
-            const open = installment.status === 'Scheduled' || installment.status === 'Failed';
-            return (
+          {ledger.installments.map((installment) => (
               <tr key={installment.id} className="border-b align-top" data-testid="rent-installment">
                 <td className="py-2 pr-3">
                   {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
                 </td>
                 <td className="py-2 pr-3">{formatDate(installment.dueDate)}</td>
-                <td className="py-2 pr-3">{formatCurrency(installment.amount, installment.currency)}</td>
+                <td className="py-2 pr-3">
+                  <RentComposition row={installment} currency={installment.currency} />
+                </td>
                 <td className="py-2 pr-3">
                   <div className="flex flex-wrap items-center gap-1">
                     <Badge variant={STATUS_VARIANT[installment.status]} data-testid="rent-installment-status">
@@ -416,37 +507,15 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                   </div>
                   <InstallmentDetail installment={installment} />
                 </td>
-                <td className="py-2">
-                  {open && active && (
-                    <div className="flex flex-wrap gap-2">
-                      {ledger.onlinePaymentsAvailable && ledger.hasTenantEmail && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => sendRequest.mutate(installment.id)}
-                          disabled={sendRequest.isPending}
-                        >
-                          {installment.paymentRequestedAt ? t('rent.resendLink') : t('rent.sendLink')}
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline" onClick={() => setMarkPaidFor(installment)}>
-                        {t('rent.markPaid')}
-                      </Button>
-                    </div>
-                  )}
+                <td className="sticky right-0 bg-card py-2">
+                  <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />
                 </td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
-      <MarkRentPaidDialog
-        leaseId={leaseId}
-        installment={markPaidFor}
-        onOpenChange={(next) => {
-          if (!next) setMarkPaidFor(null);
-        }}
-      />
+      </div>
+      {dialog}
     </div>
   );
 }

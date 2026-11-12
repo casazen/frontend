@@ -3,6 +3,13 @@ import { z } from 'zod';
 import i18n from '@/i18n/config';
 import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
+import guestDe from '@/i18n/locales/guest-checkin.de.json';
+import guestFr from '@/i18n/locales/guest-checkin.fr.json';
+import guestEs from '@/i18n/locales/guest-checkin.es.json';
+import { GUEST_LOCALE_OPTIONS } from '@/features/checkin/lib/guest-locale';
+import { GUEST_ERROR_KEYS } from '@/features/checkin/lib/guest-errors';
+import { STATISTICAL_FIELD_OPTIONS } from '@/features/checkin/schemas/checkin.schema';
+import { CHECKIN_WIZARD_STEPS, ISSUE_FIELD_LABEL_KEYS, ISSUE_TEXT_KEYS } from '@/features/checkin/wizard/lib/checkin-wizard-model';
 import {
   getBookingStatusLabel,
   getOtaConnectionStatusLabel,
@@ -13,7 +20,6 @@ import {
   persistLocale,
   readPersistedLocale,
 } from '@/lib/i18n-labels';
-import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
@@ -64,7 +70,7 @@ const SOURCES = import.meta.glob<string>(['/src/**/*.{ts,tsx}', '!/src/**/*.test
  * - properties holding a key (`navKey: 'nav.x'`, `titleKey`, `descriptionKey`, ...);
  * - messages of Zod schemas (they are i18n keys translated by FormFieldError).
  */
-function collectUsedKeys(): Map<string, string> {
+function collectUsedKeys(sources: Record<string, string> = SOURCES): Map<string, string> {
   const used = new Map<string, string>();
   const namespaces = Object.keys(it_);
   const keyShape = /^[a-zA-Z][\w-]*(\.[\w-]+)+$/;
@@ -72,7 +78,7 @@ function collectUsedKeys(): Map<string, string> {
     if (keyShape.test(key)) used.set(key, file);
   };
 
-  for (const [file, source] of Object.entries(SOURCES)) {
+  for (const [file, source] of Object.entries(sources)) {
     for (const m of source.matchAll(/(?<![\w.])(?:i18n\.)?t\(\s*(['"`])([^'"`$\s]+)\1/g)) add(m[2], file);
     for (const m of source.matchAll(/i18nKey=["']([^"']+)["']/g)) add(m[1], file);
     for (const m of source.matchAll(/\b\w*Key:\s*['"]([^'"]+)['"]/g)) {
@@ -208,7 +214,6 @@ describe('keys used in code', () => {
 
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
-      ...COMMON_AMENITIES.map((a) => `amenity.${a}`),
       // The explained states (UI-11): every state of the dictionary, typed against the enums, has its name and its sentence in both
       // languages, and its list of what is needed when it has a way forward (status.<kind>.<key>.*).
       ...Object.entries(STATUS_DICTIONARY).flatMap(([kind, states]) =>
@@ -229,7 +234,7 @@ describe('keys used in code', () => {
         (c) => `serviceRequest.categories.${c}`,
       ),
       ...['Inviato', 'InCompilazione', 'Completo', 'AlloggiatiInviato', 'Scaduto'].map((s) => `checkin.status.${s}`),
-      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'Rifiutato', 'Errore'].map(
+      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'NotDue', 'Rifiutato', 'Errore'].map(
         (s) => `alloggiati.statusLabel.${s}`,
       ),
       ...['Errore', 'Rifiutato'].map((s) => `alloggiati.failureNotice.${s}`),
@@ -337,5 +342,117 @@ describe('zod error map', () => {
     await i18n.changeLanguage('en');
     const tooSmall = z.number().min(2).safeParse(1);
     expect(tooSmall.error!.issues[0].message).toBe('The value must be at least 2');
+  });
+});
+
+/**
+ * The guest check-in page in five languages (NF-40, AC-NF40-4). Italian and English are in the app; German, French and Spanish are three
+ * subset files that hold only the keys of the `checkin` namespace the page uses and are loaded when the guest chooses them. The keys of the
+ * namespace that are not the page's are the host side (the link panel, the wizard) and the ones nothing uses any more.
+ */
+describe('guest check-in locales', () => {
+  const NOT_ON_THE_GUEST_PAGE_EXACT = new Set([
+    'copyLink', 'linkCopied', 'generateError', 'resendLink', 'resendError', 'sessionLabel', 'sessionLoading', 'saveData', 'checkInComplete',
+    'personalData', 'personalDataDescription', 'document', 'documentIdentity', 'documentHint', 'documentAlreadyUploaded', 'selectFile',
+    'uploading', 'unsupportedFormat', 'fileTooLarge', 'birthPlace', 'nationality', 'documentExpiry', 'documentIssuingCountry', 'address',
+    'city', 'postalCode', 'country', 'stepPersonal', 'marketingConsent', 'validation.documentNumber.maxLength',
+  ]);
+  const NOT_ON_THE_GUEST_PAGE_PREFIXES = [
+    'access.', 'link.', 'status.', 'biometric.', 'wizard.',
+    'validation.placeOfBirth.', 'validation.nationality.', 'validation.documentIssuingCountry.',
+  ];
+
+  /** The keys of the `checkin` namespace of en.json that the guest page uses (they carry the `checkin.` prefix). */
+  const guestPageKeys = [...enKeys.keys()].filter((key) => {
+    if (!key.startsWith('checkin.')) return false;
+    const local = key.slice('checkin.'.length);
+    return !NOT_ON_THE_GUEST_PAGE_EXACT.has(local) && !NOT_ON_THE_GUEST_PAGE_PREFIXES.some((prefix) => local.startsWith(prefix));
+  });
+
+  const SUBSETS = [
+    ['de', guestDe],
+    ['fr', guestFr],
+    ['es', guestEs],
+  ] as const;
+
+  it('guestCheckinLocales_PageKeys_AreTheNamespaceOfEnglishWithoutTheHostSide', () => {
+    // Guard against a list that silently selects nothing.
+    expect(guestPageKeys.length).toBeGreaterThan(100);
+    expect(guestPageKeys).toContain('checkin.next');
+    expect(guestPageKeys).toContain('checkin.language.label');
+    expect(guestPageKeys).not.toContain('checkin.link.copyTitle');
+    expect(guestPageKeys.some((key) => key.startsWith('checkin.wizard.'))).toBe(false);
+  });
+
+  it.each(SUBSETS)('guestCheckinLocales_%s_HasExactlyTheKeysOfThePage', (_language, bundle) => {
+    const keys = flatten(bundle as LocaleTree);
+    const missing = guestPageKeys.filter((key) => !keys.has(key));
+    const extra = [...keys.keys()].filter((key) => !guestPageKeys.includes(key));
+
+    expect(missing, 'keys of the page missing from the subset file').toEqual([]);
+    expect(extra, 'keys of the subset file that are not keys of the page').toEqual([]);
+  });
+
+  it.each(SUBSETS)('guestCheckinLocales_%s_OnlyTheCheckinNamespace_NoEmptyTextsSamePlaceholdersAsEnglish', (_language, bundle) => {
+    expect(Object.keys(bundle)).toEqual(['checkin']);
+    const keys = flatten(bundle as LocaleTree);
+    const empty = [...keys.entries()].filter(([, value]) => String(value).trim() === '').map(([key]) => key);
+    const mismatched = [...keys.entries()]
+      .filter(([key]) => enKeys.has(key))
+      .filter(([key, value]) => placeholders(value).join() !== placeholders(enKeys.get(key)!).join())
+      .map(([key]) => key);
+
+    expect(empty).toEqual([]);
+    expect(mismatched).toEqual([]);
+  });
+
+  it('guestCheckinLocales_StaticKeysOfThePageSources_AreKeysOfThePageAndExistInItAndEn', () => {
+    const pageSources = import.meta.glob<string>(
+      ['/src/features/checkin/*.tsx', '/src/features/checkin/{components,schemas,lib}/*.{ts,tsx}'],
+      { query: '?raw', import: 'default', eager: true },
+    );
+    const used = [...collectUsedKeys(pageSources).keys()].filter((key) => key.startsWith('checkin.'));
+
+    expect(used.length).toBeGreaterThan(40);
+    // A key the page uses is in the subset files too, or a German guest reads English where the page has a German text.
+    expect(used.filter((key) => !guestPageKeys.some((candidate) => candidate === key || candidate === `${key}_other`))).toEqual([]);
+    expect(used.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
+  });
+
+  it('guestCheckinLocales_KeysWrittenOutInTheCode_ExistInItAndEn', () => {
+    const keys = [
+      ...GUEST_LOCALE_OPTIONS.map((option) => option.nameKey),
+      ...Object.values(GUEST_ERROR_KEYS),
+      ...Object.values(STATISTICAL_FIELD_OPTIONS).flatMap((options) => options.map((option) => option.labelKey)),
+      ...['tourismType', 'travelWay', 'educationLevel'].flatMap((field) => [`checkin.${field}.label`, `checkin.validation.${field}.required`]),
+      ...['SingleGuest', 'HeadOfFamily', 'HeadOfGroup', 'FamilyMember', 'GroupMember'].map((kind) => `checkin.guestKind.${kind}`),
+      ...Object.values(ISSUE_FIELD_LABEL_KEYS),
+      ...Object.values(ISSUE_TEXT_KEYS),
+      ...CHECKIN_WIZARD_STEPS.flatMap((step) => ['label', 'title', 'purpose', 'help'].map((part) => `checkin.wizard.steps.${step}.${part}`)),
+      ...['resident', 'health_care', 'disability_companion', 'public_service', 'host_family', 'other'].map((code) => `touristTax.exemption.${code}`),
+    ];
+
+    expect(keys.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
+    // The messages of the server the page can translate are in the subset files too.
+    expect(Object.values(GUEST_ERROR_KEYS).filter((key) => !guestPageKeys.includes(key))).toEqual([]);
+  });
+
+  it('guestCheckinLocales_NewKeys_FollowTheConventionAndNeverUseDefaultValue', () => {
+    const newKeys = guestPageKeys.filter((key) =>
+      /^checkin\.(errors|language|residence|toast|tourismType|travelWay|educationLevel|guestKind)\./.test(key),
+    );
+
+    expect(newKeys.length).toBeGreaterThan(40);
+    for (const key of newKeys) expect(key).toMatch(/^checkin\.[a-zA-Z]+\.[\w.]+$/);
+    const sources = import.meta.glob<string>(['/src/features/checkin/**/*.{ts,tsx}', '!/src/features/checkin/**/__tests__/**'], {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    });
+    expect(Object.values(sources).some((source) => /\bdefaultValue\b/.test(source))).toBe(false);
+  });
+
+  it('fallbackChain_GermanFrenchAndSpanish_FallBackToEnglishThenItalian', () => {
+    expect(i18n.options.fallbackLng).toEqual({ default: ['it'], de: ['en', 'it'], fr: ['en', 'it'], es: ['en', 'it'] });
   });
 });

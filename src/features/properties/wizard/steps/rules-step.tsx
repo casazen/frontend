@@ -25,6 +25,7 @@ const QUIET_TO_TIMES = hours(6, 9);
 const SMOKING_OPTIONS = ['No', 'OutdoorsOnly', 'Yes'] as const;
 const PETS_OPTIONS = ['No', 'OnRequest', 'Yes'] as const;
 const PARTIES_OPTIONS = ['No', 'OnRequest'] as const;
+const CHILDREN_OPTIONS = ['No', 'OnRequest', 'Yes'] as const;
 
 /** The hours of the list plus the one the property has, if it is another (an API client may have stored 15:30): never hidden. */
 function withCurrent(list: readonly string[], current: string): string[] {
@@ -59,7 +60,7 @@ function TimeSelect({ form, name, label, list, blank }: TimeSelectProps) {
 
 interface PolicySelectProps<T extends string> {
   form: UseFormReturn<PropertyWizardValues>;
-  name: 'smokingPolicy' | 'petsPolicy' | 'partiesPolicy';
+  name: 'smokingPolicy' | 'petsPolicy' | 'partiesPolicy' | 'childrenPolicy';
   label: string;
   options: readonly T[];
   optionLabel: (option: T) => string;
@@ -84,7 +85,7 @@ interface RulesStepProps {
 }
 
 /**
- * Step 4 · «Quali regole valgono in casa?» (SR-07c): arrival and departure, smoking, pets, parties, quiet hours, what extra guests pay,
+ * Step 5 · «Quali regole valgono in casa?» (SR-07c): arrival and departure, smoking, pets, parties, children (NF-37), quiet hours, what extra guests pay,
  * and **which of the five cancellation policies of the catalog** the host offers. Every answer is the host's: nothing is preselected for
  * the policy, and the line under each one is made of its own numbers (`cancellationPolicyLine`), not of the catalog's description.
  */
@@ -111,7 +112,7 @@ export function RulesStep({ form }: RulesStepProps) {
         <h3 id="property-wizard-rules-house" className="text-base font-semibold">
           {t('propertyWizard.rules.house.title')}
         </h3>
-        <div className="grid min-w-0 gap-4 sm:grid-cols-3">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <PolicySelect
             form={form}
             name="smokingPolicy"
@@ -132,6 +133,13 @@ export function RulesStep({ form }: RulesStepProps) {
             label={t('propertyWizard.rules.house.parties')}
             options={PARTIES_OPTIONS}
             optionLabel={(option) => t(`propertyWizard.rules.partiesOptions.${option}`)}
+          />
+          <PolicySelect
+            form={form}
+            name="childrenPolicy"
+            label={t('propertyWizard.rules.house.children')}
+            options={CHILDREN_OPTIONS}
+            optionLabel={(option) => t(`propertyWizard.rules.childrenOptions.${option}`)}
           />
         </div>
 

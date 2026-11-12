@@ -67,15 +67,24 @@ async function mockActivation(page: Page, state: ServerState): Promise<void> {
   });
 }
 
-/** Creates the property with the first step, leaves the optional ones, gives the rate and arrives at the last step. */
+/**
+ * Creates the property with the first step, leaves the optional ones, gives the rate and arrives at the last step. The channel manager is
+ * off here (the flag `octorateConnector` is, in the e2e, as in production): the texts of the listing are optional, as they always were, so
+ * the Italian headline is written and the English texts are left empty — «Continua» asks for nothing more.
+ */
 async function goToLastStep(page: Page): Promise<void> {
   await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'));
   const created = await createPropertyWithWizard(page, { name: 'Casa Procedura', address: 'Via Garibaldi 42', comune: 'Milano', postalCode: '20100' });
   expect(created.status()).toBe(201);
-  for (const stepId of ['photos', 'amenities', 'rules']) {
+  for (const stepId of ['photos', 'amenities']) {
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', stepId);
     await page.getByTestId('wizard-skip').click();
   }
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'descriptions');
+  await page.getByLabel('Titolo', { exact: true }).fill('Casa Procedura');
+  await page.getByTestId('property-wizard-next').click();
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'rules');
+  await page.getByTestId('wizard-skip').click();
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'prices');
   await page.getByLabel('Prezzo base per notte').fill('135');
   await page.getByTestId('property-wizard-next').click();

@@ -15,6 +15,7 @@ type BookingNextStepKind =
   | 'sendLink'
   | 'resendLink'
   | 'waitingDocuments'
+  | 'completeGuestData'
   | 'stayInProgress'
   | 'registerDeparture'
   | 'sendAlloggiati'
@@ -34,6 +35,11 @@ interface CheckInFacts {
   /** Null while no link was ever made. */
   status: GuestCheckInSessionStatus | null;
   canIssueLink: boolean;
+}
+
+/** Whether the guest data of the stay are complete for Alloggiati Web, as `GET /alloggiati/{id}/status` says it (`dataComplete`). */
+interface GuestDataFacts {
+  complete: boolean;
 }
 
 /** The Alloggiati Web communication of a stay, as `GET /alloggiati/{id}/status` says it. */
@@ -66,7 +72,7 @@ export function documentsNeeded(booking: StayFacts, today: string): 'checkIn' | 
 export function nextStepOf(
   booking: StayFacts,
   today: string,
-  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts } = {},
+  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts } = {},
 ): BookingNextStep {
   const alloggiati = facts.alloggiati;
   const alloggiatiToSend = alloggiati !== undefined && ALLOGGIATI_TO_SEND.includes(alloggiati.status);
@@ -88,6 +94,8 @@ export function nextStepOf(
       if (link?.canIssueLink && link.status === null) return { kind: 'sendLink', tone: 'neutral' };
       if (link?.canIssueLink && link.status === 'Scaduto') return { kind: 'resendLink', tone: 'warning' };
       if (link?.status === 'Inviato' || link?.status === 'InCompilazione') return { kind: 'waitingDocuments', tone: 'info' };
+      // Nothing is owed by the guest, and the data are still incomplete: the host fills them in the wizard "Guest check-in".
+      if (facts.guestData?.complete === false) return { kind: 'completeGuestData', tone: 'warning' };
       return { kind: 'allInOrder', tone: 'success' };
     }
 

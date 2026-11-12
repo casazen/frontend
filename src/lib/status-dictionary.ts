@@ -3,6 +3,7 @@ import type { AdminSupplierStatus } from "@/types/admin-suppliers";
 import type { BillingSubscriptionStatus } from "@/types/billing.types";
 import type { BookingStatus } from "@/types/booking.types";
 import type { CinStatus } from "@/types/cin.types";
+import type { ChannelPublishStatus } from "@/types/listing.types";
 import type { PropertyComplianceStatus } from "@/types/compliance.types";
 import type { LeaseStage, LeaseStatus } from "@/types/lease.types";
 import type { PaymentStatus } from "@/types/payment.types";
@@ -197,6 +198,7 @@ export const STATUS_DICTIONARY = {
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
+    NotDue: { tone: "neutral", icon: "circle-dashed" },
   }),
   /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
   cin: defineKind<CinStatus>({
@@ -209,6 +211,19 @@ export const STATUS_DICTIONARY = {
     Confirmed: { tone: "success", icon: "check-circle", derived: true },
     ToConfirm: { tone: "warning", icon: "hourglass", derived: true },
     NotChosen: { tone: "warning", icon: "circle-dashed", derived: true },
+  }),
+  /**
+   * The content of a property on a channel of the channel manager (E02/F03/US01, NF-09): sent and waiting, accepted by the channel manager
+   * and waiting for the channel, published, to fix, or managed on the channel itself (the host edits it there). Green published, yellow
+   * while it is on its way, red to fix, grey when nothing is sent.
+   */
+  channel: defineKind<ChannelPublishStatus>({
+    Draft: { tone: "neutral", icon: "pencil" },
+    Sending: { tone: "warning", icon: "send" },
+    Accepted: { tone: "warning", icon: "hourglass" },
+    Published: { tone: "success", icon: "check-circle" },
+    ToFix: { tone: "danger", icon: "alert-circle" },
+    ManagedOnChannel: { tone: "neutral", icon: "circle-dashed" },
   }),
   /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
   serviceListing: defineKind<SupplierServiceStatus>({

@@ -9,7 +9,7 @@ import type { Booking } from '@/types';
 import { BOOKINGS_PATH } from '../lib/booking-list-query';
 import { documentsNeeded, nextStepOf } from '../lib/booking-next-step';
 import { stayDateOf } from '../lib/booking-price';
-import { canOpenCheckOut } from '../lib/stay-actions';
+import { canOpenCheckOut, checkInWizardPath } from '../lib/stay-actions';
 
 interface BookingNextStepProps {
   booking: Booking;
@@ -43,9 +43,15 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   const session = useBookingCheckInSession(needs === 'checkIn' ? booking.id : '');
   const alloggiati = useAlloggiatiStatus(booking.id, needs === 'alloggiati');
   const sendLink = useSendCheckInLink();
+  // Whether the guest data of a confirmed stay are complete: if not, the wizard "Guest check-in" is where the host completes them.
+  const guestData = useAlloggiatiStatus(booking.id, needs !== 'alloggiati' && booking.status === 'Confirmed' && canWrite);
 
   // The documents change the step: wait for them rather than show a block that changes a moment later.
-  if ((needs === 'checkIn' && session.isLoading) || (needs === 'alloggiati' && alloggiati.isLoading)) {
+  if (
+    (needs === 'checkIn' && session.isLoading) ||
+    (needs === 'alloggiati' && alloggiati.isLoading) ||
+    (booking.status === 'Confirmed' && canWrite && guestData.isLoading)
+  ) {
     return (
       <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
         <span className="sr-only">{t('shared.loading.srOnly')}</span>
@@ -59,6 +65,7 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   const step = nextStepOf(booking, today, {
     checkIn: link ? { status: link.status ?? null, canIssueLink: link.canIssueLink } : undefined,
     alloggiati: communication ? { status: communication.status, isOverdue: communication.isOverdue } : undefined,
+    guestData: guestData.data ? { complete: guestData.data.dataComplete } : undefined,
   });
 
   const language = i18n.language;
@@ -74,6 +81,11 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   const checkOut: CalmAction | null =
     canWrite && canOpenCheckOut(booking, today)
       ? { label: t('booking.list.actions.departure'), href: `${BOOKINGS_PATH}/${booking.id}/checkout`, testId: 'open-checkout-wizard' }
+      : null;
+  // The host may fill the guest data in himself, whoever the link is waiting for: a stay whose data are incomplete leads to the wizard.
+  const completeInWizard: CalmAction | null =
+    canWrite && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
+      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id), testId: 'booking-next-check-in-wizard' }
       : null;
   const sendCheckInLink: CalmAction | null =
     canWrite && link?.canIssueLink
@@ -108,14 +120,39 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
           body: t('booking.next.registerArrival.body', { date: arrival }),
           who: myTurn,
           primary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : toBookings,
-          secondary: checkOut ?? undefined,
+          secondary: checkOut ?? completeInWizard ?? undefined,
         };
       case 'sendLink':
-        return { title: t('booking.next.sendLink.title'), body: t('booking.next.sendLink.body'), who: myTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.sendLink.title'),
+          body: t('booking.next.sendLink.body'),
+          who: myTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
       case 'resendLink':
-        return { title: t('booking.next.resendLink.title'), body: t('booking.next.resendLink.body'), who: myTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.resendLink.title'),
+          body: t('booking.next.resendLink.body'),
+          who: myTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
       case 'waitingDocuments':
-        return { title: t('booking.next.waitingDocuments.title'), body: t('booking.next.waitingDocuments.body'), who: guestTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.waitingDocuments.title'),
+          body: t('booking.next.waitingDocuments.body'),
+          who: guestTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
+      case 'completeGuestData':
+        return {
+          title: t('booking.next.completeGuestData.title'),
+          body: t('booking.next.completeGuestData.body'),
+          who: myTurn,
+          primary: completeInWizard ?? toBookings,
+        };
       case 'stayInProgress':
         return {
           title: t('booking.next.stayInProgress.title', { guest }),

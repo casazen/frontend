@@ -7,13 +7,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
+import { todayInRome } from '@/lib/stay-dates';
 import type { StayGuestType } from '@/types/public-checkin.types';
 import {
   ALLOGGIATI_GENDERS,
   DOCUMENT_KINDS,
   LEADER_TYPES,
   MAX_DOCUMENT_NUMBER_LENGTH,
+  STATISTICAL_FIELD_OPTIONS,
   isMinorOn,
+  type StatisticalGuestField,
   type StayGuestFormValues,
 } from '../schemas/checkin.schema';
 import { CodeTableInput } from './code-table-input';
@@ -21,6 +24,10 @@ import { isListAvailable, type CodeTableSource, type CodeTableValue } from './co
 
 export const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+/** The controls added for NF-40 are at least 44 px high (touch target, WCAG 2.2 AA). */
+const touchSelectClassName = selectClassName.replace('h-10', 'h-11');
+const TOUCH_INPUT = 'h-11';
 
 /** Shape shared by the guest portal and the host form: the guests of the stay at `guests`. */
 export interface StayGuestsFormShape {
@@ -38,11 +45,36 @@ const FIELD = {
   dateOfBirth: 'dateOfBirth',
   bornInItaly: 'bornInItaly',
   birthProvince: 'birthProvince',
+  residenceInItaly: 'residenceInItaly',
+  residenceProvince: 'residenceProvince',
   documentType: 'documentType',
   documentNumber: 'documentNumber',
+  documentIssuedOn: 'documentIssuedOn',
+  documentExpiresOn: 'documentExpiresOn',
 } as const satisfies Partial<Record<GuestField, GuestField>>;
-type CodedNameField = 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentTypeLabel' | 'documentIssuePlaceName';
-type CodedCodeField = 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentTypeCode' | 'documentIssuePlaceCode';
+type CodedNameField =
+  | 'birthComuneName'
+  | 'birthCountryName'
+  | 'citizenshipName'
+  | 'residenceComuneName'
+  | 'residenceCountryName'
+  | 'documentTypeLabel'
+  | 'documentIssuePlaceName';
+type CodedCodeField =
+  | 'birthComuneCode'
+  | 'birthCountryCode'
+  | 'citizenshipCode'
+  | 'residenceComuneCode'
+  | 'residenceCountryCode'
+  | 'documentTypeCode'
+  | 'documentIssuePlaceCode';
+
+/** The label of each statistical field (an i18n key, written out for the i18n test). */
+const STATISTICAL_LABEL_KEYS: Record<StatisticalGuestField, string> = {
+  tourismType: 'checkin.tourismType.label',
+  travelWay: 'checkin.travelWay.label',
+  educationLevel: 'checkin.educationLevel.label',
+};
 
 function useGuestField(index: number) {
   const { register, setValue, formState } = useFormContext<StayGuestsFormShape>();
@@ -65,6 +97,11 @@ interface StayGuestPersonalFieldsProps {
   index: number;
   arrivalDate?: string;
   source: CodeTableSource;
+  /**
+   * The statistical fields the region requires (`requiredGuestFields` of the public view or of the wizard): only these are asked, and
+   * they have to be chosen. None by default, as the host form of the guests of the Alloggiati tab has none.
+   */
+  requiredFields?: readonly StatisticalGuestField[];
   /** First guest only: the kind of the whole stay changed (single, family, group). */
   onLeaderTypeChange?: (type: StayGuestType) => void;
   onRemove?: () => void;
@@ -72,9 +109,17 @@ interface StayGuestPersonalFieldsProps {
 
 /**
  * Personal data of one guest (all kinds): the kind of stay on the first guest, names, sex, date of birth (minors
- * flagged), place of birth (comune and province in Italy, state abroad) and citizenship.
+ * flagged), place of birth (comune and province in Italy, state abroad), citizenship, the residence (optional) and the
+ * statistical fields the region requires.
  */
-export function StayGuestPersonalFields({ index, arrivalDate, source, onLeaderTypeChange, onRemove }: StayGuestPersonalFieldsProps) {
+export function StayGuestPersonalFields({
+  index,
+  arrivalDate,
+  source,
+  requiredFields = [],
+  onLeaderTypeChange,
+  onRemove,
+}: StayGuestPersonalFieldsProps) {
   const { t } = useTranslation();
   const { register, setValue, id, errorOf, a11y, setCoded } = useGuestField(index);
   const guest = useWatch<StayGuestsFormShape, `guests.${number}`>({ name: `guests.${index}` });
@@ -88,7 +133,7 @@ export function StayGuestPersonalFields({ index, arrivalDate, source, onLeaderTy
       <legend className="flex items-center gap-2 px-1 text-sm font-semibold">
         {t('checkin.guestHeading', { index: index + 1 })}
         <Badge variant="secondary" data-testid={`stay-guest-${index}-type`}>
-          {t(`alloggiati.guestKind.${guest.type}`)}
+          {t(`checkin.guestKind.${guest.type}`)}
         </Badge>
         {minor && (
           <Badge variant="outline" data-testid={`stay-guest-${index}-minor`}>
@@ -199,19 +244,101 @@ export function StayGuestPersonalFields({ index, arrivalDate, source, onLeaderTy
         )}
 
         <div className="space-y-2">
-          <Label htmlFor={id('citizenshipName')}>{t('checkin.citizenship')}</Label>
+          <Label htmlFor={`guest-${index}-citizenship`}>{t('checkin.citizenship')}</Label>
           <CodeTableInput
-            id={id('citizenshipName')}
+            id={`guest-${index}-citizenship`}
+            purpose="citizenship"
             list="stati"
             source={source}
             name={guest.citizenshipName}
             code={guest.citizenshipCode}
             aria-invalid={!!errorOf('citizenshipName')}
-            aria-describedby={`${id('citizenshipName')}-error`}
+            aria-describedby={`guest-${index}-citizenship-error`}
             onValueChange={(value) => setCoded('citizenshipName', 'citizenshipCode', value)}
           />
-          <FormFieldError id={`${id('citizenshipName')}-error`} error={errorOf('citizenshipName')} />
+          <FormFieldError id={`guest-${index}-citizenship-error`} error={errorOf('citizenshipName')} />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor={id('residenceInItaly')}>{t('checkin.residence.label')}</Label>
+          <select
+            {...register(`guests.${index}.residenceInItaly`)}
+            {...a11y(FIELD.residenceInItaly)}
+            className={touchSelectClassName}
+            aria-describedby={`${id('residenceInItaly')}-hint ${id('residenceInItaly')}-error`}
+          >
+            <option value="">{t('checkin.choose')}</option>
+            <option value="yes">{t('checkin.residence.inItaly')}</option>
+            <option value="no">{t('checkin.residence.abroad')}</option>
+          </select>
+          <p id={`${id('residenceInItaly')}-hint`} className="text-xs text-muted-foreground">
+            {t('checkin.residence.hint')}
+          </p>
+          <FormFieldError id={`${id('residenceInItaly')}-error`} error={errorOf('residenceInItaly')} />
+        </div>
+
+        {guest.residenceInItaly === 'yes' && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor={id('residenceComuneName')}>{t('checkin.residence.comune')}</Label>
+              <CodeTableInput
+                id={id('residenceComuneName')}
+                list="comuni"
+                source={source}
+                name={guest.residenceComuneName}
+                code={guest.residenceComuneCode}
+                className={TOUCH_INPUT}
+                aria-invalid={!!errorOf('residenceComuneName')}
+                aria-describedby={`${id('residenceComuneName')}-error`}
+                onValueChange={(value) => {
+                  setCoded('residenceComuneName', 'residenceComuneCode', value);
+                  if (value.province) setValue(`guests.${index}.residenceProvince`, value.province, { shouldDirty: true });
+                }}
+              />
+              <FormFieldError id={`${id('residenceComuneName')}-error`} error={errorOf('residenceComuneName')} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={id('residenceProvince')}>{t('checkin.residence.province')}</Label>
+              <Input
+                maxLength={2}
+                className={`${TOUCH_INPUT} uppercase`}
+                {...register(`guests.${index}.residenceProvince`)}
+                {...a11y(FIELD.residenceProvince)}
+              />
+              <FormFieldError id={`${id('residenceProvince')}-error`} error={errorOf('residenceProvince')} />
+            </div>
+          </>
+        )}
+        {guest.residenceInItaly === 'no' && (
+          <div className="space-y-2">
+            <Label htmlFor={id('residenceCountryName')}>{t('checkin.residence.country')}</Label>
+            <CodeTableInput
+              id={id('residenceCountryName')}
+              list="stati"
+              source={source}
+              name={guest.residenceCountryName}
+              code={guest.residenceCountryCode}
+              className={TOUCH_INPUT}
+              aria-invalid={!!errorOf('residenceCountryName')}
+              aria-describedby={`${id('residenceCountryName')}-error`}
+              onValueChange={(value) => setCoded('residenceCountryName', 'residenceCountryCode', value)}
+            />
+            <FormFieldError id={`${id('residenceCountryName')}-error`} error={errorOf('residenceCountryName')} />
+          </div>
+        )}
+
+        {requiredFields.map((field) => (
+          <div key={field} className="space-y-2">
+            <Label htmlFor={id(field)}>{t(STATISTICAL_LABEL_KEYS[field])}</Label>
+            <select {...register(`guests.${index}.${field}`)} {...a11y(field)} className={touchSelectClassName}>
+              <option value="">{t('checkin.choose')}</option>
+              {STATISTICAL_FIELD_OPTIONS[field].map((option) => (
+                <option key={option.code} value={option.code}>{t(option.labelKey)}</option>
+              ))}
+            </select>
+            <FormFieldError id={`${id(field)}-error`} error={errorOf(field)} />
+          </div>
+        ))}
       </div>
 
       {onRemove && (
@@ -231,7 +358,10 @@ interface StayGuestDocumentFieldsProps {
   source: CodeTableSource;
 }
 
-/** Identity document of a single guest or of a head of family or group: kind (or official type), number, place of issue. */
+/**
+ * Identity document of a single guest or of a head of family or group: kind (or official type), number, place of issue, and the
+ * issue and expiry days (optional).
+ */
 export function StayGuestDocumentFields({ index, source }: StayGuestDocumentFieldsProps) {
   const { t } = useTranslation();
   const { register, setValue, id, errorOf, a11y, setCoded } = useGuestField(index);
@@ -303,6 +433,28 @@ export function StayGuestDocumentFields({ index, source }: StayGuestDocumentFiel
           />
           <p className="text-xs text-muted-foreground">{t('checkin.documentIssuePlaceHint')}</p>
           <FormFieldError id={`${id('documentIssuePlaceName')}-error`} error={errorOf('documentIssuePlaceName')} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={id('documentIssuedOn')}>{t('checkin.documentIssuedOn.label')}</Label>
+          <Input
+            type="date"
+            min="1900-01-01"
+            max={todayInRome()}
+            className={TOUCH_INPUT}
+            {...register(`guests.${index}.documentIssuedOn`)}
+            {...a11y(FIELD.documentIssuedOn)}
+          />
+          <FormFieldError id={`${id('documentIssuedOn')}-error`} error={errorOf('documentIssuedOn')} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={id('documentExpiresOn')}>{t('checkin.documentExpiresOn.label')}</Label>
+          <Input
+            type="date"
+            className={TOUCH_INPUT}
+            {...register(`guests.${index}.documentExpiresOn`)}
+            {...a11y(FIELD.documentExpiresOn)}
+          />
+          <FormFieldError id={`${id('documentExpiresOn')}-error`} error={errorOf('documentExpiresOn')} />
         </div>
       </div>
     </fieldset>

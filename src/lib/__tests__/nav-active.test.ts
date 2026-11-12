@@ -103,7 +103,7 @@ describe('isNavEntryActive for pages that hang from an entry', () => {
 describe('isNavEntryActive on the route manifest', () => {
   const allowAll = () => true;
   const activePath = (contextKey: Parameters<typeof getNavMatchEntries>[0], pathname: string) =>
-    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true }))?.path;
+    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true, crmMarketing: true }))?.path;
 
   it.each([
     ['short-rent', '/app/short-rent', '/app/short-rent'],
@@ -123,7 +123,9 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/vetrina'],
     ['short-rent', '/app/short-rent/guests', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/bookings'],
-    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/bookings'],
+    // The CRM (behind its flag) is an entry of "Altro" of its own, not a tab of Prenotazioni.
+    ['short-rent', '/app/short-rent/crm/guests', '/app/short-rent/crm/guests'],
+    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/crm/guests'],
     ['short-rent', '/app/short-rent/reviews', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/trusted-suppliers', '/app/short-rent/properties'],
     ['short-rent', '/app/short-rent/channels', '/app/short-rent/properties'],
@@ -137,13 +139,14 @@ describe('isNavEntryActive on the route manifest', () => {
     ['long-rent', '/app/long-rent', '/app/long-rent'],
     ['long-rent', '/app/long-rent/settings/billing', undefined],
     ['long-rent', '/app/long-rent/profile', undefined],
-    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/tenants/t1', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/rents'],
-    ['long-rent', '/app/long-rent/leases', '/app/long-rent/leases'],
-    // Contratti stays highlighted on the pages of a contract (it was not, as an "exact" entry).
-    ['long-rent', '/app/long-rent/leases/new', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/leases/l1', '/app/long-rent/leases'],
+    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/deadlines'],
+    ['long-rent', '/app/long-rent/tenants/t1', '/app/long-rent/tenants'],
+    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/fiscal'],
+    ['long-rent', '/app/long-rent/payments', '/app/long-rent/payments'],
+    ['long-rent', '/app/long-rent/leases', undefined],
+    // Contracts have no standalone menu destination.
+    ['long-rent', '/app/long-rent/leases/new', undefined],
+    ['long-rent', '/app/long-rent/leases/l1', undefined],
     ['long-rent', '/app/long-rent/properties/p1/edit', '/app/long-rent/properties'],
     ['supplier', '/app/supplier/calendar', '/app/supplier/availability'],
     ['supplier', '/app/supplier/inbox/r1', '/app/supplier/inbox'],

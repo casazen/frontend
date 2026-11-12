@@ -7,14 +7,20 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { isValidCin } from '@/lib/cin-format';
 import { cn } from '@/lib/utils';
+import { useListingStatus } from '@/queries/use-listing-status';
 import { useProperty } from '@/queries/use-properties';
 import { longRentPropertyEditPath } from '../long-rent/paths';
 import { PROPERTIES_PATH } from '../properties-paths';
+import { importedSteps } from './channels-model';
 import { PropertyWizard } from './property-wizard';
-import { PROPERTY_ID_PARAM, resumeStepFor } from './property-wizard-model';
+import { PROPERTY_ID_PARAM, resumeStepFor, type WizardStepId } from './property-wizard-model';
+import { useWizardListingSeed } from './use-wizard-listing-seed';
 
 /** A property that cannot be opened: said with the reason the server gave, with the way back to the list always there. */
 function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
@@ -45,22 +51,62 @@ function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) 
 
 /**
  * The wizard reopened on a property (`?propertyId=`). The step it opens on, when the address names none, is the first that has a
- * blocker open, as the server tells it (`resumeStepFor`); a long-term property is not this wizard's: it goes to its own section.
+ * blocker open, as the server tells it (`resumeStepFor`); a long-term property is not this wizard's: it goes to its own section. It opens
+ * form starts from it, and a form that started without it would take it away with the first save.
+ *
+ * A listing that is already on the channels (published from here, or imported and mapped) opens on the steps that lack data, as the status
+ * of its channels lists them, then the channels and the last step — the check of an imported listing (NF-29) — with «Mostra tutti i passi»
+ * to see the rest. The list of steps is fixed when the wizard opens, so a step the host is on never disappears under them.
  */
 function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed: boolean }) {
   const { t } = useTranslation();
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const property = useProperty(propertyId, { fresh: true });
   // Not needed when the address already names a step (a link to «Aggiungi foto»): the wizard opens there at once.
   const activation = useComplianceActivation(stepNamed ? '' : propertyId);
+  const shortRent = property.data !== undefined && property.data.rentalMode !== 'Long';
+  const listing = useWizardListingSeed(propertyId, shortRent);
+  const channels = useListingStatus(propertyId, { enabled: connectorOn && shortRent });
+  const [checked, setChecked] = useState<WizardStepId[] | null | undefined>(undefined);
+  const [showAll, setShowAll] = useState(false);
+
+  // Fixed once, when the status first arrives (or fails: the wizard then opens as it always did) and the property is there to say if its CIN
+  // is valid: a CIN that is missing is fixed in the last step, not in the `base` the server files it under.
+  if (checked === undefined && connectorOn && property.data && (channels.data !== undefined || channels.isError)) {
+    setChecked(importedSteps(channels.data, isValidCin(property.data.cinCode)));
+  }
+  const waitingForStatus = connectorOn && shortRent && checked === undefined;
 
   if (property.isError && !property.data) return <LoadError error={property.error} onRetry={() => void property.refetch()} />;
-  if (!property.data || (!stepNamed && !activation.data && !activation.isError)) {
+  if (property.data?.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.data.id)} replace />;
+  if (listing.failed) return <LoadError error={listing.error} onRetry={listing.retry} />;
+  if (!property.data || !listing.seed || waitingForStatus || (!stepNamed && !activation.data && !activation.isError)) {
     return <LoadingScreen message={t('propertyWizard.page.loading')} className="h-auto flex-1" />;
   }
-  if (property.data.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.data.id)} replace />;
 
-  const initialStepId = !stepNamed && activation.data ? resumeStepFor(property.data, activation.data.steps) : undefined;
-  return <PropertyWizard key={propertyId} property={property.data} initialStepId={initialStepId} />;
+  const onlySteps = checked && !showAll ? checked : undefined;
+  const initialStepId = onlySteps
+    ? stepNamed
+      ? undefined
+      : onlySteps[0]
+    : !stepNamed && activation.data
+      ? resumeStepFor(property.data, activation.data.steps)
+      : undefined;
+
+  return (
+    <>
+      {checked ? (
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg bg-muted p-4" data-testid="property-wizard-imported">
+          <p className="min-w-0 flex-1 text-sm">{showAll ? t('propertyWizard.imported.all') : t('propertyWizard.imported.only')}</p>
+          <label className="flex min-h-11 items-center gap-3 text-sm font-medium">
+            <Switch checked={showAll} onCheckedChange={setShowAll} data-testid="property-wizard-show-all" />
+            {t('propertyWizard.imported.showAll')}
+          </label>
+        </div>
+      ) : null}
+      <PropertyWizard key={propertyId} property={property.data} listing={listing.seed} onlySteps={onlySteps} initialStepId={initialStepId} />
+    </>
+  );
 }
 
 /**

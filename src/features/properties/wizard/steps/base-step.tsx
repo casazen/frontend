@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Qty } from '@/components/ui/qty';
 import { ACCOMMODATION_TYPES, type AccommodationType } from '@/types';
 import type { PropertyWizardValues } from '../property-wizard-model';
+import { RoomsEditor } from './rooms-editor';
 
 const TYPE_ICONS: Record<AccommodationType, LucideIcon> = {
   Apartment: Building2,
@@ -62,15 +63,35 @@ function SpaceRow({ form, name, min, max }: SpaceRowProps) {
   );
 }
 
+/** A counter that the rooms below decide: shown with its number, not changed here. */
+function DerivedRow({ name, value }: { name: 'bedrooms' | 'beds'; value: number }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex min-w-0 items-center justify-between gap-4" data-testid={`property-wizard-${name}-derived`}>
+      <div className="min-w-0">
+        <div className="font-medium">{t(`propertyWizard.base.spaces.${name}.label`)}</div>
+        <div className="text-sm text-foreground/70">{t('propertyWizard.base.spaces.fromRooms')}</div>
+      </div>
+      <output className="min-w-[2.5ch] text-center text-lg font-semibold tabular-nums" aria-label={t(`propertyWizard.base.spaces.${name}.label`)}>
+        {value}
+      </output>
+    </div>
+  );
+}
+
 interface BaseStepProps {
   form: UseFormReturn<PropertyWizardValues>;
+  /** How many rooms the server has for the property (none while it is not created): the last one saved cannot be taken off. */
+  storedRoomCount?: number;
 }
 
 /**
  * Step 1 · «Che casa stai aggiungendo?» (SR-07b): the kind of accommodation, the name, where it is (the comune from the official
- * list) and its spaces. «Avanti» creates the property on the server. No map: without a geocoder a pin would be made up.
+ * list), its spaces and its rooms with their beds (NF-34). «Avanti» creates the property on the server and saves the rooms. No map:
+ * without a geocoder a pin would be made up.
  */
-export function BaseStep({ form }: BaseStepProps) {
+export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
   const { t } = useTranslation();
   const {
     register,
@@ -79,6 +100,8 @@ export function BaseStep({ form }: BaseStepProps) {
     formState: { errors },
   } = form;
   const comuneIstatCode = watch('comuneIstatCode') || null;
+  // Once the unit has a room, the bedrooms and the beds are the rooms': the counters are not asked twice.
+  const hasRooms = watch('rooms').length > 0;
 
   return (
     <>
@@ -142,13 +165,19 @@ export function BaseStep({ form }: BaseStepProps) {
         <h3 id="property-wizard-spaces" className="text-base font-semibold">
           {t('propertyWizard.base.spaces.title')}
         </h3>
-        {SPACES.map((space) => (
-          <SpaceRow key={space.name} form={form} {...space} />
-        ))}
+        {SPACES.map((space) =>
+          hasRooms && (space.name === 'bedrooms' || space.name === 'beds') ? (
+            <DerivedRow key={space.name} name={space.name} value={watch(space.name)} />
+          ) : (
+            <SpaceRow key={space.name} form={form} {...space} />
+          ),
+        )}
         <Field label={t('propertyWizard.base.areaSqm.label')} optional hint={t('propertyWizard.base.areaSqm.hint')} error={errors.areaSqm} className="max-w-xs">
           <Input inputMode="numeric" autoComplete="off" maxLength={4} {...register('areaSqm')} />
         </Field>
       </section>
+
+      <RoomsEditor form={form} storedRoomCount={storedRoomCount} />
     </>
   );
 }

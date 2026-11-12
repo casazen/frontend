@@ -13,6 +13,7 @@ import {
   stayDateToLocalDate,
   toStayDate,
   todayInRome,
+  todayInZurich,
   utcStayDate,
 } from '@/lib/stay-dates';
 import { LATE_EVENING_UTC, NOON_UTC, freezeClock, withBrowserTimeZone } from '@/test/clock';
@@ -30,6 +31,14 @@ describe('todayInRome', () => {
 
   it('todayInRome_EarlyEveningUtc_ReturnsSameCalendarDay', () => {
     expect(todayInRome(new Date('2026-09-23T21:30:00Z'))).toBe('2026-09-23');
+  });
+});
+
+describe('todayInZurich', () => {
+  it('uses the Zurich calendar date, which is the next day late in the UTC evening', () => {
+    // 23:30 UTC is 00:30 the next day in Zurich (CET, UTC+1). The UTC date is still the 15th.
+    expect(todayInZurich(new Date('2026-01-15T23:30:00Z'))).toBe('2026-01-16');
+    expect(new Date('2026-01-15T23:30:00Z').toISOString().slice(0, 10)).toBe('2026-01-15');
   });
 });
 

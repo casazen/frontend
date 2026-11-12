@@ -3,6 +3,7 @@ import { UsersApi } from '@/api/users.api';
 import { AuthTokenUnavailableError, isTransientRequestError } from '@/lib/api-errors';
 import { hasConsent } from '@/lib/cookie-consent';
 import { HOST_INVITE_PATH_PREFIX } from '@/lib/host-invite';
+import { isMarketingLinkPath } from '@/lib/marketing-link-paths';
 import type { SignupAttribution } from '@/types';
 
 /**
@@ -162,6 +163,8 @@ let deferredTouch: LandingTouch | null = null;
  * accepts on the second page still counts for the page they came in by).
  */
 export function recordLandingTouch(location: PageLocation = window.location, referrer = document.referrer): void {
+  // The visit of a person who stops or confirms the marketing e-mails is no statistic about a visitor (NF-95): not even held in memory.
+  if (isMarketingLinkPath(location.pathname)) return;
   if (readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) return;
   const touch: LandingTouch = {
     landingPath: validLandingPath(location.pathname),

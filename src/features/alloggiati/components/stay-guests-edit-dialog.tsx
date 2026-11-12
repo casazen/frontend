@@ -17,6 +17,8 @@ import { alloggiatiApi } from '@/api/alloggiati.api';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getServerFieldErrorsByPath } from '@/lib/server-validation-errors';
 import { useReplaceStayGuests } from '@/queries/use-alloggiati';
+import { useCheckInWizardState } from '@/queries/use-checkin-wizard';
+import type { CheckInWizardGuest } from '@/types/checkin-wizard.types';
 import type {
   AlloggiatiGuestRowDto,
   AlloggiatiGuestSummaryDto,
@@ -26,12 +28,14 @@ import type { AlloggiatiCodeTable, StayGuestType } from '@/types/public-checkin.
 import {
   DOCUMENT_KINDS,
   MAX_STAY_GUESTS,
+  createStayGuestsFormSchema,
   followerTypeOf,
   guestFormPathOf,
+  requiredStatisticalFields,
   requiresDocument,
   stayGuestDefaults,
-  stayGuestsFormSchema,
   toStayGuestSubmit,
+  type StatisticalGuestField,
   type StayGuestFormValues,
   type StayGuestsFormValues,
 } from '@/features/checkin/schemas/checkin.schema';
@@ -43,8 +47,15 @@ const ALL_TABLES: AlloggiatiCodeTable[] = ['Comuni', 'Stati', 'Documenti', 'Tipi
 /**
  * Form values of a registered guest, as the host sees it (codes found in the tables). The full document number comes from
  * the audited API call made when the form opens; without it the field starts empty with the masked number as a hint.
+ * The residence, the document dates, the statistical fields and the tourist tax exemption are not in the row of the summary: they
+ * come from the guest of the check-in wizard of the same position. The server takes the list as the whole truth, so a field the form
+ * did not carry would be erased by a save.
  */
-function stayGuestValuesFromRow(row: AlloggiatiGuestRowDto, documentNumber: string | undefined): StayGuestFormValues {
+function stayGuestValuesFromRow(
+  row: AlloggiatiGuestRowDto,
+  documentNumber: string | undefined,
+  saved: CheckInWizardGuest | undefined,
+): StayGuestFormValues {
   const bornAbroad = row.bornInItaly === false;
   return {
     type: row.type,
@@ -67,6 +78,18 @@ function stayGuestValuesFromRow(row: AlloggiatiGuestRowDto, documentNumber: stri
     documentNumberOnFile: documentNumber ? null : row.documentNumberMasked,
     documentIssuePlaceName: row.documentIssuePlace,
     documentIssuePlaceCode: row.codes.documentIssuePlace,
+    documentIssuedOn: saved?.documentIssuedOn?.slice(0, 10) ?? '',
+    documentExpiresOn: saved?.documentExpiresOn?.slice(0, 10) ?? '',
+    residenceInItaly: saved?.residenceInItaly === true ? 'yes' : saved?.residenceInItaly === false ? 'no' : '',
+    residenceComuneName: saved?.residenceComuneName ?? '',
+    residenceComuneCode: saved?.residenceComuneCode ?? null,
+    residenceProvince: saved?.residenceProvince ?? '',
+    residenceCountryName: saved?.residenceCountryName ?? '',
+    residenceCountryCode: saved?.residenceCountryCode ?? null,
+    tourismType: saved?.tourismType ?? '',
+    travelWay: saved?.travelWay ?? '',
+    educationLevel: saved?.educationLevel ?? '',
+    taxExemptionCode: saved?.taxExemptionCode ?? '',
   };
 }
 
@@ -96,6 +119,10 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
     retry: false,
   });
   const numbersForbidden = numbers.isError && getHttpStatus(numbers.error) === 403;
+  // The fields the summary does not carry (residence, document dates, tourist tax exemption): read from the wizard of the booking.
+  const saved = useCheckInWizardState(bookingId, open);
+  const requiredGuestFields = saved.data?.requiredGuestFields;
+  const statisticalFields = useMemo(() => requiredStatisticalFields(requiredGuestFields), [requiredGuestFields]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -104,12 +131,21 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
           <DialogTitle>{t('alloggiati.editGuests.title')}</DialogTitle>
           <DialogDescription>{t('alloggiati.editGuests.description')}</DialogDescription>
         </DialogHeader>
-        {withDocuments && numbers.isLoading ? (
+        {(withDocuments && numbers.isLoading) || saved.isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="stay-guests-edit-loading">
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('alloggiati.editGuests.loadingDocuments')}
           </div>
-        ) : withDocuments && numbers.isError && !numbersForbidden ? (
+        ) : saved.isError && !saved.data ? (
+          <div className="space-y-2" data-testid="stay-guests-edit-load-error">
+            <p className="text-sm text-destructive">
+              {getProblemMessage(saved.error, t) ?? t('alloggiati.editGuests.guestsLoadFailed')}
+            </p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void saved.refetch()}>
+              {t('alloggiati.guestSummary.retry')}
+            </Button>
+          </div>
+        ) : withDocuments && numbers.isError && !numbers.data && !numbersForbidden ? (
           <div className="space-y-2" data-testid="stay-guests-edit-load-error">
             <p className="text-sm text-destructive">
               {getProblemMessage(numbers.error, t) ?? t('alloggiati.editGuests.documentsLoadFailed')}
@@ -123,6 +159,8 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
             bookingId={bookingId}
             summary={summary}
             documentNumbers={numbers.data}
+            savedGuests={saved.data?.guests}
+            statisticalFields={statisticalFields}
             onDone={() => onOpenChange(false)}
           />
         )}
@@ -135,22 +173,28 @@ interface StayGuestsEditFormProps {
   bookingId: string;
   summary: AlloggiatiGuestSummaryDto;
   documentNumbers: StayGuestDocumentNumberDto[] | undefined;
+  /** The guests of the check-in wizard: the fields the summary does not carry. */
+  savedGuests: CheckInWizardGuest[] | undefined;
+  /** The statistical fields the region requires (`requiredGuestFields` of the wizard): asked here too, and sent. */
+  statisticalFields: readonly StatisticalGuestField[];
   onDone: () => void;
 }
 
-function StayGuestsEditForm({ bookingId, summary, documentNumbers, onDone }: StayGuestsEditFormProps) {
+function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, statisticalFields, onDone }: StayGuestsEditFormProps) {
   const { t } = useTranslation();
   const replace = useReplaceStayGuests(bookingId);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const initial = useMemo<StayGuestsFormValues>(() => {
     const byPosition = new Map((documentNumbers ?? []).map((n) => [n.position, n.documentNumber]));
-    const guests = summary.guests.map((row) => stayGuestValuesFromRow(row, byPosition.get(row.position)));
+    const savedByPosition = new Map((savedGuests ?? []).filter((g) => g.saved).map((g) => [g.position, g]));
+    const guests = summary.guests.map((row) => stayGuestValuesFromRow(row, byPosition.get(row.position), savedByPosition.get(row.position)));
     if (guests.length === 0) guests.push(stayGuestDefaults('SingleGuest'));
     return { guests };
-  }, [summary.guests, documentNumbers]);
+  }, [summary.guests, documentNumbers, savedGuests]);
 
-  const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(stayGuestsFormSchema), defaultValues: initial });
+  const schema = useMemo(() => createStayGuestsFormSchema(statisticalFields), [statisticalFields]);
+  const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const { control, getValues, setValue, setError, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
   const guests = useWatch({ control, name: 'guests' });
@@ -174,7 +218,11 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, onDone }: Sta
   const onSubmit = handleSubmit(async (values) => {
     setSaveError(null);
     try {
-      await replace.mutateAsync(values.guests.map(toStayGuestSubmit));
+      // The exemption of the tourist tax and the statistical fields travel with the guest as they were received: the server takes the
+      // list as the whole truth, so a save that left them out would erase them.
+      await replace.mutateAsync(
+        values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true, keepStatistical: true })),
+      );
       onDone();
     } catch (error) {
       const serverErrors = getServerFieldErrorsByPath(error, t('checkin.validation.invalidValue'));
@@ -199,6 +247,7 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, onDone }: Sta
               index={index}
               arrivalDate={summary.arrivalDate}
               source={source}
+              requiredFields={statisticalFields}
               onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
               onRemove={index > 0 ? () => remove(index) : undefined}
             />

@@ -1,9 +1,12 @@
+import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type {
   AlloggiatiCodeEntryDto,
   AlloggiatiCodeList,
   BiometricVerificationResponse,
+  CheckInDocumentReadResult,
   PublicCheckInContextDto,
+  PublicCheckInLanguageResponse,
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
 
@@ -11,12 +14,27 @@ export const publicCheckinApi = {
   getContext: (token: string) =>
     ApiClient.get<PublicCheckInContextDto>(`/public/checkin/${token}`, undefined, { public: true }),
 
+  /** Saves the language the guest chose on the page (`it`, `en`, `de`, `fr` or `es`); the page and the emails of the session use it. */
+  setLanguage: (token: string, language: string) =>
+    ApiClient.put<PublicCheckInLanguageResponse>(`/public/checkin/${token}/language`, { language }, { public: true }),
+
   submit: (token: string, data: PublicCheckInSubmitRequest) =>
     ApiClient.post<{ sessionId: string; message: string }>(`/public/checkin/${token}`, data, { public: true }),
 
   /** Official Alloggiati codes matching `q` (empty until an admin imports the tables). */
   searchCodes: (token: string, list: AlloggiatiCodeList, q: string) =>
     ApiClient.get<AlloggiatiCodeEntryDto[]>(`/public/checkin/${token}/codes`, { list, q }, { public: true }),
+
+  /** Reads one identity-document photo. The photo is not stored. */
+  readDocument: async (token: string, file: File) => {
+    const body = new FormData();
+    body.append('file', file);
+    const response = await axios.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
+      public: true,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 
   /**
    * Submit a selfie for biometric verification. The backend processes it synchronously

@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  Bell,
   Calendar,
   CalendarCheck,
   CalendarDays,
@@ -41,6 +42,7 @@ import {
 
 export const NAV_ICONS: Record<string, LucideIcon> = {
   BadgeCheck,
+  Bell,
   LayoutDashboard,
   Home,
   Calendar,

@@ -54,7 +54,6 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Prenotazioni', '/app/short-rent/bookings'],
       ['Ospiti', '/app/short-rent/guests'],
-      ['CRM Ospiti', '/app/short-rent/crm/guests'],
       ['Recensioni', '/app/short-rent/reviews'],
     ]);
     expect(links[0]).toHaveAttribute('aria-current', 'page');
@@ -64,11 +63,10 @@ describe('NavSectionTabs (UI-04a)', () => {
   it.each([
     ['/app/short-rent/guests', 'Ospiti'],
     ['/app/short-rent/reviews', 'Recensioni'],
-    ['/app/short-rent/crm/guests', 'CRM Ospiti'],
   ])('NavSectionTabs_PageOfTheSection_%s_HasTheSameTabsAndMarksItself_%s', (path, current) => {
     renderAt(path);
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'CRM Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
     const open = tabs('Sezioni di Prenotazioni').filter((link) => link.getAttribute('aria-current') === 'page');
     expect(open.map((link) => link.textContent)).toEqual([current]);
   });
@@ -82,14 +80,14 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
     renderAt('/app/long-rent/tenants');
 
-    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze']);
+    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze', 'Report fiscale']);
   });
 
   it('NavSectionTabs_EnglishUi_UsesTheEnglishNames', async () => {
     await i18n.changeLanguage('en');
     renderAt('/app/short-rent/guests');
 
-    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Guest CRM', 'Reviews']);
+    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
@@ -143,7 +141,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_NoWorkspace_ShowsEveryPageOfTheSection', () => {
     renderAt('/app/short-rent/bookings', { withWorkspace: false });
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'CRM Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
   });
 
   it('NavSectionTabs_NoRouter_ShowsNothingAndDoesNotFail', () => {

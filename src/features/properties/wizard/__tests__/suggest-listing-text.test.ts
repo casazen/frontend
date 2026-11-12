@@ -4,6 +4,10 @@ import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, suggestListingText, type Li
 
 const t = i18n.getFixedT('it');
 
+// The labels of the catalog of the amenities (`GET /api/public/amenities`), Italian: the text takes its names from there.
+const LABELS: Record<string, string> = { WiFi: 'Wi-Fi', Pool: 'Piscina', Garden: 'Giardino', Gym: 'Palestra' };
+const label = (amenity: string) => LABELS[amenity] ?? amenity;
+
 const apartment: ListingTextInput = {
   accommodationType: 'Apartment',
   name: 'Casa Lago',
@@ -18,17 +22,17 @@ const apartment: ListingTextInput = {
 
 describe('suggestListingText', () => {
   it('suggestListingText_WhatWasEntered_SaysThatAndNothingElse', () => {
-    const text = suggestListingText({ ...apartment, areaSqm: '70', amenities: ['WiFi', 'Pool', 'Garden', 'Gym'] }, t);
+    const text = suggestListingText({ ...apartment, areaSqm: '70', amenities: ['WiFi', 'Pool', 'Garden', 'Gym'] }, t, label);
 
     // Every word comes from a field of the first steps: no «check-in semplice», no view, no quiet. Only the first three amenities.
     expect(text.title).toBe('Appartamento a Como · 4 ospiti');
     expect(text.description).toBe(
-      'Appartamento «Casa Lago» a Como. Ospita fino a 4 persone. 2 camere da letto, 3 letti e 1 bagno. Superficie: 70 m². Tra le dotazioni: WiFi, Piscina e Giardino.',
+      'Appartamento «Casa Lago» a Como. Ospita fino a 4 persone. 2 camere da letto, 3 letti e 1 bagno. Superficie: 70 m². Tra le dotazioni: Wi-Fi, Piscina e Giardino.',
     );
   });
 
   it('suggestListingText_DataMissing_LeavesTheSentenceOut', () => {
-    const text = suggestListingText({ ...apartment, accommodationType: 'RoomOrSuite', bedrooms: 0, beds: 1, maxGuests: 1, name: '' }, t);
+    const text = suggestListingText({ ...apartment, accommodationType: 'RoomOrSuite', bedrooms: 0, beds: 1, maxGuests: 1, name: '' }, t, label);
 
     // No name, no area, no amenity: those sentences are not made up. A studio flat has no bedrooms, and says so.
     expect(text.title).toBe('Stanza o suite a Como · 1 ospite');
@@ -38,7 +42,7 @@ describe('suggestListingText', () => {
   it('suggestListingText_LongNames_StaysInsideTheLimitsOfTheFields', () => {
     const name = 'Villa dei Cipressi Secolari con Vista Sul Lago e Sulle Montagne '.repeat(8).trim().slice(0, 100);
     const city = 'Sant’Angelo in Pontano di Sopra e di Sotto Frazione';
-    const text = suggestListingText({ ...apartment, name, city, amenities: ['WiFi', 'Pool', 'Garden'] }, t);
+    const text = suggestListingText({ ...apartment, name, city, amenities: ['WiFi', 'Pool', 'Garden'] }, t, label);
 
     expect(text.title.length).toBeLessThanOrEqual(LISTING_TITLE_MAX);
     expect(text.description.length).toBeLessThanOrEqual(LISTING_DESCRIPTION_MAX);

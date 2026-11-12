@@ -98,7 +98,12 @@ export function RentsPage() {
   const [importing, setImporting] = useState(false);
   const recordRow = useCallback((row: RentRegisterRow) => setRecording({ row }), []);
 
-  const list = useRentsList({ canManage, held, onRecord: recordRow, onRemind: setReminding });
+  const list = useRentsList({
+    canManage,
+    held,
+    onRecord: recordRow,
+    onRemind: setReminding,
+  });
   const { state } = useListState(list);
   const status = rentStatusOfChip(state.chip);
 
