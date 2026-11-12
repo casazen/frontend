@@ -24,7 +24,7 @@ concurrency:
 jobs:
   golden-journey-web:
     name: GJ web suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,7 +40,7 @@ jobs:
 
   gj-l3:
     name: GJ L3 (UI, ephemeral stack)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     # Throw-away service container: the password below is not a secret.
     services:
