@@ -209,6 +209,26 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     expect(screen.queryByTestId('pending-error')).not.toBeInTheDocument();
   });
 
+  it('ThreadPage_RefusedMessageTakenBackToTheBox_GoesInFrontOfWhatTheHostTypedMeanwhile', async () => {
+    vi.mocked(messageHubApi.getThread).mockResolvedValue(
+      thread({ kind: 'Request', booking: null, customer: null, allowedActions: { canReply: true, contactDetailsAllowed: false, attachmentsAllowed: false, autoReplyAllowed: false, reason: null } }),
+    );
+    vi.mocked(messageHubApi.reply).mockRejectedValue(httpError(422, { code: 'channel_rule_violation' }));
+    renderThread();
+    await screen.findByTestId('reply-composer');
+
+    typeMessage('Chiamami al 333 1234567');
+    fireEvent.click(screen.getByTestId('reply-send'));
+    await screen.findByTestId('pending-error');
+    // The box stays open while a message is refused: the host goes on with another one.
+    typeMessage('Ci vediamo alle 15.');
+    fireEvent.click(screen.getByTestId('pending-edit'));
+
+    // Nothing the host typed is lost: the refused words come first, the new ones stay under them.
+    expect(textbox()).toHaveValue('Chiamami al 333 1234567\n\nCi vediamo alle 15.');
+    expect(screen.queryByTestId('pending-error')).not.toBeInTheDocument();
+  });
+
   it('ThreadPage_ReplyToAConversationOfAChannel_IsSentOnceWithOneKeyAndShownAsSent', async () => {
     renderThread();
     await screen.findByTestId('reply-composer');

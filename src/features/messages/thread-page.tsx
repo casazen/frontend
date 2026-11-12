@@ -175,7 +175,9 @@ function ThreadView({ threadKey }: { threadKey: string }) {
     checking: thread.isFetching,
     onRetryPending: retry,
     onEditPending: (item) => {
-      setDraft(item.text);
+      // The box stays open while a message is refused, so the host may have typed another one: that is not thrown away, the refused
+      // words go in front of it.
+      setDraft(draft.trim() ? `${item.text}\n\n${draft}` : item.text);
       discard(item.key);
     },
   };
