@@ -27,6 +27,7 @@ const EXISTING = [
   '/app/short-rent/fiscal/wizard',
   '/app/short-rent/fiscal/issuer',
   '/app/short-rent/marketplace',
+  '/app/short-rent/messages',
 ];
 
 const permissions =
@@ -44,8 +45,8 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
   });
 
   it('registry_EveryPathItNames_IsEitherInTheManifestOrOnTheListOfThePagesOtherEpicsStillRegister', () => {
-    // The ones that are not in the manifest yet are the paths the lead aligns with the tasks of E03 and E05; nothing else may be missing.
-    const stillToRegister = new Set(['/app/short-rent/compliance/sender', '/app/short-rent/messages']);
+    // The one that is not in the manifest yet is the path the lead aligns with the task of E03 (the sender wizard); nothing else may be missing.
+    const stillToRegister = new Set(['/app/short-rent/compliance/sender']);
     const missing = allLaunchCandidates()
       .map((candidate) => candidate.path)
       .filter((path) => !getManifestEntry(path) && !stillToRegister.has(path));
@@ -66,6 +67,9 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
     expect(resolveLaunchTarget('identification')?.to).toBe('/app/short-rent/compliance/identification');
     expect(resolveLaunchTarget('fiscal')?.to).toBe('/app/short-rent/fiscal/wizard');
     expect(resolveLaunchTarget('marketplace')?.to).toBe('/app/short-rent/marketplace');
+    // The inbox of E05 is registered now: the target resolves to it by itself.
+    expect(resolveLaunchTarget('messages')?.to).toBe('/app/short-rent/messages');
+    expect(resolveLaunchTarget('summary')?.to).toBe('/app/short-rent/onboarding/summary');
   });
 
   it('resolveLaunchTarget_APropertyIsNamed_OpensThePageOfThatProperty', () => {

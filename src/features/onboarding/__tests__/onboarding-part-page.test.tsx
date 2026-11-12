@@ -133,19 +133,23 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     await waitFor(() => expect(screen.getByTestId(`part-property-${PROPERTY}-police`)).toHaveAttribute('href', `/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY}&assist=1`));
   });
 
-  it('OnboardingPartPage_PageThatDoesNotExistYet_SaysNotAvailableYetWithNoLink', async () => {
+  it('OnboardingPartPage_NoPageThePersonCanOpen_SaysNotAvailableYetWithNoLink', async () => {
+    // The page that does the part is not one this person may open (or is not registered yet): the part says so, and offers no dead link.
+    workspace.hasPermission = () => false;
+    renderPage('/app/short-rent/onboarding/parts/compliance');
+
+    const unavailable = await screen.findByTestId('part-launch-unavailable');
+    expect(unavailable).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
+    expect(screen.queryByTestId('part-launch-primary')).not.toBeInTheDocument();
+    expect(screen.getByTestId('part-launch-back')).toBeInTheDocument();
+  });
+
+  it('OnboardingPartPage_MessagesPart_OpensTheInboxNowThatItIsRegistered', async () => {
     vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ messagesAi: { state: 'open', reason: null, launchTarget: 'messages' } }));
     vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
     renderPage('/app/short-rent/onboarding/parts/messagesAi');
 
-    // The inbox of E05 is not registered in the manifest: the part says why, and offers no dead link.
-    await waitFor(() => expect(screen.queryByTestId('part-launch-primary') ?? screen.queryByTestId('part-launch-unavailable')).not.toBeNull());
-    if (screen.queryByTestId('part-launch-primary')) {
-      expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/messages');
-    } else {
-      expect(screen.getByTestId('part-launch-unavailable')).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
-    }
-    expect(screen.getByTestId('part-launch-back')).toBeInTheDocument();
+    expect(await screen.findByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/messages');
   });
 
   it('OnboardingPartPage_FirstPart_AsksWhereTheListingsAreAndKeepsTheAnswerInTheServerDraftBeforeOpeningTheConnectRoute', async () => {

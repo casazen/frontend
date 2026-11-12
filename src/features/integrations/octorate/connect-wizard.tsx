@@ -116,9 +116,18 @@ function requestedScenario(params: URLSearchParams): WizardScenario | null {
   return isWizardScenario(value) ? value : null;
 }
 
-/** The first step after the question, for an answer that came with the address. */
+/**
+ * The first step after the question, for an answer that came with the address. «New» is the exception: it starts on the question, where an answer that
+ * already led somewhere is warned about and an import that started refuses it, so the address is never a way round that guard.
+ */
 function stepAfterQuestion(scenario: WizardScenario): string {
+  if (scenario === 'newInventory') return SCENARIO_STEP_ID;
   return scenario === 'mixed' ? MIXED_STEP_ID : WHY_STEP_ID;
+}
+
+/** The answers that include the import of the listings that exist on OTAs: the road `onOtas`, or a mixed portfolio with a group in that situation. */
+function includesOtas(values: Pick<ConnectWizardValues, 'scenario' | 'groups'>): boolean {
+  return values.scenario === 'onOtas' || (values.scenario === 'mixed' && scenariosOfGroups(readGroups(values.groups)).has('onOtas'));
 }
 
 /**
@@ -199,7 +208,7 @@ function ConnectWizard() {
       setOutcomes(all);
       const failed = done.filter((outcome) => outcome.kind === 'failed').length;
       if (failed > 0) throw new MappingIncompleteError(failed);
-      if (values.batchId) {
+      if (values.batchId && includesOtas(values)) {
         await continueImport.mutateAsync({ batchId: values.batchId, leaveForLater: plan.later.map((listing) => listing.octorateAccommodationId) });
       }
       return { outcomes: all };
@@ -399,7 +408,7 @@ function ConnectWizard() {
         <ConnectDone
           outcomes={result?.outcomes ?? null}
           fresh={result !== undefined}
-          batchId={values.batchId ?? null}
+          batchId={includesOtas(values) ? (values.batchId ?? null) : null}
           hasNew={values.scenario === 'mixed' && scenariosOfGroups(readGroups(values.groups)).has('newInventory')}
         />
       )}

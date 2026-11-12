@@ -390,6 +390,15 @@ describe('where each answer goes', () => {
     expect(screen.queryByTestId('listing-wizard')).not.toBeInTheDocument();
   });
 
+  it('OctorateConnectWizard_NewAskedForInTheAddress_StartsOnTheQuestionSoTheGuardOfTheAnswerRuns', async () => {
+    // The address is never a way round the rule that an answer that led somewhere is warned about and refused once an import started.
+    renderWizard(`${OCTORATE_CONNECT_PATH}?scenario=newInventory`);
+
+    await onStep('scenario');
+    expect(screen.queryByTestId('listing-wizard')).not.toBeInTheDocument();
+    expect(screen.getByTestId('octorate-scenario-newInventory')).toBeChecked();
+  });
+
   it('OctorateConnectWizard_ADraftWithTheAnswerOnTheOtas_ResumesTheSameRoadAfterAReload', async () => {
     writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-channels', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
     vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Waiting' })]));

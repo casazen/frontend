@@ -79,6 +79,38 @@ describe('route manifest: the plan «Inizia con CasaZen» (E10/F03/US01/T02)', (
   });
 });
 
+describe('route manifest: the pages of the parts, the panel steps and the summary (E10/F03/US02)', () => {
+  const PAGES = [
+    { path: '/app/short-rent/onboarding/parts/:partKey', permissions: ['property.read'] },
+    { path: '/app/short-rent/onboarding/summary', permissions: ['property.read'] },
+    { path: '/app/short-rent/onboarding/panel/:kind', permissions: ['property.write'] },
+    { path: '/app/short-rent/onboarding/panel', permissions: ['property.write'] },
+  ] as const;
+
+  it.each(PAGES)('RouteManifest_$path_IsOnItsRouteOfShortRentBehindTheFlagAndInNoMenu', ({ path, permissions }) => {
+    const page = ROUTE_MANIFEST.find((candidate) => candidate.path === path);
+
+    expect(page, path).toBeDefined();
+    expect(page?.context).toBe('short-rent');
+    expect(page?.featureFlag).toBe('octorateOnboarding');
+    expect(page?.requiredPermissions).toEqual(permissions);
+    expect(page?.navPlacement).toBeUndefined();
+    expect(page?.navParent).toBeUndefined();
+    expect(page && isEntryFeatureEnabled(page, DEFAULT_FEATURE_FLAGS)).toBe(false);
+    expect(page && isEntryFeatureEnabled(page, flagOn)).toBe(true);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS, flagOn]) {
+      expect(getVisibleNavEntries('short-rent', allowAll, features).map((candidate) => candidate.path)).not.toContain(path);
+    }
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it.each(PAGES)('RouteManifest_$path_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async ({ path }) => {
+    const page = await ROUTE_MANIFEST.find((candidate) => candidate.path === path)?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
 describe('feature flag octorateOnboarding (mirror of the backend Features:OctorateOnboarding)', () => {
   it('FeatureFlags_OctorateOnboarding_IsOffByDefaultAndWhileTheFlagsAreNotLoaded', () => {
     expect(DEFAULT_FEATURE_FLAGS.octorateOnboarding).toBe(false);

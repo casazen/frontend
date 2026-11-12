@@ -54,11 +54,6 @@ const SEQUENCE_INDEX: Readonly<Partial<Record<ExistingImportStatus, number>>> = 
   MarkingConnected: 4,
 };
 
-/** True when the channel has stopped or ended and nothing runs on it: completed, failed or waiting for someone. */
-export function isChannelSettled(channel: Pick<ExistingInventoryChannel, 'status'>): boolean {
-  return !WORKING.has(channel.status);
-}
-
 /** True for a channel that stopped with a code: the host retries it or asks for help, and the other channels are not affected. */
 export function isChannelStopped(channel: Pick<ExistingInventoryChannel, 'status'>): boolean {
   return channel.status === 'Failed' || channel.status === 'NeedsAttention';

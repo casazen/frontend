@@ -37,7 +37,7 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 function usePanelStepCallback() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [callback] = useState(() => readPanelStepCallback(searchParams));
-  const { mutate: complete, isPending, isError, error } = useCompletePanelStepCallback();
+  const { mutate: complete, isSuccess, isError, error } = useCompletePanelStepCallback();
   const handled = useRef(false);
 
   useEffect(() => {
@@ -47,7 +47,8 @@ function usePanelStepCallback() {
     complete({ id: callback.stepId, state: callback.state });
   }, [callback, complete, setSearchParams]);
 
-  return { returned: callback !== null, pending: callback !== null && !isError && isPending, error: isError ? error : null };
+  // Pending from the first render of a visit that came back from the panel (before the call leaves, while it is on its way): the step is shown once it ended.
+  return { returned: callback !== null, pending: callback !== null && !isError && !isSuccess, error: isError ? error : null };
 }
 
 interface PanelPageProps {
