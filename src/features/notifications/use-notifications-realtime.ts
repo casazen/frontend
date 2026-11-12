@@ -6,6 +6,7 @@ import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from 
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
+import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import type { PendingAlert } from '@/types/alert';
 import {
@@ -30,9 +31,18 @@ const GUESTS_QUERY = 'guests';
 /**
  * What a completed check-in changes on screen, apart from the bell: the booking and its page, the link of the online check-in (the
  * step "Cosa succede ora" reads it), the guests of the stay and Alloggiati Web, the cockpit and the counter of the menu, the Home,
- * and the guests of the organisation. A page open in front of the host shows it without a reload.
+ * the guests of the organisation and the invoice data of the booking (the guest's «yes» to «Ti serve la fattura?» and what the guest wrote,
+ * shown in «Dati di fatturazione» of the tab Pagamento). A page open in front of the host shows it without a reload.
  */
-const STALE_ON_CHECK_IN: readonly string[] = [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, GUESTS_QUERY];
+const STALE_ON_CHECK_IN: readonly string[] = [
+  BOOKINGS_KEY,
+  CHECKIN_SESSION_KEY,
+  ALLOGGIATI_KEY,
+  COMPLIANCE_KEY,
+  DASHBOARD_KEY,
+  GUESTS_QUERY,
+  INVOICE_DATA_KEY,
+];
 
 function refreshCheckInData(queryClient: QueryClient): void {
   STALE_ON_CHECK_IN.forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));

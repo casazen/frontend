@@ -1349,6 +1349,7 @@
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
       "octorateNotFound": "The channel manager cannot find this listing.",
       "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
+      "octoratePartnerFailed": "The channel did not accept the request (invalid access or channel not reachable): check the access details and try again later.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
       "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
       "octorateRequestRejected": "The channel manager refused the request.",
@@ -1443,6 +1444,23 @@
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
+      "marketplaceActivationNotFound": "We cannot find this activation any more. Start again from the Marketplace.",
+      "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
+      "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
+      "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
+      "marketplaceDeclaredDateInvalid": "The day of the activation is missing or after today: choose today or a day in the past.",
+      "marketplaceEntryNotFound": "This card is not available to you.",
+      "marketplaceFunctionAlreadyActive": "Your license already shows this function as active: there is no need to ask for it.",
+      "marketplaceFunctionUnknown": "This function is not one of the license.",
+      "marketplaceMappingInvalid": "One of the chosen rooms is not valid. Go back and choose again.",
+      "marketplaceMappingRequired": "Link at least one room of the channel.",
+      "marketplaceOctorateNotConnected": "Your channel manager is not connected to CasaZen. Connect it and try again.",
+      "marketplacePanelAccessPending": "First give the consent on the panel of your channel manager.",
+      "marketplacePartnerNeedsWholeOrg": "This activation concerns the whole organization: only someone who sees all the properties can record it.",
+      "marketplacePortalNotCreatable": "This channel cannot be connected from CasaZen.",
+      "marketplacePortalUnknown": "This channel is not available to you.",
+      "marketplacePropertyNotFound": "We cannot find the property, or you have no access to it.",
+      "marketplacePropertyNotLinked": "The property is not linked to your channel manager yet.",
       "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
@@ -1644,6 +1662,9 @@
       "rentTrackFromInvalid": "The day to track the rents from cannot be after the end of the lease.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
       "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
+      "connectionDisabled": "The connection is switched off on the channel manager: switch it on again from its panel, then come back here.",
+      "connectionMissing": "The connection is no longer on the channel manager (it may have been removed): start the activation of the channel again.",
+      "connectionNotEnabled": "The channel manager does not show the connection as working yet: check the access to the channel and try again.",
       "consentsIncomplete": "To come in you have to accept all the required documents.",
       "invitationDailyLimitReached": "You have already sent many invitations in the last 24 hours. Try again tomorrow.",
       "invitationEmailMismatch": "This invitation is for another address: sign in with the one it was sent to.",
@@ -3411,6 +3432,89 @@
       "HeadOfFamily": "Head of family",
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
+    },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "City",
+          "civic": "Number",
+          "legend": "Address",
+          "postalCode": "Postal code",
+          "province": "Province",
+          "street": "Street"
+        },
+        "country": {
+          "label": "Country of the address",
+          "why": "If the address is not in Italy, choose the country: then the fiscal code and the VAT number are not needed."
+        },
+        "errors": {
+          "countryInvalid": "Choose a country from the list.",
+          "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+          "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+          "kindInvalid": "Choose who the invoice is for.",
+          "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+          "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+          "provinceInvalid": "The province is written with 2 letters, for example RM.",
+          "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+          "tooLong": "This text is too long.",
+          "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+          "vatNumberRequired": "Write the VAT number or the fiscal code."
+        },
+        "example": "Example:",
+        "fiscalCode": {
+          "label": "Fiscal code",
+          "why": "Why we ask: the property manager needs it to issue the invoice. For a company the VAT number is enough."
+        },
+        "kind": {
+          "Company": {
+            "description": "A company or a professional with a VAT number.",
+            "title": "A company"
+          },
+          "Guest": {
+            "description": "A private person, usually you.",
+            "title": "A person"
+          },
+          "legend": "Who should the invoice be made out to?"
+        },
+        "more": {
+          "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+          "label": "More options"
+        },
+        "name": {
+          "Company": "Company name",
+          "Guest": "Name and surname"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Why we ask: only if the invoice has to be sent to a PEC address (certified e-mail)."
+        },
+        "sdiRecipientCode": {
+          "label": "Recipient code",
+          "why": "Why we ask: it is the code a company receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+        },
+        "vatNumber": {
+          "label": "VAT number",
+          "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+        }
+      },
+      "fieldsHint": "If you write your data, the fiscal code is needed (or the VAT number for a company). If you do not have them now, leave everything empty: the property manager will ask you.",
+      "intro": "Optional: you can skip this step. If you need an invoice, tell us who to make it out to: the property manager needs it to issue the document.",
+      "no": {
+        "description": "Go on: the check-in does not change.",
+        "title": "No, thanks"
+      },
+      "onFile": {
+        "body": "The property manager already has them. If something has changed, you can send them again: they will check them.",
+        "keep": "Keep the ones we have",
+        "replace": "Send different data",
+        "title": "We already have your invoice data"
+      },
+      "question": "Do you need an invoice?",
+      "title": "Do you need an invoice?",
+      "yes": {
+        "description": "Write who to make it out to. If you do not have the data now, the property manager will ask you.",
+        "title": "Yes, I need an invoice"
+      }
     },
     "language": {
       "label": "Language",
@@ -6709,6 +6813,106 @@
     },
     "useAnother": "Use another account",
     "useSameEmail": "Sign in with the address the invitation was sent to."
+  },
+  "invoiceData": {
+    "fields": {
+      "address": {
+        "city": "City",
+        "civic": "Number",
+        "legend": "Address",
+        "postalCode": "Postal code",
+        "province": "Province",
+        "street": "Street"
+      },
+      "country": {
+        "label": "Country of the address",
+        "why": "If the address is abroad, choose the country: then the fiscal code and the VAT number are not required."
+      },
+      "errors": {
+        "countryInvalid": "Choose a country from the list.",
+        "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+        "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+        "kindInvalid": "Choose who the invoice is for.",
+        "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+        "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+        "provinceInvalid": "The province is written with 2 letters, for example RM.",
+        "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+        "tooLong": "This text is too long.",
+        "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+        "vatNumberRequired": "Write the VAT number or the fiscal code."
+      },
+      "example": "Example:",
+      "fiscalCode": {
+        "label": "Fiscal code",
+        "why": "Why we ask: it is needed to make out the invoice. For a company the VAT number is enough."
+      },
+      "kind": {
+        "Company": {
+          "description": "A company or a professional with a VAT number.",
+          "title": "A company"
+        },
+        "Guest": {
+          "description": "A private person: usually the guest.",
+          "title": "A person"
+        },
+        "legend": "Who is the invoice for?"
+      },
+      "more": {
+        "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+        "label": "More options"
+      },
+      "name": {
+        "Company": "Company name",
+        "Guest": "Name and surname"
+      },
+      "pec": {
+        "label": "PEC",
+        "why": "Why we ask: only if the recipient receives invoices on their PEC (certified e-mail)."
+      },
+      "sdiRecipientCode": {
+        "label": "Recipient code",
+        "why": "Why we ask: it is the code the recipient receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+      },
+      "vatNumber": {
+        "label": "VAT number",
+        "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+      }
+    },
+    "retry": "Try again",
+    "saved": "Invoice data saved.",
+    "section": {
+      "add": "Add the data",
+      "edit": "Check or change",
+      "empty": "No invoice data for this booking yet.",
+      "kind": {
+        "Company": "Invoice for a company.",
+        "Guest": "Invoice for a person."
+      },
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the invoice data…",
+      "missing": {
+        "fiscalCode": "The fiscal code is missing: it is needed to issue the invoice.",
+        "vatNumber": "The VAT number or the fiscal code is missing: it is needed to issue the invoice."
+      },
+      "readOnly": "Only people who manage payments can change them.",
+      "requested": "The guest asked for an invoice at check-in.",
+      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data.",
+      "title": "Invoice data"
+    },
+    "source": {
+      "CheckIn": "Data written by the guest at check-in.",
+      "Host": "Data edited by you.",
+      "Octorate": "Data that came from your channel manager."
+    },
+    "substep": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "intro": "Check the data and correct what is wrong: the invoice will be made out as you write it here.",
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the data…",
+      "saveFailed": "We could not save the data. Try again.",
+      "title": "Who to invoice"
+    }
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -10647,6 +10851,109 @@
       "count_other": "{{count}} suppliers",
       "none": "No suppliers yet"
     },
+    "partnerFlow": {
+      "backToMarketplace": "Back to the Marketplace",
+      "description": "We prepare what you need, take you to the partner's site and bring you back here.",
+      "errors": {
+        "dayFuture": "The day cannot be after today.",
+        "dayInvalid": "The day is not valid.",
+        "dayMissing": "Choose the day you did the activation.",
+        "declareFailed": "We could not record the activation. Try again in a moment.",
+        "siteAddress": "The address of the partner's site cannot be opened safely. Try again later."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "handoff": {
+        "go": "Go to the site of {{name}}",
+        "nothingSent": "CasaZen sends nothing to {{name}}: you copy the data and type it on its site yourself.",
+        "sameTab": "The site opens in this tab. To come back here use the “Back” button of your browser, or open CasaZen again: you pick up where you were.",
+        "steps": {
+          "activate": "Do the activation there, following the list of the previous step.",
+          "comeBack": "Then come back here and tell us you did it: we ask you for the day.",
+          "go": "Go to the site of {{name}}, in this tab."
+        }
+      },
+      "notFound": {
+        "text": "This address does not lead to a partner of the Marketplace.",
+        "title": "Partner not found"
+      },
+      "prepare": {
+        "checklistTitle": "What to choose and authorise on the site of {{name}}",
+        "copied": "Copied: {{field}}",
+        "copy": "Copy",
+        "copyField": "Copy {{field}}",
+        "copyFailed": "We could not copy: select it and copy it by hand.",
+        "dataHint": "{{name}} may ask you for this data of your property: copy it where it is needed.",
+        "dataTitle": "The data of your property",
+        "fields": {
+          "address": "Address",
+          "bathrooms": "Bathrooms",
+          "bedrooms": "Bedrooms",
+          "cinCode": "CIN",
+          "city": "City",
+          "maxGuests": "Maximum guests",
+          "name": "Name",
+          "postalCode": "Postal code"
+        },
+        "loading": "Preparing what you need…",
+        "noChecklist": "{{name}} has not said what to choose: you will find it on its site.",
+        "noProperty": "No property was chosen for this step: {{name}} will ask you for the data on its site.",
+        "noValue": "Not available"
+      },
+      "problem": {
+        "generic": "We could not prepare what you need. Try again in a moment.",
+        "notAvailable": {
+          "text": "This partner is not available to you.",
+          "title": "Partner not available"
+        },
+        "propertyNotFound": "We cannot find the property, or you have no access to it.",
+        "retry": "Try again"
+      },
+      "result": {
+        "close": "Close",
+        "declared": "Declared by you on {{date}}",
+        "over": "The activation is recorded",
+        "overHint": "There is nothing else to do here.",
+        "overText": "The activation of {{name}} was recorded. You will find it among the active ones.",
+        "seeActive": "See the active ones",
+        "title": "{{name}} is active",
+        "verified": "Verified: the connection shows it active (activation of {{date}})",
+        "whatNext": {
+          "theirSite": "What you set up stays on the site of {{name}}: CasaZen does not change it.",
+          "turnOff": "If one day you switch it off on the site of {{name}}, tell us here and we stop showing it as active."
+        }
+      },
+      "steps": {
+        "handoff": {
+          "label": "Partner's site",
+          "purpose": "Go to the partner's site, do the activation there and come back.",
+          "title": "The activation is done on the site of {{name}}"
+        },
+        "prepare": {
+          "label": "What you need",
+          "purpose": "The data to copy and what to choose on the partner's site.",
+          "title": "What to prepare for {{name}}"
+        },
+        "welcomeBack": {
+          "label": "Welcome back",
+          "purpose": "Tell us whether you finished on the site of {{name}}.",
+          "title": "Welcome back"
+        }
+      },
+      "thisPartner": "this partner",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate a partner",
+      "welcomeBack": {
+        "dayHint": "Today, or a day in the past.",
+        "dayLabel": "When did you do it?",
+        "notYet": "Not yet: save and exit",
+        "notYetNote": "If you have not finished, choose “Not yet”: we keep where you are and you pick up whenever you like.",
+        "question": "Did you complete the activation on {{name}}?",
+        "yes": "Yes, I completed it"
+      }
+    },
     "partners": {
       "learnMore": "Learn more",
       "learnMoreAria": "Learn more about {{name}} (opens in a new tab)"
@@ -10760,6 +11067,323 @@
         "description": "The portals where you sell your listings, and the calendars you keep in line.",
         "title": "Sales channels"
       }
+    },
+    "activation": {
+      "access": {
+        "credentialsNote": "We use the username and password once, to connect the channel. CasaZen does not keep them.",
+        "hotelId": {
+          "hint": "You can find it in your account on {{name}}.",
+          "label": "ID of “{{property}}” on {{name}}",
+          "required": "Enter the ID of the property on this channel."
+        },
+        "loading": "Checking what this channel needs…",
+        "nothing": "Nothing else is needed to connect {{name}}: you can go on.",
+        "panel": {
+          "allDone": "Consent has been given for all the chosen properties.",
+          "done": "Consent given for {{property}}",
+          "loading": "Checking where you are…",
+          "notGiven": "Your channel manager does not show the consent for “{{property}}” on {{name}} yet. Give it on its panel, then press “Check again”, or ask for help.",
+          "recheck": "Check again",
+          "title": "Consent to access {{name}}",
+          "unavailable": "This step is not available yet: the consent is given on the panel of your channel manager. We will let you know as soon as it is.",
+          "waiting": "The consent for {{property}} comes next"
+        },
+        "password": {
+          "label": "Password on {{name}}",
+          "required": "Enter the password."
+        },
+        "sameForAll": "The username and password are used for all the chosen properties: if some of them use a different login, activate those separately.",
+        "username": {
+          "label": "Username on {{name}}",
+          "required": "Enter the username."
+        }
+      },
+      "activate": {
+        "finish": "Activate {{name}}",
+        "intro": "Read what will happen again. If something is not right, go back with “Edit”.",
+        "summary": "We will connect {{name}} to “{{property}}”: bookings and availability will flow both ways.",
+        "when": "It can take up to 30 minutes before {{name}} shows everything. After the activation CasaZen checks the connection every 30 minutes."
+      },
+      "chooseFirst": {
+        "action": "Choose properties",
+        "text": "First choose the properties to connect."
+      },
+      "connection": {
+        "failed": {
+          "generic": "We could not create the connection. Try again in a moment.",
+          "refused": "{{name}} refused the connection"
+        },
+        "fix": "Fix the access details",
+        "fixProperty": "Change the properties",
+        "intro": "We create the connection with {{name}} in your channel manager, one property at a time.",
+        "needsAccess": "To connect this property we need the access details: we ask for them again for your safety.",
+        "planError": "We could not read the state of some properties. Try again.",
+        "retry": "Try again",
+        "state": {
+          "done": "Connected",
+          "failed": "Not connected",
+          "needsAccess": "Details missing",
+          "queued": "Waiting",
+          "running": "Connecting…",
+          "unconfirmed": "Not confirmed yet"
+        },
+        "unconfirmed": "Your channel manager does not show the connection yet. Try again in a moment.",
+        "working": "Creating the connection"
+      },
+      "description": "We guide you step by step. You can leave whenever you like with “Save and exit” and pick up where you left off.",
+      "errors": {
+        "accessIncomplete": "Some access details are missing: fill them in to continue.",
+        "connectionNotReady": "The connection is not ready yet: look at the list above.",
+        "mappingNone": "Link at least one room of the channel to continue.",
+        "mappingSave": "We could not save the rooms. Try again in a moment.",
+        "mappingUndecided": "For every room choose the matching one or “Do not link this room”.",
+        "noProperty": "Choose at least one property.",
+        "propertyNotLinked": "One of the chosen properties is not linked to your channel manager yet: take it out of your choice.",
+        "roomsNotIn": "The rooms of the channel have not arrived yet: we keep checking."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "import": {
+        "allIn": "The rooms of the channel are in: on to the matching.",
+        "failed": "We could not start the import.",
+        "fixAccess": "Fix the access details",
+        "fixConnection": "Back to the connection",
+        "fixProperty": "Change the properties",
+        "intro": "Your channel manager imports the rooms, the reservations and the calendar of {{name}}. A few minutes are usually enough, sometimes more.",
+        "items": {
+          "calendar": "Calendar",
+          "reservations": "Reservations",
+          "rooms": "Rooms"
+        },
+        "leave": "You can leave with “Save and exit”: the import goes on by itself in your channel manager.",
+        "noConnection": "This property has no connection yet: go back to the “Connection” step.",
+        "readError": "We could not read the rooms of the channel.",
+        "reading": "Reading the state of the property…",
+        "retry": "Try again",
+        "state": {
+          "done": "arrived",
+          "queued": "not started",
+          "requested": "request sent",
+          "starting": "starting…",
+          "waiting": "waiting for your channel manager"
+        },
+        "working": "Import in progress"
+      },
+      "mapping": {
+        "alreadyLinked": "Already linked in your channel manager: you can change it here, not unlink it.",
+        "choose": "Choose the room",
+        "fixConnection": "Back to the connection",
+        "leftOut_one": "{{count}} room cannot be managed by CasaZen and is left out.",
+        "leftOut_other": "{{count}} rooms cannot be managed by CasaZen and are left out.",
+        "loading": "Reading the rooms of the channel…",
+        "next": "Save and continue",
+        "noConnection": "This property has no connection yet.",
+        "noRooms": "Your channel manager has not brought the rooms of the channel yet: we keep checking.",
+        "noneMapped": "Link at least one room of the channel.",
+        "proposed": "Suggested by CasaZen: you can change it.",
+        "readError": "We could not read the rooms of the channel.",
+        "retry": "Check again",
+        "showMore_one": "Show one more room",
+        "showMore_other": "Show {{count}} more rooms",
+        "skip": "Do not link this room",
+        "undecided": "Choose a room or “Do not link this room”."
+      },
+      "notFound": {
+        "back": "Back to the Marketplace",
+        "text": "This address does not lead to a channel or a tool of the Marketplace.",
+        "title": "Integration not found"
+      },
+      "property": {
+        "legend": "Properties to connect",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: add one to connect {{name}}.",
+        "notConnected": {
+          "link": "Connect your channel manager",
+          "text": "To activate {{name}} your channel manager has to be connected to CasaZen.",
+          "title": "Connect your channel manager first"
+        },
+        "notCreatable": "{{name}} cannot be connected from CasaZen right now.",
+        "notLinked": {
+          "item": "isn't linked to your channel manager yet.",
+          "link": "Link your properties",
+          "title": "Not linked yet"
+        },
+        "planError": "We could not read what {{name}} needs. Try again in a moment.",
+        "portalUnknown": "This channel is not available to you.",
+        "retry": "Try again",
+        "selected_one": "{{count}} property chosen",
+        "selected_other": "{{count}} properties chosen",
+        "unread": "We could not read the status of: {{names}}. Try again to see them in the list."
+      },
+      "result": {
+        "close": "Close",
+        "counts": "{{name}}: {{active}} active, {{toFix}} to fix",
+        "fix": "Fix",
+        "over": "The activation of {{name}} is over. You can see the state of every integration among the active ones.",
+        "reason": "We could not activate it. Try again.",
+        "seeActive": "Check it among the active ones",
+        "title": {
+          "allActive": "Activation complete",
+          "allToFix": "We could not activate",
+          "over": "The activation is over",
+          "some": "Activation almost complete"
+        },
+        "whatNext": {
+          "checks": "CasaZen checks the connection every 30 minutes.",
+          "todo": "If something is wrong, we tell you in “To do”."
+        }
+      },
+      "steps": {
+        "access": {
+          "label": "Access",
+          "purpose": "We only ask for what this channel needs.",
+          "title": "What it takes to connect {{name}}"
+        },
+        "activate": {
+          "label": "Activation",
+          "purpose": "Read what will happen again, then activate.",
+          "title": "Check and activate"
+        },
+        "connection": {
+          "label": "Connection",
+          "purpose": "CasaZen creates the connection in your channel manager. A few seconds are usually enough.",
+          "title": "Connecting {{name}}"
+        },
+        "import": {
+          "label": "Import",
+          "purpose": "Your channel manager brings the rooms, the reservations and the calendar of the channel here.",
+          "title": "Bringing the data of the channel here"
+        },
+        "mapping": {
+          "label": "Rooms",
+          "purpose": "For each room of the channel choose the matching room.",
+          "title": "Match the rooms"
+        },
+        "property": {
+          "label": "Properties",
+          "purpose": "Choose the properties to connect to {{name}}: we activate them one at a time.",
+          "title": "Which properties do you want to connect?"
+        }
+      },
+      "thisChannel": "this channel",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate an integration"
+    },
+    "licensed": {
+      "ask": {
+        "after": "When you have made the request, press “I made the request”: the function stays “Requested” until it shows up in your license.",
+        "alreadyOn": "Your license already shows this function as active: there is no need to ask for it.",
+        "alreadyRequested": "You have already recorded this request. You can read the text again or go on.",
+        "copied": "Text copied",
+        "copy": "Copy the text",
+        "copyFailed": "We could not copy the text: select it and copy it by hand.",
+        "explain": "CasaZen cannot switch this function on: it is part of your channel manager's license and you ask for it. We prepare the text for you.",
+        "finish": "I made the request",
+        "loading": "Preparing the text of the request…",
+        "textLabel": "Text of the request to the channel manager",
+        "toFix": "This function is no longer in your license: you can ask for it again with the same text.",
+        "unknownFunction": "This function is not one of the license."
+      },
+      "backToMarketplace": "Back to the Marketplace",
+      "chooseFirst": {
+        "action": "Choose the property",
+        "text": "First choose the property to ask the function for."
+      },
+      "description": "We explain the function and prepare the request for your channel manager.",
+      "errors": {
+        "noProperty": "Choose a property.",
+        "requestFailed": "We could not record the request. Try again in a moment."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "function": {
+        "alreadyActive": "Your license already shows this function as active for this property.",
+        "audience": "Who it is for",
+        "cost": "What it costs",
+        "costUnknown": "Not specified",
+        "license": "Your license",
+        "loading": "Loading the card…",
+        "loadingLicense": "Reading your license…",
+        "noRoomLicense": "Without a license per room we do not publish prices or availability.",
+        "notRead": "not read yet",
+        "plan": "Plan",
+        "readAt": "Read on {{time}}",
+        "rooms": "Rooms included",
+        "whatItDoes": "What it does"
+      },
+      "notFound": {
+        "text": "This address does not lead to a function of your channel manager.",
+        "title": "Function not found"
+      },
+      "problem": {
+        "generic": "We could not read your license. Try again in a moment.",
+        "notConnected": "Your channel manager is not connected to CasaZen yet.",
+        "notConnectedLink": "Connect the channel manager",
+        "notLinked": "This property is not linked to your channel manager yet: the license belongs to each property.",
+        "notLinkedLink": "Link your properties",
+        "retry": "Try again"
+      },
+      "property": {
+        "legend": "Property to ask the function for",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: the license belongs to each property."
+      },
+      "requested": {
+        "checkFailed": "We could not read the license right now. Try again in a moment.",
+        "checkNow": "Check now",
+        "done": "Done",
+        "later": "Later",
+        "lead": "We recorded your request. The function stays “Requested” until it shows up in your license.",
+        "nextStep": "Next step: check the request among the active ones.",
+        "notYet": "The module does not show up in the license yet: we keep checking.",
+        "nowActive": "The module shows up in the license: the function is active.",
+        "over": "The request for {{name}} is over. You can find the status of the function among the active ones.",
+        "seeActive": "Go to the active ones",
+        "statusLabel": "Status",
+        "title": {
+          "active": "The function is active",
+          "none": "No request recorded",
+          "over": "The request is over",
+          "requested": "Request recorded",
+          "toFix": "The function is no longer in the license"
+        },
+        "whatNext": {
+          "checkNow": "If you want to know right away, press “Check now”.",
+          "daily": "We check your license every day and switch the card to “Active” when the module shows up."
+        }
+      },
+      "status": {
+        "active": "Active",
+        "notActive": "Not active",
+        "requested": "Requested",
+        "toFix": "To fix"
+      },
+      "steps": {
+        "ask": {
+          "label": "Request",
+          "purpose": "We prepare the text to send to your channel manager.",
+          "title": "Ask for “{{name}}”"
+        },
+        "function": {
+          "label": "Function",
+          "purpose": "What it does, who it is for and what your license says.",
+          "title": "What “{{name}}” is"
+        },
+        "property": {
+          "label": "Property",
+          "purpose": "A function is part of the license of a property.",
+          "title": "For which property?"
+        }
+      },
+      "thisFunction": "this function",
+      "title": "Request “{{name}}”",
+      "titleGeneric": "Request a function"
     },
     "status": {
       "Active": "Active",
@@ -13900,6 +14524,7 @@
         "steps": [
           "Open Payments or the booking to check amounts and status. Distinguish pending from successful payments and verify any refund outcome.",
           "Available methods depend on your organisation and booking site configuration. A booking or payment request alone does not prove payment was received.",
+          "In the Payment tab of the booking you find the Invoice data: who the invoice is made out to and where the data comes from (your channel manager, the guest at check-in, edited by you). Check or correct the data with the button of the section; people who do not manage payments can read it but not change it. The guest can ask for an invoice at check-in and write their data: if they leave it empty, add it yourself.",
           "For supported direct bookings, open the conversation from the booking to message the guest. It remains writable through the seventh day after check-out, then becomes read-only.",
           "The conversation is not a real-time chat and does not send automatic replies. Do not send card information, bank account numbers or identity documents in message text."
         ]
