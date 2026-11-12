@@ -78,7 +78,7 @@ jobs:
   verify:
     name: Lint, typecheck, unit tests, build
     needs: [static, unit]
-    if: ${{ always() }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

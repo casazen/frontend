@@ -113,28 +113,19 @@ jobs:
           curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg >/dev/null
           echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
           sudo apt-get update && sudo apt-get install -y stripe
-      # The OCR tools and the frontend install do not depend on the backend build: they run in the background while the
-      # backend compiles (about a minute saved), and the step after the build waits for both.
-      - name: Install local document OCR tools and the frontend (background)
+      - name: Install local document OCR tools
         # The contract of the round (CF-DOCS-REAL) is delivered as a scan, like the real one: the backend reads it with Tesseract (Italian and
         # English) after turning its pages into pictures with poppler, and runs them under prlimit (util-linux). The same step as the backend CI.
-        working-directory: frontend
-        run: |
-          nohup bash -c 'set -e; sudo apt-get update -qq; sudo apt-get install -y -qq --no-install-recommends tesseract-ocr tesseract-ocr-ita tesseract-ocr-eng poppler-utils; echo ok > "$RUNNER_TEMP/ocr-install.ok"' > "$RUNNER_TEMP/ocr-install.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/ocr-install.pid"
-          # No --with-deps: the ubuntu image already has every library Chromium needs; --with-deps only added
-          # fonts from the apt mirror, which at times took 10 minutes to download (~45 kB/s).
-          nohup bash -c 'set -e; npm ci; npx playwright install chromium; echo ok > "$RUNNER_TEMP/frontend-install.ok"' > "$RUNNER_TEMP/frontend-install.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/frontend-install.pid"
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ita tesseract-ocr-eng poppler-utils
       - name: Build backend
         run: dotnet build backend/Casazen.Web -c Release
-      - name: Wait for the OCR tools and the frontend install
+      - name: Install frontend and Chromium
+        working-directory: frontend
         run: |
-          for name in ocr-install frontend-install; do
-            while kill -0 "$(cat "$RUNNER_TEMP/$name.pid")" 2>/dev/null; do sleep 1; done
-            cat "$RUNNER_TEMP/$name.log"
-            [ -f "$RUNNER_TEMP/$name.ok" ] || { echo "::error::$name failed (log above)"; exit 1; }
-          done
+          npm ci
+          # No --with-deps: the ubuntu-latest image already has every library Chromium needs; --with-deps only added
+          # fonts from the apt mirror, which at times took 10 minutes to download (~45 kB/s).
+          npx playwright install chromium
       - name: Golden Journey L3 (stack up, suite, stack down)
         working-directory: frontend
         run: bash e2e/stack/ci-run.sh
