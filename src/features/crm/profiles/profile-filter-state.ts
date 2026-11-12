@@ -139,7 +139,8 @@ function activeFilterCount(filters: ProfileFilterState): number {
 
 /**
  * The state of the list of profiles, which lives in the address (`useSearchParams`) so that a view can be reloaded, shared and left with
- * the Back button. Every change goes back to the first page, and each one is a step of the history.
+ * the Back button. Every change goes back to the first page, and each one is a step of the history, except a text being typed, which
+ * replaces the step it is in (`replace`): Back leaves the search as it was, not one letter at a time.
  */
 export function useProfileFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -148,7 +149,8 @@ export function useProfileFilters() {
   const activeCount = activeFilterCount(filters);
 
   const change = useCallback(
-    (patch: ProfileFilterPatch) => setSearchParams((current) => applyProfileFilters(current, patch)),
+    (patch: ProfileFilterPatch, options?: { replace?: boolean }) =>
+      setSearchParams((current) => applyProfileFilters(current, patch), { replace: options?.replace }),
     [setSearchParams],
   );
   const clear = useCallback(() => setSearchParams((current) => withoutFilters(current)), [setSearchParams]);

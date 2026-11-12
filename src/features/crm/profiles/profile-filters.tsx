@@ -17,8 +17,9 @@ const TEXT_DEBOUNCE_MS = 350;
 const MIN_STAYS_CHOICES = [1, 2, 3, 5, 10];
 
 /**
- * A text that is typed: it shows at once and goes to the address a moment after the last key, on Enter or when the field loses the focus.
- * It follows the address when that changes by itself (Back, "Clear filters") and never overwrites what is being typed.
+ * A text that is typed: it shows at once and goes to the address, trimmed, a moment after the last key, on Enter or when the field loses
+ * the focus. It follows the address when that changes by itself (Back, "Clear filters") and never overwrites what is being typed: the
+ * space after "mario" stays in the box while the host goes on with "rossi", though the address has "mario".
  */
 function useCommittedText(value: string, onCommit: (text: string) => void) {
   const [draft, setDraft] = useState(value);
@@ -39,18 +40,20 @@ function useCommittedText(value: string, onCommit: (text: string) => void) {
     commit.current = onCommit;
   });
   useEffect(() => {
-    if (draft === sent) return undefined;
+    const text = draft.trim();
+    if (text === sent) return undefined;
     const timer = setTimeout(() => {
-      setSent(draft);
-      commit.current(draft);
+      setSent(text);
+      commit.current(text);
     }, TEXT_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [draft, sent]);
 
   const flush = () => {
-    if (draft === sent) return;
-    setSent(draft);
-    onCommit(draft);
+    const text = draft.trim();
+    if (text === sent) return;
+    setSent(text);
+    onCommit(text);
   };
   return { draft, setDraft, flush };
 }
@@ -117,10 +120,13 @@ function SearchBox({ value, onCommit }: { value: string; onCommit: (text: string
   );
 }
 
+/** What the filters tell the page: what changed, and whether it replaces the step of the history (a text being typed) or adds one. */
+type OnFilterChange = (patch: ProfileFilterPatch, options?: { replace?: boolean }) => void;
+
 interface FilterPanelProps {
   id: string;
   filters: ProfileFilterState;
-  onChange: (patch: ProfileFilterPatch) => void;
+  onChange: OnFilterChange;
 }
 
 /** The filters that are not always in sight: country, language, the channel booked on, a tag, the minimum of stays, the e-mail. */
@@ -136,7 +142,7 @@ function FilterPanel({ id, filters, onChange }: FilterPanelProps) {
         value={filters.country}
         placeholder={t('crm.filters.country.placeholder')}
         maxLength={100}
-        onCommit={(country) => onChange({ country })}
+        onCommit={(country) => onChange({ country }, { replace: true })}
       />
       <Field label={t('crm.filters.language.label')}>
         <Select value={filters.language} onChange={(event) => onChange({ language: event.target.value })}>
@@ -163,7 +169,7 @@ function FilterPanel({ id, filters, onChange }: FilterPanelProps) {
         value={filters.tag}
         placeholder={t('crm.filters.tag.placeholder')}
         maxLength={40}
-        onCommit={(tag) => onChange({ tag })}
+        onCommit={(tag) => onChange({ tag }, { replace: true })}
       />
       <Field label={t('crm.filters.minStays.label')}>
         <Select
@@ -195,7 +201,7 @@ interface ProfileFiltersProps {
   activeCount: number;
   /** The search or a filter is on. */
   hasFilters: boolean;
-  onChange: (patch: ProfileFilterPatch) => void;
+  onChange: OnFilterChange;
   onClear: () => void;
 }
 
@@ -212,7 +218,7 @@ export function ProfileFilters({ filters, activeCount, hasFilters, onChange, onC
 
   return (
     <section aria-label={t('crm.filters.region')} className="space-y-4" data-testid="crm-filters">
-      <SearchBox value={filters.search} onCommit={(search) => onChange({ search })} />
+      <SearchBox value={filters.search} onCommit={(search) => onChange({ search }, { replace: true })} />
 
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t('crm.filters.sort.label')} className="w-full sm:w-56">

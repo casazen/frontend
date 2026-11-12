@@ -142,6 +142,19 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'rossi', page: 1 }));
   });
 
+  it('GuestList_ASearchWithASpaceAfterTheFirstWord_KeepsTheSpaceInTheBoxAndSendsItTrimmed', async () => {
+    renderList();
+    await findTable();
+    const box = screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') });
+
+    fireEvent.change(box, { target: { value: 'mario ' } });
+
+    await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('?q=mario');
+    // The host is still typing "mario rossi": the space they typed is not taken away under their fingers.
+    expect(box).toHaveValue('mario ');
+  });
+
   it('GuestList_TheSearchBox_SaysWhatItFindsInTheHint', async () => {
     renderList();
     await findTable();
