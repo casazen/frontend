@@ -273,7 +273,9 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
   // The sections of the menus: an entry and, in tab order, the pages that hang from it. This is what keeps "Altro" short.
   const SECTIONS: Record<string, string[]> = {
-    // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and no page hangs from it yet.
+    // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and its pages hang from it as tabs:
+    // for now the merge proposals (E07/F01/US04/T03), the last of the tabs the epic has (the audiences, campaigns and automations come first).
+    '/app/short-rent/crm/guests': ['/app/short-rent/crm/merge'],
     // Messaggi (NF-61) is the first tab after the bookings, then the guests and the reviews.
     '/app/short-rent/bookings': ['/app/short-rent/messages', '/app/short-rent/guests', '/app/short-rent/reviews'],
     '/app/short-rent/compliance': [
@@ -926,7 +928,7 @@ describe('route-manifest nav helpers', () => {
 // E07/F06/US03/T01 (NF-95, AC-NF95-8): the CRM module is unfinished, so its entry and its pages exist only while the backend flag
 // `CrmMarketing` is on. The pages the e-mails link to are not in this table: they are public routes, never behind the flag.
 describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/T01)', () => {
-  const CRM_PATHS = ['/app/short-rent/crm/guests', '/app/short-rent/crm/guests/:id'];
+  const CRM_PATHS = ['/app/short-rent/crm/guests', '/app/short-rent/crm/guests/:id', '/app/short-rent/crm/merge'];
   const OTHER_FLAGS_ON: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
 
   it('crm entries are hidden while crmMarketing is off', () => {
@@ -952,6 +954,10 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
         expect(paths(getNavMatchEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
         expect(paths(getVisibleNavEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
         expect(paths(getNavChildren('/app/short-rent/bookings', hasPermission, features)), where).not.toContain('/app/short-rent/crm/guests');
+        // The merge proposals are a page of the CRM: no tab, no entry of "Altro" of its own, not even for who may write the guests.
+        expect(paths(getNavMatchEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/merge');
+        expect(paths(getVisibleNavEntries('short-rent', hasPermission, features)), where).not.toContain('/app/short-rent/crm/merge');
+        expect(paths(getNavChildren('/app/short-rent/crm/guests', hasPermission, features)), where).not.toContain('/app/short-rent/crm/merge');
       }
     }
     expect(getContextNav('short-rent', allowAll).more.map((entry) => entry.navKey)).not.toContain('nav.crm');
@@ -987,6 +993,37 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
     const entries = getNavMatchEntries('short-rent', allowAll, on);
     expect(resolveActiveNavEntry('/app/short-rent/crm/guests', entries)?.path).toBe('/app/short-rent/crm/guests');
     expect(resolveActiveNavEntry('/app/short-rent/crm/guests/c1', entries)?.path).toBe('/app/short-rent/crm/guests');
+  });
+
+  it('puts the merge proposals in a tab of the CRM entry, behind the flag and the permission to write the guests', () => {
+    const merge = entryOf('/app/short-rent/crm/merge');
+    expect(merge.navKey).toBe('nav.crmMerge');
+    expect(merge.navParent).toBe('/app/short-rent/crm/guests');
+    expect(merge.featureFlag).toBe('crmMarketing');
+    // Merging and dismissing are `guest.write` on the API (`CrmController`), and the page is for deciding: reading is not enough.
+    expect(merge.requiredPermissions).toEqual(['guest.write']);
+    // A page that hangs is in no menu of its own.
+    expect(merge.navPlacement).toBeUndefined();
+    expect(merge.navGroup).toBeUndefined();
+    expect(merge.navBottom).toBeUndefined();
+
+    const on: Partial<FeatureFlags> = { crmMarketing: true };
+    // The tabs of the CRM: the entry, then the merge proposals. The entry of "Altro" is still one.
+    expect(paths(getNavSection('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/merge']);
+    expect(paths(getNavSection('/app/short-rent/crm/merge', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/merge']);
+    expect(paths(getNavChildren('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/merge']);
+    expect(paths(getSecondaryNavEntries('short-rent', allowAll, on))).not.toContain('/app/short-rent/crm/merge');
+
+    // Who may read the guests but not write them has the list, no tab and no way to the page.
+    const reader = without('guest.write');
+    expect(paths(getNavSection('/app/short-rent/crm/guests', reader, on))).toEqual([]);
+    expect(paths(getNavChildren('/app/short-rent/crm/guests', reader, on))).toEqual([]);
+    expect(paths(getSecondaryNavEntries('short-rent', reader, on))).toContain('/app/short-rent/crm/guests');
+    expect(paths(getVisibleNavEntries('short-rent', reader, on))).not.toContain('/app/short-rent/crm/merge');
+    expect(isEntryFeatureEnabled(merge, { crmMarketing: false })).toBe(false);
+
+    // The open page highlights the CRM entry, not another one.
+    expect(resolveActiveNavEntry('/app/short-rent/crm/merge', getNavMatchEntries('short-rent', allowAll, on))?.path).toBe('/app/short-rent/crm/guests');
   });
 
 });
