@@ -201,6 +201,42 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(identification).queryByRole('button')).not.toBeInTheDocument();
     });
 
+    it('OnboardingPlan_PartPutOffThatStillWaitsForAnotherPart_NamesItAndOffersNoWayIn', async () => {
+      // The server gives «rimandato» precedence over «in attesa»: the listings were put off before the channels, which they need, were done.
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+        plan({ listings: { state: 'deferred', reason: 'channel_content_to_fix', remindAt: '2026-11-13T08:00:00Z', done: 0, total: 2 } }),
+      );
+      renderPage();
+      await rows();
+
+      const listings = row('listings');
+
+      expect(within(listings).getByTestId('onboarding-part-state')).toHaveTextContent(i18n.t('onboardingPlan.states.deferredUntil', { date: '13 novembre' }));
+      expect(within(listings).getByTestId('onboarding-part-reason')).toHaveTextContent(
+        i18n.t('onboardingPlan.reasons.required_part_not_done', { parts: i18n.t(partTitleKey('channels')) }),
+      );
+      // Not «Riprendi»: it would lead to a part that cannot be done yet, as for a part that is blocked.
+      expect(within(listings).queryByRole('link')).not.toBeInTheDocument();
+      expect(within(listings).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('OnboardingPlan_PartPutOffWhoseRequiredPartsAreDone_OffersResumeAndKeepsItsOwnReason', async () => {
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+        plan({
+          properties: { state: 'done' },
+          channels: { state: 'done' },
+          listings: { state: 'deferred', reason: 'channel_content_to_fix', remindAt: '2026-11-13T08:00:00Z', done: 0, total: 2 },
+        }),
+      );
+      renderPage();
+      await rows();
+
+      const listings = row('listings');
+
+      expect(within(listings).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.actions.resume'));
+      expect(within(listings).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.channel_content_to_fix'));
+    });
+
     it('OnboardingPlan_PartNotAvailable_ShowsWhyAndNoButton', async () => {
       renderPage();
       await rows();
