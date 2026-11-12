@@ -578,6 +578,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The hand-off to a Partner Hub partner (E09/F02/US04/T04, MKT-03, S18, Q-006): the activation happens on the partner's own site, so the wizard prepares what the
+    // partner will ask, opens the site in the same tab and records what the person declares. In no menu: the cards of the Partners group lead here. The partners never
+    // depend on the channel manager, so there is no flag; the declaration is written (`ota.write`), as the backend asks.
+    path: '/app/short-rent/marketplace/partners/:code/activate',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    component: async () => ({
+      default: (await import('@/features/marketplace/partners/partner-wizard-page')).PartnerWizardPage,
+    }),
+  },
+  {
     // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
     // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',

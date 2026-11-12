@@ -1427,12 +1427,15 @@
       "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
       "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
       "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
+      "marketplaceDeclaredDateInvalid": "The day of the activation is missing or after today: choose today or a day in the past.",
+      "marketplaceEntryNotFound": "This card is not available to you.",
       "marketplaceFunctionAlreadyActive": "Your license already shows this function as active: there is no need to ask for it.",
       "marketplaceFunctionUnknown": "This function is not one of the license.",
       "marketplaceMappingInvalid": "One of the chosen rooms is not valid. Go back and choose again.",
       "marketplaceMappingRequired": "Link at least one room of the channel.",
       "marketplaceOctorateNotConnected": "Your channel manager is not connected to CasaZen. Connect it and try again.",
       "marketplacePanelAccessPending": "First give the consent on the panel of your channel manager.",
+      "marketplacePartnerNeedsWholeOrg": "This activation concerns the whole organization: only someone who sees all the properties can record it.",
       "marketplacePortalNotCreatable": "This channel cannot be connected from CasaZen.",
       "marketplacePortalUnknown": "This channel is not available to you.",
       "marketplacePropertyNotFound": "We cannot find the property, or you have no access to it.",
@@ -10588,6 +10591,109 @@
       "count_one": "{{count}} supplier",
       "count_other": "{{count}} suppliers",
       "none": "No suppliers yet"
+    },
+    "partnerFlow": {
+      "backToMarketplace": "Back to the Marketplace",
+      "description": "We prepare what you need, take you to the partner's site and bring you back here.",
+      "errors": {
+        "dayFuture": "The day cannot be after today.",
+        "dayInvalid": "The day is not valid.",
+        "dayMissing": "Choose the day you did the activation.",
+        "declareFailed": "We could not record the activation. Try again in a moment.",
+        "siteAddress": "The address of the partner's site cannot be opened safely. Try again later."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "handoff": {
+        "go": "Go to the site of {{name}}",
+        "nothingSent": "CasaZen sends nothing to {{name}}: you copy the data and type it on its site yourself.",
+        "sameTab": "The site opens in this tab. To come back here use the “Back” button of your browser, or open CasaZen again: you pick up where you were.",
+        "steps": {
+          "activate": "Do the activation there, following the list of the previous step.",
+          "comeBack": "Then come back here and tell us you did it: we ask you for the day.",
+          "go": "Go to the site of {{name}}, in this tab."
+        }
+      },
+      "notFound": {
+        "text": "This address does not lead to a partner of the Marketplace.",
+        "title": "Partner not found"
+      },
+      "prepare": {
+        "checklistTitle": "What to choose and authorise on the site of {{name}}",
+        "copied": "Copied: {{field}}",
+        "copy": "Copy",
+        "copyField": "Copy {{field}}",
+        "copyFailed": "We could not copy: select it and copy it by hand.",
+        "dataHint": "{{name}} may ask you for this data of your property: copy it where it is needed.",
+        "dataTitle": "The data of your property",
+        "fields": {
+          "address": "Address",
+          "bathrooms": "Bathrooms",
+          "bedrooms": "Bedrooms",
+          "cinCode": "CIN",
+          "city": "City",
+          "maxGuests": "Maximum guests",
+          "name": "Name",
+          "postalCode": "Postal code"
+        },
+        "loading": "Preparing what you need…",
+        "noChecklist": "{{name}} has not said what to choose: you will find it on its site.",
+        "noProperty": "No property was chosen for this step: {{name}} will ask you for the data on its site.",
+        "noValue": "Not available"
+      },
+      "problem": {
+        "generic": "We could not prepare what you need. Try again in a moment.",
+        "notAvailable": {
+          "text": "This partner is not available to you.",
+          "title": "Partner not available"
+        },
+        "propertyNotFound": "We cannot find the property, or you have no access to it.",
+        "retry": "Try again"
+      },
+      "result": {
+        "close": "Close",
+        "declared": "Declared by you on {{date}}",
+        "over": "The activation is recorded",
+        "overHint": "There is nothing else to do here.",
+        "overText": "The activation of {{name}} was recorded. You will find it among the active ones.",
+        "seeActive": "See the active ones",
+        "title": "{{name}} is active",
+        "verified": "Verified: the connection shows it active (activation of {{date}})",
+        "whatNext": {
+          "theirSite": "What you set up stays on the site of {{name}}: CasaZen does not change it.",
+          "turnOff": "If one day you switch it off on the site of {{name}}, tell us here and we stop showing it as active."
+        }
+      },
+      "steps": {
+        "handoff": {
+          "label": "Partner's site",
+          "purpose": "Go to the partner's site, do the activation there and come back.",
+          "title": "The activation is done on the site of {{name}}"
+        },
+        "prepare": {
+          "label": "What you need",
+          "purpose": "The data to copy and what to choose on the partner's site.",
+          "title": "What to prepare for {{name}}"
+        },
+        "welcomeBack": {
+          "label": "Welcome back",
+          "purpose": "Tell us whether you finished on the site of {{name}}.",
+          "title": "Welcome back"
+        }
+      },
+      "thisPartner": "this partner",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate a partner",
+      "welcomeBack": {
+        "dayHint": "Today, or a day in the past.",
+        "dayLabel": "When did you do it?",
+        "notYet": "Not yet: save and exit",
+        "notYetNote": "If you have not finished, choose “Not yet”: we keep where you are and you pick up whenever you like.",
+        "question": "Did you complete the activation on {{name}}?",
+        "yes": "Yes, I completed it"
+      }
     },
     "partners": {
       "learnMore": "Learn more",
