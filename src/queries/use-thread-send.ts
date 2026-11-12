@@ -68,9 +68,12 @@ export function useThreadSend<T extends { messages: M[] }, M extends { id: strin
     [queryClient, send, threadKey],
   );
 
+  // `idempotencyKey` is for a caller that offers again something an earlier attempt may already have stored (a message the channel
+  // refused, from a page that is opened again later): it gives the key of that message, so that the server answers `replayed` with the
+  // stored one instead of writing it a second time. Without it every message gets a key of its own.
   const sendMessage = useCallback(
-    (text: string) => {
-      const item: PendingThreadMessage = { key: newIdempotencyKey(), text, status: 'sending' };
+    (text: string, idempotencyKey?: string) => {
+      const item: PendingThreadMessage = { key: idempotencyKey ?? newIdempotencyKey(), text, status: 'sending' };
       setPending((all) => [...all, item]);
       setRedacted(false);
       void attempt(item);

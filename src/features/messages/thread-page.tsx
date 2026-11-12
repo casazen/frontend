@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +26,7 @@ import { MessageBubble, type BubbleActions } from './components/message-bubble';
 import { ReplyComposer } from './components/reply-composer';
 import { guestProfilePath } from './lib/guest-profile';
 import { channelLabel } from './lib/channels';
-import { buildThreadItems, type HubThreadItem } from './lib/thread-items';
+import { buildThreadItems, resendKeyOf, resentMessageIds, type HubThreadItem } from './lib/thread-items';
 
 /** From `2xl` the inbox, the open conversation and the booking are three columns (about 1,500 px: three columns need it); under it the list is the page before. */
 const THREE_COLUMNS_QUERY = '(width >= 96rem)';
@@ -148,6 +148,11 @@ function ThreadView({ threadKey }: { threadKey: string }) {
   const [draft, setDraft] = useState('');
   const [resent, setResent] = useState<ReadonlySet<string>>(() => new Set());
   const data = thread.data;
+  // A refused message offered again loses its «Riprova» at once (`resent`, this page) and for good (a later message of the host with the
+  // same text: the conversation opened again lists it), and the key of the send is made from the message: a second click, from this page
+  // or from another one, never writes it twice.
+  const messages = data?.messages;
+  const alreadyResent = useMemo(() => new Set([...resent, ...resentMessageIds(messages ?? [])]), [resent, messages]);
 
   // The guest's messages are marked as read once the host has the conversation in front of it (the page visible, and the right to write:
   // marking is a write); the newest one already marked is remembered, so that a failed mark is not repeated at every render.
@@ -164,7 +169,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
   const actions: BubbleActions = {
     onResend: (message) => {
       setResent((all) => new Set(all).add(message.id));
-      send(message.text);
+      send(message.text, resendKeyOf(message.id));
     },
     onCheck: () => void thread.refetch(),
     checking: thread.isFetching,
@@ -208,7 +213,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
           thread={data}
           items={items}
           actions={actions}
-          resent={resent}
+          resent={alreadyResent}
           canWrite={canWrite}
           draft={draft}
           onDraft={setDraft}

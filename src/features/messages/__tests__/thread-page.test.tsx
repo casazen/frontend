@@ -276,6 +276,48 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     expect(messageHubApi.reply).toHaveBeenCalledTimes(1);
   });
 
+  it('ThreadPage_RefusedMessageSentAgain_UsesAKeyMadeFromThatMessageSoOpeningTheConversationAgainCannotWriteItTwice', async () => {
+    const refused = msg({ id: 'm-7', direction: 'Outbound', origin: 'Person', text: 'Dalle 15.', deliveryState: 'Error' });
+    vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ messages: [msg({ id: 'm-1' }), refused] }));
+    const first = renderThread();
+
+    fireEvent.click(await screen.findByTestId('delivery-retry'));
+    await waitFor(() => expect(messageHubApi.reply).toHaveBeenCalledTimes(1));
+    expect(messageHubApi.reply).toHaveBeenLastCalledWith(KEY, 'Dalle 15.', 'resend-m-7');
+    // On this page the refused message has no second button.
+    await waitFor(() => expect(screen.queryByTestId('delivery-retry')).not.toBeInTheDocument());
+
+    // The conversation opened again before the list carried the new message: the same message gives the same key, and the server answers
+    // «replayed» instead of writing it a second time.
+    first.unmount();
+    renderThread();
+    fireEvent.click(await screen.findByTestId('delivery-retry'));
+    await waitFor(() => expect(messageHubApi.reply).toHaveBeenCalledTimes(2));
+    expect(messageHubApi.reply).toHaveBeenLastCalledWith(KEY, 'Dalle 15.', 'resend-m-7');
+  });
+
+  it('ThreadPage_ConversationOpenedAgainAfterTheMessageWasSentAgain_HasNoRiprovaOnTheRefusedOne', async () => {
+    const hostMessage = (id: string, deliveryState: MessageHubMessage['deliveryState']) => msg({ id, direction: 'Outbound', origin: 'Person', text: 'Dalle 15.', deliveryState });
+    vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ messages: [hostMessage('m-7', 'Error'), hostMessage('m-8', 'Sent')] }));
+    renderThread();
+
+    // The refusal stays on screen as it happened, and nothing offers to send the same words a second time.
+    expect(await screen.findByTestId('delivery-error')).toHaveTextContent('Non inviato');
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+  });
+
+  it('ThreadPage_SecondAttemptRefusedToo_OnlyTheNewestMessageOffersRiprovaWithItsOwnKey', async () => {
+    const hostMessage = (id: string) => msg({ id, direction: 'Outbound', origin: 'Person', text: 'Dalle 15.', deliveryState: 'Error' });
+    vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ messages: [hostMessage('m-7'), hostMessage('m-8')] }));
+    renderThread();
+
+    expect(await screen.findAllByTestId('delivery-error')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(messageHubApi.reply).toHaveBeenCalledTimes(1));
+    expect(messageHubApi.reply).toHaveBeenCalledWith(KEY, 'Dalle 15.', 'resend-m-8');
+  });
+
   it('ThreadPage_ConversationClosedMeanwhile_SaysSoInTheSentenceOfThatAnswer', async () => {
     vi.mocked(messageHubApi.reply).mockRejectedValue(httpError(409, { code: 'thread_closed' }));
     renderThread();

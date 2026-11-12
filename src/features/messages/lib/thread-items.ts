@@ -28,6 +28,30 @@ export function senderOf(message: MessageHubMessage, guestName: string | null | 
   return message.senderName?.trim() || labels.you;
 }
 
+/**
+ * The `Idempotency-Key` of the send that offers a refused message again: it is made from the message, so the same message always gives the
+ * same key and the server writes it once however many times, from however many pages, «Riprova» is pressed (it answers `replayed`).
+ * 7 characters and the id of the message (a Guid): inside the 8 to 64 letters, digits, `-` or `_` the API takes.
+ */
+export function resendKeyOf(messageId: string): string {
+  return `resend-${messageId}`;
+}
+
+/**
+ * The refused messages that a later message of the host already carries again (the same text): their «Riprova» is gone, on this page and
+ * on the next one that opens the conversation, so that the host is not offered to send twice what the channel already has. When the
+ * second attempt was refused too, only the newest keeps the button.
+ */
+export function resentMessageIds(messages: readonly MessageHubMessage[]): Set<string> {
+  const resent = new Set<string>();
+  messages.forEach((message, index) => {
+    if (message.direction !== 'Outbound' || message.deliveryState !== 'Error') return;
+    const text = message.text.trim();
+    if (text && messages.slice(index + 1).some((later) => later.direction === 'Outbound' && later.text.trim() === text)) resent.add(message.id);
+  });
+  return resent;
+}
+
 /** The rows of a conversation: its messages oldest first, then what this page is still sending or could not send. */
 export function buildThreadItems(thread: MessageHubThreadDetail, pending: readonly PendingThreadMessage[], labels: SenderLabels): HubThreadItem[] {
   return [

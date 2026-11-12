@@ -4,7 +4,7 @@ import i18n from '@/i18n/config';
 import type { MessageHubMessage, MessageHubThreadDetail } from '@/types';
 import { guestProfilePath } from '../lib/guest-profile';
 import { canRetryReply, replyProblemMessage } from '../lib/reply-problems';
-import { buildThreadItems, senderOf } from '../lib/thread-items';
+import { buildThreadItems, resendKeyOf, resentMessageIds, senderOf } from '../lib/thread-items';
 
 const LABELS = { guest: 'Ospite', you: 'Tu', assistant: 'Assistente CasaZen' };
 
@@ -54,6 +54,51 @@ describe('who wrote a message (NF-61)', () => {
     const thread = { guestName: null, booking: { guestName: 'Luca Verdi' }, messages: [msg({ id: 'a' })] } as unknown as MessageHubThreadDetail;
 
     expect(buildThreadItems(thread, [], LABELS)[0].author).toBe('Luca Verdi');
+  });
+});
+
+describe('a refused message offered again (NF-63, AC-NF63-6)', () => {
+  const host = (overrides: Partial<MessageHubMessage> & { id: string }) => msg({ direction: 'Outbound', origin: 'Person', text: 'Dalle 15.', ...overrides });
+
+  it('resendKeyOf_SameMessage_AlwaysGivesTheSameKeyAndItIsOneTheApiTakes', () => {
+    const id = '6f1c9a52-1111-4222-8333-944455556666';
+
+    expect(resendKeyOf(id)).toBe(`resend-${id}`);
+    expect(resendKeyOf(id)).toBe(resendKeyOf(id));
+    expect(resendKeyOf(id)).not.toBe(resendKeyOf('7a2d0b63-2222-4333-8444-a55566667777'));
+    // 8 to 64 letters, digits, «-» or «_»: a Guid after the seven characters of the prefix fits.
+    expect(resendKeyOf(id)).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
+  });
+
+  it('resentMessageIds_RefusedMessageThatALaterMessageOfTheHostCarriesAgain_IsResent', () => {
+    const messages = [host({ id: 'a', deliveryState: 'Error' }), host({ id: 'b', text: '  Dalle 15.  ', deliveryState: 'Sent' })];
+
+    expect([...resentMessageIds(messages)]).toEqual(['a']);
+  });
+
+  it('resentMessageIds_SecondAttemptRefusedToo_OnlyTheNewestKeepsItsButton', () => {
+    const messages = [host({ id: 'a', deliveryState: 'Error' }), host({ id: 'b', deliveryState: 'Error' })];
+
+    expect([...resentMessageIds(messages)]).toEqual(['a']);
+  });
+
+  it('resentMessageIds_RefusedMessageNothingFollows_IsNotResent', () => {
+    const messages = [host({ id: 'a', deliveryState: 'Error' }), msg({ id: 'b', text: 'Dalle 15.' }), host({ id: 'c', text: 'Altro testo' })];
+
+    // The guest wrote the same words, and the host wrote other ones: neither is the host's message again.
+    expect(resentMessageIds(messages).size).toBe(0);
+  });
+
+  it('resentMessageIds_SameWordsBeforeTheRefusal_AreNotACopyOfIt', () => {
+    const messages = [host({ id: 'a', deliveryState: 'Sent' }), host({ id: 'b', deliveryState: 'Error' })];
+
+    expect(resentMessageIds(messages).size).toBe(0);
+  });
+
+  it('resentMessageIds_MessageThatIsNotRefused_NeverCounts', () => {
+    const messages = [host({ id: 'a', deliveryState: 'ManualVerify' }), host({ id: 'b' }), host({ id: 'c', text: '   ', deliveryState: 'Error' }), host({ id: 'd', text: '   ' })];
+
+    expect(resentMessageIds(messages).size).toBe(0);
   });
 });
 
