@@ -321,11 +321,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
-    // Approval queue (NF-06): items requiring human decision before execution. In "Altro", the entry of the queues of decisions:
-    // the verifications of the guests are its other tab.
+    // Approval queue (NF-06, NF-68): items requiring human decision before execution: the drafts of messages, the campaigns, the texts of the AI.
+    // In "Altro", the entry of the queues of decisions: the verifications of the guests are its other tab. Deciding asks its own permission,
+    // `approval.decide` (the owner, the administrators and the property managers; not the collaborator or the accountant), the one the API asks
+    // for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['property.write'],
+    requiredPermissions: ['approval.decide'],
     navKey: 'nav.approvalQueue',
     navPlacement: 'secondary',
     navOrder: 29,

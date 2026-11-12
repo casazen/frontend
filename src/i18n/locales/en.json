@@ -1629,6 +1629,24 @@
       "concordatofacileAlreadyPurchased": "The guided form is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
       "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
+      "approvalEditInvalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "approvalItemNotFound": "This item is no longer there, or it is not one you can manage. The list updates on its own.",
+      "approvalItemNotPending": "This item has already been decided or has expired. The list updates on its own.",
+      "approvalOriginActionFailed": "The linked action did not go through: the item stays in the queue and you can try again.",
+      "approvalRejectionReasonRequired": "Write the reason for the rejection (500 characters at most).",
+      "approvalSendAttemptsExhausted": "The channel refused this message several times. Reject the draft or write the answer by hand in the conversation.",
+      "campaignNotPendingApproval": "The campaign is no longer waiting for approval: it was already approved or went back to a draft.",
+      "channelRuleViolation": "Before the booking the channel does not allow links, e-mail addresses or phone numbers: remove them from the text and try again.",
+      "chatNotLicensed": "The license of your channel manager does not include chat with guests: the message cannot be sent from here.",
+      "crmMarketingDisabled": "Campaigns are not active for your organization yet: the approval stays in the queue.",
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
+      "messageTextInvalid": "The message cannot be empty or longer than 2000 characters: edit it and try again.",
+      "octorateChatNotSendable": "The channel no longer lets you write in this conversation.",
+      "octorateMessageError": "The channel did not accept the message.",
+      "octorateRateLimited": "Your channel manager received too many requests: try again in a few minutes.",
+      "octorateRequestRejected": "Your channel manager did not accept the message.",
+      "threadKeyInvalid": "The conversation of this draft is no longer there.",
+      "threadNotFound": "The conversation of this draft is no longer there.",
       "leaseAlreadyTerminated": "This lease has already ended.",
       "leaseBusy": "The lease is busy with another operation. Try again in a few seconds.",
       "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
@@ -1692,24 +1710,80 @@
   "approval": {
     "action": {
       "approve": "Approve",
+      "approveAndSend": "Approve and send",
       "approved": "Item approved",
       "approveFailed": "Failed to approve item",
+      "edit": "Edit",
+      "edited": "Edit saved",
+      "editFailed": "Could not save the edit",
+      "executed": {
+        "already": "It was already approved: nothing was sent again.",
+        "campaign": "Campaign approved and scheduled.",
+        "campaignApproved": "Campaign approved. It has no send date yet: schedule it from the campaigns.",
+        "message": "Message sent to the guest.",
+        "messageQueued": "Your channel manager has the message and will send it to the guest.",
+        "messageVerify": "We do not know whether the channel received the message: check the conversation before you write it again.",
+        "none": "Approved. There was no action linked to run."
+      },
+      "originFailed": "The approval could not be completed: the item stays in the queue.",
+      "originFailedHint": "You can try again, or edit the text and approve it again.",
+      "originUnknown": "Something went wrong. Try again in a moment.",
       "reject": "Reject",
       "rejected": "Item rejected",
-      "rejectFailed": "Failed to reject item"
+      "rejectFailed": "Failed to reject item",
+      "retry": "Try again",
+      "save": "Save",
+      "saveAndApprove": "Save and approve"
     },
     "ai_generated": "AI Generated",
+    "confidence": {
+      "high": "high",
+      "label": "Confidence: {{level}} ({{percent}}%)",
+      "low": "low, check it carefully"
+    },
     "content": "Content",
+    "contentEdited": "Text as you edited it",
+    "contentShowOriginal": "Show the original text",
+    "decided": {
+      "reason": "Reason",
+      "title": "Just decided"
+    },
     "dialog": {
       "reasonLabel": "Rejection reason",
       "reasonPlaceholder": "Describe why you are rejecting this item…",
       "rejectDescription": "Specify the reason for rejecting this item. The reason will be logged.",
       "rejectTitle": "Reject item"
     },
+    "edit": {
+      "bodyLabel": "Campaign text",
+      "campaignHint": "The body of the email, under the subject line.",
+      "description": "Change the text before you decide. The original stays below.",
+      "descriptionCampaign": "Change the subject line and the text of the campaign before you approve it. The original stays below.",
+      "descriptionMessage": "Change the message before it goes to the guest. The original stays below.",
+      "error": {
+        "bodyRequired": "Write the text of the campaign.",
+        "empty": "Write the text.",
+        "subjectOneLine": "The subject line must fit on one line.",
+        "subjectRequired": "Write the subject line of the campaign.",
+        "subjectTooLong": "The subject line is too long: {{max}} characters at most.",
+        "tooLong": "The text is too long: {{max}} characters at most."
+      },
+      "invalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "original": "Original text",
+      "restore": "Restore the original",
+      "subjectLabel": "Subject line",
+      "textLabel": "Text",
+      "title": "Edit the text"
+    },
+    "edited": "Edited",
     "expires": "Expires",
     "filter": {
       "allTypes": "All types",
       "type": "Type"
+    },
+    "hint": {
+      "campaign": "When you approve it, the campaign is approved and, if it already has a send date, scheduled.",
+      "messageDraft": "When you approve it, the message goes to the guest. You can edit it first."
     },
     "queue": {
       "description": "Items awaiting approval before execution",
@@ -1720,15 +1794,42 @@
       "loading": "Loading approval queue…",
       "title": "Approval Queue"
     },
+    "reject": {
+      "reasonRequired": "Write the reason for the rejection.",
+      "reasonTooLong": "The reason is too long: {{max}} characters at most."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellation or refund",
+      "check_in_time": "Check-in time",
+      "complaint": "Complaint",
+      "directions": "Directions",
+      "discount_request": "Discount request",
+      "early_arrival_or_late_checkout": "Early arrival or late check-out",
+      "emergency": "Emergency",
+      "invoice_request": "Invoice request",
+      "label": "Situation",
+      "malfunction": "Malfunction or problem",
+      "noise": "Noise",
+      "other": "Other",
+      "parking": "Parking",
+      "pets": "Pets",
+      "thank_you": "Thank you",
+      "wifi": "Wi-Fi"
+    },
     "status": {
       "approved": "Approved",
       "expired": "Expired",
       "pending": "Pending",
       "rejected": "Rejected"
     },
+    "thread": {
+      "open": "Open the conversation"
+    },
     "type": {
       "aiText": "AI Text",
       "campaign": "Campaign",
+      "messageDraft": "Message draft",
+      "other": "Other",
       "routine": "Routine"
     }
   },
