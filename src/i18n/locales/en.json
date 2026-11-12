@@ -1298,6 +1298,15 @@
       "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
       "channelAccessNotValid": "The access to the portal is not valid: open it again and retry.",
       "channelConnectionNotFound": "The access is given but we cannot find the portal's connection: check the panel.",
+      "crmConfirmationLimitReached": "You have already sent the maximum number of confirmation requests to this address.",
+      "crmConfirmationNotRequired": "This contact needs no confirmation: it has no consent to confirm, or it is already confirmed.",
+      "crmContactNotFound": "We cannot find this contact any more, or it is not among the properties you have access to.",
+      "crmContactSuppressed": "The guest asked not to receive e-mails any more: we cannot send them the request.",
+      "crmMergeCandidateNotFound": "We cannot find this proposal any more, or it involves guests you do not see in full. Refresh the list.",
+      "crmMergeNotProposed": "This proposal has already been decided. Refresh the list.",
+      "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
+      "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
+      "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
       "d6ChannelFailed": "The portal had a problem: try again shortly.",
       "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
       "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
@@ -1322,6 +1331,7 @@
       "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
       "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
       "mappingRefreshConflict": "We were already reading the listings: try again in a moment.",
+      "marketingConfirmationUnavailable": "We cannot queue the confirmation e-mail. Try again in a few moments.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
@@ -4606,46 +4616,339 @@
     }
   },
   "crm": {
-    "actions": "Actions",
-    "backToList": "Back to list",
-    "consent": "Consents",
-    "consentEmail": "Email",
-    "consentGrantedEmail": "Email consent granted",
-    "consentGrantedWhatsApp": "WhatsApp consent granted",
-    "consentNotGrantedEmail": "Email consent not granted",
-    "consentNotGrantedWhatsApp": "WhatsApp consent not granted",
-    "consentWhatsApp": "WhatsApp",
-    "country": "Country",
-    "description": "Search and view guest profiles for marketing and segmentation",
-    "email": "Email",
-    "empty": "No guests found. Guests who have stayed at your properties will appear here.",
-    "error": "Loading error",
-    "errorDescription": "Could not load guest profiles. Please try again later.",
-    "firstStay": "First stay",
-    "guestSince": "Guest since {{date}}",
-    "language": "Language",
-    "lastStay": "Last stay",
-    "loading": "Loading CRM guests...",
-    "loadingProfile": "Loading guest profile...",
-    "marketingConsent": "Marketing consents",
-    "next": "Next",
-    "noConsent": "No consent",
-    "noResults": "No results for your search. Try different terms.",
-    "noTags": "No tags assigned",
-    "previous": "Previous",
-    "profileError": "Profile loading error",
-    "profileErrorDescription": "Could not load guest profile. Please try again later.",
-    "profileInfo": "Profile information",
-    "searchPlaceholder": "Search by email or country...",
-    "showing": "Showing {{start}}-{{end}} of {{total}}",
-    "spend": "Total spend",
-    "stayHistory": "Stay history",
-    "stays": "Stays",
-    "tags": "Tags",
-    "title": "Guest CRM",
-    "totalSpend": "Total spend",
-    "totalStays": "Total stays",
-    "viewDetails": "Details"
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Direct site",
+      "Expedia": "Expedia",
+      "Local": "Booked locally",
+      "Manual": "Entered by hand",
+      "OtherChannel": "Another portal",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
+    "contacts": {
+      "basis": {
+        "Consent": "Consent",
+        "None": "None",
+        "ServiceOnly": "Service only",
+        "SoftOptIn": "Direct customer"
+      },
+      "basisDate": "recorded on {{date}}",
+      "basisVersion": "text version {{version}}",
+      "basisVersionAndDate": "text version {{version}}, recorded on {{date}}",
+      "channel": {
+        "Email": "E-mail",
+        "Phone": "Phone",
+        "WhatsApp": "WhatsApp"
+      },
+      "confirmation": {
+        "Confirmed": "Confirmed",
+        "Pending": "Waiting for the guest's answer",
+        "Unconfirmed": "Not asked yet"
+      },
+      "confirmationError": "We could not send the confirmation request. Try again in a few moments.",
+      "confirmationLimit": "You have already sent the maximum number of requests to this address: no more can be sent.",
+      "confirmationSent": "Request sent: the guest will get an e-mail to confirm.",
+      "confirmationSuppressed": "You cannot ask for the confirmation: the guest asked not to receive e-mails any more.",
+      "confirmationTooSoon": "A request went out a few minutes ago: wait for the guest to answer before sending another.",
+      "description": "How you can reach this guest, and what each contact lets you do.",
+      "empty": "No contact is recorded for this guest.",
+      "fields": {
+        "basis": "Basis",
+        "channel": "Channel",
+        "confirmation": "Confirmation",
+        "optOut": "Opt-out",
+        "origin": "Where it comes from"
+      },
+      "origin": {
+        "CheckIn": "Online check-in",
+        "DirectBooking": "Booking on your own site",
+        "GuestPage": "Guest page",
+        "Manual": "Entered by hand",
+        "OctorateContactInfo": "Channel manager booking",
+        "OtaForward": "Forward address of a booking channel",
+        "WelcomePage": "Welcome page"
+      },
+      "otaForward": "Forward address of the channel: service messages only.",
+      "reachability": {
+        "channelNotAvailable": "The guest gave their consent, but CasaZen does not send messages on this channel yet.",
+        "marketable": "You can write to them about news and offers.",
+        "noBasis": "You cannot write to them about news and offers: they gave no consent.",
+        "notConfirmed": "You cannot write to them about news and offers yet: they gave their consent but have not confirmed the address.",
+        "otaForward": "You cannot write to them about news and offers: this is the forward address of a booking channel, valid only for messages about the stay.",
+        "suppressed": "You cannot write to them about news and offers: they asked not to be contacted any more.",
+        "unknown": "You cannot write to them about news and offers on this contact."
+      },
+      "sendConfirmation": "Send the confirmation request",
+      "sendConfirmationFor": "Send the confirmation request to {{value}}",
+      "suppressed": "Yes, they asked not to be contacted any more on this channel",
+      "title": "Contacts",
+      "withdrawals": "A consent is withdrawn in the privacy tab of the guest's record, not here.",
+      "withdrawalsLink": "Open the privacy tab"
+    },
+    "detail": {
+      "backToList": "Back to the profiles",
+      "channels": {
+        "empty": "No completed stay yet.",
+        "title": "Where they book"
+      },
+      "fallbackTitle": "Guest profile",
+      "group": {
+        "average": "On average {{adults}} adults and {{children}} children per stay.",
+        "couple": "Usually travels as a couple.",
+        "family": "Usually travels as a family, with children.",
+        "group": "Usually travels in a group, three adults or more.",
+        "none": "No completed stay yet: we do not know how they travel.",
+        "single": "Usually travels alone.",
+        "title": "How they travel"
+      },
+      "guestRecord": "Open the guest record",
+      "history": {
+        "columns": {
+          "channel": "Channel",
+          "dates": "Dates",
+          "property": "Property",
+          "status": "Status",
+          "total": "Amount"
+        },
+        "empty": {
+          "description": "The bookings of this guest will show up here.",
+          "title": "No booking to show"
+        },
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "range": "{{from}} – {{to}}",
+        "title": "Stay history",
+        "truncated": "Showing the latest {{count}} stays: the totals count all of them."
+      },
+      "loadError": "We cannot load the profile",
+      "loading": "Loading the profile…",
+      "mergeLink": "Review the duplicates",
+      "mergeProposals_one": "A possible duplicate of this guest is waiting for your decision.",
+      "mergeProposals_other": "{{count}} possible duplicates of this guest are waiting for your decision.",
+      "noStayYet": "No completed stay yet",
+      "notFound": {
+        "description": "The profile does not exist, or it is not among the properties you have access to.",
+        "title": "Profile not found"
+      },
+      "properties": {
+        "empty": "No property yet.",
+        "title": "Properties"
+      },
+      "reviews": {
+        "average": "Average mark {{rating}} out of 5",
+        "count_one": "{{count}} review",
+        "count_other": "{{count}} reviews",
+        "empty": "No review on their stays.",
+        "entry": "{{rating}} out of 5",
+        "latest": "The latest reviews",
+        "title": "Reviews"
+      },
+      "since": "Guest since {{date}}",
+      "staysCount_one": "{{count}} stay",
+      "staysCount_other": "{{count}} stays",
+      "totals": {
+        "advance": "Books on average",
+        "advanceDays_one": "{{count}} day ahead",
+        "advanceDays_other": "{{count}} days ahead",
+        "averageSpend": "Average spend",
+        "label": "At a glance",
+        "spend": "Total spend",
+        "stays": "Stays"
+      },
+      "unnamed": "Guest without a name"
+    },
+    "filters": {
+      "channel": {
+        "all": "All channels",
+        "label": "Booked on"
+      },
+      "clear": "Clear the filters",
+      "country": {
+        "hint": "Write the two-letter ISO code (IT, DE, FR…): the filter looks for the exact value saved on the profile.",
+        "label": "Country",
+        "placeholder": "E.g. IT"
+      },
+      "email": {
+        "any": "Any",
+        "label": "Reachable by e-mail",
+        "reachable": "Yes, I can write to them",
+        "unreachable": "No, I cannot write to them"
+      },
+      "language": {
+        "all": "All languages",
+        "label": "Language"
+      },
+      "minStays": {
+        "any": "Any",
+        "label": "Stays",
+        "option_one": "At least {{count}} stay",
+        "option_other": "At least {{count}} stays"
+      },
+      "panel": {
+        "button": "Filters",
+        "buttonActive": "Filters ({{active}})"
+      },
+      "region": "Search and filter the profiles",
+      "search": {
+        "hint": "Type a part of the name, or the whole e-mail address or phone number.",
+        "label": "Search for a guest",
+        "placeholder": "Name, e-mail or phone"
+      },
+      "sort": {
+        "label": "Sort by",
+        "lastStay": "Latest stay",
+        "name": "Name (A-Z)",
+        "spend": "Highest spend",
+        "stays": "Most stays"
+      },
+      "tag": {
+        "label": "Tag",
+        "placeholder": "E.g. VIP"
+      }
+    },
+    "list": {
+      "channels": "Booking channels",
+      "columns": {
+        "channels": "Channels",
+        "email": "E-mail",
+        "guest": "Guest",
+        "lastStay": "Latest stay",
+        "spend": "Spend",
+        "stays": "Stays"
+      },
+      "count_one": "{{count}} profile",
+      "count_other": "{{count}} profiles",
+      "description": "Your guests, with their stays and whether you can write to them. You only see who stayed at the properties you have access to.",
+      "empty": {
+        "description": "Profiles come with the bookings: when a guest stays with you, you will find them here.",
+        "title": "No guests yet"
+      },
+      "label": "Guest profiles",
+      "lastStay": "latest stay {{date}}",
+      "loadError": "We cannot load the guest profiles",
+      "mergeProposal": "Possible duplicate",
+      "mergeProposalHint": "Another profile may be the same person: you will find it among the duplicates to review.",
+      "mergeProposalHintReadOnly": "Another profile may be the same person: whoever can edit the guests decides on it.",
+      "moreTags_one": "+{{count}} more",
+      "moreTags_other": "+{{count}} more",
+      "noMatch": {
+        "action": "Clear the filters",
+        "description": "Try fewer filters or another search.",
+        "title": "No profile matches the filters"
+      },
+      "noName": "Guest without a name",
+      "staysCount_one": "{{count}} stay",
+      "staysCount_other": "{{count}} stays",
+      "tags": "Tags",
+      "title": "Guest CRM"
+    },
+    "merge": {
+      "card": {
+        "label": "Possible duplicate: {{a}} and {{b}}",
+        "merge": "Merge",
+        "mergeAria": "Merge {{a}} and {{b}}",
+        "notSame": "They are not the same person",
+        "notSameAria": "They are not the same person: {{a}} and {{b}}"
+      },
+      "count_one": "{{count}} proposal to review",
+      "count_other": "{{count}} proposals to review",
+      "description": "CasaZen found guests who may be the same person. It never merges anything by itself: you decide.",
+      "dialog": {
+        "confirm": "Merge the profiles",
+        "consent": "No consent changes: every contact stays as it is, with its basis and its confirmation.",
+        "description": "Choose the profile to keep: the other one will no longer show in your lists.",
+        "final": "This cannot be undone.",
+        "history": "The history and the contacts of the other profile move to the one you keep.",
+        "legend": "Which profile do you want to keep?",
+        "stays_one": "{{count}} stay",
+        "stays_other": "{{count}} stays",
+        "title": "Merge the two profiles"
+      },
+      "dismiss": {
+        "confirm": "Yes, they are different people",
+        "description": "CasaZen will not propose this pair again. No profile changes.",
+        "title": "Are they two different people?"
+      },
+      "dismissDone": "Done: this pair will not be proposed to you again.",
+      "dismissError": "We could not save your decision. Try again in a few moments.",
+      "empty": {
+        "action": "Go to the profiles",
+        "description": "When CasaZen finds two guests who may be the same person, you will see them here and decide.",
+        "title": "No duplicates to review"
+      },
+      "label": "Possible duplicates",
+      "likelihood": {
+        "likely": "Likely the same person",
+        "possible": "Possibly the same person",
+        "veryLikely": "Very likely the same person"
+      },
+      "loadError": "We cannot load the possible duplicates",
+      "loading": "Loading the possible duplicates…",
+      "mergeDone": "Profiles merged.",
+      "mergeError": "We could not merge the profiles. Try again in a few moments.",
+      "profile": {
+        "contacts": "Contacts",
+        "country": "Country",
+        "lastStay": "Latest stay",
+        "noContacts": "No contact",
+        "noName": "Guest without a name",
+        "noStay": "No stay",
+        "position": "Profile {{position}}",
+        "properties": "Properties",
+        "stays": "Stays"
+      },
+      "reasons": {
+        "sameEmail": "They share the same e-mail address.",
+        "sameNameBirth": "They have the same name and the same date of birth.",
+        "sameNameSameProperty": "They have the same name and stayed at the same property.",
+        "samePhone": "They share the same phone number.",
+        "title": "Why we put them together",
+        "unknown": "They have other things in common."
+      },
+      "title": "Possible duplicates"
+    },
+    "state": {
+      "consent": {
+        "hint": "The guest gave their consent and confirmed their e-mail address: you can write to them about news and offers.",
+        "label": "Reachable, with consent"
+      },
+      "noContact": {
+        "hint": "There is no e-mail address to write to: either there is none, or it was left without any permission to use it.",
+        "label": "No contact"
+      },
+      "serviceOnly": {
+        "hint": "You can write to them only about their stay (confirmations, arrival instructions, invoices), not about news and offers. This is the case for the addresses of booking portals and for guests who gave no consent.",
+        "label": "Service only"
+      },
+      "softOptIn": {
+        "hint": "They booked directly with you: you may offer them services similar to those they bought, and every message carries a link to unsubscribe.",
+        "label": "Reachable, direct customer"
+      },
+      "toConfirm": {
+        "hint": "They gave their consent but have not confirmed their e-mail address yet (or they asked not to receive e-mails any more). For now you cannot write to them about news and offers: open the profile to see which.",
+        "label": "To confirm"
+      },
+      "unsubscribed": {
+        "hint": "They asked not to receive promotional e-mails any more, so you cannot write to them about news and offers. Messages about a stay can still reach them.",
+        "label": "Unsubscribed"
+      }
+    },
+    "tags": {
+      "add": "Add",
+      "addLabel": "New tag",
+      "addPlaceholder": "E.g. VIP",
+      "description": "Your own words for finding the guest again and for preparing the mailings. Up to 50 tags, each up to 40 characters.",
+      "duplicate": "This tag is already there.",
+      "empty": "No tags: add one to find this guest again.",
+      "error": "We could not save the tags. Try again in a few moments.",
+      "limit": "You have reached the maximum of {{count}} tags: remove one to add more.",
+      "remove": "Remove the tag {{tag}}",
+      "success": "Tags saved.",
+      "title": "Tags"
+    }
   },
   "dashboard": {
     "title": "Good morning, {{name}}",

@@ -1298,6 +1298,15 @@
       "assistStepAlreadyDone": "Questo passaggio è già stato fatto: non serve altro.",
       "channelAccessNotValid": "L'accesso al portale non è valido: riaprilo e riprova.",
       "channelConnectionNotFound": "L'accesso è dato ma non troviamo il collegamento del portale: controlla il pannello.",
+      "crmConfirmationLimitReached": "Hai già inviato il numero massimo di richieste di conferma a questo indirizzo.",
+      "crmConfirmationNotRequired": "Questo contatto non ha bisogno di una conferma: non ha dato un consenso da confermare, oppure l'ha già confermato.",
+      "crmContactNotFound": "Non troviamo più questo contatto, oppure non è tra gli immobili a cui hai accesso.",
+      "crmContactSuppressed": "L'ospite ha chiesto di non ricevere più e-mail: non possiamo inviargli la richiesta.",
+      "crmMergeCandidateNotFound": "Non troviamo più questa proposta, oppure riguarda ospiti che non vedi per intero. Aggiorna l'elenco.",
+      "crmMergeNotProposed": "Questa proposta è già stata decisa. Aggiorna l'elenco.",
+      "crmMergeSurvivorInvalid": "Il profilo da tenere deve essere uno dei due della proposta.",
+      "crmProfileNotFound": "Il profilo non esiste, oppure non è tra gli immobili a cui hai accesso.",
+      "crmTagsInvalid": "I tag non sono validi: al massimo 50, da 1 a 40 caratteri ciascuno, senza doppioni e non troppo lunghi in tutto.",
       "d6ChannelFailed": "Il portale ha avuto un problema: riprova tra poco.",
       "d6OperationUnverified": "Questo passaggio per questo portale non è ancora attivo: resta guidato e te lo diciamo appena si può.",
       "d6ResultUnknown": "Non sappiamo com'è andata: controlla nel pannello e poi chiedi di nuovo.",
@@ -1322,6 +1331,7 @@
       "issuerFieldInvalid": "Uno dei dati di chi emette non è valido. Controlla i campi e riprova.",
       "issuerProfileIncomplete": "Per far emettere i documenti a CasaZen mancano alcuni dati. Controlla i passaggi e riprova.",
       "mappingRefreshConflict": "Stavamo già leggendo gli annunci: riprova tra un momento.",
+      "marketingConfirmationUnavailable": "Non riusciamo a mettere in coda l'e-mail di conferma. Riprova tra qualche istante.",
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
       "notificationLegalChannelRequired": "Le scadenze di legge non possono restare senza un canale: lascia attivo almeno un canale.",
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
@@ -4606,46 +4616,339 @@
     }
   },
   "crm": {
-    "actions": "Azioni",
-    "backToList": "Torna all'elenco",
-    "consent": "Consensi",
-    "consentEmail": "Email",
-    "consentGrantedEmail": "Consenso email concesso",
-    "consentGrantedWhatsApp": "Consenso WhatsApp concesso",
-    "consentNotGrantedEmail": "Consenso email non concesso",
-    "consentNotGrantedWhatsApp": "Consenso WhatsApp non concesso",
-    "consentWhatsApp": "WhatsApp",
-    "country": "Paese",
-    "description": "Cerca e visualizza i profili degli ospiti per marketing e segmentazione",
-    "email": "Email",
-    "empty": "Nessun ospite trovato. Gli ospiti che hanno soggiornato nelle tue proprietà appariranno qui.",
-    "error": "Errore nel caricamento",
-    "errorDescription": "Impossibile caricare i profili ospiti. Riprova più tardi.",
-    "firstStay": "Primo soggiorno",
-    "guestSince": "Ospite dal {{date}}",
-    "language": "Lingua",
-    "lastStay": "Ultimo soggiorno",
-    "loading": "Caricamento ospiti CRM...",
-    "loadingProfile": "Caricamento profilo ospite...",
-    "marketingConsent": "Consensi marketing",
-    "next": "Avanti",
-    "noConsent": "Nessun consenso",
-    "noResults": "Nessun risultato per la ricerca. Prova con altri termini.",
-    "noTags": "Nessun tag assegnato",
-    "previous": "Indietro",
-    "profileError": "Errore nel caricamento del profilo",
-    "profileErrorDescription": "Impossibile caricare il profilo dell'ospite. Riprova più tardi.",
-    "profileInfo": "Informazioni profilo",
-    "searchPlaceholder": "Cerca per email o paese...",
-    "showing": "Mostrando {{start}}-{{end}} di {{total}}",
-    "spend": "Spesa totale",
-    "stayHistory": "Storico soggiorni",
-    "stays": "Soggiorni",
-    "tags": "Tag",
-    "title": "CRM Ospiti",
-    "totalSpend": "Spesa totale",
-    "totalStays": "Soggiorni totali",
-    "viewDetails": "Dettagli"
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Sito diretto",
+      "Expedia": "Expedia",
+      "Local": "Locale",
+      "Manual": "Inserita a mano",
+      "OtherChannel": "Altro portale",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
+    "contacts": {
+      "basis": {
+        "Consent": "Consenso",
+        "None": "Nessuna",
+        "ServiceOnly": "Solo servizio",
+        "SoftOptIn": "Cliente diretto"
+      },
+      "basisDate": "registrato il {{date}}",
+      "basisVersion": "testo versione {{version}}",
+      "basisVersionAndDate": "testo versione {{version}}, registrato il {{date}}",
+      "channel": {
+        "Email": "E-mail",
+        "Phone": "Telefono",
+        "WhatsApp": "WhatsApp"
+      },
+      "confirmation": {
+        "Confirmed": "Confermato",
+        "Pending": "In attesa della risposta dell'ospite",
+        "Unconfirmed": "Non ancora richiesta"
+      },
+      "confirmationError": "Non siamo riusciti a inviare la richiesta di conferma. Riprova tra qualche istante.",
+      "confirmationLimit": "Hai già inviato il numero massimo di richieste a questo indirizzo: non se ne possono inviare altre.",
+      "confirmationSent": "Richiesta inviata: l'ospite riceverà un'e-mail per confermare.",
+      "confirmationSuppressed": "Non puoi chiedere la conferma: l'ospite ha chiesto di non ricevere più e-mail.",
+      "confirmationTooSoon": "Una richiesta è partita da pochi minuti: aspetta che l'ospite risponda prima di inviarne un'altra.",
+      "description": "Come puoi raggiungere questo ospite e che cosa ti permette di fare ogni contatto.",
+      "empty": "Nessun contatto registrato per questo ospite.",
+      "fields": {
+        "basis": "Base",
+        "channel": "Canale",
+        "confirmation": "Conferma",
+        "optOut": "Disiscrizione",
+        "origin": "Da dove arriva"
+      },
+      "origin": {
+        "CheckIn": "Check-in online",
+        "DirectBooking": "Prenotazione sul sito diretto",
+        "GuestPage": "Pagina dell'ospite",
+        "Manual": "Inserito a mano",
+        "OctorateContactInfo": "Prenotazione del channel manager",
+        "OtaForward": "Indirizzo di inoltro del portale",
+        "WelcomePage": "Pagina di benvenuto"
+      },
+      "otaForward": "Indirizzo di inoltro del portale: solo messaggi di servizio.",
+      "reachability": {
+        "channelNotAvailable": "L'ospite ha dato il consenso, ma CasaZen non invia ancora messaggi su questo canale.",
+        "marketable": "Puoi scrivergli per novità e offerte.",
+        "noBasis": "Non puoi scrivergli per novità e offerte: non ha dato il consenso.",
+        "notConfirmed": "Non puoi ancora scrivergli per novità e offerte: ha dato il consenso ma non ha confermato l'indirizzo.",
+        "otaForward": "Non puoi scrivergli per novità e offerte: è l'indirizzo di inoltro del portale, vale solo per i messaggi sul soggiorno.",
+        "suppressed": "Non puoi scrivergli per novità e offerte: ha chiesto di non essere più contattato.",
+        "unknown": "Non puoi scrivergli per novità e offerte su questo contatto."
+      },
+      "sendConfirmation": "Invia la richiesta di conferma",
+      "sendConfirmationFor": "Invia la richiesta di conferma a {{value}}",
+      "suppressed": "Sì, ha chiesto di non essere più contattato su questo canale",
+      "title": "Contatti",
+      "withdrawals": "Il ritiro di un consenso si gestisce nella scheda privacy dell'ospite, non qui.",
+      "withdrawalsLink": "Apri la scheda privacy"
+    },
+    "detail": {
+      "backToList": "Torna ai profili",
+      "channels": {
+        "empty": "Ancora nessun soggiorno concluso.",
+        "title": "Dove prenota"
+      },
+      "fallbackTitle": "Profilo ospite",
+      "group": {
+        "average": "In media {{adults}} adulti e {{children}} bambini per soggiorno.",
+        "couple": "Di solito viaggia in coppia.",
+        "family": "Di solito viaggia in famiglia, con bambini.",
+        "group": "Di solito viaggia in gruppo, da tre adulti in su.",
+        "none": "Ancora nessun soggiorno concluso: non sappiamo come viaggia.",
+        "single": "Di solito viaggia da solo.",
+        "title": "Come viaggia"
+      },
+      "guestRecord": "Apri la scheda dell'ospite",
+      "history": {
+        "columns": {
+          "channel": "Canale",
+          "dates": "Date",
+          "property": "Immobile",
+          "status": "Stato",
+          "total": "Importo"
+        },
+        "empty": {
+          "description": "Le prenotazioni di questo ospite compariranno qui.",
+          "title": "Nessuna prenotazione da mostrare"
+        },
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "range": "{{from}} – {{to}}",
+        "title": "Storico dei soggiorni",
+        "truncated": "Mostriamo gli ultimi {{count}} soggiorni: i totali li contano tutti."
+      },
+      "loadError": "Non riusciamo a caricare il profilo",
+      "loading": "Caricamento del profilo…",
+      "mergeLink": "Rivedi i duplicati",
+      "mergeProposals_one": "Un possibile duplicato di questo ospite aspetta la tua decisione.",
+      "mergeProposals_other": "{{count}} possibili duplicati di questo ospite aspettano la tua decisione.",
+      "noStayYet": "Ancora nessun soggiorno concluso",
+      "notFound": {
+        "description": "Il profilo non esiste, oppure non è tra gli immobili a cui hai accesso.",
+        "title": "Profilo non trovato"
+      },
+      "properties": {
+        "empty": "Ancora nessun immobile.",
+        "title": "Immobili"
+      },
+      "reviews": {
+        "average": "Voto medio {{rating}} su 5",
+        "count_one": "{{count}} recensione",
+        "count_other": "{{count}} recensioni",
+        "empty": "Nessuna recensione sui suoi soggiorni.",
+        "entry": "{{rating}} su 5",
+        "latest": "Le ultime recensioni",
+        "title": "Recensioni"
+      },
+      "since": "Ospite dal {{date}}",
+      "staysCount_one": "{{count}} soggiorno",
+      "staysCount_other": "{{count}} soggiorni",
+      "totals": {
+        "advance": "Prenota in media con",
+        "advanceDays_one": "{{count}} giorno di anticipo",
+        "advanceDays_other": "{{count}} giorni di anticipo",
+        "averageSpend": "Spesa media",
+        "label": "In breve",
+        "spend": "Spesa totale",
+        "stays": "Soggiorni"
+      },
+      "unnamed": "Ospite senza nome"
+    },
+    "filters": {
+      "channel": {
+        "all": "Tutti i canali",
+        "label": "Prenotato su"
+      },
+      "clear": "Azzera i filtri",
+      "country": {
+        "hint": "Scrivi il codice ISO a due lettere (IT, DE, FR…): il filtro cerca il valore esatto salvato nel profilo.",
+        "label": "Paese",
+        "placeholder": "Es. IT"
+      },
+      "email": {
+        "any": "Indifferente",
+        "label": "Raggiungibile via e-mail",
+        "reachable": "Sì, posso scrivergli",
+        "unreachable": "No, non posso scrivergli"
+      },
+      "language": {
+        "all": "Tutte le lingue",
+        "label": "Lingua"
+      },
+      "minStays": {
+        "any": "Qualsiasi",
+        "label": "Soggiorni",
+        "option_one": "Almeno {{count}} soggiorno",
+        "option_other": "Almeno {{count}} soggiorni"
+      },
+      "panel": {
+        "button": "Filtri",
+        "buttonActive": "Filtri ({{active}})"
+      },
+      "region": "Cerca e filtra i profili",
+      "search": {
+        "hint": "Scrivi una parte del nome, oppure l'e-mail o il telefono per intero.",
+        "label": "Cerca un ospite",
+        "placeholder": "Nome, e-mail o telefono"
+      },
+      "sort": {
+        "label": "Ordina per",
+        "lastStay": "Ultimo soggiorno",
+        "name": "Nome (A-Z)",
+        "spend": "Spesa più alta",
+        "stays": "Più soggiorni"
+      },
+      "tag": {
+        "label": "Tag",
+        "placeholder": "Es. VIP"
+      }
+    },
+    "list": {
+      "channels": "Canali di prenotazione",
+      "columns": {
+        "channels": "Canali",
+        "email": "E-mail",
+        "guest": "Ospite",
+        "lastStay": "Ultimo soggiorno",
+        "spend": "Spesa",
+        "stays": "Soggiorni"
+      },
+      "count_one": "{{count}} profilo",
+      "count_other": "{{count}} profili",
+      "description": "I tuoi ospiti, con i loro soggiorni e la possibilità di scrivergli. Vedi solo chi ha soggiornato negli immobili a cui hai accesso.",
+      "empty": {
+        "description": "I profili arrivano con le prenotazioni: quando un ospite soggiorna da te, lo trovi qui.",
+        "title": "Ancora nessun ospite"
+      },
+      "label": "Profili degli ospiti",
+      "lastStay": "ultimo soggiorno {{date}}",
+      "loadError": "Non riusciamo a caricare i profili degli ospiti",
+      "mergeProposal": "Possibile duplicato",
+      "mergeProposalHint": "Un altro profilo potrebbe essere la stessa persona: lo trovi tra i duplicati da rivedere.",
+      "mergeProposalHintReadOnly": "Un altro profilo potrebbe essere la stessa persona: a deciderlo è chi può modificare gli ospiti.",
+      "moreTags_one": "+{{count}} altro",
+      "moreTags_other": "+{{count}} altri",
+      "noMatch": {
+        "action": "Azzera i filtri",
+        "description": "Prova con meno filtri o con un'altra ricerca.",
+        "title": "Nessun profilo corrisponde ai filtri"
+      },
+      "noName": "Ospite senza nome",
+      "staysCount_one": "{{count}} soggiorno",
+      "staysCount_other": "{{count}} soggiorni",
+      "tags": "Tag",
+      "title": "CRM Ospiti"
+    },
+    "merge": {
+      "card": {
+        "label": "Possibile duplicato: {{a}} e {{b}}",
+        "merge": "Unisci",
+        "mergeAria": "Unisci {{a}} e {{b}}",
+        "notSame": "Non sono la stessa persona",
+        "notSameAria": "Non sono la stessa persona: {{a}} e {{b}}"
+      },
+      "count_one": "{{count}} proposta da rivedere",
+      "count_other": "{{count}} proposte da rivedere",
+      "description": "CasaZen ha trovato ospiti che potrebbero essere la stessa persona. Non unisce mai nulla da solo: decidi tu.",
+      "dialog": {
+        "confirm": "Unisci i profili",
+        "consent": "Nessun consenso cambia: ogni contatto resta com'è, con la sua base e la sua conferma.",
+        "description": "Scegli il profilo da tenere: l'altro non comparirà più negli elenchi.",
+        "final": "Non si può annullare.",
+        "history": "Lo storico e i contatti dell'altro profilo passano a quello che tieni.",
+        "legend": "Quale profilo vuoi tenere?",
+        "stays_one": "{{count}} soggiorno",
+        "stays_other": "{{count}} soggiorni",
+        "title": "Unisci i due profili"
+      },
+      "dismiss": {
+        "confirm": "Sì, sono persone diverse",
+        "description": "CasaZen non ti riproporrà più questa coppia. Nessun profilo cambia.",
+        "title": "Sono due persone diverse?"
+      },
+      "dismissDone": "Fatto: questa coppia non ti verrà più riproposta.",
+      "dismissError": "Non siamo riusciti a salvare la tua decisione. Riprova tra qualche istante.",
+      "empty": {
+        "action": "Vai ai profili",
+        "description": "Quando CasaZen trova due ospiti che potrebbero essere la stessa persona, li vedi qui e decidi tu.",
+        "title": "Nessun duplicato da rivedere"
+      },
+      "label": "Possibili duplicati",
+      "likelihood": {
+        "likely": "Probabilmente la stessa persona",
+        "possible": "Forse la stessa persona",
+        "veryLikely": "Molto probabilmente la stessa persona"
+      },
+      "loadError": "Non riusciamo a caricare i possibili duplicati",
+      "loading": "Caricamento dei possibili duplicati…",
+      "mergeDone": "Profili uniti.",
+      "mergeError": "Non siamo riusciti a unire i profili. Riprova tra qualche istante.",
+      "profile": {
+        "contacts": "Contatti",
+        "country": "Paese",
+        "lastStay": "Ultimo soggiorno",
+        "noContacts": "Nessun contatto",
+        "noName": "Ospite senza nome",
+        "noStay": "Nessun soggiorno",
+        "position": "Profilo {{position}}",
+        "properties": "Immobili",
+        "stays": "Soggiorni"
+      },
+      "reasons": {
+        "sameEmail": "Hanno lo stesso indirizzo e-mail.",
+        "sameNameBirth": "Hanno lo stesso nome e la stessa data di nascita.",
+        "sameNameSameProperty": "Hanno lo stesso nome e hanno soggiornato nello stesso immobile.",
+        "samePhone": "Hanno lo stesso numero di telefono.",
+        "title": "Perché li abbiamo accostati",
+        "unknown": "Hanno altri elementi in comune."
+      },
+      "title": "Possibili duplicati"
+    },
+    "state": {
+      "consent": {
+        "hint": "L'ospite ha dato il consenso e ha confermato il suo indirizzo e-mail: puoi scrivergli per novità e offerte.",
+        "label": "Raggiungibile, con consenso"
+      },
+      "noContact": {
+        "hint": "Non c'è un indirizzo e-mail a cui scrivere: manca l'indirizzo, oppure è stato lasciato senza alcun permesso di usarlo.",
+        "label": "Nessun contatto"
+      },
+      "serviceOnly": {
+        "hint": "Puoi scrivergli solo per il soggiorno (conferme, istruzioni di arrivo, fattura), non per novità e offerte. Succede con gli indirizzi dei portali e con chi non ha dato il consenso.",
+        "label": "Solo servizio"
+      },
+      "softOptIn": {
+        "hint": "Ha prenotato direttamente da te: puoi proporgli servizi simili a quelli già acquistati, e ogni messaggio ha il link per annullare l'iscrizione.",
+        "label": "Raggiungibile, cliente diretto"
+      },
+      "toConfirm": {
+        "hint": "Ha dato il consenso ma non ha ancora confermato il suo indirizzo e-mail (o ha chiesto di non riceverne più). Per ora non puoi scrivergli per novità e offerte: apri il profilo per vedere come stanno le cose.",
+        "label": "Da confermare"
+      },
+      "unsubscribed": {
+        "hint": "Ha chiesto di non ricevere più e-mail promozionali, quindi non puoi scrivergli per novità e offerte. I messaggi sul soggiorno possono comunque arrivare.",
+        "label": "Iscrizione annullata"
+      }
+    },
+    "tags": {
+      "add": "Aggiungi",
+      "addLabel": "Nuovo tag",
+      "addPlaceholder": "Es. VIP",
+      "description": "Parole tue per ritrovare l'ospite e per preparare gli invii. Fino a 50 tag, di massimo 40 caratteri.",
+      "duplicate": "Questo tag c'è già.",
+      "empty": "Nessun tag: aggiungine uno per ritrovare questo ospite.",
+      "error": "Non siamo riusciti a salvare i tag. Riprova tra qualche istante.",
+      "limit": "Hai raggiunto il massimo di {{count}} tag: toglierne uno per aggiungerne altri.",
+      "remove": "Togli il tag {{tag}}",
+      "success": "Tag salvati.",
+      "title": "Tag"
+    }
   },
   "dashboard": {
     "title": "Buongiorno, {{name}}",
