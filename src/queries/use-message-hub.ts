@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { messageHubApi } from '@/api/message-hub.api';
 import { retryTransientErrors } from '@/lib/query-client';
 import { NOTIFICATIONS_QUERY } from '@/queries/use-notifications';
@@ -10,6 +10,16 @@ export const MESSAGE_HUB_QUERY = 'message-hub';
 
 /** How often the hub is read again while the page is visible: it has no real-time channel of its own in v1. */
 export const MESSAGE_HUB_POLL_MS = 60_000;
+
+/**
+ * The list of the conversations and the counters of the hub: what an answer or a read changes, wherever it is given (the page of a
+ * conversation, the tab of a booking, the drawer of a booking). They are marked stale and, where a page shows them (the Home, the inbox,
+ * the number on the tab «Messaggi»), read again at once.
+ */
+export function invalidateMessageHubLists(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'threads'] });
+  void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'unread'] });
+}
 
 /**
  * A guest's message makes the in-app notifications change (the number on the bell, the pop-up), whether the real-time channel writes the

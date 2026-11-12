@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bookingMessagesApi, type HostThreadFilters } from '@/api/booking-messages.api';
 import { retryTransientErrors } from '@/lib/query-client';
+import { invalidateMessageHubLists } from '@/queries/use-message-hub';
 import { NOTIFICATIONS_QUERY } from '@/queries/use-notifications';
 import { useThreadSend } from '@/queries/use-thread-send';
 import type { HostThread } from '@/types';
@@ -43,6 +44,8 @@ export function useSendBookingMessage(bookingId: string) {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
+      // The Home and the tab «Messaggi» read the same conversation through the hub (NF-61): the row «Rispondi a…» and the number change at once too.
+      invalidateMessageHubLists(queryClient);
       return sent;
     },
     [bookingId, key, queryClient],
@@ -59,6 +62,7 @@ export function useMarkThreadRead(bookingId: string) {
       queryClient.setQueryData([BOOKING_THREAD_QUERY, bookingId], thread);
       void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
+      invalidateMessageHubLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY] });
     },
   });

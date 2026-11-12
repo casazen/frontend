@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { messageHubApi } from '@/api/message-hub.api';
 import { retryTransientErrors } from '@/lib/query-client';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
-import { MESSAGE_HUB_POLL_MS, MESSAGE_HUB_QUERY, useRefetchOnNotificationsChange } from '@/queries/use-message-hub';
+import { MESSAGE_HUB_POLL_MS, MESSAGE_HUB_QUERY, invalidateMessageHubLists, useRefetchOnNotificationsChange } from '@/queries/use-message-hub';
 import { NOTIFICATIONS_QUERY } from '@/queries/use-notifications';
 import { newIdempotencyKey, useThreadSend, type SentThreadMessage } from '@/queries/use-thread-send';
 import type {
@@ -45,8 +45,7 @@ export function useMarkHubThreadRead(threadKey: string) {
     mutationFn: () => messageHubApi.markRead(threadKey),
     onSuccess: (read) => {
       queryClient.setQueryData<MessageHubThreadDetail>(threadKeyOf(threadKey), (thread) => (thread ? { ...thread, unreadCount: read.unreadCount } : thread));
-      void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'threads'] });
-      void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'unread'] });
+      invalidateMessageHubLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY] });
@@ -71,8 +70,7 @@ export function useSendHubReply(threadKey: string) {
   const send = useCallback(
     async (text: string, idempotencyKey: string): Promise<SentThreadMessage<MessageHubMessage>> => {
       const answer = await messageHubApi.reply(threadKey, text, idempotencyKey);
-      void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'threads'] });
-      void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'unread'] });
+      invalidateMessageHubLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
       void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
