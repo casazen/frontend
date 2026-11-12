@@ -309,8 +309,13 @@ export function WelcomePage() {
     welcome: { tone: 'ask', icon: House, title: t('marketing.welcome.title', names), description: t('marketing.welcome.welcomeOnly', names) },
     ask: { tone: 'ask', icon: House, title: t('marketing.welcome.title', names), description: t('marketing.welcome.description', names) },
     done: confirmedByEmail
-      ? { tone: 'done', icon: MailCheck, title: t('marketing.welcome.done.title'), description: t('marketing.welcome.done.description') }
-      : { tone: 'done', icon: Check, title: t('marketing.welcome.doneWhatsApp.title'), description: t('marketing.welcome.doneWhatsApp.description') },
+      ? ({ tone: 'done', icon: MailCheck, title: t('marketing.welcome.done.title'), description: t('marketing.welcome.done.description') } as const)
+      : ({
+          tone: 'done',
+          icon: Check,
+          title: t('marketing.welcome.doneWhatsApp.title'),
+          description: t('marketing.welcome.doneWhatsApp.description'),
+        } as const),
   } as const;
 
   return (
