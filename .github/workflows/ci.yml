@@ -4,7 +4,7 @@ name: CI
 # Mark the "CI / Lint, typecheck, unit tests, build" check as required in branch protection
 # (steps: backend/docs/runbooks/ci-frontend.md).
 #
-# Shape (CI speed-up): the static checks and the unit tests run as parallel jobs (the unit tests split in 3 vitest shards),
+# Shape (CI speed-up): the static checks and the unit tests run as parallel jobs (the unit tests split in vitest shards),
 # and the check `Lint, typecheck, unit tests, build` is the job that waits for all of them. Same checks, same commands.
 
 on:
@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
