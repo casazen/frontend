@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Booking, BookingAmountSources } from '@/types';
 import { bookingPriceBreakdown } from '../lib/booking-price';
 import { Amount, AmountSourceLine } from './booking-facts';
+import { BookingInvoiceDataSection } from './booking-invoice-data-section';
 import { BookingOtaAmounts } from './booking-ota-amounts';
 
 /**
@@ -20,6 +21,8 @@ import { BookingOtaAmounts } from './booking-ota-amounts';
  * Each of those figures says where it comes from when the API says it (`amountSources`, NF-77): Stripe for a booking made on the
  * site, the host's own entry for a payment recorded by hand. A channel booking has its own section under this one, "Importi del
  * canale", where every figure carries its source, so the summary does not tag the same numbers twice.
+ *
+ * Under the amounts there is "Dati di fatturazione" (FIS-01, NF-81): who the invoice of the booking is made out to, for who may read payments.
  */
 export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const { t } = useTranslation();
@@ -95,6 +98,9 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
       {/* NF-77, ADR-033-R8: what the channel says about the money of an imported booking; nothing for any other booking and for who
           may not read payments (the API sends no amounts to them). */}
       <BookingOtaAmounts booking={booking} />
+
+      {/* FIS-01, NF-81: who the invoice is made out to, and where the data comes from; the section is not there for who may not read payments. */}
+      <BookingInvoiceDataSection bookingId={booking.id} />
     </div>
   );
 }

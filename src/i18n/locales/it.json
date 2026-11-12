@@ -6675,6 +6675,106 @@
     "useAnother": "Usa un altro account",
     "useSameEmail": "Accedi con l’indirizzo a cui è arrivato l’invito."
   },
+  "invoiceData": {
+    "fields": {
+      "address": {
+        "city": "Città",
+        "civic": "Civico",
+        "legend": "Indirizzo",
+        "postalCode": "CAP",
+        "province": "Provincia",
+        "street": "Via o piazza"
+      },
+      "country": {
+        "label": "Paese dell'indirizzo",
+        "why": "Se l'indirizzo è all'estero, scegli il paese: in quel caso codice fiscale e partita IVA non sono obbligatori."
+      },
+      "errors": {
+        "countryInvalid": "Scegli un paese dall'elenco.",
+        "fiscalCodeInvalid": "Il codice fiscale non è valido: controlla i 16 caratteri (persona) o le 11 cifre (azienda).",
+        "fiscalCodeRequired": "Scrivi il codice fiscale: serve per intestare la fattura.",
+        "kindInvalid": "Scegli a chi intestare la fattura.",
+        "pecInvalid": "L'indirizzo PEC non è valido: controlla la chiocciola e il dominio.",
+        "postalCodeInvalid": "In Italia il CAP ha 5 cifre. Se l'indirizzo è all'estero, scegli il paese in «Altre opzioni».",
+        "provinceInvalid": "La provincia si scrive con 2 lettere, per esempio RM.",
+        "recipientCodeInvalid": "Il codice destinatario ha 7 lettere o cifre.",
+        "tooLong": "Questo testo è troppo lungo.",
+        "vatNumberInvalid": "La partita IVA non è valida: controlla le 11 cifre.",
+        "vatNumberRequired": "Scrivi la partita IVA oppure il codice fiscale."
+      },
+      "example": "Esempio:",
+      "fiscalCode": {
+        "label": "Codice fiscale",
+        "why": "Perché lo chiediamo: serve a intestare la fattura. Per un'azienda basta la partita IVA."
+      },
+      "kind": {
+        "Company": {
+          "description": "Una società o un professionista con partita IVA.",
+          "title": "Un'azienda"
+        },
+        "Guest": {
+          "description": "Un privato: di solito l'ospite.",
+          "title": "Una persona"
+        },
+        "legend": "A chi intestare la fattura?"
+      },
+      "more": {
+        "hint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
+        "label": "Altre opzioni"
+      },
+      "name": {
+        "Company": "Ragione sociale",
+        "Guest": "Nome e cognome"
+      },
+      "pec": {
+        "label": "PEC",
+        "why": "Perché lo chiediamo: serve solo se il destinatario riceve le fatture sulla sua PEC (posta elettronica certificata)."
+      },
+      "sdiRecipientCode": {
+        "label": "Codice destinatario",
+        "why": "Perché lo chiediamo: è il codice con cui il destinatario riceve le fatture elettroniche. Sono 7 lettere o cifre: se non lo sai, lascialo vuoto."
+      },
+      "vatNumber": {
+        "label": "Partita IVA",
+        "why": "Perché lo chiediamo: serve a intestare la fattura a un'azienda o a un professionista."
+      }
+    },
+    "retry": "Riprova",
+    "saved": "Dati di fatturazione salvati.",
+    "section": {
+      "add": "Aggiungi i dati",
+      "edit": "Controlla o modifica",
+      "empty": "Nessun dato di fatturazione. Aggiungili se l'ospite vuole la fattura.",
+      "kind": {
+        "Company": "Fattura per un'azienda.",
+        "Guest": "Fattura per una persona."
+      },
+      "loadFailed": "Non riesco a leggere i dati di fatturazione.",
+      "loading": "Leggo i dati di fatturazione…",
+      "missing": {
+        "fiscalCode": "Manca il codice fiscale: serve per emettere la fattura.",
+        "vatNumber": "Manca la partita IVA o il codice fiscale: serve per emettere la fattura."
+      },
+      "readOnly": "Solo chi gestisce i pagamenti può modificarli.",
+      "requested": "L'ospite ha chiesto la fattura al check-in.",
+      "requestedNoData": "L'ospite ha chiesto la fattura al check-in, ma non ha scritto i suoi dati. Aggiungili tu.",
+      "title": "Dati di fatturazione"
+    },
+    "source": {
+      "CheckIn": "Dati scritti dall'ospite al check-in.",
+      "Host": "Dati modificati da te.",
+      "Octorate": "Dati arrivati dal tuo channel manager."
+    },
+    "substep": {
+      "cancel": "Annulla",
+      "done": "Fatto",
+      "intro": "Controlla i dati e correggi quello che non va: la fattura sarà intestata come scrivi qui.",
+      "loadFailed": "Non riesco a leggere i dati di fatturazione.",
+      "loading": "Leggo i dati…",
+      "saveFailed": "Non sono riuscito a salvare i dati. Riprova.",
+      "title": "A chi intestare la fattura"
+    }
+  },
   "language": {
     "switchToItalian": "Passa all'italiano",
     "switchToEnglish": "Passa all'inglese",

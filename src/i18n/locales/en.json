@@ -6675,6 +6675,106 @@
     "useAnother": "Use another account",
     "useSameEmail": "Sign in with the address the invitation was sent to."
   },
+  "invoiceData": {
+    "fields": {
+      "address": {
+        "city": "City",
+        "civic": "Number",
+        "legend": "Address",
+        "postalCode": "Postal code",
+        "province": "Province",
+        "street": "Street"
+      },
+      "country": {
+        "label": "Country of the address",
+        "why": "If the address is abroad, choose the country: then the fiscal code and the VAT number are not required."
+      },
+      "errors": {
+        "countryInvalid": "Choose a country from the list.",
+        "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+        "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+        "kindInvalid": "Choose who the invoice is for.",
+        "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+        "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+        "provinceInvalid": "The province is written with 2 letters, for example RM.",
+        "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+        "tooLong": "This text is too long.",
+        "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+        "vatNumberRequired": "Write the VAT number or the fiscal code."
+      },
+      "example": "Example:",
+      "fiscalCode": {
+        "label": "Fiscal code",
+        "why": "Why we ask: it is needed to make out the invoice. For a company the VAT number is enough."
+      },
+      "kind": {
+        "Company": {
+          "description": "A company or a professional with a VAT number.",
+          "title": "A company"
+        },
+        "Guest": {
+          "description": "A private person: usually the guest.",
+          "title": "A person"
+        },
+        "legend": "Who is the invoice for?"
+      },
+      "more": {
+        "hint": "You usually do not need them: if you do not know what they are, leave them empty.",
+        "label": "More options"
+      },
+      "name": {
+        "Company": "Company name",
+        "Guest": "Name and surname"
+      },
+      "pec": {
+        "label": "PEC",
+        "why": "Why we ask: only if the recipient receives invoices on their PEC (certified e-mail)."
+      },
+      "sdiRecipientCode": {
+        "label": "Recipient code",
+        "why": "Why we ask: it is the code the recipient receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+      },
+      "vatNumber": {
+        "label": "VAT number",
+        "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+      }
+    },
+    "retry": "Try again",
+    "saved": "Invoice data saved.",
+    "section": {
+      "add": "Add the data",
+      "edit": "Check or change",
+      "empty": "No invoice data yet. Add them if the guest wants an invoice.",
+      "kind": {
+        "Company": "Invoice for a company.",
+        "Guest": "Invoice for a person."
+      },
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the invoice data…",
+      "missing": {
+        "fiscalCode": "The fiscal code is missing: it is needed to issue the invoice.",
+        "vatNumber": "The VAT number or the fiscal code is missing: it is needed to issue the invoice."
+      },
+      "readOnly": "Only people who manage payments can change them.",
+      "requested": "The guest asked for an invoice at check-in.",
+      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data. Add them yourself.",
+      "title": "Invoice data"
+    },
+    "source": {
+      "CheckIn": "Data written by the guest at check-in.",
+      "Host": "Data edited by you.",
+      "Octorate": "Data that came from your channel manager."
+    },
+    "substep": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "intro": "Check the data and correct what is wrong: the invoice will be made out as you write it here.",
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the data…",
+      "saveFailed": "We could not save the data. Try again.",
+      "title": "Who to invoice"
+    }
+  },
   "language": {
     "switchToItalian": "Switch to Italian",
     "switchToEnglish": "Switch to English",
