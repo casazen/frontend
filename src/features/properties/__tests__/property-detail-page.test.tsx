@@ -9,6 +9,7 @@ import type { Property, PropertyDetailDto } from '@/types';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { fetchServiceRequests } from '@/api/service-requests.api';
+import { welcomeApi } from '@/api/welcome.api';
 import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
@@ -27,12 +28,23 @@ vi.mock('@/queries/use-cin', () => ({
   }),
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const workspace = vi.hoisted(() => ({ permissions: [] as string[] }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
-    hasPermission: (context: string, permission: string) =>
-      context === 'short-rent' && ['property.write', 'booking.read', 'booking.write'].includes(permission),
+    hasPermission: (context: string, permission: string) => context === 'short-rent' && workspace.permissions.includes(permission),
   }),
 }));
+// The QR of the welcome page (CRM-03) is covered by its own test; here only whether the page mounts it (and so reads its API) is asked.
+vi.mock('@/api/welcome.api', () => ({
+  welcomeApi: {
+    getLink: vi.fn(() => Promise.resolve({ active: false, url: null, createdAt: null })),
+    createLink: vi.fn(),
+    rotateLink: vi.fn(),
+    getPage: vi.fn(),
+    submitConsent: vi.fn(),
+  },
+}));
+vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,QRCODE')) } }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'app-shell' }, children),
@@ -119,7 +131,7 @@ function mockDetailError(status: number) {
   return refetch;
 }
 
-function renderPage(otaPartnerApi = false, search = '') {
+function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     createElement(
@@ -127,7 +139,7 @@ function renderPage(otaPartnerApi = false, search = '') {
       { client: queryClient },
       createElement(
         FeatureFlagsContext.Provider,
-        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi }, isLoading: false } },
+        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi, crmMarketing }, isLoading: false } },
         createElement(
           MemoryRouter,
           { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
@@ -153,6 +165,8 @@ describe('PropertyDetailPage', () => {
   let activateMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
 
   beforeEach(() => {
+    workspace.permissions = ['property.write', 'booking.read', 'booking.write'];
+    vi.mocked(welcomeApi.getLink).mockClear();
     vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
       data: mockDetail,
@@ -363,5 +377,29 @@ describe('PropertyDetailPage', () => {
     renderPage(false, '?tab=ical');
 
     expect(screen.getByTestId('ical-settings')).toBeInTheDocument();
+  });
+
+  // CRM-03: the QR of the welcome page is for who may write the property, and only where the CRM module is on (its API answers 404 otherwise).
+  it('PropertyDetailPage_CrmModuleOnAndPropertyWrite_ShowsTheWelcomeQrCard', async () => {
+    renderPage(false, '', true);
+
+    expect(await screen.findByTestId('welcome-qr-card')).toBeInTheDocument();
+    expect(welcomeApi.getLink).toHaveBeenCalledWith(PROPERTY_ID);
+  });
+
+  it('PropertyDetailPage_CrmModuleOff_NoWelcomeQrCardAndNoCallToItsApi', () => {
+    renderPage(false, '', false);
+
+    expect(screen.queryByTestId('welcome-qr-card')).not.toBeInTheDocument();
+    expect(welcomeApi.getLink).not.toHaveBeenCalled();
+  });
+
+  it('PropertyDetailPage_CrmModuleOnWithoutPropertyWrite_NoWelcomeQrCardAndNoCallToItsApi', () => {
+    workspace.permissions = ['booking.read'];
+
+    renderPage(false, '', true);
+
+    expect(screen.queryByTestId('welcome-qr-card')).not.toBeInTheDocument();
+    expect(welcomeApi.getLink).not.toHaveBeenCalled();
   });
 });

@@ -1451,6 +1451,13 @@
       "directBookingMarketingConsentUnavailable": "Il testo per ricevere le offerte non è più disponibile: ricarica la pagina e riprova.",
       "directBookingSoftOptInNoticeOutdated": "L'informazione sulle offerte è stata aggiornata: ricarica la pagina, leggila e riprova.",
       "directBookingWhatsappRequiresPhone": "Per ricevere le offerte su WhatsApp serve il tuo numero di telefono: scrivilo e riprova.",
+      "welcomeAdultRequired": "Per continuare devi dichiarare di avere almeno 18 anni.",
+      "welcomeChannelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
+      "welcomeConsentOutdated": "Il testo del consenso è stato aggiornato: leggilo di nuovo e conferma la tua scelta.",
+      "welcomeConsentUnavailable": "In questo momento non possiamo raccogliere la tua scelta: riprova più tardi.",
+      "welcomeEmailInvalid": "Controlla l'indirizzo e-mail: non sembra corretto.",
+      "welcomeLinkInvalid": "Questa pagina non è più attiva.",
+      "welcomePhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
       "onsiteRequestLinkInvalid": "Link di conferma non valido: apri il link ricevuto via email.",
       "onsiteRequestExpired": "La richiesta è scaduta: le date sono tornate disponibili. Puoi inviare una nuova richiesta.",
       "onsiteRequestNotPending": "La richiesta non è più in attesa: è già stata accettata, rifiutata o annullata.",
@@ -10248,6 +10255,42 @@
       "pageTitle": "Annulla iscrizione",
       "retry": "Non siamo riusciti a completare l'operazione. Riprova tra qualche istante.",
       "title": "Vuoi annullare l'iscrizione?"
+    },
+    "welcome": {
+      "adultLabel": "Ho almeno 18 anni",
+      "consentText": "Scegliendo un canale acconsenti a ricevere da {{host}} comunicazioni promozionali (novità e offerte) su quel canale. Puoi cambiare idea in ogni momento: ogni messaggio ha il link per annullare l'iscrizione.",
+      "consentVersion": "Facoltativo. Versione del testo: {{version}}",
+      "description": "Ti dà il benvenuto {{host}}. Se vuoi, lasciaci un contatto per ricevere novità e offerte: è facoltativo e non cambia il tuo soggiorno.",
+      "done": {
+        "description": "Se l'indirizzo è corretto, ti arriva un messaggio con un link per confermare la tua scelta. Finché non confermi, non ti scriviamo. Se hai scelto solo WhatsApp, non devi fare altro.",
+        "title": "Controlla la tua e-mail per confermare"
+      },
+      "emailChannel": "E-mail",
+      "emailHint": "Ti scriviamo qui per farti confermare la scelta.",
+      "errors": {
+        "adultRequired": "Per continuare conferma di avere almeno 18 anni.",
+        "channelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
+        "generic": "Non siamo riusciti a inviare la tua scelta. Riprova tra qualche istante."
+      },
+      "inactive": {
+        "description": "Il codice che hai inquadrato non è più valido. Chiedi alla struttura di mostrartene uno nuovo.",
+        "title": "Questa pagina non è attiva"
+      },
+      "legend": "Come vuoi ricevere novità e offerte di {{host}}?",
+      "loadError": {
+        "description": "Controlla la connessione e riprova.",
+        "hint": "Non siamo riusciti ad aprire la pagina.",
+        "retry": "Riprova",
+        "title": "Non riusciamo ad aprire la pagina"
+      },
+      "loading": "Un momento…",
+      "pageTitle": "Benvenuto",
+      "phoneHint": "Serve solo se scegli WhatsApp.",
+      "submit": "Invia la mia scelta",
+      "title": "Benvenuto a {{property}}",
+      "welcomeOnly": "Ti dà il benvenuto {{host}}. Buon soggiorno!",
+      "whatsAppChannel": "WhatsApp",
+      "whatsAppNeedsPhone": "Scrivi prima il tuo numero di telefono per scegliere WhatsApp."
     }
   },
   "marketplace": {
@@ -12808,7 +12851,34 @@
         "data": "Dati dell'immobile",
         "pricing": "Prezzi"
       },
-      "tabsLabel": "Sezioni dell'immobile"
+      "tabsLabel": "Sezioni dell'immobile",
+      "welcomeQr": {
+        "copied": "Copiato",
+        "copy": "Copia",
+        "copyFailed": "Non siamo riusciti a copiare: seleziona l'indirizzo e copialo a mano.",
+        "create": "Crea il QR",
+        "createFailed": "Non siamo riusciti a creare il QR. Riprova tra qualche istante.",
+        "description": "Stampa il cartello e mettilo in casa: chi lo inquadra può lasciarti un contatto e scegliere se ricevere le tue offerte. Per l'ospite è facoltativo e non cambia il suo soggiorno.",
+        "linkLabel": "Indirizzo della pagina di benvenuto",
+        "loadError": "Non riusciamo a leggere il QR di benvenuto.",
+        "loading": "Leggo il QR di benvenuto…",
+        "noAddress": "Il QR esiste, ma qui l'indirizzo pubblico del sito non è configurato: non possiamo mostrartelo.",
+        "none": "Per questa casa non c'è ancora un QR di benvenuto.",
+        "popupBlocked": "Il browser ha bloccato la finestra di stampa: consentila e riprova.",
+        "print": "Stampa il cartello",
+        "qrAlt": "QR della pagina di benvenuto di {{name}}",
+        "renew": "Crea un nuovo QR",
+        "renewConfirm": "Sì, crea un nuovo QR",
+        "renewConsequence": "Chi inquadra il vecchio cartello vedrà che la pagina non è attiva, finché non lo sostituisci.",
+        "renewDescription": "Il QR che hai stampato smetterà di funzionare subito. Dovrai stampare il cartello nuovo e sostituirlo in casa.",
+        "renewDone": "Nuovo QR creato: stampa il cartello e sostituisci il vecchio.",
+        "renewFailed": "Non siamo riusciti a creare il nuovo QR. Il cartello che hai stampato funziona ancora: riprova tra qualche istante.",
+        "renewTitle": "Creare un nuovo QR?",
+        "retry": "Riprova",
+        "signLine": "Inquadra il codice per lasciarci un contatto e ricevere novità e offerte. È facoltativo.",
+        "signTitle": "Benvenuto!",
+        "title": "QR di benvenuto"
+      }
     },
     "info": {
       "timezone": "Fuso orario",
