@@ -22,9 +22,17 @@ export function invalidateMessageHubLists(queryClient: QueryClient): void {
 }
 
 /**
+ * The parts of the hub that follow what a guest writes: the list (`threads`), the counters (`unread`) and the conversation that is open
+ * (`thread`). The files of the messages, the templates and the ways to reach a guest do not change with a notification, and reading them
+ * again costs a request to the channel each: they are left as they are.
+ */
+const LIVE_PARTS: readonly string[] = ['threads', 'unread', 'thread'];
+
+/**
  * A guest's message makes the in-app notifications change (the number on the bell, the pop-up), whether the real-time channel writes the
- * count or the list is read again. When any of those queries is written, the hub is stale too: it is read again at once, instead of
- * at the next minute. Called with `cancelRefetch: false`, so that two hooks of the hub on one page do not restart each other's reading.
+ * count or the list is read again (the window coming back to the front does it too). When any of those queries is written, the live parts
+ * of the hub ({@link LIVE_PARTS}) are stale too: they are read again at once, instead of at the next minute. Called with
+ * `cancelRefetch: false`, so that two hooks of the hub on one page do not restart each other's reading.
  */
 export function useRefetchOnNotificationsChange(enabled: boolean): void {
   const queryClient = useQueryClient();
@@ -32,7 +40,10 @@ export function useRefetchOnNotificationsChange(enabled: boolean): void {
     if (!enabled) return;
     return queryClient.getQueryCache().subscribe((event) => {
       if (event.type === 'updated' && event.action.type === 'success' && event.query.queryKey[0] === NOTIFICATIONS_QUERY) {
-        void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY] }, { cancelRefetch: false });
+        void queryClient.invalidateQueries(
+          { queryKey: [MESSAGE_HUB_QUERY], predicate: (query) => LIVE_PARTS.includes(String(query.queryKey[1])) },
+          { cancelRefetch: false },
+        );
       }
     });
   }, [enabled, queryClient]);

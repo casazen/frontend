@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { messageHubApi } from '@/api/message-hub.api';
 import type { MessageHubPage } from '@/types';
 import { MESSAGE_HUB_POLL_MS, totalUnread, useMessageHubThreads, useMessageHubUnread } from '../use-message-hub';
@@ -79,6 +79,45 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     });
 
     await waitFor(() => expect(messageHubApi.list).toHaveBeenCalledTimes(2));
+  });
+
+  it('useMessageHubThreads_InAppNotificationsChange_ReadsAgainTheOpenConversationButNotTheFilesTheTemplatesOrTheContacts', async () => {
+    const { client, wrapper } = setup();
+    // The queries of an open conversation, with the keys the hooks of `use-message-thread` give them.
+    const reads = {
+      thread: vi.fn().mockResolvedValue({}),
+      file: vi.fn().mockResolvedValue(new Blob(['x'])),
+      templates: vi.fn().mockResolvedValue([]),
+      channelTemplates: vi.fn().mockResolvedValue([]),
+      contacts: vi.fn().mockResolvedValue({}),
+    };
+    const { result } = renderHook(
+      () => ({
+        threads: useMessageHubThreads({}),
+        thread: useQuery({ queryKey: ['message-hub', 'thread', 'ota:1'], queryFn: reads.thread }),
+        file: useQuery({ queryKey: ['message-hub', 'attachment', 'm-1'], queryFn: reads.file, staleTime: Infinity }),
+        templates: useQuery({ queryKey: ['message-hub', 'templates'], queryFn: reads.templates }),
+        channelTemplates: useQuery({ queryKey: ['message-hub', 'channel-templates', 'ota:1'], queryFn: reads.channelTemplates }),
+        contacts: useQuery({ queryKey: ['message-hub', 'contact-options', 'b-1'], queryFn: reads.contacts }),
+      }),
+      { wrapper },
+    );
+    await waitFor(() => expect(Object.values(result.current).every((query) => query.isSuccess)).toBe(true));
+
+    // What the window coming back to the front, a thread read or the real-time channel do: the notifications are written.
+    act(() => {
+      client.setQueryData(UNREAD_COUNT_KEY, 3);
+    });
+
+    // The list and the conversation that is open follow it...
+    await waitFor(() => expect(messageHubApi.list).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(reads.thread).toHaveBeenCalledTimes(2));
+    // ...the pictures, the templates and the ways to reach the guest do not: each would be a request to the channel for nothing.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(reads.file).toHaveBeenCalledTimes(1);
+    expect(reads.templates).toHaveBeenCalledTimes(1);
+    expect(reads.channelTemplates).toHaveBeenCalledTimes(1);
+    expect(reads.contacts).toHaveBeenCalledTimes(1);
   });
 
   it('useMessageHubThreads_ChangeOfAnotherQuery_DoesNotReadTheListAgain', async () => {
