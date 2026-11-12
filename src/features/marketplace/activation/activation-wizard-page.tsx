@@ -26,7 +26,7 @@ import type { MarketplaceActivationPlan, MarketplaceConnectionKind } from '@/typ
 import { SaveAndExit, WizardFrame } from '../components/wizard-frame';
 import { parseMarketplaceEntry } from '../lib/marketplace-entry';
 import { MARKETPLACE_PATH, MARKETPLACE_PROPERTY_PARAM } from '../lib/marketplace-paths';
-import { draftOfThePropertyOf, useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
+import { draftOfThePropertyOf, forgetReturnTo, useWizardLeave, useWizardReturn } from '../lib/use-wizard-exit';
 import {
   ACTIVATION_DRAFT_VERSION,
   ACTIVATION_STEP,
@@ -90,8 +90,10 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const { exitPath } = useWizardReturn();
-  const leave = useWizardLeave(exitPath, t('marketplace.activation.exit.saved'));
+  // The person may leave for the panel of the channel manager in this tab and come back to a step of this wizard: the page it was opened from is kept in the tab for that trip.
+  const returnKey = activationWizardId(kind, code);
+  const { exitPath } = useWizardReturn(returnKey);
+  const leave = useWizardLeave(exitPath, t('marketplace.activation.exit.saved'), returnKey);
   const { contexts } = useWorkspace();
   const { flags } = useFeatureFlags();
   const saveMapping = useSaveActivationMapping();
@@ -383,7 +385,10 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
         finishLabel={t('marketplace.activation.activate.finish', { name })}
         finishFailedMessage={failedMessage}
         onFinish={activateAll}
-        onExit={() => navigate(exitPath)}
+        onExit={() => {
+          forgetReturnTo(returnKey);
+          navigate(exitPath);
+        }}
         aboveFooter={
           // The guided step of the panel has its own «Salva ed esci», and the steps keep their own buttons as they are: one is enough on the screen.
           needsPanel && panelAvailability === 'ready' && searchParams.get('step') === ACTIVATION_STEP.access ? null : (

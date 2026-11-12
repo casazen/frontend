@@ -5,6 +5,7 @@ import { activateActivation, getActivation, getActivationPlan } from '@/api/mark
 import { propertiesApi } from '@/api/properties.api';
 import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
 import { MARKETPLACE_PATH } from '../../lib/marketplace-paths';
+import { returnToStorageKey } from '../../lib/use-wizard-exit';
 import {
   ACTIVATION_PATH,
   SCOPE,
@@ -209,5 +210,82 @@ describe('the result: the closing button and the way out', () => {
 
     expect(await screen.findByTestId('somewhere-else-marker', {}, WAIT)).toBeInTheDocument();
     expect(readWizardDraft(WIZARD_DRAFT_ID, SCOPE)).toBeNull();
+  });
+});
+
+describe('the way back after the trip to the panel of the channel manager', () => {
+  const OPENED_FROM = `${ACTIVATION_PATH}?propertyId=prop-1&step=activate&returnTo=${encodeURIComponent(RETURN_TO)}`;
+  // The panel sends the person back to a step of the wizard: the record of the guided step carries no returnTo, so the address has none.
+  const CAME_BACK = `${ACTIVATION_PATH}?propertyId=prop-1&step=activate`;
+
+  async function opened(url: string) {
+    renderActivation(url);
+    await screen.findByTestId('activation-activate-step', {}, WAIT);
+  }
+
+  it('ActivationWizard_LeftForThePanelAndOpenedAgainAtAStepWithNoReturnTo_StillGoesBackToWhereItWasOpenedFrom', async () => {
+    givenTheLastStep();
+    await opened(OPENED_FROM);
+    // The person leaves for the panel of the channel manager in this tab: the page goes away.
+    cleanup();
+
+    await opened(CAME_BACK);
+    fireEvent.click(screen.getByTestId('activation-save-exit'));
+
+    expect(await screen.findByTestId('somewhere-else-marker', {}, WAIT)).toBeInTheDocument();
+  });
+
+  it('ActivationWizard_LeftForThePanelAndOpenedAgainAtAStep_TheClosingButtonOfTheResultGoesBackThereToo', async () => {
+    givenTheLastStep();
+    vi.mocked(activateActivation).mockResolvedValue(state({ status: 'Active' }));
+    await opened(OPENED_FROM);
+    cleanup();
+
+    await opened(CAME_BACK);
+    fireEvent.click(primaryButton());
+    await onStep('fatto');
+    fireEvent.click(screen.getByTestId('wizard-done-primary'));
+
+    expect(await screen.findByTestId('somewhere-else-marker', {}, WAIT)).toBeInTheDocument();
+  });
+
+  it('ActivationWizard_VisitThatStartsAfresh_GoesToTheMarketplaceWhatAnEarlierVisitKeptIsNotFollowed', async () => {
+    givenTheLastStep();
+    await opened(OPENED_FROM);
+    cleanup();
+
+    // From the Marketplace again: no step and no returnTo in the address.
+    renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1`);
+    fireEvent.click(await screen.findByTestId('activation-save-exit', {}, WAIT));
+
+    expect(await screen.findByTestId('marketplace-marker', {}, WAIT)).toBeInTheDocument();
+    // And it did not stay for a later step either.
+    cleanup();
+    await opened(CAME_BACK);
+    fireEvent.click(screen.getByTestId('activation-save-exit'));
+    expect(await screen.findByTestId('marketplace-marker', {}, WAIT)).toBeInTheDocument();
+  });
+
+  it('SaveAndExit_ForgetsWhereTheWizardWasOpenedFrom_SoALaterStepOfItGoesToTheMarketplace', async () => {
+    givenTheLastStep();
+    await opened(OPENED_FROM);
+    fireEvent.click(screen.getByTestId('activation-save-exit'));
+    expect(await screen.findByTestId('somewhere-else-marker', {}, WAIT)).toBeInTheDocument();
+    cleanup();
+
+    await opened(CAME_BACK);
+    fireEvent.click(screen.getByTestId('activation-save-exit'));
+
+    expect(await screen.findByTestId('marketplace-marker', {}, WAIT)).toBeInTheDocument();
+  });
+
+  it('ActivationWizard_AddressKeptInTheTabThatIsNotAPageOfTheApp_IsNeverFollowed', async () => {
+    givenTheLastStep();
+    sessionStorage.setItem(returnToStorageKey(WIZARD_DRAFT_ID), 'https://evil.example/app/');
+    await opened(CAME_BACK);
+    fireEvent.click(screen.getByTestId('activation-save-exit'));
+
+    expect(await screen.findByTestId('marketplace-marker', {}, WAIT)).toBeInTheDocument();
+    expect(currentLocation()).toBe(MARKETPLACE_PATH);
   });
 });
