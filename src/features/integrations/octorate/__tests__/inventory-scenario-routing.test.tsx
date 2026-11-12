@@ -4,12 +4,13 @@ import i18n from '@/i18n/config';
 import { octorateApi } from '@/api/octorate.api';
 import { onboardingApi } from '@/api/onboarding.api';
 import { propertiesApi } from '@/api/properties.api';
+import { propertyIcalApi } from '@/api/property-ical.api';
 import { listingStatusApi } from '@/api/listing-status.api';
 import { getMarketplaceCatalog } from '@/api/marketplace.api';
 import { PROPERTY_CREATE_PATH } from '@/features/properties/properties-paths';
 import { expectNoAxeViolations } from '@/test/axe';
 import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
-import type { ExistingInventoryBatch, ExistingInventoryChannel } from '@/types';
+import type { ExistingInventoryBatch, ExistingInventoryChannel, ExistingInventoryCounts, OctorateListing } from '@/types';
 import {
   INVENTORY_SCENARIOS,
   MIXED_GROUP_NAMES,
@@ -22,7 +23,7 @@ import {
   type PortfolioGroup,
 } from '../inventory-scenario';
 import { OCTORATE_CONNECT_PATH } from '../octorate-callback';
-import { SCOPE, WAIT, WIZARD_DRAFT_ID, axiosError, connection, currentLocation, onStep, property, renderWizard } from './octorate-fixtures';
+import { SCOPE, WAIT, WIZARD_DRAFT_ID, axiosError, connection, currentLocation, linkedListing, listing, newListing, onStep, property, renderWizard } from './octorate-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/queries/use-users', async (importOriginal) => ({
@@ -53,6 +54,7 @@ vi.mock('@/api/octorate.api', () => ({
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn(), create: vi.fn() } }));
 vi.mock('@/api/listing-status.api', () => ({ listingStatusApi: { publish: vi.fn() } }));
+vi.mock('@/api/property-ical.api', () => ({ propertyIcalApi: { getFeeds: vi.fn() } }));
 vi.mock('@/api/marketplace.api', () => ({ getMarketplaceCatalog: vi.fn(), getMarketplaceEntry: vi.fn(), getMarketplaceActive: vi.fn() }));
 vi.mock('@/api/wizard-draft.api', () => ({
   WIZARD_DRAFTS_KEY: ['wizard-drafts'],
@@ -80,6 +82,17 @@ const OWNER = [{ contextKey: 'short-rent', roleKey: 'property_owner' }];
 const PROPERTY_MANAGER = [{ contextKey: 'short-rent', roleKey: 'property_manager' }];
 
 const PANEL_URL = 'https://panel.channel-manager.test/';
+
+/** When the rooms of the channel came in. */
+const ROOMS_IN = '2026-11-10T10:05:00Z';
+
+/** The counts of the listings of a channel: nothing, but what a test says. */
+function counts(overrides: Partial<ExistingInventoryCounts> = {}): ExistingInventoryCounts {
+  return { found: 0, roomsImported: 0, confirmed: 0, pending: 0, leftForLater: 0, rejected: 0, outOfScope: 0, reservationsImported: 0, calendarImported: 0, connected: 0, failed: 0, ...overrides };
+}
+
+/** An answer of the server that takes a little (the import is asked for and answered after the screen shows that it works). */
+const later = (milliseconds = 30) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
 const choose = (scenario: InventoryScenario) => fireEvent.click(screen.getByTestId(`octorate-scenario-${scenario}`));
 const next = () => fireEvent.click(screen.getByTestId('octorate-connect-next'));
@@ -149,6 +162,7 @@ beforeEach(async () => {
   vi.mocked(octorateApi.refreshListings).mockResolvedValue([]);
   vi.mocked(octorateApi.setInventoryIntents).mockResolvedValue([]);
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property({ id: 'p1', name: 'Casa Rosa' }), property({ id: 'p2', name: 'Casa Blu' })]);
+  vi.mocked(propertyIcalApi.getFeeds).mockResolvedValue([]);
   vi.mocked(getMarketplaceCatalog).mockResolvedValue({
     octorate: { enabled: true, connected: true },
     groups: [
@@ -693,31 +707,90 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
   it('ExistingInventoryWizard_OnOtasNeverCallsCreate_Test', async () => {
     const { win } = fakeWindow();
     vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);
+    // What the server holds, as it moves along the whole road: the batch (the access, the rooms, the end) and the listings (what the host decided).
+    let current = batch([channel({ accessState: 'Waiting' })]);
+    const decided = new Map<string, OctorateListing>();
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockImplementation(async () => current);
     vi.mocked(octorateApi.createExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NotStarted', status: 'Draft' })]));
     vi.mocked(octorateApi.startChannelAccess).mockResolvedValue({ channelCode: 'booking_xml', alreadyComplete: false, handoffMode: 'managedWindow', panelUrl: PANEL_URL });
-    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Waiting' })]));
-    vi.mocked(octorateApi.confirmChannelAccess).mockResolvedValue(batch([channel({ accessState: 'Confirmed', status: 'Failed', errorCode: 'd6_channel_failed' })]));
+    vi.mocked(octorateApi.confirmChannelAccess).mockImplementation(async () => {
+      current = batch([channel({ accessState: 'Confirmed', status: 'AwaitingChannelAccess' })]);
+      return current;
+    });
+    vi.mocked(octorateApi.runExistingInventoryBatch).mockImplementation(async () => {
+      await later();
+      current = batch([channel({ accessState: 'Confirmed', status: 'AwaitingMapping', roomsImportedAt: ROOMS_IN, counts: counts({ found: 3, roomsImported: 3, pending: 3 }) })]);
+      return current;
+    });
+    vi.mocked(octorateApi.continueExistingInventoryBatch).mockImplementation(async () => {
+      current = batch(
+        [channel({ accessState: 'Confirmed', status: 'Completed', roomsImportedAt: ROOMS_IN, completedAt: ROOMS_IN, counts: counts({ found: 3, roomsImported: 3, confirmed: 2, leftForLater: 1, reservationsImported: 2, calendarImported: 2, connected: 2 }) })],
+        { status: 'Completed', completedAt: ROOMS_IN },
+      );
+      return current;
+    });
+    vi.mocked(propertiesApi.getAll).mockResolvedValue([property()]);
+    vi.mocked(octorateApi.getFoundListings).mockImplementation(async () => [
+      decided.get('acc-1') ?? listing(),
+      decided.get('acc-new') ?? newListing(),
+      listing({ octorateAccommodationId: 'acc-4', name: 'Casa Gialla', proposedProperty: null, status: 'Ambiguous' }),
+    ]);
+    vi.mocked(octorateApi.confirmMapping).mockImplementation(async (id) => {
+      decided.set(id, linkedListing());
+    });
+    vi.mocked(octorateApi.importListing).mockImplementation(async (id) => {
+      decided.set(id, linkedListing({ octorateAccommodationId: id, name: 'Casa Nuova', proposedProperty: { id: 'prop-9', name: 'Casa Nuova', address: '', city: '' } }));
+      return { propertyId: 'prop-9' };
+    });
+
+    // The channel: the panel opens in its own window and the step stays on screen.
     await toTheOtaChannels();
     fireEvent.click(await screen.findByTestId('existing-channel-choice-booking_xml', undefined, WAIT));
     fireEvent.click(screen.getByTestId('existing-channel-booking_xml-open'));
     await waitFor(() => expect(octorateApi.startChannelAccess).toHaveBeenCalled(), WAIT);
+    await waitFor(() => expect(screen.getByTestId('existing-channel-booking_xml')).toHaveAttribute('data-state', 'waiting'), WAIT);
 
-    // Every recovery path of the step: the panel again, the window closed, the confirmation after a check that could not tell, and a channel that failed.
+    // Every recovery path of the step: the panel again, the window closed, the confirmation after a check that could not tell.
     fireEvent.click(screen.getByTestId('existing-channel-booking_xml-open'));
     await waitFor(() => expect(octorateApi.startChannelAccess).toHaveBeenCalledTimes(2), WAIT);
-    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'NeedsConfirmation' })]));
+    current = batch([channel({ accessState: 'NeedsConfirmation' })]);
     act(() => {
-      window.dispatchEvent(new Event('focus'));
+      win.closed = true;
     });
     fireEvent.click(await screen.findByTestId('existing-channel-booking_xml-confirm', undefined, WAIT));
-    await waitFor(() => expect(octorateApi.confirmChannelAccess).toHaveBeenCalled(), WAIT);
+    await waitFor(() => expect(octorateApi.confirmChannelAccess).toHaveBeenCalledWith('batch-1', 'booking_xml'), WAIT);
 
-    // No UI or request of this road creates or publishes a listing: the listing wizard is never mounted and its calls are never made.
+    // The import: it starts by itself once the access is given, stops at the mapping, and the wizard goes on.
+    await onStep('mapping');
+    expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(1);
+
+    // The mapping: one listing confirmed to its property, one imported as a record of CasaZen (the server creates nothing on the channel manager for it), one left for later.
+    fireEvent.click(await screen.findByTestId('octorate-mapping-confirm-acc-1', undefined, WAIT));
+    fireEvent.click(screen.getByTestId('octorate-mapping-import-acc-new'));
+    fireEvent.click(screen.getByTestId('octorate-connect-next'));
+    await onStep('summary');
+    fireEvent.click(screen.getByTestId('octorate-connect-finish'));
+
+    // The end: what the host decided is done listing by listing, and the import goes on for the confirmed ones, naming the listing left for later (it stays write-blocked).
+    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toBeInTheDocument();
+    expect(octorateApi.confirmMapping).toHaveBeenCalledWith('acc-1', 'prop-1', undefined);
+    expect(octorateApi.continueExistingInventoryBatch).toHaveBeenCalledTimes(1);
+    expect(octorateApi.continueExistingInventoryBatch).toHaveBeenCalledWith('batch-1', expect.objectContaining({ leaveForLater: ['acc-4'] }));
+    // The result of the import, channel by channel, from what the server says.
+    const result = await screen.findByTestId('existing-import-result', undefined, WAIT);
+    await waitFor(() => expect(within(result).getByTestId('existing-result-booking_xml')).toHaveAttribute('data-status', 'Completed'), WAIT);
+    expect(within(result).getByTestId('existing-result-booking_xml-counts')).toHaveTextContent(
+      i18n.t('octorate.connect.existing.result.counts', { connected: 2, leftForLater: 1, failed: 0 }),
+    );
+
+    // No UI or request of the whole road creates or publishes a listing: the listing wizard is never mounted and its calls are never made; the only record of CasaZen
+    // that was made is the import of the one listing the host chose (and the server says it creates nothing on the channel manager).
     expect(screen.queryByTestId('listing-wizard')).not.toBeInTheDocument();
-    expect(currentLocation()).not.toBe(PROPERTY_CREATE_PATH);
+    expect(currentLocation()).not.toContain(PROPERTY_CREATE_PATH);
     expect(propertiesApi.create).not.toHaveBeenCalled();
     expect(listingStatusApi.publish).not.toHaveBeenCalled();
-    expect(octorateApi.importListing).not.toHaveBeenCalled();
+    expect(octorateApi.importListing).toHaveBeenCalledTimes(1);
+    expect(octorateApi.importListing).toHaveBeenCalledWith('acc-new');
   });
 });
 
@@ -780,7 +853,10 @@ describe('the existing listings: the progress of the import (E02/F01/US03/T02, D
   it('OctorateConnectWizard_ImportThatFailsToStart_SaysWhyAndRiprovaAsksAgainOnceNeverInALoop', async () => {
     vi.mocked(octorateApi.runExistingInventoryBatch)
       .mockRejectedValueOnce(axiosError(409, { code: 'existing_inventory_access_pending' }))
-      .mockResolvedValue(batch([channel({ accessState: 'Verified', status: 'AwaitingMapping' })]));
+      .mockImplementation(async () => {
+        await later();
+        return batch([channel({ accessState: 'Verified', status: 'AwaitingMapping' })]);
+      });
     await toTheImport();
 
     // The start the step makes by itself fails: the person is told why and has «Riprova» (no dead end), and the step does not ask again by itself.
@@ -797,6 +873,68 @@ describe('the existing listings: the progress of the import (E02/F01/US03/T02, D
     await waitFor(() => expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(2), WAIT);
     await onStep('mapping');
     expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledTimes(2);
+  });
+
+  /** The state of the last step of the sequence of a channel on screen: `done`, `current`, `pending` or `attention`. */
+  const lastStep = (row: HTMLElement) => row.querySelector('[data-step="connected"]')?.getAttribute('data-state');
+
+  it('OctorateConnectWizard_ImportThatIsNotCompleted_ShowsTheStepsBeforeDoneAndNeverTheCompletion', async () => {
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-import', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
+    // Everything is counted as brought in, and the server is still marking the listings as connected: it is not completed.
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(
+      batch(
+        [channel({ accessState: 'Confirmed', status: 'MarkingConnected', roomsImportedAt: ROOMS_IN, counts: counts({ found: 2, roomsImported: 2, confirmed: 2, reservationsImported: 2, calendarImported: 2 }) })],
+        { status: 'MarkingConnected' },
+      ),
+    );
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-import`);
+    await onStep('existing-import');
+
+    const row = await screen.findByTestId('existing-progress-booking_xml', undefined, WAIT);
+    // The sequence in the words of the wizard, each step with its state; the last one is the one that works.
+    for (const step of ['rooms', 'mapping', 'reservations', 'calendar']) expect(row.querySelector(`[data-step="${step}"]`)).toHaveAttribute('data-state', 'done');
+    expect(lastStep(row)).toBe('current');
+    expect(within(row).getByText(i18n.t('octorate.connect.existing.progress.steps.connected'))).toBeInTheDocument();
+    // No word of completion, and the wizard does not go on to the mapping.
+    expect(screen.queryByTestId('existing-progress-completed')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('existing-progress-at-mapping')).not.toBeInTheDocument();
+    expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', 'existing-import');
+  });
+
+  it('OctorateConnectWizard_ImportThatTheServerSaysIsCompleted_ShowsEveryStepDoneAndTheCompletion', async () => {
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-import', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(
+      batch(
+        [channel({ accessState: 'Confirmed', status: 'Completed', roomsImportedAt: ROOMS_IN, completedAt: ROOMS_IN, counts: counts({ found: 2, roomsImported: 2, confirmed: 2, reservationsImported: 2, calendarImported: 2, connected: 2 }) })],
+        { status: 'Completed', completedAt: ROOMS_IN },
+      ),
+    );
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-import`);
+    await onStep('existing-import');
+
+    const row = await screen.findByTestId('existing-progress-booking_xml', undefined, WAIT);
+    for (const step of ['rooms', 'mapping', 'reservations', 'calendar', 'connected']) expect(row.querySelector(`[data-step="${step}"]`)).toHaveAttribute('data-state', 'done');
+    expect(await screen.findByTestId('existing-progress-completed')).toHaveTextContent(i18n.t('octorate.connect.existing.progress.completed'));
+  });
+
+  it('OctorateConnectWizard_ChannelThatStoppedInTheImport_SaysWhyAndRiprovaAsksForThatChannelAgain', async () => {
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-import', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(
+      batch([channel({ accessState: 'Confirmed', status: 'NeedsAttention', errorCode: 'channel_connection_not_found', roomsImportedAt: null })], { status: 'NeedsAttention' }),
+    );
+    vi.mocked(octorateApi.runExistingInventoryBatch).mockImplementation(async () => {
+      await later();
+      return batch([channel({ accessState: 'Confirmed', status: 'ImportingRooms' })]);
+    });
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-import`);
+    await onStep('existing-import');
+
+    // A channel that stopped is not run again by itself; it says why, in the words of the app, and the host asks again.
+    const stopped = await screen.findByTestId('existing-progress-booking_xml-stopped', undefined, WAIT);
+    expect(stopped).toHaveTextContent(i18n.t('apiErrors.codes.channelConnectionNotFound'));
+    expect(octorateApi.runExistingInventoryBatch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('existing-progress-booking_xml-retry'));
+    await waitFor(() => expect(octorateApi.runExistingInventoryBatch).toHaveBeenCalledWith('batch-1', undefined), WAIT);
   });
 });
 
