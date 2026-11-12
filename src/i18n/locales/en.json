@@ -1293,6 +1293,9 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "assistContextInvalid": "This help request is not about a step we can do for you.",
+      "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
+      "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
       "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
       "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
@@ -1309,11 +1312,22 @@
       "octorateMappingPropertyTaken": "This property is already linked to another listing. Go back and choose another one.",
       "octorateMappingRefreshConflict": "The listings are already being updated. Try again in a moment.",
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
+      "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
+      "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
+      "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
+      "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
+      "panelStepChannelInvalid": "The channel of this step is not valid.",
+      "panelStepKindInvalid": "This kind of step does not exist.",
+      "panelStepNotFound": "This step no longer exists or is not yours.",
+      "panelStepNotValid": "The last check found the connection not valid: open the panel again and retry.",
+      "panelStepResumeInvalid": "We could not save where to resume from. Try again.",
+      "panelStepStateInvalid": "The return from the panel is no longer valid: open the panel again.",
+      "panelStepVerificationRequired": "CasaZen has to check the connection first: wait for the check and try again.",
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
@@ -10993,6 +11007,147 @@
         "fiscalDocuments": "Decide who issues the fiscal documents of the bookings.",
         "messagesAi": "Choose how and when to write to your guests.",
         "pricesCalendar": "Prices and rules are set once and apply to every channel."
+      }
+    },
+    "panel": {
+      "actions": {
+        "confirmNo": "No, open it again",
+        "confirmYes": "Yes, continue",
+        "continue": "Continue",
+        "open": "Open the panel",
+        "reopen": "Open the panel again",
+        "retryOpen": "Try to open it again",
+        "saveExit": "Save and exit"
+      },
+      "adminOnly": "The organization administrator does this step.",
+      "assist": {
+        "action": {
+          "doItForMe": "Do it for me",
+          "needHelp": "I need help"
+        },
+        "error": "We could not send the request. Try again in a moment.",
+        "note": "CasaZen support takes care of it: you also find it in To do.",
+        "status": {
+          "Cancelled": "Request cancelled",
+          "Done": "Done: CasaZen support took care of it",
+          "InProgress": "In progress: CasaZen support is working on it",
+          "Requested": "Request sent to CasaZen support"
+        },
+        "todoLink": "See it in To do"
+      },
+      "channelAccess": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The channels section with the portal to connect",
+          "3": "The login page of the portal, where you enter your credentials",
+          "4": "The list of the channels with the Activated status"
+        },
+        "description": "The access to the portal is given from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check that you logged in to the portal with the right credentials and that the channel shows «Activated», then open the panel again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the channels section and choose the portal to connect.",
+          "3": "Log in to the portal with your credentials: you enter them only there, never in CasaZen.",
+          "4": "Check that the channel shows «Activated»."
+        },
+        "title": "Give access to the channel"
+      },
+      "channelMissing": "The channel to give access to is missing. Go back to the plan and start again from there.",
+      "context": {
+        "channel": "Channel:",
+        "property": "Property:"
+      },
+      "errors": {
+        "callback": "We could not verify the connection when you came back from the panel. Open the panel again.",
+        "confirm": "We could not confirm. Try again.",
+        "load": "We could not load the step.",
+        "open": "We could not open the panel. Try again."
+      },
+      "explain": {
+        "credentialsNote": "You enter your credentials only in the panel and on the portals' sites: never in CasaZen.",
+        "instructionsTitle": "What you will do in the panel",
+        "needTitle": "Keep at hand"
+      },
+      "istat": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The ISTAT section of the panel",
+          "3": "The fields for the ISTAT credentials of your region",
+          "4": "The connection test button and the Activated status"
+        },
+        "description": "The connection with the ISTAT of your region is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the ISTAT credentials of your region, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the ISTAT section, the tourism statistics of your region.",
+          "3": "Enter the ISTAT credentials of your region.",
+          "4": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the ISTAT of your region"
+      },
+      "page": {
+        "backToPlan": "Back to the plan",
+        "resumeTitle": "Resume the step"
+      },
+      "police": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The State Police section of the panel",
+          "3": "The fields for the Alloggiati Web credentials and the web service key",
+          "4": "The list of the rooms with the room number to enter",
+          "5": "The connection test button and the Activated status"
+        },
+        "description": "The connection with Alloggiati Web is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the Alloggiati Web credentials, the web service key and the room number of each room, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the State Police section (Alloggiati Web).",
+          "3": "Enter the Alloggiati Web credentials and the web service key.",
+          "4": "Enter the Alloggiati Web room number for each room.",
+          "5": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the State Police"
+      },
+      "returning": "Checking the connection...",
+      "started": {
+        "alert": "The browser blocked the panel window. Allow pop-ups for this site and try again: you will start again from here."
+      },
+      "state": {
+        "assist": {
+          "body": "You asked for help: as soon as the step is done you see it here and in To do.",
+          "title": "CasaZen support is on it"
+        },
+        "explain": {
+          "body": "We open the panel you need and CasaZen stays here to follow the connection.",
+          "title": "We open the panel for you"
+        },
+        "notValid": {
+          "body": "CasaZen checked and the connection is not valid yet.",
+          "title": "The connection does not show as active yet"
+        },
+        "recovered": {
+          "body": "CasaZen verified the connection: you go on from here.",
+          "title": "Connection successful",
+          "toast": "Connection verified"
+        },
+        "started": {
+          "body": "Your progress is saved, but the panel did not open.",
+          "title": "Allow it to open and try again"
+        },
+        "unverifiable": {
+          "body": "We cannot see it from here. If you see «Activated» in the panel, confirm; otherwise open the panel again or ask for help.",
+          "title": "Did you complete the connection and see the Activated status?"
+        },
+        "waiting": {
+          "body": "Complete the steps in the panel window: as soon as CasaZen sees the connection active, it takes you on by itself. There is nothing else to press.",
+          "title": "I am waiting for the connection"
+        }
+      },
+      "waiting": {
+        "checking": "checking",
+        "elapsedNow": "Just opened",
+        "elapsed_one": "Waiting for {{count}} minute",
+        "elapsed_other": "Waiting for {{count}} minutes"
       }
     },
     "parts": {

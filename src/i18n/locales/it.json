@@ -1293,6 +1293,9 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "assistContextInvalid": "Questa richiesta di aiuto non riguarda un passaggio che possiamo fare per te.",
+      "assistRequestAlreadyOpen": "Hai già una richiesta aperta per questo passaggio: la trovi in Da fare.",
+      "assistStepAlreadyDone": "Questo passaggio è già stato fatto: non serve altro.",
       "documentIssuanceNotAvailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
       "fiscalSettingsNeedWholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti.",
       "issuerFieldInvalid": "Uno dei dati di chi emette non è valido. Controlla i campi e riprova.",
@@ -1309,11 +1312,22 @@
       "octorateMappingPropertyTaken": "Questo immobile è già collegato a un altro annuncio. Torna indietro e scegline un altro.",
       "octorateMappingRefreshConflict": "Gli annunci si stanno già aggiornando. Riprova tra qualche istante.",
       "octorateNotConnected": "Il tuo channel manager non è collegato. Torna al collegamento e riprova.",
+      "octoratePanelUrlMissing": "L'indirizzo del pannello non è ancora configurato. Contatta il supporto.",
       "octoratePropertyNotFound": "Non troviamo l'immobile scelto, oppure non hai accesso. Torna indietro e scegline un altro.",
       "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
+      "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
+      "panelStepAssistOpen": "Se ne sta occupando il supporto di CasaZen: non serve confermare.",
+      "panelStepCallbackUnsupported": "Questo passaggio non prevede il ritorno automatico dal pannello.",
+      "panelStepChannelInvalid": "Il canale di questo passaggio non è valido.",
+      "panelStepKindInvalid": "Questo tipo di passaggio non esiste.",
+      "panelStepNotFound": "Questo passaggio non esiste più o non è tuo.",
+      "panelStepNotValid": "L'ultimo controllo ha trovato il collegamento non valido: riapri il pannello e riprova.",
+      "panelStepResumeInvalid": "Non è stato possibile salvare da dove riprendere. Riprova.",
+      "panelStepStateInvalid": "Il ritorno dal pannello non è più valido: riapri il pannello.",
+      "panelStepVerificationRequired": "Prima CasaZen deve controllare il collegamento: aspetta il controllo e riprova.",
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
@@ -10993,6 +11007,147 @@
         "fiscalDocuments": "Stabilisci chi emette i documenti fiscali delle prenotazioni.",
         "messagesAi": "Scegli come e quando scrivere ai tuoi ospiti.",
         "pricesCalendar": "Prezzi e regole si impostano una volta sola e valgono su tutti i canali."
+      }
+    },
+    "panel": {
+      "actions": {
+        "confirmNo": "No, riapri",
+        "confirmYes": "Sì, continua",
+        "continue": "Continua",
+        "open": "Apri il pannello",
+        "reopen": "Riapri il pannello",
+        "retryOpen": "Riprova ad aprire",
+        "saveExit": "Salva ed esci"
+      },
+      "adminOnly": "Questo passaggio lo fa l'amministratore dell'organizzazione.",
+      "assist": {
+        "action": {
+          "doItForMe": "Fallo per me",
+          "needHelp": "Mi serve aiuto"
+        },
+        "error": "Non è stato possibile inviare la richiesta. Riprova tra poco.",
+        "note": "Se ne occupa il supporto di CasaZen: lo trovi anche in Da fare.",
+        "status": {
+          "Cancelled": "Richiesta annullata",
+          "Done": "Fatto: ci ha pensato il supporto di CasaZen",
+          "InProgress": "In lavorazione: il supporto di CasaZen ci sta lavorando",
+          "Requested": "Richiesta inviata al supporto di CasaZen"
+        },
+        "todoLink": "Vedi in Da fare"
+      },
+      "channelAccess": {
+        "alts": {
+          "1": "Il pannello del channel manager con la struttura da scegliere",
+          "2": "La sezione dei canali con il portale da collegare",
+          "3": "La pagina di accesso del portale, dove inserisci le tue credenziali",
+          "4": "L'elenco dei canali con lo stato Attivata"
+        },
+        "description": "L'accesso al portale si dà dal pannello del tuo channel manager: ti guidiamo noi e CasaZen resta qui a seguirlo.",
+        "notValid": "Controlla di aver fatto l'accesso al portale con le credenziali giuste e che il canale risulti «Attivata», poi riapri il pannello.",
+        "steps": {
+          "1": "Accedi al pannello del tuo channel manager e scegli la struttura.",
+          "2": "Apri la sezione dei canali e scegli il portale da collegare.",
+          "3": "Accedi al portale con le tue credenziali: le inserisci solo lì, mai in CasaZen.",
+          "4": "Controlla che il canale risulti «Attivata»."
+        },
+        "title": "Dai l'accesso al canale"
+      },
+      "channelMissing": "Manca il canale a cui dare l'accesso. Torna al piano e riparti da lì.",
+      "context": {
+        "channel": "Canale:",
+        "property": "Immobile:"
+      },
+      "errors": {
+        "callback": "Non è stato possibile verificare il collegamento al ritorno dal pannello. Riapri il pannello.",
+        "confirm": "Non è stato possibile confermare. Riprova.",
+        "load": "Non è stato possibile caricare il passaggio.",
+        "open": "Non è stato possibile aprire il pannello. Riprova."
+      },
+      "explain": {
+        "credentialsNote": "Le credenziali le inserisci solo nel pannello e sui siti dei portali: mai in CasaZen.",
+        "instructionsTitle": "Cosa farai nel pannello",
+        "needTitle": "Tieni a portata di mano"
+      },
+      "istat": {
+        "alts": {
+          "1": "Il pannello del channel manager con la struttura da scegliere",
+          "2": "La sezione dell'ISTAT nel pannello",
+          "3": "I campi delle credenziali ISTAT della tua regione",
+          "4": "Il pulsante di prova della connessione e lo stato Attivata"
+        },
+        "description": "Il collegamento con l'ISTAT della tua regione si fa dal pannello del tuo channel manager: ti guidiamo noi e CasaZen resta qui a seguirlo.",
+        "notValid": "Controlla le credenziali ISTAT della tua regione, poi premi di nuovo «Test di connessione».",
+        "steps": {
+          "1": "Accedi al pannello del tuo channel manager e scegli la struttura.",
+          "2": "Apri la sezione dell'ISTAT, la statistica del turismo della tua regione.",
+          "3": "Inserisci le credenziali ISTAT della tua regione.",
+          "4": "Premi «Test di connessione» e controlla che lo stato sia «Attivata»."
+        },
+        "title": "Collega l'ISTAT della tua regione"
+      },
+      "page": {
+        "backToPlan": "Torna al piano",
+        "resumeTitle": "Riprendi il passaggio"
+      },
+      "police": {
+        "alts": {
+          "1": "Il pannello del channel manager con la struttura da scegliere",
+          "2": "La sezione della Polizia di Stato nel pannello",
+          "3": "I campi delle credenziali di Alloggiati Web e della chiave del web service",
+          "4": "L'elenco delle camere con il numero di camera da indicare",
+          "5": "Il pulsante di prova della connessione e lo stato Attivata"
+        },
+        "description": "Il collegamento con Alloggiati Web si fa dal pannello del tuo channel manager: ti guidiamo noi e CasaZen resta qui a seguirlo.",
+        "notValid": "Controlla le credenziali di Alloggiati Web, la chiave del web service e il numero di camera di ogni camera, poi premi di nuovo «Test di connessione».",
+        "steps": {
+          "1": "Accedi al pannello del tuo channel manager e scegli la struttura.",
+          "2": "Apri la sezione della Polizia di Stato (Alloggiati Web).",
+          "3": "Inserisci le credenziali di Alloggiati Web e la chiave del web service.",
+          "4": "Indica il numero di camera di Alloggiati Web per ogni camera.",
+          "5": "Premi «Test di connessione» e controlla che lo stato sia «Attivata»."
+        },
+        "title": "Collega la Polizia di Stato"
+      },
+      "returning": "Sto verificando il collegamento...",
+      "started": {
+        "alert": "Il browser ha bloccato la finestra del pannello. Consenti le finestre a comparsa per questo sito e riprova: ripartirai da qui."
+      },
+      "state": {
+        "assist": {
+          "body": "Hai chiesto aiuto: appena il passaggio è fatto lo vedi qui e in Da fare.",
+          "title": "Ci pensa il supporto di CasaZen"
+        },
+        "explain": {
+          "body": "Apriamo il pannello necessario e CasaZen resta qui a seguire il collegamento.",
+          "title": "Apriamo il pannello per te"
+        },
+        "notValid": {
+          "body": "CasaZen ha controllato e il collegamento non è ancora valido.",
+          "title": "Il collegamento non risulta ancora attivo"
+        },
+        "recovered": {
+          "body": "CasaZen ha verificato il collegamento: si continua da qui.",
+          "title": "Collegamento riuscito",
+          "toast": "Collegamento verificato"
+        },
+        "started": {
+          "body": "Il tuo avanzamento è salvato, ma il pannello non si è aperto.",
+          "title": "Consenti l'apertura e riprova"
+        },
+        "unverifiable": {
+          "body": "Da qui non riusciamo a vederlo noi. Se nel pannello vedi «Attivata», conferma; altrimenti riapri il pannello o chiedi aiuto.",
+          "title": "Hai completato il collegamento e visto lo stato Attivata?"
+        },
+        "waiting": {
+          "body": "Completa i passaggi nella finestra del pannello: appena CasaZen vede il collegamento attivo, ti porta avanti da solo. Non serve premere altro.",
+          "title": "Sto aspettando il collegamento"
+        }
+      },
+      "waiting": {
+        "checking": "controllo in corso",
+        "elapsedNow": "Appena aperto",
+        "elapsed_one": "In attesa da {{count}} minuto",
+        "elapsed_other": "In attesa da {{count}} minuti"
       }
     },
     "parts": {
