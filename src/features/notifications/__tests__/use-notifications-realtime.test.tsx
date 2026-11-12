@@ -2,16 +2,21 @@ import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { createElement } from 'react';
+import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
+import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import type { PendingAlert } from '@/types/alert';
 import type { NotificationsChange, RealtimeClient, RealtimeState } from '../realtime-client';
 import { applyNotificationsChange, useNotificationsRealtime } from '../use-notifications-realtime';
+
+// The section «Dati di fatturazione» of an open booking reads its data through this module: nothing goes to the network.
+vi.mock('@/api/invoice-data.api', () => ({ getInvoiceData: vi.fn(), saveInvoiceData: vi.fn() }));
 
 function fakeClient(initial: RealtimeState = 'disconnected') {
   let state = initial;
@@ -141,6 +146,8 @@ describe('useNotificationsRealtime', () => {
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([BOOKINGS_KEY]);
     expect(keys).toContainEqual([CHECKIN_SESSION_KEY]);
+    // The invoice data the guest wrote at that check-in (FIS-01) is one of them.
+    expect(keys).toContainEqual([INVOICE_DATA_KEY]);
   });
 
   it('useNotificationsRealtime_State_FollowsTheChannel', () => {
@@ -303,7 +310,7 @@ describe('applyNotificationsChange', () => {
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
-    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, 'guests'])
+    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, 'guests', INVOICE_DATA_KEY])
       expect(keys, root).toContainEqual([root]);
     // The entity is a booking, so its thread is read again too, as for any booking event.
     expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
@@ -318,6 +325,7 @@ describe('applyNotificationsChange', () => {
       const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
       expect(keys).not.toContainEqual([BOOKINGS_KEY]);
       expect(keys).not.toContainEqual([CHECKIN_SESSION_KEY]);
+      expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
     },
   );
 
@@ -342,5 +350,36 @@ describe('applyNotificationsChange', () => {
     await waitFor(() => expect(readLink).toHaveBeenCalledTimes(2));
     expect(readBooking).toHaveBeenCalledTimes(2);
     expect(readCompliance).toHaveBeenCalledTimes(2);
+  });
+
+  // FIS-01: the guest's «yes» to «Ti serve la fattura?» and the data the guest wrote are saved with the check-in, so the section «Dati di
+  // fatturazione» of the open tab Pagamento (`useInvoiceData`, which keeps no data once unmounted) shows them at once, not at the next focus.
+  it('applyNotificationsChange_GuestCheckInCompleted_AnOpenInvoiceDataSectionShowsWhatTheGuestWroteWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const read = vi.mocked(getInvoiceData);
+    read.mockResolvedValueOnce({ bookingId: 'b-1', invoiceRequested: false });
+    read.mockResolvedValueOnce({ bookingId: 'b-1', invoiceRequested: true, recipientKind: 'Guest', name: 'Mario Rossi', source: 'CheckIn' });
+    const { result } = renderHook(() => useInvoiceData('b-1'), { wrapper });
+    await waitFor(() => expect(result.current.data?.invoiceRequested).toBe(false));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' }));
+
+    await waitFor(() => expect(result.current.data?.invoiceRequested).toBe(true));
+    expect(result.current.data).toMatchObject({ name: 'Mario Rossi', source: 'CheckIn' });
+    expect(read).toHaveBeenCalledTimes(2);
+  });
+
+  it('applyNotificationsChange_GuestMessage_DoesNotReadTheInvoiceDataOfAnOpenBookingAgain', async () => {
+    const { queryClient, wrapper } = setup();
+    const read = vi.mocked(getInvoiceData);
+    read.mockClear();
+    read.mockResolvedValue({ bookingId: 'b-1', invoiceRequested: false });
+    const { result } = renderHook(() => useInvoiceData('b-1'), { wrapper });
+    await waitFor(() => expect(result.current.data).toBeDefined());
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-message', entityId: 'b-1' }));
+    await act(async () => {});
+
+    expect(read).toHaveBeenCalledTimes(1);
   });
 });
