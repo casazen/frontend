@@ -647,6 +647,80 @@ describe('a refused save', () => {
   });
 });
 
+describe('the two calls of the last button: the tax profile first, then the setting', () => {
+  /** A business CasaZen issues for whose tax profile has no VAT number yet: the last button sends the VAT number to the tax profile first. */
+  async function toTheSummaryWithAVatNumberToAdd() {
+    renderWizard();
+    await onStep('who');
+    fireEvent.click(screen.getByTestId('fiscal-issuer-mode-CasaZenDirectOnly'));
+    await goTo('regime');
+    fireEvent.click(screen.getByTestId('fiscal-issuer-vat-yes'));
+    fireEvent.click(screen.getByTestId('fiscal-issuer-vat-regime-flatRate'));
+    await goTo('issuer');
+    type('fiscal-issuer-vat-number', '12345678901');
+    await goTo('address');
+    type('fiscal-issuer-street', 'Via Roma');
+    type('fiscal-issuer-postal-code', '20121');
+    type('fiscal-issuer-city', 'Milano');
+    type('fiscal-issuer-province', 'MI');
+    await goTo('summary');
+  }
+
+  it('IssuerWizard_TaxProfileRefused_TheSettingIsNotSentAndTheErrorIsOnScreen', async () => {
+    vi.mocked(fiscalApi.putTaxProfile).mockRejectedValue(
+      problem(400, { status: 400, code: 'fiscal_tax_identifier_invalid', detail: 'La partita IVA non è valida.' }),
+    );
+    await toTheSummaryWithAVatNumberToAdd();
+
+    fireEvent.click(finish());
+
+    expect(await screen.findByTestId('fiscal-issuer-finish-error', undefined, WAIT)).toHaveTextContent('La partita IVA non è valida.');
+    // The setting was never sent, nothing says it was saved, and the person is still on the last step with the answers.
+    expect(fiscalApi.putTaxProfile).toHaveBeenCalledTimes(1);
+    expect(saveIssuerSettings).not.toHaveBeenCalled();
+    expect(wizard()).toHaveAttribute('data-step', 'summary');
+    expect(screen.queryByTestId('fiscal-issuer-done')).not.toBeInTheDocument();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId('fiscal-issuer-summary-step')).toHaveTextContent('12345678901');
+  });
+
+  it('IssuerWizard_SettingRefusedAfterTheTaxProfile_TheSecondTryDoesNotWriteTheProfileAgain', async () => {
+    // What the server holds: the VAT number once the tax profile took it, the confirmation once the setting was saved.
+    let vatNumberOnRecord = false;
+    let confirmed = false;
+    const issuer = { ...completedSetting().issuer, vatNumber: '12345678901', fiscalCode: undefined };
+    const saved = () => completedSetting({ mode: 'CasaZenDirectOnly', regime: 'VatFlatRate', issuer, confirmedAt: '2026-11-10T10:00:00Z' });
+    vi.mocked(getIssuerSettings).mockImplementation(async () =>
+      confirmed ? saved() : settings(vatNumberOnRecord ? { issuer: { countryCode: 'IT', vatNumber: '12345678901' } } : {}),
+    );
+    vi.mocked(fiscalApi.putTaxProfile).mockImplementation(async () => {
+      vatNumberOnRecord = true;
+      return { hasPartitaIva: true, partitaIvaNumber: '12345678901', fiscalCode: null, fiscalDataRetentionUntil: null };
+    });
+    vi.mocked(saveIssuerSettings)
+      .mockRejectedValueOnce(problem(422, { status: 422, code: 'document_issuance_not_available' }))
+      .mockImplementationOnce(async () => {
+        confirmed = true;
+        return saved();
+      });
+    await toTheSummaryWithAVatNumberToAdd();
+
+    // First try: the VAT number goes to the tax profile, and then the setting is refused.
+    fireEvent.click(finish());
+    expect(await screen.findByTestId('fiscal-issuer-finish-error', undefined, WAIT)).toHaveTextContent(text('apiErrors.codes.documentIssuanceNotAvailable'));
+    expect(fiscalApi.putTaxProfile).toHaveBeenCalledTimes(1);
+    expect(fiscalApi.putTaxProfile).toHaveBeenCalledWith({ hasPartitaIva: true, partitaIvaNumber: '12345678901' });
+    expect(saveIssuerSettings).toHaveBeenCalledTimes(1);
+    expect(wizard()).toHaveAttribute('data-step', 'summary');
+
+    // Second try: the tax profile has the VAT number now, so it is on record and it is not written again; the setting goes through.
+    fireEvent.click(finish());
+    await waitFor(() => expect(saveIssuerSettings).toHaveBeenCalledTimes(2), WAIT);
+    expect(fiscalApi.putTaxProfile).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('fiscal-issuer-done', undefined, WAIT)).toBeInTheDocument();
+  });
+});
+
 describe('save and exit, help and the draft', () => {
   it('IssuerWizard_SaveAndExit_KeepsTheAnswersAsTheDraftChangesNothingAndLeaves', async () => {
     const first = renderWizard();
