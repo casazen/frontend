@@ -1448,6 +1448,9 @@
       "directBookingConsentRequired": "To book you must consent to the processing of your personal data.",
       "directBookingConsentOutdated": "The privacy notice has been updated: reload the page and give your consent again.",
       "directBookingInvalidPaymentOption": "Invalid payment method.",
+      "directBookingMarketingConsentUnavailable": "The text to receive offers is no longer available: reload the page and try again.",
+      "directBookingSoftOptInNoticeOutdated": "The information about offers has been updated: reload the page, read it and try again.",
+      "directBookingWhatsappRequiresPhone": "To receive offers on WhatsApp we need your phone number: type it and try again.",
       "onsiteRequestLinkInvalid": "Invalid confirmation link: open the link you received by email.",
       "onsiteRequestExpired": "The request has expired: the dates are available again. You can send a new request.",
       "onsiteRequestNotPending": "The request is no longer pending: it has already been accepted, declined or cancelled.",
@@ -14298,6 +14301,7 @@
       "emailRequired": "Enter your email address",
       "emailInvalid": "Enter a valid email address",
       "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
+      "whatsAppNeedsPhone": "To receive offers on WhatsApp, type your phone number.",
       "countryRequired": "Select your country of residence"
     },
     "touristTaxIncluded": "Tourist tax (included in the total)",
@@ -14510,9 +14514,13 @@
       "emailHint": "We send the confirmation and the link for the online check-in here.",
       "emailUse": "Use {{email}}",
       "next": "Continue: payment",
-      "offers": "I'd like to receive the offers of {{name}}.",
+      "offersEmail": "E-mail",
       "offersHint": "You can unsubscribe at any time.",
+      "offersLegend": "Would you like to receive the offers of {{name}}?",
+      "offersWhatsApp": "WhatsApp",
+      "offersWhatsAppNeedsPhone": "Type your phone number above first to choose WhatsApp.",
       "phoneHint": "Only to organise your arrival.",
+      "softOptInNotice": "{{name}} will use this e-mail address to send you offers on stays similar to the one you are booking. You can object at any time, free of charge: every message has a link to unsubscribe.",
       "whoTitle": "Who is booking"
     },
     "leads": {

@@ -11,6 +11,7 @@ import { useBooking } from '@/features/public-booking/booking/booking-context';
 import { detailsSchema, type DetailsFormValues } from '@/features/public-booking/checkout/details-schema';
 import { arrivalSlots, suggestEmail, type DetailsValues } from '@/features/public-booking/checkout/checkout-model';
 import { shortTime } from '@/features/public-booking/lib/property-profile';
+import { translateValidationMessage } from '@/i18n/validation-message';
 import { getCountryOptions } from '@/lib/countries';
 import { cn } from '@/lib/utils';
 import '@/features/public-booking/checkout/checkout.css';
@@ -22,8 +23,10 @@ interface StepDetailsProps {
   values: DetailsValues;
   /** Called on every change, so going back and forth between the steps loses nothing. */
   onChange: (values: DetailsValues) => void;
-  /** The site has a text for the optional «send me offers» consent (its version): only then the box is there. */
+  /** The site has a text for the optional «send me offers» consent (its version): only then the two boxes (E-mail, WhatsApp) are there. */
   offersVersion: string | null | undefined;
+  /** The site has a soft opt-in notice (art. 130 c. 4, its version): only then the notice is shown under the e-mail field. */
+  softOptInNoticeVersion?: string | null;
   siteName: string;
   onBack: () => void;
   onNext: () => void;
@@ -31,11 +34,13 @@ interface StepDetailsProps {
 
 /**
  * Step 2, «I tuoi dati» (DB-05): who books. Name and surname in two fields (the API asks for two), the email with a gentle correction
- * when its domain looks like a typo, the phone if the guest wants, the country, the expected arrival time if the check-in window is
- * known, and the optional offers box (never ticked for the guest, and only when the site has a text for it). Errors say how to fix
- * and take the focus to the first wrong field. The documents of the travellers are asked later, with the online check-in.
+ * when its domain looks like a typo (and, when the site has one, the soft opt-in notice: a paragraph, not a box, that blocks nothing), the
+ * phone if the guest wants, the country, the expected arrival time if the check-in window is known, and the optional offers boxes, one
+ * per channel (NF-90: «E-mail» and «WhatsApp», never ticked for the guest, only when the site has a text for them; WhatsApp waits for a
+ * phone number). Errors say how to fix and take the focus to the first wrong field. The documents of the travellers are asked later,
+ * with the online check-in.
  */
-export function StepDetails({ values, onChange, offersVersion, siteName, onBack, onNext }: StepDetailsProps) {
+export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVersion, siteName, onBack, onNext }: StepDetailsProps) {
   const { t, i18n } = useTranslation();
   const { property } = useBooking();
   const {
@@ -43,6 +48,7 @@ export function StepDetails({ values, onChange, offersVersion, siteName, onBack,
     handleSubmit,
     control,
     setValue,
+    trigger,
     formState: { errors },
   } = useForm<DetailsFormValues>({ resolver: zodResolver(detailsSchema), mode: 'onTouched', defaultValues: values });
   const countryOptions = useMemo(() => getCountryOptions(i18n.language), [i18n.language]);
@@ -57,12 +63,26 @@ export function StepDetails({ values, onChange, offersVersion, siteName, onBack,
       phone: watched.phone ?? '',
       country: watched.country ?? '',
       arrival: watched.arrival ?? '',
-      offers: watched.offers ?? false,
+      offersEmail: watched.offersEmail ?? false,
+      offersWhatsApp: watched.offersWhatsApp ?? false,
     });
-  }, [watched.firstName, watched.lastName, watched.email, watched.phone, watched.country, watched.arrival, watched.offers, onChange]);
+  }, [
+    watched.firstName,
+    watched.lastName,
+    watched.email,
+    watched.phone,
+    watched.country,
+    watched.arrival,
+    watched.offersEmail,
+    watched.offersWhatsApp,
+    onChange,
+  ]);
 
   const email = watched.email ?? '';
   const suggestion = suggestEmail(email.trim());
+  // The WhatsApp box needs a number: until one is typed it cannot be ticked (a box already ticked stays free, so it can be unticked).
+  const phoneTyped = (watched.phone ?? '').trim() !== '';
+  const whatsAppError = translateValidationMessage(errors.offersWhatsApp?.message, t, i18n);
 
   const from = shortTime(property.checkInFrom);
   const to = shortTime(property.checkInTo);
@@ -108,10 +128,23 @@ export function StepDetails({ values, onChange, offersVersion, siteName, onBack,
                 </button>
               </p>
             ) : null}
+            {/* The soft opt-in notice (art. 130 c. 4, PO-07): a notice, not a box. It asks nothing and blocks nothing; the version goes with the booking. */}
+            {softOptInNoticeVersion ? (
+              <p className="text-sm leading-relaxed text-[var(--cz-public-muted)]" data-testid="checkout-soft-opt-in-notice">
+                {t('publicCheckout.details.softOptInNotice', { name: siteName })}
+              </p>
+            ) : null}
           </div>
           <div className="co-row">
             <Field label={t('publicBooking.phone')} hint={t('publicCheckout.details.phoneHint')} optional error={errors.phone}>
-              <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" {...register('phone')} />
+              {/* A number typed or cleared changes what the WhatsApp box may do: its message is checked again at once, not at the next press. */}
+              <Input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                {...register('phone', { onChange: () => void trigger('offersWhatsApp') })}
+              />
             </Field>
             <Field label={t('publicBooking.country')} error={errors.country}>
               <select id="country" autoComplete="country" className={SELECT_CLASS} {...register('country')}>
@@ -150,21 +183,62 @@ export function StepDetails({ values, onChange, offersVersion, siteName, onBack,
 
       <section className={cn('co-section', 'space-y-3')}>
         {offersVersion ? (
-          <Controller
-            control={control}
-            name="offers"
-            render={({ field }) => (
-              <div className="flex items-start gap-3">
-                <Checkbox id="offers" checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
-                <Label htmlFor="offers" className="cursor-pointer text-sm leading-relaxed">
-                  {t('publicCheckout.details.offers', { name: siteName })}
-                  <small className="block text-[var(--cz-public-muted)]">
-                    {t('publicCheckout.details.offersHint')} {t('publicCheckout.optional')}
-                  </small>
-                </Label>
-              </div>
-            )}
-          />
+          <fieldset className="space-y-3" data-testid="checkout-offers">
+            <legend className="text-sm leading-relaxed">
+              {t('publicCheckout.details.offersLegend', { name: siteName })}{' '}
+              <span className="text-[var(--cz-public-muted)]">{t('publicCheckout.optional')}</span>
+            </legend>
+            <Controller
+              control={control}
+              name="offersEmail"
+              render={({ field }) => (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="offersEmail"
+                    ref={field.ref}
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    data-testid="checkout-offers-email"
+                  />
+                  <Label htmlFor="offersEmail" className="cursor-pointer text-sm leading-relaxed">
+                    {t('publicCheckout.details.offersEmail')}
+                  </Label>
+                </div>
+              )}
+            />
+            <Controller
+              control={control}
+              name="offersWhatsApp"
+              render={({ field }) => (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="offersWhatsApp"
+                    ref={field.ref}
+                    checked={field.value}
+                    disabled={!phoneTyped && !field.value}
+                    aria-describedby={[!phoneTyped ? 'offersWhatsApp-hint' : '', whatsAppError ? 'offersWhatsApp-error' : ''].filter(Boolean).join(' ') || undefined}
+                    aria-invalid={whatsAppError ? true : undefined}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    data-testid="checkout-offers-whatsapp"
+                  />
+                  <Label htmlFor="offersWhatsApp" className={cn('text-sm leading-relaxed', phoneTyped || field.value ? 'cursor-pointer' : 'cursor-not-allowed')}>
+                    {t('publicCheckout.details.offersWhatsApp')}
+                    {!phoneTyped ? (
+                      <small id="offersWhatsApp-hint" className="block text-[var(--cz-public-muted)]" data-testid="checkout-offers-whatsapp-hint">
+                        {t('publicCheckout.details.offersWhatsAppNeedsPhone')}
+                      </small>
+                    ) : null}
+                  </Label>
+                </div>
+              )}
+            />
+            {whatsAppError ? (
+              <p id="offersWhatsApp-error" role="alert" className="text-sm text-destructive" data-testid="checkout-offers-whatsapp-error">
+                {whatsAppError}
+              </p>
+            ) : null}
+            <p className="text-sm text-[var(--cz-public-muted)]">{t('publicCheckout.details.offersHint')}</p>
+          </fieldset>
         ) : null}
         <p className="co-note">
           <IdCard aria-hidden />

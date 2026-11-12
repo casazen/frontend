@@ -83,6 +83,12 @@ export interface PublicOrgDto {
    * version: the checkout then shows no box and the API refuses a `marketingConsent: true`. Absent on an older backend.
    */
   marketingConsentVersion?: string | null;
+  /**
+   * Version of the soft opt-in notice the checkout shows to the customer (`Gdpr:SoftOptInNoticeVersion`, art. 130 c. 4 Codice privacy, PO-07),
+   * or null while the product owner has not set one: the checkout then shows no notice and the booking does not send a version back.
+   * Absent on an older backend.
+   */
+  softOptInNoticeVersion?: string | null;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */

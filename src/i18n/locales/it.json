@@ -1448,6 +1448,9 @@
       "directBookingConsentRequired": "Per prenotare devi acconsentire al trattamento dei dati personali.",
       "directBookingConsentOutdated": "L'informativa sul trattamento dei dati è stata aggiornata: ricarica la pagina e acconsenti di nuovo.",
       "directBookingInvalidPaymentOption": "Metodo di pagamento non valido.",
+      "directBookingMarketingConsentUnavailable": "Il testo per ricevere le offerte non è più disponibile: ricarica la pagina e riprova.",
+      "directBookingSoftOptInNoticeOutdated": "L'informazione sulle offerte è stata aggiornata: ricarica la pagina, leggila e riprova.",
+      "directBookingWhatsappRequiresPhone": "Per ricevere le offerte su WhatsApp serve il tuo numero di telefono: scrivilo e riprova.",
       "onsiteRequestLinkInvalid": "Link di conferma non valido: apri il link ricevuto via email.",
       "onsiteRequestExpired": "La richiesta è scaduta: le date sono tornate disponibili. Puoi inviare una nuova richiesta.",
       "onsiteRequestNotPending": "La richiesta non è più in attesa: è già stata accettata, rifiutata o annullata.",
@@ -14298,6 +14301,7 @@
       "emailRequired": "Inserisci l'indirizzo email",
       "emailInvalid": "Inserisci un indirizzo email valido",
       "phoneInvalid": "Inserisci un numero di telefono valido: da 6 a 15 cifre, con + iniziale facoltativo",
+      "whatsAppNeedsPhone": "Per ricevere le offerte su WhatsApp scrivi il tuo numero di telefono.",
       "countryRequired": "Seleziona il paese di residenza"
     },
     "touristTaxIncluded": "Tassa di soggiorno (inclusa nel totale)",
@@ -14510,9 +14514,13 @@
       "emailHint": "Ti mandiamo qui la conferma e il link per il check-in online.",
       "emailUse": "Usa {{email}}",
       "next": "Continua: pagamento",
-      "offers": "Voglio ricevere le offerte di {{name}}.",
+      "offersEmail": "E-mail",
       "offersHint": "Puoi cancellarti quando vuoi.",
+      "offersLegend": "Vuoi ricevere le offerte di {{name}}?",
+      "offersWhatsApp": "WhatsApp",
+      "offersWhatsAppNeedsPhone": "Scrivi prima il tuo numero di telefono, qui sopra, per scegliere WhatsApp.",
       "phoneHint": "Solo per organizzare l'arrivo.",
+      "softOptInNotice": "{{name}} userà questo indirizzo e-mail per mandarti offerte su soggiorni simili a quello che prenoti. Puoi opporti in ogni momento, gratis: ogni messaggio ha il link per annullare l'iscrizione.",
       "whoTitle": "Chi prenota"
     },
     "leads": {

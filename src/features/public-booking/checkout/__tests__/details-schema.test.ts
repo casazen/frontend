@@ -8,7 +8,8 @@ const valid: DetailsFormValues = {
   phone: '+39 333 123 4567',
   country: 'DE',
   arrival: '',
-  offers: false,
+  offersEmail: false,
+  offersWhatsApp: false,
 };
 
 /** Messages (i18n keys) of the issues on `field`. */
@@ -58,6 +59,19 @@ describe('detailsSchema', () => {
     expect(messagesFor({ country: '' }, 'country')).toEqual(['publicBooking.validation.countryRequired']);
     expect(messagesFor({ country: 'Italia' }, 'country')).toEqual(['publicBooking.validation.countryRequired']);
     expect(messagesFor({ country: 'IT' }, 'country')).toEqual([]);
+  });
+
+  it('safeParse_WhatsAppBoxWithoutAPhone_IsRefusedOnTheBoxWithItsOwnMessage', () => {
+    for (const phone of ['', '   ']) {
+      expect(messagesFor({ offersWhatsApp: true, phone }, 'offersWhatsApp')).toEqual(['publicBooking.validation.whatsAppNeedsPhone']);
+    }
+  });
+
+  it('safeParse_WhatsAppBoxWithAPhone_OrUntickedOrEmailOnly_IsAccepted', () => {
+    expect(detailsSchema.safeParse({ ...valid, offersWhatsApp: true, phone: '+39 333 123 4567' }).success).toBe(true);
+    // The box left unticked needs no number, and the e-mail box needs none either.
+    expect(detailsSchema.safeParse({ ...valid, phone: '' }).success).toBe(true);
+    expect(detailsSchema.safeParse({ ...valid, offersEmail: true, phone: '' }).success).toBe(true);
   });
 });
 
