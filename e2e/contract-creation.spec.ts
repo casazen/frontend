@@ -276,7 +276,8 @@ async function fillParties(page: Page) {
 
 async function openSheet(page: Page, leaseId: string) {
   if (page.url().includes('step=7')) {
-    await page.getByTestId('nav-group-everyday').getByRole('link', { name: 'Contratti' }).click();
+    // Use the wizard's return link; Contracts is no longer a sidebar destination.
+    await page.getByRole('link', { name: 'Torna a Contratti', exact: true }).click();
   } else {
     await page.getByTestId('lease-wizard-save').click();
   }
@@ -452,7 +453,9 @@ test.describe('Contract creation, every type', () => {
     await page.locator('#lw-securityDeposit').fill('0');
     await choose(page, 'lease-regime-CedolareSecca');
     await page.getByTestId('lease-wizard-next').click();
+    await expect(page).toHaveURL(/step=4/);
     await page.getByTestId('lease-wizard-back').click();
+    await expect(page).toHaveURL(/step=3/);
     await choose(page, 'lease-type-Concordato');
     await page.getByTestId('lease-wizard-next').click();
     await page.locator('#lw-startDate').fill('2027-02-01');

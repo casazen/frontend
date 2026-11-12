@@ -22,7 +22,7 @@ jobs:
   # "E2E L2 (demo)" is the job below that waits for the three.
   e2e-l2-shard:
     name: E2E L2 (demo) shard ${{ matrix.shard }}/3
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false

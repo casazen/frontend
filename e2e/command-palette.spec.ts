@@ -422,15 +422,17 @@ test.describe('Command palette (UI-06)', () => {
   test.describe('Who may see what', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
 
-    test('a landlord of long rentals finds the leases and not the pages and actions of the short rentals', async ({ page }) => {
+    test('a landlord finds properties and contract actions without a redundant contracts page', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await openPage(page, '/app/long-rent/leases', 'long-term');
       await openFromKeyboard(page);
 
-      await search(page, 'contratti');
-      await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Contratti');
+      await search(page, 'immobili');
+      await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Immobili');
       // One area only: the second line does not repeat its name.
       await expect(group(page, 'Pagine').getByRole('option').first()).not.toContainText('Affitti lunghi');
+      await search(page, 'contratti');
+      await expect(group(page, 'Pagine').getByRole('option')).toHaveCount(0);
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Nuovo contratto');
 
       for (const outside of ['prenotazioni', 'incassi', 'calendario', 'ospiti', 'fornitori']) {

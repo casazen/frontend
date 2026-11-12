@@ -102,13 +102,15 @@ describe('route-manifest main menu (UI-04a)', () => {
   it('keeps the long-rent, supplier and staff menus to the pages they have', () => {
     expect(paths(getPrimaryNavEntries('long-rent', allowAll))).toEqual([
       '/app/long-rent',
-      '/app/long-rent/leases',
       '/app/long-rent/properties',
       '/app/long-rent/service-requests',
     ]);
-    // Inquilini, Scadenze and the fiscal report are tabs of Contratti. Canoni open from a contract.
+    // Area-wide tenant, deadline and fiscal pages remain in Altro. Canoni open from a contract.
     // Conto SEPA is with the settings. Profilo is in the menu of the user.
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
+      '/app/long-rent/tenants',
+      '/app/long-rent/deadlines',
+      '/app/long-rent/fiscal',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
       '/app/long-rent/payments',
@@ -319,6 +321,10 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
         // The one parent that is in no menu: the profile of the area, which the menu of the user leads to (below). Its pages are tabs of it.
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
         expect(parent.requiredPermissions, `${entry.path} hangs from ${parent.path}`).toEqual([]);
+      } else if (parent.path === '/app/long-rent/leases') {
+        // The legacy contract section stays routable; its area-wide pages move to Altro.
+        expect(parent.navPlacement).toBeUndefined();
+        expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toContain(entry.path);
       } else {
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
       }
@@ -494,7 +500,7 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
     }
   });
 
-  // The 44 pages that were in a menu before UI-04a. Plan and billing left the menus because the org badge of the header
+  // The 43 pages that remain navigable after removing the redundant contracts section. Plan and billing left the menus because the org badge of the header
   // leads to the plan page (`usePlanPagePath`), which links to the billing page and back.
   const MENU_PAGES_BEFORE = [
     '/app/short-rent', '/app/short-rent/properties', '/app/short-rent/fiscal', '/app/short-rent/settings/domain',
@@ -504,7 +510,7 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
     '/app/short-rent/marketplace', '/app/short-rent/alloggiati', '/app/short-rent/compliance/cin',
     '/app/short-rent/payments', '/app/short-rent/payments/revenue', '/app/short-rent/ota', '/app/short-rent/vetrina',
     '/app/short-rent/profile', '/app/short-rent/guests',
-    '/app/long-rent/leases', '/app/long-rent/properties', '/app/long-rent/profile', '/app/long-rent/settings/plan',
+    '/app/long-rent/properties', '/app/long-rent/profile', '/app/long-rent/settings/plan',
     '/app/long-rent/settings/billing', '/app/long-rent/settings/organization',
     '/app/admin', '/app/admin/users', '/app/admin/profile', '/app/admin/suppliers', '/app/admin/suppliers/invite',
     '/app/admin/jobs', '/app/admin/seo', '/app/admin/cin', '/app/admin/compliance/tax-rates',
@@ -522,7 +528,7 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
   const REACHED_BY_THE_USER_MENU = ['/app/short-rent/profile', '/app/long-rent/profile'];
 
   it('keeps every page that was in a menu reachable by a full-access user, with every flag on', () => {
-    expect(MENU_PAGES_BEFORE).toHaveLength(44);
+    expect(MENU_PAGES_BEFORE).toHaveLength(43);
     const flags: Partial<FeatureFlags> = { otaPartnerApi: true, aiSupplierDiscovery: true, rliProvider: true, eSignProvider: true };
     for (const page of MENU_PAGES_BEFORE) {
       const entry = entryOf(page);
