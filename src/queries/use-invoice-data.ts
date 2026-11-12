@@ -27,11 +27,16 @@ export function useInvoiceData(bookingId: string, options: { enabled?: boolean }
 /**
  * Saves the invoice data as the host. The data that comes back is the one on screen from then on, and the query is read again. A refusal is left to
  * the caller: the 422 that names fields is shown on those fields, any other problem in the panel that asked.
+ *
+ * `gcTime: 0` as for the query: a mutation keeps what it was given (`variables`: the fiscal code, the VAT number, the PEC, the address) and what
+ * it got back (`data`) in the mutation cache for five minutes by default, after the panel that made it is gone. Here it is dropped as soon as
+ * nothing observes it, a refused save included.
  */
 export function useSaveInvoiceData(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    gcTime: 0,
     mutationFn: (data: SaveInvoiceDataRequest) => saveInvoiceData(bookingId, data),
     onSuccess: async (saved) => {
       queryClient.setQueryData([INVOICE_DATA_KEY, bookingId], saved);
