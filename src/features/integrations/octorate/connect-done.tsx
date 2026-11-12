@@ -7,6 +7,7 @@ import { PROPERTIES_PATH } from '@/features/properties/properties-paths';
 import { useOctorateConnection } from '@/queries/use-octorate-connection';
 import { useFoundListings } from '@/queries/use-octorate-mapping';
 import { ConnectResult } from './connect-summary-step';
+import { ExistingImportResult, NewListingsCard } from './existing-import-result';
 import { resultRows, type ListingOutcome } from './mapping-model';
 import { OCTORATE_CONNECT_PATH } from './octorate-callback';
 
@@ -18,6 +19,10 @@ interface ConnectDoneProps {
   outcomes: readonly ListingOutcome[] | null;
   /** The wizard has just finished. Not the case when the address is opened again (a reload): then nothing proves that the connection works. */
   fresh: boolean;
+  /** The import of the listings that already exist on OTAs, when this wizard started one: its result is shown channel by channel. */
+  batchId?: string | null;
+  /** A mixed portfolio with properties that are new: the listing wizard is offered for them, never started by itself. */
+  hasNew?: boolean;
 }
 
 /**
@@ -29,7 +34,7 @@ interface ConnectDoneProps {
  * Opened again on its address, it asks the server first: a connection that is not there sends the host back to the beginning, and the
  * rows say where each listing stands now (what only the visit that did it knew, such as which listing was imported, is not repeated).
  */
-export function ConnectDone({ outcomes, fresh }: ConnectDoneProps) {
+export function ConnectDone({ outcomes, fresh, batchId = null, hasNew = false }: ConnectDoneProps) {
   const { t } = useTranslation();
   const connection = useOctorateConnection({ enabled: !fresh });
   const listings = useFoundListings({ enabled: fresh || connection.data?.status === 'Connected' });
@@ -55,7 +60,9 @@ export function ConnectDone({ outcomes, fresh }: ConnectDoneProps) {
       primary={{ label: t('octorate.connect.done.checkImported'), to: PROPERTIES_PATH }}
       secondary={{ label: t('octorate.connect.done.toHome'), to: HOME_PATH }}
     >
+      {batchId ? <ExistingImportResult batchId={batchId} /> : null}
       {listings.isSuccess ? <ConnectResult rows={rows} /> : null}
+      {hasNew ? <NewListingsCard /> : null}
     </WizardDone>
   );
 }

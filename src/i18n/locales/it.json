@@ -1296,15 +1296,39 @@
       "assistContextInvalid": "Questa richiesta di aiuto non riguarda un passaggio che possiamo fare per te.",
       "assistRequestAlreadyOpen": "Hai già una richiesta aperta per questo passaggio: la trovi in Da fare.",
       "assistStepAlreadyDone": "Questo passaggio è già stato fatto: non serve altro.",
+      "channelAccessNotValid": "L'accesso al portale non è valido: riaprilo e riprova.",
+      "channelConnectionNotFound": "L'accesso è dato ma non troviamo il collegamento del portale: controlla il pannello.",
+      "d6ChannelFailed": "Il portale ha avuto un problema: riprova tra poco.",
+      "d6OperationUnverified": "Questo passaggio per questo portale non è ancora attivo: resta guidato e te lo diciamo appena si può.",
+      "d6ResultUnknown": "Non sappiamo com'è andata: controlla nel pannello e poi chiedi di nuovo.",
       "documentIssuanceNotAvailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
+      "existingInventoryAccessPending": "Nessun portale ha ancora l'accesso: finisci prima il passaggio sul pannello.",
+      "existingInventoryChannelNotSupported": "Uno dei portali scelti non è disponibile per l'importazione.",
+      "existingInventoryChannelsRequired": "Scegli almeno un portale.",
+      "existingInventoryGroupNotFound": "Questo gruppo non esiste.",
+      "existingInventoryGroupScenarioMismatch": "Il gruppo contiene immobili in una situazione diversa.",
+      "existingInventoryMappingPending": "Prima decidi per ogni annuncio: conferma, importa, escludi o lascia per dopo.",
+      "existingInventoryNeedsWholeOrg": "Per importare tutto l'inventario serve poter vedere tutti gli immobili dell'organizzazione.",
+      "existingInventoryNotReady": "Gli annunci non sono ancora stati importati.",
+      "existingInventoryScopeInvalid": "La scelta degli immobili da importare non è valida.",
+      "existingInventoryTooManyChannels": "Hai scelto troppi portali in una volta.",
       "fiscalSettingsNeedWholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti.",
+      "inventoryGroupRequired": "Manca il nome del gruppo.",
+      "inventoryIntentAssignmentsInvalid": "Non c'è niente da salvare, oppure c'è troppo.",
+      "inventoryIntentChangeRefused": "Non puoi passare ai nuovi annunci: c'è già un'importazione o un abbinamento per questo immobile.",
+      "inventoryIntentConflict": "Qualcuno ha cambiato la stessa risposta nel frattempo: riprova.",
+      "inventoryIntentDuplicate": "Un immobile è indicato due volte.",
+      "inventoryScenarioInvalid": "Questa situazione non esiste.",
       "issuerFieldInvalid": "Uno dei dati di chi emette non è valido. Controlla i campi e riprova.",
       "issuerProfileIncomplete": "Per far emettere i documenti a CasaZen mancano alcuni dati. Controlla i passaggi e riprova.",
+      "mappingRefreshConflict": "Stavamo già leggendo gli annunci: riprova tra un momento.",
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
       "notificationLegalChannelRequired": "Le scadenze di legge non possono restare senza un canale: lascia attivo almeno un canale.",
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
+      "octorateConflict": "Il channel manager segnala un conflitto: riprova.",
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
+      "octorateExistingInventoryMustImport": "Questo immobile esiste già sui portali: va importato e abbinato, non creato di nuovo.",
       "octorateMappingAlreadyConfirmed": "Questo annuncio è già collegato a un immobile.",
       "octorateMappingLinkedToOtherProperty": "Questo annuncio è già stato collegato a un altro immobile nel frattempo. Torna indietro: l'elenco si aggiorna da solo.",
       "octorateMappingNotConfirmed": "Prima di scegliere la camera, l'annuncio va collegato a un immobile.",
@@ -1312,9 +1336,13 @@
       "octorateMappingPropertyTaken": "Questo immobile è già collegato a un altro annuncio. Torna indietro e scegline un altro.",
       "octorateMappingRefreshConflict": "Gli annunci si stanno già aggiornando. Riprova tra qualche istante.",
       "octorateNotConnected": "Il tuo channel manager non è collegato. Torna al collegamento e riprova.",
+      "octorateNotFound": "Il channel manager non trova questo annuncio.",
       "octoratePanelUrlMissing": "L'indirizzo del pannello non è ancora configurato. Contatta il supporto.",
       "octoratePropertyNotFound": "Non troviamo l'immobile scelto, oppure non hai accesso. Torna indietro e scegline un altro.",
+      "octorateRateLimited": "Troppe richieste al channel manager: riprova tra qualche minuto.",
+      "octorateRequestRejected": "Il channel manager ha rifiutato la richiesta.",
       "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
+      "octorateRoomNotChosen": "Manca la camera di un annuncio: scegli quale.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
@@ -1336,6 +1364,7 @@
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
       "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "reservationImportIncomplete": "Non abbiamo letto tutte le prenotazioni: riprova.",
       "stripeConnectDashboardNotReady": "Il tuo account Stripe non è ancora pronto: collega Stripe o completa la verifica, poi potrai aprirlo da qui.",
       "bankLinkDebitUnavailable": "Questo bonifico Stripe è disponibile per una scadenza in euro, da un conto italiano o europeo.",
       "bankLinkNotLinked": "Collega prima il conto. Poi potrai avviare il bonifico.",
@@ -10641,6 +10670,7 @@
           "title": "Il collegamento non è riuscito"
         },
         "next": {
+          "channels": "Scegli i portali",
           "listings": "Vedi i tuoi annunci",
           "retry": "Riprova il collegamento",
           "start": "Vai al tuo channel manager"
@@ -10665,8 +10695,101 @@
         "toHome": "Torna alla home"
       },
       "errors": {
+        "mixedConflict": "Un immobile non può stare in due situazioni diverse: toglilo da una.",
+        "mixedTwoSituations": "Scegli almeno due situazioni.",
+        "scenarioChangeConfirm": "Conferma di aver capito prima di passare ai nuovi annunci.",
+        "scenarioChangeRefused": "Non puoi passare ai nuovi annunci: c'è già un'importazione o degli annunci abbinati.",
         "scenarioRequired": "Scegli dove si trovano oggi i tuoi annunci.",
         "scenarioUnavailable": "Questa strada non è ancora disponibile: scegli un'altra risposta."
+      },
+      "existing": {
+        "channels": {
+          "batchFailed": "Non è stato possibile preparare l'importazione. Riprova.",
+          "blocked": "Il browser ha bloccato la finestra. Consenti le finestre a comparsa per questo sito e riprova: il tuo avanzamento è salvato.",
+          "confirmFailed": "Non è stato possibile confermare. Riprova.",
+          "confirmNo": "No, riapri",
+          "confirmQuestion": "Hai completato l'accesso e visto il portale come Attivato?",
+          "confirmYes": "Sì, ho fatto",
+          "connect": "Collega su Octorate",
+          "credentials": "Le credenziali del portale le inserisci solo su Octorate o sul portale stesso, mai in CasaZen.",
+          "legend": "I portali dove hai già annunci",
+          "listLabel": "I portali scelti e il loro collegamento",
+          "loadFailed": "Non è stato possibile caricare l'elenco dei portali.",
+          "none": "Scegli almeno un portale.",
+          "notValid": "L'accesso non risulta valido: riapri il pannello e riprova.",
+          "openFailed": "Non è stato possibile aprire il pannello. Riprova.",
+          "reopen": "Riapri il pannello",
+          "state": {
+            "connected": "Collegato",
+            "error": "Errore",
+            "needsConfirmation": "Da confermare",
+            "notStarted": "Da collegare",
+            "verifying": "Verifica in corso",
+            "waiting": "In attesa del login"
+          },
+          "waiting": "Sto aspettando il tuo accesso sul pannello: appena lo vedo, vado avanti da solo."
+        },
+        "errors": {
+          "accessPending": "Nessun portale ha ancora l'accesso: finisci prima il passaggio sul pannello.",
+          "notInYet": "Gli annunci non sono ancora arrivati: aspetta la fine dell'importazione.",
+          "unknown": "L'importazione si è fermata su questo portale. Riprova o chiedi aiuto."
+        },
+        "mapping": {
+          "note": "Per ogni annuncio importato puoi confermare l'immobile proposto, sceglierne un altro o importarlo come immobile di CasaZen: quest'ultima scelta crea solo la scheda di gestione in CasaZen e non crea nessun nuovo annuncio sul portale. Quelli ambigui puoi lasciarli per dopo: restano bloccati in scrittura."
+        },
+        "new": {
+          "action": "Crea i nuovi annunci",
+          "text": "Gli immobili non ancora pubblicati li crei tu, nella procedura guidata: CasaZen non li crea da solo.",
+          "title": "Nuovi annunci"
+        },
+        "progress": {
+          "atMapping": "Gli annunci sono arrivati: ora li abbini ai tuoi immobili.",
+          "completed": "Importazione completata.",
+          "counts": "Trovati {{found}} · abbinati {{confirmed}} · da decidere {{pending}}",
+          "loadFailed": "Non è stato possibile leggere lo stato dell'importazione.",
+          "loading": "Leggo lo stato dell'importazione...",
+          "noBatch": {
+            "text": "Scegli i portali e dai l'accesso nel passo precedente.",
+            "title": "Importazione non avviata"
+          },
+          "retry": "Riprova",
+          "retryUnknown": "Ho controllato nel pannello: chiedi di nuovo",
+          "sequenceLabel": "Passi dell'importazione di {{channel}}",
+          "state": {
+            "attention": "serve la tua attenzione",
+            "current": "in corso",
+            "done": "fatto",
+            "pending": "da fare"
+          },
+          "steps": {
+            "calendar": "Calendario",
+            "connected": "Collegamento completato",
+            "mapping": "Abbinamento",
+            "reservations": "Prenotazioni",
+            "rooms": "Annunci e camere"
+          },
+          "working": "Importazione in corso..."
+        },
+        "result": {
+          "counts": "Collegati {{connected}} · lasciati per dopo {{leftForLater}} · non riusciti {{failed}}",
+          "migrationNote": "Recensioni, posizionamento e storico dipendono dalla migrazione che fa il portale stesso: CasaZen non li promette.",
+          "status": {
+            "AwaitingChannelAccess": "In attesa dell'accesso",
+            "AwaitingMapping": "Da abbinare",
+            "Completed": "Collegato",
+            "Draft": "Da avviare",
+            "Failed": "Non riuscito",
+            "ImportingCalendar": "Importo il calendario",
+            "ImportingReservations": "Importo le prenotazioni",
+            "ImportingRooms": "Importo annunci e camere",
+            "MarkingConnected": "Collego",
+            "NeedsAttention": "Serve la tua attenzione"
+          },
+          "title": "Annunci importati dai portali"
+        },
+        "summary": {
+          "preserved": "Gli annunci importati mantengono i codici che hanno già sui portali: non ne pubblichiamo di nuovi."
+        }
       },
       "exit": {
         "saveAndExit": "Salva ed esci",
@@ -10726,11 +10849,53 @@
           "question": "Quale camera è questo immobile?"
         }
       },
+      "mixed": {
+        "conflictLine": "«{{property}}» è in più di una situazione: toglilo da una.",
+        "conflictTitle": "Un immobile è in due situazioni",
+        "counts": "{{groups}} situazioni · {{properties}} immobili scelti",
+        "groupCount_one": "{{count}} immobile in questa situazione",
+        "groupCount_other": "{{count}} immobili in questa situazione",
+        "groups": {
+          "newInventory": {
+            "description": "Non esistono ancora sui portali: li creiamo insieme, solo quando lo decidi tu.",
+            "none": "Nessun immobile scelto: li aggiungi dopo.",
+            "title": "Non ancora pubblicati"
+          },
+          "onOctorate": {
+            "description": "Sono già sul tuo account Octorate: li colleghiamo con un'autorizzazione.",
+            "none": "Nessun immobile scelto: li troviamo con l'autorizzazione.",
+            "title": "Già su Octorate"
+          },
+          "onOtas": {
+            "description": "Esistono già sui portali: importiamo gli annunci con i loro codici, senza pubblicarne di nuovi.",
+            "none": "Nessun immobile scelto: gli annunci che importiamo diventano immobili di CasaZen.",
+            "title": "Già sulle OTA o in un altro gestionale"
+          }
+        },
+        "loadFailed": "Non è stato possibile caricare i tuoi immobili.",
+        "rest": "Gli immobili che non scegli qui restano come sono."
+      },
       "page": {
         "description": "Un percorso guidato, un passo alla volta. Puoi uscire quando vuoi e riprendere da dove eri."
       },
       "scenario": {
+        "change": {
+          "ack": "Ho capito: voglio creare nuovi annunci",
+          "refused": "C'è già un'importazione avviata o degli annunci abbinati ai tuoi immobili. Per non rischiare doppioni, qui non puoi passare ai nuovi annunci.",
+          "refusedTitle": "Non si può cambiare ora",
+          "text": "Prima avevi detto che i tuoi annunci esistono già. Se scegli «non ancora pubblicati» CasaZen ne creerà di nuovi su Octorate e sulle OTA: non è un modo per rimediare a un'importazione.",
+          "title": "Stai cambiando risposta"
+        },
+        "confirm": {
+          "mixed": "Dirai quali immobili sono in ogni situazione: ognuno segue la sua strada e alla fine il riepilogo li mette insieme.",
+          "newInventory": "CasaZen creerà nuovi annunci su Octorate e sulle OTA che sceglierai. Scegli questa strada solo se gli annunci non esistono ancora.",
+          "onOctorate": "Collegheremo il tuo account Octorate a CasaZen con un'autorizzazione e abbineremo ai tuoi immobili gli annunci che troviamo.",
+          "onOtas": "CasaZen importerà gli annunci che hai già sulle OTA e ne conserverà i codici. Non pubblicherà annunci sostitutivi."
+        },
         "legend": "Dove si trovano oggi i tuoi annunci?",
+        "mixed": {
+          "title": "Ho una situazione mista"
+        },
         "newInventory": {
           "description": "Parti da zero: creiamo insieme il tuo primo annuncio.",
           "title": "Non sono ancora stati pubblicati"
@@ -10756,10 +10921,32 @@
           "purpose": "Ti portiamo sul suo sito per dare il consenso, poi torni qui.",
           "title": "Collega il tuo channel manager"
         },
+        "existingChannels": {
+          "label": "Portali",
+          "next": "Importa gli annunci",
+          "purpose": "Scegli i portali e dai l'accesso a ciascuno dal pannello del tuo channel manager: CasaZen resta qui e ti segue.",
+          "title": "Su quali portali sono i tuoi annunci?"
+        },
+        "existingImport": {
+          "label": "Importazione",
+          "next": "Vai all'abbinamento",
+          "purpose": "Leggiamo gli annunci, le camere, le prenotazioni e i calendari: non pubblichiamo nulla.",
+          "title": "Importiamo i tuoi annunci"
+        },
         "mapping": {
           "label": "Abbinamento",
           "purpose": "Per ogni annuncio scegli a quale immobile di CasaZen corrisponde. Se non sei sicuro, puoi decidere dopo.",
           "title": "Abbina gli annunci ai tuoi immobili"
+        },
+        "mixed": {
+          "label": "Situazione",
+          "purpose": "Per ogni situazione indica quali immobili ci sono. Gli altri restano come sono.",
+          "title": "Com'è la tua situazione?"
+        },
+        "new": {
+          "label": "Nuovi annunci",
+          "purpose": "Ti portiamo alla procedura guidata per creare l'immobile.",
+          "title": "Creiamo i tuoi nuovi annunci"
         },
         "scenario": {
           "label": "Annunci",
@@ -10836,6 +11023,7 @@
             "badge": "Non riuscito",
             "text": "Non siamo riusciti a completare questo annuncio."
           },
+          "ids": "Codici conservati: {{ids}}",
           "imported": {
             "badge": "Importato",
             "text": "Nuovo immobile in CasaZen: {{property}}."

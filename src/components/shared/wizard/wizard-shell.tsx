@@ -105,6 +105,12 @@ export interface WizardShellProps<TValues extends FieldValues, TResult = void> {
   /** Name of the flow ("property-new"): the draft is kept under it. */
   id: string;
   steps: ReadonlyArray<WizardStep<TValues>>;
+  /**
+   * The steps as a function of the answers, for a flow whose path depends on them (a first question that sends the person down one road or
+   * another). It is asked again at every change of an answer, the step on screen is found by its id, and the next one is the one after it in the
+   * list the answers give now. `steps` stays the list for the answers a flow starts from (what is shown while nothing is answered).
+   */
+  stepsFor?: (values: TValues) => ReadonlyArray<WizardStep<TValues>>;
   /** What the answers are before the person types anything. A saved draft is laid over it. */
   defaultValues: DefaultValues<TValues>;
   /** The main button of the last step: it names what happens ("Create the property"), never "Send". */
@@ -226,7 +232,8 @@ export function WizardShell<TValues extends FieldValues, TResult = void>(props: 
 
 /** The wizard once its draft is known: the form, the steps, the buttons. `draftState` is the draft of the flow (`useWizardDraft`). */
 function WizardShellBody<TValues extends FieldValues, TResult = void>({
-  steps,
+  steps: stepsOfFlow,
+  stepsFor,
   defaultValues,
   finishLabel,
   onFinish,
@@ -254,6 +261,22 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
     () => ({ ...defaultValues, ...(draft.restored?.values ?? {}) }) as DefaultValues<TValues>
   );
 
+  // The rules of the step on screen. The resolver always reads the latest step, so one form serves every step.
+  const stepRef = React.useRef<WizardStep<TValues> | null>(null);
+  const stepIdRef = React.useRef("");
+  const resolver = React.useCallback<Resolver<TValues>>(async (values, context, options) => {
+    const schema = stepRef.current?.schema;
+    if (!schema) return { values, errors: {} };
+    return (zodResolver(schema) as unknown as Resolver<TValues>)(values, context, options);
+  }, []);
+  const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
+  const problems = collectProblems(form.formState.errors);
+  // compute compares snapshots: validation notifications must not look like new answers
+  // (including steps whose fields use setValue without register).
+  const values = useWatch({ control: form.control, compute: (answers) => answers });
+  // The steps the answers give now: a flow whose path depends on them changes its list as they change.
+  const steps = React.useMemo(() => (stepsFor ? stepsFor(values as TValues) : stepsOfFlow), [stepsFor, stepsOfFlow, values]);
+
   // Where the wizard stands. The step the page opened on is remembered: "back" to an address without `?step` goes there.
   const [openingStepId] = React.useState(() => (steps.some((s) => s.id === initialStepId) ? initialStepId : steps[0]?.id));
   const stepParam = searchParams.get(STEP_PARAM);
@@ -268,23 +291,10 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
   const [failedStepId, setFailedStepId] = React.useState<string | null>(null);
   const [focusRequest, setFocusRequest] = React.useState(0);
 
-  // The rules of the step on screen. The resolver always reads the latest step, so one form serves every step.
-  const stepRef = React.useRef(step);
-  const stepIdRef = React.useRef(step.id);
   React.useEffect(() => {
     stepRef.current = step;
     stepIdRef.current = step.id;
   });
-  const resolver = React.useCallback<Resolver<TValues>>(async (values, context, options) => {
-    const schema = stepRef.current.schema;
-    if (!schema) return { values, errors: {} };
-    return (zodResolver(schema) as unknown as Resolver<TValues>)(values, context, options);
-  }, []);
-  const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
-  const problems = collectProblems(form.formState.errors);
-  // compute compares snapshots: validation notifications must not look like new answers
-  // (including steps whose fields use setValue without register).
-  const values = useWatch({ control: form.control, compute: (answers) => answers });
 
   // Revalidate after React commits the changed answers, outside RHF's watch notification.
   // A summary can render before passive effects run: do not gate this on an effect-synced ref.

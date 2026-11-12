@@ -1296,15 +1296,39 @@
       "assistContextInvalid": "This help request is not about a step we can do for you.",
       "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
       "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
+      "channelAccessNotValid": "The access to the portal is not valid: open it again and retry.",
+      "channelConnectionNotFound": "The access is given but we cannot find the portal's connection: check the panel.",
+      "d6ChannelFailed": "The portal had a problem: try again shortly.",
+      "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
+      "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
       "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
+      "existingInventoryAccessPending": "No portal has its access yet: finish the step on the panel first.",
+      "existingInventoryChannelNotSupported": "One of the chosen portals is not available for the import.",
+      "existingInventoryChannelsRequired": "Choose at least one portal.",
+      "existingInventoryGroupNotFound": "This group does not exist.",
+      "existingInventoryGroupScenarioMismatch": "The group holds properties in a different situation.",
+      "existingInventoryMappingPending": "First decide for each listing: confirm, import, exclude or leave for later.",
+      "existingInventoryNeedsWholeOrg": "To import the whole inventory you need to be able to see all the properties of the organization.",
+      "existingInventoryNotReady": "The listings have not been imported yet.",
+      "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
+      "existingInventoryTooManyChannels": "You chose too many portals at once.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
+      "inventoryGroupRequired": "The name of the group is missing.",
+      "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
+      "inventoryIntentChangeRefused": "You cannot move to new listings: there is already an import or a mapping for this property.",
+      "inventoryIntentConflict": "Someone changed the same answer in the meantime: try again.",
+      "inventoryIntentDuplicate": "A property is listed twice.",
+      "inventoryScenarioInvalid": "This situation does not exist.",
       "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
       "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
+      "mappingRefreshConflict": "We were already reading the listings: try again in a moment.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
+      "octorateExistingInventoryMustImport": "This property already exists on the portals: it has to be imported and matched, not created again.",
       "octorateMappingAlreadyConfirmed": "This listing is already linked to a property.",
       "octorateMappingLinkedToOtherProperty": "This listing has meanwhile been linked to another property. Go back: the list updates by itself.",
       "octorateMappingNotConfirmed": "Before choosing the room, the listing has to be linked to a property.",
@@ -1312,9 +1336,13 @@
       "octorateMappingPropertyTaken": "This property is already linked to another listing. Go back and choose another one.",
       "octorateMappingRefreshConflict": "The listings are already being updated. Try again in a moment.",
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
+      "octorateNotFound": "The channel manager cannot find this listing.",
       "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
+      "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
+      "octorateRequestRejected": "The channel manager refused the request.",
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
+      "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
@@ -1336,6 +1364,7 @@
       "noOrgContext": "Your account is not linked to any organization.",
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "reservationImportIncomplete": "We did not read all the reservations: try again.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
       "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
       "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
@@ -10641,6 +10670,7 @@
           "title": "The connection did not work"
         },
         "next": {
+          "channels": "Choose the portals",
           "listings": "See your listings",
           "retry": "Try connecting again",
           "start": "Go to your channel manager"
@@ -10665,8 +10695,101 @@
         "toHome": "Back to the home page"
       },
       "errors": {
+        "mixedConflict": "A property cannot be in two different situations: take it out of one.",
+        "mixedTwoSituations": "Choose at least two situations.",
+        "scenarioChangeConfirm": "Confirm that you understood before moving to new listings.",
+        "scenarioChangeRefused": "You cannot move to new listings: there is already an import or there are matched listings.",
         "scenarioRequired": "Choose where your listings are today.",
         "scenarioUnavailable": "This path is not available yet: choose another answer."
+      },
+      "existing": {
+        "channels": {
+          "batchFailed": "We could not prepare the import. Try again.",
+          "blocked": "The browser blocked the window. Allow pop-ups for this site and try again: your progress is saved.",
+          "confirmFailed": "We could not confirm. Try again.",
+          "confirmNo": "No, open it again",
+          "confirmQuestion": "Did you complete the access and see the portal as Activated?",
+          "confirmYes": "Yes, I did",
+          "connect": "Connect on Octorate",
+          "credentials": "You enter the portal credentials only on Octorate or on the portal itself, never in CasaZen.",
+          "legend": "The portals where you already have listings",
+          "listLabel": "The chosen portals and their connection",
+          "loadFailed": "We could not load the list of portals.",
+          "none": "Choose at least one portal.",
+          "notValid": "The access does not look valid: open the panel again and retry.",
+          "openFailed": "We could not open the panel. Try again.",
+          "reopen": "Open the panel again",
+          "state": {
+            "connected": "Connected",
+            "error": "Error",
+            "needsConfirmation": "To confirm",
+            "notStarted": "To connect",
+            "verifying": "Checking",
+            "waiting": "Waiting for the login"
+          },
+          "waiting": "I am waiting for your access on the panel: as soon as I see it, I go on by myself."
+        },
+        "errors": {
+          "accessPending": "No portal has its access yet: finish the step on the panel first.",
+          "notInYet": "The listings have not arrived yet: wait for the import to finish.",
+          "unknown": "The import stopped on this portal. Try again or ask for help."
+        },
+        "mapping": {
+          "note": "For each imported listing you can confirm the proposed property, choose another one or import it as a CasaZen property: this last choice only creates the management record in CasaZen and does not create any new listing on the portal. You can leave the ambiguous ones for later: they stay blocked for writing."
+        },
+        "new": {
+          "action": "Create the new listings",
+          "text": "You create the properties that are not published yet yourself, in the guided procedure: CasaZen does not create them by itself.",
+          "title": "New listings"
+        },
+        "progress": {
+          "atMapping": "The listings have arrived: now you match them to your properties.",
+          "completed": "Import completed.",
+          "counts": "Found {{found}} · matched {{confirmed}} · to decide {{pending}}",
+          "loadFailed": "We could not read the state of the import.",
+          "loading": "Reading the state of the import...",
+          "noBatch": {
+            "text": "Choose the portals and give the access in the previous step.",
+            "title": "Import not started"
+          },
+          "retry": "Try again",
+          "retryUnknown": "I checked the panel: ask again",
+          "sequenceLabel": "Steps of the import of {{channel}}",
+          "state": {
+            "attention": "needs your attention",
+            "current": "in progress",
+            "done": "done",
+            "pending": "to do"
+          },
+          "steps": {
+            "calendar": "Calendar",
+            "connected": "Connection completed",
+            "mapping": "Matching",
+            "reservations": "Reservations",
+            "rooms": "Listings and rooms"
+          },
+          "working": "Import in progress..."
+        },
+        "result": {
+          "counts": "Connected {{connected}} · left for later {{leftForLater}} · failed {{failed}}",
+          "migrationNote": "Reviews, ranking and history depend on the migration the portal itself makes: CasaZen does not promise them.",
+          "status": {
+            "AwaitingChannelAccess": "Waiting for the access",
+            "AwaitingMapping": "To match",
+            "Completed": "Connected",
+            "Draft": "To start",
+            "Failed": "Failed",
+            "ImportingCalendar": "Importing the calendar",
+            "ImportingReservations": "Importing the reservations",
+            "ImportingRooms": "Importing listings and rooms",
+            "MarkingConnected": "Connecting",
+            "NeedsAttention": "Needs your attention"
+          },
+          "title": "Listings imported from the portals"
+        },
+        "summary": {
+          "preserved": "The imported listings keep the codes they already have on the portals: we do not publish new ones."
+        }
       },
       "exit": {
         "saveAndExit": "Save and exit",
@@ -10726,11 +10849,53 @@
           "question": "Which room is this property?"
         }
       },
+      "mixed": {
+        "conflictLine": "«{{property}}» is in more than one situation: take it out of one.",
+        "conflictTitle": "A property is in two situations",
+        "counts": "{{groups}} situations · {{properties}} properties chosen",
+        "groupCount_one": "{{count}} property in this situation",
+        "groupCount_other": "{{count}} properties in this situation",
+        "groups": {
+          "newInventory": {
+            "description": "They do not exist on the portals yet: we create them together, only when you decide.",
+            "none": "No property chosen: you add them later.",
+            "title": "Not published yet"
+          },
+          "onOctorate": {
+            "description": "They are already on your Octorate account: we connect them with an authorization.",
+            "none": "No property chosen: we find them with the authorization.",
+            "title": "Already on Octorate"
+          },
+          "onOtas": {
+            "description": "They already exist on the portals: we import the listings with their codes, without publishing new ones.",
+            "none": "No property chosen: the listings we import become CasaZen properties.",
+            "title": "Already on OTAs or in another system"
+          }
+        },
+        "loadFailed": "We could not load your properties.",
+        "rest": "The properties you do not choose here stay as they are."
+      },
       "page": {
         "description": "A guided path, one step at a time. You can leave whenever you like and pick up where you left off."
       },
       "scenario": {
+        "change": {
+          "ack": "I understand: I want to create new listings",
+          "refused": "An import has already started or listings are matched to your properties. To avoid duplicates, you cannot move to new listings here.",
+          "refusedTitle": "It cannot be changed now",
+          "text": "Before, you said your listings already exist. If you choose «not published yet» CasaZen will create new ones on Octorate and on the OTAs: it is not a way to recover from an import.",
+          "title": "You are changing your answer"
+        },
+        "confirm": {
+          "mixed": "You will say which properties are in each situation: each follows its own road and at the end the summary puts them together.",
+          "newInventory": "CasaZen will create new listings on Octorate and on the OTAs you choose. Choose this road only if the listings do not exist yet.",
+          "onOctorate": "We will connect your Octorate account to CasaZen with an authorization and match the listings we find to your properties.",
+          "onOtas": "CasaZen will import the listings you already have on the OTAs and keep their codes. It will not publish replacement listings."
+        },
         "legend": "Where are your listings today?",
+        "mixed": {
+          "title": "I have a mixed situation"
+        },
         "newInventory": {
           "description": "Start from scratch: we create your first listing together.",
           "title": "Not published yet"
@@ -10756,10 +10921,32 @@
           "purpose": "We take you to its site to give your consent, then you come back here.",
           "title": "Connect your channel manager"
         },
+        "existingChannels": {
+          "label": "Portals",
+          "next": "Import the listings",
+          "purpose": "Choose the portals and give the access to each one from the panel of your channel manager: CasaZen stays here and follows you.",
+          "title": "Which portals are your listings on?"
+        },
+        "existingImport": {
+          "label": "Import",
+          "next": "Go to the matching",
+          "purpose": "We read the listings, the rooms, the reservations and the calendars: we publish nothing.",
+          "title": "We import your listings"
+        },
         "mapping": {
           "label": "Matching",
           "purpose": "For each listing, choose which CasaZen property it is. If you are not sure, you can decide later.",
           "title": "Match the listings to your properties"
+        },
+        "mixed": {
+          "label": "Situation",
+          "purpose": "For each situation say which properties are in it. The others stay as they are.",
+          "title": "What is your situation?"
+        },
+        "new": {
+          "label": "New listings",
+          "purpose": "We take you to the guided procedure to create the property.",
+          "title": "We create your new listings"
         },
         "scenario": {
           "label": "Listings",
@@ -10836,6 +11023,7 @@
             "badge": "Did not work",
             "text": "We could not complete this listing."
           },
+          "ids": "Codes kept: {{ids}}",
           "imported": {
             "badge": "Imported",
             "text": "New property in CasaZen: {{property}}."

@@ -114,3 +114,136 @@ export interface SetRoomRequest {
 export interface ImportListingResult {
   propertyId: string;
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The listings that already exist on OTAs or in another channel manager (E02/F01/US03, D6, ADR-023): the scenario the host declares, the import
+// batch and the access to each channel in the panel. They mirror the backend `OctorateExistingInventoryDtos` field for field, in camelCase.
+// The scenario travels as its code (`onOctorate`, `onOtas`, `newInventory`); the other enums as their member names. The server never sends or
+// takes a credential, a token or a payload of Octorate or of an OTA: only ids, codes, counts and instants.
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** Where the listings of a property are today, the first question of the connect wizard (backend `OctorateInventoryScenarioCodes`). */
+export const INVENTORY_SCENARIO_CODES = ['onOctorate', 'onOtas', 'newInventory'] as const;
+export type InventoryScenarioCode = (typeof INVENTORY_SCENARIO_CODES)[number];
+
+/**
+ * Where an import of existing inventory stands, for a batch and for each of its channels (backend `OctorateInventoryImportStatus`). The first
+ * seven are the steps in the order they run; the last three end or stop a channel (`NeedsAttention` waits for a person or for time).
+ */
+export type ExistingImportStatus =
+  | 'Draft'
+  | 'AwaitingChannelAccess'
+  | 'ImportingRooms'
+  | 'AwaitingMapping'
+  | 'ImportingReservations'
+  | 'ImportingCalendar'
+  | 'MarkingConnected'
+  | 'Completed'
+  | 'Failed'
+  | 'NeedsAttention';
+
+/** Where the access to a channel in the panel stands (backend `ChannelAccessState`). */
+export type ChannelAccessState = 'NotStarted' | 'Waiting' | 'Verifying' | 'NeedsConfirmation' | 'Verified' | 'Confirmed' | 'NotValid';
+
+/** Which properties a batch is about: all the inventory, the properties named, or a named group of a mixed portfolio (backend `OctorateInventoryScopeKind`). */
+export type InventoryScopeKind = 'AllInventory' | 'Properties' | 'Group';
+
+/** The counts of the listings of a channel. */
+export interface ExistingInventoryCounts {
+  found: number;
+  roomsImported: number;
+  confirmed: number;
+  pending: number;
+  leftForLater: number;
+  rejected: number;
+  outOfScope: number;
+  reservationsImported: number;
+  calendarImported: number;
+  connected: number;
+  failed: number;
+}
+
+/** Which operations of the import are verified for the channel: one that is not stops with `d6_operation_unverified` and the step stays guided. */
+export interface ExistingInventoryCapabilities {
+  importRooms: boolean;
+  importReservations: boolean;
+  importCalendar: boolean;
+  markConnected: boolean;
+}
+
+/** A listing of a channel with its progress: the ids Octorate gave and the state of its mapping; never a name, an address or a payload. */
+export interface ExistingInventoryItem {
+  octorateAccommodationId: string;
+  octorateConnectionId: string;
+  mappingStatus: OctorateMappingStatus | null;
+  leftForLater: boolean;
+  roomsImported: boolean;
+  roomCount: number;
+  reservationsImported: boolean;
+  calendarImported: boolean;
+  connected: boolean;
+  /** A stable code (`d6_result_unknown`, `d6_operation_unverified`, ...) the screen translates. */
+  errorCode: string | null;
+}
+
+/** A channel of a batch: where it stands, the counts of its listings and the listings themselves. */
+export interface ExistingInventoryChannel {
+  channelCode: string;
+  status: ExistingImportStatus;
+  errorCode: string | null;
+  accessState: ChannelAccessState;
+  accessCompletedAt: string | null;
+  roomsImportedAt: string | null;
+  completedAt: string | null;
+  counts: ExistingInventoryCounts;
+  capabilities: ExistingInventoryCapabilities;
+  items: ExistingInventoryItem[];
+}
+
+/** `GET api/octorate/existing-inventory/batches/{id}`: progress, counts and stable error codes of an import; never a credential or a payload. */
+export interface ExistingInventoryBatch {
+  id: string;
+  scenario: InventoryScenarioCode;
+  scopeKind: InventoryScopeKind;
+  group: string | null;
+  propertyIds: string[];
+  status: ExistingImportStatus;
+  errorCode: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  channels: ExistingInventoryChannel[];
+}
+
+/**
+ * Body of `POST api/octorate/existing-inventory/batches`: the OTA channels (portal codes) and the properties it is about. Without `propertyIds` and
+ * `group` it is the whole inventory; one narrows it; both is a 422, and so is an empty `propertyIds` (never «all»).
+ */
+export interface CreateExistingInventoryBatchRequest {
+  channels: string[];
+  propertyIds?: string[];
+  group?: string;
+}
+
+/** `POST .../channels/{code}/access/start`: how to open the panel for a channel (the only answer that carries its address). */
+export interface ChannelAccessStart {
+  channelCode: string;
+  alreadyComplete: boolean;
+  handoffMode: 'redirectCallback' | 'managedWindow' | null;
+  panelUrl: string | null;
+}
+
+/** The scenario declared for a property, or for a named group with no property yet (`GET` and `PUT api/octorate/inventory-intents`). */
+export interface InventoryIntent {
+  propertyId: string | null;
+  scenario: InventoryScenarioCode;
+  group: string | null;
+  updatedAt: string;
+}
+
+/** One assignment of a scenario: a property (or, with none, a named group) and what the host declared. */
+export interface InventoryIntentAssignment {
+  propertyId?: string;
+  scenario: InventoryScenarioCode;
+  group?: string;
+}
