@@ -41,7 +41,9 @@ jobs:
   gj-l3:
     name: GJ L3 (UI, ephemeral stack)
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # The job takes 6-9 minutes; on 8 Nov every run hung for 32 minutes in the suite step and failed after 36: 15 minutes
+    # is a margin over a slow run and bounds what a hang costs.
+    timeout-minutes: 15
     # Throw-away service container: the password below is not a secret.
     services:
       postgres:
