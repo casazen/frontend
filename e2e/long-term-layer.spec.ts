@@ -22,7 +22,8 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await expect(page).toHaveURL(/\/app\/long-rent(?:\?.*)?$/, { timeout: 15_000 });
     // The area name of the sidebar (UI-04a: "Affitti lunghi"; the backend still sends "Affitti lungo termine").
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Immobili|Properties/i })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
     await expect(page.getByRole('link', { name: /Prenotazioni|Bookings/i })).toHaveCount(0);
   });
 
@@ -65,7 +66,8 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'dual'), { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Immobili|Properties/i })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
     // The switcher names the area the user is in.
     await expect(page.getByTestId('area-switcher')).toHaveAttribute('aria-label', /Affitti lunghi|Long-term rentals/);
   });
