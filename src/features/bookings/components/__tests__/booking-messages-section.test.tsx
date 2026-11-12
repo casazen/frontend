@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { bookingMessagesApi } from '@/api/booking-messages.api';
 import type { Booking, HostThread } from '@/types';
@@ -9,7 +10,10 @@ import { BookingMessagesSection } from '../booking-messages-section';
 vi.mock('@/api/booking-messages.api', () => ({
   bookingMessagesApi: { getThread: vi.fn(), markRead: vi.fn(), send: vi.fn(), listThreads: vi.fn(), listUnread: vi.fn() },
 }));
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
+const permissions = vi.hoisted(() => ({ read: true }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'booking.read' || permissions.read }),
+}));
 
 const BOOKING = { id: 'b-1', guest: { firstName: 'Sofia', lastName: 'Marino' } } as unknown as Booking;
 
@@ -31,7 +35,9 @@ function renderSection() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <BookingMessagesSection booking={BOOKING} />
+      <MemoryRouter>
+        <BookingMessagesSection booking={BOOKING} />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -75,5 +81,48 @@ describe('BookingMessagesSection: marking the thread as read (SR-12)', () => {
     renderSection();
     await screen.findByTestId('booking-messages');
     expect(bookingMessagesApi.markRead).not.toHaveBeenCalled();
+  });
+});
+
+// NF-61, NF-63: how a booking leads to the page of the messages, where its conversations are and where the host is told how a guest with
+// no conversation can be written to (the contact options). Without this link the panel of the contact options had no way in.
+describe('BookingMessagesSection: the way to the page of the messages', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    setVisibility('visible');
+    permissions.read = true;
+    vi.mocked(bookingMessagesApi.getThread).mockResolvedValue(thread(0));
+    await i18n.changeLanguage('it');
+  });
+
+  afterEach(() => {
+    cleanup();
+    setVisibility('visible');
+    permissions.read = true;
+  });
+
+  it('BookingMessagesSection_BookingWithItsThread_LeadsToTheMessagesOfThatBooking', async () => {
+    renderSection();
+
+    const link = await screen.findByTestId('booking-messages-hub-link');
+    expect(link).toHaveTextContent("Scrivi all'ospite");
+    // The same address the inbox reads back as «all the conversations of this booking».
+    expect(link).toHaveAttribute('href', '/app/short-rent/messages?view=all&booking=b-1');
+  });
+
+  it('BookingMessagesSection_BookingWithNoThread_LeadsThereToo', async () => {
+    vi.mocked(bookingMessagesApi.getThread).mockResolvedValue({ state: 'Unavailable', closesAt: null, unreadCount: 0, needsReply: false, messages: [] });
+    renderSection();
+
+    expect(await screen.findByTestId('booking-messages-unavailable')).toBeInTheDocument();
+    expect(screen.getByTestId('booking-messages-hub-link')).toHaveAttribute('href', '/app/short-rent/messages?view=all&booking=b-1');
+  });
+
+  it('BookingMessagesSection_UserWhoMayNotOpenTheMessages_HasNoLinkToThePageOfNoAccess', async () => {
+    permissions.read = false;
+    renderSection();
+
+    await screen.findByTestId('booking-messages');
+    expect(screen.queryByTestId('booking-messages-hub-link')).not.toBeInTheDocument();
   });
 });

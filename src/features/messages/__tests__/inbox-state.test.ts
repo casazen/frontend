@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { messagesOfBookingPath } from '@/lib/message-hub-routes';
 import { INBOX_PAGE_SIZE, inboxFilters, parseInboxState, withInboxState } from '../lib/inbox-state';
 
 const PROPERTY = '6f1c9a52-1111-4222-8333-944455556666';
@@ -49,6 +50,15 @@ describe('the state of the list of the messages (NF-61)', () => {
 
   it('inboxFilters_All_AsksForNoViewFilterAndNeverSendsAnEmptySearch', () => {
     expect(inboxFilters(parseInboxState(new URLSearchParams('view=all')))).toEqual({ page: 1, pageSize: INBOX_PAGE_SIZE });
+  });
+
+  it('messagesOfBookingPath_AddressOfABooking_IsReadBackByTheInboxAsAllTheConversationsOfThatBooking', () => {
+    const [path, query] = messagesOfBookingPath(BOOKING).split('?');
+
+    expect(path).toBe('/app/short-rent/messages');
+    // Every conversation of the booking, answered or not (not only «Da rispondere»), and nothing else narrows the list.
+    expect(parseInboxState(new URLSearchParams(query))).toEqual({ view: 'all', channel: null, propertyId: null, bookingId: BOOKING, q: '', page: 1 });
+    expect(inboxFilters(parseInboxState(new URLSearchParams(query)))).toEqual({ bookingId: BOOKING, page: 1, pageSize: INBOX_PAGE_SIZE });
   });
 
   it('inboxFilters_UnreadWithChannelPropertyBookingAndSearch_CombinesThemAll', () => {
