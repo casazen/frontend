@@ -37,6 +37,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(menu.getByTestId('nav-more').getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
       // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
+        'Messaggi',
         'Ospiti',
         'CRM Ospiti',
         'Recensioni',
@@ -222,12 +223,12 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(tabs.getByRole('link', { name: 'Documenti sito' })).toHaveAttribute('aria-current', 'page');
     });
 
-    test('the guests and the reviews are tabs of Prenotazioni (the CRM is behind its flag), the payments figures tabs of Incassi', async ({ page }) => {
+    test('the messages, the guests and the reviews are tabs of Prenotazioni (the CRM is behind its flag), the payments figures tabs of Incassi', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/bookings', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       const bookingTabs = page.getByRole('navigation', { name: 'Sezioni di Prenotazioni' });
-      await expect(bookingTabs.getByRole('link')).toHaveText(['Prenotazioni', 'Ospiti', 'Recensioni']);
+      await expect(bookingTabs.getByRole('link')).toHaveText(['Prenotazioni', 'Messaggi', 'Ospiti', 'Recensioni']);
       await bookingTabs.getByRole('link', { name: 'Recensioni' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/reviews$/);
       await expect(menu.getByRole('link', { name: 'Prenotazioni' })).toHaveAttribute('aria-current', 'page');

@@ -10315,6 +10315,190 @@
     "enterHint": "Invio per inviare, Maiusc+Invio per andare a capo.",
     "counter": "{{count}}/{{max}}"
   },
+  "messages": {
+    "actions": {
+      "anonymized": "I dati dell'ospite sono stati cancellati su sua richiesta.",
+      "cannotReply": "Non puoi rispondere a questa conversazione.",
+      "mappingNotConfirmed": "Puoi leggere questa conversazione, ma non rispondere: l'annuncio non è ancora collegato a un tuo immobile.",
+      "readOnly": "Puoi leggere i messaggi, ma non hai il permesso di rispondere.",
+      "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi."
+    },
+    "attachment": {
+      "download": "Scarica l'allegato",
+      "error": "Non riesco ad aprire l'allegato. Riprova tra poco.",
+      "fileName": "Allegato",
+      "imageAlt": "Immagine allegata al messaggio",
+      "loading": "Carico l'allegato…",
+      "unavailable": "Allegato non più disponibile"
+    },
+    "bookingCard": {
+      "balance": "Ancora da pagare",
+      "children_one": "di cui {{count}} bambino",
+      "children_other": "di cui {{count}} bambini",
+      "commission": "Commissione del canale",
+      "guest": "Ospite",
+      "guests_one": "{{count}} ospite",
+      "guests_other": "{{count}} ospiti",
+      "hide": "Nascondi la prenotazione",
+      "net": "Netto per te",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noAmounts": "Gli importi non sono ancora disponibili.",
+      "none": "Non c'è ancora una prenotazione: è una richiesta. Quando l'ospite prenota, la trovi qui.",
+      "open": "Apri la prenotazione",
+      "openProfile": "Apri il profilo dell'ospite",
+      "paid": "Già pagato",
+      "people": "Persone",
+      "show": "Mostra la prenotazione",
+      "source": "Da: {{source}}",
+      "sourceLabel": "Provenienza",
+      "stay": "Soggiorno",
+      "title": "Prenotazione",
+      "total": "Totale"
+    },
+    "channel": {
+      "airbnb": "Airbnb",
+      "booking": "Booking.com",
+      "direct": "Diretto",
+      "expedia": "Expedia",
+      "vrbo": "Vrbo"
+    },
+    "composer": {
+      "label": "Messaggio per l'ospite",
+      "language": "Lingua della traduzione",
+      "machineTranslated": "Traduzione automatica",
+      "offline": "Sei offline: puoi inviare il messaggio quando torni online.",
+      "placeholder": "Scrivi la tua risposta…",
+      "send": "Invia",
+      "templates": "Modelli",
+      "translate": "Traduci"
+    },
+    "contact": {
+      "directFirst": "Puoi scrivere tu per primo: l'ospite riceve il messaggio nella pagina della sua prenotazione.",
+      "emailIntro": "Questo canale non ha una chat. Puoi scrivere all'ospite per e-mail attraverso CasaZen: il suo indirizzo non lo vedi e non lo conserviamo.",
+      "emailPlaceholder": "Scrivi il messaggio per l'ospite…",
+      "error": "Non riesco a controllare come raggiungere l'ospite.",
+      "hasThread": "C'è già una conversazione con questo ospite.",
+      "loading": "Controllo come puoi raggiungere l'ospite…",
+      "needsVerification": "Non sappiamo ancora se il messaggio è partito. Controlla tra poco prima di riscriverlo.",
+      "noChannel": "Per questa prenotazione CasaZen non ha un modo per scrivere all'ospite.",
+      "openThread": "Apri la conversazione",
+      "reason": {
+        "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: per ora non puoi scrivere all'ospite da qui.",
+        "noConversation": "Questa prenotazione non ha ancora una conversazione e non c'è un altro modo per scrivere all'ospite.",
+        "notConnected": "Il collegamento ai canali non è attivo: non puoi scrivere all'ospite da qui.",
+        "other": "Per ora non puoi scrivere all'ospite da CasaZen.",
+        "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi."
+      },
+      "sent": "Messaggio inviato per e-mail.",
+      "title": "Scrivi all'ospite",
+      "unavailable": "Il canale non ci dà l'e-mail di questo ospite: scrivigli dal canale.",
+      "writeByEmail": "Scrivi per e-mail"
+    },
+    "empty": {
+      "all": "Non ci sono ancora conversazioni",
+      "allHint": "Appena un ospite ti scrive, dal tuo sito o da un canale, la trovi qui.",
+      "noMatch": "Nessuna conversazione trovata",
+      "noMatchHint": "Prova con un'altra ricerca o togli un filtro.",
+      "showAll": "Mostra tutte le conversazioni",
+      "toRespond": "Nessun messaggio a cui rispondere",
+      "toRespondHint": "Quando un ospite scrive, la conversazione compare qui.",
+      "unread": "Non hai messaggi da leggere",
+      "unreadHint": "Hai letto tutti i messaggi dei tuoi ospiti."
+    },
+    "filter": {
+      "all": "Tutte",
+      "booking": "Solo una prenotazione",
+      "bookingClear": "Mostra tutte le conversazioni",
+      "channel": "Canale",
+      "channelAll": "Tutti i canali",
+      "clear": "Azzera i filtri",
+      "label": "Conversazioni da mostrare",
+      "property": "Immobile",
+      "propertyAll": "Tutti gli immobili",
+      "toRespond": "Da rispondere",
+      "unread": "Non lette"
+    },
+    "inbox": {
+      "description": "Tutte le conversazioni con i tuoi ospiti, quelle dei canali e quelle dirette, in un unico elenco.",
+      "listLabel": "Conversazioni",
+      "loading": "Carico le conversazioni…",
+      "noSelection": {
+        "description": "La leggi qui, con la prenotazione accanto, e rispondi senza uscire da CasaZen.",
+        "title": "Scegli una conversazione"
+      },
+      "title": "Messaggi"
+    },
+    "loadError": "Non riesco a caricare i messaggi.",
+    "problem": {
+      "generic": "Non è andato a buon fine. Riprova.",
+      "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: il messaggio non è stato inviato.",
+      "rateLimited_one": "Troppi messaggi: riprova tra {{count}} minuto.",
+      "rateLimited_other": "Troppi messaggi: riprova tra {{count}} minuti.",
+      "textInvalid": "Scrivi un messaggio non vuoto e di al massimo 2000 caratteri.",
+      "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi.",
+      "tooManyRequests": "Troppi messaggi in poco tempo: riprova tra poco."
+    },
+    "request": {
+      "noContacts": "Prima della prenotazione il canale non permette di scrivere link, indirizzi e-mail o numeri di telefono: toglili dal messaggio."
+    },
+    "search": {
+      "label": "Cerca una conversazione",
+      "placeholder": "Cerca per ospite, codice o immobile"
+    },
+    "state": {
+      "check": "Controlla",
+      "edit": "Modifica",
+      "error": "Non inviato",
+      "errorHint": "Il canale non ha accettato il messaggio.",
+      "needsVerification": "Da verificare",
+      "needsVerificationHint": "Non sappiamo se il canale l'ha ricevuto. Controlla prima di scriverlo di nuovo.",
+      "retry": "Riprova",
+      "sending": "In invio",
+      "sent": "Inviato"
+    },
+    "template": {
+      "channel": "Modelli del canale",
+      "channelEmpty": "Il canale non ha modelli per questa conversazione.",
+      "channelHint": "Sono in sola lettura: li copi nel messaggio e li cambi come vuoi.",
+      "channelUnavailable": "I modelli del canale non sono disponibili adesso.",
+      "empty": "Non hai ancora modelli di messaggio.",
+      "loadError": "Non riesco a caricare i modelli.",
+      "loading": "Carico i modelli…",
+      "mine": "I tuoi modelli",
+      "renderError": "Non riesco a preparare il modello per questa conversazione.",
+      "tooLong": "Con il modello il messaggio supera i {{max}} caratteri: accorcia il testo e riprova."
+    },
+    "thread": {
+      "archived": "Archiviata",
+      "backToList": "Torna ai messaggi",
+      "closed": "Chiusa",
+      "earlier": "Qui vedi gli ultimi messaggi della conversazione.",
+      "empty": "Ancora nessun messaggio. Scrivi tu per primo.",
+      "fileOnly": "Solo un allegato",
+      "loadError": "Non riesco a caricare la conversazione.",
+      "loading": "Carico la conversazione…",
+      "logLabel": "Messaggi con {{name}}",
+      "notFound": "Conversazione non trovata",
+      "notFoundHint": "L'indirizzo non è giusto, oppure la conversazione non è tra quelle dei tuoi immobili.",
+      "refreshError": "Non riesco ad aggiornare la conversazione: quello che vedi potrebbe non essere l'ultimo messaggio.",
+      "request": "Richiesta",
+      "sender": {
+        "assistant": "Assistente CasaZen",
+        "guest": "Ospite",
+        "you": "Tu"
+      },
+      "title": "Conversazione",
+      "translate": "Traduci",
+      "unassigned": "Immobile da collegare"
+    },
+    "translate": {
+      "error": "Non riesco a tradurre adesso. Riprova.",
+      "hide": "Nascondi la traduzione",
+      "unavailable": "La traduzione non è disponibile in questo momento.",
+      "use": "Usa la traduzione"
+    }
+  },
   "nav": {
     "accountHome": "Home",
     "people": "Persone",
@@ -10358,6 +10542,7 @@
     "suppliers": "Fornitori",
     "trustedSuppliers": "Fornitori fidati",
     "guests": "Ospiti",
+    "messages": "Messaggi",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "ai": "Configurazione AI",
@@ -10415,7 +10600,9 @@
       "compliance_one": "{{count}} adempimento con rischio di sanzione",
       "compliance_other": "{{count}} adempimenti con rischio di sanzione",
       "activities_one": "{{count}} attività urgente",
-      "activities_other": "{{count}} attività urgenti"
+      "activities_other": "{{count}} attività urgenti",
+      "messages_one": "{{count}} messaggio da leggere",
+      "messages_other": "{{count}} messaggi da leggere"
     },
     "activities": "Attività",
     "inviteQr": "QR di invito",
