@@ -13014,7 +13014,9 @@
       "salesChannels": {
         "description": "I portali dove vendi i tuoi alloggi e i calendari che tieni allineati.",
         "title": "Canali di vendita"
-      }
+      },
+      "showLess": "Mostra solo i principali",
+      "showMore": "Visualizza altri canali ({{count}})"
     },
     "activation": {
       "access": {
@@ -14106,6 +14108,8 @@
           "notValid": "L'accesso non risulta valido: riapri il pannello e riprova.",
           "openFailed": "Non è stato possibile aprire il pannello. Riprova.",
           "reopen": "Riapri il pannello",
+          "showLess": "Mostra solo i principali",
+          "showMore": "Visualizza altri portali ({{count}})",
           "state": {
             "connected": "Collegato",
             "error": "Errore",

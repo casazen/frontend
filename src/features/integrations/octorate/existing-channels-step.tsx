@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
+import { splitMainChannels } from '@/features/marketplace/lib/main-channels';
 import { AssistRequestButton } from '@/features/onboarding/components/assist-request-button';
 import { useExternalHandoff } from '@/features/onboarding/use-external-handoff';
 import { Alert } from '@/components/ui/alert';
@@ -178,6 +179,11 @@ export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepP
 
   const nameOf = (code: string) => catalog.choices.find((choice) => choice.code === code)?.name ?? code;
 
+  // The main portals at once, the others behind «Visualizza altri»: a portal already chosen is never hidden.
+  const [showAll, setShowAll] = useState(false);
+  const split = splitMainChannels(catalog.choices, (choice) => selected.includes(choice.code));
+  const shown = showAll ? [...split.main, ...split.others] : split.main;
+
   const ensureBatch = async (): Promise<string> => {
     const wanted = getValues('channels');
     const existing = getValues('batchId');
@@ -219,20 +225,37 @@ export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepP
       {catalog.isError ? (
         <StepProblem title={t('octorate.connect.existing.channels.loadFailed')} error={catalog.error} onRetry={() => void catalog.refetch()} testId="existing-channels-load-error" />
       ) : (
-        <ChoiceGroup legend={t('octorate.connect.existing.channels.legend')} minCardWidth={12}>
-          {catalog.choices.map((choice) => (
-            <ChoiceCard
-              key={choice.code}
-              type="checkbox"
-              name="existing-channels"
-              value={choice.code}
-              checked={selected.includes(choice.code)}
-              onChange={() => toggle(choice.code)}
-              title={choice.name}
-              data-testid={`existing-channel-choice-${choice.code}`}
-            />
-          ))}
-        </ChoiceGroup>
+        <>
+          <ChoiceGroup legend={t('octorate.connect.existing.channels.legend')} minCardWidth={12}>
+            {shown.map((choice) => (
+              <ChoiceCard
+                key={choice.code}
+                type="checkbox"
+                name="existing-channels"
+                value={choice.code}
+                checked={selected.includes(choice.code)}
+                onChange={() => toggle(choice.code)}
+                title={choice.name}
+                data-testid={`existing-channel-choice-${choice.code}`}
+              />
+            ))}
+          </ChoiceGroup>
+          {split.others.length > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn('self-start', TOUCH_TARGET)}
+              aria-expanded={showAll}
+              onClick={() => setShowAll((value) => !value)}
+              data-testid="existing-channels-show-more"
+            >
+              {showAll
+                ? t('octorate.connect.existing.channels.showLess')
+                : t('octorate.connect.existing.channels.showMore', { count: split.others.length })}
+            </Button>
+          ) : null}
+        </>
       )}
 
       <Alert variant="info" data-testid="existing-channels-credentials-note">

@@ -13014,7 +13014,9 @@
       "salesChannels": {
         "description": "The portals where you sell your listings, and the calendars you keep in line.",
         "title": "Sales channels"
-      }
+      },
+      "showLess": "Show only the main ones",
+      "showMore": "Show other channels ({{count}})"
     },
     "activation": {
       "access": {
@@ -14106,6 +14108,8 @@
           "notValid": "The access does not look valid: open the panel again and retry.",
           "openFailed": "We could not open the panel. Try again.",
           "reopen": "Open the panel again",
+          "showLess": "Show only the main ones",
+          "showMore": "Show other portals ({{count}})",
           "state": {
             "connected": "Connected",
             "error": "Error",
