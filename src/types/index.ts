@@ -3,6 +3,7 @@ export * from './user.types';
 export * from './property.types';
 export * from './booking.types';
 export * from './payment.types';
+export * from './payment-ledger.types';
 export * from './ota.types';
 export * from './api.types';
 export * from './guest.types';  // ✅ New
