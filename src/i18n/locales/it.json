@@ -1704,6 +1704,19 @@
       "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",
       "calendarBlockNotFound": "Il blocco non esiste più: aggiorna il calendario.",
       "calendarBlockHeldByModeChange": "Queste notti sono chiuse dal passaggio all'affitto lungo: per riaprirle annulla il passaggio.",
+      "calendarChangeNoProperties": "Scegli almeno un immobile.",
+      "calendarChangeNotFound": "Non troviamo più questa modifica.",
+      "calendarChangeNotRetryable": "Questa modifica non si può inviare di nuovo: si può fare solo per una modifica non inviata o inviata in parte.",
+      "calendarDayRuleInPast": "Questi giorni sono già passati: scegli giorni da oggi in poi.",
+      "calendarDayRuleInvalidAdvance": "L'anticipo deve essere tra 0 e 730 giorni e il massimo non può essere inferiore al minimo.",
+      "calendarDayRuleInvalidPrice": "Il prezzo deve essere maggiore di zero, con al massimo due decimali, fino a 100.000.",
+      "calendarDayRuleInvalidStay": "Il soggiorno minimo e massimo devono essere tra 1 e 365 notti e il massimo non può essere inferiore al minimo.",
+      "calendarDayRuleNothingToChange": "La modifica non cambia nulla: cambia almeno un valore.",
+      "calendarDayRuleRangeInvalid": "La data di fine non può essere precedente a quella di inizio.",
+      "calendarDayRuleRangeTooLong": "Una modifica può coprire al massimo 366 giorni.",
+      "calendarTooManyProperties": "Una modifica può riguardare al massimo 50 immobili.",
+      "calendarWindowTooLarge": "Il periodo è troppo lungo per essere letto in una volta.",
+      "propertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
       "propertyModeBlockedByBookings": "In quel giorno ci sono ancora soggiorni o date occupate sui portali. Scegli un giorno più avanti.",
       "propertyModeBlockedByDraftLease": "C'è una bozza di contratto: va eliminata prima del passaggio.",
       "propertyModeBlockedByLease": "In quel giorno c'è ancora un contratto in corso. Scegli il giorno dopo la sua fine.",
@@ -2569,6 +2582,274 @@
         "range_other": "dal {{arrival}} al {{departure}}, {{count}} notti",
         "shown": "Mostro {{shown}} immobili su {{total}}: scegline uno dal filtro per vedere gli altri.",
         "zoom": "Giorni mostrati"
+      },
+      "bulk": {
+        "apply": "Applica le modifiche",
+        "applyFailed": "Non siamo riusciti ad applicare le modifiche. Nulla è stato salvato: riprova.",
+        "changes": {
+          "clear": "Togli la regola",
+          "close": "Chiudi",
+          "daysLabel": "Quanti giorni",
+          "keep": "Lascia com'è",
+          "nightsLabel": "Quante notti",
+          "priceLabel": "Prezzo a notte",
+          "reopen": "Riapri",
+          "set": "Imposta"
+        },
+        "description": "Cambia il prezzo e le restrizioni di più giorni e di più immobili in un colpo solo. Prima di applicare vedi cosa succederà.",
+        "done": {
+          "description_one": "{{days}} su {{count}} immobile.",
+          "description_other": "{{days}} in tutto su {{count}} immobili.",
+          "next": {
+            "calendar": "Controlla il calendario: i nuovi prezzi e le nuove restrizioni sono sui giorni.",
+            "checkAgain": "Il tuo channel manager non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
+            "retry": "Premi «Riprova ora» sulla riga che non è partita: finché non va a buon fine, il tuo channel manager non ha quelle modifiche.",
+            "wait": "Puoi uscire: l'invio al tuo channel manager prosegue e lo vedi sopra il calendario."
+          },
+          "propertyFallback": "Immobile",
+          "title": "Modifica salvata in CasaZen"
+        },
+        "errors": {
+          "allPast": "Questi giorni sono già passati: scegli giorni da oggi in poi.",
+          "fromInvalid": "Scrivi il primo giorno.",
+          "propertiesRequired": "Scegli almeno un immobile.",
+          "propertiesTooMany": "Puoi scegliere al massimo 50 immobili alla volta.",
+          "toBeforeFrom": "L'ultimo giorno non può essere prima del primo.",
+          "toInvalid": "Scrivi l'ultimo giorno.",
+          "tooLong": "Una modifica può coprire al massimo 366 giorni.",
+          "weekdaysRequired": "Scegli almeno un giorno della settimana."
+        },
+        "fields": {
+          "closedToArrival": "Arrivi",
+          "closedToDeparture": "Partenze",
+          "maxAdvanceDays": "Anticipo massimo",
+          "maxNights": "Soggiorno massimo",
+          "minAdvanceDays": "Anticipo minimo",
+          "minNights": "Soggiorno minimo",
+          "price": "Prezzo"
+        },
+        "open": "Cambia più giorni",
+        "period": {
+          "days_one": "{{count}} giorno",
+          "days_other": "{{count}} giorni",
+          "from": "Dal giorno",
+          "to": "Al giorno",
+          "weekdays": "Giorni della settimana",
+          "weekdaysHint": "Di solito sono tutti. Togli quelli che non vuoi toccare."
+        },
+        "properties": {
+          "all": "Scegli tutti",
+          "connected": "Collegato al tuo channel manager: la modifica viene inviata anche lì.",
+          "none": "Togli la scelta",
+          "notConnected": "Non collegato al tuo channel manager: la modifica resta in CasaZen."
+        },
+        "reloaded": "Le modifiche sono già sul calendario: puoi controllarle da lì.",
+        "saveAndExit": "Salva ed esci",
+        "steps": {
+          "changes": {
+            "label": "Cosa cambia",
+            "purpose": "Per ogni valore: lascialo com'è, impostalo o toglila. Cambia almeno un valore.",
+            "title": "Cosa vuoi cambiare"
+          },
+          "period": {
+            "label": "Periodo",
+            "purpose": "Il primo e l'ultimo giorno (al massimo 366 giorni) e i giorni della settimana da toccare.",
+            "title": "Scegli i giorni"
+          },
+          "properties": {
+            "label": "Immobili",
+            "purpose": "Quelli che puoi modificare. Per ognuno vedi se è collegato al tuo channel manager.",
+            "title": "Scegli gli immobili"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa succederà. Non viene inviato nulla finché non applichi.",
+            "title": "Controlla prima di applicare"
+          }
+        },
+        "summary": {
+          "changed_one": "{{count}} giorno cambia",
+          "changed_other": "{{count}} giorni cambiano",
+          "diff": "{{field}}: {{from}} → {{to}}",
+          "headline_one": "Cambieremo {{what}} di {{days}} su {{count}} immobile in CasaZen.",
+          "headline_other": "Cambieremo {{what}} di {{days}} in tutto su {{count}} immobili in CasaZen.",
+          "invalid": {
+            "changes": "Cambia almeno un valore e controlla che sia scritto bene.",
+            "period": "Controlla i giorni scelti: l'ultimo non può essere prima del primo né già passato.",
+            "properties": "Scegli almeno un immobile."
+          },
+          "invalidTitle": "Manca qualcosa nei passi precedenti",
+          "loading": "Calcolo cosa succederebbe...",
+          "mirrored_one": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamata al channel manager).",
+          "mirrored_other": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamate al channel manager).",
+          "notMirrored": "{{name}} non è collegato al tuo channel manager: la sua modifica resta in CasaZen.",
+          "nothingChanges": "Nessun giorno cambierebbe: i valori sono già questi.",
+          "nothingSent": "Non viene inviato nulla finché non premi «Applica le modifiche».",
+          "previewFailed": "Non riusciamo a calcolare cosa succederebbe",
+          "previewFailedHint": "Riprova tra poco: non è stato salvato né inviato nulla.",
+          "quota_one": "In tutto circa {{count}} chiamata al channel manager: è solo una stima.",
+          "quota_other": "In tutto circa {{count}} chiamate al channel manager: è solo una stima.",
+          "retry": "Riprova",
+          "roomNotChosen": "Per {{name}} la camera non è scelta nel tuo channel manager: la modifica resta in CasaZen finché non la scegli.",
+          "samples": "Le prime modifiche, prima e dopo:",
+          "skippedPast_one": "{{count}} giorno già passato non si tocca",
+          "skippedPast_other": "{{count}} giorni già passati non si toccano",
+          "taken_one": "{{count}} notte occupata: la regola non cambia la prenotazione",
+          "taken_other": "{{count}} notti occupate: la regola non cambia le prenotazioni",
+          "unchanged_one": "{{count}} giorno resta com'era",
+          "unchanged_other": "{{count}} giorni restano com'erano",
+          "what": {
+            "closedToArrival": "gli arrivi",
+            "closedToDeparture": "le partenze",
+            "maxAdvanceDays": "l'anticipo massimo",
+            "maxNights": "il soggiorno massimo",
+            "minAdvanceDays": "l'anticipo minimo",
+            "minNights": "il soggiorno minimo",
+            "price": "il prezzo"
+          }
+        },
+        "title": "Cambia più giorni"
+      },
+      "change": {
+        "error": {
+          "channelError": "Il tuo channel manager ha preso la modifica ma ha segnalato un errore nell'invio ai canali.",
+          "notAuthorized": "Il tuo channel manager non ha accettato l'accesso di CasaZen: ricollega l'account e riprova.",
+          "quotaLow": "Il tuo channel manager ha quasi esaurito le richieste consentite: l'invio riprende da solo più tardi.",
+          "roomNotLicensed": "La camera non ha una licenza attiva nel tuo channel manager: attivala lì, poi riprova.",
+          "unknown": "Il tuo channel manager non ha completato l'invio. Riprova tra poco."
+        },
+        "list": {
+          "failed_one": "{{count}} modifica non è stata inviata.",
+          "failed_other": "{{count}} modifiche non sono state inviate.",
+          "kind": {
+            "Block": "Blocco di date",
+            "Bulk": "Modifica di più immobili",
+            "DayRules": "Prezzo e restrizioni",
+            "Publication": "Invio iniziale del calendario"
+          },
+          "noAnswer_one": "{{count}} modifica aspetta ancora: il tuo channel manager non ha risposto.",
+          "noAnswer_other": "{{count}} modifiche aspettano ancora: il tuo channel manager non ha risposto.",
+          "retry": "Riprova",
+          "toggle": "Ultime modifiche",
+          "unreadable": "Non riusciamo a leggere le modifiche inviate al tuo channel manager.",
+          "waiting_one": "{{count}} modifica è in invio al tuo channel manager.",
+          "waiting_other": "{{count}} modifiche sono in invio al tuo channel manager."
+        },
+        "result": {
+          "accepted": "Accettata dal tuo channel manager.",
+          "checkAgain": "Controlla di nuovo",
+          "confirmed": "Confermata dal tuo channel manager.",
+          "failed": "Non inviata al tuo channel manager.",
+          "noAnswer": "Il tuo channel manager non ha ancora risposto: la modifica è salvata in CasaZen.",
+          "notConnected": "Questo immobile non è collegato al tuo channel manager: la modifica resta in CasaZen.",
+          "notFound": "Non troviamo più questa modifica.",
+          "retry": "Riprova ora",
+          "retryFailed": "Non siamo riusciti a inviare di nuovo la modifica. Riprova.",
+          "saved": "La modifica è nel calendario di CasaZen.",
+          "savedTitle": "Salvato in CasaZen",
+          "sending": "Invio al tuo channel manager in corso.",
+          "unreadable": "Non riusciamo a leggere a che punto è l'invio al tuo channel manager.",
+          "waiting": "In attesa di essere inviata al tuo channel manager."
+        },
+        "state": {
+          "Applied": "Salvata in CasaZen",
+          "Confirmed": "Confermata dal tuo channel manager",
+          "Failed": "Non inviata",
+          "PartiallySent": "Inviata solo in parte",
+          "Queued": "In attesa di invio",
+          "Sending": "In invio",
+          "Sent": "Accettata dal tuo channel manager"
+        },
+        "tone": {
+          "done": "fatto",
+          "info": "da sapere",
+          "problem": "da guardare",
+          "working": "in corso"
+        }
+      },
+      "day": {
+        "closedToArrival": "arrivi chiusi",
+        "closedToArrivalShort": "no arrivi",
+        "closedToDeparture": "partenze chiuse",
+        "closedToDepartureShort": "no partenze",
+        "gridLabel": "Giorni di {{property}}",
+        "hasRule": "regola propria",
+        "loadError": "Non riusciamo a leggere prezzi e regole dei giorni: il calendario resta senza.",
+        "minNights_one": "minimo {{count}} notte",
+        "minNights_other": "minimo {{count}} notti",
+        "minShort": "min {{count}}",
+        "past": "giorno passato",
+        "price": "{{price}} a notte",
+        "retry": "Riprova",
+        "source": {
+          "Base": "prezzo abituale",
+          "DayRule": "prezzo che hai impostato sul calendario",
+          "Seasonal": "prezzo stagionale che hai confermato",
+          "Weekend": "prezzo del fine settimana"
+        },
+        "taken": "notte occupata"
+      },
+      "dayRules": {
+        "backToUsual": "Torna al prezzo abituale",
+        "clear": "Rimuovi la regola",
+        "closedToArrival": "Arrivi chiusi",
+        "closedToDeparture": "Partenze chiuse",
+        "current": {
+          "closed": "chiusi",
+          "days_one": "{{count}} giorno",
+          "days_other": "{{count}} giorni",
+          "mixed": "valori diversi nei giorni scelti",
+          "mixedPrices": "Prezzi diversi nei giorni scelti.",
+          "none": "nessun limite",
+          "nights_one": "{{count}} notte",
+          "nights_other": "{{count}} notti",
+          "now": "Ora: {{value}}",
+          "open": "aperti",
+          "price": "Prezzo attuale: {{price}} ({{source}})"
+        },
+        "errors": {
+          "advanceInvalid": "Scrivi un numero intero di giorni.",
+          "advanceRange": "Scrivi un numero di giorni da 0 a 730.",
+          "advanceRequired": "Scrivi quanti giorni, oppure rimuovi la regola.",
+          "maxAdvanceBelowMin": "L'anticipo massimo non può essere inferiore al minimo.",
+          "maxStayBelowMin": "Il soggiorno massimo non può essere inferiore al minimo.",
+          "nothingToChange": "Cambia almeno un valore, oppure chiudi il pannello.",
+          "priceDecimals": "Il prezzo può avere al massimo due decimali.",
+          "priceInvalid": "Scrivi un prezzo valido, per esempio 120 o 120,50.",
+          "priceRange": "Il prezzo deve essere tra 0,01 e 100.000.",
+          "priceRequired": "Scrivi il prezzo a notte, oppure torna al prezzo abituale.",
+          "stayInvalid": "Scrivi un numero intero di notti.",
+          "stayRange": "Scrivi un numero di notti da 1 a 365.",
+          "stayRequired": "Scrivi quante notti, oppure rimuovi la regola."
+        },
+        "keep": "Lascia com'è",
+        "keepPrice": "Lascia il prezzo com'è",
+        "maxAdvanceDays": "Anticipo massimo (giorni prima dell'arrivo)",
+        "maxNights": "Soggiorno massimo (notti)",
+        "minAdvanceDays": "Anticipo minimo (giorni prima dell'arrivo)",
+        "minNights": "Soggiorno minimo (notti)",
+        "price": "Nuovo prezzo a notte",
+        "priceHint": "Per esempio 120 o 120,50, nella valuta dell'immobile. Vale per ogni notte scelta.",
+        "priceWillClear": "Le notti scelte tornano al prezzo abituale.",
+        "saveFailed": "Non siamo riusciti a salvare la modifica. Riprova.",
+        "savePrice": "Salva il prezzo",
+        "saveRestrictions": "Salva le restrizioni",
+        "willClear": "La regola verrà rimossa."
+      },
+      "panel": {
+        "actions": "Cosa vuoi fare con questi giorni",
+        "allPast": "Questi giorni sono già passati: non si possono bloccare né modificare. Scegli giorni da oggi in poi.",
+        "block": "Blocca",
+        "description": "Scegli se bloccare i giorni, cambiare il prezzo o cambiare le restrizioni. Puoi ancora allargare la selezione dal calendario.",
+        "done": "Fatto",
+        "price": "Prezzo",
+        "restrictions": "Restrizioni",
+        "somePast_one": "{{count}} giorno è già passato: resta com'era.",
+        "somePast_other": "{{count}} giorni sono già passati: restano com'erano.",
+        "taken_one": "{{count}} notte della selezione è già occupata da una prenotazione, una richiesta o un blocco: il blocco verrà rifiutato.",
+        "taken_other": "{{count}} notti della selezione sono già occupate da una prenotazione, una richiesta o un blocco: il blocco verrà rifiutato.",
+        "title_one": "{{dates}} · {{property}} · {{count}} notte",
+        "title_other": "{{dates}} · {{property}} · {{count}} notti"
       }
     },
     "validation": {

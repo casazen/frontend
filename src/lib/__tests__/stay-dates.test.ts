@@ -67,6 +67,26 @@ describe('stay date helpers', () => {
     expect(nightsBetween('2026-10-04', '2026-10-04')).toBe(0);
   });
 
+  it('formatStayDate_ReusesItsFormatter_NotOneForEveryDate', () => {
+    // A Timeline writes the name of every day of every row: the formatter is made once for a language and its options.
+    const original = Intl.DateTimeFormat;
+    let made = 0;
+    Intl.DateTimeFormat = function (...args: ConstructorParameters<typeof Intl.DateTimeFormat>) {
+      made += 1;
+      return new original(...args);
+    } as unknown as typeof Intl.DateTimeFormat;
+    try {
+      for (let index = 0; index < 300; index += 1) formatStayDate(addDays('2026-09-01', index % 28), 'it', { day: 'numeric', month: 'long' });
+      expect(made).toBeLessThanOrEqual(1);
+      expect(formatStayDate('2026-09-12', 'it', { day: 'numeric', month: 'long' })).toBe('12 settembre');
+      expect(formatStayDate('2026-09-12', 'en', { day: 'numeric', month: 'long' })).toBe('September 12');
+      // Other options, other formatter: nothing is mixed up.
+      expect(formatStayDate('2026-09-12', 'it', { weekday: 'short' })).toBe('sab');
+    } finally {
+      Intl.DateTimeFormat = original;
+    }
+  });
+
   it('formatStayDate_InvalidDate_ReturnsEmptyInsteadOfInvalidDate', () => {
     expect(formatStayDate('', 'it')).toBe('');
     expect(formatStayDate('2026-10-01', 'it')).toBe('1 ottobre 2026');

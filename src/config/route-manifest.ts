@@ -523,6 +523,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/bookings/calendar'],
   },
   {
+    // A change of the price and the rules of many days of many properties, in a guided wizard with a summary before anything is sent (NF-78, NF-05). It is not in a menu: the
+    // calendar has the button that opens it, and it needs the right to write properties (the API checks it again for every property).
+    path: '/app/short-rent/bookings/calendar/bulk',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({ default: (await import('@/features/bookings/calendar-bulk-page')).CalendarBulkPage }),
+  },
+  {
     path: '/app/short-rent/bookings/:id/checkout',
     context: 'short-rent',
     requiredPermissions: ['booking.write'],

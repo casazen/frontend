@@ -6,7 +6,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
+import { calendarChangesApi } from '@/api/calendar-changes.api';
+import { calendarDaysApi } from '@/api/calendar-days.api';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useProperties } from '@/queries/use-properties';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { freezeClock, withBrowserTimeZone } from '@/test/clock';
@@ -22,6 +26,8 @@ vi.mock('@/components/layout/app-shell', () => ({
 }));
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getCalendar: vi.fn(), createOtaStay: vi.fn() } }));
 vi.mock('@/api/manual-blocks.api', () => ({ manualBlocksApi: { create: vi.fn(), remove: vi.fn() } }));
+vi.mock('@/api/calendar-days.api', () => ({ calendarDaysApi: { getDays: vi.fn() } }));
+vi.mock('@/api/calendar-changes.api', () => ({ calendarChangesApi: { apply: vi.fn(), get: vi.fn(), retry: vi.fn(), list: vi.fn(), preview: vi.fn() } }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -59,25 +65,28 @@ function problemError(status: number, data: unknown): AxiosError {
   });
 }
 
-function renderPage(permissions: string[] = ['property.write', 'booking.write']) {
+function renderPage(permissions: string[] = ['property.write', 'booking.write'], connector = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = {
     hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission),
   } as unknown as WorkspaceContextValue;
   render(
     <QueryClientProvider client={queryClient}>
-      <WorkspaceContext.Provider value={workspace}>
-        <MemoryRouter>
-          <CalendarPage />
-        </MemoryRouter>
-      </WorkspaceContext.Provider>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <WorkspaceContext.Provider value={workspace}>
+          <MemoryRouter>
+            <CalendarPage />
+          </MemoryRouter>
+        </WorkspaceContext.Provider>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
 }
 
+// "Blocca date" opens the panel of the days (E08/F05/US03/T02) on tonight of the property shown, with the block form in it.
 function openForm() {
   fireEvent.click(screen.getByRole('button', { name: 'Blocca date' }));
-  return screen.getByRole('region', { name: 'Blocca date' });
+  return screen.getByTestId('manual-block-form');
 }
 
 async function openMaintenanceBlock() {
@@ -98,6 +107,8 @@ describe('CalendarPage manual blocks (PC-09)', () => {
       isLoading: false,
     } as unknown as ReturnType<typeof useProperties>);
     vi.mocked(bookingsApi.getCalendar).mockResolvedValue(calendarResponse([]));
+    vi.mocked(calendarDaysApi.getDays).mockResolvedValue({ today: '2026-09-30', properties: [] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -105,7 +116,51 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     vi.useRealTimers();
   });
 
-  it('BloccaDate_ValidForm_SendsStayDatesReasonAndNoteAndClosesTheForm', async () => {
+  // The guard of the reads of the days and of the changes: the right to read properties, and for the changes the connector of the channel manager. Nothing is asked without them.
+  it('CalendarPage_WithoutTheRightToReadProperties_AsksForNoDaysAndNoChanges', async () => {
+    renderPage(['property.write', 'booking.write'], true);
+    await screen.findByRole('button', { name: 'Giorno' });
+    await waitFor(() => expect(bookingsApi.getCalendar).toHaveBeenCalled());
+
+    expect(calendarDaysApi.getDays).not.toHaveBeenCalled();
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+  });
+
+  it('CalendarPage_WithTheRightToReadProperties_AsksForTheDaysAndTheChanges', async () => {
+    renderPage(['property.read', 'property.write', 'booking.write'], true);
+    await screen.findByRole('button', { name: 'Giorno' });
+
+    await waitFor(() => expect(calendarDaysApi.getDays).toHaveBeenCalled());
+    await waitFor(() => expect(calendarChangesApi.list).toHaveBeenCalled());
+  });
+
+  it('CalendarPage_ConnectorOff_AsksForTheDaysButNotForTheChanges', async () => {
+    renderPage(['property.read', 'property.write', 'booking.write'], false);
+    await screen.findByRole('button', { name: 'Giorno' });
+
+    await waitFor(() => expect(calendarDaysApi.getDays).toHaveBeenCalled());
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+  });
+
+  it('TheDaysPanel_WhileOpen_LeavesItsRoomToTheCalendarOnAWideScreen_AndGivesItBack', async () => {
+    renderPage();
+    await screen.findByRole('button', { name: 'Giorno' });
+    const body = screen.getByTestId('calendar-page-body');
+    expect(body).not.toHaveAttribute('data-panel-open');
+    expect(body.className).not.toContain('xl:pr-');
+
+    // The panel is a sheet fixed to the right edge, 28 rem wide: from 80 rem the page keeps that room (a little more) free of the calendar, so that the next day to click is in view.
+    openForm();
+    expect(body).toHaveAttribute('data-panel-open', 'true');
+    expect(body.className).toContain('xl:pr-[27.5rem]');
+
+    fireEvent.click(within(screen.getByTestId('manual-block-form')).getByRole('button', { name: 'Annulla' }));
+    await waitFor(() => expect(body).not.toHaveAttribute('data-panel-open'));
+    expect(body.className).not.toContain('xl:pr-');
+  });
+
+  it('BloccaDate_ValidForm_SendsStayDatesReasonAndNoteAndClosesThePanel', async () => {
     vi.mocked(manualBlocksApi.create).mockResolvedValue({ id: 'mb9' } as ManualBlockDto);
     renderPage();
     await screen.findByRole('button', { name: 'Giorno' });
@@ -129,7 +184,7 @@ describe('CalendarPage manual blocks (PC-09)', () => {
         note: 'Ferie',
       }),
     );
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Blocca date' })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByTestId('day-panel')).not.toBeInTheDocument());
     // The calendar of the range is asked again with the new block.
     await waitFor(() => expect(bookingsApi.getCalendar).toHaveBeenCalledTimes(2));
   });
@@ -162,7 +217,8 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     expect(await within(form).findByTestId('manual-block-error')).toHaveTextContent(
       'Una prenotazione occupa già una di queste notti: annullala o scegli altre date.',
     );
-    expect(screen.getByRole('region', { name: 'Blocca date' })).toBeInTheDocument();
+    expect(screen.getByTestId('day-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('manual-block-form')).toBeInTheDocument();
   });
 
   it('ManualBlock_Opened_ShowsReasonNoteAndRemovesItAfterConfirmation', async () => {
