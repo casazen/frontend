@@ -24,6 +24,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { SlotInfo } from 'react-big-calendar';
 import { toStayDate, todayInRome } from '@/lib/stay-dates';
+import { cn } from '@/lib/utils';
 import { clearSelection, pressDay, selectionOfDays, startSelection, type DaySelection } from './lib/day-selection';
 import {
   hostCalendarRange,
@@ -188,7 +189,13 @@ export function CalendarPage() {
     <UnreadMessagesContext.Provider value={unreadMessages.data ?? NO_UNREAD}>
     <AppShell>
       {/* A column that fills the content region: the calendar takes the height the screen has left (`host-calendar.css`). */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
+      {/* The panel of the days is a sheet fixed to the right edge (28 rem, no dark layer): where the screen has the room (from 80 rem) the page leaves that space to it, so that the days of
+          the calendar stay in view and in reach for the next click; below that the panel covers the right of the calendar and the days under it are reached with the keyboard or by closing it. */}
+      <div
+        className={cn('flex min-h-0 flex-1 flex-col gap-4', selection && canWriteProperty && 'xl:pr-[27.5rem]')}
+        data-testid="calendar-page-body"
+        data-panel-open={selection && canWriteProperty ? 'true' : undefined}
+      >
         <PageHeader
           title={t('booking.calendar.pageTitle')}
           description={t('booking.calendar.pageDescription')}

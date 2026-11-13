@@ -106,6 +106,23 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     vi.useRealTimers();
   });
 
+  it('TheDaysPanel_WhileOpen_LeavesItsRoomToTheCalendarOnAWideScreen_AndGivesItBack', async () => {
+    renderPage();
+    await screen.findByRole('button', { name: 'Giorno' });
+    const body = screen.getByTestId('calendar-page-body');
+    expect(body).not.toHaveAttribute('data-panel-open');
+    expect(body.className).not.toContain('xl:pr-');
+
+    // The panel is a sheet fixed to the right edge, 28 rem wide: from 80 rem the page keeps that room (a little more) free of the calendar, so that the next day to click is in view.
+    openForm();
+    expect(body).toHaveAttribute('data-panel-open', 'true');
+    expect(body.className).toContain('xl:pr-[27.5rem]');
+
+    fireEvent.click(within(screen.getByTestId('manual-block-form')).getByRole('button', { name: 'Annulla' }));
+    await waitFor(() => expect(body).not.toHaveAttribute('data-panel-open'));
+    expect(body.className).not.toContain('xl:pr-');
+  });
+
   it('BloccaDate_ValidForm_SendsStayDatesReasonAndNoteAndClosesThePanel', async () => {
     vi.mocked(manualBlocksApi.create).mockResolvedValue({ id: 'mb9' } as ManualBlockDto);
     renderPage();
