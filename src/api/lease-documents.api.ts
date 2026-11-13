@@ -3,7 +3,7 @@ import { ApiClient } from './client';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import type { LeaseDocumentSection } from '@/types';
 
-export type LeaseDocumentKind = 'Contract' | 'Attestation' | 'Registration' | 'Other';
+export type LeaseDocumentKind = 'Contract' | 'Attestation' | 'Registration' | 'Other' | 'RegistrationIdentity';
 export interface LeaseDocument {
   id: string; leaseId: string; kind: LeaseDocumentKind; fileName: string; sizeBytes: number; uploadedAt: string;
   /** A contract that was read: the sections its file is made of (the contract, its attestation, its calculation sheet). CF-DOCS-REAL. */

@@ -155,6 +155,13 @@ describe('LeaseDetailPage', () => {
     vi.unstubAllGlobals();
   });
 
+  it('opens registration deadlines on return from Stripe', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Signed' }) }));
+    renderPage('?registrationCheckout=success');
+    const tab = await screen.findByTestId('lease-tab-scadenze');
+    expect(tab).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('render_Lease_ShowsMaskedPartiesTranslatedRolesAndTimeline', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail() }));
 

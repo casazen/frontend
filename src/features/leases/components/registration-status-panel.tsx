@@ -137,9 +137,9 @@ export function RegistrationStatusPanel({
               {canUseProvider && (
                 <Button variant="outline" onClick={onStartCheckout ?? onSubmitToProvider} disabled={isSubmittingToProvider || isStartingCheckout}>
                   {isStartingCheckout ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reindirizzamento al pagamento…</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('registrationPreparation.redirecting')}</>
                   ) : onStartCheckout ? (
-                    <><CreditCard className="mr-2 h-4 w-4" />Paga e registra con OpenAPI (€32,90 + IVA)</>
+                    <><CreditCard className="mr-2 h-4 w-4" />{t('registrationPreparation.providerAction')}</>
                   ) : (
                     isSubmittingToProvider ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('leases.rli.submitting')}</>

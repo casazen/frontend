@@ -427,7 +427,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     renderPage();
 
     const panel = await registrationPanel();
-    await waitFor(() => expect(panel.getByRole('button', { name: /Paga e registra con OpenAPI/ })).toBeInTheDocument());
+    await waitFor(() => expect(panel.getByRole('button', { name: /Dati per la registrazione/ })).toBeInTheDocument());
     expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('Registrazione non riuscita');
     const alert = panel.getByRole('alert');
     expect(alert).toHaveTextContent('Il contratto NON è registrato');

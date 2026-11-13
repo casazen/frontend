@@ -1,3 +1,4 @@
+import { RegistrationPreparationDialog } from '../components/registration-preparation-dialog';
 import { useState, type ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,8 @@ import { formatCurrency } from '@/lib/utils';
 import { useExportRli, useRliAdvisory, useRliChecklist } from '@/queries/use-leases';
 import { useRentLedger } from '@/queries/use-rent';
 import type { CedolareAdvisory, LeaseDetail, QuesturaCommunicationStatus, RliChecklist } from '@/types';
+import { useRegistrationFlow } from '../hooks/use-registration-flow';
+import { DelegaCaptureDialog } from '../components/delega-capture-dialog';
 import { ManualRegistrationDialog } from '../components/manual-registration-dialog';
 import { QuesturaCommunicationPanel } from '../components/questura-communication-panel';
 import { RentSchedulePanel } from '../components/rent-schedule-panel';
@@ -94,6 +97,7 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   const { t, i18n } = useTranslation();
   const checklist = useRliChecklist(lease.id);
   const advisory = useRliAdvisory(lease.id);
+  const flow = useRegistrationFlow(lease, checklist.data);
   const ledger = useRentLedger(lease.id, lease.status);
   const exportRli = useExportRli();
   const registration = getRliRegistrationState(lease.status, lease.registration);
@@ -145,7 +149,7 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         title={viaService ? t('leaseRound.service.title') : t('leaseWizard.after.registration.title')}
         body={
           <>
-            <p>{viaService ? t('leaseRound.service.note') : t('leaseWizard.after.registration.body')}</p>
+            <p>{viaService ? t('leaseRound.service.note') : flow.providerFilingAvailable ? t('leaseWizard.after.registration.providerBody') : t('leaseWizard.after.registration.body')}</p>
             {costs ? (
               <p className="mt-2" data-testid="lease-after-costs">
                 {costs}
@@ -156,9 +160,10 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         who={t('leaseWizard.after.registration.who')}
         when={registrationWhen(lease, checklist.data, t, i18n.language)}
         primary={{
-          label: viaService ? t('leaseRound.service.declare') : t('leaseWizard.after.registration.mark'),
-          onClick: () => setDeclareOpen(true),
-          testId: 'lease-after-mark-registered',
+          label: flow.providerFilingAvailable ? t('leaseWizard.after.registration.pay') : viaService ? t('leaseRound.service.declare') : t('leaseWizard.after.registration.mark'),
+          onClick: flow.providerFilingAvailable ? () => void flow.startCheckout() : () => setDeclareOpen(true),
+          loading: flow.startingCheckout,
+          testId: flow.providerFilingAvailable ? 'lease-after-pay-registration' : 'lease-after-mark-registered',
         }}
         secondary={
           viaService
@@ -177,6 +182,18 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   return (
     <div className="space-y-8" data-testid="lease-after-step">
       {registrationBlock}
+      {toRegister && flow.providerFilingAvailable && (
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={() => setDeclareOpen(true)} data-testid="lease-after-mark-registered">
+            {t('leaseWizard.after.registration.mark')}
+          </Button>
+          <p className="text-sm text-foreground/70">{t('leaseWizard.after.registration.serviceCost')}</p>
+        </div>
+      )}
+      {flow.providerFilingAvailable && <RegistrationPreparationDialog {...flow.preparationProps} />}
+      {toRegister && flow.providerFilingAvailable && checklist.data && (
+        <DelegaCaptureDialog {...flow.dialogProps} tosVersion={checklist.data.tosVersion} attestationText={checklist.data.attestationText} />
+      )}
 
       {/* The attestation is what the benefits of a canone concordato are claimed with: asked here, never a stop (CF-END). */}
       {isConcordatoLease(lease) ? <AttestationSection leaseId={lease.id} viaService={lease.isConcordatoFacileSource === true} /> : null}

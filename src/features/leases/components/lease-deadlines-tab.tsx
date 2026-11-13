@@ -1,9 +1,7 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { RegistrationPreparationDialog } from './registration-preparation-dialog';
 import type { LeaseDetail } from '@/types';
-import { useRliChecklist, useTriggerRegistration } from '@/queries/use-leases';
-import { leasesApi } from '@/api/leases.api';
-import { toast } from 'sonner';
+import { useRliChecklist } from '@/queries/use-leases';
+import { useRegistrationFlow } from '../hooks/use-registration-flow';
 import { DelegaCaptureDialog } from './delega-capture-dialog';
 import { LeaseDates } from './lease-dates';
 import { QuesturaCommunicationPanel } from './questura-communication-panel';
@@ -17,50 +15,8 @@ import { RliChecklist } from './rli-checklist';
  */
 export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail; showQuestura: boolean }) {
   const { data: checklist } = useRliChecklist(lease.id);
-  const triggerRegistration = useTriggerRegistration();
-  const [delegaOpen, setDelegaOpen] = useState(false);
-  const [startingCheckout, setStartingCheckout] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
-  const providerFilingAvailable = checklist?.providerFilingAvailable === true;
-
-  const checkoutSucceeded = searchParams.get('registrationCheckout') === 'success';
-  const dialogOpen = delegaOpen || (checkoutSucceeded && providerFilingAvailable);
-
-  const handleDelegaOpenChange = (open: boolean) => {
-    setDelegaOpen(open);
-    if (!open && checkoutSucceeded) {
-      const next = new URLSearchParams(searchParams);
-      next.delete('registrationCheckout');
-      setSearchParams(next, { replace: true });
-    }
-  };
-
-  // The mutation reports its own errors (toast with the server's reason): only swallow the rejection.
-  const handleDelegaConfirm = async (payload: { tosVersion: string; attestationAccepted: boolean }) => {
-    try {
-      await triggerRegistration.mutateAsync({
-        id: lease.id,
-        tosVersion: payload.tosVersion,
-        attestationAccepted: payload.attestationAccepted,
-      });
-    } catch {
-      // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
-    }
-    handleDelegaOpenChange(false);
-  };
-
-  const startCheckout = async () => {
-    setStartingCheckout(true);
-    try {
-      const checkout = await leasesApi.createRegistrationCheckout(lease.id);
-      window.location.assign(checkout.sessionUrl);
-    } catch {
-      toast.error('Non è stato possibile aprire il pagamento per la registrazione.');
-      setStartingCheckout(false);
-    }
-  };
+  const flow = useRegistrationFlow(lease, checklist);
+  const providerFilingAvailable = flow.providerFilingAvailable;
 
   return (
     <div className="space-y-8">
@@ -74,20 +30,18 @@ export function LeaseDeadlinesTab({ lease, showQuestura }: { lease: LeaseDetail;
         registration={lease.registration}
         registrationDeadline={lease.registrationDeadline}
         providerFilingAvailable={providerFilingAvailable}
-        onSubmitToProvider={() => setDelegaOpen(true)}
-        isSubmittingToProvider={triggerRegistration.isPending}
-        onStartCheckout={startCheckout}
-        isStartingCheckout={startingCheckout}
+        onSubmitToProvider={flow.openDelega}
+        isSubmittingToProvider={flow.dialogProps.isSubmitting}
+        onStartCheckout={flow.startCheckout}
+        isStartingCheckout={flow.startingCheckout}
         viaService={lease.isConcordatoFacileSource === true}
       />
+      {flow.providerFilingAvailable && <RegistrationPreparationDialog {...flow.preparationProps} />}
       {providerFilingAvailable && !lease.isConcordatoFacileSource && checklist && (
         <DelegaCaptureDialog
-          open={dialogOpen}
-          onOpenChange={handleDelegaOpenChange}
+          {...flow.dialogProps}
           tosVersion={checklist.tosVersion}
           attestationText={checklist.attestationText}
-          isSubmitting={triggerRegistration.isPending}
-          onConfirm={handleDelegaConfirm}
         />
       )}
     </div>

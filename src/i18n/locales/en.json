@@ -1,4 +1,40 @@
 {
+  "registrationPreparation": {
+  "providerAction": "Registration details · OpenAPI",
+  "redirecting": "Redirecting to payment…",
+  "title": "Registration details",
+  "description": "Check the prefilled details and add anything missing. We validate the filing before opening payment.",
+  "privacy": "Identity documents are needed for registration and will be sent to OpenAPI with the contract. They are kept as private contract attachments.",
+  "signedContract": "Signed contract: already held by CasaZen.",
+  "selectDocument": "Select an existing attachment",
+  "uploadDocument": "Or upload the document (PDF, JPG or PNG, maximum 20 MB)",
+  "uploading": "Uploading document…",
+  "selectValue": "Select…",
+  "fileTooLarge": "The document exceeds 20 MB.",
+  "uploadError": "Document upload failed.",
+  "saved": "Registration details saved.",
+  "saveError": "Unable to save. Reopen this form if another tab changed it.",
+  "loadError": "Unable to load registration details.",
+  "retry": "Try again",
+  "loading": "Loading details…",
+  "fixIssues": "Complete or correct these details before continuing:",
+  "contract": "Contract",
+  "additionalFields": "Additional and conditional details",
+  "costs": "The service payment is €32.90. Any registration taxes and stamp duty are excluded and charged by the provider to the specified IBAN.",
+  "saveDraft": "Save and continue later",
+  "continuePayment": "Save and continue to Stripe payment",
+  "continuePaid": "Payment received: continue with authorization",
+  "saving": "Processing…",
+  "groups": {
+    "contract": "Contract",
+    "property": "Property",
+    "applicant": "Applicant and tax payment account",
+    "landlords": "Landlords and documents",
+    "tenants": "Tenants and documents",
+    "taxes": "Tax regime, guarantees and clauses",
+    "otherProperties": "Additional properties in the same contract"
+  }
+},
   "account": {
     "activity": {
       "accessRequested": "Request for access to an area or a page",
@@ -3050,7 +3086,8 @@
       "Contract": "Signed contract and attestation",
       "Attestation": "Attestation (only if it comes separately)",
       "Registration": "Registration receipt",
-      "Other": "Other"
+      "RegistrationIdentity": "Registration identity document",
+        "Other": "Other"
     }
   },
   "channels": {
@@ -8062,6 +8099,10 @@
   "leaseWizard": {
     "after": {
       "registration": {
+        "providerBody": "Pay for registration with Stripe, then confirm the authorization to send the contract to OpenAPI. Registration is confirmed only when the receipt arrives.",
+        "pay": "Pay and register with OpenAPI",
+        "serviceCost": "The service fee is separate from estimated taxes and is shown before payment.",
+        "checkoutError": "Unable to open the registration payment.",
         "body": "The contract has to be registered with the Agenzia delle Entrate (the Italian Revenue Agency). Then declare it here with the receipt: the contract becomes “Registered” and the deadline goes away.",
         "costs": {
           "cedolare": "Estimated costs: none. With the cedolare secca (flat tax) there is no registration tax or stamp duty (estimate).",
