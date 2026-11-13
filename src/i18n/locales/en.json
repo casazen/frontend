@@ -15102,6 +15102,7 @@
       "acceptedOn": "Accepted on {{date}}",
       "actionError": "The operation could not be completed.",
       "anOwner": "An owner",
+      "checkAgain": "Check again",
       "closedOn": "Closed on {{date}}",
       "confirm": {
         "action_one": "Send {{count}} invitation",
@@ -15160,7 +15161,8 @@
       "sentNone": "No invitation was sent.",
       "sentSome": "Invitations sent: {{sent}}. The e-mail did not go out for {{failed}}: {{owners}}. Their invitation was withdrawn.",
       "sent_one": "{{count}} invitation sent.",
-      "sent_other": "{{count}} invitations sent."
+      "sent_other": "{{count}} invitations sent.",
+      "watchOver": "We no longer update the state of the invitations by ourselves. Check again to see whether somebody accepted."
     },
     "issues": {
       "excess": "Shares at {{total}}%",

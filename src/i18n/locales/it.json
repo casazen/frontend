@@ -15102,6 +15102,7 @@
       "acceptedOn": "Accettato il {{date}}",
       "actionError": "Non è stato possibile completare l'operazione.",
       "anOwner": "Un proprietario",
+      "checkAgain": "Controlla di nuovo",
       "closedOn": "Chiuso il {{date}}",
       "confirm": {
         "action_one": "Invia {{count}} invito",
@@ -15160,7 +15161,8 @@
       "sentNone": "Nessun invito è stato inviato.",
       "sentSome": "Inviti inviati: {{sent}}. L'e-mail non è partita per {{failed}}: {{owners}}. Per loro l'invito è stato ritirato.",
       "sent_one": "{{count}} invito inviato.",
-      "sent_other": "{{count}} inviti inviati."
+      "sent_other": "{{count}} inviti inviati.",
+      "watchOver": "Non aggiorniamo più da soli lo stato degli inviti. Controlla di nuovo per vedere se qualcuno ha accettato."
     },
     "issues": {
       "excess": "Quote al {{total}}%",

@@ -11,7 +11,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { getVisibleNavEntries, ROUTE_MANIFEST } from '@/config/route-manifest';
 import { OWNER_STEP_PATH, ownerManualCsv } from '@/lib/owner-onboarding';
-import { ownerOnboardingKeys } from '@/queries/use-owner-onboarding';
+import { OWNER_REFRESH_MS, OWNER_WATCH_MS, ownerOnboardingKeys } from '@/queries/use-owner-onboarding';
 import type {
   OwnerImportResult,
   OwnerInvitationPreview,
@@ -675,6 +675,105 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(container.textContent ?? '').not.toMatch(/portale-proprietari\/invito|token=/);
       expect(Object.keys(localStorage)).toHaveLength(0);
       expect(Object.keys(sessionStorage)).toHaveLength(0);
+    });
+  });
+
+  describe('the refresh of the invitations: only while a link is in force, ten minutes at most', () => {
+    const NOBODY_WAITING = [invitation(OWNER_A, 'Marta Esposito', 'ready'), invitation(OWNER_C, 'Anna Neri', 'notReady')];
+    const calls = (method: 'listInvitations' | 'getReadiness') => vi.mocked(ownerOnboardingApi[method]).mock.calls.length;
+
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      cleanup();
+      vi.useRealTimers();
+    });
+
+    it('OwnerInvitations_NoLinkInForce_NothingIsAskedByItself', async () => {
+      vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue(NOBODY_WAITING);
+      renderPage();
+      await screen.findByTestId('owner-invitations-list');
+
+      await act(() => vi.advanceTimersByTimeAsync(2 * OWNER_WATCH_MS));
+
+      // Opened once, never again: with nobody who may accept there is nothing to wait for, and no notice about a check that was never made.
+      expect(calls('listInvitations')).toBe(1);
+      expect(calls('getReadiness')).toBe(1);
+      expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument();
+    });
+
+    it('OwnerInvitations_ALinkInForce_IsFollowedEveryThirtySecondsForTenMinutesThenTheNeutralNoticeAsksToCheckAgain', async () => {
+      vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue(INVITATIONS);
+      renderPage();
+      await screen.findByTestId('owner-invitations-list');
+      expect(calls('listInvitations')).toBe(1);
+
+      // The window is open: the page asks by itself and says nothing about it.
+      await act(() => vi.advanceTimersByTimeAsync(3 * OWNER_REFRESH_MS + 5_000));
+      expect(calls('listInvitations')).toBeGreaterThanOrEqual(4);
+      expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument();
+
+      // Ten minutes after it opened it stops: a neutral notice (a status, not an error) and a button, and not one read more by itself.
+      await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS));
+      const notice = await screen.findByTestId('owner-invitations-watch-over');
+      expect(notice).toHaveAttribute('role', 'status');
+      expect(notice).toHaveTextContent(i18n.t('ownerOnboarding.invitations.watchOver'));
+      expect(screen.queryByTestId('owner-invitations-error')).not.toBeInTheDocument();
+      const stopped = calls('listInvitations');
+      expect(stopped).toBeLessThanOrEqual(OWNER_WATCH_MS / OWNER_REFRESH_MS + 4);
+      await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS));
+      expect(calls('listInvitations')).toBe(stopped);
+
+      // «Controlla di nuovo» reads at once and opens the window again: the notice goes and the page follows the link again.
+      fireEvent.click(within(notice).getByRole('button', { name: i18n.t('ownerOnboarding.invitations.checkAgain') }));
+      await waitFor(() => expect(calls('listInvitations')).toBe(stopped + 1));
+      await waitFor(() => expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument());
+      await act(() => vi.advanceTimersByTimeAsync(2 * OWNER_REFRESH_MS + 5_000));
+      expect(calls('listInvitations')).toBeGreaterThanOrEqual(stopped + 2);
+    });
+
+    it('OwnerInvitations_ALinkSentAfterTheWindowWasOver_OpensTheWindowAgainAndIsFollowed', async () => {
+      vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue(NOBODY_WAITING);
+      const { client } = renderPage();
+      await screen.findByTestId('owner-invitations-list');
+      await act(() => vi.advanceTimersByTimeAsync(OWNER_WATCH_MS + 5 * 60_000));
+      expect(calls('listInvitations')).toBe(1);
+
+      // The person confirms a batch after a quarter of an hour on the page (the write reads the list again): the new link is followed all the same, not told at once as «stopped».
+      vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue([
+        invitation(OWNER_A, 'Marta Esposito', 'invited', { invitationId: 'inv-a', sentAt: '2026-11-13T10:00:00Z', expiresAt: '2026-11-20T10:00:00Z' }),
+        invitation(OWNER_C, 'Anna Neri', 'notReady'),
+      ]);
+      await act(async () => {
+        await client.invalidateQueries({ queryKey: ownerOnboardingKeys.invitations });
+      });
+      await waitFor(() => expect(within(screen.getAllByTestId('owner-invitation-row')[0]).getByTestId('owner-invitation-state')).toHaveTextContent(i18n.t('ownerOnboarding.portalStates.invited')));
+      expect(screen.queryByTestId('owner-invitations-watch-over')).not.toBeInTheDocument();
+
+      const before = calls('listInvitations');
+      await act(() => vi.advanceTimersByTimeAsync(2 * OWNER_REFRESH_MS + 5_000));
+      expect(calls('listInvitations')).toBeGreaterThan(before);
+    });
+
+    it('OwnerInvitations_AnOwnerAcceptsWhileThePageIsOpen_TheListAndTheReadinessFollow', async () => {
+      vi.mocked(ownerOnboardingApi.listInvitations)
+        .mockResolvedValueOnce(INVITATIONS)
+        .mockResolvedValue([
+          INVITATIONS[0],
+          invitation(OWNER_B, 'Luca Bianchi', 'accepted', { invitationId: 'inv-b', acceptedAt: '2026-11-13T10:00:00Z' }),
+          INVITATIONS[2],
+        ]);
+      renderPage();
+      await screen.findByTestId('owner-invitations-list');
+      expect(calls('getReadiness')).toBe(1);
+
+      await act(() => vi.advanceTimersByTimeAsync(OWNER_REFRESH_MS + 5_000));
+
+      // The acceptance shows without a reload, and the readiness (the phase «Accesso al portale») is read again because the states changed.
+      await waitFor(() => expect(screen.getAllByTestId('owner-invitation-state').map((mark) => mark.textContent)).toContain(i18n.t('ownerOnboarding.portalStates.accepted')));
+      await waitFor(() => expect(calls('getReadiness')).toBeGreaterThanOrEqual(2));
     });
   });
 });

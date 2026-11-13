@@ -322,6 +322,17 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
 
       {body}
 
+      {!notFound && !invitations.isError && invitations.watchOver ? (
+        // A link is still in force but the page has asked by itself for ten minutes: it stops (each read works out the whole portfolio on the server) and says so in neutral words,
+        // never as a failure, with the button that asks again.
+        <div className="flex flex-wrap items-center gap-2" role="status" data-testid="owner-invitations-watch-over">
+          <p className="min-w-0 flex-1 text-sm text-foreground/70">{t('ownerOnboarding.invitations.watchOver')}</p>
+          <Button type="button" size="sm" variant="outline" className="min-h-11" disabled={busy} loading={invitations.isFetching} onClick={invitations.checkAgain} data-testid="owner-invitations-check-again">
+            {t('ownerOnboarding.invitations.checkAgain')}
+          </Button>
+        </div>
+      ) : null}
+
       {outcome ? (
         <Alert variant={outcome.tone} data-testid="owner-invitations-outcome" role="status">
           {outcome.text}
