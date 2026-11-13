@@ -21,7 +21,8 @@ interface BookingEditSyncProps {
 
 /**
  * Where the push of an edit to the channel manager stands (E08/F03/US02, NF-75, NF-74), read from `octorateSync` of the booking: being sent, failed with its reason and
- * "Retry now", or in conflict with both versions and the two choices. `Synced` says nothing, and so does a booking that is not mirrored: this is a notice for what is
+ * "Retry now", or, for a change the channel manager refused because the reservation changed there, in conflict with both versions and the two choices (any other refusal,
+ * as the dates of a creation taken there, is a failure with its reason). `Synced` says nothing, and so does a booking that is not mirrored: this is a notice for what is
  * not done, never a success the server did not confirm. A conflict is `role="alert"` by hand: an `Alert` announces only the danger variant by itself.
  */
 export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChannelVersion }: BookingEditSyncProps) {
@@ -57,13 +58,19 @@ export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChann
     </Button>
   );
 
-  if (sync.state === 'Failed') {
+  // Two versions can be in conflict only for a change CasaZen sent (`Update`): the reservation changed in the channel manager after CasaZen read it. The refusal of anything
+  // else is no booking changed over there: a creation whose dates are taken in the channel manager (`octorate_dates_unavailable`) has no reservation to differ from. It is
+  // a failure like the others: it says why, and the choice is to ask again once the problem is sorted out.
+  const versionsInConflict = sync.state === 'Conflict' && sync.lastOperation === 'Update';
+
+  if (sync.state === 'Failed' || (sync.state === 'Conflict' && !versionsInConflict)) {
     return (
       <Alert
         variant="warning"
         role="alert"
         title={t('booking.edit.sync.failed.title')}
         data-testid="booking-sync-failed"
+        data-state={sync.state}
         data-code={sync.errorCode ?? undefined}
         action={sync.canRetry ? retryButton(false) : undefined}
       >
@@ -80,7 +87,7 @@ export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChann
     );
   }
 
-  // `Conflict`: the reservation changed in the channel manager after CasaZen read it. Both versions are shown and neither is lost until the host decides.
+  // `Conflict` of a change: the reservation changed in the channel manager after CasaZen read it. Both versions are shown and neither is lost until the host decides.
   const day = (value: string | null | undefined) =>
     value ? formatStayDate(stayDateOf(value), i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }) : t('booking.edit.conflict.notAvailable');
   const stay = (checkIn: string | null | undefined, checkOut: string | null | undefined) => `${day(checkIn)} → ${day(checkOut)}`;

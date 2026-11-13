@@ -600,6 +600,24 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         expect(bookingsApi.update).not.toHaveBeenCalled();
       });
 
+      it('BookingEditPage_CreationRefusedForTheDates_SaysTheyAreTakenAndAsksAgainWithoutWritingOverAnything', async () => {
+        // The creation of the booking in the channel manager found the dates taken: no reservation exists there, so there are no two versions to choose between.
+        vi.mocked(bookingsApi.getById).mockResolvedValue(
+          booking({ source: 'Direct', octorateSync: sync({ state: 'Conflict', lastOperation: 'Create', errorCode: 'octorate_dates_unavailable', canRetry: true }) }),
+        );
+        vi.mocked(bookingsApi.retryOctorateSync).mockResolvedValue({ bookingId: BOOKING_ID, state: 'Pending' });
+        renderPage();
+
+        const failed = await screen.findByTestId('booking-sync-failed', undefined, WAIT);
+        expect(failed).toHaveTextContent(i18n.t('booking.syncReason.datesUnavailable'));
+        expect(screen.queryByTestId('booking-sync-conflict')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Usa la versione del channel manager' })).not.toBeInTheDocument();
+
+        fireEvent.click(within(failed).getByRole('button', { name: 'Riprova ora' }));
+
+        await waitFor(() => expect(bookingsApi.retryOctorateSync).toHaveBeenCalledWith(BOOKING_ID, false), WAIT);
+      });
+
       it('BookingEditPage_UseTheChannelManagerVersion_OpensTheFormWithItsDatesAndGuestsAndSavesNothing', async () => {
         vi.mocked(bookingsApi.getById).mockResolvedValue(conflicted());
         renderPage();

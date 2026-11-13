@@ -170,6 +170,26 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
       expect(screen.queryByRole('button', { name: 'Usa la versione del channel manager' })).not.toBeInTheDocument();
     });
 
+    it.each(['Create', 'Payment', 'Cancel'] as const)('render_ConflictOf%s_IsAFailureThatSaysWhyAndOffersRetryNowOnly', (lastOperation) => {
+      const onRetry = vi.fn();
+      // The dates of a creation are taken in the channel manager: there is no reservation over there that changed, and no version of it to choose.
+      const refused = sync({ state: 'Conflict', lastOperation, errorCode: 'octorate_dates_unavailable', canRetry: true });
+      renderSync(booking(refused), { onRetry, onUseChannelVersion: vi.fn() });
+
+      const failed = screen.getByTestId('booking-sync-failed');
+      expect(failed).toHaveAttribute('role', 'alert');
+      expect(failed).toHaveAttribute('data-state', 'Conflict');
+      expect(failed).toHaveTextContent('Salvata in CasaZen, non ancora nel tuo channel manager');
+      expect(failed).toHaveTextContent('Le date risultano già occupate nel channel manager');
+      expect(screen.queryByTestId('booking-sync-conflict')).not.toBeInTheDocument();
+      expect(screen.queryByText('La prenotazione è stata modificata nel tuo channel manager')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('booking-conflict-channel')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Tieni la versione di CasaZen' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Usa la versione del channel manager' })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Riprova ora' }));
+      expect(onRetry).toHaveBeenCalledWith(false);
+    });
+
     it('render_ConflictWhoCannotWrite_HasNoChoiceToMake', () => {
       renderSync(booking({ ...conflict, canRetry: false }));
 
