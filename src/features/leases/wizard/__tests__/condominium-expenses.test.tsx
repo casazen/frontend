@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryObserver } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
@@ -58,10 +58,38 @@ describe('Condominium expenses on the contract wizard', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     post.mockReset();
+    vi.mocked(axios.get).mockReset();
+    vi.mocked(axios.get).mockResolvedValue({ data: null });
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('saving an advance refreshes review without refetching draft values still being edited', async () => {
+    const qc = client();
+    const draftKey = ['lease-draft', 'lease-1'];
+    const draft = { values: { monthlyRent: '' } };
+    qc.setQueryData(draftKey, draft);
+    const refetchDraft = vi.fn(async () => draft);
+    const observer = new QueryObserver(qc, { queryKey: draftKey, queryFn: refetchDraft, staleTime: Infinity });
+    const unsubscribe = observer.subscribe(() => {});
+    post.mockResolvedValue({ data: proposal({ source: 'Manual', settledAtConsuntivo: true }) });
+    try {
+      render(expenses(qc));
+      fireEvent.change(await screen.findByLabelText('Importo per rata (€)'), { target: { value: '120' } });
+      fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+      expect(await screen.findByTestId('lease-condominium-saved')).toBeInTheDocument();
+      expect(refetchDraft).not.toHaveBeenCalled();
+      expect(qc.getQueryData(draftKey)).toBe(draft);
+    } finally { unsubscribe(); }
+  });
+
+  it('restores a saved amount after a fresh page load', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: proposal({ source: 'Manual', installmentAmount: 150, lastInstallmentAmount: 150, annualAmount: 1800, settledAtConsuntivo: true }) });
+    renderExpenses();
+    expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/150,00/);
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('does not post an empty body when the step opens', async () => {
@@ -102,7 +130,7 @@ describe('Condominium expenses on the contract wizard', () => {
     await waitFor(() =>
       expect(post).toHaveBeenLastCalledWith(
         PATH,
-        { cadence: 'Monthly', previousConsuntivo: 1000, preventivo: 1146 },
+        { cadence: 'Monthly', settlementRequired: true, previousConsuntivo: 1000, preventivo: 1146 },
         undefined,
       ),
     );
@@ -131,11 +159,11 @@ describe('Condominium expenses on the contract wizard', () => {
     renderExpenses();
 
     expect(await screen.findByText('Si conguaglia al consuntivo. Le rate già emesse non cambiano.')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.change(screen.getByLabelText('Importo per rata (€)'), { target: { value: '80' } });
     fireEvent.click(screen.getByTestId('lease-condominium-manual'));
 
     await waitFor(() =>
-      expect(post).toHaveBeenLastCalledWith(PATH, { cadence: 'Monthly', manualAmount: 80 }, undefined),
+      expect(post).toHaveBeenLastCalledWith(PATH, { cadence: 'Monthly', settlementRequired: true, manualAmount: 80 }, undefined),
     );
     expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
     expect(screen.queryByTestId('lease-condominium-accept')).not.toBeInTheDocument();
@@ -162,7 +190,7 @@ describe('Condominium expenses on the contract wizard', () => {
 
     renderExpenses();
 
-    const manual = await screen.findByLabelText('Importo a mano (€ al mese)');
+    const manual = await screen.findByLabelText('Importo per rata (€)');
     expect(screen.getByTestId('lease-condominium-manual')).toBeDisabled();
     fireEvent.change(manual, { target: { value: '95,50' } });
     expect(screen.getByTestId('lease-condominium-manual')).toBeEnabled();
@@ -174,7 +202,7 @@ describe('Condominium expenses on the contract wizard', () => {
     fireEvent.click(screen.getByTestId('lease-condominium-manual'));
 
     await waitFor(() =>
-      expect(post).toHaveBeenLastCalledWith(PATH, { cadence: 'Monthly', manualAmount: 95.5 }, undefined),
+      expect(post).toHaveBeenLastCalledWith(PATH, { cadence: 'Monthly', settlementRequired: true, manualAmount: 95.5 }, undefined),
     );
   });
 
@@ -195,7 +223,7 @@ describe('Condominium expenses on the contract wizard', () => {
     const queryClient = client();
     const view = render(expenses(queryClient));
 
-    fireEvent.change(await screen.findByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.change(await screen.findByLabelText('Importo per rata (€)'), { target: { value: '80' } });
     fireEvent.click(screen.getByTestId('lease-condominium-manual'));
     expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
     const calls = post.mock.calls.length;
@@ -230,7 +258,7 @@ describe('Condominium expenses on the contract wizard', () => {
     });
     const view = render(expenses(queryClient));
 
-    fireEvent.change(await screen.findByLabelText('Importo a mano (€ al mese)'), { target: { value: '80' } });
+    fireEvent.change(await screen.findByLabelText('Importo per rata (€)'), { target: { value: '80' } });
     fireEvent.click(screen.getByTestId('lease-condominium-manual'));
     expect(await screen.findByTestId('lease-condominium-saved')).toHaveTextContent(/80,00/);
     const calls = post.mock.calls.length;

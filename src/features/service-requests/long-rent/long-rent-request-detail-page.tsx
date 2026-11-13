@@ -106,9 +106,13 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
 
   return (
     <div className="min-w-0 space-y-6" data-testid="long-rent-request-page">
-      {/* The trail (Affitti lunghi › Interventi › this request) and, on a phone, the link back to the list (UI-05). */}
+      {/* The trail (Affitti lunghi › Immobili › this property › this request) and, on a phone, the link back to the list (UI-05). */}
       <PageHeader
-        crumbs="auto"
+        crumbs={[
+          { label: t('nav.properties'), to: '/app/long-rent/properties' },
+          { label: request.propertyName ?? t('nav.properties'), to: `${propertyPath}?tab=requests` },
+          { label: title },
+        ]}
         title={title}
         description={[request.propertyName, when.day].filter(Boolean).join(' · ') || undefined}
         action={<StatusBadge kind="request" status={request.status} size="lg" data-testid="long-rent-request-status" />}

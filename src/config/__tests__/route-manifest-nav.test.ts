@@ -103,13 +103,10 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getPrimaryNavEntries('long-rent', allowAll))).toEqual([
       '/app/long-rent',
       '/app/long-rent/properties',
-      '/app/long-rent/service-requests',
     ]);
-    // Area-wide tenant, deadline and fiscal pages remain in Altro. Canoni open from a contract.
+    // Fiscal reports stand alone; tenants and deadlines live inside contracts.
     // Conto SEPA is with the settings. Profilo is in the menu of the user.
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
-      '/app/long-rent/tenants',
-      '/app/long-rent/deadlines',
       '/app/long-rent/fiscal',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
@@ -321,7 +318,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
     // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
     '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
-    '/app/long-rent/leases': ['/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/fiscal'],
     '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
@@ -343,10 +339,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
         // The one parent that is in no menu: the profile of the area, which the menu of the user leads to (below). Its pages are tabs of it.
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
         expect(parent.requiredPermissions, `${entry.path} hangs from ${parent.path}`).toEqual([]);
-      } else if (parent.path === '/app/long-rent/leases') {
-        // The legacy contract section stays routable; its area-wide pages move to Altro.
-        expect(parent.navPlacement).toBeUndefined();
-        expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toContain(entry.path);
       } else {
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
       }
@@ -452,7 +444,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
 
     // The same strip in the other rental area.
     const leases = ['/app/long-rent/leases', '/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/fiscal'];
-    for (const page of leases) expect(paths(getNavSection(page, allowAll)), page).toEqual(leases);
+    for (const page of leases) expect(paths(getNavSection(page, allowAll)), page).toEqual([]);
   });
 
   it('draws no tabs for a page that is in no section, a record of a section, or an entry with no other page', () => {
@@ -930,7 +922,6 @@ describe('route-manifest nav helpers', () => {
     const visible = getVisibleNavEntries('long-rent', without('lease.read'));
     expect(paths(visible)).toEqual([
       '/app/long-rent/properties',
-      '/app/long-rent/service-requests',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
       '/app/long-rent/payments',

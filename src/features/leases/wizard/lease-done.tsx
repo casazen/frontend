@@ -1,3 +1,4 @@
+import { newLeaseForPropertyPath } from '@/features/properties/long-rent/paths';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { TFunction } from 'i18next';
@@ -195,7 +196,7 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
         lead={t(`leaseWizardGuide.done.lead.${imported ? 'Imported' : 'Created'}`)}
         whatNext={rows}
         primary={{ label: t('leaseWizardGuide.done.open'), to: `${LEASES_PATH}/${lease.id}` }}
-        secondary={{ label: t('leaseWizard.done.another'), to: `${LEASES_PATH}/new` }}
+        secondary={{ label: t('leaseWizard.done.another'), to: newLeaseForPropertyPath(lease.propertyId) }}
       >
         {benefits ? <RegisteredBenefits lease={lease} /> : null}
       </WizardDone>

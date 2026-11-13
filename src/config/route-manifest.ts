@@ -814,10 +814,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     // Contracts are managed from the property's Contracts tab, not a separate menu entry.
-    // Keep this route for existing links and the area-wide tenant, deadline and fiscal pages.
+    // Old list addresses now lead back to the properties.
     navKey: 'nav.leases',
     icon: 'FileText',
-    component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
+    component: async () => ({ default: (await import('@/features/leases/legacy-leases-redirect')).LegacyLeasesRedirect }),
     legacyPaths: ['/leases'],
   },
   {
@@ -831,14 +831,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
   },
   {
-    // Scadenze (LR-05): the agenda of the dates not to miss, month by month. A tab of Contratti, after the tenants; the overview links
-    // here too. Reading it asks what the leases ask.
+    // Compatibility address for the area agenda. Contract deadlines live on the contract sheet.
     path: '/app/long-rent/deadlines',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentDeadlines',
-    navParent: '/app/long-rent/leases',
-    navOrder: 2,
     icon: 'CalendarDays',
     component: async () => ({
       default: (await import('@/features/leases/deadlines/long-rent-deadlines-page')).LongRentDeadlinesPage,
@@ -846,14 +843,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Inquilini (LR-09): who lives in the properties let long term, since when, for how much and how punctually, with the copy of a
-    // person's data and the request to erase them. A tab of Contratti, before the deadlines. Reading it asks what the leases ask; the
+    // person's data and the request to erase them. Tenant data lives inside each contract. The compatibility address remains available; the
     // copy and the erasure ask `lease.create` too (the sheet hides them from who may not).
     path: '/app/long-rent/tenants',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentTenants',
-    navParent: '/app/long-rent/leases',
-    navOrder: 1,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/leases/tenants/tenants-page')).TenantsPage }),
   },
@@ -973,15 +968,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not). Fourth of the main menu, and the fourth place of the phone bar.
+    // hides the buttons from who may not). The entry point is the Interventi tab of each property.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
-    navGroup: 'portfolio',
-    navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 3,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -997,12 +988,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. A tab of Contratti. It is not a condominium balance sheet.
+    // the leases; the others find the reserved page. A standalone report, without contract-list tabs.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentFiscal',
-    navParent: '/app/long-rent/leases',
+    navPlacement: 'secondary',
     navOrder: 3,
     icon: 'Receipt',
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
