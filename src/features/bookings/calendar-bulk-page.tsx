@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button';
 import { useApplyCalendarChange, usePreviewCalendarChange } from '@/queries/use-calendar-changes';
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { BulkChangeDone } from './components/bulk-change-done';
-import { ChangesStep, PeriodStep, PropertiesStep, SummaryStep, previewReady } from './components/bulk-change-steps';
+import { ChangesStep, PeriodStep, PropertiesStep, SummaryStep } from './components/bulk-change-steps';
 import {
   BULK_CHANGE_STEP,
   changesStepSchema,
   emptyBulkChange,
+  firstInvalidStep,
   periodStepSchema,
   propertiesStepSchema,
   toChangeRequest,
@@ -25,6 +26,9 @@ const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
 /** The draft of the wizard keeps what the host chose in this browser: dates, properties and what to change (no personal data, no credentials). */
 const BULK_DRAFT_ID = 'calendar-bulk';
 const BULK_DRAFT_VERSION = 1;
+
+/** The last button is offered only when the answers meet the rules of the steps and the preview has said what would happen. */
+const previewReady = (preview: { isSuccess: boolean }, values: BulkChangeValues): boolean => firstInvalidStep(values) === null && preview.isSuccess;
 
 /** What the wizard gives back when the last button is pressed: the process of the change, which the result follows. */
 type BulkChangeResult = CalendarChange;
@@ -91,7 +95,7 @@ function BulkChangeWizard() {
       // The result opened again (a reload) has nothing to say: the changes are on the calendar.
       renderDone={({ result, values }) => (result ? <BulkChangeDone change={result} values={values} /> : <ReloadedDone />)}
       aboveFooter={
-        <Button type="button" variant="ghost" className="min-h-11" onClick={() => navigate(CALENDAR_PATH)} data-testid="bulk-save-and-exit">
+        <Button type="button" variant="ghost" className="min-h-11" disabled={apply.isPending} onClick={() => navigate(CALENDAR_PATH)} data-testid="bulk-save-and-exit">
           {t('booking.calendar.bulk.saveAndExit')}
         </Button>
       }

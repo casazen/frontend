@@ -10,6 +10,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { translateValidationMessage } from '@/i18n/validation-message';
 import { getProblemMessage } from '@/lib/api-errors';
 import { addDays, formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -66,6 +67,8 @@ export function PropertiesStep() {
   const properties = useProperties({ mode: 'short' });
   const list = Array.isArray(properties.data) ? properties.data : [];
   const canRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
+  // With the connector of the channel manager off nothing is sent there: the step says nothing about it.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const today = todayInRome();
   const { layer } = useDayLayer(canRead ? { from: today, to: today } : undefined, canRead);
   const chosen = values.propertyIds ?? [];
@@ -100,7 +103,7 @@ export function PropertiesStep() {
 
       <ul className="space-y-2" role="list">
         {list.map((property) => {
-          const mirrored = layer?.get(property.id)?.mirrored;
+          const mirrored = connectorOn ? layer?.get(property.id)?.mirrored : undefined;
           const Icon = mirrored ? PlugZap : Plug;
           return (
             <li key={property.id}>
@@ -350,6 +353,7 @@ export function SummaryStep({ preview }: SummaryStepProps) {
   const today = todayInRome();
   const { layer } = useDayLayer(canRead ? { from: today, to: today } : undefined, canRead);
 
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const names = (id: string) => (Array.isArray(properties.data) ? properties.data : []).find((property) => property.id === id)?.name ?? '';
   // A draft or an address can open the wizard here with answers that do not meet the rules of the steps before: nothing is asked, and the step that is wrong is said.
   const invalidStep = firstInvalidStep(values);
@@ -380,7 +384,7 @@ export function SummaryStep({ preview }: SummaryStepProps) {
           </Button>
         </div>
       ) : data ? (
-        <PreviewBody preview={data} values={values} names={names} currencyOf={(id) => layer?.get(id)?.currency ?? 'EUR'} />
+        <PreviewBody preview={data} values={values} names={names} currencyOf={(id) => layer?.get(id)?.currency ?? 'EUR'} connectorOn={connectorOn} />
       ) : (
         <p role="status" aria-busy="true" className="text-sm text-foreground/70" data-testid="bulk-summary-loading">
           {t('booking.calendar.bulk.summary.loading')}
@@ -395,15 +399,17 @@ interface PreviewBodyProps {
   values: BulkChangeValues;
   names: (id: string) => string;
   currencyOf: (id: string) => string;
+  /** The connector of the channel manager is on: only then does the summary speak of the channel manager, of the room and of the quota. */
+  connectorOn: boolean;
 }
 
-function PreviewBody({ preview, values, names, currencyOf }: PreviewBodyProps) {
+function PreviewBody({ preview, values, names, currencyOf, connectorOn }: PreviewBodyProps) {
   const { t, i18n } = useTranslation();
   const what = new Intl.ListFormat(i18n.language, { style: 'long', type: 'conjunction' }).format(changedFields(values.rules).map((field) => t(FIELD_KEYS[field].what)));
   const days = Math.max(0, ...preview.properties.map((property) => property.days));
   const roomMissing = new Set(preview.warnings.filter((warning) => warning.code === 'room_not_chosen').map((warning) => warning.propertyId));
 
-  const lines: ReactNode[] = preview.properties.map((property) => {
+  const lines: ReactNode[] = connectorOn ? preview.properties.map((property) => {
     const name = property.name || names(property.propertyId);
     if (roomMissing.has(property.propertyId)) return <li key={property.propertyId}>{t('booking.calendar.bulk.summary.roomNotChosen', { name })}</li>;
     return property.mirrored ? (
@@ -411,14 +417,14 @@ function PreviewBody({ preview, values, names, currencyOf }: PreviewBodyProps) {
     ) : (
       <li key={property.propertyId}>{t('booking.calendar.bulk.summary.notMirrored', { name })}</li>
     );
-  });
+  }) : [];
 
   return (
     <div className="space-y-4" data-testid="bulk-summary-preview">
       <div className="space-y-2 rounded-md border bg-muted/40 p-4 text-sm" data-testid="bulk-summary-words">
         <p className="font-medium">{t('booking.calendar.bulk.summary.headline', { what, days, count: preview.properties.length })}</p>
-        <ul className="list-disc space-y-1 pl-5">{lines}</ul>
-        {preview.estimatedQuotaUnits > 0 ? <p data-testid="bulk-summary-quota">{t('booking.calendar.bulk.summary.quota', { count: preview.estimatedQuotaUnits })}</p> : null}
+        {lines.length > 0 ? <ul className="list-disc space-y-1 pl-5">{lines}</ul> : null}
+        {connectorOn && preview.estimatedQuotaUnits > 0 ? <p data-testid="bulk-summary-quota">{t('booking.calendar.bulk.summary.quota', { count: preview.estimatedQuotaUnits })}</p> : null}
         {preview.changedDays === 0 ? <p data-testid="bulk-summary-nothing">{t('booking.calendar.bulk.summary.nothingChanges')}</p> : null}
         <p className="text-foreground/70">{t('booking.calendar.bulk.summary.nothingSent')}</p>
       </div>
@@ -455,9 +461,4 @@ function PreviewBody({ preview, values, names, currencyOf }: PreviewBodyProps) {
       </ul>
     </div>
   );
-}
-
-/** The state of the preview, for the page: the last button is offered only when the preview has answered. */
-export function previewReady(preview: PreviewMutation, values: BulkChangeValues): boolean {
-  return firstInvalidStep(values) === null && preview.isSuccess;
 }

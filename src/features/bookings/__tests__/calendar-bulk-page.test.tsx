@@ -7,6 +7,8 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
 import { calendarDaysApi } from '@/api/calendar-days.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { useProperties } from '@/queries/use-properties';
 import { freezeClock } from '@/test/clock';
@@ -73,19 +75,21 @@ function problemError(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data });
 }
 
-function renderPage(permissions: string[] = ['property.read', 'property.write']) {
+function renderPage(permissions: string[] = ['property.read', 'property.write'], connector = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = { hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission) } as unknown as WorkspaceContextValue;
   render(
     <QueryClientProvider client={client}>
-      <WorkspaceContext.Provider value={workspace}>
-        <MemoryRouter initialEntries={['/app/short-rent/bookings/calendar/bulk']}>
-          <Routes>
-            <Route path="/app/short-rent/bookings/calendar/bulk" element={<CalendarBulkPage />} />
-            <Route path="/app/short-rent/bookings/calendar" element={<p>calendar-page</p>} />
-          </Routes>
-        </MemoryRouter>
-      </WorkspaceContext.Provider>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <WorkspaceContext.Provider value={workspace}>
+          <MemoryRouter initialEntries={['/app/short-rent/bookings/calendar/bulk']}>
+            <Routes>
+              <Route path="/app/short-rent/bookings/calendar/bulk" element={<CalendarBulkPage />} />
+              <Route path="/app/short-rent/bookings/calendar" element={<p>calendar-page</p>} />
+            </Routes>
+          </MemoryRouter>
+        </WorkspaceContext.Provider>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
 }
@@ -158,6 +162,21 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     await screen.findAllByTestId('bulk-property', undefined, WAIT);
     expect(screen.queryByTestId('bulk-property-connection')).not.toBeInTheDocument();
     expect(calendarDaysApi.getDays).not.toHaveBeenCalled();
+  });
+
+  it('CalendarBulkPage_ConnectorOff_SaysNothingOfTheChannelManagerInTheStepsAndTheSummary', { timeout: 30_000 }, async () => {
+    renderPage(['property.read', 'property.write'], false);
+    await toSummary();
+
+    const words = screen.getByTestId('bulk-summary-words');
+    expect(words).toHaveTextContent('Cambieremo il prezzo di 31 giorni su 2 immobili in CasaZen.');
+    expect(words.textContent).not.toMatch(/gestionale/i);
+    expect(screen.queryByTestId('bulk-summary-quota')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('bulk-wizard-back'));
+    fireEvent.click(screen.getByTestId('bulk-wizard-back'));
+    fireEvent.click(screen.getByTestId('bulk-wizard-back'));
+    await screen.findAllByTestId('bulk-property', undefined, WAIT);
+    expect(screen.queryByTestId('bulk-property-connection')).not.toBeInTheDocument();
   });
 
   it('CalendarBulkPage_PeriodEntirelyPast_IsRefusedWithAPlainSentence_AndNothingGoesOn', { timeout: 30_000 }, async () => {
