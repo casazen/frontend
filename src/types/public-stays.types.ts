@@ -171,7 +171,13 @@ export interface PublicStaysQuery {
   pageSize?: number;
 }
 
-/** One night of the whole site: free when some home that sleeps the party is. */
+/**
+ * One night of the whole site. `anyAvailable` is true when some home that sleeps the party is free that night AND a stay can start on it
+ * (the backend decides with the rules of the nights, NF-36: `PublicStayPlanner.SiteDays`). A night closed to arrival, or outside the
+ * advance limits of its rule, is false although it can still be slept in and left on, so the pickers draw it like a taken night and
+ * refuse a stay that goes through it; the calendar of a single home does not work like this (its `available` stays «the night is free»).
+ * A separate «free to sleep in» flag of the site calendar is a backend follow-up.
+ */
 export interface PublicSiteCalendarDay {
   date: string;
   anyAvailable: boolean;
