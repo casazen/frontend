@@ -13,6 +13,7 @@ import {
   startCheckoutWizard,
 } from '@/api/compliance.api';
 import { fineCount } from '@/features/compliance/lib/compliance-tiers';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type {
   CheckoutWizardCompleteCommand,
   CheckoutWizardProgressCommand,
@@ -169,24 +170,41 @@ export function useCheckoutWizard(bookingId: string, enabled = true) {
 }
 
 /**
- * Saves the progress of the wizard as the host moves between the steps (CO-17): the answer replaces the cached start,
- * so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
+ * Saves the progress of the wizard as the host moves between the steps and when it leaves with "Save and exit" (CO-17): the answer replaces
+ * the cached start, so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
+ *
+ * The answers hold free notes about the stay, so the mutation is dropped as soon as nothing observes it (`gcTime: 0`, not five minutes in the
+ * cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer stay).
  */
 export function useSaveCheckoutProgress(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CheckoutWizardProgressCommand) => saveCheckoutProgress(bookingId, payload),
+    gcTime: 0,
+    mutationFn: async (payload: CheckoutWizardProgressCommand) => {
+      try {
+        return await saveCheckoutProgress(bookingId, payload);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (state) => queryClient.setQueryData(checkoutStartKey(bookingId), state),
   });
 }
 
+/** Closes the stay with the answers of the wizard; kept like the progress (`gcTime: 0`, a refusal without its request). */
 export function useCompleteCheckoutWizard(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CheckoutWizardCompleteCommand) =>
-      completeCheckoutWizard(bookingId, payload),
+    gcTime: 0,
+    mutationFn: async (payload: CheckoutWizardCompleteCommand) => {
+      try {
+        return await completeCheckoutWizard(bookingId, payload);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (result) => {
       // The cockpit changes; the wizard start of this stay is never fetched again (it would answer 409 now).
       queryClient.setQueryData([COMPLIANCE_KEY, 'checkout-state', bookingId], result.wizard);

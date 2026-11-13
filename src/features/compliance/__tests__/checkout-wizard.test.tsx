@@ -202,13 +202,11 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
     next();
 
-    // 2. Alloggiati: still to send, shown with the link, never blocking.
+    // 2. Alloggiati: still to send, never blocking; the guests' data are completed in a panel, not on another page.
     await onStep('alloggiati');
     expect(screen.getByTestId('checkout-alloggiati-to-send')).toBeInTheDocument();
-    expect(screen.getByTestId('checkout-alloggiati-link')).toHaveAttribute(
-      'href',
-      `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
-    );
+    expect(screen.getByTestId('checkout-alloggiati-complete')).toBeEnabled();
+    expect(screen.queryByTestId('checkout-alloggiati-link')).not.toBeInTheDocument();
     next();
 
     // 3. Cleaning: a supplier of the property's comune for the category.

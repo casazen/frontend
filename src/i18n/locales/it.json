@@ -4574,8 +4574,7 @@
         "toSendHint": "La comunicazione di questo soggiorno non risulta inviata. CasaZen non la trasmette: inviala sul portale Alloggiati Web e registrala come inviata. Il check-out non è bloccato.",
         "failedHint": "La comunicazione di questo soggiorno è in errore o respinta: correggila e inviala di nuovo sul portale. Il check-out non è bloccato.",
         "overdue": "Scadenza superata il {{deadline}}.",
-        "dataIncomplete": "Mancano dati degli ospiti.",
-        "open": "Apri la sezione Alloggiati della prenotazione"
+        "dataIncomplete": "Mancano dati degli ospiti."
       },
       "cleaning": {
         "existingTitle": "Richieste già inviate per questo soggiorno",
@@ -4621,6 +4620,16 @@
         "taxCollection": "Indica come è stata riscossa l'imposta di soggiorno.",
         "propertyReady": "Indica se la proprietà è pronta per il prossimo ospite."
       },
+      "guestData": {
+        "cancel": "Annulla",
+        "description": "Compila i dati che servono ad Alloggiati Web. Le risposte del check-out restano come sono.",
+        "done": "Fatto",
+        "open": "Completa i dati degli ospiti",
+        "saved": "Dati degli ospiti salvati.",
+        "title": "Dati degli ospiti",
+        "unsaved": "Hai modifiche non salvate. Salva i dati degli ospiti, oppure annulla per lasciarle."
+      },
+      "saveAndExit": "Salva ed esci",
       "summary": {
         "title": "Le tue risposte",
         "departure": "Partenza",
@@ -4631,14 +4640,43 @@
         "touristTax": "Imposta di soggiorno"
       },
       "done": {
-        "title": "Il soggiorno è chiuso",
-        "description": "Il check-out di {{guest}} è registrato.",
-        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
-        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
-        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
-        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "alloggiatiSent": "La comunicazione Alloggiati risulta inviata.",
         "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
-        "compliance": "Vai agli adempimenti"
+        "channelManager": {
+          "blocked": "Il canale non permette di registrare questo check-out nel channel manager.",
+          "checkAgain": "Controlla di nuovo",
+          "conflict": "Il channel manager ha una versione diversa della prenotazione: il check-out non è stato registrato lì.",
+          "failed": "Il check-out non è arrivato al channel manager.",
+          "notFound": "Non troviamo la prenotazione: non possiamo dire se il check-out è nel channel manager.",
+          "pending": "Il check-out è in invio al channel manager.",
+          "retry": "Riprova ora",
+          "retryFailed": "Non siamo riusciti a riprovare. Riprova tra un momento.",
+          "synced": "Il check-out è stato inviato al channel manager.",
+          "title": "Il check-out sul channel manager richiede un controllo",
+          "unreadable": "Non riusciamo a leggere lo stato del check-out sul channel manager.",
+          "waiting": "Il channel manager non ha ancora risposto: il check-out non risulta ancora registrato lì.",
+          "waitingText": "Può servire qualche minuto. Controlla di nuovo tra poco."
+        },
+        "cleaningNotSent": "La richiesta di pulizia non risulta inviata: controllala nel dettaglio della prenotazione.",
+        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "cleaningSkipped": "Pulizie: nessuna richiesta, il passaggio è stato saltato.",
+        "compliance": "Vai agli adempimenti",
+        "description": "Il check-out di {{guest}} è registrato.",
+        "next": {
+          "alloggiatiLink": "Apri la scheda Alloggiati della prenotazione",
+          "checkChannelManager": "Controlla lo stato della prenotazione sul channel manager.",
+          "markReady": "Dichiara l'immobile pronto dagli adempimenti, quando lo è.",
+          "nothing": "Non resta altro da fare per questo soggiorno.",
+          "retryChannelManager": "Riprova l'invio del check-out al channel manager.",
+          "sendAlloggiati": "Invia la comunicazione Alloggiati dalla scheda della prenotazione.",
+          "title": "Prossimo passo"
+        },
+        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
+        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
+        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
+        "title": "Il soggiorno è chiuso",
+        "touristTax": "Imposta di soggiorno dichiarata: {{collection}}.",
+        "touristTaxNotCollected": "Imposta di soggiorno: non riscossa. Va gestita secondo il regolamento del comune."
       }
     },
     "safety": {

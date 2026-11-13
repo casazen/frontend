@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useFormContext, useWatch, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, UserPlus } from 'lucide-react';
@@ -94,21 +94,30 @@ interface StandaloneGuestsEditorProps {
   state: CheckInWizardState;
   source: CodeTableSource;
   onSaved?: (state: CheckInWizardState) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 /** The editor of the guests on its own: its own form, with the document of each guest, and its own "Save guests". */
-function StandaloneGuestsEditor({ bookingId, state, source, onSaved }: StandaloneGuestsEditorProps) {
+function StandaloneGuestsEditor({ bookingId, state, source, onSaved, onDirtyChange }: StandaloneGuestsEditorProps) {
   const { t } = useTranslation();
   const save = useSaveCheckInGuests(bookingId);
   const [saveError, setSaveError] = useState<string | null>(null);
   const statisticalFields = useMemo(() => statisticalFieldsOf(state), [state]);
   const schema = useMemo(() => z.object({ guests: createStayGuestListSchema(statisticalFields) }), [statisticalFields]);
   const form = useForm<CheckInWizardValues>({ resolver: zodResolver(schema), defaultValues: wizardValuesFromState(state) });
+  const { isDirty } = form.formState;
+
+  // Whoever mounts the editor may need to know that there is something typed that the server does not hold (a panel that must not close over it).
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     setSaveError(null);
     try {
       const saved = await save.mutateAsync(toGuestsPayload(values, statisticalFields));
+      // What the server holds now is the baseline: nothing typed is waiting to be saved.
+      form.reset(values);
       onSaved?.(saved);
     } catch (error) {
       const problems = guestFieldProblemsOf(error, values.guests.length, t('checkin.validation.invalidValue'));
@@ -147,6 +156,8 @@ interface GuestsEditorProps {
   form?: UseFormReturn<CheckInWizardValues>;
   /** The guests were saved (the editor on its own): the state the server answered. */
   onSaved?: (state: CheckInWizardState) => void;
+  /** The editor on its own: whether something was typed that is not saved yet; `false` again once the guests are saved. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 /**
@@ -154,7 +165,7 @@ interface GuestsEditorProps {
  * `StayGuestPersonalFields` and saves them as the host. The check-out wizard mounts it as it is, in its guests sub-step: one component,
  * not a copy.
  */
-export function GuestsEditor({ bookingId, form, onSaved }: GuestsEditorProps) {
+export function GuestsEditor({ bookingId, form, onSaved, onDirtyChange }: GuestsEditorProps) {
   const { t } = useTranslation();
   // Inside the wizard the state is already on screen: share it. On its own, the editor reads it again each time it opens.
   const state = useCheckInWizardState(bookingId, true, form ? false : 'always');
@@ -191,7 +202,16 @@ export function GuestsEditor({ bookingId, form, onSaved }: GuestsEditorProps) {
       </FormProvider>
     );
   }
-  return <StandaloneGuestsEditor key={bookingId} bookingId={bookingId} state={state.data} source={source} onSaved={onSaved} />;
+  return (
+    <StandaloneGuestsEditor
+      key={bookingId}
+      bookingId={bookingId}
+      state={state.data}
+      source={source}
+      onSaved={onSaved}
+      onDirtyChange={onDirtyChange}
+    />
+  );
 }
 
 /** The guests step of the wizard: the personal data of each guest, in the form of the wizard. */

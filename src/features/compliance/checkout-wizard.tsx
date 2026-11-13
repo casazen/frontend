@@ -1,4 +1,4 @@
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
+import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { WizardSummary } from '@/components/shared/wizard/wizard-summary';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -31,6 +32,7 @@ import { hasStayStarted } from '@/features/bookings/lib/stay-actions';
 import {
   CHECKOUT_WIZARD_STEPS,
   type CheckoutWizardCompleteResult,
+  type CheckoutWizardProgressCommand,
   type CheckoutWizardState,
   type CheckoutWizardStepId,
 } from '@/types/compliance.types';
@@ -50,6 +52,7 @@ import {
   TouristTaxStep,
 } from './components/checkout-wizard-steps';
 import { CheckoutDone } from './components/checkout-wizard-done';
+import { CheckoutGuestDataSubflow } from './components/checkout-guest-data-subflow';
 
 /**
  * Check-out of a stay (CO-08, CO-17, A5-24). The wizard is opened (`checkout-wizard/start`, same rules as
@@ -60,6 +63,10 @@ import { CheckoutDone } from './components/checkout-wizard-done';
  * wizard resumes where it was, on the web or in the app. When the host never registered the arrival of a confirmed
  * booking the page offers "Registra arrivo e procedi" instead of a 409 dead end. When the stay is closed the wizard says
  * "What happens now"; after that the page shows what was declared and lets the host declare the property ready.
+ *
+ * There is no way out of the open wizard but "Save and exit" (E08/F04/US01, NF-45, NF-02): the guests' data that Alloggiati Web needs are completed in a
+ * panel over the wizard, in the Alloggiati step and in the card of the arrival that was never registered, and the panel gives back the same step with its
+ * answers. The pages that are not the wizard (the booking that cannot be loaded, the stay already closed, the check-out not available) keep their way back.
  */
 export function CheckoutWizardPage() {
   const { id } = useParams<{ id: string }>();
@@ -73,6 +80,8 @@ export function CheckoutWizardPage() {
   // Set when the host closes the stay in this visit: the booking becomes "checked out" at once, and the confirmation
   // "What happens now" must stay on screen instead of giving way to the summary of a closed stay.
   const [closedHere, setClosedHere] = useState<CheckoutWizardCompleteResult | null>(null);
+  // The panel that completes the guests' data from the card of the arrival that was never registered (the one of the Alloggiati step is the wizard's own).
+  const [guestDataOpen, setGuestDataOpen] = useState(false);
 
   if (bookingLoading) {
     return <LoadingScreen message={t('compliance.checkout.loading')} />;
@@ -122,6 +131,8 @@ export function CheckoutWizardPage() {
   }
 
   const arrivalMissing = booking.status === 'Confirmed' && hasStayStarted(booking);
+  // The state of the wizard once it is open: the stay is checked in (or was closed in this visit) and the server has opened the wizard.
+  const wizardState = arrivalRegistered || closedHere !== null ? start.data : undefined;
   if (!closedHere && !arrivalRegistered && !arrivalMissing) {
     return (
       <AppShell>
@@ -150,7 +161,7 @@ export function CheckoutWizardPage() {
               <CardDescription>{t('compliance.checkout.arrivalMissingHint', { guest: guestName })}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <GuestDataNotice bookingId={bookingId} />
+              <GuestDataNotice bookingId={bookingId} inline onComplete={() => setGuestDataOpen(true)} busy={registerArrival.isPending} />
               {registerArrival.isError && (
                 <p role="alert" className="text-sm text-destructive">
                   {getProblemMessage(registerArrival.error, t) ?? t('compliance.checkout.startFailed')}
@@ -169,6 +180,7 @@ export function CheckoutWizardPage() {
             </CardContent>
           </Card>
         )}
+        {arrivalMissing && <CheckoutGuestDataSubflow bookingId={bookingId} open={guestDataOpen} onOpenChange={setGuestDataOpen} />}
 
         {arrivalRegistered && start.isLoading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="checkout-starting">
@@ -188,17 +200,18 @@ export function CheckoutWizardPage() {
           </div>
         )}
 
-        {(arrivalRegistered || closedHere) && start.data && (
+        {wizardState && (
           <CheckoutWizardForm
             key={bookingId}
             bookingId={bookingId}
             guestName={guestName}
-            state={start.data}
+            state={wizardState}
             onClosed={setClosedHere}
           />
         )}
 
-        {!closedHere && (
+        {/* The way back is for the page that is not the wizard (loading, a start that failed, the arrival to register): the open wizard has "Save and exit". */}
+        {!closedHere && !wizardState && (
           <Button variant="ghost" asChild>
             <Link to={`/app/short-rent/bookings/${bookingId}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -212,7 +225,15 @@ export function CheckoutWizardPage() {
 }
 
 /** The fields of one step: the step components, fed from the form of the wizard. */
-function CheckoutStepPanel({ step, state }: { step: CheckoutWizardStepId; state: CheckoutWizardState }) {
+function CheckoutStepPanel({
+  step,
+  state,
+  onCompleteGuestData,
+}: {
+  step: CheckoutWizardStepId;
+  state: CheckoutWizardState;
+  onCompleteGuestData: () => void;
+}) {
   const form = useFormContext<CheckoutAnswers>();
   const answers = useWatch({ control: form.control }) as CheckoutAnswers;
   const change = useCallback(
@@ -228,7 +249,7 @@ function CheckoutStepPanel({ step, state }: { step: CheckoutWizardStepId; state:
     case 'stay-summary':
       return <StaySummaryStep state={state} draft={answers} onChange={change} />;
     case 'alloggiati':
-      return <AlloggiatiStep state={state} />;
+      return <AlloggiatiStep state={state} onCompleteGuestData={onCompleteGuestData} />;
     case 'cleaning':
       return <CleaningStep state={state} draft={answers} onChange={change} />;
     case 'tourist-tax':
@@ -277,6 +298,57 @@ function CheckoutSummary({ answers }: { answers: CheckoutAnswers }) {
   );
 }
 
+interface SaveAndExitProps {
+  bookingId: string;
+  /** Saves the progress (the same call as the one that runs when the host lands on another step); it rejects when the server does not take it. */
+  save: (command: CheckoutWizardProgressCommand) => Promise<unknown>;
+  /** A request of the wizard is on its way (a save, the closing of the stay): the button stays off until it has answered. */
+  busy: boolean;
+  /** The host is leaving: told to the wizard, whose "Continue" and last button stay off from the press until the save has answered. */
+  onExiting: (exiting: boolean) => void;
+}
+
+/**
+ * "Save and exit" (UX-06, AC-NF45-2): saves the answers as they stand, on the step the host is on, and only then leaves to the booking. It is the only way out
+ * of the open wizard. When the server does not take the progress the host stays, with the answers, and the reason is on screen above the buttons (the
+ * line of a progress that was not saved): leaving would lose what the wizard is there to keep.
+ */
+function SaveAndExit({ bookingId, save, busy, onExiting }: SaveAndExitProps) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { getValues } = useFormContext<CheckoutAnswers>();
+  const stepId = useOptionalWizard()?.stepId;
+
+  const saveAndExit = async () => {
+    if (busy || !stepId) return;
+    onExiting(true);
+    try {
+      await save(progressCommand(getValues(), stepId as CheckoutWizardStepId));
+    } catch {
+      // Not saved: the host stays, the reason is on screen, and the wizard takes presses again.
+      onExiting(false);
+      return;
+    }
+    navigate(`/app/short-rent/bookings/${bookingId}`);
+  };
+
+  return (
+    <div className="flex justify-end">
+      <Button
+        type="button"
+        variant="ghost"
+        className="min-h-11"
+        disabled={busy}
+        loading={busy}
+        onClick={() => void saveAndExit()}
+        data-testid="checkout-save-exit"
+      >
+        {t('compliance.checkout.saveAndExit')}
+      </Button>
+    </div>
+  );
+}
+
 /** The 5 steps of an open wizard, starting from the progress saved on the server. */
 function CheckoutWizardForm({
   bookingId,
@@ -292,7 +364,11 @@ function CheckoutWizardForm({
   const { t } = useTranslation();
   const saveProgress = useSaveCheckoutProgress(bookingId);
   const completeCheckout = useCompleteCheckoutWizard(bookingId);
-  const { mutate: saveProgressNow } = saveProgress;
+  const { mutate: saveProgressNow, mutateAsync: saveProgressAsync } = saveProgress;
+  // The panel that completes the guests' data, over the wizard (opened from the Alloggiati step): it is not a step, so the answers and the step stay as they are.
+  const [guestDataOpen, setGuestDataOpen] = useState(false);
+  // "Save and exit" is on its way: "Continue" and the last button take no press meanwhile (a second request of the same wizard would race the save).
+  const [exiting, setExiting] = useState(false);
 
   const steps: WizardStep<CheckoutAnswers>[] = CHECKOUT_WIZARD_STEPS.map((stepId) => ({
     id: stepId,
@@ -300,7 +376,8 @@ function CheckoutWizardForm({
     title: t(`compliance.checkout.steps.${stepId}.title`),
     purpose: t(`compliance.checkout.steps.${stepId}.hint`),
     schema: checkoutStepSchemas[stepId],
-    render: () => <CheckoutStepPanel step={stepId} state={state} />,
+    nextDisabled: exiting,
+    render: () => <CheckoutStepPanel step={stepId} state={state} onCompleteGuestData={() => setGuestDataOpen(true)} />,
   }));
 
   /** Lands on a step: the answers so far are saved, and the wizard reopens there, on the web or in the app. */
@@ -310,44 +387,56 @@ function CheckoutWizardForm({
   );
 
   return (
-    <WizardShell<CheckoutAnswers, CheckoutWizardCompleteResult>
-      id={`checkout-${bookingId}`}
-      steps={steps}
-      defaultValues={answersFromState(state)}
-      initialStepId={stepFromState(state)}
-      finishLabel={t('compliance.checkout.complete')}
-      finishFailedMessage={t('compliance.checkout.completeFailed')}
-      onFinish={async (values) => {
-        const result = await completeCheckout.mutateAsync(completeCommand(values));
-        onClosed(result);
-        return result;
-      }}
-      onStepChange={onStepChange}
-      // The server remembers the answers too, and so does the app: a draft of a step behind the one the server is on is older
-      // than what the server knows, and would put old answers over newer ones.
-      draft={{
-        accept: (saved) =>
-          CHECKOUT_WIZARD_STEPS.indexOf(saved.step as CheckoutWizardStepId) >= CHECKOUT_WIZARD_STEPS.indexOf(stepFromState(state)),
-      }}
-      // Reopening the confirmation (a typed address) when nothing was closed here: there is nothing to confirm, start over.
-      renderDone={({ result }) =>
-        result ? <CheckoutDone bookingId={bookingId} guestName={guestName} result={result} /> : <Navigate to={{ search: '' }} replace />
-      }
-      aboveFooter={
-        saveProgress.isError ? (
-          <p role="alert" className="text-sm text-destructive" data-testid="checkout-progress-error">
-            {getProblemMessage(saveProgress.error, t) ?? t('compliance.checkout.progressSaveFailed')}
-          </p>
-        ) : undefined
-      }
-      testIds={{
-        root: 'checkout-wizard-form',
-        back: 'checkout-step-back',
-        next: 'checkout-step-next',
-        finish: 'checkout-complete-button',
-        finishError: 'checkout-complete-error',
-      }}
-    />
+    <>
+      <WizardShell<CheckoutAnswers, CheckoutWizardCompleteResult>
+        id={`checkout-${bookingId}`}
+        steps={steps}
+        defaultValues={answersFromState(state)}
+        initialStepId={stepFromState(state)}
+        finishLabel={t('compliance.checkout.complete')}
+        finishFailedMessage={t('compliance.checkout.completeFailed')}
+        onFinish={async (values) => {
+          const result = await completeCheckout.mutateAsync(completeCommand(values));
+          onClosed(result);
+          return result;
+        }}
+        onStepChange={onStepChange}
+        // The server remembers the answers too, and so does the app: a draft of a step behind the one the server is on is older
+        // than what the server knows, and would put old answers over newer ones.
+        draft={{
+          accept: (saved) =>
+            CHECKOUT_WIZARD_STEPS.indexOf(saved.step as CheckoutWizardStepId) >= CHECKOUT_WIZARD_STEPS.indexOf(stepFromState(state)),
+        }}
+        // Reopening the confirmation (a typed address) when nothing was closed here: there is nothing to confirm, start over.
+        renderDone={({ result }) =>
+          result ? <CheckoutDone bookingId={bookingId} guestName={guestName} result={result} /> : <Navigate to={{ search: '' }} replace />
+        }
+        aboveFooter={
+          <>
+            {saveProgress.isError ? (
+              <p role="alert" className="text-sm text-destructive" data-testid="checkout-progress-error">
+                {getProblemMessage(saveProgress.error, t) ?? t('compliance.checkout.progressSaveFailed')}
+              </p>
+            ) : null}
+            <SaveAndExit
+              bookingId={bookingId}
+              save={saveProgressAsync}
+              busy={saveProgress.isPending || completeCheckout.isPending}
+              onExiting={setExiting}
+            />
+          </>
+        }
+        testIds={{
+          root: 'checkout-wizard-form',
+          back: 'checkout-step-back',
+          next: 'checkout-step-next',
+          finish: 'checkout-complete-button',
+          finishError: 'checkout-complete-error',
+        }}
+      />
+      {/* Next to the wizard and not inside its form: the editor of the guests is a form of its own, and the events of a layer go up the tree of the page. */}
+      <CheckoutGuestDataSubflow bookingId={bookingId} open={guestDataOpen} onOpenChange={setGuestDataOpen} />
+    </>
   );
 }
 
