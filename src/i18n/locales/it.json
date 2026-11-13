@@ -2234,8 +2234,8 @@
         },
         "description": "Cambia il prezzo e le restrizioni di più giorni e di più immobili in un colpo solo. Prima di applicare vedi cosa succederà.",
         "done": {
-          "description_one": "{{days}} giorni su {{count}} immobile.",
-          "description_other": "{{days}} giorni su {{count}} immobili.",
+          "description_one": "{{days}} su {{count}} immobile.",
+          "description_other": "{{days}} in tutto su {{count}} immobili.",
           "next": {
             "calendar": "Controlla il calendario: i nuovi prezzi e le nuove restrizioni sono sui giorni.",
             "checkAgain": "Il tuo channel manager non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
@@ -2307,8 +2307,8 @@
           "changed_one": "{{count}} giorno cambia",
           "changed_other": "{{count}} giorni cambiano",
           "diff": "{{field}}: {{from}} → {{to}}",
-          "headline_one": "Cambieremo {{what}} di {{days}} giorni su {{count}} immobile in CasaZen.",
-          "headline_other": "Cambieremo {{what}} di {{days}} giorni su {{count}} immobili in CasaZen.",
+          "headline_one": "Cambieremo {{what}} di {{days}} su {{count}} immobile in CasaZen.",
+          "headline_other": "Cambieremo {{what}} di {{days}} in tutto su {{count}} immobili in CasaZen.",
           "invalid": {
             "changes": "Cambia almeno un valore e controlla che sia scritto bene.",
             "period": "Controlla i giorni scelti: l'ultimo non può essere prima del primo né già passato.",

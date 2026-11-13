@@ -169,7 +169,7 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     await toSummary();
 
     const words = screen.getByTestId('bulk-summary-words');
-    expect(words).toHaveTextContent('Cambieremo il prezzo di 31 giorni su 2 immobili in CasaZen.');
+    expect(words).toHaveTextContent('Cambieremo il prezzo di 60 giorni in tutto su 2 immobili in CasaZen.');
     expect(words.textContent).not.toMatch(/channel manager/i);
     expect(screen.queryByTestId('bulk-summary-quota')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('bulk-wizard-back'));
@@ -249,7 +249,7 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
       minNights: { action: 'Keep' },
     });
     const words = screen.getByTestId('bulk-summary-words');
-    expect(words).toHaveTextContent('Cambieremo il prezzo di 31 giorni su 2 immobili in CasaZen.');
+    expect(words).toHaveTextContent('Cambieremo il prezzo di 60 giorni in tutto su 2 immobili in CasaZen.');
     expect(words).toHaveTextContent('Per Villa Mare la modifica viene inviata anche al tuo channel manager (circa 3 chiamate al channel manager).');
     expect(words).toHaveTextContent('Casa Lago non è collegato al tuo channel manager: la sua modifica resta in CasaZen.');
     expect(screen.getByTestId('bulk-summary-quota')).toHaveTextContent('è solo una stima');
@@ -262,6 +262,42 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     expect(calendarChangesApi.apply).not.toHaveBeenCalled();
     expect(screen.getAllByRole('link', { name: /Modifica/ }).length).toBeGreaterThanOrEqual(3);
     expect(screen.getByTestId('bulk-wizard-apply')).toBeEnabled();
+  });
+
+  it.each([
+    [20, 'Cambieremo il prezzo di 20 giorni su 1 immobile in CasaZen.'],
+    [1, 'Cambieremo il prezzo di 1 giorno su 1 immobile in CasaZen.'],
+  ])('CalendarBulkPage_Summary_TheHeadlineCountsTheDaysThatChange_%i_NotTheDaysOfThePeriod', { timeout: 30_000 }, async (changedDays, headline) => {
+    // 31 days selected, 5 of them already over and 6 that already hold the price: only the others change.
+    vi.mocked(calendarChangesApi.preview).mockResolvedValue({
+      ...PREVIEW,
+      days: 31,
+      changedDays,
+      unchangedDays: 6,
+      skippedPastDays: 5,
+      warnings: [],
+      properties: [{ ...PREVIEW.properties[0], days: 31, changedDays, unchangedDays: 6, skippedPastDays: 5 }],
+    });
+    renderPage();
+    await toSummary();
+
+    expect(screen.getByTestId('bulk-summary-headline')).toHaveTextContent(headline);
+    expect(screen.getByTestId('bulk-summary-words').textContent).not.toContain('31 giorni');
+  });
+
+  it('CalendarBulkPage_Summary_WhenNoDayWouldChange_SaysSoAndHasNoHeadline', { timeout: 30_000 }, async () => {
+    vi.mocked(calendarChangesApi.preview).mockResolvedValue({
+      ...PREVIEW,
+      changedDays: 0,
+      unchangedDays: 62,
+      warnings: [],
+      properties: PREVIEW.properties.map((property) => ({ ...property, changedDays: 0, unchangedDays: 31, samples: [] })),
+    });
+    renderPage();
+    await toSummary();
+
+    expect(screen.getByTestId('bulk-summary-nothing')).toHaveTextContent('Nessun giorno cambierebbe');
+    expect(screen.queryByTestId('bulk-summary-headline')).not.toBeInTheDocument();
   });
 
   it('CalendarBulkPage_Summary_TellsThePricesInTheCurrencyOfEachProperty_EvenWithoutTheDayLayer', { timeout: 30_000 }, async () => {
@@ -307,6 +343,8 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
 
     expect(await screen.findByText('Modifica salvata in CasaZen', undefined, WAIT)).toBeInTheDocument();
     expect(vi.mocked(calendarChangesApi.apply).mock.calls[0][0].price).toEqual({ action: 'Set', value: 120.5 });
+    // The result says the days that change (the 30 and 30 the summary announced), not the 30 days the period covers.
+    expect(screen.getByText('60 giorni in tutto su 2 immobili.')).toBeInTheDocument();
     expect(screen.getByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     const lines = screen.getAllByTestId('calendar-change-property');
     expect(lines[0]).toHaveAttribute('data-state', 'waiting');

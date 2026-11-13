@@ -12,6 +12,7 @@ import { BulkChangeDone } from './components/bulk-change-done';
 import { ChangesStep, PeriodStep, PropertiesStep, SummaryStep } from './components/bulk-change-steps';
 import {
   BULK_CHANGE_STEP,
+  changedDaysOf,
   changesStepSchema,
   emptyBulkChange,
   firstInvalidStep,
@@ -93,7 +94,9 @@ function BulkChangeWizard() {
       draft={{ version: BULK_DRAFT_VERSION, accept: (saved) => Array.isArray((saved.values as Partial<BulkChangeValues>).propertyIds) }}
       onExit={() => navigate(CALENDAR_PATH)}
       // The result opened again (a reload) has nothing to say: the changes are on the calendar.
-      renderDone={({ result, values }) => (result ? <BulkChangeDone change={result} values={values} /> : <ReloadedDone />)}
+      renderDone={({ result, values }) =>
+        result ? <BulkChangeDone change={result} values={values} changedDays={preview.data ? changedDaysOf(preview.data) : undefined} /> : <ReloadedDone />
+      }
       aboveFooter={
         <Button type="button" variant="ghost" className="min-h-11" disabled={apply.isPending} onClick={() => navigate(CALENDAR_PATH)} data-testid="bulk-save-and-exit">
           {t('booking.calendar.bulk.saveAndExit')}

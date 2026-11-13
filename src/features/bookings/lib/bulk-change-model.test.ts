@@ -4,6 +4,7 @@ import { WEEKDAYS } from '@/types/calendar-changes.types';
 import {
   BULK_CHANGE_STEP,
   BULK_ERROR_KEYS,
+  changedDaysOf,
   changedFields,
   changesStepSchema,
   emptyBulkChange,
@@ -96,5 +97,17 @@ describe('the bulk change model (E08/F05/US03/T03)', () => {
     expect(periodDays('2026-09-12', '2026-10-12')).toBe(31);
     expect(periodDays('2026-10-12', '2026-09-12')).toBe(0);
     expect(periodDays('', '2026-09-12')).toBe(0);
+  });
+
+  it('changedDaysOf_AddsUpTheDaysThatChangeOfEveryProperty_NotTheDaysThePeriodCovers', () => {
+    // 31 days selected on each property: 5 already over and 6 that already hold the values on the first, none over on the second.
+    const preview = {
+      properties: [
+        { days: 31, changedDays: 20, unchangedDays: 6, skippedPastDays: 5 },
+        { days: 31, changedDays: 25, unchangedDays: 6, skippedPastDays: 0 },
+      ],
+    };
+    expect(changedDaysOf(preview as never)).toBe(45);
+    expect(changedDaysOf({ properties: [] })).toBe(0);
   });
 });

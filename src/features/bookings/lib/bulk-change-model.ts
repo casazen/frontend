@@ -1,7 +1,7 @@
 import { z, type ZodType } from 'zod';
 import type { FieldValues } from 'react-hook-form';
 import { addDays, isStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
-import { WEEKDAYS, type CalendarChangeRequest, type Weekday } from '@/types/calendar-changes.types';
+import { WEEKDAYS, type CalendarChangePreview, type CalendarChangeRequest, type Weekday } from '@/types/calendar-changes.types';
 import { DAY_RULE_FIELDS, dayRulesSchema, emptyDayRules, toFieldPatches, type DayRuleField, type DayRulesValues } from './day-rules-model';
 
 /**
@@ -91,6 +91,14 @@ export function toChangeRequest(values: BulkChangeValues): CalendarChangeRequest
     ...(weekdays.length === WEEKDAYS.length ? {} : { daysOfWeek: weekdays }),
     ...toFieldPatches(values.rules),
   };
+}
+
+/**
+ * The days a previewed change changes, of every property added up: what the summary and the result say. Not the days the period covers (they count the days already over and the days
+ * that already hold the values), which `days` of each property is.
+ */
+export function changedDaysOf(preview: Pick<CalendarChangePreview, 'properties'>): number {
+  return preview.properties.reduce((total, property) => total + property.changedDays, 0);
 }
 
 /** The values the request changes, in the order the wizard shows them: what the summary says is being changed. */

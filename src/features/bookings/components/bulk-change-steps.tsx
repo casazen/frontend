@@ -19,7 +19,7 @@ import { usePreviewCalendarChange } from '@/queries/use-calendar-changes';
 import { WEEKDAYS, type CalendarChangePreview, type CalendarChangeValues, type Weekday } from '@/types/calendar-changes.types';
 import { formatDayPrice } from '../lib/day-layer';
 import { KEEP, type DayRuleField, type DayRulesValues, type FieldAction, type NumberRuleField } from '../lib/day-rules-model';
-import { BULK_CHANGE_STEP, BULK_MAX_PROPERTIES, changedFields, firstInvalidStep, periodDays, toChangeRequest, type BulkChangeValues } from '../lib/bulk-change-model';
+import { BULK_CHANGE_STEP, BULK_MAX_PROPERTIES, changedDaysOf, changedFields, firstInvalidStep, periodDays, toChangeRequest, type BulkChangeValues } from '../lib/bulk-change-model';
 import { useDayLayer } from '../lib/use-day-layer';
 
 /** A Monday: the weekday names are read from the days that follow it. */
@@ -409,7 +409,8 @@ interface PreviewBodyProps {
 function PreviewBody({ preview, values, names, currencyOf, connectorOn }: PreviewBodyProps) {
   const { t, i18n } = useTranslation();
   const what = new Intl.ListFormat(i18n.language, { style: 'long', type: 'conjunction' }).format(changedFields(values.rules).map((field) => t(FIELD_KEYS[field].what)));
-  const days = Math.max(0, ...preview.properties.map((property) => property.days));
+  // The days that change, not the days the period covers (which count the days already over and the ones that already hold these values): of every property, added up.
+  const changedDays = changedDaysOf(preview);
   const roomMissing = new Set(preview.warnings.filter((warning) => warning.code === 'room_not_chosen').map((warning) => warning.propertyId));
 
   const lines: ReactNode[] = connectorOn ? preview.properties.map((property) => {
@@ -425,10 +426,14 @@ function PreviewBody({ preview, values, names, currencyOf, connectorOn }: Previe
   return (
     <div className="space-y-4" data-testid="bulk-summary-preview">
       <div className="space-y-2 rounded-md border bg-muted/40 p-4 text-sm" data-testid="bulk-summary-words">
-        <p className="font-medium">{t('booking.calendar.bulk.summary.headline', { what, days, count: preview.properties.length })}</p>
+        {changedDays > 0 ? (
+          <p className="font-medium" data-testid="bulk-summary-headline">
+            {t('booking.calendar.bulk.summary.headline', { what, days: t('booking.calendar.bulk.period.days', { count: changedDays }), count: preview.properties.length })}
+          </p>
+        ) : null}
         {lines.length > 0 ? <ul className="list-disc space-y-1 pl-5">{lines}</ul> : null}
         {connectorOn && preview.estimatedQuotaUnits > 0 ? <p data-testid="bulk-summary-quota">{t('booking.calendar.bulk.summary.quota', { count: preview.estimatedQuotaUnits })}</p> : null}
-        {preview.changedDays === 0 ? <p data-testid="bulk-summary-nothing">{t('booking.calendar.bulk.summary.nothingChanges')}</p> : null}
+        {changedDays === 0 ? <p data-testid="bulk-summary-nothing">{t('booking.calendar.bulk.summary.nothingChanges')}</p> : null}
         <p className="text-foreground/70">{t('booking.calendar.bulk.summary.nothingSent')}</p>
       </div>
 

@@ -8,7 +8,7 @@ import { useCalendarChange } from '@/queries/use-calendar-changes';
 import { useProperties } from '@/queries/use-properties';
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { nextStepOfChange, type ChangeNextStep } from '../lib/calendar-change-words';
-import { periodDays, type BulkChangeValues } from '../lib/bulk-change-model';
+import type { BulkChangeValues } from '../lib/bulk-change-model';
 import { CalendarChangeLines } from './calendar-change-lines';
 
 const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
@@ -24,6 +24,8 @@ interface BulkChangeDoneProps {
   /** The change the API answered when the last button was pressed: the process that sends it to the channel manager. */
   change: CalendarChange;
   values: BulkChangeValues;
+  /** The days the summary said would change (the preview the host confirmed), of every property added up; the result says no number of days when it is not known. */
+  changedDays?: number;
 }
 
 /**
@@ -31,7 +33,7 @@ interface BulkChangeDoneProps {
  * it, with the same words as the panel of the days (`CalendarChangeLines`): waiting, being sent, accepted by the channel manager, not sent with the reason and "Retry now", or not
  * connected (the change stays in CasaZen). Never "published on the channels". One next step is suggested; the only way out is "Save and exit", back to the calendar.
  */
-export function BulkChangeDone({ change, values }: BulkChangeDoneProps) {
+export function BulkChangeDone({ change, values, changedDays }: BulkChangeDoneProps) {
   const { t } = useTranslation();
   const properties = useProperties({ mode: 'short' });
   const mayRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
@@ -49,7 +51,11 @@ export function BulkChangeDone({ change, values }: BulkChangeDoneProps) {
   return (
     <WizardDone
       title={t('booking.calendar.bulk.done.title')}
-      description={t('booking.calendar.bulk.done.description', { days: periodDays(values.from, values.to), count: change.propertyCount || values.propertyIds.length })}
+      description={
+        changedDays === undefined
+          ? undefined
+          : t('booking.calendar.bulk.done.description', { days: t('booking.calendar.bulk.period.days', { count: changedDays }), count: change.propertyCount || values.propertyIds.length })
+      }
       whatNext={[{ text: t(next.key), icon: next.icon }]}
       primary={{ label: t('booking.calendar.bulk.saveAndExit'), to: CALENDAR_PATH }}
     >
