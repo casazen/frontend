@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { DRAFT_KEY } from './use-lease-draft';
 import { condominiumProposalApi } from '@/api/condominium-proposal.api';
 import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
 
@@ -19,9 +20,9 @@ export function condominiumExpenseKey(leaseId: string) {
 }
 
 /**
- * The expense already kept for this lease. Opening the step does not call the server:
+ * The expense already kept for this lease is restored with GET. Opening never posts a budget:
  * `POST` with an empty body is a write of a budget and drops settle-at-consuntivo.
- * The choice stays for the life of this draft in the app. The default cache lifetime would drop it
+ * The persisted choice also stays cached for the life of the draft. The default cache lifetime would drop it
  * when the step unmounts, and the next open would look empty.
  */
 export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
@@ -32,7 +33,8 @@ export function useCondominiumExpenseProbe(leaseId: string, enabled: boolean) {
     queryFn: async (): Promise<CondominiumExpenseView> => {
       const cached = queryClient.getQueryData<CondominiumExpenseView>(key);
       if (cached?.saved) return cached;
-      return { proposal: null, saved: null };
+      const saved = await condominiumProposalApi.saved(leaseId);
+      return { proposal: null, saved: saved ? { proposal: saved, request: {} } : null };
     },
     enabled: enabled && leaseId.trim() !== '',
     retry: false,
@@ -48,6 +50,8 @@ export function useProposeCondominiumExpense(leaseId: string) {
     mutationFn: (body: ProposeTenantExpense) => condominiumProposalApi.propose(leaseId, body),
     onSuccess: (proposal, request) => {
       rememberCondominiumExpense(queryClient, leaseId, proposal, request);
+      // Refresh the review, not the draft values: those may still be edited in the form.
+      void queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, leaseId, 'review'] });
     },
   });
 }

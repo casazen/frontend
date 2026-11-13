@@ -24,8 +24,8 @@ test.describe('CondoLedger landlord on the test app', () => {
 
     await pinE2eLocale(page, 'it');
     await loginViaAuth0(page);
-    await page.goto('/app/long-rent/leases');
-    await expect(page.getByRole('heading', { name: 'Contratti' })).toBeVisible({ timeout: 60_000 });
+    await page.goto('/app/long-rent/properties');
+    await expect(page.getByRole('heading', { name: 'Immobili' })).toBeVisible({ timeout: 60_000 });
 
     await openCondominiumStep(page);
     const leaseId = await exerciseDocuments(page);

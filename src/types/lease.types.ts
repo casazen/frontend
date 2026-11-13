@@ -35,6 +35,7 @@ export const LEASE_EVENT_TYPES = [
   // LR-12: the draft reviewed, downloaded for the signature on paper, taken back; LR-13: a contract signed elsewhere brought in.
   'ReviewConfirmed',
   'ReviewReopened',
+  'CondominiumExpenseChosen',
   'SentForSignature',
   'SentRevoked',
   'Imported',
