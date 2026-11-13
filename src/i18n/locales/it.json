@@ -1,4 +1,40 @@
 {
+  "registrationPreparation": {
+  "providerAction": "Dati per la registrazione · OpenAPI",
+  "redirecting": "Reindirizzamento al pagamento…",
+  "title": "Dati per la registrazione",
+  "description": "Controlla i dati precompilati e aggiungi ciò che manca. Prima del pagamento verifichiamo la completezza della pratica.",
+  "privacy": "I documenti di identità servono per la registrazione e saranno trasmessi a OpenAPI con il contratto. Sono conservati tra gli allegati privati del contratto.",
+  "signedContract": "Contratto firmato: già acquisito da CasaZen.",
+  "selectDocument": "Seleziona un allegato già caricato",
+  "uploadDocument": "Oppure carica il documento (PDF, JPG o PNG, massimo 20 MB)",
+  "uploading": "Caricamento del documento…",
+  "selectValue": "Seleziona…",
+  "fileTooLarge": "Il documento supera 20 MB.",
+  "uploadError": "Caricamento del documento non riuscito.",
+  "saved": "Dati della registrazione salvati.",
+  "saveError": "Salvataggio non riuscito. Riapri il modulo se è stato modificato da un’altra scheda.",
+  "loadError": "Non è stato possibile caricare i dati della registrazione.",
+  "retry": "Riprova",
+  "loading": "Caricamento dei dati…",
+  "fixIssues": "Completa o correggi questi dati prima di proseguire:",
+  "contract": "Contratto",
+  "additionalFields": "Dati aggiuntivi e campi richiesti in base al caso",
+  "costs": "Il pagamento del servizio è di 32,90 €. Le eventuali imposte di registro e bollo sono escluse e vengono addebitate dal fornitore sull’IBAN indicato.",
+  "saveDraft": "Salva e continua dopo",
+  "continuePayment": "Salva e passa al pagamento Stripe",
+  "continuePaid": "Pagamento già ricevuto: continua con la delega",
+  "saving": "Operazione in corso…",
+  "groups": {
+    "contract": "Contratto",
+    "property": "Immobile",
+    "applicant": "Richiedente e conto per le imposte",
+    "landlords": "Locatori e documenti",
+    "tenants": "Conduttori e documenti",
+    "taxes": "Regime fiscale, garanzie e clausole",
+    "otherProperties": "Ulteriori immobili nello stesso contratto"
+  }
+},
   "account": {
     "activity": {
       "accessRequested": "Richiesta di accesso a un'area o a una pagina",
@@ -4081,7 +4117,8 @@
       "Contract": "Contratto firmato e attestazione",
       "Attestation": "Attestazione (solo se arriva a parte)",
       "Registration": "Ricevuta di registrazione",
-      "Other": "Altro"
+      "RegistrationIdentity": "Documento per la registrazione",
+        "Other": "Altro"
     }
   },
   "channels": {
@@ -10009,6 +10046,10 @@
   "leaseWizard": {
     "after": {
       "registration": {
+        "providerBody": "Paga la registrazione con Stripe, poi conferma la delega per inviare il contratto a OpenAPI. La registrazione sarà confermata solo alla ricezione della ricevuta.",
+        "pay": "Paga e registra con OpenAPI",
+        "serviceCost": "Il costo del servizio è distinto dalle imposte stimate ed è indicato prima del pagamento.",
+        "checkoutError": "Non è stato possibile aprire il pagamento per la registrazione.",
         "body": "Il contratto va registrato all'Agenzia delle Entrate. Poi segnalalo qui con la ricevuta: il contratto passa a «Registrato» e la scadenza sparisce.",
         "costs": {
           "cedolare": "Costi stimati: nessuno. Con la cedolare secca non si pagano imposta di registro né bollo (stima).",

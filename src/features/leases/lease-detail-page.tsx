@@ -106,7 +106,9 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   const step = serviceDraft || cfContract ? null : nextStep;
   // The sheet opens on the guide; the button of «Cosa devi fare ora» leads to the tab where its step is done (an address with `?tab=`
   // is always obeyed, the old names of the tabs too).
-  const tab = leaseTabOf(searchParams.get('tab'), DEFAULT_LEASE_TAB);
+  const tab = searchParams.get('registrationCheckout') === 'success'
+    ? 'scadenze'
+    : leaseTabOf(searchParams.get('tab'), DEFAULT_LEASE_TAB);
   const [explainOpen, setExplainOpen] = useState(false);
   const explainId = useId();
 
