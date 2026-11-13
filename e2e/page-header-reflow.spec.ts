@@ -32,7 +32,8 @@ const sectionMenu = (page: Page) => page.getByTestId('nav-section-select');
 
 const PAGES: HeaderPage[] = [
   { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
-  { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Adempimenti', controls: sectionMenu },
+  // The page answers «Sono in regola?» (NF-52): the entry of the menu is still «Adempimenti».
+  { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Sono in regola?', controls: sectionMenu },
   { name: 'booking site (menu of its section)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: sectionMenu },
   { name: 'guests (menu of the section of the bookings)', path: '/app/short-rent/guests', profile: 'dual', heading: 'Ospiti', controls: sectionMenu },
   { name: 'fiscal report (standalone)', path: '/app/long-rent/fiscal', profile: 'dual', heading: 'Report fiscale', controls: (page) => page.getByRole('heading', { level: 1 }) },

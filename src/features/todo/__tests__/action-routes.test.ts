@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
+import { COMPLIANCE_ACTION_TARGETS } from '@/lib/compliance-routes';
 import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -217,5 +218,105 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('SomethingNew'))).toBeNull();
     expect(todoActionRoute(itemFor('toString'))).toBeNull();
     expect(todoActionRoute(itemFor(''))).toBeNull();
+  });
+});
+
+// E03/F02/US01/T03 (NF-52): the feeder opens a "To do" for each red or yellow item of the cockpit, with the action of the cockpit. The «Adesso» block of the
+// Home must lead where the cockpit leads.
+describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
+  const stay = (action: string) => ({ action, entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null });
+  const ofProperty = (action: string, entityType = 'Property') => ({ action, entityType, entityId: PROPERTY_ID, propertyId: PROPERTY_ID as string | null });
+  const ACTIONS_OF_THE_LIGHT = ['SendAlloggiatiManually', 'ActivateOctorateSend', 'RenewPoliceCredentials', 'EnterMunicipalityTaxRate', 'DeclareTouristTax'] as const;
+
+  it.each(ACTIONS_OF_THE_LIGHT)('actionRouteMap_%s_HasAnEntryThatLeadsWhereTheCockpitLeads', (action) => {
+    expect(Object.hasOwn(ACTION_ROUTE_MAP, action)).toBe(true);
+    const todo = ACTION_ROUTE_MAP[action].route;
+    const cockpit = COMPLIANCE_ACTION_TARGETS[action].route;
+
+    expect(todo.path).toBe(cockpit.path);
+    if ('tab' in todo) expect(todo.tab).toBe(cockpit.tab);
+  });
+
+  it('todoActionRoute_SendAlloggiatiManually_OpensTheAlloggiatiSectionOfTheStay', () => {
+    expect(todoActionRoute(stay('SendAlloggiatiManually'))).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+    // The id of anything else than a booking is not a booking's.
+    expect(todoActionRoute({ ...stay('SendAlloggiatiManually'), entityType: 'Property' })).toBeNull();
+  });
+
+  it.each(['ActivateOctorateSend', 'EnterMunicipalityTaxRate'])('todoActionRoute_%s_OpensThePageOfTheProperty', (action) => {
+    expect(todoActionRoute(ofProperty(action))).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    // The property is the one the item names, or the entity itself.
+    expect(todoActionRoute({ ...ofProperty(action), propertyId: null })).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    expect(todoActionRoute({ ...ofProperty(action, 'Booking'), propertyId: null })).toBeNull();
+  });
+
+  it('todoActionRoute_RenewPoliceCredentials_OpensTheAlloggiatiDashboard', () => {
+    expect(todoActionRoute(ofProperty('RenewPoliceCredentials'))).toBe('/app/short-rent/alloggiati');
+  });
+
+  it('todoActionRoute_DeclareTouristTax_OpensTheArchiveOnTheTaxDeclarationOfTheProperty', () => {
+    // The item of a month is about the property and carries the month in its entity type.
+    expect(todoActionRoute(ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'))).toBe(
+      `/app/short-rent/alloggiati/reports?property=${PROPERTY_ID}&kind=TouristTaxDeclaration`,
+    );
+    // Without a property there is nothing to filter on: no half-built address.
+    expect(todoActionRoute({ ...ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'), propertyId: null })).toBeNull();
+  });
+
+  it('todoActionRoute_ActionsOfTheLight_NeverOfferAPageThePersonCannotOpen', () => {
+    // The page of a property asks `property.read`; the Alloggiati pages and the archive ask `booking.read`.
+    const bookingsOnly = permissions(['booking.read']);
+    const propertiesOnly = permissions(['property.read']);
+
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), bookingsOnly)).toBeNull();
+    expect(todoActionRoute(ofProperty('RenewPoliceCredentials'), propertiesOnly)).toBeNull();
+    expect(todoActionRoute(ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'), propertiesOnly)).toBeNull();
+    expect(todoActionRoute(stay('SendAlloggiatiManually'), propertiesOnly)).toBeNull();
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), propertiesOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    expect(todoActionRoute(stay('SendAlloggiatiManually'), bookingsOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 21 values): the map has an entry for each, or the action is
+// in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
+// the page adds the entry and takes the action out of the list (the test below fails until it does).
+const BACKEND_ACTIONS = [
+  'ReviewBooking',
+  'StartCheckIn',
+  'CompleteCheckOut',
+  'VerifyIdentity',
+  'UploadAlloggiatiProof',
+  'UploadIstatProof',
+  'FixListingError',
+  'ReplyToMessage',
+  'ApproveAiDraft',
+  'ResumeWizard',
+  'ReconnectChannel',
+  'ConfirmChannelMapping',
+  'CheckImportedListing',
+  'SendAlloggiatiManually',
+  'ActivateOctorateSend',
+  'EnterMunicipalityTaxRate',
+  'DeclareTouristTax',
+  'RenewPoliceCredentials',
+  'ReviewFiscalDocument',
+  'ReviewOwnerStay',
+  'RenewOwnerDocument',
+] as const;
+
+/** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */
+const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'CheckImportedListing', 'ReviewOwnerStay', 'RenewOwnerDocument'];
+
+describe('ACTION_ROUTE_MAP and the actions of the backend', () => {
+  it.each(BACKEND_ACTIONS)('actionRouteMap_BackendAction_%s_HasAnEntryOrIsInTheListOfThoseWithoutAPageYet', (action) => {
+    expect(Object.hasOwn(ACTION_ROUTE_MAP, action), action).toBe(!ACTIONS_WITHOUT_A_PAGE_YET.includes(action));
+  });
+
+  it('actionRouteMap_EveryEntry_IsAnActionOfTheBackend', () => {
+    expect(Object.keys(ACTION_ROUTE_MAP).filter((action) => !(BACKEND_ACTIONS as readonly string[]).includes(action))).toEqual([]);
+  });
+
+  it.each(ACTIONS_WITHOUT_A_PAGE_YET)('todoActionRoute_%s_WithoutAPageYet_OffersNoButtonAndNeverADeadOne', (action) => {
+    expect(todoActionRoute(itemFor(action))).toBeNull();
   });
 });

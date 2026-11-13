@@ -8,12 +8,18 @@ import * as propertyQueries from '@/queries/use-properties';
 import type { Property, PropertyDetailDto } from '@/types';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { fetchComplianceSummary } from '@/api/compliance.api';
 import { fetchServiceRequests } from '@/api/service-requests.api';
 import { welcomeApi } from '@/api/welcome.api';
 import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('@/queries/use-properties');
+// The card «Cosa fare ora» reads the lights of the compliance items from the summary of the adempimenti (NF-52): none here (tests: property-next-step-lights.test.tsx).
+vi.mock('@/api/compliance.api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/compliance.api')>()),
+  fetchComplianceSummary: vi.fn(),
+}));
 // The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
 vi.mock('../mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 vi.mock('@/api/service-requests.api', () => ({
@@ -168,6 +174,15 @@ describe('PropertyDetailPage', () => {
     workspace.permissions = ['property.write', 'booking.read', 'booking.write'];
     vi.mocked(welcomeApi.getLink).mockClear();
     vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
+    const noSection = { count: 0, items: [] };
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({
+      propertiesPending: noSection,
+      guestCheckInsIncomplete: noSection,
+      checkoutsDue: noSection,
+      alloggiatiFailures: noSection,
+      alloggiatiManualRequired: noSection,
+      turnoversPending: noSection,
+    });
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
       data: mockDetail,
       isLoading: false,
@@ -205,13 +220,13 @@ describe('PropertyDetailPage', () => {
     } as unknown as ReturnType<typeof propertyQueries.useDownloadPropertyDocument>);
   });
 
-  it('AC8: renders property name and section headings', () => {
+  it('AC8: renders property name and section headings', async () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: i18n.t('property.detail.sections.data') })).toBeInTheDocument();
     expect(screen.getByTestId('property-status')).toHaveTextContent(i18n.t('property.table.active'));
-    // One highlighted block, and for an active property with nothing to fix it says so.
-    expect(screen.getByTestId('property-next-step')).toHaveAttribute('data-next-step', 'allInOrder');
+    // One highlighted block, and for an active property with nothing to fix it says so (once the lights of its compliance items are read).
+    expect(await screen.findByTestId('property-next-step')).toHaveAttribute('data-next-step', 'allInOrder');
   });
 
   // SU-04: the mismatch between the CIN's ISTAT code and the property's comune is a note, never an error.

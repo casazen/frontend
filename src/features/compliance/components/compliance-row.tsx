@@ -2,6 +2,8 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LightState } from '../lib/compliance-light';
+import { ComplianceLight } from './compliance-light';
 
 // The title and the line under it are one control, as wide as the column and at least 44 px high (as in the rows of the Home).
 const OPEN =
@@ -20,6 +22,13 @@ interface ComplianceRowProps {
   sub?: string;
   /** What it still lacks, in words. */
   detail?: string;
+  /**
+   * The traffic light of the row (NF-52): its pill, with the icon and the words of the light, and the reason in plain words under the title.
+   * A row without one (the CIN page, the Alloggiati dashboard) has no light at all; `unknown` draws "Da verificare", never green.
+   */
+  light?: LightState;
+  /** Why the row has its light, in plain words: read with the light, drawn under what the row is about. */
+  reason?: string;
   /** The state, as a `StatusBadge`. */
   badge?: React.ReactNode;
   /** How pressing it is (a `NoteLine`): its words and icon say it, not only its color. */
@@ -37,7 +46,7 @@ interface ComplianceRowProps {
  * A row of the pages of the adempimenti (cockpit, CIN, Alloggiati Web): what it is about, where it is and what it lacks, one
  * state, and the one button that does what it asks. On a phone it is a single column with the button under the text.
  */
-export function ComplianceRow({ icon: Icon, title, to, sub, detail, badge, note, action, testId, titleTestId, urgent = false }: ComplianceRowProps) {
+export function ComplianceRow({ icon: Icon, title, to, sub, detail, light, reason, badge, note, action, testId, titleTestId, urgent = false }: ComplianceRowProps) {
   const text = (
     <>
       <span className={cn('block break-words font-semibold', to && 'group-hover/open:underline')}>{title}</span>
@@ -72,9 +81,15 @@ export function ComplianceRow({ icon: Icon, title, to, sub, detail, badge, note,
             {text}
           </div>
         )}
+        {reason ? (
+          <p className="break-words text-sm text-foreground/80" data-testid="compliance-reason">
+            {reason}
+          </p>
+        ) : null}
         {detail ? <p className="break-words text-sm text-foreground/70">{detail}</p> : null}
-        {badge || note ? (
+        {light || badge || note ? (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+            {light ? <ComplianceLight state={light} reason={reason} data-testid="compliance-light" /> : null}
             {badge}
             {note}
           </div>

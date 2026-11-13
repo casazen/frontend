@@ -9,6 +9,7 @@ import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/
 import { formatCurrency } from '@/lib/utils';
 import type { BookingChannel, BookingListItem } from '@/types';
 import { OtaBadge } from './components/booking-facts';
+import { bookingCanCancel } from './lib/booking-change';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/booking-list-query';
 import { bookingChannelName, bookingChannelText, bookingSourceName, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
@@ -39,7 +40,6 @@ const bookingPath = (booking: BookingListItem) => `${BOOKINGS_PATH}/${booking.id
 const isAwaitingHost = (booking: BookingListItem) => booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
 /** A pending booking the host can accept: a request waiting for the answer, or one entered by hand and left pending. */
 const canAccept = (booking: BookingListItem) => isAwaitingHost(booking) || (booking.status === 'Pending' && booking.source === 'Manual');
-const canCancel = (booking: BookingListItem) => booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn';
 
 /**
  * The list of the bookings (SR-04): the unified list in `server` mode, in the words of the host. A server filters it, orders it
@@ -254,7 +254,8 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         if (isAwaitingHost(booking)) {
           entries.push({ id: 'decline', label: t('booking.list.actions.decline'), icon: X, onSelect: () => handlers.decline(booking) });
         }
-        if (canCancel(booking)) {
+        // "Annulla" where the API says the booking can be cancelled (`changeOptions`: a booking of a channel only where the channel lets the host do it, NF-76).
+        if (bookingCanCancel(booking)) {
           if (entries.length > 0) entries.push('separator');
           entries.push({ id: 'cancel', label: t('booking.cancel.action'), icon: XCircle, danger: true, onSelect: () => handlers.cancel(booking) });
         }

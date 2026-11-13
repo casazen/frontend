@@ -476,6 +476,22 @@
           "title": "Alloggiati Web deadline",
           "why": "Guests must be reported to the police within the deadline."
         },
+        "BookingOverlap": {
+          "title": "Dates already taken on the channel manager",
+          "why": "The dates of this booking are also taken on the channel manager: check the booking and the calendars before a second guest arrives."
+        },
+        "BookingSpecialRequest": {
+          "title": "Special request from the guest",
+          "why": "The guest wrote a special request: read it before they arrive."
+        },
+        "BookingSyncConflict": {
+          "title": "Booking also changed on the channel manager",
+          "why": "The booking was changed there while you were editing it: choose whether to keep CasaZen's version or the channel manager's."
+        },
+        "CheckImportedListing": {
+          "title": "Imported property to check",
+          "why": "The property was created from a listing of the channel manager and stays inactive until you check what was imported."
+        },
         "CheckInPending": {
           "title": "Check-in to complete",
           "why": "The check-in of this stay is not complete yet."
@@ -484,6 +500,14 @@
           "title": "Check-out to complete",
           "why": "The stay is over: record the departure."
         },
+        "CleaningDue": {
+          "title": "Cleaning to arrange",
+          "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Listing to match to a property",
+          "why": "A listing found on the channel manager may match several of your properties, or none: confirm or reject the match."
+        },
         "CredentialsToRenew": {
           "title": "Credentials to renew",
           "why": "The credentials of a service are about to expire or have already expired."
@@ -491,6 +515,10 @@
         "FiscalDocument": {
           "title": "Fiscal document to fix",
           "why": "A fiscal document needs you."
+        },
+        "IdentityVerification": {
+          "title": "Guest identity to verify",
+          "why": "The guest's identity is not verified yet: we are waiting for their selfie, or an operator has to decide."
         },
         "IntegrationError": {
           "title": "Connection to fix",
@@ -508,6 +536,26 @@
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
         },
+        "MessageToReply": {
+          "title": "Message to answer",
+          "why": "The assistant passed a guest's message to you: answer it yourself."
+        },
+        "MunicipalityTaxRateMissing": {
+          "title": "Tourist tax rate to enter",
+          "why": "We do not know the tourist tax rate of the municipality: enter it, we never take it as zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Owner document expiring",
+          "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Owner stay block not accepted",
+          "why": "The channel manager did not accept the block of the dates: the stay is not confirmed until you send it again."
+        },
+        "OwnerStayToReview": {
+          "title": "Owner stay to decide",
+          "why": "The owner asked to stay in their property: approve or reject the request."
+        },
         "PublicationError": {
           "title": "Publication error",
           "why": "A listing could not be published on a channel."
@@ -519,6 +567,10 @@
         "ReconnectChannelManager": {
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
+        },
+        "TouristTaxDeadline": {
+          "title": "Tourist tax due",
+          "why": "The tax of the period has to be declared and paid, with the receipts archived."
         },
         "WizardResume": {
           "title": "Setup to resume",
@@ -1343,6 +1395,7 @@
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateCancelFailed": "The channel manager could not cancel the booking on the channel: the booking is unchanged.",
       "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
@@ -1545,6 +1598,10 @@
       "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
       "bookingNotCheckedIn": "The check-out can be recorded only for a confirmed stay or one whose arrival was registered.",
       "bookingCheckoutTooEarly": "The check-out can be recorded from the arrival day.",
+      "bookingEditPaymentInProgress": "A payment of this booking is still being processed, or the guest still has to pay it: the price is not changed until it is closed.",
+      "bookingEditPaymentPermissionRequired": "This change moves money and needs the permission on payments: ask whoever manages the organization.",
+      "bookingSettlementFailed": "The payment of the difference did not go through, so the change was not saved. You can try again.",
+      "bookingTouristTaxUnavailable": "We cannot work out the tourist tax of the new dates, which the guest has already paid: the change was not saved.",
       "directBookingDeferredPaymentUnavailable": "Paying at the deadline is not available for these dates: the arrival is too close. Choose another payment method.",
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
@@ -1587,6 +1644,8 @@
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
       "icalBlockNotFound": "Calendar block not found.",
+      "otaBookingCancelNotAllowed": "This booking cannot be cancelled from CasaZen: it is cancelled on the channel it comes from.",
+      "otaBookingChangeNotAllowed": "This booking cannot be changed from CasaZen: it is changed on the channel it comes from.",
       "otaStayBlockNotImported": "Only a block imported from a linked OTA calendar can become a stay.",
       "otaStayBlockAlreadyConverted": "A stay was already created from this block.",
       "otaStayBlockOverlapsBooking": "The dates of the block overlap a booking already on the calendar: check the calendar.",
@@ -2602,7 +2661,66 @@
       "notFound": "Booking not found",
       "notFoundDescription": "The booking you're looking for doesn't exist.",
       "notEditable": "A cancelled booking cannot be changed.",
-      "backToBooking": "Back to the booking"
+      "backToBooking": "Back to the booking",
+      "conflict": {
+        "casazen": "CasaZen version",
+        "channelManager": "Channel manager version",
+        "description": "The change is saved in CasaZen, but the booking is different in your channel manager. Choose which version to keep: nothing is lost until you do.",
+        "keepCasazen": "Keep the CasaZen version",
+        "keepCasazenHint": "We write the CasaZen version over the one in your channel manager.",
+        "notAvailable": "not available",
+        "title": "The booking was changed in your channel manager",
+        "useChannelManager": "Use the channel-manager version",
+        "useChannelManagerHint": "The form opens with its dates and guests: you save when you decide to."
+      },
+      "review": {
+        "back": "Back",
+        "confirm": "Confirm and save",
+        "dates": "Dates",
+        "description": "Check what happens to the payments: nothing is saved until you confirm.",
+        "guests": "Guests",
+        "quoteFailed": "We cannot work out what happens to the payments. Try again.",
+        "title": "Check before saving",
+        "total": "New total"
+      },
+      "saved": {
+        "title": "Booking updated."
+      },
+      "settlement": {
+        "preview": {
+          "chargeSavedCard": "{{amount}} is charged on the guest's saved card.",
+          "noMoney": "No payment is made from here: the balance stays as agreed with the guest.",
+          "offlineRefundDue": "{{amount}} was paid outside CasaZen (cash or bank transfer): you give it back to the guest yourself.",
+          "paymentLink": "The guest receives a link to pay {{amount}}.",
+          "priceChanges": "The price goes from {{from}} to {{to}}.",
+          "priceSame": "The price does not change.",
+          "refund": "{{amount}} is refunded to the guest's card."
+        },
+        "result": {
+          "chargeSavedCard": {
+            "done": "{{amount}} charged on the guest's saved card.",
+            "pending": "The charge of {{amount}} on the guest's saved card is not confirmed yet."
+          },
+          "offlineRefundDue": "{{amount}} is still to be given back to the guest: it was paid outside CasaZen.",
+          "paymentLink": {
+            "done": "The link to pay {{amount}} was sent to the guest.",
+            "pending": "The link to pay {{amount}} has not been sent to the guest yet."
+          }
+        }
+      },
+      "sync": {
+        "checkAgain": "Check again",
+        "failed": {
+          "askAgain": "Once the problem is sorted out, try again yourself.",
+          "retrying": "We try again automatically.",
+          "title": "Saved in CasaZen, not yet in your channel manager"
+        },
+        "notAllowed": "The channel does not allow this change: nothing was sent to the channel manager.",
+        "pending": "Sending the change to your channel manager…",
+        "retry": "Retry now",
+        "retryFailed": "We could not send the change again. Try again.",
+        "waiting": "Your channel manager has not answered yet: the change is saved in CasaZen, but the sending is not finished yet."
+      }
     },
     "amountSource": {
       "ChannelManager": "Channel manager",
@@ -2694,6 +2812,11 @@
         "action": "Complete the check-in",
         "body": "Some guest data are missing: you can enter them yourself now, step by step.",
         "title": "Complete the guest data"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
       },
       "confirmManual": {
         "title": "Confirm the booking"
@@ -2791,7 +2914,45 @@
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
       },
-      "guestNotified": "The guest will get a cancellation email, without the reason."
+      "guestNotified": "The guest will get a cancellation email, without the reason.",
+      "channel": {
+        "confirm": "Ask to cancel",
+        "confirmed": "Your channel manager confirmed the cancellation.",
+        "description": "Your channel manager cancels the booking on the channel: only when it confirms does CasaZen show it as cancelled too.",
+        "noMoney": "No payment is moved from CasaZen.",
+        "refused": "The channel did not cancel it: the booking is unchanged.",
+        "submitting": "Asking to cancel…",
+        "title": "Ask your channel manager to cancel this booking"
+      },
+      "sync": {
+        "checkAgain": "Check again",
+        "conflict": "Your channel manager did not accept the cancellation: the booking changed there. The cancellation in CasaZen stands.",
+        "failed": {
+          "askAgain": "Once the problem is sorted out, try again yourself.",
+          "retrying": "We try again automatically.",
+          "title": "Cancelled in CasaZen, not yet in your channel manager"
+        },
+        "notAllowed": "The channel does not allow the cancellation from here: nothing was sent to the channel manager.",
+        "pending": "Cancelling the booking in your channel manager…",
+        "retry": "Retry now",
+        "retryFailed": "We could not send the cancellation again. Try again.",
+        "synced": "Cancelled in your channel manager too.",
+        "unconfirmed": "Your channel manager has not confirmed the cancellation yet.",
+        "waiting": "Your channel manager has not answered yet: the booking is cancelled in CasaZen, but the cancellation is not confirmed there yet.",
+        "willUpdate": "Your channel manager is updated too."
+      }
+    },
+    "changeGuidance": {
+      "cancel": {
+        "bookingCom": "To cancel this Booking.com booking, ask the guest to cancel it on Booking.com.",
+        "channel": "To cancel this {{channel}} booking, ask the guest to cancel it on {{channel}}.",
+        "default": "To cancel this booking, ask the guest to cancel it on the channel they booked through."
+      },
+      "modify": {
+        "bookingCom": "On Booking.com the guest changes the dates from the app or the extranet: ask the guest to do it there.",
+        "channel": "To change this {{channel}} booking, ask the guest to request the change on {{channel}}.",
+        "default": "To change this booking, ask the guest to request the change on the channel they booked through."
+      }
     },
     "channels": {
       "Agoda": "Agoda",
@@ -2912,6 +3073,17 @@
       "markVerified": "Mark as verified",
       "resolved": "Stay verified",
       "failed": "Could not update the stay. Try again."
+    },
+    "syncReason": {
+      "datesUnavailable": "The dates are already taken in the channel manager: check the calendar of your channels.",
+      "linkedElsewhere": "The booking in the channel manager is already linked to another CasaZen booking: check whether it is a duplicate.",
+      "notMirrored": "The property is not linked to the channel manager right now (the connection was lost or the mapping is still to be confirmed): reconnect it or confirm it, then try again.",
+      "paymentsNotRecorded": "Not every payment was recorded in the channel manager. Check and try again.",
+      "rejected": "The channel manager refused the request. Check the details and try again.",
+      "reservationChanged": "The booking changed in the channel manager after it was last read: check the differences before trying again.",
+      "roomNotChosen": "The room of the channel manager is missing for this property: choose it, then try again.",
+      "unavailable": "The channel manager did not answer.",
+      "unknown": "The channel manager did not confirm it."
     },
     "timeline": {
       "alloggiatiDeadline": "{{status}} · by {{date}}",
@@ -4255,8 +4427,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance",
-      "description": "What is missing to be compliant, for your properties and your stays."
+      "title": "Am I compliant?",
+      "description": "For each obligation you see whether it is in order, in progress or yours to do. Green only shows when CasaZen holds the proof."
     },
     "summary": {
       "title": "Compliance overview",
@@ -4273,7 +4445,16 @@
       "alloggiatiManualRequired": "Alloggiati to send manually",
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
-      "turnoversPending": "Properties to declare ready"
+      "turnoversPending": "Properties to declare ready",
+      "line": {
+        "allClear": "All compliant",
+        "red": "{{count}} to fix",
+        "todo_one": "{{count}} thing to do",
+        "todo_other": "{{count}} things to do",
+        "unknown": "{{count}} to verify",
+        "withDetail": "{{todo}}: {{what}}",
+        "yellow": "{{count}} in progress"
+      }
     },
     "cockpit": {
       "kicker": {
@@ -4297,7 +4478,7 @@
       },
       "fine": {
         "title": "Legal deadlines",
-        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "intro": "Deadlines set by law: Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24), then there are ISTAT and the tourist tax. If they are not sent in time you risk a penalty.",
         "moreLink": "See them all in Alloggiati"
       },
       "start": {
@@ -4321,6 +4502,10 @@
         "toggle_one": "{{count}} property in order",
         "toggle_other": "{{count}} properties in order"
       },
+      "green": {
+        "toggle_one": "{{count}} obligation in order",
+        "toggle_other": "{{count}} obligations in order"
+      },
       "openAll": "All duties",
       "showMore": "Show the other {{count}}",
       "showLess": "Show less",
@@ -4332,6 +4517,81 @@
         "composition": "Guest composition",
         "guestData": "Guest details"
       }
+    },
+    "item": {
+      "ActivateOctorateSend": "Automatic send to the Questura",
+      "ActivateProperty": "Property activation",
+      "CheckOut": "Departure",
+      "CompleteGuestCheckIn": "Guest details",
+      "ConfirmPropertyReady": "Property ready for the next guest",
+      "DeclareTouristTax": "Tourist tax of {{period}}",
+      "EnterMunicipalityTaxRate": "Tourist tax rate of the municipality",
+      "RenewPoliceCredentials": "Questura credentials",
+      "ResolveAlloggiatiFailure": "Alloggiati Web",
+      "SendAlloggiati": "Alloggiati Web",
+      "SendAlloggiatiManually": "Alloggiati Web sent by hand",
+      "UploadAlloggiatiReceipt": "Alloggiati Web receipt",
+      "UploadIstatProof": "ISTAT of {{period}}",
+      "VerifyIdentity": "Guest identity",
+      "noPeriod": "a period"
+    },
+    "light": {
+      "fallback": {
+        "green": "This is in order.",
+        "red": "Something has to be done.",
+        "unknown": "CasaZen has no result for this yet: check it.",
+        "yellow": "This is in progress: wait for the confirmation."
+      },
+      "green": "Compliant",
+      "named": "{{light}}: {{reason}}",
+      "red": "To do",
+      "unknown": "To verify",
+      "yellow": "In progress"
+    },
+    "lines": {
+      "more_one": "and {{count}} more obligation",
+      "more_other": "and {{count}} more obligations",
+      "ofProperty": "Obligations of this property",
+      "ofStay": "Obligations of this stay",
+      "unavailable": {
+        "body": "We do not know whether all is in order: try again in a moment.",
+        "title": "We cannot check the obligations"
+      }
+    },
+    "reason": {
+      "action_required": "There is something to do.",
+      "activation_incomplete": "The activation is not finished: until it is, the property cannot be booked from your site.",
+      "alloggiati_failed": "Alloggiati Web did not accept the communication: fix the data and send it again.",
+      "alloggiati_incomplete": "Alloggiati Web took only some of the guests: the stay is not complete.",
+      "alloggiati_not_sent": "Alloggiati Web has not been sent yet.",
+      "alloggiati_sending": "The communication to Alloggiati Web is in progress.",
+      "awaiting_receipt": "It was sent: the receipt still has to be archived.",
+      "checkout_due": "The departure has to be closed.",
+      "cin_invalid": "The CIN is not in the right format.",
+      "cin_missing": "The CIN is missing.",
+      "cin_valid": "The CIN is in the right format.",
+      "connection_inactive": "The automatic send is not active: activate it or send it yourself.",
+      "connection_unverified": "We cannot tell whether the automatic send is active: confirm it yourself.",
+      "credentials_refused": "The Questura refused the credentials: enter them again.",
+      "deadline_overdue": "The deadline has passed and there is no proof.",
+      "entrusted_to_channel_manager": "Your channel manager takes care of it: we are waiting for the receipt.",
+      "evidence_missing": "The archived proof is missing.",
+      "external_verification_required": "The result is only in your channel manager: CasaZen cannot see it, check it there.",
+      "guest_data_missing": "Some guest details needed for Alloggiati Web are missing.",
+      "identity_missing": "The arrival is near and the guest's identity is not verified yet.",
+      "identity_verified": "The guest's identity is verified.",
+      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it (it is never taken as zero).",
+      "operator_decision_required": "An operator has to decide on the identity check.",
+      "over_thirty_nights_not_sent": "Over 30 nights the channel manager does not send by itself: send Alloggiati Web yourself.",
+      "period_open": "The period is still open: the deadline has not come.",
+      "property_ready_not_confirmed": "You have not declared the property ready for the next guest yet.",
+      "receipt_archived": "The receipt is archived.",
+      "receipt_missing": "It was sent, but the receipt is not archived: upload it.",
+      "selfie_awaited": "We are waiting for the guest's selfie before the arrival.",
+      "short_stay_at_risk": "Short stay (6 hours to send): the guests are not entrusted to the channel manager. Send Alloggiati Web yourself."
+    },
+    "row": {
+      "named": "{{what}}: {{label}}"
     },
     "autopilot": {
       "button": "Handle with AI",
@@ -5366,6 +5626,10 @@
       "requests_other": "{{count}} requests to approve"
     },
     "todo": {
+      "ActivateOctorateSend": {
+        "cta": "Check the send",
+        "title": "Activate the automatic send to the Questura: {{label}}"
+      },
       "ActivateProperty": {
         "cta": "Finish",
         "ctaCin": "Add the CIN",
@@ -5387,9 +5651,21 @@
         "cta": "Confirm",
         "title": "Declare the property ready after {{label}}"
       },
+      "DeclareTouristTax": {
+        "cta": "Declare the tax",
+        "title": "Declare and pay the tourist tax of {{period}}: {{label}}"
+      },
+      "EnterMunicipalityTaxRate": {
+        "cta": "Enter the rate",
+        "title": "Enter the tourist tax rate of the municipality: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Pay",
         "title": "Pay {{label}}'s job"
+      },
+      "RenewPoliceCredentials": {
+        "cta": "Update the credentials",
+        "title": "Update the Questura credentials: {{label}}"
       },
       "RespondToRequest": {
         "cta": "Accept",
@@ -5410,6 +5686,22 @@
       "SendAlloggiati": {
         "cta": "Prepare the data",
         "title": "Alloggiati Web to send: {{label}}"
+      },
+      "SendAlloggiatiManually": {
+        "cta": "Prepare the data",
+        "title": "Send Alloggiati Web by hand: {{label}}"
+      },
+      "UploadAlloggiatiReceipt": {
+        "cta": "Upload the receipt",
+        "title": "Upload the Alloggiati Web receipt: {{label}}"
+      },
+      "UploadIstatProof": {
+        "cta": "Upload the proof",
+        "title": "Upload the ISTAT proof of {{period}}: {{label}}"
+      },
+      "VerifyIdentity": {
+        "cta": "Check the identity",
+        "title": "Verify the identity of {{label}}"
       },
       "decline": {
         "description": "The guest gets an email and the dates become available again.",
@@ -14967,6 +15259,11 @@
       "cinMissing": {
         "action": "Enter the CIN",
         "title": "The CIN code is missing"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
       },
       "heading": "What to do now",
       "paused": {
