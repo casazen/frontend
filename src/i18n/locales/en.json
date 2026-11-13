@@ -2190,6 +2190,11 @@
       "listError": "The list of the properties could not be loaded. Try again.",
       "listLabel": "Properties",
       "loadError": "The settings of this property could not be loaded. Try again.",
+      "loosen": {
+        "confirm": "Save anyway",
+        "description": "For this property the assistant will follow looser rules than the organization’s. Check what changes before you save.",
+        "title": "Save less strict rules?"
+      },
       "noSignature": "no signature",
       "notFound": "Property not found",
       "notFoundHint": "This property is not among yours, or it no longer exists. Choose it from the list.",
@@ -2205,6 +2210,9 @@
         "failed": "The exceptions could not be removed. Try again.",
         "title": "Remove the exceptions of this property?"
       },
+      "rulesError": "The organization’s rules could not be read. You cannot save until they are, because we could not tell you what you loosen.",
+      "rulesLoading": "Reading the organization’s rules to check what you loosen: you will be able to save in a moment.",
+      "rulesNeeded": "To save the exceptions of this property you need to be able to read the organization’s rules: without them we cannot tell you what you loosen.",
       "save": "Save the property settings",
       "saveFailed": "The settings of this property could not be saved. Try again.",
       "signature": {

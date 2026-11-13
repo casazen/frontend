@@ -496,7 +496,7 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       await expectNoAxeViolations(container);
     });
 
-    it('propertyPanel_ExceptionThatLoosensTheOrganization_SaysSoAndSavesTheThresholdItRead', async () => {
+    it('propertyPanel_ExceptionThatLoosensTheOrganization_SaysSoAsksToConfirmAndSavesTheThresholdItRead', async () => {
       vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue({ ...NO_EXCEPTIONS, forbiddenTopics: [], confidenceThreshold: 0.7 });
       vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
       renderPage(`${URL}&propertyId=p1`);
@@ -508,6 +508,14 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
 
       fireEvent.change(screen.getByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
       fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      // A looser rule is not saved with one click: the person confirms what it loosens (the two sentences of the warnings) and only then it goes out.
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog).toHaveTextContent('Salvare regole meno restrittive?');
+      expect(dialog).toHaveTextContent('Parcheggio');
+      expect(dialog).toHaveTextContent('soglia di affidabilità più bassa (0.7)');
+      expect(assistantSettingsApi.savePropertySettings).not.toHaveBeenCalled();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Salva comunque' }));
 
       await waitFor(() =>
         expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledWith('p1', {
@@ -560,6 +568,7 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       renderPage(`${URL}&propertyId=p1`);
 
       fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      await waitFor(() => expect(screen.getByTestId('assistant-property-save')).toBeEnabled());
       vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue(other);
       fireEvent.click(screen.getByTestId('assistant-property-save'));
 
@@ -576,6 +585,7 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       renderPage(`${URL}&propertyId=p1`);
 
       fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      await waitFor(() => expect(screen.getByTestId('assistant-property-save')).toBeEnabled());
       vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValueOnce(NO_EXCEPTIONS).mockResolvedValue(other);
       fireEvent.click(screen.getByTestId('assistant-property-save'));
 
@@ -591,11 +601,91 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       renderPage(`${URL}&propertyId=p1`);
 
       fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      await waitFor(() => expect(screen.getByTestId('assistant-property-save')).toBeEnabled());
       vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue({ ...NO_EXCEPTIONS, updatedAt: '2026-11-13T10:00:00Z' });
       fireEvent.click(screen.getByTestId('assistant-property-save'));
 
       await waitFor(() => expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledWith('p1', expect.objectContaining({ tone: 'Formal' })));
       expect(screen.queryByTestId('assistant-property-save-error')).not.toBeInTheDocument();
+    });
+
+    it('propertyPanel_ChoosingAListOfItsOwn_StartsFromTheOrganizationsListNotFromNothing', async () => {
+      renderPage(`${URL}&propertyId=p1`);
+
+      // Once the rules of the organization are there (they say what it forbids), «this property only» starts with that list and nothing is loosened yet.
+      await waitFor(() => expect(screen.getByTestId('assistant-property-exceptions')).toHaveTextContent('Come l’organizzazione: Parcheggio'));
+      fireEvent.click(screen.getByTestId('assistant-topics-own'));
+
+      expect(screen.getByTestId('assistant-property-topic-Parking')).toBeChecked();
+      expect(screen.queryByTestId('assistant-relaxed-topics')).not.toBeInTheDocument();
+    });
+
+    it('propertyPanel_ChangeThatLoosensTheOrganization_SavesNothingUntilTheConfirmationAndNothingWhenItIsCancelled', async () => {
+      vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue({ ...NO_EXCEPTIONS, forbiddenTopics: ['Parking'] });
+      vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
+      renderPage(`${URL}&propertyId=p1`);
+
+      // This property keeps the organization's ban on Parking; the person takes it away and saves.
+      fireEvent.click(await screen.findByTestId('assistant-property-topic-Parking'));
+      expect(await screen.findByTestId('assistant-relaxed-topics')).toHaveTextContent('Parcheggio');
+      fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog).toHaveTextContent('Parcheggio');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(assistantSettingsApi.savePropertySettings).not.toHaveBeenCalled();
+    });
+
+    it('propertyPanel_ChangeThatLoosensNothing_IsSavedWithoutAsking', async () => {
+      vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
+      renderPage(`${URL}&propertyId=p1`);
+
+      // The property follows the organization's forbidden topics and only the tone changes: nothing is loosened, nothing is asked.
+      await waitFor(() => expect(screen.getByTestId('assistant-property-exceptions')).toHaveTextContent('Come l’organizzazione: Parcheggio'));
+      fireEvent.change(screen.getByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      await waitFor(() => expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledWith('p1', expect.objectContaining({ tone: 'Formal' })));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('propertyPanel_RulesOfTheOrganizationNotReadYet_OffersNoSaveUntilTheyAre', async () => {
+      const pending = deferred<AssistantRules>();
+      vi.mocked(assistantSettingsApi.getRules).mockReturnValue(pending.promise);
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      expect(screen.getByTestId('assistant-property-rules-loading')).toBeInTheDocument();
+      expect(screen.getByTestId('assistant-property-save')).toBeDisabled();
+
+      pending.resolve(RULES);
+      await waitFor(() => expect(screen.getByTestId('assistant-property-save')).toBeEnabled());
+      expect(screen.queryByTestId('assistant-property-rules-loading')).not.toBeInTheDocument();
+    });
+
+    it('propertyPanel_RulesOfTheOrganizationThatFailedToLoad_OffersNoSaveAndARetry', async () => {
+      vi.mocked(assistantSettingsApi.getRules).mockRejectedValue(httpError(403));
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      const failure = await screen.findByTestId('assistant-property-rules-error');
+      expect(screen.getByTestId('assistant-property-save')).toBeDisabled();
+
+      vi.mocked(assistantSettingsApi.getRules).mockResolvedValue(RULES);
+      fireEvent.click(within(failure).getByRole('button', { name: 'Riprova' }));
+
+      await waitFor(() => expect(screen.getByTestId('assistant-property-save')).toBeEnabled());
+    });
+
+    it('propertyPanel_PersonWhoCannotReadTheRulesOfTheOrganization_CannotSaveAndIsToldWhy', async () => {
+      grants.permissions = new Set(['property.read', 'property.write']);
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      expect(screen.getByTestId('assistant-property-rules-needed')).toBeInTheDocument();
+      expect(screen.getByTestId('assistant-property-save')).toBeDisabled();
+      expect(assistantSettingsApi.getRules).not.toHaveBeenCalled();
     });
   });
 

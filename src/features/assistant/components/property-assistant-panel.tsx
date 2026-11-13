@@ -41,6 +41,12 @@ import { SettingsError, SettingsLoading, SettingsNoAccess, SettingsNotFound } fr
 
 type Mode = 'inherit' | 'own';
 
+/**
+ * Whether the rules of the organization are known to the form: what an exception loosens can be said only against them, so a save is offered only when they are `ready`
+ * (still being read, `loading`; not readable, `failed`; the person may not read them, `forbidden`).
+ */
+type RulesStatus = 'ready' | 'loading' | 'failed' | 'forbidden';
+
 /** What the form of the exceptions holds: every field starts as «as the organization» until it is changed. */
 interface ExceptionFields {
   enabled: 'inherit' | 'off' | 'on';
@@ -109,24 +115,36 @@ interface ExceptionsFormProps {
    */
   save: ReturnType<typeof useSavePropertyAssistantSettings>;
   reset: ReturnType<typeof useRemovePropertyAssistantSettings>;
+  /** Whether `rules` is known (see {@link RulesStatus}): without the rules of the organization the form cannot say what an exception loosens, so it offers no save. */
+  rulesStatus: RulesStatus;
+  /** Reads the rules of the organization again (the retry of a reading that failed). */
+  onReloadRules: () => void;
 }
 
-function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset }: ExceptionsFormProps) {
+function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rulesStatus, onReloadRules }: ExceptionsFormProps) {
   const { t, i18n } = useTranslation();
   const initial = fieldsOf(settings);
   const [fields, setFields] = useState<ExceptionFields>(initial);
   const [attempted, setAttempted] = useState(false);
   const [confirmingReset, setConfirmingReset] = useState(false);
+  const [confirmingLoosen, setConfirmingLoosen] = useState(false);
 
   const problems = problemsOf(fields);
   const shown = attempted ? problems : {};
   const dirty = JSON.stringify(fields) !== JSON.stringify(initial);
   const busy = save.isPending || reset.isPending;
+  const rulesReady = rulesStatus === 'ready';
   const update = (patch: Partial<ExceptionFields>) => setFields((current) => ({ ...current, ...patch }));
 
   // What the exceptions loosen, said before it is saved and after: a looser rule of a property is never relaxed in silence.
   const loosened = relaxedTopics(rules?.forbiddenTopics ?? [], fields.topicsMode === 'own' ? fields.forbiddenTopics : null);
   const lowerThreshold = relaxedThreshold(settings.confidenceThreshold, rules?.confidenceThreshold);
+  const loosens = loosened.length > 0 || lowerThreshold;
+  // What the person confirms before such a save, one sentence each (the same ones the warnings above the button say).
+  const loosenings = [
+    ...(loosened.length > 0 ? [t('assistant.property.relaxedTopics', { topics: loosened.map((name) => topicText(name, t, i18n)).join(', ') })] : []),
+    ...(lowerThreshold ? [t('assistant.property.relaxedThreshold', { value: settings.confidenceThreshold, organization: rules?.confidenceThreshold })] : []),
+  ];
 
   const asOrganization = (value: string | null) =>
     value === null ? t('assistant.property.asOrganization') : t('assistant.property.asOrganizationValue', { value });
@@ -135,13 +153,24 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset }: E
   const organizationTopics =
     rules === undefined ? null : rules.forbiddenTopics.length === 0 ? t('assistant.property.noTopics') : rules.forbiddenTopics.map((name) => topicText(name, t, i18n)).join(', ');
 
+  // `base` is what this form started from: the save reads the exceptions again and sends nothing if somebody else changed them meanwhile.
+  const send = () => save.mutate({ propertyId, request: requestOf(fields, settings), base: settings });
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     setAttempted(true);
-    if (!canEdit || Object.keys(problems).length > 0) return;
-    // `base` is what this form started from: the save reads the exceptions again and sends nothing if somebody else changed them meanwhile.
-    save.mutate({ propertyId, request: requestOf(fields, settings), base: settings });
+    if (!canEdit || !rulesReady || Object.keys(problems).length > 0) return;
+    // A rule looser than the organization's is never saved with one click: the person confirms what it loosens first (the dialog is outside this form).
+    if (loosens) {
+      setConfirmingLoosen(true);
+      return;
+    }
+    send();
   };
+
+  // «Only for this property» starts from the organization's own list, so that choosing it does not forbid nothing: the person unticks what this property allows.
+  const chooseTopicsMode = (topicsMode: Mode) =>
+    update(topicsMode === 'own' && fields.forbiddenTopics.length === 0 ? { topicsMode, forbiddenTopics: [...(rules?.forbiddenTopics ?? [])] } : { topicsMode });
 
   const modeOptions = (name: string): Array<{ value: Mode; label: string; testId: string; disabled: boolean }> => [
     { value: 'inherit', label: t('assistant.property.asOrganization'), testId: `assistant-${name}-inherit`, disabled: !canEdit },
@@ -214,7 +243,7 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset }: E
 
           <div className="space-y-2">
             <p className="text-sm font-medium leading-snug">{t('assistant.rules.forbiddenTopics.label')}</p>
-            <Segmented<Mode> label={t('assistant.rules.forbiddenTopics.label')} value={fields.topicsMode} onValueChange={(topicsMode) => update({ topicsMode })} options={modeOptions('topics')} />
+            <Segmented<Mode> label={t('assistant.rules.forbiddenTopics.label')} value={fields.topicsMode} onValueChange={chooseTopicsMode} options={modeOptions('topics')} />
             {fields.topicsMode === 'own' ? (
               <fieldset className="min-w-0 space-y-2" data-testid="assistant-property-topics">
                 <legend className="sr-only">{t('assistant.rules.forbiddenTopics.label')}</legend>
@@ -267,16 +296,54 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset }: E
           </Alert>
         ) : null}
 
+        {/* Without the rules of the organization the form cannot say what an exception loosens: no save is offered until they are read, and the reason is said. */}
+        {canEdit && rulesStatus === 'loading' ? (
+          <Alert variant="info" role="status" data-testid="assistant-property-rules-loading">
+            {t('assistant.property.rulesLoading')}
+          </Alert>
+        ) : null}
+        {canEdit && rulesStatus === 'failed' ? (
+          <Alert
+            variant="danger"
+            data-testid="assistant-property-rules-error"
+            action={
+              <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={onReloadRules}>
+                {t('shared.errorFallback.tryAgain')}
+              </Button>
+            }
+          >
+            {t('assistant.property.rulesError')}
+          </Alert>
+        ) : null}
+        {canEdit && rulesStatus === 'forbidden' ? (
+          <Alert variant="info" data-testid="assistant-property-rules-needed">
+            {t('assistant.property.rulesNeeded')}
+          </Alert>
+        ) : null}
+
         {canEdit ? (
           <div>
-            <Button type="submit" className="min-h-11 w-full sm:w-auto" loading={save.isPending} disabled={!dirty || reset.isPending} data-testid="assistant-property-save">
+            <Button type="submit" className="min-h-11 w-full sm:w-auto" loading={save.isPending} disabled={!dirty || reset.isPending || !rulesReady} data-testid="assistant-property-save">
               {t('assistant.property.save')}
             </Button>
           </div>
         ) : null}
       </form>
 
-      {/* Outside the form: a confirmation dialog inside a form would submit it. */}
+      {/* Outside the form: a confirmation dialog inside a form would submit it. A rule looser than the organization's is saved only after this one. */}
+      {canEdit ? (
+        <ConfirmationDialog
+          open={confirmingLoosen}
+          onOpenChange={setConfirmingLoosen}
+          title={t('assistant.property.loosen.title')}
+          description={t('assistant.property.loosen.description')}
+          confirmLabel={t('assistant.property.loosen.confirm')}
+          consequences={loosenings}
+          isLoading={save.isPending}
+          onConfirm={send}
+        />
+      ) : null}
+
       {canEdit && hasPropertyExceptions(settings) ? (
         <div className="space-y-2">
           <Button type="button" variant="outline" className="min-h-11" onClick={() => setConfirmingReset(true)} disabled={busy} data-testid="assistant-property-reset">
@@ -325,6 +392,8 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
   // The saves live here, above the form that is started again: their refusals outlive the reading again that follows them.
   const save = useSavePropertyAssistantSettings();
   const reset = useRemovePropertyAssistantSettings();
+  // A person who may not read the rules of the organization never knows what an exception loosens (and nothing is asked of the server for them).
+  const rulesStatus: RulesStatus = !canReadRules ? 'forbidden' : rules.data ? 'ready' : rules.isError ? 'failed' : 'loading';
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.property')} testId="assistant-property-no-access" />;
   // A 404 is «not found» even when an older answer is still in the cache (the query keeps its data on an error).
@@ -337,7 +406,7 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
   return (
     <div className="min-w-0 space-y-8" data-testid="assistant-property-panel" data-property-id={propertyId}>
       {/* The form starts from what the server holds and starts again when that changes (after a save, or when someone else changed the exceptions). */}
-      <ExceptionsForm key={JSON.stringify(settings.data)} propertyId={propertyId} settings={settings.data} rules={rules.data} canEdit={canEdit} save={save} reset={reset} />
+      <ExceptionsForm key={JSON.stringify(settings.data)} propertyId={propertyId} settings={settings.data} rules={rules.data} canEdit={canEdit} save={save} reset={reset} rulesStatus={rulesStatus} onReloadRules={() => void rules.refetch()} />
       <KnowledgeList scope={{ kind: 'property', propertyId }} canRead={canRead} canEdit={canEdit} />
     </div>
   );

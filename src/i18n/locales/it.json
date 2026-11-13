@@ -2190,6 +2190,11 @@
       "listError": "Non è stato possibile leggere l’elenco degli immobili. Riprova.",
       "listLabel": "Immobili",
       "loadError": "Non è stato possibile leggere le impostazioni di questo immobile. Riprova.",
+      "loosen": {
+        "confirm": "Salva comunque",
+        "description": "Per questo immobile l’assistente seguirà regole più larghe di quelle dell’organizzazione. Controlla cosa cambia prima di salvare.",
+        "title": "Salvare regole meno restrittive?"
+      },
       "noSignature": "nessuna firma",
       "notFound": "Immobile non trovato",
       "notFoundHint": "Questo immobile non è tra i tuoi, oppure non esiste più. Sceglilo dall’elenco.",
@@ -2205,6 +2210,9 @@
         "failed": "Non è stato possibile rimuovere le eccezioni. Riprova.",
         "title": "Rimuovere le eccezioni di questo immobile?"
       },
+      "rulesError": "Non è stato possibile leggere le regole dell’organizzazione. Finché non le leggiamo non puoi salvare, perché non potremmo dirti cosa allenti.",
+      "rulesLoading": "Leggo le regole dell’organizzazione per controllare cosa allenti: potrai salvare tra un momento.",
+      "rulesNeeded": "Per salvare le eccezioni di questo immobile serve poter leggere le regole dell’organizzazione: senza non possiamo dirti cosa allenti.",
       "save": "Salva le impostazioni dell’immobile",
       "saveFailed": "Non è stato possibile salvare le impostazioni di questo immobile. Riprova.",
       "signature": {
