@@ -411,6 +411,20 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       for (const method of INVITATION_WRITES) expect(ownerOnboardingApi[method]).not.toHaveBeenCalled();
     });
 
+    it('OwnerOnboarding_ImportConfirmationOfAFile_NamesTheFileAndWhatIsWritten', async () => {
+      vi.mocked(ownerOnboardingApi.importOwners).mockResolvedValue(importResult(true));
+      renderPage();
+      const chosen = file();
+      await chooseFile(chosen);
+      fireEvent.click(screen.getByTestId('owner-import-check'));
+      await screen.findByTestId('owner-import-result');
+      fireEvent.click(screen.getByTestId('owner-import-apply'));
+
+      const dialog = await screen.findByRole('dialog');
+      expect(within(dialog).getByTestId('owner-import-confirm-source')).toHaveTextContent(i18n.t('ownerOnboarding.import.confirm.file', { name: chosen.name }));
+      expect(dialog).toHaveTextContent(i18n.t('ownerOnboarding.import.confirm.effect', { owners: 1, matched: 0, ownerships: 1, periods: 0 }));
+    });
+
     it('OwnerOnboarding_ImportCheck_ShowsEveryRowWithItsErrorInWordsAndTheProposedActionBeforeAnythingChanges', async () => {
       vi.mocked(ownerOnboardingApi.importOwners).mockResolvedValue(importResult(true));
       renderPage();
@@ -759,6 +773,58 @@ describe('the owner entered by hand (NF-109, manual completion)', () => {
     expect(vi.mocked(ownerOnboardingApi.importOwners).mock.calls[1][1]).toBe(false);
     await waitFor(() => expect((screen.getByTestId('owner-manual-name') as HTMLInputElement).value).toBe(''));
     for (const method of INVITATION_WRITES) expect(ownerOnboardingApi[method]).not.toHaveBeenCalled();
+  });
+
+  it('OwnerOnboarding_ManualOwnerEditedAfterTheCheck_ForgetsTheCheckAndNeverImportsTheRowAsItWas', async () => {
+    vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(importResult(dryRun)));
+    renderPage();
+    await openForm();
+    fillRow();
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    await screen.findByTestId('owner-import-result');
+    await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
+
+    // The person corrects the share after the check: that check was about the row as it was, so its answer goes and the import is off until the row is checked again.
+    type('owner-manual-share', '60');
+    await waitFor(() => expect(screen.queryByTestId('owner-import-result')).not.toBeInTheDocument());
+    expect(screen.getByTestId('owner-import-apply')).toBeDisabled();
+    expect(screen.queryByTestId('owner-import-forget')).not.toBeInTheDocument();
+    expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
+
+    // A new check of the row as the form holds it now; the import then writes that row, never the old one.
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    await waitFor(() => expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2));
+    expect((await vi.mocked(ownerOnboardingApi.importOwners).mock.calls[1][0].text()).split(/\r?\n/)[1]).toContain(',60,');
+    await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('owner-import-apply'));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
+
+    await waitFor(() => expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(3));
+    const [written, dryRun] = vi.mocked(ownerOnboardingApi.importOwners).mock.calls[2];
+    expect(dryRun).toBe(false);
+    const row = await written.text();
+    expect(row).toContain(',60,');
+    expect(row).not.toContain(',100,');
+  });
+
+  it('OwnerOnboarding_ImportConfirmationOfARowByHand_NamesTheRowAndWhatIsWrittenWithoutTheTaxCodeNorTheEmail', async () => {
+    vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(importResult(dryRun)));
+    renderPage();
+    await openForm();
+    fillRow();
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('owner-import-apply'));
+
+    const dialog = await screen.findByRole('dialog');
+    // What will be written, in words: the row as it was sent and the effect the check announced, not only counts of rows.
+    expect(within(dialog).getByTestId('owner-import-confirm-source')).toHaveTextContent(
+      i18n.t('ownerOnboarding.import.confirm.row', { owner: 'Maria Verdi (P-9)', property: 'IT-CIN-9', share: '100', start: '2026-01-01' }),
+    );
+    expect(dialog).toHaveTextContent(i18n.t('ownerOnboarding.import.confirm.effect', { owners: 1, matched: 0, ownerships: 1, periods: 0 }));
+    // The tax code and the e-mail typed in the form are not printed again.
+    expect(dialog.textContent ?? '').not.toContain('VRDMRA80A41H501Z');
+    expect(dialog.textContent ?? '').not.toContain('maria@example.com');
   });
 
   it('OwnerOnboarding_ManualOwner_WithoutWhatTheServerNeedsIsNotSentAndSaysWhy', async () => {

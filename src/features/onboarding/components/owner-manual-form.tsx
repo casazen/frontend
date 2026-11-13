@@ -4,7 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { ownerManualCsv, type ManualOwnerValues } from '@/lib/owner-onboarding';
+import { manualOwnerRow, ownerManualCsv, type ManualOwnerRow, type ManualOwnerValues } from '@/lib/owner-onboarding';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
@@ -17,8 +17,10 @@ const REQUIRED: readonly (keyof ManualOwnerValues)[] = ['property', 'legalName',
 interface OwnerManualFormProps {
   /** A request of the card is in flight: the form waits. */
   disabled: boolean;
-  /** The one row as a file, to be checked exactly as a file chosen from the computer is: the check, then the confirmed import. */
-  onFile: (file: File) => void;
+  /** The one row as a file, to be checked exactly as a file chosen from the computer is: the check, then the confirmed import; with the row as the confirmation will name it. */
+  onFile: (file: File, row: ManualOwnerRow) => void;
+  /** A field of the form changed: the file that was made of it before (and its check) is not what the form holds any more. */
+  onEdit: () => void;
 }
 
 /**
@@ -27,12 +29,16 @@ interface OwnerManualFormProps {
  * (a name, an address, a tax code) lives in this form only while it is on the page: it is not written to the URL, the storage or the log, and it is not kept by the cache of
  * the mutations (the file goes through `useImportOwners`). The form is not a form of the page: the card around it never submits.
  */
-export function OwnerManualForm({ disabled, onFile }: OwnerManualFormProps) {
+export function OwnerManualForm({ disabled, onFile, onEdit }: OwnerManualFormProps) {
   const { t } = useTranslation();
   const [values, setValues] = useState<ManualOwnerValues>(EMPTY);
   const [problem, setProblem] = useState<string | null>(null);
 
-  const set = (key: keyof ManualOwnerValues) => (value: string) => setValues((current) => ({ ...current, [key]: value }));
+  const set = (key: keyof ManualOwnerValues) => (value: string) => {
+    setValues((current) => ({ ...current, [key]: value }));
+    // What was checked is the row as it was sent: a change makes that check be about another row, so the panel forgets it and asks for a new one.
+    onEdit();
+  };
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -47,7 +53,7 @@ export function OwnerManualForm({ disabled, onFile }: OwnerManualFormProps) {
       return;
     }
     setProblem(null);
-    onFile(new File([ownerManualCsv(values)], 'proprietario-manuale.csv', { type: 'text/csv' }));
+    onFile(new File([ownerManualCsv(values)], 'proprietario-manuale.csv', { type: 'text/csv' }), manualOwnerRow(values));
   }
 
   return (

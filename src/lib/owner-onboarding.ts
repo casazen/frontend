@@ -219,6 +219,24 @@ export interface ManualOwnerValues {
   ownershipStart: string;
 }
 
+/**
+ * The row typed by hand as the confirmation of the import shows it: which property, which owner, what share and from when. Never the tax code or the e-mail, which the
+ * confirmation has no need to print again.
+ */
+export interface ManualOwnerRow {
+  property: string;
+  owner: string;
+  share: string;
+  start: string;
+}
+
+/** The row of the form as the confirmation names it: the name of the owner, with the code the agency gave it when there is one. */
+export function manualOwnerRow(values: ManualOwnerValues): ManualOwnerRow {
+  const name = values.legalName.trim();
+  const key = values.ownerKey.trim();
+  return { property: values.property.trim(), owner: key === '' ? name : `${name} (${key})`, share: values.sharePercent.trim(), start: values.ownershipStart.trim() };
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** One cell of a CSV: quoted when it holds a separator, a quote or a line break. */

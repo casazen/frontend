@@ -14,6 +14,7 @@ import {
   ownerIssueKey,
   ownerRowCodeKey,
   ownerTemplateCsv,
+  type ManualOwnerRow,
 } from '@/lib/owner-onboarding';
 import { useImportOwners } from '@/queries/use-owner-onboarding';
 import type { OwnerImportResult, OwnerImportRow } from '@/types/owner-onboarding.types';
@@ -193,7 +194,10 @@ export function OwnerImportPanel() {
   const check = useImportOwners();
   const [file, setFile] = useState<File | null>(null);
   const [problem, setProblem] = useState<FileProblem | null>(null);
-  const [checkedFile, setCheckedFile] = useState<File | null>(null);
+  // The check that opens the import: the file that was sent and what the server answered (kept here because the answer of the mutation is replaced by the one of the import).
+  const [checked, setChecked] = useState<{ file: File; result: OwnerImportResult } | null>(null);
+  // The row typed by hand that is the file of the page now, as the confirmation names it: a change of the form makes its check be about another row.
+  const [manual, setManual] = useState<{ file: File; row: ManualOwnerRow } | null>(null);
   const [page, setPage] = useState(0);
   const [confirming, setConfirming] = useState(false);
   // The form of one owner entered by hand: shown on request, and emptied (a new key) when the file is forgotten or the import wrote something.
@@ -202,15 +206,17 @@ export function OwnerImportPanel() {
 
   const { mutate, reset, isPending, error } = check;
   const result = check.data;
-  // Only the check of THIS file opens the import: another file, or a file that was changed, is checked again.
-  const canImport = file !== null && checkedFile === file && result?.dryRun === true && result.summary.valid > 0 && !isPending;
+  // Only the check of THIS file opens the import: another file, or a file that was changed, is checked again; a check with no valid row opens nothing; and what an import
+  // already answered is not imported again by the same check.
+  const canImport = file !== null && checked !== null && checked.file === file && checked.result.summary.valid > 0 && result?.dryRun !== false && !isPending;
   const errorMessage = useMemo(() => (error ? (getProblemMessage(error, t) ?? t('ownerOnboarding.import.error')) : null), [error, t]);
 
   function choose(files: File[]) {
     const chosen = files[0];
     if (!chosen) return;
     reset();
-    setCheckedFile(null);
+    setChecked(null);
+    setManual(null);
     setPage(0);
     if (!isOwnerImportFileName(chosen.name)) {
       setFile(null);
@@ -230,17 +236,32 @@ export function OwnerImportPanel() {
     if (!file) return;
     const sent = file;
     setPage(0);
-    mutate({ file: sent, dryRun: true }, { onSuccess: () => setCheckedFile(sent) });
+    setChecked(null);
+    mutate({ file: sent, dryRun: true }, { onSuccess: (answer) => setChecked({ file: sent, result: answer }) });
   }
 
   /** The row typed by hand, as a file: checked exactly as a file chosen from the computer is. */
-  function checkManual(manual: File) {
+  function checkManual(sent: File, row: ManualOwnerRow) {
     reset();
     setProblem(null);
     setPage(0);
-    setFile(manual);
-    setCheckedFile(null);
-    mutate({ file: manual, dryRun: true }, { onSuccess: () => setCheckedFile(manual) });
+    setFile(sent);
+    setChecked(null);
+    setManual({ file: sent, row });
+    mutate({ file: sent, dryRun: true }, { onSuccess: (answer) => setChecked({ file: sent, result: answer }) });
+  }
+
+  /**
+   * A field of the form changed after the row was checked: that file, its check and its answer were about the row as it was, so none of them is what the form holds now.
+   * Once an import has answered, the form is the next row (or the same one, still to be checked again) and the answer of that import stays on the page.
+   */
+  function editManual() {
+    if (manual === null || file !== manual.file || result?.dryRun === false) return;
+    reset();
+    setFile(null);
+    setChecked(null);
+    setManual(null);
+    setPage(0);
   }
 
   function importFile() {
@@ -261,7 +282,8 @@ export function OwnerImportPanel() {
     reset();
     setFormKey((key) => key + 1);
     setFile(null);
-    setCheckedFile(null);
+    setChecked(null);
+    setManual(null);
     setProblem(null);
     setPage(0);
   }
@@ -310,7 +332,7 @@ export function OwnerImportPanel() {
           {t(manualOpen ? 'ownerOnboarding.manual.close' : 'ownerOnboarding.manual.open')}
         </Button>
         <div id="owner-manual-region" hidden={!manualOpen}>
-          {manualOpen ? <OwnerManualForm key={formKey} disabled={isPending} onFile={checkManual} /> : null}
+          {manualOpen ? <OwnerManualForm key={formKey} disabled={isPending} onFile={checkManual} onEdit={editManual} /> : null}
         </div>
       </div>
 
@@ -360,18 +382,33 @@ export function OwnerImportPanel() {
         onOpenChange={(open) => {
           if (!isPending) setConfirming(open);
         }}
-        title={t('ownerOnboarding.import.confirm.title', { count: result?.summary.valid ?? 0 })}
+        title={t('ownerOnboarding.import.confirm.title', { count: checked?.result.summary.valid ?? 0 })}
         description={t('ownerOnboarding.import.confirm.description')}
         consequences={[
-          t('ownerOnboarding.import.confirm.valid', { count: result?.summary.valid ?? 0 }),
-          t('ownerOnboarding.import.confirm.invalid', { count: result?.summary.invalid ?? 0 }),
+          t('ownerOnboarding.import.confirm.valid', { count: checked?.result.summary.valid ?? 0 }),
+          t('ownerOnboarding.import.confirm.invalid', { count: checked?.result.summary.invalid ?? 0 }),
+          t('ownerOnboarding.import.confirm.effect', {
+            owners: checked?.result.summary.ownersToCreate ?? 0,
+            matched: checked?.result.summary.ownersMatched ?? 0,
+            ownerships: checked?.result.summary.ownershipsToCreate ?? 0,
+            periods: checked?.result.summary.periodsToUpdate ?? 0,
+          }),
           t('ownerOnboarding.import.confirm.noInvitation'),
         ]}
         confirmLabel={t('ownerOnboarding.import.confirm.action')}
         cancelLabel={t('ownerOnboarding.import.confirm.cancel')}
         isLoading={isPending}
         onConfirm={importFile}
-      />
+      >
+        {checked ? (
+          // What the check was made on and so what is written: the file, or the row typed by hand as it was sent (no tax code, no e-mail).
+          <p className="break-words text-sm font-medium" data-testid="owner-import-confirm-source">
+            {manual && manual.file === checked.file
+              ? t('ownerOnboarding.import.confirm.row', { owner: manual.row.owner, property: manual.row.property, share: manual.row.share, start: manual.row.start })
+              : t('ownerOnboarding.import.confirm.file', { name: checked.file.name })}
+          </p>
+        ) : null}
+      </ConfirmationDialog>
     </div>
   );
 }
