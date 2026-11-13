@@ -42,6 +42,19 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-summary-page')).OnboardingSummaryPage }),
   },
   {
+    // The owner step of the plan (E10/F03/US05/T01, NF-109, ONB-06), for an org on the agency plan: the owners imported or completed, their associations and shares,
+    // the data for the statements and the invitations to the portal, with the accounting for the owners told apart from the properties that work. In no menu: a row of
+    // the plan (`OwnerStepRow`, drawn only for the agency plan and its administrator) leads here. It asks `property.read` like the plan; the owners are the organization
+    // administrator's (the server asks the agency permissions of the owner and the administrators), and the page tells anyone else so instead of meeting a 403. The page
+    // also reads the agency plan flag (`agencyTier`): while it is off the address leads back to the plan.
+    path: '/app/short-rent/onboarding/owners',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    component: async () => ({ default: (await import('@/features/onboarding/owner-onboarding-page')).OwnerOnboardingPage }),
+  },
+  {
     // A step that Octorate allows only from its panel (E10/F03/US02/T01, NF-107): `police`, `istat` or `channel-access`, with the property and the
     // channel in the query. In no menu: the plan, the parts and the «Da fare» of a step left half way lead here. The panel steps are written
     // (`property.write`); the page tells anyone who is not the organization administrator who does the step, instead of meeting a 403.
