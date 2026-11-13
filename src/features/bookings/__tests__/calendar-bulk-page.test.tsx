@@ -264,6 +264,25 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     expect(screen.getByTestId('bulk-wizard-apply')).toBeEnabled();
   });
 
+  it('CalendarBulkPage_Summary_TellsThePricesInTheCurrencyOfEachProperty_EvenWithoutTheDayLayer', { timeout: 30_000 }, async () => {
+    // A property in Swiss francs: its prices are never told in euros because the day layer is not there (no right to read it asks nothing), as the list of the properties has the currency.
+    vi.mocked(useProperties).mockReturnValue({
+      data: [
+        { id: 'p1', name: 'Villa Mare', city: 'Lugano', currency: 'CHF' },
+        { id: 'p2', name: 'Casa Lago', city: 'Como', currency: 'EUR' },
+      ],
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useProperties>);
+    renderPage(['property.write']);
+    await toSummary();
+
+    expect(calendarDaysApi.getDays).not.toHaveBeenCalled();
+    const sample = (within(screen.getAllByTestId('bulk-summary-property')[0]).getByTestId('bulk-summary-sample').textContent ?? '').replace(/\s/g, ' ');
+    expect(sample).toContain('Prezzo: 100 CHF → 120,50 CHF');
+    expect(sample).not.toContain('€');
+  });
+
   it('CalendarBulkPage_PreviewThatFailed_SaysSo_AndTheLastButtonIsOff', { timeout: 30_000 }, async () => {
     vi.mocked(calendarChangesApi.preview).mockRejectedValue(problemError(422, { code: 'calendar_too_many_properties', detail: 'x y' }));
     renderPage();

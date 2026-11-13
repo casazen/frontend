@@ -354,7 +354,10 @@ export function SummaryStep({ preview }: SummaryStepProps) {
   const { layer } = useDayLayer(canRead ? { from: today, to: today } : undefined, canRead);
 
   const connectorOn = useFeatureFlags().flags.octorateConnector;
-  const names = (id: string) => (Array.isArray(properties.data) ? properties.data : []).find((property) => property.id === id)?.name ?? '';
+  const propertyList = Array.isArray(properties.data) ? properties.data : [];
+  const names = (id: string) => propertyList.find((property) => property.id === id)?.name ?? '';
+  // The prices of the preview are in cents of the currency of each property: the list of the properties says it (it is there whatever the caller may read), the day layer repeats it.
+  const currencyOf = (id: string) => propertyList.find((property) => property.id === id)?.currency ?? layer?.get(id)?.currency ?? 'EUR';
   // A draft or an address can open the wizard here with answers that do not meet the rules of the steps before: nothing is asked, and the step that is wrong is said.
   const invalidStep = firstInvalidStep(values);
   const requestKey = invalidStep ? null : JSON.stringify(toChangeRequest(values));
@@ -384,7 +387,7 @@ export function SummaryStep({ preview }: SummaryStepProps) {
           </Button>
         </div>
       ) : data ? (
-        <PreviewBody preview={data} values={values} names={names} currencyOf={(id) => layer?.get(id)?.currency ?? 'EUR'} connectorOn={connectorOn} />
+        <PreviewBody preview={data} values={values} names={names} currencyOf={currencyOf} connectorOn={connectorOn} />
       ) : (
         <p role="status" aria-busy="true" className="text-sm text-foreground/70" data-testid="bulk-summary-loading">
           {t('booking.calendar.bulk.summary.loading')}
