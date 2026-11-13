@@ -12,14 +12,16 @@ export const SENDER_PROPERTY_PARAM = 'property';
 /** What changing the sender asks: the permission of the endpoints that change it (`PUT`, the connection test, the declaration), the one the route of the wizard asks. */
 export const SENDER_WRITE_PERMISSION = 'property.write';
 
-/** Raise it when the shape of the values changes: a draft written for the old shape is ignored. */
-export const SENDER_DRAFT_VERSION = 1;
+/** Raise it when the shape of the values changes: a draft written for the old shape is ignored. (2: the consent to the delegation is no longer kept in it.) */
+export const SENDER_DRAFT_VERSION = 2;
 
 /**
- * What the draft never keeps. The confirmation that the other sender goes off is given on the summary, about the change that is on screen at that moment: it is given again
- * when the wizard is resumed. Nothing of the credentials is here at all: they are not a value of the wizard (they stay in the state of their step and leave with the save).
+ * What the draft never keeps. The confirmation that the other sender goes off is given on the summary, about the change that is on screen at that moment, and the consent to the delegation
+ * is given on the choice, with the text in front of the person: both are given again when the wizard is resumed (also from another device, and straight at the summary), so a box that was
+ * ticked at another time is never ticked for them and a consent is never recorded for a text that was not shown in that session. Nothing of the credentials is here at all: they are not a
+ * value of the wizard (they are in its state, outside its form, and leave with the save).
  */
-export const SENDER_DRAFT_EXCLUDE: readonly string[] = ['switchConfirmed'];
+export const SENDER_DRAFT_EXCLUDE: readonly string[] = ['switchConfirmed', 'delegationConsentVersion'];
 
 /** The steps of the wizard, by the name `?step=` carries. */
 export const SENDER_STEP = {
@@ -32,8 +34,9 @@ export const SENDER_STEP = {
 export type SenderStepId = (typeof SENDER_STEP)[keyof typeof SENDER_STEP];
 
 /**
- * The answers of the wizard (the draft). `delegationConsentVersion` is the version of the delegation text the person ticked, never a bare yes: the consent counts only for the
- * text in force (`consentGiven`). `switchConfirmed` is the change the person confirmed (`confirmationOf`), so a confirmation never outlives the change it was about.
+ * The answers of the wizard. `delegationConsentVersion` is the version of the delegation text the person ticked, never a bare yes: the consent counts only for the
+ * text in force (`consentGiven`). `switchConfirmed` is the change the person confirmed (`confirmationOf`), so a confirmation never outlives the change it was about. Those two are
+ * given in the session that shows what they are about and are not part of the draft (`SENDER_DRAFT_EXCLUDE`).
  */
 export interface SenderWizardValues {
   sender: ComplianceSenderType | '';

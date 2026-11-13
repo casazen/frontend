@@ -683,6 +683,39 @@ describe('SenderWizardPage: leaving and coming back (NF-04, NF-06)', () => {
     expect((body.data as { values: Record<string, unknown> }).values.sender).toBe('ChannelManager');
   });
 
+  it('SenderWizardPage_ResumedDraft_NeverBringsBackTheConsentAndTheTextHasToBeSeenAgain', async () => {
+    const first = await open();
+    click('sender-option-ChannelManager');
+    await screen.findByTestId('sender-delegation-consent');
+    click('sender-delegation-consent');
+    fireEvent.click(primary());
+    await onStep('summary');
+
+    // The consent was given on the choice, with the text in front of the person: it is in no draft, neither the browser's nor the server's.
+    await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
+    const stored = [...Array(sessionStorage.length).keys()].map((index) => sessionStorage.getItem(sessionStorage.key(index) ?? ''));
+    expect(stored.length).toBeGreaterThan(0);
+    expect(JSON.stringify(stored)).not.toContain('delegationConsentVersion');
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain('delegationConsentVersion');
+
+    // Back in the same browser, the draft is resumed straight at the summary: the consent is not there, and the change cannot be made without it.
+    first.unmount();
+    await open();
+    click('wizard-draft-resume');
+    await onStep('summary');
+    expect(screen.getByTestId('sender-summary-step')).not.toHaveTextContent(text('compliance.sender.summary.delegation.toRecord'));
+    click('sender-switch-confirmed');
+    fireEvent.click(primary());
+    expect(await screen.findByTestId('wizard-error-summary')).toHaveTextContent(text('compliance.sender.errors.consentRequired'));
+    expect(propertySenderApi.switch).not.toHaveBeenCalled();
+
+    // On the choice the box is empty and the text is shown: the consent is given again.
+    click('sender-back');
+    await onStep('choice');
+    expect(screen.getByTestId('sender-delegation-text')).toBeInTheDocument();
+    expect(screen.getByTestId('sender-delegation-consent')).not.toBeChecked();
+  });
+
   it('SenderWizardPage_Help_IsOnEveryStepAndOpensOverTheWizardWithoutLeavingIt', async () => {
     await open();
 

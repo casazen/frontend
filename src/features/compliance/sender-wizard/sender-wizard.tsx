@@ -330,8 +330,8 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
       steps={stepsFor(defaults)}
       stepsFor={stepsFor}
       defaultValues={defaults}
-      // The answers are the draft of the property on the server, resumed on any device; a draft that names a way that cannot be chosen now is dropped. The confirmation of a change is not kept, and the
-      // credentials are not an answer of the wizard: they are in no draft.
+      // The answers are the draft of the property on the server, resumed on any device; a draft that names a way that cannot be chosen now is dropped. The confirmation of a change and the consent to
+      // the delegation are not kept (they are given again, with what they are about in front of the person), and the credentials are not an answer of the wizard: they are in no draft.
       draft={{
         exclude: SENDER_DRAFT_EXCLUDE,
         version: SENDER_DRAFT_VERSION,
