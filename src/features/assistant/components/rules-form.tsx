@@ -109,11 +109,15 @@ function Checklist({ legend, help, names, selected, label, disabled, onChange, t
 interface RulesFieldsFormProps {
   rules: AssistantRules;
   canEdit: boolean;
+  /**
+   * The mutation belongs to `RulesForm`, not to this form: this form is started again whenever the server holds other rules (after a save, or when somebody else changed
+   * them), and a refusal that lived inside it (the 409, or the rules that changed while it was open) would be gone with the remount.
+   */
+  save: ReturnType<typeof useSaveAssistantRules>;
 }
 
-function RulesFieldsForm({ rules, canEdit }: RulesFieldsFormProps) {
+function RulesFieldsForm({ rules, canEdit, save }: RulesFieldsFormProps) {
   const { t, i18n } = useTranslation();
-  const save = useSaveAssistantRules();
   const initial = fieldsOf(rules);
   const [fields, setFields] = useState<RulesFields>(initial);
   const [attempted, setAttempted] = useState(false);
@@ -127,7 +131,8 @@ function RulesFieldsForm({ rules, canEdit }: RulesFieldsFormProps) {
     event.preventDefault();
     setAttempted(true);
     if (!canEdit || Object.keys(problems).length > 0) return;
-    save.mutate(requestOf(fields, rules));
+    // `base` is what this form started from: the save reads the rules again and sends nothing if somebody else changed them meanwhile.
+    save.mutate({ request: requestOf(fields, rules), base: rules });
   };
 
   const tones: Record<AssistantTone, string> = {
@@ -278,11 +283,13 @@ interface RulesFormProps {
 export function RulesForm({ canRead, canEdit }: RulesFormProps) {
   const { t } = useTranslation();
   const rules = useAssistantRules(canRead);
+  // The save lives here, above the form that is started again: its refusal outlives the reading again that follows it.
+  const save = useSaveAssistantRules();
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.rules')} testId="assistant-rules-no-access" />;
   if (rules.isPending) return <SettingsLoading testId="assistant-rules-loading" />;
   if (!rules.data) return <SettingsError message={t('assistant.rules.loadError')} onRetry={() => void rules.refetch()} testId="assistant-rules-error" />;
 
   // The form starts from what the server holds and starts again when that changes (after a save, or when someone else changed the rules).
-  return <RulesFieldsForm key={JSON.stringify(rules.data)} rules={rules.data} canEdit={canEdit} />;
+  return <RulesFieldsForm key={JSON.stringify(rules.data)} rules={rules.data} canEdit={canEdit} save={save} />;
 }

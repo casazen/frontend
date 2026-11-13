@@ -6,6 +6,7 @@ import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import type { AssistantDraftOutcome } from '@/types/assistant-drafts.types';
 import {
   KNOWLEDGE_TOPICS,
+  type AssistantRules,
   type EffectiveSituation,
   type KnowledgeEntry,
   type KnowledgeEntryKind,
@@ -174,6 +175,61 @@ export function relaxedThreshold(property: number | null, organization: number |
   return property !== null && organization !== undefined && property < organization;
 }
 
+// -- what somebody else changed while a form was open ----------------------------------------------------------------------------------
+
+/** The two lists hold the same names in the same order (the server keeps the order it was given). */
+function sameList(first: readonly string[], second: readonly string[]): boolean {
+  return first.length === second.length && first.every((name, index) => name === second[index]);
+}
+
+/**
+ * Whether the rules the server holds now (`current`) are the ones a form started from (`base`): every field the form owns, the threshold it does not show included.
+ * The version of the instructions is NOT compared: it grows with every change that affects drafting (an answer of the knowledge, a situation, the exceptions of a
+ * property), and a form must not be refused for something it does not hold.
+ */
+export function sameRules(base: AssistantRules, current: AssistantRules): boolean {
+  return (
+    base.enabled === current.enabled &&
+    base.tone === current.tone &&
+    base.signature === current.signature &&
+    base.hoursFrom === current.hoursFrom &&
+    base.hoursTo === current.hoursTo &&
+    base.confidenceThreshold === current.confidenceThreshold &&
+    sameList(base.languages, current.languages) &&
+    sameList(base.allowedTopics, current.allowedTopics) &&
+    sameList(base.forbiddenTopics, current.forbiddenTopics)
+  );
+}
+
+/** The same for the exceptions of a property. `updatedAt` is not compared: the server moves it on a save that changes nothing. */
+export function sameExceptions(base: PropertyAssistantSettings, current: PropertyAssistantSettings): boolean {
+  return (
+    base.enabled === current.enabled &&
+    base.tone === current.tone &&
+    base.signature === current.signature &&
+    base.hoursFrom === current.hoursFrom &&
+    base.hoursTo === current.hoursTo &&
+    base.confidenceThreshold === current.confidenceThreshold &&
+    (base.forbiddenTopics === null || current.forbiddenTopics === null ? base.forbiddenTopics === current.forbiddenTopics : sameList(base.forbiddenTopics, current.forbiddenTopics))
+  );
+}
+
+/** The stable code of the 409 the server gives to two changes of the instructions that meet at the same moment (`AssistantStore.ConcurrentChangeCode`). */
+const CONCURRENT_CHANGE_CODE = 'assistant_concurrent_change';
+
+/**
+ * A save that was not sent because the server no longer holds what the form started from: somebody changed it meanwhile, and a whole-set save would have written over it
+ * in silence (the server has no version to check a PUT against). Nothing was written. The screen tells it with the sentence of the 409 `assistant_concurrent_change`.
+ */
+export class StaleSettingsError extends Error {
+  readonly code = CONCURRENT_CHANGE_CODE;
+
+  constructor() {
+    super('The settings changed while the form was open');
+    this.name = 'StaleSettingsError';
+  }
+}
+
 // -- the draft of a conversation -------------------------------------------------------------------------------------------------------
 
 /** The pending draft of the assistant for a conversation: the newest one (a new draft supersedes the one that was waiting), or `null`. */
@@ -262,8 +318,9 @@ const ERROR_KEYS: Readonly<Record<string, string>> = {
   property_not_found: 'assistant.error.propertyNotFound',
 };
 
-/** The stable code of an error of the API, if it has one. */
+/** The stable code of an error of the API, if it has one (a save refused before it was sent, because the settings changed meanwhile, carries the code of the 409). */
 export function errorCodeOf(error: unknown): string | undefined {
+  if (error instanceof StaleSettingsError) return error.code;
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
 

@@ -103,12 +103,16 @@ interface ExceptionsFormProps {
   /** The rules of the organization, when the person may read them: the value an exception falls back to, and what an exception loosens. */
   rules: AssistantRules | undefined;
   canEdit: boolean;
+  /**
+   * The two mutations belong to `PropertyAssistantPanel`, not to this form: the form is started again whenever the server holds other exceptions (after a save, or when
+   * somebody else changed them), and a refusal that lived inside it (the 409, or the exceptions that changed while it was open) would be gone with the remount.
+   */
+  save: ReturnType<typeof useSavePropertyAssistantSettings>;
+  reset: ReturnType<typeof useRemovePropertyAssistantSettings>;
 }
 
-function ExceptionsForm({ propertyId, settings, rules, canEdit }: ExceptionsFormProps) {
+function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset }: ExceptionsFormProps) {
   const { t, i18n } = useTranslation();
-  const save = useSavePropertyAssistantSettings();
-  const reset = useRemovePropertyAssistantSettings();
   const initial = fieldsOf(settings);
   const [fields, setFields] = useState<ExceptionFields>(initial);
   const [attempted, setAttempted] = useState(false);
@@ -135,7 +139,8 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit }: ExceptionsForm
     event.preventDefault();
     setAttempted(true);
     if (!canEdit || Object.keys(problems).length > 0) return;
-    save.mutate({ propertyId, request: requestOf(fields, settings) });
+    // `base` is what this form started from: the save reads the exceptions again and sends nothing if somebody else changed them meanwhile.
+    save.mutate({ propertyId, request: requestOf(fields, settings), base: settings });
   };
 
   const modeOptions = (name: string): Array<{ value: Mode; label: string; testId: string; disabled: boolean }> => [
@@ -317,6 +322,9 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
   const { t } = useTranslation();
   const settings = usePropertyAssistantSettings(propertyId, canRead);
   const rules = useAssistantRules(canReadRules);
+  // The saves live here, above the form that is started again: their refusals outlive the reading again that follows them.
+  const save = useSavePropertyAssistantSettings();
+  const reset = useRemovePropertyAssistantSettings();
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.property')} testId="assistant-property-no-access" />;
   // A 404 is «not found» even when an older answer is still in the cache (the query keeps its data on an error).
@@ -329,7 +337,7 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
   return (
     <div className="min-w-0 space-y-8" data-testid="assistant-property-panel" data-property-id={propertyId}>
       {/* The form starts from what the server holds and starts again when that changes (after a save, or when someone else changed the exceptions). */}
-      <ExceptionsForm key={JSON.stringify(settings.data)} propertyId={propertyId} settings={settings.data} rules={rules.data} canEdit={canEdit} />
+      <ExceptionsForm key={JSON.stringify(settings.data)} propertyId={propertyId} settings={settings.data} rules={rules.data} canEdit={canEdit} save={save} reset={reset} />
       <KnowledgeList scope={{ kind: 'property', propertyId }} canRead={canRead} canEdit={canEdit} />
     </div>
   );

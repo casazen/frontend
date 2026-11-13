@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { assistantSettingsApi } from '@/api/assistant-settings.api';
+import { StaleSettingsError, sameExceptions, sameRules } from '@/features/assistant/lib/assistant-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import i18n from '@/i18n/config';
 import { retryTransientErrors } from '@/lib/query-client';
 import type {
+  AssistantRules,
+  PropertyAssistantSettings,
   SaveAssistantRulesRequest,
   SaveAssistantSituationRequest,
   SaveKnowledgeEntryRequest,
@@ -40,7 +43,8 @@ async function withoutRequestOnFailure<T>(call: () => Promise<T>): Promise<T> {
 
 /**
  * The instructions of the assistant depend on all of these (rules, exceptions, knowledge, situations): a change to one of them makes the whole root stale, so the
- * pages that are open read what the server holds now. A 409 `assistant_concurrent_change` is told by the form, and the reading again is what it asks for.
+ * pages that are open read what the server holds now. A refusal of a save is told by the component that holds the mutation, which is not the form that is started again
+ * when the reading brings other values (a form that holds its own mutation loses the refusal with the remount).
  */
 function useRefreshAssistant() {
   const queryClient = useQueryClient();
@@ -54,12 +58,27 @@ export function useAssistantRules(enabled: boolean) {
   return useQuery({ queryKey: RULES_KEY, queryFn: () => assistantSettingsApi.getRules(), enabled, ...LIVE });
 }
 
-/** Saves the rules of the organization, the whole set (the organization administrator only). The form shows the refusal; the rules are read again whatever the answer. */
+/**
+ * Saves the rules of the organization, the whole set (the organization administrator only). The server has no version to check a PUT against (the version of the
+ * instructions is only read, and the 409 `assistant_concurrent_change` is for two changes that meet at the same moment), so a form that was open for a while would write
+ * over what somebody else saved, in silence. The rules are therefore read again first: when they are no longer what the form started from (`base`) nothing is sent, the values
+ * the server holds are put on the screen and the refusal is `StaleSettingsError`. The refusal is told by the component that holds this mutation (the rules are read again
+ * whatever the answer, and the form that started from the old ones is started again).
+ */
 export function useSaveAssistantRules() {
+  const queryClient = useQueryClient();
   const refresh = useRefreshAssistant();
   return useMutation({
     gcTime: 0,
-    mutationFn: (request: SaveAssistantRulesRequest) => withoutRequestOnFailure(() => assistantSettingsApi.saveRules(request)),
+    mutationFn: ({ request, base }: { request: SaveAssistantRulesRequest; base: AssistantRules }) =>
+      withoutRequestOnFailure(async () => {
+        const current = await assistantSettingsApi.getRules();
+        if (!sameRules(base, current)) {
+          queryClient.setQueryData(RULES_KEY, current);
+          throw new StaleSettingsError();
+        }
+        return assistantSettingsApi.saveRules(request);
+      }),
     onSuccess: () => {
       toast.success(i18n.t('assistant.toast.rulesSaved'));
     },
@@ -69,23 +88,36 @@ export function useSaveAssistantRules() {
 
 // -- the exceptions of a property ------------------------------------------------------------------------------------------------------
 
+const propertySettingsKey = (propertyId: string | null) => [ASSISTANT_QUERY, 'property-settings', propertyId] as const;
+
 /** The exceptions of a property (`property.read`). */
 export function usePropertyAssistantSettings(propertyId: string | null, enabled: boolean) {
   return useQuery({
-    queryKey: [ASSISTANT_QUERY, 'property-settings', propertyId],
+    queryKey: propertySettingsKey(propertyId),
     queryFn: () => assistantSettingsApi.getPropertySettings(propertyId as string),
     enabled: enabled && propertyId !== null,
     ...LIVE,
   });
 }
 
-/** Saves the exceptions of a property, the whole set (`property.write`). */
+/**
+ * Saves the exceptions of a property, the whole set (`property.write`). Like the rules of the organization, it reads them again first and sends nothing when they are no
+ * longer what the form started from (`base`): `StaleSettingsError`, and the values the server holds are put on the screen.
+ */
 export function useSavePropertyAssistantSettings() {
+  const queryClient = useQueryClient();
   const refresh = useRefreshAssistant();
   return useMutation({
     gcTime: 0,
-    mutationFn: ({ propertyId, request }: { propertyId: string; request: SavePropertyAssistantSettingsRequest }) =>
-      withoutRequestOnFailure(() => assistantSettingsApi.savePropertySettings(propertyId, request)),
+    mutationFn: ({ propertyId, request, base }: { propertyId: string; request: SavePropertyAssistantSettingsRequest; base: PropertyAssistantSettings }) =>
+      withoutRequestOnFailure(async () => {
+        const current = await assistantSettingsApi.getPropertySettings(propertyId);
+        if (!sameExceptions(base, current)) {
+          queryClient.setQueryData(propertySettingsKey(propertyId), current);
+          throw new StaleSettingsError();
+        }
+        return assistantSettingsApi.savePropertySettings(propertyId, request);
+      }),
     onSuccess: () => {
       toast.success(i18n.t('assistant.toast.propertySaved'));
     },

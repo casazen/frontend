@@ -261,6 +261,65 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       expect(await screen.findByTestId('assistant-rules-save-error')).toHaveTextContent('Qualcuno ha cambiato le istruzioni dell’assistente');
     });
 
+    it('rulesForm_RulesChangedBySomebodyElseWhileTheFormWasOpen_AreNotOverwrittenInSilence', async () => {
+      // The other administrator changed the tone and the version moved: what the server holds is NOT what this form started from.
+      const other: AssistantRules = { ...RULES, tone: 'Formal', instructionVersion: 4 };
+      renderPage();
+
+      fireEvent.change(await screen.findByTestId('assistant-signature'), { target: { value: 'Sofia e Luca' } });
+      vi.mocked(assistantSettingsApi.getRules).mockResolvedValue(other);
+      fireEvent.click(screen.getByTestId('assistant-rules-save'));
+
+      // Nothing is sent (a whole-set save would have written the old tone over the other's), the refusal is said, and the form shows what the server holds now.
+      expect(await screen.findByTestId('assistant-rules-save-error')).toHaveTextContent('non è stato salvato nulla');
+      expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
+      await waitFor(() => expect(screen.getByTestId('assistant-tone-Formal')).toHaveAttribute('aria-pressed', 'true'));
+      expect(screen.getByTestId('assistant-signature')).toHaveValue('Sofia');
+      // The refusal outlives the form that was started again with the other values.
+      expect(screen.getByTestId('assistant-rules-save-error')).toBeInTheDocument();
+    });
+
+    it('rulesForm_TwoSavesThatMeetAtTheSameMoment_KeepTheRefusalOnTheScreenAfterTheReadingAgainBringsOtherValues', async () => {
+      // The check before the save sees the rules unchanged; the server refuses (409) because another save got there first, and the reading again that follows holds its values.
+      const other: AssistantRules = { ...RULES, signature: 'Altro amministratore', instructionVersion: 4 };
+      vi.mocked(assistantSettingsApi.saveRules).mockRejectedValue(httpError(409, { code: 'assistant_concurrent_change' }));
+      renderPage();
+
+      fireEvent.change(await screen.findByTestId('assistant-signature'), { target: { value: 'Sofia e Luca' } });
+      vi.mocked(assistantSettingsApi.getRules).mockResolvedValueOnce(RULES).mockResolvedValue(other);
+      fireEvent.click(screen.getByTestId('assistant-rules-save'));
+
+      await waitFor(() => expect(assistantSettingsApi.saveRules).toHaveBeenCalledTimes(1));
+      // The form started again with the other administrator's signature, and the 409 is still said: the refusal did not go with the old form.
+      await waitFor(() => expect(screen.getByTestId('assistant-signature')).toHaveValue('Altro amministratore'));
+      expect(screen.getByTestId('assistant-rules-save-error')).toHaveTextContent('Qualcuno ha cambiato le istruzioni dell’assistente');
+    });
+
+    it('rulesForm_OnlyTheVersionOfTheInstructionsMoved_IsNoConflictAndTheSaveGoesOut', async () => {
+      // An answer of the knowledge or an exception of a property moved the version; the rules of this form are the same: nothing would be overwritten.
+      vi.mocked(assistantSettingsApi.saveRules).mockResolvedValue(RULES);
+      renderPage();
+
+      fireEvent.change(await screen.findByTestId('assistant-signature'), { target: { value: 'Sofia e Luca' } });
+      vi.mocked(assistantSettingsApi.getRules).mockResolvedValue({ ...RULES, instructionVersion: 9 });
+      fireEvent.click(screen.getByTestId('assistant-rules-save'));
+
+      await waitFor(() => expect(assistantSettingsApi.saveRules).toHaveBeenCalledWith(expect.objectContaining({ signature: 'Sofia e Luca' })));
+      expect(screen.queryByTestId('assistant-rules-save-error')).not.toBeInTheDocument();
+    });
+
+    it('rulesForm_RulesThatCannotBeReadAgainBeforeTheSave_AreNotSavedOver', async () => {
+      renderPage();
+
+      fireEvent.change(await screen.findByTestId('assistant-signature'), { target: { value: 'Sofia e Luca' } });
+      vi.mocked(assistantSettingsApi.getRules).mockRejectedValue(httpError(500));
+      fireEvent.click(screen.getByTestId('assistant-rules-save'));
+
+      // What cannot be checked is not written: the refusal is the general one, and nothing was sent.
+      expect(await screen.findByTestId('assistant-rules-save-error')).toHaveTextContent('Non è stato possibile salvare le regole');
+      expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
+    });
+
     it('rulesForm_HasNoAccessibilityViolation', async () => {
       const { container } = renderPage();
 
@@ -493,6 +552,50 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.click(within(dialog).getByRole('button', { name: 'Torna all’organizzazione' }));
 
       await waitFor(() => expect(assistantSettingsApi.deletePropertySettings).toHaveBeenCalledWith('p1'));
+    });
+
+    it('propertyPanel_ExceptionsChangedBySomebodyElseWhileTheFormWasOpen_AreNotOverwrittenInSilence', async () => {
+      // Somebody else gave the property its own tone meanwhile: the exceptions the server holds are not the ones this form started from.
+      const other: PropertyAssistantSettings = { ...NO_EXCEPTIONS, tone: 'Friendly', updatedAt: '2026-11-13T10:00:00Z' };
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue(other);
+      fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      expect(await screen.findByTestId('assistant-property-save-error')).toHaveTextContent('non è stato salvato nulla');
+      expect(assistantSettingsApi.savePropertySettings).not.toHaveBeenCalled();
+      // The form shows what the server holds now, and the refusal outlives the form that was started again.
+      await waitFor(() => expect(screen.getByTestId('assistant-property-tone')).toHaveValue('Friendly'));
+      expect(screen.getByTestId('assistant-property-save-error')).toBeInTheDocument();
+    });
+
+    it('propertyPanel_TwoSavesThatMeetAtTheSameMoment_KeepTheRefusalOnTheScreenAfterTheReadingAgainBringsOtherValues', async () => {
+      const other: PropertyAssistantSettings = { ...NO_EXCEPTIONS, signature: 'Firma di un altro', updatedAt: '2026-11-13T10:00:00Z' };
+      vi.mocked(assistantSettingsApi.savePropertySettings).mockRejectedValue(httpError(409, { code: 'assistant_concurrent_change' }));
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValueOnce(NO_EXCEPTIONS).mockResolvedValue(other);
+      fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      await waitFor(() => expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledTimes(1));
+      // The form started again with the other person's signature, and the 409 is still said.
+      await waitFor(() => expect(screen.getByTestId('assistant-property-signature')).toHaveValue('Firma di un altro'));
+      expect(screen.getByTestId('assistant-property-save-error')).toHaveTextContent('Qualcuno ha cambiato le istruzioni dell’assistente');
+    });
+
+    it('propertyPanel_OnlyTheDateOfTheLastSaveMoved_IsNoConflictAndTheSaveGoesOut', async () => {
+      // The server moves `updatedAt` on a save that changes nothing: the exceptions are the same, so nothing would be overwritten.
+      vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
+      renderPage(`${URL}&propertyId=p1`);
+
+      fireEvent.change(await screen.findByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
+      vi.mocked(assistantSettingsApi.getPropertySettings).mockResolvedValue({ ...NO_EXCEPTIONS, updatedAt: '2026-11-13T10:00:00Z' });
+      fireEvent.click(screen.getByTestId('assistant-property-save'));
+
+      await waitFor(() => expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledWith('p1', expect.objectContaining({ tone: 'Formal' })));
+      expect(screen.queryByTestId('assistant-property-save-error')).not.toBeInTheDocument();
     });
   });
 

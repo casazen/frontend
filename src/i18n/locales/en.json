@@ -2056,7 +2056,7 @@
       "title": "Assistant draft"
     },
     "error": {
-      "concurrentChange": "Someone changed the assistant’s instructions at the same moment: we read them again, check and try again.",
+      "concurrentChange": "Someone changed the assistant’s instructions while you were editing them: nothing was saved. The updated values are shown here: check them and make your change again.",
       "entryInvalid": "The answer is not valid: it needs a text of at most 1,000 characters and, for a frequently asked question, the question too.",
       "entryNotFound": "This answer no longer exists: the list has been updated.",
       "modeNotAllowed": "This situation is sensitive: it can only go to a person or prepare a draft.",

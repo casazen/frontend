@@ -2056,7 +2056,7 @@
       "title": "Bozza dell'assistente"
     },
     "error": {
-      "concurrentChange": "Qualcuno ha cambiato le istruzioni dell’assistente nello stesso momento: le abbiamo rilette, controlla e riprova.",
+      "concurrentChange": "Qualcuno ha cambiato le istruzioni dell’assistente mentre le modificavi: non è stato salvato nulla. Qui trovi i valori aggiornati: controllali e rifai la tua modifica.",
       "entryInvalid": "La risposta non è valida: serve un testo di al massimo 1000 caratteri e, per una domanda frequente, anche la domanda.",
       "entryNotFound": "Questa risposta non esiste più: l’elenco è stato aggiornato.",
       "modeNotAllowed": "Questa situazione è delicata: può solo passare a una persona o preparare una bozza.",
