@@ -14,7 +14,8 @@ export const ownerOnboardingKeys = {
 /**
  * A page open on the screen asks again by itself: the owner who accepts, the file that was just imported and the invitation that lapsed show up
  * without a reload. The server sends no push for the acceptance of an invitation, so the answer is read every thirty seconds while the page is visible
- * (a tab in the background does not ask).
+ * (a tab in the background does not ask). Both reads hold the names of the owners of the agency (third parties): they are dropped as soon as no screen shows them
+ * (`gcTime: 0`), not kept in memory for the default ten minutes after the person has left.
  */
 const REFRESH_MS = 30_000;
 
@@ -38,6 +39,7 @@ export function useOwnerReadiness(enabled: boolean) {
     queryKey: ownerOnboardingKeys.readiness,
     queryFn: () => ownerOnboardingApi.getReadiness(),
     enabled,
+    gcTime: 0,
     refetchOnMount: 'always',
     staleTime: 10_000,
     refetchInterval: enabled ? REFRESH_MS : false,
@@ -50,6 +52,7 @@ export function useOwnerInvitations(enabled: boolean) {
     queryKey: ownerOnboardingKeys.invitations,
     queryFn: () => ownerOnboardingApi.listInvitations(),
     enabled,
+    gcTime: 0,
     refetchOnMount: 'always',
     staleTime: 10_000,
     refetchInterval: enabled ? REFRESH_MS : false,

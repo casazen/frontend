@@ -235,15 +235,18 @@ export function OwnerInvitationPanel({ report }: OwnerInvitationPanelProps) {
               <li key={owner.ownerId} className="flex min-w-0 flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-invitation-row" data-state={state}>
                 <div className="flex min-w-0 items-start gap-3">
                   {invitable ? (
-                    <Checkbox
-                      id={checkId}
-                      className="mt-1 size-5"
-                      checked={selected.has(owner.ownerId)}
-                      disabled={busy}
-                      onCheckedChange={(checked) => toggle(owner.ownerId, checked === true)}
-                      aria-label={t('ownerOnboarding.invitations.select', { name: owner.displayName })}
-                      data-testid="owner-invitation-select"
-                    />
+                    // The box is small: the label around it is the touch target (44 px), and clicking it ticks the box.
+                    <label htmlFor={checkId} className="-m-2.5 flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                      <Checkbox
+                        id={checkId}
+                        className="size-5"
+                        checked={selected.has(owner.ownerId)}
+                        disabled={busy}
+                        onCheckedChange={(checked) => toggle(owner.ownerId, checked === true)}
+                        aria-label={t('ownerOnboarding.invitations.select', { name: owner.displayName })}
+                        data-testid="owner-invitation-select"
+                      />
+                    </label>
                   ) : null}
                   <div className="min-w-0 space-y-1">
                     <p className="break-words text-sm font-semibold">{owner.displayName}</p>
