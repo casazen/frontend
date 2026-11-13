@@ -74,4 +74,16 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/onboarding/integration-settings-page')).IntegrationSettingsPage }),
   },
+  {
+    // The bulk configuration (E10/F03/US03/T02, NF-105, ONB-02): an agency with many properties applies one choice to all of them or to a selection, fills the
+    // data that changes per property from a file, follows how many are ready and activates a pilot group first. In no menu: the plan leads here when the agency
+    // has more than 10 properties. The organization administrator's page (`orgBillingAdmin`: the server asks `OrgBillingAdmin`): anyone else who opens the
+    // address reads who manages it and no request is sent.
+    path: '/app/short-rent/onboarding/bulk',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    component: async () => ({ default: (await import('@/features/onboarding/onboarding-bulk-page')).OnboardingBulkPage }),
+  },
 ];

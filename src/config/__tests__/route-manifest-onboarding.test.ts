@@ -153,6 +153,35 @@ describe('route manifest: the integration settings (E10/F03/US03/T01)', () => {
   });
 });
 
+describe('route manifest: the bulk configuration (E10/F03/US03/T02)', () => {
+  const BULK_PATH = '/app/short-rent/onboarding/bulk';
+  const bulk = ROUTE_MANIFEST.find((candidate) => candidate.path === BULK_PATH);
+
+  it('RouteManifest_TheBulkPage_IsOnItsRouteBehindTheFlagInNoMenuAndForTheOrganizationAdministrator', () => {
+    expect(bulk?.context).toBe('short-rent');
+    expect(bulk?.featureFlag).toBe('octorateOnboarding');
+    expect(bulk?.requiredPermissions).toEqual([]);
+    expect(bulk?.orgBillingAdmin).toBe(true);
+    expect(bulk?.navPlacement).toBeUndefined();
+    expect(bulk?.navParent).toBeUndefined();
+    expect(bulk?.navKey).toBeUndefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === BULK_PATH)).toHaveLength(1);
+    expect(bulk && isEntryFeatureEnabled(bulk, DEFAULT_FEATURE_FLAGS)).toBe(false);
+    expect(bulk && isEntryFeatureEnabled(bulk, flagOn)).toBe(true);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS, flagOn]) {
+      expect(getVisibleNavEntries('short-rent', allowAll, features).map((candidate) => candidate.path)).not.toContain(BULK_PATH);
+      expect(getSecondaryNavEntries('short-rent', allowAll, features).map((candidate) => candidate.path)).not.toContain(BULK_PATH);
+    }
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheBulkPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await bulk?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
 describe('feature flag octorateOnboarding (mirror of the backend Features:OctorateOnboarding)', () => {
   it('FeatureFlags_OctorateOnboarding_IsOffByDefaultAndWhileTheFlagsAreNotLoaded', () => {
     expect(DEFAULT_FEATURE_FLAGS.octorateOnboarding).toBe(false);
