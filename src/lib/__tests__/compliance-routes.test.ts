@@ -47,8 +47,8 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   // CHK-12 (NF-52): without a month the archive opens on the kind and the property only.
   VerifyIdentity: `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`,
   UploadAlloggiatiReceipt: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
-  // The section of the property page that tells the police send (E03/F03/US02/T01).
-  ActivateOctorateSend: `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`,
+  // The wizard that activates the police send of the property (E03/F01/US02/T02); who may only read the property is led to its section (E03/F03/US02/T01).
+  ActivateOctorateSend: `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`,
   SendAlloggiatiManually: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   UploadIstatProof: `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`,
   EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
@@ -192,6 +192,8 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
       `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-09`,
     );
     expect(complianceActionRoute(itemFor('ActivateOctorateSend'), propertyOnly)).toBe(EXPECTED.ActivateOctorateSend);
+    // The wizard changes the sender (`property.write`): who may only read the property finds the section that tells it, never a page that would refuse them.
+    expect(complianceActionRoute(itemFor('ActivateOctorateSend'), permissions(['property.read']))).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
   });
 
   it('complianceActionRoute_PropertyItemWithoutItsProperty_HasNoLink', () => {
@@ -200,7 +202,7 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
   });
 });
 
-// A card on the page of the property must not offer a button that opens the page it is on (the tourist tax rate leads there; the police send opens its section).
+// A card on the page of the property must not offer a button that opens the page it is on (the tourist tax rate leads there; the police send opens its wizard, or its section for who may only read).
 describe('isCurrentAddress', () => {
   const propertyPage = `/app/short-rent/properties/${PROPERTY_ID}`;
 
@@ -213,8 +215,18 @@ describe('isCurrentAddress', () => {
     expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(true);
   });
 
-  it('isCurrentAddress_ActivateOctorateSend_IsSomewhereToGoUntilTheSectionIsOpen', () => {
+  it('isCurrentAddress_ActivateOctorateSend_IsTheWizardAndNeverThePageOfThePropertyTheCardIsOn', () => {
     const address = complianceActionRoute(itemFor('ActivateOctorateSend'))!;
+
+    expect(address).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    // The card sits on the page of the property: the wizard is another page, so the button is offered whatever the tab is.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?section=connection-health' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: '/app/short-rent/compliance/sender', search: `?property=${PROPERTY_ID}` })).toBe(true);
+  });
+
+  it('isCurrentAddress_ActivateOctorateSendForWhoMayOnlyRead_IsSomewhereToGoUntilTheSectionIsOpen', () => {
+    const address = complianceActionRoute(itemFor('ActivateOctorateSend'), permissions(['property.read']))!;
 
     expect(address).toBe(`${propertyPage}?section=connection-health`);
     // On the plain page the section is a place to go to: the button is offered. Once it is in the address there is nothing left to open.

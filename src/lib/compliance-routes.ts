@@ -103,10 +103,13 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // The send of the channel manager is the property's: its page, on the section that tells who sends, whether it works and what to do (E03/F03/US02/T01).
+  // The send of the channel manager is the property's: the wizard that activates it (who sends, the passage on the panel, the connection test; E03/F01/US02/T02), opened for
+  // the property of the item. Whoever may not change the sender (`property.write`) is led to the section of the property page that tells who sends, whether it works and
+  // what to do (E03/F03/US02/T01): the page asks `property.read` only.
   ActivateOctorateSend: {
     target: 'property',
-    route: { path: '/app/short-rent/properties/:id', query: { section: CONNECTION_HEALTH_SECTION } },
+    route: { path: '/app/short-rent/compliance/sender', query: { property: true } },
+    fallback: { path: '/app/short-rent/properties/:id', query: { section: CONNECTION_HEALTH_SECTION } },
     write: 'property.write',
   },
   // A stay the channel manager does not send by itself: the same section as every Alloggiati to send by hand (CO-11).
@@ -183,10 +186,11 @@ export function complianceActionRoute(
 
 /**
  * Whether an address of `complianceActionRoute` is the one the person is already at: the same page, with every parameter it carries (the tab, the
- * filters) already in the address of the page. The police send and the tourist tax rate of a property lead to the page of the property, and a card on
+ * filters) already in the address of the page. The tourist tax rate of a property leads to the page of the property, and a card on
  * that page (it sits above every tab) that offered them would offer a button that opens the page it is on and changes nothing: the card leaves the
- * button out, and still says what is wrong and why. The police send opens the section of its connection health (`?section=connection-health`), which is
- * not the address the person is on until they have opened it; the tourist tax rate has no page where it is entered yet, so its button stays out.
+ * button out, and still says what is wrong and why. The police send opens the wizard that activates it, which is another page (for who may only read the property
+ * it opens the section of its connection health, `?section=connection-health`, which is
+ * not the address the person is on until they have opened it); the tourist tax rate has no page where it is entered yet, so its button stays out.
  */
 export function isCurrentAddress(address: string, location: { pathname: string; search: string }): boolean {
   const [path, query = ''] = address.split('?');

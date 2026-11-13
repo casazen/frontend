@@ -669,6 +669,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Attiva l'invio automatico alla Polizia» (E03/F01/US02/T02, NF-42): the wizard that sets who sends the guest data to the police and to ISTAT for one property
+    // (`?property=<id>`), with the passage on the panel of the channel manager and the connection test. In no menu: the panel «Invio a Polizia e ISTAT» of the property page
+    // (its «Attiva o ricollega» appears because this route exists), the cockpit of the adempimenti, the «Da fare» of the activation and the onboarding lead here. It asks what
+    // changing the sender asks, `property.write` (the endpoints it calls ask it); the property is read with `property.read`. No flag: the channel manager is offered only where
+    // the server says it can send, so with the connector off the wizard has only the other ways.
+    path: '/app/short-rent/compliance/sender',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/compliance/sender-wizard/sender-wizard')).SenderWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/bookings/:id',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

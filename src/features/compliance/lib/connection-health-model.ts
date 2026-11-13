@@ -3,7 +3,7 @@ import type { ConnectionHealthLine, ConnectionHealthSender, ConnectionHealthStat
 
 /**
  * The section of the page of the property where the police and ISTAT send is told (`?section=connection-health`): the panel «Invio a Polizia e ISTAT».
- * The button `ActivateOctorateSend` of the cockpit and of the To do opens the page on it.
+ * The button `ActivateOctorateSend` of the cockpit and of the To do opens the wizard that activates the send (`SENDER_WIZARD_PATH`) and, for who may not open it, the page on this section.
  */
 export const CONNECTION_HEALTH_SECTION = 'connection-health';
 

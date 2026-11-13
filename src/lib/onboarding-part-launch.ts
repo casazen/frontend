@@ -19,6 +19,11 @@ export type LaunchFocus = 'sender' | 'cin' | 'taxRate';
 export interface LaunchCandidate {
   path: string;
   step?: string;
+  /**
+   * The query parameter that carries the property into a page that is not «of one property» by its path (`:id`): the sender wizard reads `?property=<id>`. It is written
+   * when the caller names a property; a caller that names none opens the page without it, and the page asks which property.
+   */
+  propertyParam?: string;
 }
 
 interface LaunchEntry {
@@ -35,7 +40,7 @@ const CONNECT = '/app/short-rent/integrations/octorate';
 const ACTIVATION = '/app/short-rent/properties/:id/activation';
 
 /**
- * The registry. The pages the other epics still have to register (the sender wizard of E03, the inbox of E05) come FIRST in their lists: while they
+ * The registry. The pages the other epics still have to register (the inbox of E05; the sender wizard of E03 is registered now) come FIRST in their lists: while they
  * are not in the manifest the target falls back to the page that exists, and the day they are registered they win by themselves. The paths are the
  * ones the lead aligns with their tasks (epic risks); `onboarding-part-launch.test.ts` keeps the ones that exist today in the manifest.
  */
@@ -49,7 +54,11 @@ const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
     property: [{ path: ACTIVATION }],
     general: [{ path: '/app/short-rent/compliance' }],
     focus: {
-      sender: { general: [{ path: '/app/short-rent/compliance/sender' }, { path: '/app/short-rent/compliance' }], property: [{ path: '/app/short-rent/compliance/sender' }, { path: ACTIVATION }] },
+      // The sender wizard of E03 (E03/F01/US02/T02) is registered: it wins for a property (`?property=<id>`) and, with none named, opens on the choice of the property.
+      sender: {
+        general: [{ path: '/app/short-rent/compliance/sender' }, { path: '/app/short-rent/compliance' }],
+        property: [{ path: '/app/short-rent/compliance/sender', propertyParam: 'property' }, { path: ACTIVATION }],
+      },
       cin: { general: [{ path: '/app/short-rent/compliance/cin' }], property: [{ path: ACTIVATION, step: 'cin' }] },
       taxRate: { general: [{ path: '/app/short-rent/reports/tourist-tax' }], property: [{ path: ACTIVATION, step: 'tourist-tax' }] },
     },
@@ -81,7 +90,10 @@ export function resolveCandidates(
     // A page of one property needs the property; without it the page is not a candidate.
     if (candidate.path.includes(':id') && !propertyId) continue;
     const path = candidate.path.includes(':id') ? generatePath(candidate.path, { id: propertyId ?? '' }) : candidate.path;
-    return { entry, to: candidate.step ? `${path}?step=${encodeURIComponent(candidate.step)}` : path };
+    const query: string[] = [];
+    if (candidate.propertyParam && propertyId) query.push(`${candidate.propertyParam}=${encodeURIComponent(propertyId)}`);
+    if (candidate.step) query.push(`step=${encodeURIComponent(candidate.step)}`);
+    return { entry, to: query.length > 0 ? `${path}?${query.join('&')}` : path };
   }
   return null;
 }

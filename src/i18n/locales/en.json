@@ -4754,6 +4754,254 @@
       },
       "title": "Identification and access"
     },
+    "sender": {
+      "choice": {
+        "now": "Now: {{sender}}",
+        "legend": "Who sends the guests' data to the police?",
+        "notAvailable": "Not available yet.",
+        "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
+        "options": {
+          "ChannelManager": {
+            "title": "Your channel manager",
+            "description": "It sends the guests' data every day. It is the recommended choice when the property is connected."
+          },
+          "CasaZen": {
+            "title": "CasaZen",
+            "description": "CasaZen transmits the data with the credentials of your portal."
+          },
+          "Manual": {
+            "title": "I do it myself, with the file",
+            "description": "You download the file of each stay and upload it yourself on the police portal."
+          }
+        }
+      },
+      "confirmFirst": {
+        "text": "Confirm who sends first: this step works on the sender in effect.",
+        "go": "Go to the summary"
+      },
+      "credentials": {
+        "whyCasaZen": "CasaZen needs the credentials of the Alloggiati Web portal to send the data.",
+        "whyChannelManager": "Your channel manager sends without them. If you save them, CasaZen can download the receipts by itself: it is optional, but recommended.",
+        "saved": "Credentials saved.",
+        "notSaved": "Credentials not saved yet."
+      },
+      "delegation": {
+        "title": "You delegate the transmission",
+        "intro": "With an automatic sender you delegate the transmission of the data to the police to the service you choose. The responsibility for the communications and the accuracy of the data stay with you.",
+        "textLabel": "Text of the delegation",
+        "consent": "I have read the text and I delegate the transmission of the guests' data.",
+        "accepted": "You have already delegated the transmission: there is no need to do it again.",
+        "unknownVersion": "The text of the delegation has been updated and this page does not show it yet: reload the page to read it before giving your consent.",
+        "text": "Delegation of the transmission of the guest registration data\n\n1. On behalf of the organization that manages the property, I entrust CasaZen and the sending service I chose for this property with the daily transmission of the guests' data to the services of the State Police (Alloggiati Web) and, where required, to the regional statistics (ISTAT).\n\n2. I remain responsible for the communications and for the accuracy of the data: CasaZen and the chosen service act only to transmit them, following my instructions.\n\n3. I can change who sends, or go back to sending the data myself with the file, at any time from this procedure.\n\n4. The guests' data is processed according to the CasaZen privacy notice."
+      },
+      "description": "Choose who sends the guests' data to the State Police every day and check that it works.",
+      "done": {
+        "loading": "Reading the state of the sender…",
+        "readError": "I cannot read the state of the sender.",
+        "toCompliance": "Go to the to-do of compliance",
+        "toProperty": "Open the property",
+        "toState": "Check the state of the sender",
+        "active": {
+          "title": "Automatic sending is active",
+          "lead": "Your channel manager confirms that it sends the data to the police.",
+          "points": {
+            "send": "Every day your channel manager sends the guests' data to the police.",
+            "istat": "The same sender handles the regional statistics (ISTAT), where required."
+          }
+        },
+        "declared": {
+          "title": "You declared sending active",
+          "lead": "The state is «Declared active»: it is your word, CasaZen cannot verify it.",
+          "points": {
+            "word": "Your channel manager has not verified it yet.",
+            "check": "Check the state whenever you like: if your channel manager confirms it, it becomes «Active»."
+          }
+        },
+        "unverified": {
+          "title": "Sender chosen, not verified yet",
+          "lead": "You chose automatic sending, but we do not know yet whether it works.",
+          "points": {
+            "unknown": "Until your channel manager confirms it (or you declare that you saw «Activated»), sending is not considered active.",
+            "check": "Come back and check when you have finished on the panel."
+          }
+        },
+        "inactive": {
+          "title": "Automatic sending is not active yet",
+          "lead": "Your channel manager says it is not sending.",
+          "points": {
+            "off": "For now the data does not leave by itself: you have to send it.",
+            "fix": "Resume the step from the panel and then run the check again."
+          }
+        },
+        "manual": {
+          "title": "You will send the data to the police",
+          "lead": "There is no automatic sending, so there is nothing to check.",
+          "points": {
+            "file": "For each stay you download the file and upload it on the police portal.",
+            "reminders": "CasaZen reminds you of the deadlines among the to-do items of compliance."
+          }
+        },
+        "notAvailable": {
+          "title": "Sending with CasaZen is not available yet",
+          "lead": "This option is not active in this version.",
+          "points": {
+            "soon": "For now you send the data yourself, or you choose your channel manager."
+          }
+        }
+      },
+      "errors": {
+        "chooseOne": "Choose who sends the data.",
+        "consentRequired": "An automatic sender needs the consent to the delegation: go back to «Who sends» and give it.",
+        "confirmRequired": "Confirm the change before you continue.",
+        "switchFailed": "The sender could not be changed: nothing has changed. Try again.",
+        "confirmationRequired": "The sender in effect changed in the meantime: check the summary and confirm again.",
+        "delegationRequired": "An automatic sender needs the consent to the delegation: go back to «Who sends» and give it.",
+        "delegationOutdated": "The text of the delegation has changed: go back to «Who sends», read it and confirm again.",
+        "casaZenNotAvailable": "Sending with CasaZen is not available yet: choose another option.",
+        "channelManagerNotAvailable": "Your channel manager cannot send for this property: connect it first, or choose another option.",
+        "notApplicable": "There is no sender to choose for this property.",
+        "changedConcurrently": "Someone changed who sends while you were here: check the summary again."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "Saved: pick up whenever you like."
+      },
+      "finish": "Confirm and finish",
+      "help": {
+        "button": "Help",
+        "title": "We are here to help",
+        "supportWithEmail": "If you get stuck, write to us at",
+        "supportGeneric": "If you get stuck, write to CasaZen support: what you have done stays saved.",
+        "choice": "If the property is connected to your channel manager, it is the most comfortable choice: it sends every day. If you prefer to do it yourself, choose the file.",
+        "summary": "Here you see what will change before it changes. Only when you confirm does CasaZen update who sends.",
+        "credentials": "These are the credentials of the police portal (Alloggiati Web). You save them once and they are never shown again.",
+        "panel": "This step is done on the panel of your channel manager and CasaZen checks the result. You can leave and come back: the step stays where it is.",
+        "test": "The check asks your channel manager whether sending is active. If it does not say, you can declare that you saw «Activated»: it stays your declaration."
+      },
+      "loadError": "I cannot read who sends the data of this property.",
+      "loading": "Reading how you send the data today…",
+      "noPermission": {
+        "title": "You cannot change who sends",
+        "text": "Changing the sending to the police needs the permission to edit the properties. Ask whoever manages the organization.",
+        "back": "See the state of the sender"
+      },
+      "notApplicable": {
+        "title": "There is no sender to choose for this property",
+        "text": "The property is outside Italy: the communication to the Italian police is not needed.",
+        "back": "Back to the property"
+      },
+      "notFound": {
+        "title": "Property not found",
+        "text": "This property does not exist or is not one of yours. Check the address or go back to the list.",
+        "back": "Back to the properties"
+      },
+      "panel": {
+        "moduleNote": "To use automatic sending your channel manager may require its management module, which is usually paid: check your subscription before you start.",
+        "unavailable": "We cannot guide you step by step here: follow these instructions on the panel of your channel manager, then go to the check."
+      },
+      "pick": {
+        "title": "Choose the property",
+        "loading": "Loading your properties…",
+        "loadError": "I cannot load your properties.",
+        "emptyTitle": "You have no properties yet",
+        "emptyText": "The sending to the police is chosen for each property: add the first one.",
+        "emptyAction": "Go to the properties"
+      },
+      "stale": {
+        "text": "We could not refresh the state: what you see below may be out of date.",
+        "retry": "Try again"
+      },
+      "state": {
+        "active": "Active",
+        "declared": "Declared active",
+        "unverified": "Not verified",
+        "inactive": "Not active",
+        "manual": "Sent by hand",
+        "notAvailable": "Not available yet"
+      },
+      "steps": {
+        "choice": {
+          "label": "Who sends",
+          "title": "Who sends the data to the police?",
+          "purpose": "Choose who transmits the guests' data. You can change your mind whenever you like."
+        },
+        "summary": {
+          "label": "Summary",
+          "title": "Check before it changes",
+          "purpose": "Nothing changes until you confirm.",
+          "next": "Confirm and continue"
+        },
+        "credentials": {
+          "label": "Credentials",
+          "title": "Portal credentials (optional)",
+          "purpose": "They are needed if you want CasaZen to download the receipts. They are never shown again."
+        },
+        "panel": {
+          "label": "Panel",
+          "title": "Connect the sending on your channel manager",
+          "purpose": "This step is done on the panel of your channel manager: CasaZen guides you and checks the result.",
+          "next": "Go to the check"
+        },
+        "test": {
+          "label": "Check",
+          "title": "Let us check that it works",
+          "purpose": "A quick check: the state is «Active» only if your channel manager confirms it."
+        }
+      },
+      "summary": {
+        "who": "Who sends",
+        "istat": "ISTAT statistics",
+        "istatFollows": "The same service sends them, where required",
+        "delegation": {
+          "label": "Delegation of the transmission",
+          "accepted": "Already accepted",
+          "toRecord": "Recorded with your confirmation",
+          "notNeeded": "Not needed: you send the data"
+        },
+        "switch": {
+          "title": "What changes",
+          "automaticToAutomatic": "The other automatic sender will be switched off: from now on only the service you chose sends.",
+          "manualToAutomatic": "From now on the service you chose sends the data automatically: you no longer have to send it by hand.",
+          "toManual": "Automatic sending will be switched off: from now on you send the data yourself, with the file.",
+          "confirm": "I understand what changes and I confirm.",
+          "same": "This is already the sender in effect: nothing changes."
+        }
+      },
+      "test": {
+        "run": "Check now",
+        "again": "Check again",
+        "lastRun": "Last automatic send: {{when}}",
+        "error": "We could not run the check right now, so we do not know whether sending works. Try again.",
+        "declareError": "Your answer could not be recorded. Try again.",
+        "outcome": {
+          "active": "Your channel manager confirms that automatic sending is active.",
+          "declared": "You said you saw «Activated». CasaZen cannot verify it: the state stays «Declared active».",
+          "unverified": "We do not know yet whether sending works. Run the check to see what your channel manager answers.",
+          "inactive": "Your channel manager says automatic sending is not active.",
+          "manual": "With sending by hand there is nothing to check.",
+          "notAvailable": "This sender is not available yet: we cannot check it."
+        },
+        "reason": {
+          "octorate_not_connected": "Your channel manager is not connected to this property.",
+          "octorate_police_account_invalid": "The police credentials on the panel of your channel manager are not valid.",
+          "octorate_police_autorun_off": "On the panel of your channel manager the daily automatic sending is off.",
+          "octorate_police_not_exposed": "Your channel manager does not say whether sending is active: you can declare it yourself, but it stays your declaration.",
+          "octorate_unavailable": "Your channel manager is not answering right now: try again shortly.",
+          "sender_casazen_not_available": "Sending with CasaZen is not available yet."
+        },
+        "ask": {
+          "title": "Did you see the state «Activated»?",
+          "text": "Check on the panel of your channel manager. If you see it, say so here: it will be recorded as «Declared active».",
+          "yes": "Yes, I saw it",
+          "no": "No, back to the panel"
+        },
+        "fix": {
+          "panel": "Back to the panel",
+          "choice": "Change who sends"
+        }
+      },
+      "title": "Activate automatic sending to the police"
+    },
     "properties": {
       "openWizard": "Activation wizard",
       "publishBlocked": "Complete the activation wizard before publishing the property."
