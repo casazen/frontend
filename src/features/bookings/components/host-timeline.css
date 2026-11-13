@@ -231,12 +231,13 @@
   border-right: 1px solid var(--color-border);
 }
 
-/* The days of a row are controls where they can be selected (E08/F05/US03/T02): a finger needs 44 px, the keyboard a visible place. */
-.host-timeline__cell[role='gridcell'] {
+/* The days of a row are controls where they can be selected (E08/F05/US03/T02): a finger needs 44 px, the keyboard a visible place. A cell that is only named for a screen reader
+ * (no tabindex) is not a control. */
+.host-timeline__cell[role='gridcell'][tabindex] {
   cursor: pointer;
 }
 
-.host-timeline__cell[role='gridcell']:focus-visible {
+.host-timeline__cell[role='gridcell'][tabindex]:focus-visible {
   z-index: 1;
   outline: 2px solid var(--color-ring);
   outline-offset: -2px;

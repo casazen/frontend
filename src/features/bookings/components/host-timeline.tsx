@@ -243,6 +243,10 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
           {rows.map(({ property, bars, lanes, chips, slots }) => {
             const paused = property.status === 'Paused';
             const rowStyle = { '--lanes': lanes, '--slots': slots } as CSSProperties;
+            // The days of a row are told to a screen reader whenever they say something: they can be selected (a control named in words) or the row has its day layer (a cell named in
+            // words, no control: a caller who may read the prices but not change them still hears what the eyes read). Without either they are decoration.
+            const rowLayer = dayLayer?.get(property.id);
+            const described = selectable || rowLayer !== undefined;
             return (
               <div
                 key={property.id}
@@ -265,15 +269,15 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
                 <div className="host-timeline__track">
                   <div
                     className="host-timeline__cells"
-                    role={selectable ? 'grid' : undefined}
-                    aria-label={selectable ? t('booking.calendar.day.gridLabel', { property: property.name }) : undefined}
-                    aria-hidden={selectable ? undefined : true}
+                    role={described ? 'grid' : undefined}
+                    aria-label={described ? t('booking.calendar.day.gridLabel', { property: property.name }) : undefined}
+                    aria-hidden={described ? undefined : true}
                     data-testid="timeline-cells"
                   >
                     {/* A row of the grid that takes no box of its own: the cells keep the columns of the days. */}
-                    <div role={selectable ? 'row' : undefined} className="host-timeline__cells-row">
+                    <div role={described ? 'row' : undefined} className="host-timeline__cells-row">
                       {days.map((day) => {
-                        const layer = dayLayer?.get(property.id);
+                        const layer = rowLayer;
                         const info = layer?.days.get(day);
                         const classes = cn(
                           'host-timeline__cell',
@@ -284,7 +288,18 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
                         );
                         const content = layer && showsPrice(info, day, today) ? <DayCellContent info={info} currency={layer.currency} zoom={days.length} /> : null;
                         if (!selectable) {
-                          return (
+                          return described ? (
+                            <div
+                              key={day}
+                              role="gridcell"
+                              className={classes}
+                              data-testid="timeline-cell"
+                              data-date={day}
+                              aria-label={dayLabel({ date: day, propertyName: property.name, today, language: i18n.language, currency: layer?.currency, info }, t)}
+                            >
+                              {content}
+                            </div>
+                          ) : (
                             <span key={day} className={classes} data-testid="timeline-cell" data-date={day}>
                               {content}
                             </span>

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { expectNoAxeViolations } from '@/test/axe';
 import type { CalendarDayInfo, CalendarDaysResponse } from '@/types/calendar-days.types';
 import type { HostCalendarProperty, HostCalendarResponse } from '@/types/host-calendar.types';
 import { toDayLayer } from '../../lib/day-layer';
@@ -149,6 +150,20 @@ describe('the Timeline with the day layer (E08/F05/US03/T01)', () => {
     expect(screen.getByTestId('timeline-cells')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('HostTimeline_ACallerWhoMayReadButNotChangeTheDays_HearsWhatTheEyesRead_AndTheCellsAreNoControls', async () => {
+    // The day layer is there and nothing can be selected (no `onPressDay`): each day is a cell named in words, never a control, and the row is not hidden from a screen reader.
+    const { container } = renderTimeline();
+
+    expect(screen.getByRole('grid', { name: 'Giorni di Casa Mare' })).not.toHaveAttribute('aria-hidden');
+    expect(screen.getAllByRole('gridcell')).toHaveLength(DAYS.length);
+    expect((cellOf('2026-09-13').getAttribute('aria-label') ?? '').replace(/\s/g, ' ')).toBe('13 settembre, Casa Mare, 120,50 euro, arrivi chiusi');
+    expect((cellOf('2026-09-12').getAttribute('aria-label') ?? '').replace(/\s/g, ' ')).toBe('12 settembre, Casa Mare, 120 euro, minimo 2 notti, regola propria');
+    expect(cellOf('2026-09-10')).toHaveAttribute('aria-label', '10 settembre, Casa Mare, giorno passato');
+    expect(cellOf('2026-09-14')).toHaveAttribute('aria-label', '14 settembre, Casa Mare, notte occupata');
+    for (const cell of screen.getAllByRole('gridcell')) expect(cell).not.toHaveAttribute('tabindex');
+    await expectNoAxeViolations(container);
+  });
+
   it.each(['Expedia', 'Vrbo', 'TripAdvisor', 'Agoda'] as const)('HostTimeline_BookingFrom_%s_ShowsItsOwnIconAndName', (channel) => {
     renderTimeline({}, channel);
 
@@ -175,6 +190,12 @@ describe('the days of the Timeline as controls (E08/F05/US03/T02)', () => {
     expect((cell.getAttribute('aria-label') ?? '').replace(/\s/g, ' ')).toBe('13 settembre, Casa Mare, 120,50 euro, arrivi chiusi');
     expect(cellOf('2026-09-10')).toHaveAttribute('aria-label', '10 settembre, Casa Mare, giorno passato');
     expect(cellOf('2026-09-14')).toHaveAttribute('aria-label', '14 settembre, Casa Mare, notte occupata');
+  });
+
+  it('HostTimeline_DaysThatCanBeSelected_HaveNoAxeViolation', async () => {
+    const { container } = renderTimeline({ onPressDay: vi.fn(), selection: startSelection('p1', '2026-09-12') });
+
+    await expectNoAxeViolations(container);
   });
 
   it('HostTimeline_AClickOrEnterOrSpace_PressesTheDay_AndShiftExtends', () => {
