@@ -13287,7 +13287,7 @@
         "usage": "Quota del channel manager usata: {{percent}}% ({{used}} su {{limit}} unità).",
         "warn": "La quota del channel manager è quasi esaurita: gli aggiornamenti potrebbero fermarsi finché non torna disponibile."
       },
-      "refresh": "Controlla di nuovo",
+      "refresh": "Aggiorna",
       "title": "Stato dei collegamenti",
       "toFixNoDetail": "Questa connessione va corretta.",
       "waiting_one": "{{count}} integrazione in attesa di essere completata.",

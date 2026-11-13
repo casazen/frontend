@@ -13287,7 +13287,7 @@
         "usage": "Channel manager quota used: {{percent}}% ({{used}} of {{limit}} units).",
         "warn": "The channel manager quota is almost used up: updates may stop until it is available again."
       },
-      "refresh": "Check again",
+      "refresh": "Refresh",
       "title": "State of the connections",
       "toFixNoDetail": "This connection needs fixing.",
       "waiting_one": "{{count}} integration is waiting to be completed.",

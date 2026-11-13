@@ -61,6 +61,12 @@ describe('what the words promise', () => {
     for (const text of [label, units, unknown, usage, warn, locale.marketplace.mine.card.quotaWarn]) expect(text).toMatch(/channel manager/i);
   });
 
+  it.each(LOCALES)('$language: the button of the panel only refreshes: it does not promise a new check on the channel manager', ({ locale }) => {
+    // «Controlla di nuovo» / «Check again» is what the app says where the channel manager is asked again; the panel only reads the rows of CasaZen (the sync is a job of its own).
+    expect(locale.marketplace.health.refresh).not.toMatch(/controlla|check/i);
+    expect(locale.marketplace.health.description).toMatch(/ultimo controllo|last check/i);
+  });
+
   it.each(LOCALES)('$language: «declared» never says «verified», and «verified» is a line of its own', ({ locale }) => {
     const { declared, declaredNoDate, verified } = locale.marketplace.mine.card;
 
