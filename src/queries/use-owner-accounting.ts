@@ -159,10 +159,11 @@ export function useAccountingPolicies(enabled = true) {
 }
 
 /** The obligations of the year against the F24 of each month and the annual data. */
-export function useTaxReconciliation(year: number) {
+export function useTaxReconciliation(year: number, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.taxReconciliation(year),
     queryFn: () => ownerAccountingApi.getTaxReconciliation(year),
+    enabled,
     refetchOnMount: 'always' as const,
   });
 }

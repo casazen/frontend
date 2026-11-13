@@ -152,12 +152,57 @@ describe('route-manifest main menu (UI-04a)', () => {
   // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
   const AGENCY_PAGES: [AppContextKey, string][] = [
     ['short-rent', '/app/short-rent/trusted-suppliers'],
+    ['account', '/app/account/statements'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
     ['account', '/app/account/owner-close'],
-    ['admin', '/app/admin/statements'],
     ['admin', '/app/admin/activities'],
   ];
+
+  // E06/F05/US01/T02 (NF-25): the pages of the agency's money chain are in the manifest, so they open from the Amministrazione. A page that is not in it (the
+  // statements were registered in the staff console, whose permission no agency role holds) fails here: `entryOf` throws for a path that is missing, and the
+  // component each entry opens is checked by name, so an entry cannot point at another page.
+  const MONEY_PAGES = [
+    ['/app/account/statements', 'StatementsPage'],
+    ['/app/account/withholding', 'WithholdingPage'],
+    ['/app/account/wire-transfers', 'WireTransferPage'],
+  ] as const;
+
+  it.each(MONEY_PAGES)('has %s in the Amministrazione, behind the plan, for the finance administrators, and it opens %s', async (path, componentName) => {
+    const entry = entryOf(path);
+    expect(entry.context).toBe('account');
+    expect(entry.featureFlag).toBe('agencyTier');
+    // The backend asks `agency.*` permissions that follow the org role (owner and administrators): they are not among the context permissions, so the entry is
+    // the org billing administrator's, as the other pages of the agency's money are.
+    expect(entry.orgBillingAdmin).toBe(true);
+    expect(entry.requiredPermissions).toEqual([]);
+    expect(entry.navPlacement).toBe('primary');
+    expect(entry.navGroup).toBe('account');
+    expect(entry.navKey).toBeTruthy();
+    // Loading the page module pulls its whole graph: more than the default 5 s on a loaded runner.
+    expect((await entry.component()).default.name).toBe(componentName);
+  }, 30_000);
+
+  it('shows the statements next to the other two pages of the money chain, to the finance administrator of an agency and to nobody else', () => {
+    const on = { agencyTier: true };
+    const primary = paths(getPrimaryNavEntries('account', allowAll, on));
+    expect(primary).toEqual(expect.arrayContaining(['/app/account/statements', '/app/account/withholding', '/app/account/wire-transfers']));
+    expect(primary.indexOf('/app/account/statements')).toBeLessThan(primary.indexOf('/app/account/withholding'));
+    expect(primary.indexOf('/app/account/withholding')).toBeLessThan(primary.indexOf('/app/account/wire-transfers'));
+    expect(primary.length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
+    // A member of the org that is not its owner or an administrator (accountant, property manager, collaborator) has no entry: the endpoints are not theirs.
+    expect(paths(getPrimaryNavEntries('account', notBillingAdmin, on))).not.toContain('/app/account/statements');
+    // Plan off: no entry, whoever the person is.
+    expect(paths(getPrimaryNavEntries('account', allowAll, {}))).not.toContain('/app/account/statements');
+  });
+
+  it('keeps /app/admin/statements as an old address that opens the statements of the Amministrazione, and out of the staff console', () => {
+    expect(ROUTE_MANIFEST.some((entry) => entry.path === '/app/admin/statements')).toBe(false);
+    expect(entryOf('/app/account/statements').legacyPaths).toContain('/app/admin/statements');
+    expect(paths(getNavMatchEntries('admin', allowAll, { agencyTier: true }))).not.toContain('/app/admin/statements');
+    // No other entry claims the old address.
+    expect(ROUTE_MANIFEST.filter((entry) => entry.legacyPaths?.includes('/app/admin/statements'))).toHaveLength(1);
+  });
 
   it('keeps the pages of the owner accounting behind the agency plan and for the finance administrators of the org', () => {
     // E06/F05/US02/T04: the endpoints they read answer only an org on the agency plan and the owner and the administrators (`agency.*` permissions).
@@ -307,12 +352,13 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/settings/site-documents',
       '/app/short-rent/settings/domain',
     ],
-    // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3.
+    // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3. Documenti fiscali (E06/F03/US04/T01, behind the flags of the documents) is next to Regime fiscale, at 3.5.
     '/app/short-rent/payments': [
       '/app/short-rent/payments/revenue',
       '/app/short-rent/reports',
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
+      '/app/short-rent/fiscal/documents',
       '/app/short-rent/settings/payments',
     ],
     '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
@@ -322,7 +368,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
   };
-  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
+  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true, fiscalDocumentIssuance: true };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
     for (const [parent, pages] of Object.entries(SECTIONS)) {
@@ -504,7 +550,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
   });
 
   it('puts the entry a page hangs from first in its tabs, for a user who may open every page', () => {
-    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
+    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true, fiscalDocumentIssuance: true };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));
       expect(tabs[0], entry.path).toBe(entry.navParent);
