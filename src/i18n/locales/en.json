@@ -1395,6 +1395,7 @@
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateCancelFailed": "The channel manager could not cancel the booking on the channel: the booking is unchanged.",
       "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
@@ -1597,6 +1598,10 @@
       "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
       "bookingNotCheckedIn": "The check-out can be recorded only for a confirmed stay or one whose arrival was registered.",
       "bookingCheckoutTooEarly": "The check-out can be recorded from the arrival day.",
+      "bookingEditPaymentInProgress": "A payment of this booking is still being processed, or the guest still has to pay it: the price is not changed until it is closed.",
+      "bookingEditPaymentPermissionRequired": "This change moves money and needs the permission on payments: ask whoever manages the organization.",
+      "bookingSettlementFailed": "The payment of the difference did not go through, so the change was not saved. You can try again.",
+      "bookingTouristTaxUnavailable": "We cannot work out the tourist tax of the new dates, which the guest has already paid: the change was not saved.",
       "directBookingDeferredPaymentUnavailable": "Paying at the deadline is not available for these dates: the arrival is too close. Choose another payment method.",
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
@@ -1639,6 +1644,8 @@
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
       "icalBlockNotFound": "Calendar block not found.",
+      "otaBookingCancelNotAllowed": "This booking cannot be cancelled from CasaZen: it is cancelled on the channel it comes from.",
+      "otaBookingChangeNotAllowed": "This booking cannot be changed from CasaZen: it is changed on the channel it comes from.",
       "otaStayBlockNotImported": "Only a block imported from a linked OTA calendar can become a stay.",
       "otaStayBlockAlreadyConverted": "A stay was already created from this block.",
       "otaStayBlockOverlapsBooking": "The dates of the block overlap a booking already on the calendar: check the calendar.",
@@ -2654,7 +2661,66 @@
       "notFound": "Booking not found",
       "notFoundDescription": "The booking you're looking for doesn't exist.",
       "notEditable": "A cancelled booking cannot be changed.",
-      "backToBooking": "Back to the booking"
+      "backToBooking": "Back to the booking",
+      "conflict": {
+        "casazen": "CasaZen version",
+        "channelManager": "Channel manager version",
+        "description": "The change is saved in CasaZen, but the booking is different in your channel manager. Choose which version to keep: nothing is lost until you do.",
+        "keepCasazen": "Keep the CasaZen version",
+        "keepCasazenHint": "We write the CasaZen version over the one in your channel manager.",
+        "notAvailable": "not available",
+        "title": "The booking was changed in your channel manager",
+        "useChannelManager": "Use the channel-manager version",
+        "useChannelManagerHint": "The form opens with its dates and guests: you save when you decide to."
+      },
+      "review": {
+        "back": "Back",
+        "confirm": "Confirm and save",
+        "dates": "Dates",
+        "description": "Check what happens to the payments: nothing is saved until you confirm.",
+        "guests": "Guests",
+        "quoteFailed": "We cannot work out what happens to the payments. Try again.",
+        "title": "Check before saving",
+        "total": "New total"
+      },
+      "saved": {
+        "title": "Booking updated."
+      },
+      "settlement": {
+        "preview": {
+          "chargeSavedCard": "{{amount}} is charged on the guest's saved card.",
+          "noMoney": "No payment is made from here: the balance stays as agreed with the guest.",
+          "offlineRefundDue": "{{amount}} was paid outside CasaZen (cash or bank transfer): you give it back to the guest yourself.",
+          "paymentLink": "The guest receives a link to pay {{amount}}.",
+          "priceChanges": "The price goes from {{from}} to {{to}}.",
+          "priceSame": "The price does not change.",
+          "refund": "{{amount}} is refunded to the guest's card."
+        },
+        "result": {
+          "chargeSavedCard": {
+            "done": "{{amount}} charged on the guest's saved card.",
+            "pending": "The charge of {{amount}} on the guest's saved card is not confirmed yet."
+          },
+          "offlineRefundDue": "{{amount}} is still to be given back to the guest: it was paid outside CasaZen.",
+          "paymentLink": {
+            "done": "The link to pay {{amount}} was sent to the guest.",
+            "pending": "The link to pay {{amount}} has not been sent to the guest yet."
+          }
+        }
+      },
+      "sync": {
+        "checkAgain": "Check again",
+        "failed": {
+          "askAgain": "Once the problem is sorted out, try again yourself.",
+          "retrying": "We try again automatically.",
+          "title": "Saved in CasaZen, not yet in your channel manager"
+        },
+        "notAllowed": "The channel does not allow this change: nothing was sent to the channel manager.",
+        "pending": "Sending the change to your channel manager…",
+        "retry": "Retry now",
+        "retryFailed": "We could not send the change again. Try again.",
+        "waiting": "Your channel manager has not answered yet: the change is saved in CasaZen, but the sending is not finished yet."
+      }
     },
     "amountSource": {
       "ChannelManager": "Channel manager",
@@ -2848,7 +2914,45 @@
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
       },
-      "guestNotified": "The guest will get a cancellation email, without the reason."
+      "guestNotified": "The guest will get a cancellation email, without the reason.",
+      "channel": {
+        "confirm": "Ask to cancel",
+        "confirmed": "Your channel manager confirmed the cancellation.",
+        "description": "Your channel manager cancels the booking on the channel: only when it confirms does CasaZen show it as cancelled too.",
+        "noMoney": "No payment is moved from CasaZen.",
+        "refused": "The channel did not cancel it: the booking is unchanged.",
+        "submitting": "Asking to cancel…",
+        "title": "Ask your channel manager to cancel this booking"
+      },
+      "sync": {
+        "checkAgain": "Check again",
+        "conflict": "Your channel manager did not accept the cancellation: the booking changed there. The cancellation in CasaZen stands.",
+        "failed": {
+          "askAgain": "Once the problem is sorted out, try again yourself.",
+          "retrying": "We try again automatically.",
+          "title": "Cancelled in CasaZen, not yet in your channel manager"
+        },
+        "notAllowed": "The channel does not allow the cancellation from here: nothing was sent to the channel manager.",
+        "pending": "Cancelling the booking in your channel manager…",
+        "retry": "Retry now",
+        "retryFailed": "We could not send the cancellation again. Try again.",
+        "synced": "Cancelled in your channel manager too.",
+        "unconfirmed": "Your channel manager has not confirmed the cancellation yet.",
+        "waiting": "Your channel manager has not answered yet: the booking is cancelled in CasaZen, but the cancellation is not confirmed there yet.",
+        "willUpdate": "Your channel manager is updated too."
+      }
+    },
+    "changeGuidance": {
+      "cancel": {
+        "bookingCom": "To cancel this Booking.com booking, ask the guest to cancel it on Booking.com.",
+        "channel": "To cancel this {{channel}} booking, ask the guest to cancel it on {{channel}}.",
+        "default": "To cancel this booking, ask the guest to cancel it on the channel they booked through."
+      },
+      "modify": {
+        "bookingCom": "On Booking.com the guest changes the dates from the app or the extranet: ask the guest to do it there.",
+        "channel": "To change this {{channel}} booking, ask the guest to request the change on {{channel}}.",
+        "default": "To change this booking, ask the guest to request the change on the channel they booked through."
+      }
     },
     "channels": {
       "Agoda": "Agoda",
@@ -2969,6 +3073,17 @@
       "markVerified": "Mark as verified",
       "resolved": "Stay verified",
       "failed": "Could not update the stay. Try again."
+    },
+    "syncReason": {
+      "datesUnavailable": "The dates are already taken in the channel manager: check the calendar of your channels.",
+      "linkedElsewhere": "The booking in the channel manager is already linked to another CasaZen booking: check whether it is a duplicate.",
+      "notMirrored": "The property is not linked to the channel manager right now (the connection was lost or the mapping is still to be confirmed): reconnect it or confirm it, then try again.",
+      "paymentsNotRecorded": "Not every payment was recorded in the channel manager. Check and try again.",
+      "rejected": "The channel manager refused the request. Check the details and try again.",
+      "reservationChanged": "The booking changed in the channel manager after it was last read: check the differences before trying again.",
+      "roomNotChosen": "The room of the channel manager is missing for this property: choose it, then try again.",
+      "unavailable": "The channel manager did not answer.",
+      "unknown": "The channel manager did not confirm it."
     },
     "timeline": {
       "alloggiatiDeadline": "{{status}} · by {{date}}",
