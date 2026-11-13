@@ -11,6 +11,7 @@ import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
 import type { NotificationsChange, RealtimeClient, RealtimeState } from '../realtime-client';
 import { applyNotificationsChange, useNotificationsRealtime } from '../use-notifications-realtime';
@@ -148,6 +149,21 @@ describe('useNotificationsRealtime', () => {
     expect(keys).toContainEqual([CHECKIN_SESSION_KEY]);
     // The invoice data the guest wrote at that check-in (FIS-01) is one of them.
     expect(keys).toContainEqual([INVOICE_DATA_KEY]);
+  });
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheVerificationsOfTheOperator', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A guest handed a verification to an operator while the socket was down: the console open in front of the operator reads it again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([VERIFICATION_KEY]);
   });
 
   it('useNotificationsRealtime_State_FollowsTheChannel', () => {
@@ -315,6 +331,28 @@ describe('applyNotificationsChange', () => {
     // The entity is a booking, so its thread is read again too, as for any booking event.
     expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
   });
+
+  it('applyNotificationsChange_VerificationRequired_ReadsAgainTheQueueTheFiguresAndTheCockpit', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'verification-required', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([VERIFICATION_KEY]);
+    expect(keys).toContainEqual([COMPLIANCE_KEY]);
+    // It is not a completed check-in: the booking data is not read again.
+    expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
+  });
+
+  it.each(['guest-message', 'new-booking', 'service-request-taken'])(
+    'applyNotificationsChange_%s_DoesNotReadTheVerificationsAgain',
+    (type) => {
+      const { queryClient } = setup();
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'x-1' });
+      const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+      expect(keys).not.toContainEqual([VERIFICATION_KEY]);
+    },
+  );
 
   it.each(['guest-message', 'new-booking', 'service-request-taken'])(
     'applyNotificationsChange_%s_DoesNotReadTheCheckInDataAgain',

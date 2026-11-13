@@ -8,6 +8,7 @@ import type {
   BookingFilterParams,
   BookingListItem,
   BookingListParams,
+  BookingPaymentLink,
   BookingTimeline,
   CancelBookingDto,
   CancelBookingResult,
@@ -70,7 +71,18 @@ export const bookingsApi = {
    */
   createManual: (data: CreateManualBookingDto) => ApiClient.post<ManualBooking>('/bookings/manual', data),
 
-  /** Whether a stay of a property is free, what takes it if not and the nearest free dates (SR-06a). Advice: the API checks again on creation. */
+  /**
+   * A new payment link of the balance of a booking the host entered, e-mailed to the guest (NF-74, E08/F01/US01/T05): the previous link stops working. The
+   * answer gives the link once, for the host to copy; the token in it is never stored by the API. Needs `payment.write`; 422 `payment_link_unavailable` when
+   * the booking is not one the host entered, is cancelled, has nothing left to pay or a payment in progress, or the Stripe account is not ready; 503
+   * `payment_provider_error` when Stripe did not answer.
+   */
+  createPaymentLink: (id: string) => ApiClient.post<BookingPaymentLink>(`/bookings/${id}/payment-link`),
+
+  /**
+   * Whether a stay of a property is free, what takes it if not and the nearest free dates (SR-06a); for a property mirrored on the channel manager its answer
+   * is part of it (`channelManagerChecked`, a `channelManager` conflict, E08/F01/US02/T01). Advice: the API checks again on creation.
+   */
   availability: ({ propertyId, from, to }: StayAvailabilityParams) =>
     ApiClient.get<StayAvailability>(`/properties/${encodeURIComponent(propertyId)}/availability`, { from, to }),
 

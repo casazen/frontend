@@ -1554,6 +1554,7 @@
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
       "checkoutPaymentNotResumable": "Non c'è un pagamento da completare per questa prenotazione: è già in corso, completato oppure la prenotazione è chiusa.",
+      "paymentLinkUnavailable": "Non è possibile creare il link di pagamento: servono un conto Stripe pronto a incassare, un saldo da pagare e una prenotazione inserita da te e non annullata. Se un pagamento è già in corso, aspetta il suo esito.",
       "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto.",
       "stripeConnectUnavailable": "Stripe non risponde in questo momento. Il tuo account Stripe collegato non è stato modificato: riprova tra qualche istante.",
       "stripeConnectNotConfigured": "I pagamenti Stripe non sono configurati correttamente sul server. Il tuo account collegato non è stato modificato: contatta l'assistenza CasaZen.",
@@ -2189,6 +2190,9 @@
         "invalid": "Indica un numero di minori valido",
         "lessThanGuests": "Serve almeno un adulto: i minori devono essere meno degli ospiti"
       },
+      "paymentArrangement": {
+        "required": "Scegli come pagherà l'ospite"
+      },
       "priceNote": {
         "maxLength": "La nota sul prezzo può avere al massimo 80 caratteri"
       },
@@ -2355,12 +2359,17 @@
           "title": "Date libere, ma sotto il soggiorno minimo"
         },
         "blocked": "Queste date non sono libere: scegli altre date o usa quelle libere più vicine.",
+        "channelManagerBlocked": "Queste date risultano occupate nel tuo channel manager: scegli altre date.",
+        "channelManagerBlockedNamed": "Queste date risultano occupate su {{channel}}, nel tuo channel manager: scegli altre date.",
+        "channelManagerUnchecked": "Non siamo riusciti a controllare le date nel tuo channel manager. Puoi proseguire: le ricontrolliamo quando crei la prenotazione.",
         "checking": "Controllo se le date sono libere…",
         "conflict": {
           "block": "Si sovrappone al blocco «{{title}}» ({{range}}).",
           "blockUnnamed": "Si sovrappone a un blocco del calendario ({{range}}).",
           "booking": "Si sovrappone al soggiorno di {{name}} ({{range}}).",
           "bookingUnnamed": "Si sovrappone a un altro soggiorno ({{range}}).",
+          "channelManager": "Risultano occupate nel tuo channel manager ({{range}}).",
+          "channelManagerNamed": "Risultano occupate su {{channel}}, nel tuo channel manager ({{range}}).",
           "ical": "Si sovrappone alla prenotazione su {{portal}} ({{range}})."
         },
         "invalid": {
@@ -2391,15 +2400,73 @@
           "Other": "un altro portale"
         }
       },
-      "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
+      "description": "Per una prenotazione presa per telefono o di persona: pochi passi brevi, la bozza si salva da sola.",
       "done": {
+        "booking": {
+          "title": "Prenotazione creata in CasaZen"
+        },
         "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
+        "channelManager": {
+          "blocked": "Il canale non permette questa operazione: la prenotazione non è stata creata nel channel manager.",
+          "conflict": "La prenotazione nel tuo channel manager risulta diversa da quella di CasaZen: finché non si risolve, le date possono restare aperte sugli altri canali.",
+          "datesTaken": "Le date risultano già occupate nel tuo channel manager: la prenotazione è in CasaZen, ma lì non è stata creata e le stesse notti possono essere vendute due volte. Controlla il calendario dei canali e decidi quale prenotazione tenere.",
+          "failed": "Non è andata a buon fine: finché non riesce, le date possono restare aperte sugli altri canali.",
+          "notFound": "Non troviamo più questa prenotazione: controllala dall'elenco delle prenotazioni.",
+          "pending": "In invio: stiamo creando la prenotazione nel tuo channel manager, che chiuderà le date su tutti i canali.",
+          "reasons": {
+            "datesUnavailable": "Il channel manager dice che le date sono già occupate: controlla il calendario dei canali.",
+            "linkedElsewhere": "La prenotazione esiste già nel channel manager ed è collegata a un'altra prenotazione di CasaZen: controlla se è un doppione.",
+            "notMirrored": "L'immobile non è collegato al channel manager in questo momento: ricollegalo o conferma l'abbinamento, poi riprova.",
+            "paymentsNotRecorded": "La prenotazione è nel channel manager, ma non tutti gli incassi sono stati registrati lì: riprova.",
+            "rejected": "Il channel manager ha rifiutato la prenotazione: controlla i dati e riprova.",
+            "reservationChanged": "La prenotazione è stata cambiata nel channel manager dopo l'ultima lettura: controlla le differenze prima di riprovare.",
+            "roomNotChosen": "Manca la camera dell'immobile nel channel manager: scegli la camera nell'abbinamento, poi riprova.",
+            "unavailable": "Il channel manager non ha risposto: l'invio viene ripetuto e puoi riprovare anche tu.",
+            "unknown": "Il channel manager non ha completato l'operazione. Riprova tra poco."
+          },
+          "refresh": "Controlla di nuovo",
+          "retry": "Riprova l'invio",
+          "retryFailed": "Non siamo riusciti a ripetere l'invio. Riprova tra poco.",
+          "synced": "Fatto: la prenotazione è nel tuo channel manager e le date sono chiuse su tutti i canali.",
+          "title": "Channel manager",
+          "unreadable": "Non riusciamo a leggere a che punto è l'invio al channel manager.",
+          "waiting": "Non abbiamo ancora la conferma del channel manager: le date possono non essere ancora chiuse su tutti i canali."
+        },
         "checkin": "Pochi giorni prima dell'arrivo {{name}} riceve per email il link per il check-in online.",
         "description": "{{property}}, dal {{from}} al {{to}}",
         "guestFallback": "l'ospite",
+        "next": {
+          "checkChannelManager": "Apri la prenotazione e controlla come risulta nel channel manager: finché non è a posto, le date possono restare aperte sugli altri canali o essere vendute due volte.",
+          "recordIncome": "Quando l'ospite paga, segna l'incasso con «Registra incasso» nella prenotazione.",
+          "retryChannelManager": "Riprova l'invio al channel manager: finché non va a buon fine, le date possono restare aperte sugli altri canali.",
+          "sendPaymentLink": "Invia il link di pagamento a {{name}}: per ora non ha ricevuto nulla."
+        },
         "open": "Apri la prenotazione",
         "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "paymentBankTransfer": "L'ospite paga con un bonifico: quando arriva, segna l'incasso con «Registra incasso» nella prenotazione.",
+        "paymentLink": {
+          "copied": "Link copiato",
+          "copy": "Copia il link",
+          "copyFailed": "Non siamo riusciti a copiarlo: selezionalo qui sotto e copialo a mano.",
+          "field": "Link di pagamento da copiare",
+          "missing": "Il link non è stato creato: la prenotazione c'è, ma l'ospite non ha ricevuto nessun link.",
+          "notEmailed": "Il link è pronto, ma l'email all'ospite non è partita: copialo e mandaglielo tu.",
+          "resend": "Invia di nuovo",
+          "resendHint": "Un nuovo link sostituisce quello di prima, che smette di funzionare.",
+          "send": "Crea e invia il link",
+          "sendFailed": "Non siamo riusciti a creare il link. Riprova tra poco.",
+          "sent": "Link inviato all'ospite: potrà pagare il saldo online.",
+          "title": "Link di pagamento"
+        },
+        "paymentOnSite": "L'ospite paga in struttura: quando incassi, segna l'incasso con «Registra incasso» nella prenotazione.",
         "paymentPortal": "Il pagamento lo incassa {{portal}}: non registrarlo anche qui.",
+        "paymentTitle": "Pagamento",
+        "state": {
+          "done": "fatto",
+          "problem": "da controllare",
+          "todo": "da fare",
+          "working": "in corso"
+        },
         "title": "Prenotazione di {{name}} inserita",
         "toList": "Tutte le prenotazioni"
       },
@@ -2415,6 +2482,26 @@
         "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
         "phone": "Telefono",
         "phoneExample": "+39 333 123 4567"
+      },
+      "payment": {
+        "bankTransfer": {
+          "description": "L'ospite ti paga con un bonifico. Quando arriva, segni tu l'incasso con «Registra incasso».",
+          "title": "Bonifico"
+        },
+        "legend": "Come pagherà l'ospite?",
+        "onSite": {
+          "description": "L'ospite paga di persona, in struttura. Quando incassi, segni tu l'incasso con «Registra incasso».",
+          "title": "Paga in struttura"
+        },
+        "paymentLink": {
+          "description": "L'ospite riceve per email un link per pagare online il saldo con la carta. Quando paga, l'incasso si registra da solo.",
+          "title": "Link di pagamento"
+        },
+        "reason": {
+          "account": "Per usarlo serve un conto Stripe collegato e pronto a incassare: attivalo dalle impostazioni dei pagamenti, poi torna qui.",
+          "nothingToPay": "Non c'è nulla da pagare: il totale concordato è zero.",
+          "permission": "Per inviare un link di pagamento serve il permesso di gestire i pagamenti di questo immobile."
+        }
       },
       "portal": {
         "amount": "Importo",
@@ -2454,14 +2541,24 @@
           "purpose": "Bastano il nome e l'email di chi ha prenotato.",
           "title": "Chi viene a soggiornare?"
         },
+        "payment": {
+          "label": "Pagamento",
+          "purpose": "Scegli come pagherà l'ospite: da questa scelta dipende cosa succede dopo.",
+          "title": "Come pagherà l'ospite?"
+        },
+        "price": {
+          "label": "Prezzo",
+          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "title": "Quanto paga l'ospite?"
+        },
         "stay": {
           "label": "Soggiorno",
           "purpose": "Scegli l'immobile, le date e quante persone arrivano.",
           "title": "Per quale casa e quali date?"
         },
         "summary": {
-          "label": "Riepilogo e prezzo",
-          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "label": "Riepilogo",
+          "purpose": "Controlla le risposte e cosa succede quando crei la prenotazione.",
           "title": "Controlla e crea la prenotazione"
         }
       },
@@ -2477,8 +2574,30 @@
         "minors_one": "{{count}} minore",
         "minors_other": "{{count}} minori",
         "notes": "Note",
+        "payment": "Pagamento",
+        "paymentValue": {
+          "bankTransfer": "Bonifico",
+          "onSite": "Paga in struttura",
+          "paymentLink": "Link di pagamento",
+          "portal": "Incassa {{portal}}"
+        },
+        "portalAmount": "Importo del portale",
+        "price": "Totale",
+        "priceAgreed": "prezzo concordato",
         "property": "Immobile",
-        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo."
+        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo.",
+        "willHappen": {
+          "bankTransfer": "L'ospite paga con un bonifico: quando arriva, l'incasso lo segni tu.",
+          "casazen": "La prenotazione viene creata in CasaZen: le notti risultano subito occupate sul calendario e sul sito di prenotazione.",
+          "channelManager": "Viene creata anche nel tuo channel manager, che chiude queste date su tutti i canali.",
+          "channelManagerMaybe": "Se l'immobile è collegato al tuo channel manager, viene creata anche lì e le date si chiudono su tutti i canali.",
+          "onSite": "L'ospite paga in struttura: l'incasso lo segni tu.",
+          "paymentLink": "L'ospite riceve per email un link per pagare online il saldo; dopo la creazione puoi copiarlo da qui.",
+          "paymentMissing": "Manca la scelta di come pagherà l'ospite: torna al passo «Pagamento».",
+          "portal": "{{portal}} incassa per te: in CasaZen non registrare nessun pagamento.",
+          "portalCompleted": "La prenotazione di {{portal}} viene completata con i dati dell'ospite, senza crearne un'altra.",
+          "title": "Cosa succede quando crei la prenotazione"
+        }
       },
       "title": "Nuova prenotazione"
     },
@@ -3357,6 +3476,7 @@
     "lastName": "Cognome *",
     "stepPersonal": "Dati anagrafici",
     "stepDocument": "Documento d'identita'",
+    "stepIdentity": "Verifica dell'identità",
     "stepConsents": "Informativa e consensi",
     "stepOf": "Passo {{step}} di {{total}}",
     "next": "Avanti",
@@ -3422,34 +3542,36 @@
     "removeGuest": "Rimuovi ospite",
     "addGuest": "Aggiungi ospite",
     "biometric": {
-      "consent": {
-        "title": "Verifica biometrica facoltativa",
-        "description": "Possiamo confrontare la tua foto con il documento per velocizzare il check-in.",
-        "purposeTitle": "A cosa serve",
-        "purpose": "La verifica biometrica confronta il tuo volto con la foto del documento. Il confronto avviene sul server e la tua foto viene cancellata immediatamente dopo.",
-        "optionalTitle": "È facoltativa",
-        "optional": "Puoi rifiutare senza conseguenze: il gestore della struttura riceverà comunque i tuoi dati e il documento. Il rifiuto viene segnalato ma non blocca il check-in.",
-        "accept": "Acconsento alla verifica",
-        "decline": "Rifiuto",
-        "version": "Versione consenso: {{version}}"
-      },
       "capture": {
-        "title": "Scatta un selfie",
-        "instructions": "Inquadra il tuo viso, assicurati che sia ben illuminato e centrato, poi scatta la foto. La confronteremo con il documento.",
-        "cameraError": "Impossibile accedere alla fotocamera. Verifica i permessi del browser.",
-        "takePhoto": "Scatta foto",
-        "retake": "Scatta di nuovo",
-        "submit": "Invia foto",
         "attemptsRemaining": "Tentativi rimasti: {{count}}",
-        "maxAttemptsReached": "Hai raggiunto il numero massimo di tentativi. Il check-in sarà verificato manualmente dal gestore."
+        "cameraDenied": "Il browser ha bloccato la fotocamera. Per consentirla, tocca l'icona del lucchetto o della fotocamera accanto all'indirizzo web, scegli «Consenti» per la fotocamera e premi «Riprova».",
+        "cameraNotFound": "Su questo dispositivo non è stata trovata nessuna fotocamera.",
+        "cameraTitle": "La fotocamera non è disponibile",
+        "cameraUnknown": "Non è stato possibile avviare la fotocamera.",
+        "cameraUnsupported": "Questa pagina non può usare la fotocamera in questo browser. Apri il link nel tuo browser abituale, oppure chiedi la verifica di un operatore.",
+        "capturedLabel": "Il selfie che hai scattato",
+        "instructions": "Guarda la fotocamera in un posto ben illuminato e tieni il viso dentro l'inquadratura. Confrontiamo la foto con quella del tuo documento.",
+        "noFile": "Per la tua sicurezza il selfie va scattato adesso con la fotocamera: non si può scegliere tra i tuoi file o la galleria.",
+        "notPrepared": "Non è stato possibile preparare la foto. Scattala di nuovo.",
+        "previewLabel": "Anteprima dal vivo della tua fotocamera",
+        "retake": "Scatta di nuovo",
+        "retryCamera": "Riprova",
+        "sending": "Controllo in corso...",
+        "submit": "Invia la foto",
+        "takePhoto": "Scatta la foto",
+        "title": "Scatta un selfie"
       },
-      "outcome": {
-        "accept": "Verificato",
-        "acceptMessage": "La verifica biometrica è riuscita. Il tuo check-in è stato completato.",
-        "escalate": "Da verificare",
-        "escalateMessage": "La verifica biometrica richiede una conferma manuale. Il gestore della struttura controllerà i tuoi dati.",
-        "reject": "Non verificato",
-        "rejectMessage": "La verifica biometrica non è riuscita. Riprova o il gestore della struttura verificherà manualmente."
+      "consent": {
+        "accept": "Acconsento al controllo del volto",
+        "decline": "Non acconsento: mi verificherà una persona",
+        "description": "Per darti il codice di accesso della struttura, confrontiamo un selfie con la foto del tuo documento d'identità.",
+        "documentKept": "La foto del tuo documento viene conservata cifrata solo fino alla fine del controllo, poi viene cancellata.",
+        "optional": "Puoi rifiutare. Allora una persona della struttura verificherà la tua identità con te e il codice di accesso ti arriva dopo la sua decisione. Rifiutare non blocca il tuo check-in.",
+        "optionalTitle": "La scelta è tua",
+        "purpose": "Fotografi il tuo documento e poi scatti un selfie con la fotocamera. Un programma sul nostro server confronta le due foto. Il tuo selfie non viene mai salvato: viene cancellato appena finisce il confronto.",
+        "purposeTitle": "Cosa succede",
+        "title": "Verifica la tua identità con il viso",
+        "version": "Versione di questo testo: {{version}}"
       }
     },
     "consent": {
@@ -3555,6 +3677,76 @@
       "HeadOfFamily": "Capofamiglia",
       "HeadOfGroup": "Capogruppo",
       "SingleGuest": "Ospite singolo"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Foto del documento d'identità",
+        "instructions": "Appoggia il documento su una superficie piana e ben illuminata. Inquadra tutto il lato con la tua foto e le due righe di lettere in basso, senza riflessi.",
+        "notAcceptable": "La foto non è ancora abbastanza buona. Scattala di nuovo.",
+        "pick": "Fotografa il documento",
+        "pickAgain": "Fotografalo di nuovo",
+        "sending": "Lettura del documento...",
+        "title": "Fotografa il tuo documento d'identità"
+      },
+      "documentNotArchived": "Il documento non sarà archiviato.",
+      "guidance": {
+        "avoid_glare": "Evita i riflessi: inclina un poco il documento o allontanati dalla luce.",
+        "hold_still": "Tieni fermo il telefono: la foto è sfocata.",
+        "less_light": "C'è troppa luce: spostati dove la luce è più morbida.",
+        "more_light": "C'è poca luce: spostati in un posto più luminoso.",
+        "move_closer": "Avvicinati: il tuo viso è troppo piccolo nella foto.",
+        "one_face_only": "Nella foto devi esserci solo tu.",
+        "other": "Scatta di nuovo la foto.",
+        "retake_picture": "La foto non si legge: scattala di nuovo.",
+        "retake_selfie": "Scatta di nuovo il selfie, guardando dritto la fotocamera.",
+        "show_document_photo": "Inquadra il lato del documento con la tua foto.",
+        "show_whole_document": "Inquadra tutto il lato del documento, con le due righe di lettere in basso.",
+        "show_your_face": "Mostra il viso: nella foto non si vedeva.",
+        "tip_remove_glasses": "Togli gli occhiali.",
+        "tip_remove_mask": "Togli la mascherina o qualsiasi cosa copra il viso.",
+        "upload_document_again": "Fotografa di nuovo il documento: non si riusciva a leggerlo.",
+        "use_live_camera": "Scatta il selfie adesso con la fotocamera, non da una foto o da uno schermo.",
+        "use_valid_document": "Il documento è scaduto: usa un documento valido."
+      },
+      "intro": "A questo passo partecipa solo l'ospite che lascia il documento d'identità. Gli altri ospiti non devono scattare un selfie.",
+      "nextHint": "Completa questo passo per andare avanti. Se preferisci, chiedi la verifica di un operatore.",
+      "operator": {
+        "ask": "Chiedi la verifica di un operatore",
+        "requested": "Abbiamo avvisato chi gestisce la struttura. Verificherà la tua identità e il codice di accesso ti arriva dopo la sua decisione."
+      },
+      "problem": {
+        "consent_required": "Prima ci serve la tua risposta sul controllo del volto.",
+        "document_photo": "Ci serve di nuovo la foto del documento: scattala ancora una volta.",
+        "document_required": "Prima fotografa il documento.",
+        "failed": "Qualcosa non ha funzionato. Riprova.",
+        "link_unavailable": "Questo link non è più valido, oppure il check-in è già completo. Chiedi un nuovo link a chi gestisce la struttura.",
+        "network": "Non siamo riusciti a raggiungere il server. Non è stato salvato nulla: controlla la connessione e riprova.",
+        "processing": "Non siamo riusciti a elaborare la foto. Riprova.",
+        "too_large": "La foto è troppo grande. Scattala di nuovo con una risoluzione più bassa.",
+        "too_many_requests": "Troppi tentativi in poco tempo. Aspetta un momento e riprova.",
+        "unsupported": "Questo tipo di file non è supportato. Usa una foto JPEG o PNG."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "Se la tua prenotazione ha un indirizzo email, abbiamo inviato il codice anche lì.",
+          "codeLabel": "Il tuo codice di accesso",
+          "noCode": "La tua identità è verificata. Se la tua prenotazione ha un indirizzo email, il codice di accesso è stato inviato lì; altrimenti chi gestisce la struttura ti darà le istruzioni per entrare.",
+          "title": "Sei verificato"
+        },
+        "operator": {
+          "notOffered": "Per questo soggiorno il controllo del volto non si usa: la tua identità la verifica una persona. Chiedilo qui e chi gestisce la struttura verrà avvisato. Il codice di accesso ti arriva dopo la sua decisione.",
+          "text": "Chi gestisce la struttura verificherà la tua identità. Il codice di accesso ti arriva dopo la sua decisione.",
+          "title": "Una persona controllerà la tua identità"
+        },
+        "retry": {
+          "again": "Scatta di nuovo il selfie",
+          "againDocument": "Fotografa di nuovo il documento",
+          "attempts": "Tentativi rimasti: {{count}}",
+          "intro": "Questa volta il controllo non è andato a buon fine. Ecco cosa cambiare:",
+          "noReason": "Questa volta il controllo non è andato a buon fine.",
+          "title": "Non siamo ancora riusciti a verificarti"
+        }
+      }
     },
     "invoice": {
       "fields": {
@@ -12069,7 +12261,8 @@
       "serviceRequestBackupInvited": "Sei una riserva per una nuova richiesta di servizio.",
       "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
-      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa."
+      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
+      "verificationRequired": "L'identità di un ospite aspetta la tua verifica."
     }
   },
   "octorate": {
@@ -24292,33 +24485,49 @@
   },
   "verification": {
     "action": {
-      "photoRequested": "Richiesta foto inviata al cliente",
-      "photoRequestFailed": "Impossibile inviare la richiesta foto",
-      "reject": "Rifiuta",
-      "rejectFailed": "Impossibile rifiutare la verifica",
-      "rejected": "Verifica rifiutata",
-      "request_photo": "Richiedi nuova foto",
-      "verified": "Verifica registrata",
-      "verification": "Verifica",
-      "verificationRejected": "Verifica respinta",
-      "verify": "Verifica",
-      "verifyFailed": "Impossibile registrare la verifica"
+      "photoRequestFailed": "Impossibile inviare la richiesta della foto",
+      "photoRequested": "Nuova foto richiesta: all'ospite è stato inviato un nuovo link.",
+      "reject": "Rifiuta il check-in",
+      "rejectFailed": "Impossibile rifiutare il check-in",
+      "rejected": "Check-in rifiutato",
+      "request_photo": "Richiedi una nuova foto",
+      "verificationRejected": "Verifica non approvata: nessun codice di accesso viene inviato.",
+      "verified": "Verifica approvata. Il codice di accesso della struttura viene inviato all'ospite per email, se la struttura ne ha uno.",
+      "verify": "Registra la decisione",
+      "verifyFailed": "Impossibile registrare la decisione"
     },
-    "attempts": "Tentativi",
-    "checkIn": "Check-in",
-    "checkOut": "Check-out",
+    "arrivalDeparture": "Soggiorno dal {{arrival}} al {{departure}}",
+    "attempts": "Tentativi automatici",
+    "check": {
+      "document_validity": "Documento",
+      "liveness": "Ripresa dal vivo",
+      "mrz_consistency": "Documento e dati del check-in",
+      "other": "Controllo {{code}}",
+      "processing": "Elaborazione automatica",
+      "quality": "Qualità della foto",
+      "similarity": "Confronto del volto"
+    },
+    "checks": {
+      "title": "Cosa ha rilevato il controllo automatico"
+    },
     "dialog": {
-      "acceptButton": "Accetta verifica",
-      "confirmReject": "Conferma rifiuto",
-      "noteLabel": "Nota (opzionale per accettazione, obbligatoria per rifiuto)",
-      "notePlaceholder": "Inserisci una nota...",
-      "reasonLabel": "Motivo del rifiuto",
-      "reasonPlaceholder": "Inserisci il motivo del rifiuto...",
-      "rejectButton": "Rifiuta verifica",
-      "rejectDescription": "Il rifiuto impedirà ulteriori tentativi di verifica per questa prenotazione.",
-      "rejectTitle": "Rifiuta verifica biometrica",
-      "verifyDescription": "Accetta la verifica per completare il check-in, oppure rifiutala con una nota.",
-      "verifyTitle": "Registra verifica manuale"
+      "acceptButton": "Approva la verifica",
+      "confirmReject": "Conferma il rifiuto",
+      "noteHint": "La nota è facoltativa per approvare e obbligatoria per non approvare. Resta nel registro delle verifiche.",
+      "noteLabel": "Nota",
+      "notePlaceholder": "Scrivi cosa hai verificato con l'ospite...",
+      "reasonLabel": "Motivo del rifiuto (obbligatorio)",
+      "reasonPlaceholder": "Scrivi perché rifiuti il check-in...",
+      "rejectButton": "Non verificato",
+      "rejectDescription": "Il check-in viene chiuso e l'ospite non può riprovare. Nessun codice di accesso viene inviato.",
+      "rejectTitle": "Rifiuta il check-in",
+      "verifyDescription": "Contatta l'ospite fuori da CasaZen e poi registra la decisione. Approvando, all'ospite arriva per email il codice di accesso della struttura (se ne ha uno); «Non verificato» non invia nulla e richiede una nota.",
+      "verifyTitle": "Registra la tua decisione"
+    },
+    "figures": {
+      "threshold": "soglia {{threshold}}",
+      "value": "valore {{value}}",
+      "valueAndThreshold": "valore {{value}}, soglia {{threshold}}"
     },
     "filter": {
       "allDeadlines": "Tutte le scadenze",
@@ -24326,23 +24535,79 @@
       "deadline": "Scadenza",
       "past": "Scadute",
       "reason": "Motivo",
+      "reasons": {
+        "no_match": "Ultimo controllo: volto diverso",
+        "not_passed": "Ultimo controllo non superato",
+        "operator_requested": "Nessun controllo automatico",
+        "review": "Un controllo richiede una persona",
+        "technical_error": "Errore tecnico",
+        "uncertain": "Confronto incerto"
+      },
       "today": "Oggi",
       "upcoming": "Prossime"
     },
+    "guest": {
+      "contactHint": "Contatta l'ospite fuori da CasaZen (per esempio con una videochiamata) e poi registra la tua decisione.",
+      "noContact": "Nessun indirizzo email registrato: cerca il contatto dell'ospite nella prenotazione.",
+      "openBooking": "Apri la prenotazione",
+      "title": "Ospite"
+    },
+    "metrics": {
+      "loading": "Caricamento dei numeri...",
+      "notOk": "Non superate",
+      "ok": "Superate da sole",
+      "operatorDecisions_one": "{{count}} decisione di un operatore",
+      "operatorDecisions_other": "{{count}} decisioni di un operatore",
+      "operatorShare": "Concluse da un operatore",
+      "period": "Dal {{from}} al {{to}}",
+      "retry": "Riprova",
+      "review": "Passate a una persona",
+      "title": "Verifiche degli ultimi 30 giorni",
+      "unavailable": "Al momento non è stato possibile leggere i numeri."
+    },
+    "provisional": {
+      "badge": "Soglie provvisorie",
+      "explain": "Le soglie di questo controllo non sono mai state tarate: considera provvisorio l'esito automatico."
+    },
     "queue": {
-      "description": "Prenotazioni in attesa di verifica biometrica manuale",
-      "emptyFiltered": "Nessuna verifica corrisponde ai filtri selezionati",
+      "description": "Ospiti la cui identità aspetta la verifica di una persona",
+      "emptyFiltered": "Nessuna verifica corrisponde ai filtri scelti",
       "emptyQueue": "Nessuna verifica in attesa",
       "emptyTitle": "Nessun elemento",
       "loadError": "Impossibile caricare la coda di verifica",
       "loading": "Caricamento coda di verifica...",
+      "retry": "Riprova",
       "title": "Coda di verifica"
     },
-    "reason": {
-      "consent_refused": "Consenso rifiutato",
-      "label": "Motivo",
-      "model_error": "Errore del modello",
-      "unverified": "Foto non verificata"
+    "result": {
+      "between_thresholds": "tra le due soglie: decide una persona",
+      "birth_date_mismatch": "la data di nascita non corrisponde ai dati del check-in",
+      "check_digits_invalid": "le cifre di controllo del documento non sono corrette",
+      "document_number_mismatch": "il numero del documento non corrisponde ai dati del check-in",
+      "error": "errore imprevisto",
+      "expired": "il documento è scaduto",
+      "face_too_small": "il volto è troppo piccolo nella foto",
+      "failed": "non superato",
+      "image_unreadable": "la foto non è leggibile",
+      "multiple_faces": "più di un volto nella foto",
+      "names_mismatch": "i nomi non corrispondono ai dati del check-in",
+      "nationality_mismatch": "la cittadinanza non corrisponde ai dati del check-in",
+      "no_face": "nessun volto trovato",
+      "not_run": "non eseguito: un controllo precedente lo ha fermato",
+      "other": "esito {{code}}",
+      "passed": "superato",
+      "timeout": "ha impiegato troppo tempo",
+      "unavailable": "i modelli non sono disponibili",
+      "unreadable": "il documento non è leggibile"
+    },
+    "why": {
+      "no_match": "L'ultimo controllo automatico non ha trovato il volto uguale a quello del documento. L'ospite può anche aver chiesto lui una persona.",
+      "not_passed": "L'ultimo controllo automatico non è stato superato. L'ospite può anche aver chiesto lui una persona.",
+      "operator_requested": "Nessun controllo automatico concluso: l'ospite ha chiesto una persona o non ha dato il consenso biometrico, oppure il controllo del volto non si usa (impostazione dell'organizzazione, ospite minorenne).",
+      "review": "Un controllo ha rilevato qualcosa che richiede lo sguardo di una persona.",
+      "technical_error": "Il controllo automatico non ha potuto essere eseguito.",
+      "title": "Perché è qui",
+      "uncertain": "Il confronto è incerto: cade tra le due soglie."
     }
   },
   "vetrina": {
