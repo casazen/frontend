@@ -265,6 +265,22 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(screen.queryByTestId('marketplace-active-Partner-plain-prop-2-trust')).not.toBeInTheDocument();
   });
 
+  it('MarketplaceMinePage_DeclaredFunction_SaysTheDayOfRome_AndAPartnerTheDayTheHostGave', async () => {
+    api.getMarketplaceActive.mockResolvedValue({
+      integrations: [
+        // A function of the license is declared at the instant the host asks for it: 23:30 UTC of the 12th is the 13th in Rome.
+        row({ kind: 'LicensedFunction', code: 'chat', name: 'TEST Chat', status: 'Pending', isDeclared: true, declaredAt: '2026-11-12T23:30:00Z', lastSyncedAt: null }),
+        // A partner's is midnight UTC of the day the host gave: that day, whatever the zone.
+        row({ kind: 'Partner', code: 'beds', name: 'TEST Beds', property: null, isDeclared: true, declaredAt: '2026-11-10T00:00:00Z', lastSyncedAt: null }),
+      ],
+      providers: [],
+    });
+    renderPage();
+
+    expect(await screen.findByTestId('marketplace-active-LicensedFunction-chat-prop-1-trust')).toHaveTextContent('Attivazione dichiarata da te il 13 novembre 2026');
+    expect(screen.getByTestId('marketplace-active-Partner-beds-org-trust')).toHaveTextContent('Attivazione dichiarata da te il 10 novembre 2026');
+  });
+
   it('MarketplaceMinePage_Fix_OpensTheWizardOfTheKindForThatPropertyAndComesBack', async () => {
     api.getMarketplaceActive.mockResolvedValue({
       integrations: [row({ status: 'ToFix' }), row({ kind: 'LicensedFunction', code: 'chat', name: 'TEST Chat', status: 'ToFix' })],

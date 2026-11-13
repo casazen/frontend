@@ -125,9 +125,10 @@ export interface MarketplaceIntegrationProperty {
 
 /**
  * An activation of the Active tab (`MarketplaceIntegrationDto`). `status` is the status of a card (a request that waits for the license is `Pending`
- * here); the health rows say `Requested`. `declaredAt` is the day the host gave when it declared the activation (midnight UTC of that day) and
- * `verifiedAt` is when a connection or the license first showed it: «declared by you on …» is said from the first, «verified» only when the second is
- * set. The list carries no id of the activation: the health rows do (channels, tools and functions of the license).
+ * here); the health rows say `Requested`. `declaredAt` is when the host declared the activation: for a partner the day the host gave (midnight UTC of that
+ * day), for a function of the license the instant it asked (UTC); `verifiedAt` is when a connection or the license first showed it (UTC). «Declared by you
+ * on …» is said from the first, «verified» only when the second is set. The list carries no id of the activation: the health rows do (channels, tools and
+ * functions of the license).
  */
 export interface MarketplaceActiveIntegration {
   kind: MarketplaceEntryKind;

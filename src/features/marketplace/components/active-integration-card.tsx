@@ -80,7 +80,7 @@ export function ActiveIntegrationCard({ row, fixTo, mayManage }: ActiveIntegrati
   const language = i18n.language;
 
   const verified = formatInstantDay(row.verifiedAt, language);
-  const declared = formatDeclaredDay(row.declaredAt, language);
+  const declared = formatDeclaredDay(row.declaredAt, language, row.kind);
   const lastSync = formatInstant(row.lastSyncedAt, language);
   const error = row.health?.error ?? null;
   const changeRequested = formatInstantDay(row.health?.changeRequestedAt, language);

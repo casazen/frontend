@@ -198,9 +198,15 @@ export function formatInstantDay(instant: string | null | undefined, language: s
   return instant ? formatRomeDateTime(instant, language, { dateStyle: 'long' }) : '';
 }
 
-/** The day the host gave when it declared an activation: `declaredAt` is midnight UTC of that day, so the day is the UTC one and is shown without any shift. */
-export function formatDeclaredDay(declaredAt: string | null | undefined, language: string): string {
+/**
+ * The day an activation was declared, as the host reads it. A partner is declared for a day the host gave: `declaredAt` is midnight UTC of that day, so its day is the UTC one and is
+ * shown without any shift. For every other kind (a function of the license is declared at the moment the host asks for it) `declaredAt` is a real instant, and its day is the one in
+ * Europe/Rome, like every other date of the tab: 23:30 UTC of the 12th is already the 13th in Rome.
+ */
+export function formatDeclaredDay(declaredAt: string | null | undefined, language: string, kind: string): string {
   if (!declaredAt) return '';
+  if (kind.toLowerCase() !== 'partner') return formatInstantDay(declaredAt, language);
+
   const date = new Date(declaredAt);
   return Number.isNaN(date.getTime()) ? '' : formatStayDate(utcStayDate(date), language);
 }

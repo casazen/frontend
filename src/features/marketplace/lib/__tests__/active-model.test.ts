@@ -197,10 +197,23 @@ describe('the words of a date', () => {
     expect(formatInstant('not a date', 'it')).toBe('');
   });
 
-  it('formatDeclaredDay_MidnightUtcOfTheDay_IsThatDayWhateverTheZone', () => {
-    expect(formatDeclaredDay('2026-11-10T00:00:00Z', 'it')).toBe('10 novembre 2026');
-    expect(formatDeclaredDay('2026-11-10T00:00:00Z', 'en')).toBe('November 10, 2026');
-    expect(formatDeclaredDay(null, 'it')).toBe('');
+  it('formatDeclaredDay_PartnerMidnightUtcOfTheDay_IsThatDayWhateverTheZone', () => {
+    expect(formatDeclaredDay('2026-11-10T00:00:00Z', 'it', 'Partner')).toBe('10 novembre 2026');
+    expect(formatDeclaredDay('2026-11-10T00:00:00Z', 'en', 'Partner')).toBe('November 10, 2026');
+    expect(formatDeclaredDay(null, 'it', 'Partner')).toBe('');
+  });
+
+  it('formatDeclaredDay_InstantOfAnotherKind_IsTheDayInRome_NotTheUtcOne', () => {
+    // A function of the license is declared at the instant the host asks for it: 23:30 UTC of the 12th is the 13th in Rome (UTC+1 in winter)...
+    expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'it', 'LicensedFunction')).toBe('13 novembre 2026');
+    expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'en', 'LicensedFunction')).toBe('November 13, 2026');
+    // ... and 22:30 UTC of the 12th of July is the 13th too (UTC+2 in summer); 21:30 UTC is still the 12th.
+    expect(formatDeclaredDay('2026-07-12T22:30:00Z', 'it', 'LicensedFunction')).toBe('13 luglio 2026');
+    expect(formatDeclaredDay('2026-07-12T21:30:00Z', 'it', 'LicensedFunction')).toBe('12 luglio 2026');
+    // The same instant for a partner is the day the host gave: the UTC one.
+    expect(formatDeclaredDay('2026-11-12T23:30:00Z', 'it', 'Partner')).toBe('12 novembre 2026');
+    expect(formatDeclaredDay('not a date', 'it', 'LicensedFunction')).toBe('');
+    expect(formatDeclaredDay('not a date', 'it', 'Partner')).toBe('');
   });
 });
 
