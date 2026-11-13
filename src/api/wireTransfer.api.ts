@@ -1,30 +1,27 @@
 import { ApiClient } from './client';
-import axios from '@/lib/axios';
-import { withJsonErrorBody } from '@/lib/file-download';
+import { fileApi, type DownloadedFile } from './file.api';
 import type { CreateBatchRequest, CreateBatchResponse } from '@/types';
 
+/**
+ * The wire files that pay the owners (backend `api/wire-transfers`, ADR-017): the owner and the administrators of an org on the agency plan
+ * (`agency.wire.manage`). There is no read of the batches: what the server says of one is what the answer of each call says.
+ */
 export const wireTransferApi = {
-  /** Create a wire transfer batch from the given statement IDs. */
+  /**
+   * Creates a wire file from published statements of ONE currency (EUR: SEPA, CHF: Swiss). The server checks the debit account, the owners' accounts and
+   * amounts and the file against its schema before it saves anything; the refusals are 422 with a `code` (`wire_batch_schema_unavailable`: no file is made).
+   */
   createBatch: (data: CreateBatchRequest) =>
     ApiClient.post<CreateBatchResponse>('/wire-transfers/batch', data),
 
-  /** Download the wire transfer batch file (SEPA pain.001 or Swiss Payment Standards XML). */
-  downloadBatchFile: async (batchId: string): Promise<Blob> => {
-    try {
-      const res = await axios.get<Blob>(`/wire-transfers/batch/${batchId}/file`, {
-        responseType: 'blob',
-      });
-      return res.data;
-    } catch (error) {
-      throw await withJsonErrorBody(error);
-    }
-  },
+  /** The file of a batch, through the authenticated client. The server marks the batch Downloaded the first time it hands the file out. */
+  downloadBatchFile: (batchId: string): Promise<DownloadedFile> =>
+    fileApi.get(`/wire-transfers/batch/${batchId}/file`),
 
-  /** Confirm that the batch file has been downloaded. */
-  confirmDownload: (batchId: string) =>
-    ApiClient.post<void>(`/wire-transfers/batch/${batchId}/confirm-download`),
-
-  /** Confirm that the batch has been paid (wire transfers executed at the bank). */
+  /**
+   * Marks the batch as paid. It cannot be undone, and it is the administrator's word: the server does not know whether the bank executed the transfers.
+   * 422 `batch_not_downloaded` while the file was never handed out, `batch_already_paid` once it is.
+   */
   confirmPaid: (batchId: string) =>
     ApiClient.post<void>(`/wire-transfers/batch/${batchId}/confirm-paid`),
 };

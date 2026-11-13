@@ -1,38 +1,22 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Download, FileText } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
-import { useOwnerStatements, downloadStatement } from '@/queries/ownerPortal';
+import { useOwnerStatements } from '@/queries/ownerPortal';
 import { formatCurrency } from '@/lib/utils';
-import { toast } from 'sonner';
-import { getProblemMessage } from '@/lib/api-errors';
 
 /**
- * Owner portal statements (ADR-011-R2): published statements with PDF and CSV download.
- * Only published statements are visible (AC-NF16-3).
+ * Owner portal statements (ADR-011-R2): the published statements of the owner.
+ * Only published statements are visible (AC-NF16-3). The portal has no download of a statement: the backend serves none to the owner
+ * (`api/owner-portal/statements` is the list only), so the page offers none instead of a button that answers 404.
  */
 export function OwnerStatements() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { data: statements, isLoading, error } = useOwnerStatements();
-
-  const handleDownload = async (statementId: string, format: 'pdf' | 'csv') => {
-    setDownloadingId(statementId);
-    try {
-      await downloadStatement(statementId, format);
-      toast.success(t('ownerPortal.statements.downloadSuccess'));
-    } catch (err) {
-      const message = getProblemMessage(err, t);
-      toast.error(message || t('ownerPortal.statements.downloadError'));
-    } finally {
-      setDownloadingId(null);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -113,26 +97,6 @@ export function OwnerStatements() {
                                 year: statement.year,
                               })}
                             </span>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownload(statement.statementId, 'pdf')}
-                              disabled={downloadingId === statement.statementId}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              PDF
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownload(statement.statementId, 'csv')}
-                              disabled={downloadingId === statement.statementId}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              CSV
-                            </Button>
                           </div>
                         </CardTitle>
                         <CardDescription>{statement.propertyName}</CardDescription>
