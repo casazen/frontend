@@ -163,6 +163,11 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
 
   const retry = useRetryOctorateSync();
   const askAgain = () => retry.mutate({ id: booking.id }, { onSuccess: () => setWatch({ since: Date.now(), retried: true }) });
+  // «Check again»: the result follows the channel manager for the time it waits once more, so that what the host asked for is not left to a second press.
+  const checkAgain = () => {
+    setWatch({ since: Date.now(), retried: false });
+    void detail.refetch();
+  };
 
   // The payment link.
   const [link, setLink] = useState<IssuedLink | null>(() => (booking.paymentLinkUrl ? { url: booking.paymentLinkUrl, emailSent: null } : null));
@@ -214,7 +219,7 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
             title={t('booking.create.done.channelManager.title')}
             action={
               mirror.kind === 'waiting' || mirror.kind === 'unreadable' ? (
-                <Button type="button" size="sm" variant="outline" disabled={busy} loading={detail.isFetching} data-testid="booking-done-channel-manager-refresh" onClick={() => void detail.refetch()}>
+                <Button type="button" size="sm" variant="outline" disabled={busy} loading={detail.isFetching} data-testid="booking-done-channel-manager-refresh" onClick={checkAgain}>
                   {t('booking.create.done.channelManager.refresh')}
                 </Button>
               ) : mirror.canRetry ? (

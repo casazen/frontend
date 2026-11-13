@@ -80,6 +80,17 @@ describe('the line of the channel manager', () => {
     expect(mirrorLineOf({ ...open, sync: null, watchOver: true })?.kind).toBe('waiting');
   });
 
+  it('mirrorLineOf_StillBeingSentWhenTheResultStoppedFollowingIt_SaysNoAnswerHasComeInsteadOfClaimingItIsOnItsWay', () => {
+    // The last read said "being sent" a minute and a half ago and nobody asks any more: the line must not go on saying it as if it knew.
+    expect(mirrorLineOf({ ...open, sync: sync({ state: 'Pending' }), watchOver: false })?.kind).toBe('pending');
+    expect(mirrorLineOf({ ...open, sync: sync({ state: 'Pending' }), watchOver: true })?.kind).toBe('waiting');
+  });
+
+  it('mirrorLineOf_TimeOverDoesNotHideASettledState', () => {
+    expect(mirrorLineOf({ ...open, sync: sync({ state: 'Synced' }), watchOver: true })?.kind).toBe('synced');
+    expect(mirrorLineOf({ ...open, sync: sync({ state: 'Failed', canRetry: true }), watchOver: true })?.kind).toBe('failed');
+  });
+
   it('mirrorLineOf_TheReadFailedAndThereIsNoMirror_SaysItCannotRead', () => {
     expect(mirrorLineOf({ ...open, sync: undefined, read: 'failed' })?.kind).toBe('unreadable');
   });

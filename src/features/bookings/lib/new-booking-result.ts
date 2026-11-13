@@ -93,7 +93,8 @@ export function mirrorLineOf({ expected, sync, read, watchOver, retrying }: Mirr
     if (retrying && (sync.state === 'Failed' || sync.state === 'Conflict')) return line('pending');
     switch (sync.state) {
       case 'Pending':
-        return line('pending');
+        // Still being sent as far as the last read goes; once the result has stopped following it, it does not claim to know: it says no answer has come.
+        return line(watchOver ? 'waiting' : 'pending');
       case 'Synced':
         return line('synced');
       case 'Failed':

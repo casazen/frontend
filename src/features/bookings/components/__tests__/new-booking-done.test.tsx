@@ -207,6 +207,44 @@ describe('the line of the channel manager changes by itself', () => {
     await advance(30_000);
     expect(bookingsApi.getById).toHaveBeenCalledTimes(reads);
   });
+
+  it('NewBookingDone_StillBeingSentAfterTheTimeItWaits_StopsClaimingItAndFollowsAgainWhenAskedToCheck', async () => {
+    // The server keeps saying "being sent": after a minute and a half the result stops asking and says no answer has come; «Check again» reads at once and
+    // follows it for the time it waits once more, so the outcome is shown without a second press.
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Pending' }));
+    renderDone({ channelManager: true });
+
+    await advance(0);
+    expect(line()).toHaveAttribute('data-state', 'pending');
+    await advance(95_000);
+    expect(line()).toHaveAttribute('data-state', 'waiting');
+
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Synced' }));
+    const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
+    fireEvent.click(screen.getByTestId('booking-done-channel-manager-refresh'));
+    await advance(0);
+
+    expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(reads);
+    expect(line()).toHaveAttribute('data-state', 'synced');
+  });
+
+  it('NewBookingDone_CheckAgainThatStillFindsNoAnswer_GoesBackToBeingSentAndFollowsItAgain', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail(null));
+    renderDone({ channelManager: true });
+    await advance(95_000);
+    expect(line()).toHaveAttribute('data-state', 'waiting');
+
+    fireEvent.click(screen.getByTestId('booking-done-channel-manager-refresh'));
+    await advance(0);
+    expect(line()).toHaveAttribute('data-state', 'pending');
+
+    // It asks again by itself from then on, and says no answer has come once more when the time is over.
+    const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
+    await advance(6_000);
+    expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(reads);
+    await advance(95_000);
+    expect(line()).toHaveAttribute('data-state', 'waiting');
+  });
 });
 
 describe('«Retry» of the channel manager', () => {
