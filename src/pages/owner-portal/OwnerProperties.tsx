@@ -1,30 +1,33 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Building2, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { useOwnerProperties } from '@/queries/ownerPortal';
 import { formatCurrency } from '@/lib/utils';
 import { formatStayDate } from '@/lib/stay-dates';
 
 /**
- * Owner portal property detail (ADR-011-R8): property details with occupancy and recent bookings.
- * Guest data is masked per ADR-011-R3: only dates, channel, amounts visible.
+ * Owner portal property detail (ADR-011-R8, E07/F07/US01/T03): property details with occupancy and recent bookings.
+ * Guest data is masked per ADR-011-R3: only dates, channel, amounts visible. From here the owner goes to the calendar of the property
+ * and to the inbox about it; the page reads the list of the owner's own properties and finds the property in it, so an id that is not one of them is «not found»
+ * (never the data of somebody else), and a list that could not be read is an error with a retry, never «not found».
  */
 export function OwnerProperties() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const navigate = useNavigate();
   const { propertyId } = useParams<{ propertyId: string }>();
-  const { data: properties, isLoading, error } = useOwnerProperties();
+  const properties = useOwnerProperties();
 
-  const property = properties?.find((p) => p.propertyId === propertyId);
+  const property = properties.data?.find((p) => p.propertyId === propertyId);
 
-  if (isLoading) {
+  if (properties.isLoading) {
     return (
-      <div className="container mx-auto max-w-4xl p-6 space-y-6">
+      <div className="space-y-6">
         <SkeletonLine className="h-8 w-64" />
         <SkeletonCard />
         <SkeletonCard />
@@ -32,60 +35,70 @@ export function OwnerProperties() {
     );
   }
 
-  if (error) {
+  if (properties.isError) {
     return (
-      <div className="container mx-auto max-w-4xl p-6">
-        <ErrorState
-          title={t('ownerPortal.properties.error')}
-          error={error}
-        />
-      </div>
+      <PortalReadProblem
+        error={properties.error}
+        failedTitle={t('ownerPortal.properties.error')}
+        onRetry={() => void properties.refetch()}
+        testId="owner-property-error"
+      />
     );
   }
 
   if (!property) {
     return (
-      <div className="container mx-auto max-w-4xl p-6">
-        <ErrorState
-          title={t('ownerPortal.properties.notFound')}
-        />
-        <Button
-          variant="outline"
-          onClick={() => navigate('/portale-proprietari')}
-          className="mt-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('ownerPortal.properties.backToDashboard')}
+      <div className="space-y-4">
+        <ErrorState title={t('ownerPortal.properties.notFound')} error={undefined} testId="owner-property-not-found" />
+        <Button asChild variant="outline" className={TOUCH}>
+          <Link to={ownerPortalPaths.home}>
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            {t('ownerPortal.properties.backToDashboard')}
+          </Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/portale-proprietari')}
-        >
-          <ArrowLeft className="h-5 w-5" />
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <Button asChild variant="ghost" className={`${TOUCH} -ml-3`}>
+          <Link to={ownerPortalPaths.home}>
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            {t('ownerPortal.properties.backToDashboard')}
+          </Link>
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-[#1f3a3d] flex items-center gap-2">
-            <Building2 className="h-8 w-8" />
-            {property.propertyName}
+        <div className="min-w-0">
+          <h1 className="flex min-w-0 items-start gap-2 break-words text-2xl font-bold text-[#1f3a3d] sm:text-3xl">
+            <Building2 aria-hidden="true" className="mt-1 h-7 w-7 shrink-0" />
+            <span className="min-w-0">{property.propertyName}</span>
           </h1>
-          <p className="text-muted-foreground mt-1">{property.address}</p>
+          <p className="mt-1 break-words text-muted-foreground">{property.address}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className={TOUCH}>
+            <Link to={ownerPortalPaths.calendar(property.propertyId)} data-testid="owner-property-calendar">
+              <Calendar aria-hidden="true" className="h-4 w-4" />
+              {t('ownerPortal.properties.openCalendar')}
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className={TOUCH}>
+            <Link to={`${ownerPortalPaths.messages}?topic=property&propertyId=${encodeURIComponent(property.propertyId)}`} data-testid="owner-property-message">
+              <MessageSquare aria-hidden="true" className="h-4 w-4" />
+              {t('ownerPortal.properties.writeToAgency')}
+            </Link>
+          </Button>
         </div>
       </div>
 
       {/* Property summary */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <h2 className="sr-only">{t('ownerPortal.properties.summaryTitle')}</h2>
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalRevenue')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(property.totalRevenue, 'EUR')}</div>
@@ -95,7 +108,7 @@ export function OwnerProperties() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalBookings')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{property.totalBookings}</div>
@@ -105,7 +118,7 @@ export function OwnerProperties() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.occupancyRate')}</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <Building2 aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{property.occupancyRate.toFixed(1)}%</div>
@@ -113,40 +126,37 @@ export function OwnerProperties() {
         </Card>
       </div>
 
-      {/* Recent bookings */}
+      {/* Recent bookings: dates, channel, amount and state only, never a guest */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('ownerPortal.properties.recentBookings')}</CardTitle>
+          <CardTitle className="text-xl">{t('ownerPortal.properties.recentBookings')}</CardTitle>
           <CardDescription>{t('ownerPortal.properties.recentBookingsDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {property.recentBookings.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">{t('ownerPortal.properties.noBookings')}</p>
+            <p className="py-8 text-center text-muted-foreground">{t('ownerPortal.properties.noBookings')}</p>
           ) : (
-            <div className="space-y-4">
+            <ul className="space-y-4" data-testid="owner-recent-bookings">
               {property.recentBookings.map((booking) => (
-                <div
-                  key={booking.bookingId}
-                  className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                >
-                  <div className="flex-1">
+                <li key={booking.bookingId} className="flex min-w-0 flex-col gap-2 border-b pb-4 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Calendar aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="font-medium">
                         {formatStayDate(booking.checkInDate, locale)} - {formatStayDate(booking.checkOutDate, locale)}
                       </span>
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">
+                    <div className="mt-1 break-words text-sm text-muted-foreground">
                       {t('ownerPortal.properties.channel')}: {booking.channel}
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="sm:text-right">
                     <div className="font-semibold">{formatCurrency(booking.totalAmount, 'EUR')}</div>
                     <div className="text-sm text-muted-foreground">{t(`bookingStatus.${booking.status}`)}</div>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </CardContent>
       </Card>

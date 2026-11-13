@@ -28,54 +28,8 @@ export interface OwnerPortalBookingSummary {
   status: BookingStatus;
 }
 
-/**
- * Monthly statement summary for owner portal (ADR-011-R2).
- * Only published statements are visible.
- */
-export interface OwnerPortalStatement {
-  statementId: string;
-  propertyId: string;
-  propertyName: string;
-  month: number;
-  year: number;
-  totalRevenue: number;
-  agencyCommission: number;
-  netAmount: number;
-  publishedAt: string;
-}
-
-/**
- * Invoice summary for owner portal (ADR-011-R2).
- * Invoices received by the owner from the agency.
- */
-export interface OwnerPortalInvoice {
-  invoiceId: string;
-  invoiceNumber: string;
-  invoiceDate: string;
-  amount: number;
-  description: string;
-  isPaid: boolean;
-}
-
-/**
- * Withholding tax summary for owner portal (ADR-011-R2).
- * Aggregated withholding information for tax purposes.
- */
-export interface OwnerPortalWithholding {
-  year: number;
-  totalWithheld: number;
-  details: OwnerPortalWithholdingDetail[];
-}
-
-/**
- * Detailed withholding entry.
- */
-export interface OwnerPortalWithholdingDetail {
-  propertyId: string;
-  propertyName: string;
-  month: number;
-  amountWithheld: number;
-}
+// The statements, the invoices and the withholding of the owner come from `owner-portal-operations.types.ts` (the published statement versions and the links of the invoices):
+// the old summaries of this file were the shape of endpoints that answered an empty list for every owner, and are gone.
 
 /** How the owner's overview and trend are cut: all the owner's properties together, or one line for each. */
 export type OwnerPortalGroupBy = 'none' | 'property';
