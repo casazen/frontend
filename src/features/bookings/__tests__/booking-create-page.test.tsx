@@ -17,6 +17,7 @@ import { NOON_UTC, freezeClock } from '@/test/clock';
 import type { Booking, ManualBooking, Property, StayAvailability } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import { BookingCreatePage } from '../booking-create-page';
+import { NEW_BOOKING_DRAFT_VERSION, emptyNewBooking, type NewBookingValues } from '../lib/new-booking-model';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/queries/use-users', () => ({
@@ -287,6 +288,48 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     );
     expect(screen.queryByTestId('booking-properties-empty')).not.toBeInTheDocument();
     await waitFor(() => expect(label('booking.create.stay.property')).toBeDisabled(), WAIT);
+  });
+});
+
+describe('the draft of the browser and the address', { timeout: 20000 }, () => {
+  // The draft of the flow as the wizard keeps it: this tab only, for this user in this organization (the user and the organization of the mock above).
+  const DRAFT_KEY = 'casazen.wizardDraft:user-1:org-1:sr-new-booking';
+
+  function keepDraft(values: Partial<NewBookingValues>, version = NEW_BOOKING_DRAFT_VERSION) {
+    sessionStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ step: 'stay', version, savedAt: Date.now(), values: { ...emptyNewBooking(''), ...values } }),
+    );
+  }
+
+  it('BookingCreatePage_DraftOfTheSamePropertyAsTheAddress_IsTakenUp', async () => {
+    keepDraft({ propertyId: property.id, checkInDate: '2027-10-01', checkOutDate: '2027-10-05' });
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
+
+    await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
+    await waitFor(() => expect(label('booking.create.stay.checkIn')).toHaveValue('2027-10-01'), WAIT);
+    expect(label('booking.create.stay.property')).toHaveValue(property.id);
+  });
+
+  it('BookingCreatePage_DraftOfAnotherProperty_GivesWayToTheAddressAndItsAnswersAreNotTaken', async () => {
+    // The property in the address is the one the host came from: a draft for another property must not win over it, nor bring its dates along.
+    keepDraft({ propertyId: 'property-2', checkInDate: '2027-10-01', checkOutDate: '2027-10-05' });
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
+
+    await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
+    await waitFor(() => expect(label('booking.create.stay.property')).toHaveValue(property.id), WAIT);
+    expect(label('booking.create.stay.checkIn')).toHaveValue('');
+    expect(label('booking.create.stay.checkOut')).toHaveValue('');
+  });
+
+  it('BookingCreatePage_DraftOfTheThreeStepsOfBefore_IsNotReadBack', async () => {
+    // Version 2 has no answer about how the guest pays: the draft is of another shape and is ignored, so that no payment answer is ever made up for the host.
+    keepDraft({ propertyId: property.id, checkInDate: '2027-10-01', checkOutDate: '2027-10-05' }, 2);
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
+
+    await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
+    await waitFor(() => expect(label('booking.create.stay.property')).toHaveValue(property.id), WAIT);
+    expect(label('booking.create.stay.checkIn')).toHaveValue('');
   });
 });
 
