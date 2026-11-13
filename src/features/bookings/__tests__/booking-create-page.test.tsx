@@ -295,10 +295,10 @@ describe('the draft of the browser and the address', { timeout: 20000 }, () => {
   // The draft of the flow as the wizard keeps it: this tab only, for this user in this organization (the user and the organization of the mock above).
   const DRAFT_KEY = 'casazen.wizardDraft:user-1:org-1:sr-new-booking';
 
-  function keepDraft(values: Partial<NewBookingValues>, version = NEW_BOOKING_DRAFT_VERSION) {
+  function keepDraft(values: Partial<NewBookingValues>, version = NEW_BOOKING_DRAFT_VERSION, step = 'stay') {
     sessionStorage.setItem(
       DRAFT_KEY,
-      JSON.stringify({ step: 'stay', version, savedAt: Date.now(), values: { ...emptyNewBooking(''), ...values } }),
+      JSON.stringify({ step, version, savedAt: Date.now(), values: { ...emptyNewBooking(''), ...values } }),
     );
   }
 
@@ -330,6 +330,39 @@ describe('the draft of the browser and the address', { timeout: 20000 }, () => {
     await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
     await waitFor(() => expect(label('booking.create.stay.property')).toHaveValue(property.id), WAIT);
     expect(label('booking.create.stay.checkIn')).toHaveValue('');
+  });
+
+  // A draft taken up at the summary: the stay was not checked in this visit, so nothing is known about the channel manager of the property.
+  const keepDraftOfTheSummary = () =>
+    keepDraft(
+      {
+        propertyId: property.id,
+        checkInDate: '2027-10-01',
+        checkOutDate: '2027-10-05',
+        guest: { name: 'Mario Rossi', email: '', phone: '' },
+        paymentArrangement: 'onSite',
+      },
+      NEW_BOOKING_DRAFT_VERSION,
+      'summary',
+    );
+
+  it('BookingCreatePage_DraftTakenUpAtTheSummary_ConnectorOn_SaysAsAConditionThatItIsCreatedInTheChannelManager', async () => {
+    keepDraftOfTheSummary();
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}&step=summary`, { connector: true });
+
+    expect(await screen.findByTestId('booking-summary-happens-channelManagerMaybe', undefined, WAIT)).toHaveTextContent(
+      i18n.t('booking.create.summary.willHappen.channelManagerMaybe'),
+    );
+  });
+
+  it('BookingCreatePage_DraftTakenUpAtTheSummary_ConnectorOff_SaysNothingOfTheChannelManager', async () => {
+    // With the connector off nothing is pushed or asked: not even as a condition.
+    keepDraftOfTheSummary();
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}&step=summary`);
+
+    await screen.findByTestId('booking-summary-what-happens', undefined, WAIT);
+    expect(screen.queryByTestId('booking-summary-happens-channelManagerMaybe')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-summary-happens-channelManager')).not.toBeInTheDocument();
   });
 });
 
@@ -602,11 +635,22 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
 
   it('BookingCreatePage_Summary_ConnectedProperty_SaysItIsCreatedInTheChannelManagerToo', async () => {
     vi.mocked(bookingsApi.availability).mockResolvedValue(freeOnChannelManager);
-    renderPage();
+    renderPage('/app/short-rent/bookings/new', { connector: true });
 
     await reachSummary();
 
     expect(screen.getByTestId('booking-summary-happens-channelManager')).toHaveTextContent(i18n.t('booking.create.summary.willHappen.channelManager'));
+  });
+
+  it('BookingCreatePage_Summary_ConnectedPropertyButConnectorOff_DoesNotMentionTheChannelManager', async () => {
+    // With the connector off nothing is pushed or asked: whatever the stay step saw, the summary says nothing of a channel manager.
+    vi.mocked(bookingsApi.availability).mockResolvedValue(freeOnChannelManager);
+    renderPage();
+
+    await reachSummary();
+
+    expect(screen.queryByTestId('booking-summary-happens-channelManager')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-summary-happens-channelManagerMaybe')).not.toBeInTheDocument();
   });
 
   it('BookingCreatePage_Summary_PropertyNotConnected_DoesNotMentionTheChannelManager', async () => {

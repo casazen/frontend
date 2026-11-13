@@ -6,6 +6,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { fetchHostBookingQuote, fetchStayAvailability, useCreateManualBooking, usePaymentLinkAccountReady } from '@/queries/use-bookings';
 import { NewBookingDone } from './components/new-booking-done';
@@ -51,6 +52,8 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
   const queryClient = useQueryClient();
   const createBooking = useCreateManualBooking();
   const { hasPermission } = useWorkspace();
+  // With the connector of the channel manager off nothing is pushed or asked: the summary says nothing about a channel manager, whatever the stay step saw.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   const [defaults] = useState(() => emptyNewBooking(propertyId));
   // A step that is left with something the API needs and no field can show: the wizard says it above the buttons.
   const [problem, setProblem] = useState<string | null>(null);
@@ -154,7 +157,7 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
         label: t('booking.create.steps.summary.label'),
         title: t('booking.create.steps.summary.title'),
         purpose: t('booking.create.steps.summary.purpose'),
-        render: () => <SummaryStep channelManager={channelManagerOf(checkedStay, values)} />,
+        render: () => <SummaryStep channelManager={channelManagerOf(checkedStay, values)} connectorOn={connectorOn} />,
       },
     ];
   };

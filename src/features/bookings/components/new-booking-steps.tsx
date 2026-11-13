@@ -453,14 +453,17 @@ const PAYMENT_HAPPENS_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
 interface SummaryStepProps {
   /** The property is mirrored on the channel manager, as the availability said on the way out of the stay step; `null` when it is not known. */
   channelManager: boolean | null;
+  /** The connector of the channel manager is on (`octorateConnector`): with it off nothing is pushed or asked, so nothing is said about a channel manager, whatever else is known. */
+  connectorOn: boolean;
 }
 
 /**
  * Step 5: what was answered (each block with its "Edit" back to the step: the price and the way of paying are steps of their own), and, in plain words, what
  * happens when the button creates the booking: it is created in CasaZen and, for a property connected to the channel manager, there too, which closes the dates
- * on every channel; and how the guest pays. A portal's reservation is completed with the name of the guest and nothing is paid here: the portal collects.
+ * on every channel (said only with the connector on); and how the guest pays. A portal's reservation is completed with the name of the guest and nothing is
+ * paid here: the portal collects.
  */
-export function SummaryStep({ channelManager }: SummaryStepProps) {
+export function SummaryStep({ channelManager, connectorOn }: SummaryStepProps) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<NewBookingValues>();
   const values = useWatch({ control }) as NewBookingValues;
@@ -520,15 +523,16 @@ export function SummaryStep({ channelManager }: SummaryStepProps) {
         },
   ];
 
-  // What will happen, one sentence each. Only things that are true: the channel manager is told only for a property that is connected (or, when that is not
-  // known, said as a condition), and nothing is promised about the payment of a portal's reservation.
+  // What will happen, one sentence each. Only things that are true: the channel manager is told only with the connector on, and only for a property that is
+  // connected (or, when that is not known, said as a condition), and nothing is promised about the payment of a portal's reservation.
+  const mentionsChannelManager = connectorOn && !link;
   const happens: { id: string; text: string }[] = [
     {
       id: 'casazen',
       text: link ? t('booking.create.summary.willHappen.portalCompleted', { portal }) : t('booking.create.summary.willHappen.casazen'),
     },
-    ...(!link && channelManager === true ? [{ id: 'channelManager', text: t('booking.create.summary.willHappen.channelManager') }] : []),
-    ...(!link && channelManager === null ? [{ id: 'channelManagerMaybe', text: t('booking.create.summary.willHappen.channelManagerMaybe') }] : []),
+    ...(mentionsChannelManager && channelManager === true ? [{ id: 'channelManager', text: t('booking.create.summary.willHappen.channelManager') }] : []),
+    ...(mentionsChannelManager && channelManager === null ? [{ id: 'channelManagerMaybe', text: t('booking.create.summary.willHappen.channelManagerMaybe') }] : []),
     link
       ? { id: 'payment', text: t('booking.create.summary.willHappen.portal', { portal }) }
       : { id: 'payment', text: arrangement !== '' ? t(PAYMENT_HAPPENS_KEYS[arrangement]) : t('booking.create.summary.willHappen.paymentMissing') },
