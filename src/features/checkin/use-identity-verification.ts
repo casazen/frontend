@@ -139,9 +139,9 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
   };
 
   const askOperator = async () => {
-    await run(() => publicCheckinApi.requestOperator(token), afterOperatorRequest);
-    // A person has it, or it passed: the photo of the document is no longer needed.
-    documentPhoto.current = null;
+    const asked = await run(() => publicCheckinApi.requestOperator(token), afterOperatorRequest);
+    // A person has it, or it passed: the photo of the document is no longer needed. A call that failed leaves it, for the guest who tries again.
+    if (asked) documentPhoto.current = null;
   };
 
   const retake = () => {

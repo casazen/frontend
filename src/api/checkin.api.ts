@@ -1,5 +1,5 @@
 import axios from '@/lib/axios';
-import { ApiClient } from './client';
+import { ApiClient, type ApiRequestOptions } from './client';
 import type {
   AlloggiatiCodeEntryDto,
   AlloggiatiCodeList,
@@ -13,6 +13,12 @@ import type {
   PublicCheckInLanguageResponse,
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
+
+/**
+ * The anonymous upload of a picture: `multipart/form-data` must be said, or the instance (JSON by default) turns the form into JSON and the API
+ * gets no file. The browser adds the boundary.
+ */
+const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
 
 export const publicCheckinApi = {
   /**
@@ -62,7 +68,7 @@ export const publicCheckinApi = {
   postDocument: (token: string, photo: Blob) => {
     const body = new FormData();
     body.append('document', photo, 'document.jpg');
-    return ApiClient.post<IdentityDocumentResponse>(`/public/checkin/${token}/document`, body, { public: true });
+    return ApiClient.post<IdentityDocumentResponse>(`/public/checkin/${token}/document`, body, PUBLIC_MULTIPART);
   },
 
   /**
@@ -73,7 +79,7 @@ export const publicCheckinApi = {
     const body = new FormData();
     body.append('selfie', selfie, 'selfie.jpg');
     if (documentPhoto) body.append('documentPhoto', documentPhoto, 'document.jpg');
-    return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, { public: true });
+    return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, PUBLIC_MULTIPART);
   },
 
   /** The guest asks for a person, at any step, also after a retry or a failed attempt (GDPR art. 22, AC-NF51-11): the operators are told at once. */

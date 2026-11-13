@@ -179,6 +179,27 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     await waitFor(() => expect(stage()).toBe('document'));
   });
 
+  it('IdentityStep_AskingForAPersonFails_SaysSoAndTheButtonStaysAvailableForAnotherTry', async () => {
+    vi.mocked(publicCheckinApi.requestOperator).mockRejectedValueOnce(httpError(undefined, undefined, AxiosError.ERR_NETWORK));
+    vi.mocked(publicCheckinApi.requestOperator).mockResolvedValueOnce({
+      result: 'operator',
+      operatorPathOpen: true,
+      state: state({ step: 'operator', operatorRequested: true, biometricOffered: false }),
+    });
+    renderStep(state({ step: 'operator', biometricOffered: false }));
+
+    fireEvent.click(screen.getByTestId('identity-ask-operator'));
+
+    expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.network'));
+    // Nobody was told: the step is not over, and the guest tries again.
+    expect(screen.getByTestId('harness-concluded')).toHaveTextContent('false');
+    expect(screen.getByTestId('identity-ask-operator')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('identity-ask-operator'));
+
+    await waitFor(() => expect(screen.getByTestId('harness-concluded')).toHaveTextContent('true'));
+    expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
+  });
+
   it('IdentityStep_NotOfferedForThisStay_SaysAPersonVerifiesAndOnlyTheGuestAskingConcludesTheStep', async () => {
     vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({
       result: 'operator',
@@ -557,6 +578,21 @@ describe('IdentityStep: accessibility (UX-11)', () => {
 
     const operator = renderStep(state({ step: 'operator', operatorRequested: true }));
     await expectNoAxeViolations(operator.container);
+  });
+
+  it('IdentityStep_ADocumentThatWasNotGoodEnough_HasNoAccessibilityViolations', async () => {
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValue({
+      success: false,
+      acceptable: false,
+      guidanceCodes: ['avoid_glare', 'show_whole_document'],
+      documentStored: false,
+      documentNotArchived: false,
+    });
+    const { container } = renderStep(state({ step: 'document', consentRecorded: true }));
+    pickDocument();
+    await screen.findByTestId('checkin-identity-document-guidance');
+
+    await expectNoAxeViolations(container);
   });
 
   it('IdentityStep_TheSelfieWithACamera_HasNoAccessibilityViolations', async () => {
