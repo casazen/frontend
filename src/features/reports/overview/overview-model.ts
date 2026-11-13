@@ -1,6 +1,6 @@
 import type { PerformanceQuery, ReportPeriod } from '@/api/reports.api';
 import type { ReportSource } from '@/features/reports/report-catalog';
-import { PERIOD_PRESETS, presetPeriod, type PeriodPresetId } from '@/features/reports/report-period';
+import { presetPeriod, type PeriodPresetId } from '@/features/reports/report-period';
 import { getBookingSourceLabel } from '@/lib/i18n-labels';
 import { formatStayDate } from '@/lib/stay-dates';
 import type { PerformanceGroupBy, PerformanceReport, TrendBucket, TrendUnit } from '@/types/report.types';
@@ -40,9 +40,6 @@ export function defaultOverviewState(today: string): OverviewState {
 export function overviewDays(state: Pick<OverviewState, 'preset' | 'custom'>, today: string): ReportPeriod {
   return state.preset === 'custom' ? state.custom : presetPeriod(state.preset, today);
 }
-
-/** The periods that need no typing: what the owner portal offers. */
-export const FIXED_PRESETS = PERIOD_PRESETS.filter((id): id is Exclude<PeriodPresetId, 'custom'> => id !== 'custom');
 
 /** The overview is a read of short rent: no fiscal rule applies to its days, only the ones of every report (24 months at most). */
 export const HOST_PERIOD_SOURCE: ReportSource = { kind: 'host', report: 'revenue-by-property' };
