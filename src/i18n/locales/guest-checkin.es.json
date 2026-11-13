@@ -232,6 +232,89 @@
       "HeadOfGroup": "Jefe de grupo",
       "SingleGuest": "Huésped individual"
     },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "Ciudad",
+          "civic": "Número",
+          "legend": "Dirección",
+          "postalCode": "Código postal",
+          "province": "Provincia",
+          "street": "Calle"
+        },
+        "country": {
+          "label": "País de la dirección",
+          "why": "Si la dirección no está en Italia, elija el país: entonces no hacen falta el código fiscal ni el número de IVA."
+        },
+        "errors": {
+          "countryInvalid": "Elija un país de la lista.",
+          "fiscalCodeInvalid": "El código fiscal (codice fiscale) no es válido: compruebe los 16 caracteres (persona) o los 11 dígitos (empresa).",
+          "fiscalCodeRequired": "Escriba el código fiscal (codice fiscale): hace falta para emitir la factura.",
+          "kindInvalid": "Elija a nombre de quién se emite la factura.",
+          "pecInvalid": "La dirección PEC no es válida: compruebe la arroba y el dominio.",
+          "postalCodeInvalid": "En Italia el código postal tiene 5 dígitos. Si la dirección está en el extranjero, elija el país en «Más opciones».",
+          "provinceInvalid": "La provincia se escribe con 2 letras, por ejemplo RM.",
+          "recipientCodeInvalid": "El código de destinatario tiene 7 letras o dígitos.",
+          "tooLong": "Este texto es demasiado largo.",
+          "vatNumberInvalid": "El número de IVA (partita IVA) no es válido: compruebe los 11 dígitos.",
+          "vatNumberRequired": "Escriba el número de IVA (partita IVA) o el código fiscal."
+        },
+        "example": "Ejemplo:",
+        "fiscalCode": {
+          "label": "Código fiscal (codice fiscale)",
+          "why": "Por qué lo pedimos: el gestor del alojamiento lo necesita para emitir la factura. Para una empresa basta el número de IVA."
+        },
+        "kind": {
+          "Company": {
+            "description": "Una sociedad o un profesional con número de IVA.",
+            "title": "Una empresa"
+          },
+          "Guest": {
+            "description": "Un particular, normalmente usted.",
+            "title": "Una persona"
+          },
+          "legend": "¿A nombre de quién debe emitirse la factura?"
+        },
+        "more": {
+          "hint": "La dirección es opcional. Las demás opciones normalmente no hacen falta: si no sabe qué son, déjelas en blanco.",
+          "label": "Más opciones"
+        },
+        "name": {
+          "Company": "Razón social",
+          "Guest": "Nombre y apellidos"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Por qué lo pedimos: solo si la factura debe enviarse a una dirección PEC (correo electrónico certificado)."
+        },
+        "sdiRecipientCode": {
+          "label": "Código de destinatario",
+          "why": "Por qué lo pedimos: es el código con el que una empresa recibe las facturas electrónicas. Tiene 7 letras o dígitos: si no lo conoce, déjelo en blanco."
+        },
+        "vatNumber": {
+          "label": "Número de IVA (partita IVA)",
+          "why": "Por qué lo pedimos: hace falta para emitir una factura a una empresa o a un profesional."
+        }
+      },
+      "fieldsHint": "Si escribe sus datos, hace falta el código fiscal (o el número de IVA en el caso de una empresa). Si ahora no los tiene, deje todo en blanco: el gestor del alojamiento se los pedirá.",
+      "intro": "Opcional: puede omitir este paso. Si necesita una factura, indique a nombre de quién emitirla: el gestor del alojamiento lo necesita para emitir el documento.",
+      "no": {
+        "description": "Continúe: el check-in no cambia.",
+        "title": "No, gracias"
+      },
+      "onFile": {
+        "body": "El gestor del alojamiento ya los tiene. Si algo ha cambiado, puede enviarlos de nuevo: los revisará.",
+        "keep": "Conservar los que tenemos",
+        "replace": "Enviar otros datos",
+        "title": "Ya tenemos sus datos de facturación"
+      },
+      "question": "¿Necesita una factura?",
+      "title": "¿Necesita una factura?",
+      "yes": {
+        "description": "Indique a nombre de quién emitirla. Si ahora no tiene los datos, el gestor del alojamiento se los pedirá.",
+        "title": "Sí, necesito una factura"
+      }
+    },
     "language": {
       "label": "Idioma",
       "loadFailed": "No hemos podido cargar este idioma: la página se queda en el idioma anterior.",

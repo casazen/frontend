@@ -16,7 +16,9 @@ export type WizardType =
   | 'CheckIn'
   | 'CheckOut'
   | 'ComplianceSender'
-  | 'TouristTax';
+  | 'TouristTax'
+  | 'OnboardingActivation'
+  | 'OnboardingBulk';
 
 /** A draft as the server holds it (`GET /wizards/{type}/draft`). */
 export interface ServerWizardDraft {

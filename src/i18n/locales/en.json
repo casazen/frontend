@@ -1293,11 +1293,60 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "archiveDocumentHasNoFile": "This document has no file to download.",
+      "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
+      "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
+      "archiveInvalidPage": "The requested page is not valid.",
+      "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
+      "archiveInvalidType": "This type of document does not exist.",
+      "archiveTypeForbidden": "You do not have access to this type of document.",
+      "assistContextInvalid": "This help request is not about a step we can do for you.",
+      "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
+      "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
+      "channelAccessNotValid": "The access to the portal is not valid: open it again and retry.",
+      "channelConnectionNotFound": "The access is given but we cannot find the portal's connection: check the panel.",
+      "crmConfirmationLimitReached": "You have already sent the maximum number of confirmation requests to this address.",
+      "crmConfirmationNotRequired": "This contact needs no confirmation: it has no consent to confirm, or it is already confirmed.",
+      "crmContactNotFound": "We cannot find this contact any more, or it is not among the properties you have access to.",
+      "crmContactSuppressed": "The guest asked not to receive e-mails any more: we cannot send them the request.",
+      "crmMergeCandidateNotFound": "We cannot find this proposal any more, or it involves guests you do not see in full. Refresh the list.",
+      "crmMergeNotProposed": "This proposal has already been decided. Refresh the list.",
+      "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
+      "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
+      "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
+      "d6ChannelFailed": "The portal had a problem: try again shortly.",
+      "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
+      "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
+      "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
+      "existingInventoryAccessPending": "No portal has its access yet: finish the step on the panel first.",
+      "existingInventoryChannelNotSupported": "One of the chosen portals is not available for the import.",
+      "existingInventoryChannelsRequired": "Choose at least one portal.",
+      "existingInventoryGroupNotFound": "This group does not exist.",
+      "existingInventoryGroupScenarioMismatch": "The group holds properties in a different situation.",
+      "existingInventoryMappingPending": "First decide for each listing: confirm, import, exclude or leave for later.",
+      "existingInventoryNeedsWholeOrg": "To import the whole inventory you need to be able to see all the properties of the organization.",
+      "existingInventoryNotReady": "The listings have not been imported yet.",
+      "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
+      "existingInventoryTooManyChannels": "You chose too many portals at once.",
+      "f24TaxCodeMixed": "The month has withholdings with different tax codes: a single F24 cannot be made.",
+      "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
+      "inventoryGroupRequired": "The name of the group is missing.",
+      "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
+      "inventoryIntentChangeRefused": "You cannot move to new listings: there is already an import or a mapping for this property.",
+      "inventoryIntentConflict": "Someone changed the same answer in the meantime: try again.",
+      "inventoryIntentDuplicate": "A property is listed twice.",
+      "inventoryScenarioInvalid": "This situation does not exist.",
+      "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
+      "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
+      "mappingRefreshConflict": "We were already reading the listings: try again in a moment.",
+      "marketingConfirmationUnavailable": "We cannot queue the confirmation e-mail. Try again in a few moments.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
+      "octorateExistingInventoryMustImport": "This property already exists on the portals: it has to be imported and matched, not created again.",
       "octorateMappingAlreadyConfirmed": "This listing is already linked to a property.",
       "octorateMappingLinkedToOtherProperty": "This listing has meanwhile been linked to another property. Go back: the list updates by itself.",
       "octorateMappingNotConfirmed": "Before choosing the room, the listing has to be linked to a property.",
@@ -1305,11 +1354,42 @@
       "octorateMappingPropertyTaken": "This property is already linked to another listing. Go back and choose another one.",
       "octorateMappingRefreshConflict": "The listings are already being updated. Try again in a moment.",
       "octorateNotConnected": "Your channel manager is not connected. Go back to the connection and try again.",
+      "octorateNotFound": "The channel manager cannot find this listing.",
+      "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
+      "octoratePartnerFailed": "The channel did not accept the request (invalid access or channel not reachable): check the access details and try again later.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
+      "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
+      "octorateRequestRejected": "The channel manager refused the request.",
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
+      "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
+      "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
+      "ownerCloseNotReady": "The month cannot be closed: there are anomalies to resolve.",
+      "ownerCloseUnreconciled": "The balance does not match the payments: closing needs a reason.",
+      "ownerCloseWaiverForbidden": "Only who manages the owners' finances can close with a difference.",
+      "ownerExternalDocumentDuplicate": "This invoice is already linked to a statement.",
+      "ownerFiscalProfileOverlap": "A profile already applies from that day or later: pick a later date.",
+      "ownerFxRateExists": "A rate already exists for these currencies on that day.",
+      "ownerPayoutKeyReused": "This payment was already recorded with different data: start again from the statement.",
+      "ownerPeriodClosed": "The month is closed: nothing is posted any more.",
+      "ownerPeriodDirty": "The ledger changed after this version: make a new version.",
+      "ownerPeriodNotEnded": "The month is not over yet: it closes after its last day.",
+      "ownerPolicyAlreadyApproved": "This rule is already approved and never changes.",
+      "ownerStatementFlagged": "This version has anomalies: resolve them and make a new version.",
+      "ownerStatementNotApproved": "The statement must be approved first.",
+      "ownerStatementNotDraft": "This version is no longer a draft.",
+      "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
+      "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
+      "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
+      "panelStepChannelInvalid": "The channel of this step is not valid.",
+      "panelStepKindInvalid": "This kind of step does not exist.",
+      "panelStepNotFound": "This step no longer exists or is not yours.",
+      "panelStepNotValid": "The last check found the connection not valid: open the panel again and retry.",
+      "panelStepResumeInvalid": "We could not save where to resume from. Try again.",
+      "panelStepStateInvalid": "The return from the panel is no longer valid: open the panel again.",
+      "panelStepVerificationRequired": "CasaZen has to check the connection first: wait for the check and try again.",
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
@@ -1318,6 +1398,7 @@
       "noOrgContext": "Your account is not linked to any organization.",
       "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "reservationImportIncomplete": "We did not read all the reservations: try again.",
       "stripeConnectDashboardNotReady": "Your Stripe account is not ready yet: connect Stripe or finish the verification, then you can open it from here.",
       "bankLinkDebitUnavailable": "This Stripe transfer is for a due in euro, from an Italian or European account.",
       "bankLinkNotLinked": "Link the account first. Then you can start the transfer.",
@@ -1339,6 +1420,11 @@
       "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
       "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
       "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
+      "taxApplicabilityUnresolved": "A fact is missing to decide the withholding: CasaZen does not guess it.",
+      "taxFileAlreadyFiled": "The file was already sent: it cannot be generated again.",
+      "taxFilingReferenceRequired": "The reference is needed: who handed it over, the receipt or the reason.",
+      "taxFilingTransitionInvalid": "The file cannot go to this state from where it is.",
+      "taxNoObligations": "There are no withholdings to declare for this period.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
       "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
@@ -1365,6 +1451,23 @@
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
+      "marketplaceActivationNotFound": "We cannot find this activation any more. Start again from the Marketplace.",
+      "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
+      "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
+      "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
+      "marketplaceDeclaredDateInvalid": "The day of the activation is missing or after today: choose today or a day in the past.",
+      "marketplaceEntryNotFound": "This card is not available to you.",
+      "marketplaceFunctionAlreadyActive": "Your license already shows this function as active: there is no need to ask for it.",
+      "marketplaceFunctionUnknown": "This function is not one of the license.",
+      "marketplaceMappingInvalid": "One of the chosen rooms is not valid. Go back and choose again.",
+      "marketplaceMappingRequired": "Link at least one room of the channel.",
+      "marketplaceOctorateNotConnected": "Your channel manager is not connected to CasaZen. Connect it and try again.",
+      "marketplacePanelAccessPending": "First give the consent on the panel of your channel manager.",
+      "marketplacePartnerNeedsWholeOrg": "This activation concerns the whole organization: only someone who sees all the properties can record it.",
+      "marketplacePortalNotCreatable": "This channel cannot be connected from CasaZen.",
+      "marketplacePortalUnknown": "This channel is not available to you.",
+      "marketplacePropertyNotFound": "We cannot find the property, or you have no access to it.",
+      "marketplacePropertyNotLinked": "The property is not linked to your channel manager yet.",
       "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
@@ -1401,6 +1504,20 @@
       "directBookingConsentRequired": "To book you must consent to the processing of your personal data.",
       "directBookingConsentOutdated": "The privacy notice has been updated: reload the page and give your consent again.",
       "directBookingInvalidPaymentOption": "Invalid payment method.",
+      "directBookingMarketingConsentUnavailable": "The text to receive offers is no longer available: reload the page and try again.",
+      "directBookingSoftOptInNoticeOutdated": "The information about offers has been updated: reload the page, read it and try again.",
+      "directBookingWhatsappRequiresPhone": "To receive offers on WhatsApp we need your phone number: type it and try again.",
+      "guestMarketingConsentOutdated": "The text of the consent has been updated: read it again and repeat your choice.",
+      "guestMarketingConsentUnavailable": "We cannot save your choice right now: please try again later.",
+      "guestMarketingEmailInvalid": "Type a correct e-mail address: the one of the booking cannot be used for offers.",
+      "guestMarketingPhoneInvalid": "Check the phone number: it does not look right.",
+      "welcomeAdultRequired": "To continue you must declare that you are at least 18 years old.",
+      "welcomeChannelRequired": "Choose at least one channel: e-mail or WhatsApp.",
+      "welcomeConsentOutdated": "The text of the consent has been updated: read it again and confirm your choice.",
+      "welcomeConsentUnavailable": "We cannot collect your choice right now: please try again later.",
+      "welcomeEmailInvalid": "Check the e-mail address: it does not look right.",
+      "welcomeLinkInvalid": "This page is no longer active.",
+      "welcomePhoneInvalid": "Check the phone number: it does not look right.",
       "onsiteRequestLinkInvalid": "Invalid confirmation link: open the link you received by email.",
       "onsiteRequestExpired": "The request has expired: the dates are available again. You can send a new request.",
       "onsiteRequestNotPending": "The request is no longer pending: it has already been accepted, declined or cancelled.",
@@ -1552,6 +1669,9 @@
       "rentTrackFromInvalid": "The day to track the rents from cannot be after the end of the lease.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
       "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
+      "connectionDisabled": "The connection is switched off on the channel manager: switch it on again from its panel, then come back here.",
+      "connectionMissing": "The connection is no longer on the channel manager (it may have been removed): start the activation of the channel again.",
+      "connectionNotEnabled": "The channel manager does not show the connection as working yet: check the access to the channel and try again.",
       "consentsIncomplete": "To come in you have to accept all the required documents.",
       "invitationDailyLimitReached": "You have already sent many invitations in the last 24 hours. Try again tomorrow.",
       "invitationEmailMismatch": "This invitation is for another address: sign in with the one it was sent to.",
@@ -1582,6 +1702,24 @@
       "concordatofacileAlreadyPurchased": "The guided form is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
       "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
+      "approvalEditInvalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "approvalItemNotFound": "This item is no longer there, or it is not one you can manage. The list updates on its own.",
+      "approvalItemNotPending": "This item has already been decided or has expired. The list updates on its own.",
+      "approvalOriginActionFailed": "The linked action did not go through: the item stays in the queue and you can try again.",
+      "approvalRejectionReasonRequired": "Write the reason for the rejection (500 characters at most).",
+      "approvalSendAttemptsExhausted": "The channel refused this message several times. Reject the draft or write the answer by hand in the conversation.",
+      "campaignNotPendingApproval": "The campaign is no longer waiting for approval: it was already approved or went back to a draft.",
+      "channelRuleViolation": "Before the booking the channel does not allow links, e-mail addresses or phone numbers: remove them from the text and try again.",
+      "chatNotLicensed": "The license of your channel manager does not include chat with guests: the message cannot be sent from here.",
+      "crmMarketingDisabled": "Campaigns are not active for your organization yet: the approval stays in the queue.",
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
+      "messageTextInvalid": "The message cannot be empty or longer than 2000 characters: edit it and try again.",
+      "octorateChatNotSendable": "The channel no longer lets you write in this conversation.",
+      "octorateMessageError": "The channel did not accept the message.",
+      "octorateRateLimited": "Your channel manager received too many requests: try again in a few minutes.",
+      "octorateRequestRejected": "Your channel manager did not accept the message.",
+      "threadKeyInvalid": "The conversation of this draft is no longer there.",
+      "threadNotFound": "The conversation of this draft is no longer there.",
       "leaseAlreadyTerminated": "This lease has already ended.",
       "leaseBusy": "The lease is busy with another operation. Try again in a few seconds.",
       "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
@@ -1645,24 +1783,80 @@
   "approval": {
     "action": {
       "approve": "Approve",
+      "approveAndSend": "Approve and send",
       "approved": "Item approved",
       "approveFailed": "Failed to approve item",
+      "edit": "Edit",
+      "edited": "Edit saved",
+      "editFailed": "Could not save the edit",
+      "executed": {
+        "already": "It was already approved: nothing was sent again.",
+        "campaign": "Campaign approved and scheduled.",
+        "campaignApproved": "Campaign approved. It has no send date yet: schedule it from the campaigns.",
+        "message": "Message sent to the guest.",
+        "messageQueued": "Your channel manager has the message and will send it to the guest.",
+        "messageVerify": "We do not know whether the channel received the message: check the conversation before you write it again.",
+        "none": "Approved. There was no action linked to run."
+      },
+      "originFailed": "The approval could not be completed: the item stays in the queue.",
+      "originFailedHint": "You can try again, or edit the text and approve it again.",
+      "originUnknown": "Something went wrong. Try again in a moment.",
       "reject": "Reject",
       "rejected": "Item rejected",
-      "rejectFailed": "Failed to reject item"
+      "rejectFailed": "Failed to reject item",
+      "retry": "Try again",
+      "save": "Save",
+      "saveAndApprove": "Save and approve"
     },
     "ai_generated": "AI Generated",
+    "confidence": {
+      "high": "high",
+      "label": "Confidence: {{level}} ({{percent}}%)",
+      "low": "low, check it carefully"
+    },
     "content": "Content",
+    "contentEdited": "Text as you edited it",
+    "contentShowOriginal": "Show the original text",
+    "decided": {
+      "reason": "Reason",
+      "title": "Just decided"
+    },
     "dialog": {
       "reasonLabel": "Rejection reason",
       "reasonPlaceholder": "Describe why you are rejecting this item…",
       "rejectDescription": "Specify the reason for rejecting this item. The reason will be logged.",
       "rejectTitle": "Reject item"
     },
+    "edit": {
+      "bodyLabel": "Campaign text",
+      "campaignHint": "The body of the email, under the subject line.",
+      "description": "Change the text before you decide. The original stays below.",
+      "descriptionCampaign": "Change the subject line and the text of the campaign before you approve it. The original stays below.",
+      "descriptionMessage": "Change the message before it goes to the guest. The original stays below.",
+      "error": {
+        "bodyRequired": "Write the text of the campaign.",
+        "empty": "Write the text.",
+        "subjectOneLine": "The subject line must fit on one line.",
+        "subjectRequired": "Write the subject line of the campaign.",
+        "subjectTooLong": "The subject line is too long: {{max}} characters at most.",
+        "tooLong": "The text is too long: {{max}} characters at most."
+      },
+      "invalid": "The text is not valid: a message cannot be empty or longer than 2000 characters; a campaign needs a subject line and a text.",
+      "original": "Original text",
+      "restore": "Restore the original",
+      "subjectLabel": "Subject line",
+      "textLabel": "Text",
+      "title": "Edit the text"
+    },
+    "edited": "Edited",
     "expires": "Expires",
     "filter": {
       "allTypes": "All types",
       "type": "Type"
+    },
+    "hint": {
+      "campaign": "When you approve it, the campaign is approved and, if it already has a send date, scheduled.",
+      "messageDraft": "When you approve it, the message goes to the guest. You can edit it first."
     },
     "queue": {
       "description": "Items awaiting approval before execution",
@@ -1673,15 +1867,42 @@
       "loading": "Loading approval queue…",
       "title": "Approval Queue"
     },
+    "reject": {
+      "reasonRequired": "Write the reason for the rejection.",
+      "reasonTooLong": "The reason is too long: {{max}} characters at most."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellation or refund",
+      "check_in_time": "Check-in time",
+      "complaint": "Complaint",
+      "directions": "Directions",
+      "discount_request": "Discount request",
+      "early_arrival_or_late_checkout": "Early arrival or late check-out",
+      "emergency": "Emergency",
+      "invoice_request": "Invoice request",
+      "label": "Situation",
+      "malfunction": "Malfunction or problem",
+      "noise": "Noise",
+      "other": "Other",
+      "parking": "Parking",
+      "pets": "Pets",
+      "thank_you": "Thank you",
+      "wifi": "Wi-Fi"
+    },
     "status": {
       "approved": "Approved",
       "expired": "Expired",
       "pending": "Pending",
       "rejected": "Rejected"
     },
+    "thread": {
+      "open": "Open the conversation"
+    },
     "type": {
       "aiText": "AI Text",
       "campaign": "Campaign",
+      "messageDraft": "Message draft",
+      "other": "Other",
       "routine": "Routine"
     }
   },
@@ -3219,6 +3440,89 @@
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
     },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "City",
+          "civic": "Number",
+          "legend": "Address",
+          "postalCode": "Postal code",
+          "province": "Province",
+          "street": "Street"
+        },
+        "country": {
+          "label": "Country of the address",
+          "why": "If the address is not in Italy, choose the country: then the fiscal code and the VAT number are not needed."
+        },
+        "errors": {
+          "countryInvalid": "Choose a country from the list.",
+          "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+          "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+          "kindInvalid": "Choose who the invoice is for.",
+          "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+          "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+          "provinceInvalid": "The province is written with 2 letters, for example RM.",
+          "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+          "tooLong": "This text is too long.",
+          "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+          "vatNumberRequired": "Write the VAT number or the fiscal code."
+        },
+        "example": "Example:",
+        "fiscalCode": {
+          "label": "Fiscal code",
+          "why": "Why we ask: the property manager needs it to issue the invoice. For a company the VAT number is enough."
+        },
+        "kind": {
+          "Company": {
+            "description": "A company or a professional with a VAT number.",
+            "title": "A company"
+          },
+          "Guest": {
+            "description": "A private person, usually you.",
+            "title": "A person"
+          },
+          "legend": "Who should the invoice be made out to?"
+        },
+        "more": {
+          "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+          "label": "More options"
+        },
+        "name": {
+          "Company": "Company name",
+          "Guest": "Name and surname"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Why we ask: only if the invoice has to be sent to a PEC address (certified e-mail)."
+        },
+        "sdiRecipientCode": {
+          "label": "Recipient code",
+          "why": "Why we ask: it is the code a company receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+        },
+        "vatNumber": {
+          "label": "VAT number",
+          "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+        }
+      },
+      "fieldsHint": "If you write your data, the fiscal code is needed (or the VAT number for a company). If you do not have them now, leave everything empty: the property manager will ask you.",
+      "intro": "Optional: you can skip this step. If you need an invoice, tell us who to make it out to: the property manager needs it to issue the document.",
+      "no": {
+        "description": "Go on: the check-in does not change.",
+        "title": "No, thanks"
+      },
+      "onFile": {
+        "body": "The property manager already has them. If something has changed, you can send them again: they will check them.",
+        "keep": "Keep the ones we have",
+        "replace": "Send different data",
+        "title": "We already have your invoice data"
+      },
+      "question": "Do you need an invoice?",
+      "title": "Do you need an invoice?",
+      "yes": {
+        "description": "Write who to make it out to. If you do not have the data now, the property manager will ask you.",
+        "title": "Yes, I need an invoice"
+      }
+    },
     "language": {
       "label": "Language",
       "loadFailed": "We could not load this language: the page stays in the one it had.",
@@ -4448,46 +4752,339 @@
     }
   },
   "crm": {
-    "actions": "Actions",
-    "backToList": "Back to list",
-    "consent": "Consents",
-    "consentEmail": "Email",
-    "consentGrantedEmail": "Email consent granted",
-    "consentGrantedWhatsApp": "WhatsApp consent granted",
-    "consentNotGrantedEmail": "Email consent not granted",
-    "consentNotGrantedWhatsApp": "WhatsApp consent not granted",
-    "consentWhatsApp": "WhatsApp",
-    "country": "Country",
-    "description": "Search and view guest profiles for marketing and segmentation",
-    "email": "Email",
-    "empty": "No guests found. Guests who have stayed at your properties will appear here.",
-    "error": "Loading error",
-    "errorDescription": "Could not load guest profiles. Please try again later.",
-    "firstStay": "First stay",
-    "guestSince": "Guest since {{date}}",
-    "language": "Language",
-    "lastStay": "Last stay",
-    "loading": "Loading CRM guests...",
-    "loadingProfile": "Loading guest profile...",
-    "marketingConsent": "Marketing consents",
-    "next": "Next",
-    "noConsent": "No consent",
-    "noResults": "No results for your search. Try different terms.",
-    "noTags": "No tags assigned",
-    "previous": "Previous",
-    "profileError": "Profile loading error",
-    "profileErrorDescription": "Could not load guest profile. Please try again later.",
-    "profileInfo": "Profile information",
-    "searchPlaceholder": "Search by email or country...",
-    "showing": "Showing {{start}}-{{end}} of {{total}}",
-    "spend": "Total spend",
-    "stayHistory": "Stay history",
-    "stays": "Stays",
-    "tags": "Tags",
-    "title": "Guest CRM",
-    "totalSpend": "Total spend",
-    "totalStays": "Total stays",
-    "viewDetails": "Details"
+    "channels": {
+      "Agoda": "Agoda",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Direct": "Direct site",
+      "Expedia": "Expedia",
+      "Local": "Booked locally",
+      "Manual": "Entered by hand",
+      "OtherChannel": "Another portal",
+      "TripAdvisor": "Tripadvisor",
+      "Vrbo": "Vrbo"
+    },
+    "contacts": {
+      "basis": {
+        "Consent": "Consent",
+        "None": "None",
+        "ServiceOnly": "Service only",
+        "SoftOptIn": "Direct customer"
+      },
+      "basisDate": "recorded on {{date}}",
+      "basisVersion": "text version {{version}}",
+      "basisVersionAndDate": "text version {{version}}, recorded on {{date}}",
+      "channel": {
+        "Email": "E-mail",
+        "Phone": "Phone",
+        "WhatsApp": "WhatsApp"
+      },
+      "confirmation": {
+        "Confirmed": "Confirmed",
+        "Pending": "Waiting for the guest's answer",
+        "Unconfirmed": "Not asked yet"
+      },
+      "confirmationError": "We could not send the confirmation request. Try again in a few moments.",
+      "confirmationLimit": "You have already sent the maximum number of requests to this address: no more can be sent.",
+      "confirmationSent": "Request sent: the guest will get an e-mail to confirm.",
+      "confirmationSuppressed": "You cannot ask for the confirmation: the guest asked not to receive e-mails any more.",
+      "confirmationTooSoon": "A request went out a few minutes ago: wait for the guest to answer before sending another.",
+      "description": "How you can reach this guest, and what each contact lets you do.",
+      "empty": "No contact is recorded for this guest.",
+      "fields": {
+        "basis": "Basis",
+        "channel": "Channel",
+        "confirmation": "Confirmation",
+        "optOut": "Opt-out",
+        "origin": "Where it comes from"
+      },
+      "origin": {
+        "CheckIn": "Online check-in",
+        "DirectBooking": "Booking on your own site",
+        "GuestPage": "Guest page",
+        "Manual": "Entered by hand",
+        "OctorateContactInfo": "Channel manager booking",
+        "OtaForward": "Forward address of a booking channel",
+        "WelcomePage": "Welcome page"
+      },
+      "otaForward": "Forward address of the channel: service messages only.",
+      "reachability": {
+        "channelNotAvailable": "The guest gave their consent, but CasaZen does not send messages on this channel yet.",
+        "marketable": "You can write to them about news and offers.",
+        "noBasis": "You cannot write to them about news and offers: they gave no consent.",
+        "notConfirmed": "You cannot write to them about news and offers yet: they gave their consent but have not confirmed the address.",
+        "otaForward": "You cannot write to them about news and offers: this is the forward address of a booking channel, valid only for messages about the stay.",
+        "suppressed": "You cannot write to them about news and offers: they asked not to be contacted any more.",
+        "unknown": "You cannot write to them about news and offers on this contact."
+      },
+      "sendConfirmation": "Send the confirmation request",
+      "sendConfirmationFor": "Send the confirmation request to {{value}}",
+      "suppressed": "Yes, they asked not to be contacted any more on this channel",
+      "title": "Contacts",
+      "withdrawals": "A consent is withdrawn in the privacy tab of the guest's record, not here.",
+      "withdrawalsLink": "Open the privacy tab"
+    },
+    "detail": {
+      "backToList": "Back to the profiles",
+      "channels": {
+        "empty": "No completed stay yet.",
+        "title": "Where they book"
+      },
+      "fallbackTitle": "Guest profile",
+      "group": {
+        "average": "On average {{adults}} adults and {{children}} children per stay.",
+        "couple": "Usually travels as a couple.",
+        "family": "Usually travels as a family, with children.",
+        "group": "Usually travels in a group, three adults or more.",
+        "none": "No completed stay yet: we do not know how they travel.",
+        "single": "Usually travels alone.",
+        "title": "How they travel"
+      },
+      "guestRecord": "Open the guest record",
+      "history": {
+        "columns": {
+          "channel": "Channel",
+          "dates": "Dates",
+          "property": "Property",
+          "status": "Status",
+          "total": "Amount"
+        },
+        "empty": {
+          "description": "The bookings of this guest will show up here.",
+          "title": "No booking to show"
+        },
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "range": "{{from}} – {{to}}",
+        "title": "Stay history",
+        "truncated": "Showing the latest {{count}} stays: the totals count all of them."
+      },
+      "loadError": "We cannot load the profile",
+      "loading": "Loading the profile…",
+      "mergeLink": "Review the duplicates",
+      "mergeProposals_one": "A possible duplicate of this guest is waiting for your decision.",
+      "mergeProposals_other": "{{count}} possible duplicates of this guest are waiting for your decision.",
+      "noStayYet": "No completed stay yet",
+      "notFound": {
+        "description": "The profile does not exist, or it is not among the properties you have access to.",
+        "title": "Profile not found"
+      },
+      "properties": {
+        "empty": "No property yet.",
+        "title": "Properties"
+      },
+      "reviews": {
+        "average": "Average mark {{rating}} out of 5",
+        "count_one": "{{count}} review",
+        "count_other": "{{count}} reviews",
+        "empty": "No review on their stays.",
+        "entry": "{{rating}} out of 5",
+        "latest": "The latest reviews",
+        "title": "Reviews"
+      },
+      "since": "Guest since {{date}}",
+      "staysCount_one": "{{count}} stay",
+      "staysCount_other": "{{count}} stays",
+      "totals": {
+        "advance": "Books on average",
+        "advanceDays_one": "{{count}} day ahead",
+        "advanceDays_other": "{{count}} days ahead",
+        "averageSpend": "Average spend",
+        "label": "At a glance",
+        "spend": "Total spend",
+        "stays": "Stays"
+      },
+      "unnamed": "Guest without a name"
+    },
+    "filters": {
+      "channel": {
+        "all": "All channels",
+        "label": "Booked on"
+      },
+      "clear": "Clear the filters",
+      "country": {
+        "hint": "Write the two-letter ISO code (IT, DE, FR…): the filter looks for the exact value saved on the profile.",
+        "label": "Country",
+        "placeholder": "E.g. IT"
+      },
+      "email": {
+        "any": "Any",
+        "label": "Reachable by e-mail",
+        "reachable": "Yes, I can write to them",
+        "unreachable": "No, I cannot write to them"
+      },
+      "language": {
+        "all": "All languages",
+        "label": "Language"
+      },
+      "minStays": {
+        "any": "Any",
+        "label": "Stays",
+        "option_one": "At least {{count}} stay",
+        "option_other": "At least {{count}} stays"
+      },
+      "panel": {
+        "button": "Filters",
+        "buttonActive": "Filters ({{active}})"
+      },
+      "region": "Search and filter the profiles",
+      "search": {
+        "hint": "Type a part of the name, or the whole e-mail address or phone number.",
+        "label": "Search for a guest",
+        "placeholder": "Name, e-mail or phone"
+      },
+      "sort": {
+        "label": "Sort by",
+        "lastStay": "Latest stay",
+        "name": "Name (A-Z)",
+        "spend": "Highest spend",
+        "stays": "Most stays"
+      },
+      "tag": {
+        "label": "Tag",
+        "placeholder": "E.g. VIP"
+      }
+    },
+    "list": {
+      "channels": "Booking channels",
+      "columns": {
+        "channels": "Channels",
+        "email": "E-mail",
+        "guest": "Guest",
+        "lastStay": "Latest stay",
+        "spend": "Spend",
+        "stays": "Stays"
+      },
+      "count_one": "{{count}} profile",
+      "count_other": "{{count}} profiles",
+      "description": "Your guests, with their stays and whether you can write to them. You only see who stayed at the properties you have access to.",
+      "empty": {
+        "description": "Profiles come with the bookings: when a guest stays with you, you will find them here.",
+        "title": "No guests yet"
+      },
+      "label": "Guest profiles",
+      "lastStay": "latest stay {{date}}",
+      "loadError": "We cannot load the guest profiles",
+      "mergeProposal": "Possible duplicate",
+      "mergeProposalHint": "Another profile may be the same person: you will find it among the duplicates to review.",
+      "mergeProposalHintReadOnly": "Another profile may be the same person: whoever can edit the guests decides on it.",
+      "moreTags_one": "+{{count}} more",
+      "moreTags_other": "+{{count}} more",
+      "noMatch": {
+        "action": "Clear the filters",
+        "description": "Try fewer filters or another search.",
+        "title": "No profile matches the filters"
+      },
+      "noName": "Guest without a name",
+      "staysCount_one": "{{count}} stay",
+      "staysCount_other": "{{count}} stays",
+      "tags": "Tags",
+      "title": "Guest CRM"
+    },
+    "merge": {
+      "card": {
+        "label": "Possible duplicate: {{a}} and {{b}}",
+        "merge": "Merge",
+        "mergeAria": "Merge {{a}} and {{b}}",
+        "notSame": "They are not the same person",
+        "notSameAria": "They are not the same person: {{a}} and {{b}}"
+      },
+      "count_one": "{{count}} proposal to review",
+      "count_other": "{{count}} proposals to review",
+      "description": "CasaZen found guests who may be the same person. It never merges anything by itself: you decide.",
+      "dialog": {
+        "confirm": "Merge the profiles",
+        "consent": "No consent changes: every contact stays as it is, with its basis and its confirmation.",
+        "description": "Choose the profile to keep: the other one will no longer show in your lists.",
+        "final": "This cannot be undone.",
+        "history": "The history and the contacts of the other profile move to the one you keep.",
+        "legend": "Which profile do you want to keep?",
+        "stays_one": "{{count}} stay",
+        "stays_other": "{{count}} stays",
+        "title": "Merge the two profiles"
+      },
+      "dismiss": {
+        "confirm": "Yes, they are different people",
+        "description": "CasaZen will not propose this pair again. No profile changes.",
+        "title": "Are they two different people?"
+      },
+      "dismissDone": "Done: this pair will not be proposed to you again.",
+      "dismissError": "We could not save your decision. Try again in a few moments.",
+      "empty": {
+        "action": "Go to the profiles",
+        "description": "When CasaZen finds two guests who may be the same person, you will see them here and decide.",
+        "title": "No duplicates to review"
+      },
+      "label": "Possible duplicates",
+      "likelihood": {
+        "likely": "Likely the same person",
+        "possible": "Possibly the same person",
+        "veryLikely": "Very likely the same person"
+      },
+      "loadError": "We cannot load the possible duplicates",
+      "loading": "Loading the possible duplicates…",
+      "mergeDone": "Profiles merged.",
+      "mergeError": "We could not merge the profiles. Try again in a few moments.",
+      "profile": {
+        "contacts": "Contacts",
+        "country": "Country",
+        "lastStay": "Latest stay",
+        "noContacts": "No contact",
+        "noName": "Guest without a name",
+        "noStay": "No stay",
+        "position": "Profile {{position}}",
+        "properties": "Properties",
+        "stays": "Stays"
+      },
+      "reasons": {
+        "sameEmail": "They share the same e-mail address.",
+        "sameNameBirth": "They have the same name and the same date of birth.",
+        "sameNameSameProperty": "They have the same name and stayed at the same property.",
+        "samePhone": "They share the same phone number.",
+        "title": "Why we put them together",
+        "unknown": "They have other things in common."
+      },
+      "title": "Possible duplicates"
+    },
+    "state": {
+      "consent": {
+        "hint": "The guest gave their consent and confirmed their e-mail address: you can write to them about news and offers.",
+        "label": "Reachable, with consent"
+      },
+      "noContact": {
+        "hint": "There is no e-mail address to write to: either there is none, or it was left without any permission to use it.",
+        "label": "No contact"
+      },
+      "serviceOnly": {
+        "hint": "You can write to them only about their stay (confirmations, arrival instructions, invoices), not about news and offers. This is the case for the addresses of booking portals and for guests who gave no consent.",
+        "label": "Service only"
+      },
+      "softOptIn": {
+        "hint": "They booked directly with you: you may offer them services similar to those they bought, and every message carries a link to unsubscribe.",
+        "label": "Reachable, direct customer"
+      },
+      "toConfirm": {
+        "hint": "They gave their consent but have not confirmed their e-mail address yet (or they asked not to receive e-mails any more). For now you cannot write to them about news and offers: open the profile to see which.",
+        "label": "To confirm"
+      },
+      "unsubscribed": {
+        "hint": "They asked not to receive promotional e-mails any more, so you cannot write to them about news and offers. Messages about a stay can still reach them.",
+        "label": "Unsubscribed"
+      }
+    },
+    "tags": {
+      "add": "Add",
+      "addLabel": "New tag",
+      "addPlaceholder": "E.g. VIP",
+      "description": "Your own words for finding the guest again and for preparing the mailings. Up to 50 tags, each up to 40 characters.",
+      "duplicate": "This tag is already there.",
+      "empty": "No tags: add one to find this guest again.",
+      "error": "We could not save the tags. Try again in a few moments.",
+      "limit": "You have reached the maximum of {{count}} tags: remove one to add more.",
+      "remove": "Remove the tag {{tag}}",
+      "success": "Tags saved.",
+      "title": "Tags"
+    }
   },
   "dashboard": {
     "title": "Good morning, {{name}}",
@@ -4781,6 +5378,74 @@
     "openPropertyPage": "Open property page",
     "orgUrlSectionTitle": "Org URL",
     "selectPropertyHint": "Select a property to preview its booking page."
+  },
+  "documentArchive": {
+    "booking": "Booking",
+    "columns": {
+      "booking": "Booking",
+      "date": "Date",
+      "document": "Document",
+      "property": "Property",
+      "size": "Size"
+    },
+    "count_one": "{{count}} document",
+    "count_other": "{{count}} documents",
+    "description": "Every document you can read, in one place: search, filter and download a file or the archive of a period.",
+    "download": "Download",
+    "downloadDone": "Document downloaded.",
+    "downloadFailed": "The document could not be downloaded. Try again.",
+    "emptyDescription": "Documents show up here as soon as you upload or receive them.",
+    "emptyTitle": "No documents",
+    "error": "Unable to load the documents.",
+    "export": {
+      "description": "A ZIP file with the documents of the period: a folder for each type and the index as a CSV. A document with no file is in the index with an empty file column.",
+      "done": "Archive downloaded.",
+      "error": {
+        "invalidDates": "Check the dates: a first day and a last day are needed, the first not after the last.",
+        "noTypes": "Choose at least one type of document.",
+        "tooLong": "The period is too long: the archive covers 24 months at most."
+      },
+      "failed": "The archive could not be downloaded. Try again.",
+      "open": "Download archive",
+      "period": "Period",
+      "preparing": "Preparing the archive: it can take a while. Do not close this window.",
+      "property": "Property",
+      "received": "Downloading the archive: {{size}} received so far. Do not close this window.",
+      "retry": "Try again",
+      "start": "Download",
+      "title": "Download the document archive",
+      "tooBig_one": "The archive would be too large: the file found goes over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooBig_other": "The archive would be too large: the {{count}} files found go over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooLarge_one": "We found {{count}} file: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
+      "tooLarge_other": "We found {{count}} files: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
+      "types": "Types of document"
+    },
+    "filters": {
+      "all": "All",
+      "allProperties": "All properties",
+      "days": "Document date",
+      "property": "Property"
+    },
+    "noFile": "No file",
+    "noResultsDescription": "Try removing a filter or searching with another word.",
+    "noResultsTitle": "No documents with these filters",
+    "pageSize": "Documents per page",
+    "search": {
+      "label": "Search the documents",
+      "placeholder": "Search by title, property or booking code"
+    },
+    "title": "Documents",
+    "types": {
+      "AlloggiatiReceipt": "Alloggiati receipt",
+      "Contract": "Contract",
+      "CreditNote": "Credit note",
+      "Invoice": "Invoice",
+      "IstatProof": "ISTAT proof",
+      "Other": "Other document",
+      "PropertyDocument": "Property document",
+      "Receipt": "Receipt",
+      "TouristTax": "Tourist tax"
+    }
   },
   "documentPages": {
     "select": "Choose a PDF or page photos",
@@ -5102,6 +5767,269 @@
     },
     "list": {
       "title": "Properties"
+    }
+  },
+  "fiscalDocuments": {
+    "issuer": {
+      "address": {
+        "city": {
+          "example": "Milan",
+          "label": "Town or city"
+        },
+        "civic": {
+          "label": "Street number"
+        },
+        "postalCode": {
+          "hint": "The postal code (CAP): 5 digits.",
+          "label": "Postal code"
+        },
+        "province": {
+          "hint": "The two-letter abbreviation.",
+          "label": "Province"
+        },
+        "street": {
+          "example": "Via Roma",
+          "label": "Street or square"
+        }
+      },
+      "card": {
+        "action": "Set up",
+        "description": "Choose who issues the fiscal documents of your stays: your channel manager, CasaZen or your accountant.",
+        "title": "How you issue documents"
+      },
+      "data": {
+        "defaultSeries": {
+          "hint": "The letters before the number of the document. If you leave it empty we use the year.",
+          "label": "Number series"
+        },
+        "fatturaPaRegimeCode": {
+          "hint": "If you leave it empty we use the code of your regime.",
+          "label": "Regime code in the electronic invoice"
+        },
+        "fiscalCode": {
+          "hint": "It is needed for receipts. We save it in your tax profile.",
+          "label": "Fiscal code"
+        },
+        "issuerPec": {
+          "hint": "Only if you receive electronic invoices on your PEC (certified e-mail).",
+          "label": "PEC"
+        },
+        "issuerSdiRecipientCode": {
+          "hint": "It is 7 letters or digits. Only if you receive electronic invoices through a channel of your own.",
+          "label": "Recipient code of your channel"
+        },
+        "legalName": {
+          "hint": "The company name, or first and last name.",
+          "label": "Name on the documents"
+        },
+        "moreOptions": "More options",
+        "moreOptionsHint": "They are usually not needed: if you do not know what they are, leave them empty.",
+        "onRecord": {
+          "fiscalCode": "Fiscal code {{value}}, from your tax profile.",
+          "vatNumber": "VAT number {{value}}, from your tax profile."
+        },
+        "vatNumber": {
+          "hint": "It is 11 digits. We save it in your tax profile.",
+          "label": "VAT number"
+        }
+      },
+      "description": "Tell us who issues the fiscal documents of your stays and which document your regime needs. It only takes a few minutes.",
+      "done": {
+        "rule": {
+          "invoice": "For your regime the document is an electronic invoice.",
+          "receipt": "For your regime the document is a PDF receipt."
+        },
+        "title": "We saved how you issue documents",
+        "toFiscal": "Back to the fiscal regime",
+        "toHome": "Go to the home"
+      },
+      "effects": {
+        "accountant": {
+          "issues": "CasaZen does not issue documents for your bookings: your accountant takes care of it."
+        },
+        "casazen": {
+          "direct": "CasaZen issues documents only for direct bookings: the ones of your site and the ones you enter yourself.",
+          "portals": "For bookings that come from the portals CasaZen never issues documents: each booking has only one issuer.",
+          "receipt": "For your regime the document is a receipt, not an electronic invoice: there is no XML file and nothing is sent to the Sistema di Interscambio (SDI).",
+          "ruleUnconfirmed": "Until the type of document and the VAT of your regime are confirmed, CasaZen does not issue any document."
+        },
+        "change": "You can change this choice whenever you like.",
+        "noSdi": "CasaZen sends nothing to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency).",
+        "octorate": {
+          "issues": "Your channel manager issues the documents: CasaZen does not issue any.",
+          "oneIssuer": "Each booking has only one issuer: where your channel manager issues, CasaZen never does."
+        },
+        "sdi": {
+          "available": "CasaZen can send electronic invoices to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency).",
+          "notAvailable": "Sending to the Sistema di Interscambio (SDI, the channel for electronic invoices of the Italian Revenue Agency) is not available yet: you download the XML file yourself."
+        }
+      },
+      "errors": {
+        "addressCivic": "The street number can have 20 characters at most.",
+        "addressStreet": "Write the street or square.",
+        "casazenUnavailable": "CasaZen does not issue documents yet: choose another answer.",
+        "city": "Write the town or city.",
+        "defaultSeries": "The series can have letters, digits and the signs . _ / - (20 characters at most).",
+        "fatturaPaRegimeCode": "The regime code has 4 letters or digits at most, for example RF01.",
+        "fiscalCode": "The fiscal code is not valid: check the 16 characters (or the 11 digits of a company) again.",
+        "hasVatNumber": "Answer: do you have a VAT number?",
+        "issuerPec": "Write a valid PEC address, for example name@pec.it.",
+        "issuerSdiRecipientCode": "The recipient code has 7 letters or digits.",
+        "legalName": "Write the name that appears on the documents (200 characters at most).",
+        "modeRequired": "Choose who issues the documents.",
+        "octorateUnavailable": "Your channel manager is not connected: choose another answer.",
+        "postalCode": "The postal code has 5 digits.",
+        "province": "The province is the two-letter abbreviation, for example MI.",
+        "regime": "Choose your regime.",
+        "vatNumber": "The VAT number has 11 digits.",
+        "vatRegime": "Choose the regime you apply."
+      },
+      "example": {
+        "heading": "Example of a document",
+        "issuedTo": "The name and details of the guest",
+        "note": "It is only an example: the final type of document and VAT are confirmed by your accountant.",
+        "PrivatePerson": {
+          "issuedBy": "Your name and your fiscal code",
+          "title": "Receipt",
+          "vat": "No VAT"
+        },
+        "rows": {
+          "issuedBy": "Issued by",
+          "issuedTo": "Issued to",
+          "stay": "Stay",
+          "vat": "VAT"
+        },
+        "stay": "Dates and number of nights, with the amount",
+        "VatFlatRate": {
+          "issuedBy": "Your name or company name and your VAT number",
+          "title": "Electronic invoice",
+          "vat": "No VAT, with the wording of the flat-rate regime"
+        },
+        "VatOrdinary": {
+          "issuedBy": "Your name or company name and your VAT number",
+          "title": "Electronic invoice",
+          "vat": "VAT shown on the document"
+        }
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "Answers saved in this browser. Nothing has changed until you confirm."
+      },
+      "finishLabel": "Confirm and save",
+      "help": {
+        "address": "Write the address of whoever issues the documents, as it must appear on the document.",
+        "button": "Help",
+        "issuer": "The name on the documents is the one of whoever issues them: the company name, or first and last name. The other options are usually not needed.",
+        "regime": "The regime says which document is needed: a receipt for a private person, an electronic invoice if you have a VAT number. If you are not sure, ask your accountant.",
+        "summary": "Check your answers: “Edit” goes back to the right step. Nothing changes until you confirm.",
+        "supportGeneric": "Still in doubt? Contact CasaZen support.",
+        "supportWithEmail": "Still in doubt? Write to support:",
+        "title": "How do you issue documents?",
+        "who": "For each booking only one party issues the documents: your channel manager, CasaZen (for direct bookings only) or your accountant. Choose the one you already use."
+      },
+      "labels": {
+        "mode": {
+          "Accountant": "Your accountant",
+          "CasaZenDirectOnly": "CasaZen, for direct bookings only",
+          "Octorate": "Your channel manager"
+        },
+        "regime": {
+          "PrivatePerson": "Private person, no VAT number",
+          "VatFlatRate": "VAT number, flat-rate regime",
+          "VatOrdinary": "VAT number, ordinary regime"
+        }
+      },
+      "loadError": "We cannot load how you issue documents.",
+      "loading": "Loading your settings…",
+      "regime": {
+        "hasVatNumber": {
+          "legend": "Do you have a VAT number?",
+          "no": {
+            "description": "You rent as a private person, with no VAT number.",
+            "title": "No, I am a private person"
+          },
+          "yes": {
+            "description": "You rent as a business, with a VAT number.",
+            "title": "Yes, I have a VAT number"
+          }
+        },
+        "vatRegime": {
+          "flatRate": {
+            "description": "You invoice without VAT, under the rules of the simplified regime.",
+            "title": "Flat-rate regime"
+          },
+          "hint": "Not sure? Ask your accountant.",
+          "legend": "Which regime do you apply?",
+          "ordinary": {
+            "description": "You apply VAT like other businesses.",
+            "title": "Ordinary regime"
+          }
+        }
+      },
+      "saved": "How you issue documents has been saved",
+      "saveFailed": "We could not save. Try again in a moment.",
+      "steps": {
+        "address": {
+          "label": "Address",
+          "purpose": "The address of whoever issues, as it must appear on the document.",
+          "title": "The address on the documents"
+        },
+        "issuer": {
+          "label": "Details",
+          "purpose": "Check the name on the documents. We have already filled in what we know.",
+          "title": "Your details on the documents"
+        },
+        "regime": {
+          "label": "Regime",
+          "purpose": "Two simple questions: then we show you the document of your regime.",
+          "title": "Which regime do you have?"
+        },
+        "summary": {
+          "label": "Summary",
+          "purpose": "Here is what will happen. Nothing changes until you confirm.",
+          "title": "Check and confirm"
+        },
+        "who": {
+          "label": "Who issues",
+          "purpose": "Choose one answer: each booking has only one issuer.",
+          "title": "Who issues the documents?"
+        }
+      },
+      "summary": {
+        "effects": "What will happen",
+        "items": {
+          "address": "Address",
+          "fiscalCode": "Fiscal code",
+          "name": "Name on the documents",
+          "regime": "Regime",
+          "vatNumber": "VAT number",
+          "who": "Who issues"
+        },
+        "problems": {
+          "fix": "Fix",
+          "fixStep": "Fix: {{step}}",
+          "title": "Before you confirm, fix this"
+        }
+      },
+      "title": "How do you issue documents?",
+      "who": {
+        "accountant": {
+          "description": "CasaZen does not issue documents: they stay with your accountant.",
+          "title": "My accountant takes care of it"
+        },
+        "casazen": {
+          "description": "CasaZen issues the documents of the bookings of your site and the ones you enter yourself, never the ones that come from the portals.",
+          "title": "CasaZen issues the documents (direct bookings only)",
+          "unavailable": "Not available yet: right now CasaZen does not issue documents."
+        },
+        "channelManager": {
+          "description": "CasaZen issues nothing: your channel manager issues the documents.",
+          "title": "Your channel manager issues the documents",
+          "unavailable": "Not available yet: your channel manager is not connected to CasaZen."
+        },
+        "legend": "Who issues the documents of your stays?",
+        "recommended": "Recommended"
+      }
     }
   },
   "guestCancellation": {
@@ -5960,6 +6888,106 @@
     },
     "useAnother": "Use another account",
     "useSameEmail": "Sign in with the address the invitation was sent to."
+  },
+  "invoiceData": {
+    "fields": {
+      "address": {
+        "city": "City",
+        "civic": "Number",
+        "legend": "Address",
+        "postalCode": "Postal code",
+        "province": "Province",
+        "street": "Street"
+      },
+      "country": {
+        "label": "Country of the address",
+        "why": "If the address is abroad, choose the country: then the fiscal code and the VAT number are not required."
+      },
+      "errors": {
+        "countryInvalid": "Choose a country from the list.",
+        "fiscalCodeInvalid": "The fiscal code is not valid: check the 16 characters (person) or the 11 digits (company).",
+        "fiscalCodeRequired": "Write the fiscal code: it is needed to make out the invoice.",
+        "kindInvalid": "Choose who the invoice is for.",
+        "pecInvalid": "The PEC address is not valid: check the at sign and the domain.",
+        "postalCodeInvalid": "In Italy the postal code has 5 digits. If the address is abroad, choose the country under “More options”.",
+        "provinceInvalid": "The province is written with 2 letters, for example RM.",
+        "recipientCodeInvalid": "The recipient code has 7 letters or digits.",
+        "tooLong": "This text is too long.",
+        "vatNumberInvalid": "The VAT number is not valid: check the 11 digits.",
+        "vatNumberRequired": "Write the VAT number or the fiscal code."
+      },
+      "example": "Example:",
+      "fiscalCode": {
+        "label": "Fiscal code",
+        "why": "Why we ask: it is needed to make out the invoice. For a company the VAT number is enough."
+      },
+      "kind": {
+        "Company": {
+          "description": "A company or a professional with a VAT number.",
+          "title": "A company"
+        },
+        "Guest": {
+          "description": "A private person: usually the guest.",
+          "title": "A person"
+        },
+        "legend": "Who is the invoice for?"
+      },
+      "more": {
+        "hint": "The address is optional. The other options are usually not needed: if you do not know what they are, leave them empty.",
+        "label": "More options"
+      },
+      "name": {
+        "Company": "Company name",
+        "Guest": "Name and surname"
+      },
+      "pec": {
+        "label": "PEC",
+        "why": "Why we ask: only if the recipient receives invoices on their PEC (certified e-mail)."
+      },
+      "sdiRecipientCode": {
+        "label": "Recipient code",
+        "why": "Why we ask: it is the code the recipient receives e-invoices with. It has 7 letters or digits: if you do not know it, leave it empty."
+      },
+      "vatNumber": {
+        "label": "VAT number",
+        "why": "Why we ask: it is needed to make out an invoice to a company or a professional."
+      }
+    },
+    "retry": "Try again",
+    "saved": "Invoice data saved.",
+    "section": {
+      "add": "Add the data",
+      "edit": "Check or change",
+      "empty": "No invoice data for this booking yet.",
+      "kind": {
+        "Company": "Invoice for a company.",
+        "Guest": "Invoice for a person."
+      },
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the invoice data…",
+      "missing": {
+        "fiscalCode": "The fiscal code is missing: it is needed to issue the invoice.",
+        "vatNumber": "The VAT number or the fiscal code is missing: it is needed to issue the invoice."
+      },
+      "readOnly": "Only people who manage payments can change them.",
+      "requested": "The guest asked for an invoice at check-in.",
+      "requestedNoData": "The guest asked for an invoice at check-in but did not write their data.",
+      "title": "Invoice data"
+    },
+    "source": {
+      "CheckIn": "Data written by the guest at check-in.",
+      "Host": "Data edited by you.",
+      "Octorate": "Data that came from your channel manager."
+    },
+    "substep": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "intro": "Check the data and correct what is wrong: the invoice will be made out as you write it here.",
+      "loadFailed": "We could not read the invoice data.",
+      "loading": "Reading the data…",
+      "saveFailed": "We could not save the data. Try again.",
+      "title": "Who to invoice"
+    }
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -9835,6 +10863,47 @@
       "pageTitle": "Unsubscribe",
       "retry": "We could not complete the request. Please try again in a moment.",
       "title": "Do you want to unsubscribe?"
+    },
+    "welcome": {
+      "adultLabel": "I am at least 18 years old",
+      "consentText": "By choosing a channel you agree to receive promotional messages (news and offers) from {{host}} on that channel. You can change your mind at any time: every message has a link to unsubscribe.",
+      "consentVersion": "Optional. Text version: {{version}}",
+      "description": "{{host}} welcomes you. If you like, leave us a contact to receive news and offers: it is optional and changes nothing about your stay.",
+      "done": {
+        "description": "If the address is correct, you will get a message with a link to confirm your choice. Until you confirm, we will not write to you.",
+        "title": "Check your e-mail to confirm"
+      },
+      "doneWhatsApp": {
+        "description": "There is nothing else to do.",
+        "title": "Thank you, we received your choice"
+      },
+      "emailChannel": "E-mail",
+      "emailHint": "Only needed if you choose e-mail: we write here so you can confirm your choice.",
+      "errors": {
+        "adultRequired": "To continue, confirm that you are at least 18 years old.",
+        "channelRequired": "Choose at least one channel: e-mail or WhatsApp.",
+        "generic": "We could not send your choice. Please try again in a moment."
+      },
+      "inactive": {
+        "description": "The code you scanned is no longer valid. Ask the property to show you a new one.",
+        "title": "This page is not active"
+      },
+      "legend": "How would you like to receive news and offers from {{host}}?",
+      "loadError": {
+        "description": "Check your connection and try again.",
+        "hint": "We could not open the page.",
+        "retry": "Try again",
+        "title": "We cannot open the page"
+      },
+      "loading": "One moment…",
+      "pageTitle": "Welcome",
+      "phoneHint": "Only needed if you choose WhatsApp: type it with the international prefix, for example +39.",
+      "privacyNotice": "How your data is handled is explained in the <privacy>privacy notice</privacy>.",
+      "submit": "Send my choice",
+      "title": "Welcome to {{property}}",
+      "welcomeOnly": "{{host}} welcomes you. Enjoy your stay!",
+      "whatsAppChannel": "WhatsApp",
+      "whatsAppNeedsPhone": "Type your phone number first to choose WhatsApp."
     }
   },
   "marketplace": {
@@ -9857,6 +10926,109 @@
       "count_one": "{{count}} supplier",
       "count_other": "{{count}} suppliers",
       "none": "No suppliers yet"
+    },
+    "partnerFlow": {
+      "backToMarketplace": "Back to the Marketplace",
+      "description": "We prepare what you need, take you to the partner's site and bring you back here.",
+      "errors": {
+        "dayFuture": "The day cannot be after today.",
+        "dayInvalid": "The day is not valid.",
+        "dayMissing": "Choose the day you did the activation.",
+        "declareFailed": "We could not record the activation. Try again in a moment.",
+        "siteAddress": "The address of the partner's site cannot be opened safely. Try again later."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "handoff": {
+        "go": "Go to the site of {{name}}",
+        "nothingSent": "CasaZen sends nothing to {{name}}: you copy the data and type it on its site yourself.",
+        "sameTab": "The site opens in this tab. To come back here use the “Back” button of your browser, or open CasaZen again: you pick up where you were.",
+        "steps": {
+          "activate": "Do the activation there, following the list of the previous step.",
+          "comeBack": "Then come back here and tell us you did it: we ask you for the day.",
+          "go": "Go to the site of {{name}}, in this tab."
+        }
+      },
+      "notFound": {
+        "text": "This address does not lead to a partner of the Marketplace.",
+        "title": "Partner not found"
+      },
+      "prepare": {
+        "checklistTitle": "What to choose and authorise on the site of {{name}}",
+        "copied": "Copied: {{field}}",
+        "copy": "Copy",
+        "copyField": "Copy {{field}}",
+        "copyFailed": "We could not copy: select it and copy it by hand.",
+        "dataHint": "{{name}} may ask you for this data of your property: copy it where it is needed.",
+        "dataTitle": "The data of your property",
+        "fields": {
+          "address": "Address",
+          "bathrooms": "Bathrooms",
+          "bedrooms": "Bedrooms",
+          "cinCode": "CIN",
+          "city": "City",
+          "maxGuests": "Maximum guests",
+          "name": "Name",
+          "postalCode": "Postal code"
+        },
+        "loading": "Preparing what you need…",
+        "noChecklist": "{{name}} has not said what to choose: you will find it on its site.",
+        "noProperty": "No property was chosen for this step: {{name}} will ask you for the data on its site.",
+        "noValue": "Not available"
+      },
+      "problem": {
+        "generic": "We could not prepare what you need. Try again in a moment.",
+        "notAvailable": {
+          "text": "This partner is not available to you.",
+          "title": "Partner not available"
+        },
+        "propertyNotFound": "We cannot find the property, or you have no access to it.",
+        "retry": "Try again"
+      },
+      "result": {
+        "close": "Close",
+        "declared": "Declared by you on {{date}}",
+        "over": "The activation is recorded",
+        "overHint": "There is nothing else to do here.",
+        "overText": "The activation of {{name}} was recorded. You will find it among the active ones.",
+        "seeActive": "See the active ones",
+        "title": "{{name}} is active",
+        "verified": "Verified: the connection shows it active (activation of {{date}})",
+        "whatNext": {
+          "theirSite": "What you set up stays on the site of {{name}}: CasaZen does not change it.",
+          "turnOff": "If one day you switch it off on the site of {{name}}, tell us here and we stop showing it as active."
+        }
+      },
+      "steps": {
+        "handoff": {
+          "label": "Partner's site",
+          "purpose": "Go to the partner's site, do the activation there and come back.",
+          "title": "The activation is done on the site of {{name}}"
+        },
+        "prepare": {
+          "label": "What you need",
+          "purpose": "The data to copy and what to choose on the partner's site.",
+          "title": "What to prepare for {{name}}"
+        },
+        "welcomeBack": {
+          "label": "Welcome back",
+          "purpose": "Tell us whether you finished on the site of {{name}}.",
+          "title": "Welcome back"
+        }
+      },
+      "thisPartner": "this partner",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate a partner",
+      "welcomeBack": {
+        "dayHint": "Today, or a day in the past.",
+        "dayLabel": "When did you do it?",
+        "notYet": "Not yet: save and exit",
+        "notYetNote": "If you have not finished, choose “Not yet”: we keep where you are and you pick up whenever you like.",
+        "question": "Did you complete the activation on {{name}}?",
+        "yes": "Yes, I completed it"
+      }
     },
     "partners": {
       "learnMore": "Learn more",
@@ -9972,6 +11144,323 @@
         "title": "Sales channels"
       }
     },
+    "activation": {
+      "access": {
+        "credentialsNote": "We use the username and password once, to connect the channel. CasaZen does not keep them.",
+        "hotelId": {
+          "hint": "You can find it in your account on {{name}}.",
+          "label": "ID of “{{property}}” on {{name}}",
+          "required": "Enter the ID of the property on this channel."
+        },
+        "loading": "Checking what this channel needs…",
+        "nothing": "Nothing else is needed to connect {{name}}: you can go on.",
+        "panel": {
+          "allDone": "Consent has been given for all the chosen properties.",
+          "done": "Consent given for {{property}}",
+          "loading": "Checking where you are…",
+          "notGiven": "Your channel manager does not show the consent for “{{property}}” on {{name}} yet. Give it on its panel, then press “Check again”, or ask for help.",
+          "recheck": "Check again",
+          "title": "Consent to access {{name}}",
+          "unavailable": "This step is not available yet: the consent is given on the panel of your channel manager. We will let you know as soon as it is.",
+          "waiting": "The consent for {{property}} comes next"
+        },
+        "password": {
+          "label": "Password on {{name}}",
+          "required": "Enter the password."
+        },
+        "sameForAll": "The username and password are used for all the chosen properties: if some of them use a different login, activate those separately.",
+        "username": {
+          "label": "Username on {{name}}",
+          "required": "Enter the username."
+        }
+      },
+      "activate": {
+        "finish": "Activate {{name}}",
+        "intro": "Read what will happen again. If something is not right, go back with “Edit”.",
+        "summary": "We will connect {{name}} to “{{property}}”: bookings and availability will flow both ways.",
+        "when": "It can take up to 30 minutes before {{name}} shows everything. After the activation CasaZen checks the connection every 30 minutes."
+      },
+      "chooseFirst": {
+        "action": "Choose properties",
+        "text": "First choose the properties to connect."
+      },
+      "connection": {
+        "failed": {
+          "generic": "We could not create the connection. Try again in a moment.",
+          "refused": "{{name}} refused the connection"
+        },
+        "fix": "Fix the access details",
+        "fixProperty": "Change the properties",
+        "intro": "We create the connection with {{name}} in your channel manager, one property at a time.",
+        "needsAccess": "To connect this property we need the access details: we ask for them again for your safety.",
+        "planError": "We could not read the state of some properties. Try again.",
+        "retry": "Try again",
+        "state": {
+          "done": "Connected",
+          "failed": "Not connected",
+          "needsAccess": "Details missing",
+          "queued": "Waiting",
+          "running": "Connecting…",
+          "unconfirmed": "Not confirmed yet"
+        },
+        "unconfirmed": "Your channel manager does not show the connection yet. Try again in a moment.",
+        "working": "Creating the connection"
+      },
+      "description": "We guide you step by step. You can leave whenever you like with “Save and exit” and pick up where you left off.",
+      "errors": {
+        "accessIncomplete": "Some access details are missing: fill them in to continue.",
+        "connectionNotReady": "The connection is not ready yet: look at the list above.",
+        "mappingNone": "Link at least one room of the channel to continue.",
+        "mappingSave": "We could not save the rooms. Try again in a moment.",
+        "mappingUndecided": "For every room choose the matching one or “Do not link this room”.",
+        "noProperty": "Choose at least one property.",
+        "propertyNotLinked": "One of the chosen properties is not linked to your channel manager yet: take it out of your choice.",
+        "roomsNotIn": "The rooms of the channel have not arrived yet: we keep checking."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "import": {
+        "allIn": "The rooms of the channel are in: on to the matching.",
+        "failed": "We could not start the import.",
+        "fixAccess": "Fix the access details",
+        "fixConnection": "Back to the connection",
+        "fixProperty": "Change the properties",
+        "intro": "Your channel manager imports the rooms, the reservations and the calendar of {{name}}. A few minutes are usually enough, sometimes more.",
+        "items": {
+          "calendar": "Calendar",
+          "reservations": "Reservations",
+          "rooms": "Rooms"
+        },
+        "leave": "You can leave with “Save and exit”: the import goes on by itself in your channel manager.",
+        "noConnection": "This property has no connection yet: go back to the “Connection” step.",
+        "readError": "We could not read the rooms of the channel.",
+        "reading": "Reading the state of the property…",
+        "retry": "Try again",
+        "state": {
+          "done": "arrived",
+          "queued": "not started",
+          "requested": "request sent",
+          "starting": "starting…",
+          "waiting": "waiting for your channel manager"
+        },
+        "working": "Import in progress"
+      },
+      "mapping": {
+        "alreadyLinked": "Already linked in your channel manager: you can change it here, not unlink it.",
+        "choose": "Choose the room",
+        "fixConnection": "Back to the connection",
+        "leftOut_one": "{{count}} room cannot be managed by CasaZen and is left out.",
+        "leftOut_other": "{{count}} rooms cannot be managed by CasaZen and are left out.",
+        "loading": "Reading the rooms of the channel…",
+        "next": "Save and continue",
+        "noConnection": "This property has no connection yet.",
+        "noRooms": "Your channel manager has not brought the rooms of the channel yet: we keep checking.",
+        "noneMapped": "Link at least one room of the channel.",
+        "proposed": "Suggested by CasaZen: you can change it.",
+        "readError": "We could not read the rooms of the channel.",
+        "retry": "Check again",
+        "showMore_one": "Show one more room",
+        "showMore_other": "Show {{count}} more rooms",
+        "skip": "Do not link this room",
+        "undecided": "Choose a room or “Do not link this room”."
+      },
+      "notFound": {
+        "back": "Back to the Marketplace",
+        "text": "This address does not lead to a channel or a tool of the Marketplace.",
+        "title": "Integration not found"
+      },
+      "property": {
+        "legend": "Properties to connect",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: add one to connect {{name}}.",
+        "notConnected": {
+          "link": "Connect your channel manager",
+          "text": "To activate {{name}} your channel manager has to be connected to CasaZen.",
+          "title": "Connect your channel manager first"
+        },
+        "notCreatable": "{{name}} cannot be connected from CasaZen right now.",
+        "notLinked": {
+          "item": "isn't linked to your channel manager yet.",
+          "link": "Link your properties",
+          "title": "Not linked yet"
+        },
+        "planError": "We could not read what {{name}} needs. Try again in a moment.",
+        "portalUnknown": "This channel is not available to you.",
+        "retry": "Try again",
+        "selected_one": "{{count}} property chosen",
+        "selected_other": "{{count}} properties chosen",
+        "unread": "We could not read the status of: {{names}}. Try again to see them in the list."
+      },
+      "result": {
+        "close": "Close",
+        "counts": "{{name}}: {{active}} active, {{toFix}} to fix",
+        "fix": "Fix",
+        "over": "The activation of {{name}} is over. You can see the state of every integration among the active ones.",
+        "reason": "We could not activate it. Try again.",
+        "seeActive": "Check it among the active ones",
+        "title": {
+          "allActive": "Activation complete",
+          "allToFix": "We could not activate",
+          "over": "The activation is over",
+          "some": "Activation almost complete"
+        },
+        "whatNext": {
+          "checks": "CasaZen checks the connection every 30 minutes.",
+          "todo": "If something is wrong, we tell you in “To do”."
+        }
+      },
+      "steps": {
+        "access": {
+          "label": "Access",
+          "purpose": "We only ask for what this channel needs.",
+          "title": "What it takes to connect {{name}}"
+        },
+        "activate": {
+          "label": "Activation",
+          "purpose": "Read what will happen again, then activate.",
+          "title": "Check and activate"
+        },
+        "connection": {
+          "label": "Connection",
+          "purpose": "CasaZen creates the connection in your channel manager. A few seconds are usually enough.",
+          "title": "Connecting {{name}}"
+        },
+        "import": {
+          "label": "Import",
+          "purpose": "Your channel manager brings the rooms, the reservations and the calendar of the channel here.",
+          "title": "Bringing the data of the channel here"
+        },
+        "mapping": {
+          "label": "Rooms",
+          "purpose": "For each room of the channel choose the matching room.",
+          "title": "Match the rooms"
+        },
+        "property": {
+          "label": "Properties",
+          "purpose": "Choose the properties to connect to {{name}}: we activate them one at a time.",
+          "title": "Which properties do you want to connect?"
+        }
+      },
+      "thisChannel": "this channel",
+      "title": "Activate {{name}}",
+      "titleGeneric": "Activate an integration"
+    },
+    "licensed": {
+      "ask": {
+        "after": "When you have made the request, press “I made the request”: the function stays “Requested” until it shows up in your license.",
+        "alreadyOn": "Your license already shows this function as active: there is no need to ask for it.",
+        "alreadyRequested": "You have already recorded this request. You can read the text again or go on.",
+        "copied": "Text copied",
+        "copy": "Copy the text",
+        "copyFailed": "We could not copy the text: select it and copy it by hand.",
+        "explain": "CasaZen cannot switch this function on: it is part of your channel manager's license and you ask for it. We prepare the text for you.",
+        "finish": "I made the request",
+        "loading": "Preparing the text of the request…",
+        "textLabel": "Text of the request to the channel manager",
+        "toFix": "This function is no longer in your license: you can ask for it again with the same text.",
+        "unknownFunction": "This function is not one of the license."
+      },
+      "backToMarketplace": "Back to the Marketplace",
+      "chooseFirst": {
+        "action": "Choose the property",
+        "text": "First choose the property to ask the function for."
+      },
+      "description": "We explain the function and prepare the request for your channel manager.",
+      "errors": {
+        "noProperty": "Choose a property.",
+        "requestFailed": "We could not record the request. Try again in a moment."
+      },
+      "exit": {
+        "saveAndExit": "Save and exit",
+        "saved": "We saved where you are: pick up whenever you like from the Marketplace."
+      },
+      "function": {
+        "alreadyActive": "Your license already shows this function as active for this property.",
+        "audience": "Who it is for",
+        "cost": "What it costs",
+        "costUnknown": "Not specified",
+        "license": "Your license",
+        "loading": "Loading the card…",
+        "loadingLicense": "Reading your license…",
+        "noRoomLicense": "Without a license per room we do not publish prices or availability.",
+        "notRead": "not read yet",
+        "plan": "Plan",
+        "readAt": "Read on {{time}}",
+        "rooms": "Rooms included",
+        "whatItDoes": "What it does"
+      },
+      "notFound": {
+        "text": "This address does not lead to a function of your channel manager.",
+        "title": "Function not found"
+      },
+      "problem": {
+        "generic": "We could not read your license. Try again in a moment.",
+        "notConnected": "Your channel manager is not connected to CasaZen yet.",
+        "notConnectedLink": "Connect the channel manager",
+        "notLinked": "This property is not linked to your channel manager yet: the license belongs to each property.",
+        "notLinkedLink": "Link your properties",
+        "retry": "Try again"
+      },
+      "property": {
+        "legend": "Property to ask the function for",
+        "loadError": "We could not load your properties.",
+        "loading": "Loading your properties…",
+        "none": "You have no short-term properties yet: the license belongs to each property."
+      },
+      "requested": {
+        "checkFailed": "We could not read the license right now. Try again in a moment.",
+        "checkNow": "Check now",
+        "done": "Done",
+        "later": "Later",
+        "lead": "We recorded your request. The function stays “Requested” until it shows up in your license.",
+        "nextStep": "Next step: check the request among the active ones.",
+        "notYet": "The module does not show up in the license yet: we keep checking.",
+        "nowActive": "The module shows up in the license: the function is active.",
+        "over": "The request for {{name}} is over. You can find the status of the function among the active ones.",
+        "seeActive": "Go to the active ones",
+        "statusLabel": "Status",
+        "title": {
+          "active": "The function is active",
+          "none": "No request recorded",
+          "over": "The request is over",
+          "requested": "Request recorded",
+          "toFix": "The function is no longer in the license"
+        },
+        "whatNext": {
+          "checkNow": "If you want to know right away, press “Check now”.",
+          "daily": "We check your license every day and switch the card to “Active” when the module shows up."
+        }
+      },
+      "status": {
+        "active": "Active",
+        "notActive": "Not active",
+        "requested": "Requested",
+        "toFix": "To fix"
+      },
+      "steps": {
+        "ask": {
+          "label": "Request",
+          "purpose": "We prepare the text to send to your channel manager.",
+          "title": "Ask for “{{name}}”"
+        },
+        "function": {
+          "label": "Function",
+          "purpose": "What it does, who it is for and what your license says.",
+          "title": "What “{{name}}” is"
+        },
+        "property": {
+          "label": "Property",
+          "purpose": "A function is part of the license of a property.",
+          "title": "For which property?"
+        }
+      },
+      "thisFunction": "this function",
+      "title": "Request “{{name}}”",
+      "titleGeneric": "Request a function"
+    },
     "status": {
       "Active": "Active",
       "NotActive": "Not active",
@@ -10049,6 +11538,190 @@
     "enterHint": "Enter to send, Shift+Enter for a new line.",
     "counter": "{{count}}/{{max}}"
   },
+  "messages": {
+    "actions": {
+      "anonymized": "The guest's data was erased at their request.",
+      "cannotReply": "You cannot answer this conversation.",
+      "mappingNotConfirmed": "You can read this conversation but not answer it: the listing is not linked to one of your properties yet.",
+      "readOnly": "You can read the messages, but you do not have permission to answer.",
+      "threadClosed": "The conversation is closed: no more messages can be written."
+    },
+    "attachment": {
+      "download": "Download the attachment",
+      "error": "I cannot open the attachment. Try again in a moment.",
+      "fileName": "Attachment",
+      "imageAlt": "Image attached to the message",
+      "loading": "Loading the attachment…",
+      "unavailable": "Attachment no longer available"
+    },
+    "bookingCard": {
+      "balance": "Still to pay",
+      "children_one": "including {{count}} child",
+      "children_other": "including {{count}} children",
+      "commission": "Channel commission",
+      "guest": "Guest",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "hide": "Hide the booking",
+      "net": "Net for you",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noAmounts": "The amounts are not available yet.",
+      "none": "There is no booking yet: this is a request. When the guest books, you will find it here.",
+      "open": "Open the booking",
+      "openProfile": "Open the guest profile",
+      "paid": "Already paid",
+      "people": "People",
+      "show": "Show the booking",
+      "source": "From: {{source}}",
+      "sourceLabel": "Source",
+      "stay": "Stay",
+      "title": "Booking",
+      "total": "Total"
+    },
+    "channel": {
+      "airbnb": "Airbnb",
+      "booking": "Booking.com",
+      "direct": "Direct",
+      "expedia": "Expedia",
+      "vrbo": "Vrbo"
+    },
+    "composer": {
+      "label": "Message for the guest",
+      "language": "Language of the translation",
+      "machineTranslated": "Machine translated",
+      "offline": "You are offline: you can send the message when you are back online.",
+      "placeholder": "Write your answer…",
+      "send": "Send",
+      "templates": "Templates",
+      "translate": "Translate"
+    },
+    "contact": {
+      "directFirst": "You can write first: the guest receives the message on the page of their booking.",
+      "emailIntro": "This channel has no chat. You can write to the guest by e-mail through CasaZen: you do not see their address and we do not keep it.",
+      "emailPlaceholder": "Write the message for the guest…",
+      "error": "I cannot check how to reach the guest.",
+      "hasThread": "There is already a conversation with this guest.",
+      "loading": "Checking how you can reach the guest…",
+      "needsVerification": "We do not know yet whether the message went out. Check in a moment before writing it again.",
+      "noChannel": "For this booking CasaZen has no way to write to the guest.",
+      "openThread": "Open the conversation",
+      "reason": {
+        "mappingNotConfirmed": "The listing is not linked to one of your properties yet: for now you cannot write to the guest from here.",
+        "noConversation": "This booking has no conversation yet and there is no other way to write to the guest.",
+        "notConnected": "The link to the channels is not active: you cannot write to the guest from here.",
+        "other": "For now you cannot write to the guest from CasaZen.",
+        "threadClosed": "The conversation is closed: no more messages can be written."
+      },
+      "sent": "Message sent by e-mail.",
+      "title": "Write to the guest",
+      "unavailable": "The channel does not give us this guest's e-mail: write to them from the channel.",
+      "writeByEmail": "Write by e-mail"
+    },
+    "empty": {
+      "all": "No conversations yet",
+      "allHint": "As soon as a guest writes to you, from your site or a channel, you will find the conversation here.",
+      "noMatch": "No conversation found",
+      "noMatchHint": "Try another search or remove a filter.",
+      "showAll": "Show all conversations",
+      "toRespond": "Nothing to respond to",
+      "toRespondHint": "When a guest writes, the conversation shows up here.",
+      "unread": "No messages to read",
+      "unreadHint": "You have read every message from your guests."
+    },
+    "filter": {
+      "all": "All",
+      "booking": "One booking only",
+      "bookingClear": "Show all conversations",
+      "channel": "Channel",
+      "channelAll": "All channels",
+      "clear": "Clear filters",
+      "label": "Conversations to show",
+      "property": "Property",
+      "propertyAll": "All properties",
+      "toRespond": "To respond",
+      "unread": "Unread"
+    },
+    "inbox": {
+      "description": "Every conversation with your guests, from the channels and direct, in one list.",
+      "listLabel": "Conversations",
+      "loading": "Loading conversations…",
+      "noSelection": {
+        "description": "Read it here with the booking beside it, and answer without leaving CasaZen.",
+        "title": "Choose a conversation"
+      },
+      "title": "Messages"
+    },
+    "loadError": "Messages could not be loaded.",
+    "problem": {
+      "generic": "It did not work. Try again.",
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
+      "rateLimited_one": "Too many messages: try again in {{count}} minute.",
+      "rateLimited_other": "Too many messages: try again in {{count}} minutes.",
+      "textInvalid": "Write a message that is not empty and has at most 2000 characters.",
+      "threadClosed": "The conversation is closed: no more messages can be written.",
+      "tooManyRequests": "Too many messages in a short time: try again in a moment."
+    },
+    "request": {
+      "noContacts": "Before the booking the channel does not allow links, e-mail addresses or phone numbers: remove them from the message."
+    },
+    "search": {
+      "label": "Search conversations",
+      "placeholder": "Search by guest, code or property"
+    },
+    "state": {
+      "check": "Check",
+      "edit": "Edit",
+      "error": "Not sent",
+      "errorHint": "The channel did not accept the message.",
+      "needsVerification": "Needs checking",
+      "needsVerificationHint": "We cannot tell whether the channel received it. Check before writing it again.",
+      "retry": "Try again",
+      "sending": "Sending",
+      "sent": "Sent"
+    },
+    "template": {
+      "channel": "Channel templates",
+      "channelEmpty": "The channel has no templates for this conversation.",
+      "channelHint": "They are read only: you copy them into the message and change them as you like.",
+      "channelUnavailable": "The channel templates are not available right now.",
+      "empty": "You have no message templates yet.",
+      "loadError": "I cannot load the templates.",
+      "loading": "Loading the templates…",
+      "mine": "Your templates",
+      "renderError": "I cannot prepare the template for this conversation.",
+      "tooLong": "With the template the message is over {{max}} characters: shorten the text and try again."
+    },
+    "thread": {
+      "archived": "Archived",
+      "backToList": "Back to the messages",
+      "closed": "Closed",
+      "earlier": "You see the latest messages of the conversation here.",
+      "empty": "No messages yet. Write first.",
+      "fileOnly": "Only an attachment",
+      "loadError": "I cannot load the conversation.",
+      "loading": "Loading the conversation…",
+      "logLabel": "Messages with {{name}}",
+      "notFound": "Conversation not found",
+      "notFoundHint": "The address is not right, or the conversation is not one of your properties'.",
+      "refreshError": "I cannot refresh the conversation: what you see may not be the latest message.",
+      "request": "Request",
+      "sender": {
+        "assistant": "CasaZen assistant",
+        "guest": "Guest",
+        "you": "You"
+      },
+      "title": "Conversation",
+      "translate": "Translate",
+      "unassigned": "Property to link"
+    },
+    "translate": {
+      "error": "I cannot translate right now. Try again.",
+      "hide": "Hide the translation",
+      "unavailable": "Translation is not available at the moment.",
+      "use": "Use the translation"
+    }
+  },
   "nav": {
     "accountHome": "Home",
     "people": "People",
@@ -10056,6 +11729,7 @@
     "properties": "Properties",
     "profile": "Profile",
     "notificationPreferences": "Notifications",
+    "onboardingPlan": "Start with CasaZen",
     "plan": "Plan",
     "billing": "Billing",
     "bookings": "Bookings",
@@ -10091,6 +11765,7 @@
     "suppliers": "Suppliers",
     "trustedSuppliers": "Trusted Suppliers",
     "guests": "Guests",
+    "messages": "Messages",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "ai": "AI configuration",
@@ -10135,6 +11810,7 @@
     "crmMerge": "Duplicates",
     "crmSegments": "Audiences",
     "demoEnvironment": "Demo environment",
+    "documents": "Documents",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
     "menuLabel": "{{area}} menu",
@@ -10148,7 +11824,9 @@
       "compliance_one": "{{count}} duty with a risk of penalty",
       "compliance_other": "{{count}} duties with a risk of penalty",
       "activities_one": "{{count}} urgent task",
-      "activities_other": "{{count}} urgent tasks"
+      "activities_other": "{{count}} urgent tasks",
+      "messages_one": "{{count}} unread message",
+      "messages_other": "{{count}} unread messages"
     },
     "activities": "Activities",
     "inviteQr": "Invite QR codes",
@@ -10156,6 +11834,7 @@
     "channels": "Channels and calendars",
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
+    "ownerClose": "Month-end close",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -10360,6 +12039,7 @@
           "title": "The connection did not work"
         },
         "next": {
+          "channels": "Choose the portals",
           "listings": "See your listings",
           "retry": "Try connecting again",
           "start": "Go to your channel manager"
@@ -10384,8 +12064,101 @@
         "toHome": "Back to the home page"
       },
       "errors": {
+        "mixedConflict": "A property cannot be in two different situations: take it out of one.",
+        "mixedTwoSituations": "Choose at least two situations.",
+        "scenarioChangeConfirm": "Confirm that you understood before moving to new listings.",
+        "scenarioChangeRefused": "You cannot move to new listings: there is already an import or there are matched listings.",
         "scenarioRequired": "Choose where your listings are today.",
         "scenarioUnavailable": "This path is not available yet: choose another answer."
+      },
+      "existing": {
+        "channels": {
+          "batchFailed": "We could not prepare the import. Try again.",
+          "blocked": "The browser blocked the window. Allow pop-ups for this site and try again: your progress is saved.",
+          "confirmFailed": "We could not confirm. Try again.",
+          "confirmNo": "No, open it again",
+          "confirmQuestion": "Did you complete the access and see the portal as Activated?",
+          "confirmYes": "Yes, I did",
+          "connect": "Connect on Octorate",
+          "credentials": "You enter the portal credentials only on Octorate or on the portal itself, never in CasaZen.",
+          "legend": "The portals where you already have listings",
+          "listLabel": "The chosen portals and their connection",
+          "loadFailed": "We could not load the list of portals.",
+          "none": "Choose at least one portal.",
+          "notValid": "The access does not look valid: open the panel again and retry.",
+          "openFailed": "We could not open the panel. Try again.",
+          "reopen": "Open the panel again",
+          "state": {
+            "connected": "Connected",
+            "error": "Error",
+            "needsConfirmation": "To confirm",
+            "notStarted": "To connect",
+            "verifying": "Checking",
+            "waiting": "Waiting for the login"
+          },
+          "waiting": "I am waiting for your access on the panel: as soon as I see it, I go on by myself."
+        },
+        "errors": {
+          "accessPending": "No portal has its access yet: finish the step on the panel first.",
+          "notInYet": "The listings have not arrived yet: wait for the import to finish.",
+          "unknown": "The import stopped on this portal. Try again or ask for help."
+        },
+        "mapping": {
+          "note": "For each imported listing you can confirm the proposed property, choose another one or import it as a CasaZen property: this last choice only creates the management record in CasaZen and does not create any new listing on the portal. You can leave the ambiguous ones for later: they stay blocked for writing."
+        },
+        "new": {
+          "action": "Create the new listings",
+          "text": "You create the properties that are not published yet yourself, in the guided procedure: CasaZen does not create them by itself.",
+          "title": "New listings"
+        },
+        "progress": {
+          "atMapping": "The listings have arrived: now you match them to your properties.",
+          "completed": "Import completed.",
+          "counts": "Found {{found}} · matched {{confirmed}} · to decide {{pending}}",
+          "loadFailed": "We could not read the state of the import.",
+          "loading": "Reading the state of the import...",
+          "noBatch": {
+            "text": "Choose the portals and give the access in the previous step.",
+            "title": "Import not started"
+          },
+          "retry": "Try again",
+          "retryUnknown": "I checked the panel: ask again",
+          "sequenceLabel": "Steps of the import of {{channel}}",
+          "state": {
+            "attention": "needs your attention",
+            "current": "in progress",
+            "done": "done",
+            "pending": "to do"
+          },
+          "steps": {
+            "calendar": "Calendar",
+            "connected": "Connection completed",
+            "mapping": "Matching",
+            "reservations": "Reservations",
+            "rooms": "Listings and rooms"
+          },
+          "working": "Import in progress..."
+        },
+        "result": {
+          "counts": "Connected {{connected}} · left for later {{leftForLater}} · failed {{failed}}",
+          "migrationNote": "Reviews, ranking and history depend on the migration the portal itself makes: CasaZen does not promise them.",
+          "status": {
+            "AwaitingChannelAccess": "Waiting for the access",
+            "AwaitingMapping": "To match",
+            "Completed": "Connected",
+            "Draft": "To start",
+            "Failed": "Failed",
+            "ImportingCalendar": "Importing the calendar",
+            "ImportingReservations": "Importing the reservations",
+            "ImportingRooms": "Importing listings and rooms",
+            "MarkingConnected": "Connecting",
+            "NeedsAttention": "Needs your attention"
+          },
+          "title": "Listings imported from the portals"
+        },
+        "summary": {
+          "preserved": "The imported listings keep the codes they already have on the portals: we do not publish new ones."
+        }
       },
       "exit": {
         "saveAndExit": "Save and exit",
@@ -10445,11 +12218,53 @@
           "question": "Which room is this property?"
         }
       },
+      "mixed": {
+        "conflictLine": "«{{property}}» is in more than one situation: take it out of one.",
+        "conflictTitle": "A property is in two situations",
+        "counts": "{{groups}} situations · {{properties}} properties chosen",
+        "groupCount_one": "{{count}} property in this situation",
+        "groupCount_other": "{{count}} properties in this situation",
+        "groups": {
+          "newInventory": {
+            "description": "They do not exist on the portals yet: we create them together, only when you decide.",
+            "none": "No property chosen: you add them later.",
+            "title": "Not published yet"
+          },
+          "onOctorate": {
+            "description": "They are already on your Octorate account: we connect them with an authorization.",
+            "none": "No property chosen: we find them with the authorization.",
+            "title": "Already on Octorate"
+          },
+          "onOtas": {
+            "description": "They already exist on the portals: we import the listings with their codes, without publishing new ones.",
+            "none": "No property chosen: the listings we import become CasaZen properties.",
+            "title": "Already on OTAs or in another system"
+          }
+        },
+        "loadFailed": "We could not load your properties.",
+        "rest": "The properties you do not choose here stay as they are."
+      },
       "page": {
         "description": "A guided path, one step at a time. You can leave whenever you like and pick up where you left off."
       },
       "scenario": {
+        "change": {
+          "ack": "I understand: I want to create new listings",
+          "refused": "An import has already started or listings are matched to your properties. To avoid duplicates, you cannot move to new listings here.",
+          "refusedTitle": "It cannot be changed now",
+          "text": "Before, you said your listings already exist. If you choose «not published yet» CasaZen will create new ones on Octorate and on the OTAs: it is not a way to recover from an import.",
+          "title": "You are changing your answer"
+        },
+        "confirm": {
+          "mixed": "You will say which properties are in each situation: each follows its own road and at the end the summary puts them together.",
+          "newInventory": "CasaZen will create new listings on Octorate and on the OTAs you choose. Choose this road only if the listings do not exist yet.",
+          "onOctorate": "We will connect your Octorate account to CasaZen with an authorization and match the listings we find to your properties.",
+          "onOtas": "CasaZen will import the listings you already have on the OTAs and keep their codes. It will not publish replacement listings."
+        },
         "legend": "Where are your listings today?",
+        "mixed": {
+          "title": "I have a mixed situation"
+        },
         "newInventory": {
           "description": "Start from scratch: we create your first listing together.",
           "title": "Not published yet"
@@ -10475,10 +12290,32 @@
           "purpose": "We take you to its site to give your consent, then you come back here.",
           "title": "Connect your channel manager"
         },
+        "existingChannels": {
+          "label": "Portals",
+          "next": "Import the listings",
+          "purpose": "Choose the portals and give the access to each one from the panel of your channel manager: CasaZen stays here and follows you.",
+          "title": "Which portals are your listings on?"
+        },
+        "existingImport": {
+          "label": "Import",
+          "next": "Go to the matching",
+          "purpose": "We read the listings, the rooms, the reservations and the calendars: we publish nothing.",
+          "title": "We import your listings"
+        },
         "mapping": {
           "label": "Matching",
           "purpose": "For each listing, choose which CasaZen property it is. If you are not sure, you can decide later.",
           "title": "Match the listings to your properties"
+        },
+        "mixed": {
+          "label": "Situation",
+          "purpose": "For each situation say which properties are in it. The others stay as they are.",
+          "title": "What is your situation?"
+        },
+        "new": {
+          "label": "New listings",
+          "purpose": "We take you to the guided procedure to create the property.",
+          "title": "We create your new listings"
         },
         "scenario": {
           "label": "Listings",
@@ -10555,6 +12392,7 @@
             "badge": "Did not work",
             "text": "We could not complete this listing."
           },
+          "ids": "Codes kept: {{ids}}",
           "imported": {
             "badge": "Imported",
             "text": "New property in CasaZen: {{property}}."
@@ -10665,6 +12503,474 @@
     "readDocument": "Read the document",
     "documentInPreparation": "text being prepared",
     "readSubprocessors": "See the full list of subprocessors"
+  },
+  "onboardingPlan": {
+    "actions": {
+      "doNow": "Do it now",
+      "group": "Exit and help",
+      "later": "I'll do it later",
+      "resume": "Resume"
+    },
+    "defer": {
+      "adminOnly": "Only the organization administrator can postpone a step.",
+      "confirm": "Confirm",
+      "description": "\"{{part}}\" goes to your to-do list, with a reminder.",
+      "error": "We could not postpone this step. Try again.",
+      "legend": "When do you want the reminder?",
+      "notDeferrable": "It is needed for the next steps.",
+      "options": {
+        "evening": "This evening at 8:00 pm",
+        "nextWeek": "In a week, at 9:00 am",
+        "tomorrow": "Tomorrow at 9:00 am"
+      },
+      "title": "When should we remind you?",
+      "toast": "You'll find it in your to-do list"
+    },
+    "description": "One path, from zero to everything active.",
+    "empty": "There is nothing to show here yet.",
+    "exit": {
+      "action": "Save and exit",
+      "error": "We could not save. Try again shortly.",
+      "saved": "Saved. What is left is in your to-do list."
+    },
+    "flows": {
+      "names": {
+        "Bookings": "Bookings",
+        "CheckInCompliance": "Check-in and compliance",
+        "Documents": "Fiscal documents",
+        "Listings": "Listings on the channels",
+        "Messages": "Messages",
+        "Reports": "Reports"
+      },
+      "states": {
+        "active": "Active",
+        "notAvailable": "Not available",
+        "toComplete": "To complete"
+      }
+    },
+    "help": {
+      "action": "Help"
+    },
+    "launch": {
+      "backToPlan": "Back to the plan",
+      "entry": {
+        "continue": "Continue",
+        "hint": "Choose your situation to continue.",
+        "loading": "Loading your answer..."
+      },
+      "panelLabel": "Open the step",
+      "properties": {
+        "empty": "There are no properties to show.",
+        "istat": "ISTAT",
+        "loadError": "We could not load the properties.",
+        "loading": "Loading the properties...",
+        "next": "Next page",
+        "noMatch": "No property matches the search.",
+        "page": "Page {{page}} of {{pages}} · {{total}} properties",
+        "pages": "Pages of the properties",
+        "police": "State Police",
+        "previous": "Previous page",
+        "search": "Search for a property",
+        "title": "Properties: {{flow}}"
+      },
+      "unavailable": {
+        "reason": "The guided procedure of this step is not ready yet: you find it here as soon as it is. In the meantime you can go back to the plan.",
+        "title": "Not available yet"
+      }
+    },
+    "listLabel": "The steps to activate CasaZen",
+    "loadError": "We could not load the plan.",
+    "loading": "Loading the plan...",
+    "needs": {
+      "alloggiatiCredentials": "Your Alloggiati Web credentials, with the web service key",
+      "fiscalData": "The fiscal data of whoever issues the documents",
+      "istatCredentials": "The ISTAT credentials of your region",
+      "lockCode": "The code of the lock or of the key box",
+      "otaAccess": "Access to your accounts on the booking portals, such as Airbnb and Booking.com"
+    },
+    "needsPanel": {
+      "intro": "Keep them at hand: we guide you one step at a time.",
+      "title": "What you need"
+    },
+    "nextStep": {
+      "continue": "Continue",
+      "kicker": "Next step",
+      "later": "Later",
+      "laterDone": "Done: you will find it in your to-do list.",
+      "laterError": "We could not put it in your to-do list. Try again.",
+      "laterToast": "You'll find it in your to-do list",
+      "why": {
+        "checkInCompliance": "Online check-in and legal obligations spare you fines and phone calls.",
+        "checkListings": "So you know the listings on the channels are complete.",
+        "connectChannels": "So the bookings and calendars of your channels reach CasaZen.",
+        "fiscalDocuments": "Decide who issues the fiscal documents of the bookings.",
+        "messagesAi": "Choose how and when to write to your guests.",
+        "pricesCalendar": "Prices and rules are set once and apply to every channel."
+      }
+    },
+    "panel": {
+      "actions": {
+        "confirmNo": "No, open it again",
+        "confirmYes": "Yes, continue",
+        "continue": "Continue",
+        "open": "Open the panel",
+        "reopen": "Open the panel again",
+        "retryOpen": "Try to open it again",
+        "saveExit": "Save and exit"
+      },
+      "adminOnly": "The organization administrator does this step.",
+      "assist": {
+        "action": {
+          "doItForMe": "Do it for me",
+          "needHelp": "I need help"
+        },
+        "error": "We could not send the request. Try again in a moment.",
+        "note": "CasaZen support takes care of it: you also find it in To do.",
+        "status": {
+          "Cancelled": "Request cancelled",
+          "Done": "Done: CasaZen support took care of it",
+          "InProgress": "In progress: CasaZen support is working on it",
+          "Requested": "Request sent to CasaZen support"
+        },
+        "todoLink": "See it in To do"
+      },
+      "channelAccess": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The channels section with the portal to connect",
+          "3": "The login page of the portal, where you enter your credentials",
+          "4": "The list of the channels with the Activated status"
+        },
+        "description": "The access to the portal is given from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check that you logged in to the portal with the right credentials and that the channel shows «Activated», then open the panel again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the channels section and choose the portal to connect.",
+          "3": "Log in to the portal with your credentials: you enter them only there, never in CasaZen.",
+          "4": "Check that the channel shows «Activated»."
+        },
+        "title": "Give access to the channel"
+      },
+      "channelMissing": "The channel to give access to is missing. Go back to the plan and start again from there.",
+      "context": {
+        "channel": "Channel:",
+        "property": "Property:"
+      },
+      "errors": {
+        "callback": "We could not verify the connection when you came back from the panel. Open the panel again.",
+        "confirm": "We could not confirm. Try again.",
+        "load": "We could not load the step.",
+        "open": "We could not open the panel. Try again."
+      },
+      "explain": {
+        "credentialsNote": "You enter your credentials only in the panel and on the portals' sites: never in CasaZen.",
+        "instructionsTitle": "What you will do in the panel",
+        "needTitle": "Keep at hand"
+      },
+      "istat": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The ISTAT section of the panel",
+          "3": "The fields for the ISTAT credentials of your region",
+          "4": "The connection test button and the Activated status"
+        },
+        "description": "The connection with the ISTAT of your region is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the ISTAT credentials of your region, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the ISTAT section, the tourism statistics of your region.",
+          "3": "Enter the ISTAT credentials of your region.",
+          "4": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the ISTAT of your region"
+      },
+      "page": {
+        "backToPlan": "Back to the plan",
+        "resumeTitle": "Resume the step"
+      },
+      "police": {
+        "alts": {
+          "1": "The panel of the channel manager with the property to choose",
+          "2": "The State Police section of the panel",
+          "3": "The fields for the Alloggiati Web credentials and the web service key",
+          "4": "The list of the rooms with the room number to enter",
+          "5": "The connection test button and the Activated status"
+        },
+        "description": "The connection with Alloggiati Web is made from the panel of your channel manager: we guide you and CasaZen stays here to follow it.",
+        "notValid": "Check the Alloggiati Web credentials, the web service key and the room number of each room, then press «Connection test» again.",
+        "steps": {
+          "1": "Log in to the panel of your channel manager and choose the property.",
+          "2": "Open the State Police section (Alloggiati Web).",
+          "3": "Enter the Alloggiati Web credentials and the web service key.",
+          "4": "Enter the Alloggiati Web room number for each room.",
+          "5": "Press «Connection test» and check that the status is «Activated»."
+        },
+        "title": "Connect the State Police"
+      },
+      "returning": "Checking the connection...",
+      "started": {
+        "alert": "The browser blocked the panel window. Allow pop-ups for this site and try again: you will start again from here."
+      },
+      "state": {
+        "assist": {
+          "body": "You asked for help: as soon as the step is done you see it here and in To do.",
+          "title": "CasaZen support is on it"
+        },
+        "explain": {
+          "body": "We open the panel you need and CasaZen stays here to follow the connection.",
+          "title": "We open the panel for you"
+        },
+        "notValid": {
+          "body": "CasaZen checked and the connection is not valid yet.",
+          "title": "The connection does not show as active yet"
+        },
+        "recovered": {
+          "body": "CasaZen verified the connection: you go on from here.",
+          "title": "Connection successful",
+          "toast": "Connection verified"
+        },
+        "started": {
+          "body": "Your progress is saved, but the panel did not open.",
+          "title": "Allow it to open and try again"
+        },
+        "unverifiable": {
+          "body": "We cannot see it from here. If you see «Activated» in the panel, confirm; otherwise open the panel again or ask for help.",
+          "title": "Did you complete the connection and see the Activated status?"
+        },
+        "waiting": {
+          "body": "Complete the steps in the panel window: as soon as CasaZen sees the connection active, it takes you on by itself. There is nothing else to press.",
+          "title": "I am waiting for the connection"
+        }
+      },
+      "waiting": {
+        "checking": "checking",
+        "elapsedNow": "Just opened",
+        "elapsed_one": "Waiting for {{count}} minute",
+        "elapsed_other": "Waiting for {{count}} minutes"
+      }
+    },
+    "part": {
+      "description": "What this step does and where it takes you.",
+      "needsTitle": "What you need",
+      "statusLabel": "Status of the step"
+    },
+    "parts": {
+      "activation": {
+        "title": "Summary and activation",
+        "what": "Check everything, run the final test and switch the flows on."
+      },
+      "channels": {
+        "title": "Your channels",
+        "what": "Connect each portal, match the listings and import bookings and calendars."
+      },
+      "compliance": {
+        "title": "Legal obligations",
+        "what": "Who sends Alloggiati Web and ISTAT, tourist tax and CIN."
+      },
+      "fiscalDocuments": {
+        "title": "Fiscal documents",
+        "what": "Who issues them, the tax regime and the issuer data."
+      },
+      "identification": {
+        "title": "Identification and access",
+        "what": "Guest verification, consent texts, lock code and the QR to print."
+      },
+      "listings": {
+        "title": "Check your listings",
+        "what": "Check the content imported from each channel: we only ask for what is missing."
+      },
+      "messagesAi": {
+        "title": "Messages and AI",
+        "what": "Alert preferences, how to write to guests and scheduled messages."
+      },
+      "octorateConnection": {
+        "title": "Connect Octorate",
+        "what": "Give consent to your Octorate account, or have your properties created there."
+      },
+      "partners": {
+        "title": "Connected services",
+        "what": "If you like, connect the services of the marketplace."
+      },
+      "pricesRules": {
+        "title": "Prices and rules",
+        "what": "Base price, rate plans, restrictions and conditions."
+      },
+      "properties": {
+        "title": "Your properties",
+        "what": "Match the Octorate properties to the CasaZen ones, or create the missing ones."
+      }
+    },
+    "path": {
+      "all": "All steps",
+      "continue": "Continue",
+      "next": "Next: {{step}}",
+      "progress": "{{done}} of {{total}}",
+      "progressLabel": "Progress of the path",
+      "steps": {
+        "checkInCompliance": {
+          "title": "Online check-in and legal obligations"
+        },
+        "checkListings": {
+          "title": "Check your listings"
+        },
+        "connectChannels": {
+          "title": "Connect your channels"
+        },
+        "fiscalDocuments": {
+          "title": "Fiscal documents"
+        },
+        "messagesAi": {
+          "title": "Messages and AI"
+        },
+        "pricesCalendar": {
+          "title": "Prices and calendar"
+        }
+      },
+      "title": "Start with CasaZen"
+    },
+    "progress": "{{done}} of {{total}}",
+    "reasons": {
+      "access_code_missing": "At least one property has no access code yet.",
+      "channel_content_to_fix": "A channel rejected the content of a listing: it needs to be fixed.",
+      "channels_missing": "At least one property is not on any channel yet.",
+      "cin_missing_or_invalid": "The CIN of at least one property is missing or not valid.",
+      "connection_lost": "The connection with Octorate no longer works: it needs to be made again.",
+      "connection_missing": "You have not connected Octorate yet.",
+      "existing_ota_import_incomplete": "We are still reading the listings you already have on the portals.",
+      "flows_incomplete": "Something is still to complete in one of the flows of a property.",
+      "identification_off": "Guest identification is not switched on in this installation.",
+      "inventory_scenario_missing": "Tell us first whether your properties are already on Octorate, on the portals, or new.",
+      "mapping_unavailable": "We cannot read the matches with Octorate right now. Try again shortly.",
+      "mapping_unconfirmed": "The match between the listings on Octorate and your properties is not confirmed yet.",
+      "no_property": "There are no properties to set up yet.",
+      "not_provided": "This step is not available yet.",
+      "price_missing": "At least one property has no base price.",
+      "property": {
+        "channel_content_to_fix": "A channel refused the content of the listing: it has to be fixed.",
+        "cin_missing_or_invalid": "The CIN of this property is missing or not valid.",
+        "connection_lost": "The connection with the channel manager no longer works: it has to be made again.",
+        "connection_missing": "Your channel manager is not connected yet.",
+        "content_managed_on_channel": "The content is managed on the channel.",
+        "flow_not_activated": "Everything is ready: only the activation is missing.",
+        "mapping_unavailable": "We cannot read the matching right now. Try again shortly.",
+        "mapping_unconfirmed": "The listing is not matched to this property yet: it has to be confirmed.",
+        "not_provided": "This function is not available yet.",
+        "property_inactive": "This property is not active.",
+        "property_long_rent": "This property is a long-term rental: it is not needed here.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications for this property is missing.",
+        "tax_rate_missing": "The tourist tax of this property's municipality is missing.",
+        "unknown": "There is still something to complete."
+      },
+      "required_part_not_done": "Complete first: {{parts}}.",
+      "sender_missing": "Nobody is set to send the Alloggiati Web and ISTAT communications of at least one property.",
+      "tax_rate_missing": "The tourist tax of the comune of at least one property is missing.",
+      "unknown": "This step is not complete yet."
+    },
+    "states": {
+      "blocked": "Waiting",
+      "deferred": "Postponed",
+      "deferredUntil": "Postponed to {{date}}",
+      "done": "Done",
+      "notAvailable": "Not available",
+      "open": "To do"
+    },
+    "summary": {
+      "activate": {
+        "action": "Activate",
+        "text": "Switch on the flows that are ready. What is not ready stays in To do and you find it here again.",
+        "title": "Activate"
+      },
+      "activation": {
+        "activated_one": "activated on {{count}} property",
+        "activated_other": "activated on {{count}} properties",
+        "close": "Close",
+        "confirm": "Confirm",
+        "description": "Choose the flows: before switching on we tell you for how many properties.",
+        "edit": "Edit",
+        "error": "We could not activate. Try again.",
+        "flowCounts": "{{ready}} ready · {{notReady}} to complete",
+        "flowFailed": "This flow could not be completed: what was already switched on stays on.",
+        "flows": "Flows to activate",
+        "lacks": "missing: {{what}}",
+        "loadError": "We could not read what is ready.",
+        "loading": "Checking what is ready...",
+        "nextDone": "Everything that was ready is active. Go back to the plan to see what is left.",
+        "nextRetry": "Some flows were not completed. Close and try again: what is already on does not change.",
+        "nextTodo": "What is not ready is in To do.",
+        "resultDescription": "Here is what happened, flow by flow.",
+        "resultTitle": "Done",
+        "stayInTodo_one": "{{count}} property is not ready and stays in To do",
+        "stayInTodo_other": "{{count}} properties are not ready and stay in To do",
+        "title": "Do you want to activate?",
+        "toPlan": "Back to the plan",
+        "toTodo": "Go to To do",
+        "willActivate_one": "It switches on for {{count}} property",
+        "willActivate_other": "It switches on for {{count}} properties"
+      },
+      "adminOnly": "The organization administrator is needed to activate.",
+      "description": "Check where each flow stands on each property, run the final test and switch on the ones that are ready.",
+      "filters": {
+        "allFlows": "All flows",
+        "allStates": "All states",
+        "flow": "Flow",
+        "search": "Search for a property",
+        "state": "State"
+      },
+      "prerequisites": {
+        "cin": "the CIN",
+        "connection": "the connection",
+        "content": "the content of the listing",
+        "mapping": "the matching of the listings",
+        "singleSender": "who sends Alloggiati Web and ISTAT",
+        "taxRate": "the tourist tax"
+      },
+      "strip": {
+        "counts": "{{active}} active · {{toComplete}} to complete · {{notAvailable}} not available",
+        "label": "The six flows",
+        "noCounts": "Counts not available"
+      },
+      "table": {
+        "caption": "State of each flow on each property",
+        "empty": "There are no properties to show.",
+        "loadError": "We could not load the state of the properties.",
+        "loading": "Loading the properties...",
+        "noData": "—",
+        "noMatch": "No property matches these filters.",
+        "property": "Property",
+        "title": "Where you stand, property by property"
+      },
+      "title": "Summary and activation"
+    },
+    "test": {
+      "description": "We pass a recently imported booking through all the flows, read only.",
+      "error": "We could not run the test. Try again.",
+      "noBooking": "This property has no imported booking yet to run the test on.",
+      "noEffect": "No effect: nothing is sent",
+      "outcomes": {
+        "fail": "does not work",
+        "pass": "works",
+        "skipped": "not checked"
+      },
+      "propertiesError": "We could not load the properties.",
+      "property": "Property of the test",
+      "reasons": {
+        "booking_not_active": "The booking does not require a communication to the Police.",
+        "booking_status_unmapped": "The state of the booking does not match between CasaZen and the channel manager.",
+        "channel_content_to_fix": "A channel refused the content of the listing.",
+        "channel_states_missing": "The property is on no channel.",
+        "content_managed_on_channel": "The content is managed on the channel: CasaZen sends nothing.",
+        "guest_data_missing": "The guest data are not complete yet: they usually come with the check-in.",
+        "not_applicable": "The property is outside Italy: there is nothing to communicate.",
+        "not_provided": "This flow is not available yet.",
+        "ota_amounts_missing": "The amounts of the booking are missing, that is the commission and what the guest paid.",
+        "sender_missing": "Who sends the Alloggiati Web and ISTAT communications is missing.",
+        "unknown": "Check this flow."
+      },
+      "resultLabel": "Result of the test, flow by flow",
+      "run": "Run the final test",
+      "title": "Final test"
+    },
+    "title": "Start with CasaZen"
   },
   "org": {
     "tier": {
@@ -10855,6 +13161,708 @@
       "WARNING": "Warning"
     }
   },
+  "ownerAccounting": {
+    "actions": {
+      "approve": {
+        "label": "Approve"
+      },
+      "close": {
+        "label": "Close the month"
+      },
+      "closeWaits": "The month can be closed once it is over.",
+      "generate": {
+        "flagged": "The statement of {{owner}} is ready (version {{version}}) but has anomalies: resolve them and make a new one.",
+        "success": "Statement of {{owner}} prepared: version {{version}}."
+      },
+      "more": "More actions",
+      "payout": {
+        "label": "Record a payment"
+      },
+      "prepare": {
+        "label": "Prepare the statement"
+      },
+      "publish": {
+        "label": "Publish"
+      },
+      "regenerate": {
+        "label": "Make a new version"
+      },
+      "stale": "The ledger changed after this version: you need a new version before approving or publishing it."
+    },
+    "adminRequired": {
+      "description": "Closing the statements is about the owners' money: the account owner and the administrators handle it. Ask one of them to open this page.",
+      "title": "An administrator of the organization is needed"
+    },
+    "anomalies": {
+      "actions": {
+        "correction": "Record a correction",
+        "fx": "Add the exchange rate",
+        "onboarding": "Complete it in the activation",
+        "payment": "Open the payment",
+        "post": "Check the month",
+        "profile": "Open the owner's data",
+        "row": "Go to the statement"
+      },
+      "notBlocking": "Does not block the close",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "times": "×{{count}}",
+      "title": "Anomalies to resolve",
+      "wholeMonth": "The whole month"
+    },
+    "changes": {
+      "added": "Lines posted since then: {{count}}",
+      "addedLine": "{{type}}: {{amount}}",
+      "figure": {
+        "channelFees": "Channel fees",
+        "charges": "Charges and expenses",
+        "closingBalance": "Closing balance",
+        "commission": "Agency commission",
+        "corrections": "Corrections",
+        "openingBalance": "Opening balance",
+        "payments": "Payments",
+        "revenue": "Owner's revenue"
+      },
+      "first": "This is the first version of the month: there is nothing to compare it with.",
+      "from": "{{before}} → {{after}}",
+      "history": "Versions of the month",
+      "intro": "Compared with version {{version}}, cut on {{cutoff}}:",
+      "none": "Nothing changed since version {{version}}.",
+      "title": "What changed since the previous version",
+      "versionLine": "Version {{version}} · {{status}} · cut on {{cutoff}}"
+    },
+    "close": {
+      "confirm": "Close the month",
+      "consequences": {
+        "evidence": "The evidence of the month (versions, lines and published files) is kept for the time the tax rule asks.",
+        "nothingPosted": "Nothing is posted in a closed month any more: what comes after goes into a correction of an open month."
+      },
+      "description": "Close the month of {{owner}} on the approved statement, after checking that the balance matches the payments.",
+      "done": "The month of {{period}} of {{owner}} is closed.",
+      "notReady": "The month cannot be closed yet",
+      "title": "Close {{period}}",
+      "waiverHint": "It stays on record with your name and the date.",
+      "waiverNotice": "The balance does not match the payments, or it is negative. Closing needs a reason, and only who manages the owners' finances can do it.",
+      "waiverReason": "Reason for closing with a difference",
+      "word": "CLOSE"
+    },
+    "correction": {
+      "amount": "Amount ({{currency}})",
+      "attachment": "Attachment or reference",
+      "attachmentHint": "An https address or the reference of a document.",
+      "currency": "Currency",
+      "currencyHint": "Three letters, as in the owner's statements (for example EUR).",
+      "date": "Date of the correction",
+      "dateHint": "It counts in the month of this date: a closed month takes no lines, pick an open one.",
+      "description": "Add a line to the ledger of {{owner}}, with its reason. Lines already posted are never changed: the correction is one line more.",
+      "direction": "In whose favour",
+      "done": "Correction recorded for {{owner}}.",
+      "fromOwner": "Charged to the owner (taken off the balance)",
+      "open": "Record a correction",
+      "reason": "Reason",
+      "reasonHint": "Write what you correct and why: whoever checks the month will read it.",
+      "submit": "Record the correction",
+      "title": "Record a correction",
+      "toOwner": "In favour of the owner (added to the balance)"
+    },
+    "description": "Check, approve and publish the owners' statements, then close the month.",
+    "errors": {
+      "generic": "It did not work. Try again in a moment.",
+      "withField": "{{message}} (field: {{field}})"
+    },
+    "external": {
+      "add": "Link an invoice",
+      "added": "Invoice linked.",
+      "dialog": {
+        "date": "Invoice date",
+        "description": "Enter the details of the invoice your agency's fiscal system has already issued. CasaZen keeps the link, not the amount.",
+        "externalId": "Identifier in the system",
+        "externalIdHint": "The code your system knows the invoice by.",
+        "fromFile": "Work out the fingerprint from a file",
+        "fromFileHint": "The file stays on your computer: CasaZen only receives its fingerprint.",
+        "hash": "File fingerprint (SHA-256)",
+        "hashHint": "64 hexadecimal characters: it tells the file apart if someone changes it.",
+        "hashInvalid": "The fingerprint is 64 hexadecimal characters.",
+        "number": "Invoice number",
+        "provider": "System that issued it",
+        "providerHint": "For example the name of the management or invoicing software.",
+        "submit": "Link the invoice",
+        "title": "Link an issued invoice",
+        "url": "Address of the document",
+        "urlHint": "Where the issued invoice is (https).",
+        "urlInvalid": "It needs an address that starts with https://."
+      },
+      "empty": "No invoice linked.",
+      "entered": "To check",
+      "hash": "File fingerprint: {{hash}}…",
+      "hashError": "I cannot read the file.",
+      "loading": "Looking for the linked invoices…",
+      "needsApproval": "You will be able to link an invoice once the statement is approved.",
+      "notice": "The statement is not a fiscal document and CasaZen does not issue invoices to owners. If your agency has to invoice, it does so from its own fiscal system: here you link the invoice already issued, to find it with the statement.",
+      "open": "Open the document",
+      "removalReason": "Unlinked on {{date}}: {{reason}}",
+      "remove": "Unlink",
+      "removeDialog": {
+        "confirm": "Unlink",
+        "description": "The link to invoice no. {{number}} will no longer be active, but it stays in the history with its reason.",
+        "hint": "For example: linked to the wrong statement by mistake.",
+        "reason": "Why you unlink it",
+        "title": "Unlink the invoice"
+      },
+      "removed": "Unlinked",
+      "removedDone": "Link removed: it stays in the history.",
+      "row": "{{provider}} · no. {{number}} of {{date}}",
+      "title": "Invoices issued outside CasaZen",
+      "verified": "Checked",
+      "verifiedAt": "Checked on {{date}}.",
+      "verifiedDone": "Link marked as checked.",
+      "verify": "Mark as checked"
+    },
+    "fields": {
+      "agencyCollected": "agency collection",
+      "amount": "amount",
+      "approvedByName": "approver's name",
+      "attachmentReference": "attachment",
+      "baseCurrency": "from currency",
+      "components": "base components",
+      "currency": "currency",
+      "date": "date",
+      "description": "reason",
+      "documentSha256": "file fingerprint",
+      "documentUrl": "document address",
+      "externalDate": "invoice date",
+      "externalId": "identifier in the system",
+      "externalNumber": "invoice number",
+      "grossAmount": "gross amount",
+      "grossBaseComponents": "gross base components",
+      "handoffReference": "who handed it over and how",
+      "jurisdiction": "jurisdiction",
+      "paidOn": "payment date",
+      "parameters": "parameters",
+      "provider": "issuing system",
+      "qualifyingShortLet": "short-term let",
+      "quoteCurrency": "to currency",
+      "rate": "exchange rate",
+      "rateDate": "rate date",
+      "reason": "reason",
+      "receiptReference": "receipt",
+      "reference": "reference",
+      "retentionYears": "years of retention",
+      "rounding": "rounding",
+      "ruleCode": "rule code",
+      "source": "source",
+      "sourceSha256": "source fingerprint",
+      "sourceUrl": "source address",
+      "validFrom": "valid from",
+      "validTo": "valid until",
+      "version": "version",
+      "withholdingRatePercent": "withholding rate",
+      "withholdingTaxCode": "tax code"
+    },
+    "filing": {
+      "dialog": {
+        "Accepted": {
+          "confirm": "Record the receipt",
+          "description": "Record the receipt with which the Revenue Agency accepted the file.",
+          "field": "Number or reference of the receipt",
+          "hint": "You find it on the receipt of the Revenue Agency.",
+          "title": "Record the receipt"
+        },
+        "Rejected": {
+          "confirm": "Mark as rejected",
+          "description": "Record that the file was rejected, with the reason.",
+          "field": "Reason for the rejection",
+          "hint": "Copy the reason given in the notice of rejection.",
+          "title": "Mark as rejected"
+        },
+        "Reviewed": {
+          "confirm": "Mark as reviewed",
+          "description": "Do you confirm you checked the data of this file?",
+          "title": "File reviewed"
+        },
+        "Submitted": {
+          "confirm": "Record the handoff",
+          "description": "CasaZen sends nothing to the Revenue Agency: you or your intermediary do. Here you record that it happened.",
+          "field": "Who handed it over and how",
+          "hint": "For example: handed over by the accountant on 16/11, protocol 123456.",
+          "title": "Record the handoff"
+        }
+      },
+      "done": {
+        "Accepted": "Receipt recorded.",
+        "Rejected": "Rejection recorded.",
+        "Reviewed": "File marked as reviewed.",
+        "Submitted": "Handoff recorded."
+      },
+      "handoff": "Handoff reference: {{reference}}",
+      "label": {
+        "accepted": "Accepted",
+        "acceptedWithoutProof": "Outcome to confirm",
+        "calculated": "Calculated",
+        "generated": "Generated",
+        "rejected": "Rejected",
+        "reviewed": "Reviewed",
+        "submitted": "Submitted",
+        "submittedWithoutProof": "Handoff to confirm"
+      },
+      "missingProof": "The handoff reference or the receipt is missing: until it is there, CasaZen does not count it as sent or accepted.",
+      "receipt": "Receipt: {{reference}}",
+      "rejection": "Reason for the rejection: {{reason}}",
+      "step": {
+        "Accepted": "Record the receipt",
+        "Rejected": "Mark as rejected",
+        "Reviewed": "Mark as reviewed",
+        "Submitted": "Record the handoff"
+      }
+    },
+    "focus": {
+      "blocked": {
+        "title_one": "{{count}} anomaly to resolve before closing",
+        "title_other": "{{count}} anomalies to resolve before closing"
+      },
+      "body": "Statements with no anomaly: {{ready}} out of {{owners}} ({{percent}}%). Approve, publish and close the ones below.",
+      "check": "Check the month",
+      "closed": {
+        "body": "All the statements of the month are closed: nothing is posted in this month any more.",
+        "title": "{{period}} is closed"
+      },
+      "empty": {
+        "body": "This month has no owner revenue, charges or payments. If you expected something, check the month.",
+        "title": "No statement to prepare in {{period}}"
+      },
+      "kicker": "Close of {{period}}",
+      "ready": {
+        "title": "All in order: you can go on"
+      },
+      "then": "Then: approve, publish and close the statements below.",
+      "who": "Your turn"
+    },
+    "fx": {
+      "base": "From currency",
+      "baseHint": "For example CHF.",
+      "date": "Day of the rate",
+      "description": "CasaZen does not look rates up on its own: write the one your agency uses, with its source. One unit of the first currency is worth the rate in the second, on the day given and the 7 days after it.",
+      "done": "Rate added: check the month again.",
+      "quote": "To currency",
+      "quoteHint": "For example EUR.",
+      "rate": "Rate",
+      "rateInvalid": "Write a number above zero, with at most 8 decimals.",
+      "source": "Source of the rate",
+      "sourceHint": "For example: Bank of Italy, rate of 12/10.",
+      "submit": "Add the rate",
+      "title": "Add an exchange rate"
+    },
+    "groups": {
+      "approved": {
+        "hint": "Ready to publish to the owner.",
+        "title": "Approved"
+      },
+      "published": {
+        "hint": "The owner sees them. Record the payment and close the month.",
+        "title": "Published"
+      },
+      "toPrepare": {
+        "hint": "There is no statement yet.",
+        "title": "To prepare"
+      },
+      "toVerify": {
+        "hint": "Drafts to check and approve, or flagged for anomalies to resolve.",
+        "title": "To check"
+      }
+    },
+    "issue": {
+      "currencyMixed": {
+        "how": "The owner's lines are in different currencies: pick the currency he is paid in, in his financial data.",
+        "title": "The statement mixes several currencies"
+      },
+      "duplicateEntry": {
+        "how": "Check the month again. If it stays, open the statement and fix the double line with a correction.",
+        "title": "A line is posted twice"
+      },
+      "fxMissing": {
+        "how": "A line is in a currency other than the owner's and there is no rate for that day: add it and check the month again.",
+        "title": "An exchange rate is missing"
+      },
+      "lateSourceAfterClose": {
+        "how": "The month stays closed. Record a correction in an open month to settle the owner's account.",
+        "title": "A movement arrived after the close"
+      },
+      "ledgerStatementImbalance": {
+        "how": "Lines changed after the version: make a new version.",
+        "title": "The statement does not match the ledger"
+      },
+      "negativeBalance": {
+        "how": "It can be closed only with a reason and the permission of who manages the owners' finances.",
+        "title": "The owner's balance is negative"
+      },
+      "ownerFiscalPolicyJurisdictionMismatch": {
+        "how": "In the financial data, pick a rule of the same jurisdiction as the profile.",
+        "title": "The tax rule is of another jurisdiction"
+      },
+      "ownerFiscalPolicyMissing": {
+        "how": "Pick or create a rule in the financial data and have the accountant's approval recorded.",
+        "title": "The owner's tax rule is missing"
+      },
+      "ownerFiscalPolicyNotApproved": {
+        "how": "Record the accountant's approval in the financial data.",
+        "title": "The tax rule is not approved yet"
+      },
+      "ownerFiscalPolicyNotEffective": {
+        "how": "Pick a rule valid in the period, or create a new one.",
+        "title": "The tax rule is not in force this month"
+      },
+      "ownerFiscalProfileIncomplete": {
+        "how": "Complete the profile: name, tax residence, jurisdiction, identifier, currency and revenue rule.",
+        "title": "The owner's financial data is incomplete"
+      },
+      "ownerFiscalProfileMissing": {
+        "how": "Enter his profile, valid from this month.",
+        "title": "The owner's financial data is missing"
+      },
+      "ownershipMissing": {
+        "how": "State who owns it in the activation: with no owner its revenue goes to no statement.",
+        "title": "A property has no owner in this period"
+      },
+      "ownershipShareGap": {
+        "how": "Fix the shares in the activation: the revenue of that property stays out until they add up.",
+        "title": "The shares of a property do not make 100%"
+      },
+      "periodClosed": {
+        "how": "Nothing is posted in this month any more.",
+        "title": "Month closed"
+      },
+      "periodDirty": {
+        "how": "Make a new version: the current one can no longer be approved or published.",
+        "title": "The ledger changed after the last version"
+      },
+      "sourceAmountMissing": {
+        "how": "Open the payment and fill in the amount: without it the line does not enter the statement.",
+        "title": "A payment has no amount"
+      },
+      "statementMissing": {
+        "how": "Prepare it from the owner's row.",
+        "title": "The statement is missing"
+      },
+      "statementNotApproved": {
+        "how": "Check it and approve it.",
+        "title": "The statement is not approved yet"
+      },
+      "unknown": {
+        "how": "The system reported it but this version of the app does not know it: check the month or ask for help.",
+        "title": "Anomaly {{code}}"
+      },
+      "unpostedSource": {
+        "how": "Press «Check the month»: the missing lines are posted to the ledger.",
+        "title": "Some movements are not posted yet"
+      }
+    },
+    "line": {
+      "credit": "Credit",
+      "debit": "Debit",
+      "document": "This line is linked to a fiscal document.",
+      "facts": {
+        "payment": "Payment",
+        "posted": "Posted",
+        "property": "Property",
+        "recognition": "Counts for the month",
+        "rule": "Rule",
+        "service": "Service",
+        "source": "Origin",
+        "taxCode": "Tax code",
+        "title": "Dates and rule"
+      },
+      "formula": {
+        "AgencyCommission": "Agency commission under the mandate, on the owner's revenue. It is taken off the balance.",
+        "AgencyPayment": "Payment from the owner to the agency, for instance to cover a negative balance. It is added to the balance.",
+        "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
+        "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
+        "Correction": "Manual correction with its reason: it replaces a line or adds one.",
+        "OwnerCharge": "Charge of the agency to the owner, for his share. It is taken off the balance.",
+        "OwnerExpense": "Expense paid by the agency on behalf of the owner, for his share. It is taken off the balance.",
+        "OwnerPayment": "Transfer paid to the owner: it settles what was owed. It is taken off the balance.",
+        "Withholding": "Withholding kept from the payment and due to the tax authority. It is taken off the balance."
+      },
+      "open": {
+        "attachment": "Open the attachment",
+        "attachmentText": "Attachment: {{reference}}",
+        "booking": "Open the booking",
+        "payment": "Open the payment",
+        "title": "Open the source",
+        "wires": "Open the transfers"
+      },
+      "reversal": "Reversal",
+      "reverses": "Cancels line {{id}}.",
+      "source": {
+        "Booking": "Booking",
+        "Manual": "Manual correction",
+        "OwnerCharge": "Charge or expense",
+        "OwnerPayout": "Payout to the owner",
+        "Payment": "Payment",
+        "WireBatch": "Wire transfer"
+      },
+      "steps": {
+        "fx": "Exchange rate",
+        "fxSource": "Rate taken from: {{source}}, of {{date}}",
+        "original": "Owner's amount",
+        "rate": "1 {{from}} = {{rate}} {{to}}",
+        "result": "Amount in the statement",
+        "sameCurrency": "none ({{currency}})",
+        "share": "Owner's share",
+        "source": "Amount of the source",
+        "title": "How the amount is reached"
+      },
+      "type": {
+        "AgencyCommission": "Agency commission",
+        "AgencyPayment": "Payment from the owner",
+        "BookingRevenue": "Revenue of a booking",
+        "ChannelFee": "Channel fee",
+        "Correction": "Correction",
+        "OwnerCharge": "Agency charge",
+        "OwnerExpense": "Expense for the owner",
+        "OwnerPayment": "Payment to the owner",
+        "Withholding": "Withholding"
+      }
+    },
+    "lines": {
+      "amount": "Amount",
+      "caption": "Lines of the statement",
+      "date": "Date",
+      "empty": "No line in this statement.",
+      "item": "Item",
+      "share": "Share",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "summary": "{{share}}% share of {{source}}",
+      "title": "Lines of the statement"
+    },
+    "loadError": "We cannot read the month-end close.",
+    "loading": "Reading the month…",
+    "owner": {
+      "unnamed": "Owner {{id}}"
+    },
+    "payments": {
+      "evidenceLoading": "Reading the withholding decision…",
+      "noEvidence": "No withholding decision recorded for this payment.",
+      "payout": "Payment of {{date}}: {{amount}}",
+      "title": "Payments and reconciliation",
+      "withholdingOfAnotherVersion": "The withholdings of this statement come from payments recorded on another version of the month."
+    },
+    "payout": {
+      "agencyCollected": "Did the agency collect the rent or step in the payment?",
+      "blocked": {
+        "policy_jurisdiction_mismatch": "The rule picked is of another jurisdiction than the profile.",
+        "policy_missing": "The profile has no tax rule.",
+        "policy_not_approved": "The tax rule is not yet approved by the accountant.",
+        "policy_not_effective": "The tax rule is not in force on the payment day.",
+        "profile_incomplete": "The owner's profile is incomplete for the payment day: complete it first.",
+        "profile_missing": "There is no valid owner profile on the payment day."
+      },
+      "checking": "Checking the tax rule for this day…",
+      "choose": "Choose…",
+      "component": "Amount of the item «{{component}}»",
+      "confirm": "Record the payment",
+      "description": "Record the transfer paid to {{owner}}. The withholding, if the approved rule asks for it, is decided by CasaZen when you confirm.",
+      "done": "Payment to {{owner}} recorded.",
+      "errors": {
+        "answer": "Pick an answer: without it CasaZen cannot decide.",
+        "components": "Write an amount for each item (0 is fine).",
+        "gross": "Write an amount above zero, with at most two decimals.",
+        "paidOn": "Pick the payment date.",
+        "reference": "At most 100 characters."
+      },
+      "facts": "What the rule needs",
+      "factsHint": "These are the facts the approved rule asks for to decide whether there is a withholding. If you do not know them yet, do not record the payment.",
+      "gross": "Gross amount paid ({{currency}})",
+      "left": "Left to pay: {{amount}}",
+      "loading": "Reading the owner's tax rule…",
+      "no": "No",
+      "noVersion": "First prepare and approve the statement.",
+      "nothingLeft": "Nothing is left to pay: the payments already cover the balance. Record another one only if you are sure.",
+      "openProfile": "Open the owner's data",
+      "overLeft": "The amount is more than what is left to pay ({{amount}}). Check it before recording.",
+      "paidOn": "Payment date",
+      "qualifyingShortLet": "Do the stays fall under a short-term let according to the rule?",
+      "recorded": "Payment recorded",
+      "recordedBody": "Gross {{gross}}, withholding {{withheld}}, net {{net}}.",
+      "reference": "Reference of the transfer",
+      "rule": "Rule applied: {{rule}} version {{version}} ({{jurisdiction}}), approved by {{approver}} on {{date}}.",
+      "ruleBlocked": "A payment cannot be recorded yet",
+      "ruleError": "We cannot read the owner's tax rule",
+      "title": "Record a payment",
+      "unresolved": "A fact is missing to decide the withholding: {{field}}.",
+      "useLeft": "Use the amount left",
+      "withholdingNote": "CasaZen does not work out the withholding in advance: it decides it when you confirm, with the approved rule in force on the payment day, and keeps the evidence.",
+      "yes": "Yes"
+    },
+    "period": {
+      "backToSuggested": "Back to {{period}}",
+      "label": "Month to close",
+      "next": "Next month",
+      "previous": "Previous month"
+    },
+    "post": {
+      "done": "Check done: {{posted}} lines posted, {{reversed}} reversed, {{unchanged}} unchanged."
+    },
+    "readiness": {
+      "label": "Statements with no anomaly",
+      "percent": "{{percent}}% ready: {{ready}} out of {{owners}}",
+      "valueText": "{{ready}} statements out of {{owners}} with no anomaly"
+    },
+    "reconciliation": {
+      "difference": "Difference",
+      "due": "Due (approved balance)",
+      "gross": "gross {{amount}}",
+      "loading": "Reading the payments…",
+      "negative": "The balance is negative: closing needs a reason.",
+      "net": "net {{amount}}",
+      "noPayouts": "No payment recorded for this month.",
+      "notReconciled": "The balance does not match the payments: closing needs a reason.",
+      "paid": "Paid",
+      "payouts": "Payments of the month",
+      "reconciled": "The balance matches the payments: the month can be closed.",
+      "reversed": "Reversed",
+      "title": "Payment reconciliation",
+      "withheld": "withholding {{amount}}",
+      "wires": "With no payment recorded here, at the close CasaZen counts the transfers marked as paid for this month: the close gives the final figures."
+    },
+    "row": {
+      "blocking_one": "{{count}} anomaly",
+      "blocking_other": "{{count}} anomalies",
+      "closed": "Closed",
+      "loading": "Reading the statement…",
+      "noStatement": "No statement",
+      "paymentsError": "I cannot read the payments.",
+      "profile": "Financial data",
+      "stale": "Out of date",
+      "state": "Version {{version}} · {{status}} · balance {{balance}}",
+      "versionsError": "I cannot read the versions.",
+      "warnings_one": "{{count}} notice",
+      "warnings_other": "{{count}} notices"
+    },
+    "rows": {
+      "title": "Statements of the month"
+    },
+    "statement": {
+      "backToClose": "Back to the month-end close",
+      "closed": "Month closed",
+      "closing": "Closing balance",
+      "costs": "Commissions and costs",
+      "description": "Version {{version}} · {{status}}",
+      "downloadPublished": "Download the published file",
+      "figures": "At a glance",
+      "fileBody": "Published on {{date}}. File fingerprint: {{hash}}…",
+      "fileTitle": "Published file",
+      "flaggedTitle": "Anomalies that flagged this version",
+      "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
+      "focusTitle": "Version {{version}} · {{status}}",
+      "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
+      "kicker": "Statement of {{period}}",
+      "loadError": "We cannot read the statement.",
+      "loading": "Reading the statement…",
+      "nonFiscal": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. If an invoice is needed, your agency's fiscal system issues it and you link it here.",
+      "notFound": "This statement does not exist",
+      "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
+      "openLatest": "Open the latest version",
+      "opening": "Opening balance {{amount}}",
+      "ownerProfile": "Owner's financial data",
+      "paidAndWithheld": "Payments and withholdings",
+      "revenue": "Owner's revenue",
+      "superseded": "This version was replaced by a newer one. It stays here as it was, with its file.",
+      "title": "Statement of {{owner}} · {{period}}",
+      "titleGeneric": "Statement"
+    },
+    "step": {
+      "approve": {
+        "confirm": "Approve",
+        "consequence1": "After the approval the statement is not edited: changing anything needs a new version.",
+        "consequence2": "It does not go to the owner yet: publishing does that.",
+        "description": "The statement of {{owner}} for {{period}} is checked and can be published.",
+        "done": "Version {{version}} of {{owner}} approved.",
+        "title": "Approve version {{version}}"
+      },
+      "publish": {
+        "confirm": "Publish",
+        "consequence1": "The file and its fingerprint are kept and never change.",
+        "consequence2": "Changing anything needs a new version: this one stays as it is, readable.",
+        "description": "The statement of {{owner}} for {{period}} becomes the one the owner sees.",
+        "done": "Version {{version}} of {{owner}} published.",
+        "title": "Publish version {{version}}"
+      },
+      "regenerate": {
+        "confirm": "Make a new version",
+        "consequence1": "Version {{version}} stays readable as superseded, with its original file.",
+        "consequence2": "The new version starts as a draft: it must be approved and published again.",
+        "description": "The ledger of {{owner}} changed after version {{version}} of {{period}}: a new one is needed.",
+        "done": "New version of {{owner}} prepared.",
+        "title": "New version after {{version}}"
+      }
+    },
+    "tax": {
+      "amount": "Amount",
+      "annualGenerated": "Annual data generated.",
+      "annualNone": "The annual data of this year has not been generated yet.",
+      "annualRegenerated": "Annual data generated again.",
+      "annualTitle": "Annual data for the Certificazione Unica {{year}}",
+      "applicable": "Withholding applies",
+      "base": "Gross base",
+      "calculated": "Withholdings calculated: {{amount}} to pay with an F24. The F24 file has not been generated yet.",
+      "downloadData": "Download the data",
+      "downloadPdf": "Download the PDF",
+      "dueDate": "Due date",
+      "evidenceCount": "Payments",
+      "evidenceHash": "Fingerprint of the evidence: {{hash}}…",
+      "f24Generated": "F24 generated.",
+      "f24Regenerated": "F24 generated again from the withholdings.",
+      "f24Title": "F24 of {{period}}",
+      "generateAnnual": "Generate the annual data",
+      "generateF24": "Generate the F24",
+      "generatedAt": "Generated on",
+      "loading": "Reading the withholdings…",
+      "mismatch": "The F24 ({{f24}}) does not match the withholdings of the month ({{obligations}}): generate it again before going on.",
+      "none": "No withholding to pay for this month: with no withholding there is no F24.",
+      "notApplicable": "No withholding",
+      "note": "CasaZen prepares the data but does not send it to the Revenue Agency: you or your intermediary do, and here you record the reference and the receipt.",
+      "overdue": "Overdue, to pay",
+      "paidAt": "Paid on {{date}}",
+      "paidOn": "Paid on {{date}}",
+      "payment": "Payment",
+      "rate": "Rate",
+      "reason": {
+        "applicable": "Withholding applies under the approved rule.",
+        "noCollectionOrIntervention": "The agency neither collected nor stepped in the payment: the rule asks for no withholding.",
+        "notQualifyingShortLet": "The stays do not fall under a short-term let according to the rule: no withholding.",
+        "other": "Reason: {{code}}",
+        "ruleWithoutWithholding": "The approved rule does not ask for a withholding."
+      },
+      "regenerate": "Generate again from the data",
+      "reversal": "Reversal",
+      "rule": "Rule {{rule}} version {{version}} ({{jurisdiction}})",
+      "ruleVersion": "Rule used: {{version}}",
+      "taxCode": "Tax code",
+      "title": "Withholdings and tax filings",
+      "toPay": "To pay",
+      "withheld": "Withheld",
+      "yearAnnualMatch": "In {{year}} the annual data ({{amount}}) match the withholdings.",
+      "yearAnnualMismatch": "The annual data of {{year}} ({{annual}}) do not match the withholdings of the year ({{obligations}}).",
+      "yearEmpty": "In {{year}} there are no withholdings: there is nothing to reconcile.",
+      "yearF24Match": "In {{year}} the withholdings ({{amount}}) match the F24.",
+      "yearF24Mismatch_one": "In {{year}} the F24 of {{count}} month does not match the withholdings:",
+      "yearF24Mismatch_other": "In {{year}} the F24 of {{count}} months do not match the withholdings:",
+      "yearF24MonthLine": "{{month}}: withholdings {{obligations}}, F24 {{f24}}",
+      "yearF24NotGenerated": "{{month}}: withholdings {{obligations}}, F24 not generated yet",
+      "yearReconciled": "In {{year}} the withholdings ({{amount}}) match the F24 and the annual data."
+    },
+    "title": "Month-end close",
+    "version": {
+      "status": {
+        "Approved": "Approved",
+        "Draft": "Draft",
+        "Flagged": "Flagged",
+        "Published": "Published",
+        "Superseded": "Superseded"
+      }
+    }
+  },
   "ownerPortal": {
     "dashboard": {
       "title": "Owner Portal",
@@ -10906,6 +13914,259 @@
       "error": "Loading error",
       "errorMessage": "Unable to load statements. Please try again later."
     }
+  },
+  "ownerProfile": {
+    "approveDialog": {
+      "confirm": "Record the approval",
+      "consequence1": "The approval stays on record with the name and the date.",
+      "consequence2": "An approved rule never changes: changing a value needs a new version of the rule.",
+      "description": "You record that the accountant approved this rule. CasaZen does not approve rules: it takes note of who did.",
+      "done": "Approval recorded.",
+      "name": "Name of who approved",
+      "nameHint": "The accountant or the qualified person who approved the rule.",
+      "title": "Approval of rule {{rule}} version {{version}}"
+    },
+    "description": "Who the owner is for statements, payments and withholdings, how he is paid and which tax rule applies. Sensitive data is hidden.",
+    "dialog": {
+      "choose": "Choose…",
+      "countryHint": "Two letters, for example IT or CH.",
+      "countryInvalid": "It takes two letters.",
+      "currencyHint": "Three letters, for example EUR or CHF.",
+      "currencyInvalid": "It takes three letters.",
+      "description": "The new version applies from the day given: the one in force ends the day before. What is already posted does not change.",
+      "done": "Financial data saved.",
+      "identity": "Who he is",
+      "jurisdictionHint": "For example IT, CH or CH-TI.",
+      "jurisdictionInvalid": "Two letters, and if needed a dash and the code (CH-TI).",
+      "mandate": "Mandate",
+      "mandateInvalid": "The end cannot come before the start.",
+      "model": "How it is accounted for",
+      "noPolicy": "No rule picked",
+      "payment": "Payment",
+      "policyOption": "{{rule}} version {{version}} · {{jurisdiction}} · {{state}}",
+      "rule": "Tax rule",
+      "ruleHint": "The country does not pick the rule: you do, among those the accountant approved. The system blocks a rule that is not approved, not in force or of another jurisdiction.",
+      "submit": "Save the new version",
+      "title": "New version of the financial data",
+      "validFrom": "Applies from",
+      "validFromFirst": "The first profile of this owner. The data covers the days from this one on: the months before it stay blocked, and a profile cannot be moved back later. Start it from the first month you still have to close.",
+      "validFromHint": "The first day the new data applies.",
+      "validFromTooEarly": "A profile already applies from {{date}}: pick a later day."
+    },
+    "facts": {
+      "empty": "Not given",
+      "hide": "Hide the data",
+      "reveal": "Show the full data",
+      "rule": "rule {{rule}} version {{version}}",
+      "title": "Profile in force",
+      "validBetween": "Valid from {{from}} to {{to}}",
+      "validFrom": "Valid from {{from}}"
+    },
+    "fields": {
+      "accountingPolicyId": "Tax rule",
+      "bankAccountReference": "Payment account (IBAN)",
+      "entityKind": "Kind of subject",
+      "expenseCommissionModel": "Expenses and commissions",
+      "fiscalCode": "Fiscal code",
+      "foreignTaxId": "Foreign tax identifier",
+      "legalAddress": "Legal address",
+      "legalName": "Legal name",
+      "mandateFrom": "Mandate from",
+      "mandateRole": "Role in the mandate",
+      "mandateTo": "Mandate until",
+      "revenueRecognitionRule": "When revenue counts",
+      "settlementCurrency": "Payment currency",
+      "taxJurisdiction": "Tax jurisdiction",
+      "taxResidenceCountry": "Tax residence",
+      "vatNumber": "VAT number",
+      "workingCapitalRule": "Working capital"
+    },
+    "focus": {
+      "approve": "Record the approval",
+      "back": "Back to the month-end close",
+      "blocked": {
+        "policy_jurisdiction_mismatch": {
+          "body": "The rule picked is of another jurisdiction than the profile: pick one of the same.",
+          "title": "The tax rule is not the right one"
+        },
+        "policy_missing": {
+          "body": "The profile has no tax rule. Pick one already approved or create a new one with the accountant's values.",
+          "title": "The tax rule is missing"
+        },
+        "policy_not_approved": {
+          "body": "Until the accountant approves it, the rule cannot be used for statements and payments.",
+          "title": "The tax rule is waiting for approval"
+        },
+        "policy_not_effective": {
+          "body": "The rule picked does not apply today. Pick one in force or create a new one.",
+          "title": "The tax rule is not in force"
+        },
+        "profile_incomplete": {
+          "body": "Missing: {{fields}}.",
+          "title": "The financial data is incomplete"
+        },
+        "profile_missing": {
+          "body": "Without a profile no statement can be prepared and no payment recorded for this owner.",
+          "title": "The owner's financial data is missing"
+        }
+      },
+      "complete": "Complete the data",
+      "kicker": "Today",
+      "newPolicy": "Create a rule",
+      "ready": {
+        "body": "Rule {{rule}} version {{version}} ({{jurisdiction}}) applies, approved by {{approver}}.",
+        "title": "The data is ready from {{from}}: statements and payments can be prepared from that day on"
+      },
+      "who": "Your turn"
+    },
+    "history": {
+      "current": "In force",
+      "noRule": "No rule",
+      "title": "Earlier versions"
+    },
+    "loadError": "We cannot read the financial data.",
+    "loading": "Reading the financial data…",
+    "maskedNotice": "For safety you only see the last digits of identifiers, address and account. Only who manages the owners' finances sees them in full and can change them.",
+    "monthNotCovered": {
+      "body": "The data applies from {{from}}, so the statement of that month stays blocked: a new profile cannot start on a day before the one in force. Ask for help to cover that month.",
+      "title": "The data does not cover {{period}}"
+    },
+    "newVersion": "New version of the data",
+    "noProfile": "This owner has no financial data yet.",
+    "notFound": "This owner does not exist",
+    "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
+    "onboarding": {
+      "complete": "The activation reports nothing left to complete for this owner.",
+      "completeAction": "Complete it in the activation",
+      "title": "What the activation still misses",
+      "unavailable": "The owners' activation is not available now: shares and mandate are completed there once it is."
+    },
+    "options": {
+      "entityKind": {
+        "LegalEntity": "Company or entity",
+        "NaturalPerson": "Natural person"
+      },
+      "expenseCommissionModel": {
+        "gross": "Gross",
+        "net_of_commission": "Net of commission"
+      },
+      "mandateRole": {
+        "landlord": "Landlord",
+        "owner": "Owner",
+        "usufructuary": "Usufructuary"
+      },
+      "revenueRecognitionRule": {
+        "cash": "When collected",
+        "stay": "At the end of the stay"
+      },
+      "workingCapitalRule": {
+        "none": "None",
+        "reserve": "Reserve"
+      }
+    },
+    "ownership": {
+      "excess": "From {{from}} {{until}} the shares make {{percent}}%: they exceed 100%.",
+      "gap": "From {{from}} {{until}} nobody owns the property.",
+      "onward": "onward",
+      "ownerOverlap": "From {{from}} {{until}} this owner appears twice.",
+      "shortfall": "From {{from}} {{until}} the shares make {{percent}}%: the rest is missing.",
+      "title": "Shares by period",
+      "until": "to {{date}}"
+    },
+    "policy": {
+      "approve": "Record the approval",
+      "approved": "Approved",
+      "approvedBy": "Approved by {{name}} on {{date}}.",
+      "approvedShort": "approved",
+      "available": "Tax rules of the agency: {{count}}",
+      "components": "Base items",
+      "hash": "fingerprint {{hash}}…",
+      "name": "{{rule}} version {{version}} · {{jurisdiction}}",
+      "new": "New rule",
+      "no": "No",
+      "none": "The profile has no tax rule.",
+      "pending": "To approve",
+      "pendingShort": "to approve",
+      "rate": "Rate",
+      "retention": "Retention",
+      "rounding": "Rounding",
+      "roundingValue": {
+        "half_even": "Half to even",
+        "half_up": "Half up"
+      },
+      "source": "Official source",
+      "taxCode": "Tax code",
+      "title": "Tax rule and approval",
+      "waiting": "It is waiting for the accountant's approval.",
+      "withholding": "Withholding at payment",
+      "years_one": "{{count}} year",
+      "years_other": "{{count}} years",
+      "yes": "Yes"
+    },
+    "policyDialog": {
+      "components": "Items of the gross base",
+      "componentsHint": "Codes separated by a comma, for example: rent, cleaning.",
+      "description": "A rule says whether there is a withholding at the payment to the owner and how it is worked out. It stays a draft until the accountant approves it.",
+      "done": "Rule created: now it needs to be approved.",
+      "halfEven": "Half to even",
+      "halfUp": "Half up",
+      "jurisdiction": "Jurisdiction",
+      "notice": "CasaZen proposes no rates, tax codes or jurisdictions: write the ones your accountant gives you, with the official source.",
+      "parameters": "Parameters",
+      "rate": "Withholding rate (%)",
+      "rateHint": "The value given by the approved rule.",
+      "rateInvalid": "Write a number between 0 and 100.",
+      "requiresCollection": "The agency must have collected or stepped in the payment",
+      "requiresShortLet": "A short-term let is needed",
+      "retention": "Years of retention",
+      "retentionHint": "How long the evidence is kept (1 to 50).",
+      "rounding": "Rounding",
+      "ruleCode": "Rule code",
+      "source": "Official source",
+      "sourceSha": "Fingerprint of the source (SHA-256)",
+      "sourceShaHint": "64 hexadecimal characters of the official document.",
+      "sourceShaInvalid": "The fingerprint is 64 hexadecimal characters.",
+      "sourceUrl": "Address of the source",
+      "sourceUrlHint": "The official page or document (https).",
+      "sourceUrlInvalid": "It needs an address that starts with https://.",
+      "submit": "Create the rule",
+      "taxCode": "Tax code",
+      "taxCodeHint": "The one given by the approved rule.",
+      "title": "New tax rule",
+      "validFrom": "Applies from",
+      "validTo": "Applies until",
+      "version": "Version",
+      "withholdingApplies": "The rule asks for a withholding at payment"
+    },
+    "reason": {
+      "billingAddressIncomplete": "The billing address is incomplete.",
+      "bicInvalid": "The BIC is not valid.",
+      "bicMissing": "The BIC is missing (needed for an IBAN outside the SEPA area).",
+      "emailInvalid": "The e-mail address is not valid.",
+      "emailMissing": "The e-mail address is missing.",
+      "entityKindMissing": "The kind of subject is missing.",
+      "fiscalCodeInvalid": "The fiscal code is not valid.",
+      "fiscalIdMissing": "A tax identifier is missing.",
+      "ibanInvalid": "The IBAN is not valid.",
+      "ibanMissing": "The IBAN is missing.",
+      "legalNameMissing": "The legal name is missing.",
+      "mandateDocumentMissing": "The signed mandate document is missing.",
+      "mandateMissing": "The agency's mandate is missing.",
+      "mandateOutsideOwnership": "The mandate goes outside the period of ownership.",
+      "other": "To complete: {{code}}",
+      "ownerOverlap": "The same owner appears twice in the same period.",
+      "ownershipMissing": "No ownership is on record.",
+      "ownershipNotReady": "The ownership shares are not in order.",
+      "registryNotReady": "The registry is not complete.",
+      "settlementCurrencyMissing": "The payment currency is missing.",
+      "sharesExcess": "The shares of a property exceed 100%.",
+      "sharesGap": "For a period nobody owns the property.",
+      "sharesShortfall": "The shares of a property do not reach 100%.",
+      "taxResidenceMissing": "The tax residence is missing.",
+      "vatNumberInvalid": "The VAT number is not valid."
+    },
+    "title": "Financial data of {{owner}}",
+    "titleGeneric": "Owner's financial data"
   },
   "pageHeader": {
     "moreActions": "More actions",
@@ -11356,6 +14617,7 @@
         "steps": [
           "Open Payments or the booking to check amounts and status. Distinguish pending from successful payments and verify any refund outcome.",
           "Available methods depend on your organisation and booking site configuration. A booking or payment request alone does not prove payment was received.",
+          "In the Payment tab of the booking you find the Invoice data: who the invoice is made out to and where the data comes from (your channel manager, the guest at check-in, edited by you). Check or correct the data with the button of the section; people who do not manage payments can read it but not change it. The guest can ask for an invoice at check-in and write their data: if they leave it empty, add it yourself.",
           "For supported direct bookings, open the conversation from the booking to message the guest. It remains writable through the seventh day after check-out, then becomes read-only.",
           "The conversation is not a real-time chat and does not send automatic replies. Do not send card information, bank account numbers or identity documents in message text."
         ]
@@ -11580,7 +14842,34 @@
         "data": "Property details",
         "pricing": "Prices"
       },
-      "tabsLabel": "Sections of the property"
+      "tabsLabel": "Sections of the property",
+      "welcomeQr": {
+        "copied": "Copied",
+        "copy": "Copy",
+        "copyFailed": "We could not copy it: select the address and copy it by hand.",
+        "create": "Create the QR",
+        "createFailed": "We could not create the QR. Please try again in a moment.",
+        "description": "Print the sign and put it in the house: whoever scans it can leave you a contact and choose whether to receive your offers. It is optional for the guest and changes nothing about their stay.",
+        "linkLabel": "Address of the welcome page",
+        "loadError": "We cannot read the welcome QR.",
+        "loading": "Reading the welcome QR…",
+        "noAddress": "The QR exists, but the public address of the site is not set up here: we cannot show it to you.",
+        "none": "This house has no welcome QR yet.",
+        "popupBlocked": "Your browser blocked the print window: allow it and try again.",
+        "print": "Print the sign",
+        "qrAlt": "QR code of the welcome page of {{name}}",
+        "renew": "Create a new QR",
+        "renewConfirm": "Yes, create a new QR",
+        "renewConsequence": "Anyone who scans the old sign will see that the page is not active, until you replace it.",
+        "renewDescription": "The QR you printed will stop working right away. You will have to print the new sign and replace it in the house.",
+        "renewDone": "New QR created: print the sign and replace the old one.",
+        "renewFailed": "We could not create the new QR. The one you printed still works: please try again in a moment.",
+        "renewTitle": "Create a new QR?",
+        "retry": "Try again",
+        "signLine": "Scan the code to leave us a contact and receive news and offers. It is optional.",
+        "signTitle": "Welcome!",
+        "title": "Welcome QR"
+      }
     },
     "info": {
       "timezone": "Timezone",
@@ -13073,6 +16362,8 @@
       "emailRequired": "Enter your email address",
       "emailInvalid": "Enter a valid email address",
       "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
+      "whatsAppNeedsPhone": "To receive offers on WhatsApp, type your phone number.",
+      "whatsAppNeedsPrefix": "To receive offers on WhatsApp, type the number with the international prefix, for example +39 333 1234567.",
       "countryRequired": "Select your country of residence"
     },
     "touristTaxIncluded": "Tourist tax (included in the total)",
@@ -13232,6 +16523,53 @@
       "hostContactNoName": "For any question contact the host:",
       "hostContactDirectly": "For any question contact the host of the property directly."
     },
+    "guestMarketing": {
+      "addressHint": "The address of the booking cannot be used for offers (for example, it is a temporary address of the booking channel): type here the one you really use.",
+      "addressLabel": "Your e-mail address",
+      "addressRequired": "Type the e-mail address where you want to receive the offers.",
+      "channels": {
+        "email": "E-mail",
+        "whatsapp": "WhatsApp"
+      },
+      "consentText": "By choosing a channel you agree to receive promotional messages (news and offers) from the property on that channel. You can change your mind at any time: every message has a link to unsubscribe.",
+      "consentVersion": "Optional. Text version: {{version}}",
+      "intro": "Choose whether you want to receive news and offers from the property. It is optional and changes nothing about your booking.",
+      "loadError": "We cannot read your choices. Please try again in a moment.",
+      "loading": "Loading your choices…",
+      "phoneHint": "The number where you want to receive the messages, with the international prefix, for example +39.",
+      "phoneLabel": "Your phone number",
+      "phoneRequired": "Type the phone number where you want to receive the offers.",
+      "resend": "Send the confirmation again",
+      "resendDone": "We sent the message again: check your e-mail, spam folder included.",
+      "resendError": "We could not send the message. Please try again in a moment.",
+      "resendNothing": "We sent nothing: you asked for it a moment ago. Try again in a few minutes.",
+      "retry": "Try again",
+      "save": "Save my choices",
+      "saveError": "We could not save your choice. Please try again in a moment.",
+      "state": {
+        "confirmed": "Confirmed",
+        "none": "Not subscribed",
+        "pending": "To confirm",
+        "serviceOnly": "Not subscribed",
+        "softOptIn": "You receive offers on similar stays",
+        "withdrawn": "Unsubscribed"
+      },
+      "stateDetail": {
+        "confirmed": "You will receive news and offers from the property.",
+        "pending": "We wrote to you to ask you to confirm: open the link in the message. Until you confirm, we will not write to you.",
+        "serviceOnly": "We use this contact for your stay only, never for offers.",
+        "softOptIn": "We write to you because you booked directly with the property. You can object at any time, free of charge.",
+        "withdrawn": "You chose not to receive offers any more: we will not write to you. This choice is final."
+      },
+      "title": "Offers and news",
+      "withdraw": "I do not want offers",
+      "withdrawConfirm": "Yes, I do not want offers",
+      "withdrawConsequence": "Messages about your stay, like confirmations and arrival instructions, will keep coming.",
+      "withdrawDescription": "We will not write to you any more about offers on {{channel}}. You cannot go back from here.",
+      "withdrawFinal": "The choice is final: we will not write to you any more about offers, and you cannot go back from here.",
+      "withdrawLabel": "I do not want offers on {{channel}}",
+      "withdrawTitle": "Do you no longer want offers?"
+    },
     "guestMessages": {
       "title": "Messages",
       "intro": "Write to the host about anything to do with your stay. We email you when they reply.",
@@ -13285,9 +16623,14 @@
       "emailHint": "We send the confirmation and the link for the online check-in here.",
       "emailUse": "Use {{email}}",
       "next": "Continue: payment",
-      "offers": "I'd like to receive the offers of {{name}}.",
+      "offersEmail": "E-mail",
       "offersHint": "You can unsubscribe at any time.",
+      "offersLegend": "Would you like to receive the offers of {{name}}?",
+      "offersWhatsApp": "WhatsApp",
+      "offersWhatsAppNeedsPhone": "Type your phone number above first to choose WhatsApp.",
       "phoneHint": "Only to organise your arrival.",
+      "phoneHintOffers": "To organise your arrival and, if you choose WhatsApp, for the offers: type it with the international prefix, for example +39.",
+      "softOptInNotice": "{{name}} will use this e-mail address to send you offers on stays similar to the one you are booking. You can object at any time, free of charge: every message has a link to unsubscribe.",
       "whoTitle": "Who is booking"
     },
     "leads": {

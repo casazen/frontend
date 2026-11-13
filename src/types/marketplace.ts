@@ -145,3 +145,169 @@ export interface MarketplaceActiveResponse {
   integrations: MarketplaceActiveIntegration[];
   providers: MarketplaceActiveProvider[];
 }
+
+/*
+ * The guided activation of an entry (E09/F02, MKT-03): the plan, the connection, the import and the mapping of a channel or a tool through the
+ * channel manager's API, the request of a function of its license, and the hand-off to a partner's own site. The shapes mirror
+ * `MarketplaceActivationDtos`, `MarketplaceFunctionDtos` and `MarketplacePartnerActivationDtos`. No shape carries a credential: the username
+ * and the password of a portal are only in the body of the start, and no answer gives them back.
+ */
+
+/** The two kinds that go through the channel manager's API (backend `MarketplaceActivationKind`): the path of the wizard says `channel` or `tool`. */
+export type MarketplaceConnectionKind = 'Channel' | 'Tool';
+
+/** Where an activation stands (backend `MarketplaceActivationStatus`); the card shows `Requested` and `Pending` as Pending. */
+export type MarketplaceActivationStatus = 'Requested' | 'Pending' | 'Active' | 'ToFix' | 'Deactivated';
+
+/** What a portal asks of the person to be connected (the stable codes of the plan, in the order of the wizard). */
+export const MARKETPLACE_ACTIVATION_REQUIREMENTS = ['hotelId', 'credentials', 'panelAccess'] as const;
+export type MarketplaceActivationRequirement = (typeof MARKETPLACE_ACTIVATION_REQUIREMENTS)[number];
+
+/**
+ * `GET /api/marketplace/activations/plan?kind=&code=&propertyId=`: what the activation of a channel or a tool needs for one property.
+ * `propertyLinked` false leads to the connect wizard first; `activationId` is the activation that exists, to resume it; `creatable` false
+ * says the portal cannot be connected through the API (the wizard cannot start).
+ */
+export interface MarketplaceActivationPlan {
+  kind: MarketplaceConnectionKind;
+  code: string;
+  name: string;
+  propertyId: string;
+  requirements: string[];
+  creatable: boolean;
+  propertyLinked: boolean;
+  activationId: string | null;
+  activationStatus: MarketplaceActivationStatus | null;
+}
+
+/**
+ * Body of `POST /api/marketplace/activations`. `hotelId`, `username` and `password` are sent once, only when the portal asks for them: the
+ * channel manager gets them in this one call and CasaZen keeps none of them.
+ */
+export interface StartMarketplaceActivationRequest {
+  kind: MarketplaceConnectionKind;
+  code: string;
+  propertyId: string;
+  hotelId?: string;
+  username?: string;
+  password?: string;
+}
+
+/**
+ * Where an activation stands (`GET /api/marketplace/activations/{id}` and the answer of every step). `lastErrorCode` is a code the client
+ * turns into simple words; `panelAccessDone` is true once the person gave the access on the channel. No credential, ever.
+ */
+export interface MarketplaceActivationState {
+  activationId: string;
+  kind: MarketplaceConnectionKind;
+  code: string;
+  propertyId: string;
+  status: MarketplaceActivationStatus;
+  connectionFound: boolean;
+  connectionStatus: string | null;
+  panelAccessDone: boolean;
+  lastSyncedAt: string | null;
+  lastErrorCode: string | null;
+  connectionLastUpdate: string | null;
+}
+
+/** A room of the listing on the channel, with what it is mapped to and the proposal of CasaZen. A room with `manageable` false is shown for information and never mapped. */
+export interface MarketplaceChannelRoom {
+  channelRoomId: string;
+  name: string;
+  rateName: string | null;
+  manageable: boolean;
+  mappedProductId: string | null;
+  proposedProductId: string | null;
+}
+
+/** A product (room) of the property's listing on the channel manager. */
+export interface MarketplaceProduct {
+  productId: string;
+  name: string | null;
+}
+
+/** `GET /api/marketplace/activations/{id}/mapping`: the rooms of the channel and the products of the listing they can be mapped to. */
+export interface MarketplaceActivationMapping {
+  activationId: string;
+  propertyProductId: string | null;
+  channelRooms: MarketplaceChannelRoom[];
+  products: MarketplaceProduct[];
+}
+
+/** One room of the channel the person chose and the product of the listing it is mapped to (`PUT .../mapping` takes a list of them, never an empty one). */
+export interface MarketplaceRoomChoice {
+  channelRoomId: string;
+  productId: string;
+}
+
+/** The status of a function of the channel manager's license for a property (backend `MarketplaceFunctionStatus`). */
+export type MarketplaceFunctionStatus = 'NotActive' | 'Requested' | 'Active' | 'ToFix';
+
+/**
+ * One function of the license for the property, and the answer of `POST /api/marketplace/functions/{moduleCode}/request`. `Requested` is the host
+ * asking and the license not showing it yet (`isDeclared`); `requestGuidance` is what to ask the channel manager, in the language asked, with the
+ * name of the function and of the property put in (`null` for an `Active` function).
+ */
+export interface MarketplaceFunction {
+  code: string;
+  name: string;
+  status: MarketplaceFunctionStatus;
+  activationId: string | null;
+  isDeclared: boolean;
+  requestedAt: string | null;
+  verifiedAt: string | null;
+  lastSyncedAt: string | null;
+  lastErrorCode: string | null;
+  changeRequestedAt: string | null;
+  requestGuidance: string | null;
+}
+
+/**
+ * `GET /api/marketplace/functions?propertyId=` and `POST /api/marketplace/functions/refresh`: the twelve functions of the license of one property,
+ * the plan (`tier`) and the room limit of the last live read (`null` until a read). `noRoomLicense`: the limit read is 0, so no prices and no
+ * availability are published.
+ */
+export interface MarketplaceFunctionList {
+  propertyId: string;
+  tier: string | null;
+  roomsLimit: number | null;
+  noRoomLicense: boolean;
+  licenseReadAt: string | null;
+  functions: MarketplaceFunction[];
+}
+
+/** The fields of the property that the brief of a partner carries, and no others: `cinCode` only when the CIN is valid. */
+export interface MarketplacePartnerPropertyData {
+  name: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  cinCode: string | null;
+}
+
+/** `GET /api/marketplace/partners/{code}/brief`: what the host takes to the partner's own site. No guest, no booking, no price, no document. */
+export interface MarketplacePartnerBrief {
+  code: string;
+  name: string;
+  websiteUrl: string;
+  checklist: string[];
+  propertyData: MarketplacePartnerPropertyData | null;
+}
+
+/**
+ * The answer of `POST /api/marketplace/partners/{code}/declare`: `isDeclared` is true while only the host's word backs the activation, and `verifiedAt`
+ * is set only when a connection showed it active. `declaredAt` is the day the host gave, as midnight UTC of that day.
+ */
+export interface MarketplacePartnerActivation {
+  activationId: string;
+  code: string;
+  propertyId: string | null;
+  status: MarketplaceActivationStatus;
+  isDeclared: boolean;
+  declaredAt: string | null;
+  verifiedAt: string | null;
+}

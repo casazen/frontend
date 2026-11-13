@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
@@ -53,6 +54,7 @@ describe('NavSectionTabs (UI-04a)', () => {
     const links = tabs('Sezioni di Prenotazioni');
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Prenotazioni', '/app/short-rent/bookings'],
+      ['Messaggi', '/app/short-rent/messages'],
       ['Ospiti', '/app/short-rent/guests'],
       ['Recensioni', '/app/short-rent/reviews'],
     ]);
@@ -60,13 +62,52 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(links.slice(1).every((link) => !link.hasAttribute('aria-current'))).toBe(true);
   });
 
+  it('NavSectionTabs_MessagesNotReadYet_ShowTheirNumberOnTheTabWithTheWordsOfTheMenu', () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    client.setQueryData(['message-hub', 'unread'], {
+      items: [
+        { threadKey: 'ota:6f1c9a52-1111-4222-8333-944455556666', unreadCount: 2 },
+        { threadKey: 'direct:b-1', bookingId: 'b-1', unreadCount: 1 },
+      ],
+    });
+    renderAt('/app/short-rent/bookings', {
+      children: (
+        <QueryClientProvider client={client}>
+          <NavSectionTabs />
+        </QueryClientProvider>
+      ),
+    });
+
+    const messages = within(screen.getByRole('navigation', { name: 'Sezioni di Prenotazioni' })).getByRole('link', { name: /Messaggi/ });
+    // The number is on the screen; a screen reader reads what it counts, once.
+    expect(messages).toHaveTextContent('Messaggi3, 3 messaggi da leggere');
+    expect(messages).toHaveAttribute('href', '/app/short-rent/messages');
+    // Only the tab of the messages has a number: the other tabs have none.
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Messaggi3, 3 messaggi da leggere', 'Ospiti', 'Recensioni']);
+  });
+
+  it('NavSectionTabs_NothingToRead_ShowsNoNumber', () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    client.setQueryData(['message-hub', 'unread'], { items: [] });
+    renderAt('/app/short-rent/bookings', {
+      children: (
+        <QueryClientProvider client={client}>
+          <NavSectionTabs />
+        </QueryClientProvider>
+      ),
+    });
+
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Messaggi', 'Ospiti', 'Recensioni']);
+  });
+
   it.each([
+    ['/app/short-rent/messages', 'Messaggi'],
     ['/app/short-rent/guests', 'Ospiti'],
     ['/app/short-rent/reviews', 'Recensioni'],
   ])('NavSectionTabs_PageOfTheSection_%s_HasTheSameTabsAndMarksItself_%s', (path, current) => {
     renderAt(path);
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Messaggi', 'Ospiti', 'Recensioni']);
     const open = tabs('Sezioni di Prenotazioni').filter((link) => link.getAttribute('aria-current') === 'page');
     expect(open.map((link) => link.textContent)).toEqual([current]);
   });
@@ -74,7 +115,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_SectionOfThePayments_NamesTheSectionAfterItsEntry', () => {
     renderAt('/app/short-rent/fiscal');
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale', 'Stripe Connect']);
   });
 
   it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
@@ -87,13 +128,13 @@ describe('NavSectionTabs (UI-04a)', () => {
     await i18n.changeLanguage('en');
     renderAt('/app/short-rent/guests');
 
-    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews']);
+    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Messages', 'Guests', 'Reviews']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
     renderAt('/app/short-rent/payments', { hasPermission: (_ctx, permission) => permission !== 'property.write' });
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
   it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {
@@ -141,7 +182,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_NoWorkspace_ShowsEveryPageOfTheSection', () => {
     renderAt('/app/short-rent/bookings', { withWorkspace: false });
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Messaggi', 'Ospiti', 'Recensioni']);
   });
 
   it('NavSectionTabs_NoRouter_ShowsNothingAndDoesNotFail', () => {

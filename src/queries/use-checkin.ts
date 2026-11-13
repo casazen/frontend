@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
 import { getProblemMessage } from '@/lib/api-errors';
+import { readInvoiceDataProblems } from '@/lib/invoice-data-schema';
 import { retryTransientErrors } from '@/lib/query-client';
 
 const CHECKIN_KEY = 'checkin';
@@ -24,8 +25,12 @@ export function useCheckInContext(token: string) {
   });
 }
 
-/** 400 ValidationProblem with field errors: the check-in page shows them on the fields, not in a toast. */
+/**
+ * 400 ValidationProblem with field errors, or the 422 of the invoice block (FIS-01, it names its fields): the check-in page shows them on the
+ * fields, in the language of the page, not in a toast.
+ */
 function isFieldValidationProblem(error: unknown): boolean {
+  if (readInvoiceDataProblems(error).length > 0) return true;
   if (!isAxiosError(error) || error.response?.status !== 400) return false;
   const errors: unknown = (error.response.data as { errors?: unknown } | undefined)?.errors;
   return typeof errors === 'object' && errors !== null && Object.keys(errors).length > 0;

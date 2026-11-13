@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { CheckInPage } from '../checkin-page';
 import { publicCheckinApi } from '@/api/checkin.api';
@@ -144,7 +145,15 @@ async function acceptAndSubmit() {
   fireEvent.click(screen.getByTestId('checkin-submit'));
 }
 
+/** The step «Ti serve la fattura?» (FIS-01) is after the document and before the privacy notice. */
+async function goToInvoice() {
+  fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+  await screen.findByTestId('checkin-invoice-step');
+}
+
+/** From the document to the privacy notice, passing the invoice step as a guest does who has nothing to say there: with no answer. */
 async function goToConsents() {
+  await goToInvoice();
   fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
   await screen.findByTestId('checkin-privacy-notice');
 }
@@ -773,6 +782,9 @@ describe('CheckInPage', () => {
       setField('guest-0-documentNumber', 'CA12345AB');
       setField('guest-0-documentIssuePlaceName', 'Firenze');
       fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      // The invoice step is optional: it is passed without an answer.
+      await screen.findByTestId('checkin-invoice-step');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
       await screen.findByTestId('checkin-privacy-notice');
       fireEvent.click(screen.getByTestId('checkin-submit'));
 
@@ -797,6 +809,365 @@ describe('CheckInPage', () => {
       await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveFocus());
       expect(await screen.findByTestId('checkin-announcement')).toHaveTextContent(/campi da controllare/);
       expect(screen.getByTestId('checkin-announcement')).toHaveAttribute('role', 'status');
+    });
+  });
+
+  /**
+   * «Ti serve la fattura?» (FIS-01, NF-81, E06/F02/US03/T02): an optional step between the document and the privacy notice. Only a «yes» sends
+   * the `invoice` block; the step never blocks the check-in; the page never shows what the booking holds.
+   */
+  describe('invoice step (FIS-01)', () => {
+    const FISCAL_CODE = 'RSSMRA80A01H501U';
+    const OK = { sessionId: openContext.sessionId!, message: 'ok' };
+
+    async function toInvoiceStep() {
+      renderPage();
+      await screen.findByTestId('checkin-page');
+      fillGuest(0, { firstName: 'Giulia' });
+      await goToDocuments();
+      fillDocument(0);
+      await goToInvoice();
+    }
+
+    const field = (name: string) => screen.getByTestId(`checkin-invoice-${name}`) as HTMLInputElement;
+    const type = (name: string, value: string) => fireEvent.change(field(name), { target: { value } });
+    const next = () => fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+
+    /** From the invoice step to the send, and the payload that went out. */
+    async function sendFromInvoiceStep() {
+      const sentBefore = vi.mocked(publicCheckinApi.submit).mock.calls.length;
+      next();
+      await screen.findByTestId('checkin-privacy-notice');
+      fireEvent.click(screen.getByTestId('checkin-submit'));
+      await waitFor(() => expect(vi.mocked(publicCheckinApi.submit).mock.calls.length).toBeGreaterThan(sentBefore));
+      const calls = vi.mocked(publicCheckinApi.submit).mock.calls;
+      return calls[calls.length - 1][1];
+    }
+
+    beforeEach(() => {
+      vi.mocked(publicCheckinApi.submit).mockResolvedValue(OK);
+    });
+
+    it('invoiceStep_FifthStepOfFive_AsksTheQuestionAndShowsNoFieldBeforeAnAnswer', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      expect(screen.getByRole('group', { name: 'Ti serve la fattura?' })).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Facoltativo');
+      expect(screen.getByText(i18n.t('checkin.stepOf', { step: 4, total: 5 }))).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
+      expect(screen.getByTestId('checkin-invoice-yes')).not.toBeChecked();
+      expect(screen.getByTestId('checkin-invoice-no')).not.toBeChecked();
+      // One step, one topic: nothing of the fields is there until the guest says yes.
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Codice fiscale')).not.toBeInTheDocument();
+    });
+
+    it('invoiceStep_PassedWithNoAnswer_IsSkippedAndSendsNoDataAtAll', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload).not.toHaveProperty('invoice');
+      expect(payload.guests).toHaveLength(1);
+    });
+
+    it('invoiceStep_ANo_SendsNoDataAtAllAndShowsNoField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-no'));
+
+      expect(screen.getByTestId('checkin-invoice-no')).toBeChecked();
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_AYesWithData_ShowsTheFieldsAndSendsTheBlockNormalizedWithTheKindAndTheCountry', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', '  Mario   Rossi ');
+      type('fiscalCode', ' rssmra80a01 h501u ');
+      type('city', 'Roma');
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload.invoice).toEqual({
+        needInvoice: true,
+        recipientKind: 'Guest',
+        countryCode: 'IT',
+        name: 'Mario Rossi',
+        fiscalCode: FISCAL_CODE,
+        city: 'Roma',
+      });
+    });
+
+    it('invoiceStep_ACompany_SendsItsKindAndItsVatNumber', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      fireEvent.click(screen.getByTestId('checkin-invoice-kind-Company'));
+      type('name', 'Rossi S.r.l.');
+      type('vatNumber', '12345678903');
+      type('sdiRecipientCode', 'abc1234');
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({
+        needInvoice: true,
+        recipientKind: 'Company',
+        countryCode: 'IT',
+        name: 'Rossi S.r.l.',
+        vatNumber: 'IT12345678903',
+        sdiRecipientCode: 'ABC1234',
+      });
+    });
+
+    it('invoiceStep_AYesWithNothingWritten_SendsOnlyTheYesAndLeavesTheDataToTheHost', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      // The kind alone is no data: it would ask the server for an identification the guest never saw.
+      fireEvent.click(screen.getByTestId('checkin-invoice-kind-Company'));
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({ needInvoice: true });
+    });
+
+    it('invoiceStep_DataWithoutAFiscalCode_StopsOnTheFieldAndTheGuestCanAlwaysGoOnByAnsweringNo', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+
+      next();
+
+      expect(await screen.findByText('Scrivi il codice fiscale: serve per intestare la fattura.')).toBeInTheDocument();
+      expect(field('fiscalCode')).toHaveAttribute('aria-invalid', 'true');
+      await waitFor(() => expect(field('fiscalCode')).toHaveFocus());
+      expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+
+      // The step never blocks the check-in: the guest who does not want to say more answers no and goes on, with nothing sent.
+      fireEvent.click(screen.getByTestId('checkin-invoice-no'));
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    // AC-NF04-1: about five fields at a time. The server asks no address (a «yes» with a name and a fiscal code is complete for it), so the step
+    // holds only what identifies the guest and the address is under «Altre opzioni».
+    it('invoiceStep_AYes_ShowsOnlyWhatIdentifiesTheGuestAndKeepsTheAddressUnderMoreOptions', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+
+      const more = screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement;
+      expect(more.open).toBe(false);
+      const inView = within(screen.getByTestId('checkin-invoice-fields'))
+        .getAllByRole('textbox')
+        .filter((box) => !more.contains(box))
+        .map((box) => box.id);
+      expect(inView).toEqual(['checkin-invoice-name', 'checkin-invoice-fiscalCode']);
+      for (const name of ['addressStreet', 'addressCivic', 'postalCode', 'city', 'province']) expect(more.contains(field(name)), name).toBe(true);
+    });
+
+    it('invoiceStep_NoAddress_IsAcceptedAndSentWithoutOneBecauseTheServerAsksNone', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload.invoice).toEqual({ needInvoice: true, recipientKind: 'Guest', countryCode: 'IT', name: 'Mario Rossi', fiscalCode: FISCAL_CODE });
+    });
+
+    it('invoiceStep_AnAddressProblem_OpensTheOptionsAndStopsOnTheField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      type('postalCode', '12');
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(false);
+
+      next();
+
+      expect(await screen.findByText(/In Italia il CAP ha 5 cifre/)).toBeInTheDocument();
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(true);
+      expect(field('postalCode')).toHaveAttribute('aria-invalid', 'true');
+      await waitFor(() => expect(field('postalCode')).toHaveFocus());
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+    });
+
+    it('invoiceStep_EveryFormatIsCheckedOnItsFieldWithTheSharedRules', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('fiscalCode', 'XYZ');
+      type('vatNumber', '123');
+      type('sdiRecipientCode', 'AB');
+      type('pec', 'no');
+
+      next();
+
+      expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
+      expect(screen.getByText(/La partita IVA non è valida/)).toBeInTheDocument();
+      expect(screen.getByText('Il codice destinatario ha 7 lettere o cifre.')).toBeInTheDocument();
+      expect(screen.getByText(/L'indirizzo PEC non è valido/)).toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
+    });
+
+    it('invoiceStep_AbroadWithoutAFiscalCodeOrAVatNumber_IsAccepted', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Hans Meier');
+      fireEvent.change(field('countryCode'), { target: { value: 'DE' } });
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({ needInvoice: true, recipientKind: 'Guest', countryCode: 'DE', name: 'Hans Meier' });
+    });
+
+    it('invoiceStep_ServerRefusesTheBlock_BringsTheGuestBackToTheStepWithTheDataKeptAndNoToast', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.submit)
+        .mockRejectedValueOnce(
+          httpError(422, {
+            code: 'invoice_data_fiscal_code_invalid',
+            field: 'fiscalCode',
+            errors: [{ field: 'fiscalCode', code: 'invoice_data_fiscal_code_invalid' }],
+          }),
+        )
+        .mockResolvedValueOnce(OK);
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      type('city', 'Roma');
+      next();
+      await screen.findByTestId('checkin-privacy-notice');
+
+      fireEvent.click(screen.getByTestId('checkin-submit'));
+
+      // Back on the invoice step, with the error on the field the server named and everything the guest typed still there.
+      expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
+      expect(field('fiscalCode')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('name').value).toBe('Mario Rossi');
+      expect(field('fiscalCode').value).toBe(FISCAL_CODE);
+      expect(field('city').value).toBe('Roma');
+      expect(screen.getByTestId('checkin-submit-error')).toHaveTextContent('correggi i campi evidenziati');
+      expect(toast.error).not.toHaveBeenCalled();
+
+      // The guest corrects and sends again: the guests were never lost.
+      type('fiscalCode', 'rssmra80a01h501u');
+      const payload = await sendFromInvoiceStep();
+      expect(payload.invoice).toMatchObject({ needInvoice: true, name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' });
+      expect(payload.guests[0]).toMatchObject({ firstName: 'Giulia' });
+      expect(await screen.findByTestId('checkin-success')).toBeInTheDocument();
+    });
+
+    it('invoiceStep_GoingBackAndForth_KeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      next();
+      await screen.findByTestId('checkin-privacy-notice');
+
+      fireEvent.click(screen.getByRole('button', { name: /Indietro/ }));
+
+      await screen.findByTestId('checkin-invoice-step');
+      expect(screen.getByTestId('checkin-invoice-yes')).toBeChecked();
+      expect(field('name').value).toBe('Mario Rossi');
+      expect(field('fiscalCode').value).toBe(FISCAL_CODE);
+    });
+
+    it('invoiceStep_TheGuestSaidYesBefore_StartsAnsweredAndAsksForTheFields', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, invoiceRequested: true });
+      await toInvoiceStep();
+
+      expect(screen.getByTestId('checkin-invoice-yes')).toBeChecked();
+      expect(screen.getByTestId('checkin-invoice-data')).toBeInTheDocument();
+      expect(field('name').value).toBe('');
+    });
+
+    // Privacy (AC-E06-F02-US01-04): the link is anonymous, so the page is write-only for the invoice data. The context says that the booking has
+    // some, never what it is; the step says so, shows no field of it and offers to send others with the fields empty.
+    it('invoiceStep_TheBookingHasData_SaysSoShowsNothingOfItAndStartsTheNewFieldsEmpty', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      const leaked = { fiscalCode: FISCAL_CODE, vatNumber: 'IT12345678903', pec: 'segreto@pec.it', name: 'Nome Segreto' };
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true, invoiceRequested: true, ...leaked });
+      await toInvoiceStep();
+
+      const onFile = screen.getByTestId('checkin-invoice-on-file');
+      expect(onFile).toHaveTextContent('Abbiamo già i tuoi dati di fatturazione');
+      expect(screen.queryByTestId('checkin-invoice-yes')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      for (const value of Object.values(leaked)) expect(window.document.body.textContent).not.toContain(value);
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+
+      expect(screen.getByTestId('checkin-invoice-data')).toBeInTheDocument();
+      expect(field('name').value).toBe('');
+      expect(field('fiscalCode').value).toBe('');
+      for (const input of window.document.querySelectorAll<HTMLInputElement>('[data-testid^="checkin-invoice-"]')) {
+        for (const value of Object.values(leaked)) expect(input.value).not.toBe(value);
+      }
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestKeepsIt_SendsNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestReplacesIt_SendsTheNewData', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      type('name', 'Mario Bianchi');
+      type('fiscalCode', FISCAL_CODE);
+
+      expect((await sendFromInvoiceStep()).invoice).toMatchObject({ needInvoice: true, name: 'Mario Bianchi', fiscalCode: FISCAL_CODE });
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestChangesHerMind_KeepsWhatWasTypedButSendsNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      type('name', 'Mario Bianchi');
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_InTheLanguageOfThePage_AsksAndExplainsInGerman', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, language: 'de' });
+      renderPage();
+      await screen.findByRole('heading', { name: 'Gäste-Check-in' });
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+      await screen.findByLabelText(/^Vorname/);
+      const setField = (id: string, value: string) => fireEvent.change(window.document.getElementById(id)!, { target: { value } });
+      setField('guest-0-firstName', 'Giulia');
+      setField('guest-0-lastName', 'Bianchi');
+      setField('guest-0-gender', 'Female');
+      setField('guest-0-dateOfBirth', '1992-03-08');
+      setField('guest-0-bornInItaly', 'no');
+      setField('guest-0-birthCountryName', 'Francia');
+      setField('guest-0-citizenship', 'Italia');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      await screen.findByTestId('stay-guest-0-document');
+      setField('guest-0-documentType', 'IdentityCard');
+      setField('guest-0-documentNumber', 'CA12345AB');
+      setField('guest-0-documentIssuePlaceName', 'Firenze');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      await screen.findByTestId('checkin-invoice-step');
+
+      expect(screen.getByRole('group', { name: 'Benötigen Sie eine Rechnung?' })).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Freiwillig');
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      expect(screen.getByLabelText(/Steuernummer \(codice fiscale\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Warum wir fragen: Der Vermieter braucht sie/)).toHaveTextContent('Beispiel: RSSMRA80A01H501U');
+      type('fiscalCode', 'XYZ');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+
+      // The error is in German too, and no word of Italian or English is on the step.
+      expect(await screen.findByText(/Die Steuernummer \(codice fiscale\) ist ungültig/)).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).not.toHaveTextContent(/Esempio|Example|Perché/);
     });
   });
 });

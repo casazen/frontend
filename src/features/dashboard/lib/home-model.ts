@@ -3,9 +3,11 @@ import type { PermissionPredicate } from '@/config/route-manifest';
 import { translateErrorCode } from '@/lib/api-errors';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
+import { messageThreadPath } from '@/lib/message-hub-routes';
 import { addDays, formatRomeDateTime, formatStayDate, romeDateOf, romeWallClock, todayInRome } from '@/lib/stay-dates';
 import { COMPLIANCE_COCKPIT_ACTIONS, type ComplianceCockpitAction } from '@/types/compliance.types';
 import type { HostThreadSummary } from '@/types/guest-message.types';
+import type { MessageHubThread } from '@/types/message-hub.types';
 import type {
   DashboardIcalFeed,
   DashboardToday,
@@ -241,24 +243,37 @@ function conflictNote(item: DashboardTodoItem, { t, locale }: Context, now?: Dat
   };
 }
 
+/**
+ * A conversation that waits for the host's answer: a row of the list of the direct threads (`GET api/messages`, SR-12) or of the hub
+ * (`GET api/messages?includeOta=true`, NF-61), which also lists the conversations of the channels.
+ */
+export type HomeThread = HostThreadSummary | MessageHubThread;
+
+function isHubThread(thread: HomeThread): thread is MessageHubThread {
+  return 'threadKey' in thread;
+}
+
 export interface TodoOptions {
   propertyId: string;
   canWrite: boolean;
   hasPermission: PermissionPredicate;
-  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true`, SR-12); none when the host cannot read them. */
-  threads?: readonly HostThreadSummary[];
+  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true&includeOta=true`, NF-61); none when the host cannot read them. */
+  threads?: readonly HomeThread[];
 }
 
 /**
  * «Rispondi a {ospite}»: a guest wrote and the host has not answered (SR-12). The title and the button go to the booking on its tab
- * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads.
+ * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads. A conversation
+ * of a channel, or one with no booking yet (a request), has no such tab: it is answered in the page of the messages (NF-61).
  */
-function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow {
-  const to = `${bookingPath(thread.bookingId)}?tab=messages`;
-  const preview = thread.lastGuestMessagePreview?.trim();
-  const guest = thread.guestName.trim() || t('dashboard.todo.RespondToGuest.guestFallback');
+function messageRow(thread: HomeThread, { t, locale }: Context): HomeRow {
+  const hub = isHubThread(thread);
+  const bookingId = thread.bookingId ?? undefined;
+  const to = hub && (thread.source === 'Ota' || bookingId === undefined) ? messageThreadPath(thread.threadKey) : `${bookingPath(bookingId ?? '')}?tab=messages`;
+  const preview = (hub ? thread.preview : thread.lastGuestMessagePreview)?.trim();
+  const guest = (thread.guestName ?? '').trim() || t('dashboard.todo.RespondToGuest.guestFallback');
   return {
-    id: `message-${thread.bookingId}`,
+    id: `message-${hub ? thread.threadKey : thread.bookingId}`,
     title: t('dashboard.todo.RespondToGuest.title', { label: guest }),
     subject: guest,
     sub: [thread.propertyName, preview ? `«${preview}»` : null].filter(Boolean).join(' · '),
@@ -269,7 +284,7 @@ function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow 
       tone: 'warning',
     },
     to,
-    bookingId: thread.bookingId,
+    bookingId,
     unread: thread.unreadCount,
     action: { kind: 'link', label: t('dashboard.todo.RespondToGuest.cta'), to },
   };
@@ -315,7 +330,7 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
       };
     });
 
-  const messages = (options.threads ?? []).filter((thread) => inScope(thread.propertyId)).map((thread) => messageRow(thread, context));
+  const messages = (options.threads ?? []).filter((thread) => inScope(thread.propertyId ?? null)).map((thread) => messageRow(thread, context));
 
   const failing = feeds
     .filter((feed) => feed.lastImportStatus === 'Failure' || feed.lastImportStatus === 'PartialFailure')

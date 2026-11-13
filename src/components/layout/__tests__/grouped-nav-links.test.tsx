@@ -224,7 +224,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       renderNav('/app/short-rent');
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
-      for (const name of ['Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Profilo']) {
+      for (const name of ['Messaggi', 'Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Profilo']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
     });
@@ -255,9 +255,11 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it.each([
+      ['/app/short-rent/messages', 'Prenotazioni'],
       ['/app/short-rent/guests', 'Prenotazioni'],
       ['/app/short-rent/reviews', 'Prenotazioni'],
       ['/app/short-rent/payments/revenue', 'Incassi'],
+      ['/app/short-rent/documents', 'Incassi'],
       ['/app/short-rent/fiscal', 'Incassi'],
       ['/app/short-rent/settings/payments', 'Incassi'],
       ['/app/short-rent/channels', 'Immobili'],
@@ -331,11 +333,12 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_ARoleWithoutTheOwnerOfAPage_StillFindsItsPagesInMore', () => {
-      // Who cannot read the payments finds the fiscal regime and the Stripe account in "Altro", each as an entry of its own.
+      // Who cannot read the payments finds the documents, the fiscal regime and the Stripe account in "Altro", each as an entry of its own.
       renderNav('/app/short-rent', { hasPermission: (_ctx, permission) => permission !== 'payment.read' });
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
       expect(within(screen.getByTestId('nav-more')).getAllByRole('link').map((item) => item.textContent)).toEqual([
+        'Documenti',
         'Regime fiscale',
         'Stripe Connect',
         'Coda di approvazione',

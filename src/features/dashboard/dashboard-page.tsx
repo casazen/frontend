@@ -19,7 +19,7 @@ import { TodoTodayList } from '@/features/todo/today-list';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
-import { useHostThreads } from '@/queries/use-booking-messages';
+import { useMessageHubThreads } from '@/queries/use-message-hub';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
 import { useProperties } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
@@ -68,8 +68,9 @@ export function DashboardPage() {
   const overview = useDashboardOverview(overviewQueryFor(period, propertyId));
   const feeds = useDashboardIcalFeeds(hasPermission('short-rent', 'property.read'));
   const feedList = useMemo(() => (Array.isArray(feeds.data) ? feeds.data : []), [feeds.data]);
-  // The guests who wrote and wait for an answer (SR-12): a row of "Da fare" each. Without the permission to read bookings, no request.
-  const threads = useHostThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
+  // The guests who wrote and wait for an answer (SR-12): a row of "Da fare" each, the ones of the channels included (NF-61). Without the
+  // permission to read bookings, no request.
+  const threads = useMessageHubThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
   const threadList = useMemo(() => threads.data?.items ?? [], [threads.data]);
 
   // The "To do" list of the host (NF-07): what the system asks of it, already sorted by the server. Its first item is the "Adesso" of the Home

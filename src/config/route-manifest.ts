@@ -1,4 +1,5 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { ONBOARDING_ROUTES } from './onboarding-routes';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { profilePathForContext } from '@/lib/profile-path';
 
@@ -25,8 +26,9 @@ export type NavPlacement = 'primary' | 'secondary';
  * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
  * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
  * `activities` is the number of the urgent items of the "To do" list (`GET api/me/activities/count`, ADR-026-R12), in red too.
+ * `messages` is the number of the guests' messages the host has not read, in all the conversations (`GET api/messages/unread?includeOta=true`).
  */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities';
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
 export const MAX_PRIMARY_NAV_ENTRIES = 8;
@@ -68,7 +70,10 @@ export interface RouteManifestEntry {
    * its counter are read together).
    */
   navBarKey?: string;
-  /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
+  /**
+   * Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). A page that hangs from an
+   * entry ({@link navParent}) is in no menu: its counter, if it has one (the messages not read yet), is on its tab (`NavSectionTabs`).
+   */
   navCount?: NavCountKey;
   isDefault?: boolean;
   /**
@@ -238,6 +243,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Come emetti i documenti?» (E06/F02/US02/T03, FIS-02, NF-82): who issues the fiscal documents of the organization and which document its
+    // regime needs. A guided flow opened from a card of the fiscal page, in no menu and no tab. It changes the setting of the whole
+    // organization, so it asks `property.write`, as the backend does for the save (which also needs `payment.read` and the whole organization:
+    // the wizard says so when the server refuses).
+    path: '/app/short-rent/fiscal/issuer',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/fiscal/issuer-wizard/issuer-wizard-page')).IssuerWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/fiscal/reports',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -257,6 +274,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 2,
     icon: 'TrendingUp',
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
+  },
+  {
+    // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
+    // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
+    // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
+    // `property.read` (backend policy `SharedPropertyRead`); the server then opens each type with the permission of its own area, and the page
+    // offers only the types it sends. For who may not read payments, the page that hangs from Incassi takes a place in "Altro" (UI-04a).
+    path: '/app/short-rent/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.documents',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
   },
   {
     // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
@@ -304,11 +336,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
-    // Approval queue (NF-06): items requiring human decision before execution. In "Altro", the entry of the queues of decisions:
-    // the verifications of the guests are its other tab.
+    // Approval queue (NF-06, NF-68): items requiring human decision before execution: the drafts of messages, the campaigns, the texts of the AI.
+    // In "Altro", the entry of the queues of decisions: the verifications of the guests are its other tab. Deciding asks its own permission,
+    // `approval.decide` (the owner, the administrators and the property managers; not the collaborator or the accountant), the one the API asks
+    // for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['property.write'],
+    requiredPermissions: ['approval.decide'],
     navKey: 'nav.approvalQueue',
     navPlacement: 'secondary',
     navOrder: 29,
@@ -533,6 +567,41 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
+  },
+  {
+    // The guided activation of a sales channel or a connected tool through the channel manager (E09/F02/US04/T01, MKT-03, NF-56): `channel` or `tool` and the
+    // code of the portal in the catalog. In no menu: the cards of the marketplace and the Active tab lead here, with the property and where to come back to
+    // in the query. It writes the connection, so it asks `ota.write` and the channel manager's flag, as the backend does.
+    path: '/app/short-rent/marketplace/activate/:kind/:code',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/activation/activation-wizard-page')).ActivationWizardPage,
+    }),
+  },
+  {
+    // The guided request of a function of the channel manager's license (E09/F02/US04/T03, MKT-03, PO-12, D21): CasaZen cannot switch a module of the license on, so the
+    // wizard prepares the request and records it as Requested until the license shows the module. In no menu: the cards and the detail of the function lead here. Same
+    // permission and flag as the activation: the license is read from, and the request is recorded for, the connected channel manager.
+    path: '/app/short-rent/marketplace/request/:moduleCode',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/functions/licensed-request-wizard-page')).LicensedRequestWizardPage,
+    }),
+  },
+  {
+    // The hand-off to a Partner Hub partner (E09/F02/US04/T04, MKT-03, S18, Q-006): the activation happens on the partner's own site, so the wizard prepares what the
+    // partner will ask, opens the site in the same tab and records what the person declares. In no menu: the cards of the Partners group lead here. The partners never
+    // depend on the channel manager, so there is no flag; the declaration is written (`ota.write`), as the backend asks.
+    path: '/app/short-rent/marketplace/partners/:code/activate',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    component: async () => ({
+      default: (await import('@/features/marketplace/partners/partner-wizard-page')).PartnerWizardPage,
+    }),
   },
   {
     // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
@@ -1105,6 +1174,42 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
+    // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
+    // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
+    // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the
+    // org billing administrator like the other pages of the agency's money. In "Altro": the main menu of the area is at its limit.
+    path: '/app/account/owner-close',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.ownerClose',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
+  },
+  {
+    // One version of the statement of an owner (E06/F05/US02/T04): the formula, every line with its source, what changed since the version before, the
+    // payouts and the withholding evidence, the invoices linked from the external fiscal system. In no menu: «Chiusura mensile» leads here.
+    path: '/app/account/owner-close/versions/:versionId',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owner-accounting/statement-detail-page')).StatementDetailPage }),
+  },
+  {
+    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109): the fiscal profile masked, the mandate, the rule set with the accountant's approval, what the
+    // activation still misses. In no menu: the month-end close and its anomalies lead here.
+    path: '/app/account/owners/:ownerId/financial',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owners/owner-financial-profile-page')).OwnerFinancialProfilePage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
@@ -1263,15 +1368,41 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/marketing-page')).MarketingPage }),
     legacyPaths: ['/admin/marketing'],
   },
+  // Messages (E05/F02/US03, NF-61)
+  {
+    // Messaggi: every conversation with the guests, the ones of the channels and the direct ones, "Da rispondere" first, with the number of the
+    // messages not read yet on its tab. The first tab of Prenotazioni after the bookings. The main menu has its eight entries (UI-04a), so
+    // the page hangs from the entry of the bookings like the guests and the reviews do. The server shows each user only the conversations
+    // its scope reaches (HostScope); reading asks `booking.read`, and answering asks `booking.write` inside the page.
+    path: '/app/short-rent/messages',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.messages',
+    navParent: '/app/short-rent/bookings',
+    navOrder: 1,
+    navCount: 'messages',
+    icon: 'MessageSquare',
+    component: async () => ({ default: (await import('@/features/messages/inbox-page')).InboxPage }),
+  },
+  {
+    // One conversation (E05/F02/US03/T02, NF-61/63/64): the messages in the middle, the booking and the link to the guest beside them, the
+    // box that answers; from a very wide screen the inbox is the third column. In no menu: the rows of the list and of the Home lead
+    // here. It asks `booking.read`, like the list; answering asks `booking.write` inside the page. The key of the conversation is the one the
+    // server gave (`ota:…`, `direct:…`), escaped in the address.
+    path: '/app/short-rent/messages/:threadKey',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/messages/thread-page')).ThreadPage }),
+  },
   // Guests
   {
-    // Ospiti: the first tab of Prenotazioni after the bookings.
+    // Ospiti: the second tab of Prenotazioni, after the messages.
     path: '/app/short-rent/guests',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     navKey: 'nav.guests',
     navParent: '/app/short-rent/bookings',
-    navOrder: 1,
+    navOrder: 2,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
   },
@@ -1308,6 +1439,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
+  },
+  {
+    // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
+    // last tab of the CRM (after the audiences, the campaigns and the automations). The API lists them for `guest.read` but merges and
+    // dismisses for `guest.write`, and the page is for deciding, so it asks `guest.write`.
+    path: '/app/short-rent/crm/merge',
+    context: 'short-rent',
+    requiredPermissions: ['guest.write'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmMerge',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 4,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/crm/merge/merge-page')).MergePage }),
   },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
   // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
@@ -1574,6 +1719,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'supplierOnlinePayments',
     component: async () => ({ default: (await import('@/features/supplier/earnings/supplier-earnings-page')).SupplierEarningsPage }),
   },
+  // The pages of the activation with Octorate (epic E10), behind the flag `octorateOnboarding`: see `onboarding-routes.ts`.
+  ...ONBOARDING_ROUTES,
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;

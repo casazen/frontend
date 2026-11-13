@@ -16,7 +16,8 @@ import {
 /**
  * What the checkout sends to make a booking, and what it never sends. The amounts are not here: the server prices the same stay again
  * and charges its own total. What is here costs money or privacy when it is wrong: the payment option (when the card is charged), the
- * consent to the offers (only when the site has a text for it, never preselected) and the ages (only when complete).
+ * consents to the offers (one per channel, only when the site has a text for them, never preselected), the version of the soft opt-in
+ * notice (only when the site has one) and the ages (only when complete).
  */
 const draft: CheckoutDraft = {
   ...EMPTY_DRAFT,
@@ -35,6 +36,16 @@ describe('paymentOptionOf', () => {
   });
 });
 
+describe('the offers boxes of the checkout (NF-90)', () => {
+  it('EmptyDetails_TheTwoOffersBoxes_AreNeverPreselected', () => {
+    // The guest ticks them or they stay «no»: a blank draft, and the one the page starts from, have both unticked.
+    expect(EMPTY_DETAILS.offersEmail).toBe(false);
+    expect(EMPTY_DETAILS.offersWhatsApp).toBe(false);
+    expect(EMPTY_DRAFT.details.offersEmail).toBe(false);
+    expect(EMPTY_DRAFT.details.offersWhatsApp).toBe(false);
+  });
+});
+
 describe('buildBookingPayload', () => {
   it('buildBookingPayload_Basics_TrimsTheGuestAndSendsTheCheckoutConsentOnly', () => {
     const payload = buildBookingPayload({ ...stay, draft });
@@ -42,24 +53,71 @@ describe('buildBookingPayload', () => {
     expect(payload.guest).toEqual({ firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', country: 'IT' });
     expect(payload.consent).toEqual({ dataProcessing: true, consentVersion: DIRECT_CHECKOUT_CONSENT_VERSION });
     expect(payload).not.toHaveProperty('marketingConsent');
+    expect(payload).not.toHaveProperty('marketingConsentEmail');
+    expect(payload).not.toHaveProperty('marketingConsentWhatsApp');
+    expect(payload).not.toHaveProperty('softOptInNoticeVersion');
     expect(payload).not.toHaveProperty('childrenAges');
     expect(payload).not.toHaveProperty('specialRequests');
     expect(payload).not.toHaveProperty('expectedArrivalTime');
   });
 
-  it('buildBookingPayload_OffersBoxWithoutVersion_SendsNoMarketingConsentEvenIfTicked', () => {
-    const ticked = { ...draft, details: { ...draft.details, offers: true } };
+  it('buildBookingPayload_OffersBoxesWithoutVersion_SendNoConsentEvenIfTicked', () => {
+    const ticked = { ...draft, details: { ...draft.details, phone: '+39 333 1234567', offersEmail: true, offersWhatsApp: true } };
 
-    expect(buildBookingPayload({ ...stay, draft: ticked, marketingConsentVersion: null })).not.toHaveProperty('marketingConsent');
-    expect(buildBookingPayload({ ...stay, draft: ticked, marketingConsentVersion: undefined })).not.toHaveProperty('marketingConsent');
+    for (const version of [null, undefined, '']) {
+      const payload = buildBookingPayload({ ...stay, draft: ticked, marketingConsentVersion: version });
+      expect(payload).not.toHaveProperty('marketingConsentEmail');
+      expect(payload).not.toHaveProperty('marketingConsentWhatsApp');
+    }
   });
 
-  it('buildBookingPayload_OffersBoxWithVersion_SendsWhatTheGuestChose', () => {
-    const ticked = { ...draft, details: { ...draft.details, offers: true } };
+  it('buildBookingPayload_OffersBoxesWithVersion_SendWhatTheGuestChoseAndNeverTheOldSingleConsent', () => {
+    const phone = '+39 333 1234567';
+    const both = { ...draft, details: { ...draft.details, phone, offersEmail: true, offersWhatsApp: true } };
+    const onlyEmail = { ...draft, details: { ...draft.details, phone, offersEmail: true } };
+    const onlyWhatsApp = { ...draft, details: { ...draft.details, phone, offersWhatsApp: true } };
 
-    expect(buildBookingPayload({ ...stay, draft: ticked, marketingConsentVersion: '2026-10' }).marketingConsent).toBe(true);
-    // Never preselected: the default answer is "no", and it is sent as a "no".
-    expect(buildBookingPayload({ ...stay, draft, marketingConsentVersion: '2026-10' }).marketingConsent).toBe(false);
+    const bothPayload = buildBookingPayload({ ...stay, draft: both, marketingConsentVersion: '2026-10' });
+    expect(bothPayload.marketingConsentEmail).toBe(true);
+    expect(bothPayload.marketingConsentWhatsApp).toBe(true);
+    expect(buildBookingPayload({ ...stay, draft: onlyEmail, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(false);
+    expect(buildBookingPayload({ ...stay, draft: onlyWhatsApp, marketingConsentVersion: '2026-10' }).marketingConsentEmail).toBe(false);
+    // Never preselected: the default answer is "no" on each channel, and it is sent as a "no".
+    const untouched = buildBookingPayload({ ...stay, draft, marketingConsentVersion: '2026-10' });
+    expect(untouched.marketingConsentEmail).toBe(false);
+    expect(untouched.marketingConsentWhatsApp).toBe(false);
+    // The single «send me offers» of before is gone, whatever the boxes say.
+    expect(bothPayload).not.toHaveProperty('marketingConsent');
+    expect(untouched).not.toHaveProperty('marketingConsent');
+  });
+
+  it('buildBookingPayload_WhatsAppTickedWithoutAPhone_NeverSendsTheConsent', () => {
+    // The form refuses this (the schema); the payload holds the same line, because the API answers 422 and a consent with no number is no consent.
+    const noPhone = { ...draft, details: { ...draft.details, phone: '   ', offersWhatsApp: true } };
+
+    expect(buildBookingPayload({ ...stay, draft: noPhone, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(false);
+  });
+
+  it('buildBookingPayload_WhatsAppTickedOnANumberThatDoesNotSayItsCountry_NeverSendsTheConsent', () => {
+    // The form refuses this too; the server would put its own calling code in front of the number and record the consent for a stranger's phone.
+    const national = { ...draft, details: { ...draft.details, phone: '333 1234567', offersEmail: true, offersWhatsApp: true } };
+    const international = { ...draft, details: { ...draft.details, phone: '0039 333 1234567', offersWhatsApp: true } };
+
+    const nationalPayload = buildBookingPayload({ ...stay, draft: national, marketingConsentVersion: '2026-10' });
+    expect(nationalPayload.marketingConsentWhatsApp).toBe(false);
+    expect(nationalPayload.marketingConsentEmail).toBe(true);
+    expect(buildBookingPayload({ ...stay, draft: international, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(true);
+  });
+
+  it('buildBookingPayload_SoftOptInNotice_SendsItsVersionOnlyWhenTheSiteHasOne', () => {
+    expect(buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: '2026-11' }).softOptInNoticeVersion).toBe('2026-11');
+    for (const version of [null, undefined, '']) {
+      expect(buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: version })).not.toHaveProperty('softOptInNoticeVersion');
+    }
+    // A notice, not a consent: it travels with or without the boxes and ticks nothing.
+    const withNotice = buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: '2026-11' });
+    expect(withNotice).not.toHaveProperty('marketingConsentEmail');
+    expect(withNotice).not.toHaveProperty('marketingConsentWhatsApp');
   });
 
   it('buildBookingPayload_RequestMode_AsksTheOnSiteOption', () => {

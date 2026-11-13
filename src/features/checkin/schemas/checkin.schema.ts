@@ -1,14 +1,18 @@
 import { z } from 'zod';
+import { addInvoiceDataIssues, emptyInvoiceDataForm, hasTypedInvoiceData, invoiceDataFormShape, normalizeInvoiceData } from '@/lib/invoice-data-schema';
 import { todayInRome } from '@/lib/stay-dates';
 import { isItalianProvince } from '../components/italian-provinces';
 import type {
   AlloggiatiDocumentKind,
   AlloggiatiGender,
+  PublicCheckInContextDto,
   PublicCheckInGuestPrefill,
+  PublicCheckInInvoiceRequest,
   PublicCheckInSubmitRequest,
   StayGuestSubmit,
   StayGuestType,
 } from '@/types/public-checkin.types';
+import type { InvoiceDataTextField } from '@/types/invoice-data.types';
 
 /** Genders offered to the guest: the only ones Alloggiati Web accepts (1 = male, 2 = female). */
 export const ALLOGGIATI_GENDERS = ['Male', 'Female'] as const satisfies readonly AlloggiatiGender[];
@@ -384,6 +388,68 @@ export function guestFormPathOf(serverPath: string, guestCount: number): `guests
   return field in guestShape ? `guests.${index}.${field as keyof StayGuestFormValues}` : null;
 }
 
+/** The answers to «Ti serve la fattura?» (FIS-01): not answered yet (the step is skipped), yes, or no. */
+export const INVOICE_ANSWERS = ['', 'yes', 'no'] as const;
+
+export type InvoiceAnswer = (typeof INVOICE_ANSWERS)[number];
+
+/**
+ * The invoice step of the guest page (FIS-01, E06/F02/US03/T02): the answer and, for a «yes», the data of the shared schema
+ * (`@/lib/invoice-data-schema`, the same rules as the server). Only a «yes» is checked, and only when the guest wrote something: a «yes» with
+ * nothing written leaves the data to the host and never blocks the check-in, as the server accepts it. A «no», or no answer, is not checked at all.
+ */
+const invoiceStepSchema = z.object({ answer: z.enum(INVOICE_ANSWERS), ...invoiceDataFormShape }).superRefine((values, context) => {
+  if (values.answer === 'yes') addInvoiceDataIssues(values, { requireIdentification: true, onlyWhenTyped: true }, context);
+});
+
+/** What the guest has answered and typed at the invoice step. */
+export type InvoiceStepValues = z.input<typeof invoiceStepSchema>;
+
+/** The invoice step with the given answer and nothing written: a private person in Italy. */
+export function emptyInvoiceStep(answer: InvoiceAnswer = ''): InvoiceStepValues {
+  return { answer, ...emptyInvoiceDataForm() };
+}
+
+/**
+ * The invoice step as the page starts it: «yes» is already answered when the guest said so before and the booking has no data yet (the fields are
+ * then asked); in any other case there is no answer, and the guest may go on without one.
+ */
+export function initialInvoiceStep(context: Pick<PublicCheckInContextDto, 'invoiceRequested' | 'hasInvoiceData'> | undefined): InvoiceStepValues {
+  return emptyInvoiceStep(context?.invoiceRequested === true && context.hasInvoiceData !== true ? 'yes' : '');
+}
+
+/** The texts of the invoice block, in the order of the form: the kind and the country go with them. */
+const INVOICE_BLOCK_TEXT_FIELDS = [
+  'name',
+  'fiscalCode',
+  'vatNumber',
+  'addressStreet',
+  'addressCivic',
+  'postalCode',
+  'city',
+  'province',
+  'sdiRecipientCode',
+  'pec',
+] as const satisfies readonly InvoiceDataTextField[];
+
+/**
+ * The `invoice` block of the request, or nothing. Only a «yes» sends one: a guest who skips the step or says no sends no data at all (and the
+ * server ignores a «no» anyway). A «yes» with nothing written is the block `{ needInvoice: true }`: the guest wants the invoice and leaves the data
+ * to the host. When something is written the block carries the texts that are not empty, normalized as the server stores them, with the kind of
+ * recipient and the country: those two alone would ask the server for an identification the guest never saw.
+ */
+export function toPublicCheckInInvoice(step: InvoiceStepValues | undefined): PublicCheckInInvoiceRequest | undefined {
+  if (!step || step.answer !== 'yes') return undefined;
+  if (!hasTypedInvoiceData(step)) return { needInvoice: true };
+
+  const data = normalizeInvoiceData(step);
+  const block: PublicCheckInInvoiceRequest = { needInvoice: true, recipientKind: data.recipientKind, countryCode: data.countryCode };
+  for (const field of INVOICE_BLOCK_TEXT_FIELDS) {
+    if (data[field] !== '') block[field] = data[field];
+  }
+  return block;
+}
+
 /**
  * The guest portal form. No consent is asked for the Alloggiati registration (CO-15, A5-15): it is a legal obligation
  * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional (NF-05).
@@ -393,6 +459,8 @@ export function createPublicCheckInFormSchema(required: readonly StatisticalGues
   return z
     .object({
       guests: createStayGuestListSchema(required),
+      /** The optional answer to «Ti serve la fattura?» and the data of a «yes» (FIS-01). */
+      invoice: invoiceStepSchema.optional(),
       /** Guest ticked the email marketing channel (NF-05). */
       marketingConsentEmail: z.boolean().optional(),
       /** Guest ticked the WhatsApp marketing channel (NF-05). */
@@ -576,10 +644,13 @@ export function toPublicCheckInSubmitRequest(
   values: PublicCheckInFormValues,
   options: Pick<StayGuestSubmitOptions, 'statisticalFields'> = {},
 ): PublicCheckInSubmitRequest {
+  const invoice = toPublicCheckInInvoice(values.invoice);
   return {
     guests: values.guests.map((guest) => toStayGuestSubmit(guest, options)),
     marketingConsentEmail: values.marketingConsentEmail ?? false,
     marketingConsentWhatsApp: values.marketingConsentWhatsApp ?? false,
     marketingEmail: values.marketingEmail?.trim() || null,
+    // The invoice block only for a «yes» (FIS-01): the key is not there for a guest who skipped the step or said no.
+    ...(invoice ? { invoice } : {}),
   };
 }

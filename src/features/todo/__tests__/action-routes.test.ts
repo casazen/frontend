@@ -104,7 +104,7 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   });
 
   it('todoActionRoute_WithTheWritePermissions_OpensThePageOfTheAction', () => {
-    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decide']);
+    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decide', 'approval.decide']);
 
     for (const action of R6_ACTIONS) {
       expect(todoActionRoute(itemFor(action), everything), action).toBe(EXPECTED[action]);
@@ -120,7 +120,10 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('StartCheckIn'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     // The queue of the verifications is decided by who holds `verification.decide`: the others find the documents of the stay.
     expect(todoActionRoute(itemFor('VerifyIdentity'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
-    // The queue of the approvals is `property.write`: the others find the messages of the stay.
+    // The queue of the approvals is decided by who holds `approval.decide`: the others find the messages of the stay.
+    expect(todoActionRoute(itemFor('ApproveAiDraft'), permissions(['property.read', 'property.write', 'booking.read', 'booking.write']))).toBe(
+      `/app/short-rent/bookings/${BOOKING_ID}?tab=messages`,
+    );
     expect(todoActionRoute(itemFor('ApproveAiDraft'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=messages`);
   });
 
@@ -161,6 +164,25 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(item)).toBe(`/app/short-rent/properties/${PROPERTY_ID}/activation`);
   });
 
+  it('todoActionRoute_ItemsOfTheActivationWithOctorate_OpenTheirOwnPageNotTheWizardOfAProperty', () => {
+    const STEP_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+    const item = (entityType: string, overrides: Partial<{ entityId: string; propertyId: string | null }> = {}) =>
+      itemFor('ResumeWizard', { entityType, entityId: STEP_ID, propertyId: PROPERTY_ID, ...overrides });
+    const everything = permissions(['property.read', 'property.write']);
+
+    // A guided step of the panel finds its kind from the id of the step (the item knows the step, not its kind); its property does not take it to the activation of the property.
+    expect(todoActionRoute(item('OnboardingPanelStep'), everything)).toBe(`/app/short-rent/onboarding/panel?step=${STEP_ID}`);
+    // A part put off or left half way, and a «Fallo per me» request, know the id of a stored row and no part: the plan, where the part that is open is highlighted.
+    expect(todoActionRoute(item('OnboardingPart', { propertyId: null }), everything)).toBe('/app/short-rent/onboarding');
+    expect(todoActionRoute(item('OnboardingAssistRequest', { propertyId: null }), everything)).toBe('/app/short-rent/onboarding');
+    // A flow to complete opens the summary of the activation (readable by whoever reads the properties).
+    expect(todoActionRoute(item('OnboardingFlow', { propertyId: null }), permissions(['property.read']))).toBe('/app/short-rent/onboarding/summary');
+    // The panel steps are written: a reader is not sent to a page that would refuse them.
+    expect(todoActionRoute(item('OnboardingPanelStep'), permissions(['property.read']))).toBeNull();
+    // Everything else about a property still opens its activation.
+    expect(todoActionRoute(item('Property'), everything)).toBe(`/app/short-rent/properties/${PROPERTY_ID}/activation`);
+  });
+
   it('todoActionRoute_ItemWithoutTheIdThePageNeeds_ReturnsNullNeverAHalfBuiltAddress', () => {
     expect(todoActionRoute(itemFor('ReviewBooking', { entityId: NO_ID }))).toBeNull();
     expect(todoActionRoute(itemFor('ResumeWizard', { entityType: 'Draft', entityId: NO_ID, propertyId: null }))).toBeNull();
@@ -177,6 +199,17 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(queueItem, readOnly)).toBeNull();
     // The same item about a booking still finds the stay.
     expect(todoActionRoute(itemFor('ApproveAiDraft'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=messages`);
+  });
+
+  it('todoActionRoute_ReviewFiscalDocument_OpensTheFiscalPageOfTheHostForWhoMayReadTheProperties', () => {
+    // `ActivityAction` 30 (E06/F03/US02/T01): a rejected or to-collect fiscal document of the channel manager. Its page is the fiscal page of the
+    // host until the list of the documents exists; the item is about a document, never a booking, so no id fills the address.
+    const item = itemFor('ReviewFiscalDocument', { entityType: 'FiscalDocument', entityId: BOOKING_ID, propertyId: null });
+
+    expect(todoActionRoute(item)).toBe('/app/short-rent/fiscal');
+    expect(todoActionRoute(item, permissions(['property.read']))).toBe('/app/short-rent/fiscal');
+    // Who cannot open the page is not offered a button that ends on «nessun accesso».
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
   });
 
   it('todoActionRoute_UnknownAction_ReturnsNullNeverTheDashboard', () => {
