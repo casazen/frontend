@@ -199,20 +199,44 @@ describe('documentArchiveApi.download and export (NF-99)', () => {
   });
 });
 
-// NF-99, AC-NF99-4: the 422 says how many files the period holds, and the page tells it; any other error is not that case.
+// NF-99, AC-NF99-4: the 422 says which limit the period went over (too many files, or too large), and the page tells it; any other error is not that case.
 describe('archiveExportTooLarge (NF-99)', () => {
-  it('ArchiveExportTooLarge_The422OfTheArchive_GivesTheNumberOfFiles', async () => {
-    vi.mocked(axios.get).mockRejectedValueOnce(blobError(422, { code: ARCHIVE_ERROR.tooLarge, fileCount: 412, maxFiles: 300, maxBytes: 209715200 }));
-    const refused = await documentArchiveApi.export({ from: '2026-01-01', to: '2026-12-31' }).catch((failure: unknown) => failure);
+  const MEGABYTE = 1024 * 1024;
 
-    expect(archiveExportTooLarge(refused)).toEqual({ fileCount: 412 });
+  async function refusedWith(body: Record<string, unknown>): Promise<unknown> {
+    vi.mocked(axios.get).mockRejectedValueOnce(blobError(422, { code: ARCHIVE_ERROR.tooLarge, ...body }));
+    return documentArchiveApi.export({ from: '2026-01-01', to: '2026-12-31' }).catch((failure: unknown) => failure);
+  }
+
+  it('ArchiveExportTooLarge_MoreFilesThanOneArchiveHolds_IsTooManyFiles', async () => {
+    const refused = await refusedWith({ fileCount: 412, maxFiles: 300, maxBytes: 200 * MEGABYTE });
+
+    expect(archiveExportTooLarge(refused)).toEqual({ limit: 'files', fileCount: 412, maxFiles: 300 });
   });
 
-  it('ArchiveExportTooLarge_NoNumberInTheBody_StillTheSameCase', async () => {
-    vi.mocked(axios.get).mockRejectedValueOnce(blobError(422, { code: ARCHIVE_ERROR.tooLarge }));
-    const refused = await documentArchiveApi.export({ from: '2026-01-01', to: '2026-12-31' }).catch((failure: unknown) => failure);
+  // A document that stores no size counts as 10 MB in the cap of the bytes: 21 property documents are 210 MB, over the 200 MB, with far fewer than 300 files.
+  it('ArchiveExportTooLarge_FewFilesOverTheBytes_IsTooLargeNotTooManyFiles', async () => {
+    const refused = await refusedWith({ fileCount: 21, maxFiles: 300, maxBytes: 200 * MEGABYTE });
 
-    expect(archiveExportTooLarge(refused)).toEqual({ fileCount: null });
+    expect(archiveExportTooLarge(refused)).toEqual({ limit: 'size', fileCount: 21, maxFiles: 300, maxBytes: 200 * MEGABYTE });
+  });
+
+  it('ArchiveExportTooLarge_ExactlyTheMostFiles_IsTheSizeNotTheNumber', async () => {
+    const refused = await refusedWith({ fileCount: 300, maxFiles: 300, maxBytes: 200 * MEGABYTE });
+
+    expect(archiveExportTooLarge(refused)).toMatchObject({ limit: 'size' });
+  });
+
+  it.each([
+    ['no number in the body', {}],
+    ['no limit of the files', { fileCount: 21, maxBytes: 200 * MEGABYTE }],
+    ['no count of the files', { maxFiles: 300, maxBytes: 200 * MEGABYTE }],
+    ['no limit of the bytes for a few files', { fileCount: 21, maxFiles: 300 }],
+    ['numbers that are not numbers', { fileCount: '21', maxFiles: -1, maxBytes: null }],
+  ])('ArchiveExportTooLarge_%s_StillTheSameCaseButNoLimitIsToldApart', async (_name, body) => {
+    const refused = await refusedWith(body);
+
+    expect(archiveExportTooLarge(refused)).toEqual({ limit: null });
   });
 
   it.each([

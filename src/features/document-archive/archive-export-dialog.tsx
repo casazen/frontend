@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { archiveExportTooLarge, isArchiveCallCancelled } from '@/api/document-archive.api';
@@ -21,6 +22,21 @@ const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short',
 /** The box of a choice (a type of document): 44 px high, and it shows when it is on and when the keyboard is on it. */
 const CHOICE =
   'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border bg-background px-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring';
+
+/**
+ * The refusal of an archive that is too large, in words: which limit the period went over (more files than one archive holds, or a size over
+ * what one archive holds: a few files can be too large) and what the limits are, so that the person knows how much to narrow it.
+ */
+function tooLargeText(t: TFunction, language: string, large: ArchiveExportTooLarge): string {
+  switch (large.limit) {
+    case 'files':
+      return t('documentArchive.export.tooLarge', { count: large.fileCount, max: large.maxFiles });
+    case 'size':
+      return t('documentArchive.export.tooBig', { count: large.fileCount, max: large.maxFiles, size: formatFileSize(large.maxBytes, language) });
+    default:
+      return t('apiErrors.codes.archiveExportTooLarge');
+  }
+}
 
 interface ArchiveExportDialogProps {
   open: boolean;
@@ -248,7 +264,7 @@ function ExportForm({ onClose, types, properties, propertyId }: Omit<ArchiveExpo
         ) : null}
         {tooLarge ? (
           <p role="alert" className="mt-4 text-sm text-destructive" data-testid="archive-export-too-large">
-            {tooLarge.fileCount === null ? t('apiErrors.codes.archiveExportTooLarge') : t('documentArchive.export.tooLarge', { count: tooLarge.fileCount })}
+            {tooLargeText(t, language, tooLarge)}
           </p>
         ) : null}
         {failure ? (

@@ -5393,8 +5393,10 @@
       "retry": "Riprova",
       "start": "Scarica",
       "title": "Scarica l'archivio dei documenti",
-      "tooLarge_one": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio. Scegli un periodo più breve o meno tipi di documento.",
-      "tooLarge_other": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio. Scegli un periodo più breve o meno tipi di documento.",
+      "tooBig_one": "L'archivio sarebbe troppo grande: il file trovato supera le dimensioni ammesse per un solo archivio (al massimo {{max}} file e {{size}} in tutto). Scegli un periodo più breve o meno tipi di documento.",
+      "tooBig_other": "L'archivio sarebbe troppo grande: i {{count}} file trovati superano le dimensioni ammesse per un solo archivio (al massimo {{max}} file e {{size}} in tutto). Scegli un periodo più breve o meno tipi di documento.",
+      "tooLarge_one": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio (al massimo {{max}}). Scegli un periodo più breve o meno tipi di documento.",
+      "tooLarge_other": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio (al massimo {{max}}). Scegli un periodo più breve o meno tipi di documento.",
       "types": "Tipi di documento"
     },
     "filters": {

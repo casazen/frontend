@@ -13,6 +13,7 @@ import { saveBlobAs } from '@/lib/file-download';
 import { todayInRome } from '@/lib/stay-dates';
 import { useProperties } from '@/queries/use-properties';
 import type { ArchiveDocument, ArchiveDocumentPage, ArchiveTypeCount } from '@/types';
+import { formatFileSize } from '../document-file';
 import { DocumentsPage } from '../documents-page';
 
 vi.mock('@/api/document-archive.api', async (importOriginal) => ({
@@ -458,20 +459,49 @@ describe('the archive of a period (NF-99)', () => {
     expect(dialog.getByTestId('archive-export-start')).toBeEnabled();
   });
 
-  it('tells how many files the server found when the period holds too many, and asks for a shorter one', async () => {
+  it('tells how many files the server found when the period holds too many, with how many one archive holds, and asks for a shorter one', async () => {
     vi.mocked(documentArchiveApi.export).mockRejectedValueOnce(problem(422, { code: 'archive_export_too_large', fileCount: 412, maxFiles: 300, maxBytes: 209715200 }));
     const dialog = await openDialog();
 
     fireEvent.click(dialog.getByTestId('archive-export-start'));
 
     const message = await dialog.findByTestId('archive-export-too-large');
-    expect(message).toHaveTextContent(i18n.t('documentArchive.export.tooLarge', { count: 412 }));
+    expect(message).toHaveTextContent(i18n.t('documentArchive.export.tooLarge', { count: 412, max: 300 }));
     expect(message).toHaveTextContent('412');
+    expect(message).toHaveTextContent('300');
     expect(saveBlobAs).not.toHaveBeenCalled();
     // The dialog stays open for another period, and the button offers to try again.
     expect(dialog.getByTestId('archive-export-start')).toHaveTextContent(i18n.t('documentArchive.export.retry'));
     fireEvent.change(dialog.getByTestId('archive-export-period'), { target: { value: 'lastMonth' } });
     expect(dialog.queryByTestId('archive-export-too-large')).not.toBeInTheDocument();
+  });
+
+  // The cap of the bytes counts a document that stores no size as 10 MB: 21 property documents are 210 MB, over the 200 MB, with far fewer than 300 files.
+  it('says the archive is too large, not that there are too many files, when a few files go over the size', async () => {
+    vi.mocked(documentArchiveApi.export).mockRejectedValueOnce(problem(422, { code: 'archive_export_too_large', fileCount: 21, maxFiles: 300, maxBytes: 209715200 }));
+    const dialog = await openDialog();
+
+    fireEvent.click(dialog.getByTestId('archive-export-start'));
+
+    const message = await dialog.findByTestId('archive-export-too-large');
+    // The size is written as a person reads it, with the space that the language puts between the number and the unit: any kind of space is one.
+    const expected = i18n.t('documentArchive.export.tooBig', { count: 21, max: 300, size: formatFileSize(209715200, 'en') }).replace(/\s+/g, ' ');
+    expect(message).toHaveTextContent(expected);
+    expect(message).toHaveTextContent(/too large/i);
+    expect(message).not.toHaveTextContent(/too many/i);
+    expect(message).toHaveTextContent('21');
+    expect(message).toHaveTextContent('300');
+    expect(message).toHaveTextContent(/200\s*MB/);
+    expect(saveBlobAs).not.toHaveBeenCalled();
+  });
+
+  it('says only that the archive would be too large when the server does not send the limits', async () => {
+    vi.mocked(documentArchiveApi.export).mockRejectedValueOnce(problem(422, { code: 'archive_export_too_large' }));
+    const dialog = await openDialog();
+
+    fireEvent.click(dialog.getByTestId('archive-export-start'));
+
+    expect(await dialog.findByTestId('archive-export-too-large')).toHaveTextContent(i18n.t('apiErrors.codes.archiveExportTooLarge'));
   });
 
   it('keeps no token in the cache of the mutations when the archive fails, and nothing once the dialog is closed', async () => {

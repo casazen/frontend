@@ -72,7 +72,15 @@ export interface ArchiveExportQuery {
   propertyId?: string;
 }
 
-/** What the 422 `archive_export_too_large` says: how many files the period holds (`fileCount`), when the server tells it. */
-export interface ArchiveExportTooLarge {
-  fileCount: number | null;
-}
+/**
+ * What the 422 `archive_export_too_large` says: which of the two limits of an archive the period went over, with the numbers the server sends
+ * (`fileCount`, `maxFiles`, `maxBytes`). The server refuses by the number of documents and by their size (a document that stores no size counts as
+ * 10 MB there), so a few files can be "too large" without being "too many": the number of files tells the two apart.
+ */
+export type ArchiveExportTooLarge =
+  /** More documents than one archive holds. */
+  | { limit: 'files'; fileCount: number; maxFiles: number }
+  /** Within the number of documents, but over the size one archive holds (as the documents declare it). */
+  | { limit: 'size'; fileCount: number; maxFiles: number; maxBytes: number }
+  /** The server did not send the numbers that tell which limit it was. */
+  | { limit: null };

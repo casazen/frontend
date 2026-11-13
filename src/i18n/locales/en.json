@@ -5393,8 +5393,10 @@
       "retry": "Try again",
       "start": "Download",
       "title": "Download the document archive",
-      "tooLarge_one": "We found {{count}} file: too many for one archive. Choose a shorter period or fewer types of document.",
-      "tooLarge_other": "We found {{count}} files: too many for one archive. Choose a shorter period or fewer types of document.",
+      "tooBig_one": "The archive would be too large: the file found goes over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooBig_other": "The archive would be too large: the {{count}} files found go over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooLarge_one": "We found {{count}} file: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
+      "tooLarge_other": "We found {{count}} files: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
       "types": "Types of document"
     },
     "filters": {

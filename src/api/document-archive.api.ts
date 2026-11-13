@@ -119,15 +119,26 @@ export function isArchiveCallCancelled(error: unknown): boolean {
   return isAxiosError(error) && error.code === AxiosError.ERR_CANCELED;
 }
 
+/** A count the server sends (`fileCount`, `maxFiles`, `maxBytes`): a whole number from zero, or `null` for anything else. */
+function wholeNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+}
+
 /**
- * What the 422 `archive_export_too_large` says, or `null` for any other error: the number of files the period holds, when the server sends
- * a number (`fileCount`), so that the person is told how many were found and asked for a shorter period.
+ * What the 422 `archive_export_too_large` says, or `null` for any other error. The server refuses an archive with more documents than
+ * `maxFiles` and one that is larger than `maxBytes` (a document that stores no size counts as 10 MB there: with the default 200 MB, 21 property
+ * documents are already too large) with the same code and the number of documents it found: more than `maxFiles` is "too many files", up to
+ * `maxFiles` it is the size. With a number missing the page cannot tell which limit it was, and says only that the archive would be too large.
  */
 export function archiveExportTooLarge(error: unknown): ArchiveExportTooLarge | null {
   if (!isAxiosError(error) || error.response?.status !== 422 || archiveErrorCode(error) !== ARCHIVE_ERROR.tooLarge) return null;
   const body = error.response.data as Record<string, unknown>;
-  const count = body.fileCount;
-  return { fileCount: typeof count === 'number' && Number.isFinite(count) && count >= 0 ? Math.floor(count) : null };
+  const fileCount = wholeNumber(body.fileCount);
+  const maxFiles = wholeNumber(body.maxFiles);
+  const maxBytes = wholeNumber(body.maxBytes);
+  if (fileCount === null || maxFiles === null) return { limit: null };
+  if (fileCount > maxFiles) return { limit: 'files', fileCount, maxFiles };
+  return maxBytes === null ? { limit: null } : { limit: 'size', fileCount, maxFiles, maxBytes };
 }
 
 /** The document archive (NF-99, REP-04): what the caller may read in one place, one file at a time or as a ZIP of a period. */
