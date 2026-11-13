@@ -1,4 +1,4 @@
-import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { isFeatureRuleEnabled, type FeatureFlagRule, type FeatureFlags } from './feature-flags';
 import { ONBOARDING_ROUTES } from './onboarding-routes';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { profilePathForContext } from '@/lib/profile-path';
@@ -84,8 +84,11 @@ export interface RouteManifestEntry {
   homeWhenDenied?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
-  /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
-  featureFlag?: FeatureFlagKey;
+  /**
+   * Backend feature flag: while off the entry is in no menu and its route redirects to the context home. A list of flags is met while ANY of them is on (a page that serves
+   * two sources, each behind a flag of its own).
+   */
+  featureFlag?: FeatureFlagRule;
   /**
    * Plan and billing of the org (backend policy `OrgBillingAdmin`, TN-3): the entry is in the menu only for the org
    * billing administrator ({@link ORG_BILLING_ADMIN_PERMISSION}). The route stays reachable: the page itself tells
@@ -260,6 +263,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.read'],
     component: async () => ({
       default: (await import('@/features/fiscal/fiscal-reports-page')).FiscalReportsPage,
+    }),
+  },
+  {
+    // The fiscal documents (FIS-04, FIS-07, NF-84, NF-87, E06/F03/US04/T01): the list of the ones CasaZen issued for its direct bookings and of the ones imported read-only from the
+    // channel manager, with the state of each in simple words, the PDF and the XML, and the CSV and the Excel file. A tab of Incassi next to Regime fiscale. It asks what the backend asks:
+    // `payment.read` for the list, the downloads and the files (`FiscalDocumentsController`), plus `property.read` for the setting that tells who issues. It exists while either flag of the
+    // documents is on (CasaZen issues, or the channel manager's documents are imported): with both off the tab, the card of the fiscal page and the link of the payment ledger are not there
+    // and the address leads to the home of the area. The ledger of the payments (E06/F04/US01/T04) links to it only while this entry is here, its flags are on and the caller holds these.
+    path: '/app/short-rent/fiscal/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read', 'payment.read'],
+    featureFlag: ['fiscalDocumentIssuance', 'octorateDocumentImport'],
+    navKey: 'nav.fiscalDocuments',
+    navParent: '/app/short-rent/payments',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/fiscal/documents/fiscal-documents-page')).FiscalDocumentsPage,
     }),
   },
   {
@@ -1173,8 +1194,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
-    // Withholding tax management (ADR-018): withholding summary by month/owner/apartment, F24 preview and download,
-    // and payment reconciliation. For org billing administrators who handle tax compliance. Agency plan only (`agencyTier`).
+    // «Rendiconti» (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners, with the real PDF and CSV. It reads and writes the agency
+    // endpoint `/statements` (ADR-010: only an org on the Agency plan, so behind `agencyTier`), which is the agency's own and not the platform console's:
+    // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
+    // `agency.statement.manage` to approve and publish), which the owner and the administrators hold from their role in the org and which is not among the
+    // context permissions of `/me/contexts` (so it cannot be a `requiredPermissions` entry): like the other pages of the agency's money, the entry is for
+    // the org billing administrator, who is that owner or administrator, and the page checks the role and the plan of the organization before it reads anything (the flag is the environment's, the plan is each organization's: the backend refuses any other plan with a bare 403).
+    path: '/app/account/statements',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.statements',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+    legacyPaths: ['/app/admin/statements'],
+  },
+  {
+    // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
+    // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
     context: 'account',
     requiredPermissions: [],
@@ -1188,8 +1229,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
   {
-    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
-    // For org billing administrators who handle owner payments. Agency plan only (`agencyTier`).
+    // Wire transfer batch management (ADR-017): the payment files (SEPA for EUR, Swiss for CHF) that pay the owners' published statements. The backend asks
+    // `agency.wire.manage`, which only the owner and the administrators hold: the entry is for the org billing administrator, and the page checks the role
+    // before it reads anything, the plan of the organization too. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],
@@ -1534,19 +1576,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
   {
-    // Reads the agency endpoint `/statements` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
-    path: '/app/admin/statements',
-    context: 'admin',
-    requiredPermissions: ['admin.statements.read'],
-    featureFlag: 'agencyTier',
-    navKey: 'nav.statements',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 7,
-    icon: 'FileText',
-    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
-  },
-  {
     // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
     path: '/app/admin/activities',
     context: 'admin',
@@ -1756,7 +1785,7 @@ export type PermissionPredicate = (contextKey: AppContextKey, permission: string
 
 /** Entries behind a feature flag need the flag on; without flags (not loaded) they are hidden. */
 export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Partial<FeatureFlags>): boolean {
-  return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
+  return isFeatureRuleEnabled(features, entry.featureFlag);
 }
 
 /** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */

@@ -1116,6 +1116,23 @@
       }
     }
   },
+  "agencyFinance": {
+    "adminRequired": {
+      "description": "The statements, the withholding and the wire transfers concern the owners' money: the owner and the administrators of the organization handle them. Ask one of them to open this page.",
+      "title": "The organization administrator is needed"
+    },
+    "notUpdated": "These figures could not be updated: what you see may be out of date.",
+    "planError": "Could not check the plan of the organization",
+    "planRequired": {
+      "action": "Go to the plan",
+      "description": "The owners' statements, withholding and wire transfers are for organizations on the Agency plan, and yours is not. You can change the plan from the plan and billing page.",
+      "title": "The Agency plan is needed"
+    },
+    "refused": {
+      "description": "The server does not show you the owners' money: it needs the Agency plan and the role of owner or administrator of the organization. If you think this is a mistake, sign out and in again or ask an administrator.",
+      "title": "This page is not available for your access"
+    }
+  },
   "aiContentNotice": {
     "label": "AI-generated content",
     "seo": "Text generated with the help of AI and approved by a CasaZen administrator before publication: always check the official sources.",
@@ -1375,6 +1392,7 @@
       "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
       "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
       "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
+      "csvTooManyRows": "There are too many documents for one CSV file: narrow the period.",
       "d6ChannelFailed": "The portal had a problem: try again shortly.",
       "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
       "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
@@ -1390,6 +1408,11 @@
       "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
       "existingInventoryTooManyChannels": "You chose too many portals at once.",
       "f24TaxCodeMixed": "The month has withholdings with different tax codes: a single F24 cannot be made.",
+      "fatturapaSchemaUnavailable": "Not available yet: an operator adds the schema of the electronic invoice, and until it is there an invoice cannot be issued.",
+      "fiscalDocumentNotFound": "We can no longer find this document, or it is not among the properties you can access. Refresh the list.",
+      "fiscalDocumentXmlUnavailable": "This document has no XML file: only the invoices and credit notes issued by CasaZen have one.",
+      "fiscalExportInvalidFormat": "The file format is not valid: choose CSV or Excel.",
+      "fiscalExportInvalidRange": "The period is not valid: the first day must be before the last one, between 2000 and 2100.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
       "inventoryGroupRequired": "The name of the group is missing.",
       "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
@@ -1424,6 +1447,7 @@
       "octorateNotFound": "The channel manager cannot find this listing.",
       "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
       "octoratePartnerFailed": "The channel did not accept the request (invalid access or channel not reachable): check the access details and try again later.",
+      "octoratePdfUnavailable": "Your channel manager has no PDF of this document, or it cannot be reached now.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
       "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
       "octorateRequestRejected": "The channel manager refused the request.",
@@ -1449,6 +1473,42 @@
       "ownerStatementNotApproved": "The statement must be approved first.",
       "ownerStatementNotDraft": "This version is no longer a draft.",
       "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
+      "ownerAttachmentNotFound": "This attachment is not available.",
+      "ownerCalendarRangeInvalid": "The chosen period is not valid.",
+      "ownerContactAgencyRequired": "Your profile is linked to more than one agency: to invite a contact write to the agency concerned.",
+      "ownerContactDailyLimitReached": "You have sent too many invitations today. Try again tomorrow.",
+      "ownerContactEmailNotQueued": "We could not send the invitation e-mail: the invitation was cancelled. Try again.",
+      "ownerContactExists": "This person is already one of your contacts.",
+      "ownerContactInvalid": "Check the name and the e-mail address of the contact.",
+      "ownerContactLimitReached": "You have reached the maximum number of contacts.",
+      "ownerContactNotFound": "This contact does not exist.",
+      "ownerContactOwnerOnly": "Only the owner can manage the contacts.",
+      "ownerContactRevoked": "The access of this contact has already been withdrawn.",
+      "ownerConversationInvalid": "Check the subject and what the conversation is about.",
+      "ownerConversationNotFound": "This conversation is not available.",
+      "ownerConversationReferenceNotFound": "What the conversation refers to is not one of your items.",
+      "ownerDocumentNotFound": "This document is not available.",
+      "ownerFileActiveContent": "The file cannot be accepted because it is password protected or contains parts we cannot check. Export it again as a plain PDF.",
+      "ownerFileMissing": "Choose a file.",
+      "ownerFileTooLarge": "The file is too large: 10 MB at most.",
+      "ownerFileTypeNotAllowed": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image.",
+      "ownerMessageInvalid": "Write the message before sending it.",
+      "ownerPortalPermissionMissing": "The owner has not given you permission for this operation.",
+      "ownerPortalPermissionUnknown": "One of the chosen permissions does not exist.",
+      "ownerPortalPermissionsEmpty": "Choose at least one permission: no permission does not mean “all”.",
+      "ownerPortalPropertyNotFound": "This property is not one of yours.",
+      "ownerStayAllowanceExceeded": "With this stay you would pass the nights you have available this year.",
+      "ownerStayBeyondWindow": "The arrival is further ahead than the rules allow.",
+      "ownerStayBlackout": "One of the nights falls on dates closed to owner stays.",
+      "ownerStayDatesUnavailable": "One or more nights are no longer free. Choose other dates.",
+      "ownerStayInPast": "The arrival cannot be a day that has already passed.",
+      "ownerStayInvalidRange": "The departure must be after the arrival.",
+      "ownerStayNotCancellable": "This stay can no longer be cancelled.",
+      "ownerStayNotFound": "This stay does not exist.",
+      "ownerStayNoticeTooShort": "The arrival is closer than the notice the rules ask for.",
+      "ownerStayOutsidePeriod": "One of the nights is outside the period in which the rules allow owner stays.",
+      "ownerStayTooLong": "The stay is longer than the rules allow.",
+      "ownerStayTooShort": "The stay is shorter than the rules allow.",
       "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
       "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
       "panelStepChannelInvalid": "The channel of this step is not valid.",
@@ -1461,6 +1521,7 @@
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
+      "xlsxTooManyRows": "There are too many documents for one Excel file: narrow the period.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
@@ -1850,7 +1911,28 @@
       "taxNotCalculable": "The tourist tax cannot be worked out yet.",
       "taxRateInvalid": "The values of the tax are not valid: check the amount, age, nights and season.",
       "taxRateOfficialExists": "An official rate already exists for this municipality: you cannot enter another one.",
-      "taxRateSourceRequired": "Say where the amount comes from."
+      "taxRateSourceRequired": "Say where the amount comes from.",
+      "batchAlreadyPaid": "This wire file has already been marked as paid.",
+      "batchNotDownloaded": "The file has to be downloaded before it is marked as paid.",
+      "batchXmlNotFound": "This wire file has no content: it cannot be downloaded.",
+      "f24NotFound": "There is no F24 for this month.",
+      "invalidDebitAccountIban": "The IBAN of the debit account is not valid: check it and try again.",
+      "mixedCurrenciesNotAllowed": "A wire file has a single currency: choose statements that are all in euro or all in francs.",
+      "noStatementsProvided": "Choose at least one statement.",
+      "ownerInvalidIban": "The IBAN of an owner of the chosen statements is not valid: correct it before creating the file.",
+      "ownerMissingIban": "An owner of the chosen statements has no IBAN: add it before creating the file.",
+      "statementNotApproved": "The statement has to be approved first.",
+      "statementNotDraft": "This statement is no longer a draft: the list has been updated.",
+      "statementNotExportable": "The PDF and the CSV can only be downloaded once the statement is approved.",
+      "statementNotFound": "We cannot find this statement: the list has been updated.",
+      "statementsAlreadyInBatch": "At least one of the chosen statements is already in a wire file: a statement is paid only once.",
+      "statementsNotFoundOrNotOwned": "One of the chosen statements no longer exists: the list has been updated.",
+      "statementsNotPublished": "Wire transfers are only made for published statements: publish the chosen ones first.",
+      "wireAmountInvalid": "The amount of a transfer is not valid: it must be greater than zero with at most two decimals. No file was created.",
+      "wireBatchContentInvalid": "The wire file does not match the chosen statements (amounts, number of transfers or currency), so it was not created. No statement was locked.",
+      "wireBatchSchemaUnavailable": "Wire transfers cannot be switched on yet: the control file is missing and an operator has to add it. No file was created and the statements stay free.",
+      "wireBatchXmlInvalid": "The wire file did not pass the format check, so it was not created. No statement was locked: try again or ask an operator.",
+      "wireCurrencyNotSupported": "Wire transfers are only made in euro (EUR) or Swiss francs (CHF): the chosen statements are in another currency."
     }
   },
   "appShell": {
@@ -7706,6 +7788,120 @@
         "legend": "Who issues the documents of your stays?",
         "recommended": "Recommended"
       }
+    },
+    "list": {
+      "actions": {
+        "pdf": "PDF",
+        "pdfLabel": "Download the PDF of {{document}}",
+        "xml": "XML",
+        "xmlLabel": "Download the XML of {{document}}"
+      },
+      "booking": "Open the booking",
+      "bookingLinked": "Linked booking",
+      "card": {
+        "action": "Open the list"
+      },
+      "columns": {
+        "document": "Document",
+        "recipient": "Recipient",
+        "state": "Status",
+        "total": "Total"
+      },
+      "count_one": "{{count}} document",
+      "count_other": "{{count}} documents",
+      "description": "Invoices, credit notes and receipts: the ones CasaZen issued and the ones of your channel manager, each with its status.",
+      "download": {
+        "done": "File downloaded.",
+        "failed": "We could not download the file. Try again in a moment.",
+        "notFound": "Document not found."
+      },
+      "empty": {
+        "action": "Choose who issues the documents",
+        "filteredDescription": "Change the period or the filters to see other documents.",
+        "filteredTitle": "No documents match these filters",
+        "mode": {
+          "Accountant": "Your accountant issues them, outside CasaZen: nothing shows up here.",
+          "CasaZenDirectOnly": "CasaZen issues the documents of direct bookings: you will find them here as soon as one is issued.",
+          "Octorate": "Your channel manager issues them: CasaZen imports them read-only and shows them here.",
+          "unknown": "When CasaZen issues a document, or receives one from your channel manager, you will find it here.",
+          "unset": "You have not chosen yet who issues the fiscal documents. Once you do, you will find them here."
+        },
+        "title": "No fiscal documents yet"
+      },
+      "export": {
+        "csv": "CSV",
+        "failed": "We could not prepare the file. Try again in a moment.",
+        "hint": "The CSV and Excel files hold the issued documents, with the same days, kind and source as the filters.",
+        "label": "Download the list",
+        "statusBlocked": "The files hold issued documents only: remove the status filter to download them.",
+        "xlsx": "Excel"
+      },
+      "filters": {
+        "all": "All",
+        "dateOrder": "The first day must be before the last one.",
+        "dateRange": "Choose days between 2000 and 2100.",
+        "from": "From",
+        "kind": "Kind",
+        "label": "Document filters",
+        "reset": "Clear filters",
+        "source": "Issued by",
+        "status": "Status",
+        "statuses": {
+          "Discarded": "Dropped drafts",
+          "Draft": "Drafts",
+          "Issued": "Issued"
+        },
+        "to": "To"
+      },
+      "forbidden": "Your role cannot see the fiscal documents. Ask whoever administers the organization to give you access.",
+      "gone": "This document is no longer there.",
+      "kind": {
+        "CreditNote": "Credit note",
+        "Invoice": "Invoice",
+        "Proforma": "Proforma",
+        "Receipt": "Receipt"
+      },
+      "loadError": "The fiscal documents could not be loaded.",
+      "named": "{{kind}} {{number}}",
+      "noBooking": "No booking",
+      "noDate": "No date",
+      "noRecipient": "Recipient not given",
+      "note": {
+        "sdiNotAvailable": "Sending to the SDI is not available in CasaZen yet: the invoices issued stay «to send» and your accountant sends them with the XML file."
+      },
+      "notFound": "List not found.",
+      "pdfUnavailable": "PDF not available",
+      "readOnly": "Read-only",
+      "source": {
+        "CasaZen": "Issued by CasaZen",
+        "Octorate": "From your channel manager"
+      },
+      "state": {
+        "channelManaged": "Managed by your channel manager",
+        "delivered": "Delivered",
+        "discarded": "Dropped draft",
+        "draft": "Draft",
+        "issued": "Issued",
+        "manualDeclared": "Sent outside CasaZen (declared)",
+        "paid": "Paid",
+        "rejected": "Rejected by the SDI",
+        "sdiCode": "SDI code: {{code}}",
+        "sdiUnavailable": "SDI status not available",
+        "submitted": "Sent to the SDI",
+        "toCollect": "To collect",
+        "toSend": "Issued - to send to the SDI",
+        "unrecognizedPayment": "Collection: {{code}}",
+        "unrecognizedSdi": "SDI status: {{code}}",
+        "unrecognizedStatus": "Status: {{code}}"
+      },
+      "tableLabel": "Fiscal documents",
+      "title": "Fiscal documents",
+      "unnumbered": "{{kind}} (no number)",
+      "watch": {
+        "checkAgain": "Check again",
+        "over": "We no longer check by ourselves whether the SDI has answered. Check again to see the updated statuses."
+      },
+      "xmlUnavailable": "XML not available"
     }
   },
   "guestCancellation": {
@@ -13559,6 +13755,7 @@
     "cin": "CIN",
     "identification": "Identification",
     "fiscal": "Fiscal regime",
+    "fiscalDocuments": "Fiscal documents",
     "payments": "Payments",
     "revenue": "Revenue",
     "reports": "Reports",
@@ -16108,6 +16305,68 @@
       }
     }
   },
+  "ownerContactInvitation": {
+    "accepting": "We are activating your access",
+    "claimsPending": {
+      "description": "We have recorded your invitation, but your access needs a few more moments. Try again shortly: if it does not activate, write to support.",
+      "title": "Your access to the portal is not active yet"
+    },
+    "emailMismatch": {
+      "action": "Sign in with another account",
+      "description": "You signed in with an address other than the one the invitation was sent to. Sign in with the right address: the invitation is still valid and you activate it from here.",
+      "title": "This invitation is for another e-mail address"
+    },
+    "emailNotVerified": {
+      "description": "We sent you a message to confirm the address. Open it, then come back here and try again.",
+      "login": "Sign in again",
+      "title": "Confirm your e-mail address first"
+    },
+    "failure": {
+      "other": "The invitation could not be accepted. If the problem continues, write to support.",
+      "retry": "The service did not answer. Try again in a moment.",
+      "title": "We could not activate your access"
+    },
+    "invite": {
+      "description": "Sign in to enter the CasaZen owner portal with the permissions the owner has given you.",
+      "login": "I already have an account",
+      "sameEmail": "Use the same e-mail address the invitation was sent to: it is the only one you can accept it with.",
+      "signup": "Create your account",
+      "title": "You are invited to an owner’s portal"
+    },
+    "loading": "One moment",
+    "notFound": {
+      "description": "The owner portal is not active yet. Try again later or ask whoever invited you.",
+      "title": "Page not available"
+    },
+    "openPortal": "Open the portal",
+    "opening": "Taking you to the portal",
+    "pageTitle": "Invitation to the owner portal",
+    "retry": "Try again",
+    "support": "Write to support",
+    "tokenPending": {
+      "description": "Your invitation was accepted, but we could not renew your access. Try again: if it continues, sign out and sign in again.",
+      "title": "We could not open the portal"
+    },
+    "unusable": {
+      "expired": {
+        "description": "The link is no longer valid. Ask the owner to send you a new invitation.",
+        "title": "This invitation has expired"
+      },
+      "goToPortal": "Go to the owner portal",
+      "invalid": {
+        "description": "The link is not valid or is incomplete. Open the link you received by e-mail again, or ask the owner to send you a new one.",
+        "title": "This invitation does not work"
+      },
+      "revoked": {
+        "description": "The owner has withdrawn this invitation. If you think it is a mistake, ask them to send you a new one.",
+        "title": "This invitation has been withdrawn"
+      },
+      "used": {
+        "description": "The link has already been used by an account. If it was you, open the portal and sign in; otherwise ask the owner for a new invitation.",
+        "title": "This invitation has already been used"
+      }
+    }
+  },
   "ownerInvitation": {
     "accepting": "We are activating your access",
     "claimsPending": {
@@ -16517,55 +16776,413 @@
     "updateFailed": "We cannot update the state of the owners: what you see is the last one we read and may be out of date. What you are filling in stays here."
   },
   "ownerPortal": {
-    "dashboard": {
-      "title": "Owner Portal",
-      "viewStatements": "View statements",
-      "yourProperties": "Your properties",
-      "noProperties": "No properties available",
-      "revenue": "Revenue",
-      "bookings": "Bookings",
-      "occupancy": "Occupancy",
-      "adr": "ADR",
-      "revPar": "RevPAR",
+    "accounting": {
+      "ask": "Ask about this statement",
+      "description": "The statements your agency has published, the linked invoices and the accounting documents shared with you.",
+      "documentsTitle": "Accounting documents",
+      "error": "The statements could not be loaded",
+      "invoiceOf": "Linked to the statement of {{period}}",
+      "invoiceStatus": {
+        "Entered": "Link recorded",
+        "Verified": "Link checked"
+      },
+      "invoiceTitle": "Invoice no. {{number}} of {{date}}",
+      "invoicesError": "The linked invoices could not be loaded",
+      "invoicesNote": "These are invoices issued by the agency in its own system: here you find the link the agency recorded. CasaZen does not issue invoices.",
+      "invoicesTitle": "Linked invoices",
+      "loading": "Loading the accounting",
+      "noDocuments": "The agency has not shared any accounting document with you.",
+      "noInvoiceLink": "The link to this invoice is not available.",
+      "noInvoices": "There are no invoices linked to your statements.",
+      "noPaymentNote": "You only see published statements here. Amounts and the state of payments are not shown in the portal yet: ask your agency in the messages for the detail.",
+      "noStatements": "The agency has not published any statement for you yet.",
+      "openInvoice": "Open the invoice",
+      "opensNewTab": "(opens in a new tab)",
+      "publishedOn": "published on {{date}}",
+      "statementTitle": "Statement of {{period}}",
+      "statementsTitle": "Published statements",
+      "status": {
+        "published": "Published",
+        "superseded": "Superseded"
+      },
+      "supersededNote": "A newer version of this statement has taken its place: this one stays here as a record.",
+      "title": "Accounting",
+      "version": "Version {{number}}"
+    },
+    "calendar": {
+      "description": "See the free, occupied and blocked nights of your properties and ask for your own stays. To protect guests’ privacy you only see dates.",
+      "empty": "No date of this period falls within your period of ownership: there is nothing to show.",
+      "error": "The calendar could not be loaded",
+      "kinds": {
+        "available": "Free",
+        "blocked": "Blocked",
+        "occupied": "Occupied",
+        "ownerStay": "Owner stay"
+      },
+      "loading": "Loading the calendar",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noProperties": "There are no properties whose calendar you can see.",
       "period": "Period",
-      "tilesLabel": "The numbers for your properties",
-      "previousYear": "Compared with the same days last year: {{from}} to {{to}}.",
-      "share": "Revenue on an accrual basis, on your share of each property: the nights of the confirmed stays, lodging and cleaning, tourist tax excluded.",
-      "trendTitle": "Trend over time",
-      "overviewError": "Could not load the numbers for the period.",
-      "trendError": "Could not load the trend.",
+      "periods": {
+        "sixMonths": "Next 6 months",
+        "threeMonths": "Next 3 months",
+        "twelveMonths": "Next 12 months"
+      },
+      "privacyNote": "To protect guests’ privacy you only find dates and one word here: never names, contacts or sales channels.",
+      "propertiesError": "Your properties could not be loaded",
+      "property": "Property",
+      "range": "From {{from}} to {{to}}",
+      "runsLabel": "Dates of {{property}}",
+      "sectionTitle": "Calendar of {{property}}",
+      "summary": {
+        "available": "Free nights",
+        "blocked": "Blocked nights",
+        "occupied": "Occupied nights",
+        "ownerStay": "Your stays"
+      },
+      "summaryLabel": "Nights of the period",
+      "title": "Properties and calendar"
+    },
+    "contacts": {
+      "description": "Let another person into the portal with their own account and only the permissions you choose. Each permission is independent and you can withdraw it at any time: it applies from their next request.",
+      "empty": "You have not invited any contact yet.",
+      "error": "The contacts could not be loaded",
+      "failed": "The operation could not be completed. Try again.",
+      "invite": {
+        "description": "It receives an e-mail with a link valid for 7 days. To get in it must use the same address and an account of its own: you never share yours.",
+        "detailsRequired": "Write a first name, a last name and a valid e-mail address.",
+        "email": "E-mail address",
+        "failed": "The invitation could not be sent. Try again.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "permissionRequired": "Choose at least one permission: no permission does not mean “all”.",
+        "permissions": "What it can do",
+        "sending": "Sending",
+        "sent": "We wrote to {{email}}. It has no access yet: it will have it only when it accepts the invitation.",
+        "sentTitle": "Invitation sent",
+        "submit": "Send the invitation",
+        "title": "Invite a contact"
+      },
+      "listTitle": "Your contacts",
+      "loading": "Loading the contacts",
+      "permissions": {
+        "accounting": {
+          "read": {
+            "description": "Published statements and accounting documents.",
+            "label": "See the accounting"
+          }
+        },
+        "calendar": {
+          "read": {
+            "description": "Free, occupied and blocked dates, never guest data.",
+            "label": "See the calendar"
+          }
+        },
+        "documents": {
+          "read": {
+            "description": "The documents the agency shares with you.",
+            "label": "See the documents"
+          }
+        },
+        "inbox": {
+          "use": {
+            "description": "Read and write in the conversations.",
+            "label": "Use the messages with the agency"
+          }
+        },
+        "label": "Permissions",
+        "noneLeft": "Leave at least one permission: to take all access away use “Withdraw access”.",
+        "save": "Save the permissions",
+        "stays": {
+          "request": {
+            "description": "Requests follow the rules of the agency.",
+            "label": "Ask for and cancel stays"
+          }
+        }
+      },
+      "revoke": {
+        "button": "Withdraw access",
+        "confirm": "Withdraw access",
+        "consequenceNow": "It applies from its next request.",
+        "consequenceRecord": "A record of the invitation and of its access remains.",
+        "description": "This person will no longer be able to enter your portal.",
+        "keep": "Leave it as it is",
+        "title": "Withdraw the access of {{name}}?"
+      },
+      "status": {
+        "active": {
+          "description": "It has access with the permissions below.",
+          "title": "Active"
+        },
+        "expired": {
+          "description": "The invitation expired on {{date}}: it has no access. You can invite it again, or revoke it: until you do, it counts towards the most contacts.",
+          "title": "Invitation expired"
+        },
+        "invited": {
+          "description": "It has not accepted yet: until it accepts, by {{date}}, it has no access at all.",
+          "title": "Invitation sent"
+        },
+        "revoked": {
+          "description": "Access withdrawn on {{date}}: it no longer has any access.",
+          "title": "Withdrawn"
+        }
+      },
+      "title": "Contacts"
+    },
+    "dashboard": {
+      "bookings": "Bookings",
+      "description": "Your properties and what you can do with your agency: calendar, accounting, documents and messages.",
+      "error": "The properties could not be loaded",
+      "noProperties": "There are no properties available",
+      "numbersUnavailable": {
+        "description": "Occupancy, revenue and the trend over time are not shown in the portal yet: here you only find your properties and their bookings. For the numbers, ask the agency in the messages.",
+        "title": "The numbers of your properties are not available yet"
+      },
       "recentBookings": "Recent bookings",
-      "error": "Loading error",
-      "errorMessage": "Unable to load portal data. Please try again later."
+      "title": "Owner Portal",
+      "yourProperties": "Your properties"
+    },
+    "documents": {
+      "ask": "Write to the agency",
+      "description": "The documents your agency shares with you: mandate, contracts, insurance, statements and invoices. Each one has its version in force, its dates and its expiry.",
+      "download": "Download",
+      "downloadAria": "Download {{title}}, version {{number}}",
+      "downloadFailed": "The file could not be downloaded. Try again.",
+      "effectiveFrom": "In force from {{date}}",
+      "empty": "The agency has not shared any document with you yet.",
+      "error": "The documents could not be loaded",
+      "expiresOn": "Expires on {{date}}",
+      "expiry": {
+        "expired": "Expired on {{date}}",
+        "expiring": "Expiring on {{date}}",
+        "valid": "Valid until {{date}}"
+      },
+      "expiryNoDate": {
+        "expired": "Expired",
+        "expiring": "Expiring",
+        "valid": "Valid"
+      },
+      "loading": "Loading the documents",
+      "noVersion": "This document has no file yet.",
+      "olderVersions_one": "{{count}} earlier version",
+      "olderVersions_other": "{{count}} earlier versions",
+      "title": "Documents",
+      "type": {
+        "Contract": "Contract",
+        "Insurance": "Insurance",
+        "Invoice": "Invoice",
+        "Mandate": "Mandate",
+        "Other": "Other document",
+        "Statement": "Statement"
+      },
+      "version": "Version {{number}}",
+      "versionState": {
+        "current": "In force",
+        "expired": "Expired",
+        "superseded": "Superseded",
+        "upcoming": "Not in force yet"
+      }
+    },
+    "inbox": {
+      "description": "Write to the agency and find your conversations about a property, a stay, a document or a statement. Notification e-mails never contain the text of the messages.",
+      "empty": "There are no conversations with the agency yet.",
+      "error": "The conversations could not be loaded",
+      "lastMessage": "last message {{when}}",
+      "listTitle": "Your conversations",
+      "loading": "Loading the messages",
+      "new": {
+        "agencyNeeded": "Your profile is linked to more than one agency, and a general question does not say which one to write to. Choose a property, a stay, a document or a statement: the conversation goes to the agency of that item.",
+        "body": "Your message",
+        "cancel": "Cancel",
+        "choose": "Choose…",
+        "document": "Document",
+        "failed": "The message could not be sent. Try again.",
+        "open": "New conversation",
+        "privacyNote": "Write only what is needed here. Do not enter card or bank account details.",
+        "property": "Property",
+        "referenceRequired": "Choose what the conversation is about.",
+        "send": "Send the message",
+        "sending": "Sending",
+        "statement": "Statement",
+        "statementOption": "Statement {{month}}/{{year}}, version {{version}}",
+        "stay": "Stay",
+        "subject": "Subject",
+        "title": "New conversation with the agency",
+        "topic": "What it is about",
+        "topics": {
+          "document": "A document",
+          "general": "A general question",
+          "ownerStay": "A stay",
+          "property": "A property",
+          "statementVersion": "A statement"
+        },
+        "wordsRequired": "Write the subject and the message."
+      },
+      "preferences": {
+        "description": "The e-mail only says there is a message and links back here: it never contains the words of the message.",
+        "label": "Get an e-mail when the agency writes to you",
+        "readFailed": "Your e-mail preference could not be read.",
+        "saveFailed": "The preference could not be saved. Try again."
+      },
+      "thread": {
+        "agency": "Agency",
+        "attach": "Attach a file",
+        "attachHint": "PDF, JPEG or PNG, up to 10 MB. The file is checked before it is stored.",
+        "attachment": {
+          "empty": "The file is empty.",
+          "size": "The file is too large: 10 MB at most.",
+          "type": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image."
+        },
+        "attachmentFallbackName": "attachment",
+        "back": "All conversations",
+        "body": "Your message",
+        "bodyRequired": "Write the message.",
+        "downloadAria": "Download the attachment {{name}}",
+        "empty": "This conversation has no messages yet.",
+        "error": "The messages could not be loaded",
+        "messagesLabel": "Messages of the conversation",
+        "refresh": "Refresh",
+        "remove": "Remove",
+        "removeFile": "Remove the file {{name}}",
+        "replyTitle": "Reply",
+        "send": "Send",
+        "sendFailed": "The message could not be sent. Try again.",
+        "sending": "Sending",
+        "title": "Conversation"
+      },
+      "title": "Messages",
+      "topic": {
+        "Document": "Document",
+        "General": "General",
+        "OwnerStay": "Stay",
+        "Property": "Property",
+        "StatementVersion": "Statement"
+      }
     },
     "properties": {
-      "title": "Property details",
-      "totalRevenue": "Total revenue",
-      "totalBookings": "Total bookings",
-      "occupancyRate": "Occupancy rate",
-      "recentBookings": "Recent bookings",
-      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and amounts visible)",
-      "noBookings": "No recent bookings",
+      "backToDashboard": "Back to the overview",
       "channel": "Channel",
+      "error": "The details of the property could not be loaded",
+      "noBookings": "No recent bookings",
       "notFound": "Property not found",
-      "notFoundMessage": "The requested property is not available or you do not have permission to view it.",
-      "backToDashboard": "Back to dashboard",
-      "error": "Loading error",
-      "errorMessage": "Unable to load property details. Please try again later."
+      "openCalendar": "Calendar and stays",
+      "recentBookings": "Recent bookings",
+      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
+      "summaryTitle": "Summary of the property",
+      "totalBookings": "Total bookings",
+      "writeToAgency": "Write to the agency"
     },
-    "statements": {
-      "title": "Statements",
-      "description": "View your published monthly statements. Download in PDF or CSV format.",
-      "noStatements": "No statements available",
-      "monthYear": "{{month}} {{year}}",
-      "totalRevenue": "Total revenue",
-      "agencyCommission": "Agency commission",
-      "netAmount": "Net amount",
-      "publishedAt": "Published on {{date}}",
-      "downloadSuccess": "Download complete",
-      "downloadError": "Unable to download the statement. Please try again later.",
-      "error": "Loading error",
-      "errorMessage": "Unable to load statements. Please try again later."
+    "shell": {
+      "nav": {
+        "accounting": "Accounting",
+        "calendar": "Properties and calendar",
+        "contacts": "Contacts",
+        "documents": "Documents",
+        "home": "Overview",
+        "label": "Owner portal",
+        "messages": "Messages"
+      },
+      "pageTitle": "Owner portal - CasaZen",
+      "signOut": "Sign out",
+      "title": "Owner portal"
+    },
+    "states": {
+      "backHome": "Back to the overview",
+      "forbidden": {
+        "description": "Your access does not include this section. If you think this is a mistake, write to your agency.",
+        "title": "You cannot see this part of the portal"
+      },
+      "ownerOnly": {
+        "description": "Only the owner can manage the contacts who enter the portal. Your access does not change.",
+        "title": "This part is for the owner only"
+      },
+      "permission": {
+        "description": "The owner has not given you permission for this section. Ask them to change your permissions: the rest of the portal is still yours to use.",
+        "title": "You do not have permission to see this part"
+      },
+      "unavailable": {
+        "description": "It is not active yet, or what you are looking for does not exist. It does not mean there is nothing to see: try again later or write to your agency.",
+        "title": "This part of the portal is not available"
+      }
+    },
+    "stays": {
+      "ask": "Write to the agency about this stay",
+      "byContact": "Asked for by one of your contacts.",
+      "cancel": "Cancel the stay",
+      "cancelConfirm": {
+        "confirm": "Cancel the stay",
+        "consequence": "If it was already approved, its dates are made available again on the sales channels.",
+        "description": "The stay is cancelled and the dates become free again. You can ask for a new stay whenever you like.",
+        "keep": "Keep it",
+        "title": "Cancel this stay?"
+      },
+      "cancelFailed": "The stay could not be cancelled. Try again.",
+      "empty": "You have not asked for any stay yet.",
+      "endDate": "Departure",
+      "error": "Your stays could not be loaded",
+      "errors": {
+        "allowanceExceeded": "With this stay you would pass the {{nights}} nights you have available in {{year}}.",
+        "beyondWindow": "The arrival is too far ahead: it cannot be more than {{days}} days from today.",
+        "datesRequired": "Choose the arrival day and the departure day.",
+        "endBeforeStart": "The departure must be after the arrival.",
+        "generic": "The request could not be sent. Try again.",
+        "noticeTooShort": "The arrival is too close: at least {{days}} days of notice are needed.",
+        "startInPast": "The arrival cannot be a day that has already passed.",
+        "tooLong": "The stay is too long: {{nights}} nights at most.",
+        "tooShort": "The stay is too short: at least {{nights}} nights are needed."
+      },
+      "listTitle": "Your stays",
+      "requestSent": "Request sent. It is not a confirmed stay yet: the dates are not blocked until it is approved and the sales channels have recorded it.",
+      "requestTitle": "New stay request",
+      "rule": {
+        "activePeriod": "Valid from {{from}} to {{to}}.",
+        "allowance_one": "Up to {{count}} night in {{year}}: you already hold {{used}}, {{left}} left.",
+        "allowance_other": "Up to {{count}} nights in {{year}}: you already hold {{used}}, {{left}} left.",
+        "approvalAutomatic": "If it follows the rules the request is approved automatically, but the stay is confirmed only once the dates have been blocked on the sales channels.",
+        "approvalRequired": "Every request is approved by the agency. Until it is approved it does not block the dates.",
+        "blackout": "Not available from {{from}} to {{to}}.",
+        "maxAdvance_one": "The arrival cannot be more than {{count}} day from today.",
+        "maxAdvance_other": "The arrival cannot be more than {{count}} days from today.",
+        "minAdvance_one": "At least {{count}} day of notice.",
+        "minAdvance_other": "At least {{count}} days of notice.",
+        "nightsAtLeast_one": "At least {{count}} night.",
+        "nightsAtLeast_other": "At least {{count}} nights.",
+        "nightsBetween": "From {{min}} to {{max}} nights.",
+        "noNotice": "No minimum notice.",
+        "title": "The rules for this property"
+      },
+      "ruleError": "The stay rules could not be loaded",
+      "sectionTitle": "Ask for a stay",
+      "startDate": "Arrival",
+      "state": {
+        "approved_syncing": {
+          "description": "Approved, but the dates are still being blocked on the sales channels: it is not confirmed yet.",
+          "title": "Approved, dates being blocked"
+        },
+        "cancelled": {
+          "description": "The stay was cancelled: the dates are no longer yours.",
+          "title": "Cancelled"
+        },
+        "confirmed": {
+          "description": "The dates are blocked: the stay is confirmed.",
+          "title": "Confirmed"
+        },
+        "rejected": {
+          "description": "The agency declined the request: the dates were not blocked.",
+          "title": "Declined"
+        },
+        "requested": {
+          "description": "Waiting for approval. The dates are not blocked yet.",
+          "title": "Request sent"
+        },
+        "sync_failed": {
+          "description": "Approved, but blocking the dates did not succeed: the agency is putting it right. It is not confirmed.",
+          "title": "Approved, blocking failed"
+        }
+      },
+      "submit": "Send the request",
+      "submitting": "Sending"
     }
   },
   "ownerProfile": {
@@ -22176,54 +22793,64 @@
     }
   },
   "statement": {
-    "title": "Owner statements",
-    "description": "View and manage monthly owner statements",
-    "loading": "Loading statements…",
-    "loadError": "Could not load statements",
-    "emptyTitle": "No statements",
-    "emptyList": "No statements have been generated yet",
-    "emptyFiltered": "No statements found with the selected filters",
-    "viewDetails": "View details",
-    "period": "Period",
-    "revenue": "Revenue",
-    "commission": "Commission",
-    "expenses": "Expenses",
-    "withholdingTax": "Withholding",
-    "netPayable": "Net payable",
-    "summary": "Summary",
-    "publishedAt": "Published on",
-    "ownershipPercent": "Ownership share: {{percent}}%",
-    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
-    "status": {
-      "draft": "Draft",
-      "approved": "Approved",
-      "published": "Published"
+    "approve": {
+      "confirmDescription": "Statement of {{owner}} for {{property}}, period {{period}}: net payable {{amount}}.",
+      "confirmTitle": "Approve the statement?",
+      "consequenceLocked": "Once approved, the statement can no longer be edited.",
+      "error": "Could not approve the statement",
+      "success": "Statement approved successfully"
     },
-    "filter": {
-      "status": "Filter by status",
-      "allStatuses": "All statuses"
-    },
-    "generateButton": "Generate statement",
     "approveButton": "Approve",
-    "publishButton": "Publish",
+    "commission": "Commission",
+    "description": "View and manage monthly owner statements",
+    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
     "download": {
-      "pdf": "Download PDF",
       "csv": "Download CSV",
-      "pdfError": "Could not download the PDF",
-      "csvError": "Could not download the CSV"
+      "csvError": "Could not download the CSV",
+      "draft": "The PDF and the CSV can be downloaded once the statement is approved.",
+      "pdf": "Download PDF",
+      "pdfError": "Could not download the PDF"
+    },
+    "emptyFiltered": "No statements found with the selected filters",
+    "emptyList": "No statements have been generated yet",
+    "emptyTitle": "No statements",
+    "expenses": "Expenses",
+    "filter": {
+      "allStatuses": "All statuses",
+      "status": "Filter by status"
     },
     "generate": {
-      "success": "Statement generated successfully",
-      "error": "Could not generate the statement"
+      "error": "Could not generate the statement",
+      "success": "Statement generated successfully"
     },
-    "approve": {
-      "success": "Statement approved successfully",
-      "error": "Could not approve the statement"
-    },
+    "generateButton": "Generate statement",
+    "loadError": "Could not load statements",
+    "loading": "Loading statements…",
+    "netPayable": "Net payable",
+    "notFound": "Statement not found",
+    "notFoundHint": "The statement is no longer in the list: it may have been removed or belong to another organization. Go back to the list.",
+    "ownershipPercent": "Ownership share: {{percent}}%",
+    "period": "Period",
     "publish": {
-      "success": "Statement published successfully",
-      "error": "Could not publish the statement"
-    }
+      "confirmDescription": "Statement of {{owner}} for {{property}}, period {{period}}: net payable {{amount}}.",
+      "confirmTitle": "Publish the statement?",
+      "consequenceImmutable": "Once published it can no longer be changed: a correction goes in next month's statement.",
+      "consequenceWire": "The statement shows as published and can go into a wire file. Nothing is sent to the owner from here.",
+      "error": "Could not publish the statement",
+      "success": "Statement published successfully"
+    },
+    "publishButton": "Publish",
+    "publishedAt": "Published on",
+    "revenue": "Revenue",
+    "status": {
+      "approved": "Approved",
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "summary": "Summary",
+    "title": "Owner statements",
+    "viewDetails": "View details",
+    "withholdingTax": "Withholding"
   },
   "status": {
     "channel": {
@@ -27054,88 +27681,122 @@
     "noOrg": "Complete your organization setup to activate the public site."
   },
   "withholding": {
-    "title": "Withholding Tax",
-    "description": "Manage withholding tax on owner payments and generate F24 forms.",
-    "error": "Error loading withholding data",
-    "month": "Month",
-    "year": "Year",
+    "description": "The withholding tax on the owners' payments, month by month, and the F24 to pay it.",
     "dueDate": "Due date",
-    "downloadPdf": "PDF",
-    "downloadExcel": "Excel",
-    "summary": {
-      "title": "Withholding Summary",
-      "description": "Breakdown of withholdings by month, owner, and apartment.",
-      "total": "Total withheld",
-      "byOwner": "By owner",
-      "ownerTotal": "Total: {{amount}}",
-      "property": "Property",
-      "grossBase": "Gross base",
-      "commission": "Commission",
-      "withheld": "Withheld",
-      "crossYear": "Cash year {{cashYear}}, stay year {{stayYear}}",
-      "noData": "No withholding data for the selected period",
-      "downloadSuccess": "Summary downloaded successfully",
-      "downloadError": "Could not download summary"
-    },
+    "error": "Error loading withholding data",
     "f24": {
-      "title": "F24 Form",
-      "description": "F24 form preview for {{month}} {{year}}",
-      "taxCode": "Tax code",
-      "reference": "Reference",
-      "totalAmount": "Total amount",
-      "download": "Download F24",
-      "downloadSuccess": "F24 downloaded successfully",
+      "description": "The data to fill in the F24 of {{period}}, as the server has it.",
+      "download": "Download the F24 (PDF)",
       "downloadError": "Could not download F24",
-      "pastDue": "Past due: deadline was {{date}}"
+      "filingLink": "Filing status and receipts",
+      "none": "There is no F24 for this month: it is prepared from the month-end close when there is withholding to pay.",
+      "notFound": "There is no F24 for this month.",
+      "openClose": "Open the month-end close",
+      "overdueUnpaid": "The due date was {{date}} and the payment is not registered.",
+      "paidRegistered": "Payment registered by the administrator on {{date}}. CasaZen does not check the payment.",
+      "reference": "Reference",
+      "sectionTitle": "F24 of {{period}}",
+      "taxCode": "Tax code",
+      "title": "F24 Form",
+      "totalAmount": "Total amount",
+      "unpaid": "Payment not registered yet."
     },
+    "loading": "Loading withholding…",
+    "month": "Month",
+    "notFound": "Withholding data not found",
     "payment": {
-      "title": "Payment Reconciliation",
-      "description": "Record the date when you made the F24 payment.",
-      "date": "Payment date",
-      "dateRequired": "Select the payment date",
+      "confirmDescription": "F24 of {{period}}, amount {{amount}}, paid on {{date}}.",
+      "confirmTitle": "Register the payment of the F24?",
+      "consequenceFinal": "It cannot be undone from here.",
+      "consequenceWord": "You register it: CasaZen does not know whether the payment went through.",
+      "date": "Payment day",
+      "description": "Once you have paid the F24, write the day here: you register it, CasaZen does not know whether the payment went through.",
       "record": "Record payment",
-      "recordSuccess": "Payment recorded successfully",
-      "recordError": "Could not record payment"
-    }
+      "recordError": "Could not record payment",
+      "title": "Register the payment"
+    },
+    "summary": {
+      "byOwner": "By owner",
+      "description": "The withholding on the owners' payments made in the month, with the reversals. The figures are the server's, in euro.",
+      "grossBase": "Gross base",
+      "noData": "No withholding data for the selected period",
+      "owner": "Owner",
+      "payouts": "Payments",
+      "taxable": "Total gross base",
+      "title": "Withholding of the month",
+      "total": "Total withheld",
+      "withheld": "Withheld"
+    },
+    "title": "Withholding Tax",
+    "year": "Year"
   },
   "wire": {
+    "accountCleared": "For safety the debit account was cleared from the field: type it again to try once more.",
+    "alreadyInFile": "This statement is already in a file made in this visit.",
     "batch": {
-      "confirmDownload": "Confirm download",
-      "confirmDownloadError": "Could not confirm download",
-      "confirmDownloadSuccess": "Download confirmed successfully",
-      "confirmPaid": "Confirm payment",
-      "confirmPaidError": "Could not confirm payment",
-      "confirmPaidSuccess": "Payment confirmed successfully",
-      "create": "Create wire batch",
-      "createAnother": "Create another batch",
-      "createError": "Could not create batch",
-      "createSuccess": "Batch created successfully",
+      "confirmCreateDescription_one": "You are about to create the file with {{count}} statement in {{currency}}, to be paid from the account {{account}}.",
+      "confirmCreateDescription_other": "You are about to create the file with {{count}} statements in {{currency}}, to be paid from the account {{account}}.",
+      "confirmCreateTitle": "Create the wire file?",
+      "confirmPaidDescription": "You are about to mark the file {{reference}} as paid. Check that it is the right one.",
+      "confirmPaidError": "Could not mark the file as paid",
+      "confirmPaidTitle": "Mark the file as paid?",
+      "consequenceFinal": "It cannot be undone: the statements in the file show as paid in the owners' account.",
+      "consequenceLocked": "The chosen statements go into this file and cannot be put in another one.",
+      "consequenceNoExecution": "CasaZen creates the file but does not make the transfers: you upload it to your bank.",
+      "consequenceWord": "You mark it: CasaZen does not know whether the bank carried out the transfers.",
+      "create": "Create the wire file",
+      "createError": "Could not create the wire file",
       "currency": "Currency",
-      "details": "Batch details",
-      "detailsDescription": "Information about the created wire transfer batch",
-      "download": "Download file",
-      "downloadError": "Could not download file",
-      "downloadSuccess": "File downloaded successfully",
-      "id": "Batch ID",
-      "paidComplete": "The batch has been confirmed as paid",
+      "debitAccount": "Debit account",
+      "details": "Wire file",
+      "detailsDescription": "The file created in this visit and where it stands",
+      "download": "Download the file",
+      "downloadError": "Could not download the file",
+      "id": "Reference",
+      "leaveHint": "This page does not keep the files it creates: if you close or reload it, the file cannot be found here again or marked as paid.",
+      "markPaid": "Mark as paid",
+      "nextDownload": "The file is ready: download it to upload it to your bank.",
+      "nextUpload": "File downloaded. Upload it to your bank and, once the transfers have gone out, mark it as paid.",
+      "notFound": "This wire file no longer exists or is not your organization's.",
+      "paidComplete": "Marked as paid by the administrator. CasaZen does not check that the bank carried out the transfers.",
+      "sessionTitle": "Files created in this visit",
       "status": "Status",
       "totalAmount": "Total amount",
-      "transferCount": "Transfer count"
+      "transferCount": "Number of transfers"
     },
+    "chosenCount_one": "{{count}} statement chosen in {{currency}}",
+    "chosenCount_other": "{{count}} statements chosen in {{currency}}",
+    "currencyGroup": "Statements in {{currency}}",
+    "currencyNotSupported": "Wire transfers are only made in euro (EUR) or Swiss francs (CHF): statements in {{currency}} cannot be paid with this file.",
     "debitAccount": "Debit account (IBAN)",
+    "debitAccountHint": "The account of your agency the transfers will leave from. It does not stay on this page and is shown masked on screen; it is written in the wire file, which CasaZen keeps.",
     "debitAccountPlaceholder": "IT00X0000000000000000000000",
-    "description": "Generate SEPA files to pay property owners.",
-    "loadError": "Could not load data",
-    "loading": "Loading wire transfers...",
-    "noApprovedStatements": "No approved statements",
-    "noApprovedStatementsDescription": "Approve statements before creating a wire transfer batch.",
-    "selectStatements": "Select statements",
-    "status": {
-      "downloaded": "Downloaded",
-      "generated": "Generated",
-      "paid": "Paid"
+    "description": "Create the wire file that pays the owners: choose published statements of a single currency, give the debit account and upload the file to your bank. CasaZen does not make the transfers.",
+    "leave": {
+      "confirm": "Leave the page",
+      "consequenceLocked": "A file that is not marked as paid keeps its statements locked: they cannot go into another file.",
+      "consequenceNeedsPage": "To download it again or mark it as paid this page has to stay open.",
+      "description": "The file you made cannot be found again once you leave the page: this page does not keep the files it creates.",
+      "stay": "Stay here",
+      "title": "Leave the page?"
     },
-    "title": "Owner Wire Transfers"
+    "loadError": "Could not load the statements",
+    "loading": "Loading wire transfers...",
+    "noPublishedStatements": "No published statements",
+    "noPublishedStatementsDescription": "Publish the statements before creating the wire file.",
+    "notFound": "Statements not found",
+    "oneCurrencyHint": "A file has a single currency: once you choose one, statements in another currency stay off until you clear the choice.",
+    "selectStatements": "Choose the statements to pay",
+    "status": {
+      "downloaded": "File downloaded, not yet marked as paid",
+      "generated": "File created, not yet downloaded",
+      "paid": "Marked as paid by the administrator"
+    },
+    "title": "Owner Wire Transfers",
+    "unavailable": {
+      "body": "The control file of the wire transfers is missing and an operator has to add it. No file was created and the statements stay free: try again when wire transfers are switched on.",
+      "title": "Wire transfers cannot be switched on yet"
+    }
   },
   "tenantArea": {
     "title": "Tenant area",
