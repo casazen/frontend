@@ -154,8 +154,17 @@ const next = () => fireEvent.click(screen.getByTestId('checkout-step-next'));
 /** The props the panel gave the editor: the booking, and what the editor tells its owner (the stub has no form): something unsaved is typed, the guests were saved. */
 const editorProps = () => guestsEditor.mock.lastCall![0] as { bookingId: string; onDirtyChange: (dirty: boolean) => void; onSaved: (state: unknown) => void };
 
+/**
+ * Lets React finish what it still has to do for the last render: the wizard learns which step's rules apply from an effect of the render, and a click made
+ * before that effect has run is checked against the rules of the step before (the failure that `checkout-wizard.test.tsx` settles the same way).
+ */
+const settle = () => act(async () => undefined);
+
+/** The wizard is on `step`, settled there, with its main button ready: only then does a click get the rules of that step. */
 async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', step), WAIT);
+  await settle();
+  await waitFor(() => expect(screen.getByTestId(/^checkout-(step-next|complete-button)$/)).toBeEnabled(), WAIT);
 }
 
 /** Walks to the Alloggiati step with the departure confirmed. */
