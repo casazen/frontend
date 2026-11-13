@@ -10,7 +10,7 @@ import { ownerOnboardingApi } from '@/api/owner-onboarding.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { getVisibleNavEntries, ROUTE_MANIFEST } from '@/config/route-manifest';
-import { OWNER_STEP_PATH, ownerManualCsv } from '@/lib/owner-onboarding';
+import { OWNER_STEP_PATH, ownerFinancialPath, ownerManualCsv } from '@/lib/owner-onboarding';
 import { OWNER_REFRESH_MS, OWNER_WATCH_MS, ownerOnboardingKeys } from '@/queries/use-owner-onboarding';
 import type {
   OwnerImportResult,
@@ -299,6 +299,30 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       const link = within(table).getByTestId('owner-accounting-table-complete');
       expect(link).toHaveAttribute('href', `/app/account/owners/${OWNER_B}/financial`);
       expect(within(table).queryByText('Marta Esposito')).not.toBeInTheDocument();
+    });
+
+    it('OwnerOnboarding_OwnerWithOnlyTheMandateMissing_IsLinkedToWhereTheMandateIsCompleted_AndOneWithOnlyTheSharesWrongIsNot', async () => {
+      const base = readiness();
+      const ready = { registry: true, ownership: true, mandate: true, fiscalProfile: true, payment: true, portal: true };
+      vi.mocked(ownerOnboardingApi.getReadiness).mockResolvedValue({
+        ...base,
+        summary: { ...base.summary, mandate: { ready: 1, toComplete: 1 }, ownership: { ready: 1, toComplete: 1 }, payment: { ready: 2, toComplete: 0 } },
+        owners: [
+          owner(OWNER_A, 'Marta Esposito', { accountingReady: false, ready: { ...ready, mandate: false }, reasons: [{ dimension: 'mandate', code: 'mandate_missing', field: null, propertyId: PROPERTY_ID }] }),
+          owner(OWNER_B, 'Luca Bianchi', { accountingReady: false, ready: { ...ready, ownership: false }, reasons: [{ dimension: 'ownership', code: 'ownership_missing', field: null, propertyId: PROPERTY_ID }] }),
+        ],
+      });
+      renderPage();
+
+      const table = await screen.findByTestId('owner-mandate-table');
+      // The mandate is completed in «Dati finanziari»: the owner who lacks it has the way there even though no fiscal or payment fact is missing (the table of the third phase lists nobody).
+      expect(screen.getByTestId('owner-accounting-table-all-ready')).toBeInTheDocument();
+      expect(within(table).getAllByTestId('owner-mandate-table-row')).toHaveLength(2);
+      const links = within(table).getAllByTestId('owner-mandate-table-complete');
+      expect(links).toHaveLength(1);
+      expect(links[0]).toHaveAttribute('href', ownerFinancialPath(OWNER_A));
+      // The shares are put right with the file, not there: the owner whose shares are wrong and whose mandate is fine has no link.
+      expect(within(within(table).getAllByTestId('owner-mandate-table-row')[1]).queryByTestId('owner-mandate-table-complete')).not.toBeInTheDocument();
     });
 
     it('OwnerOnboarding_EveryoneReady_SaysSoOncePerPhaseAndMarksTheStatementsReady', async () => {

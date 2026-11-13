@@ -281,6 +281,9 @@ export function OwnerOnboardingPage() {
                     owners={report.owners}
                     dimensions={['ownership', 'mandate']}
                     properties={report.properties}
+                    // The mandate is completed in «Dati finanziari», which the table of the third phase leads to only for the fiscal and payment facts: an owner with nothing but the
+                    // mandate missing would have no way there. The shares are not completed there (the file puts them right), so they have no link.
+                    canComplete={['mandate']}
                     allReadyLabel={t('ownerOnboarding.table.mandateAllReady')}
                     testId="owner-mandate-table"
                   />

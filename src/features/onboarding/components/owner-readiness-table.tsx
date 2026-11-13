@@ -108,11 +108,22 @@ interface OwnerReadinessTableProps {
   dimensions: readonly OwnerDimension[];
   /** The properties the readiness names, to put a name on a reason that is about a property. */
   properties: readonly OwnerOnboardingProperty[];
-  /** The person manages the owners' finances: each owner links to the page where what is missing is completed by hand. */
-  canComplete?: boolean;
+  /**
+   * The person manages the owners' finances: each owner links to the page where what is missing is completed by hand («Dati finanziari»: the fiscal profile, the payment data and
+   * the mandate). `true` links every owner of the table; a list of dimensions links only the owners that are not ready for one of them (the mandate is completed there, the shares
+   * are not: they are put right with the file).
+   */
+  canComplete?: boolean | readonly OwnerDimension[];
   /** What to say when the owners listed are all ready. */
   allReadyLabel: string;
   testId: string;
+}
+
+/** Whether the owner of a row has the link to where what is missing is completed by hand. */
+function hasCompleteLink(canComplete: OwnerReadinessTableProps['canComplete'], owner: OwnerReadinessOwner): boolean {
+  if (canComplete === undefined || canComplete === false) return false;
+  if (canComplete === true) return true;
+  return canComplete.some((dimension) => !owner.ready[dimension]);
 }
 
 /**
@@ -121,7 +132,7 @@ interface OwnerReadinessTableProps {
  * to complete, codes and field names): it renders a fixed list of fields, so nothing else of an answer (a fiscal code, an IBAN, anything of a guest) can reach the
  * page. An owner that has nothing to complete is not listed again: the phase says so once.
  */
-export function OwnerReadinessTable({ owners, dimensions, properties, canComplete = false, allReadyLabel, testId }: OwnerReadinessTableProps) {
+export function OwnerReadinessTable({ owners, dimensions, properties, canComplete, allReadyLabel, testId }: OwnerReadinessTableProps) {
   const { t } = useTranslation();
   const names = new Map(properties.map((property) => [property.propertyId, property.name] as const));
   const incomplete = owners.filter((owner) => dimensions.some((dimension) => !owner.ready[dimension]));
@@ -160,7 +171,7 @@ export function OwnerReadinessTable({ owners, dimensions, properties, canComplet
               <tr key={owner.ownerId} className="border-b align-top" data-testid={`${testId}-row`}>
                 <th scope="row" className="py-3 pr-3 font-medium">
                   <span className="break-words">{owner.displayName}</span>
-                  {canComplete ? (
+                  {hasCompleteLink(canComplete, owner) ? (
                     <Link to={ownerFinancialPath(owner.ownerId)} className={cn(TOUCH_LINK, 'mt-1 block text-sm font-normal')} data-testid={`${testId}-complete`}>
                       {t('ownerOnboarding.table.complete')}
                       <span className="sr-only">{` - ${owner.displayName}`}</span>
