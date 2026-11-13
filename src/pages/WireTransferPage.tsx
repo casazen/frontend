@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
+import { StaleReadNotice } from '@/components/finance/stale-read-notice';
 import { WireBatchCard, type CreatedBatch } from '@/components/finance/WireBatchCard';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -180,6 +181,8 @@ function WireTransferBody() {
   return (
     <div className="space-y-6" data-testid="wire-transfer-page">
       {header}
+      {/* Here a failed read has the last answer in memory (a 404 or nothing to show is told before): the list may be out of date. */}
+      {isError && <StaleReadNotice onRetry={() => void refetch()} />}
 
       {schemaUnavailable && (
         <Alert variant="warning" title={t('wire.unavailable.title')} data-testid="wire-unavailable">

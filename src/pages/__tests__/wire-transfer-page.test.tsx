@@ -601,3 +601,34 @@ describe('a file that is not paid is not found again once the page is left, so l
     expect(leavingTheTab()).toBe(false);
   });
 });
+
+describe('a read that fails with the last answer in memory is never drawn as if it were in order', () => {
+  it('WirePage_UpdateFails_TheOldFiguresStayButSayTheyMayBeOutOfDate_AndRetryReadsAgain', async () => {
+    const client = renderPage();
+    await screen.findByTestId('wire-compose');
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+
+    api.getAll.mockRejectedValueOnce(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+    await client.invalidateQueries({ queryKey: ['statements'] });
+
+    const notice = await screen.findByTestId('read-not-updated');
+    expect(notice).toHaveTextContent('Non è stato possibile aggiornare questi dati');
+    expect(screen.getByTestId('wire-compose')).toBeInTheDocument();
+
+    api.getAll.mockResolvedValue([CHF, EUR, DRAFT, APPROVED, USD]);
+    fireEvent.click(within(notice).getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument());
+    expect(screen.getByTestId('wire-compose')).toBeInTheDocument();
+  });
+
+  it('WirePage_FirstReadFails_NoOldFiguresToDraw_SaysSoWithARetryNotAStaleNotice', async () => {
+    api.getAll.mockRejectedValue(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('error-state')).toBeInTheDocument();
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('wire-compose')).not.toBeInTheDocument();
+  });
+});

@@ -349,3 +349,34 @@ describe('the plan of the organization is checked before anything is read (any o
     expect(screen.queryByTestId('withholding-summary')).not.toBeInTheDocument();
   });
 });
+
+describe('a read that fails with the last answer in memory is never drawn as if it were in order', () => {
+  it('WithholdingPage_UpdateFails_TheOldFiguresStayButSayTheyMayBeOutOfDate_AndRetryReadsAgain', async () => {
+    const client = renderPage();
+    await screen.findByTestId('withholding-summary');
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+
+    api.getSummary.mockRejectedValueOnce(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+    await client.invalidateQueries({ queryKey: ['withholding', 'summary', 11, 2026] });
+
+    const notice = await screen.findByTestId('read-not-updated');
+    expect(notice).toHaveTextContent('Non è stato possibile aggiornare questi dati');
+    expect(screen.getByTestId('withholding-summary')).toBeInTheDocument();
+
+    api.getSummary.mockResolvedValue(SUMMARY);
+    fireEvent.click(within(notice).getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument());
+    expect(screen.getByTestId('withholding-summary')).toBeInTheDocument();
+  });
+
+  it('WithholdingPage_FirstReadFails_NoOldFiguresToDraw_SaysSoWithARetryNotAStaleNotice', async () => {
+    api.getSummary.mockRejectedValue(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('error-state')).toBeInTheDocument();
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('withholding-summary')).not.toBeInTheDocument();
+  });
+});

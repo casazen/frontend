@@ -1121,6 +1121,7 @@
       "description": "I rendiconti, le ritenute e i bonifici riguardano i soldi dei proprietari: li gestiscono il titolare e gli amministratori. Chiedi a uno di loro di aprire questa pagina.",
       "title": "Serve l'amministratore dell'organizzazione"
     },
+    "notUpdated": "Non è stato possibile aggiornare questi dati: quello che vedi può essere vecchio.",
     "planError": "Impossibile verificare il piano dell'organizzazione",
     "planRequired": {
       "action": "Vai al piano",

@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
+import { StaleReadNotice } from '@/components/finance/stale-read-notice';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { Select } from '@/components/ui/select';
@@ -48,6 +49,8 @@ function StatementsBody() {
   }, [statements, statusFilter]);
 
   const header = <PageHeader title={t('statement.title')} description={t('statement.description')} crumbs="auto" />;
+  // A read that failed with the last answer still in memory (a 404 is told before): the old list is drawn, and says it may be out of date.
+  const stale = isError && statements !== undefined && statements !== null;
 
   if (isPending) {
     return (
@@ -85,7 +88,12 @@ function StatementsBody() {
   if (selectedId) {
     const selected = statements?.find((statement) => statement.id === selectedId);
     if (selected) {
-      return <StatementDetail statement={selected} onBack={() => setSelectedId(null)} />;
+      return (
+        <div className="space-y-6">
+          {stale && <StaleReadNotice onRetry={() => void refetch()} />}
+          <StatementDetail statement={selected} onBack={() => setSelectedId(null)} />
+        </div>
+      );
     }
     return (
       <div className="space-y-6" data-testid="statements-page">
@@ -100,6 +108,7 @@ function StatementsBody() {
   return (
     <div className="space-y-6" data-testid="statements-page">
       {header}
+      {stale && <StaleReadNotice onRetry={() => void refetch()} />}
 
       <div className="flex flex-wrap gap-4 items-end">
         <div className="w-full sm:w-64">

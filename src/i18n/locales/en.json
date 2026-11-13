@@ -1121,6 +1121,7 @@
       "description": "The statements, the withholding and the wire transfers concern the owners' money: the owner and the administrators of the organization handle them. Ask one of them to open this page.",
       "title": "The organization administrator is needed"
     },
+    "notUpdated": "These figures could not be updated: what you see may be out of date.",
     "planError": "Could not check the plan of the organization",
     "planRequired": {
       "action": "Go to the plan",

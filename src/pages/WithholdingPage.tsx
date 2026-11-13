@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
+import { StaleReadNotice } from '@/components/finance/stale-read-notice';
 import { F24Card } from '@/components/finance/F24Card';
 import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
@@ -130,6 +131,8 @@ function WithholdingBody() {
   return (
     <div className="space-y-6" data-testid="withholding-page">
       {header}
+      {/* A failed read with the last answer in memory (a 404 or nothing to show is told before): the figures may be out of date. */}
+      {summaryQuery.isError && <StaleReadNotice onRetry={() => void summaryQuery.refetch()} />}
 
       <PlainSection title={t('withholding.summary.title')} data-testid="withholding-summary">
         <p className="text-sm text-muted-foreground">{t('withholding.summary.description')}</p>
@@ -198,7 +201,10 @@ function WithholdingBody() {
         ) : f24Query.isPending ? (
           <SkeletonCard lines={3} label={t('withholding.loading')} />
         ) : f24Query.data ? (
-          <F24Card record={f24Query.data} />
+          <div className="space-y-3">
+            {f24Query.isError && <StaleReadNotice onRetry={() => void f24Query.refetch()} />}
+            <F24Card record={f24Query.data} />
+          </div>
         ) : (
           <ErrorState title={t('withholding.error')} error={f24Query.error} onRetry={() => void f24Query.refetch()} />
         )}

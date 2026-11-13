@@ -365,3 +365,34 @@ describe('the plan of the organization is checked before anything is read (any o
     expect(screen.queryByTestId('statements-list')).not.toBeInTheDocument();
   });
 });
+
+describe('a read that fails with the last answer in memory is never drawn as if it were in order', () => {
+  it('StatementsPage_UpdateFails_TheOldFiguresStayButSayTheyMayBeOutOfDate_AndRetryReadsAgain', async () => {
+    const client = renderPage();
+    await screen.findByTestId('statements-list');
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+
+    api.getAll.mockRejectedValueOnce(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+    await client.invalidateQueries({ queryKey: ['statements'] });
+
+    const notice = await screen.findByTestId('read-not-updated');
+    expect(notice).toHaveTextContent('Non è stato possibile aggiornare questi dati');
+    expect(screen.getByTestId('statements-list')).toBeInTheDocument();
+
+    api.getAll.mockResolvedValue([CHF, EUR]);
+    fireEvent.click(within(notice).getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument());
+    expect(screen.getByTestId('statements-list')).toBeInTheDocument();
+  });
+
+  it('StatementsPage_FirstReadFails_NoOldFiguresToDraw_SaysSoWithARetryNotAStaleNotice', async () => {
+    api.getAll.mockRejectedValue(Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('error-state')).toBeInTheDocument();
+    expect(screen.queryByTestId('read-not-updated')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('statements-list')).not.toBeInTheDocument();
+  });
+});
