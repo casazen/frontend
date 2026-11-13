@@ -75,6 +75,15 @@ export const bookingsApi = {
     ApiClient.get<StayAvailability>(`/properties/${encodeURIComponent(propertyId)}/availability`, { from, to }),
 
   /**
+   * Asks again for the push of a booking to the channel manager (E08/F01/US01/T03, NF-74): only a sync that is `Failed` or `Conflict` (409
+   * `octorate_sync_not_retryable` otherwise). 202: the push runs again through the event bus, and the sync keeps its state until it starts. `overwrite` is
+   * the host's choice to write CasaZen's version over a reservation that changed there (a change, E08/F02): a creation has nothing to overwrite. Behind the
+   * backend flag `Features:OctorateConnector`: 404 while it is off. 404 too for a booking of another org or out of the caller's reach.
+   */
+  retryOctorateSync: (id: string, overwrite = false) =>
+    ApiClient.post<OctorateSyncRetryResult>(`/bookings/${id}/octorate-sync/retry${overwrite ? '?overwrite=true' : ''}`),
+
+  /**
    * Dates, guests and notes only: the backend computes the price again (PC-07). For a confirmed booking of the booking site the money follows the price and the
    * answer says what was done with it (`settlement`, E08/F02/US01/T01, NF-75). 422 `booking_settlement_failed` when Stripe refuses: nothing is saved. 403
    * `booking_edit_payment_permission_required` when the money moves and the caller may not write payments.
@@ -88,15 +97,6 @@ export const bookingsApi = {
    */
   editQuote: (id: string, data: UpdateBookingDto) =>
     ApiClient.post<BookingEditQuote>(`/bookings/${id}/edit-quote`, data),
-
-  /**
-   * Asks again for the push of a booking to the channel manager (E08/F01/US01/T03, NF-74): only a sync that is `Failed` or `Conflict` (409
-   * `octorate_sync_not_retryable` otherwise). 202: the push runs again through the event bus, and the sync keeps its state until it starts. `overwrite` is
-   * the host's choice to write CasaZen's version over a reservation that changed there (a change, E08/F02): a creation has nothing to overwrite. Behind the
-   * backend flag `Features:OctorateConnector`: 404 while it is off. 404 too for a booking of another org or out of the caller's reach.
-   */
-  retryOctorateSync: (id: string, overwrite = false) =>
-    ApiClient.post<OctorateSyncRetryResult>(`/bookings/${id}/octorate-sync/retry${overwrite ? '?overwrite=true' : ''}`),
 
   /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
   quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),

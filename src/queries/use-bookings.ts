@@ -183,6 +183,30 @@ export function useCreateManualBooking() {
   });
 }
 
+/**
+ * Asks again for the push of a booking to the channel manager (NF-74, NF-80): the edit and the cancellation offer it when the sync is `Failed` or `Conflict`
+ * (`overwrite` is the host's choice to write CasaZen's version over the one that changed there). No toast: the line of the channel manager shows the outcome and the
+ * error. Whatever the answer (a 409 "nothing to retry" included), the booking is read again, so the line shows what the server holds. A refusal is kept without the request
+ * that was sent (`withoutRequest`: it holds the access token of the call).
+ */
+export function useRetryOctorateSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async ({ id, overwrite }: { id: string; overwrite?: boolean }) => {
+      try {
+        return await bookingsApi.retryOctorateSync(id, overwrite);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: (_data, _error, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, id] });
+    },
+  });
+}
+
 const stayAvailabilityKey = (params: StayAvailabilityParams | null) => [BOOKINGS_KEY, 'availability', params] as const;
 
 /**
@@ -257,23 +281,6 @@ export function useBookingEditQuote() {
       } catch (error) {
         throw withoutRequest(error);
       }
-    },
-  });
-}
-
-/**
- * Asks again for the push of a booking to the channel manager (NF-74, NF-80): the edit and the cancellation offer it when the sync is `Failed` or `Conflict`
- * (`overwrite` is the host's choice to write CasaZen's version over the one that changed there). No toast: the line of the channel manager shows the outcome and the
- * error. Whatever the answer (a 409 "nothing to retry" included), the booking is read again, so the line shows what the server holds.
- */
-export function useRetryOctorateSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    gcTime: 0,
-    mutationFn: ({ id, overwrite }: { id: string; overwrite?: boolean }) => bookingsApi.retryOctorateSync(id, overwrite),
-    onSettled: (_data, _error, { id }) => {
-      void queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, id] });
     },
   });
 }

@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+import { getProblemCode } from '@/lib/api-errors';
 import type {
   Booking,
   BookingChangeOptions,
@@ -103,4 +105,32 @@ export function channelVersionChange(
     numberOfChildren: Math.min(booking.numberOfChildren ?? 0, Math.max(guests - 1, 0)),
     specialRequests: booking.specialRequests ?? '',
   };
+}
+
+/** The answers of the API that leave a booking of a channel as it was when the host asks to cancel it (NF-76). */
+export type ChannelRefusalCode = 'ota_booking_cancel_not_allowed' | 'octorate_cancel_failed' | 'octorate_unavailable';
+
+/** Why the channel did not cancel the booking: the code of the API, and the channel it names. */
+export interface ChannelRefusal {
+  code: ChannelRefusalCode;
+  channel: string | null;
+}
+
+/**
+ * Whether a failed cancellation is one of the three that leave a booking of a channel unchanged (E08/F02/US02, NF-76): 422 `ota_booking_cancel_not_allowed` (the channel is
+ * closed), 422 `octorate_cancel_failed` (the channel manager refused) and 503 `octorate_unavailable` (it did not answer). The problem carries the `channel`; the dialog says
+ * the booking is unchanged and gives the one sentence that says how to ask the guest or the channel. `null` for any other failure: those say what they say.
+ */
+export function channelRefusalOf(error: unknown): ChannelRefusal | null {
+  if (!isAxiosError(error) || !error.response) return null;
+
+  const { status, data } = error.response;
+  const code = getProblemCode(data);
+  const refused =
+    (status === 422 && (code === 'ota_booking_cancel_not_allowed' || code === 'octorate_cancel_failed')) ||
+    (status === 503 && code === 'octorate_unavailable');
+  if (!refused || !code) return null;
+
+  const channel = typeof data === 'object' && data !== null && 'channel' in data && typeof data.channel === 'string' ? data.channel : null;
+  return { code: code as ChannelRefusalCode, channel };
 }

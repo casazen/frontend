@@ -1343,6 +1343,7 @@
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
       "notificationLegalChannelRequired": "Le scadenze di legge non possono restare senza un canale: lascia attivo almeno un canale.",
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
+      "octorateCancelFailed": "Il channel manager non è riuscito ad annullare la prenotazione sul canale: la prenotazione è rimasta com'era.",
       "octorateConflict": "Il channel manager segnala un conflitto: riprova.",
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
@@ -1363,7 +1364,7 @@
       "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
       "octorateRoomNotChosen": "Manca la camera di un annuncio: scegli quale.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
-      "octorateSyncNotRetryable": "Non c'è un invio al channel manager da ripetere.",
+      "octorateSyncNotRetryable": "Questa prenotazione non ha un invio al channel manager da ripetere.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
@@ -1590,6 +1591,7 @@
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
       "icalBlockNotFound": "Blocco del calendario non trovato.",
+      "otaBookingCancelNotAllowed": "Da CasaZen questa prenotazione non si può annullare: si annulla sul canale da cui arriva.",
       "otaBookingChangeNotAllowed": "Da CasaZen questa prenotazione non si può modificare: si cambia sul canale da cui arriva.",
       "otaStayBlockNotImported": "Solo un blocco importato da un calendario OTA collegato può diventare un soggiorno.",
       "otaStayBlockAlreadyConverted": "Da questo blocco è già stato creato un soggiorno.",
@@ -2734,7 +2736,31 @@
         "intentsCanceled": "Il pagamento non completato è stato annullato su Stripe.",
         "noRefund": "Nessun rimborso richiesto."
       },
-      "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo."
+      "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo.",
+      "channel": {
+        "confirm": "Chiedi l'annullamento",
+        "confirmed": "Il tuo channel manager ha confermato l'annullamento.",
+        "description": "Il channel manager annulla la prenotazione sul canale: solo quando lo conferma, la prenotazione risulta annullata anche in CasaZen.",
+        "noMoney": "Da CasaZen non si muove nessun pagamento.",
+        "refused": "Il canale non l'ha annullata: la prenotazione è rimasta com'era.",
+        "submitting": "Chiedo l'annullamento…",
+        "title": "Chiedi al tuo channel manager di annullare questa prenotazione"
+      },
+      "sync": {
+        "conflict": "Il tuo channel manager non ha accettato l'annullamento: la prenotazione lì è cambiata. L'annullamento in CasaZen resta valido.",
+        "failed": {
+          "askAgain": "Quando hai sistemato il problema, riprova tu.",
+          "retrying": "Riproviamo in automatico.",
+          "title": "Annullata in CasaZen, non ancora nel tuo channel manager"
+        },
+        "notAllowed": "Il canale non permette l'annullamento da qui: al channel manager non è stato inviato nulla.",
+        "pending": "Sto annullando la prenotazione nel tuo channel manager…",
+        "retry": "Riprova ora",
+        "retryFailed": "Non siamo riusciti a rimandare l'annullamento. Riprova.",
+        "synced": "Annullata anche nel tuo channel manager.",
+        "unconfirmed": "Il tuo channel manager non ha ancora confermato l'annullamento.",
+        "willUpdate": "Anche il tuo channel manager viene aggiornato."
+      }
     },
     "changeGuidance": {
       "cancel": {

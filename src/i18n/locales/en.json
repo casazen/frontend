@@ -1343,6 +1343,7 @@
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
       "notificationLegalChannelRequired": "Legal deadlines cannot be left without a channel: keep at least one channel on.",
       "octorateAuthFailed": "Your channel manager refused CasaZen's access. Try again later; if it happens again, connect the account again.",
+      "octorateCancelFailed": "The channel manager could not cancel the booking on the channel: the booking is unchanged.",
       "octorateConflict": "The channel manager reports a conflict: try again.",
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
@@ -1363,7 +1364,7 @@
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
       "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
-      "octorateSyncNotRetryable": "There is nothing to send again to the channel manager.",
+      "octorateSyncNotRetryable": "This booking has no sending to the channel manager to repeat.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
@@ -1590,6 +1591,7 @@
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
       "icalBlockNotFound": "Calendar block not found.",
+      "otaBookingCancelNotAllowed": "This booking cannot be cancelled from CasaZen: it is cancelled on the channel it comes from.",
       "otaBookingChangeNotAllowed": "This booking cannot be changed from CasaZen: it is changed on the channel it comes from.",
       "otaStayBlockNotImported": "Only a block imported from a linked OTA calendar can become a stay.",
       "otaStayBlockAlreadyConverted": "A stay was already created from this block.",
@@ -2734,7 +2736,31 @@
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
       },
-      "guestNotified": "The guest will get a cancellation email, without the reason."
+      "guestNotified": "The guest will get a cancellation email, without the reason.",
+      "channel": {
+        "confirm": "Ask to cancel",
+        "confirmed": "Your channel manager confirmed the cancellation.",
+        "description": "Your channel manager cancels the booking on the channel: only when it confirms does CasaZen show it as cancelled too.",
+        "noMoney": "No payment is moved from CasaZen.",
+        "refused": "The channel did not cancel it: the booking is unchanged.",
+        "submitting": "Asking to cancel…",
+        "title": "Ask your channel manager to cancel this booking"
+      },
+      "sync": {
+        "conflict": "Your channel manager did not accept the cancellation: the booking changed there. The cancellation in CasaZen stands.",
+        "failed": {
+          "askAgain": "Once the problem is sorted out, try again yourself.",
+          "retrying": "We try again automatically.",
+          "title": "Cancelled in CasaZen, not yet in your channel manager"
+        },
+        "notAllowed": "The channel does not allow the cancellation from here: nothing was sent to the channel manager.",
+        "pending": "Cancelling the booking in your channel manager…",
+        "retry": "Retry now",
+        "retryFailed": "We could not send the cancellation again. Try again.",
+        "synced": "Cancelled in your channel manager too.",
+        "unconfirmed": "Your channel manager has not confirmed the cancellation yet.",
+        "willUpdate": "Your channel manager is updated too."
+      }
     },
     "changeGuidance": {
       "cancel": {

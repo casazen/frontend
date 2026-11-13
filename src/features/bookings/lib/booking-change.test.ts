@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { AxiosError, AxiosHeaders } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type { Booking, BookingChangeOptions } from '@/types';
 import {
   bookingCanCancel,
   bookingCanEdit,
   channelGuidanceOf,
+  channelRefusalOf,
   channelVersionChange,
   settlementHasMoney,
   stayChanged,
@@ -178,5 +182,46 @@ describe('channelVersionChange', () => {
   it('channelVersionChange_DatesNotKept_IsNullBecauseThereIsNothingToPutInTheForm', () => {
     expect(channelVersionChange(booking, { checkIn: null, checkOut: '2027-10-08T00:00:00Z', guests: 3 })).toBeNull();
     expect(channelVersionChange(booking, undefined)).toBeNull();
+  });
+});
+
+function problem(status: number, data: unknown): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
+}
+
+describe('channelRefusalOf', () => {
+  it.each([
+    [422, 'ota_booking_cancel_not_allowed'],
+    [422, 'octorate_cancel_failed'],
+    [503, 'octorate_unavailable'],
+  ])('channelRefusalOf_%i_%s_IsARefusalThatLeavesTheBookingAsItWas', (status, code) => {
+    expect(channelRefusalOf(problem(status, { status, code, channel: 'BookingCom' }))).toEqual({ code, channel: 'BookingCom' });
+  });
+
+  it('channelRefusalOf_ProblemWithNoChannel_HasNoChannel', () => {
+    expect(channelRefusalOf(problem(422, { status: 422, code: 'octorate_cancel_failed' }))?.channel).toBeNull();
+  });
+
+  it('channelRefusalOf_TheRequestIsKeptOutOfTheFailure_StillReadsTheAnswer', () => {
+    // The mutation keeps the failure without the request that was sent (`withoutRequest`): the status and the body of the answer stay.
+    const kept = withoutRequest(problem(503, { status: 503, code: 'octorate_unavailable', channel: 'Airbnb' }));
+    expect(channelRefusalOf(kept)).toEqual({ code: 'octorate_unavailable', channel: 'Airbnb' });
+  });
+
+  it.each([
+    [409, 'booking_already_cancelled'],
+    [422, 'booking_not_cancellable'],
+    [503, 'payment_provider_error'],
+    [500, 'octorate_unavailable'],
+    [422, 'octorate_unavailable'],
+  ])('channelRefusalOf_%i_%s_IsNotOne', (status, code) => {
+    expect(channelRefusalOf(problem(status, { status, code }))).toBeNull();
+  });
+
+  it('channelRefusalOf_NotAnAnswerOfTheApi_IsNotOne', () => {
+    expect(channelRefusalOf(new Error('boom'))).toBeNull();
+    expect(channelRefusalOf(undefined)).toBeNull();
+    expect(channelRefusalOf(new AxiosError('Network Error', AxiosError.ERR_NETWORK))).toBeNull();
   });
 });
