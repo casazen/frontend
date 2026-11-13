@@ -157,9 +157,24 @@ describe('route-manifest main menu (UI-04a)', () => {
     ['short-rent', '/app/short-rent/trusted-suppliers'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
+    ['account', '/app/account/owner-close'],
     ['admin', '/app/admin/statements'],
     ['admin', '/app/admin/activities'],
   ];
+
+  it('keeps the pages of the owner accounting behind the agency plan and for the finance administrators of the org', () => {
+    // E06/F05/US02/T04: the endpoints they read answer only an org on the agency plan and the owner and the administrators (`agency.*` permissions).
+    for (const path of ['/app/account/owner-close', '/app/account/owner-close/versions/:versionId', '/app/account/owners/:ownerId/financial']) {
+      const entry = entryOf(path);
+      expect(entry.context, path).toBe('account');
+      expect(entry.featureFlag, path).toBe('agencyTier');
+      expect(entry.orgBillingAdmin, path).toBe(true);
+    }
+    // The month-end close is in «Altro»: the main menu of the area is at its limit. The statement and the profile are pages opened from it, in no menu.
+    expect(entryOf('/app/account/owner-close').navPlacement).toBe('secondary');
+    expect(entryOf('/app/account/owner-close/versions/:versionId').navPlacement).toBeUndefined();
+    expect(entryOf('/app/account/owners/:ownerId/financial').navPlacement).toBeUndefined();
+  });
 
   it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
     expect(entryOf(path).featureFlag).toBe('agencyTier');
