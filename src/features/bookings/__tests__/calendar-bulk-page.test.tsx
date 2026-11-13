@@ -374,4 +374,21 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
 
     expect(await screen.findByText('calendar-page', undefined, WAIT)).toBeInTheDocument();
   });
+
+  it('CalendarBulkPage_FirstStep_HasNoCancel_TheOnlyWayOutIsSaveAndExit_WhichKeepsWhatWasChosen', { timeout: 30_000 }, async () => {
+    renderPage();
+    await chooseProperties();
+
+    // The shell's own "Cancel" would delete the draft and leave: it is not there, so nothing leaves the wizard but "Save and exit".
+    expect(screen.queryByTestId('wizard-exit')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Annulla' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button').filter((button) => /esci/i.test(button.textContent ?? ''))).toHaveLength(1);
+
+    fireEvent.click(screen.getByTestId('bulk-save-and-exit'));
+    expect(await screen.findByText('calendar-page', undefined, WAIT)).toBeInTheDocument();
+    // What was chosen is kept for when the host comes back.
+    const saved = Object.keys(window.sessionStorage).filter((key) => key.includes('calendar-bulk'));
+    expect(saved).toHaveLength(1);
+    expect(JSON.parse(window.sessionStorage.getItem(saved[0]) ?? '{}').values.propertyIds).toEqual(['p1', 'p2']);
+  });
 });

@@ -92,7 +92,7 @@ function BulkChangeWizard() {
       finishFailedMessage={t('booking.calendar.bulk.applyFailed')}
       onFinish={(values) => apply.mutateAsync(toChangeRequest(values))}
       draft={{ version: BULK_DRAFT_VERSION, accept: (saved) => Array.isArray((saved.values as Partial<BulkChangeValues>).propertyIds) }}
-      onExit={() => navigate(CALENDAR_PATH)}
+      // No `onExit`: the shell would add "Cancel" to the first step, which deletes the draft and leaves. The one way out is "Save and exit" (above the buttons), which keeps it.
       // The result opened again (a reload) has nothing to say: the changes are on the calendar.
       renderDone={({ result, values }) =>
         result ? <BulkChangeDone change={result} values={values} changedDays={preview.data ? changedDaysOf(preview.data) : undefined} /> : <ReloadedDone />
