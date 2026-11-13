@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
@@ -133,5 +133,36 @@ describe('a figure that is missing is never a zero in its place (the Home servic
     expect(text).not.toMatch(/occupazione/i);
     // What the page does say: how many bookings the property has.
     expect(text).toContain('Prenotazioni totali');
+  });
+});
+
+describe('the days of a booking are the days the answer writes, none of them moved by the time zone', () => {
+  it('OwnerPortal_PropertyPage_DrawsTheDatesOfTheBookings_FirstOfJanuaryLastOfDecemberAndTheDayTheClockChanged', async () => {
+    // The answer writes a booking day as an instant: the stored UTC midnight of the day (2026-12-28T00:00:00Z), or the same without the zone. A page that read it as an
+    // instant of the browser would move the first of January to the 31st of December in America, and one that only takes a plain day draws nothing.
+    const booking = (bookingId: string, checkInDate: string, checkOutDate: string) => ({ bookingId, checkInDate, checkOutDate, channel: 'Direct', totalAmount: 1, status: 'Confirmed' });
+    api.getProperties.mockResolvedValue([
+      {
+        ...PROPERTY,
+        recentBookings: [
+          booking('n1', '2026-12-28T00:00:00Z', '2027-01-01T00:00:00Z'),
+          booking('n2', '2026-12-31T00:00:00', '2027-01-02T00:00:00'),
+          booking('n3', '2026-12-30T00:00:00Z', '2026-12-31T00:00:00Z'),
+          booking('n4', '2026-03-28T00:00:00Z', '2026-03-29T00:00:00Z'),
+          booking('n5', '2026-11-10', '2026-11-12'),
+        ],
+      },
+    ]);
+    renderPortal('/portale-proprietari/immobili/p1');
+    const rows = within(await screen.findByTestId('owner-recent-bookings')).getAllByRole('listitem');
+
+    const days = rows.map((row) => row.querySelector('span.font-medium')?.textContent);
+    expect(days).toEqual([
+      '28 dicembre 2026 - 1 gennaio 2027',
+      '31 dicembre 2026 - 2 gennaio 2027',
+      '30 dicembre 2026 - 31 dicembre 2026',
+      '28 marzo 2026 - 29 marzo 2026',
+      '10 novembre 2026 - 12 novembre 2026',
+    ]);
   });
 });

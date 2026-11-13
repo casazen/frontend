@@ -8,7 +8,7 @@ import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { useOwnerProperties } from '@/queries/ownerPortal';
-import { formatStayDate } from '@/lib/stay-dates';
+import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 
 /**
  * Owner portal property detail (ADR-011-R8, E07/F07/US01/T03): property details with the number of its bookings and the recent ones. NO occupancy is drawn: the Home's service that works it
@@ -123,8 +123,9 @@ export function OwnerProperties() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      {/* The answer writes a booking day as an instant (the stored UTC midnight of the day, `…T00:00:00Z`): the day is read as written, never as an instant in the browser time zone. */}
                       <span className="font-medium">
-                        {formatStayDate(booking.checkInDate, locale)} - {formatStayDate(booking.checkOutDate, locale)}
+                        {formatStayDate(parseStayDate(booking.checkInDate), locale)} - {formatStayDate(parseStayDate(booking.checkOutDate), locale)}
                       </span>
                     </div>
                     <div className="mt-1 break-words text-sm text-muted-foreground">
