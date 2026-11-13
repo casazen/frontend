@@ -2,12 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import type { UseFormReturn } from "react-hook-form";
+import { useFormContext, type UseFormReturn } from "react-hook-form";
 import i18n from "@/i18n/config";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { readWizardDraft, writeWizardDraft } from "@/lib/wizard-draft";
 import { useUiStore } from "@/store/ui-store";
+import { useOptionalWizard } from "../wizard-context";
 import { WizardShell, type WizardShellProps, type WizardStep } from "../wizard-shell";
 import { WizardSummary } from "../wizard-summary";
 
@@ -269,6 +270,47 @@ describe("WizardShell steps and address", () => {
     expect(onStepChange).toHaveBeenNthCalledWith(1, { from: "person", to: "home", values: expect.objectContaining({ name: "Anna" }) });
     expect(onStepChange).toHaveBeenNthCalledWith(2, { from: "home", to: "person", values: expect.objectContaining({ name: "Anna" }) });
     expect(onStepChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("WizardShell_BelowFooter_FollowsTheBarOutsideTheFormWithTheAnswersAndTheStepInReach", () => {
+    const onPress = vi.fn();
+    function Below() {
+      const { getValues } = useFormContext<Values>();
+      const wizard = useOptionalWizard();
+      return (
+        <button type="button" data-testid="below" onClick={() => onPress({ step: wizard?.stepId, name: getValues("name") })}>
+          below
+        </button>
+      );
+    }
+    const { container } = renderWizard({ belowFooter: <Below /> });
+
+    type("Nome", "Anna");
+    const below = screen.getByTestId("below");
+    const bar = screen.getByTestId("wizard-next").closest("div.sticky")!;
+    // After the bar of the buttons and never inside the form above it: on a phone the page scrolls the message of a refused finish in and the toast comes up over the room
+    // of the bar, so whatever sits between that message and the bar pushes the buttons down into the toast.
+    expect(bar.compareDocumentPosition(below) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(below.closest("form")).toBeNull();
+    expect(container.querySelector("form")!.contains(below)).toBe(false);
+    // The form and the step are in its reach all the same.
+    fireEvent.click(below);
+    expect(onPress).toHaveBeenCalledWith({ step: "person", name: "Anna" });
+  });
+
+  it("WizardShell_BelowFooter_IsNotOnTheConfirmation", async () => {
+    renderWizard({ belowFooter: <p data-testid="below">under the bar</p> });
+
+    type("Nome", "Anna");
+    next();
+    await screen.findByRole("heading", { level: 2, name: "La casa" });
+    next();
+    await screen.findByRole("heading", { level: 2, name: "Controlla e conferma" });
+    expect(screen.getByTestId("below")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("wizard-finish"));
+
+    expect(await screen.findByTestId("done")).toBeInTheDocument();
+    expect(screen.queryByTestId("below")).not.toBeInTheDocument();
   });
 
   it("WizardShell_NavigationDisabled_ShutsBackSkipAndTheListOfStepsButNotTheMainButton", async () => {

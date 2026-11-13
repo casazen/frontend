@@ -435,19 +435,21 @@ function CheckoutWizardForm({
           )
         }
         aboveFooter={
-          <>
-            {saveProgress.isError ? (
-              <p role="alert" className="text-sm text-destructive" data-testid="checkout-progress-error">
-                {getProblemMessage(saveProgress.error, t) ?? t('compliance.checkout.progressSaveFailed')}
-              </p>
-            ) : null}
-            <SaveAndExit
-              bookingId={bookingId}
-              save={saveProgressAsync}
-              busy={saveProgress.isPending || completeCheckout.isPending}
-              onExiting={onExiting}
-            />
-          </>
+          saveProgress.isError ? (
+            <p role="alert" className="text-sm text-destructive" data-testid="checkout-progress-error">
+              {getProblemMessage(saveProgress.error, t) ?? t('compliance.checkout.progressSaveFailed')}
+            </p>
+          ) : undefined
+        }
+        // Where the link back to the booking was: under the bar of the buttons, after the wizard. Not above the bar, between the message of a refused closing and the
+        // bar: on a phone the page scrolls that message in and the toast comes up over the room of the bar, and a button in between pushes the buttons into the toast.
+        belowFooter={
+          <SaveAndExit
+            bookingId={bookingId}
+            save={saveProgressAsync}
+            busy={saveProgress.isPending || completeCheckout.isPending}
+            onExiting={onExiting}
+          />
         }
         testIds={{
           root: 'checkout-wizard-form',

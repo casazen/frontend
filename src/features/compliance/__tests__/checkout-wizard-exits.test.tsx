@@ -216,6 +216,21 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
     expect(screen.getByTestId('checkout-save-exit')).toBeInTheDocument();
   });
 
+  it('CheckoutWizardPage_SaveAndExit_IsUnderTheBarOfTheButtonsAndNeverBetweenTheMessageAndTheBar', async () => {
+    renderPage();
+    await goToAlloggiati();
+
+    const exit = screen.getByTestId('checkout-save-exit');
+    const bar = screen.getByTestId('checkout-step-next').closest('div.sticky')!;
+    const form = screen.getByTestId('checkout-wizard-form').querySelector('form')!;
+    // Where the link back to the booking was: after the bar of the buttons, outside the form. Between the message of a refused closing and the bar there is nothing (the note of
+    // a progress that was not saved apart): on a phone the page scrolls that message in and the toast comes up over the room of the bar (AC-W9 of the pilot), and a button
+    // in between would push the buttons down into the toast; what follows the bar also keeps it clear of the toast at the end of the page.
+    expect(form.contains(exit)).toBe(false);
+    expect(form.nextElementSibling).toBe(bar);
+    expect(bar.compareDocumentPosition(exit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('CheckoutWizardPage_CompleteTheGuestsData_OpensAPanelOverTheWizardWithTheSharedEditor', async () => {
     renderPage();
     await goToAlloggiati();

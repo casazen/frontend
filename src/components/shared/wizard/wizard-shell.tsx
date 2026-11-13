@@ -142,6 +142,13 @@ export interface WizardShellProps<TValues extends FieldValues, TResult = void> {
   /** Something to show right above the buttons (a note about a failed save). */
   aboveFooter?: React.ReactNode;
   /**
+   * Something to show under the bar of the buttons, in the form's reach (`useFormContext`, `useOptionalWizard`) but outside the form: the way out of a flow ("Save and
+   * exit"). It follows the bar and is never put between the message of a refused finish and the bar: on a phone the page scrolls that message in, the toast comes up
+   * over the room of the bar, and whatever sits between the two would push the buttons down into the toast; what follows the bar also keeps the bar clear of the
+   * toast when the page is at its end.
+   */
+  belowFooter?: React.ReactNode;
+  /**
    * The way between the steps is shut for now, because a request that must not meet the save of a change of step is on its way (the flow is leaving): "Back",
    * "Skip" and the steps of the list take no press. The main button has `nextDisabled` for the same. Default: open.
    */
@@ -249,6 +256,7 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
   onExit,
   finishFailedMessage,
   aboveFooter,
+  belowFooter,
   navigationDisabled,
   testIds,
   className,
@@ -666,6 +674,12 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
           )
         )}
       </div>
+
+      {belowFooter ? (
+        <FormProvider {...form}>
+          <WizardContext.Provider value={context}>{belowFooter}</WizardContext.Provider>
+        </FormProvider>
+      ) : null}
 
       {/* Outside the form: a dialog inside it would submit it. The conflict has to be answered, so it is up while the draft has one. */}
       {draft.conflict ? (
