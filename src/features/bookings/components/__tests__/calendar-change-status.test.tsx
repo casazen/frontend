@@ -1,0 +1,196 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError, AxiosHeaders } from 'axios';
+import i18n from '@/i18n/config';
+import { calendarChangesApi } from '@/api/calendar-changes.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { CHANGE_POLL_MS, CHANGE_WATCH_MS } from '@/queries/use-calendar-changes';
+import type { CalendarChange } from '@/types/calendar-changes.types';
+import { CalendarChangeStatus } from '../calendar-change-status';
+
+vi.mock('@/api/calendar-changes.api', () => ({ calendarChangesApi: { apply: vi.fn(), get: vi.fn(), retry: vi.fn(), list: vi.fn(), preview: vi.fn() } }));
+
+const change = (changes: Partial<CalendarChange> = {}): CalendarChange => ({
+  id: 'c1',
+  kind: 'DayRules',
+  state: 'Queued',
+  requestedAt: '2026-09-12T10:00:00Z',
+  propertyCount: 1,
+  dayCount: 3,
+  quotaUnitsEstimated: 1,
+  properties: [{ propertyId: 'p1', state: 'Pending', chunkCount: 1 }],
+  ...changes,
+});
+
+function statusError(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders() };
+  return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: {} });
+}
+
+function renderStatus(canRetry = true, connector = true) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 0 }, mutations: { retry: false } } });
+  render(
+    <QueryClientProvider client={client}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <CalendarChangeStatus propertyName={(id) => (id === 'p1' ? 'Villa Mare' : 'Casa Lago')} canRetry={canRetry} />
+      </FeatureFlagsContext.Provider>
+    </QueryClientProvider>,
+  );
+  return client;
+}
+
+describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    await i18n.changeLanguage('it');
+  });
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('CalendarChangeStatus_AChangeBeingSent_SaysSo', async () => {
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
+    renderStatus();
+
+    expect(await screen.findByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
+    expect(screen.getByTestId('calendar-change-status')).toHaveAttribute('data-state', 'waiting');
+  });
+
+  it('CalendarChangeStatus_ConnectorOff_AsksForNothingAndSaysNothingOfTheChannelManager', async () => {
+    // Changes left waiting or failed from when the connector was on: with it off nothing is sent there, so nothing is followed, asked or said.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' }), change({ id: 'c2', state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', chunkCount: 1 }] })]);
+    renderStatus(true, false);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/channel manager/i);
+  });
+
+  it('CalendarChangeStatus_AChangeThatWasNotSent_SaysSoWithRetry_AndTheListIsOneClickAway', async () => {
+    const failed = change({ id: 'c2', state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', errorCode: 'octorate_unavailable', chunkCount: 1 }] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([failed, change({ id: 'c3', state: 'Confirmed', properties: [{ propertyId: 'p2', state: 'Confirmed', chunkCount: 1 }] })]);
+    vi.mocked(calendarChangesApi.retry).mockResolvedValue(change({ id: 'c2', state: 'Queued' }));
+    renderStatus();
+
+    expect(await screen.findByTestId('calendar-change-status-failed')).toHaveTextContent('1 modifica non è stata inviata.');
+    expect(screen.queryByTestId('calendar-change-list')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('calendar-change-status-toggle'));
+    const rows = screen.getAllByTestId('calendar-change-row');
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]).getByTestId('calendar-change-row-state')).toHaveTextContent('Non inviata');
+    expect(within(rows[0]).getByTestId('calendar-change-row-reason')).toHaveTextContent('Il channel manager non ha risposto');
+    expect(rows[0]).toHaveTextContent('Villa Mare');
+    expect(within(rows[1]).getByTestId('calendar-change-row-state')).toHaveTextContent('Confermata dal tuo channel manager');
+
+    fireEvent.click(screen.getByTestId('calendar-change-status-retry'));
+    await waitFor(() => expect(calendarChangesApi.retry).toHaveBeenCalledWith('c2'));
+  });
+
+  it('CalendarChangeStatus_OpenForMoreThanThreeMinutes_AChangeSentNowIsFollowedFromNow_NotToldAsNoAnswer', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([]);
+    const client = renderStatus();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
+    });
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+
+    // The host sends a change from the panel, the wizard or a block: every calendar view is read again (what the mutations ask for). The page has been open for more than three
+    // minutes, and the window of this change starts now, not from the opening of the page.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Queued' })]);
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['bookings', 'calendar'] });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
+    expect(screen.queryByTestId('calendar-change-status-check')).not.toBeInTheDocument();
+
+    // It is followed every five seconds: the next read says that the channel manager took it, and the line goes away.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] })]);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+  });
+
+  it('CalendarChangeStatus_AChangeThatWaitsForTooLong_StopsBeingAskedForAndSaysNoAnswerYetWithCheckAgain', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
+    renderStatus();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
+    });
+
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica aspetta ancora: il tuo channel manager non ha risposto.');
+    const calls = vi.mocked(calendarChangesApi.list).mock.calls.length;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS * 6);
+    });
+    expect(vi.mocked(calendarChangesApi.list).mock.calls.length).toBe(calls);
+
+    // "Check again" asks once more and the line follows the change for a new while.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('calendar-change-status-check'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(vi.mocked(calendarChangesApi.list).mock.calls.length).toBe(calls + 1);
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
+  });
+
+  it('CalendarChangeStatus_EverythingDelivered_DisappearsAndSaysNothing', async () => {
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sent' }), change({ id: 'c2', state: 'Applied' })]);
+    renderStatus();
+
+    await waitFor(() => expect(calendarChangesApi.list).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument());
+  });
+
+  it('CalendarChangeStatus_AListThatCannotBeRead_IsNeverTakenForAllDelivered', async () => {
+    vi.mocked(calendarChangesApi.list).mockRejectedValue(statusError(500));
+    renderStatus();
+
+    const line = await screen.findByTestId('calendar-change-status');
+    expect(line).toHaveAttribute('data-state', 'unreadable');
+    expect(line).toHaveTextContent('Non riusciamo a leggere le modifiche inviate al tuo channel manager.');
+  });
+
+  // What this proves is what the line does with a 403 body; it does not prove what the app does with a refused GET (the interceptor of axios moves to the page of "no access").
+  // The guard that matters is the right to read, checked before the line is mounted (`calendar-page-manual-block.test.tsx`: no right, no list asked).
+  it('CalendarChangeStatus_A403AnswerOfTheList_IsNotSaidAsAFailure', async () => {
+    vi.mocked(calendarChangesApi.list).mockRejectedValue(statusError(403));
+    renderStatus();
+
+    await waitFor(() => expect(calendarChangesApi.list).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument());
+  });
+
+  it('CalendarChangeStatus_WithoutTheRightToWrite_OffersNoRetry', async () => {
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', chunkCount: 1 }] })]);
+    renderStatus(false);
+
+    await screen.findByTestId('calendar-change-status-failed');
+    fireEvent.click(screen.getByTestId('calendar-change-status-toggle'));
+    expect(screen.queryByTestId('calendar-change-status-retry')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('calendar-change-row-retry')).not.toBeInTheDocument();
+  });
+
+  it('CalendarChangeStatus_TheButtonsStayOffWhileARetryIsOnItsWay', async () => {
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', chunkCount: 1 }] })]);
+    vi.mocked(calendarChangesApi.retry).mockReturnValue(new Promise(() => undefined));
+    renderStatus();
+
+    fireEvent.click(await screen.findByTestId('calendar-change-status-retry'));
+    fireEvent.click(screen.getByTestId('calendar-change-status-toggle'));
+    await waitFor(() => expect(screen.getByTestId('calendar-change-row-retry')).toBeDisabled());
+    expect(screen.getByTestId('calendar-change-status-retry')).toBeDisabled();
+  });
+});

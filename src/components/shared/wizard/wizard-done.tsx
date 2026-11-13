@@ -34,8 +34,8 @@ export interface WizardDoneProps {
   whatNext: ReadonlyArray<{ text: string; icon?: LucideIcon; tone?: WizardDoneTone }>;
   /** The recommended next step: toward the thing that was created. */
   primary: WizardDoneAction;
-  /** The other thing the person is likely to want. */
-  secondary: WizardDoneAction;
+  /** The other thing the person is likely to want. A flow that lets the person leave only one way (the bulk change of the calendar: "Save and exit") gives none. */
+  secondary?: WizardDoneAction;
   className?: string;
   /** What follows from the thing that was done and only the flow that did it can tell (a follow-up), between "What happens now" and the actions. */
   children?: React.ReactNode;
@@ -91,11 +91,13 @@ export function WizardDone({ title, description, lead, whatNext, primary, second
             {primary.label}
           </Link>
         </Button>
-        <Button asChild size="lg" variant="outline" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight">
-          <Link to={secondary.to} data-testid="wizard-done-secondary">
-            {secondary.label}
-          </Link>
-        </Button>
+        {secondary && (
+          <Button asChild size="lg" variant="outline" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight">
+            <Link to={secondary.to} data-testid="wizard-done-secondary">
+              {secondary.label}
+            </Link>
+          </Button>
+        )}
       </div>
     </section>
   );

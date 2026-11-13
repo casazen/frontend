@@ -226,6 +226,22 @@ export function romeDateOf(instant: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? '' : todayInRome(date);
 }
 
+/**
+ * The formatters of the stay dates, made once for each language and each set of options: building one costs about a tenth of a millisecond, and the calendars write a date for
+ * every cell of every row (a Timeline of fifty properties for thirty days is fifteen hundred).
+ */
+const STAY_DATE_FORMATS = new Map<string, Intl.DateTimeFormat>();
+
+function stayDateFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let format = STAY_DATE_FORMATS.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' });
+    STAY_DATE_FORMATS.set(key, format);
+  }
+  return format;
+}
+
 /** Stay date formatted for display (no time zone shift), or an empty string when invalid. */
 export function formatStayDate(
   date: string,
@@ -233,5 +249,5 @@ export function formatStayDate(
   options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' },
 ): string {
   const utc = toUtcDate(date);
-  return utc ? new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utc) : '';
+  return utc ? stayDateFormat(locale, options).format(utc) : '';
 }

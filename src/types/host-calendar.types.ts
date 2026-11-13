@@ -6,8 +6,8 @@ import type { OtaReviewReason } from './calendar.types';
  * are written by name. An item carries only the fields of its `type`: the others are absent, never `null`.
  */
 
-/** Where a stay or a portal's reservation came from (backend `BookingChannel`). */
-export type HostCalendarItemChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Other';
+/** Where a stay or a portal's reservation came from (backend `BookingChannel`): each portal of the channel manager has its own value (NF-78). */
+export type HostCalendarItemChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Expedia' | 'Vrbo' | 'TripAdvisor' | 'Agoda' | 'Other';
 
 /** The properties asked for and the days of the range, with what the screen needs to draw a row. */
 export interface HostCalendarProperty {
