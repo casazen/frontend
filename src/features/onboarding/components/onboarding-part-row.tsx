@@ -74,7 +74,7 @@ interface PartStateBadgeProps {
 }
 
 /** The state of a part: an icon, a word and a tint. A deferred part says until when. */
-function PartStateBadge({ state, remindAt }: PartStateBadgeProps) {
+export function PartStateBadge({ state, remindAt }: PartStateBadgeProps) {
   const { t, i18n } = useTranslation();
   const { tone, Icon } = STATE_VIEW[state];
   const reminder = state === 'deferred' && remindAt ? formatRomeDateTime(remindAt, i18n.language, { day: 'numeric', month: 'long' }) : '';

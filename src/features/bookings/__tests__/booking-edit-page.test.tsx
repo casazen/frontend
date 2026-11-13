@@ -714,8 +714,10 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
   describe('the page is read fresh and says what the server says (lessons of the reviews)', () => {
     it('BookingEditPage_BookingInTheCacheFromAnEarlierVisit_NeverStartsTheForm', async () => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-      // What the detail page left in the cache, with other guests than the booking has now.
-      client.setQueryData(['bookings', BOOKING_ID], booking({ numberOfGuests: 5 }));
+      // What the detail page left in the cache, with other guests than the booking has now, from an EARLIER visit: the page tells a booking read after it opened from one an
+      // earlier visit left by the time of the read (`dataUpdatedAt >= openedAt`), so the cache must be older than the opening. Set "now", it can be in the same millisecond as the
+      // opening (a fast runner) and then the form starts from it.
+      client.setQueryData(['bookings', BOOKING_ID], booking({ numberOfGuests: 5 }), { updatedAt: Date.now() - 60_000 });
       vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ numberOfGuests: 2 }));
       renderPage(client);
 
@@ -725,7 +727,8 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
 
     it('BookingEditPage_NotFoundWhileTheCacheStillHoldsTheBooking_SaysNotFoundAndShowsNoForm', async () => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-      client.setQueryData(['bookings', BOOKING_ID], booking());
+      // From an earlier visit (see the test above): older than the opening of the page.
+      client.setQueryData(['bookings', BOOKING_ID], booking(), { updatedAt: Date.now() - 60_000 });
       vi.mocked(bookingsApi.getById).mockRejectedValue(problem(404, { status: 404, code: 'not_found' }));
       renderPage(client);
 
