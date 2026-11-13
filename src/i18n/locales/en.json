@@ -16342,10 +16342,9 @@
       "occupancyRate": "Occupancy rate",
       "openCalendar": "Calendar and stays",
       "recentBookings": "Recent bookings",
-      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and amounts are visible)",
+      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
       "summaryTitle": "Summary of the property",
       "totalBookings": "Total bookings",
-      "totalRevenue": "Total revenue",
       "writeToAgency": "Write to the agency"
     },
     "shell": {

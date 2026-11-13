@@ -16342,10 +16342,9 @@
       "occupancyRate": "Tasso di occupazione",
       "openCalendar": "Calendario e soggiorni",
       "recentBookings": "Prenotazioni recenti",
-      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e importi visibili)",
+      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e stato visibili)",
       "summaryTitle": "Riepilogo dell’immobile",
       "totalBookings": "Prenotazioni totali",
-      "totalRevenue": "Ricavi totali",
       "writeToAgency": "Scrivi all’agenzia"
     },
     "shell": {

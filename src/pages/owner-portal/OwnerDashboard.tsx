@@ -15,7 +15,6 @@ import { PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/po
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useOwnerOverview, useOwnerProperties, useOwnerTrend } from '@/queries/ownerPortal';
-import { formatCurrency } from '@/lib/utils';
 import type { OwnerPortalReportQuery } from '@/types';
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -152,10 +151,6 @@ export function OwnerDashboard() {
                   </CardHeader>
                   <CardContent>
                     <dl className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <dt className="text-muted-foreground">{t('ownerPortal.dashboard.revenue')}</dt>
-                        <dd className="font-semibold">{formatCurrency(property.totalRevenue, 'EUR')}</dd>
-                      </div>
                       <div>
                         <dt className="text-muted-foreground">{t('ownerPortal.dashboard.bookings')}</dt>
                         <dd className="font-semibold">{property.totalBookings}</dd>

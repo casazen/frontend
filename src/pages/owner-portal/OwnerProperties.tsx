@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Building2, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
@@ -8,12 +8,12 @@ import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { useOwnerProperties } from '@/queries/ownerPortal';
-import { formatCurrency } from '@/lib/utils';
 import { formatStayDate } from '@/lib/stay-dates';
 
 /**
  * Owner portal property detail (ADR-011-R8, E07/F07/US01/T03): property details with occupancy and recent bookings.
- * Guest data is masked per ADR-011-R3: only dates, channel, amounts visible. From here the owner goes to the calendar of the property
+ * Guest data is masked per ADR-011-R3: only dates, channel and state of a booking are visible. NO amount is drawn: the answer of the server has no currency (a booking can be in francs) and
+ * its sums are the whole price the guests paid, not the share of the owner, so a «€» next to them would say what is not true. From here the owner goes to the calendar of the property
  * and to the inbox about it; the page reads the list of the owner's own properties and finds the property in it, so an id that is not one of them is «not found»
  * (never the data of somebody else), and a list that could not be read is an error with a retry, never «not found».
  */
@@ -97,16 +97,6 @@ export function OwnerProperties() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalRevenue')}</CardTitle>
-            <TrendingUp aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(property.totalRevenue, 'EUR')}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalBookings')}</CardTitle>
             <Calendar aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -126,7 +116,7 @@ export function OwnerProperties() {
         </Card>
       </div>
 
-      {/* Recent bookings: dates, channel, amount and state only, never a guest */}
+      {/* Recent bookings: dates, channel and state only, never a guest and never an amount (the answer has no currency and no share of the owner) */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{t('ownerPortal.properties.recentBookings')}</CardTitle>
@@ -150,10 +140,7 @@ export function OwnerProperties() {
                       {t('ownerPortal.properties.channel')}: {booking.channel}
                     </div>
                   </div>
-                  <div className="sm:text-right">
-                    <div className="font-semibold">{formatCurrency(booking.totalAmount, 'EUR')}</div>
-                    <div className="text-sm text-muted-foreground">{t(`bookingStatus.${booking.status}`)}</div>
-                  </div>
+                  <div className="text-sm text-muted-foreground sm:text-right">{t(`bookingStatus.${booking.status}`)}</div>
                 </li>
               ))}
             </ul>
