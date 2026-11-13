@@ -7,6 +7,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { CancelBookingDialog } from '../cancel-booking-dialog';
+import { SYNC_PENDING_LIMIT_MS, SYNC_WATCH_MS } from '../../lib/octorate-sync';
 import type { Booking, BookingCancellationQuote, BookingChangeOptions, BookingOctorateSync, CancelBookingResult } from '@/types';
 
 vi.mock('@/api/bookings.api', () => ({
@@ -370,6 +371,40 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
       const failed = await screen.findByTestId('booking-cancel-sync-failed', undefined, WAIT);
       expect(failed).toHaveAttribute('data-state', 'Conflict');
       expect(failed).toHaveTextContent("L'annullamento in CasaZen resta valido");
+    });
+
+    it('confirm_CancellationStillBeingSentTenMinutesAfterTheOpening_StopsAskingAndSaysThereIsNoAnswerYet', async () => {
+      // The push started and stopped halfway: the row says Pending for good, and the host cannot ask again from there.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        vi.mocked(bookingsApi.getById).mockResolvedValue(mirrored());
+        vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(quote());
+        vi.mocked(bookingsApi.cancel).mockResolvedValue(cancelled([]));
+        renderDialog();
+
+        await screen.findByTestId('cancel-sync-note', undefined, WAIT);
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Cancelled', octorateSync: sync({ state: 'Pending', lastOperation: 'Cancel' }) }));
+        confirm();
+        expect(await screen.findByTestId('booking-cancel-sync-pending', undefined, WAIT)).toBeInTheDocument();
+
+        await vi.advanceTimersByTimeAsync(SYNC_PENDING_LIMIT_MS + SYNC_WATCH_MS);
+
+        const waiting = await screen.findByTestId('booking-cancel-sync-waiting', undefined, WAIT);
+        expect(waiting).toHaveTextContent('non ha ancora risposto');
+        expect(screen.queryByTestId('booking-cancel-sync-pending')).not.toBeInTheDocument();
+        const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
+        await vi.advanceTimersByTimeAsync(2 * SYNC_WATCH_MS);
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
+
+        // «Controlla di nuovo» reads the booking once more, and the answer that has come is shown.
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Cancelled', octorateSync: sync({ state: 'Synced', lastOperation: 'Cancel' }) }));
+        fireEvent.click(within(waiting).getByRole('button', { name: 'Controlla di nuovo' }));
+
+        expect(await screen.findByTestId('booking-cancel-sync-synced', undefined, WAIT)).toBeInTheDocument();
+        expect(screen.queryByTestId('booking-cancel-sync-waiting')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('confirm_BookingNotMirrored_ShowsNoChannelManagerLineAfterTheCancellation', async () => {

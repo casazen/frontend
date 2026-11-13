@@ -13,15 +13,22 @@ interface BookingCancelSyncProps {
   retryError: string | null;
   /** "Retry now" asks for the cancellation to be sent again. */
   onRetry: () => void;
+  /** The dialog has stopped asking for a cancellation that is still `Pending` (`useSyncWatch`): the line says that there is no answer yet, and offers «Check again». */
+  waitOver?: boolean;
+  /** «Check again» reads the booking once more and waits for one more minute. */
+  onCheckAgain?: () => void;
+  /** The booking is being read again (what «Check again» asked for). */
+  checking?: boolean;
 }
 
 /**
  * The line of the channel manager in the result of a cancellation (E08/F03/US02, NF-76, AC-NF76-1): the cancellation is made in CasaZen first and sent after, so the refunds
  * above it never wait for this line. Being sent, cancelled there too, failed with its reason and "Retry now", or refused because the reservation changed there. The row says
  * what the last thing CasaZen sent stands at: until that is the cancellation it still says an older thing, and the line says only that the channel manager has not
- * confirmed the cancellation, never a success it did not give. Nothing for a booking that is not mirrored.
+ * confirmed the cancellation, never a success it did not give. A cancellation that is still being sent when the dialog has stopped waiting for it is said as not answered yet,
+ * with «Check again». Nothing for a booking that is not mirrored.
  */
-export function BookingCancelSync({ booking, busy, retryError, onRetry }: BookingCancelSyncProps) {
+export function BookingCancelSync({ booking, busy, retryError, onRetry, waitOver = false, onCheckAgain, checking = false }: BookingCancelSyncProps) {
   const { t } = useTranslation();
   const sync = booking.octorateSync;
   if (!sync) return null;
@@ -43,6 +50,25 @@ export function BookingCancelSync({ booking, busy, retryError, onRetry }: Bookin
   }
 
   if (sync.state === 'Pending') {
+    // Still `Pending` when the dialog stopped asking: nothing has come back, which is neither a cancellation sent nor a failure, and the host can look again.
+    if (waitOver) {
+      return (
+        <Alert
+          variant="info"
+          data-testid="booking-cancel-sync-waiting"
+          action={
+            onCheckAgain ? (
+              <Button size="sm" variant="outline" disabled={busy} loading={checking} onClick={onCheckAgain} data-testid="booking-cancel-sync-check-again">
+                {t('booking.cancel.sync.checkAgain')}
+              </Button>
+            ) : undefined
+          }
+        >
+          {t('booking.cancel.sync.waiting')}
+        </Alert>
+      );
+    }
+
     return (
       <p role="status" className="text-sm text-yellow-700" data-testid="booking-cancel-sync-pending">
         {t('booking.cancel.sync.pending')}

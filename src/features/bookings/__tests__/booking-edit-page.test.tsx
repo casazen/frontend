@@ -12,6 +12,7 @@ import { propertiesApi } from '@/api/properties.api';
 import type { Booking, BookingChangeOptions, BookingEditQuote, BookingOctorateSync, Property, UpdatedBooking } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import { BookingEditPage } from '../booking-edit-page';
+import { SYNC_PENDING_LIMIT_MS, SYNC_WATCH_MS } from '../lib/octorate-sync';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
@@ -559,6 +560,62 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         await vi.advanceTimersByTimeAsync(500);
         const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
         await vi.advanceTimersByTimeAsync(20_000);
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('BookingEditPage_PushStillPendingTenMinutesAfterTheOpening_StopsAskingAndSaysItHasNoAnswerYet', async () => {
+      // A push that stopped halfway leaves the row Pending for good, and the host cannot ask again from there.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
+        renderPage();
+        expect(await screen.findByTestId('booking-sync-pending', undefined, WAIT)).toBeInTheDocument();
+
+        await vi.advanceTimersByTimeAsync(SYNC_PENDING_LIMIT_MS + 1_000);
+
+        const waiting = await screen.findByTestId('booking-sync-waiting', undefined, WAIT);
+        expect(waiting).toHaveTextContent('non ha ancora risposto');
+        expect(screen.queryByTestId('booking-sync-pending')).not.toBeInTheDocument();
+        const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
+        await vi.advanceTimersByTimeAsync(2 * SYNC_WATCH_MS);
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
+
+        // «Controlla di nuovo» reads the booking once more, and the answer that has come is shown.
+        vi.mocked(bookingsApi.getById).mockResolvedValue(
+          booking({ octorateSync: sync({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }) }),
+        );
+        fireEvent.click(within(waiting).getByRole('button', { name: 'Controlla di nuovo' }));
+
+        expect(await screen.findByTestId('booking-sync-failed', undefined, WAIT)).toBeInTheDocument();
+        expect(screen.queryByTestId('booking-sync-waiting')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('BookingEditPage_CheckAgainWhileStillPending_WaitsForOneMoreMinuteAndThenSaysItAgain', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
+        renderPage();
+        await screen.findByTestId('booking-sync-pending', undefined, WAIT);
+        await vi.advanceTimersByTimeAsync(SYNC_PENDING_LIMIT_MS + 1_000);
+        fireEvent.click(within(await screen.findByTestId('booking-sync-waiting', undefined, WAIT)).getByRole('button', { name: 'Controlla di nuovo' }));
+
+        // The minute after the asking: it asks again every few seconds, and says "being sent" meanwhile.
+        const asked = vi.mocked(bookingsApi.getById).mock.calls.length;
+        await vi.advanceTimersByTimeAsync(SYNC_WATCH_MS / 2);
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(asked + 3);
+        expect(await screen.findByTestId('booking-sync-pending', undefined, WAIT)).toBeInTheDocument();
+
+        // And when the minute is over without an answer it stops again and says so.
+        await vi.advanceTimersByTimeAsync(SYNC_WATCH_MS);
+        expect(await screen.findByTestId('booking-sync-waiting', undefined, WAIT)).toBeInTheDocument();
+        const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
+        await vi.advanceTimersByTimeAsync(2 * SYNC_WATCH_MS);
         expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
       } finally {
         vi.useRealTimers();

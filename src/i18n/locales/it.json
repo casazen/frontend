@@ -2538,6 +2538,7 @@
         }
       },
       "sync": {
+        "checkAgain": "Controlla di nuovo",
         "failed": {
           "askAgain": "Quando hai sistemato il problema, riprova tu.",
           "retrying": "Riproviamo in automatico.",
@@ -2546,7 +2547,8 @@
         "notAllowed": "Il canale non permette questa modifica: al channel manager non è stato inviato nulla.",
         "pending": "Sto inviando la modifica al tuo channel manager…",
         "retry": "Riprova ora",
-        "retryFailed": "Non siamo riusciti a rimandare la modifica. Riprova."
+        "retryFailed": "Non siamo riusciti a rimandare la modifica. Riprova.",
+        "waiting": "Il tuo channel manager non ha ancora risposto: la modifica è salvata in CasaZen, ma l'invio non risulta ancora concluso."
       }
     },
     "amountSource": {
@@ -2747,6 +2749,7 @@
         "title": "Chiedi al tuo channel manager di annullare questa prenotazione"
       },
       "sync": {
+        "checkAgain": "Controlla di nuovo",
         "conflict": "Il tuo channel manager non ha accettato l'annullamento: la prenotazione lì è cambiata. L'annullamento in CasaZen resta valido.",
         "failed": {
           "askAgain": "Quando hai sistemato il problema, riprova tu.",
@@ -2759,6 +2762,7 @@
         "retryFailed": "Non siamo riusciti a rimandare l'annullamento. Riprova.",
         "synced": "Annullata anche nel tuo channel manager.",
         "unconfirmed": "Il tuo channel manager non ha ancora confermato l'annullamento.",
+        "waiting": "Il tuo channel manager non ha ancora risposto: la prenotazione è annullata in CasaZen, ma l'annullamento non è ancora confermato lì.",
         "willUpdate": "Anche il tuo channel manager viene aggiornato."
       }
     },

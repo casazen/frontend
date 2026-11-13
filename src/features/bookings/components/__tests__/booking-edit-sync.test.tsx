@@ -36,10 +36,24 @@ interface Handlers {
   retryError?: string | null;
   onRetry?: (overwrite: boolean) => void;
   onUseChannelVersion?: () => void;
+  waitOver?: boolean;
+  onCheckAgain?: () => void;
+  checking?: boolean;
 }
 
-function renderSync(value: Booking, { busy = false, retryError = null, onRetry = vi.fn(), onUseChannelVersion }: Handlers = {}) {
-  return render(<BookingEditSync booking={value} busy={busy} retryError={retryError} onRetry={onRetry} onUseChannelVersion={onUseChannelVersion} />);
+function renderSync(value: Booking, { busy = false, retryError = null, onRetry = vi.fn(), onUseChannelVersion, waitOver, onCheckAgain, checking }: Handlers = {}) {
+  return render(
+    <BookingEditSync
+      booking={value}
+      busy={busy}
+      retryError={retryError}
+      onRetry={onRetry}
+      onUseChannelVersion={onUseChannelVersion}
+      waitOver={waitOver}
+      onCheckAgain={onCheckAgain}
+      checking={checking}
+    />,
+  );
 }
 
 beforeEach(async () => {
@@ -64,6 +78,36 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
 
     expect(screen.getByTestId('booking-sync-pending')).toHaveTextContent('Sto inviando la modifica al tuo channel manager');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('render_PendingThatThePageStoppedWaitingFor_SaysNoAnswerYetAndOffersCheckAgain', () => {
+    const onCheckAgain = vi.fn();
+    renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain });
+
+    // Neither "being sent" nor a failure nor a success: what the page knows is that nothing has come back.
+    expect(screen.getByTestId('booking-sync-waiting')).toHaveTextContent('non ha ancora risposto');
+    expect(screen.getByTestId('booking-sync-waiting')).toHaveTextContent("l'invio non risulta ancora concluso");
+    expect(screen.queryByTestId('booking-sync-pending')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-sync-failed')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Controlla di nuovo' }));
+    expect(onCheckAgain).toHaveBeenCalledTimes(1);
+  });
+
+  it('render_WaitOverWhileBusy_DisablesCheckAgain', () => {
+    renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain: vi.fn(), busy: true });
+
+    expect(screen.getByRole('button', { name: 'Controlla di nuovo' })).toBeDisabled();
+  });
+
+  it.each([
+    ['Synced', null],
+    ['Failed', 'octorate_rejected'],
+  ] as const)('render_WaitOverButTheRowIsNotPending_%s_SaysWhatTheRowSays', (state, errorCode) => {
+    const { container } = renderSync(booking(sync({ state, errorCode })), { waitOver: true, onCheckAgain: vi.fn() });
+
+    expect(screen.queryByTestId('booking-sync-waiting')).not.toBeInTheDocument();
+    if (state === 'Synced') expect(container).toBeEmptyDOMElement();
+    else expect(screen.getByTestId('booking-sync-failed')).toBeInTheDocument();
   });
 
   it('render_NotAllowedByTheChannel_SaysNothingWasSent', () => {

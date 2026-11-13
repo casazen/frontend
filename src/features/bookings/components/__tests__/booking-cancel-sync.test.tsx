@@ -31,8 +31,19 @@ const sync = (overrides: Partial<BookingOctorateSync> = {}): BookingOctorateSync
   ...overrides,
 });
 
-function renderSync(value: Booking, { busy = false, retryError = null, onRetry = vi.fn() }: { busy?: boolean; retryError?: string | null; onRetry?: () => void } = {}) {
-  return render(<BookingCancelSync booking={value} busy={busy} retryError={retryError} onRetry={onRetry} />);
+interface Handlers {
+  busy?: boolean;
+  retryError?: string | null;
+  onRetry?: () => void;
+  waitOver?: boolean;
+  onCheckAgain?: () => void;
+  checking?: boolean;
+}
+
+function renderSync(value: Booking, { busy = false, retryError = null, onRetry = vi.fn(), waitOver, onCheckAgain, checking }: Handlers = {}) {
+  return render(
+    <BookingCancelSync booking={value} busy={busy} retryError={retryError} onRetry={onRetry} waitOver={waitOver} onCheckAgain={onCheckAgain} checking={checking} />,
+  );
 }
 
 beforeEach(async () => {
@@ -61,6 +72,32 @@ describe('BookingCancelSync (the channel manager line of a cancellation, NF-76)'
     renderSync(booking(sync({ state: 'Pending' })));
 
     expect(screen.getByTestId('booking-cancel-sync-pending')).toHaveTextContent('Sto annullando la prenotazione nel tuo channel manager');
+  });
+
+  it('render_CancellationStillPendingWhenTheDialogStoppedWaiting_SaysNoAnswerYetAndOffersCheckAgain', () => {
+    const onCheckAgain = vi.fn();
+    renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain });
+
+    // Neither "being cancelled" nor a failure nor a success: what the dialog knows is that nothing has come back.
+    expect(screen.getByTestId('booking-cancel-sync-waiting')).toHaveTextContent('non ha ancora risposto');
+    expect(screen.getByTestId('booking-cancel-sync-waiting')).toHaveTextContent("l'annullamento non è ancora confermato lì");
+    expect(screen.queryByTestId('booking-cancel-sync-pending')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-cancel-sync-synced')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Controlla di nuovo' }));
+    expect(onCheckAgain).toHaveBeenCalledTimes(1);
+  });
+
+  it('render_WaitOverWhileBusy_DisablesCheckAgain', () => {
+    renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain: vi.fn(), busy: true });
+
+    expect(screen.getByRole('button', { name: 'Controlla di nuovo' })).toBeDisabled();
+  });
+
+  it.each(['Synced', 'Failed'] as const)('render_WaitOverButTheRowIsNotPending_%s_SaysWhatTheRowSays', (state) => {
+    renderSync(booking(sync({ state, errorCode: state === 'Failed' ? 'octorate_rejected' : null })), { waitOver: true, onCheckAgain: vi.fn() });
+
+    expect(screen.queryByTestId('booking-cancel-sync-waiting')).not.toBeInTheDocument();
+    expect(screen.getByTestId(state === 'Synced' ? 'booking-cancel-sync-synced' : 'booking-cancel-sync-failed')).toBeInTheDocument();
   });
 
   it.each([

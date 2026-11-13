@@ -2538,6 +2538,7 @@
         }
       },
       "sync": {
+        "checkAgain": "Check again",
         "failed": {
           "askAgain": "Once the problem is sorted out, try again yourself.",
           "retrying": "We try again automatically.",
@@ -2546,7 +2547,8 @@
         "notAllowed": "The channel does not allow this change: nothing was sent to the channel manager.",
         "pending": "Sending the change to your channel manager…",
         "retry": "Retry now",
-        "retryFailed": "We could not send the change again. Try again."
+        "retryFailed": "We could not send the change again. Try again.",
+        "waiting": "Your channel manager has not answered yet: the change is saved in CasaZen, but the sending is not finished yet."
       }
     },
     "amountSource": {
@@ -2747,6 +2749,7 @@
         "title": "Ask your channel manager to cancel this booking"
       },
       "sync": {
+        "checkAgain": "Check again",
         "conflict": "Your channel manager did not accept the cancellation: the booking changed there. The cancellation in CasaZen stands.",
         "failed": {
           "askAgain": "Once the problem is sorted out, try again yourself.",
@@ -2759,6 +2762,7 @@
         "retryFailed": "We could not send the cancellation again. Try again.",
         "synced": "Cancelled in your channel manager too.",
         "unconfirmed": "Your channel manager has not confirmed the cancellation yet.",
+        "waiting": "Your channel manager has not answered yet: the booking is cancelled in CasaZen, but the cancellation is not confirmed there yet.",
         "willUpdate": "Your channel manager is updated too."
       }
     },

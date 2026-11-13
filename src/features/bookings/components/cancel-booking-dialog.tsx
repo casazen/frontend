@@ -54,6 +54,11 @@ function CancelBookingBody({ bookingId, onClose }: { bookingId: string; onClose:
   const booking = useBooking(bookingId, { fresh: true, refetchInterval: (current) => watch.interval(current?.octorateSync) });
   const options = booking.data?.changeOptions;
   const isChannel = !!options?.channel;
+  // The dialog stopped asking for a cancellation that never answered: «Check again» reads the booking once more and waits for one more minute.
+  const checkAgain = () => {
+    watch.ask();
+    void booking.refetch();
+  };
 
   return (
     <>
@@ -67,7 +72,14 @@ function CancelBookingBody({ bookingId, onClose }: { bookingId: string; onClose:
       ) : isChannel && options ? (
         <ChannelCancel bookingId={bookingId} options={options} onClose={onClose} />
       ) : (
-        <MoneyCancel bookingId={bookingId} booking={booking.data} watch={watch} onClose={onClose} />
+        <MoneyCancel
+          bookingId={bookingId}
+          booking={booking.data}
+          watch={watch}
+          checking={booking.isFetching}
+          onCheckAgain={checkAgain}
+          onClose={onClose}
+        />
       )}
     </>
   );
@@ -175,6 +187,10 @@ interface MoneyCancelProps {
   /** The booking as it was read; `undefined` when it could not be. */
   booking: Booking | undefined;
   watch: ReturnType<typeof useSyncWatch>;
+  /** The booking is being read again (what «Check again» asked for). */
+  checking: boolean;
+  /** «Check again» for a cancellation the channel manager has not answered: read the booking once more and wait for one more minute. */
+  onCheckAgain: () => void;
   onClose: () => void;
 }
 
@@ -184,7 +200,7 @@ interface MoneyCancelProps {
  * not done; and, for a booking that is mirrored on the channel manager, one line for it (E08/F03/US02, NF-76): being sent, cancelled there too, or failed with "Retry now". The
  * cancellation is made in CasaZen first: the refunds never wait for that line.
  */
-function MoneyCancel({ bookingId, booking, watch, onClose }: MoneyCancelProps) {
+function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClose }: MoneyCancelProps) {
   const { t } = useTranslation();
   const quote = useBookingCancellationQuote(bookingId, true);
   const cancel = useCancelBooking();
@@ -275,7 +291,17 @@ function MoneyCancel({ bookingId, booking, watch, onClose }: MoneyCancelProps) {
           {result.refunds.length === 0 && (
             <p className="text-sm text-muted-foreground">{t('booking.cancel.result.noRefund')}</p>
           )}
-          {booking && mirrored && <BookingCancelSync booking={booking} busy={busy} retryError={retryError} onRetry={askAgain} />}
+          {booking && mirrored && (
+            <BookingCancelSync
+              booking={booking}
+              busy={busy}
+              retryError={retryError}
+              onRetry={askAgain}
+              waitOver={watch.waitOver}
+              onCheckAgain={onCheckAgain}
+              checking={checking}
+            />
+          )}
           <DialogFooter>
             <Button type="button" onClick={onClose} disabled={retry.isPending}>
               {t('booking.cancel.close')}

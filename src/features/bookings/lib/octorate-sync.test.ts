@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
 import type { BookingOctorateSync } from '@/types';
-import { SYNC_POLL_MS, SYNC_WATCH_MS, syncPollInterval, syncReasonKey, syncRetriesByItself } from './octorate-sync';
+import { SYNC_PENDING_LIMIT_MS, SYNC_POLL_MS, SYNC_WATCH_MS, syncPollInterval, syncReasonKey, syncRetriesByItself, syncWaitEndsAt } from './octorate-sync';
 
 const sync = (state: BookingOctorateSync['state']): BookingOctorateSync => ({
   state,
@@ -24,6 +24,28 @@ describe('syncPollInterval', () => {
     expect(interval).toBeGreaterThan(SYNC_POLL_MS);
   });
 
+  it('syncPollInterval_PushStillPendingAtTheLimit_StopsAskingForEver', () => {
+    // A push that stopped halfway leaves the row Pending and the host cannot ask again from there: a page that went on asking would say "being sent" for good.
+    const watch = { openedAt: OPENED, askedAt: null };
+    expect(syncPollInterval(sync('Pending'), watch, OPENED + SYNC_PENDING_LIMIT_MS - 1)).not.toBe(false);
+    expect(syncPollInterval(sync('Pending'), watch, OPENED + SYNC_PENDING_LIMIT_MS)).toBe(false);
+    expect(syncPollInterval(sync('Pending'), watch, OPENED + 10 * SYNC_PENDING_LIMIT_MS)).toBe(false);
+  });
+
+  it('syncPollInterval_HostAsksAgainAfterTheLimit_AsksForOneMoreMinuteAndThenStopsAgain', () => {
+    const askedAt = OPENED + SYNC_PENDING_LIMIT_MS + 5_000;
+    const watch = { openedAt: OPENED, askedAt };
+    expect(syncPollInterval(sync('Pending'), watch, askedAt + 10_000)).toBe(SYNC_POLL_MS);
+    expect(syncPollInterval(sync('Pending'), watch, askedAt + SYNC_WATCH_MS)).toBe(false);
+  });
+
+  it('syncPollInterval_HostAskedJustBeforeTheLimit_KeepsAskingUntilTheMinuteAfterItIsOver', () => {
+    const askedAt = OPENED + SYNC_PENDING_LIMIT_MS - 10_000;
+    const watch = { openedAt: OPENED, askedAt };
+    expect(syncPollInterval(sync('Pending'), watch, OPENED + SYNC_PENDING_LIMIT_MS + 10_000)).toBe(SYNC_POLL_MS);
+    expect(syncPollInterval(sync('Pending'), watch, askedAt + SYNC_WATCH_MS)).toBe(false);
+  });
+
   it('syncPollInterval_HostJustAsked_AsksAgainEvenThoughTheRowHasNotMoved', () => {
     // The row keeps what it said until the push starts: after a save or "Retry now" a page that stopped on `Failed` or `Synced` would show an old state for good.
     const watch = { openedAt: OPENED, askedAt: OPENED + 10_000 };
@@ -44,6 +66,21 @@ describe('syncPollInterval', () => {
 
   it('syncPollInterval_BookingNotMirrored_DoesNotPollUnlessAsked', () => {
     expect(syncPollInterval(null, { openedAt: OPENED, askedAt: null }, OPENED + 1_000)).toBe(false);
+  });
+});
+
+describe('syncWaitEndsAt', () => {
+  it('syncWaitEndsAt_NothingAsked_IsTheLimitFromTheOpening', () => {
+    expect(syncWaitEndsAt({ openedAt: OPENED, askedAt: null })).toBe(OPENED + SYNC_PENDING_LIMIT_MS);
+  });
+
+  it('syncWaitEndsAt_AskedAfterTheLimit_IsTheEndOfTheMinuteAfterTheAsking', () => {
+    const askedAt = OPENED + SYNC_PENDING_LIMIT_MS + 1_000;
+    expect(syncWaitEndsAt({ openedAt: OPENED, askedAt })).toBe(askedAt + SYNC_WATCH_MS);
+  });
+
+  it('syncWaitEndsAt_AskedEarly_IsStillTheLimitFromTheOpening', () => {
+    expect(syncWaitEndsAt({ openedAt: OPENED, askedAt: OPENED + 5_000 })).toBe(OPENED + SYNC_PENDING_LIMIT_MS);
   });
 });
 

@@ -17,20 +17,47 @@ interface BookingEditSyncProps {
   onRetry: (overwrite: boolean) => void;
   /** The host chooses the version of the channel manager after a conflict: the page opens the form with its dates and guests. Missing when the form cannot take them. */
   onUseChannelVersion?: () => void;
+  /** The page has stopped asking for a push that is still `Pending` (`useSyncWatch`): the line says that there is no answer yet, and offers «Check again». */
+  waitOver?: boolean;
+  /** «Check again» reads the booking once more and waits for one more minute. */
+  onCheckAgain?: () => void;
+  /** The booking is being read again (what «Check again» asked for). */
+  checking?: boolean;
 }
 
 /**
- * Where the push of an edit to the channel manager stands (E08/F03/US02, NF-75, NF-74), read from `octorateSync` of the booking: being sent, failed with its reason and
- * "Retry now", or, for a change the channel manager refused because the reservation changed there, in conflict with both versions and the two choices (any other refusal,
- * as the dates of a creation taken there, is a failure with its reason). `Synced` says nothing, and so does a booking that is not mirrored: this is a notice for what is
- * not done, never a success the server did not confirm. A conflict is `role="alert"` by hand: an `Alert` announces only the danger variant by itself.
+ * Where the push of an edit to the channel manager stands (E08/F03/US02, NF-75, NF-74), read from `octorateSync` of the booking: being sent (or, once the page has stopped
+ * waiting for it, not answered yet, with «Check again»), failed with its reason and "Retry now", or, for a change the channel manager refused because the reservation
+ * changed there, in conflict with both versions and the two choices (any other refusal, as the dates of a creation taken there, is a failure with its reason). `Synced` says
+ * nothing, and so does a booking that is not mirrored: this is a notice for what is not done, never a success the server did not confirm. A conflict is `role="alert"` by
+ * hand: an `Alert` announces only the danger variant by itself.
  */
-export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChannelVersion }: BookingEditSyncProps) {
+export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChannelVersion, waitOver = false, onCheckAgain, checking = false }: BookingEditSyncProps) {
   const { t, i18n } = useTranslation();
   const sync = booking.octorateSync;
   if (!sync || sync.state === 'Synced') return null;
 
   if (sync.state === 'Pending') {
+    // A push that is still `Pending` when the page stopped asking is not "being sent" any more as far as this page knows: it says that nothing has come back, which is
+    // neither a success nor a failure, and lets the host look again.
+    if (waitOver) {
+      return (
+        <Alert
+          variant="info"
+          data-testid="booking-sync-waiting"
+          action={
+            onCheckAgain ? (
+              <Button size="sm" variant="outline" disabled={busy} loading={checking} onClick={onCheckAgain} data-testid="booking-sync-check-again">
+                {t('booking.edit.sync.checkAgain')}
+              </Button>
+            ) : undefined
+          }
+        >
+          {t('booking.edit.sync.waiting')}
+        </Alert>
+      );
+    }
+
     return (
       <p role="status" className="text-sm text-muted-foreground" data-testid="booking-sync-pending">
         {t('booking.edit.sync.pending')}

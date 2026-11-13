@@ -82,6 +82,12 @@ export function BookingEditPage() {
     );
   };
 
+  // The page stopped asking for a push that never answered: «Check again» reads the booking once more and waits for one more minute.
+  const checkAgain = () => {
+    watch.ask();
+    void refetch();
+  };
+
   if (isLoading || (!isError && !readAfterOpen)) {
     return <LoadingScreen message={t('booking.edit.loading')} className="h-auto flex-1" />;
   }
@@ -180,7 +186,16 @@ export function BookingEditPage() {
   };
 
   const sync = (
-    <BookingEditSync booking={booking} busy={busy} retryError={retryError} onRetry={askAgain} onUseChannelVersion={chooseChannelVersion} />
+    <BookingEditSync
+      booking={booking}
+      busy={busy}
+      retryError={retryError}
+      onRetry={askAgain}
+      onUseChannelVersion={chooseChannelVersion}
+      waitOver={watch.waitOver}
+      onCheckAgain={checkAgain}
+      checking={query.isFetching}
+    />
   );
 
   return (
