@@ -14936,8 +14936,8 @@
       "title": "Your access to the portal is not active yet"
     },
     "emailMismatch": {
-      "action": "Sign out and use another account",
-      "description": "You signed in with an address other than the one your agency sent the invitation to. Sign out and sign in with the right address.",
+      "action": "Sign in with another account",
+      "description": "You signed in with an address other than the one your agency sent the invitation to. Sign in with the right address: the invitation is still valid and you activate it from here.",
       "title": "This invitation is for another e-mail address"
     },
     "emailNotVerified": {

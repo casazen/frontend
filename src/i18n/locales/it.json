@@ -14936,8 +14936,8 @@
       "title": "Il tuo accesso al portale non è ancora attivo"
     },
     "emailMismatch": {
-      "action": "Esci e usa un altro account",
-      "description": "Hai effettuato l'accesso con un indirizzo diverso da quello a cui l'agenzia ha inviato l'invito. Esci e accedi con l'indirizzo giusto.",
+      "action": "Accedi con un altro account",
+      "description": "Hai effettuato l'accesso con un indirizzo diverso da quello a cui l'agenzia ha inviato l'invito. Accedi con l'indirizzo giusto: l'invito resta valido e lo attivi da qui.",
       "title": "Questo invito è per un altro indirizzo e-mail"
     },
     "emailNotVerified": {

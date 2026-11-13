@@ -267,15 +267,28 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(peekOwnerInvitationToken()).toBeNull();
   });
 
-  it('OwnerInvitationRoute_EmailOfAnotherAccount_OffersToSignOutAndGrantsNothing', async () => {
+  it('OwnerInvitationRoute_EmailOfAnotherAccount_OffersAnotherSignInThatCarriesTheSecretInTheAppStateOnlyAndGrantsNothing', async () => {
     mockAuth(true);
     vi.mocked(axios.post).mockRejectedValue(problem(403, 'owner_invitation_email_mismatch'));
-    openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+    const view = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
 
     fireEvent.click(await screen.findByTestId('owner-invitation-switch'));
 
-    expect(logout).toHaveBeenCalledTimes(1);
+    // Not a sign-out to the home page (the secret would be lost and nothing would say to open the link again): a new sign-in, asked for although a session exists, that brings
+    // the person back to this page with the secret in the `appState` and in no address.
+    expect(login).toHaveBeenLastCalledWith({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: TOKEN }, authorizationParams: { prompt: 'login' } });
+    expect(JSON.stringify(vi.mocked(login).mock.calls[0][0].returnTo)).not.toContain(TOKEN);
+    expect(logout).not.toHaveBeenCalled();
+    // Nothing is sent again by itself, nothing is granted, and nothing is written to the browser.
+    expect(axios.post).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
+    expect(Object.keys(localStorage)).toHaveLength(0);
+    expect(Object.keys(sessionStorage)).toHaveLength(0);
+
+    // A person who leaves instead takes the secret with them: the link of the e-mail brings it back.
+    expect(peekOwnerInvitationToken()).toBe(TOKEN);
+    view.unmount();
+    expect(peekOwnerInvitationToken()).toBeNull();
   });
 
   it('OwnerInvitationRoute_EmailNotVerified_KeepsTheTokenAndANewSignInCarriesItAgain', async () => {

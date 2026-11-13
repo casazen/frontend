@@ -127,7 +127,7 @@ type Stage = 'opening' | 'claimsPending' | 'tokenPending';
 export function OwnerInvitationPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isLoading: authLoading, isAuthenticated, login, logout, refreshAccessToken } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, login, refreshAccessToken } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   useNoReferrer();
   useSeoMeta({ title: t('ownerInvitation.pageTitle'), noindex: true });
@@ -152,12 +152,12 @@ export function OwnerInvitationPage() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [failure, setFailure] = useState<OwnerInvitationFailure | null>(null);
 
-  // True while the invitation is accepted but the claims of the portal did not reach the identity provider: the secret then waits in memory for a new acceptance, and
-  // a person who leaves the page (a link, the back button) takes it with them: the link of the e-mail still works and brings it back.
-  const waitingForClaims = useRef(false);
+  // True while the secret waits in memory on purpose for another try: the claims of the portal did not reach the identity provider, the request has to be sent again, or another
+  // account has to sign in with it. A person who leaves the page (a link, the back button) takes it with them: the link of the e-mail still works and brings it back.
+  const keepsSecret = useRef(false);
   useEffect(
     () => () => {
-      if (waitingForClaims.current) clearOwnerInvitationToken();
+      if (keepsSecret.current) clearOwnerInvitationToken();
     },
     [],
   );
@@ -181,12 +181,12 @@ export function OwnerInvitationPage() {
       if (!claimsArePublished(accepted.claimsRefresh)) {
         // Accepted, but the portal would refuse the person (no claims in the token): not a success. The server repeats the hand-over of the claims at every acceptance of
         // the same invitation by the same account, so the secret is kept, in memory only, for the «Riprova» that accepts again.
-        waitingForClaims.current = true;
+        keepsSecret.current = true;
         setStage('claimsPending');
         return;
       }
       // Published: the secret is forgotten for good and the portal opens in place of this address.
-      waitingForClaims.current = false;
+      keepsSecret.current = false;
       clearOwnerInvitationToken();
       void openPortal();
     },
@@ -198,9 +198,12 @@ export function OwnerInvitationPage() {
       started.current = true;
       mutateAsync(secret).then(finish, (error: unknown) => {
         reset();
-        // A link that does not work, or an account that can never use it, is final: the secret is forgotten. A request worth sending again keeps it.
+        // A link that does not work is final: the secret is forgotten. It is kept (in memory, until the person leaves) for a request worth sending again, for an account whose
+        // e-mail is not verified yet and for an account that is not the invited one: the link is good, and the person can sign in with the right account and come back with it.
         const refused = ownerInvitationFailureOf(error);
-        if (refused.kind !== 'retry' && refused.kind !== 'other' && refused.kind !== 'emailNotVerified') clearOwnerInvitationToken();
+        const kept = refused.kind === 'retry' || refused.kind === 'other' || refused.kind === 'emailNotVerified' || refused.kind === 'emailMismatch';
+        if (!kept) clearOwnerInvitationToken();
+        keepsSecret.current = kept;
         setFailure(refused);
       });
     },
@@ -255,7 +258,11 @@ export function OwnerInvitationPage() {
 
   // A new sign-in carries the secret again, in the `appState`, because the page is loaded again when the person comes back.
   const signInAgain = () => login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token } });
-  if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={logout} onNewLogin={signInAgain} />;
+  // Another account for the same invitation: Auth0 asks for the sign-in again although a session exists (`prompt=login`, as `forceReauth` does) and the secret goes with it in the
+  // `appState`, like in every other sign-in of this page. A sign-out would send the person to the home page without the secret, and nothing there says to open the link again.
+  const switchAccount = () =>
+    login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token }, authorizationParams: { prompt: 'login' } });
+  if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={switchAccount} onNewLogin={signInAgain} />;
   return <WaitingCard title={t('ownerInvitation.accepting')} />;
 }
 
