@@ -149,7 +149,12 @@ const summary: ComplianceSummaryResult = {
 
 /** The same summary as an older server sends it: no `handoffTopic` on any item. */
 function withoutTopics(result: ComplianceSummaryResult): ComplianceSummaryResult {
-  const strip = (items: ComplianceSummaryItem[]) => items.map(({ handoffTopic: _topic, ...rest }) => rest);
+  const strip = (items: ComplianceSummaryItem[]) =>
+    items.map((item) => {
+      const older: ComplianceSummaryItem = { ...item };
+      delete older.handoffTopic;
+      return older;
+    });
   const section = (value: { count: number; items: ComplianceSummaryItem[] } | undefined) => (value ? { ...value, items: strip(value.items) } : undefined);
   return {
     ...result,
