@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { publicOrgApi } from '@/api/public-org.api';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { freezeClock } from '@/test/clock';
-import { addDays } from '@/lib/stay-dates';
+import { addDays, nightsBetween } from '@/lib/stay-dates';
 import { BookingCard } from '../booking-card';
 import { BookingProvider } from '../booking-provider';
 import type { DirectBookingQuote, PublicCalendarDto, PublicPropertyDetailDto } from '@/types';
@@ -77,6 +78,23 @@ const quote: DirectBookingQuote = {
     { kind: 'Total', quantity: null, unitAmountCents: null, amountCents: 51950 },
   ],
 };
+
+/** The answer of the server to a quote it refuses: a 422 with the stable `code` (and the `limit` and `date` of the rule) in its problem body. */
+function refusal(data: unknown): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
+    status: 422,
+    data,
+    statusText: '',
+    headers: {},
+    config,
+  });
+}
+
+/** The calendar of the home with the rules of the host on some days (NF-36). */
+function calendarWith(rules: Record<string, Partial<PublicCalendarDto['days'][number]>>): PublicCalendarDto {
+  return { ...calendar, days: calendar.days.map((day) => ({ ...day, ...rules[day.date] })) };
+}
 
 function renderCard(search: string, home: PublicPropertyDetailDto = property) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -183,5 +201,165 @@ describe('BookingCard', () => {
 
     await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
     expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+  });
+
+  /**
+   * The rules the host set on the nights (E08/F05/US01, NF-36): the calendar of the home carries them, so the card says what is wrong and
+   * where to go as soon as the calendar is in (what the server answered meanwhile is not shown), and when the server refuses all the same
+   * it is said with its own sentence, never as «failed».
+   */
+  describe('the rules of the host on the nights', () => {
+    it('BookingCard_ArrivalOnANightClosedToArrival_SaysSoOffersTheFirstOpenDatesAndNoCheckout', async () => {
+      vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue(calendarWith({ '2026-10-16': { closedToArrival: true } }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'arrivalClosed');
+      expect(problem).toHaveTextContent('Gli arrivi sono chiusi il 16 ottobre.');
+      expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+
+      // The way out is the first dates for as long a stay that the rule does not refuse: the night after, not the closed one.
+      expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent('Prime date libere');
+      fireEvent.click(screen.getByTestId('stay-problem-exit'));
+      await waitFor(() =>
+        expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
+          expect.objectContaining({ checkInDate: '2026-10-17', checkOutDate: '2026-10-20' }),
+          expect.anything(),
+        ),
+      );
+      expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    });
+
+    it('BookingCard_DepartureOnADayClosedToDeparture_SaysSoAndOffersTheFirstOpenDates', async () => {
+      vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue(calendarWith({ '2026-10-19': { closedToDeparture: true } }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'departureClosed');
+      expect(problem).toHaveTextContent('Le partenze sono chiuse il 19 ottobre.');
+      expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+
+      fireEvent.click(screen.getByTestId('stay-problem-exit'));
+      await waitFor(() =>
+        expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
+          expect.objectContaining({ checkInDate: '2026-10-17', checkOutDate: '2026-10-20' }),
+          expect.anything(),
+        ),
+      );
+      expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    });
+
+    it('BookingCard_StayLongerThanTheMaximumOfItsArrival_SaysTheMaximumAndOffersNoCheckout', async () => {
+      vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue(calendarWith({ '2026-10-16': { maxNights: 2 } }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'maxNights');
+      expect(problem).toHaveTextContent('Il soggiorno massimo è di 2 notti.');
+      expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+    });
+
+    it('BookingCard_ArrivalOutsideTheAdvanceWindow_SaysSoAndTheWayOutLooksFromToday', async () => {
+      // Today is the 5th: the 16th is 11 days ahead and the rule of every night allows 7 at most.
+      const rules = Object.fromEntries(calendar.days.map((day) => [day.date, { maxAdvanceDays: 7 }]));
+      vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue(calendarWith(rules));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'advance');
+      expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+
+      // From the 16th on there is nothing (every night is further ahead): the way out starts from today.
+      fireEvent.click(screen.getByTestId('stay-problem-exit'));
+      await waitFor(() =>
+        expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
+          expect.objectContaining({ checkInDate: '2026-10-05', checkOutDate: '2026-10-08' }),
+          expect.anything(),
+        ),
+      );
+      expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['direct_booking_arrival_closed', 'arrivalClosed', 'Gli arrivi sono chiusi il 16 ottobre.'],
+      ['direct_booking_departure_closed', 'departureClosed', 'Le partenze sono chiuse il 19 ottobre.'],
+      ['direct_booking_max_nights_exceeded', 'maxNights', 'Il soggiorno massimo è di 2 notti.'],
+      ['direct_booking_advance_too_short', 'advance', 'Queste date non si possono prenotare con questo anticipo.'],
+      ['direct_booking_advance_too_long', 'advance', 'Queste date non si possono prenotare con questo anticipo.'],
+      ['direct_booking_min_nights_not_met', 'minNights', 'Il soggiorno minimo è di 2 notti.'],
+    ])('BookingCard_QuoteRefusedWith_%s_SaysTheRuleWithAWayOutAndNeverTheGenericFailure', async (code, kind, sentence) => {
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code, date: '2026-10-16', limit: 2 }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', kind);
+      expect(problem).toHaveTextContent(sentence);
+      expect(problem).not.toHaveTextContent(i18n.t('propertyBooking.quote.failed'));
+      expect(screen.getByTestId('stay-problem-exit')).toBeInTheDocument();
+      expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
+    });
+
+    it('BookingCard_QuoteRefusedForTheMinimumOfTheArrivalDate_SaysTheNumberOfTheServerAndStretchesTheStayToIt', async () => {
+      // The home asks for no minimum and the calendar (older than the rule) none either; the rule of that night asks for five: the server
+      // says it in `limit`, and the card says the same. The server takes any stay of five nights or more.
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockImplementation(async (payload) => {
+        const nights = nightsBetween(payload.checkInDate, payload.checkOutDate);
+        if (nights < 5) throw refusal({ code: 'direct_booking_min_nights_not_met', limit: 5 });
+        return { ...quote, checkInDate: payload.checkInDate, checkOutDate: payload.checkOutDate, nights };
+      });
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      expect(await screen.findByTestId('stay-problem')).toHaveTextContent('Il soggiorno minimo è di 5 notti.');
+
+      // The way out is the five nights the server asked for (the 16th to the 21st), not the one night that the calendar knows of, which is
+      // shorter than the three nights the guest has.
+      expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent('Allunga fino a 5 notti');
+      fireEvent.click(screen.getByTestId('stay-problem-exit'));
+      await waitFor(() =>
+        expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
+          expect.objectContaining({ checkInDate: '2026-10-16', checkOutDate: '2026-10-21' }),
+          expect.anything(),
+        ),
+      );
+      await waitFor(() => expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument());
+    });
+
+    it('BookingCard_QuoteRefusedForAMinimumThatIsNotAboveTheStay_OffersNoShorterStayOnlyToClearTheDates', async () => {
+      // The refusal carries no limit and the home asks for two nights: «stretching» the three nights of the guest to two would give back a
+      // shorter stay than the one that was refused. That is no way out; the dates are cleared instead.
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'direct_booking_min_nights_not_met' }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, minNights: 2 });
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'minNights');
+      expect(problem).toHaveTextContent('Il soggiorno minimo è di 2 notti.');
+      expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent(i18n.t('propertyBooking.problem.clearDates'));
+      expect(problem).not.toHaveTextContent('Allunga');
+    });
+
+    it('BookingCard_QuoteRefusedForTheMaximumWithoutALimit_DoesNotInventANumber', async () => {
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'direct_booking_max_nights_exceeded' }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'maxNights');
+      expect(problem).toHaveTextContent('Il soggiorno supera il massimo consentito per questo arrivo.');
+      expect(problem).not.toHaveTextContent('propertyBooking.problem');
+    });
+
+    it('BookingCard_QuoteRefusedWithACodeOfNoRule_IsStillTheGenericFailure', async () => {
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'something_else' }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      expect(await screen.findByTestId('booking-quote-error')).toHaveTextContent(i18n.t('propertyBooking.quote.failed'));
+      expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    });
+
+    it('BookingCard_CalendarWithNoRuleAtAll_BehavesAsItAlwaysDid', async () => {
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
+
+      await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
+      expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
+    });
   });
 });

@@ -104,6 +104,8 @@ export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: rea
 /**
  * Why a home is not free for the stay, in a sentence that also says what to do about it («Libera dal 12 novembre», «Soggiorno minimo
  * 3 notti»); `null` for a home that is free. The server gives the reason, the first free day and the minimum stay; nothing is guessed.
+ * The rules the host set on the nights have their own reasons (closed arrival or departure, the most nights, the advance; NF-36): a
+ * reason this page does not know is still said as «busy», never left out.
  */
 export function availabilityNote(
   card: Pick<PublicStayCard, 'availability' | 'maxGuests'>,
@@ -119,6 +121,14 @@ export function availabilityNote(
         : t('siteHome.card.busy');
     case 'min_nights':
       return t('siteHome.card.minNights', { count: minNights ?? 1 });
+    case 'arrival_closed':
+      return t('siteHome.card.arrivalClosed');
+    case 'departure_closed':
+      return t('siteHome.card.departureClosed');
+    case 'max_nights':
+      return t('siteHome.card.maxNights');
+    case 'advance':
+      return t('siteHome.card.advance');
     case 'guests':
       return t('siteHome.card.tooManyGuests', { count: card.maxGuests });
     case 'pets':

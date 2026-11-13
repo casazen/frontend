@@ -468,6 +468,19 @@ export interface PublicCalendarDayDto {
   nightlyPriceCents: number;
   /** The fewest nights of a stay that starts on this day: 1 when there is no minimum. */
   minNights: number;
+  /**
+   * The most nights of a stay that starts on this day; `null` for no maximum. This and the four fields below are the rules the host
+   * set on the day (E08/F05/US01, NF-36): an older backend does not send them, and a day without them has no rule.
+   */
+  maxNights?: number | null;
+  /** A stay cannot start on this night: it is free (`available`) and can still be slept in and left on. */
+  closedToArrival?: boolean;
+  /** A stay cannot end on this day (the day of the departure). */
+  closedToDeparture?: boolean;
+  /** The fewest days between today and the arrival of a stay that starts on this day; `null` for no minimum. */
+  minAdvanceDays?: number | null;
+  /** The most days between today and the arrival of a stay that starts on this day; `null` for no maximum. */
+  maxAdvanceDays?: number | null;
 }
 
 /** The public calendar of a property: a day for each day from `startDate` (included) to `endDate` (excluded). */
