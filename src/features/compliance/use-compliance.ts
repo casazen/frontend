@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import {
   completeCheckoutWizard,
   completeComplianceActivation,
@@ -18,11 +18,12 @@ import type {
   CheckoutWizardCompleteCommand,
   CheckoutWizardProgressCommand,
   CompletePropertyActivationCommand,
+  ComplianceSummaryResult,
   SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 
 export const COMPLIANCE_KEY = 'compliance';
 
@@ -150,6 +151,28 @@ export function useComplianceLights(enabled: boolean) {
     refetchOnMount: 'always',
     retry: false,
   });
+}
+
+/** The read of the lights that a card holds: only what the helpers below need of it. */
+type LightsRead = Pick<UseQueryResult<ComplianceSummaryResult>, 'data' | 'error' | 'isError'>;
+
+/**
+ * Whether the summary is not there at all (a 404: the traffic light is off). The card is then what it always was, and an old answer left in the cache
+ * by the query is not an answer (TanStack Query keeps the data of a read that fails).
+ */
+const lightsAreOff = (read: LightsRead): boolean => read.isError && getHttpStatus(read.error) === 404;
+
+/** The summary a card reads its lines from: none when the lights are off, whatever the cache still holds. */
+export function lightsOf(read: LightsRead): ComplianceSummaryResult | undefined {
+  return lightsAreOff(read) ? undefined : read.data;
+}
+
+/**
+ * Whether a card could not read the lights and has to say so: the read failed with a 5xx, the network or a 403, which is «non lo so» and never
+ * «tutto in ordine». A 404 is the traffic light off: the card is what it was.
+ */
+export function lightsCouldNotBeRead(read: LightsRead): boolean {
+  return read.isError && !lightsAreOff(read);
 }
 
 const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];

@@ -6,7 +6,8 @@ import { ComplianceLines } from '@/features/compliance/components/compliance-lin
 import { reasonText, periodName } from '@/features/compliance/lib/compliance-light';
 import { deadlineNote } from '@/features/compliance/lib/cockpit-model';
 import { hasLinesToShow, stayLinesOf, viewOfLines } from '@/features/compliance/lib/compliance-lines';
-import { useComplianceLights } from '@/features/compliance/use-compliance';
+import { ComplianceUnavailable } from '@/features/compliance/components/compliance-unavailable';
+import { lightsCouldNotBeRead, lightsOf, useComplianceLights } from '@/features/compliance/use-compliance';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
 import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -58,7 +59,9 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   const { hasPermission } = useWorkspace();
   const wantsLights = hasPermission('short-rent', 'booking.read') && (booking.status === 'Confirmed' || booking.status === 'CheckedIn' || booking.status === 'CheckedOut');
   const lights = useComplianceLights(wantsLights);
-  const lines = useMemo(() => (lights.data ? stayLinesOf(lights.data, booking.id) : []), [lights.data, booking.id]);
+  const summary = lightsOf(lights);
+  const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
+  const lines = useMemo(() => (summary ? stayLinesOf(summary, booking.id) : []), [summary, booking.id]);
 
   // The documents change the step: wait for them rather than show a block that changes a moment later.
   if (
@@ -79,6 +82,11 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   // The lights can take back a step that says «tutto in ordine»: until they are read, that is not said (a step that asks something is said at once).
   if (wantsLights && lights.isLoading && claimsAllInOrder(nextStepOf(booking, today, facts))) return <NextStepLoading />;
   const step = nextStepOf(booking, today, { ...facts, compliance: lines });
+  // A read of the lights that failed (not a 404, which is the traffic light off) never lets the block say that all is well: it says it does not know, and
+  // offers to try again. A step that asks something is said as it is.
+  if (lightsFailed && claimsAllInOrder(step)) {
+    return <ComplianceUnavailable kicker={t('booking.next.heading')} testId="booking-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />;
+  }
 
   const language = i18n.language;
   const guest = `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');

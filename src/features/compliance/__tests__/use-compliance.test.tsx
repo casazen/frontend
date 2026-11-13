@@ -7,7 +7,14 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { completeComplianceActivation, fetchComplianceSummary } from '@/api/compliance.api';
 import type { ComplianceSummaryResult } from '@/types/compliance.types';
-import { COMPLIANCE_KEY, useCompleteComplianceActivation, useComplianceLights, useComplianceLightsOn } from '../use-compliance';
+import {
+  COMPLIANCE_KEY,
+  lightsCouldNotBeRead,
+  lightsOf,
+  useCompleteComplianceActivation,
+  useComplianceLights,
+  useComplianceLightsOn,
+} from '../use-compliance';
 
 vi.mock('@/api/compliance.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/compliance.api')>()),
@@ -119,6 +126,39 @@ describe('the reads of the compliance lights', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.data).toBeUndefined();
     expect(fetchComplianceSummary).toHaveBeenCalledTimes(1);
+  });
+
+  // TanStack Query keeps the data of a read that fails: a 404 is the traffic light off and no answer, whatever the cache still holds (a card is what it was).
+  it('lightsOf_A404WithAnOldAnswerInTheCache_IsNoAnswerAndIsNotAFailure', async () => {
+    const client = sharedClient();
+    client.setQueryData([COMPLIANCE_KEY, 'summary'], summary('Red'));
+    vi.mocked(fetchComplianceSummary).mockRejectedValue(httpError(404));
+    const { result } = renderHook(() => useComplianceLights(true), { wrapper: withClient(client) });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeDefined();
+    expect(lightsOf(result.current)).toBeUndefined();
+    expect(lightsCouldNotBeRead(result.current)).toBe(false);
+  });
+
+  it.each([[500], [403], [undefined]])('lightsCouldNotBeRead_ReadThatFailedWith_%s_IsAFailureAndNeverTheLightsOff', async (status) => {
+    vi.mocked(fetchComplianceSummary).mockRejectedValue(status === undefined ? new Error('Network Error') : httpError(status));
+    const { result } = renderHook(() => useComplianceLights(true), { wrapper: withClient(sharedClient()) });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(lightsCouldNotBeRead(result.current)).toBe(true);
+    expect(lightsOf(result.current)).toBeUndefined();
+  });
+
+  it('lightsCouldNotBeRead_NotAskedOrRead_IsNotAFailure', async () => {
+    const idle = renderHook(() => useComplianceLights(false), { wrapper: withClient(sharedClient()) });
+    expect(lightsCouldNotBeRead(idle.result.current)).toBe(false);
+
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summary('Green'));
+    const read = renderHook(() => useComplianceLights(true), { wrapper: withClient(sharedClient()) });
+    await waitFor(() => expect(read.result.current.isSuccess).toBe(true));
+    expect(lightsCouldNotBeRead(read.result.current)).toBe(false);
+    expect(lightsOf(read.result.current)).toEqual(summary('Green'));
   });
 
   it('useComplianceLights_ShareTheEntryOfThePageAndOfTheMenu', async () => {

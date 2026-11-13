@@ -9,7 +9,8 @@ import { ComplianceLines } from '@/features/compliance/components/compliance-lin
 import { deadlineNote } from '@/features/compliance/lib/cockpit-model';
 import { periodName, reasonText } from '@/features/compliance/lib/compliance-light';
 import { hasLinesToShow, propertyLinesOf, viewOfLines } from '@/features/compliance/lib/compliance-lines';
-import { useComplianceActivation, useComplianceLights } from '@/features/compliance/use-compliance';
+import { ComplianceUnavailable } from '@/features/compliance/components/compliance-unavailable';
+import { lightsCouldNotBeRead, lightsOf, useComplianceActivation, useComplianceLights } from '@/features/compliance/use-compliance';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute, isCurrentAddress } from '@/lib/compliance-routes';
 import { displayableMediaUrls } from '@/lib/media-url';
@@ -70,7 +71,9 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
   // on a GET takes the user to «nessun accesso»).
   const wantsLights = canReadBookings && (status === 'Active' || status === 'Paused');
   const lights = useComplianceLights(wantsLights);
-  const lines = useMemo(() => (lights.data ? propertyLinesOf(lights.data, property.id) : []), [lights.data, property.id]);
+  const summary = lightsOf(lights);
+  const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
+  const lines = useMemo(() => (summary ? propertyLinesOf(summary, property.id) : []), [summary, property.id]);
   const facts = { status, cinStatus: property.cinStatus, photoCount: displayableMediaUrls(property.photoUrls).length, canWrite };
   const kind = nextStepOf({ ...facts, compliance: lines });
 
@@ -95,6 +98,12 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
         <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
       </div>
     );
+  }
+
+  // A read of the lights that failed (not a 404, which is the traffic light off) never lets the block say «tutto in ordine»: it says it does not know,
+  // and offers to try again. A step that asks something (a photo, the CIN, a compliance item) is said as it is.
+  if (lightsFailed && kind === 'allInOrder') {
+    return <ComplianceUnavailable kicker={t('property.next.heading')} testId="property-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />;
   }
 
   const toProperties: CalmAction = { label: t('property.next.toProperties'), href: PROPERTIES_PATH };

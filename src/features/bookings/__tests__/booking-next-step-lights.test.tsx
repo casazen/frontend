@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { fetchComplianceSummary } from '@/api/compliance.api';
@@ -39,6 +40,11 @@ const stay = (status: Booking['status']): Booking =>
     checkOutDate: '2026-09-12T00:00:00Z',
     guest: { firstName: 'Mario', lastName: 'Rossi' },
   }) as unknown as Booking;
+
+function httpError(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: undefined, statusText: '', headers: {}, config });
+}
 
 const empty = { count: 0, items: [] };
 const summaryOf = (parts: Partial<ComplianceSummaryResult>): ComplianceSummaryResult => ({
@@ -214,14 +220,52 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'sendAlloggiati');
   });
 
-  it('BookingNextStep_SummaryFails_SaysWhatItAlwaysSaidAndNothingAsInOrderOrAsAnError', async () => {
-    vi.mocked(fetchComplianceSummary).mockRejectedValue(new Error('boom'));
+  // A read that fails is «non lo so», never «concluso» or «tutto a posto»: the block says it could not check and offers to try again.
+  it.each([
+    ['a server error', () => httpError(500)],
+    ['a 403', () => httpError(403)],
+    ['the network', () => new Error('Network Error')],
+  ])('BookingNextStep_SummaryFailsWith%s_SaysItDoesNotKnowNeverConcludedAndOffersToTryAgain', async (_what, failure) => {
+    vi.mocked(fetchComplianceSummary).mockRejectedValueOnce(failure());
     renderStep();
 
     const block = await screen.findByTestId('booking-next-step');
-    expect(block).toHaveAttribute('data-next-step', 'completed');
+    expect(block).toHaveAttribute('data-next-step', 'complianceUnavailable');
+    expect(block).toHaveTextContent('Non riusciamo a controllare gli adempimenti');
+    expect(block).not.toHaveTextContent('Il soggiorno è concluso');
+    expect(block).not.toHaveTextContent('Tutto a posto');
+    expect(block).toHaveAttribute('data-tone', 'neutral');
+    expect(screen.queryByTestId('compliance-lines')).not.toBeInTheDocument();
+
+    // «Riprova» reads the lights again: with an answer the card is the one it always is.
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')) }));
+    fireEvent.click(within(block).getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'compliance'));
+    expect(fetchComplianceSummary).toHaveBeenCalledTimes(2);
+  });
+
+  it('BookingNextStep_SummaryNotFound_IsTheTrafficLightOffAndTheCardIsWhatItWas', async () => {
+    vi.mocked(fetchComplianceSummary).mockRejectedValue(httpError(404));
+    renderStep();
+
+    expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
     expect(screen.queryByTestId('compliance-lines')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+  });
+
+  it('BookingNextStep_SummaryFailsAndAStepAsksSomething_SaysThatStepAsItIs', async () => {
+    vi.mocked(fetchComplianceSummary).mockRejectedValue(httpError(500));
+    vi.mocked(useAlloggiatiStatus).mockReturnValue({
+      data: { status: 'DaInviareManualmente', isOverdue: false, deadlineAt: '2026-09-11T10:00:00Z', dataComplete: true },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useAlloggiatiStatus>);
+    renderStep();
+
+    // Alloggiati Web to send is asked, not claimed to be fine: there is nothing to take back.
+    await waitFor(() => expect(fetchComplianceSummary).toHaveBeenCalled());
+    expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'sendAlloggiati');
   });
 
   it('BookingNextStep_WhoMayNotWrite_IsLedToThePageNotToldToDoIt', async () => {
