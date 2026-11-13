@@ -3,9 +3,12 @@ import {
   canvasToJpeg,
   DOCUMENT_JPEG_QUALITY,
   DOCUMENT_MAX_WIDTH,
+  DOCUMENT_WITH_SELFIE_AS_IS_BYTES,
   fitWidth,
   IMAGE_SEND_AS_IS_BYTES,
   prepareDocumentPhoto,
+  REQUEST_LIMIT_BYTES,
+  SELFIE_BUDGET_BYTES,
   SELFIE_JPEG_QUALITY,
   SELFIE_MAX_WIDTH,
 } from '../image-capture';
@@ -111,6 +114,52 @@ describe('prepareDocumentPhoto', () => {
 
     expect(prepared).toEqual({ ok: true, blob: photo });
     expect(encoded).toHaveLength(0);
+  });
+
+  it('prepareDocumentPhoto_TheDocumentThatComesAgainWithTheSelfieAndTheSelfie_StayUnderTheLimitOfOneRequest', () => {
+    // The request of the selfie of a property that keeps no document carries both pictures, and the API refuses the whole body over its limit.
+    expect(REQUEST_LIMIT_BYTES).toBe(10_000_000);
+    expect(DOCUMENT_WITH_SELFIE_AS_IS_BYTES + SELFIE_BUDGET_BYTES).toBeLessThanOrEqual(REQUEST_LIMIT_BYTES - 1_000_000);
+    // What went as it is for one picture (9 MB) plus a selfie over 1 MB is the request the API refused.
+    expect(IMAGE_SEND_AS_IS_BYTES + 1_000_001).toBeGreaterThan(REQUEST_LIMIT_BYTES);
+    expect(DOCUMENT_WITH_SELFIE_AS_IS_BYTES).toBeLessThan(IMAGE_SEND_AS_IS_BYTES);
+  });
+
+  it('prepareDocumentPhoto_AJpegThatWouldGoAsItIsAloneButComesAgainWithTheSelfie_IsRedrawnSmaller', async () => {
+    stubCanvas();
+    const bitmap = { width: 4000, height: 3000, close: vi.fn() };
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(bitmap));
+    const photo = file(DOCUMENT_WITH_SELFIE_AS_IS_BYTES + 1, 'image/jpeg');
+
+    const alone = await prepareDocumentPhoto(photo);
+    expect(alone).toEqual({ ok: true, blob: photo });
+    expect(encoded).toHaveLength(0);
+
+    const withSelfie = await prepareDocumentPhoto(photo, { withSelfie: true });
+
+    expect(withSelfie.ok).toBe(true);
+    expect(withSelfie.ok && withSelfie.blob).not.toBe(photo);
+    expect(encoded[0]).toMatchObject({ width: DOCUMENT_MAX_WIDTH, type: 'image/jpeg', quality: DOCUMENT_JPEG_QUALITY });
+  });
+
+  it('prepareDocumentPhoto_AJpegThatComesAgainWithTheSelfieAndIsUnderTheLowerLimit_IsStillSentAsItIs', async () => {
+    stubCanvas();
+    const photo = file(DOCUMENT_WITH_SELFIE_AS_IS_BYTES, 'image/jpeg');
+
+    expect(await prepareDocumentPhoto(photo, { withSelfie: true })).toEqual({ ok: true, blob: photo });
+    expect(encoded).toHaveLength(0);
+  });
+
+  it('prepareDocumentPhoto_ARedrawnPhotoThatComesAgainWithTheSelfieAndIsOverTheLowerLimit_IsTooLarge', async () => {
+    stubCanvas(() => {
+      const heavy = new Blob(['x'], { type: 'image/jpeg' });
+      Object.defineProperty(heavy, 'size', { value: DOCUMENT_WITH_SELFIE_AS_IS_BYTES + 1 });
+      return heavy;
+    });
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 3000, height: 2000, close: vi.fn() }));
+
+    // Under the limit of one picture, over the one of two: it would be the request the API refuses.
+    expect(await prepareDocumentPhoto(file(IMAGE_SEND_AS_IS_BYTES - 1, 'image/jpeg'), { withSelfie: true })).toEqual({ ok: false, problem: 'too_large' });
   });
 
   it('prepareDocumentPhoto_AJpegOverTheLimitAndABrowserThatCannotRedrawIt_IsTooLarge', async () => {

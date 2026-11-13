@@ -15,8 +15,23 @@ export const DOCUMENT_MAX_WIDTH = 2560;
 /** The quality of the JPEG of a photo of the document that had to be redrawn. */
 export const DOCUMENT_JPEG_QUALITY = 0.85;
 
-/** What is sent as it is stays under this: the API refuses an image over 10 MB. */
+/** What the API accepts of one request: the WHOLE body, every picture in it (`MaxImageRequestBytes` of the public check-in controller). */
+export const REQUEST_LIMIT_BYTES = 10_000_000;
+
+/** What is sent as it is stays under this when the request carries one picture: the API refuses a request over 10 MB. */
 export const IMAGE_SEND_AS_IS_BYTES = 9_000_000;
+
+/**
+ * What a selfie (at most 1920 px wide, a JPEG at 80 %, ADR-013-R12) is allowed to weigh in the sum of a request that also carries the photo of the
+ * document: it is 0.3 to 0.9 MB as a rule and up to about 1.5 MB for a noisy frame taken in poor light.
+ */
+export const SELFIE_BUDGET_BYTES = 2_000_000;
+
+/**
+ * What goes as it is of the photo of a document that comes again with every selfie (a property that keeps no document, ADR-013-R6): the request of the
+ * selfie carries both pictures and the API refuses it over {@link REQUEST_LIMIT_BYTES}, so the document leaves room for the selfie and the form.
+ */
+export const DOCUMENT_WITH_SELFIE_AS_IS_BYTES = 5_000_000;
 
 /** The types of image the API accepts for the document and the selfie. */
 const ACCEPTED_TYPES: ReadonlySet<string> = new Set(['image/jpeg', 'image/jpg', 'image/png']);
@@ -93,13 +108,16 @@ async function redrawAsJpeg(file: File, maxWidth: number, quality: number): Prom
 /**
  * The photo of the document as it is sent: a JPEG or a PNG under {@link IMAGE_SEND_AS_IS_BYTES} goes as it is (nothing is redrawn, nothing of its
  * legibility is lost); anything else is drawn again as a JPEG of {@link DOCUMENT_MAX_WIDTH} at most, when this browser can; otherwise it is said
- * why it cannot be sent and the guest takes the photo again.
+ * why it cannot be sent and the guest takes the photo again. A photo that will come again with every selfie (`withSelfie`, a property that keeps no
+ * document) is held to {@link DOCUMENT_WITH_SELFIE_AS_IS_BYTES} instead, so that the request of the selfie, which carries both, stays under the limit
+ * of the API: the document is redrawn from there up, which keeps the lines of its MRZ legible at {@link DOCUMENT_MAX_WIDTH}.
  */
-export async function prepareDocumentPhoto(file: File): Promise<PreparedPhoto> {
+export async function prepareDocumentPhoto(file: File, options: { withSelfie?: boolean } = {}): Promise<PreparedPhoto> {
+  const asIsBytes = options.withSelfie ? DOCUMENT_WITH_SELFIE_AS_IS_BYTES : IMAGE_SEND_AS_IS_BYTES;
   const accepted = ACCEPTED_TYPES.has(file.type.toLowerCase());
-  if (accepted && file.size <= IMAGE_SEND_AS_IS_BYTES) return { ok: true, blob: file };
+  if (accepted && file.size <= asIsBytes) return { ok: true, blob: file };
 
   const redrawn = await redrawAsJpeg(file, DOCUMENT_MAX_WIDTH, DOCUMENT_JPEG_QUALITY);
-  if (redrawn && redrawn.size <= IMAGE_SEND_AS_IS_BYTES) return { ok: true, blob: redrawn };
+  if (redrawn && redrawn.size <= asIsBytes) return { ok: true, blob: redrawn };
   return { ok: false, problem: accepted ? 'too_large' : 'unsupported' };
 }

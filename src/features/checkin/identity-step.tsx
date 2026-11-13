@@ -22,7 +22,8 @@ export function IdentityStep({ identity }: IdentityStepProps) {
   if (!progress) return null;
 
   const handleDocument = async (file: File) => {
-    const prepared = await prepareDocumentPhoto(file);
+    // A property that keeps no document gets the photo again with every selfie: the request of the selfie carries both pictures, so this one is held smaller.
+    const prepared = await prepareDocumentPhoto(file, { withSelfie: progress.documentNotArchived });
     if (!prepared.ok) {
       identity.reportProblem(prepared.problem);
       return;

@@ -8,6 +8,7 @@ import { publicCheckinApi } from '@/api/checkin.api';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { IdentityVerificationState } from '@/types/public-checkin.types';
 import { IdentityStep } from '../identity-step';
+import { DOCUMENT_WITH_SELFIE_AS_IS_BYTES } from '@/lib/image-capture';
 import { BIOMETRIC_CONSENT_VERSION } from '../lib/identity-model';
 import { useIdentityVerification } from '../use-identity-verification';
 
@@ -101,6 +102,23 @@ function pickDocument() {
   fireEvent.change(screen.getByTestId('checkin-identity-document-file'), { target: { files: [photoFile()] } });
 }
 
+/** The guest picks a photo of the document that weighs `size` bytes (only the size is made up). */
+function pickDocumentOfSize(size: number) {
+  const photo = photoFile();
+  Object.defineProperty(photo, 'size', { value: size });
+  fireEvent.change(screen.getByTestId('checkin-identity-document-file'), { target: { files: [photo] } });
+  return photo;
+}
+
+/** A browser that can draw a photo again: the bitmap of a 4000 x 3000 photo, a canvas and a JPEG that comes out of it. */
+function stubRedraw() {
+  vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 4000, height: 3000, close: vi.fn() }));
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn(), fillRect: vi.fn() } as unknown as CanvasRenderingContext2D);
+  vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (this: HTMLCanvasElement, callback, type) {
+    callback(new Blob(['redrawn'], { type }));
+  });
+}
+
 async function takeAndSendSelfie() {
   await waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
   fireEvent.click(screen.getByTestId('selfie-take'));
@@ -115,6 +133,7 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: undefined });
 });
 
@@ -541,6 +560,32 @@ describe('IdentityStep: a property in Ticino (ADR-013-R6, R15)', () => {
     const [first, second] = vi.mocked(publicCheckinApi.postSelfie).mock.calls;
     expect(first[2]).toBe(photo);
     expect(second[2]).toBe(photo);
+  });
+
+  it('IdentityStep_TicinoAPhotoThatWouldGoAsItIsAlone_IsRedrawnSmallerBecauseItComesAgainWithTheSelfie', async () => {
+    stubRedraw();
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValue({ success: true, acceptable: true, guidanceCodes: [], documentStored: false, documentNotArchived: true });
+    renderStep(state({ step: 'document', consentRecorded: true, documentNotArchived: true }));
+
+    // 6 MB is under the 9 MB of one picture and over what leaves room for a selfie in the same request (the API refuses the whole body over 10 MB).
+    const photo = pickDocumentOfSize(6_000_000);
+
+    await waitFor(() => expect(stage()).toBe('selfie'));
+    const sent = vi.mocked(publicCheckinApi.postDocument).mock.calls[0][1];
+    expect(sent).not.toBe(photo);
+    expect(sent.type).toBe('image/jpeg');
+    expect(sent.size).toBeLessThanOrEqual(DOCUMENT_WITH_SELFIE_AS_IS_BYTES);
+  });
+
+  it('IdentityStep_OutsideTicino_TheSamePhotoGoesAsItIsBecauseTheSelfieRequestCarriesNoDocument', async () => {
+    stubRedraw();
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValue({ success: true, acceptable: true, guidanceCodes: [], documentStored: true, documentNotArchived: false });
+    renderStep(state({ step: 'document', consentRecorded: true, documentNotArchived: false }));
+
+    const photo = pickDocumentOfSize(6_000_000);
+
+    await waitFor(() => expect(stage()).toBe('selfie'));
+    expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[0][1]).toBe(photo);
   });
 
   it('IdentityStep_OutsideTicino_SendsTheSelfieAloneTheServerKeepsTheDocument', async () => {
