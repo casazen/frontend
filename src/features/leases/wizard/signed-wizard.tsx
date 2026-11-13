@@ -1,6 +1,7 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
+import { LONG_RENT_PROPERTIES_PATH } from '@/features/properties/long-rent/paths';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -15,8 +16,6 @@ import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { stepWords } from './step-words';
 import { AFTER_STEP, DONE_STEP, leaseEditPath, registeredSteps, stepKey } from './wizard-model';
-
-const LEASES_PATH = '/app/long-rent/leases';
 
 /**
  * The end of «Crea contratto» (LR-06b), once the contract is signed: «Dopo la firma» (`?step=8`) and the final screen «Cosa succede ora»
@@ -39,7 +38,7 @@ export function SignedWizard({ leaseId, view }: { leaseId: string; view: 'after'
     if (getHttpStatus(lease.error) === 404) {
       return (
         <div data-testid="lease-not-found">
-          <EmptyState icon={FileText} title={t('leases.notFound')} description={t('leases.notFoundDescription')} action={{ label: t('leases.backToList'), href: LEASES_PATH }} />
+          <EmptyState icon={FileText} title={t('leases.notFound')} description={t('leases.notFoundDescription')} action={{ label: t('longRentProperties.detail.backToList'), href: LONG_RENT_PROPERTIES_PATH }} />
         </div>
       );
     }

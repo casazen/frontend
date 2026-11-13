@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { CondominiumManagement } from '@/features/condominium/condominium-management';
+import { CONDO_KEY } from '@/api/condominium-accounting.api';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/page-header';
@@ -20,13 +21,13 @@ export function LandlordPaymentsPage() {
   const [confirm, setConfirm] = useState<string | null>(null);
   const dues = useQuery({ queryKey: ['condominium-manual-payments'], queryFn: () => ApiClient.get<CondoDue[]>(url) });
   const mark = useMutation({ mutationFn: (id: string) => ApiClient.post(`${url}/${encodeURIComponent(id)}/mark-paid`, {}),
-    onSuccess: () => { setConfirm(null); void qc.invalidateQueries({ queryKey: ['condominium-manual-payments'] }); } });
+    onSuccess: () => { setConfirm(null); void qc.invalidateQueries({ queryKey: ['condominium-manual-payments'] }); void qc.invalidateQueries({ queryKey: [CONDO_KEY] }); } });
   const canWrite = hasPermission('long-rent', 'property.write');
   return <div className="min-w-0 space-y-6" data-testid="long-rent-payments">
     <PageHeader title={t('condoManual.title')} description={t('condoManual.description')} crumbs="auto" />
     <div className={`${FOCUS_COLUMN} space-y-4`}>
       <p className="text-sm">{t('condoManual.reminder')}</p>
-      <Link to="/app/long-rent/leases" className="underline" data-testid="long-rent-payments-contracts">{t('longRentPayments.contracts')}</Link>
+      <CondominiumManagement />
       {dues.isLoading ? <p role="status">{t('tenantSepa.loading')}</p> : null}
       {dues.isError || mark.isError ? <p role="alert">{t('tenantSepa.error')}</p> : null}
       {dues.data?.length === 0 ? <p>{t('condoManual.empty')}</p> : null}

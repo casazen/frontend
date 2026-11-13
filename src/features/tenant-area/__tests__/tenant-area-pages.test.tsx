@@ -90,6 +90,19 @@ describe('tenant area', () => {
     vi.useRealTimers();
   });
 
+  it('shows the annual condominium report and the adjusted installment', async () => {
+    get.mockResolvedValue({ data: { ...area,
+      condominiumReports: [{ id: 'settlement-1', periodLabel: '2025/2026', periodEnd: '2026-05-31', recoverable: 2160, advances: 1800, prior: 0, balance: 360 }],
+      dues: [{ ...area.dues[0], amount: 830, components: [{ kind: 'Rent', amount: 650 }, { kind: 'CondominiumAdvance', amount: 180, description: 'Preventivo 2026/2027 · conguaglio esercizio precedente ripartito' }] }],
+    } });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);
+    const report = await screen.findByTestId('tenant-condominium-report', {}, { timeout: 15000 });
+    expect(report).toHaveTextContent('2025/2026');
+    expect(report).toHaveTextContent(/360,00/);
+    expect(report).toHaveTextContent(/180,00/);
+    expect(report).toHaveTextContent(/830,00/);
+  });
+
   it('shows the breakdown and the bank details, and a transfer declaration does not mark the installment paid', async () => {
     // 23:30 UTC is already the next calendar day in Zurich. The default must not be the UTC date.
     freezeClock('2026-01-15T23:30:00Z');

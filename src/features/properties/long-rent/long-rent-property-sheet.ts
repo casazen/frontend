@@ -5,11 +5,11 @@
  */
 export type LongRentPropertyPanel = 'contracts' | 'expenses' | 'maintenance' | 'documents' | 'requests' | 'data';
 
-/** The tabs a person sees. Contratti, Spese condominiali and Manutenzione need the leases, so they are hidden from who may not read them. */
+/** Expenses belong to the property. Only contracts and tenant maintenance require lease access. */
 export function longRentPropertyPanels(canReadLeases: boolean): LongRentPropertyPanel[] {
   return canReadLeases
     ? ['contracts', 'expenses', 'maintenance', 'documents', 'requests', 'data']
-    : ['documents', 'requests', 'data'];
+    : ['expenses', 'documents', 'requests', 'data'];
 }
 
 /** The tab a `?tab=` opens: an unknown value, or the contracts to who may not read them, opens the first one. */
