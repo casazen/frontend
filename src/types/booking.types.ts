@@ -89,6 +89,47 @@ export interface Booking {
   collection?: BookingCollection | null;
   /** Booking detail only: where each figure comes from; a figure with no value has no entry. Missing for who may not read payments. */
   amountSources?: BookingAmountSources | null;
+  /**
+   * Booking detail only (`GET /bookings/:id`): the mirror of the booking on the channel manager, where the last operation CasaZen sent for it stands
+   * (NF-74); `null` when the booking is not mirrored there. Missing on the booking an action answers with, the creation included: the result of
+   * the new-booking wizard reads the detail to know it.
+   */
+  octorateSync?: BookingOctorateSync | null;
+}
+
+/** Where the last operation CasaZen sent to the channel manager for a booking stands (`octorateSync.state`). `NotAllowedByChannel` is a change the channel does not allow. */
+export type OctorateSyncState = 'Pending' | 'Synced' | 'Failed' | 'Conflict' | 'NotAllowedByChannel';
+
+/** The last operation sent to the channel manager for a booking. */
+export type OctorateSyncOperation = 'Create' | 'Update' | 'Cancel' | 'Payment';
+
+/** The stay as the channel manager holds it after it refused a change (`Conflict` only); a member that was not kept is `null`. */
+export interface OctorateVersion {
+  checkIn: string | null;
+  checkOut: string | null;
+  guests: number | null;
+}
+
+/**
+ * The mirror of a booking on the channel manager (`octorateSync` of the booking detail, NF-74): a state, a stable code of CasaZen for a failure (never a text
+ * of the channel manager) and whether the caller may ask for the push again. No personal data.
+ */
+export interface BookingOctorateSync {
+  state: OctorateSyncState;
+  lastOperation: OctorateSyncOperation;
+  /** When the channel manager last confirmed an operation (UTC); null until it did. */
+  lastSyncedAt: string | null;
+  /** Why the last operation failed: `octorate_dates_unavailable`, `octorate_unavailable`...; null otherwise. */
+  errorCode: string | null;
+  /** The state is `Failed` or `Conflict` and the caller may write the booking: `POST /bookings/:id/octorate-sync/retry` is open to them. */
+  canRetry: boolean;
+  octorateVersion?: OctorateVersion | null;
+}
+
+/** The answer of `POST /bookings/:id/octorate-sync/retry` (202): the push is queued, the state `Pending`. */
+export interface OctorateSyncRetryResult {
+  bookingId: string;
+  state: OctorateSyncState;
 }
 
 /**
@@ -271,6 +312,14 @@ export interface CreateBookingDto {
 }
 
 /**
+ * How the guest of a booking the host enters is to pay it (NF-74): `paymentLink` (the guest is e-mailed a secure link to pay the balance online, on the
+ * host's Stripe account), `onSite` or `bankTransfer` (recorded only: the host records the income by hand with "Registra incasso", nothing is sent). The API
+ * also knows `none`, which the client never sends: the choice decides money, so it is always an explicit one.
+ */
+export const HOST_PAYMENT_ARRANGEMENTS = ['paymentLink', 'onSite', 'bankTransfer'] as const;
+export type HostPaymentArrangement = (typeof HOST_PAYMENT_ARRANGEMENTS)[number];
+
+/**
  * POST /bookings/manual: a booking entered by hand with only what it needs (SR-06a). Prices and tourist tax are never sent
  * (the API prices the stay); `totalPrice` is the total the host agreed when it is not the quote's.
  */
@@ -291,6 +340,11 @@ export interface CreateManualBookingDto {
   priceNote?: string;
   /** The block of a portal's calendar this booking completes (`linkableBlockId` of the availability). */
   blockId?: string;
+  /**
+   * How the guest pays (the payment step of the wizard, NF-74). `paymentLink` needs `payment.write` and a Stripe account ready (422 `payment_link_unavailable`
+   * otherwise). Never with `blockId`: the portal collects.
+   */
+  paymentArrangement?: HostPaymentArrangement;
 }
 
 /** The answer of POST /bookings/manual: the booking and what the host should know about it. */
@@ -300,6 +354,26 @@ export interface ManualBooking extends Booking {
   minNights: number | null;
   /** False: the guest gives the documents and the rest of the data with the online check-in. */
   guestDataComplete: boolean;
+  /**
+   * With `paymentArrangement: 'paymentLink'`: the link e-mailed to the guest, given this once for the host to copy (a credential: the token in it is never stored
+   * by the API, so it is shown on the result of the wizard only and kept nowhere). `null` for the other arrangements and when the link could not be made.
+   */
+  paymentLinkUrl?: string | null;
+  /** Why the link is missing although the booking was created (`payment_link_unavailable`, `payment_provider_error`): the host sends it again. `null` otherwise. */
+  paymentLinkError?: string | null;
+}
+
+/** The answer of POST /bookings/:id/payment-link: a new link of the balance, e-mailed to the guest; the previous link stops working. */
+export interface BookingPaymentLink {
+  bookingId: string;
+  /** The link, given this once for the host to copy (a credential). */
+  paymentLinkUrl: string;
+  /** The balance the guest pays. */
+  amount: number;
+  currency: string;
+  sentAt: string;
+  /** The e-mail to the guest was queued; false when the guest has no address (then the host sends the link another way). */
+  emailSent: boolean;
 }
 
 /** `state` of GET /properties/:id/availability (SR-06a). */
@@ -308,16 +382,19 @@ export type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkab
 /** Why a stay is `invalid`. */
 export type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
 
-/** A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`) or the host's own block (`block`). */
-export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block';
+/**
+ * A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`), the host's own block (`block`) or the channel
+ * manager saying the nights cannot be booked (`channelManager`: no id of its own, the dates are the ones asked for).
+ */
+export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block' | 'channelManager';
 
 /** Something that takes a night of the dates asked for. */
 export interface StayAvailabilityConflict {
   id: string;
   type: StayAvailabilityConflictType;
-  /** The guest's name (booking), the name of the calendar (portal) or the host's note (block); null when there is none. */
+  /** The guest's name (booking), the name of the calendar (portal), the host's note (block) or the channel the channel manager names; null when there is none. */
   title: string | null;
-  /** Where a booking came from or whose calendar the block is; null for the host's own block. */
+  /** Where a booking came from or whose calendar the block is; null for the host's own block and for the channel manager. */
   channel: BookingChannel | null;
   /** Arrival day and departure day (`YYYY-MM-DD`). */
   from: string;
@@ -344,6 +421,12 @@ export interface StayAvailability {
   nearestFreeWindow: StayAvailabilityWindow | null;
   /** With `linkableBlock`: the block to complete with POST /bookings/manual (`blockId`). */
   linkableBlockId: string | null;
+  /**
+   * Whether the channel manager was asked (NF-74, NF-80): `null` for a property that is not mirrored there (nothing to ask), `true` when it answered (its
+   * "not available" is `occupied` with a `channelManager` conflict), `false` when it could not be asked. `false` is advice only: it never blocks the host,
+   * the API asks again when the booking is created. Missing in the answer of an older API: read as `null`.
+   */
+  channelManagerChecked?: boolean | null;
 }
 
 /** The stay GET /properties/:id/availability is asked about. */

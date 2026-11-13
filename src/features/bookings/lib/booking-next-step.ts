@@ -1,4 +1,6 @@
 import type { CalmTone } from '@/components/shared/calm';
+import { pendingLines, type ComplianceLine } from '@/features/compliance/lib/compliance-lines';
+import { romeDateOf } from '@/lib/stay-dates';
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
 import type { Booking } from '@/types';
 import type { GuestCheckInSessionStatus } from '@/types/public-checkin.types';
@@ -21,11 +23,15 @@ type BookingNextStepKind =
   | 'sendAlloggiati'
   | 'allInOrder'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  // A compliance item of the stay that is not in order while the step has nothing else to ask (NF-52): `line` is the one.
+  | 'compliance';
 
 interface BookingNextStep {
   kind: BookingNextStepKind;
   tone: CalmTone;
+  /** For `compliance`: the item that is the step, the worst of the stay's. */
+  line?: ComplianceLine;
 }
 
 type StayFacts = Pick<Booking, 'status' | 'source' | 'onSiteRequestState' | 'checkInDate' | 'checkOutDate'>;
@@ -63,16 +69,49 @@ export function documentsNeeded(booking: StayFacts, today: string): 'checkIn' | 
   return null;
 }
 
+/** The steps that have nothing to ask of the host: a compliance item that is not in order is worth more than their «tutto in ordine». */
+const QUIET_STEPS: readonly BookingNextStepKind[] = ['stayInProgress', 'allInOrder', 'completed'];
+
 /**
- * The one thing to do now, from what the booking already says: its status and dates (Europe/Rome), how it is paid, and the
- * documents (the online check-in link, Alloggiati Web). The order is the one a host would follow: the answer that is owed first,
+ * Whether the step says that all is well («tutto in ordine», «concluso»): until the compliance lights of the stay are read the page does not say it,
+ * because a light that is not green would take it back a moment later.
+ */
+export function claimsAllInOrder(step: Pick<BookingNextStep, 'kind'>): boolean {
+  return step.kind === 'allInOrder' || step.kind === 'completed';
+}
+
+/**
+ * The compliance items of the stay (identity, Alloggiati Web, the receipt: NF-52, AC-NF52-9) and the step. They never take a step that asks
+ * something (the answer, the arrival, the documents, the departure) from the host, but when the step has nothing to ask the worst of them is the
+ * next step: red when the host has to act (red as the deadline when it has passed), blue when it is in hand. `lines` are worst first.
+ */
+function withCompliance(step: BookingNextStep, today: string, lines: readonly ComplianceLine[] | undefined): BookingNextStep {
+  const line = pendingLines(lines ?? [])[0];
+  if (!line || !QUIET_STEPS.includes(step.kind)) return step;
+  const dueDay = romeDateOf(line.dueAt);
+  const overdue = dueDay !== '' && dueDay < today;
+  return { kind: 'compliance', tone: line.state === 'red' ? (overdue ? 'danger' : 'warning') : 'info', line };
+}
+
+/**
+ * The one thing to do now, from what the booking already says: its status and dates (Europe/Rome), how it is paid, the
+ * documents (the online check-in link, Alloggiati Web) and, when the step has nothing to ask, the compliance items of the stay
+ * with their lights. The order is the one a host would follow: the answer that is owed first,
  * then the arrival, the documents, the departure. A read that is not there (still loading, or it failed) never invents a task:
  * the step is then the one the dates give.
  */
 export function nextStepOf(
   booking: StayFacts,
   today: string,
-  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts } = {},
+  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts; compliance?: readonly ComplianceLine[] } = {},
+): BookingNextStep {
+  return withCompliance(stepOf(booking, today, facts), today, facts.compliance);
+}
+
+function stepOf(
+  booking: StayFacts,
+  today: string,
+  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts },
 ): BookingNextStep {
   const alloggiati = facts.alloggiati;
   const alloggiatiToSend = alloggiati !== undefined && ALLOGGIATI_TO_SEND.includes(alloggiati.status);

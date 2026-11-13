@@ -8,6 +8,7 @@ import guestFr from '@/i18n/locales/guest-checkin.fr.json';
 import guestEs from '@/i18n/locales/guest-checkin.es.json';
 import { GUEST_LOCALE_OPTIONS } from '@/features/checkin/lib/guest-locale';
 import { GUEST_ERROR_KEYS } from '@/features/checkin/lib/guest-errors';
+import { GUIDANCE_CODES, IDENTITY_PROBLEMS, guidanceKey, problemKey } from '@/features/checkin/lib/identity-model';
 import { STATISTICAL_FIELD_OPTIONS } from '@/features/checkin/schemas/checkin.schema';
 import { CHECKIN_WIZARD_STEPS, ISSUE_FIELD_LABEL_KEYS, ISSUE_TEXT_KEYS } from '@/features/checkin/wizard/lib/checkin-wizard-model';
 import {
@@ -357,8 +358,9 @@ describe('guest check-in locales', () => {
     'uploading', 'unsupportedFormat', 'fileTooLarge', 'birthPlace', 'nationality', 'documentExpiry', 'documentIssuingCountry', 'address',
     'city', 'postalCode', 'country', 'stepPersonal', 'marketingConsent', 'validation.documentNumber.maxLength',
   ]);
+  // The biometric texts (consent, selfie) are on the guest page since the identity step (E03/F04/US03/T01): in the five languages.
   const NOT_ON_THE_GUEST_PAGE_PREFIXES = [
-    'access.', 'link.', 'status.', 'biometric.', 'wizard.',
+    'access.', 'link.', 'status.', 'wizard.',
     'validation.placeOfBirth.', 'validation.nationality.', 'validation.documentIssuingCountry.',
   ];
 
@@ -423,6 +425,11 @@ describe('guest check-in locales', () => {
     const keys = [
       ...GUEST_LOCALE_OPTIONS.map((option) => option.nameKey),
       ...Object.values(GUEST_ERROR_KEYS),
+      // The identity step (E03/F04/US03/T01): the words of each guidance code of the API, of each problem and of each reason the camera is not there.
+      ...GUIDANCE_CODES.map((code) => guidanceKey(code)),
+      guidanceKey('a_code_of_the_future'),
+      ...IDENTITY_PROBLEMS.map((problem) => problemKey(problem)),
+      ...['cameraDenied', 'cameraNotFound', 'cameraUnsupported', 'cameraUnknown'].map((reason) => `checkin.biometric.capture.${reason}`),
       ...Object.values(STATISTICAL_FIELD_OPTIONS).flatMap((options) => options.map((option) => option.labelKey)),
       ...['tourismType', 'travelWay', 'educationLevel'].flatMap((field) => [`checkin.${field}.label`, `checkin.validation.${field}.required`]),
       ...['SingleGuest', 'HeadOfFamily', 'HeadOfGroup', 'FamilyMember', 'GroupMember'].map((kind) => `checkin.guestKind.${kind}`),

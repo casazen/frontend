@@ -476,6 +476,22 @@
           "title": "Alloggiati Web deadline",
           "why": "Guests must be reported to the police within the deadline."
         },
+        "BookingOverlap": {
+          "title": "Dates already taken on the channel manager",
+          "why": "The dates of this booking are also taken on the channel manager: check the booking and the calendars before a second guest arrives."
+        },
+        "BookingSpecialRequest": {
+          "title": "Special request from the guest",
+          "why": "The guest wrote a special request: read it before they arrive."
+        },
+        "BookingSyncConflict": {
+          "title": "Booking also changed on the channel manager",
+          "why": "The booking was changed there while you were editing it: choose whether to keep CasaZen's version or the channel manager's."
+        },
+        "CheckImportedListing": {
+          "title": "Imported property to check",
+          "why": "The property was created from a listing of the channel manager and stays inactive until you check what was imported."
+        },
         "CheckInPending": {
           "title": "Check-in to complete",
           "why": "The check-in of this stay is not complete yet."
@@ -484,6 +500,14 @@
           "title": "Check-out to complete",
           "why": "The stay is over: record the departure."
         },
+        "CleaningDue": {
+          "title": "Cleaning to arrange",
+          "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Listing to match to a property",
+          "why": "A listing found on the channel manager may match several of your properties, or none: confirm or reject the match."
+        },
         "CredentialsToRenew": {
           "title": "Credentials to renew",
           "why": "The credentials of a service are about to expire or have already expired."
@@ -491,6 +515,10 @@
         "FiscalDocument": {
           "title": "Fiscal document to fix",
           "why": "A fiscal document needs you."
+        },
+        "IdentityVerification": {
+          "title": "Guest identity to verify",
+          "why": "The guest's identity is not verified yet: we are waiting for their selfie, or an operator has to decide."
         },
         "IntegrationError": {
           "title": "Connection to fix",
@@ -508,6 +536,26 @@
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
         },
+        "MessageToReply": {
+          "title": "Message to answer",
+          "why": "The assistant passed a guest's message to you: answer it yourself."
+        },
+        "MunicipalityTaxRateMissing": {
+          "title": "Tourist tax rate to enter",
+          "why": "We do not know the tourist tax rate of the municipality: enter it, we never take it as zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Owner document expiring",
+          "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Owner stay block not accepted",
+          "why": "The channel manager did not accept the block of the dates: the stay is not confirmed until you send it again."
+        },
+        "OwnerStayToReview": {
+          "title": "Owner stay to decide",
+          "why": "The owner asked to stay in their property: approve or reject the request."
+        },
         "PublicationError": {
           "title": "Publication error",
           "why": "A listing could not be published on a channel."
@@ -519,6 +567,10 @@
         "ReconnectChannelManager": {
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
+        },
+        "TouristTaxDeadline": {
+          "title": "Tourist tax due",
+          "why": "The tax of the period has to be declared and paid, with the receipts archived."
         },
         "WizardResume": {
           "title": "Setup to resume",
@@ -1368,6 +1420,7 @@
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
       "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
+      "octorateSyncNotRetryable": "This booking has no sending to the channel manager to repeat.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
@@ -1553,6 +1606,7 @@
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
+      "paymentLinkUnavailable": "The payment link cannot be created: it needs a Stripe account ready to take payments, a balance to pay and a booking you entered yourself that is not cancelled. If a payment is already under way, wait for its outcome.",
       "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
       "stripeConnectUnavailable": "Stripe is not responding right now. Your connected Stripe account was not changed: try again in a moment.",
       "stripeConnectNotConfigured": "Stripe payments are not configured correctly on the server. Your connected account was not changed: contact CasaZen support.",
@@ -2186,6 +2240,9 @@
         "invalid": "Enter a valid number of minors",
         "lessThanGuests": "At least one adult is needed: minors must be fewer than the guests"
       },
+      "paymentArrangement": {
+        "required": "Choose how the guest will pay"
+      },
       "priceNote": {
         "maxLength": "The note on the price can have at most 80 characters"
       },
@@ -2352,12 +2409,17 @@
           "title": "Dates are free, but under the minimum stay"
         },
         "blocked": "These dates are not free: choose other dates or use the nearest free ones.",
+        "channelManagerBlocked": "These dates are taken in your channel manager: choose other dates.",
+        "channelManagerBlockedNamed": "These dates are taken on {{channel}}, in your channel manager: choose other dates.",
+        "channelManagerUnchecked": "We could not check the dates in your channel manager. You can go on: we check them again when you create the booking.",
         "checking": "Checking whether the dates are free…",
         "conflict": {
           "block": "It overlaps the block \"{{title}}\" ({{range}}).",
           "blockUnnamed": "It overlaps a block of the calendar ({{range}}).",
           "booking": "It overlaps the stay of {{name}} ({{range}}).",
           "bookingUnnamed": "It overlaps another stay ({{range}}).",
+          "channelManager": "Taken in your channel manager ({{range}}).",
+          "channelManagerNamed": "Taken on {{channel}}, in your channel manager ({{range}}).",
           "ical": "It overlaps the reservation on {{portal}} ({{range}})."
         },
         "invalid": {
@@ -2388,15 +2450,73 @@
           "Other": "another portal"
         }
       },
-      "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
+      "description": "For a booking taken by phone or in person: a few short steps, and the draft saves itself.",
       "done": {
+        "booking": {
+          "title": "Booking created in CasaZen"
+        },
         "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
+        "channelManager": {
+          "blocked": "The channel does not allow this operation: the booking was not created in the channel manager.",
+          "conflict": "The booking in your channel manager differs from the one in CasaZen: until it is settled, the dates may stay open on the other channels.",
+          "datesTaken": "The dates are already taken in your channel manager: the booking is in CasaZen, but it was not created there and the same nights may be sold twice. Check the calendar of the channels and decide which booking to keep.",
+          "failed": "It did not go through: until it does, the dates may stay open on the other channels.",
+          "notFound": "We can no longer find this booking: check it from the list of bookings.",
+          "pending": "Being sent: we are creating the booking in your channel manager, which will close the dates on every channel.",
+          "reasons": {
+            "datesUnavailable": "The channel manager says the dates are already taken: check the calendar of the channels.",
+            "linkedElsewhere": "The booking already exists in the channel manager and is linked to another booking of CasaZen: check whether it is a duplicate.",
+            "notMirrored": "The property is not connected to the channel manager right now: reconnect it or confirm the match, then try again.",
+            "paymentsNotRecorded": "The booking is in the channel manager, but not every payment was recorded there: try again.",
+            "rejected": "The channel manager refused the booking: check the details and try again.",
+            "reservationChanged": "The booking was changed in the channel manager after it was last read: check the differences before trying again.",
+            "roomNotChosen": "The room of the property is missing in the channel manager: choose the room in the match, then try again.",
+            "unavailable": "The channel manager did not answer: the sending is repeated, and you can try again too.",
+            "unknown": "The channel manager did not complete the operation. Try again in a moment."
+          },
+          "refresh": "Check again",
+          "retry": "Retry sending",
+          "retryFailed": "We could not send it again. Try again in a moment.",
+          "synced": "Done: the booking is in your channel manager and the dates are closed on every channel.",
+          "title": "Channel manager",
+          "unreadable": "We cannot read how far the sending to the channel manager has got.",
+          "waiting": "We have no confirmation from the channel manager yet: the dates may not be closed on every channel."
+        },
         "checkin": "A few days before arrival {{name}} gets the link for the online check-in by email.",
         "description": "{{property}}, from {{from}} to {{to}}",
         "guestFallback": "the guest",
+        "next": {
+          "checkChannelManager": "Open the booking and check how it stands in the channel manager: until it is settled, the dates may stay open on the other channels or be sold twice.",
+          "recordIncome": "When the guest pays, record the income with “Record payment” in the booking.",
+          "retryChannelManager": "Retry the sending to the channel manager: until it goes through, the dates may stay open on the other channels.",
+          "sendPaymentLink": "Send the payment link to {{name}}: so far they have received nothing."
+        },
         "open": "Open the booking",
         "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "paymentBankTransfer": "The guest pays by bank transfer: when it arrives, record the income with “Record payment” in the booking.",
+        "paymentLink": {
+          "copied": "Link copied",
+          "copy": "Copy link",
+          "copyFailed": "We could not copy it: select it below and copy it by hand.",
+          "field": "Payment link to copy",
+          "missing": "The link was not created: the booking is there, but the guest has not received any link.",
+          "notEmailed": "The link is ready, but the email to the guest did not go out: copy it and send it yourself.",
+          "resend": "Send again",
+          "resendHint": "A new link replaces the previous one, which stops working.",
+          "send": "Create and send the link",
+          "sendFailed": "We could not create the link. Try again in a moment.",
+          "sent": "Link sent to the guest: they can pay the balance online.",
+          "title": "Payment link"
+        },
+        "paymentOnSite": "The guest pays at the property: when you collect, record the income with “Record payment” in the booking.",
         "paymentPortal": "{{portal}} collects the payment: do not record it here as well.",
+        "paymentTitle": "Payment",
+        "state": {
+          "done": "done",
+          "problem": "to check",
+          "todo": "to do",
+          "working": "in progress"
+        },
         "title": "Booking for {{name}} added",
         "toList": "All bookings"
       },
@@ -2412,6 +2532,26 @@
         "notesHint": "For example the arrival time or a special request.",
         "phone": "Phone",
         "phoneExample": "+39 333 123 4567"
+      },
+      "payment": {
+        "bankTransfer": {
+          "description": "The guest pays you by bank transfer. When it arrives, you record the income with “Record payment”.",
+          "title": "Bank transfer"
+        },
+        "legend": "How will the guest pay?",
+        "onSite": {
+          "description": "The guest pays in person, at the property. When you collect, you record the income with “Record payment”.",
+          "title": "Pays at the property"
+        },
+        "paymentLink": {
+          "description": "The guest gets a link by email to pay the balance online by card. When they pay, the income is recorded by itself.",
+          "title": "Payment link"
+        },
+        "reason": {
+          "account": "You need a Stripe account that is connected and ready to take payments: set it up in the payment settings, then come back here.",
+          "nothingToPay": "There is nothing to pay: the agreed total is zero.",
+          "permission": "To send a payment link you need the permission to manage the payments of this property."
+        }
       },
       "portal": {
         "amount": "Amount",
@@ -2451,14 +2591,24 @@
           "purpose": "The name and the email of the person who booked are enough.",
           "title": "Who is coming to stay?"
         },
+        "payment": {
+          "label": "Payment",
+          "purpose": "Choose how the guest will pay: what happens next depends on it.",
+          "title": "How will the guest pay?"
+        },
+        "price": {
+          "label": "Price",
+          "purpose": "CasaZen works out the price from the settings of the property.",
+          "title": "How much does the guest pay?"
+        },
         "stay": {
           "label": "Stay",
           "purpose": "Choose the property, the dates and how many people are coming.",
           "title": "Which property, and which dates?"
         },
         "summary": {
-          "label": "Summary and price",
-          "purpose": "CasaZen works out the price from the settings of the property.",
+          "label": "Summary",
+          "purpose": "Check your answers and what happens when you create the booking.",
           "title": "Check and create the booking"
         }
       },
@@ -2474,8 +2624,30 @@
         "minors_one": "{{count}} minor",
         "minors_other": "{{count}} minors",
         "notes": "Notes",
+        "payment": "Payment",
+        "paymentValue": {
+          "bankTransfer": "Bank transfer",
+          "onSite": "Pays at the property",
+          "paymentLink": "Payment link",
+          "portal": "Collected by {{portal}}"
+        },
+        "portalAmount": "Amount of the portal",
+        "price": "Total",
+        "priceAgreed": "agreed price",
         "property": "Property",
-        "stayMissing": "The property and the dates are missing: without them we cannot work out the price."
+        "stayMissing": "The property and the dates are missing: without them we cannot work out the price.",
+        "willHappen": {
+          "bankTransfer": "The guest pays by bank transfer: when it arrives, you record the income.",
+          "casazen": "The booking is created in CasaZen: the nights are taken at once on the calendar and on the booking site.",
+          "channelManager": "It is created in your channel manager as well, which closes these dates on every channel.",
+          "channelManagerMaybe": "If the property is connected to your channel manager, it is created there too and the dates close on every channel.",
+          "onSite": "The guest pays at the property: you record the income.",
+          "paymentLink": "The guest gets a link by email to pay the balance online; after the booking is created you can copy it from here.",
+          "paymentMissing": "How the guest will pay is not chosen: go back to the “Payment” step.",
+          "portal": "{{portal}} collects for you: do not record any payment in CasaZen.",
+          "portalCompleted": "The reservation of {{portal}} is completed with the guest's details, without creating another one.",
+          "title": "What happens when you create the booking"
+        }
       },
       "title": "New booking"
     },
@@ -2579,6 +2751,11 @@
         "action": "Complete the check-in",
         "body": "Some guest data are missing: you can enter them yourself now, step by step.",
         "title": "Complete the guest data"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
       },
       "confirmManual": {
         "title": "Confirm the booking"
@@ -3246,6 +3423,7 @@
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
     "stepDocument": "Identity document",
+    "stepIdentity": "Identity check",
     "stepConsents": "Privacy notice and consents",
     "stepOf": "Step {{step}} of {{total}}",
     "next": "Next",
@@ -3311,34 +3489,36 @@
     "removeGuest": "Remove guest",
     "addGuest": "Add guest",
     "biometric": {
-      "consent": {
-        "title": "Optional biometric verification",
-        "description": "We can compare your photo with your document to speed up check-in.",
-        "purposeTitle": "What it's for",
-        "purpose": "Biometric verification compares your face with the photo on your document. The comparison happens on the server and your photo is deleted immediately after.",
-        "optionalTitle": "It's optional",
-        "optional": "You can refuse without consequences: the property manager will still receive your data and document. The refusal is noted but does not block check-in.",
-        "accept": "I consent to verification",
-        "decline": "I refuse",
-        "version": "Consent version: {{version}}"
-      },
       "capture": {
-        "title": "Take a selfie",
-        "instructions": "Frame your face, make sure it's well lit and centered, then take the photo. We'll compare it with your document.",
-        "cameraError": "Cannot access camera. Check browser permissions.",
-        "takePhoto": "Take photo",
-        "retake": "Retake",
-        "submit": "Submit photo",
-        "attemptsRemaining": "Attempts remaining: {{count}}",
-        "maxAttemptsReached": "You have reached the maximum number of attempts. Check-in will be verified manually by the manager."
+        "attemptsRemaining": "Attempts left: {{count}}",
+        "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
+        "cameraNotFound": "No camera was found on this device.",
+        "cameraTitle": "The camera is not available",
+        "cameraUnknown": "The camera could not be started.",
+        "cameraUnsupported": "This page cannot use the camera in this browser. Open the link in your usual browser, or ask an operator to verify you.",
+        "capturedLabel": "The selfie you took",
+        "instructions": "Look at the camera in a well-lit place and keep your face in the frame. We compare the photo with the one on your document.",
+        "noFile": "For your safety the selfie has to be taken now with the camera: it cannot be chosen from your files or gallery.",
+        "notPrepared": "The photo could not be prepared. Please take it again.",
+        "previewLabel": "Live view of your camera",
+        "retake": "Take it again",
+        "retryCamera": "Try again",
+        "sending": "Checking...",
+        "submit": "Send the photo",
+        "takePhoto": "Take the photo",
+        "title": "Take a selfie"
       },
-      "outcome": {
-        "accept": "Verified",
-        "acceptMessage": "Biometric verification succeeded. Your check-in is complete.",
-        "escalate": "To be verified",
-        "escalateMessage": "Biometric verification requires manual confirmation. The property manager will check your details.",
-        "reject": "Not verified",
-        "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
+      "consent": {
+        "accept": "I agree to the face check",
+        "decline": "I do not agree: a person will check me",
+        "description": "To give you the access code of the property, we compare a selfie with the photo on your identity document.",
+        "documentKept": "The photo of your document is kept encrypted only until the check is over, then it is deleted.",
+        "optional": "You can say no. A person at the property will then check your identity with you, and the access code reaches you after their decision. Saying no does not stop your check-in.",
+        "optionalTitle": "It is your choice",
+        "purpose": "You photograph your document and then take a selfie with the camera. A program on our server compares the two. Your selfie is never saved: it is deleted as soon as the comparison ends.",
+        "purposeTitle": "What happens",
+        "title": "Check your identity with your face",
+        "version": "Version of this text: {{version}}"
       }
     },
     "consent": {
@@ -3444,6 +3624,76 @@
       "HeadOfFamily": "Head of family",
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Photo of the identity document",
+        "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo and the two lines of letters at the bottom, without reflections.",
+        "notAcceptable": "The photo is not good enough yet. Please take it again.",
+        "pick": "Photograph the document",
+        "pickAgain": "Photograph it again",
+        "sending": "Reading the document...",
+        "title": "Photograph your identity document"
+      },
+      "documentNotArchived": "The document will not be archived.",
+      "guidance": {
+        "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
+        "hold_still": "Hold the phone still: the photo is blurred.",
+        "less_light": "There is too much light: move to a softer light.",
+        "more_light": "There is too little light: move to a brighter place.",
+        "move_closer": "Move closer: your face is too small in the picture.",
+        "one_face_only": "Only you should be in the picture.",
+        "other": "Please take the photo again.",
+        "retake_picture": "The picture could not be read: please take it again.",
+        "retake_selfie": "Take the selfie again, looking straight at the camera.",
+        "show_document_photo": "Show the side of the document with your photo.",
+        "show_whole_document": "Show the whole side of the document with the two lines of letters at the bottom.",
+        "show_your_face": "Show your face: we could not see it in the picture.",
+        "tip_remove_glasses": "Take off your glasses.",
+        "tip_remove_mask": "Take off any mask or anything that covers your face.",
+        "upload_document_again": "Photograph the document again: it could not be read.",
+        "use_live_camera": "Take the selfie now with the camera, not from a photo or a screen.",
+        "use_valid_document": "The document is expired: use a valid one."
+      },
+      "intro": "Only the guest who leaves the identity document takes part in this step. The other guests do not need to take a selfie.",
+      "nextHint": "Finish this step to go on. If you prefer, ask an operator to verify you.",
+      "operator": {
+        "ask": "Ask an operator to verify me",
+        "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
+      },
+      "problem": {
+        "consent_required": "We need your answer about the face check first.",
+        "document_photo": "We need the photo of the document again: please take it once more.",
+        "document_required": "Please photograph the document first.",
+        "failed": "Something went wrong. Please try again.",
+        "link_unavailable": "This link is no longer valid, or the check-in is already complete. Ask your host for a new link.",
+        "network": "We could not reach the server. Nothing was saved: check your connection and try again.",
+        "processing": "We could not process the photo. Please try again.",
+        "too_large": "The photo is too large. Take it again with a lower resolution.",
+        "too_many_requests": "Too many attempts in a short time. Wait a moment and try again.",
+        "unsupported": "This type of file is not supported. Use a JPEG or PNG photo."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "If your booking has an email address, we also sent the code there.",
+          "codeLabel": "Your access code",
+          "noCode": "Your identity is verified. If your booking has an email address, we sent the access code there; otherwise your host will give you the access instructions.",
+          "title": "You are verified"
+        },
+        "operator": {
+          "notOffered": "The face check is not used for this stay: a person has to verify your identity. Ask for it here and the host will be told. The access code reaches you after their decision.",
+          "text": "The host will verify your identity. The access code reaches you after their decision.",
+          "title": "A person will check your identity"
+        },
+        "retry": {
+          "again": "Take the selfie again",
+          "againDocument": "Photograph the document again",
+          "attempts": "Attempts left: {{count}}",
+          "intro": "The check did not pass this time. Here is what to change:",
+          "noReason": "The check did not pass this time.",
+          "title": "We could not verify you yet"
+        }
+      }
     },
     "invoice": {
       "fields": {
@@ -4067,8 +4317,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance",
-      "description": "What is missing to be compliant, for your properties and your stays."
+      "title": "Am I compliant?",
+      "description": "For each obligation you see whether it is in order, in progress or yours to do. Green only shows when CasaZen holds the proof."
     },
     "summary": {
       "title": "Compliance overview",
@@ -4085,7 +4335,16 @@
       "alloggiatiManualRequired": "Alloggiati to send manually",
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
-      "turnoversPending": "Properties to declare ready"
+      "turnoversPending": "Properties to declare ready",
+      "line": {
+        "allClear": "All compliant",
+        "red": "{{count}} to fix",
+        "todo_one": "{{count}} thing to do",
+        "todo_other": "{{count}} things to do",
+        "unknown": "{{count}} to verify",
+        "withDetail": "{{todo}}: {{what}}",
+        "yellow": "{{count}} in progress"
+      }
     },
     "cockpit": {
       "kicker": {
@@ -4109,7 +4368,7 @@
       },
       "fine": {
         "title": "Legal deadlines",
-        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "intro": "Deadlines set by law: Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24), then there are ISTAT and the tourist tax. If they are not sent in time you risk a penalty.",
         "moreLink": "See them all in Alloggiati"
       },
       "start": {
@@ -4133,6 +4392,10 @@
         "toggle_one": "{{count}} property in order",
         "toggle_other": "{{count}} properties in order"
       },
+      "green": {
+        "toggle_one": "{{count}} obligation in order",
+        "toggle_other": "{{count}} obligations in order"
+      },
       "openAll": "All duties",
       "showMore": "Show the other {{count}}",
       "showLess": "Show less",
@@ -4144,6 +4407,81 @@
         "composition": "Guest composition",
         "guestData": "Guest details"
       }
+    },
+    "item": {
+      "ActivateOctorateSend": "Automatic send to the Questura",
+      "ActivateProperty": "Property activation",
+      "CheckOut": "Departure",
+      "CompleteGuestCheckIn": "Guest details",
+      "ConfirmPropertyReady": "Property ready for the next guest",
+      "DeclareTouristTax": "Tourist tax of {{period}}",
+      "EnterMunicipalityTaxRate": "Tourist tax rate of the municipality",
+      "RenewPoliceCredentials": "Questura credentials",
+      "ResolveAlloggiatiFailure": "Alloggiati Web",
+      "SendAlloggiati": "Alloggiati Web",
+      "SendAlloggiatiManually": "Alloggiati Web sent by hand",
+      "UploadAlloggiatiReceipt": "Alloggiati Web receipt",
+      "UploadIstatProof": "ISTAT of {{period}}",
+      "VerifyIdentity": "Guest identity",
+      "noPeriod": "a period"
+    },
+    "light": {
+      "fallback": {
+        "green": "This is in order.",
+        "red": "Something has to be done.",
+        "unknown": "CasaZen has no result for this yet: check it.",
+        "yellow": "This is in progress: wait for the confirmation."
+      },
+      "green": "Compliant",
+      "named": "{{light}}: {{reason}}",
+      "red": "To do",
+      "unknown": "To verify",
+      "yellow": "In progress"
+    },
+    "lines": {
+      "more_one": "and {{count}} more obligation",
+      "more_other": "and {{count}} more obligations",
+      "ofProperty": "Obligations of this property",
+      "ofStay": "Obligations of this stay",
+      "unavailable": {
+        "body": "We do not know whether all is in order: try again in a moment.",
+        "title": "We cannot check the obligations"
+      }
+    },
+    "reason": {
+      "action_required": "There is something to do.",
+      "activation_incomplete": "The activation is not finished: until it is, the property cannot be booked from your site.",
+      "alloggiati_failed": "Alloggiati Web did not accept the communication: fix the data and send it again.",
+      "alloggiati_incomplete": "Alloggiati Web took only some of the guests: the stay is not complete.",
+      "alloggiati_not_sent": "Alloggiati Web has not been sent yet.",
+      "alloggiati_sending": "The communication to Alloggiati Web is in progress.",
+      "awaiting_receipt": "It was sent: the receipt still has to be archived.",
+      "checkout_due": "The departure has to be closed.",
+      "cin_invalid": "The CIN is not in the right format.",
+      "cin_missing": "The CIN is missing.",
+      "cin_valid": "The CIN is in the right format.",
+      "connection_inactive": "The automatic send is not active: activate it or send it yourself.",
+      "connection_unverified": "We cannot tell whether the automatic send is active: confirm it yourself.",
+      "credentials_refused": "The Questura refused the credentials: enter them again.",
+      "deadline_overdue": "The deadline has passed and there is no proof.",
+      "entrusted_to_channel_manager": "Your channel manager takes care of it: we are waiting for the receipt.",
+      "evidence_missing": "The archived proof is missing.",
+      "external_verification_required": "The result is only in your channel manager: CasaZen cannot see it, check it there.",
+      "guest_data_missing": "Some guest details needed for Alloggiati Web are missing.",
+      "identity_missing": "The arrival is near and the guest's identity is not verified yet.",
+      "identity_verified": "The guest's identity is verified.",
+      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it (it is never taken as zero).",
+      "operator_decision_required": "An operator has to decide on the identity check.",
+      "over_thirty_nights_not_sent": "Over 30 nights the channel manager does not send by itself: send Alloggiati Web yourself.",
+      "period_open": "The period is still open: the deadline has not come.",
+      "property_ready_not_confirmed": "You have not declared the property ready for the next guest yet.",
+      "receipt_archived": "The receipt is archived.",
+      "receipt_missing": "It was sent, but the receipt is not archived: upload it.",
+      "selfie_awaited": "We are waiting for the guest's selfie before the arrival.",
+      "short_stay_at_risk": "Short stay (6 hours to send): the guests are not entrusted to the channel manager. Send Alloggiati Web yourself."
+    },
+    "row": {
+      "named": "{{what}}: {{label}}"
     },
     "autopilot": {
       "button": "Handle with AI",
@@ -5230,6 +5568,10 @@
       "requests_other": "{{count}} requests to approve"
     },
     "todo": {
+      "ActivateOctorateSend": {
+        "cta": "Check the send",
+        "title": "Activate the automatic send to the Questura: {{label}}"
+      },
       "ActivateProperty": {
         "cta": "Finish",
         "ctaCin": "Add the CIN",
@@ -5251,9 +5593,21 @@
         "cta": "Confirm",
         "title": "Declare the property ready after {{label}}"
       },
+      "DeclareTouristTax": {
+        "cta": "Declare the tax",
+        "title": "Declare and pay the tourist tax of {{period}}: {{label}}"
+      },
+      "EnterMunicipalityTaxRate": {
+        "cta": "Enter the rate",
+        "title": "Enter the tourist tax rate of the municipality: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Pay",
         "title": "Pay {{label}}'s job"
+      },
+      "RenewPoliceCredentials": {
+        "cta": "Update the credentials",
+        "title": "Update the Questura credentials: {{label}}"
       },
       "RespondToRequest": {
         "cta": "Accept",
@@ -5274,6 +5628,22 @@
       "SendAlloggiati": {
         "cta": "Prepare the data",
         "title": "Alloggiati Web to send: {{label}}"
+      },
+      "SendAlloggiatiManually": {
+        "cta": "Prepare the data",
+        "title": "Send Alloggiati Web by hand: {{label}}"
+      },
+      "UploadAlloggiatiReceipt": {
+        "cta": "Upload the receipt",
+        "title": "Upload the Alloggiati Web receipt: {{label}}"
+      },
+      "UploadIstatProof": {
+        "cta": "Upload the proof",
+        "title": "Upload the ISTAT proof of {{period}}: {{label}}"
+      },
+      "VerifyIdentity": {
+        "cta": "Check the identity",
+        "title": "Verify the identity of {{label}}"
       },
       "decline": {
         "description": "The guest gets an email and the dates become available again.",
@@ -12010,7 +12380,8 @@
       "serviceRequestBackupInvited": "You are a backup for a new service request.",
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
-      "serviceRequestBackupClosed": "A request you were a backup for was closed."
+      "serviceRequestBackupClosed": "A request you were a backup for was closed.",
+      "verificationRequired": "A guest's identity is waiting for you to verify it."
     }
   },
   "octorate": {
@@ -14830,6 +15201,11 @@
       "cinMissing": {
         "action": "Enter the CIN",
         "title": "The CIN code is missing"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
       },
       "heading": "What to do now",
       "paused": {
@@ -24233,33 +24609,49 @@
   },
   "verification": {
     "action": {
-      "photoRequested": "Photo request sent to guest",
       "photoRequestFailed": "Failed to send photo request",
-      "reject": "Reject",
-      "rejectFailed": "Failed to reject verification",
-      "rejected": "Verification rejected",
+      "photoRequested": "New photo requested: the guest has been sent a new link.",
+      "reject": "Reject check-in",
+      "rejectFailed": "Failed to reject the check-in",
+      "rejected": "Check-in rejected",
       "request_photo": "Request new photo",
-      "verified": "Verification recorded",
-      "verification": "Verification",
-      "verificationRejected": "Verification rejected",
-      "verify": "Verify",
-      "verifyFailed": "Failed to record verification"
+      "verificationRejected": "Verification not approved: no access code is sent.",
+      "verified": "Verification approved. The access code of the property is sent to the guest by email, if the property has one.",
+      "verify": "Record decision",
+      "verifyFailed": "Failed to record the decision"
     },
-    "attempts": "Attempts",
-    "checkIn": "Check-in",
-    "checkOut": "Check-out",
+    "arrivalDeparture": "Stay from {{arrival}} to {{departure}}",
+    "attempts": "Automatic attempts",
+    "check": {
+      "document_validity": "Document",
+      "liveness": "Live capture",
+      "mrz_consistency": "Document and check-in data",
+      "other": "Check {{code}}",
+      "processing": "Automatic processing",
+      "quality": "Photo quality",
+      "similarity": "Face comparison"
+    },
+    "checks": {
+      "title": "What the automatic check found"
+    },
     "dialog": {
-      "acceptButton": "Accept verification",
+      "acceptButton": "Approve verification",
       "confirmReject": "Confirm rejection",
-      "noteLabel": "Note (optional for acceptance, required for rejection)",
-      "notePlaceholder": "Enter a note...",
-      "reasonLabel": "Reason for rejection",
-      "reasonPlaceholder": "Enter the reason for rejection...",
-      "rejectButton": "Reject verification",
-      "rejectDescription": "Rejection will prevent further verification attempts for this booking.",
-      "rejectTitle": "Reject biometric verification",
-      "verifyDescription": "Accept the verification to complete check-in, or reject it with a note.",
-      "verifyTitle": "Record manual verification"
+      "noteHint": "The note is optional to approve and required to not approve. It is kept in the verification log.",
+      "noteLabel": "Note",
+      "notePlaceholder": "Write what you checked with the guest...",
+      "reasonLabel": "Reason for rejection (required)",
+      "reasonPlaceholder": "Write why the check-in is rejected...",
+      "rejectButton": "Not verified",
+      "rejectDescription": "The check-in is closed and the guest cannot try again. No access code is sent.",
+      "rejectTitle": "Reject the check-in",
+      "verifyDescription": "Contact the guest outside CasaZen, then record your decision. Approving sends the guest the access code of the property by email (if the property has one); \"Not verified\" sends nothing and needs a note.",
+      "verifyTitle": "Record your decision"
+    },
+    "figures": {
+      "threshold": "threshold {{threshold}}",
+      "value": "value {{value}}",
+      "valueAndThreshold": "value {{value}}, threshold {{threshold}}"
     },
     "filter": {
       "allDeadlines": "All deadlines",
@@ -24267,23 +24659,79 @@
       "deadline": "Deadline",
       "past": "Past due",
       "reason": "Reason",
+      "reasons": {
+        "no_match": "Last check: different face",
+        "not_passed": "Last check not passed",
+        "operator_requested": "No automatic check",
+        "review": "A check needs a person",
+        "technical_error": "Technical error",
+        "uncertain": "Uncertain comparison"
+      },
       "today": "Today",
       "upcoming": "Upcoming"
     },
+    "guest": {
+      "contactHint": "Contact the guest outside CasaZen (for example by video call) and then record your decision.",
+      "noContact": "No email address on file: look for the guest's contact in the booking.",
+      "openBooking": "Open the booking",
+      "title": "Guest"
+    },
+    "metrics": {
+      "loading": "Loading the figures...",
+      "notOk": "Not passed",
+      "ok": "Passed on their own",
+      "operatorDecisions_one": "{{count}} decision of an operator",
+      "operatorDecisions_other": "{{count}} decisions of an operator",
+      "operatorShare": "Concluded by an operator",
+      "period": "From {{from}} to {{to}}",
+      "retry": "Try again",
+      "review": "Sent to a person",
+      "title": "Verifications of the last 30 days",
+      "unavailable": "The figures could not be read right now."
+    },
+    "provisional": {
+      "badge": "Provisional thresholds",
+      "explain": "The thresholds of this check were never calibrated: treat the automatic outcome as provisional."
+    },
     "queue": {
-      "description": "Bookings awaiting manual biometric verification",
+      "description": "Guests whose identity waits for a person to verify it",
       "emptyFiltered": "No verifications match the selected filters",
       "emptyQueue": "No verifications pending",
       "emptyTitle": "No items",
       "loadError": "Failed to load verification queue",
       "loading": "Loading verification queue...",
+      "retry": "Try again",
       "title": "Verification Queue"
     },
-    "reason": {
-      "consent_refused": "Consent refused",
-      "label": "Reason",
-      "model_error": "Model error",
-      "unverified": "Photo unverified"
+    "result": {
+      "between_thresholds": "between the two thresholds: a person decides",
+      "birth_date_mismatch": "the birth date does not match the check-in data",
+      "check_digits_invalid": "the check digits of the document are wrong",
+      "document_number_mismatch": "the document number does not match the check-in data",
+      "error": "an unexpected error",
+      "expired": "the document is expired",
+      "face_too_small": "the face is too small in the picture",
+      "failed": "not passed",
+      "image_unreadable": "the picture could not be read",
+      "multiple_faces": "more than one face in the picture",
+      "names_mismatch": "the names do not match the check-in data",
+      "nationality_mismatch": "the nationality does not match the check-in data",
+      "no_face": "no face found",
+      "not_run": "not reached: an earlier check stopped it",
+      "other": "result {{code}}",
+      "passed": "passed",
+      "timeout": "it took too long",
+      "unavailable": "the models are not available",
+      "unreadable": "the document could not be read"
+    },
+    "why": {
+      "no_match": "The last automatic check did not find the face the same as the one on the document. The guest may also have asked for a person.",
+      "not_passed": "The last automatic check did not pass. The guest may also have asked for a person.",
+      "operator_requested": "No automatic check was concluded: the guest asked for a person or did not give the biometric consent, or the face check is not used (a setting of the organization, a minor guest).",
+      "review": "A check found something that needs a person to look at it.",
+      "technical_error": "The automatic check could not run.",
+      "title": "Why it is here",
+      "uncertain": "The comparison is uncertain: it falls between the two thresholds."
     }
   },
   "vetrina": {

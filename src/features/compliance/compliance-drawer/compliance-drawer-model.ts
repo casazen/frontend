@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import { isAxiosError } from 'axios';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { safeReturnTo } from '@/lib/auth-return-to';
-import type { ComplianceSummaryItem } from '@/types/compliance.types';
+import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 import type { ComplianceHandoffRequest, ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 
 /** The page of the adempimenti: where a route that cannot be said to the server falls back to. */
@@ -71,20 +71,34 @@ export function originKeyOf(target: ComplianceDrawerTarget): string {
 }
 
 /** The actions of the cockpit that are an Alloggiati Web communication of a stay: the ones whose outcome the host goes to check. */
-const ALLOGGIATI_ACTIONS: readonly string[] = ['SendAlloggiati', 'ResolveAlloggiatiFailure'];
+const ALLOGGIATI_ACTIONS: readonly ComplianceCockpitAction[] = ['SendAlloggiati', 'ResolveAlloggiatiFailure', 'SendAlloggiatiManually', 'UploadAlloggiatiReceipt'];
+
+/** The actions that are an ISTAT month of a property: the outcome of the period is read in the connected area as well. */
+const ISTAT_ACTIONS: readonly ComplianceCockpitAction[] = ['UploadIstatProof'];
+
+/** The months of the periods the backend sends (`yyyy-MM`). */
+const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /**
- * The target of the button of a row of the cockpit, or `undefined` when the row has none: not an Alloggiati communication, or the
- * property is not known (the summary names the stay, and the property only for the properties to activate; the Home's «Da fare» names it for the
- * first stays). The button is never offered for a target the server could not check; the row's own button leads to the stay, where it is.
+ * The target of the button of a row of the cockpit, or `undefined` when the row has none: not an Alloggiati communication or an ISTAT month,
+ * or what the server needs to check it is not known. An Alloggiati item names the stay, and its property only when the summary says it (or the
+ * Home's «Da fare», for the first stays); an ISTAT item is the property's own (its id is the property) with its month. The button is never
+ * offered for a target the server could not check: the row's own button leads to the page, where the host can still do the check by hand.
  */
 export function drawerTargetOf(
-  item: Pick<ComplianceSummaryItem, 'action' | 'bookingId' | 'propertyId'>,
+  item: Pick<ComplianceSummaryItem, 'id' | 'action' | 'bookingId' | 'propertyId' | 'period'>,
   stayPropertyId?: string | null,
 ): ComplianceDrawerTarget | undefined {
-  if (!ALLOGGIATI_ACTIONS.includes(item.action) || !item.bookingId) return undefined;
-  const propertyId = item.propertyId ?? stayPropertyId;
-  return propertyId ? { topic: 'Alloggiati', propertyId, bookingId: item.bookingId } : undefined;
+  if (ALLOGGIATI_ACTIONS.includes(item.action)) {
+    if (!item.bookingId) return undefined;
+    const propertyId = item.propertyId ?? stayPropertyId;
+    return propertyId ? { topic: 'Alloggiati', propertyId, bookingId: item.bookingId } : undefined;
+  }
+  if (ISTAT_ACTIONS.includes(item.action)) {
+    const propertyId = item.propertyId ?? item.id;
+    return propertyId && item.period && MONTH.test(item.period) ? { topic: 'Istat', propertyId, period: item.period } : undefined;
+  }
+  return undefined;
 }
 
 /** The address the server gave cannot be opened (it is not an https address): the user stays in CasaZen. */

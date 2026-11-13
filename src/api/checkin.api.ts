@@ -1,14 +1,24 @@
 import axios from '@/lib/axios';
-import { ApiClient } from './client';
+import { ApiClient, type ApiRequestOptions } from './client';
 import type {
   AlloggiatiCodeEntryDto,
   AlloggiatiCodeList,
-  BiometricVerificationResponse,
+  BiometricConsentRequest,
+  BiometricConsentResponse,
   CheckInDocumentReadResult,
+  IdentityDocumentResponse,
+  IdentityOperatorResponse,
+  IdentitySelfieResponse,
   PublicCheckInContextDto,
   PublicCheckInLanguageResponse,
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
+
+/**
+ * The anonymous upload of a picture: `multipart/form-data` must be said, or the instance (JSON by default) turns the form into JSON and the API
+ * gets no file. The browser adds the boundary.
+ */
+const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
 
 export const publicCheckinApi = {
   /**
@@ -45,16 +55,34 @@ export const publicCheckinApi = {
   },
 
   /**
-   * Submit a selfie for biometric verification. The backend processes it synchronously
-   * and returns the outcome within 3 seconds per ADR-013-R1.
+   * The guest's answer to the biometric consent (E03/F04/US03/T01, ADR-013-R9): explicit, separate from the privacy notice, refusable. A refusal, or a
+   * verification that is not offered, answers `result: operator`: a person verifies and the operators are told at once.
    */
-  submitSelfie: (token: string, imageBlob: Blob) => {
-    const formData = new FormData();
-    formData.append('selfie', imageBlob, 'selfie.jpg');
-    return ApiClient.post<BiometricVerificationResponse>(
-      `/public/checkin/${token}/selfie`,
-      formData,
-      { public: true }
-    );
+  postBiometricConsent: (token: string, request: BiometricConsentRequest) =>
+    ApiClient.post<BiometricConsentResponse>(`/public/checkin/${token}/biometric-consent`, request, { public: true }),
+
+  /**
+   * The photo of the identity document of the guest who verifies: the answer carries the capture guidance (`acceptable`, `guidanceCodes`). The photo is
+   * read in memory by the API; outside Ticino it is kept encrypted until the verification is over, in Ticino nothing is kept.
+   */
+  postDocument: (token: string, photo: Blob) => {
+    const body = new FormData();
+    body.append('document', photo, 'document.jpg');
+    return ApiClient.post<IdentityDocumentResponse>(`/public/checkin/${token}/document`, body, PUBLIC_MULTIPART);
   },
+
+  /**
+   * The selfie of the guest who verifies (ADR-013-R1: compared in the request, ADR-013-R2: nothing of it is kept). For a property in Ticino the photo
+   * of the document comes again with it (`documentPhoto`). The answer is `ok` (with the lock code), `retry` or `operator`.
+   */
+  postSelfie: (token: string, selfie: Blob, documentPhoto?: Blob | null) => {
+    const body = new FormData();
+    body.append('selfie', selfie, 'selfie.jpg');
+    if (documentPhoto) body.append('documentPhoto', documentPhoto, 'document.jpg');
+    return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, PUBLIC_MULTIPART);
+  },
+
+  /** The guest asks for a person, at any step, also after a retry or a failed attempt (GDPR art. 22, AC-NF51-11): the operators are told at once. */
+  requestOperator: (token: string) =>
+    ApiClient.post<IdentityOperatorResponse>(`/public/checkin/${token}/request-operator`, undefined, { public: true }),
 };

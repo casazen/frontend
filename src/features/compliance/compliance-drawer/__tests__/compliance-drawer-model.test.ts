@@ -110,27 +110,56 @@ describe('originKeyOf', () => {
 });
 
 describe('drawerTargetOf', () => {
-  it.each(['SendAlloggiati', 'ResolveAlloggiatiFailure'] as const)('drawerTargetOf_%s_WithTheStaysProperty_IsAnAlloggiatiTarget', (action) => {
-    expect(drawerTargetOf({ action, bookingId: BOOKING, propertyId: null }, PROPERTY)).toEqual({ topic: 'Alloggiati', propertyId: PROPERTY, bookingId: BOOKING });
+  const item = (over: Partial<Parameters<typeof drawerTargetOf>[0]>): Parameters<typeof drawerTargetOf>[0] => ({
+    id: BOOKING,
+    action: 'SendAlloggiati',
+    bookingId: BOOKING,
+    propertyId: null,
+    period: null,
+    ...over,
   });
+
+  it.each(['SendAlloggiati', 'ResolveAlloggiatiFailure', 'SendAlloggiatiManually', 'UploadAlloggiatiReceipt'] as const)(
+    'drawerTargetOf_%s_WithTheStaysProperty_IsAnAlloggiatiTarget',
+    (action) => {
+      expect(drawerTargetOf(item({ action }), PROPERTY)).toEqual({ topic: 'Alloggiati', propertyId: PROPERTY, bookingId: BOOKING });
+    },
+  );
 
   it('drawerTargetOf_PropertyOfTheItem_WinsOverTheOneOfTheHome', () => {
     const other = '33333333-3333-3333-3333-333333333333';
-    expect(drawerTargetOf({ action: 'SendAlloggiati', bookingId: BOOKING, propertyId: other }, PROPERTY)?.propertyId).toBe(other);
+    expect(drawerTargetOf(item({ propertyId: other }), PROPERTY)?.propertyId).toBe(other);
   });
 
   it('drawerTargetOf_PropertyNotKnown_HasNoTarget_TheServerCouldNotCheckIt', () => {
-    expect(drawerTargetOf({ action: 'SendAlloggiati', bookingId: BOOKING, propertyId: null })).toBeUndefined();
-    expect(drawerTargetOf({ action: 'SendAlloggiati', bookingId: BOOKING, propertyId: null }, null)).toBeUndefined();
-  });
-
-  it.each(['ActivateProperty', 'CompleteGuestCheckIn', 'CheckOut', 'ConfirmPropertyReady'] as const)('drawerTargetOf_%s_IsNotAnAlloggiatiCommunication', (action) => {
-    expect(drawerTargetOf({ action, bookingId: BOOKING, propertyId: PROPERTY }, PROPERTY)).toBeUndefined();
+    expect(drawerTargetOf(item({}))).toBeUndefined();
+    expect(drawerTargetOf(item({}), null)).toBeUndefined();
   });
 
   it('drawerTargetOf_ItemWithoutAStay_HasNoTarget', () => {
-    expect(drawerTargetOf({ action: 'SendAlloggiati', bookingId: null, propertyId: PROPERTY }, PROPERTY)).toBeUndefined();
+    expect(drawerTargetOf(item({ bookingId: null, propertyId: PROPERTY }), PROPERTY)).toBeUndefined();
   });
+
+  it('drawerTargetOf_IstatMonthOfAProperty_IsAnIstatTargetWithItsPeriodAndNoStay', () => {
+    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, propertyId: PROPERTY, period: '2026-10' }))).toEqual({
+      topic: 'Istat',
+      propertyId: PROPERTY,
+      period: '2026-10',
+    });
+    // The item of a property is the property's own: its id is the property when the summary names none.
+    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, period: '2026-10' }))?.propertyId).toBe(PROPERTY);
+  });
+
+  it.each([null, undefined, '', '2026-13', '2026-1', 'ottobre', '2026-10-01'])('drawerTargetOf_IstatItemWithPeriod_%s_HasNoTarget', (period) => {
+    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, propertyId: PROPERTY, period }))).toBeUndefined();
+  });
+
+  it.each(['ActivateProperty', 'CompleteGuestCheckIn', 'CheckOut', 'ConfirmPropertyReady', 'VerifyIdentity', 'ActivateOctorateSend', 'DeclareTouristTax', 'EnterMunicipalityTaxRate', 'RenewPoliceCredentials'] as const)(
+    'drawerTargetOf_%s_IsNotAnAlloggiatiOrIstatCommunication',
+    (action) => {
+      expect(drawerTargetOf(item({ action, propertyId: PROPERTY, period: '2026-10' }), PROPERTY)).toBeUndefined();
+    },
+  );
 });
 
 describe('describeFailure', () => {

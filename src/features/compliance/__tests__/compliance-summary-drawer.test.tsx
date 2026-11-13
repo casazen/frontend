@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { fetchComplianceSummary } from '@/api/compliance.api';
@@ -42,6 +42,8 @@ const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const CHECKIN_BOOKING_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const MANUAL_BOOKING_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const FAILED_BOOKING_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+const RECEIPT_BOOKING_ID = '99999999-9999-9999-9999-999999999999';
+const GREEN_BOOKING_ID = '88888888-8888-8888-8888-888888888888';
 
 const empty = { count: 0, items: [] };
 
@@ -61,6 +63,37 @@ const summary: ComplianceSummaryResult = {
     items: [{ id: FAILED_BOOKING_ID, label: 'Carla Neri', action: 'ResolveAlloggiatiFailure', propertyId: null, bookingId: FAILED_BOOKING_ID }],
   },
   turnoversPending: empty,
+  // The communication entrusted to the channel manager, whose outcome is only there (yellow), and one the API says is in order (green).
+  receiptsToUpload: {
+    count: 1,
+    items: [
+      {
+        id: RECEIPT_BOOKING_ID,
+        label: 'Giulia Blu',
+        action: 'UploadAlloggiatiReceipt',
+        propertyId: null,
+        bookingId: RECEIPT_BOOKING_ID,
+        light: 'Yellow',
+        reason: 'external_verification_required',
+      },
+      {
+        id: GREEN_BOOKING_ID,
+        label: 'Sara Verde',
+        action: 'UploadAlloggiatiReceipt',
+        propertyId: null,
+        bookingId: GREEN_BOOKING_ID,
+        light: 'Green',
+        reason: 'receipt_archived',
+      },
+    ],
+  },
+  // An ISTAT month of a property: the item is the property's own and carries its month.
+  periodItems: {
+    count: 1,
+    items: [
+      { id: PROPERTY_ID, label: 'Villa Test', action: 'UploadIstatProof', propertyId: PROPERTY_ID, bookingId: null, period: '2026-10', light: 'Red', reason: 'evidence_missing' },
+    ],
+  },
 };
 
 const todoOf = (action: string, bookingId: string): DashboardTodoItem => ({
@@ -104,7 +137,12 @@ function renderWidget(connector = true) {
 
 beforeEach(() => {
   permissions.granted = ['property.read', 'property.write', 'booking.read', 'booking.write'];
-  reads.todo = [todoOf('SendAlloggiati', MANUAL_BOOKING_ID), todoOf('ResolveAlloggiatiFailure', FAILED_BOOKING_ID)];
+  reads.todo = [
+    todoOf('SendAlloggiati', MANUAL_BOOKING_ID),
+    todoOf('ResolveAlloggiatiFailure', FAILED_BOOKING_ID),
+    todoOf('UploadAlloggiatiReceipt', RECEIPT_BOOKING_ID),
+    todoOf('UploadAlloggiatiReceipt', GREEN_BOOKING_ID),
+  ];
   vi.mocked(fetchComplianceSummary).mockResolvedValue(summary);
   vi.mocked(octorateComplianceHandoffApi.start).mockResolvedValue(HANDOFF);
 });
@@ -120,11 +158,14 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
 
     expect(await screen.findByTestId('compliance-summary-alloggiati-manual-drawer')).toHaveTextContent('Verifica nel tuo Cassetto Compliance');
     expect(screen.getByTestId('compliance-summary-alloggiati-drawer')).toBeInTheDocument();
+    // The communication whose outcome is only in the connected area, and the ISTAT month of a property.
+    expect(screen.getByTestId('compliance-summary-receipts-drawer')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-summary-periods-drawer')).toBeInTheDocument();
     // The button of the row is where it was: the action is one more, not a replacement.
     expect(screen.getByTestId('compliance-summary-alloggiati-manual-link')).toBeInTheDocument();
     expect(screen.getByTestId('compliance-summary-alloggiati-link')).toBeInTheDocument();
     // The others are not an Alloggiati communication: no outcome to go and read.
-    expect(screen.getAllByTestId(/-drawer$/)).toHaveLength(2);
+    expect(screen.getAllByTestId(/-drawer$/)).toHaveLength(4);
   });
 
   it('widget_ActionPressed_AsksForTheStayOfTheRowAndTheRouteOfThePage', async () => {
@@ -141,6 +182,38 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
       period: null,
       returnPath: '/app/short-rent',
     });
+  });
+
+  it('widget_IstatMonth_AsksForThePropertyAndTheMonthAndNoStay', async () => {
+    vi.mocked(octorateComplianceHandoffApi.start).mockResolvedValue({
+      ...HANDOFF,
+      topic: 'Istat',
+      context: { ...HANDOFF.context, bookingId: null, bookingCode: null, period: '2026-10' },
+      guide: { code: 'istat_period', menuPath: 'Strutture, poi ISTAT', check: 'Controlla l'invio del periodo.' },
+    });
+    renderWidget();
+
+    fireEvent.click(await screen.findByTestId('compliance-summary-periods-drawer'));
+
+    // The month the host reads is the one the server names, written as a month.
+    expect(await screen.findByTestId('compliance-drawer-period')).toHaveTextContent(/ottobre 2026/i);
+    expect(octorateComplianceHandoffApi.start).toHaveBeenCalledWith({
+      topic: 'Istat',
+      propertyId: PROPERTY_ID,
+      bookingId: null,
+      period: '2026-10',
+      returnPath: '/app/short-rent',
+    });
+  });
+
+  it('widget_ItemTheApiSaysIsInOrder_HasNoActionToGoAndReadItsOutcome', async () => {
+    renderWidget();
+
+    fireEvent.click(await screen.findByRole('button', { name: /adempimento in regola/ }));
+
+    const green = await screen.findByTestId('compliance-summary-green-section');
+    expect(green).toHaveTextContent('Sara Verde');
+    expect(within(green).queryByTestId(/-drawer$/)).not.toBeInTheDocument();
   });
 
   it('widget_ConnectorOff_ShowsTheRowsAsTheyWereWithNoAction', async () => {
