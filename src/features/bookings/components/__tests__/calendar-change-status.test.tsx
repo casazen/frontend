@@ -6,6 +6,7 @@ import i18n from '@/i18n/config';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { CHANGE_POLL_MS, CHANGE_WATCH_MS } from '@/queries/use-calendar-changes';
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { CalendarChangeStatus } from '../calendar-change-status';
 
@@ -45,7 +46,10 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.clearAllMocks();
     await i18n.changeLanguage('it');
   });
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
 
   it('CalendarChangeStatus_AChangeBeingSent_SaysSo', async () => {
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
@@ -87,6 +91,57 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
 
     fireEvent.click(screen.getByTestId('calendar-change-status-retry'));
     await waitFor(() => expect(calendarChangesApi.retry).toHaveBeenCalledWith('c2'));
+  });
+
+  it('CalendarChangeStatus_OpenForMoreThanThreeMinutes_AChangeSentNowIsFollowedFromNow_NotToldAsNoAnswer', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([]);
+    const client = renderStatus();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
+    });
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+
+    // The host sends a change from the panel, the wizard or a block: every calendar view is read again (what the mutations ask for). The page has been open for more than three
+    // minutes, and the window of this change starts now, not from the opening of the page.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Queued' })]);
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['bookings', 'calendar'] });
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
+    expect(screen.queryByTestId('calendar-change-status-check')).not.toBeInTheDocument();
+
+    // It is followed every five seconds: the next read says that the channel manager took it, and the line goes away.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] })]);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
+    });
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+  });
+
+  it('CalendarChangeStatus_AChangeThatWaitsForTooLong_StopsBeingAskedForAndSaysNoAnswerYetWithCheckAgain', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
+    renderStatus();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
+    });
+
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica aspetta ancora: il tuo channel manager non ha risposto.');
+    const calls = vi.mocked(calendarChangesApi.list).mock.calls.length;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS * 6);
+    });
+    expect(vi.mocked(calendarChangesApi.list).mock.calls.length).toBe(calls);
+
+    // "Check again" asks once more and the line follows the change for a new while.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('calendar-change-status-check'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(vi.mocked(calendarChangesApi.list).mock.calls.length).toBe(calls + 1);
+    expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
   });
 
   it('CalendarChangeStatus_EverythingDelivered_DisappearsAndSaysNothing', async () => {

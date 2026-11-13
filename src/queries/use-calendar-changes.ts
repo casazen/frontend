@@ -22,17 +22,37 @@ export const CHANGE_WATCH_MS = 180_000;
 /** The change is waiting to be sent or being sent: the only states that are still on their way. */
 export const isChangeWaiting = (change: Pick<CalendarChange, 'state'> | undefined): boolean => change?.state === 'Queued' || change?.state === 'Sending';
 
-/** The window in which a screen follows a waiting change by itself: it opens when the screen does and again at each "Check again". */
+/**
+ * The window in which a screen follows a waiting change by itself: it opens when the screen does, again each time a change that was not waiting starts to wait
+ * (`useRestartOnNewWaiting`: the change the host has just sent, a "Retry now": the screen may have been open for hours) and again at each "Check again". `now` is the time as of
+ * the last tick, kept in the state of the screen so that nothing reads the clock while it renders.
+ */
 function useWatchWindow() {
   const [since, setSince] = useState(() => Date.now());
   const now = useNow(CHANGE_POLL_MS);
-  return { since, over: now - since >= CHANGE_WATCH_MS, restart: () => setSince(Date.now()) };
+  return { since, now, setSince, over: now - since >= CHANGE_WATCH_MS, restart: () => setSince(Date.now()) };
+}
+
+/**
+ * Opens the window again when a change that was not waiting starts to wait: a new one appears (the host sent it from the panel, the wizard or a block) or a failed one is sent again.
+ * Without it the window would run from the opening of the page, and a change sent after more than three minutes would be told at once as "no answer yet" and never followed. The state
+ * is adjusted while rendering, as React lets a value that follows from what the screen reads (here the ids that wait) be.
+ */
+function useRestartOnNewWaiting(watch: Pick<ReturnType<typeof useWatchWindow>, 'now' | 'setSince'>, waitingIds: readonly string[]) {
+  const [known, setKnown] = useState<readonly string[]>([]);
+  const { now, setSince } = watch;
+  if (waitingIds.some((id) => !known.includes(id))) {
+    setKnown(waitingIds);
+    setSince(now);
+  } else if (waitingIds.length < known.length) {
+    setKnown(waitingIds);
+  }
 }
 
 /**
  * One change of the calendar with the state of each property (E08/F05/US02/T02). While it is `Queued` or `Sending` it is read again every five seconds, up to
- * `CHANGE_WATCH_MS` from when the screen opened (or from the last `checkAgain`): `watchOver` says the window is over while the change is still waiting. A 404 is a change that
- * is not there, whatever an earlier read left in the cache; `enabled: false` reads nothing.
+ * `CHANGE_WATCH_MS` from when the screen opened, from the moment the change starts to wait again (a "Retry now") or from the last `checkAgain`: `watchOver` says the window is
+ * over while the change is still waiting. A 404 is a change that is not there, whatever an earlier read left in the cache; `enabled: false` reads nothing.
  */
 export function useCalendarChange(id: string | undefined, options: { enabled?: boolean; initial?: CalendarChange } = {}) {
   const watch = useWatchWindow();
@@ -48,10 +68,12 @@ export function useCalendarChange(id: string | undefined, options: { enabled?: b
     retry: false,
     refetchInterval: (current) => (isChangeWaiting(current.state.data) && Date.now() - watch.since < CHANGE_WATCH_MS ? CHANGE_POLL_MS : false),
   });
+  const waiting = isChangeWaiting(query.data);
+  useRestartOnNewWaiting(watch, id && waiting ? [id] : []);
   const { refetch } = query;
   return {
     ...query,
-    watchOver: watch.over && isChangeWaiting(query.data),
+    watchOver: watch.over && waiting,
     checkAgain: () => {
       watch.restart();
       void refetch();
@@ -61,7 +83,8 @@ export function useCalendarChange(id: string | undefined, options: { enabled?: b
 
 /**
  * The changes of the calendar the caller may see, newest first (E08/F05/US02/T02): the line above the calendar and its list. Read again whenever the calendar is shown, and
- * every five seconds while one is waiting or being sent, up to `CHANGE_WATCH_MS` (then `watchOver`). `enabled: false` reads nothing: the list needs `property.read`.
+ * every five seconds while one is waiting or being sent, up to `CHANGE_WATCH_MS` from when the screen opened, from the moment a change starts to wait (the one the host has just sent
+ * or sent again: the calendar may have been open for hours) or from the last `checkAgain` (then `watchOver`). `enabled: false` reads nothing: the list needs `property.read`.
  */
 export function useCalendarChanges(options: { enabled?: boolean } = {}) {
   const watch = useWatchWindow();
@@ -75,10 +98,12 @@ export function useCalendarChanges(options: { enabled?: boolean } = {}) {
     refetchInterval: (current) =>
       (current.state.data ?? []).some(isChangeWaiting) && Date.now() - watch.since < CHANGE_WATCH_MS ? CHANGE_POLL_MS : false,
   });
+  const waitingIds = (query.data ?? []).filter(isChangeWaiting).map((change) => change.id);
+  useRestartOnNewWaiting(watch, waitingIds);
   const { refetch } = query;
   return {
     ...query,
-    watchOver: watch.over && (query.data ?? []).some(isChangeWaiting),
+    watchOver: watch.over && waitingIds.length > 0,
     checkAgain: () => {
       watch.restart();
       void refetch();

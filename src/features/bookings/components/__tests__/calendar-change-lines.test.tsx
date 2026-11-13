@@ -98,6 +98,36 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
     expect(state()).toBe('waiting');
   });
 
+  it('CalendarChangeLines_ARetryLongAfterTheScreenOpened_IsFollowedFromTheRetry_NotToldAsNoAnswer', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    const failed: CalendarChange = { ...WAITING, state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', errorCode: 'octorate_unavailable', chunkCount: 1 }] };
+    vi.mocked(calendarChangesApi.get).mockResolvedValue(failed);
+    renderLines(failed);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(state()).toBe('failed');
+
+    // The host reads the failure and, much later than the three minutes of the window, sends it again: the change waits again and is followed from now.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
+    });
+    vi.mocked(calendarChangesApi.retry).mockResolvedValue(WAITING);
+    vi.mocked(calendarChangesApi.get).mockResolvedValue(WAITING);
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('calendar-change-retry'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(calendarChangesApi.retry).toHaveBeenCalledWith('c1');
+    expect(state()).toBe('waiting');
+
+    vi.mocked(calendarChangesApi.get).mockResolvedValue({ ...WAITING, state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
+    });
+    expect(state()).toBe('accepted');
+  });
+
   it('CalendarChangeLines_A404_IsNotFound_EvenThoughTheCacheHoldsTheChange', async () => {
     vi.mocked(calendarChangesApi.get).mockRejectedValue(statusError(404));
     renderLines({ ...WAITING, state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] });
