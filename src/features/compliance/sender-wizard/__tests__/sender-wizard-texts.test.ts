@@ -52,3 +52,19 @@ describe('the words of the change of the sender', () => {
     for (const text of Object.values(locale.compliance.sender.summary.switch)) expect(text).not.toMatch(/octorate/i);
   });
 });
+
+// The texts of the wizard are in alphabetical order at every level, in both languages (the rule of the locale files).
+describe('the keys of compliance.sender', () => {
+  const alphabetical = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0);
+
+  function unsortedLevels(node: unknown, path: string): string[] {
+    if (node === null || typeof node !== 'object' || Array.isArray(node)) return [];
+    const keys = Object.keys(node);
+    const here = keys.join() === [...keys].sort(alphabetical).join() ? [] : [path];
+    return [...here, ...keys.flatMap((key) => unsortedLevels((node as Record<string, unknown>)[key], `${path}.${key}`))];
+  }
+
+  it.each(LOCALES)('$language: every level is in alphabetical order', ({ locale }) => {
+    expect(unsortedLevels(locale.compliance.sender, 'compliance.sender')).toEqual([]);
+  });
+});
