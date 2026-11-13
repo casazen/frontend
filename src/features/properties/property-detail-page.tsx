@@ -76,7 +76,7 @@ export function PropertyDetailPage() {
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const panel = propertyPanelOf(tabParam);
-  // `?section=connection-health` (the button «Attiva l'invio» of the cockpit and of the To do): the panel that tells the police and ISTAT send.
+  // `?section=connection-health` (the button «Attiva l'invio» of the cockpit and of the To do for who may not open its wizard, and the way back from the wizard): the panel that tells the police and ISTAT send.
   const scrollToHealth = searchParams.get('section') === CONNECTION_HEALTH_SECTION && panel === 'info';
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);

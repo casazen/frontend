@@ -45,8 +45,8 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
   });
 
   it('registry_EveryPathItNames_IsEitherInTheManifestOrOnTheListOfThePagesOtherEpicsStillRegister', () => {
-    // The one that is not in the manifest yet is the path the lead aligns with the task of E03 (the sender wizard); nothing else may be missing.
-    const stillToRegister = new Set(['/app/short-rent/compliance/sender']);
+    // The sender wizard of E03 is registered now (E03/F01/US02/T02): nothing is waiting for a page any more, and nothing may be missing.
+    const stillToRegister = new Set<string>();
     const missing = allLaunchCandidates()
       .map((candidate) => candidate.path)
       .filter((path) => !getManifestEntry(path) && !stillToRegister.has(path));
@@ -83,8 +83,11 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
   });
 
   it('resolveLaunchTarget_FocusOfTheCompliance_OpensTheSenderTheCinOrTheTaxOfTheProperty', () => {
-    // The sender wizard of E03 is not registered yet: the target falls back to the page that exists, and wins the day it is registered.
-    expect(resolveLaunchTarget('compliance', 'sender', PROPERTY)?.to).toBe(`/app/short-rent/properties/${PROPERTY}/activation`);
+    // The sender wizard of E03 is registered: it wins by itself, with the property in its address; with no property named it opens on the choice of the property.
+    expect(resolveLaunchTarget('compliance', 'sender', PROPERTY)?.to).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY}`);
+    expect(resolveLaunchTarget('compliance', 'sender')?.to).toBe('/app/short-rent/compliance/sender');
+    // It changes the sender (`property.write`): who may not gets the page of the activation if they may open it, else no link at all, never a dead one.
+    expect(resolveLaunchTarget('compliance', 'sender', PROPERTY, permissions(['property.read']))).toBeNull();
     expect(resolveLaunchTarget('compliance', 'cin', PROPERTY)?.to).toBe(`/app/short-rent/properties/${PROPERTY}/activation?step=cin`);
     expect(resolveLaunchTarget('compliance', 'taxRate', PROPERTY)?.to).toBe(`/app/short-rent/properties/${PROPERTY}/activation?step=tourist-tax`);
     expect(resolveLaunchTarget('compliance', 'cin')?.to).toBe('/app/short-rent/compliance/cin');
