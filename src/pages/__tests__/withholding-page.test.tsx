@@ -17,6 +17,8 @@ const api = vi.hoisted(() => ({
 }));
 const saved = vi.hoisted(() => vi.fn());
 const workspace = vi.hoisted(() => ({ contexts: [{ contextKey: 'account', roleKey: 'org_owner' }] }));
+const plan = vi.hoisted(() => ({ isAgency: true, isLoading: false, failed: false }));
+const planHook = vi.hoisted(() => vi.fn());
 
 vi.mock('@/api/withholding.api', () => ({
   withholdingApi: { getSummary: api.getSummary, downloadF24Pdf: api.downloadF24Pdf, recordPayment: api.recordPayment },
@@ -24,6 +26,7 @@ vi.mock('@/api/withholding.api', () => ({
 vi.mock('@/api/owner-accounting.api', () => ({ ownerAccountingApi: { getTaxReconciliation: api.getTaxReconciliation, getF24: api.getF24 } }));
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: saved, withJsonErrorBody: async (error: unknown) => error }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: workspace.contexts }) }));
+vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: planHook }));
 // The month the page opens on: November 2026, whatever the day the tests run.
 vi.mock('@/lib/stay-dates', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/stay-dates')>()), todayInRome: () => '2026-11-12' }));
 vi.mock('@/components/layout/page-header', () => ({
@@ -89,6 +92,8 @@ async function openThePaymentConfirmation(day = '2026-11-20') {
 beforeEach(async () => {
   vi.resetAllMocks();
   workspace.contexts = [{ contextKey: 'account', roleKey: 'org_owner' }];
+  Object.assign(plan, { isAgency: true, isLoading: false, failed: false });
+  planHook.mockImplementation(() => ({ ...plan, retry: vi.fn() }));
   await i18n.changeLanguage('it');
   api.getSummary.mockResolvedValue(SUMMARY);
   api.getTaxReconciliation.mockResolvedValue(reconciliation(100.25));
@@ -109,6 +114,8 @@ describe('the withholding page asks the role before it reads anything (agency.wi
     expect(api.getSummary).not.toHaveBeenCalled();
     expect(api.getTaxReconciliation).not.toHaveBeenCalled();
     expect(api.getF24).not.toHaveBeenCalled();
+    // The plan is read from an endpoint of the billing administrator: for anyone else it is not even asked.
+    expect(planHook).not.toHaveBeenCalled();
   });
 });
 
@@ -288,5 +295,57 @@ describe('registering the payment of the F24 cannot be undone, and it is the adm
     expect(screen.getByTestId('f24-unpaid')).toBeInTheDocument();
     expect(screen.queryByTestId('f24-paid')).not.toBeInTheDocument();
     expect(screen.getByTestId('f24-record-payment')).toBeEnabled();
+  });
+});
+
+describe('the plan of the organization is checked before anything is read (any other plan is answered 403, and a refused read sends the whole app to the page of no access)', () => {
+  it('WithholdingPage_OrgNotOnTheAgencyPlan_SaysSoAndNothingIsRead', () => {
+    plan.isAgency = false;
+
+    renderPage();
+
+    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agenzia');
+    expect(screen.getByRole('link', { name: 'Vai al piano' })).toHaveAttribute('href', '/app/account/billing');
+    expect(screen.getByTestId('withholding-page')).toBeInTheDocument();
+    expect(api.getSummary).not.toHaveBeenCalled();
+  });
+
+  it('WithholdingPage_PlanStillOnItsWay_WaitsAndNothingIsRead_NeverSaysNotOnThePlan', () => {
+    plan.isAgency = false;
+    plan.isLoading = true;
+
+    renderPage();
+
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(screen.getByText('Caricamento delle ritenute…')).toBeInTheDocument();
+    expect(api.getSummary).not.toHaveBeenCalled();
+  });
+
+  it('WithholdingPage_PlanThatCouldNotBeRead_SaysItAndNeverNotOnThePlan', () => {
+    plan.isAgency = false;
+    plan.failed = true;
+
+    renderPage();
+
+    expect(screen.getByTestId('error-state')).toHaveTextContent("Impossibile verificare il piano dell'organizzazione");
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(api.getSummary).not.toHaveBeenCalled();
+  });
+
+  it('WithholdingPage_OrgOnTheAgencyPlan_ReadsAsBefore', async () => {
+    renderPage();
+
+    expect(await screen.findByTestId('withholding-summary')).toBeInTheDocument();
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(api.getSummary).toHaveBeenCalledTimes(1);
+  });
+
+  it('WithholdingPage_ServerRefusesTheFirstRead_TheAccessIsNotThere_TheAppStaysAndNothingIsOffered', async () => {
+    api.getSummary.mockResolvedValue(null);
+
+    renderPage();
+
+    expect(await screen.findByTestId('agency-access-refused')).toHaveTextContent('Questa pagina non è disponibile per il tuo accesso');
+    expect(screen.queryByTestId('withholding-summary')).not.toBeInTheDocument();
   });
 });

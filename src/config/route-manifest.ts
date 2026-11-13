@@ -1178,7 +1178,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
     // `agency.statement.manage` to approve and publish), which the owner and the administrators hold from their role in the org and which is not among the
     // context permissions of `/me/contexts` (so it cannot be a `requiredPermissions` entry): like the other pages of the agency's money, the entry is for
-    // the org billing administrator, who is that owner or administrator, and the page checks the role before it reads anything.
+    // the org billing administrator, who is that owner or administrator, and the page checks the role and the plan of the organization before it reads anything (the flag is the environment's, the plan is each organization's: the backend refuses any other plan with a bare 403).
     path: '/app/account/statements',
     context: 'account',
     requiredPermissions: [],
@@ -1210,7 +1210,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Wire transfer batch management (ADR-017): the payment files (SEPA for EUR, Swiss for CHF) that pay the owners' published statements. The backend asks
     // `agency.wire.manage`, which only the owner and the administrators hold: the entry is for the org billing administrator, and the page checks the role
-    // before it reads anything. Agency plan only (`agencyTier`).
+    // before it reads anything, the plan of the organization too. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],

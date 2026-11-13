@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { WireTransferPage } from '../WireTransferPage';
 import { deferred, file, problem, statement } from './agency-money-fixtures';
@@ -14,6 +15,8 @@ const api = vi.hoisted(() => ({
 }));
 const saved = vi.hoisted(() => vi.fn());
 const workspace = vi.hoisted(() => ({ contexts: [{ contextKey: 'account', roleKey: 'org_owner' }] }));
+const plan = vi.hoisted(() => ({ isAgency: true, isLoading: false, failed: false }));
+const planHook = vi.hoisted(() => vi.fn());
 
 vi.mock('@/api/statements.api', () => ({ statementsApi: { getAll: api.getAll } }));
 vi.mock('@/api/wireTransfer.api', () => ({
@@ -21,6 +24,7 @@ vi.mock('@/api/wireTransfer.api', () => ({
 }));
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: saved, withJsonErrorBody: async (error: unknown) => error }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: workspace.contexts }) }));
+vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: planHook }));
 vi.mock('@/components/layout/page-header', () => ({ PageHeader: ({ title }: { title: string }) => createElement('h1', null, title) }));
 
 vi.setConfig({ testTimeout: 30_000 });
@@ -38,7 +42,7 @@ const CREATED = { batchId: BATCH_ID, currency: 'CHF', totalAmount: 1234.5, trans
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
-  render(createElement(QueryClientProvider, { client }, createElement(WireTransferPage)));
+  render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(WireTransferPage))));
   return client;
 }
 
@@ -78,6 +82,8 @@ const status = () => screen.getByTestId('wire-batch-status').getAttribute('data-
 beforeEach(async () => {
   vi.resetAllMocks();
   workspace.contexts = [{ contextKey: 'account', roleKey: 'org_owner' }];
+  Object.assign(plan, { isAgency: true, isLoading: false, failed: false });
+  planHook.mockImplementation(() => ({ ...plan, retry: vi.fn() }));
   await i18n.changeLanguage('it');
   api.getAll.mockResolvedValue([CHF, EUR, DRAFT, APPROVED, USD]);
   api.createBatch.mockResolvedValue(CREATED);
@@ -97,6 +103,8 @@ describe('the wire page asks the role before it reads anything (agency.wire.mana
     expect(api.getAll).not.toHaveBeenCalled();
     expect(api.createBatch).not.toHaveBeenCalled();
     expect(screen.queryByTestId('wire-compose')).not.toBeInTheDocument();
+    // The plan is read from an endpoint of the billing administrator: for anyone else it is not even asked.
+    expect(planHook).not.toHaveBeenCalled();
   });
 
   it.each(['org_owner', 'org_admin'])('WirePage_%s_ReadsTheStatements', async (roleKey) => {
@@ -421,5 +429,57 @@ describe('the file of the batch and its payment (the administrator\'s word, neve
     expect(status()).toBe('Downloaded');
     expect(screen.queryByTestId('wire-batch-paid')).not.toBeInTheDocument();
     expect(screen.getByTestId('wire-batch-mark-paid')).toBeEnabled();
+  });
+});
+
+describe('the plan of the organization is checked before anything is read (any other plan is answered 403, and a refused read sends the whole app to the page of no access)', () => {
+  it('WirePage_OrgNotOnTheAgencyPlan_SaysSoAndNothingIsRead', () => {
+    plan.isAgency = false;
+
+    renderPage();
+
+    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agenzia');
+    expect(screen.getByRole('link', { name: 'Vai al piano' })).toHaveAttribute('href', '/app/account/billing');
+    expect(screen.getByTestId('wire-transfer-page')).toBeInTheDocument();
+    expect(api.getAll).not.toHaveBeenCalled();
+  });
+
+  it('WirePage_PlanStillOnItsWay_WaitsAndNothingIsRead_NeverSaysNotOnThePlan', () => {
+    plan.isAgency = false;
+    plan.isLoading = true;
+
+    renderPage();
+
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(screen.getByText('Caricamento bonifici...')).toBeInTheDocument();
+    expect(api.getAll).not.toHaveBeenCalled();
+  });
+
+  it('WirePage_PlanThatCouldNotBeRead_SaysItAndNeverNotOnThePlan', () => {
+    plan.isAgency = false;
+    plan.failed = true;
+
+    renderPage();
+
+    expect(screen.getByTestId('error-state')).toHaveTextContent("Impossibile verificare il piano dell'organizzazione");
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(api.getAll).not.toHaveBeenCalled();
+  });
+
+  it('WirePage_OrgOnTheAgencyPlan_ReadsAsBefore', async () => {
+    renderPage();
+
+    expect(await screen.findByTestId('wire-compose')).toBeInTheDocument();
+    expect(screen.queryByTestId('agency-plan-required')).not.toBeInTheDocument();
+    expect(api.getAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('WirePage_ServerRefusesTheFirstRead_TheAccessIsNotThere_TheAppStaysAndNothingIsOffered', async () => {
+    api.getAll.mockResolvedValue(null);
+
+    renderPage();
+
+    expect(await screen.findByTestId('agency-access-refused')).toHaveTextContent('Questa pagina non è disponibile per il tuo accesso');
+    expect(screen.queryByTestId('wire-compose')).not.toBeInTheDocument();
   });
 });

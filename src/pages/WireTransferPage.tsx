@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useMemo, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { AgencyAdminRequired } from '@/components/finance/agency-admin-required';
+import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { WireBatchCard, type CreatedBatch } from '@/components/finance/WireBatchCard';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -13,11 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useExactMoney } from '@/hooks/use-exact-money';
-import { useWorkspace } from '@/hooks/use-workspace';
 import { failureMessage, problemCodeOf } from '@/lib/agency-finance';
 import { getHttpStatus } from '@/lib/api-errors';
 import { maskIban } from '@/lib/iban';
-import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useStatements } from '@/queries/statements';
 import { useCreateBatch } from '@/queries/wireTransfer';
 import type { OwnerStatement } from '@/types';
@@ -30,22 +28,17 @@ const currencyOf = (statement: OwnerStatement) => statement.currency.trim().toUp
 
 /**
  * «Bonifici proprietari» of the Amministrazione (ADR-017, E06/F05/US01/T02): the wire file that pays the owners' published statements, one currency per file. The
- * backend gives it only to the owner and the administrators of an org on the agency plan (`agency.wire.manage`), so the role is checked before anything is read.
- * CasaZen makes the file and records what the administrator says; it does not move money and does not know whether the bank executed the transfers.
+ * backend gives it only to the owner and the administrators of an org on the agency plan (`agency.wire.manage`), so the role and the plan are checked before
+ * anything is read (`AgencyFinanceGate`). CasaZen makes the file and records what the administrator says; it does not move money and does not know whether the bank
+ * executed the transfers.
  */
 export function WireTransferPage() {
   const { t } = useTranslation();
-  const { contexts } = useWorkspace();
-
-  if (!isOrgBillingAdmin(contexts)) {
-    return (
-      <div className="space-y-6" data-testid="wire-transfer-page">
-        <PageHeader title={t('wire.title')} description={t('wire.description')} crumbs="auto" />
-        <AgencyAdminRequired />
-      </div>
-    );
-  }
-  return <WireTransferBody />;
+  return (
+    <AgencyFinanceGate testId="wire-transfer-page" title={t('wire.title')} description={t('wire.description')} loadingLabel={t('wire.loading')}>
+      <WireTransferBody />
+    </AgencyFinanceGate>
+  );
 }
 
 function WireTransferBody() {
@@ -156,6 +149,16 @@ function WireTransferBody() {
           error={getHttpStatus(error) === 404 ? undefined : error}
           onRetry={() => void refetch()}
         />
+      </div>
+    );
+  }
+
+  // The server refuses the list (a 403 the read accepts, so that the app stays here): the access is not there, and nothing of the page is offered.
+  if (statements === null) {
+    return (
+      <div className="space-y-6" data-testid="wire-transfer-page">
+        {header}
+        <AgencyAccessRefused />
       </div>
     );
   }

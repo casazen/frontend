@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/page-header';
-import { AgencyAdminRequired } from '@/components/finance/agency-admin-required';
+import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { F24Card } from '@/components/finance/F24Card';
 import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
@@ -13,33 +13,25 @@ import { Select } from '@/components/ui/select';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 import { useExactMoney } from '@/hooks/use-exact-money';
-import { useWorkspace } from '@/hooks/use-workspace';
 import { F24_CURRENCY } from '@/lib/agency-finance';
 import { getHttpStatus } from '@/lib/api-errors';
-import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { useF24Record, useTaxReconciliation } from '@/queries/use-owner-accounting';
 import { useWithholdingSummary } from '@/queries/withholding';
 
 /**
  * Withholding tax page (ADR-018, E06/F05/US01/T02): the withholding of the month by owner, the F24 of the month with its PDF and the registration of its payment.
- * The backend gives it only to the owner and the administrators of an org on the agency plan (`agency.withholding.manage`), so the role is checked before anything
- * is read. Opening the page makes nothing: the F24 is read only for a month the reconciliation says has one (the server builds one when asked for a month without), and
+ * The backend gives it only to the owner and the administrators of an org on the agency plan (`agency.withholding.manage`), so the role and the plan are checked
+ * before anything is read (`AgencyFinanceGate`). Opening the page makes nothing: the F24 is read only for a month the reconciliation says has one (the server builds one when asked for a month without), and
  * a month without withholding says so instead of failing.
  */
 export function WithholdingPage() {
   const { t } = useTranslation();
-  const { contexts } = useWorkspace();
-
-  if (!isOrgBillingAdmin(contexts)) {
-    return (
-      <div className="space-y-6" data-testid="withholding-page">
-        <PageHeader title={t('withholding.title')} description={t('withholding.description')} crumbs="auto" />
-        <AgencyAdminRequired />
-      </div>
-    );
-  }
-  return <WithholdingBody />;
+  return (
+    <AgencyFinanceGate testId="withholding-page" title={t('withholding.title')} description={t('withholding.description')} loadingLabel={t('withholding.loading')}>
+      <WithholdingBody />
+    </AgencyFinanceGate>
+  );
 }
 
 function WithholdingBody() {
@@ -51,12 +43,14 @@ function WithholdingBody() {
   const [selectedYear, setSelectedYear] = useState(Number(today.slice(0, 4)));
 
   const summaryQuery = useWithholdingSummary(selectedMonth, selectedYear);
-  const reconciliation = useTaxReconciliation(selectedYear);
+  const summary = summaryQuery.data;
+  // The rest is read once the summary came back: a server that refuses the summary (a 403 the read accepts) refuses the rest the same way, and a second refused
+  // read would take the whole app to the page of no access.
+  const reconciliation = useTaxReconciliation(selectedYear, summary !== undefined && summary !== null);
   const row = reconciliation.data?.months.find((candidate) => candidate.month === selectedMonth);
   const hasF24 = row?.f24 !== null && row?.f24 !== undefined;
   const f24Query = useF24Record(selectedMonth, selectedYear, hasF24);
 
-  const summary = summaryQuery.data;
   const currentYear = Number(today.slice(0, 4));
   const monthName = (month: number) => new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, month - 1, 1)));
 
@@ -116,6 +110,16 @@ function WithholdingBody() {
           error={getHttpStatus(summaryQuery.error) === 404 ? undefined : summaryQuery.error}
           onRetry={() => void summaryQuery.refetch()}
         />
+      </div>
+    );
+  }
+
+  // The server refuses the summary: the access is not there, and nothing of the page is offered.
+  if (summary === null) {
+    return (
+      <div className="space-y-6" data-testid="withholding-page">
+        {header}
+        <AgencyAccessRefused />
       </div>
     );
   }

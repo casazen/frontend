@@ -1120,6 +1120,16 @@
     "adminRequired": {
       "description": "I rendiconti, le ritenute e i bonifici riguardano i soldi dei proprietari: li gestiscono il titolare e gli amministratori. Chiedi a uno di loro di aprire questa pagina.",
       "title": "Serve l'amministratore dell'organizzazione"
+    },
+    "planError": "Impossibile verificare il piano dell'organizzazione",
+    "planRequired": {
+      "action": "Vai al piano",
+      "description": "I rendiconti, le ritenute e i bonifici dei proprietari sono per le organizzazioni con il piano Agenzia, e la tua non lo ha. Puoi cambiare piano dalla pagina del piano e della fatturazione.",
+      "title": "Serve il piano Agenzia"
+    },
+    "refused": {
+      "description": "Il server non ti mostra i soldi dei proprietari: servono il piano Agenzia e il ruolo di titolare o amministratore dell'organizzazione. Se pensi che sia un errore, esci e rientra o chiedi a un amministratore.",
+      "title": "Questa pagina non è disponibile per il tuo accesso"
     }
   },
   "aiContentNotice": {

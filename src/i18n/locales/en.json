@@ -1120,6 +1120,16 @@
     "adminRequired": {
       "description": "The statements, the withholding and the wire transfers concern the owners' money: the owner and the administrators of the organization handle them. Ask one of them to open this page.",
       "title": "The organization administrator is needed"
+    },
+    "planError": "Could not check the plan of the organization",
+    "planRequired": {
+      "action": "Go to the plan",
+      "description": "The owners' statements, withholding and wire transfers are for organizations on the Agency plan, and yours is not. You can change the plan from the plan and billing page.",
+      "title": "The Agency plan is needed"
+    },
+    "refused": {
+      "description": "The server does not show you the owners' money: it needs the Agency plan and the role of owner or administrator of the organization. If you think this is a mistake, sign out and in again or ask an administrator.",
+      "title": "This page is not available for your access"
     }
   },
   "aiContentNotice": {

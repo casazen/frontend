@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { AgencyAdminRequired } from '@/components/finance/agency-admin-required';
+import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { Select } from '@/components/ui/select';
@@ -10,30 +10,23 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { StatementDetail } from '@/components/statements/StatementDetail';
 import { useExactMoney } from '@/hooks/use-exact-money';
-import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
-import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useStatements } from '@/queries/statements';
 import type { StatementStatus } from '@/types';
 
 /**
  * «Rendiconti» of the Amministrazione (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners with the step each one is at, and for each the
  * real PDF and CSV. Every amount is shown in the currency of its statement, exactly as the server wrote it. The backend gives the statements only to the owner
- * and the administrators of an org on the agency plan, so the role is checked before anything is read: for anyone else the page asks them to contact one.
+ * and the administrators of an org on the agency plan, so the role and the plan are checked before anything is read (`AgencyFinanceGate`): for anyone else the
+ * page says why, and asks nothing.
  */
 export function StatementsPage() {
   const { t } = useTranslation();
-  const { contexts } = useWorkspace();
-
-  if (!isOrgBillingAdmin(contexts)) {
-    return (
-      <div className="space-y-6" data-testid="statements-page">
-        <PageHeader title={t('statement.title')} description={t('statement.description')} crumbs="auto" />
-        <AgencyAdminRequired />
-      </div>
-    );
-  }
-  return <StatementsBody />;
+  return (
+    <AgencyFinanceGate testId="statements-page" title={t('statement.title')} description={t('statement.description')} loadingLabel={t('statement.loading')}>
+      <StatementsBody />
+    </AgencyFinanceGate>
+  );
 }
 
 function StatementsBody() {
@@ -75,6 +68,16 @@ function StatementsBody() {
           error={getHttpStatus(error) === 404 ? undefined : error}
           onRetry={() => void refetch()}
         />
+      </div>
+    );
+  }
+
+  // The server refuses the list (a 403 the read accepts, so that the app stays here): the access is not there, and nothing of the page is offered.
+  if (statements === null) {
+    return (
+      <div className="space-y-6" data-testid="statements-page">
+        {header}
+        <AgencyAccessRefused />
       </div>
     );
   }

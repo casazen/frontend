@@ -1,4 +1,6 @@
+import axios from '@/lib/axios';
 import { ApiClient } from './client';
+import { acceptsRefusal } from './accept-refusal';
 import { fileApi, type DownloadedFile } from './file.api';
 import type {
   OwnerStatement,
@@ -11,9 +13,14 @@ import type {
  * The reads and the files need `agency.statement.view`, the writes `agency.statement.manage`: the owner and the administrators of an org on the agency plan.
  */
 export const statementsApi = {
-  /** List of owner statements, optionally filtered by property owner and/or property. */
-  getAll: (filters?: StatementFilters) =>
-    ApiClient.get<OwnerStatement[]>('/statements', filters),
+  /**
+   * List of owner statements, optionally filtered by property owner and/or property; `null` when the server refuses it to this caller (403): a refused read
+   * would send the whole app to the page of no access, and the page only has to say that the access is not there.
+   */
+  getAll: async (filters?: StatementFilters): Promise<OwnerStatement[] | null> => {
+    const response = await axios.get<OwnerStatement[]>('/statements', { params: filters, validateStatus: acceptsRefusal });
+    return response.status === 403 ? null : response.data;
+  },
 
   /** Generates a new monthly statement for the given owner, property, and period. */
   generate: (data: GenerateStatementRequest) =>
