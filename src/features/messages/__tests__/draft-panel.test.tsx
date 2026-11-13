@@ -200,6 +200,31 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['message-hub', 'thread'] }));
     });
 
+    it('draftPanel_ApproveThatWentOut_KeepsEveryButtonWaitingUntilTheListIsReadAgain', async () => {
+      // The approval is answered and the list that is read again is not back yet: the draft is still in it, and a message that went out is not offered «Approva e invia» again.
+      const reading = deferred<ApprovalQueueItem[]>();
+      vi.mocked(approvalQueueApi.approve).mockResolvedValue(item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent' }));
+      renderPanel();
+
+      const approve = await screen.findByRole('button', { name: 'Approva e invia' });
+      const readings = vi.mocked(approvalQueueApi.getPending).mock.calls.length;
+      vi.mocked(approvalQueueApi.getPending).mockReturnValue(reading.promise);
+      fireEvent.click(approve);
+
+      await waitFor(() => expect(approvalQueueApi.getPending).toHaveBeenCalledTimes(readings + 1));
+      expect(screen.getByTestId('assistant-draft-text')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Approva e invia/ })).toHaveAttribute('aria-busy', 'true');
+      expect(screen.getByRole('button', { name: 'Modifica' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Rifiuta' })).toBeDisabled();
+      expect(screen.queryByTestId('assistant-draft-notice')).not.toBeInTheDocument();
+
+      // The list is back without the draft: what went out is said and nothing is left to approve.
+      reading.resolve([]);
+      expect(await screen.findByTestId('assistant-draft-notice')).toHaveTextContent('Messaggio inviato all\'ospite.');
+      expect(screen.queryByTestId('assistant-draft-text')).not.toBeInTheDocument();
+      expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1);
+    });
+
     it('draftPanel_ApproveThatTheChannelHasNotConfirmed_IsToldAsToCheckNeverAsSent', async () => {
       vi.mocked(approvalQueueApi.approve).mockResolvedValue(item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'ManualVerify' }));
       renderPanel();
@@ -245,6 +270,30 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
 
       expect(await screen.findByTestId('assistant-draft-notice')).toBeInTheDocument();
       expect(calls).toEqual(['edit:a1:Il check-in è dalle 16.', 'approve:a1']);
+    });
+
+    it('draftPanel_SaveAndApproveThatWentOut_KeepsTheEditorWaitingAndNeverShowsTheOriginalTextAgain', async () => {
+      // The edit is saved and approved; the list that is read again is not back yet and still holds the original text: it is not shown with a button that approves it.
+      const reading = deferred<ApprovalQueueItem[]>();
+      vi.mocked(approvalQueueApi.edit).mockResolvedValue(item({ editedContentText: 'Il check-in è dalle 16.' }));
+      vi.mocked(approvalQueueApi.approve).mockResolvedValue(
+        item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent', editedContentText: 'Il check-in è dalle 16.' }),
+      );
+      renderPanel();
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Modifica' }));
+      fireEvent.change(within(screen.getByTestId('assistant-draft-editor')).getByRole('textbox'), { target: { value: 'Il check-in è dalle 16.' } });
+      vi.mocked(approvalQueueApi.getPending).mockReturnValue(reading.promise);
+      fireEvent.click(screen.getByRole('button', { name: 'Salva e approva' }));
+
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(screen.getByRole('button', { name: /Salva e approva/ })).toHaveAttribute('aria-busy', 'true'));
+      expect(screen.getByTestId('assistant-draft-editor')).toBeInTheDocument();
+      expect(screen.queryByTestId('assistant-draft-text')).not.toBeInTheDocument();
+
+      reading.resolve([]);
+      expect(await screen.findByTestId('assistant-draft-notice')).toBeInTheDocument();
+      expect(screen.queryByTestId('assistant-draft-editor')).not.toBeInTheDocument();
     });
 
     it('draftPanel_EmptyEdit_IsNotSentAndSaysWhy', async () => {

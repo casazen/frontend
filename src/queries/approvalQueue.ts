@@ -17,7 +17,11 @@ const PENDING_KEY = [APPROVAL_QUEUE_KEY, 'pending'] as const;
 /** How often the queue is read again while its page is visible (AC-NF68-4): an item that has just been put in it shows up within this time. */
 export const APPROVAL_QUEUE_POLL_MS = 60_000;
 
-/** The queue and its items are stale after any decision: they are read again where a page shows them. */
+/**
+ * The queue and its items are stale after any decision: they are read again where a page shows them. The promise ends when that reading has: the `onSettled` of every
+ * decision returns it, so the decision stays pending (and every button of the screen waits) until the list no longer holds the item it decided; an item that went out is
+ * never left on the screen with its buttons on again for the time the list takes to come back.
+ */
 export function invalidateQueue(queryClient: QueryClient): Promise<void> {
   return queryClient.invalidateQueries({ queryKey: [APPROVAL_QUEUE_KEY] });
 }
@@ -134,9 +138,7 @@ export function useApproveItem() {
       if (item.itemType === 'MessageDraft') invalidateConversations(queryClient);
     },
     onError: toastApproveFailed,
-    onSettled: () => {
-      void invalidateQueue(queryClient);
-    },
+    onSettled: () => invalidateQueue(queryClient),
   });
 }
 
@@ -164,9 +166,7 @@ export function useEditItem() {
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('approval.action.editFailed'));
     },
-    onSettled: () => {
-      void invalidateQueue(queryClient);
-    },
+    onSettled: () => invalidateQueue(queryClient),
   });
 }
 
@@ -193,9 +193,7 @@ export function useSaveAndApproveItem() {
       if (item.itemType === 'MessageDraft') invalidateConversations(queryClient);
     },
     onError: toastApproveFailed,
-    onSettled: () => {
-      void invalidateQueue(queryClient);
-    },
+    onSettled: () => invalidateQueue(queryClient),
   });
 }
 
@@ -221,8 +219,6 @@ export function useRejectItem() {
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('approval.action.rejectFailed'));
     },
-    onSettled: () => {
-      void invalidateQueue(queryClient);
-    },
+    onSettled: () => invalidateQueue(queryClient),
   });
 }
