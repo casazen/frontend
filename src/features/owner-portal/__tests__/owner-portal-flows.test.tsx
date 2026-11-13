@@ -326,6 +326,43 @@ describe('the inbox (NF-111, AC-NF111-5)', () => {
     expect(api.startConversation).toHaveBeenCalledWith({ topic: 'document', documentId: 'd1', subject: 'Scadenza', body: 'Quando scade il mandato?' });
   });
 
+  it('OwnerInbox_AGeneralQuestionOfAnOwnerWithSeveralAgencies_IsRefusedWithWordsThatSayWhatToDo_NotWithTheCommonOne', async () => {
+    api.startConversation.mockRejectedValue(refusal(422, 'owner_conversation_invalid'));
+    renderPortal('/portale-proprietari/messaggi?topic=general');
+    const form = await screen.findByTestId('owner-new-conversation');
+    // The subject stops at the longest the server takes, so that this refusal has one cause left.
+    expect(within(form).getByTestId('owner-new-subject').getAttribute('maxlength')).toBe('160');
+
+    fireEvent.change(within(form).getByTestId('owner-new-subject'), { target: { value: 'Una domanda' } });
+    fireEvent.change(within(form).getByTestId('owner-new-body'), { target: { value: 'Quanto costa?' } });
+    fireEvent.click(within(form).getByTestId('owner-new-submit'));
+
+    const refused = await within(form).findByTestId('owner-new-refused');
+    expect(refused.textContent).toContain('più agenzie');
+    expect(refused.textContent).toContain('Scegli un immobile, un soggiorno, un documento o un rendiconto');
+    expect(refused.textContent).not.toContain('Controlla l’oggetto');
+    expect(api.startConversation).toHaveBeenCalledWith({ topic: 'general', subject: 'Una domanda', body: 'Quanto costa?' });
+  });
+
+  it('OwnerInbox_ARefusalOfAQuestionAboutAnItem_KeepsTheCommonWords', async () => {
+    api.listDocuments.mockResolvedValue({
+      documents: [{ id: 'd1', orgId: 'o1', propertyOwnerId: 'po1', type: 'Mandate', title: 'Mandato di gestione', expiryState: 'none', versions: [], updatedAt: '2026-11-01T10:00:00Z' }],
+      statements: [],
+    });
+    api.startConversation.mockRejectedValue(refusal(422, 'owner_conversation_invalid'));
+    renderPortal('/portale-proprietari/messaggi?topic=document&documentId=d1');
+    const form = await screen.findByTestId('owner-new-conversation');
+    await waitFor(() => expect((within(form).getByTestId('owner-new-reference') as HTMLSelectElement).value).toBe('d1'));
+
+    fireEvent.change(within(form).getByTestId('owner-new-subject'), { target: { value: 'Scadenza' } });
+    fireEvent.change(within(form).getByTestId('owner-new-body'), { target: { value: 'Quando scade?' } });
+    fireEvent.click(within(form).getByTestId('owner-new-submit'));
+
+    const refused = await within(form).findByTestId('owner-new-refused');
+    expect(refused.textContent).toContain('Controlla l’oggetto');
+    expect(refused.textContent).not.toContain('più agenzie');
+  });
+
   it('OwnerInbox_AnItemThatIsNotThePersonsOwn_IsNotOnOffer_AndTheConversationIsNotStarted', async () => {
     renderPortal('/portale-proprietari/messaggi?topic=document&documentId=somebody-elses');
     const form = await screen.findByTestId('owner-new-conversation');

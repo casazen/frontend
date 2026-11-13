@@ -16259,6 +16259,7 @@
       "listTitle": "Le tue conversazioni",
       "loading": "Caricamento dei messaggi",
       "new": {
+        "agencyNeeded": "Il tuo profilo è collegato a più agenzie e una domanda generale non dice a quale scrivere. Scegli un immobile, un soggiorno, un documento o un rendiconto: la conversazione va all’agenzia di quell’elemento.",
         "body": "Il tuo messaggio",
         "cancel": "Annulla",
         "choose": "Scegli…",

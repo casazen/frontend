@@ -11,7 +11,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useOwnerDocuments, useOwnerProperties, useOwnerStays, useStartOwnerConversation } from '@/queries/ownerPortal';
 import type { OwnerConversationTopicCode, StartOwnerConversationBody } from '@/types';
-import { CONVERSATION_TOPICS, currentData, visibleStatements, type NewConversationInitial } from './owner-portal-model';
+import { CONVERSATION_SUBJECT_MAX_LENGTH, CONVERSATION_TOPICS, currentData, isAgencyNeededRefusal, visibleStatements, type NewConversationInitial } from './owner-portal-model';
 import { ownerPortalPaths } from './paths';
 import { TOUCH } from './portal-parts';
 
@@ -109,7 +109,12 @@ export function NewConversationForm({ initial, onCancel }: NewConversationFormPr
     });
   };
 
-  const refusal = start.error ? (getProblemMessage(start.error, t) ?? t('ownerPortal.inbox.new.failed')) : null;
+  // The topic is the one of the request that was refused, not the one chosen since.
+  const refusal = start.error
+    ? isAgencyNeededRefusal(start.error, start.variables?.topic)
+      ? t('ownerPortal.inbox.new.agencyNeeded')
+      : (getProblemMessage(start.error, t) ?? t('ownerPortal.inbox.new.failed'))
+    : null;
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4 rounded-md border bg-card p-4" data-testid="owner-new-conversation" aria-labelledby="owner-new-conversation-title">
@@ -186,7 +191,14 @@ export function NewConversationForm({ initial, onCancel }: NewConversationFormPr
       ) : null}
 
       <Field label={t('ownerPortal.inbox.new.subject')}>
-        <Input className={TOUCH} value={subject} onChange={(event) => setSubject(event.target.value)} autoComplete="off" data-testid="owner-new-subject" />
+        <Input
+          className={TOUCH}
+          value={subject}
+          maxLength={CONVERSATION_SUBJECT_MAX_LENGTH}
+          onChange={(event) => setSubject(event.target.value)}
+          autoComplete="off"
+          data-testid="owner-new-subject"
+        />
       </Field>
       <Field label={t('ownerPortal.inbox.new.body')}>
         <Textarea className="min-h-32" value={body} onChange={(event) => setBody(event.target.value)} data-testid="owner-new-body" />

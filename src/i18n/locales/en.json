@@ -16259,6 +16259,7 @@
       "listTitle": "Your conversations",
       "loading": "Loading the messages",
       "new": {
+        "agencyNeeded": "Your profile is linked to more than one agency, and a general question does not say which one to write to. Choose a property, a stay, a document or a statement: the conversation goes to the agency of that item.",
         "body": "Your message",
         "cancel": "Cancel",
         "choose": "Choose…",

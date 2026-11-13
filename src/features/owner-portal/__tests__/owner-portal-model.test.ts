@@ -12,6 +12,7 @@ import {
   formatBytes,
   isAccountingDocument,
   isContactEditable,
+  isAgencyNeededRefusal,
   isContactRevocable,
   isOwnerOnlyRefusal,
   looksLikeEmail,
@@ -241,6 +242,17 @@ describe('delegated contacts', () => {
 });
 
 describe('the inbox', () => {
+  it('IsAgencyNeededRefusal_OnlyTheRefusalOfAGeneralQuestion_ThatTheServerCallsInvalid', () => {
+    // A general question of an owner with several agencies: the server cannot tell which one to write to, and nothing else is left behind that code (the subject stops at its longest).
+    expect(isAgencyNeededRefusal(failure(422, 'owner_conversation_invalid'), 'general')).toBe(true);
+    // The same code for a question about an item is the common one (the reference), and any other code, or no answer, is not about the agency.
+    expect(isAgencyNeededRefusal(failure(422, 'owner_conversation_invalid'), 'document')).toBe(false);
+    expect(isAgencyNeededRefusal(failure(422, 'owner_message_invalid'), 'general')).toBe(false);
+    expect(isAgencyNeededRefusal(failure(500), 'general')).toBe(false);
+    expect(isAgencyNeededRefusal(new Error('no answer'), 'general')).toBe(false);
+    expect(isAgencyNeededRefusal(failure(422, 'owner_conversation_invalid'), undefined)).toBe(false);
+  });
+
   it('AttachmentProblem_SparesAnUploadTheServerWouldRefuse', () => {
     expect(attachmentProblem({ type: 'application/pdf', size: 1000 })).toBeNull();
     expect(attachmentProblem({ type: 'image/png', size: ATTACHMENT_MAX_BYTES })).toBeNull();

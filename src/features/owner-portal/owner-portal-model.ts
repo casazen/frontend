@@ -273,6 +273,18 @@ export function looksLikeEmail(value: string): boolean {
 /** What a conversation can be about, as the server reads it. */
 export const CONVERSATION_TOPICS: readonly OwnerConversationTopicCode[] = ['general', 'property', 'ownerStay', 'document', 'statementVersion'];
 
+/** The longest subject of a conversation the server takes (`OwnerConversation.SubjectMaxLength`): the field stops there, so a refusal of a general question has one cause left. */
+export const CONVERSATION_SUBJECT_MAX_LENGTH = 160;
+
+/**
+ * The refusal of a GENERAL question of an owner that has more than one agency: the server cannot tell which one to write to (`owner_conversation_invalid` on `agencyId`) and the portal has no
+ * list of the agencies to choose from. The words and the subject are checked before (the subject stops at its longest), so for a general conversation nothing else is left behind that code.
+ * The text says what to do: ask about an item, which has its own agency.
+ */
+export function isAgencyNeededRefusal(error: unknown, topic: OwnerConversationTopicCode | undefined): boolean {
+  return topic === 'general' && isAxiosError(error) && getProblemCode(error.response?.data) === 'owner_conversation_invalid';
+}
+
 /** What the address can ask the form to start with: ids only, never words. A value that is not one of the person's own items is ignored (the select shows nothing chosen). */
 export interface NewConversationInitial {
   topic: OwnerConversationTopicCode;
