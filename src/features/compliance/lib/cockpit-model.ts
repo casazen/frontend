@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import { AlertCircle, Home, LogOut, Send, Sparkles, Users, type LucideIcon } from 'lucide-react';
 import type { CalmTone } from '@/components/shared/calm';
 import type { PermissionPredicate } from '@/config/route-manifest';
+import { drawerTargetOf, type ComplianceDrawerTarget } from '@/features/compliance/compliance-drawer/compliance-drawer-model';
 import { urgencyOf, type RowNote } from '@/features/dashboard/lib/home-model';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { addDays, formatStayDate, romeWallClock, todayInRome } from '@/lib/stay-dates';
@@ -51,6 +52,8 @@ export interface CockpitRow {
   cta: string;
   /** Only to read (a property that is in order): the title opens its page and there is no button. */
   quiet?: boolean;
+  /** What «Verifica nel tuo Cassetto Compliance» is about, for an Alloggiati communication whose property is known; absent for the others. */
+  drawer?: ComplianceDrawerTarget;
 }
 
 /** The rows of one level, with what the server counts of it. */
@@ -234,6 +237,7 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
     to,
     // Whoever may only look is taken to the page, not told to do what the page will not let them do.
     cta: canWrite ? cta : t('dashboard.todo.open'),
+    drawer: drawerTargetOf(item, facts.stay?.propertyId),
   };
 }
 
