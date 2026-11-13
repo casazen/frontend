@@ -49,6 +49,9 @@ test.describe('Long-rent information architecture', () => {
         description: '',
       }),
     ]);
+    await page.route('**/api/long-rent/condominiums/properties', route => route.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify([{ propertyId: PROPERTY_ID, propertyName: 'Bilocale Monza', books: [] }]),
+    }));
     await page.route(`**/api/properties/${PROPERTY_ID}/documents`, async (route) => {
       if (route.request().method() !== 'GET') {
         await route.fallback();
@@ -177,15 +180,11 @@ test.describe('Long-rent information architecture', () => {
     await expect(page.getByTestId('maintenance-landlord')).toContainText('Nessuna richiesta');
 
     await page.getByTestId('long-rent-property-tab-expenses').click();
-    await expect(page.getByTestId('long-rent-property-expenses')).toBeVisible();
-    await expect(page.getByTestId('long-rent-property-condo-situation-lease-ia-1')).toContainText('80,00');
+    await expect(page.getByTestId('condominium-management')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Attiva gestione condominiale' })).toBeVisible();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Canoni', exact: true })).toHaveCount(0);
 
-    await expect(page.getByRole('link', { name: 'Apri il contratto' })).toHaveAttribute(
-      'href',
-      `/app/long-rent/leases/${LEASE_ID}`,
-    );
     await page.goto(demoUrl(`/app/long-rent/leases/${LEASE_ID}?tab=pagamenti`, 'long-term'), { waitUntil: 'domcontentloaded' });
 
     await page.getByTestId('lease-tab-inquilini').click();
