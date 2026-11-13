@@ -16,6 +16,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaCredentialsErrors, type QuesturaCredentialsField } from '@/features/properties/components/questura-credentials-form';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ import { useSetQuesturaCredentials } from '@/queries/use-questura-credentials';
 import type { WizardDraft } from '@/lib/wizard-draft';
 import type { PropertySender } from '@/types';
 import type { ComplianceSenderType } from '@/types/checkin-wizard.types';
+import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
 import { SenderWizardDone } from './sender-wizard-done';
 import { SenderWizardExit } from './sender-wizard-exit';
 import {
@@ -37,6 +39,7 @@ import {
   SenderStepBlockedError,
   defaultSenderChoice,
   delegationSettled,
+  hasTypedCredentials,
   propertyOfAddress,
   senderOptions,
   senderStepIds,
@@ -47,7 +50,7 @@ import {
   toSwitchRequest,
   type SenderStepId,
   type SenderWizardValues,
-  type SwitchProblemKind,
+  type StepProblemKind,
 } from './sender-wizard-model';
 import { ConnectionTestStep } from './steps/connection-test-step';
 import { CredentialsStep } from './steps/credentials-step';
@@ -143,8 +146,11 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   const testConnection = useTestConnection(propertyId);
   const declareActivated = useDeclareActivated(propertyId);
   const saveCredentials = useSetQuesturaCredentials(propertyId);
-  // What the last button of the summary was stopped by, to tell it in words (the shell shows the message of an error that has none of its own).
-  const [blocked, setBlocked] = useState<SwitchProblemKind | null>(null);
+  // What the last button of a step was stopped by, to tell it in words (the shell shows the message of an error that has none of its own).
+  const [blocked, setBlocked] = useState<StepProblemKind | null>(null);
+  // The credentials of the portal as they are typed: in the state of the wizard and in no value of its form, so in no draft, no address and no cache; they leave with the save.
+  const [typedCredentials, setTypedCredentials] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
+  const [credentialErrors, setCredentialErrors] = useState<QuesturaCredentialsErrors>({});
   // Any request of the wizard in flight: none of its buttons can be pressed again meanwhile.
   const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending;
 
@@ -175,8 +181,52 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     }
   };
 
+  const typedCredentialsPending = hasTypedCredentials(typedCredentials);
+
+  const changeCredential = (field: QuesturaCredentialsField, value: string) => {
+    setTypedCredentials((current) => ({ ...current, [field]: value }));
+    setCredentialErrors((current) => ({ ...current, [field]: undefined }));
+  };
+
+  /**
+   * Sends the credentials that were typed (`PUT`): the button of the step, Enter in a field and the main button of the wizard all come here. A field that is missing or too long is told on the
+   * field; a refusal of the server is told by the toast of the hook and the values stay in the fields, to be corrected. Whatever the end, the mutation keeps nothing of the request, and
+   * a save empties the fields.
+   */
+  const saveTypedCredentials = async (): Promise<'saved' | 'invalid' | 'refused'> => {
+    const found = validateQuesturaCredentials(typedCredentials);
+    setCredentialErrors(found);
+    if (Object.keys(found).length > 0) return 'invalid';
+    try {
+      await saveCredentials.mutateAsync(typedCredentials);
+    } catch {
+      saveCredentials.reset();
+      return 'refused';
+    }
+    saveCredentials.reset();
+    setTypedCredentials(EMPTY_QUESTURA_CREDENTIALS);
+    refreshSender();
+    return 'saved';
+  };
+
+  /**
+   * The main button of the credentials step: what was typed is saved before the step is left (nothing typed, nothing to save: the step is optional). A step that cannot save them stays, with
+   * the words of why, instead of going on and leaving them behind.
+   */
+  const saveCredentialsBeforeNext = async () => {
+    setBlocked(null);
+    if (!hasTypedCredentials(typedCredentials)) return;
+    const outcome = await saveTypedCredentials();
+    if (outcome === 'saved') return;
+    const kind = outcome === 'invalid' ? 'credentialsIncomplete' : 'credentialsNotSaved';
+    setBlocked(kind);
+    throw new SenderStepBlockedError(kind);
+  };
+
+  // «Salva ed esci» keeps the answers of the wizard as its draft and nothing else: the credentials that were typed are not part of it, and the person is told.
   const saveAndExit = () => {
-    toast.success(t('compliance.sender.exit.saved'));
+    if (typedCredentialsPending) toast.warning(t('compliance.sender.exit.savedWithoutCredentials'));
+    else toast.success(t('compliance.sender.exit.saved'));
     navigate(leaveTo);
   };
 
@@ -212,22 +262,19 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
         title: t('compliance.sender.steps.credentials.title'),
         purpose: t('compliance.sender.steps.credentials.purpose'),
         optional: true,
+        // With credentials typed the main button saves them first: it says so.
+        nextLabel: typedCredentialsPending ? t('compliance.sender.steps.credentials.saveAndNext') : undefined,
         nextDisabled: busy || !confirmed,
+        beforeNext: saveCredentialsBeforeNext,
         render: ({ goTo }) =>
           confirmed ? (
             <CredentialsStep
               read={read}
               busy={busy}
-              onSave={(credentials, done) =>
-                saveCredentials.mutate(credentials, {
-                  onSuccess: () => {
-                    done();
-                    // The values leave with the save: the mutation forgets what it was given (its variables), it does not wait for the page to go.
-                    saveCredentials.reset();
-                    refreshSender();
-                  },
-                })
-              }
+              values={typedCredentials}
+              errors={credentialErrors}
+              onChange={changeCredential}
+              onSave={() => void saveTypedCredentials()}
             />
           ) : (
             <ConfirmFirst onGo={() => goTo(SENDER_STEP.summary)} />

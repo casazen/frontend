@@ -5414,7 +5414,8 @@
         "whyCasaZen": "CasaZen needs the credentials of the Alloggiati Web portal to send the data.",
         "whyChannelManager": "Your channel manager sends without them. If you save them, CasaZen can download the receipts by itself: it is optional, but recommended.",
         "saved": "Credentials saved.",
-        "notSaved": "Credentials not saved yet."
+        "notSaved": "Credentials not saved yet.",
+        "notInDraft": "The credentials are not kept in the draft: if you leave without saving them, you will have to type them again."
       },
       "delegation": {
         "title": "You delegate the transmission",
@@ -5491,11 +5492,14 @@
         "casaZenNotAvailable": "Sending with CasaZen is not available yet: choose another option.",
         "channelManagerNotAvailable": "Your channel manager cannot send for this property: connect it first, or choose another option.",
         "notApplicable": "There is no sender to choose for this property.",
-        "changedConcurrently": "Someone changed who sends while you were here: check the summary again."
+        "changedConcurrently": "Someone changed who sends while you were here: check the summary again.",
+        "credentialsIncomplete": "Fill in the three credential fields, or skip this step to go on without saving them.",
+        "credentialsNotSaved": "We could not save the credentials: they are still in the fields. Try again, or skip this step to go on without saving them."
       },
       "exit": {
         "saveAndExit": "Save and exit",
-        "saved": "Saved: pick up whenever you like."
+        "saved": "Saved: pick up whenever you like.",
+        "savedWithoutCredentials": "Saved, except for the credentials you typed: they are not kept in the draft, you will have to type them again."
       },
       "finish": "Confirm and finish",
       "help": {
@@ -5565,7 +5569,8 @@
         "credentials": {
           "label": "Credentials",
           "title": "Portal credentials (optional)",
-          "purpose": "They are needed if you want CasaZen to download the receipts. They are never shown again."
+          "purpose": "They are needed if you want CasaZen to download the receipts. They are never shown again.",
+          "saveAndNext": "Save and continue"
         },
         "panel": {
           "label": "Panel",

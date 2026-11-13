@@ -5414,7 +5414,8 @@
         "whyCasaZen": "CasaZen ha bisogno delle credenziali del portale Alloggiati Web per inviare i dati.",
         "whyChannelManager": "Il tuo channel manager invia anche senza. Se le salvi, CasaZen può scaricare in automatico le ricevute: è facoltativo, ma consigliato.",
         "saved": "Credenziali salvate.",
-        "notSaved": "Credenziali non ancora salvate."
+        "notSaved": "Credenziali non ancora salvate.",
+        "notInDraft": "Le credenziali non vengono salvate nella bozza: se esci senza salvarle, dovrai riscriverle."
       },
       "delegation": {
         "title": "Affidi la trasmissione",
@@ -5491,11 +5492,14 @@
         "casaZenNotAvailable": "L'invio con CasaZen non è ancora disponibile: scegli un'altra opzione.",
         "channelManagerNotAvailable": "Il tuo channel manager non può inviare per questo immobile: collegalo prima, oppure scegli un'altra opzione.",
         "notApplicable": "Per questo immobile non c'è un invio da scegliere.",
-        "changedConcurrently": "Qualcuno ha cambiato chi invia mentre eri qui: controlla di nuovo il riepilogo."
+        "changedConcurrently": "Qualcuno ha cambiato chi invia mentre eri qui: controlla di nuovo il riepilogo.",
+        "credentialsIncomplete": "Completa i tre campi delle credenziali, oppure salta questo passo per continuare senza salvarle.",
+        "credentialsNotSaved": "Non siamo riusciti a salvare le credenziali: sono ancora nei campi. Riprova, oppure salta questo passo per continuare senza salvarle."
       },
       "exit": {
         "saveAndExit": "Salva ed esci",
-        "saved": "Salvato: riprendi quando vuoi."
+        "saved": "Salvato: riprendi quando vuoi.",
+        "savedWithoutCredentials": "Salvato, tranne le credenziali che hai scritto: non si conservano nella bozza, dovrai riscriverle."
       },
       "finish": "Conferma e concludi",
       "help": {
@@ -5565,7 +5569,8 @@
         "credentials": {
           "label": "Credenziali",
           "title": "Credenziali del portale (facoltativo)",
-          "purpose": "Servono se vuoi che CasaZen scarichi le ricevute. Non vengono mai mostrate di nuovo."
+          "purpose": "Servono se vuoi che CasaZen scarichi le ricevute. Non vengono mai mostrate di nuovo.",
+          "saveAndNext": "Salva e continua"
         },
         "panel": {
           "label": "Pannello",

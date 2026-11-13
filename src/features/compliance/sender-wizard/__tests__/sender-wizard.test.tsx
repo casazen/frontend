@@ -531,6 +531,133 @@ describe('SenderWizardPage: the credentials of the portal never stay anywhere', 
   });
 });
 
+/** From the first step to the credentials of a channel manager that was not the sender: the consent and the confirmation of the change given. */
+async function toTheCredentials() {
+  click('sender-option-ChannelManager');
+  await screen.findByTestId('sender-delegation-consent');
+  click('sender-delegation-consent');
+  fireEvent.click(primary());
+  await onStep('summary');
+  click('sender-switch-confirmed');
+  fireEvent.click(primary());
+  await onStep('credentials');
+}
+
+function typeCredentials({ username = 'host@example.com', password = SECRET, wsKey = 'ws-key-123' }: { username?: string; password?: string; wsKey?: string } = {}) {
+  fireEvent.change(screen.getByLabelText(text('questuraCredentials.fields.username')), { target: { value: username } });
+  fireEvent.change(screen.getByLabelText(text('questuraCredentials.fields.password')), { target: { value: password } });
+  fireEvent.change(screen.getByLabelText(text('questuraCredentials.fields.wsKey')), { target: { value: wsKey } });
+}
+
+const TYPED = { username: 'host@example.com', password: SECRET, wsKey: 'ws-key-123' };
+
+// The credentials are in no draft, so what leaves the step with them typed and unsaved is lost: nothing does it in silence.
+describe('SenderWizardPage: the credentials that were typed are never lost in silence', () => {
+  it('SenderWizardPage_CredentialsTypedAndTheMainButton_SavesThemBeforeTheStepIsLeft', async () => {
+    const { client } = await open();
+    await toTheCredentials();
+    typeCredentials();
+
+    // The main button says what it does.
+    expect(primary()).toHaveTextContent(text('compliance.sender.steps.credentials.saveAndNext'));
+    fireEvent.click(primary());
+
+    await waitFor(() => expect(questuraCredentialsApi.set).toHaveBeenCalledWith(PROPERTY_ID, TYPED), WAIT);
+    await onStep('panel');
+    expect(questuraCredentialsApi.set).toHaveBeenCalledTimes(1);
+    // They left with the save: no field, no mutation, no draft and no storage holds them.
+    expect(document.body.innerHTML).not.toContain(SECRET);
+    await waitFor(() => expect(client.getMutationCache().getAll().filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET))).toEqual([]), WAIT);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
+    expect(JSON.stringify([...Array(sessionStorage.length).keys()].map((index) => sessionStorage.getItem(sessionStorage.key(index) ?? '')))).not.toContain(SECRET);
+  });
+
+  it('SenderWizardPage_CredentialsTypedButIncomplete_TheMainButtonStaysOnTheStepAndSaysWhy', async () => {
+    await open();
+    await toTheCredentials();
+    typeCredentials({ password: '', wsKey: '' });
+
+    fireEvent.click(primary());
+
+    expect(await screen.findByTestId('sender-finish-error')).toHaveTextContent(text('compliance.sender.errors.credentialsIncomplete'));
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+    expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveAttribute('aria-invalid', 'true');
+    expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+    // What was typed is still in its field, to be completed.
+    expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue('host@example.com');
+  });
+
+  it('SenderWizardPage_CredentialsRefusedByTheServer_TheMainButtonStaysOnTheStepKeepsTheFieldsAndForgetsTheRequest', async () => {
+    vi.mocked(questuraCredentialsApi.set).mockRejectedValue(
+      Object.assign(problem(422, { code: 'questura_credentials_invalid' }), { config: { headers: new AxiosHeaders(), data: JSON.stringify({ password: SECRET }) } }),
+    );
+    const { client } = await open();
+    await toTheCredentials();
+    typeCredentials();
+
+    fireEvent.click(primary());
+
+    expect(await screen.findByTestId('sender-finish-error')).toHaveTextContent(text('compliance.sender.errors.credentialsNotSaved'));
+    expect(toast.error).toHaveBeenCalled();
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+    expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveValue(SECRET);
+    // Whatever the end, the mutation keeps nothing of what was sent: neither its variables nor the request in its error.
+    await waitFor(
+      () =>
+        expect(
+          client
+            .getMutationCache()
+            .getAll()
+            .filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET) || JSON.stringify((mutation.state.error as AxiosError | null)?.config?.data ?? null).includes(SECRET)),
+        ).toEqual([]),
+      WAIT,
+    );
+  });
+
+  it('SenderWizardPage_EnterInACredentialsField_SavesThemAsTheCardDoesAndNeverGoesOnToTheNextStep', async () => {
+    await open();
+    await toTheCredentials();
+    typeCredentials();
+
+    // The fields are in the form of the wizard: its Enter would submit it and go on with the credentials left behind. Here Enter is the save, and nothing else.
+    const notPrevented = fireEvent.keyDown(screen.getByLabelText(text('questuraCredentials.fields.wsKey')), { key: 'Enter', code: 'Enter' });
+
+    expect(notPrevented).toBe(false);
+    await waitFor(() => expect(questuraCredentialsApi.set).toHaveBeenCalledWith(PROPERTY_ID, TYPED), WAIT);
+    await waitFor(() => expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveValue(''), WAIT);
+    expect(questuraCredentialsApi.set).toHaveBeenCalledTimes(1);
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+  });
+
+  it('SenderWizardPage_SaveAndExitWithCredentialsTyped_SaysTheyWereNotKeptAndKeepsNothingOfThem', async () => {
+    await open();
+    await toTheCredentials();
+    typeCredentials();
+
+    click('sender-wizard-save-exit');
+
+    await waitFor(() => expect(screen.getByTestId('property-page')).toBeInTheDocument(), WAIT);
+    expect(toast.warning).toHaveBeenCalledWith(text('compliance.sender.exit.savedWithoutCredentials'));
+    expect(toast.success).not.toHaveBeenCalledWith(text('compliance.sender.exit.saved'));
+    expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+    await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain('host@example.com');
+  });
+
+  it('SenderWizardPage_CredentialsStepWithNothingTyped_SaysTheyAreNotInTheDraftAndTheMainButtonGoesOnAndAsksNothing', async () => {
+    await open();
+    await toTheCredentials();
+
+    expect(screen.getByTestId('sender-credentials-draft-note')).toHaveTextContent(text('compliance.sender.credentials.notInDraft'));
+    expect(primary()).not.toHaveTextContent(text('compliance.sender.steps.credentials.saveAndNext'));
+    fireEvent.click(primary());
+
+    await onStep('panel');
+    expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+  });
+});
+
 describe('SenderWizardPage: leaving and coming back (NF-04, NF-06)', () => {
   it('SenderWizardPage_SaveAndExit_LeavesToThePropertyAndKeepsTheAnswersAsTheDraftOfThePropertyWithoutTheConfirmation', async () => {
     await open();

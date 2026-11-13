@@ -4,6 +4,7 @@ import { getProblemCode } from '@/lib/api-errors';
 import type { PropertySender, SenderConnectionTest, SwitchSenderRequest } from '@/types';
 import type { ComplianceSenderType } from '@/types/checkin-wizard.types';
 import type { PanelStep, StartPanelStepRequest } from '@/types/onboarding.types';
+import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
 
 /** The parameter of the address that names the property (`?property=<id>`): the one the panel «Invio a Polizia e ISTAT» and the pages that lead here write. */
 export const SENDER_PROPERTY_PARAM = 'property';
@@ -176,16 +177,30 @@ export function switchProblemOf(error: unknown): SwitchProblemKind | null {
 }
 
 /**
- * The step stops on a refusal of the server that has words of its own. It is thrown in place of the answer, which holds the request that was sent: the shell finds nothing to say in it
+ * What stops a step with words of its own: a refusal of the change of the sender, or the credentials of the portal that were typed and could not be saved (`credentialsIncomplete`: a field is
+ * missing or too long; `credentialsNotSaved`: the server did not take them). The words are `compliance.sender.errors.<kind>`.
+ */
+export type StepProblemKind = SwitchProblemKind | 'credentialsIncomplete' | 'credentialsNotSaved';
+
+/**
+ * The step stops on something that has words of its own. It is thrown in place of the answer, which holds the request that was sent: the shell finds nothing to say in it
  * and shows the words of the kind (`finishFailedMessage`).
  */
 export class SenderStepBlockedError extends Error {
-  readonly kind: SwitchProblemKind;
+  readonly kind: StepProblemKind;
 
-  constructor(kind: SwitchProblemKind) {
+  constructor(kind: StepProblemKind) {
     super(`The sender wizard cannot go on: ${kind}`);
     this.kind = kind;
   }
+}
+
+/**
+ * Whether the person typed something in the credentials of the portal that is not saved yet (a field of spaces is empty). The credentials are in no value of the wizard and in no draft, so
+ * what leaves the step with them typed is lost: the main button saves them first and «Salva ed esci» says that they were not kept.
+ */
+export function hasTypedCredentials(values: SetQuesturaCredentialsRequest): boolean {
+  return Object.values(values).some((value) => value.trim() !== '');
 }
 
 /** What the result of the connection test, or of the state of the sender, means for the host. Only `active` is shown as «Attivo». */

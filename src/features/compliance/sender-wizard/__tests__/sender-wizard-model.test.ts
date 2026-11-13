@@ -11,6 +11,7 @@ import {
   delegationSettled,
   delegationTextKey,
   fixStepOf,
+  hasTypedCredentials,
   outcomeOfSender,
   outcomeOfTest,
   outcomeToShow,
@@ -270,5 +271,14 @@ describe('the address and the way back from the panel', () => {
     expect(senderResumePath(stepOf({ wizardType: null }))).toBeNull();
     expect(senderResumePath(stepOf({}, null))).toBeNull();
     expect(senderResumePath(undefined)).toBeNull();
+  });
+});
+
+describe('the credentials typed and not saved', () => {
+  it('hasTypedCredentials_AnyFieldWithSomethingInIt_IsTypedAndOnlySpacesAreNot', () => {
+    expect(hasTypedCredentials({ username: '', password: '', wsKey: '' })).toBe(false);
+    expect(hasTypedCredentials({ username: '  ', password: ' ', wsKey: '' })).toBe(false);
+    expect(hasTypedCredentials({ username: 'host@example.com', password: '', wsKey: '' })).toBe(true);
+    expect(hasTypedCredentials({ username: '', password: '', wsKey: 'ws-key' })).toBe(true);
   });
 });
