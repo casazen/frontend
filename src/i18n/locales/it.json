@@ -16517,6 +16517,73 @@
       "refund": "Rimborsa"
     }
   },
+  "paymentLedger": {
+    "columns": {
+      "booking": "Prenotazione",
+      "credit": "Accredito",
+      "document": "Documento",
+      "fee": "Commissione",
+      "gross": "Lordo",
+      "net": "Netto",
+      "payment": "Incasso",
+      "state": "Stato"
+    },
+    "degraded": "I dettagli del canale non sono disponibili in questo momento: qui vedi gli importi che avevamo già salvato.",
+    "document": {
+      "kind": {
+        "CreditNote": "Nota di credito",
+        "Invoice": "Fattura",
+        "Proforma": "Proforma",
+        "Receipt": "Ricevuta"
+      },
+      "named": "{{kind}} n. {{number}}",
+      "none": "Nessun documento",
+      "paymentState": {
+        "Paid": "Incassata",
+        "ToCollect": "Da incassare",
+        "Unknown": "Incasso non noto"
+      },
+      "status": {
+        "Draft": "Bozza",
+        "Issued": "Emessa"
+      }
+    },
+    "notAvailable": "Non disponibile",
+    "period": {
+      "count_one": "{{count}} riga nel periodo",
+      "count_other": "{{count}} righe nel periodo",
+      "emptyDescription": "Qui compaiono gli incassi registrati e quelli del canale. Se ne aspettavi qualcuno, controlla le date.",
+      "emptyTitle": "Nessuna riga nel periodo",
+      "forbidden": "Non hai il permesso di vedere gli incassi del periodo.",
+      "incomplete": "Scegli il primo e l’ultimo giorno del periodo.",
+      "label": "Periodo",
+      "loadError": "Non riusciamo a leggere gli incassi del periodo in questo momento.",
+      "tableLabel": "Incassi del periodo"
+    },
+    "section": {
+      "emptyDescription": "Qui compaiono i pagamenti con carta, i bonifici, i contanti e quelli incassati dal canale, appena ci sono.",
+      "emptyTitle": "Nessun incasso registrato",
+      "forbidden": "Non hai il permesso di vedere gli incassi di questa prenotazione.",
+      "label": "Incassi della prenotazione",
+      "loadError": "Non riusciamo a leggere gli incassi in questo momento.",
+      "notFound": "Non troviamo gli incassi di questa prenotazione.",
+      "title": "Incassi"
+    },
+    "source": {
+      "BankTransfer": "Bonifico",
+      "Card": "Carta",
+      "Cash": "Contanti",
+      "Ota": "Dal canale",
+      "OtaCollected": "Incassato dal canale",
+      "OtaHost": "Dal canale, incassi tu",
+      "Other": "Altro metodo"
+    },
+    "switch": {
+      "byPayment": "Per pagamento",
+      "byPeriod": "Per prenotazione e periodo",
+      "label": "Vista dei pagamenti"
+    }
+  },
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",
     "oneProperty": "1 proprietà",

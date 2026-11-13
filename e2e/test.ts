@@ -192,6 +192,30 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
+  // The payment ledger (FIS-05) of a booking (the tab Pagamento) and of a period (the payments page, «Per prenotazione e periodo»): nothing recorded,
+  // unless a spec answers otherwise. `**/api/payment-ledger**` also matches the Vite module `/src/api/payment-ledger.api.ts`: only the API is answered.
+  await page.route('**/api/payment-ledger**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const path = new URL(route.request().url()).pathname.replace(/\/$/, '');
+    if (/\/payment-ledger\/bookings\/[^/]+$/.test(path)) {
+      const bookingId = path.split('/').at(-1);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bookingId, bookingCode: '', channel: 'Direct', currency: 'EUR', lines: [], degraded: false }),
+      });
+      return;
+    }
+    if (path.endsWith('/api/payment-ledger')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], totalCount: 0, page: 1, pageSize: 20 }) });
+      return;
+    }
+    await route.fallback();
+  });
+
   await page.route('**/api/ota/integrations**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
