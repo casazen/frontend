@@ -5385,6 +5385,262 @@
       },
       "title": "Identificazione e accesso"
     },
+    "sender": {
+      "choice": {
+        "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
+        "legend": "Chi invia i dati degli ospiti alla Polizia?",
+        "notAvailable": "Non ancora disponibile.",
+        "now": "Adesso: {{sender}}",
+        "options": {
+          "CasaZen": {
+            "description": "CasaZen trasmette i dati con le credenziali del tuo portale.",
+            "title": "CasaZen"
+          },
+          "ChannelManager": {
+            "description": "Invia lui ogni giorno i dati degli ospiti. È la scelta consigliata quando l'immobile è collegato.",
+            "title": "Il tuo channel manager"
+          },
+          "Manual": {
+            "description": "Scarichi il file di ogni soggiorno e lo carichi tu sul portale della Polizia.",
+            "title": "Lo faccio io, con il file"
+          }
+        }
+      },
+      "confirmFirst": {
+        "go": "Vai al riepilogo",
+        "text": "Prima conferma chi invia: questo passaggio lavora sull'invio in corso."
+      },
+      "credentials": {
+        "notInDraft": "Le credenziali non vengono salvate nella bozza: se esci senza salvarle, dovrai riscriverle.",
+        "notSaved": "Credenziali non ancora salvate.",
+        "saved": "Credenziali salvate.",
+        "whyCasaZen": "CasaZen ha bisogno delle credenziali del portale Alloggiati Web per inviare i dati.",
+        "whyChannelManager": "Il tuo channel manager invia anche senza. Se le salvi, CasaZen può scaricare in automatico le ricevute: è facoltativo, ma consigliato."
+      },
+      "delegation": {
+        "accepted": "Hai già affidato la trasmissione: non serve rifarlo.",
+        "consent": "Ho letto il testo e affido la trasmissione dei dati degli ospiti.",
+        "intro": "Con un invio automatico affidi la trasmissione dei dati alla Polizia al servizio che scegli. Restano tue la responsabilità delle comunicazioni e la correttezza dei dati.",
+        "text": "Delega alla trasmissione dei dati degli alloggiati\n\n1. A nome dell'organizzazione che gestisce l'immobile, affido a CasaZen e al servizio di invio che ho scelto per questo immobile la trasmissione, ogni giorno, dei dati degli ospiti ai servizi della Polizia di Stato (Alloggiati Web) e, dove previsto, alle statistiche regionali (ISTAT).\n\n2. Resto il responsabile delle comunicazioni e della correttezza dei dati: CasaZen e il servizio scelto agiscono solo per trasmetterli, secondo le mie istruzioni.\n\n3. Posso cambiare chi invia, o tornare a inviare io i dati con il file, in qualsiasi momento da questa procedura.\n\n4. I dati degli ospiti sono trattati secondo l'informativa privacy di CasaZen.",
+        "textLabel": "Testo della delega",
+        "title": "Affidi la trasmissione",
+        "unknownVersion": "Il testo della delega è stato aggiornato e questa pagina non lo mostra ancora: ricarica la pagina per leggerlo prima di dare il consenso."
+      },
+      "description": "Scegli chi invia ogni giorno i dati degli ospiti alla Polizia di Stato e controlla che funzioni.",
+      "descriptionFor": "Scegli chi invia ogni giorno i dati degli ospiti di «{{property}}» alla Polizia di Stato e controlla che funzioni.",
+      "done": {
+        "active": {
+          "lead": "Il tuo channel manager conferma che invia i dati alla Polizia.",
+          "points": {
+            "istat": "Lo stesso invio si occupa delle statistiche regionali (ISTAT), dove richieste.",
+            "send": "Ogni giorno il tuo channel manager invia alla Polizia i dati degli ospiti."
+          },
+          "title": "Invio automatico attivo"
+        },
+        "declared": {
+          "lead": "Lo stato è «Dichiarato attivo»: è la tua parola, CasaZen non può verificarla.",
+          "points": {
+            "check": "Controlla lo stato quando vuoi: se il tuo channel manager lo conferma, diventa «Attivo».",
+            "word": "Non risulta ancora verificato dal tuo channel manager."
+          },
+          "title": "Hai dichiarato l'invio attivo"
+        },
+        "forProperty": "Immobile: {{property}}",
+        "inactive": {
+          "lead": "Il tuo channel manager dice che non sta inviando.",
+          "points": {
+            "fix": "Riprendi il passaggio dal pannello e poi rifai il controllo.",
+            "off": "Per ora i dati non partono da soli: devi inviarli tu."
+          },
+          "title": "L'invio automatico non è ancora attivo"
+        },
+        "loading": "Leggo lo stato dell'invio…",
+        "manual": {
+          "lead": "Non c'è nessun invio automatico, quindi non c'è nulla da controllare.",
+          "points": {
+            "file": "Per ogni soggiorno scarichi il file e lo carichi sul portale della Polizia.",
+            "reminders": "CasaZen ti ricorda le scadenze tra gli adempimenti."
+          },
+          "title": "Invierai tu i dati alla Polizia"
+        },
+        "notAvailable": {
+          "lead": "Questa opzione non è attiva in questa versione.",
+          "points": {
+            "soon": "Per ora i dati li invii tu, oppure scegli il tuo channel manager."
+          },
+          "title": "Invio con CasaZen non ancora disponibile"
+        },
+        "readError": "Non riesco a leggere lo stato dell'invio.",
+        "toCompliance": "Vai agli adempimenti",
+        "toProperty": "Apri l'immobile",
+        "toState": "Controlla lo stato dell'invio",
+        "unverified": {
+          "lead": "Hai scelto l'invio automatico, ma non sappiamo ancora se funziona.",
+          "points": {
+            "check": "Torna a controllare quando hai finito nel pannello.",
+            "unknown": "Finché non lo conferma il tuo channel manager (o tu dichiari di aver visto «Attivato»), l'invio non è dato per attivo."
+          },
+          "title": "Invio scelto, non ancora verificato"
+        }
+      },
+      "errors": {
+        "casaZenNotAvailable": "L'invio con CasaZen non è ancora disponibile: scegli un'altra opzione.",
+        "changedConcurrently": "Qualcuno ha cambiato chi invia mentre eri qui: controlla di nuovo il riepilogo.",
+        "channelManagerNotAvailable": "Il tuo channel manager non può inviare per questo immobile: collegalo prima, oppure scegli un'altra opzione.",
+        "chooseOne": "Scegli chi invia i dati.",
+        "confirmationRequired": "Nel frattempo l'invio in corso è cambiato: controlla il riepilogo e conferma di nuovo.",
+        "confirmRequired": "Conferma il cambio prima di continuare.",
+        "consentRequired": "Per un invio automatico serve il consenso alla delega: torna a «Chi invia» e confermalo.",
+        "credentialsIncomplete": "Completa i tre campi delle credenziali, oppure salta questo passo per continuare senza salvarle.",
+        "credentialsNotSaved": "Non siamo riusciti a salvare le credenziali: sono ancora nei campi. Riprova, oppure salta questo passo per continuare senza salvarle.",
+        "delegationOutdated": "Il testo della delega è cambiato: torna a «Chi invia», leggilo e conferma di nuovo.",
+        "delegationRequired": "Per un invio automatico serve il consenso alla delega: torna a «Chi invia» e confermalo.",
+        "notApplicable": "Per questo immobile non c'è un invio da scegliere.",
+        "switchFailed": "Non è stato possibile cambiare chi invia: non è cambiato nulla. Riprova."
+      },
+      "exit": {
+        "saveAndExit": "Salva ed esci",
+        "saved": "Salvato: riprendi quando vuoi.",
+        "savedWithoutCredentials": "Salvato, tranne le credenziali che hai scritto: non si conservano nella bozza, dovrai riscriverle."
+      },
+      "finish": "Conferma e concludi",
+      "help": {
+        "button": "Aiuto",
+        "choice": "Se l'immobile è collegato al tuo channel manager, è la scelta più comoda: invia lui ogni giorno. Se preferisci fare da te, scegli il file.",
+        "credentials": "Sono le credenziali del portale della Polizia (Alloggiati Web). Si salvano una volta e non si vedono più.",
+        "panel": "Questo passaggio si fa nel pannello del tuo channel manager e CasaZen controlla il risultato. Puoi uscire e tornare: il passaggio resta dov'è.",
+        "summary": "Qui vedi cosa cambia prima che cambi. Solo quando confermi, CasaZen aggiorna chi invia.",
+        "supportGeneric": "Se ti blocchi, scrivi al supporto di CasaZen: quello che hai fatto resta salvato.",
+        "supportWithEmail": "Se ti blocchi, scrivici a",
+        "test": "Il controllo chiede al tuo channel manager se l'invio è attivo. Se non lo dice, puoi dichiarare tu di aver visto «Attivato»: resta una tua dichiarazione.",
+        "title": "Ti aiutiamo noi"
+      },
+      "loadError": "Non riesco a leggere chi invia i dati di questo immobile.",
+      "loading": "Sto leggendo come invii oggi i dati…",
+      "noPermission": {
+        "back": "Vedi lo stato dell'invio",
+        "text": "Cambiare l'invio alla Polizia richiede il permesso di modificare gli immobili. Chiedi a chi gestisce l'organizzazione.",
+        "title": "Non puoi cambiare chi invia"
+      },
+      "notApplicable": {
+        "back": "Torna all'immobile",
+        "text": "L'immobile è fuori dall'Italia: la comunicazione alla Polizia italiana non serve.",
+        "title": "Per questo immobile non c'è un invio da scegliere"
+      },
+      "notFound": {
+        "back": "Torna agli immobili",
+        "text": "Questo immobile non esiste o non è tra i tuoi. Controlla l'indirizzo o torna all'elenco.",
+        "title": "Immobile non trovato"
+      },
+      "panel": {
+        "moduleNote": "Per usare l'invio automatico il tuo channel manager può richiedere il suo modulo di gestione, che di solito è a pagamento: controlla il tuo abbonamento prima di cominciare.",
+        "unavailable": "Qui non possiamo guidarti passo passo: segui queste istruzioni nel pannello del tuo channel manager, poi vai alla verifica."
+      },
+      "pick": {
+        "emptyAction": "Vai agli immobili",
+        "emptyText": "L'invio alla Polizia si sceglie per ogni immobile: aggiungi il primo.",
+        "emptyTitle": "Non hai ancora immobili",
+        "loadError": "Non riesco a caricare i tuoi immobili.",
+        "loading": "Carico i tuoi immobili…",
+        "title": "Scegli l'immobile"
+      },
+      "stale": {
+        "retry": "Riprova",
+        "text": "Non siamo riusciti ad aggiornare lo stato: quello che vedi qui sotto potrebbe non essere aggiornato."
+      },
+      "state": {
+        "active": "Attivo",
+        "declared": "Dichiarato attivo",
+        "inactive": "Non attivo",
+        "manual": "Invio a mano",
+        "notAvailable": "Non ancora disponibile",
+        "unverified": "Non verificato"
+      },
+      "steps": {
+        "choice": {
+          "label": "Chi invia",
+          "purpose": "Scegli chi trasmette i dati degli ospiti. Puoi cambiare idea quando vuoi.",
+          "title": "Chi invia i dati alla Polizia?"
+        },
+        "credentials": {
+          "label": "Credenziali",
+          "purpose": "Servono se vuoi che CasaZen scarichi le ricevute. Non vengono mai mostrate di nuovo.",
+          "saveAndNext": "Salva e continua",
+          "title": "Credenziali del portale (facoltativo)"
+        },
+        "panel": {
+          "label": "Pannello",
+          "next": "Vai alla verifica",
+          "purpose": "Questo passaggio si fa nel pannello del tuo channel manager: CasaZen ti guida e controlla il risultato.",
+          "title": "Collega l'invio nel tuo channel manager"
+        },
+        "summary": {
+          "label": "Riepilogo",
+          "next": "Conferma e continua",
+          "purpose": "Niente cambia finché non confermi.",
+          "title": "Controlla prima di cambiare"
+        },
+        "test": {
+          "label": "Verifica",
+          "purpose": "Un controllo veloce: lo stato è «Attivo» solo se il tuo channel manager lo conferma.",
+          "title": "Controlliamo che funzioni"
+        }
+      },
+      "summary": {
+        "delegation": {
+          "accepted": "Già accettata",
+          "label": "Delega della trasmissione",
+          "notNeeded": "Non serve: i dati li invii tu",
+          "toRecord": "La registro con la tua conferma"
+        },
+        "istat": "Statistiche ISTAT",
+        "istatFollows": "Le invia lo stesso servizio, dove richieste",
+        "property": "Immobile",
+        "switch": {
+          "automaticToAutomatic": "L'invio automatico in corso verrà spento: due invii automatici insieme farebbero partire i dati due volte. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello. Finché lo stato del nuovo invio non è «Attivo» continui a inviare tu.",
+          "confirm": "Ho capito cosa cambia e confermo.",
+          "manualToAutomatic": "Il servizio che hai scelto diventa chi invia i dati. Finché lo stato non è «Attivo» continui a inviarli tu, con il file: l'invio automatico parte solo quando il collegamento è fatto e verificato.",
+          "same": "Questo è già l'invio in corso: non cambia nulla.",
+          "title": "Cosa cambia",
+          "toManual": "Da ora i dati li invii tu, con il file. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello: altrimenti i dati partirebbero due volte."
+        },
+        "who": "Chi invia"
+      },
+      "test": {
+        "again": "Controlla di nuovo",
+        "ask": {
+          "no": "No, torna al pannello",
+          "text": "Controlla nel pannello del tuo channel manager. Se lo vedi, dillo qui: sarà segnato come «Dichiarato attivo».",
+          "title": "Hai visto lo stato «Attivato»?",
+          "yes": "Sì, l'ho visto"
+        },
+        "declareError": "Non è stato possibile registrare la tua risposta. Riprova.",
+        "error": "Non siamo riusciti a fare il controllo adesso, quindi non sappiamo se l'invio funziona. Riprova.",
+        "fix": {
+          "choice": "Cambia chi invia",
+          "panel": "Torna al pannello"
+        },
+        "lastRun": "Ultimo invio automatico: {{when}}",
+        "outcome": {
+          "active": "Il tuo channel manager conferma che l'invio automatico è attivo.",
+          "declared": "Hai detto di aver visto «Attivato». CasaZen non può verificarlo: lo stato resta «Dichiarato attivo».",
+          "inactive": "Il tuo channel manager dice che l'invio automatico non è attivo.",
+          "manual": "Con l'invio a mano non c'è nulla da controllare.",
+          "notAvailable": "Questo invio non è ancora disponibile: non possiamo controllarlo.",
+          "unverified": "Non sappiamo ancora se l'invio funziona. Fai il controllo per vedere cosa risponde il tuo channel manager."
+        },
+        "reason": {
+          "octorate_not_connected": "Il tuo channel manager non è collegato a questo immobile.",
+          "octorate_police_account_invalid": "Le credenziali della Polizia nel pannello del tuo channel manager non risultano valide.",
+          "octorate_police_autorun_off": "Nel pannello del tuo channel manager l'invio automatico giornaliero è spento.",
+          "octorate_police_not_exposed": "Il tuo channel manager non dice se l'invio è attivo: puoi dichiararlo tu, ma resta una tua dichiarazione.",
+          "octorate_unavailable": "Il tuo channel manager non risponde adesso: riprova tra poco.",
+          "sender_casazen_not_available": "L'invio con CasaZen non è ancora disponibile."
+        },
+        "run": "Controlla ora"
+      },
+      "title": "Attiva l'invio automatico alla Polizia"
+    },
     "properties": {
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."

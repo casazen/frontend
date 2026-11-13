@@ -155,7 +155,8 @@ export const ACTION_ROUTE_MAP = {
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
   // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
   // - `SendAlloggiatiManually`: the Alloggiati section of the booking (the item is about the stay);
-  // - `ActivateOctorateSend`: the page of the property, on the section of its connection health (the police send is the property's);
+  // - `ActivateOctorateSend`: the wizard that activates the send of the property (E03/F01/US02/T02, `?property=<id>`: the police send is the property's), or, for who may not
+  //   change the sender, the page of the property on the section of its connection health;
   // - `EnterMunicipalityTaxRate`: the page of the property (the tourist tax rate is the property's; no page enters it yet);
   // - `RenewPoliceCredentials`: the Alloggiati dashboard;
   // - `DeclareTouristTax`: the archive of the proofs, on the tax declaration of the property (the month is in the entity type of the item,
@@ -164,7 +165,8 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'alloggiati' },
   },
   ActivateOctorateSend: {
-    route: { path: '/app/short-rent/properties/:id', target: 'property', search: { section: CONNECTION_HEALTH_SECTION } },
+    route: { path: '/app/short-rent/compliance/sender', propertyParam: 'property' },
+    fallback: { path: '/app/short-rent/properties/:id', target: 'property', search: { section: CONNECTION_HEALTH_SECTION } },
   },
   RenewPoliceCredentials: {
     route: { path: '/app/short-rent/alloggiati' },

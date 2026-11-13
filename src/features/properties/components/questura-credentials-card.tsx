@@ -3,40 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FormFieldError } from '@/components/shared/form-field-error';
 import { formatDateTime } from '@/lib/utils';
 import {
   useQuesturaCredentialsStatus,
   useRemoveQuesturaCredentials,
   useSetQuesturaCredentials,
 } from '@/queries/use-questura-credentials';
-import {
-  QUESTURA_CREDENTIALS_MAX_LENGTH,
-  type SetQuesturaCredentialsRequest,
-} from '@/types/questura-credentials.types';
-
-type Field = keyof SetQuesturaCredentialsRequest;
-
-const FIELDS: { field: Field; type: 'text' | 'password'; autoComplete: string }[] = [
-  { field: 'username', type: 'text', autoComplete: 'off' },
-  { field: 'password', type: 'password', autoComplete: 'new-password' },
-  { field: 'wsKey', type: 'password', autoComplete: 'off' },
-];
-
-const EMPTY: SetQuesturaCredentialsRequest = { username: '', password: '', wsKey: '' };
-
-/** Client checks mirroring the API (required, maximum length); the API validates again. */
-function validate(values: SetQuesturaCredentialsRequest): Partial<Record<Field, string>> {
-  const errors: Partial<Record<Field, string>> = {};
-  for (const { field } of FIELDS) {
-    if (!values[field].trim()) errors[field] = `questuraCredentials.errors.${field}Required`;
-    else if (values[field].length > QUESTURA_CREDENTIALS_MAX_LENGTH[field])
-      errors[field] = `questuraCredentials.errors.${field}TooLong`;
-  }
-  return errors;
-}
+import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
+import { QuesturaCredentialsFields } from './questura-credentials-fields';
+import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaCredentialsErrors } from './questura-credentials-form';
 
 interface QuesturaCredentialsCardProps {
   propertyId: string;
@@ -54,20 +29,20 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   const status = useQuesturaCredentialsStatus(propertyId);
   const save = useSetQuesturaCredentials(propertyId);
   const remove = useRemoveQuesturaCredentials(propertyId);
-  const [values, setValues] = useState<SetQuesturaCredentialsRequest>(EMPTY);
-  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
+  const [values, setValues] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
+  const [errors, setErrors] = useState<QuesturaCredentialsErrors>({});
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const configured = status.data?.configured === true;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const found = validate(values);
+    const found = validateQuesturaCredentials(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     save.mutate(values, {
       // Write-only: the values leave the page as soon as the API has them.
-      onSuccess: () => setValues(EMPTY),
+      onSuccess: () => setValues(EMPTY_QUESTURA_CREDENTIALS),
     });
   };
 
@@ -114,29 +89,14 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
 
         {canEdit && status.data && (
           <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
-            {FIELDS.map(({ field, type, autoComplete }) => {
-              const id = `questura-${field}`;
-              return (
-                <div key={field} className="space-y-1">
-                  <Label htmlFor={id}>{t(`questuraCredentials.fields.${field}`)}</Label>
-                  <Input
-                    id={id}
-                    type={type}
-                    autoComplete={autoComplete}
-                    spellCheck={false}
-                    value={values[field]}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setValues((current) => ({ ...current, [field]: next }));
-                      setErrors((current) => ({ ...current, [field]: undefined }));
-                    }}
-                    aria-invalid={!!errors[field]}
-                    aria-describedby={errors[field] ? `${id}-error` : undefined}
-                  />
-                  <FormFieldError id={`${id}-error`} message={errors[field]} />
-                </div>
-              );
-            })}
+            <QuesturaCredentialsFields
+              values={values}
+              errors={errors}
+              onChange={(field, value) => {
+                setValues((current) => ({ ...current, [field]: value }));
+                setErrors((current) => ({ ...current, [field]: undefined }));
+              }}
+            />
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <Button type="submit" disabled={save.isPending} data-testid="questura-credentials-save">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
