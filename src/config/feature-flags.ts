@@ -14,7 +14,8 @@ export type FeatureFlagKey =
   | 'concordatoFacile'
   | 'supplierRequestBackups'
   | 'agencyTier'
-  | 'crmMarketing';
+  | 'crmMarketing'
+  | 'messageAssistant';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -98,6 +99,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */
   crmMarketing: false,
+  /**
+   * The assistant of the guests' messages (backend `MessageAssistant`, E05/F05, NF-66, NF-67, PO-08, PO-09), off until the product owner turns it on: what a guest
+   * writes is personal data and the AI provider is an external sub-processor, so the privacy notice and the processing agreement of PO-09 come first. While it is
+   * off the draft panel of the conversation and the page of its settings (`/app/short-rent/settings/assistant`, in «Altro») do not exist: the address leads to the
+   * home of the area, nothing asks the server and the backend answers 404 to every endpoint of the assistant. Even with the flag on, an organization is served only
+   * after it switches its own assistant on in its rules, and a draft is never sent without the host's approval.
+   */
+  messageAssistant: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

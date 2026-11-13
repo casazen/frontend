@@ -9,12 +9,16 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
+import { messageThreadPath } from '@/lib/message-hub-routes';
 import { cn } from '@/lib/utils';
 import { useCloseActivity } from '@/queries/internalActivities';
 import { describeTodo } from './lib/todo-model';
 
-/** Whose id fills the `:id` of a page: the id of the entity the item is about, or the id of its property. */
-export type TodoRouteTarget = 'entity' | 'property';
+/**
+ * Whose id fills the `:id` of a page: the id of the entity the item is about, or the id of its property. `thread` is the page of a conversation of the hub of messages
+ * (`:threadKey`): its key is made from the kind of conversation (`threadKind`) and the id of the entity the item is about.
+ */
+export type TodoRouteTarget = 'entity' | 'property' | 'thread';
 
 /** A page of the ROUTE_MANIFEST (a pattern with `:id` when `target` says whose id fills it), optionally on a tab or a step of it. */
 export interface TodoRoute {
@@ -41,6 +45,11 @@ export interface TodoRoute {
   onlyFor?: readonly string[];
   /** The name of the parameter of the address that carries the id of the entity the item is about (`step` of a guided step of the panel), for a page that finds the rest from it. */
   entityParam?: string;
+  /**
+   * For `target: 'thread'`: the kind of conversation the key starts with, `ota` (a conversation of a channel, the id of its thread) or `direct` (a direct booking, the id of
+   * the booking), as the hub gives them (`ota:{id}`, `direct:{bookingId}`).
+   */
+  threadKind?: 'ota' | 'direct';
 }
 
 export interface TodoActionTarget {
@@ -55,6 +64,9 @@ export interface TodoActionTarget {
 
 /** The `entityType` the server sends for an item about a booking. */
 const BOOKING = 'Booking';
+
+/** The `entityType` of an item about a conversation of a channel (the thread of the copy of the channel's messages). */
+const OTA_THREAD = 'OtaMessageThread';
 
 /** The `entityType` of the items of the activation with Octorate: a guided step of the panel, a part of the plan, a «Fallo per me» request. */
 const PANEL_STEP = 'OnboardingPanelStep';
@@ -77,15 +89,16 @@ const ONBOARDING_FLOW = 'OnboardingFlow';
  * - `FixListingError`: the wizard «Aggiungi immobile» of the property named by the item, at the step of the channels where the state of each
  *   channel and what to fix are told (E02/F03/US01/T04); for who may not write the properties the page of the property, and the channels
  *   when the item names none;
- * - `ReplyToMessage`, `ApproveAiDraft`: the tab Messaggi of the booking, or the queue of the approvals;
+ * - `ReplyToMessage`: the conversation in the hub of messages (E05/F05/US04), `/messages/ota:{id}` for an item about a thread of a channel (`OtaMessageThread`) and
+ *   `/messages/direct:{id}` for an item about the booking of a direct conversation; `ApproveAiDraft`: the queue of the approvals, or the tab Messaggi of the booking;
  * - `ResumeWizard`: the activation of the property, the wizard that is resumed by property, and the steps of the activation of CasaZen with Octorate
  *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
  *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
  *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
- * for the page of a booking): `ReplyToMessage` may be about a message thread and `ApproveAiDraft` about a queue item, whose ids are not a
- * booking's, so those items get no address from it (the button is left out and the row leads to the list).
+ * for the page of a booking): `ApproveAiDraft` may be about a queue item, whose id is not a booking's, so such an item gets no booking address from it (the button is left
+ * out and the row leads to the list). A conversation is opened through its key (`target: 'thread'`), which the kind of entity tells apart.
  */
 export const ACTION_ROUTE_MAP = {
   ReviewBooking: {
@@ -114,7 +127,8 @@ export const ACTION_ROUTE_MAP = {
     fallback: [{ path: '/app/short-rent/properties/:id', target: 'property' }, { path: '/app/short-rent/channels' }],
   },
   ReplyToMessage: {
-    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'messages' },
+    route: { path: '/app/short-rent/messages/:threadKey', target: 'thread', entityType: OTA_THREAD, threadKind: 'ota' },
+    fallback: { path: '/app/short-rent/messages/:threadKey', target: 'thread', entityType: BOOKING, threadKind: 'direct' },
   },
   ApproveAiDraft: {
     route: { path: '/app/short-rent/approval-queue' },
@@ -192,7 +206,12 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) return null;
 
   let path = entry.path;
-  if (route.target) {
+  if (route.target === 'thread') {
+    // The key of a conversation is `ota:{id}` or `direct:{bookingId}`; the address carries it escaped, like every link to a conversation.
+    const id = entityOf(route, activity);
+    if (!id || !route.threadKind) return null;
+    path = messageThreadPath(`${route.threadKind}:${id}`);
+  } else if (route.target) {
     const id = route.target === 'property' ? propertyOf(activity) : entityOf(route, activity);
     if (!id) return null;
     path = generatePath(entry.path, { id });

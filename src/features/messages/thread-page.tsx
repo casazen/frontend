@@ -21,6 +21,7 @@ import { useMarkHubThreadRead, useMessageThread, useSendHubReply } from '@/queri
 import type { MessageHubThreadDetail } from '@/types';
 import { BookingCard } from './components/booking-card';
 import { ChannelBadge } from './components/channel-badge';
+import { DraftPanel } from './components/draft-panel';
 import { InboxPane } from './components/inbox-pane';
 import { MessageBubble, type BubbleActions } from './components/message-bubble';
 import { ReplyComposer } from './components/reply-composer';
@@ -120,16 +121,20 @@ function Conversation({ threadKey, thread, items, actions, resent, canWrite, dra
           <p>{t('messages.actions.readOnly')}</p>
         </CannotReply>
       ) : (
-        <ReplyComposer
-          threadKey={threadKey}
-          withChannelTemplates={thread.source === 'Ota'}
-          value={draft}
-          onChange={onDraft}
-          onSend={onSend}
-          busy={busy}
-          disabledReason={online ? null : t('messages.composer.offline')}
-          contactDetailsAllowed={allowedActions.contactDetailsAllowed}
-        />
+        <>
+          {/* The draft of the assistant (E05/F05/US04): only with the flag `messageAssistant` and the permission to decide approvals; it renders nothing otherwise. */}
+          <DraftPanel threadKey={threadKey} canAsk />
+          <ReplyComposer
+            threadKey={threadKey}
+            withChannelTemplates={thread.source === 'Ota'}
+            value={draft}
+            onChange={onDraft}
+            onSend={onSend}
+            busy={busy}
+            disabledReason={online ? null : t('messages.composer.offline')}
+            contactDetailsAllowed={allowedActions.contactDetailsAllowed}
+          />
+        </>
       )}
     </section>
   );

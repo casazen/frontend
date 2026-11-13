@@ -1992,6 +1992,79 @@
       "current": "Area attuale: {{name}}. Cambia area"
     }
   },
+  "assistant": {
+    "draft": {
+      "approve": "Approva e invia",
+      "ask": "Chiedi una bozza all'assistente",
+      "confidence": {
+        "helpTitle": "Affidabilità della bozza",
+        "high": "Alta affidabilità",
+        "low": "Controllala con attenzione",
+        "score": "L'assistente valuta questa bozza al {{percent}}% di affidabilità. È solo un'indicazione: decidi sempre tu."
+      },
+      "edit": "Modifica",
+      "edited": "Modificata da te",
+      "loadError": "Non è stato possibile leggere le bozze in attesa. Riprova.",
+      "loading": "Cerco una bozza per questa conversazione…",
+      "none": "Non c’è nessuna bozza in attesa per questa conversazione.",
+      "notFound": "Questa conversazione non è stata trovata.",
+      "outcome": {
+        "escalated": {
+          "default": "L'assistente non ha scritto una bozza: ha aggiunto un'attività «Da fare» per te.",
+          "forbidden_topic": "L'argomento è tra quelli vietati all'assistente: non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te.",
+          "mode_escalate": "Per questa situazione hai chiesto che decida sempre una persona: l'assistente non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te.",
+          "topic_not_allowed": "L'argomento non è tra quelli consentiti all'assistente: non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te."
+        },
+        "openSettings": "Apri le impostazioni dell'assistente",
+        "openTodo": "Apri le attività da fare"
+      },
+      "reason": {
+        "ai_budget_exceeded": "L'assistente ha raggiunto il suo limite di utilizzo per ora: riprova più tardi, oppure rispondi tu.",
+        "ai_invalid_answer": "L'assistente non è riuscito a scrivere una bozza utilizzabile: riprova, oppure rispondi tu.",
+        "ai_provider_error": "L'assistente non è riuscito a scrivere la bozza in questo momento: riprova tra qualche minuto, oppure rispondi tu.",
+        "ai_provider_not_configured": "L'assistente non è ancora disponibile in questo ambiente: nessuna bozza è stata scritta.",
+        "assistant_disabled": "L'assistente è spento per la tua organizzazione o per questo immobile: nessuna bozza è stata scritta.",
+        "host_already_replied": "Hai già risposto a questo messaggio: nessuna bozza è stata scritta.",
+        "mapping_not_confirmed": "L'annuncio di questa conversazione non è ancora confermato: conferma l'abbinamento con il canale e poi riprova.",
+        "message_not_found": "Il messaggio dell'ospite non è stato trovato: nessuna bozza è stata scritta.",
+        "message_too_old": "Il messaggio è troppo vecchio perché l’assistente risponda da solo: nessuna bozza è stata scritta.",
+        "octorate_not_connected": "Il collegamento con i canali non è attivo: ricollegalo per rispondere da qui.",
+        "property_unassigned": "Questa conversazione non è ancora collegata a un immobile, quindi l'assistente non ha informazioni con cui rispondere.",
+        "superseded": "L'ospite ha scritto di nuovo: nessuna bozza è stata scritta per il messaggio precedente.",
+        "thread_closed": "La conversazione è chiusa: non si può rispondere.",
+        "thread_not_found": "La conversazione non è stata trovata: nessuna bozza è stata scritta.",
+        "unknown": "L’assistente non ha completato la richiesta: nessuna bozza è stata scritta. Riprova tra poco, oppure rispondi tu."
+      },
+      "reject": "Rifiuta",
+      "rejected": "Bozza rifiutata. Non è stato inviato nulla.",
+      "requestFailed": "Non è stato possibile chiedere la bozza. Riprova tra poco.",
+      "situation": "Situazione",
+      "title": "Bozza dell'assistente"
+    },
+    "error": {
+      "noGuestMessage": "L’ospite non ha ancora scritto nulla: non c’è un messaggio a cui rispondere."
+    },
+    "notice": {
+      "transparency": "Questa bozza è scritta da un modello di intelligenza artificiale. Non parte nulla senza la tua approvazione e gli ospiti non vengono avvisati che l'ha scritta l'assistente: questo avviso resta qui, in CasaZen."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellazione o rimborso",
+      "check_in_time": "Orario di check-in",
+      "complaint": "Reclamo",
+      "directions": "Come arrivare",
+      "discount_request": "Richiesta di sconto",
+      "early_arrival_or_late_checkout": "Arrivo anticipato o check-out in ritardo",
+      "emergency": "Emergenza",
+      "invoice_request": "Richiesta di fattura",
+      "malfunction": "Guasto o problema",
+      "noise": "Rumore",
+      "other": "Altro",
+      "parking": "Parcheggio",
+      "pets": "Animali",
+      "thank_you": "Ringraziamento",
+      "wifi": "Wi-Fi"
+    }
+  },
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} al mese",

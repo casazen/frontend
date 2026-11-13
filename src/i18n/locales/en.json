@@ -1992,6 +1992,79 @@
       "current": "Current area: {{name}}. Change area"
     }
   },
+  "assistant": {
+    "draft": {
+      "approve": "Approve and send",
+      "ask": "Ask the assistant for a draft",
+      "confidence": {
+        "helpTitle": "How sure the assistant is",
+        "high": "High confidence",
+        "low": "Check it carefully",
+        "score": "The assistant rates this draft at {{percent}}% confidence. It is only a hint: you always decide."
+      },
+      "edit": "Edit",
+      "edited": "Edited by you",
+      "loadError": "The drafts that are waiting could not be loaded. Try again.",
+      "loading": "Looking for a draft for this conversation…",
+      "none": "There is no draft waiting for this conversation.",
+      "notFound": "This conversation was not found.",
+      "outcome": {
+        "escalated": {
+          "default": "The assistant did not write a draft: it added a «To do» for you.",
+          "forbidden_topic": "The topic is one the assistant must not answer: it did not write a draft and added a «To do» for you.",
+          "mode_escalate": "For this situation you asked that a person always decides: the assistant did not write a draft and added a «To do» for you.",
+          "topic_not_allowed": "The topic is not one the assistant may answer: it did not write a draft and added a «To do» for you."
+        },
+        "openSettings": "Open the assistant settings",
+        "openTodo": "Open the To do list"
+      },
+      "reason": {
+        "ai_budget_exceeded": "The assistant has reached its limit of use for now: try again later, or answer yourself.",
+        "ai_invalid_answer": "The assistant could not write a usable draft: try again, or answer yourself.",
+        "ai_provider_error": "The assistant could not write the draft right now: try again in a few minutes, or answer yourself.",
+        "ai_provider_not_configured": "The assistant is not available in this environment yet: no draft was written.",
+        "assistant_disabled": "The assistant is switched off for your organization or for this property: no draft was written.",
+        "host_already_replied": "You have already answered this message: no draft was written.",
+        "mapping_not_confirmed": "The listing of this conversation is not confirmed yet: confirm the match with the channel and try again.",
+        "message_not_found": "The message of the guest was not found: no draft was written.",
+        "message_too_old": "The message is too old for the assistant to answer by itself: no draft was written.",
+        "octorate_not_connected": "The connection with the channels is not active: reconnect it to answer from here.",
+        "property_unassigned": "This conversation is not linked to a property yet, so the assistant has no information to answer with.",
+        "superseded": "The guest wrote again: no draft was written for the earlier message.",
+        "thread_closed": "The conversation is closed: it cannot be answered.",
+        "thread_not_found": "The conversation was not found: no draft was written.",
+        "unknown": "The assistant did not complete the request: no draft was written. Try again in a moment, or answer yourself."
+      },
+      "reject": "Reject",
+      "rejected": "Draft rejected. Nothing was sent.",
+      "requestFailed": "The draft could not be requested. Try again in a moment.",
+      "situation": "Situation",
+      "title": "Assistant draft"
+    },
+    "error": {
+      "noGuestMessage": "The guest has not written anything yet: there is no message to answer."
+    },
+    "notice": {
+      "transparency": "This draft is written by an AI model. Nothing is sent without your approval, and guests are not told that the assistant wrote it: this notice stays here, in CasaZen."
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellation or refund",
+      "check_in_time": "Check-in time",
+      "complaint": "Complaint",
+      "directions": "Directions",
+      "discount_request": "Discount request",
+      "early_arrival_or_late_checkout": "Early arrival or late check-out",
+      "emergency": "Emergency",
+      "invoice_request": "Invoice request",
+      "malfunction": "Malfunction or problem",
+      "noise": "Noise",
+      "other": "Other",
+      "parking": "Parking",
+      "pets": "Pets",
+      "thank_you": "Thank you",
+      "wifi": "Wi-Fi"
+    }
+  },
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} per month",
