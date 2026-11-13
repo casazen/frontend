@@ -198,8 +198,66 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'SendAlloggiati',
   'ResolveAlloggiatiFailure',
   'ConfirmPropertyReady',
+  // CHK-12 (E03/F02/US01/T03, NF-52): appended by the backend, never renamed. An older API does not send them.
+  'VerifyIdentity',
+  'UploadAlloggiatiReceipt',
+  'ActivateOctorateSend',
+  'SendAlloggiatiManually',
+  'UploadIstatProof',
+  'EnterMunicipalityTaxRate',
+  'DeclareTouristTax',
+  'RenewPoliceCredentials',
 ] as const;
 export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
+
+/**
+ * The traffic light of an item (`ComplianceLight` of the backend, NF-52), serialized by name: green only with an archived proof, yellow
+ * while the data are entrusted to a sender within the deadline and the receipt is awaited (or the period is open), red when the host has
+ * to act. Anything else a server sends, or nothing, is "da verificare": the client never works a light out, green least of all.
+ */
+export const COMPLIANCE_LIGHTS = ['Green', 'Yellow', 'Red'] as const;
+export type ComplianceLightName = (typeof COMPLIANCE_LIGHTS)[number];
+
+/**
+ * Stable snake_case codes of `ComplianceSummaryItem.reason` (`ComplianceReasonCodes` of the backend), in the order of the lights: the
+ * web app translates each one (`compliance.reason.<code>`). A code is never renamed; one this list does not know gets a generic text.
+ */
+export const COMPLIANCE_REASON_CODES = [
+  // Green.
+  'receipt_archived',
+  'identity_verified',
+  'cin_valid',
+  // Yellow.
+  'awaiting_receipt',
+  'entrusted_to_channel_manager',
+  'external_verification_required',
+  'alloggiati_sending',
+  'selfie_awaited',
+  'period_open',
+  'connection_unverified',
+  // Red.
+  'evidence_missing',
+  'deadline_overdue',
+  'receipt_missing',
+  'alloggiati_not_sent',
+  'alloggiati_failed',
+  'alloggiati_incomplete',
+  'over_thirty_nights_not_sent',
+  'short_stay_at_risk',
+  'connection_inactive',
+  'identity_missing',
+  'operator_decision_required',
+  'municipality_rate_missing',
+  'credentials_refused',
+  'cin_missing',
+  'cin_invalid',
+  // The items that existed before the lights: red, with nothing more specific to say.
+  'activation_incomplete',
+  'guest_data_missing',
+  'checkout_due',
+  'property_ready_not_confirmed',
+  'action_required',
+] as const;
 
 export interface ComplianceSummaryItem {
   /** Target of the action: equal to `propertyId` or `bookingId`. */
@@ -222,6 +280,15 @@ export interface ComplianceSummaryItem {
    * not send it yet (the page then reads it from the Home's "Da fare", where it can).
    */
   dueAt?: string | null;
+  /**
+   * "Am I compliant?" (NF-52): the traffic light of the item. Only a server with the traffic light on sends it (`Features:ComplianceTrafficLight`,
+   * off by default): without it, or with a value this list does not know, the item is "da verificare", never green.
+   */
+  light?: ComplianceLightName | null;
+  /** Why the item has its light: a code of {@link COMPLIANCE_REASON_CODES} that the web app translates; an unknown one gets a generic text, never the code. */
+  reason?: string | null;
+  /** The month (`yyyy-MM`) of an ISTAT or tourist tax item; null or absent for the others. */
+  period?: string | null;
 }
 
 export interface ComplianceSummarySection {
@@ -239,6 +306,19 @@ export interface ComplianceSummaryResult {
   alloggiatiManualRequired: ComplianceSummarySection;
   /** Stays checked out whose property was not declared ready for the next guest (CO-17). */
   turnoversPending: ComplianceSummarySection;
+  // The sections of CHK-12 (E03/F02/US01/T03) are add-only: an older API, or one with the traffic light off, sends none or sends them empty. Each lists
+  // its items with their light, the green ones too (red first, at most 50); its `count` is how many need attention (not green), which can be more
+  // than the items it lists.
+  /** The identity of the guest who leaves the document, for the stays arriving soon (`VerifyIdentity`). */
+  identityPending?: ComplianceSummarySection;
+  /** The communications sent, entrusted to the channel manager or declared sent, with the receipt archived or awaited (`UploadAlloggiatiReceipt`). */
+  receiptsToUpload?: ComplianceSummarySection;
+  /** The stays the channel manager does not send by itself, which the host sends by hand (`SendAlloggiatiManually`). */
+  manualSendsRequired?: ComplianceSummarySection;
+  /** The police send of the channel manager that is not active (`ActivateOctorateSend`) and the police credentials that were refused (`RenewPoliceCredentials`). */
+  connectionsToFix?: ComplianceSummarySection;
+  /** The ISTAT (`UploadIstatProof`) and tourist tax (`DeclareTouristTax`) of the closed months, with their `period`, and the rates that are not known (`EnterMunicipalityTaxRate`). */
+  periodItems?: ComplianceSummarySection;
 }
 
 /** The 5 steps of the check-out wizard, in order (CO-17, A5-24): `steps[].id` and `currentStep` of the API. */

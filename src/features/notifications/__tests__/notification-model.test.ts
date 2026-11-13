@@ -30,6 +30,8 @@ describe('notification model', () => {
       'service-request-quote-sent', 'service-request-quote-accepted', 'service-request-quote-rejected', 'service-request-quote-expired',
       'service-request-day-before', 'service-payment-received',
       'service-request-backup-invited', 'service-request-backup-active', 'service-request-backup-won', 'service-request-backup-closed',
+      // E03/F04/US02/T03: a guest handed the verification of the identity to a person.
+      'verification-required',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -46,6 +48,12 @@ describe('notification model', () => {
     ['alloggiati-failed', '/app/short-rent/bookings/b-1?tab=alloggiati'],
   ])('notificationRoute_%s_OpensTheBooking', (type, expected) => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
+  });
+
+  it('notificationRoute_VerificationRequired_OpensTheConsoleOfTheVerifications', () => {
+    // The push is for the operators who decide the verifications: the bell leads them to the console, not to the booking.
+    expect(notificationRoute({ type: 'verification-required', entityId: 'b-1' }, 'short-rent')).toBe('/app/short-rent/verifications');
+    expect(notificationKind('verification-required').textKey).toBe('notifications.types.verificationRequired');
   });
 
   it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {

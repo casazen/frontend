@@ -459,7 +459,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       '/app/long-rent/properties',
       '/not/a/page',
     ]) {
-      const section = getNavSection(pathname, (_ctx, permission) => permission !== 'verification.decide');
+      const section = getNavSection(pathname, (_ctx, permission) => permission !== 'verification.decision');
       expect(paths(section), pathname).toEqual([]);
     }
   });

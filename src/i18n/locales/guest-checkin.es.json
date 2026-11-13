@@ -113,6 +113,7 @@
     "firstName": "Nombre *",
     "lastName": "Apellido *",
     "stepDocument": "Documento de identidad",
+    "stepIdentity": "Verificación de identidad",
     "stepConsents": "Aviso de privacidad y consentimientos",
     "stepOf": "Paso {{step}} de {{total}}",
     "next": "Siguiente",
@@ -165,6 +166,39 @@
     "citizenship": "Nacionalidad *",
     "removeGuest": "Quitar huésped",
     "addGuest": "Añadir huésped",
+    "biometric": {
+      "capture": {
+        "attemptsRemaining": "Intentos restantes: {{count}}",
+        "cameraDenied": "El navegador bloqueó la cámara. Para permitirla, toque el icono del candado o de la cámara junto a la dirección web, elija «Permitir» para la cámara y pulse «Reintentar».",
+        "cameraNotFound": "No se encontró ninguna cámara en este dispositivo.",
+        "cameraTitle": "La cámara no está disponible",
+        "cameraUnknown": "No se pudo iniciar la cámara.",
+        "cameraUnsupported": "Esta página no puede usar la cámara en este navegador. Abra el enlace en su navegador habitual o pida que le verifique una persona.",
+        "capturedLabel": "El selfie que ha hecho",
+        "instructions": "Mire a la cámara en un lugar bien iluminado y mantenga su cara dentro del encuadre. Comparamos la foto con la de su documento.",
+        "noFile": "Por su seguridad, el selfie debe hacerse ahora con la cámara: no se puede elegir entre sus archivos ni su galería.",
+        "notPrepared": "No se pudo preparar la foto. Vuelva a hacerla.",
+        "previewLabel": "Vista en directo de su cámara",
+        "retake": "Volver a hacerla",
+        "retryCamera": "Reintentar",
+        "sending": "Comprobando...",
+        "submit": "Enviar la foto",
+        "takePhoto": "Hacer la foto",
+        "title": "Hágase un selfie"
+      },
+      "consent": {
+        "accept": "Acepto la comprobación facial",
+        "decline": "No acepto: me verificará una persona",
+        "description": "Para darle el código de acceso del alojamiento, comparamos un selfie con la foto de su documento de identidad.",
+        "documentKept": "La foto de su documento se conserva cifrada solo hasta que termine la comprobación y después se elimina.",
+        "optional": "Puede decir que no. Entonces una persona del alojamiento comprobará su identidad con usted y el código de acceso le llegará después de su decisión. Decir que no no detiene su check-in.",
+        "optionalTitle": "Es su decisión",
+        "purpose": "Usted fotografía su documento y después se hace un selfie con la cámara. Un programa de nuestro servidor compara ambos. Su selfie nunca se guarda: se elimina en cuanto termina la comparación.",
+        "purposeTitle": "Qué ocurre",
+        "title": "Compruebe su identidad con su cara",
+        "version": "Versión de este texto: {{version}}"
+      }
+    },
     "consent": {
       "title": "Consentimiento para comunicaciones comerciales (opcional)",
       "intro": "¿Desea recibir novedades, ofertas y noticias del alojamiento? Elija sus canales preferidos. No es obligatorio: puede completar el check-in sin dar su consentimiento.",
@@ -231,6 +265,76 @@
       "HeadOfFamily": "Cabeza de familia",
       "HeadOfGroup": "Jefe de grupo",
       "SingleGuest": "Huésped individual"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Foto del documento de identidad",
+        "instructions": "Coloque el documento sobre una superficie plana y bien iluminada. Muestre todo el lado con su foto y las dos líneas de letras de abajo, sin reflejos.",
+        "notAcceptable": "La foto todavía no es suficientemente buena. Vuelva a hacerla.",
+        "pick": "Fotografiar el documento",
+        "pickAgain": "Fotografiarlo de nuevo",
+        "sending": "Leyendo el documento...",
+        "title": "Fotografíe su documento de identidad"
+      },
+      "documentNotArchived": "El documento no se archivará.",
+      "guidance": {
+        "avoid_glare": "Evite los reflejos: incline un poco el documento o aléjese de la luz.",
+        "hold_still": "Mantenga quieto el teléfono: la foto está borrosa.",
+        "less_light": "Hay demasiada luz: pase a un lugar con luz más suave.",
+        "more_light": "Hay poca luz: pase a un lugar más luminoso.",
+        "move_closer": "Acérquese: su cara se ve demasiado pequeña en la imagen.",
+        "one_face_only": "En la imagen debe salir solo usted.",
+        "other": "Vuelva a hacer la foto.",
+        "retake_picture": "No se pudo leer la imagen: vuelva a hacerla.",
+        "retake_selfie": "Vuelva a hacer el selfie mirando directamente a la cámara.",
+        "show_document_photo": "Muestre el lado del documento con su foto.",
+        "show_whole_document": "Muestre todo el lado del documento, con las dos líneas de letras de abajo.",
+        "show_your_face": "Muestre su cara: no se veía en la imagen.",
+        "tip_remove_glasses": "Quítese las gafas.",
+        "tip_remove_mask": "Quítese la mascarilla o cualquier cosa que cubra su cara.",
+        "upload_document_again": "Fotografíe de nuevo el documento: no se pudo leer.",
+        "use_live_camera": "Haga el selfie ahora con la cámara, no desde una foto o una pantalla.",
+        "use_valid_document": "El documento está caducado: use uno válido."
+      },
+      "intro": "En este paso solo participa el huésped que deja el documento de identidad. Los demás huéspedes no tienen que hacerse un selfie.",
+      "nextHint": "Complete este paso para continuar. Si lo prefiere, pida que le verifique una persona.",
+      "operator": {
+        "ask": "Pedir la verificación de una persona",
+        "requested": "Hemos avisado al anfitrión. Verificará su identidad y el código de acceso le llegará después de su decisión."
+      },
+      "problem": {
+        "consent_required": "Primero necesitamos su respuesta sobre la comprobación facial.",
+        "document_photo": "Necesitamos de nuevo la foto del documento: vuelva a hacerla.",
+        "document_required": "Primero fotografíe el documento.",
+        "failed": "Algo ha salido mal. Inténtelo de nuevo.",
+        "link_unavailable": "Este enlace ya no es válido o el check-in ya está completo. Pida un enlace nuevo a su anfitrión.",
+        "network": "No hemos podido conectar con el servidor. No se ha guardado nada: compruebe su conexión e inténtelo de nuevo.",
+        "processing": "No hemos podido procesar la foto. Inténtelo de nuevo.",
+        "too_large": "La foto es demasiado grande. Vuelva a hacerla con una resolución más baja.",
+        "too_many_requests": "Demasiados intentos en poco tiempo. Espere un momento e inténtelo de nuevo.",
+        "unsupported": "Este tipo de archivo no es compatible. Use una foto JPEG o PNG."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "Si su reserva tiene una dirección de correo electrónico, también hemos enviado allí el código.",
+          "codeLabel": "Su código de acceso",
+          "noCode": "Su identidad está verificada. Si su reserva tiene una dirección de correo electrónico, el código de acceso se envió allí; si no, su anfitrión le dará las instrucciones de acceso.",
+          "title": "Está verificado"
+        },
+        "operator": {
+          "notOffered": "En esta estancia no se usa la comprobación facial: una persona debe verificar su identidad. Pídalo aquí y se avisará al anfitrión. El código de acceso le llega después de su decisión.",
+          "text": "El anfitrión verificará su identidad. El código de acceso le llega después de su decisión.",
+          "title": "Una persona comprobará su identidad"
+        },
+        "retry": {
+          "again": "Volver a hacer el selfie",
+          "againDocument": "Fotografiar de nuevo el documento",
+          "attempts": "Intentos restantes: {{count}}",
+          "intro": "La comprobación no ha salido bien esta vez. Esto es lo que debe cambiar:",
+          "noReason": "La comprobación no ha salido bien esta vez.",
+          "title": "Todavía no hemos podido verificarle"
+        }
+      }
     },
     "invoice": {
       "fields": {
