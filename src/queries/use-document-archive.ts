@@ -1,8 +1,8 @@
-import { isCancel } from 'axios';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ARCHIVE_ERROR, archiveErrorCode, archiveExportFileName, documentArchiveApi } from '@/api/document-archive.api';
+import { ARCHIVE_ERROR, archiveErrorCode, archiveExportFileName, documentArchiveApi, isArchiveCallCancelled } from '@/api/document-archive.api';
 import { archiveDocumentFileName } from '@/features/document-archive/document-file';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
@@ -47,24 +47,29 @@ export function useDocumentTypes(query: ArchiveTypesQuery, enabled = true) {
 /**
  * Downloads one document and saves it. A file can be a contract, a receipt or a proof about guests: the mutation keeps nothing of it once
  * nobody watches it (`gcTime: 0`), and what its function hands back is nothing: the file goes to the disk inside it, never into the cache
- * of the mutations. A document that is not found any more (404 `archive_document_not_found`: deleted, or out of the reach of the caller)
- * is told as such and the list is read again, so the row goes away; a row with no file (404 `archive_document_has_no_file`) is told to the
- * page by the error, which marks it. Everything else is told in plain words.
+ * of the mutations. What the cache keeps of a failure is the answer (status, code, body) and not the request, which holds the access token
+ * of the caller (`withoutRequest`). A document that is not found any more (404 `archive_document_not_found`: deleted, or out of the reach
+ * of the caller) is told as such, whatever the list still shows, and the list is read again, so the row goes away; a row with no file (404
+ * `archive_document_has_no_file`) is told to the page by the error, which marks it. Everything else is told in plain words.
  */
 export function useDownloadArchiveDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (document: ArchiveDocument): Promise<void> => {
-      const blob = await documentArchiveApi.download(document.type, document.id);
-      saveBlobAs(blob, archiveDocumentFileName(document, blob.type));
+      try {
+        const blob = await documentArchiveApi.download(document.type, document.id);
+        saveBlobAs(blob, archiveDocumentFileName(document, blob.type));
+      } catch (error) {
+        throw withoutRequest(error);
+      }
     },
     gcTime: 0,
     onSuccess: () => {
       toast.success(i18n.t('documentArchive.downloadDone'));
     },
     onError: (error) => {
-      if (isCancel(error)) return;
+      if (isArchiveCallCancelled(error)) return;
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('documentArchive.downloadFailed'));
       if (archiveErrorCode(error) === ARCHIVE_ERROR.notFound) void queryClient.invalidateQueries({ queryKey: [DOCUMENT_ARCHIVE_KEY] });
     },
@@ -79,15 +84,20 @@ interface ExportRequest {
 }
 
 /**
- * Downloads the ZIP of a period and saves it. Like a single document it keeps nothing once nobody watches it (`gcTime: 0`) and saves inside
- * its function. It says nothing itself: the dialog that asks for it tells the refusals (422 `archive_export_too_large` with the number of
- * files, a period the server does not accept) next to the button, and a cancelled call is not a failure.
+ * Downloads the ZIP of a period and saves it. Like a single document it keeps nothing once nobody watches it (`gcTime: 0`), saves inside
+ * its function and keeps a failure without its request. It says nothing itself: the dialog that asks for it tells the refusals (422
+ * `archive_export_too_large` with the number of files, a period the server does not accept) next to the button, and a cancelled call is
+ * not a failure.
  */
 export function useExportArchive() {
   return useMutation({
     mutationFn: async ({ query, signal, onProgress }: ExportRequest): Promise<void> => {
-      const blob = await documentArchiveApi.export(query, { signal, onProgress });
-      saveBlobAs(blob, archiveExportFileName(query.from, query.to));
+      try {
+        const blob = await documentArchiveApi.export(query, { signal, onProgress });
+        saveBlobAs(blob, archiveExportFileName(query.from, query.to));
+      } catch (error) {
+        throw withoutRequest(error);
+      }
     },
     gcTime: 0,
   });

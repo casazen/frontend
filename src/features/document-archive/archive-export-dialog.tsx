@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { isCancel } from 'axios';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { archiveExportTooLarge } from '@/api/document-archive.api';
+import { archiveExportTooLarge, isArchiveCallCancelled } from '@/api/document-archive.api';
 import type { ReportPeriod } from '@/api/reports.api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -129,7 +128,7 @@ function ExportForm({ onClose, types, properties, propertyId }: Omit<ArchiveExpo
           onClose();
         },
         onError: (error) => {
-          if (isCancel(error)) return;
+          if (isArchiveCallCancelled(error)) return;
           const large = archiveExportTooLarge(error);
           if (large) setTooLarge(large);
           else setFailure(getProblemMessage(error, t) ?? t('documentArchive.export.failed'));

@@ -1,4 +1,4 @@
-import { isAxiosError } from 'axios';
+import { AxiosError, isAxiosError } from 'axios';
 import axios from '@/lib/axios';
 import { getProblemCode, UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
@@ -50,7 +50,12 @@ function appendFilters(params: URLSearchParams, filters: ArchiveTypesQuery) {
   if (text) params.set('q', text);
 }
 
+/**
+ * No `type` at all is every type the caller may read, so an empty list must never be written as that: it is a mistake of the caller (who
+ * asks for none has nothing to ask), and it fails here instead of widening what comes back.
+ */
 function appendTypes(params: URLSearchParams, types: readonly ArchiveDocumentType[] | undefined) {
+  if (types?.length === 0) throw new RangeError('An empty list of types is not "every type": leave `types` out to ask for all of them.');
   for (const type of types ?? []) params.append('type', type);
 }
 
@@ -104,6 +109,14 @@ function asTypes(data: unknown): ArchiveTypeCount[] {
 /** The code of the problem a failed call carries (a JSON body that `withJsonErrorBody` has parsed), or `undefined`. */
 export function archiveErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
+}
+
+/**
+ * A call the person stopped (the dialog of the archive was closed while it came): not a failure to tell. The code is what is read, not the mark
+ * of `axios.isCancel`: the mutations keep a failure without its request (`withoutRequest`), which builds the error again and loses the mark.
+ */
+export function isArchiveCallCancelled(error: unknown): boolean {
+  return isAxiosError(error) && error.code === AxiosError.ERR_CANCELED;
 }
 
 /**

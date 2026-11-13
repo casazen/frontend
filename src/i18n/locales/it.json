@@ -5377,7 +5377,7 @@
     "emptyTitle": "Nessun documento",
     "error": "Impossibile caricare i documenti.",
     "export": {
-      "description": "Un file ZIP con i documenti del periodo: una cartella per ogni tipo e l'indice in CSV.",
+      "description": "Un file ZIP con i documenti del periodo: una cartella per ogni tipo e l'indice in CSV. Un documento senza file è nell'indice con la colonna del file vuota.",
       "done": "Archivio scaricato.",
       "error": {
         "invalidDates": "Controlla le date: servono un giorno di inizio e uno di fine, con l'inizio non dopo la fine.",

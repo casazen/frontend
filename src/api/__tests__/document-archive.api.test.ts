@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AxiosError, AxiosHeaders } from 'axios';
+import { AxiosError, AxiosHeaders, CanceledError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import axios from '@/lib/axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import {
   ARCHIVE_ERROR,
   archiveErrorCode,
@@ -11,6 +12,7 @@ import {
   archiveExportTooLarge,
   archiveListParams,
   documentArchiveApi,
+  isArchiveCallCancelled,
 } from '../document-archive.api';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
@@ -55,9 +57,15 @@ describe('archiveListParams (NF-99)', () => {
   });
 
   it('ArchiveListParams_NothingAsked_SendsOnlyThePage', () => {
-    const params = archiveListParams({ types: [], from: undefined, to: undefined, propertyId: undefined, q: '   ', page: 1, pageSize: 25 });
+    const params = archiveListParams({ types: undefined, from: undefined, to: undefined, propertyId: undefined, q: '   ', page: 1, pageSize: 25 });
 
     expect(params.toString()).toBe('page=1&pageSize=25');
+  });
+
+  // An empty list in input is never "every type": no `type` at all is that, so an empty list fails instead of widening what comes back.
+  it('ArchiveListParams_AnEmptyListOfTypes_IsAMistakeNotEveryType', () => {
+    expect(() => archiveListParams({ types: [], page: 1, pageSize: 25 })).toThrow(RangeError);
+    expect(() => archiveExportParams({ from: '2026-01-01', to: '2026-01-31', types: [] })).toThrow(RangeError);
   });
 
   it('ArchiveListParams_LongSearch_IsCutAtTheLengthTheServerLooksFor', () => {
@@ -74,6 +82,22 @@ describe('archiveExportParams (NF-99)', () => {
 
   it('ArchiveExportParams_NoTypesNoProperty_SendsTheDaysOnly', () => {
     expect(archiveExportParams({ from: '2026-01-01', to: '2026-03-31' }).toString()).toBe('from=2026-01-01&to=2026-03-31');
+  });
+});
+
+// A call the person stopped is not a failure: it is read by its code, which stays when the mutations keep the failure without its request.
+describe('isArchiveCallCancelled (NF-99)', () => {
+  it('IsArchiveCallCancelled_TheCallWasAborted_IsCancelledWithOrWithoutItsRequest', () => {
+    const aborted = new CanceledError('canceled');
+
+    expect(isArchiveCallCancelled(aborted)).toBe(true);
+    expect(isArchiveCallCancelled(withoutRequest(aborted))).toBe(true);
+  });
+
+  it('IsArchiveCallCancelled_AnyOtherError_IsNot', () => {
+    expect(isArchiveCallCancelled(blobError(500, { code: 'x' }))).toBe(false);
+    expect(isArchiveCallCancelled(new Error('canceled'))).toBe(false);
+    expect(isArchiveCallCancelled(undefined)).toBe(false);
   });
 });
 

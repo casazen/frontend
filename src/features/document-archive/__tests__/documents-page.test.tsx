@@ -71,6 +71,14 @@ function problem(status: number, body: Record<string, unknown>): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: body, statusText: '', headers: {}, config });
 }
 
+/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
+function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'string') return value.includes(secret);
+  if (typeof value !== 'object' || value === null || seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some((item) => holds(item, secret, seen));
+}
+
 function Where() {
   const location = useLocation();
   return createElement('output', { 'data-testid': 'where' }, location.search);
@@ -335,6 +343,32 @@ describe('DocumentsPage (NF-99)', () => {
       expect(downloadButtons()).toHaveLength(2);
     });
 
+    // A file can be a contract or a proof about guests, and the request that fails holds the access token: the cache of the mutations keeps
+    // neither, and not even the mutation once nobody watches it.
+    it('keeps in the cache of the mutations neither the token of the request that failed nor the file that came', async () => {
+      const failed = problem(500, { code: 'boom' });
+      failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
+      // The test is a real one: the token is in what axios gives.
+      expect(holds(failed, 'SECRET-TOKEN')).toBe(true);
+      vi.mocked(documentArchiveApi.download).mockRejectedValueOnce(failed).mockResolvedValueOnce(new Blob(['%PDF-1.4'], { type: 'application/pdf' }));
+      const { client, unmount } = renderPage();
+      await findTable();
+
+      fireEvent.click(downloadButtons()[0]);
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('documentArchive.downloadFailed')));
+      const failures = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
+      expect(failures.length).toBeGreaterThan(0);
+      expect(holds(failures, 'SECRET-TOKEN')).toBe(false);
+
+      await waitFor(() => expect(downloadButtons().every((button) => !(button as HTMLButtonElement).disabled)).toBe(true));
+      fireEvent.click(downloadButtons()[0]);
+      await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
+      expect(client.getMutationCache().getAll().every((mutation) => mutation.state.data === undefined)).toBe(true);
+
+      unmount();
+      await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+    });
+
     it('is not offered for a file that the list already knows to be empty: the row says so instead', async () => {
       vi.mocked(documentArchiveApi.list).mockResolvedValue(page([doc('d1', { type: 'contract', sizeBytes: 0 }), doc('d2')]));
       renderPage();
@@ -434,6 +468,25 @@ describe('the archive of a period (NF-99)', () => {
     expect(dialog.getByTestId('archive-export-start')).toHaveTextContent(i18n.t('documentArchive.export.retry'));
     fireEvent.change(dialog.getByTestId('archive-export-period'), { target: { value: 'lastMonth' } });
     expect(dialog.queryByTestId('archive-export-too-large')).not.toBeInTheDocument();
+  });
+
+  it('keeps no token in the cache of the mutations when the archive fails, and nothing once the dialog is closed', async () => {
+    const failed = problem(500, { code: 'boom' });
+    failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
+    vi.mocked(documentArchiveApi.export).mockRejectedValueOnce(failed);
+    const { client } = renderPage();
+    await findTable();
+    fireEvent.click(screen.getByTestId('archive-export-open'));
+    const dialog = within(await screen.findByTestId('archive-export-dialog'));
+
+    fireEvent.click(dialog.getByTestId('archive-export-start'));
+
+    await dialog.findByTestId('archive-export-failure');
+    const failures = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
+    expect(failures.length).toBeGreaterThan(0);
+    expect(holds(failures, 'SECRET-TOKEN')).toBe(false);
+    fireEvent.click(dialog.getByRole('button', { name: i18n.t('shared.cancel') }));
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
   it('says another failure in plain words', async () => {

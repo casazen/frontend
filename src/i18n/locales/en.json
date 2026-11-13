@@ -5377,7 +5377,7 @@
     "emptyTitle": "No documents",
     "error": "Unable to load the documents.",
     "export": {
-      "description": "A ZIP file with the documents of the period: a folder for each type and the index as a CSV.",
+      "description": "A ZIP file with the documents of the period: a folder for each type and the index as a CSV. A document with no file is in the index with an empty file column.",
       "done": "Archive downloaded.",
       "error": {
         "invalidDates": "Check the dates: a first day and a last day are needed, the first not after the last.",
