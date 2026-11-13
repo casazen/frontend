@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { octorateComplianceHandoffApi } from '@/api/octorate-compliance-handoff.api';
@@ -54,6 +54,15 @@ function renderShell(initial: string, target = TARGET) {
       </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
+}
+
+/** The browser shows the page: `persisted` when it brings it back from its memory (the back button of a page that left in the same tab). */
+function pageshow(persisted: boolean) {
+  const event = new Event('pageshow');
+  Object.defineProperty(event, 'persisted', { value: persisted });
+  act(() => {
+    window.dispatchEvent(event);
+  });
 }
 
 const keepWhereTheHostWas = (over: Partial<Parameters<typeof saveReturn>[0]> = {}) =>
@@ -165,6 +174,30 @@ describe('ComplianceDrawerReturn', () => {
 
     fireEvent.click(screen.getByRole('link', { name: 'Di nuovo agli adempimenti' }));
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(`${ROUTE}${FILTERS}`));
+    expect(screen.queryByTestId('compliance-drawer-welcome')).not.toBeInTheDocument();
+  });
+
+  it('return_PageBroughtBackFromTheBrowsersMemory_RestoresWhatTheTabKeptOnceAndALaterShowRestoresNothing', async () => {
+    renderShell(ELSEWHERE);
+    keepWhereTheHostWas();
+
+    // A page shown as any other is not a return: what the tab kept waits.
+    pageshow(false);
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
+    expect(screen.getByTestId('location')).toHaveTextContent(ELSEWHERE);
+    expect(screen.queryByTestId('compliance-drawer-welcome')).not.toBeInTheDocument();
+
+    // The browser brings the page back from its memory: the host is put back, welcomed, and what the tab kept is forgotten.
+    pageshow(true);
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(`${ROUTE}${FILTERS}`));
+    expect(await screen.findByTestId('compliance-drawer-welcome')).toHaveTextContent('Bentornato nel Cassetto Compliance');
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).toBeNull();
+
+    // Once: the host moves on, and the page coming back from the memory again with nothing kept brings them nowhere.
+    fireEvent.click(screen.getByRole('link', { name: 'Altrove' }));
+    await waitFor(() => expect(screen.queryByTestId('compliance-drawer-welcome')).not.toBeInTheDocument());
+    pageshow(true);
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent/properties');
     expect(screen.queryByTestId('compliance-drawer-welcome')).not.toBeInTheDocument();
   });
 

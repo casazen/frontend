@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
@@ -70,6 +70,15 @@ function renderButton({ connector = true, path = ROUTE }: { connector?: boolean;
 }
 
 const trigger = () => screen.getByTestId('compliance-drawer-trigger');
+
+/** The browser shows the page: `persisted` when it brings it back from its memory (the back button of a page that left in the same tab). */
+function pageshow(persisted: boolean) {
+  const event = new Event('pageshow');
+  Object.defineProperty(event, 'persisted', { value: persisted });
+  act(() => {
+    window.dispatchEvent(event);
+  });
+}
 
 beforeEach(() => {
   permissions.granted = ['booking.read'];
@@ -247,6 +256,109 @@ describe('ComplianceDrawerButton: the dialog', () => {
     expect(await screen.findByTestId('compliance-drawer-error')).toHaveTextContent('non è collegato al tuo channel manager');
     expect(screen.queryByTestId('compliance-drawer-retry')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-drawer-continue')).not.toBeInTheDocument();
+  });
+});
+
+describe("ComplianceDrawerButton: a tab that does not leave, and a page brought back from the browser's memory", () => {
+  /** The host pressed «Continua la verifica» and the navigation never came (the browser asked «Lasciare il sito?» and was told no). */
+  async function pressContinueOnATabThatStays() {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    renderButton();
+    fireEvent.click(trigger());
+    fireEvent.click(await screen.findByTestId('compliance-drawer-continue'));
+    return assign;
+  }
+
+  it('continue_TabThatDoesNotLeaveInTenSeconds_GivesTheDialogBackInsteadOfLeavingItWaiting', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    renderButton();
+    fireEvent.click(trigger());
+    const proceed = await screen.findByTestId('compliance-drawer-continue');
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      fireEvent.click(proceed);
+
+      // On its way out: nothing of the layer can be pressed, and the tab kept where to come back to.
+      expect(assign).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('compliance-drawer-continue')).toBeDisabled();
+      expect(screen.getByTestId('compliance-drawer-continue')).toHaveTextContent("Apro l'area collegata");
+      expect(screen.getByTestId('compliance-drawer-cancel')).toBeDisabled();
+      act(() => {
+        vi.advanceTimersByTime(9_999);
+      });
+      expect(screen.getByTestId('compliance-drawer-continue')).toBeDisabled();
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+
+      // The page that was to come never came: the layer is usable again, as it was, and is not a dead end.
+      expect(screen.getByTestId('compliance-drawer-continue')).toBeEnabled();
+      expect(screen.getByTestId('compliance-drawer-continue')).toHaveTextContent('Continua la verifica');
+      expect(screen.getByTestId('compliance-drawer-cancel')).toBeEnabled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('continue_TabThatDidNotLeave_ForgetsWhatItKeptWhenTheHostClosesTheDialog', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    renderButton();
+    fireEvent.click(trigger());
+    const proceed = await screen.findByTestId('compliance-drawer-continue');
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      fireEvent.click(proceed);
+      expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(10_000);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+    fireEvent.click(screen.getByTestId('compliance-drawer-cancel'));
+
+    // The host is not on their way any more: nothing is left to bring them back to a page they never left.
+    await waitFor(() => expect(screen.queryByTestId('compliance-drawer-dialog')).not.toBeInTheDocument());
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).toBeNull();
+  });
+
+  it('continue_DialogClosedWhileTheTabIsLeaving_StaysOpenAndKeepsWhatTheTabKept', async () => {
+    await pressContinueOnATabThatStays();
+
+    fireEvent.keyDown(screen.getByTestId('compliance-drawer-dialog'), { key: 'Escape' });
+
+    expect(screen.getByTestId('compliance-drawer-dialog')).toBeInTheDocument();
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
+  });
+
+  it('pageshow_PageBroughtBackFromTheBrowsersMemory_ClosesTheDialogAndLeavesWhatTheTabKeptForTheShell', async () => {
+    await pressContinueOnATabThatStays();
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
+
+    pageshow(true);
+
+    await waitFor(() => expect(screen.queryByTestId('compliance-drawer-dialog')).not.toBeInTheDocument());
+    // It is the host's way back: the shell restores it, once; the button neither forgets it nor asks for anything more.
+    expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(trigger()).not.toHaveAttribute('aria-busy');
+  });
+
+  it('pageshow_PageThatWasLoadedAnew_LeavesTheDialogAsItIs', async () => {
+    renderButton();
+    fireEvent.click(trigger());
+    await screen.findByTestId('compliance-drawer-ready');
+
+    pageshow(false);
+
+    expect(screen.getByTestId('compliance-drawer-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-drawer-continue')).toBeEnabled();
   });
 });
 
