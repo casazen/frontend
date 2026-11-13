@@ -1,4 +1,4 @@
-import type { OwnerPortalState, OwnerReadinessReport } from '@/types/owner-onboarding.types';
+import type { OwnerPortalState, OwnerReadinessReport, OwnerReadinessSummary } from '@/types/owner-onboarding.types';
 
 /**
  * The owner step of «Inizia con CasaZen» (E10/F03/US05/T01, NF-109): the page of the owners of an agency, a step the server's plan of eleven parts does not hold
@@ -42,6 +42,23 @@ export function ownerPhaseStates(report: OwnerReadinessReport): Record<OwnerPhas
   const portal: OwnerPhaseState = noOwners ? 'notStarted' : everyoneAccepted ? 'done' : 'toComplete';
 
   return { owners, shares, accounting, portal };
+}
+
+/**
+ * How many facts the owner accounting still waits for, as the step of the plan says it: the owners that are not ready for each dimension (the registry, the ownership, the mandate, the
+ * fiscal profile and the payment data) plus the properties with no owner or with shares that are wrong, the same things the phases of the page count. It is zero only when there is nothing
+ * to complete (`summary.financialReady`) or there is no owner at all, so the line of the step never says «0» beside a badge that says «to complete».
+ */
+export function ownerFactsToComplete(summary: OwnerReadinessSummary): number {
+  return (
+    summary.registry.toComplete +
+    summary.ownership.toComplete +
+    summary.mandate.toComplete +
+    summary.fiscalProfile.toComplete +
+    summary.payment.toComplete +
+    summary.propertiesWithoutOwner +
+    summary.propertiesToComplete
+  );
 }
 
 /** The portal states in the order the agency reads them, and their texts. */

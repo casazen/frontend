@@ -831,6 +831,24 @@ describe('OnboardingPlanPage, the owner step in the plan (NF-109)', () => {
     expect(within(row).getByTestId('onboarding-owners-step-open')).toHaveAttribute('href', OWNER_STEP_PATH);
   });
 
+  it.each([
+    ['the mandate', { mandate: { ready: 1, toComplete: 1 } }, 1],
+    ['the properties with no owner or with wrong shares', { propertiesWithoutOwner: 1, propertiesToComplete: 2 }, 3],
+  ])('OwnerStep_OnlyThingsOtherThanTheRegistryTheFiscalDataAndThePaymentMissing_%s_IsCountedAndNeverReadsZeroBesideToComplete', async (_name, missing, toComplete) => {
+    const base = readiness();
+    const done = { ready: 2, toComplete: 0 };
+    vi.mocked(ownerOnboardingApi.getReadiness).mockResolvedValue({
+      ...base,
+      summary: { ...base.summary, registry: done, ownership: done, mandate: done, fiscalProfile: done, payment: done, propertiesWithoutOwner: 0, propertiesToComplete: 0, financialReady: false, ...missing },
+    });
+    renderPlan();
+
+    const row = await screen.findByTestId('onboarding-owners-step');
+    await waitFor(() => expect(row).toHaveAttribute('data-state', 'toComplete'));
+    // The badge says «to complete» because of that fact, and the line counts it as the phases of the page do, instead of «0 dati da completare» beside it.
+    expect(within(row).getByTestId('onboarding-owners-step-line')).toHaveTextContent(i18n.t('ownerOnboarding.step.counts', { count: 2, toComplete }));
+  });
+
   it('OwnerStep_AgencyFlagOff_ChangesNothingAndReadsNothing', async () => {
     renderPlan({ agencyTier: false });
 

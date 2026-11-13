@@ -4,7 +4,7 @@ import { Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOrg } from '@/hooks/useOrg';
 import { getHttpStatus } from '@/lib/api-errors';
-import { OWNER_STEP_PATH } from '@/lib/owner-onboarding';
+import { OWNER_STEP_PATH, ownerFactsToComplete } from '@/lib/owner-onboarding';
 import { useOwnerReadiness } from '@/queries/use-owner-onboarding';
 import { ReadyMark } from './owner-readiness-table';
 
@@ -33,7 +33,7 @@ export function OwnerStepRow() {
     line = t('ownerOnboarding.step.checking');
   } else {
     state = report.summary.financialReady;
-    line = report.summary.owners === 0 ? t('ownerOnboarding.step.noOwners') : t('ownerOnboarding.step.counts', { count: report.summary.owners, toComplete: report.summary.registry.toComplete + report.summary.ownership.toComplete + report.summary.fiscalProfile.toComplete + report.summary.payment.toComplete });
+    line = report.summary.owners === 0 ? t('ownerOnboarding.step.noOwners') : t('ownerOnboarding.step.counts', { count: report.summary.owners, toComplete: ownerFactsToComplete(report.summary) });
   }
 
   return (
