@@ -12,6 +12,7 @@ import {
   saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
+import { summarizeLights } from '@/features/compliance/lib/compliance-light';
 import { fineCount } from '@/features/compliance/lib/compliance-tiers';
 import type {
   CheckoutWizardCompleteCommand,
@@ -104,19 +105,51 @@ export function useComplianceSummary() {
 /** How long the number on the menu is trusted before it is read again: the page itself always reads again when it opens. */
 const FINE_COUNT_STALE_MS = 60_000;
 
+/** The summary as the counters of the menu and of the Home read it: the cache entry of the page, trusted for a minute. */
+function useCountedSummary(enabled: boolean) {
+  return useQuery({
+    queryKey: [COMPLIANCE_KEY, 'summary'],
+    queryFn: fetchComplianceSummary,
+    enabled,
+    staleTime: FINE_COUNT_STALE_MS,
+  });
+}
+
 /**
  * How many things carry a risk of a sanction (`fineCount`): the number on the menu entry «Adempimenti» and the reason of the block
  * of the Home. It is the summary the page reads, in the same cache entry, so opening the page shows what the menu counted. A counter is
  * a hint: while it loads, when it fails or when the server answers something that is not the summary, there is no number.
  */
 export function useComplianceFineCount(enabled: boolean): number | undefined {
-  const query = useQuery({
+  const query = useCountedSummary(enabled);
+  return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
+}
+
+/**
+ * Whether the server sends the traffic light (NF-52): some item of the summary carries a light this version knows. With it the compliance
+ * reaches the «Adesso» block of the Home through the unified «Da fare» (the feeder keeps that list in step with the cockpit), so the Home does not
+ * hold a second block for it; without it (an older server, or the traffic light off) the Home is what it always was. False while it loads and when it fails.
+ */
+export function useComplianceLightsOn(enabled: boolean): boolean {
+  const query = useCountedSummary(enabled);
+  return enabled && query.data && typeof query.data === 'object' ? summarizeLights(query.data).lightsOn : false;
+}
+
+/**
+ * The lights of the stay or the property that a card of «Cosa succede ora» shows (NF-52, AC-NF52-9): the summary of the adempimenti, read again
+ * every time the page opens (the lights move with the clock and with what happens elsewhere, and the open page is kept in step by the live events
+ * that refresh the cockpit). `enabled` is the permission to read the bookings, which the API asks: a bare 403 on a GET would take the user to
+ * «nessun accesso». It never retries: the card does not wait for a second answer, and a read that failed says nothing (never green).
+ */
+export function useComplianceLights(enabled: boolean) {
+  return useQuery({
     queryKey: [COMPLIANCE_KEY, 'summary'],
     queryFn: fetchComplianceSummary,
     enabled,
-    staleTime: FINE_COUNT_STALE_MS,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    retry: false,
   });
-  return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
 }
 
 const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];

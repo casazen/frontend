@@ -49,6 +49,27 @@ function refreshCheckInData(queryClient: QueryClient): void {
 }
 
 /**
+ * The notifications that say a light of the compliance cockpit changed (`PushTypes` of the stay alerts and of the alerts about a period or the
+ * connection of a property, E03/F02/US02): the guest data missing, the deadline of Alloggiati Web near or past, a communication that failed, the
+ * departure to close, the receipt missing, a short stay at risk, a stay over 30 nights, ISTAT and the tourist tax of a month, the police send that is
+ * not active, an identity that waits for an operator. An open page of the adempimenti, a booking or a property shows the new light without a reload.
+ */
+const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
+  'guest-data-missing',
+  'alloggiati-deadline',
+  'alloggiati-overdue',
+  'alloggiati-failed',
+  'checkout-reminder',
+  'receipt-missing',
+  'short-stay-at-risk',
+  'over-thirty-nights',
+  'istat-deadline',
+  'tourist-tax-deadline',
+  'connection-inactive',
+  'verification-required',
+]);
+
+/**
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
@@ -65,6 +86,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   }
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
+  else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */

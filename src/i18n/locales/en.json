@@ -2547,6 +2547,11 @@
         "body": "Some guest data are missing: you can enter them yourself now, step by step.",
         "title": "Complete the guest data"
       },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
+      },
       "confirmManual": {
         "title": "Confirm the booking"
       },
@@ -4154,6 +4159,12 @@
       "red": "To do",
       "unknown": "To verify",
       "yellow": "In progress"
+    },
+    "lines": {
+      "more_one": "and {{count}} more obligation",
+      "more_other": "and {{count}} more obligations",
+      "ofProperty": "Obligations of this property",
+      "ofStay": "Obligations of this stay"
     },
     "reason": {
       "action_required": "There is something to do.",
@@ -13829,6 +13840,11 @@
       "cinMissing": {
         "action": "Enter the CIN",
         "title": "The CIN code is missing"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "An obligation is in progress"
+        }
       },
       "heading": "What to do now",
       "paused": {

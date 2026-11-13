@@ -316,6 +316,42 @@ describe('applyNotificationsChange', () => {
     expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
   });
 
+  // NF-52: a light of the cockpit changes with an alert, and a page of the adempimenti, a booking or a property that is open shows it without a reload.
+  it.each([
+    'guest-data-missing',
+    'alloggiati-deadline',
+    'alloggiati-overdue',
+    'alloggiati-failed',
+    'checkout-reminder',
+    'receipt-missing',
+    'short-stay-at-risk',
+    'over-thirty-nights',
+    'istat-deadline',
+    'tourist-tax-deadline',
+    'connection-inactive',
+    'verification-required',
+  ])('applyNotificationsChange_ComplianceAlert_%s_ReadsTheCockpitAgain', (type) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([COMPLIANCE_KEY]);
+    // It is the cockpit that moves: not the rest of what a completed check-in changes.
+    expect(keys).not.toContainEqual([BOOKINGS_KEY]);
+    expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
+  });
+
+  it('applyNotificationsChange_ComplianceAlert_AnOpenCockpitReadsTheSummaryAgainWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readSummary = vi.fn().mockResolvedValue({ light: 'Yellow' });
+    renderHook(() => useQuery({ queryKey: [COMPLIANCE_KEY, 'summary'], queryFn: readSummary }), { wrapper });
+    await waitFor(() => expect(readSummary).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'receipt-missing', entityId: 'b-1' }));
+
+    await waitFor(() => expect(readSummary).toHaveBeenCalledTimes(2));
+  });
+
   it.each(['guest-message', 'new-booking', 'service-request-taken'])(
     'applyNotificationsChange_%s_DoesNotReadTheCheckInDataAgain',
     (type) => {

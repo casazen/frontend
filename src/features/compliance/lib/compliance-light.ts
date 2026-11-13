@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { formatStayDate } from '@/lib/stay-dates';
 import {
   COMPLIANCE_REASON_CODES,
   type ComplianceLightName,
@@ -88,6 +89,11 @@ export function summarizeLights(summary: SummaryLike): LightSummary {
     totals.unlisted += counted - listedNeeding;
   }
   return totals;
+}
+
+/** `2026-09` as the host says it ("settembre 2026"); empty when it is not a month (the API sends `yyyy-MM` and nothing else). */
+export function periodName(period: string | null | undefined, locale: string): string {
+  return period && /^\d{4}-(0[1-9]|1[0-2])$/.test(period) ? formatStayDate(`${period}-01`, locale, { month: 'long', year: 'numeric' }) : '';
 }
 
 interface ReasonContext {

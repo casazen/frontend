@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
-import { useComplianceFineCount } from '@/features/compliance/use-compliance';
+import { useComplianceFineCount, useComplianceLightsOn } from '@/features/compliance/use-compliance';
 import type { TodoActivity } from '@/api/internal-activities.api';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { DashboardPage } from '../dashboard-page';
@@ -18,7 +18,10 @@ vi.mock('@/api/dashboard.api', () => ({
     getIcalFeeds: vi.fn().mockResolvedValue([]),
   },
 }));
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
+const reads = vi.hoisted(() => ({ canReadBookings: true }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'booking.read' || reads.canReadBookings }),
+}));
 vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: null }) }));
 vi.mock('@/queries/use-properties', () => {
   const properties = [{ id: 'p-1', name: 'Casa Mare' }];
@@ -28,6 +31,7 @@ vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActi
 vi.mock('@/features/compliance/use-compliance', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/features/compliance/use-compliance')>()),
   useComplianceFineCount: vi.fn(),
+  useComplianceLightsOn: vi.fn(),
 }));
 vi.mock('@/features/compliance/components/compliance-urgent-block', () => ({ ComplianceUrgentBlock: () => null }));
 vi.mock('../components/home-next-step', () => ({ HomeNextStep: () => null }));
@@ -76,6 +80,8 @@ describe('DashboardPage To do list', () => {
     // The number of the menu: how many urgent items there are, the whole of them.
     vi.mocked(useActivityCount).mockReturnValue({ data: { count: 2 } } as unknown as ReturnType<typeof useActivityCount>);
     vi.mocked(useComplianceFineCount).mockReturnValue(0);
+    vi.mocked(useComplianceLightsOn).mockReturnValue(false);
+    reads.canReadBookings = true;
     await i18n.changeLanguage('it');
   });
 
@@ -138,5 +144,39 @@ describe('DashboardPage To do list', () => {
     const summary = screen.getByTestId('home-todo-summary');
     expect(within(summary).getAllByRole('listitem')).toHaveLength(3);
     expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
+  });
+
+  // E03/F03/US01/T02 (NF-52, AC-NF52-8): with the traffic light on the compliance reaches the "Adesso" block through this very list.
+  it('DashboardPage_TrafficLightOn_TheFirstToDoIsTheNowBlockEvenWithSomethingRed', () => {
+    vi.mocked(useComplianceFineCount).mockReturnValue(2);
+    vi.mocked(useComplianceLightsOn).mockReturnValue(true);
+    renderDashboard();
+
+    // The feeder put the red item in the list: the block of the sanctions is only a line, so the Home has the one highlighted block and no item twice.
+    const focus = screen.getByTestId('home-todo-focus');
+    expect(within(focus).getByRole('heading', { level: 2 })).toHaveTextContent('Alloggiati Web in scadenza');
+    expect(within(screen.getByTestId('home-todo-summary')).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('DashboardPage_TrafficLightOff_TheBlockOfTheSanctionsStillHoldsTheNowPlace', () => {
+    // Without the light nothing feeds the list with the compliance: the block it always was keeps the place.
+    vi.mocked(useComplianceFineCount).mockReturnValue(2);
+    vi.mocked(useComplianceLightsOn).mockReturnValue(false);
+    renderDashboard();
+
+    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
+  });
+
+  it('DashboardPage_ComplianceCounters_AreOnlyForWhoMayReadTheBookings', () => {
+    renderDashboard();
+    expect(useComplianceFineCount).toHaveBeenLastCalledWith(true);
+    expect(useComplianceLightsOn).toHaveBeenLastCalledWith(true);
+    cleanup();
+
+    // The summary asks `booking.read`: without it the Home does not ask (a bare 403 on a GET would take the user to «nessun accesso»).
+    reads.canReadBookings = false;
+    renderDashboard();
+    expect(useComplianceFineCount).toHaveBeenLastCalledWith(false);
+    expect(useComplianceLightsOn).toHaveBeenLastCalledWith(false);
   });
 });

@@ -22,6 +22,18 @@ vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn(), checkIn: vi.fn() },
 }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
+// The block «Cosa succede ora» reads the lights of the stay's compliance items from the summary of the adempimenti (NF-52): none here (tests: booking-next-step-lights.test.tsx).
+vi.mock('@/api/compliance.api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/compliance.api')>()),
+  fetchComplianceSummary: vi.fn().mockResolvedValue({
+    propertiesPending: { count: 0, items: [] },
+    guestCheckInsIncomplete: { count: 0, items: [] },
+    checkoutsDue: { count: 0, items: [] },
+    alloggiatiFailures: { count: 0, items: [] },
+    alloggiatiManualRequired: { count: 0, items: [] },
+    turnoversPending: { count: 0, items: [] },
+  }),
+}));
 vi.mock('@/features/alloggiati/components/alloggiati-booking-panel', () => ({
   AlloggiatiBookingPanel: () => createElement('div', { 'data-testid': 'alloggiati-panel-stub' }),
 }));

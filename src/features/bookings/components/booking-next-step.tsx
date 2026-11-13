@@ -1,13 +1,20 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FocusBlock, type CalmAction } from '@/components/shared/calm';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ComplianceLines } from '@/features/compliance/components/compliance-lines';
+import { reasonText, periodName } from '@/features/compliance/lib/compliance-light';
+import { deadlineNote } from '@/features/compliance/lib/cockpit-model';
+import { hasLinesToShow, stayLinesOf, viewOfLines } from '@/features/compliance/lib/compliance-lines';
+import { useComplianceLights } from '@/features/compliance/use-compliance';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
 import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useBookingCheckInSession, useSendCheckInLink } from '@/queries/use-checkin';
 import type { Booking } from '@/types';
 import { BOOKINGS_PATH } from '../lib/booking-list-query';
-import { documentsNeeded, nextStepOf } from '../lib/booking-next-step';
+import { claimsAllInOrder, documentsNeeded, nextStepOf } from '../lib/booking-next-step';
 import { stayDateOf } from '../lib/booking-price';
 import { canOpenCheckOut, checkInWizardPath } from '../lib/stay-actions';
 
@@ -45,6 +52,13 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   const sendLink = useSendCheckInLink();
   // Whether the guest data of a confirmed stay are complete: if not, the wizard "Guest check-in" is where the host completes them.
   const guestData = useAlloggiatiStatus(booking.id, needs !== 'alloggiati' && booking.status === 'Confirmed' && canWrite);
+  // The compliance lights of the stay (identity, Alloggiati Web, the receipt: NF-52, AC-NF52-9) come from the summary of the adempimenti. Only
+  // whoever may read the bookings asks for it (the API asks that, and a bare 403 on a GET takes the user to «nessun accesso»), and only for a stay
+  // that can owe something. A stay the summary does not list has no lines: nothing is told, and nothing is told as green.
+  const { hasPermission } = useWorkspace();
+  const wantsLights = hasPermission('short-rent', 'booking.read') && (booking.status === 'Confirmed' || booking.status === 'CheckedIn' || booking.status === 'CheckedOut');
+  const lights = useComplianceLights(wantsLights);
+  const lines = useMemo(() => (lights.data ? stayLinesOf(lights.data, booking.id) : []), [lights.data, booking.id]);
 
   // The documents change the step: wait for them rather than show a block that changes a moment later.
   if (
@@ -52,21 +66,19 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
     (needs === 'alloggiati' && alloggiati.isLoading) ||
     (booking.status === 'Confirmed' && canWrite && guestData.isLoading)
   ) {
-    return (
-      <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
-        <span className="sr-only">{t('shared.loading.srOnly')}</span>
-        <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
-      </div>
-    );
+    return <NextStepLoading />;
   }
 
   const link = needs === 'checkIn' ? session.data : undefined;
   const communication = needs === 'alloggiati' ? alloggiati.data : undefined;
-  const step = nextStepOf(booking, today, {
+  const facts = {
     checkIn: link ? { status: link.status ?? null, canIssueLink: link.canIssueLink } : undefined,
     alloggiati: communication ? { status: communication.status, isOverdue: communication.isOverdue } : undefined,
     guestData: guestData.data ? { complete: guestData.data.dataComplete } : undefined,
-  });
+  };
+  // The lights can take back a step that says «tutto in ordine»: until they are read, that is not said (a step that asks something is said at once).
+  if (wantsLights && lights.isLoading && claimsAllInOrder(nextStepOf(booking, today, facts))) return <NextStepLoading />;
+  const step = nextStepOf(booking, today, { ...facts, compliance: lines });
 
   const language = i18n.language;
   const guest = `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');
@@ -184,8 +196,52 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
         return { title: t('booking.next.cancelled.title'), body: t('status.booking.Cancelled.explain'), primary: toBookings };
       case 'allInOrder':
         return { title: t('booking.next.allInOrder.title'), body: t('booking.next.allInOrder.body', { guest, date: arrival }), primary: toBookings };
+      case 'compliance': {
+        // The worst compliance item of the stay when the step has nothing else to ask (NF-52): red is the host's to do, yellow is in hand.
+        const line = step.line;
+        if (!line) return { title: t('booking.next.compliance.waiting.title'), primary: toBookings };
+        const route = complianceActionRoute(line.item, hasPermission);
+        const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
+        const action: CalmAction = route
+          ? { label: mayAct ? t(`dashboard.todo.${line.action}.cta`) : t('dashboard.todo.open'), href: route, testId: 'booking-next-compliance' }
+          : toBookings;
+        const reason = reasonText(line.reason, line.state, { t, exists: (key) => i18n.exists(key) });
+        const when = deadlineNote(line.dueAt, { t, locale: language })?.text;
+        return line.state === 'red'
+          ? {
+              title: t(`dashboard.todo.${line.action}.title`, { label: guest, period: periodName(line.period, language) || t('compliance.item.noPeriod') }),
+              body: reason,
+              who: myTurn,
+              when,
+              primary: action,
+            }
+          : { title: t('booking.next.compliance.waiting.title'), body: reason, when, primary: action };
+      }
     }
   };
 
-  return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...viewOfStep()} />;
+  // The lights of the other items of the stay, under what the block says: the same `ComplianceLight` and words as the page of the adempimenti.
+  const view = viewOfStep();
+  const lineView = viewOfLines(lines, { skip: step.line?.id });
+  const body = hasLinesToShow(lineView) ? (
+    <>
+      {view.body}
+      <ComplianceLines lines={lines} label={t('compliance.lines.ofStay')} hasPermission={hasPermission} skip={step.line?.id} greens="each" />
+    </>
+  ) : (
+    view.body
+  );
+
+  return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...view} body={body} />;
+}
+
+/** The block while the step is read: its place is kept, so that it does not jump when the step arrives. */
+function NextStepLoading() {
+  const { t } = useTranslation();
+  return (
+    <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
+      <span className="sr-only">{t('shared.loading.srOnly')}</span>
+      <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+    </div>
+  );
 }

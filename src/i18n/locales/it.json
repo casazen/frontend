@@ -2547,6 +2547,11 @@
         "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
         "title": "Completa i dati degli ospiti"
       },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
+      },
       "confirmManual": {
         "title": "Conferma la prenotazione"
       },
@@ -4154,6 +4159,12 @@
       "red": "Da fare",
       "unknown": "Da verificare",
       "yellow": "In corso"
+    },
+    "lines": {
+      "more_one": "e {{count}} altro adempimento",
+      "more_other": "e altri {{count}} adempimenti",
+      "ofProperty": "Adempimenti di questo immobile",
+      "ofStay": "Adempimenti di questo soggiorno"
     },
     "reason": {
       "action_required": "C'è qualcosa da fare.",
@@ -13829,6 +13840,11 @@
       "cinMissing": {
         "action": "Inserisci il CIN",
         "title": "Manca il codice CIN"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
       },
       "heading": "Cosa fare ora",
       "paused": {

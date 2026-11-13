@@ -19,6 +19,7 @@ import { TIER_OF_FIELD, type CockpitTier } from './compliance-tiers';
 import {
   LIGHT_RANK,
   lightStateOf,
+  periodName,
   reasonText,
   sectionCount,
   sectionItems,
@@ -147,11 +148,6 @@ export interface CockpitExtras {
 }
 
 const isCockpitAction = (action: string): action is ComplianceCockpitAction => (COMPLIANCE_COCKPIT_ACTIONS as readonly string[]).includes(action);
-
-/** `2026-09` as the host says it ("settembre 2026"); empty when it is not a month. */
-function periodName(period: string | null | undefined, locale: string): string {
-  return period && /^\d{4}-(0[1-9]|1[0-2])$/.test(period) ? formatStayDate(`${period}-01`, locale, { month: 'long', year: 'numeric' }) : '';
-}
 
 /**
  * What an item still lacks, in a line: the steps of the wizard for a property ("Manca: Codice CIN, Checklist
