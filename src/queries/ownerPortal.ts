@@ -62,6 +62,8 @@ export function useOwnerProperties() {
 /**
  * The owner's properties on the Home's numbers for the days of `query` (NF-96): occupancy, revenue, ADR and RevPAR, next to the same
  * days one year earlier when it asks. Read again at every visit; the previous numbers stay on screen while the next load.
+ * NO page reads it today: the Home's service behind it answers nothing for an owner (S101 follow-up), so the portal says the numbers are not available yet (`OwnerDashboard`)
+ * instead of drawing zeros. The page that draws them comes back with the answer.
  */
 export function useOwnerOverview(query: OwnerPortalReportQuery) {
   return useQuery({

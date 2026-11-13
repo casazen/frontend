@@ -16198,23 +16198,16 @@
       "title": "Contatti"
     },
     "dashboard": {
-      "adr": "ADR",
       "bookings": "Prenotazioni",
-      "description": "I numeri dei tuoi immobili e le cose che puoi fare con l’agenzia: calendario, contabilità, documenti e messaggi.",
+      "description": "I tuoi immobili e le cose che puoi fare con l’agenzia: calendario, contabilità, documenti e messaggi.",
       "error": "Impossibile caricare gli immobili",
       "noProperties": "Non ci sono immobili disponibili",
-      "occupancy": "Occupazione",
-      "overviewError": "Impossibile caricare i numeri del periodo.",
-      "period": "Periodo",
-      "previousYear": "Confronto con gli stessi giorni dell’anno scorso: dal {{from}} al {{to}}.",
+      "numbersUnavailable": {
+        "description": "Occupazione, ricavi e andamento nel tempo non sono ancora mostrati nel portale: qui trovi solo i tuoi immobili e le loro prenotazioni. Per i numeri chiedi all’agenzia nei messaggi.",
+        "title": "I numeri dei tuoi immobili non sono ancora disponibili"
+      },
       "recentBookings": "Prenotazioni recenti",
-      "revPar": "RevPAR",
-      "revenue": "Ricavi",
-      "share": "Ricavi per competenza, sulla tua quota di ogni immobile: le notti dei soggiorni confermati, alloggio e pulizie, tassa di soggiorno esclusa.",
-      "tilesLabel": "I numeri dei tuoi immobili",
       "title": "Portale Proprietari",
-      "trendError": "Impossibile caricare l’andamento.",
-      "trendTitle": "Andamento nel tempo",
       "yourProperties": "I tuoi immobili"
     },
     "documents": {
@@ -16339,7 +16332,6 @@
       "error": "Impossibile caricare i dettagli dell’immobile",
       "noBookings": "Nessuna prenotazione recente",
       "notFound": "Immobile non trovato",
-      "occupancyRate": "Tasso di occupazione",
       "openCalendar": "Calendario e soggiorni",
       "recentBookings": "Prenotazioni recenti",
       "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e stato visibili)",

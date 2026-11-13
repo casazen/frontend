@@ -11,7 +11,8 @@ import { useOwnerProperties } from '@/queries/ownerPortal';
 import { formatStayDate } from '@/lib/stay-dates';
 
 /**
- * Owner portal property detail (ADR-011-R8, E07/F07/US01/T03): property details with occupancy and recent bookings.
+ * Owner portal property detail (ADR-011-R8, E07/F07/US01/T03): property details with the number of its bookings and the recent ones. NO occupancy is drawn: the Home's service that works it
+ * out answers nothing for an owner (the field is the placeholder 0), and a 0 in the place of a figure that is missing says what is not true (see `OwnerDashboard`).
  * Guest data is masked per ADR-011-R3: only dates, channel and state of a booking are visible. NO amount is drawn: the answer of the server has no currency (a booking can be in francs) and
  * its sums are the whole price the guests paid, not the share of the owner, so a «€» next to them would say what is not true. From here the owner goes to the calendar of the property
  * and to the inbox about it; the page reads the list of the owner's own properties and finds the property in it, so an id that is not one of them is «not found»
@@ -102,16 +103,6 @@ export function OwnerProperties() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{property.totalBookings}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.occupancyRate')}</CardTitle>
-            <Building2 aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{property.occupancyRate.toFixed(1)}%</div>
           </CardContent>
         </Card>
       </div>

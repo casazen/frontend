@@ -16198,23 +16198,16 @@
       "title": "Contacts"
     },
     "dashboard": {
-      "adr": "ADR",
       "bookings": "Bookings",
-      "description": "The numbers of your properties and what you can do with your agency: calendar, accounting, documents and messages.",
+      "description": "Your properties and what you can do with your agency: calendar, accounting, documents and messages.",
       "error": "The properties could not be loaded",
       "noProperties": "There are no properties available",
-      "occupancy": "Occupancy",
-      "overviewError": "The numbers of the period could not be loaded.",
-      "period": "Period",
-      "previousYear": "Compared with the same days last year: from {{from}} to {{to}}.",
+      "numbersUnavailable": {
+        "description": "Occupancy, revenue and the trend over time are not shown in the portal yet: here you only find your properties and their bookings. For the numbers, ask the agency in the messages.",
+        "title": "The numbers of your properties are not available yet"
+      },
       "recentBookings": "Recent bookings",
-      "revPar": "RevPAR",
-      "revenue": "Revenue",
-      "share": "Revenue on an accrual basis, on your share of each property: the nights of confirmed stays, accommodation and cleaning, tourist tax excluded.",
-      "tilesLabel": "The numbers of your properties",
       "title": "Owner Portal",
-      "trendError": "The trend could not be loaded.",
-      "trendTitle": "Trend over time",
       "yourProperties": "Your properties"
     },
     "documents": {
@@ -16339,7 +16332,6 @@
       "error": "The details of the property could not be loaded",
       "noBookings": "No recent bookings",
       "notFound": "Property not found",
-      "occupancyRate": "Occupancy rate",
       "openCalendar": "Calendar and stays",
       "recentBookings": "Recent bookings",
       "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
