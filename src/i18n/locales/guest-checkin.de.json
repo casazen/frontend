@@ -113,6 +113,7 @@
     "firstName": "Vorname *",
     "lastName": "Nachname *",
     "stepDocument": "Ausweisdokument",
+    "stepIdentity": "Identitätsprüfung",
     "stepConsents": "Datenschutzhinweis und Einwilligungen",
     "stepOf": "Schritt {{step}} von {{total}}",
     "next": "Weiter",
@@ -165,6 +166,39 @@
     "citizenship": "Staatsangehörigkeit *",
     "removeGuest": "Gast entfernen",
     "addGuest": "Gast hinzufügen",
+    "biometric": {
+      "capture": {
+        "attemptsRemaining": "Verbleibende Versuche: {{count}}",
+        "cameraDenied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Erneut versuchen“.",
+        "cameraNotFound": "Auf diesem Gerät wurde keine Kamera gefunden.",
+        "cameraTitle": "Die Kamera ist nicht verfügbar",
+        "cameraUnknown": "Die Kamera konnte nicht gestartet werden.",
+        "cameraUnsupported": "Diese Seite kann in diesem Browser die Kamera nicht verwenden. Öffnen Sie den Link in Ihrem üblichen Browser oder bitten Sie eine Person, Sie zu überprüfen.",
+        "capturedLabel": "Das von Ihnen aufgenommene Selfie",
+        "instructions": "Schauen Sie an einem hellen Ort in die Kamera und halten Sie Ihr Gesicht im Bild. Wir vergleichen das Foto mit dem auf Ihrem Ausweis.",
+        "noFile": "Zu Ihrer Sicherheit muss das Selfie jetzt mit der Kamera aufgenommen werden: Es kann nicht aus Ihren Dateien oder der Galerie ausgewählt werden.",
+        "notPrepared": "Das Foto konnte nicht vorbereitet werden. Bitte nehmen Sie es erneut auf.",
+        "previewLabel": "Live-Ansicht Ihrer Kamera",
+        "retake": "Erneut aufnehmen",
+        "retryCamera": "Erneut versuchen",
+        "sending": "Wird geprüft...",
+        "submit": "Foto senden",
+        "takePhoto": "Foto aufnehmen",
+        "title": "Selfie aufnehmen"
+      },
+      "consent": {
+        "accept": "Ich stimme der Gesichtsprüfung zu",
+        "decline": "Ich stimme nicht zu: Eine Person prüft mich",
+        "description": "Um Ihnen den Zugangscode der Unterkunft zu geben, vergleichen wir ein Selfie mit dem Foto auf Ihrem Ausweisdokument.",
+        "documentKept": "Das Foto Ihres Dokuments wird nur bis zum Ende der Prüfung verschlüsselt aufbewahrt und danach gelöscht.",
+        "optional": "Sie können ablehnen. Dann prüft eine Person der Unterkunft Ihre Identität mit Ihnen, und der Zugangscode erreicht Sie nach deren Entscheidung. Eine Ablehnung stoppt Ihren Check-in nicht.",
+        "optionalTitle": "Es ist Ihre Entscheidung",
+        "purpose": "Sie fotografieren Ihr Dokument und nehmen dann mit der Kamera ein Selfie auf. Ein Programm auf unserem Server vergleicht beides. Ihr Selfie wird nie gespeichert: Es wird gelöscht, sobald der Vergleich endet.",
+        "purposeTitle": "Was passiert",
+        "title": "Identität mit dem Gesicht prüfen",
+        "version": "Version dieses Textes: {{version}}"
+      }
+    },
     "consent": {
       "title": "Einwilligung in Werbemitteilungen (freiwillig)",
       "intro": "Möchten Sie Neuigkeiten, Angebote und Nachrichten der Unterkunft erhalten? Wählen Sie Ihre bevorzugten Kanäle. Das ist nicht verpflichtend: Sie können den Check-in auch ohne Einwilligung abschließen.",
@@ -231,6 +265,76 @@
       "HeadOfFamily": "Familienoberhaupt",
       "HeadOfGroup": "Gruppenleiter",
       "SingleGuest": "Einzelgast"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Foto des Ausweisdokuments",
+        "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten, ohne Spiegelungen.",
+        "notAcceptable": "Das Foto ist noch nicht gut genug. Bitte nehmen Sie es erneut auf.",
+        "pick": "Dokument fotografieren",
+        "pickAgain": "Erneut fotografieren",
+        "sending": "Dokument wird gelesen...",
+        "title": "Ausweisdokument fotografieren"
+      },
+      "documentNotArchived": "Das Dokument wird nicht archiviert.",
+      "guidance": {
+        "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
+        "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",
+        "less_light": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
+        "more_light": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
+        "move_closer": "Gehen Sie näher heran: Ihr Gesicht ist im Bild zu klein.",
+        "one_face_only": "Im Bild sollen nur Sie zu sehen sein.",
+        "other": "Bitte nehmen Sie das Foto erneut auf.",
+        "retake_picture": "Das Bild konnte nicht gelesen werden: Bitte nehmen Sie es erneut auf.",
+        "retake_selfie": "Nehmen Sie das Selfie erneut auf und schauen Sie direkt in die Kamera.",
+        "show_document_photo": "Zeigen Sie die Seite des Dokuments mit Ihrem Foto.",
+        "show_whole_document": "Zeigen Sie die ganze Seite des Dokuments mit den zwei Zeilen mit Buchstaben unten.",
+        "show_your_face": "Zeigen Sie Ihr Gesicht: Im Bild war es nicht zu sehen.",
+        "tip_remove_glasses": "Nehmen Sie Ihre Brille ab.",
+        "tip_remove_mask": "Nehmen Sie eine Maske oder alles ab, was das Gesicht verdeckt.",
+        "upload_document_again": "Fotografieren Sie das Dokument erneut: Es konnte nicht gelesen werden.",
+        "use_live_camera": "Nehmen Sie das Selfie jetzt mit der Kamera auf, nicht von einem Foto oder Bildschirm.",
+        "use_valid_document": "Das Dokument ist abgelaufen: Verwenden Sie ein gültiges."
+      },
+      "intro": "An diesem Schritt nimmt nur der Gast teil, der das Ausweisdokument hinterlegt. Die anderen Gäste müssen kein Selfie aufnehmen.",
+      "nextHint": "Schließen Sie diesen Schritt ab, um fortzufahren. Wenn Sie möchten, bitten Sie eine Person um die Überprüfung.",
+      "operator": {
+        "ask": "Überprüfung durch eine Person anfordern",
+        "requested": "Wir haben die Unterkunft informiert. Sie prüft Ihre Identität, und der Zugangscode erreicht Sie nach ihrer Entscheidung."
+      },
+      "problem": {
+        "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
+        "document_photo": "Wir brauchen das Foto des Dokuments noch einmal: Bitte nehmen Sie es erneut auf.",
+        "document_required": "Bitte fotografieren Sie zuerst das Dokument.",
+        "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+        "link_unavailable": "Dieser Link ist nicht mehr gültig oder der Check-in ist bereits abgeschlossen. Bitten Sie Ihren Gastgeber um einen neuen Link.",
+        "network": "Wir konnten den Server nicht erreichen. Es wurde nichts gespeichert: Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "processing": "Wir konnten das Foto nicht verarbeiten. Bitte versuchen Sie es erneut.",
+        "too_large": "Das Foto ist zu groß. Nehmen Sie es mit einer niedrigeren Auflösung erneut auf.",
+        "too_many_requests": "Zu viele Versuche in kurzer Zeit. Warten Sie einen Moment und versuchen Sie es erneut.",
+        "unsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie ein JPEG- oder PNG-Foto."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Code auch dorthin gesendet.",
+          "codeLabel": "Ihr Zugangscode",
+          "noCode": "Ihre Identität ist bestätigt. Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Zugangscode dorthin gesendet; andernfalls teilt Ihr Gastgeber Ihnen die Zugangshinweise mit.",
+          "title": "Sie sind bestätigt"
+        },
+        "operator": {
+          "notOffered": "Für diesen Aufenthalt wird keine Gesichtsprüfung verwendet: Eine Person muss Ihre Identität prüfen. Fordern Sie es hier an, und der Gastgeber wird informiert. Der Zugangscode erreicht Sie nach seiner Entscheidung.",
+          "text": "Der Gastgeber prüft Ihre Identität. Der Zugangscode erreicht Sie nach seiner Entscheidung.",
+          "title": "Eine Person prüft Ihre Identität"
+        },
+        "retry": {
+          "again": "Selfie erneut aufnehmen",
+          "againDocument": "Dokument erneut fotografieren",
+          "attempts": "Verbleibende Versuche: {{count}}",
+          "intro": "Die Prüfung war diesmal nicht erfolgreich. Das sollten Sie ändern:",
+          "noReason": "Die Prüfung war diesmal nicht erfolgreich.",
+          "title": "Wir konnten Sie noch nicht bestätigen"
+        }
+      }
     },
     "invoice": {
       "fields": {

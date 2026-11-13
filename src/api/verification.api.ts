@@ -2,6 +2,8 @@ import { ApiClient } from './client';
 import type {
   PendingVerification,
   VerificationDecisionRequest,
+  VerificationMetrics,
+  VerificationMetricsPeriod,
   VerificationRejectionRequest,
 } from '@/types/verification.types';
 
@@ -10,9 +12,13 @@ import type {
  * Operator verification queue for manual biometric verification decisions.
  */
 export const verificationApi = {
-  /** Get bookings pending manual verification within the caller's scope (AC-NF12-3). */
+  /** Get bookings pending manual verification within the caller's scope (AC-NF12-3), with the reasons of the last automatic outcome. */
   getPending: () =>
     ApiClient.get<PendingVerification[]>('/verification/pending'),
+
+  /** The figures of the verifications of a period (the last 30 days when none is given) for the bookings the caller reaches (NF-51 monitoring). */
+  getMetrics: (period?: VerificationMetricsPeriod) =>
+    ApiClient.get<VerificationMetrics>('/verification/metrics', period),
 
   /** Request a new selfie photo from the guest (AC-NF12-5). */
   requestNewPhoto: (bookingId: string) =>

@@ -107,6 +107,16 @@ export interface PublicCheckInContextDto {
   invoiceRequested?: boolean;
   /** The booking already has the data of an invoice recipient (the host wrote it, or the channel manager had it); never its content. Open session only. */
   hasInvoiceData?: boolean;
+  /**
+   * The property keeps no identity document (canton Ticino, ADR-013-R6, R15): the page says «Il documento non sarà archiviato» and the selfie
+   * step sends the photo of the document again. Sent with an open session while the identity verification is on (E03/F04/US02/T04).
+   */
+  documentNotArchived?: boolean;
+  /**
+   * Where the identity verification of the session stands. Sent with an open session only while the verification is on (the feature flag of
+   * the API): absent, the page has no identity step and nothing of it changes.
+   */
+  identityVerification?: IdentityVerificationState;
 }
 
 /** Answer of `PUT /public/checkin/{token}/language`: the language now saved on the session. */
@@ -262,23 +272,80 @@ export interface CheckInLinkResponse {
   emailError?: string | null;
 }
 
-/** Biometric verification outcome (API enum `BiometricOutcome`). */
-export type BiometricOutcome = 'Accept' | 'Escalate' | 'Reject';
+/** The steps of the identity verification as the page shows them (API `IdentityVerificationSteps`). */
+export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'done' | 'operator';
+
+/** What the guest is told after an attempt (API `IdentityVerificationGuestResults`): passed, try again, or a person verifies. */
+export type IdentityVerificationResultKind = 'ok' | 'retry' | 'operator';
 
 /**
- * Response of `POST /api/public/checkin/{token}/selfie`. The backend processes the selfie
- * synchronously and returns the outcome within 3 seconds per ADR-013-R1.
+ * Where the identity verification of the session stands (E03/F04/US02/T04): only the guest who leaves the document (the single guest, the head of
+ * family or the head of group, at `verifyingGuestPosition`) is asked for a selfie; `operatorPathOpen` is always true (GDPR art. 22).
  */
-export interface BiometricVerificationResponse {
-  outcome: BiometricOutcome;
+export interface IdentityVerificationState {
+  step: IdentityVerificationStep;
+  result?: IdentityVerificationResultKind | null;
+  /** The face check is offered: not when the organization switched it off, the guest is a minor or refused the consent. */
+  biometricOffered: boolean;
+  consentRecorded: boolean;
+  consentRefused: boolean;
+  documentChecked: boolean;
   attemptsRemaining: number;
+  /** A person was asked to verify (the guest asked, the consent was refused, a review, the attempts are used). */
+  operatorRequested: boolean;
+  operatorPathOpen: boolean;
+  documentNotArchived: boolean;
+  verifyingGuestPosition: number;
 }
 
 /**
- * Biometric consent request. Records the consent timestamp and version per ADR-013-R9.
+ * The guest's answer to the biometric consent (`POST /api/public/checkin/{token}/biometric-consent`, ADR-013-R9): explicit, separate from the
+ * privacy notice and refusable. `consentVersion` (the version of the text shown, at most 50 characters) is required with a consent.
  */
 export interface BiometricConsentRequest {
   consentGiven: boolean;
-  consentVersion: string;
-  consentTimestamp: string;
+  consentVersion?: string;
+}
+
+/** What the answer to the consent did: `consent_recorded` (go on with the document) or `operator` (refused, not offered, or already with a person). */
+export interface BiometricConsentResponse {
+  consentRecorded: boolean;
+  result: 'consent_recorded' | 'operator';
+  biometricOffered: boolean;
+  operatorPathOpen: boolean;
+  state: IdentityVerificationState;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/document` for the capture guidance: whether the photo can be compared and, when it cannot, the codes of
+ * what to change. The API also sends the fields it read (`fields`): the identity step never uses them, so they are not part of this type.
+ */
+export interface IdentityDocumentResponse {
+  success: boolean;
+  /** The MRZ was read and the agent found nothing to change: the photo can be compared. */
+  acceptable: boolean;
+  /** What to change in the photo (`show_whole_document`, `avoid_glare`, `hold_still`, `more_light`, ...): codes the page translates. */
+  guidanceCodes: string[];
+  documentStored: boolean;
+  /** The property keeps no document (Ticino): the selfie request carries the photo again. */
+  documentNotArchived: boolean;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/selfie`: `ok`, `retry` or `operator`, the guidance codes, the attempts left and, only on `ok`, the lock
+ * code of the property (null or absent when it has none). Nothing of the picture comes back.
+ */
+export interface IdentitySelfieResponse {
+  result: IdentityVerificationResultKind;
+  guidanceCodes: string[];
+  attemptsRemaining: number;
+  operatorPathOpen: boolean;
+  lockCode?: string | null;
+}
+
+/** Answer of `POST /api/public/checkin/{token}/request-operator`: the guest asked for a person and the operators are told. */
+export interface IdentityOperatorResponse {
+  result: string;
+  operatorPathOpen: boolean;
+  state: IdentityVerificationState;
 }

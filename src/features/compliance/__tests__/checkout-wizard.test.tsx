@@ -140,8 +140,19 @@ function renderPage(search = '') {
 
 const next = () => fireEvent.click(screen.getByTestId('checkout-step-next'));
 
+/**
+ * Lets React finish what it still has to do for the last render: its effects, and the renders they cause. The wizard checks a step
+ * against the rules of the step it is on, and learns which one that is from an effect of the render. A runner that is busy can leave
+ * that effect for a later task, after the next step is already on screen: a click made in between is checked against the rules of the
+ * step before, goes through, and the last button closes the stay with the property answer missing (the failure of this file in CI).
+ */
+const settle = () => act(async () => undefined);
+
+/** The wizard is on `step`, settled there, with its main button ready: only then does a click get the rules of that step. */
 async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', step), WAIT);
+  await settle();
+  await waitFor(() => expect(screen.getByTestId(/^checkout-(step-next|complete-button)$/)).toBeEnabled(), WAIT);
 }
 
 beforeEach(async () => {
@@ -151,9 +162,12 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
   vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
   vi.mocked(startCheckoutWizard).mockResolvedValue(wizardState());
-  vi.mocked(saveCheckoutProgress).mockImplementation(async (_id, command) =>
-    wizardState({ currentStep: command.currentStep }),
-  );
+  // The server answers a saved step with the wizard it started, now on the step the host moved to, and the page keeps that answer as the
+  // wizard on screen: an answer that is another wizard (other tax, other stay) would change the page under a test that already looked at it.
+  vi.mocked(saveCheckoutProgress).mockImplementation(async (_id, command) => {
+    const started = await vi.mocked(startCheckoutWizard).mock.results.at(-1)?.value;
+    return { ...(started ?? wizardState()), currentStep: command.currentStep };
+  });
   vi.mocked(completeCheckoutWizard).mockResolvedValue({
     propertyReady: true,
     bookingStatus: 'CheckedOut',
