@@ -476,6 +476,22 @@
           "title": "Alloggiati Web deadline",
           "why": "Guests must be reported to the police within the deadline."
         },
+        "BookingOverlap": {
+          "title": "Dates already taken on the channel manager",
+          "why": "The dates of this booking are also taken on the channel manager: check the booking and the calendars before a second guest arrives."
+        },
+        "BookingSpecialRequest": {
+          "title": "Special request from the guest",
+          "why": "The guest wrote a special request: read it before they arrive."
+        },
+        "BookingSyncConflict": {
+          "title": "Booking also changed on the channel manager",
+          "why": "The booking was changed there while you were editing it: choose whether to keep CasaZen's version or the channel manager's."
+        },
+        "CheckImportedListing": {
+          "title": "Imported property to check",
+          "why": "The property was created from a listing of the channel manager and stays inactive until you check what was imported."
+        },
         "CheckInPending": {
           "title": "Check-in to complete",
           "why": "The check-in of this stay is not complete yet."
@@ -483,6 +499,14 @@
         "CheckOutPending": {
           "title": "Check-out to complete",
           "why": "The stay is over: record the departure."
+        },
+        "CleaningDue": {
+          "title": "Cleaning to arrange",
+          "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Listing to match to a property",
+          "why": "A listing found on the channel manager may match several of your properties, or none: confirm or reject the match."
         },
         "CredentialsToRenew": {
           "title": "Credentials to renew",
@@ -512,9 +536,25 @@
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
         },
+        "MessageToReply": {
+          "title": "Message to answer",
+          "why": "The assistant passed a guest's message to you: answer it yourself."
+        },
         "MunicipalityTaxRateMissing": {
           "title": "Tourist tax rate to enter",
           "why": "We do not know the tourist tax rate of the municipality: enter it, we never take it as zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Owner document expiring",
+          "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Owner stay block not accepted",
+          "why": "The channel manager did not accept the block of the dates: the stay is not confirmed until you send it again."
+        },
+        "OwnerStayToReview": {
+          "title": "Owner stay to decide",
+          "why": "The owner asked to stay in their property: approve or reject the request."
         },
         "PublicationError": {
           "title": "Publication error",

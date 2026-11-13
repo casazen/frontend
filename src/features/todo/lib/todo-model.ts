@@ -52,6 +52,18 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
     whyKey: 'activity.todo.type.MunicipalityTaxRateMissing.why',
   },
   TouristTaxDeadline: { titleKey: 'activity.todo.type.TouristTaxDeadline.title', whyKey: 'activity.todo.type.TouristTaxDeadline.why' },
+  // The types of the other modules already in the backend (the channel manager, the stays, the assistant, the owner portal): each item has its words.
+  // Where the page of its action does not exist yet (`ACTIONS_WITHOUT_A_PAGE_YET` in the test of the registry) it has no button, but it is not told as «Attività da completare».
+  CleaningDue: { titleKey: 'activity.todo.type.CleaningDue.title', whyKey: 'activity.todo.type.CleaningDue.why' },
+  BookingSpecialRequest: { titleKey: 'activity.todo.type.BookingSpecialRequest.title', whyKey: 'activity.todo.type.BookingSpecialRequest.why' },
+  ConfirmChannelMapping: { titleKey: 'activity.todo.type.ConfirmChannelMapping.title', whyKey: 'activity.todo.type.ConfirmChannelMapping.why' },
+  CheckImportedListing: { titleKey: 'activity.todo.type.CheckImportedListing.title', whyKey: 'activity.todo.type.CheckImportedListing.why' },
+  BookingOverlap: { titleKey: 'activity.todo.type.BookingOverlap.title', whyKey: 'activity.todo.type.BookingOverlap.why' },
+  BookingSyncConflict: { titleKey: 'activity.todo.type.BookingSyncConflict.title', whyKey: 'activity.todo.type.BookingSyncConflict.why' },
+  MessageToReply: { titleKey: 'activity.todo.type.MessageToReply.title', whyKey: 'activity.todo.type.MessageToReply.why' },
+  OwnerStayToReview: { titleKey: 'activity.todo.type.OwnerStayToReview.title', whyKey: 'activity.todo.type.OwnerStayToReview.why' },
+  OwnerStaySyncFailed: { titleKey: 'activity.todo.type.OwnerStaySyncFailed.title', whyKey: 'activity.todo.type.OwnerStaySyncFailed.why' },
+  OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

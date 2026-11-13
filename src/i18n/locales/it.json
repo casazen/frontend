@@ -476,6 +476,22 @@
           "title": "Alloggiati Web in scadenza",
           "why": "Gli ospiti vanno comunicati alla Questura entro la scadenza."
         },
+        "BookingOverlap": {
+          "title": "Date già occupate sul gestionale dei canali",
+          "why": "Le date di questa prenotazione risultano occupate anche sul gestionale dei canali: controlla la prenotazione e i calendari prima che arrivi un secondo ospite."
+        },
+        "BookingSpecialRequest": {
+          "title": "Richiesta speciale dell'ospite",
+          "why": "L'ospite ha scritto una richiesta particolare: leggila prima dell'arrivo."
+        },
+        "BookingSyncConflict": {
+          "title": "Prenotazione cambiata anche sul gestionale dei canali",
+          "why": "La prenotazione è stata cambiata anche lì mentre la modificavi: scegli se tenere la versione di CasaZen o quella del gestionale."
+        },
+        "CheckImportedListing": {
+          "title": "Immobile importato da controllare",
+          "why": "L'immobile è stato creato da un annuncio del gestionale dei canali e resta inattivo finché non controlli i dati importati."
+        },
         "CheckInPending": {
           "title": "Check-in da completare",
           "why": "Il check-in di questo soggiorno non è ancora completo."
@@ -483,6 +499,14 @@
         "CheckOutPending": {
           "title": "Check-out da completare",
           "why": "Il soggiorno è finito: registra la partenza."
+        },
+        "CleaningDue": {
+          "title": "Pulizia da richiedere",
+          "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Annuncio da collegare a un immobile",
+          "why": "Un annuncio trovato sul gestionale dei canali potrebbe corrispondere a più immobili, o a nessuno: conferma o rifiuta il collegamento."
         },
         "CredentialsToRenew": {
           "title": "Credenziali da rinnovare",
@@ -512,9 +536,25 @@
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
         },
+        "MessageToReply": {
+          "title": "Messaggio a cui rispondere",
+          "why": "L'assistente ha passato a te il messaggio di un ospite: rispondigli tu."
+        },
         "MunicipalityTaxRateMissing": {
           "title": "Imposta di soggiorno da inserire",
           "why": "Non conosciamo l'imposta di soggiorno del comune: inseriscila, non la consideriamo mai pari a zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Documento del proprietario in scadenza",
+          "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Blocco del soggiorno del proprietario non accettato",
+          "why": "Il gestionale dei canali non ha accettato il blocco delle date: il soggiorno non è confermato finché non lo invii di nuovo."
+        },
+        "OwnerStayToReview": {
+          "title": "Soggiorno del proprietario da decidere",
+          "why": "Il proprietario ha chiesto di soggiornare nel suo immobile: approva o rifiuta la richiesta."
         },
         "PublicationError": {
           "title": "Errore di pubblicazione",

@@ -276,3 +276,47 @@ describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
     expect(todoActionRoute(stay('SendAlloggiatiManually'), bookingsOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
   });
 });
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 21 values): the map has an entry for each, or the action is
+// in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
+// the page adds the entry and takes the action out of the list (the test below fails until it does).
+const BACKEND_ACTIONS = [
+  'ReviewBooking',
+  'StartCheckIn',
+  'CompleteCheckOut',
+  'VerifyIdentity',
+  'UploadAlloggiatiProof',
+  'UploadIstatProof',
+  'FixListingError',
+  'ReplyToMessage',
+  'ApproveAiDraft',
+  'ResumeWizard',
+  'ReconnectChannel',
+  'ConfirmChannelMapping',
+  'CheckImportedListing',
+  'SendAlloggiatiManually',
+  'ActivateOctorateSend',
+  'EnterMunicipalityTaxRate',
+  'DeclareTouristTax',
+  'RenewPoliceCredentials',
+  'ReviewFiscalDocument',
+  'ReviewOwnerStay',
+  'RenewOwnerDocument',
+] as const;
+
+/** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */
+const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'CheckImportedListing', 'ReviewOwnerStay', 'RenewOwnerDocument'];
+
+describe('ACTION_ROUTE_MAP and the actions of the backend', () => {
+  it.each(BACKEND_ACTIONS)('actionRouteMap_BackendAction_%s_HasAnEntryOrIsInTheListOfThoseWithoutAPageYet', (action) => {
+    expect(Object.hasOwn(ACTION_ROUTE_MAP, action), action).toBe(!ACTIONS_WITHOUT_A_PAGE_YET.includes(action));
+  });
+
+  it('actionRouteMap_EveryEntry_IsAnActionOfTheBackend', () => {
+    expect(Object.keys(ACTION_ROUTE_MAP).filter((action) => !(BACKEND_ACTIONS as readonly string[]).includes(action))).toEqual([]);
+  });
+
+  it.each(ACTIONS_WITHOUT_A_PAGE_YET)('todoActionRoute_%s_WithoutAPageYet_OffersNoButtonAndNeverADeadOne', (action) => {
+    expect(todoActionRoute(itemFor(action))).toBeNull();
+  });
+});

@@ -106,3 +106,54 @@ describe('describeTodo and the month of a property', () => {
     expect(describeTodo(activity('CheckInPending'), contextOf('it', names)).object).toBe('Prenotazione · Casa Mare');
   });
 });
+
+// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 26 values) has its own words in both languages, not «Attività da completare».
+const BACKEND_TYPES = [
+  'CheckInPending',
+  'CheckOutPending',
+  'AlloggiatiDeadline',
+  'IstatDeadline',
+  'ReceiptToRetrieve',
+  'MessageToApprove',
+  'PublicationError',
+  'FiscalDocument',
+  'WizardResume',
+  'IntegrationError',
+  'CredentialsToRenew',
+  'ReconnectChannelManager',
+  'CleaningDue',
+  'BookingSpecialRequest',
+  'ConfirmChannelMapping',
+  'CheckImportedListing',
+  'BookingOverlap',
+  'BookingSyncConflict',
+  'ListingChangedOutside',
+  'IdentityVerification',
+  'TouristTaxDeadline',
+  'MunicipalityTaxRateMissing',
+  'MessageToReply',
+  'OwnerStayToReview',
+  'OwnerStaySyncFailed',
+  'OwnerDocumentExpiring',
+] as const;
+
+describe('describeTodo for every type of the backend', () => {
+  it.each(['it', 'en'] as const)('describeTodo_EveryTypeOfTheBackend_HasItsOwnTitleAndWhyIn_%s', async (lng) => {
+    await i18n.changeLanguage(lng);
+    const t = i18n.getFixedT(lng) as TFunction;
+    const context = { t, exists: (key: string) => i18n.exists(key), locale: lng, propertyNames: new Map<string, string>() };
+    const generic = describeTodo(activity('SomethingNew'), context);
+
+    const titles = new Set<string>();
+    for (const type of BACKEND_TYPES) {
+      const text = describeTodo(activity(type), context);
+      expect(text.title, type).not.toBe(generic.title);
+      expect(text.why, type).not.toBe(generic.why);
+      expect(text.title, type).not.toMatch(/^activity.todo/);
+      titles.add(text.title);
+    }
+    // No two types share a title: the host tells them apart in the list.
+    expect(titles.size).toBe(BACKEND_TYPES.length);
+    await i18n.changeLanguage('it');
+  });
+});
