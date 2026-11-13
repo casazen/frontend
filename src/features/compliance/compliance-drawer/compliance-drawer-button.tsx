@@ -5,13 +5,7 @@ import { FileSearch } from 'lucide-react';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import type { ComplianceHandoff } from '@/types/compliance-handoff.types';
 import { ComplianceDrawerDialog, type ComplianceDrawerState } from './compliance-drawer-dialog';
-import {
-  UnusableDestinationError,
-  handoffRequestOf,
-  originKeyOf,
-  returnRouteOf,
-  type ComplianceDrawerTarget,
-} from './compliance-drawer-model';
+import { UnusableDestinationError, originKeyOf, returnRouteOf, type ComplianceDrawerTarget } from './compliance-drawer-model';
 import { forgetReturn, openDestination, saveReturn, useReturnFocus } from './compliance-drawer-return';
 import { useComplianceDrawerAvailable, useStartComplianceHandoff } from './use-compliance-drawer';
 
@@ -34,9 +28,10 @@ interface ComplianceDrawerButtonProps {
  * handoff and opens the dialog «Cassetto Compliance»; only «Continua la verifica» leaves, in this same tab, after keeping the route and the
  * filters to come back to. When it is not offered (the connector is off, or the user cannot read bookings) it is not on the page at all.
  *
- * While the server prepares the handoff the button is busy and ignores the press (`loading`: it keeps the focus), so a second press cannot ask
- * for a second handoff (the server writes a line in the activity log for each); it stays busy if the dialog was closed in the meantime, until
- * the request has ended.
+ * While the server prepares the handoff (and, for a stay of the summary that names no property, while the booking is read to know it) the button
+ * is busy and ignores the press (`loading`: it keeps the focus), so a second press cannot ask for a second handoff (the server writes a line in
+ * the activity log for each); it stays busy if the dialog was closed in the meantime, until the request has ended. A reading or a handoff that
+ * fails is shown as a failure in the dialog, never as nothing.
  */
 export function ComplianceDrawerButton({ target, subject, variant = 'outline', size = 'sm', className, testId = 'compliance-drawer-trigger' }: ComplianceDrawerButtonProps) {
   const { t } = useTranslation();
@@ -57,12 +52,16 @@ export function ComplianceDrawerButton({ target, subject, variant = 'outline', s
   const focusRef = useReturnFocus<HTMLButtonElement>(origin);
   const { mutate, reset, isPending, isError, error, data } = start;
 
+  // A stay whose property the row does not say is read first (inside the same request: the button stays busy through both).
   const ask = () =>
-    mutate(handoffRequestOf(target, comingFrom.current), {
-      onSettled: () => {
-        if (dismissed.current) reset();
+    mutate(
+      { target, returnRoute: comingFrom.current },
+      {
+        onSettled: () => {
+          if (dismissed.current) reset();
+        },
       },
-    });
+    );
 
   const begin = () => {
     comingFrom.current = returnRouteOf(location);

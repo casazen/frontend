@@ -3,6 +3,7 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import i18n from '@/i18n/config';
 import {
   COMPLIANCE_PAGE_PATH,
+  UnknownPropertyError,
   UnusableDestinationError,
   describeFailure,
   drawerTargetOf,
@@ -107,59 +108,59 @@ describe('originKeyOf', () => {
     expect(key).toBe(`Alloggiati:${PROPERTY}:${BOOKING}:`);
     expect(key).not.toBe(originKeyOf({ topic: 'Istat', propertyId: PROPERTY, period: '2026-10' }));
   });
+
+  it('originKeyOf_StayThatNamesNoProperty_IsTheKeyOfTheStayAlone', () => {
+    expect(originKeyOf({ topic: 'Alloggiati', propertyId: null, bookingId: BOOKING })).toBe(`Alloggiati::${BOOKING}:`);
+  });
 });
 
 describe('drawerTargetOf', () => {
+  // The items as the server sends them: a stay names only its booking (`propertyId: null`), a month of ISTAT is its property's own; `handoffTopic` is the server's.
   const item = (over: Partial<Parameters<typeof drawerTargetOf>[0]>): Parameters<typeof drawerTargetOf>[0] => ({
     id: BOOKING,
-    action: 'SendAlloggiati',
     bookingId: BOOKING,
     propertyId: null,
     period: null,
+    handoffTopic: 'Alloggiati',
     ...over,
   });
 
-  it.each(['SendAlloggiati', 'ResolveAlloggiatiFailure', 'SendAlloggiatiManually', 'UploadAlloggiatiReceipt'] as const)(
-    'drawerTargetOf_%s_WithTheStaysProperty_IsAnAlloggiatiTarget',
-    (action) => {
-      expect(drawerTargetOf(item({ action }), PROPERTY)).toEqual({ topic: 'Alloggiati', propertyId: PROPERTY, bookingId: BOOKING });
-    },
-  );
-
-  it('drawerTargetOf_PropertyOfTheItem_WinsOverTheOneOfTheHome', () => {
-    const other = '33333333-3333-3333-3333-333333333333';
-    expect(drawerTargetOf(item({ propertyId: other }), PROPERTY)?.propertyId).toBe(other);
+  it('drawerTargetOf_StayWithTheTopicOfTheServer_IsAnAlloggiatiTargetThatNamesNoPropertyYet', () => {
+    // The summary names no property on a stay: the button reads it from the booking when it is pressed.
+    expect(drawerTargetOf(item({}))).toEqual({ topic: 'Alloggiati', propertyId: null, bookingId: BOOKING });
   });
 
-  it('drawerTargetOf_PropertyNotKnown_HasNoTarget_TheServerCouldNotCheckIt', () => {
-    expect(drawerTargetOf(item({}))).toBeUndefined();
-    expect(drawerTargetOf(item({}), null)).toBeUndefined();
+  it('drawerTargetOf_PropertyOfTheItem_IsKeptSoTheButtonNeedsNoReading', () => {
+    expect(drawerTargetOf(item({ propertyId: PROPERTY }))).toEqual({ topic: 'Alloggiati', propertyId: PROPERTY, bookingId: BOOKING });
   });
 
-  it('drawerTargetOf_ItemWithoutAStay_HasNoTarget', () => {
-    expect(drawerTargetOf(item({ bookingId: null, propertyId: PROPERTY }), PROPERTY)).toBeUndefined();
+  it.each([null, undefined])('drawerTargetOf_TopicOfTheServer_%s_HasNoTargetWhateverTheRowIs', (handoffTopic) => {
+    // A communication never sent, a failure CasaZen knows, a month the host sends by hand: the outcome is not only in the connected area.
+    expect(drawerTargetOf(item({ handoffTopic }))).toBeUndefined();
+    expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, propertyId: PROPERTY, period: '2026-10', handoffTopic }))).toBeUndefined();
+  });
+
+  it('drawerTargetOf_TopicThisVersionDoesNotKnow_HasNoTarget', () => {
+    expect(drawerTargetOf(item({ handoffTopic: 'Police' as never }))).toBeUndefined();
+  });
+
+  it('drawerTargetOf_AlloggiatiTopicWithoutAStay_HasNoTarget', () => {
+    expect(drawerTargetOf(item({ bookingId: null, propertyId: PROPERTY }))).toBeUndefined();
   });
 
   it('drawerTargetOf_IstatMonthOfAProperty_IsAnIstatTargetWithItsPeriodAndNoStay', () => {
-    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, propertyId: PROPERTY, period: '2026-10' }))).toEqual({
+    expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, propertyId: PROPERTY, period: '2026-10', handoffTopic: 'Istat' }))).toEqual({
       topic: 'Istat',
       propertyId: PROPERTY,
       period: '2026-10',
     });
     // The item of a property is the property's own: its id is the property when the summary names none.
-    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, period: '2026-10' }))?.propertyId).toBe(PROPERTY);
+    expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, period: '2026-10', handoffTopic: 'Istat' }))?.propertyId).toBe(PROPERTY);
   });
 
   it.each([null, undefined, '', '2026-13', '2026-1', 'ottobre', '2026-10-01'])('drawerTargetOf_IstatItemWithPeriod_%s_HasNoTarget', (period) => {
-    expect(drawerTargetOf(item({ id: PROPERTY, action: 'UploadIstatProof', bookingId: null, propertyId: PROPERTY, period }))).toBeUndefined();
+    expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, propertyId: PROPERTY, period, handoffTopic: 'Istat' }))).toBeUndefined();
   });
-
-  it.each(['ActivateProperty', 'CompleteGuestCheckIn', 'CheckOut', 'ConfirmPropertyReady', 'VerifyIdentity', 'ActivateOctorateSend', 'DeclareTouristTax', 'EnterMunicipalityTaxRate', 'RenewPoliceCredentials'] as const)(
-    'drawerTargetOf_%s_IsNotAnAlloggiatiOrIstatCommunication',
-    (action) => {
-      expect(drawerTargetOf(item({ action, propertyId: PROPERTY, period: '2026-10' }), PROPERTY)).toBeUndefined();
-    },
-  );
 });
 
 describe('describeFailure', () => {
@@ -200,5 +201,9 @@ describe('describeFailure', () => {
 
   it('describeFailure_AddressThatCannotBeOpened_KeepsTheHostHereAndCanBeTriedAgain', () => {
     expect(describeFailure(new UnusableDestinationError(), t)).toEqual({ message: t('compliance.drawer.error.destination'), retryable: true });
+  });
+
+  it('describeFailure_StayThatNamesNoProperty_IsNotFoundAndAskingAgainDoesNotChangeIt', () => {
+    expect(describeFailure(new UnknownPropertyError(), t)).toEqual({ message: t('compliance.drawer.error.notFound'), retryable: false });
   });
 });

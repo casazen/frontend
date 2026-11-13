@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import { isAxiosError } from 'axios';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { safeReturnTo } from '@/lib/auth-return-to';
-import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
+import type { ComplianceSummaryItem } from '@/types/compliance.types';
 import type { ComplianceHandoffRequest, ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 
 /** The page of the adempimenti: where a route that cannot be said to the server falls back to. */
@@ -14,16 +14,23 @@ const MAX_RETURN_PATH_LENGTH = 1024;
 const APP_PATH_PREFIX = '/app/';
 
 /**
- * What a «Verifica nel tuo Cassetto Compliance» button is about: the property, the stay when it starts from a booking, the period when it
- * is about one. The names the dialog shows come from the server's answer, never from here.
+ * What a «Verifica nel tuo Cassetto Compliance» button is about: the stay when it starts from a booking, the period when it is about one, and the
+ * property. The names the dialog shows come from the server's answer, never from here.
  */
 export interface ComplianceDrawerTarget {
   topic: ComplianceHandoffTopic;
-  propertyId: string;
+  /**
+   * The property, when the row says it. The summary names no property on the item of a stay (only the booking): the button then reads it from the
+   * booking when it is pressed (`useStartComplianceHandoff`), never from a list that the page may not hold.
+   */
+  propertyId?: string | null;
   bookingId?: string | null;
   /** `yyyy-MM` or `yyyy-MM-dd`. */
   period?: string | null;
 }
+
+/** A target whose property is known: what the server is asked about. */
+export type ResolvedComplianceDrawerTarget = ComplianceDrawerTarget & { propertyId: string };
 
 /**
  * True for a page of this app, written as a relative route: a single leading `/`, under `/app/` once the path is normalised (`/app/../login`
@@ -52,7 +59,7 @@ export function returnRouteOf(location: { pathname: string; search: string }): {
 }
 
 /** The request for the server: what the button is about and the route to come back to. There is no address in it. */
-export function handoffRequestOf(target: ComplianceDrawerTarget, returnRoute: { route: string; filters: string }): ComplianceHandoffRequest {
+export function handoffRequestOf(target: ResolvedComplianceDrawerTarget, returnRoute: { route: string; filters: string }): ComplianceHandoffRequest {
   return {
     topic: target.topic,
     propertyId: target.propertyId,
@@ -67,34 +74,25 @@ export function handoffRequestOf(target: ComplianceDrawerTarget, returnRoute: { 
  * The same target is the same key, on whatever page it is asked from.
  */
 export function originKeyOf(target: ComplianceDrawerTarget): string {
-  return [target.topic, target.propertyId, target.bookingId ?? '', target.period ?? ''].join(':');
+  return [target.topic, target.propertyId ?? '', target.bookingId ?? '', target.period ?? ''].join(':');
 }
-
-/** The actions of the cockpit that are an Alloggiati Web communication of a stay: the ones whose outcome the host goes to check. */
-const ALLOGGIATI_ACTIONS: readonly ComplianceCockpitAction[] = ['SendAlloggiati', 'ResolveAlloggiatiFailure', 'SendAlloggiatiManually', 'UploadAlloggiatiReceipt'];
-
-/** The actions that are an ISTAT month of a property: the outcome of the period is read in the connected area as well. */
-const ISTAT_ACTIONS: readonly ComplianceCockpitAction[] = ['UploadIstatProof'];
 
 /** The months of the periods the backend sends (`yyyy-MM`). */
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /**
- * The target of the button of a row of the cockpit, or `undefined` when the row has none: not an Alloggiati communication or an ISTAT month,
- * or what the server needs to check it is not known. An Alloggiati item names the stay, and its property only when the summary says it (or the
- * Home's «Da fare», for the first stays); an ISTAT item is the property's own (its id is the property) with its month. The button is never
- * offered for a target the server could not check: the row's own button leads to the page, where the host can still do the check by hand.
+ * The target of the button of a row of the cockpit, or `undefined` when the row has none. The server decides which rows offer the check: it sends
+ * the topic (`handoffTopic`) only where the outcome is held by the connected area and CasaZen has no proof of it, so a row without one (a
+ * communication never sent, a failure CasaZen knows, a month the host sends by hand) has no button, and the client never works the topic out from the
+ * name of the action. An Alloggiati item names the stay, and its property only if the summary says it (it names none on a stay: the button reads it
+ * from the booking when it is pressed); an ISTAT item is the property's own (its id is the property) with its month. The row's own button still
+ * leads to its page, where the host can do the check by hand.
  */
-export function drawerTargetOf(
-  item: Pick<ComplianceSummaryItem, 'id' | 'action' | 'bookingId' | 'propertyId' | 'period'>,
-  stayPropertyId?: string | null,
-): ComplianceDrawerTarget | undefined {
-  if (ALLOGGIATI_ACTIONS.includes(item.action)) {
-    if (!item.bookingId) return undefined;
-    const propertyId = item.propertyId ?? stayPropertyId;
-    return propertyId ? { topic: 'Alloggiati', propertyId, bookingId: item.bookingId } : undefined;
+export function drawerTargetOf(item: Pick<ComplianceSummaryItem, 'id' | 'bookingId' | 'propertyId' | 'period' | 'handoffTopic'>): ComplianceDrawerTarget | undefined {
+  if (item.handoffTopic === 'Alloggiati') {
+    return item.bookingId ? { topic: 'Alloggiati', propertyId: item.propertyId, bookingId: item.bookingId } : undefined;
   }
-  if (ISTAT_ACTIONS.includes(item.action)) {
+  if (item.handoffTopic === 'Istat') {
     const propertyId = item.propertyId ?? item.id;
     return propertyId && item.period && MONTH.test(item.period) ? { topic: 'Istat', propertyId, period: item.period } : undefined;
   }
@@ -106,6 +104,14 @@ export class UnusableDestinationError extends Error {
   constructor() {
     super('The destination of the handoff is not an https address');
     this.name = 'UnusableDestinationError';
+  }
+}
+
+/** The stay the button was pressed for names no property (the booking has none, or the row had no stay): there is nothing the server could be asked about. */
+export class UnknownPropertyError extends Error {
+  constructor() {
+    super('The property of the stay is not known');
+    this.name = 'UnknownPropertyError';
   }
 }
 
@@ -123,6 +129,7 @@ export interface DrawerFailure {
  */
 export function describeFailure(error: unknown, t: TFunction): DrawerFailure {
   if (error instanceof UnusableDestinationError) return { message: t('compliance.drawer.error.destination'), retryable: true };
+  if (error instanceof UnknownPropertyError) return { message: t('compliance.drawer.error.notFound'), retryable: false };
 
   const status = getHttpStatus(error);
   if (status === 404) return { message: t('compliance.drawer.error.notFound'), retryable: false };

@@ -30,7 +30,7 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
   // What the law dates and is still to do is the urgent one: its icon takes the color of urgency and its button is the solid one. What is in
   // hand (yellow) or done (green) is not.
   const urgent = row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
-  // «Verifica nel tuo Cassetto Compliance»: for an Alloggiati communication or an ISTAT month whose property is known, where the connector is on.
+  // «Verifica nel tuo Cassetto Compliance»: for the rows whose outcome the server says is held by the connected area, where the connector is on.
   const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
   // The button of the row: where it goes, unless the row is only to read.
   const link = row.quiet ? null : row.to;

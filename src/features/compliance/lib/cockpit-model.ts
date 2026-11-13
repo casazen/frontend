@@ -72,7 +72,7 @@ export interface CockpitRow {
   cta: string;
   /** Only to read (a property that is in order, an item the API says is done): the title opens its page and there is no button. */
   quiet?: boolean;
-  /** What «Verifica nel tuo Cassetto Compliance» is about, for an Alloggiati communication or an ISTAT month whose property is known; absent for the others. */
+  /** What «Verifica nel tuo Cassetto Compliance» is about, for a row whose outcome the server says is held by the connected area (`handoffTopic`); absent for the others and for a green row. */
   drawer?: ComplianceDrawerTarget;
 }
 
@@ -275,8 +275,9 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
     // Whoever may only look is taken to the page, not told to do what the page will not let them do.
     cta: canWrite ? cta : t('dashboard.todo.open'),
     quiet: done ? true : undefined,
-    // What the API says is in order has nothing left to go and read: no action on a green row.
-    drawer: done ? undefined : drawerTargetOf(item, facts.stay?.propertyId),
+    // What the API says is in order has nothing left to go and read: no action on a green row. Elsewhere the server says which rows offer the check
+    // (`handoffTopic`): the property of a stay is not needed here, the button reads it from the booking when it is pressed.
+    drawer: done ? undefined : drawerTargetOf(item),
   };
 }
 
