@@ -115,7 +115,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_SectionOfThePayments_NamesTheSectionAfterItsEntry', () => {
     renderAt('/app/short-rent/fiscal');
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale', 'Stripe Connect']);
   });
 
   it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
@@ -134,7 +134,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
     renderAt('/app/short-rent/payments', { hasPermission: (_ctx, permission) => permission !== 'property.write' });
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
   it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {

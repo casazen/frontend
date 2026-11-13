@@ -276,6 +276,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
+    // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
+    // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
+    // `property.read` (backend policy `SharedPropertyRead`); the server then opens each type with the permission of its own area, and the page
+    // offers only the types it sends. For who may not read payments, the page that hangs from Incassi takes a place in "Altro" (UI-04a).
+    path: '/app/short-rent/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.documents',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
+  },
+  {
     // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
     // the list of reports (its row "Apri" leads here), in no menu and no tab; reading it asks for payments, and the buttons that write
     // ask for `payment.write` inside the page.

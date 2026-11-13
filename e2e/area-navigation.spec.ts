@@ -43,6 +43,7 @@ test.describe('Area navigation (UI-04a)', () => {
         'Recensioni',
         'Ricavi',
         'Report',
+        'Documenti',
         'Regime fiscale',
         'Stripe Connect',
         'Canali e calendari',
@@ -235,7 +236,7 @@ test.describe('Area navigation (UI-04a)', () => {
 
       await menu.getByRole('link', { name: 'Incassi' }).click();
       const paymentTabs = page.getByRole('navigation', { name: 'Sezioni di Incassi' });
-      await expect(paymentTabs.getByRole('link')).toHaveText(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+      await expect(paymentTabs.getByRole('link')).toHaveText(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale', 'Stripe Connect']);
       await paymentTabs.getByRole('link', { name: 'Regime fiscale' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/fiscal$/);
       await expect(menu.getByRole('link', { name: 'Incassi' })).toHaveAttribute('aria-current', 'page');
