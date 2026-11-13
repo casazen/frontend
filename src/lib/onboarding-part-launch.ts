@@ -128,6 +128,7 @@ const ACTION_LAUNCH: Readonly<Record<OnboardingFlowAction, ActionLaunch>> = {
   enterCin: { target: 'compliance', focus: 'cin' },
   enterTaxRate: { target: 'compliance', focus: 'taxRate' },
   activate: { target: 'summary' },
+  chooseIssuer: { target: 'fiscal' },
 };
 
 /**
