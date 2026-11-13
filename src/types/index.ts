@@ -39,6 +39,7 @@ export * from './owner-portal.types';
 export * from './report.types';
 export * from './verification.types';
 export * from './statement.types';
+export * from './owner-accounting.types';
 export * from './withholding.types';
 export * from './routine.types';
 export * from './wire-transfer.types';

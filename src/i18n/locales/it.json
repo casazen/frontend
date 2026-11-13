@@ -1328,6 +1328,7 @@
       "existingInventoryNotReady": "Gli annunci non sono ancora stati importati.",
       "existingInventoryScopeInvalid": "La scelta degli immobili da importare non è valida.",
       "existingInventoryTooManyChannels": "Hai scelto troppi portali in una volta.",
+      "f24TaxCodeMixed": "Nel mese ci sono ritenute con codici tributo diversi: non si può fare un solo F24.",
       "fiscalSettingsNeedWholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti.",
       "inventoryGroupRequired": "Manca il nome del gruppo.",
       "inventoryIntentAssignmentsInvalid": "Non c'è niente da salvare, oppure c'è troppo.",
@@ -1365,6 +1366,21 @@
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
+      "ownerCloseNotReady": "Il mese non si può chiudere: ci sono anomalie da risolvere.",
+      "ownerCloseUnreconciled": "Il saldo non torna con i pagamenti: per chiudere serve un motivo.",
+      "ownerCloseWaiverForbidden": "Chiudere con una differenza può farlo solo chi gestisce le finanze dei proprietari.",
+      "ownerExternalDocumentDuplicate": "Questa fattura è già collegata a un rendiconto.",
+      "ownerFiscalProfileOverlap": "Esiste già un profilo valido da quel giorno o dopo: scegli una data più recente.",
+      "ownerFxRateExists": "Esiste già un cambio per queste valute in quel giorno.",
+      "ownerPayoutKeyReused": "Questo pagamento è già stato registrato con dati diversi: ricomincia dal rendiconto.",
+      "ownerPeriodClosed": "Il mese è chiuso: non si registra più niente.",
+      "ownerPeriodDirty": "Il registro è cambiato dopo questa versione: prepara una nuova versione.",
+      "ownerPeriodNotEnded": "Il mese non è ancora finito: si chiude dopo l'ultimo giorno.",
+      "ownerPolicyAlreadyApproved": "Questa regola è già approvata e non si cambia.",
+      "ownerStatementFlagged": "Questa versione ha delle anomalie: risolvile e prepara una nuova versione.",
+      "ownerStatementNotApproved": "Il rendiconto deve prima essere approvato.",
+      "ownerStatementNotDraft": "Questa versione non è più una bozza.",
+      "ownerStatementUnchanged": "Dopo l'ultima versione non è cambiato niente: non serve una nuova versione.",
       "panelStepAssistOpen": "Se ne sta occupando il supporto di CasaZen: non serve confermare.",
       "panelStepCallbackUnsupported": "Questo passaggio non prevede il ritorno automatico dal pannello.",
       "panelStepChannelInvalid": "Il canale di questo passaggio non è valido.",
@@ -1404,6 +1420,11 @@
       "alloggiatiFileNotReady": "Il file Alloggiati non può essere generato: i dati degli ospiti sono incompleti oppure manca qualche codice ufficiale.",
       "alloggiatiFileStayDaysInvalid": "Il file Alloggiati non può essere generato: una schedina accetta da 1 a 30 giorni di permanenza.",
       "alloggiatiFileNameNotRepresentable": "Il file Alloggiati non può essere generato: il nome o il cognome di un ospite contiene caratteri che il portale non accetta. Scrivili solo con lettere dell'alfabeto latino, come sul documento.",
+      "taxApplicabilityUnresolved": "Manca un'informazione per decidere la ritenuta: CasaZen non la indovina.",
+      "taxFileAlreadyFiled": "Il file è già stato spedito: non si può rigenerare.",
+      "taxFilingReferenceRequired": "Serve il riferimento: chi l'ha trasmesso, la ricevuta o il motivo.",
+      "taxFilingTransitionInvalid": "Il file non può passare a questo stato da dove si trova.",
+      "taxNoObligations": "Non ci sono ritenute da dichiarare per questo periodo.",
       "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco.",
       "bookingDatesUnavailable": "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
@@ -11812,6 +11833,7 @@
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
+    "ownerClose": "Chiusura mensile",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -13138,6 +13160,708 @@
       "WARNING": "Attenzione"
     }
   },
+  "ownerAccounting": {
+    "actions": {
+      "approve": {
+        "label": "Approva"
+      },
+      "close": {
+        "label": "Chiudi il mese"
+      },
+      "closeWaits": "Il mese si potrà chiudere quando sarà finito.",
+      "generate": {
+        "flagged": "Il rendiconto di {{owner}} è pronto (versione {{version}}) ma ha delle anomalie: risolvile e preparane uno nuovo.",
+        "success": "Rendiconto di {{owner}} preparato: versione {{version}}."
+      },
+      "more": "Altre azioni",
+      "payout": {
+        "label": "Registra un pagamento"
+      },
+      "prepare": {
+        "label": "Prepara il rendiconto"
+      },
+      "publish": {
+        "label": "Pubblica"
+      },
+      "regenerate": {
+        "label": "Rigenera come nuova versione"
+      },
+      "stale": "Il registro è cambiato dopo questa versione: prima di approvarla o pubblicarla serve una nuova versione."
+    },
+    "adminRequired": {
+      "description": "La chiusura dei rendiconti riguarda i soldi dei proprietari: la gestiscono il titolare e gli amministratori. Chiedi a uno di loro di aprire questa pagina.",
+      "title": "Serve l'amministratore dell'organizzazione"
+    },
+    "anomalies": {
+      "actions": {
+        "correction": "Registra una rettifica",
+        "fx": "Aggiungi il cambio",
+        "onboarding": "Completa nell'attivazione",
+        "payment": "Apri il pagamento",
+        "post": "Controlla il mese",
+        "profile": "Apri i dati del proprietario",
+        "row": "Vai al rendiconto"
+      },
+      "notBlocking": "Non blocca la chiusura",
+      "showAll": "Mostra tutte ({{count}})",
+      "showLess": "Mostra meno",
+      "times": "×{{count}}",
+      "title": "Anomalie da risolvere",
+      "wholeMonth": "Tutto il mese"
+    },
+    "changes": {
+      "added": "Righe registrate da allora: {{count}}",
+      "addedLine": "{{type}}: {{amount}}",
+      "figure": {
+        "channelFees": "Commissioni del canale",
+        "charges": "Addebiti e spese",
+        "closingBalance": "Saldo di chiusura",
+        "commission": "Commissione dell'agenzia",
+        "corrections": "Rettifiche",
+        "openingBalance": "Saldo di apertura",
+        "payments": "Pagamenti",
+        "revenue": "Incassi del proprietario"
+      },
+      "first": "È la prima versione del mese: non c'è niente con cui confrontarla.",
+      "from": "{{before}} → {{after}}",
+      "history": "Versioni del mese",
+      "intro": "Rispetto alla versione {{version}}, tagliata il {{cutoff}}:",
+      "none": "Rispetto alla versione {{version}} non è cambiato niente.",
+      "title": "Cosa è cambiato dalla versione precedente",
+      "versionLine": "Versione {{version}} · {{status}} · tagliata il {{cutoff}}"
+    },
+    "close": {
+      "confirm": "Chiudi il mese",
+      "consequences": {
+        "evidence": "Le prove del mese (versioni, righe e file pubblicati) si conservano per il tempo previsto dalla regola fiscale.",
+        "nothingPosted": "In un mese chiuso non si registra più niente: quello che arriva dopo va in una rettifica di un mese aperto."
+      },
+      "description": "Chiudi il mese di {{owner}} sul rendiconto approvato, dopo aver controllato che il saldo torni con i pagamenti.",
+      "done": "Il mese di {{period}} di {{owner}} è chiuso.",
+      "notReady": "Il mese non si può ancora chiudere",
+      "title": "Chiudi {{period}}",
+      "waiverHint": "Resta registrato con il tuo nome e la data.",
+      "waiverNotice": "Il saldo non torna con i pagamenti, o è negativo. Per chiudere serve un motivo, e può farlo solo chi gestisce le finanze dei proprietari.",
+      "waiverReason": "Motivo della chiusura con differenza",
+      "word": "CHIUDI"
+    },
+    "correction": {
+      "amount": "Importo ({{currency}})",
+      "attachment": "Allegato o riferimento",
+      "attachmentHint": "Un indirizzo https o il riferimento di un documento.",
+      "currency": "Valuta",
+      "currencyHint": "Tre lettere, come nei rendiconti del proprietario (per esempio EUR).",
+      "date": "Data della rettifica",
+      "dateHint": "Conta nel mese di questa data: un mese chiuso non accetta righe, scegli un mese aperto.",
+      "description": "Aggiungi una riga al registro di {{owner}}, con il suo motivo. Le righe già registrate non si cambiano: la rettifica è una riga in più.",
+      "direction": "A favore di chi",
+      "done": "Rettifica registrata per {{owner}}.",
+      "fromOwner": "A carico del proprietario (si toglie dal saldo)",
+      "open": "Registra una rettifica",
+      "reason": "Motivo",
+      "reasonHint": "Scrivi cosa correggi e perché: lo leggerà chi controlla il mese.",
+      "submit": "Registra la rettifica",
+      "title": "Registra una rettifica",
+      "toOwner": "A favore del proprietario (si somma al saldo)"
+    },
+    "description": "Controlla, approva e pubblica i rendiconti dei proprietari, poi chiudi il mese.",
+    "errors": {
+      "generic": "Non è andata a buon fine. Riprova tra poco.",
+      "withField": "{{message}} (campo: {{field}})"
+    },
+    "external": {
+      "add": "Collega una fattura",
+      "added": "Fattura collegata.",
+      "dialog": {
+        "date": "Data della fattura",
+        "description": "Inserisci i dati della fattura che il sistema fiscale della tua agenzia ha già emesso. CasaZen ne conserva il collegamento, non l'importo.",
+        "externalId": "Identificativo nel sistema",
+        "externalIdHint": "Il codice con cui il tuo sistema riconosce la fattura.",
+        "fromFile": "Calcola l'impronta da un file",
+        "fromFileHint": "Il file resta sul tuo computer: CasaZen riceve solo la sua impronta.",
+        "hash": "Impronta del file (SHA-256)",
+        "hashHint": "64 caratteri esadecimali: serve a riconoscere il file se qualcuno lo cambia.",
+        "hashInvalid": "L'impronta è di 64 caratteri esadecimali.",
+        "number": "Numero della fattura",
+        "provider": "Sistema che l'ha emessa",
+        "providerHint": "Per esempio il nome del gestionale o del software di fatturazione.",
+        "submit": "Collega la fattura",
+        "title": "Collega una fattura emessa",
+        "url": "Indirizzo del documento",
+        "urlHint": "Dove si trova la fattura emessa (https).",
+        "urlInvalid": "Serve un indirizzo che inizia con https://."
+      },
+      "empty": "Nessuna fattura collegata.",
+      "entered": "Da controllare",
+      "hash": "Impronta del file: {{hash}}…",
+      "hashError": "Non riesco a leggere il file.",
+      "loading": "Cerco le fatture collegate…",
+      "needsApproval": "Potrai collegare una fattura quando il rendiconto sarà approvato.",
+      "notice": "Il rendiconto non è un documento fiscale e CasaZen non emette fatture ai proprietari. Se la tua agenzia deve fatturare, lo fa dal proprio sistema fiscale: qui colleghi la fattura già emessa, per ritrovarla insieme al rendiconto.",
+      "open": "Apri il documento",
+      "removalReason": "Scollegata il {{date}}: {{reason}}",
+      "remove": "Scollega",
+      "removeDialog": {
+        "confirm": "Scollega",
+        "description": "Il collegamento alla fattura n. {{number}} non sarà più attivo, ma resta nella cronologia con il suo motivo.",
+        "hint": "Per esempio: collegata per errore al rendiconto sbagliato.",
+        "reason": "Perché lo scolleghi",
+        "title": "Scollega la fattura"
+      },
+      "removed": "Scollegata",
+      "removedDone": "Collegamento rimosso: resta nella cronologia.",
+      "row": "{{provider}} · n. {{number}} del {{date}}",
+      "title": "Fatture emesse fuori da CasaZen",
+      "verified": "Controllata",
+      "verifiedAt": "Controllata il {{date}}.",
+      "verifiedDone": "Collegamento segnato come controllato.",
+      "verify": "Segna come controllata"
+    },
+    "fields": {
+      "agencyCollected": "incasso dell'agenzia",
+      "amount": "importo",
+      "approvedByName": "nome di chi approva",
+      "attachmentReference": "allegato",
+      "baseCurrency": "valuta di partenza",
+      "components": "voci della base",
+      "currency": "valuta",
+      "date": "data",
+      "description": "motivo",
+      "documentSha256": "impronta del file",
+      "documentUrl": "indirizzo del documento",
+      "externalDate": "data della fattura",
+      "externalId": "identificativo nel sistema",
+      "externalNumber": "numero della fattura",
+      "grossAmount": "importo lordo",
+      "grossBaseComponents": "voci della base lorda",
+      "handoffReference": "chi l'ha trasmesso e come",
+      "jurisdiction": "giurisdizione",
+      "paidOn": "data del pagamento",
+      "parameters": "parametri",
+      "provider": "sistema che l'ha emessa",
+      "qualifyingShortLet": "locazione breve",
+      "quoteCurrency": "valuta di arrivo",
+      "rate": "cambio",
+      "rateDate": "giorno del cambio",
+      "reason": "motivo",
+      "receiptReference": "ricevuta",
+      "reference": "riferimento",
+      "retentionYears": "anni di conservazione",
+      "rounding": "arrotondamento",
+      "ruleCode": "codice della regola",
+      "source": "fonte",
+      "sourceSha256": "impronta della fonte",
+      "sourceUrl": "indirizzo della fonte",
+      "validFrom": "valida dal",
+      "validTo": "valida fino al",
+      "version": "versione",
+      "withholdingRatePercent": "aliquota della ritenuta",
+      "withholdingTaxCode": "codice tributo"
+    },
+    "filing": {
+      "dialog": {
+        "Accepted": {
+          "confirm": "Registra la ricevuta",
+          "description": "Registra la ricevuta con cui l'Agenzia ha accettato il file.",
+          "field": "Numero o riferimento della ricevuta",
+          "hint": "Lo trovi sulla ricevuta dell'Agenzia delle Entrate.",
+          "title": "Registra la ricevuta"
+        },
+        "Rejected": {
+          "confirm": "Segna come rifiutato",
+          "description": "Registra che il file è stato rifiutato, con il motivo.",
+          "field": "Motivo del rifiuto",
+          "hint": "Copia il motivo indicato nella comunicazione di scarto.",
+          "title": "Segna come rifiutato"
+        },
+        "Reviewed": {
+          "confirm": "Segna come verificato",
+          "description": "Confermi di aver controllato i dati di questo file?",
+          "title": "File verificato"
+        },
+        "Submitted": {
+          "confirm": "Registra l'invio",
+          "description": "CasaZen non trasmette niente all'Agenzia delle Entrate: la trasmissione la fai tu o il tuo intermediario. Qui registri che è avvenuta.",
+          "field": "Chi l'ha trasmesso e come",
+          "hint": "Per esempio: trasmesso dal commercialista il 16/11, protocollo 123456.",
+          "title": "Registra l'invio"
+        }
+      },
+      "done": {
+        "Accepted": "Ricevuta registrata.",
+        "Rejected": "Rifiuto registrato.",
+        "Reviewed": "File segnato come verificato.",
+        "Submitted": "Invio registrato."
+      },
+      "handoff": "Riferimento dell'invio: {{reference}}",
+      "label": {
+        "accepted": "Accettato",
+        "acceptedWithoutProof": "Esito da confermare",
+        "calculated": "Calcolata",
+        "generated": "Generato",
+        "rejected": "Rifiutato",
+        "reviewed": "Verificato",
+        "submitted": "Inviato",
+        "submittedWithoutProof": "Invio da confermare"
+      },
+      "missingProof": "Manca il riferimento dell'invio o la ricevuta: finché non ci sono, CasaZen non lo considera spedito né accettato.",
+      "receipt": "Ricevuta: {{reference}}",
+      "rejection": "Motivo del rifiuto: {{reason}}",
+      "step": {
+        "Accepted": "Registra la ricevuta",
+        "Rejected": "Segna come rifiutato",
+        "Reviewed": "Segna come verificato",
+        "Submitted": "Registra l'invio"
+      }
+    },
+    "focus": {
+      "blocked": {
+        "title_one": "{{count}} anomalia da risolvere prima di chiudere",
+        "title_other": "{{count}} anomalie da risolvere prima di chiudere"
+      },
+      "body": "Rendiconti senza anomalie: {{ready}} su {{owners}} ({{percent}}%). Approva, pubblica e chiudi quelli qui sotto.",
+      "check": "Controlla il mese",
+      "closed": {
+        "body": "Tutti i rendiconti del mese sono chiusi: in questo mese non si registra più niente.",
+        "title": "{{period}} è chiuso"
+      },
+      "empty": {
+        "body": "In questo mese non ci sono incassi, addebiti o pagamenti dei proprietari. Se ti aspettavi qualcosa, controlla il mese.",
+        "title": "Nessun rendiconto da preparare in {{period}}"
+      },
+      "kicker": "Chiusura di {{period}}",
+      "ready": {
+        "title": "Tutto in ordine: puoi andare avanti"
+      },
+      "then": "Poi: approvare, pubblicare e chiudere i rendiconti qui sotto.",
+      "who": "Tocca a te"
+    },
+    "fx": {
+      "base": "Valuta di partenza",
+      "baseHint": "Per esempio CHF.",
+      "date": "Giorno del cambio",
+      "description": "CasaZen non cerca i cambi da sola: scrivi quello che usa la tua agenzia, con la sua fonte. Un'unità della prima valuta vale il cambio nella seconda, nel giorno indicato e nei 7 giorni dopo.",
+      "done": "Cambio aggiunto: controlla di nuovo il mese.",
+      "quote": "Valuta di arrivo",
+      "quoteHint": "Per esempio EUR.",
+      "rate": "Cambio",
+      "rateInvalid": "Scrivi un numero maggiore di zero, con al massimo 8 decimali.",
+      "source": "Fonte del cambio",
+      "sourceHint": "Per esempio: Banca d'Italia, cambio del 12/10.",
+      "submit": "Aggiungi il cambio",
+      "title": "Aggiungi un cambio"
+    },
+    "groups": {
+      "approved": {
+        "hint": "Pronti da pubblicare al proprietario.",
+        "title": "Approvati"
+      },
+      "published": {
+        "hint": "Il proprietario li vede. Registra il pagamento e chiudi il mese.",
+        "title": "Pubblicati"
+      },
+      "toPrepare": {
+        "hint": "Non c'è ancora un rendiconto.",
+        "title": "Da preparare"
+      },
+      "toVerify": {
+        "hint": "Bozze da controllare e approvare, o segnalate per anomalie da risolvere.",
+        "title": "Da verificare"
+      }
+    },
+    "issue": {
+      "currencyMixed": {
+        "how": "Le righe del proprietario sono in valute diverse: scegli la valuta del suo pagamento nei dati finanziari.",
+        "title": "Il rendiconto mescola più valute"
+      },
+      "duplicateEntry": {
+        "how": "Controlla di nuovo il mese. Se resta, apri il rendiconto e correggi la riga doppia con una rettifica.",
+        "title": "Una riga è registrata due volte"
+      },
+      "fxMissing": {
+        "how": "Una riga è in una valuta diversa da quella del proprietario e per quel giorno non c'è un cambio: aggiungilo e controlla di nuovo il mese.",
+        "title": "Manca un cambio"
+      },
+      "lateSourceAfterClose": {
+        "how": "Il mese resta chiuso. Registra una rettifica in un mese aperto per sistemare il conto del proprietario.",
+        "title": "È arrivato un movimento dopo la chiusura"
+      },
+      "ledgerStatementImbalance": {
+        "how": "Dopo la versione sono cambiate delle righe: prepara una nuova versione.",
+        "title": "Il rendiconto non corrisponde al registro"
+      },
+      "negativeBalance": {
+        "how": "Si può chiudere solo con un motivo e con il permesso di chi gestisce le finanze dei proprietari.",
+        "title": "Il saldo del proprietario è negativo"
+      },
+      "ownerFiscalPolicyJurisdictionMismatch": {
+        "how": "Scegli, nei dati finanziari, una regola della stessa giurisdizione del profilo.",
+        "title": "La regola fiscale è di un'altra giurisdizione"
+      },
+      "ownerFiscalPolicyMissing": {
+        "how": "Scegli o crea una regola nei dati finanziari e fai registrare l'approvazione del commercialista.",
+        "title": "Manca la regola fiscale del proprietario"
+      },
+      "ownerFiscalPolicyNotApproved": {
+        "how": "Registra l'approvazione del commercialista nei dati finanziari.",
+        "title": "La regola fiscale non è ancora approvata"
+      },
+      "ownerFiscalPolicyNotEffective": {
+        "how": "Scegli una regola valida nel periodo, o creane una nuova.",
+        "title": "La regola fiscale non è in vigore in questo mese"
+      },
+      "ownerFiscalProfileIncomplete": {
+        "how": "Completa il profilo: nome, residenza fiscale, giurisdizione, identificativo, valuta e regola dei ricavi.",
+        "title": "I dati finanziari del proprietario sono incompleti"
+      },
+      "ownerFiscalProfileMissing": {
+        "how": "Inserisci il suo profilo, valido da questo mese.",
+        "title": "Mancano i dati finanziari del proprietario"
+      },
+      "ownershipMissing": {
+        "how": "Indica chi lo possiede nell'attivazione: senza proprietario i suoi incassi non vanno a nessun rendiconto.",
+        "title": "Un immobile non ha proprietari in questo periodo"
+      },
+      "ownershipShareGap": {
+        "how": "Sistema le quote nell'attivazione: gli incassi di quell'immobile restano fuori finché non tornano.",
+        "title": "Le quote di un immobile non fanno 100%"
+      },
+      "periodClosed": {
+        "how": "In questo mese non si registra più niente.",
+        "title": "Mese chiuso"
+      },
+      "periodDirty": {
+        "how": "Prepara una nuova versione: quella attuale non si può più approvare né pubblicare.",
+        "title": "Il registro è cambiato dopo l'ultima versione"
+      },
+      "sourceAmountMissing": {
+        "how": "Apri il pagamento e completa l'importo: senza, la riga non entra nel rendiconto.",
+        "title": "Un incasso non ha l'importo"
+      },
+      "statementMissing": {
+        "how": "Preparalo dalla riga del proprietario.",
+        "title": "Manca il rendiconto"
+      },
+      "statementNotApproved": {
+        "how": "Controllalo e approvalo.",
+        "title": "Il rendiconto non è ancora approvato"
+      },
+      "unknown": {
+        "how": "Il sistema l'ha segnalata ma questa versione dell'app non la conosce: controlla il mese o chiedi assistenza.",
+        "title": "Anomalia {{code}}"
+      },
+      "unpostedSource": {
+        "how": "Premi «Controlla il mese»: le righe mancanti si registrano nel registro.",
+        "title": "Ci sono movimenti non ancora registrati"
+      }
+    },
+    "line": {
+      "credit": "A credito",
+      "debit": "A debito",
+      "document": "Questa riga è collegata a un documento fiscale.",
+      "facts": {
+        "payment": "Pagamento",
+        "posted": "Registrata",
+        "property": "Immobile",
+        "recognition": "Conta per il mese",
+        "rule": "Regola",
+        "service": "Servizio",
+        "source": "Origine",
+        "taxCode": "Codice tributo",
+        "title": "Date e regola"
+      },
+      "formula": {
+        "AgencyCommission": "Commissione dell'agenzia secondo il mandato, sul ricavo del proprietario. Si toglie dal saldo.",
+        "AgencyPayment": "Pagamento del proprietario all'agenzia, per esempio per coprire un saldo negativo. Si somma al saldo.",
+        "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
+        "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
+        "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
+        "OwnerCharge": "Addebito dell'agenzia al proprietario, per la sua quota. Si toglie dal saldo.",
+        "OwnerExpense": "Spesa pagata dall'agenzia per conto del proprietario, per la sua quota. Si toglie dal saldo.",
+        "OwnerPayment": "Bonifico pagato al proprietario: salda quello che gli si doveva. Si toglie dal saldo.",
+        "Withholding": "Ritenuta trattenuta sul pagamento e destinata al fisco. Si toglie dal saldo."
+      },
+      "open": {
+        "attachment": "Apri l'allegato",
+        "attachmentText": "Allegato: {{reference}}",
+        "booking": "Apri la prenotazione",
+        "payment": "Apri il pagamento",
+        "title": "Apri l'origine",
+        "wires": "Apri i bonifici"
+      },
+      "reversal": "Storno",
+      "reverses": "Annulla la riga {{id}}.",
+      "source": {
+        "Booking": "Prenotazione",
+        "Manual": "Rettifica manuale",
+        "OwnerCharge": "Addebito o spesa",
+        "OwnerPayout": "Pagamento al proprietario",
+        "Payment": "Pagamento",
+        "WireBatch": "Bonifico"
+      },
+      "steps": {
+        "fx": "Cambio",
+        "fxSource": "Cambio preso da: {{source}}, del {{date}}",
+        "original": "Importo del proprietario",
+        "rate": "1 {{from}} = {{rate}} {{to}}",
+        "result": "Importo nel rendiconto",
+        "sameCurrency": "nessuno ({{currency}})",
+        "share": "Quota del proprietario",
+        "source": "Importo della fonte",
+        "title": "Come si arriva all'importo"
+      },
+      "type": {
+        "AgencyCommission": "Commissione dell'agenzia",
+        "AgencyPayment": "Pagamento del proprietario",
+        "BookingRevenue": "Incasso di una prenotazione",
+        "ChannelFee": "Commissione del canale",
+        "Correction": "Rettifica",
+        "OwnerCharge": "Addebito dell'agenzia",
+        "OwnerExpense": "Spesa per il proprietario",
+        "OwnerPayment": "Pagamento al proprietario",
+        "Withholding": "Ritenuta"
+      }
+    },
+    "lines": {
+      "amount": "Importo",
+      "caption": "Righe del rendiconto",
+      "date": "Data",
+      "empty": "Nessuna riga in questo rendiconto.",
+      "item": "Voce",
+      "share": "Quota",
+      "showAll": "Mostra tutte ({{count}})",
+      "showLess": "Mostra meno",
+      "summary": "Quota del {{share}}% di {{source}}",
+      "title": "Righe del rendiconto"
+    },
+    "loadError": "Non riusciamo a leggere la chiusura del mese.",
+    "loading": "Leggo il mese…",
+    "owner": {
+      "unnamed": "Proprietario {{id}}"
+    },
+    "payments": {
+      "evidenceLoading": "Leggo la decisione sulla ritenuta…",
+      "noEvidence": "Nessuna decisione sulla ritenuta registrata per questo pagamento.",
+      "payout": "Pagamento del {{date}}: {{amount}}",
+      "title": "Pagamenti e riconciliazione",
+      "withholdingOfAnotherVersion": "Le ritenute di questo rendiconto vengono da pagamenti registrati su un'altra versione del mese."
+    },
+    "payout": {
+      "agencyCollected": "L'agenzia ha incassato l'affitto o è intervenuta nel pagamento?",
+      "blocked": {
+        "policy_jurisdiction_mismatch": "La regola scelta è di un'altra giurisdizione rispetto al profilo.",
+        "policy_missing": "Il profilo non ha una regola fiscale.",
+        "policy_not_approved": "La regola fiscale non è ancora approvata dal commercialista.",
+        "policy_not_effective": "La regola fiscale non è in vigore nel giorno del pagamento.",
+        "profile_incomplete": "Il profilo del proprietario è incompleto per il giorno del pagamento: completalo prima.",
+        "profile_missing": "Non c'è un profilo del proprietario valido nel giorno del pagamento."
+      },
+      "checking": "Controllo la regola fiscale per questo giorno…",
+      "choose": "Scegli…",
+      "component": "Importo della voce «{{component}}»",
+      "confirm": "Registra il pagamento",
+      "description": "Registra il bonifico pagato a {{owner}}. La ritenuta, se la regola approvata la prevede, la decide CasaZen al momento della conferma.",
+      "done": "Pagamento a {{owner}} registrato.",
+      "errors": {
+        "answer": "Scegli una risposta: senza, CasaZen non può decidere.",
+        "components": "Scrivi un importo per ogni voce (anche 0).",
+        "gross": "Scrivi un importo maggiore di zero, con al massimo due decimali.",
+        "paidOn": "Scegli la data del pagamento.",
+        "reference": "Al massimo 100 caratteri."
+      },
+      "facts": "Che cosa serve alla regola",
+      "factsHint": "Sono i fatti che la regola approvata chiede per decidere se c'è una ritenuta. Se non li sai ancora, non registrare il pagamento.",
+      "gross": "Importo lordo pagato ({{currency}})",
+      "left": "Residuo da pagare: {{amount}}",
+      "loading": "Leggo la regola fiscale del proprietario…",
+      "no": "No",
+      "noVersion": "Prima prepara e approva il rendiconto.",
+      "nothingLeft": "Non resta niente da pagare: i pagamenti coprono già il saldo. Registrane un altro solo se sei sicuro.",
+      "openProfile": "Apri i dati del proprietario",
+      "overLeft": "L'importo supera quello che resta da pagare ({{amount}}). Controllalo prima di registrare.",
+      "paidOn": "Data del pagamento",
+      "qualifyingShortLet": "I soggiorni rientrano in una locazione breve secondo la regola?",
+      "recorded": "Pagamento registrato",
+      "recordedBody": "Lordo {{gross}}, ritenuta {{withheld}}, netto {{net}}.",
+      "reference": "Riferimento del bonifico",
+      "rule": "Regola applicata: {{rule}} versione {{version}} ({{jurisdiction}}), approvata da {{approver}} il {{date}}.",
+      "ruleBlocked": "Non si può ancora registrare un pagamento",
+      "ruleError": "Non riusciamo a leggere la regola fiscale del proprietario",
+      "title": "Registra un pagamento",
+      "unresolved": "Manca un'informazione per decidere la ritenuta: {{field}}.",
+      "useLeft": "Usa il residuo",
+      "withholdingNote": "CasaZen non calcola la ritenuta in anticipo: la decide alla conferma, con la regola approvata in vigore il giorno del pagamento, e ne conserva la prova.",
+      "yes": "Sì"
+    },
+    "period": {
+      "backToSuggested": "Torna a {{period}}",
+      "label": "Mese da chiudere",
+      "next": "Mese successivo",
+      "previous": "Mese precedente"
+    },
+    "post": {
+      "done": "Controllo fatto: {{posted}} righe registrate, {{reversed}} stornate, {{unchanged}} invariate."
+    },
+    "readiness": {
+      "label": "Rendiconti senza anomalie",
+      "percent": "{{percent}}% pronti: {{ready}} su {{owners}}",
+      "valueText": "{{ready}} rendiconti su {{owners}} senza anomalie"
+    },
+    "reconciliation": {
+      "difference": "Differenza",
+      "due": "Dovuto (saldo approvato)",
+      "gross": "lordo {{amount}}",
+      "loading": "Leggo i pagamenti…",
+      "negative": "Il saldo è negativo: per chiudere serve un motivo.",
+      "net": "netto {{amount}}",
+      "noPayouts": "Nessun pagamento registrato per questo mese.",
+      "notReconciled": "Il saldo non torna con i pagamenti: per chiudere serve un motivo.",
+      "paid": "Pagato",
+      "payouts": "Pagamenti del mese",
+      "reconciled": "Il saldo torna con i pagamenti: il mese si può chiudere.",
+      "reversed": "Stornato",
+      "title": "Riconciliazione dei pagamenti",
+      "withheld": "ritenuta {{amount}}",
+      "wires": "Senza pagamenti registrati qui, alla chiusura CasaZen conta i bonifici segnati come pagati per questo mese: i numeri definitivi li dà la chiusura."
+    },
+    "row": {
+      "blocking_one": "{{count}} anomalia",
+      "blocking_other": "{{count}} anomalie",
+      "closed": "Chiuso",
+      "loading": "Leggo il rendiconto…",
+      "noStatement": "Nessun rendiconto",
+      "paymentsError": "Non riesco a leggere i pagamenti.",
+      "profile": "Dati finanziari",
+      "stale": "Da aggiornare",
+      "state": "Versione {{version}} · {{status}} · saldo {{balance}}",
+      "versionsError": "Non riesco a leggere le versioni.",
+      "warnings_one": "{{count}} avviso",
+      "warnings_other": "{{count}} avvisi"
+    },
+    "rows": {
+      "title": "Rendiconti del mese"
+    },
+    "statement": {
+      "backToClose": "Torna alla chiusura mensile",
+      "closed": "Mese chiuso",
+      "closing": "Saldo di chiusura",
+      "costs": "Commissioni e costi",
+      "description": "Versione {{version}} · {{status}}",
+      "downloadPublished": "Scarica il file pubblicato",
+      "figures": "In breve",
+      "fileBody": "Pubblicato il {{date}}. Impronta del file: {{hash}}…",
+      "fileTitle": "File pubblicato",
+      "flaggedTitle": "Anomalie che hanno segnalato questa versione",
+      "focusBody": "Saldo di chiusura {{balance}}. Versione tagliata il {{cutoff}}.",
+      "focusTitle": "Versione {{version}} · {{status}}",
+      "formula": "Saldo di chiusura = saldo di apertura {{opening}} + incassi {{revenue}} + commissioni e costi {{costs}} + pagamenti e ritenute {{paid}} + rettifiche {{corrections}} = {{closing}}.",
+      "kicker": "Rendiconto di {{period}}",
+      "loadError": "Non riusciamo a leggere il rendiconto.",
+      "loading": "Leggo il rendiconto…",
+      "nonFiscal": "Questo rendiconto non è un documento fiscale: è il riepilogo di quello che l'agenzia deve al proprietario. Se serve una fattura, la emette il sistema fiscale della tua agenzia e qui la colleghi.",
+      "notFound": "Questo rendiconto non c'è",
+      "notFoundBody": "Non esiste, o è di un'altra organizzazione. Torna alla chiusura mensile.",
+      "openLatest": "Apri la versione più recente",
+      "opening": "Saldo di apertura {{amount}}",
+      "ownerProfile": "Dati finanziari del proprietario",
+      "paidAndWithheld": "Pagamenti e ritenute",
+      "revenue": "Incassi del proprietario",
+      "superseded": "Questa versione è stata sostituita da una più recente. Resta qui com'era, con il suo file.",
+      "title": "Rendiconto di {{owner}} · {{period}}",
+      "titleGeneric": "Rendiconto"
+    },
+    "step": {
+      "approve": {
+        "confirm": "Approva",
+        "consequence1": "Dopo l'approvazione il rendiconto non si modifica: per cambiare qualcosa serve una nuova versione.",
+        "consequence2": "Non va ancora al proprietario: lo fa la pubblicazione.",
+        "description": "Il rendiconto di {{owner}} per {{period}} è controllato e può essere pubblicato.",
+        "done": "Versione {{version}} di {{owner}} approvata.",
+        "title": "Approva la versione {{version}}"
+      },
+      "publish": {
+        "confirm": "Pubblica",
+        "consequence1": "Il file e la sua impronta si conservano e non cambiano più.",
+        "consequence2": "Per cambiare qualcosa serve una nuova versione: questa resta com'è, consultabile.",
+        "description": "Il rendiconto di {{owner}} per {{period}} diventa quello che il proprietario vede.",
+        "done": "Versione {{version}} di {{owner}} pubblicata.",
+        "title": "Pubblica la versione {{version}}"
+      },
+      "regenerate": {
+        "confirm": "Fai una nuova versione",
+        "consequence1": "La versione {{version}} resta consultabile come sostituita, con il suo file originale.",
+        "consequence2": "La nuova versione parte come bozza: va approvata e pubblicata di nuovo.",
+        "description": "Il registro di {{owner}} è cambiato dopo la versione {{version}} di {{period}}: ne serve una nuova.",
+        "done": "Nuova versione di {{owner}} preparata.",
+        "title": "Nuova versione dopo la {{version}}"
+      }
+    },
+    "tax": {
+      "amount": "Importo",
+      "annualGenerated": "Dati annuali generati.",
+      "annualNone": "I dati annuali di quest'anno non sono ancora stati generati.",
+      "annualRegenerated": "Dati annuali rigenerati.",
+      "annualTitle": "Dati annuali per la Certificazione Unica {{year}}",
+      "applicable": "Ritenuta applicabile",
+      "base": "Base lorda",
+      "calculated": "Ritenute calcolate: {{amount}} da versare con F24. Il file F24 non è ancora stato generato.",
+      "downloadData": "Scarica i dati",
+      "downloadPdf": "Scarica il PDF",
+      "dueDate": "Scadenza",
+      "evidenceCount": "Pagamenti",
+      "evidenceHash": "Impronta delle prove: {{hash}}…",
+      "f24Generated": "F24 generato.",
+      "f24Regenerated": "F24 rigenerato dalle ritenute.",
+      "f24Title": "F24 di {{period}}",
+      "generateAnnual": "Genera i dati annuali",
+      "generateF24": "Genera l'F24",
+      "generatedAt": "Generati il",
+      "loading": "Leggo le ritenute…",
+      "mismatch": "L'F24 ({{f24}}) non corrisponde alle ritenute del mese ({{obligations}}): rigeneralo prima di andare avanti.",
+      "none": "Nessuna ritenuta da versare per questo mese: senza ritenuta non c'è un F24.",
+      "notApplicable": "Nessuna ritenuta",
+      "note": "CasaZen prepara i dati ma non li trasmette all'Agenzia delle Entrate: la trasmissione la fai tu o il tuo intermediario, e qui registri il riferimento e la ricevuta.",
+      "overdue": "Scaduto, da pagare",
+      "paidAt": "Pagato il {{date}}",
+      "paidOn": "Pagato il {{date}}",
+      "payment": "Pagamento",
+      "rate": "Aliquota",
+      "reason": {
+        "applicable": "Ritenuta applicabile secondo la regola approvata.",
+        "noCollectionOrIntervention": "L'agenzia non ha incassato né è intervenuta nel pagamento: la regola non prevede ritenuta.",
+        "notQualifyingShortLet": "I soggiorni non rientrano in una locazione breve secondo la regola: nessuna ritenuta.",
+        "other": "Motivo: {{code}}",
+        "ruleWithoutWithholding": "La regola approvata non prevede ritenuta."
+      },
+      "regenerate": "Rigenera dai dati",
+      "reversal": "Storno",
+      "rule": "Regola {{rule}} versione {{version}} ({{jurisdiction}})",
+      "ruleVersion": "Regola usata: {{version}}",
+      "taxCode": "Codice tributo",
+      "title": "Ritenute e invii fiscali",
+      "toPay": "Da pagare",
+      "withheld": "Ritenuto",
+      "yearAnnualMatch": "Nel {{year}} i dati annuali ({{amount}}) coincidono con le ritenute.",
+      "yearAnnualMismatch": "I dati annuali del {{year}} ({{annual}}) non coincidono con le ritenute dell'anno ({{obligations}}).",
+      "yearEmpty": "Nel {{year}} non ci sono ritenute: non c'è niente da riconciliare.",
+      "yearF24Match": "Nel {{year}} le ritenute ({{amount}}) coincidono con gli F24.",
+      "yearF24Mismatch_one": "Nel {{year}} l'F24 di {{count}} mese non coincide con le ritenute:",
+      "yearF24Mismatch_other": "Nel {{year}} gli F24 di {{count}} mesi non coincidono con le ritenute:",
+      "yearF24MonthLine": "{{month}}: ritenute {{obligations}}, F24 {{f24}}",
+      "yearF24NotGenerated": "{{month}}: ritenute {{obligations}}, F24 non ancora generato",
+      "yearReconciled": "Nel {{year}} le ritenute ({{amount}}) coincidono con gli F24 e con i dati annuali."
+    },
+    "title": "Chiusura mensile",
+    "version": {
+      "status": {
+        "Approved": "Approvato",
+        "Draft": "Bozza",
+        "Flagged": "Segnalato",
+        "Published": "Pubblicato",
+        "Superseded": "Sostituito"
+      }
+    }
+  },
   "ownerPortal": {
     "dashboard": {
       "title": "Portale Proprietari",
@@ -13189,6 +13913,259 @@
       "error": "Errore nel caricamento",
       "errorMessage": "Impossibile caricare i rendiconti. Riprova più tardi."
     }
+  },
+  "ownerProfile": {
+    "approveDialog": {
+      "confirm": "Registra l'approvazione",
+      "consequence1": "L'approvazione resta registrata con il nome e la data.",
+      "consequence2": "Una regola approvata non si cambia più: per cambiare un valore serve una nuova versione della regola.",
+      "description": "Registri che il commercialista ha approvato questa regola. CasaZen non approva le regole: prende nota di chi lo ha fatto.",
+      "done": "Approvazione registrata.",
+      "name": "Nome di chi ha approvato",
+      "nameHint": "Il commercialista o la persona qualificata che ha approvato la regola.",
+      "title": "Approvazione della regola {{rule}} versione {{version}}"
+    },
+    "description": "Chi è il proprietario per rendiconti, pagamenti e ritenute, come viene pagato e quale regola fiscale vale. I dati sensibili sono nascosti.",
+    "dialog": {
+      "choose": "Scegli…",
+      "countryHint": "Due lettere, per esempio IT o CH.",
+      "countryInvalid": "Servono due lettere.",
+      "currencyHint": "Tre lettere, per esempio EUR o CHF.",
+      "currencyInvalid": "Servono tre lettere.",
+      "description": "La nuova versione vale dal giorno indicato: quella in vigore finisce il giorno prima. Quello che è già registrato non cambia.",
+      "done": "Dati finanziari salvati.",
+      "identity": "Chi è",
+      "jurisdictionHint": "Per esempio IT, CH o CH-TI.",
+      "jurisdictionInvalid": "Due lettere, e se serve un trattino e il codice (CH-TI).",
+      "mandate": "Mandato",
+      "mandateInvalid": "La fine non può venire prima dell'inizio.",
+      "model": "Come si contabilizza",
+      "noPolicy": "Nessuna regola scelta",
+      "payment": "Pagamento",
+      "policyOption": "{{rule}} versione {{version}} · {{jurisdiction}} · {{state}}",
+      "rule": "Regola fiscale",
+      "ruleHint": "La nazione non sceglie la regola: la scegli tu, tra quelle approvate dal commercialista. Il sistema blocca una regola non approvata, non in vigore o di un'altra giurisdizione.",
+      "submit": "Salva la nuova versione",
+      "title": "Nuova versione dei dati finanziari",
+      "validFrom": "Vale dal",
+      "validFromFirst": "Il primo profilo di questo proprietario. I dati valgono dal giorno scelto in poi: i mesi prima restano bloccati, e un profilo non si può spostare indietro dopo. Fallo partire dal primo mese che devi ancora chiudere.",
+      "validFromHint": "Il primo giorno in cui i nuovi dati valgono.",
+      "validFromTooEarly": "Un profilo vale già dal {{date}}: scegli un giorno successivo."
+    },
+    "facts": {
+      "empty": "Non indicato",
+      "hide": "Nascondi i dati",
+      "reveal": "Mostra i dati per intero",
+      "rule": "regola {{rule}} versione {{version}}",
+      "title": "Profilo in vigore",
+      "validBetween": "Valido dal {{from}} al {{to}}",
+      "validFrom": "Valido dal {{from}}"
+    },
+    "fields": {
+      "accountingPolicyId": "Regola fiscale",
+      "bankAccountReference": "Conto di pagamento (IBAN)",
+      "entityKind": "Tipo di soggetto",
+      "expenseCommissionModel": "Spese e commissioni",
+      "fiscalCode": "Codice fiscale",
+      "foreignTaxId": "Identificativo fiscale estero",
+      "legalAddress": "Indirizzo legale",
+      "legalName": "Nome legale",
+      "mandateFrom": "Mandato dal",
+      "mandateRole": "Ruolo nel mandato",
+      "mandateTo": "Mandato fino al",
+      "revenueRecognitionRule": "Quando contano gli incassi",
+      "settlementCurrency": "Valuta di pagamento",
+      "taxJurisdiction": "Giurisdizione fiscale",
+      "taxResidenceCountry": "Residenza fiscale",
+      "vatNumber": "Partita IVA",
+      "workingCapitalRule": "Fondo di cassa"
+    },
+    "focus": {
+      "approve": "Registra l'approvazione",
+      "back": "Torna alla chiusura mensile",
+      "blocked": {
+        "policy_jurisdiction_mismatch": {
+          "body": "La regola scelta è di un'altra giurisdizione rispetto al profilo: scegline una della stessa.",
+          "title": "La regola fiscale non è quella giusta"
+        },
+        "policy_missing": {
+          "body": "Il profilo non ha una regola fiscale. Scegline una già approvata o creane una nuova con i valori del commercialista.",
+          "title": "Manca la regola fiscale"
+        },
+        "policy_not_approved": {
+          "body": "Finché il commercialista non l'ha approvata, la regola non si può usare per rendiconti e pagamenti.",
+          "title": "La regola fiscale aspetta l'approvazione"
+        },
+        "policy_not_effective": {
+          "body": "La regola scelta non vale oggi. Scegline una in vigore o creane una nuova.",
+          "title": "La regola fiscale non è in vigore"
+        },
+        "profile_incomplete": {
+          "body": "Mancano: {{fields}}.",
+          "title": "I dati finanziari sono incompleti"
+        },
+        "profile_missing": {
+          "body": "Senza profilo non si possono preparare rendiconti né registrare pagamenti per questo proprietario.",
+          "title": "Mancano i dati finanziari del proprietario"
+        }
+      },
+      "complete": "Completa i dati",
+      "kicker": "Oggi",
+      "newPolicy": "Crea una regola",
+      "ready": {
+        "body": "Vale la regola {{rule}} versione {{version}} ({{jurisdiction}}), approvata da {{approver}}.",
+        "title": "I dati sono pronti dal {{from}}: da quel giorno in poi si possono preparare rendiconti e pagamenti"
+      },
+      "who": "Tocca a te"
+    },
+    "history": {
+      "current": "In vigore",
+      "noRule": "Nessuna regola",
+      "title": "Versioni precedenti"
+    },
+    "loadError": "Non riusciamo a leggere i dati finanziari.",
+    "loading": "Leggo i dati finanziari…",
+    "maskedNotice": "Per sicurezza vedi solo le ultime cifre di identificativi, indirizzo e conto. Li vede per intero, e li può cambiare, solo chi gestisce le finanze dei proprietari.",
+    "monthNotCovered": {
+      "body": "I dati valgono dal {{from}}, quindi il rendiconto di quel mese resta bloccato: un nuovo profilo non può partire da un giorno prima di quello in vigore. Chiedi aiuto per coprire quel mese.",
+      "title": "I dati non coprono {{period}}"
+    },
+    "newVersion": "Nuova versione dei dati",
+    "noProfile": "Questo proprietario non ha ancora dati finanziari.",
+    "notFound": "Questo proprietario non c'è",
+    "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Torna alla chiusura mensile.",
+    "onboarding": {
+      "complete": "Nell'attivazione non risulta niente da completare per questo proprietario.",
+      "completeAction": "Completa nell'attivazione",
+      "title": "Cosa manca nell'attivazione",
+      "unavailable": "L'attivazione dei proprietari non è disponibile adesso: quote e mandato si completano lì quando lo sarà."
+    },
+    "options": {
+      "entityKind": {
+        "LegalEntity": "Società o ente",
+        "NaturalPerson": "Persona fisica"
+      },
+      "expenseCommissionModel": {
+        "gross": "Al lordo",
+        "net_of_commission": "Al netto della commissione"
+      },
+      "mandateRole": {
+        "landlord": "Locatore",
+        "owner": "Proprietario",
+        "usufructuary": "Usufruttuario"
+      },
+      "revenueRecognitionRule": {
+        "cash": "Quando incassa",
+        "stay": "Alla fine del soggiorno"
+      },
+      "workingCapitalRule": {
+        "none": "Nessun fondo",
+        "reserve": "Fondo di riserva"
+      }
+    },
+    "ownership": {
+      "excess": "Dal {{from}} {{until}} le quote fanno il {{percent}}%: superano il 100%.",
+      "gap": "Dal {{from}} {{until}} nessuno possiede l'immobile.",
+      "onward": "in poi",
+      "ownerOverlap": "Dal {{from}} {{until}} questo proprietario compare due volte.",
+      "shortfall": "Dal {{from}} {{until}} le quote fanno il {{percent}}%: manca il resto.",
+      "title": "Quote per periodo",
+      "until": "al {{date}}"
+    },
+    "policy": {
+      "approve": "Registra l'approvazione",
+      "approved": "Approvata",
+      "approvedBy": "Approvata da {{name}} il {{date}}.",
+      "approvedShort": "approvata",
+      "available": "Regole fiscali dell'agenzia: {{count}}",
+      "components": "Voci della base",
+      "hash": "impronta {{hash}}…",
+      "name": "{{rule}} versione {{version}} · {{jurisdiction}}",
+      "new": "Nuova regola",
+      "no": "No",
+      "none": "Il profilo non ha una regola fiscale.",
+      "pending": "Da approvare",
+      "pendingShort": "da approvare",
+      "rate": "Aliquota",
+      "retention": "Conservazione",
+      "rounding": "Arrotondamento",
+      "roundingValue": {
+        "half_even": "Al pari più vicino",
+        "half_up": "Per eccesso da metà"
+      },
+      "source": "Fonte ufficiale",
+      "taxCode": "Codice tributo",
+      "title": "Regola fiscale e approvazione",
+      "waiting": "Aspetta l'approvazione del commercialista.",
+      "withholding": "Ritenuta al pagamento",
+      "years_one": "{{count}} anno",
+      "years_other": "{{count}} anni",
+      "yes": "Sì"
+    },
+    "policyDialog": {
+      "components": "Voci della base lorda",
+      "componentsHint": "Codici separati da virgola, per esempio: rent, cleaning.",
+      "description": "Una regola dice se c'è una ritenuta al pagamento al proprietario e come si calcola. Resta in bozza finché il commercialista non la approva.",
+      "done": "Regola creata: ora va approvata.",
+      "halfEven": "Al pari più vicino (half even)",
+      "halfUp": "Per eccesso da metà (half up)",
+      "jurisdiction": "Giurisdizione",
+      "notice": "CasaZen non propone aliquote, codici tributo o giurisdizioni: scrivi quelli che ti dà il commercialista, con la fonte ufficiale.",
+      "parameters": "Parametri",
+      "rate": "Aliquota della ritenuta (%)",
+      "rateHint": "Il valore indicato dalla regola approvata.",
+      "rateInvalid": "Scrivi un numero tra 0 e 100.",
+      "requiresCollection": "Serve che l'agenzia abbia incassato o sia intervenuta nel pagamento",
+      "requiresShortLet": "Serve una locazione breve",
+      "retention": "Anni di conservazione",
+      "retentionHint": "Quanto si conservano le prove (da 1 a 50).",
+      "rounding": "Arrotondamento",
+      "ruleCode": "Codice della regola",
+      "source": "Fonte ufficiale",
+      "sourceSha": "Impronta della fonte (SHA-256)",
+      "sourceShaHint": "64 caratteri esadecimali del documento ufficiale.",
+      "sourceShaInvalid": "L'impronta è di 64 caratteri esadecimali.",
+      "sourceUrl": "Indirizzo della fonte",
+      "sourceUrlHint": "La pagina o il documento ufficiale (https).",
+      "sourceUrlInvalid": "Serve un indirizzo che inizia con https://.",
+      "submit": "Crea la regola",
+      "taxCode": "Codice tributo",
+      "taxCodeHint": "Quello indicato dalla regola approvata.",
+      "title": "Nuova regola fiscale",
+      "validFrom": "Vale dal",
+      "validTo": "Vale fino al",
+      "version": "Versione",
+      "withholdingApplies": "La regola prevede una ritenuta al pagamento"
+    },
+    "reason": {
+      "billingAddressIncomplete": "L'indirizzo di fatturazione è incompleto.",
+      "bicInvalid": "Il BIC non è valido.",
+      "bicMissing": "Manca il BIC (serve per un IBAN fuori dall'area SEPA).",
+      "emailInvalid": "L'indirizzo e-mail non è valido.",
+      "emailMissing": "Manca l'indirizzo e-mail.",
+      "entityKindMissing": "Manca il tipo di soggetto.",
+      "fiscalCodeInvalid": "Il codice fiscale non è valido.",
+      "fiscalIdMissing": "Manca un identificativo fiscale.",
+      "ibanInvalid": "L'IBAN non è valido.",
+      "ibanMissing": "Manca l'IBAN.",
+      "legalNameMissing": "Manca il nome legale.",
+      "mandateDocumentMissing": "Manca il documento firmato del mandato.",
+      "mandateMissing": "Manca il mandato dell'agenzia.",
+      "mandateOutsideOwnership": "Il mandato esce dal periodo di proprietà.",
+      "other": "Da completare: {{code}}",
+      "ownerOverlap": "Lo stesso proprietario compare due volte nello stesso periodo.",
+      "ownershipMissing": "Non risulta nessuna proprietà.",
+      "ownershipNotReady": "Le quote di proprietà non sono a posto.",
+      "registryNotReady": "L'anagrafica non è completa.",
+      "settlementCurrencyMissing": "Manca la valuta di pagamento.",
+      "sharesExcess": "Le quote di un immobile superano il 100%.",
+      "sharesGap": "Per un periodo nessuno possiede l'immobile.",
+      "sharesShortfall": "Le quote di un immobile non arrivano al 100%.",
+      "taxResidenceMissing": "Manca la residenza fiscale.",
+      "vatNumberInvalid": "La partita IVA non è valida."
+    },
+    "title": "Dati finanziari di {{owner}}",
+    "titleGeneric": "Dati finanziari del proprietario"
   },
   "pageHeader": {
     "moreActions": "Altre azioni",
