@@ -122,11 +122,16 @@ export interface MirrorWatchInput {
   retrying: boolean;
 }
 
-/** Whether the result keeps asking for the booking: while the answer is still to come (being sent, a mirror expected and not written yet, a retry on its way). */
+/**
+ * Whether the result keeps asking for the booking: while the answer is still to come (being sent, a retry on its way, or no row yet). With no row only a property
+ * that is known not to be connected stops asking: when that is not known (`null`: a draft taken up at the summary, a stay whose availability was not read) the row
+ * may still come, because the push writes it a moment after the booking, and a read made before it would never show a refusal of the channel manager. Nothing is
+ * said while no row comes (`mirrorLineOf`), and it stops asking when the time the result waits is over.
+ */
 export function shouldWatchMirror({ sync, expected, watchOver, retrying }: MirrorWatchInput): boolean {
   if (watchOver) return false;
   if (sync) return sync.state === 'Pending' || (retrying && (sync.state === 'Failed' || sync.state === 'Conflict'));
-  return expected === true;
+  return expected !== false;
 }
 
 /** How the guest pays, as the result tells it: a link that was sent, a link that could not be made, the two ways the host records by hand, or a portal that collects. */

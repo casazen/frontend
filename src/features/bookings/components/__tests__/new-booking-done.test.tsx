@@ -135,8 +135,8 @@ describe('the result of the new booking, one line for each part', () => {
     expect(screen.queryByTestId('booking-done-channel-manager-retry')).not.toBeInTheDocument();
   });
 
-  it('NewBookingDone_PropertyOfWhichNothingIsKnown_ShowsTheLineOnlyIfTheBookingHasAMirror', async () => {
-    // A draft taken up at the summary: the wizard never checked the availability of this stay, so it asks the booking and says only what is there.
+  it('NewBookingDone_PropertyOfWhichNothingIsKnown_SaysNothingWhileTheBookingHasNoMirror', async () => {
+    // A draft taken up at the summary: the wizard never checked the availability of this stay, so it asks the booking (and goes on asking, see below) and says only what is there.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail(null));
     renderDone({ channelManager: null });
 
@@ -189,6 +189,44 @@ describe('the line of the channel manager changes by itself', () => {
     // Settled: it stops asking.
     await advance(30_000);
     expect(bookingsApi.getById).toHaveBeenCalledTimes(2);
+  });
+
+  it('NewBookingDone_PropertyOfWhichNothingIsKnown_ShowsTheLineWhenTheRowComesAfterTheFirstRead', async () => {
+    // The push writes its row a moment after the booking, so the first read finds none; nothing says the property is connected (a draft taken up at the summary).
+    // A failure of the channel manager that comes after it must still be shown: the result keeps asking while the time it waits is not over.
+    vi.mocked(bookingsApi.getById)
+      .mockResolvedValueOnce(detail(null))
+      .mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }));
+    renderDone({ channelManager: null });
+
+    await advance(0);
+    expect(queryLine()).not.toBeInTheDocument();
+    expect(bookingsApi.getById).toHaveBeenCalledTimes(1);
+
+    await advance(3_000);
+    expect(line()).toHaveAttribute('data-state', 'failed');
+    expect(screen.getByTestId('booking-done-channel-manager-retry')).toBeInTheDocument();
+  });
+
+  it('NewBookingDone_PropertyOfWhichNothingIsKnownAndNoRowEver_SaysNothingAndStopsAskingWhenTheTimeIsOver', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail(null));
+    renderDone({ channelManager: null });
+
+    await advance(95_000);
+    expect(queryLine()).not.toBeInTheDocument();
+    const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
+    expect(reads).toBeGreaterThan(1);
+
+    await advance(30_000);
+    expect(queryLine()).not.toBeInTheDocument();
+    expect(bookingsApi.getById).toHaveBeenCalledTimes(reads);
+  });
+
+  it('NewBookingDone_PropertyNotConnected_NeverAsksTheBooking', async () => {
+    renderDone({ channelManager: false });
+
+    await advance(30_000);
+    expect(bookingsApi.getById).not.toHaveBeenCalled();
   });
 
   it('NewBookingDone_NoAnswerInTheTimeItWaits_IsNotACompletedStateAndOffersToCheckAgain', async () => {

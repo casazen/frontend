@@ -134,7 +134,19 @@ describe('when the result keeps asking', () => {
 
   it('shouldWatchMirror_PropertyNotConnected_NeverAsks', () => {
     expect(shouldWatchMirror({ ...watch, expected: false, sync: null })).toBe(false);
-    expect(shouldWatchMirror({ ...watch, expected: null, sync: null })).toBe(false);
+  });
+
+  it('shouldWatchMirror_PropertyOfWhichNothingIsKnownAndNoRowYet_KeepsAskingWhileTheTimeIsNotOver', () => {
+    // The push writes the row a moment after the booking: a read made before it finds none, which is no answer for a property not known to be unconnected.
+    expect(shouldWatchMirror({ ...watch, expected: null, sync: null })).toBe(true);
+    expect(shouldWatchMirror({ ...watch, expected: null, sync: undefined })).toBe(true);
+    expect(shouldWatchMirror({ ...watch, expected: null, sync: null, watchOver: true })).toBe(false);
+  });
+
+  it('mirrorLineOf_PropertyOfWhichNothingIsKnownAndNoRowYet_HasNoLineWhileItAsks', () => {
+    // Asking is not saying: with no row and nothing known there is no line to show, as before.
+    expect(mirrorLineOf({ ...open, expected: null, sync: null })).toBeNull();
+    expect(mirrorLineOf({ ...open, expected: null, sync: null, watchOver: true })).toBeNull();
   });
 
   it.each(['Synced', 'Failed', 'Conflict', 'NotAllowedByChannel'] as const)('shouldWatchMirror_State_%s_IsSettledAndStopsAsking', (state) => {
