@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
+import { ownerReadStateOf } from '@/features/owner-portal/owner-portal-model';
 import type {
   InviteOwnerContactBody,
   OwnerInboxPreferences,
@@ -167,6 +168,28 @@ export function useOwnerContacts() {
     queryFn: () => ownerPortalApi.listContacts(),
     ...PERSONAL,
   });
+}
+
+/**
+ * Whether the person may manage the contacts, found by asking for them once: the list is read and thrown away (the answer kept is only «yes»), so that the names and the addresses of
+ * the contacts are in memory only on the page that shows them. Only an owner manages contacts (403 `owner_contact_owner_only` for a contact it let in); a part of the portal that is
+ * not open (404) or a refusal of any other kind shows no entry either. A read that failed for a reason that passes (no answer, a 5xx) keeps the entry, and the page says what happened
+ * and lets the person try again.
+ */
+export function useCanManageOwnerContacts(): boolean {
+  const query = useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'contacts-access'],
+    queryFn: async () => {
+      await ownerPortalApi.listContacts();
+      return true;
+    },
+    gcTime: 0,
+    staleTime: 60_000,
+    refetchOnMount: 'always',
+    retry: false,
+  });
+  if (query.isSuccess) return true;
+  return query.isError && ownerReadStateOf(query.error) === 'failed';
 }
 
 function invalidateContacts(client: QueryClient) {

@@ -1,16 +1,14 @@
 import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { LogOut } from 'lucide-react';
 import { SkipLink } from '@/components/layout/skip-link';
 import { Button } from '@/components/ui/button';
-import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { useSeoMeta } from '@/lib/seo-meta';
-import { clearOwnerPortalCache, OWNER_PORTAL_KEY } from '@/queries/ownerPortal';
-import { ownerReadStateOf } from './owner-portal-model';
+import { clearOwnerPortalCache, useCanManageOwnerContacts } from '@/queries/ownerPortal';
 import { ownerPortalPaths } from './paths';
 
 const MAIN_ID = 'owner-portal-main';
@@ -23,28 +21,6 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   );
 
 /**
- * Whether the person may manage the contacts, found by asking for them once: the list is read and thrown away (the answer kept is only «yes»), so that the names
- * and the addresses of the contacts are in memory only on the page that shows them. Only an owner manages contacts (403 `owner_contact_owner_only` for a contact it
- * let in); a part of the portal that is not open (404) or a refusal of any other kind shows no entry either. A read that failed for a reason that passes (no answer,
- * a 5xx) keeps the entry, and the page says what happened and lets the person try again.
- */
-function useCanManageContacts(): boolean {
-  const query = useQuery({
-    queryKey: [OWNER_PORTAL_KEY, 'contacts-access'],
-    queryFn: async () => {
-      await ownerPortalApi.listContacts();
-      return true;
-    },
-    gcTime: 0,
-    staleTime: 60_000,
-    refetchOnMount: 'always',
-    retry: false,
-  });
-  if (query.isSuccess) return true;
-  return query.isError && ownerReadStateOf(query.error) === 'failed';
-}
-
-/**
  * The shell of the owner portal (E07/F07/US01/T03, NF-111, ADR-011): one header with the places of the portal, then the page. It is not the console of an agency (no
  * organisation menu, no host area) and it has nothing fixed to the screen that could sit on a button on a phone: the navigation is part of the page and wraps.
  * When the person leaves the portal, or signs out, everything the portal read is dropped from the cache.
@@ -53,7 +29,7 @@ export function OwnerPortalShell() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { logout } = useAuth();
-  const canManageContacts = useCanManageContacts();
+  const canManageContacts = useCanManageOwnerContacts();
   useSeoMeta({ title: t('ownerPortal.shell.pageTitle'), noindex: true });
 
   useEffect(() => () => clearOwnerPortalCache(queryClient), [queryClient]);

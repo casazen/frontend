@@ -63,8 +63,8 @@ export function OwnerCalendar() {
 
   if (properties.isLoading || stays.isLoading) return <PortalLoading label={t('ownerPortal.calendar.loading')} />;
 
-  // Neither list could be read: say so (the calendar of nobody is not «no properties»).
-  if (properties.isError && choices.length === 0) {
+  // The list of the properties could not be read: say so, whatever an earlier read left in memory (a refusal is a refusal, and the calendar of nobody is not «no properties»).
+  if (properties.isError) {
     return (
       <PortalReadProblem
         error={properties.error}
