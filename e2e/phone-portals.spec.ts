@@ -312,6 +312,7 @@ test.describe('Phone portals: tenant and landlord', () => {
       await expect(page.getByTestId('long-rent-payments')).toBeVisible();
       await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+      await page.getByText('Scadenze di tutti gli appartamenti', { exact: true }).click();
       const manualPaid = page.getByRole('button', { name: 'Segna come pagato', exact: true });
       await expect(manualPaid).toBeVisible();
       const linkBox = await manualPaid.boundingBox();
