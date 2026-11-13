@@ -149,8 +149,9 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
         const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
         // The tourist tax rate leads to the page of the property, which is the page this card is on (above every tab) and has no field for it yet: a
         // button that opens the page you are on does nothing, so there is none. The block still says what is wrong and why, and leads back to the
-        // list; it is not the host's turn here until the page where it is done exists. The police send opens the section of its connection health on
-        // the same page (`?section=connection-health`, E03/F03/US02/T01): that is not the address the person is on until they have opened it.
+        // list; it is not the host's turn here until the page where it is done exists. The police send opens the wizard that activates it (E03/F01/US02/T02),
+        // another page; for who may only read the property it opens the section of its connection health on this same page (`?section=connection-health`,
+        // E03/F03/US02/T01), which is not the address the person is on until they have opened it.
         const opens = route !== null && !isCurrentAddress(route, location);
         const action: CalmAction =
           route && opens
