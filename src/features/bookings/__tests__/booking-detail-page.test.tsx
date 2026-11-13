@@ -120,8 +120,10 @@ function axiosError(status: number, data: unknown): AxiosError {
 /** Stay dates (ISO, midnight UTC) relative to today in Europe/Rome. */
 const stayDay = (days: number) => `${addDays(todayInRome(), days)}T00:00:00Z`;
 
-function renderPage(url = `/app/short-rent/bookings/${BOOKING_ID}`) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function renderPage(
+  url = `/app/short-rent/bookings/${BOOKING_ID}`,
+  client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }),
+) {
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
@@ -230,6 +232,84 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-edit-locked')).toHaveAttribute('data-reason', 'SourceLocked');
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersEditWhenTheApiSaysItMayBeChanged', async () => {
+    // E08/F02/US01: a confirmed booking of the booking site is changed, with its money settled: `changeOptions` and `canEdit` say so, and the page follows them.
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ source: 'Direct', changeOptions: { canEdit: true, canCancel: true }, canEdit: { allowed: true, reason: null } }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('edit-booking', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByTestId('open-cancel-booking')).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-edit-locked')).not.toBeInTheDocument();
+  });
+
+  describe('a booking of a channel (E08/F03/US02, NF-75, NF-76)', () => {
+    const closedChannel: NonNullable<Booking['changeOptions']> = {
+      canEdit: false,
+      canCancel: false,
+      reasonCode: 'ota_booking_change_not_allowed',
+      guidanceKey: 'OtaChannelModifyGuidanceAirbnb',
+      channel: 'Airbnb',
+      cancelReasonCode: 'ota_booking_cancel_not_allowed',
+      cancelGuidanceKey: 'OtaChannelCancelGuidanceAirbnb',
+    };
+
+    it('BookingDetailPage_ChannelClosedForBoth_OffersNeitherAndSaysHowToAskTheGuestOrTheChannel', async () => {
+      vi.mocked(bookingsApi.getById).mockResolvedValue(
+        booking({ source: 'Airbnb', otaSource: 'Airbnb', changeOptions: closedChannel, canEdit: { allowed: false, reason: 'SourceLocked' } }),
+      );
+
+      renderPage();
+
+      const guidance = await screen.findByTestId('booking-channel-guidance', undefined, WAIT);
+      expect(within(guidance).getAllByTestId('ota-change-guidance')).toHaveLength(2);
+      expect(guidance).toHaveTextContent("Per modificare questa prenotazione di Airbnb chiedi all'ospite di richiedere la modifica su Airbnb.");
+      expect(guidance).toHaveTextContent("Per cancellare questa prenotazione di Airbnb chiedi all'ospite di annullarla su Airbnb.");
+      expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('open-cancel-booking')).not.toBeInTheDocument();
+      // The sentence of the channel replaces the one that would send the host to cancel a booking that cannot be cancelled here.
+      expect(screen.queryByTestId('booking-edit-locked')).not.toBeInTheDocument();
+    });
+
+    it('BookingDetailPage_ChannelOpenForTheCancellation_OffersCancelAndSaysOnlyHowToChange', async () => {
+      vi.mocked(bookingsApi.getById).mockResolvedValue(
+        booking({
+          source: 'Airbnb',
+          otaSource: 'Airbnb',
+          changeOptions: { ...closedChannel, canCancel: true, cancelReasonCode: null, cancelGuidanceKey: null },
+          canEdit: { allowed: false, reason: 'SourceLocked' },
+        }),
+      );
+
+      renderPage();
+
+      expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
+      const guidance = screen.getByTestId('booking-channel-guidance');
+      expect(within(guidance).getAllByTestId('ota-change-guidance')).toHaveLength(1);
+      expect(guidance).toHaveTextContent(/Per modificare questa prenotazione di Airbnb/);
+    });
+
+    it('BookingDetailPage_CancelledBookingOfAChannel_ShowsNoActionAndNoSentence', async () => {
+      vi.mocked(bookingsApi.getById).mockResolvedValue(
+        booking({
+          source: 'Airbnb',
+          status: 'Cancelled',
+          changeOptions: { canEdit: false, canCancel: false, reasonCode: 'booking_not_editable', channel: 'Airbnb', cancelReasonCode: 'booking_already_cancelled' },
+          canEdit: { allowed: false, reason: 'Cancelled' },
+        }),
+      );
+
+      renderPage();
+
+      expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('open-cancel-booking')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('booking-channel-guidance')).not.toBeInTheDocument();
+    });
   });
 
   it('BookingDetailPage_CancelledBooking_ShowsTheHostReasonAndNoActions', async () => {
@@ -423,6 +503,29 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     expect(await screen.findByTestId('booking-load-error', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('booking.detailPage.notFound'))).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_BookingInTheCacheFromAnEarlierVisit_IsReadAgainWhenThePageOpens', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(['bookings', BOOKING_ID], booking({ numberOfGuests: 5 }));
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ numberOfGuests: 2 }));
+
+    renderPage(undefined, client);
+
+    await waitFor(() => expect(bookingsApi.getById).toHaveBeenCalledTimes(1), WAIT);
+    expect(await screen.findByText('2 ospiti', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByText('5 ospiti')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_NotFoundWhileTheCacheStillHoldsTheBooking_ShowsNotFound', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(['bookings', BOOKING_ID], booking());
+    vi.mocked(bookingsApi.getById).mockRejectedValue(axiosError(404, { status: 404, code: 'not_found' }));
+
+    renderPage(undefined, client);
+
+    expect(await screen.findByText(i18n.t('booking.detailPage.notFound'), undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-detail-status')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_NotFound_ShowsNotFound', async () => {

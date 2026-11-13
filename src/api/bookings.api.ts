@@ -4,6 +4,7 @@ import type {
   BookingApprovalRequest,
   BookingCancellationQuote,
   BookingCounts,
+  BookingEditQuote,
   BookingFilterParams,
   BookingListItem,
   BookingListParams,
@@ -13,9 +14,11 @@ import type {
   CreateBookingDto,
   CreateManualBookingDto,
   ManualBooking,
+  OctorateSyncRetryResult,
   StayAvailability,
   StayAvailabilityParams,
   UpdateBookingDto,
+  UpdatedBooking,
   ArrivalRegisteredBooking,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
@@ -71,9 +74,29 @@ export const bookingsApi = {
   availability: ({ propertyId, from, to }: StayAvailabilityParams) =>
     ApiClient.get<StayAvailability>(`/properties/${encodeURIComponent(propertyId)}/availability`, { from, to }),
 
-  /** Dates, guests and notes only: the backend computes the price again (PC-07). */
+  /**
+   * Dates, guests and notes only: the backend computes the price again (PC-07). For a confirmed booking of the booking site the money follows the price and the
+   * answer says what was done with it (`settlement`, E08/F02/US01/T01, NF-75). 422 `booking_settlement_failed` when Stripe refuses: nothing is saved. 403
+   * `booking_edit_payment_permission_required` when the money moves and the caller may not write payments.
+   */
   update: (id: string, data: UpdateBookingDto) =>
-    ApiClient.put<Booking>(`/bookings/${id}`, data),
+    ApiClient.put<UpdatedBooking>(`/bookings/${id}`, data),
+
+  /**
+   * What `update` would do with the same body, worked out and not done: the new total, what the guest has paid and what happens to the difference (NF-75). The
+   * same refusals as the edit (409 `booking_dates_unavailable`...). Needs `payment.read` on the property: 403 `booking_edit_payment_permission_required`.
+   */
+  editQuote: (id: string, data: UpdateBookingDto) =>
+    ApiClient.post<BookingEditQuote>(`/bookings/${id}/edit-quote`, data),
+
+  /**
+   * Asks again for the push of a booking to the channel manager (E08/F01/US01/T03, NF-74): only a sync that is `Failed` or `Conflict` (409
+   * `octorate_sync_not_retryable` otherwise). 202: the push runs again through the event bus, and the sync keeps its state until it starts. `overwrite` is
+   * the host's choice to write CasaZen's version over a reservation that changed there (a change, E08/F02): a creation has nothing to overwrite. Behind the
+   * backend flag `Features:OctorateConnector`: 404 while it is off. 404 too for a booking of another org or out of the caller's reach.
+   */
+  retryOctorateSync: (id: string, overwrite = false) =>
+    ApiClient.post<OctorateSyncRetryResult>(`/bookings/${id}/octorate-sync/retry${overwrite ? '?overwrite=true' : ''}`),
 
   /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
   quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),
@@ -82,7 +105,12 @@ export const bookingsApi = {
   getCancellationQuote: (id: string) =>
     ApiClient.get<BookingCancellationQuote>(`/bookings/${id}/cancellation`),
 
-  /** Cancels the booking: unpaid intents canceled on Stripe, `refundAmount` refunded (BK-02). */
+  /**
+   * Cancels the booking: unpaid intents canceled on Stripe, `refundAmount` refunded (BK-02). A booking that came from a channel takes the other path (E08/F02/US02/T02,
+   * NF-76): the channel manager is asked first and the answer is 200 only after it confirmed, with no refund; 422 `ota_booking_cancel_not_allowed` where the
+   * channel is closed, 422 `octorate_cancel_failed` when the channel manager refuses and 503 `octorate_unavailable` when it does not answer: the booking is
+   * unchanged, and the problem carries `guidanceKey` and `channel`.
+   */
   cancel: (id: string, data: CancelBookingDto = {}) =>
     ApiClient.post<CancelBookingResult>(`/bookings/${id}/cancel`, data),
 

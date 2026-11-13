@@ -31,6 +31,7 @@ import { OtaReviewNotice } from './components/ota-review-notice';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH } from './lib/booking-list-query';
 import { bookingHasMessages } from './lib/booking-messages';
+import { bookingCanCancel, bookingCanEdit } from './lib/booking-change';
 import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
 import { canRegisterArrival } from './lib/stay-actions';
 
@@ -73,7 +74,8 @@ export function BookingDetailPage() {
   const [declineOpen, setDeclineOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
-  const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
+  // The page is read again whenever it opens: what the host may do with the booking (`changeOptions`) and what is tied to it change elsewhere (the guest, the channel manager).
+  const { data: booking, isLoading, isError, error, refetch } = useBooking(id!, { fresh: true });
   // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
   const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
   const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
@@ -90,8 +92,10 @@ export function BookingDetailPage() {
     return <BookingDetailSkeleton label={t('booking.detailPage.loading')} />;
   }
 
-  // An API error is never shown as "not found" (only a 404 is).
-  if (isError && getHttpStatus(error) !== 404) {
+  // An API error is never shown as "not found" (only a 404 is), and a 404 is "not found" whatever the cache still holds of the booking: the query keeps the old data
+  // when a read fails, and the page of a booking that is gone must not open on it.
+  const gone = isError && getHttpStatus(error) === 404;
+  if (isError && !gone) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">
@@ -102,7 +106,7 @@ export function BookingDetailPage() {
     );
   }
 
-  if (!booking) {
+  if (gone || !booking) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">
@@ -125,11 +129,12 @@ export function BookingDetailPage() {
   const canConfirm = canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
   // The host can also decline the request that waits for the answer (BK-06, the same dialog as the list).
   const canDecline = canWrite && booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
-  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
-  const canCancel = canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
-  // "Modifica" only where the API takes it (SR-05c): the server says so with `canEdit`, the page keeps no rule of its own. A booking
-  // from the booking site or a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
-  const canEdit = canWrite && booking.canEdit?.allowed === true;
+  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves. A booking of a channel is cancelled only where the channel lets the
+  // host do it (E08/F03/US02, NF-76): the server says so with `changeOptions`, and where it does not the page says how to ask the guest or the channel (the tab Soggiorno).
+  const canCancel = canWrite && bookingCanCancel(booking);
+  // "Modifica" only where the API takes it (SR-05c): the server says so with `changeOptions` (and `canEdit`), the page keeps no rule of its own. A request of the booking
+  // site, a booking of a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
+  const canEdit = canWrite && bookingCanEdit(booking);
   // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
 

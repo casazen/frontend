@@ -1356,6 +1356,7 @@
       "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
       "octorateRoomNotChosen": "Manca la camera di un annuncio: scegli quale.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
+      "octorateSyncNotRetryable": "Non c'è un invio al channel manager da ripetere.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
@@ -1537,6 +1538,10 @@
       "bookingNotConfirmable": "Puoi confermare solo le prenotazioni in attesa inserite da te.",
       "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno confermato o con l'arrivo registrato.",
       "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di arrivo.",
+      "bookingEditPaymentInProgress": "Un pagamento di questa prenotazione è ancora in corso, oppure l'ospite deve ancora pagarlo: il prezzo non si cambia finché non è chiuso.",
+      "bookingEditPaymentPermissionRequired": "Questa modifica sposta denaro e serve il permesso sui pagamenti: chiedi a chi gestisce l'organizzazione.",
+      "bookingSettlementFailed": "Il pagamento della differenza non è andato a buon fine, quindi la modifica non è stata salvata. Puoi riprovare.",
+      "bookingTouristTaxUnavailable": "Per le nuove date non riusciamo a calcolare la tassa di soggiorno, che l'ospite ha già pagato: la modifica non è stata salvata.",
       "directBookingDeferredPaymentUnavailable": "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino. Scegli un altro metodo di pagamento.",
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
@@ -1578,6 +1583,7 @@
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
       "icalBlockNotFound": "Blocco del calendario non trovato.",
+      "otaBookingChangeNotAllowed": "Da CasaZen questa prenotazione non si può modificare: si cambia sul canale da cui arriva.",
       "otaStayBlockNotImported": "Solo un blocco importato da un calendario OTA collegato può diventare un soggiorno.",
       "otaStayBlockAlreadyConverted": "Da questo blocco è già stato creato un soggiorno.",
       "otaStayBlockOverlapsBooking": "Le date del blocco si sovrappongono a una prenotazione già presente: verifica il calendario.",
@@ -2475,7 +2481,64 @@
       "notFound": "Prenotazione non trovata",
       "notFoundDescription": "La prenotazione che stai cercando non esiste.",
       "notEditable": "Una prenotazione annullata non si può modificare.",
-      "backToBooking": "Torna alla prenotazione"
+      "backToBooking": "Torna alla prenotazione",
+      "conflict": {
+        "casazen": "Versione di CasaZen",
+        "channelManager": "Versione del channel manager",
+        "description": "La modifica è salvata in CasaZen, ma nel tuo channel manager la prenotazione è diversa. Scegli quale versione tenere: finché non scegli, non si perde nulla.",
+        "keepCasazen": "Tieni la versione di CasaZen",
+        "keepCasazenHint": "Scriviamo la versione di CasaZen nel channel manager al posto della sua.",
+        "notAvailable": "non disponibile",
+        "title": "La prenotazione è stata modificata nel tuo channel manager",
+        "useChannelManager": "Usa la versione del channel manager",
+        "useChannelManagerHint": "Il modulo si apre con le sue date e i suoi ospiti: salvi tu quando vuoi."
+      },
+      "review": {
+        "back": "Indietro",
+        "confirm": "Conferma e salva",
+        "dates": "Date",
+        "description": "Controlla cosa succede ai pagamenti: finché non confermi, non è salvato nulla.",
+        "guests": "Ospiti",
+        "quoteFailed": "Non riusciamo a calcolare cosa succede ai pagamenti. Riprova.",
+        "title": "Controlla prima di salvare",
+        "total": "Nuovo totale"
+      },
+      "saved": {
+        "title": "Prenotazione aggiornata."
+      },
+      "settlement": {
+        "preview": {
+          "chargeSavedCard": "{{amount}} vengono addebitati sulla carta salvata dell'ospite.",
+          "noMoney": "Da qui non parte nessun pagamento: il saldo resta come concordato con l'ospite.",
+          "offlineRefundDue": "{{amount}} sono stati pagati fuori da CasaZen (contanti o bonifico): li restituisci tu all'ospite.",
+          "paymentLink": "L'ospite riceve un link per pagare {{amount}}.",
+          "priceChanges": "Il prezzo passa da {{from}} a {{to}}.",
+          "priceSame": "Il prezzo non cambia.",
+          "refund": "{{amount}} vengono rimborsati sulla carta dell'ospite."
+        },
+        "result": {
+          "chargeSavedCard": {
+            "done": "{{amount}} addebitati sulla carta salvata dell'ospite.",
+            "pending": "L'addebito di {{amount}} sulla carta salvata dell'ospite non è ancora confermato."
+          },
+          "offlineRefundDue": "Restano {{amount}} da restituire all'ospite: li aveva pagati fuori da CasaZen.",
+          "paymentLink": {
+            "done": "Il link per pagare {{amount}} è stato inviato all'ospite.",
+            "pending": "Il link per pagare {{amount}} non è ancora stato inviato all'ospite."
+          }
+        }
+      },
+      "sync": {
+        "failed": {
+          "askAgain": "Quando hai sistemato il problema, riprova tu.",
+          "retrying": "Riproviamo in automatico.",
+          "title": "Salvata in CasaZen, non ancora nel tuo channel manager"
+        },
+        "notAllowed": "Il canale non permette questa modifica: al channel manager non è stato inviato nulla.",
+        "pending": "Sto inviando la modifica al tuo channel manager…",
+        "retry": "Riprova ora",
+        "retryFailed": "Non siamo riusciti a rimandare la modifica. Riprova."
+      }
     },
     "amountSource": {
       "ChannelManager": "Channel manager",
@@ -2666,6 +2729,18 @@
       },
       "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo."
     },
+    "changeGuidance": {
+      "cancel": {
+        "bookingCom": "Per cancellare questa prenotazione di Booking.com chiedi all'ospite di annullarla su Booking.com.",
+        "channel": "Per cancellare questa prenotazione di {{channel}} chiedi all'ospite di annullarla su {{channel}}.",
+        "default": "Per cancellare questa prenotazione chiedi all'ospite di annullarla sul canale da cui ha prenotato."
+      },
+      "modify": {
+        "bookingCom": "Su Booking.com l'ospite cambia le date dall'app o dall'extranet: chiedi all'ospite di farlo da lì.",
+        "channel": "Per modificare questa prenotazione di {{channel}} chiedi all'ospite di richiedere la modifica su {{channel}}.",
+        "default": "Per modificare questa prenotazione chiedi all'ospite di richiedere la modifica sul canale da cui ha prenotato."
+      }
+    },
     "channels": {
       "Agoda": "Agoda",
       "Airbnb": "Airbnb",
@@ -2785,6 +2860,17 @@
       "markVerified": "Segna come verificato",
       "resolved": "Soggiorno verificato",
       "failed": "Impossibile aggiornare il soggiorno. Riprova."
+    },
+    "syncReason": {
+      "datesUnavailable": "Le date risultano già occupate nel channel manager: controlla il calendario dei canali.",
+      "linkedElsewhere": "La prenotazione nel channel manager è già collegata a un'altra prenotazione di CasaZen: controlla se è un duplicato.",
+      "notMirrored": "L'immobile non è collegato al channel manager in questo momento (connessione interrotta o abbinamento da confermare): ricollegalo o confermalo, poi riprova.",
+      "paymentsNotRecorded": "Nel channel manager non sono stati registrati tutti gli incassi. Controlla e riprova.",
+      "rejected": "Il channel manager ha rifiutato la richiesta. Controlla i dati e riprova.",
+      "reservationChanged": "La prenotazione è cambiata nel channel manager dopo l'ultima lettura: controlla le differenze prima di riprovare.",
+      "roomNotChosen": "Manca la camera del channel manager per questo immobile: scegli quale, poi riprova.",
+      "unavailable": "Il channel manager non ha risposto.",
+      "unknown": "Il channel manager non l'ha confermata."
     },
     "timeline": {
       "alloggiatiDeadline": "{{status}} · entro {{date}}",
