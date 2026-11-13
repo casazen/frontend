@@ -12,7 +12,7 @@ import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
 import { todayInRome } from '@/lib/stay-dates';
 import { useProperties } from '@/queries/use-properties';
-import type { ArchiveDocument, ArchiveDocumentPage, ArchiveTypeCount } from '@/types';
+import type { ArchiveDocument, ArchiveDocumentPage, ArchiveDownload, ArchiveTypeCount } from '@/types';
 import { formatFileSize } from '../document-file';
 import { DocumentsPage } from '../documents-page';
 
@@ -302,7 +302,7 @@ describe('DocumentsPage (NF-99)', () => {
 
   describe('a download', () => {
     it('is asked by type and id, saved under the name of the file, and every button waits while it runs', async () => {
-      let finish: (blob: Blob) => void = () => undefined;
+      let finish: (download: ArchiveDownload) => void = () => undefined;
       vi.mocked(documentArchiveApi.download).mockImplementation(() => new Promise((resolve) => (finish = resolve)));
       renderPage();
       await findTable();
@@ -313,11 +313,34 @@ describe('DocumentsPage (NF-99)', () => {
       await waitFor(() => expect(downloadButtons().every((button) => (button as HTMLButtonElement).disabled)).toBe(true));
       expect(downloadButtons()).toHaveLength(2);
 
-      await act(async () => finish(new Blob(['%PDF-1.4'], { type: 'application/pdf' })));
+      await act(async () => finish({ blob: new Blob(['%PDF-1.4'], { type: 'application/pdf' }), contentDisposition: null }));
 
       await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'File d1.pdf'));
       await waitFor(() => expect(downloadButtons().every((button) => !(button as HTMLButtonElement).disabled)).toBe(true));
       expect(toast.success).toHaveBeenCalledWith(i18n.t('documentArchive.downloadDone'));
+    });
+
+    // The API exposes `Content-Disposition` to the page: the receipt of a tourist tax payment is saved under its own name, and where the page cannot read
+    // the header (or it has no name) under the name rebuilt from the row, with no error.
+    it('is saved under the name the server gives it, and under the name rebuilt from the row when the page cannot read the header', async () => {
+      vi.mocked(documentArchiveApi.list).mockResolvedValue(
+        page([doc('t1', { type: 'touristTax', title: 'Siracusa', propertyId: null, propertyName: null, contentType: 'application/pdf', sizeBytes: 1234 })]),
+      );
+      const receipt = () => new Blob(['%PDF-1.4'], { type: 'application/pdf' });
+      vi.mocked(documentArchiveApi.download)
+        .mockResolvedValueOnce({ blob: receipt(), contentDisposition: `attachment; filename="F24 _.pdf"; filename*=UTF-8''F24%20Siracusa.pdf` })
+        .mockResolvedValueOnce({ blob: receipt(), contentDisposition: null });
+      renderPage();
+      await findTable();
+
+      fireEvent.click(downloadButtons()[0]);
+      await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'F24 Siracusa.pdf'));
+      await waitFor(() => expect(downloadButtons().every((button) => !(button as HTMLButtonElement).disabled)).toBe(true));
+
+      fireEvent.click(downloadButtons()[0]);
+      await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(2));
+      expect(saveBlobAs).toHaveBeenLastCalledWith(expect.any(Blob), '2026-10-12-Siracusa.pdf');
+      expect(toast.error).not.toHaveBeenCalled();
     });
 
     it('of a row whose file the server cannot find says so in the row, and the row has no button any more', async () => {
@@ -368,7 +391,9 @@ describe('DocumentsPage (NF-99)', () => {
       failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
       // The test is a real one: the token is in what axios gives.
       expect(holds(failed, 'SECRET-TOKEN')).toBe(true);
-      vi.mocked(documentArchiveApi.download).mockRejectedValueOnce(failed).mockResolvedValueOnce(new Blob(['%PDF-1.4'], { type: 'application/pdf' }));
+      vi.mocked(documentArchiveApi.download)
+        .mockRejectedValueOnce(failed)
+        .mockResolvedValueOnce({ blob: new Blob(['%PDF-1.4'], { type: 'application/pdf' }), contentDisposition: null });
       const { client, unmount } = renderPage();
       await findTable();
 

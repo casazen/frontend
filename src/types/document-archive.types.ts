@@ -73,6 +73,15 @@ export interface ArchiveExportQuery {
 }
 
 /**
+ * What a download of one document brings: the file, and the `Content-Disposition` header the server named it with, when the page may read it (the
+ * API exposes it to the browser); `null` when it may not, and the name is then rebuilt from the row.
+ */
+export interface ArchiveDownload {
+  blob: Blob;
+  contentDisposition: string | null;
+}
+
+/**
  * What the 422 `archive_export_too_large` says: which of the two limits of an archive the period went over, with the numbers the server sends
  * (`fileCount`, `maxFiles`, `maxBytes`). The server refuses by the number of documents and by their size (a document that stores no size counts as
  * 10 MB there), so a few files can be "too large" without being "too many": the number of files tells the two apart.

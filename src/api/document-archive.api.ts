@@ -5,6 +5,7 @@ import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   ArchiveDocumentPage,
   ArchiveDocumentType,
+  ArchiveDownload,
   ArchiveExportQuery,
   ArchiveExportTooLarge,
   ArchiveListQuery,
@@ -34,8 +35,8 @@ const DOWNLOAD_TIMEOUT_MS = 120_000;
 const EXPORT_TIMEOUT_MS = 10 * 60_000;
 
 /**
- * Name of the downloaded archive, written as the server names it (`casazen-documenti-20260101-20261231.zip`): the browser does not let the
- * page read the name that comes in the headers.
+ * Name of the downloaded archive, written as the server names it (`casazen-documenti-20260101-20261231.zip`): the server builds it from the same
+ * two days, so the header that carries it says nothing more.
  */
 export function archiveExportFileName(from: string, to: string): string {
   return `casazen-documenti-${from.replaceAll('-', '')}-${to.replaceAll('-', '')}.zip`;
@@ -81,6 +82,19 @@ export function archiveExportParams(query: ArchiveExportQuery): URLSearchParams 
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The value of a header of an answer, whatever the case of its name, or `null`. A browser lets a page read only the headers that the API exposes
+ * (CORS), so a header that is not there is `null`: whoever reads it has a way on without it.
+ */
+function headerOf(headers: unknown, name: string): string | null {
+  if (!isRecord(headers)) return null;
+  const wanted = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
+  }
+  return null;
 }
 
 /** A read that did not come back as a page of documents (the page of another kind an odd proxy sends) is an error to show, not rows to draw. */
@@ -157,14 +171,17 @@ export const documentArchiveApi = {
     return asTypes(res.data);
   },
 
-  /** The file of one document; a problem body (a JSON Blob) is parsed so that its code can be read. */
-  download: async (type: ArchiveDocumentType, id: string): Promise<Blob> => {
+  /**
+   * The file of one document, with the name the server gave it (`Content-Disposition`, which the API exposes to the page: `null` when it does not,
+   * and the name is then rebuilt from the row); a problem body (a JSON Blob) is parsed so that its code can be read.
+   */
+  download: async (type: ArchiveDocumentType, id: string): Promise<ArchiveDownload> => {
     try {
       const res = await axios.get<Blob>(`${PATH}/${encodeURIComponent(type)}/${encodeURIComponent(id)}/download`, {
         responseType: 'blob',
         timeout: DOWNLOAD_TIMEOUT_MS,
       });
-      return res.data;
+      return { blob: res.data, contentDisposition: headerOf(res.headers, 'content-disposition') };
     } catch (error) {
       throw await withJsonErrorBody(error);
     }

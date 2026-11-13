@@ -154,14 +154,39 @@ describe('documentArchiveApi.list and types (NF-99)', () => {
 describe('documentArchiveApi.download and export (NF-99)', () => {
   it('Download_Document_IsAskedByTypeAndIdAsABlob', async () => {
     const file = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
-    vi.mocked(axios.get).mockResolvedValueOnce({ data: file });
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: file, headers: {} });
 
-    const blob = await documentArchiveApi.download('contract', DOCUMENT.id);
+    const download = await documentArchiveApi.download('contract', DOCUMENT.id);
 
-    expect(blob).toBe(file);
+    expect(download.blob).toBe(file);
     const [url, config] = vi.mocked(axios.get).mock.calls[0]!;
     expect(url).toBe(`/documents/contract/${DOCUMENT.id}/download`);
     expect(config).toMatchObject({ responseType: 'blob' });
+  });
+
+  // The API exposes `Content-Disposition` to the page (CORS): the name the server gave the file comes with it, whatever the case of the header's name.
+  it.each([
+    ['a plain object, as the name came', { 'Content-Disposition': `attachment; filename*=UTF-8''F24.pdf` }],
+    ['a plain object in lower case', { 'content-disposition': `attachment; filename*=UTF-8''F24.pdf` }],
+    ['the headers of axios', new AxiosHeaders({ 'content-disposition': `attachment; filename*=UTF-8''F24.pdf` })],
+  ])('Download_%s_BringsTheNameTheServerGave', async (_name, headers) => {
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: new Blob(['%PDF-1.4']), headers });
+
+    const download = await documentArchiveApi.download('touristTax', DOCUMENT.id);
+
+    expect(download.contentDisposition).toBe(`attachment; filename*=UTF-8''F24.pdf`);
+  });
+
+  // Where the API does not expose the header to this origin the page does not see it: no name, and no error.
+  it.each([
+    ['no headers at all', undefined],
+    ['other headers only', { 'content-type': 'application/pdf' }],
+    ['a header that is not a text', { 'content-disposition': 12 }],
+  ])('Download_%s_HasNoNameAndNoError', async (_name, headers) => {
+    const file = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: file, headers });
+
+    await expect(documentArchiveApi.download('touristTax', DOCUMENT.id)).resolves.toEqual({ blob: file, contentDisposition: null });
   });
 
   it('Download_NoFile_ExposesTheCodeOfTheProblemBody', async () => {

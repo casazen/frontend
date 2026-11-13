@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ARCHIVE_ERROR, archiveErrorCode, archiveExportFileName, documentArchiveApi, isArchiveCallCancelled } from '@/api/document-archive.api';
-import { archiveDocumentFileName } from '@/features/document-archive/document-file';
+import { archiveDownloadFileName } from '@/features/document-archive/document-file';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -58,8 +58,8 @@ export function useDownloadArchiveDocument() {
   return useMutation({
     mutationFn: async (document: ArchiveDocument): Promise<void> => {
       try {
-        const blob = await documentArchiveApi.download(document.type, document.id);
-        saveBlobAs(blob, archiveDocumentFileName(document, blob.type));
+        const { blob, contentDisposition } = await documentArchiveApi.download(document.type, document.id);
+        saveBlobAs(blob, archiveDownloadFileName(document, blob.type, contentDisposition));
       } catch (error) {
         throw withoutRequest(error);
       }
