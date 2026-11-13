@@ -348,6 +348,56 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       expect(bookingsApi.editQuote).not.toHaveBeenCalled();
     });
 
+    describe('what the answer of the save says of the money (the part of an overpayment paid outside CasaZen)', () => {
+      // The plan of an overpayment paid in cash moves no money, so anyone who may write the booking can save it, and the answer carries what is left to give back by hand.
+      const withAnOverpaymentPaidByHand = () =>
+        saved({ settlement: { action: 'none', state: 'none', amount: 0, offlineRefundDue: 30, currency: 'EUR' } });
+
+      it('BookingEditPage_WithoutPermissionToReadPayments_SaysNothingOfTheMoneyTheAnswerCarries', async () => {
+        permissions.delete('payment.read');
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct', octorateSync: sync() }));
+        vi.mocked(bookingsApi.update).mockResolvedValue(withAnOverpaymentPaidByHand());
+        renderPage();
+
+        await changeCheckOut('2027-10-06');
+        submit();
+
+        const result = await screen.findByTestId('booking-edit-saved', undefined, WAIT);
+        expect(result).toHaveTextContent('Prenotazione aggiornata.');
+        expect(within(result).queryByTestId('booking-edit-settlement-result')).not.toBeInTheDocument();
+        expect(result).not.toHaveTextContent(/30,00/);
+        expect(bookingsApi.editQuote).not.toHaveBeenCalled();
+      });
+
+      it('BookingEditPage_WithoutPermissionToReadPayments_AnEditNotOnTheChannelManagerGoesBackToTheBooking', async () => {
+        permissions.delete('payment.read');
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
+        vi.mocked(bookingsApi.update).mockResolvedValue(withAnOverpaymentPaidByHand());
+        renderPage();
+
+        await changeCheckOut('2027-10-06');
+        submit();
+
+        // The part to give back is money, and there is no push to follow: nothing to say here, the host is back on the booking.
+        expect(await screen.findByText('booking-detail', undefined, WAIT)).toBeInTheDocument();
+        expect(screen.queryByTestId('booking-edit-saved')).not.toBeInTheDocument();
+      });
+
+      it('BookingEditPage_WithPermissionToReadPayments_SaysThePartToGiveBackByHand', async () => {
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
+        vi.mocked(bookingsApi.editQuote).mockResolvedValue(editQuote({ newTotal: 450, difference: 0, action: 'none', amount: 0, offlineRefundDue: 30 }));
+        vi.mocked(bookingsApi.update).mockResolvedValue(withAnOverpaymentPaidByHand());
+        renderPage();
+
+        await changeCheckOut('2027-10-06');
+        submit();
+        fireEvent.click(await screen.findByTestId('booking-edit-review-confirm', undefined, WAIT));
+
+        const result = await screen.findByTestId('booking-edit-saved', undefined, WAIT);
+        expect(within(result).getByTestId('booking-edit-settlement-offline')).toHaveTextContent(/Restano 30,00\s€ da restituire all'ospite/);
+      });
+    });
+
     it('BookingEditPage_MoneyMovesButTheHostMayNotWritePayments_BlocksTheConfirmationAndSaysWhy', async () => {
       permissions.delete('payment.write');
       vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));

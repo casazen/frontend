@@ -116,8 +116,10 @@ export function BookingEditPage() {
   const guestName = `${booking.guest.firstName} ${booking.guest.lastName}`;
   const stayLock = stayLockOf(booking);
   const modifyGuidance = channelGuidanceOf(booking.changeOptions, 'modify');
+  // The money of an edit is the business of who may read payments: the quote is asked only for them (the API refuses it otherwise), and so is what the save did with it.
+  const canReadPayments = hasPermission('short-rent', 'payment.read');
   // The money of an edit is read before it is saved for a booking of the booking site, by who may read payments, and only when the stay moves: the notes alone have none.
-  const reviewsMoney = booking.source === 'Direct' && stayLock === null && hasPermission('short-rent', 'payment.read');
+  const reviewsMoney = booking.source === 'Direct' && stayLock === null && canReadPayments;
   // The version of the channel manager can be put in the form only while the form takes dates and guests.
   const channelChange = stayLock === null ? channelVersionChange(booking, booking.octorateSync?.octorateVersion) : null;
   const chooseChannelVersion = channelChange
@@ -129,7 +131,10 @@ export function BookingEditPage() {
       }
     : undefined;
 
-  const afterSave = (settlement: SavedSettlement | undefined) => {
+  const afterSave = (answered: SavedSettlement | undefined) => {
+    // The answer of the save carries the amounts of the money (what was moved, what is left to give back by hand) to everyone who may write the booking: a person who may
+    // not read payments is not told them, and the page does not keep them (the quote is refused to that person for the same reason).
+    const settlement = canReadPayments ? answered : undefined;
     // A booking that is mirrored on the channel manager has its push to follow, and the money of an edit has its outcome: both are said on this page. Any other edit
     // has nothing to add to the toast, and the host is taken back to the booking.
     if (settlementHasMoney(settlement) || booking.octorateSync != null) {
