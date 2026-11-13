@@ -13,7 +13,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useMarketplaceEntry } from '@/queries/use-marketplace';
 import type { MarketplaceEntryDetail } from '@/types';
 import { marketplaceAction, marketplaceReturnTarget, parseMarketplaceEntry } from '../lib/marketplace-entry';
-import { MARKETPLACE_ENTRY_PARAM } from '../lib/marketplace-paths';
+import { MARKETPLACE_ENTRY_PARAM, MARKETPLACE_MINE_PATH } from '../lib/marketplace-paths';
 import { useMarketplaceProperty } from '../lib/marketplace-property';
 import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
@@ -137,6 +137,9 @@ function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; p
     marketplaceReturnTarget(location),
     detail.activation.type,
   );
+  // «Gestisci» leads to the Active tab: on the Active tab itself (where the card is also opened from) it would lead to the page the person is on and only shut the card, so there is no foot there.
+  if (action?.kind === 'manage' && location.pathname === MARKETPLACE_MINE_PATH) return null;
+
   // The server says why it cannot be activated; a reason this page has no text for is said in general words.
   const reasonKey = `marketplace.detail.reason.${detail.actions.reason}`;
   const reason = t(detail.actions.reason && i18n.exists(reasonKey) ? reasonKey : 'marketplace.detail.reason.unknown');

@@ -493,6 +493,17 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(screen.queryByTestId('marketplace-integration-calendars')).not.toBeInTheDocument();
   });
 
+  it('MarketplaceMinePage_DetailCard_HasNoManageButtonBackToThePageItIsOn', async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('marketplace-active-Channel-PORTAL1-prop-1-details'));
+
+    // The card of an integration that is on is opened from the Active tab: «Gestisci» would lead to the page the person is already on.
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('It sells.')).toBeInTheDocument();
+    expect(within(dialog).queryByTestId('marketplace-entry-action')).not.toBeInTheDocument();
+  });
+
   it('MarketplaceMinePage_Details_SetsTheEntryParameterOfTheDetailCardAndTheProperty', async () => {
     api.getMarketplaceActive.mockResolvedValue({ integrations: [row({ property: BLU })], providers: [] });
     api.getMarketplaceHealth.mockResolvedValue(items(item({ propertyId: 'prop-2', propertyName: 'Casa Blu' })));

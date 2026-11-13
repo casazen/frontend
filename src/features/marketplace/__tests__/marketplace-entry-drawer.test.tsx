@@ -218,6 +218,30 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(url.searchParams.get('propertyId')).toBe('prop-1');
   });
 
+  it.each([
+    ['api', 'Channel', 'PORTAL1', 'Active'],
+    ['partnerSite', 'Partner', 'test-cleaners', 'Pending'],
+  ] as const)('MarketplaceEntryDrawer_OnTheActiveTab_%s_%s_%s_HasNoManageButtonToThePageItIsOn', async (type, kind, code, status) => {
+    // «Gestisci» leads to the Active tab: opened from the Active tab itself it would only shut the card, so the card has no foot there.
+    hooks.entry.mockReturnValue(entryAnswer({ ...DETAIL, kind, code, status, activation: { ...DETAIL.activation, type } }));
+    renderDrawer(`/app/short-rent/marketplace/mine?propertyId=prop-1&entry=${kind}:${code}`);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByTestId('marketplace-entry-action')).not.toBeInTheDocument();
+    expect(within(dialog).queryByTestId('marketplace-entry-footer')).not.toBeInTheDocument();
+    expect(within(dialog).queryByTestId('marketplace-entry-reason')).not.toBeInTheDocument();
+  });
+
+  it('MarketplaceEntryDrawer_OnTheActiveTab_StillOffersTheWizardForWhatIsNotOn', async () => {
+    // «Attiva» and «Correggi» lead to a wizard, never to the page the person is on: they stay on the Active tab.
+    hooks.entry.mockReturnValue(entryAnswer({ ...DETAIL, status: 'ToFix' }));
+    renderDrawer('/app/short-rent/marketplace/mine?propertyId=prop-1&entry=Channel:PORTAL1');
+
+    const action = within(await screen.findByRole('dialog')).getByTestId('marketplace-entry-action');
+    expect(action).toHaveTextContent('Correggi');
+    expect(new URL(action.getAttribute('href') ?? '', 'http://localhost').pathname).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
+  });
+
   it('MarketplaceEntryDrawer_WizardLink_BringsThePersonBackToThePageWithoutTheCard', async () => {
     renderDrawer();
 
