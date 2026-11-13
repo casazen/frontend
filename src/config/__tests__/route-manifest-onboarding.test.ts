@@ -111,6 +111,48 @@ describe('route manifest: the pages of the parts, the panel steps and the summar
   });
 });
 
+describe('route manifest: the integration settings (E10/F03/US03/T01)', () => {
+  const SETTINGS_PATH = '/app/short-rent/settings/integration';
+  const settings = ROUTE_MANIFEST.find((candidate) => candidate.path === SETTINGS_PATH);
+  const admin = (_context: string, permission: string) => permission === 'org.billing.admin';
+  const notAdmin = () => false;
+
+  it('RouteManifest_TheSettingsPage_IsAnEntryOfAltroBehindTheFlagForTheOrganizationAdministrator', () => {
+    expect(settings?.context).toBe('short-rent');
+    expect(settings?.featureFlag).toBe('octorateOnboarding');
+    expect(settings?.requiredPermissions).toEqual([]);
+    expect(settings?.orgBillingAdmin).toBe(true);
+    expect(settings?.navKey).toBe('nav.integrationSettings');
+    expect(settings?.navPlacement).toBe('secondary');
+    expect(settings?.navOrder).toBe(34);
+    expect(settings?.icon).toBe('Settings');
+    expect(settings?.icon && NAV_ICONS[settings.icon]).toBeDefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === SETTINGS_PATH)).toHaveLength(1);
+  });
+
+  it('RouteManifest_TheSettingsPage_IsInTheMenuOnlyForTheAdministratorWithTheFlagOnAndTheAddressStaysReachable', () => {
+    const inAltro = (hasPermission: (context: string, permission: string) => boolean, features?: Partial<typeof flagOn>) =>
+      getSecondaryNavEntries('short-rent', hasPermission as never, features).map((page) => page.path);
+
+    expect(inAltro(admin, flagOn)).toContain(SETTINGS_PATH);
+    // Anyone else has no entry, and with the flag off nobody has one: the page does not exist.
+    expect(inAltro(notAdmin, flagOn)).not.toContain(SETTINGS_PATH);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS]) expect(inAltro(admin, features)).not.toContain(SETTINGS_PATH);
+    // The route guard asks no permission (the menu does, through `orgBillingAdmin`): a person who is not the administrator who opens the address is told
+    // who manages the page by the page itself, and meets no 403.
+    expect(settings?.requiredPermissions).toEqual([]);
+    expect(settings && hasEntryPermission(settings, admin)).toBe(true);
+    expect(settings && hasEntryPermission(settings, notAdmin)).toBe(false);
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheSettingsPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await settings?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
 describe('feature flag octorateOnboarding (mirror of the backend Features:OctorateOnboarding)', () => {
   it('FeatureFlags_OctorateOnboarding_IsOffByDefaultAndWhileTheFlagsAreNotLoaded', () => {
     expect(DEFAULT_FEATURE_FLAGS.octorateOnboarding).toBe(false);

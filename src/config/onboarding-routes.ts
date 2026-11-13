@@ -59,4 +59,19 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     featureFlag: 'octorateOnboarding',
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-panel-step-page')).OnboardingPanelResumePage }),
   },
+  {
+    // The integration settings (E10/F03/US03/T01, NF-108, ONB-05): the health of the connection, what can be reopened (the sender of the Alloggiati communications,
+    // a channel, the properties, any part of the plan) and how the properties and the listings stand. An entry of «Altro» for the organization administrator
+    // (`orgBillingAdmin`, as the server asks `OrgBillingAdmin`): anyone else who opens the address reads who manages the page and no request is sent.
+    path: '/app/short-rent/settings/integration',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    navKey: 'nav.integrationSettings',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/onboarding/integration-settings-page')).IntegrationSettingsPage }),
+  },
 ];

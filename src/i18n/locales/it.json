@@ -12795,6 +12795,7 @@
     "profile": "Profilo",
     "notificationPreferences": "Notifiche",
     "onboardingPlan": "Inizia con CasaZen",
+    "integrationSettings": "Integrazione",
     "plan": "Piano",
     "billing": "Fatturazione",
     "bookings": "Prenotazioni",
@@ -13616,6 +13617,74 @@
     },
     "help": {
       "action": "Aiuto"
+    },
+    "integration": {
+      "adminOnly": "Questa pagina la gestisce l'amministratore dell'organizzazione.",
+      "channels": {
+        "empty": "Non c'è ancora nessun annuncio sui canali.",
+        "status": {
+          "Accepted": "Accettato dal canale",
+          "Draft": "Bozza",
+          "ManagedOnChannel": "Gestito sul canale",
+          "Published": "Pubblicato",
+          "Sending": "In invio",
+          "ToFix": "Da correggere",
+          "other": "Altro stato"
+        },
+        "title": "Stato degli annunci per canale"
+      },
+      "connection": {
+        "environmentTest": "Ambiente di prova",
+        "lastSync": "Ultima sincronizzazione: {{date}}",
+        "neverConnected": "Non hai ancora collegato il tuo channel manager.",
+        "neverSynced": "Non ancora sincronizzato",
+        "reconnect": {
+          "action": "Ricollega il canale",
+          "contactSupport": "Per ricollegare il canale contatta il supporto di CasaZen.",
+          "notice": "Il collegamento al tuo channel manager non funziona più: probabilmente l'accesso è stato revocato dal suo pannello.",
+          "todo": "Lo trovi anche in Da fare.",
+          "unavailable": "Non ancora disponibile",
+          "writeTo": "Per ricollegare il canale scrivi a"
+        },
+        "state": {
+          "connected": "Collegato",
+          "disconnected": "Scollegato",
+          "error": "Errore",
+          "never": "Non collegato",
+          "unknown": "Stato non disponibile"
+        },
+        "title": "Collegamento al tuo channel manager",
+        "toPlan": "Vai al piano"
+      },
+      "description": "Controlla il collegamento al tuo channel manager e riapri quello che vuoi cambiare.",
+      "loadError": "Non è stato possibile caricare le impostazioni.",
+      "loading": "Carico le impostazioni...",
+      "notFound": "Questa pagina non è ancora disponibile.",
+      "parts": {
+        "empty": "Non c'è ancora niente da mostrare qui.",
+        "error": "Non è stato possibile riaprire questo passo. Riprova.",
+        "notReopenable": "Non ancora disponibile",
+        "reopen": "Riapri",
+        "reopenLabel": "Riapri: {{part}}",
+        "title": "I passi del piano",
+        "unavailable": "Non ancora disponibile: la procedura guidata di questo passo non è ancora pronta."
+      },
+      "quick": {
+        "channel": "Aggiungi un canale",
+        "properties": "Aggiungi strutture",
+        "sender": "Cambia chi invia le schedine",
+        "title": "Cosa vuoi cambiare?"
+      },
+      "senders": {
+        "casaZen": "CasaZen",
+        "channelManager": "Il tuo channel manager",
+        "empty": "Non ci sono ancora strutture in Italia da configurare.",
+        "manual": "A mano",
+        "notSet": "Non ancora scelto",
+        "title": "Chi invia le schedine"
+      },
+      "stale": "Non siamo riusciti ad aggiornare la pagina: quello che vedi potrebbe non essere aggiornato.",
+      "title": "Impostazioni dell'integrazione"
     },
     "launch": {
       "backToPlan": "Torna al piano",

@@ -12795,6 +12795,7 @@
     "profile": "Profile",
     "notificationPreferences": "Notifications",
     "onboardingPlan": "Start with CasaZen",
+    "integrationSettings": "Integration",
     "plan": "Plan",
     "billing": "Billing",
     "bookings": "Bookings",
@@ -13616,6 +13617,74 @@
     },
     "help": {
       "action": "Help"
+    },
+    "integration": {
+      "adminOnly": "The organization administrator manages this page.",
+      "channels": {
+        "empty": "There is no listing on the channels yet.",
+        "status": {
+          "Accepted": "Accepted by the channel",
+          "Draft": "Draft",
+          "ManagedOnChannel": "Managed on the channel",
+          "Published": "Published",
+          "Sending": "Sending",
+          "ToFix": "To fix",
+          "other": "Other status"
+        },
+        "title": "Listings by channel status"
+      },
+      "connection": {
+        "environmentTest": "Test environment",
+        "lastSync": "Last synchronisation: {{date}}",
+        "neverConnected": "You have not connected your channel manager yet.",
+        "neverSynced": "Not synchronised yet",
+        "reconnect": {
+          "action": "Reconnect the channel",
+          "contactSupport": "To reconnect the channel contact CasaZen support.",
+          "notice": "The connection to your channel manager no longer works: its access was probably revoked from its panel.",
+          "todo": "You also find it in To do.",
+          "unavailable": "Not available yet",
+          "writeTo": "To reconnect the channel write to"
+        },
+        "state": {
+          "connected": "Connected",
+          "disconnected": "Disconnected",
+          "error": "Error",
+          "never": "Not connected",
+          "unknown": "Status not available"
+        },
+        "title": "Connection to your channel manager",
+        "toPlan": "Go to the plan"
+      },
+      "description": "Check the connection to your channel manager and reopen what you want to change.",
+      "loadError": "The settings could not be loaded.",
+      "loading": "Loading the settings...",
+      "notFound": "This page is not available yet.",
+      "parts": {
+        "empty": "There is nothing to show here yet.",
+        "error": "This step could not be reopened. Try again.",
+        "notReopenable": "Not available yet",
+        "reopen": "Reopen",
+        "reopenLabel": "Reopen: {{part}}",
+        "title": "The steps of the plan",
+        "unavailable": "Not available yet: the guided procedure of this step is not ready."
+      },
+      "quick": {
+        "channel": "Add a channel",
+        "properties": "Add properties",
+        "sender": "Change who sends the guest registrations",
+        "title": "What do you want to change?"
+      },
+      "senders": {
+        "casaZen": "CasaZen",
+        "channelManager": "Your channel manager",
+        "empty": "There are no properties in Italy to set up yet.",
+        "manual": "By hand",
+        "notSet": "Not chosen yet",
+        "title": "Who sends the guest registrations"
+      },
+      "stale": "We could not refresh the page: what you see may be out of date.",
+      "title": "Integration settings"
     },
     "launch": {
       "backToPlan": "Back to the plan",
