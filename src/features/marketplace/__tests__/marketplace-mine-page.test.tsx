@@ -467,6 +467,32 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(screen.queryByText('Nessuna integrazione attiva')).not.toBeInTheDocument();
   });
 
+  it('MarketplaceMinePage_CalendarsReadFails_IsNotTheEmptyTab_AndSaysSoWithARetry', async () => {
+    // The list of the server is empty, but the state of the calendars could not be read: nothing is known of them, so «nothing is on» is not told.
+    api.getMarketplaceActive.mockResolvedValue({ integrations: [], providers: [] });
+    api.getCalendarOverview.mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    const error = await screen.findByTestId('marketplace-builtins-error');
+    expect(error).toHaveTextContent('Non riesco a leggere lo stato dei calendari o dei pagamenti con carta.');
+    expect(screen.queryByText('Nessuna integrazione attiva')).not.toBeInTheDocument();
+
+    // Reading again brings the answer: nothing is on, and now every read has said so.
+    api.getCalendarOverview.mockResolvedValue(feeds(0));
+    fireEvent.click(within(error).getByRole('button', { name: 'Riprova' }));
+    expect(await screen.findByText('Nessuna integrazione attiva')).toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-builtins-error')).not.toBeInTheDocument();
+  });
+
+  it('MarketplaceMinePage_CalendarsReadFails_OtherIntegrationsAreStillListed_WithTheNotice', async () => {
+    api.getCalendarOverview.mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    expect(await screen.findByTestId('marketplace-builtins-error')).toBeInTheDocument();
+    expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-integration-calendars')).not.toBeInTheDocument();
+  });
+
   it('MarketplaceMinePage_Details_SetsTheEntryParameterOfTheDetailCardAndTheProperty', async () => {
     api.getMarketplaceActive.mockResolvedValue({ integrations: [row({ property: BLU })], providers: [] });
     api.getMarketplaceHealth.mockResolvedValue(items(item({ propertyId: 'prop-2', propertyName: 'Casa Blu' })));

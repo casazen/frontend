@@ -65,6 +65,8 @@ function ActiveTab() {
   const providers = activeData?.providers ?? [];
   const builtInActive = builtIns.filter((integration) => integration.status === 'active');
   const builtInReading = builtIns.some((integration) => integration.status === 'loading');
+  // The ones whose state could not be read: nothing is known of them, so nothing is said of them but that, and the tab is never the empty one.
+  const builtInsUnread = builtIns.filter((integration) => integration.status === 'unknown');
 
   const mayFix = (kind: string) => mayManageKind(kind, hasPermission, connectorOn);
   const returnTo = marketplaceReturnTarget(location);
@@ -78,8 +80,8 @@ function ActiveTab() {
     );
   }
 
-  // Nothing is on, and every read said so: an empty tab is told only when nothing failed to be read.
-  if (!active.isPending && !active.isError && rows.length === 0 && providers.length === 0 && builtInActive.length === 0 && !builtInReading) {
+  // Nothing is on, and every read said so: an empty tab is told only when nothing failed to be read (the list of the server, the calendars and the card payments).
+  if (!active.isPending && !active.isError && rows.length === 0 && providers.length === 0 && builtInActive.length === 0 && !builtInReading && builtInsUnread.length === 0) {
     return (
       <EmptyState
         icon={Plug}
@@ -105,6 +107,13 @@ function ActiveTab() {
               <ActiveIntegrationCard key={row.key} row={row} fixTo={rowHasProblem(row) && mayFix(row.kind) ? fixPathOf(row, returnTo) : null} mayManage={mayFix(row.kind)} />
             ))}
           </ul>
+        ) : null}
+        {builtInsUnread.length > 0 ? (
+          <ErrorState
+            testId="marketplace-builtins-error"
+            title={t('marketplace.mine.integrations.builtInsLoadError')}
+            onRetry={() => builtInsUnread.forEach((integration) => integration.reload?.())}
+          />
         ) : null}
         {active.isPending ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status" data-testid="marketplace-active-loading">

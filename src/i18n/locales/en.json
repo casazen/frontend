@@ -13316,6 +13316,7 @@
       "emptyHint": "When you turn on a channel, a tool, a function or a partner you will find it here, with the CasaZen suppliers you have already used.",
       "emptyTitle": "No integration is on",
       "integrations": {
+        "builtInsLoadError": "I cannot read the state of the calendars or the card payments.",
         "loadError": "I cannot load the active integrations.",
         "title": "Integrations"
       },

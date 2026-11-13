@@ -13316,6 +13316,7 @@
       "emptyHint": "Quando attivi un canale, uno strumento, una funzione o un partner lo trovi qui, insieme ai fornitori CasaZen che hai già usato.",
       "emptyTitle": "Nessuna integrazione attiva",
       "integrations": {
+        "builtInsLoadError": "Non riesco a leggere lo stato dei calendari o dei pagamenti con carta.",
         "loadError": "Non riesco a caricare le integrazioni attive.",
         "title": "Integrazioni"
       },
