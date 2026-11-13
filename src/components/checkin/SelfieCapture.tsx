@@ -1,276 +1,262 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import type { BiometricOutcome } from '@/types/public-checkin.types';
+import { canvasToJpeg, SELFIE_JPEG_QUALITY, SELFIE_MAX_WIDTH } from '@/lib/image-capture';
 
 interface SelfieCaptureProps {
-  onCapture: (imageBlob: Blob) => Promise<void>;
-  attemptsUsed: number;
-  maxAttempts: number;
-  outcome?: BiometricOutcome | null;
+  /**
+   * Sends the picture. Resolves `true` when the API answered (the picture is let go at once) and `false` when the call failed (the picture stays on
+   * the screen, to be sent again without taking it again).
+   */
+  onCapture: (image: Blob) => Promise<boolean>;
+  /** Attempts left before a person takes over; shown when known. */
+  attemptsRemaining?: number | null;
+  /** A call of the step is in flight (this one or another): the buttons stay disabled. */
   isProcessing?: boolean;
+  /** The guest asks for a person: the way out of a camera that does not work, never a file picker. */
+  onRequestOperator: () => void;
+}
+
+/** Why the camera is not there: the browser blocked it, there is none, this page cannot use one (no secure connection, an old browser), or anything else. */
+type CameraProblem = 'denied' | 'not_found' | 'unsupported' | 'unknown';
+
+const CAMERA_TEXT: Record<CameraProblem, string> = {
+  denied: 'checkin.biometric.capture.cameraDenied',
+  not_found: 'checkin.biometric.capture.cameraNotFound',
+  unsupported: 'checkin.biometric.capture.cameraUnsupported',
+  unknown: 'checkin.biometric.capture.cameraUnknown',
+};
+
+function cameraProblemOf(error: unknown): CameraProblem {
+  const name = typeof error === 'object' && error !== null && 'name' in error ? String((error as { name: unknown }).name) : '';
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return 'denied';
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError') return 'not_found';
+  return 'unknown';
+}
+
+/** The browser can open a camera at all (it cannot on a page without a secure connection). */
+function canOpenCamera(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function';
 }
 
 /**
- * Selfie capture component using camera only (no file upload) per ADR-013-R11.
- * Resizes to max 1920px width, 80% JPEG quality before upload per ADR-013-R12.
- * Shows attempt counter and three-level outcome (Accept/Escalate/Reject).
+ * The selfie, taken with the camera only (ADR-013-R11): there is no file input anywhere, so a picture cannot be chosen from the files or the gallery.
+ * When the browser blocks the camera the screen says how to allow it and offers a person; it never offers a file picker. The picture is drawn at most
+ * 1920 px wide as a JPEG at 80 % (ADR-013-R12), held in memory for the request only and let go once the API has answered.
  */
-export function SelfieCapture({
-  onCapture,
-  attemptsUsed,
-  maxAttempts,
-  outcome,
-  isProcessing = false,
-}: SelfieCaptureProps) {
+export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessing = false, onRequestOperator }: SelfieCaptureProps) {
   const { t } = useTranslation();
+  const titleId = useId();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [cameraError, setCameraError] = useState<string | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const mounted = useRef(false);
+  const submitting = useRef(false);
+  const [camera, setCamera] = useState<'starting' | 'ready' | CameraProblem>('starting');
   const [hasCapture, setHasCapture] = useState(false);
+  const [notPrepared, setNotPrepared] = useState(false);
 
-  const attemptsRemaining = maxAttempts - attemptsUsed;
+  const supported = canOpenCamera();
+  const state: 'starting' | 'ready' | CameraProblem = supported ? camera : 'unsupported';
 
-  const startCamera = async () => {
-    try {
-      setCameraError(null);
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err) {
-      console.error('Camera access error:', err);
-      setCameraError(t('checkin.biometric.capture.cameraError'));
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-  };
-
-  useEffect(() => {
-    void startCamera();
-    return () => {
-      stopCamera();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
   }, []);
 
-  /**
-   * Resize image to max 1920px width, maintaining aspect ratio.
-   * Compress to 80% JPEG quality per ADR-013-R12.
-   */
-  const resizeAndCompressImage = (
-    sourceCanvas: HTMLCanvasElement,
-    maxWidth: number = 1920,
-    quality: number = 0.8
-  ): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const width = sourceCanvas.width;
-      const height = sourceCanvas.height;
-
-      let targetWidth = width;
-      let targetHeight = height;
-
-      if (width > maxWidth) {
-        targetWidth = maxWidth;
-        targetHeight = (height * maxWidth) / width;
-      }
-
-      const resizeCanvas = document.createElement('canvas');
-      resizeCanvas.width = targetWidth;
-      resizeCanvas.height = targetHeight;
-
-      const ctx = resizeCanvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
+  /** Opens the camera of the front; `isCurrent` says whether the screen is still the one that asked (it may have been left while the browser asked the guest). */
+  const startCamera = useCallback(async (isCurrent: () => boolean = () => mounted.current) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      if (!isCurrent()) {
+        stream.getTracks().forEach((track) => track.stop());
         return;
       }
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setCamera('ready');
+    } catch (error) {
+      if (isCurrent()) setCamera(cameraProblemOf(error));
+    }
+  }, []);
 
-      ctx.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight);
+  useEffect(() => {
+    mounted.current = true;
+    if (!canOpenCamera()) {
+      return () => {
+        mounted.current = false;
+      };
+    }
+    let current = true;
+    void startCamera(() => current);
+    return () => {
+      current = false;
+      mounted.current = false;
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
 
-      resizeCanvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to create blob'));
-          }
-        },
-        'image/jpeg',
-        quality
-      );
-    });
+  const restartCamera = () => {
+    setCamera('starting');
+    void startCamera();
   };
 
-  const capturePhoto = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
+  const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    // A video that has not started has no picture yet: nothing is drawn, nothing is sent.
+    if (!video || !canvas || video.videoWidth === 0 || video.videoHeight === 0) return;
     const context = canvas.getContext('2d');
-
     if (!context) return;
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    setHasCapture(true);
     stopCamera();
+    setNotPrepared(false);
+    setHasCapture(true);
+  };
+
+  /** Lets the picture go: the pixels of the canvas are emptied. */
+  const clearCapture = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.width = 0;
+      canvas.height = 0;
+    }
   };
 
   const retakePhoto = () => {
+    clearCapture();
     setHasCapture(false);
-    startCamera();
+    setNotPrepared(false);
+    restartCamera();
   };
 
   const submitPhoto = async () => {
-    if (!canvasRef.current) return;
-
+    const canvas = canvasRef.current;
+    if (!canvas || submitting.current) return;
+    submitting.current = true;
     try {
-      const blob = await resizeAndCompressImage(canvasRef.current);
-      await onCapture(blob);
-      setHasCapture(false);
-    } catch (err) {
-      console.error('Failed to process image:', err);
+      let image: Blob;
+      try {
+        image = await canvasToJpeg(canvas, SELFIE_MAX_WIDTH, SELFIE_JPEG_QUALITY);
+      } catch {
+        setNotPrepared(true);
+        return;
+      }
+      // The picture is a local of this call: once the API has answered nothing refers to it.
+      const answered = await onCapture(image);
+      if (answered) {
+        clearCapture();
+        setHasCapture(false);
+      }
+    } finally {
+      submitting.current = false;
     }
   };
 
-  const getOutcomeVariant = (
-    outcomeType: BiometricOutcome
-  ): 'success' | 'warning' | 'danger' => {
-    switch (outcomeType) {
-      case 'Accept':
-        return 'success';
-      case 'Escalate':
-        return 'warning';
-      case 'Reject':
-        return 'danger';
-    }
-  };
+  const problem = state === 'starting' || state === 'ready' ? null : state;
 
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader>
-        <CardTitle>{t('checkin.biometric.capture.title')}</CardTitle>
-        <CardDescription>
-          {t('checkin.biometric.capture.instructions')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {cameraError ? (
-          <Alert variant="danger">
-            <p>{cameraError}</p>
+    <section className="space-y-4" aria-labelledby={titleId} data-testid="checkin-selfie-capture">
+      <div className="space-y-1">
+        <h4 id={titleId} className="text-base font-semibold">
+          {t('checkin.biometric.capture.title')}
+        </h4>
+        <p className="text-sm text-muted-foreground">{t('checkin.biometric.capture.instructions')}</p>
+      </div>
+
+      <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
+        <li>{t('checkin.identity.guidance.tip_remove_glasses')}</li>
+        <li>{t('checkin.identity.guidance.tip_remove_mask')}</li>
+      </ul>
+
+      {problem ? (
+        <div className="space-y-3" data-testid="selfie-camera-problem">
+          <Alert variant="warning" role="alert" title={t('checkin.biometric.capture.cameraTitle')}>
+            <p>{t(CAMERA_TEXT[problem])}</p>
+            <p className="mt-1">{t('checkin.biometric.capture.noFile')}</p>
           </Alert>
-        ) : null}
-
-        <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className={`h-full w-full object-cover ${hasCapture ? 'hidden' : ''}`}
-          />
-          <canvas
-            ref={canvasRef}
-            className={`h-full w-full object-cover ${!hasCapture ? 'hidden' : ''}`}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {t('checkin.biometric.capture.attemptsRemaining', {
-              count: attemptsRemaining,
-            })}
-          </p>
-          {outcome ? (
-            <Alert
-              variant={getOutcomeVariant(outcome)}
-              className="inline-flex items-center gap-2 px-3 py-1"
-            >
-              <span className="text-sm font-medium">
-                {t(`checkin.biometric.outcome.${outcome.toLowerCase()}`)}
-              </span>
-            </Alert>
-          ) : null}
-        </div>
-
-        <div className="flex gap-3">
-          {!hasCapture ? (
-            <Button
-              onClick={capturePhoto}
-              disabled={!stream || isProcessing || attemptsRemaining === 0}
-              className="flex-1"
-            >
-              <Camera className="mr-2 h-4 w-4" />
-              {t('checkin.biometric.capture.takePhoto')}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {problem !== 'unsupported' && (
+              <Button type="button" size="lg" onClick={restartCamera} disabled={isProcessing} data-testid="selfie-camera-retry">
+                <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('checkin.biometric.capture.retryCamera')}
+              </Button>
+            )}
+            <Button type="button" size="lg" variant="outline" onClick={onRequestOperator} disabled={isProcessing} data-testid="selfie-ask-operator">
+              {t('checkin.identity.operator.ask')}
             </Button>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                onClick={retakePhoto}
-                disabled={isProcessing}
-                className="flex-1"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                {t('checkin.biometric.capture.retake')}
-              </Button>
-              <Button
-                onClick={submitPhoto}
-                disabled={isProcessing || attemptsRemaining === 0}
-                className="flex-1"
-              >
-                {t('checkin.biometric.capture.submit')}
-              </Button>
-            </>
-          )}
+          </div>
         </div>
+      ) : (
+        <>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              aria-label={t('checkin.biometric.capture.previewLabel')}
+              className={`h-full w-full object-cover ${hasCapture ? 'hidden' : ''}`}
+            />
+            <canvas
+              ref={canvasRef}
+              aria-label={t('checkin.biometric.capture.capturedLabel')}
+              role="img"
+              className={`h-full w-full object-cover ${!hasCapture ? 'hidden' : ''}`}
+            />
+          </div>
 
-        {outcome === 'Accept' ? (
-          <Alert variant="success">
-            <p className="text-sm">
-              {t('checkin.biometric.outcome.acceptMessage')}
+          {attemptsRemaining !== null && (
+            <p className="text-sm text-muted-foreground" data-testid="selfie-attempts-left">
+              {t('checkin.biometric.capture.attemptsRemaining', { count: attemptsRemaining })}
             </p>
-          </Alert>
-        ) : null}
+          )}
 
-        {outcome === 'Escalate' ? (
-          <Alert variant="warning">
-            <p className="text-sm">
-              {t('checkin.biometric.outcome.escalateMessage')}
+          {notPrepared && (
+            <p role="alert" className="text-sm text-destructive" data-testid="selfie-not-prepared">
+              {t('checkin.biometric.capture.notPrepared')}
             </p>
-          </Alert>
-        ) : null}
+          )}
 
-        {outcome === 'Reject' ? (
-          <Alert variant="danger">
-            <p className="text-sm">
-              {t('checkin.biometric.outcome.rejectMessage')}
-            </p>
-          </Alert>
-        ) : null}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {!hasCapture ? (
+              <Button type="button" size="lg" onClick={capturePhoto} disabled={state !== 'ready' || isProcessing} className="flex-1" data-testid="selfie-take">
+                <Camera className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('checkin.biometric.capture.takePhoto')}
+              </Button>
+            ) : (
+              <>
+                <Button type="button" size="lg" variant="outline" onClick={retakePhoto} disabled={isProcessing} className="flex-1" data-testid="selfie-retake">
+                  <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {t('checkin.biometric.capture.retake')}
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => void submitPhoto()}
+                  disabled={isProcessing}
+                  loading={isProcessing}
+                  className="flex-1"
+                  data-testid="selfie-send"
+                >
+                  {isProcessing ? t('checkin.biometric.capture.sending') : t('checkin.biometric.capture.submit')}
+                </Button>
+              </>
+            )}
+          </div>
 
-        {attemptsRemaining === 0 ? (
-          <Alert variant="warning">
-            <p className="text-sm">
-              {t('checkin.biometric.capture.maxAttemptsReached')}
-            </p>
-          </Alert>
-        ) : null}
-      </CardContent>
-    </Card>
+          <div>
+            <Button type="button" variant="ghost" onClick={onRequestOperator} disabled={isProcessing} data-testid="selfie-ask-operator">
+              {t('checkin.identity.operator.ask')}
+            </Button>
+          </div>
+        </>
+      )}
+    </section>
   );
 }

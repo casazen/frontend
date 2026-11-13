@@ -3213,6 +3213,7 @@
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
     "stepDocument": "Identity document",
+    "stepIdentity": "Identity check",
     "stepConsents": "Privacy notice and consents",
     "stepOf": "Step {{step}} of {{total}}",
     "next": "Next",
@@ -3278,34 +3279,36 @@
     "removeGuest": "Remove guest",
     "addGuest": "Add guest",
     "biometric": {
-      "consent": {
-        "title": "Optional biometric verification",
-        "description": "We can compare your photo with your document to speed up check-in.",
-        "purposeTitle": "What it's for",
-        "purpose": "Biometric verification compares your face with the photo on your document. The comparison happens on the server and your photo is deleted immediately after.",
-        "optionalTitle": "It's optional",
-        "optional": "You can refuse without consequences: the property manager will still receive your data and document. The refusal is noted but does not block check-in.",
-        "accept": "I consent to verification",
-        "decline": "I refuse",
-        "version": "Consent version: {{version}}"
-      },
       "capture": {
-        "title": "Take a selfie",
-        "instructions": "Frame your face, make sure it's well lit and centered, then take the photo. We'll compare it with your document.",
-        "cameraError": "Cannot access camera. Check browser permissions.",
-        "takePhoto": "Take photo",
-        "retake": "Retake",
-        "submit": "Submit photo",
-        "attemptsRemaining": "Attempts remaining: {{count}}",
-        "maxAttemptsReached": "You have reached the maximum number of attempts. Check-in will be verified manually by the manager."
+        "attemptsRemaining": "Attempts left: {{count}}",
+        "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
+        "cameraNotFound": "No camera was found on this device.",
+        "cameraTitle": "The camera is not available",
+        "cameraUnknown": "The camera could not be started.",
+        "cameraUnsupported": "This page cannot use the camera in this browser. Open the link in your usual browser, or ask an operator to verify you.",
+        "capturedLabel": "The selfie you took",
+        "instructions": "Look at the camera in a well-lit place and keep your face in the frame. We compare the photo with the one on your document.",
+        "noFile": "For your safety the selfie has to be taken now with the camera: it cannot be chosen from your files or gallery.",
+        "notPrepared": "The photo could not be prepared. Please take it again.",
+        "previewLabel": "Live view of your camera",
+        "retake": "Take it again",
+        "retryCamera": "Try again",
+        "sending": "Checking...",
+        "submit": "Send the photo",
+        "takePhoto": "Take the photo",
+        "title": "Take a selfie"
       },
-      "outcome": {
-        "accept": "Verified",
-        "acceptMessage": "Biometric verification succeeded. Your check-in is complete.",
-        "escalate": "To be verified",
-        "escalateMessage": "Biometric verification requires manual confirmation. The property manager will check your details.",
-        "reject": "Not verified",
-        "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
+      "consent": {
+        "accept": "I agree to the face check",
+        "decline": "I do not agree: a person will check me",
+        "description": "To give you the access code of the property, we compare a selfie with the photo on your identity document.",
+        "documentKept": "The photo of your document is kept encrypted only until the check is over, then it is deleted.",
+        "optional": "You can say no. A person at the property will then check your identity with you, and the access code reaches you after their decision. Saying no does not stop your check-in.",
+        "optionalTitle": "It is your choice",
+        "purpose": "You photograph your document and then take a selfie with the camera. A program on our server compares the two. Your selfie is never saved: it is deleted as soon as the comparison ends.",
+        "purposeTitle": "What happens",
+        "title": "Check your identity with your face",
+        "version": "Version of this text: {{version}}"
       }
     },
     "consent": {
@@ -3411,6 +3414,76 @@
       "HeadOfFamily": "Head of family",
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Photo of the identity document",
+        "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo and the two lines of letters at the bottom, without reflections.",
+        "notAcceptable": "The photo is not good enough yet. Please take it again.",
+        "pick": "Photograph the document",
+        "pickAgain": "Photograph it again",
+        "sending": "Reading the document...",
+        "title": "Photograph your identity document"
+      },
+      "documentNotArchived": "The document will not be archived.",
+      "guidance": {
+        "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
+        "hold_still": "Hold the phone still: the photo is blurred.",
+        "less_light": "There is too much light: move to a softer light.",
+        "more_light": "There is too little light: move to a brighter place.",
+        "move_closer": "Move closer: your face is too small in the picture.",
+        "one_face_only": "Only you should be in the picture.",
+        "other": "Please take the photo again.",
+        "retake_picture": "The picture could not be read: please take it again.",
+        "retake_selfie": "Take the selfie again, looking straight at the camera.",
+        "show_document_photo": "Show the side of the document with your photo.",
+        "show_whole_document": "Show the whole side of the document with the two lines of letters at the bottom.",
+        "show_your_face": "Show your face: we could not see it in the picture.",
+        "tip_remove_glasses": "Take off your glasses.",
+        "tip_remove_mask": "Take off any mask or anything that covers your face.",
+        "upload_document_again": "Photograph the document again: it could not be read.",
+        "use_live_camera": "Take the selfie now with the camera, not from a photo or a screen.",
+        "use_valid_document": "The document is expired: use a valid one."
+      },
+      "intro": "Only the guest who leaves the identity document takes part in this step. The other guests do not need to take a selfie.",
+      "nextHint": "Finish this step to go on. If you prefer, ask an operator to verify you.",
+      "operator": {
+        "ask": "Ask an operator to verify me",
+        "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
+      },
+      "problem": {
+        "consent_required": "We need your answer about the face check first.",
+        "document_photo": "We need the photo of the document again: please take it once more.",
+        "document_required": "Please photograph the document first.",
+        "failed": "Something went wrong. Please try again.",
+        "link_unavailable": "This link is no longer valid, or the check-in is already complete. Ask your host for a new link.",
+        "network": "We could not reach the server. Nothing was saved: check your connection and try again.",
+        "processing": "We could not process the photo. Please try again.",
+        "too_large": "The photo is too large. Take it again with a lower resolution.",
+        "too_many_requests": "Too many attempts in a short time. Wait a moment and try again.",
+        "unsupported": "This type of file is not supported. Use a JPEG or PNG photo."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "If your booking has an email address, we also sent the code there.",
+          "codeLabel": "Your access code",
+          "noCode": "Your identity is verified. If your booking has an email address, we sent the access code there; otherwise your host will give you the access instructions.",
+          "title": "You are verified"
+        },
+        "operator": {
+          "notOffered": "The face check is not used for this stay: a person has to verify your identity. Ask for it here and the host will be told. The access code reaches you after their decision.",
+          "text": "The host will verify your identity. The access code reaches you after their decision.",
+          "title": "A person will check your identity"
+        },
+        "retry": {
+          "again": "Take the selfie again",
+          "againDocument": "Photograph the document again",
+          "attempts": "Attempts left: {{count}}",
+          "intro": "The check did not pass this time. Here is what to change:",
+          "noReason": "The check did not pass this time.",
+          "title": "We could not verify you yet"
+        }
+      }
     },
     "invoice": {
       "fields": {
