@@ -5168,31 +5168,6 @@
     }
   },
   "complianceArchive": {
-    "cassetto": {
-      "cancel": "Cancel",
-      "checkLabel": "What to check",
-      "continue": "Continue the check",
-      "destinationUnavailable": "We can't tell you where to go right now. Try again in a moment.",
-      "disclosureBody": "The outcome stays in the connected area of your channel manager and CasaZen does not import it: coming back here changes no state and creates no proof.",
-      "disclosureTitle": "Data consulted on Octorate",
-      "fallbackGuide": "In the meantime you can open the area of your channel manager yourself, find the section for the data sent to the police and ISTAT, and then come back here.",
-      "intro": {
-        "Alloggiati": "You're about to open the area of your channel manager where you can see the outcome of the Alloggiati submission. Below is what to check.",
-        "Istat": "You're about to open the area of your channel manager where you can see the outcome of the ISTAT submission. Below is what to check."
-      },
-      "listingLabel": "Listing in the channel manager",
-      "menuPathLabel": "Where to look",
-      "notAvailable": "The check in the Cassetto Compliance is not available right now.",
-      "periodLabel": "Period",
-      "propertyLabel": "Property",
-      "propertyNotMapped": "This property is not connected to your channel manager.",
-      "startFailed": "We couldn't open the check. You are still in CasaZen: try again in a moment.",
-      "startFailedTitle": "Check not opened",
-      "stayLabel": "Stay",
-      "targetNotFound": "We can't find this property or this stay.",
-      "title": "Cassetto Compliance",
-      "verify": "Check in your Cassetto Compliance"
-    },
     "coverage": {
       "counts": "{{proven}} with proof · {{toVerify}} to check · {{missing}} missing · {{notApplicable}} not applicable",
       "deadline": "Deadline: {{when}}",

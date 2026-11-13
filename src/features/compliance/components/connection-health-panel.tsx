@@ -10,9 +10,10 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useConnectionHealth } from '@/queries/compliance-health';
-import type { CassettoTopic, ConnectionHealthLine, ConnectionHealthState } from '@/types';
+import type { ConnectionHealthLine, ConnectionHealthState } from '@/types';
+import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
+import { ComplianceDrawerButton } from '../compliance-drawer/compliance-drawer-button';
 import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
-import { CassettoVerifyButton } from './cassetto-verify-button';
 
 /** The look of a state: an icon, a word and a colour together (the colour is never the only sign). The tones are the semantic tokens, with an AA fallback. */
 const STATE_LOOK: Record<ConnectionHealthState, { Icon: LucideIcon; tone: string }> = {
@@ -35,7 +36,7 @@ const STATE_LOOK: Record<ConnectionHealthState, { Icon: LucideIcon; tone: string
 };
 
 interface HealthRowProps {
-  topic: CassettoTopic;
+  topic: ComplianceHandoffTopic;
   line: ConnectionHealthLine;
   applies: boolean;
   propertyId: string;
@@ -93,7 +94,10 @@ function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath }: H
               {t(instructions)}
             </p>
           ) : null}
-          {view.checkInChannelManager ? <CassettoVerifyButton topic={topic} propertyId={propertyId} testId={`connection-health-${topic}-verify`} /> : null}
+          {view.checkInChannelManager ? (
+            // The compliance drawer (E03/F05/US02): the outcome of this communication of this property is the channel manager's to tell; it is offered where the connector is on.
+            <ComplianceDrawerButton target={{ topic, propertyId }} subject={t(`connectionHealth.topic.${topic}`)} className="min-h-11" testId={`connection-health-${topic}-verify`} />
+          ) : null}
         </div>
       ) : null}
 

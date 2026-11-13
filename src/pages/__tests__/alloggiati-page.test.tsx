@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { complianceArchiveApi } from '@/api/compliance-archive.api';
-import { complianceHandoffApi } from '@/api/compliance-handoff.api';
+import { octorateComplianceHandoffApi } from '@/api/octorate-compliance-handoff.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import i18n from '@/i18n/config';
@@ -17,6 +17,7 @@ import { freezeClock } from '@/test/clock';
 import { expectNoAxeViolations } from '@/test/axe';
 import { useProperties } from '@/queries/use-properties';
 import type { ComplianceArchiveEntry, ComplianceArchivePage, CoverageReport, CoverageRow } from '@/types';
+import type { ComplianceHandoff } from '@/types/compliance-handoff.types';
 import { AlloggiatiPage } from '../AlloggiatiPage';
 
 vi.mock('@/api/compliance-archive.api', async (importOriginal) => ({
@@ -31,10 +32,7 @@ vi.mock('@/api/compliance-archive.api', async (importOriginal) => ({
     uploadProof: vi.fn(),
   },
 }));
-vi.mock('@/api/compliance-handoff.api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/api/compliance-handoff.api')>()),
-  complianceHandoffApi: { start: vi.fn() },
-}));
+vi.mock('@/api/octorate-compliance-handoff.api', () => ({ octorateComplianceHandoffApi: { start: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/file-download')>()),
   saveBlobAs: vi.fn(),
@@ -100,6 +98,19 @@ const row = (evidenceClass: CoverageRow['evidenceClass'], change: Partial<Covera
   reason: 'evidence_missing',
   handoffTopic: null,
   ...change,
+});
+
+/** What the server answers to «Verifica nel tuo Cassetto Compliance» (the compliance drawer of E03/F05/US02 asks it): where to go, what to look at there. */
+const handoff = (topic: ComplianceHandoff['topic'], change: Partial<ComplianceHandoff['context']> = {}): ComplianceHandoff => ({
+  handoffId: 'hf_5b0e2c9a41d94c63a8d1',
+  startedAt: '2026-11-13T10:00:00Z',
+  expiresAt: '2099-01-01T00:00:00Z',
+  topic,
+  destinationUrl: 'https://panel.example.com/home',
+  destinationKind: 'Home',
+  returnPath: ARCHIVE,
+  context: { propertyId: P1, propertyName: 'Casa Como', octorateListingName: null, bookingId: null, bookingCode: null, period: null, ...change },
+  guide: { code: topic === 'Istat' ? 'istat_period' : 'alloggiati_short_stay', menuPath: 'Strutture, poi Questura', check: "Controlla l'invio." },
 });
 
 const report = (rows: CoverageRow[], change: Partial<CoverageReport> = {}): CoverageReport => ({
@@ -568,24 +579,61 @@ describe('the summary of the period', () => {
     const external = await screen.findByTestId('coverage-external');
     expect(screen.getByTestId('coverage-headline')).toHaveAttribute('data-tone', 'warning');
     expect(screen.getByTestId('coverage-headline')).toHaveTextContent('1 esito da verificare nel Cassetto Compliance');
-    expect(within(external).getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance' })).toBeInTheDocument();
+    // The button is the one of the compliance drawer, named after the row it is on (a screen reader tells the rows apart).
+    expect(within(external).getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance: Soggiorno AB123-CD456 · arrivo 15 agosto 2026' })).toBeInTheDocument();
     expect(screen.getByTestId('coverage-consulted')).toHaveTextContent('Dati consultati su Octorate');
     // No result is inferred: no «inviato», no «ok», no green.
     expect(screen.getByTestId('coverage-row').textContent).not.toMatch(/inviato correttamente|esito positivo|prova archiviata il|è in regola/i);
   });
 
-  it('AlloggiatiPage_VerifyFromARow_StartsTheHandoffOfThatStay', async () => {
+  // The button is the one of the compliance drawer: it asks the server for the stay of the row (its property, the topic the server sent) and the route of this page
+  // with its filters, which is what the host comes back to; it opens the dialog and nothing else (no proof, no light).
+  it('AlloggiatiPage_VerifyFromARow_AsksTheHandoffOfThatStayAndComesBackToThisPageWithItsFilters', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(
       report([row('ExternalVerificationRequired', { kind: 'Alloggiati', bookingId: 'b1', bookingCode: 'AB123-CD456', day: '2026-08-15', period: null, handoffTopic: 'Alloggiati' })]),
     );
-    vi.mocked(complianceHandoffApi.start).mockRejectedValue(problem(409, 'octorate_handoff_property_not_mapped'));
+    vi.mocked(octorateComplianceHandoffApi.start).mockResolvedValue(handoff('Alloggiati', { bookingId: 'b1', bookingCode: 'AB123-CD456' }));
     renderPage(`${ARCHIVE}?property=${P1}`, flags);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Verifica nel tuo Cassetto Compliance' }));
+    fireEvent.click(await screen.findByTestId('coverage-drawer'));
 
-    await waitFor(() => expect(complianceHandoffApi.start).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(complianceHandoffApi.start).mock.calls[0][0]).toEqual({ topic: 'Alloggiati', propertyId: P1, bookingId: 'b1', returnPath: `${ARCHIVE}?property=${P1}` });
-    expect(await screen.findByTestId('cassetto-verify-error')).toHaveTextContent('non è collegato al tuo channel manager');
+    await waitFor(() => expect(octorateComplianceHandoffApi.start).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(octorateComplianceHandoffApi.start).mock.calls[0][0]).toEqual({
+      topic: 'Alloggiati',
+      propertyId: P1,
+      bookingId: 'b1',
+      period: null,
+      returnPath: `${ARCHIVE}?property=${P1}`,
+    });
+    expect(await screen.findByTestId('compliance-drawer-ready')).toBeInTheDocument();
+  });
+
+  it('AlloggiatiPage_VerifyFromAnIstatRow_AsksTheHandoffOfThatMonthOfThatProperty', async () => {
+    vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(report([row('ExternalVerificationRequired', { handoffTopic: 'Istat', period: '2026-08' })]));
+    vi.mocked(octorateComplianceHandoffApi.start).mockResolvedValue(handoff('Istat', { period: '2026-08' }));
+    renderPage(`${ARCHIVE}?kind=IstatProof&property=${P1}&period=2026-08`, flags);
+
+    fireEvent.click(await screen.findByTestId('coverage-drawer'));
+
+    await waitFor(() => expect(octorateComplianceHandoffApi.start).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(octorateComplianceHandoffApi.start).mock.calls[0][0]).toEqual({
+      topic: 'Istat',
+      propertyId: P1,
+      bookingId: null,
+      period: '2026-08',
+      returnPath: `${ARCHIVE}?kind=IstatProof&property=${P1}&period=2026-08`,
+    });
+  });
+
+  // The server decides which outcome the channel manager holds (`handoffTopic`): a row that does not carry it is not worked out from its kind, and has no button.
+  it('AlloggiatiPage_ToVerifyRowWithoutATopicFromTheServer_OffersNoButtonAndTellsWhereTheOutcomeIs', async () => {
+    vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(report([row('ExternalVerificationRequired', { handoffTopic: null })]));
+    renderPage(ARCHIVE, flags);
+
+    const external = await screen.findByTestId('coverage-external');
+    expect(within(external).queryByRole('button')).not.toBeInTheDocument();
+    expect(external).toHaveTextContent("L'esito si trova nell'area del tuo channel manager");
+    expect(octorateComplianceHandoffApi.start).not.toHaveBeenCalled();
   });
 
   it('AlloggiatiPage_ConnectorOff_ToVerifyRowTellsWhereTheOutcomeIsAndOffersNoButton', async () => {

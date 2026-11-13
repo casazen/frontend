@@ -6,24 +6,24 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { complianceHealthApi } from '@/api/compliance-health.api';
+import { octorateComplianceHandoffApi } from '@/api/octorate-compliance-handoff.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { ComplianceConnectionHealth, ConnectionHealthLine } from '@/types';
+import type { ComplianceHandoff } from '@/types/compliance-handoff.types';
 import { ConnectionHealthPanel } from '../connection-health-panel';
 
 vi.mock('@/api/compliance-health.api', () => ({ complianceHealthApi: { getConnectionHealth: vi.fn() } }));
-vi.mock('@/api/compliance-handoff.api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/api/compliance-handoff.api')>()),
-  complianceHandoffApi: { start: vi.fn() },
-}));
+vi.mock('@/api/octorate-compliance-handoff.api', () => ({ octorateComplianceHandoffApi: { start: vi.fn() } }));
 const workspace = vi.hoisted(() => ({ permissions: ['property.read', 'booking.read'] as string[] }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (context: string, permission: string) => context === 'short-rent' && workspace.permissions.includes(permission) }),
 }));
 
 const PROPERTY_ID = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
+const PROPERTY_PAGE = `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`;
 
 const line = (change: Partial<ConnectionHealthLine> = {}): ConnectionHealthLine => ({
   sender: 'ChannelManager',
@@ -52,7 +52,20 @@ function problem(status: number): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: {}, statusText: '', headers: {}, config });
 }
 
-function renderPanel(connector = false, timeZone: string | undefined = 'Europe/Rome') {
+/** What the server answers to «Verifica nel tuo Cassetto Compliance» (the compliance drawer of E03/F05/US02 asks it): where to go, what to look at there. */
+const handoff = (topic: ComplianceHandoff['topic']): ComplianceHandoff => ({
+  handoffId: 'hf_5b0e2c9a41d94c63a8d1',
+  startedAt: '2026-11-13T10:00:00Z',
+  expiresAt: '2099-01-01T00:00:00Z',
+  topic,
+  destinationUrl: 'https://panel.example.com/home',
+  destinationKind: 'Home',
+  returnPath: PROPERTY_PAGE,
+  context: { propertyId: PROPERTY_ID, propertyName: 'Casa Como', octorateListingName: null, bookingId: null, bookingCode: null, period: null },
+  guide: { code: topic === 'Istat' ? 'istat_period' : 'alloggiati_daily', menuPath: 'Strutture, poi Questura', check: "Controlla l'invio." },
+});
+
+function renderPanel(connector = false, timeZone: string | undefined = 'Europe/Rome', initial = '/') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     createElement(
@@ -61,7 +74,7 @@ function renderPanel(connector = false, timeZone: string | undefined = 'Europe/R
       createElement(
         FeatureFlagsContext.Provider,
         { value: { flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false } },
-        createElement(MemoryRouter, null, createElement(ConnectionHealthPanel, { propertyId: PROPERTY_ID, timeZone })),
+        createElement(MemoryRouter, { initialEntries: [initial] }, createElement(ConnectionHealthPanel, { propertyId: PROPERTY_ID, timeZone })),
       ),
     ),
   );
@@ -202,6 +215,22 @@ describe('ConnectionHealthPanel', () => {
     expect(screen.getByTestId('connection-health-Istat-verify')).toHaveTextContent('Verifica nel tuo Cassetto Compliance');
     // Active needs no verification.
     expect(screen.queryByTestId('connection-health-Alloggiati-verify')).not.toBeInTheDocument();
+  });
+
+  // The button is the one of the compliance drawer: it asks the server for that property and that communication (the topic of the line) and the route of the page of
+  // the property the host comes from, then opens the dialog. The verification is the channel manager's to tell, never a result of CasaZen's.
+  it.each(['Alloggiati', 'Istat'] as const)('ConnectionHealthPanel_VerifyPressedOnThe%sLine_AsksTheHandoffOfThatPropertyAndComesBackToThePropertyPage', async (topic) => {
+    const unknown = line({ state: 'Unknown', lastAutomaticRunAt: null });
+    vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: unknown, istat: unknown }));
+    vi.mocked(octorateComplianceHandoffApi.start).mockResolvedValue(handoff(topic));
+    renderPanel(true, 'Europe/Rome', PROPERTY_PAGE);
+    await screen.findByTestId(`connection-health-${topic}`);
+
+    fireEvent.click(screen.getByTestId(`connection-health-${topic}-verify`));
+
+    await waitFor(() => expect(octorateComplianceHandoffApi.start).toHaveBeenCalledTimes(1));
+    expect(octorateComplianceHandoffApi.start).toHaveBeenCalledWith({ topic, propertyId: PROPERTY_ID, bookingId: null, period: null, returnPath: PROPERTY_PAGE });
+    expect(await screen.findByTestId('compliance-drawer-ready')).toBeInTheDocument();
   });
 
   it('ConnectionHealthPanel_UnknownChannelManagerWithTheConnectorOff_HasNoButtonThatCanOnlyFail', async () => {

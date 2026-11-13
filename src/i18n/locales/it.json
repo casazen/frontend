@@ -5168,31 +5168,6 @@
     }
   },
   "complianceArchive": {
-    "cassetto": {
-      "cancel": "Annulla",
-      "checkLabel": "Cosa controllare",
-      "continue": "Continua la verifica",
-      "destinationUnavailable": "Al momento non riusciamo a indicarti dove andare. Riprova tra poco.",
-      "disclosureBody": "L'esito resta nell'area collegata del tuo channel manager e CasaZen non lo importa: tornando qui non cambia nessuno stato e non viene creata nessuna prova.",
-      "disclosureTitle": "Dati consultati su Octorate",
-      "fallbackGuide": "Intanto puoi aprire tu l'area del tuo channel manager, cercare la sezione dei dati per la Polizia e l'ISTAT e poi tornare qui.",
-      "intro": {
-        "Alloggiati": "Stai per aprire l'area del tuo channel manager dove trovi l'esito dell'invio degli Alloggiati. Qui sotto trovi cosa controllare.",
-        "Istat": "Stai per aprire l'area del tuo channel manager dove trovi l'esito dell'invio all'ISTAT. Qui sotto trovi cosa controllare."
-      },
-      "listingLabel": "Struttura nel channel manager",
-      "menuPathLabel": "Dove guardare",
-      "notAvailable": "La verifica nel Cassetto Compliance non è disponibile in questo momento.",
-      "periodLabel": "Periodo",
-      "propertyLabel": "Immobile",
-      "propertyNotMapped": "Questo immobile non è collegato al tuo channel manager.",
-      "startFailed": "Non riusciamo ad aprire la verifica. Sei ancora in CasaZen: riprova tra poco.",
-      "startFailedTitle": "Verifica non aperta",
-      "stayLabel": "Soggiorno",
-      "targetNotFound": "Non troviamo questo immobile o questo soggiorno.",
-      "title": "Cassetto Compliance",
-      "verify": "Verifica nel tuo Cassetto Compliance"
-    },
     "coverage": {
       "counts": "{{proven}} con prova · {{toVerify}} da verificare · {{missing}} mancanti · {{notApplicable}} non applicabili",
       "deadline": "Scadenza: {{when}}",

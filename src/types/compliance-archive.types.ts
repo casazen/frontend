@@ -1,7 +1,10 @@
 /**
- * The archive of the proofs CasaZen holds for the compliance obligations, the coverage report and the way to the area where the channel manager
- * keeps an outcome (E03/F02/US03/T01, E03/F05/US01, NF-47, NF-52, CHK-08, CHK-12 point 8, CHK-15). Enums arrive as their names.
+ * The archive of the proofs CasaZen holds for the compliance obligations and the coverage report (E03/F02/US03/T01, NF-47, NF-52, CHK-08, CHK-12
+ * point 8). Enums arrive as their names. The passage to the area where the channel manager keeps an outcome (CHK-15) is not here: its types are
+ * those of the compliance drawer (`compliance-handoff.types.ts`).
  */
+
+import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 
 /** What a proof proves (`ManualProofKind`): the receipt of an Alloggiati communication, the proof of an ISTAT one, a tourist tax declaration or payment. */
 export type ComplianceProofKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristTaxDeclaration' | 'TouristTaxPayment';
@@ -85,9 +88,6 @@ export type CoverageEvidenceClass = 'OfficialProof' | 'ExternalVerificationRequi
 /** What an obligation is about: the Alloggiati communication of a stay, the ISTAT communication or the tourist tax of a month of a property. */
 export type CoverageKind = 'Alloggiati' | 'Istat' | 'TouristTax';
 
-/** The outcome the host goes to check in the connected area: the Alloggiati communication of a stay or the ISTAT one of a period. */
-export type CassettoTopic = 'Alloggiati' | 'Istat';
-
 /** One obligation of the coverage report (`GET /api/compliance/report`). A stay is named by its code and arrival day, never by its guest. */
 export interface CoverageRow {
   kind: CoverageKind;
@@ -108,8 +108,8 @@ export interface CoverageRow {
   action: string | null;
   /** A stable code the clients translate: a code this version does not know gets the generic words of the state, never the raw code. */
   reason: string;
-  /** `Alloggiati` or `Istat` for a row whose outcome only the channel manager holds. */
-  handoffTopic: CassettoTopic | null;
+  /** `Alloggiati` or `Istat` for a row whose outcome only the channel manager holds: the server says it, the client never works it out. */
+  handoffTopic: ComplianceHandoffTopic | null;
 }
 
 /** The coverage report of a period: complete only when every applicable obligation has its archived proof. */
@@ -143,36 +143,4 @@ export interface UploadComplianceProofInput {
   /** `yyyy-MM-dd`, not in the future. */
   day: string;
   file: File;
-}
-
-/** The answer to «Verifica nel tuo Cassetto Compliance» (`POST /api/compliance/octorate-handoffs`): where to go, what to look at there. Never a result. */
-export interface CassettoHandoff {
-  handoffId: string;
-  startedAt: string;
-  expiresAt: string;
-  topic: CassettoTopic;
-  /** The one allowlisted address to open in the same tab. It is never built here. */
-  destinationUrl: string;
-  destinationKind: 'Home' | 'DeepLink';
-  returnPath: string;
-  context: {
-    propertyId: string;
-    propertyName: string;
-    octorateListingName: string | null;
-    bookingId: string | null;
-    bookingCode: string | null;
-    period: string | null;
-  };
-  guide: { code: string; menuPath: string; check: string };
-}
-
-/** What the host asks for when it goes to check an outcome: no address in it, CasaZen alone decides where the host goes. */
-export interface CassettoHandoffRequest {
-  topic: CassettoTopic;
-  propertyId: string;
-  bookingId?: string;
-  /** `yyyy-MM` or `yyyy-MM-dd`, when the check is about a period. */
-  period?: string;
-  /** The relative CasaZen route the host comes from (path and query, starting with `/`). */
-  returnPath: string;
 }

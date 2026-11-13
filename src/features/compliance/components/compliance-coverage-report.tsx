@@ -6,10 +6,11 @@ import { generatePath, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { formatRomeDateTime, formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import type { CassettoTopic, ComplianceProofKind, CoverageEvidenceClass, CoverageReport, CoverageRow } from '@/types';
+import type { ComplianceProofKind, CoverageEvidenceClass, CoverageReport, CoverageRow } from '@/types';
+import { ComplianceDrawerButton } from '../compliance-drawer/compliance-drawer-button';
+import { drawerTargetOf } from '../compliance-drawer/compliance-drawer-model';
+import { useComplianceDrawerAvailable } from '../compliance-drawer/use-compliance-drawer';
 import { COVERAGE_GROUPS, formatPeriod, proofKindOfRow, rowMatchesKind, rowsOf, summarizeCoverage, type SummaryTone } from '../lib/archive-model';
-import { useCassettoAvailable } from '../lib/cassetto';
-import { CassettoVerifyButton } from './cassetto-verify-button';
 import type { ProofUploadPrefill } from './proof-upload-dialog';
 
 /** Rows of a group shown at first: a year of stays can hold hundreds, and the page is for what needs the host, not for a wall of rows. */
@@ -170,11 +171,15 @@ interface CoverageRowItemProps {
 
 function CoverageRowItem({ row, canUpload, onUpload, language }: CoverageRowItemProps) {
   const { t } = useTranslation();
-  const cassetto = useCassettoAvailable();
   const proofKind = proofKindOfRow(row.kind);
   const mayUpload = canUpload(proofKind);
   const external = row.evidenceClass !== 'OfficialProof' && row.evidenceClass !== 'Missing' && row.evidenceClass !== 'NotApplicable';
-  const topic: CassettoTopic | null = row.handoffTopic ?? (row.kind === 'Alloggiati' ? 'Alloggiati' : row.kind === 'Istat' ? 'Istat' : null);
+  // «Verifica nel tuo Cassetto Compliance» (the compliance drawer): the server says which outcome the channel manager holds (`handoffTopic`) and the client never
+  // works it out from the kind of the row; the property is the row's, the stay or the month are the ones the topic asks for. Offered where the connector is on.
+  const drawer = useComplianceDrawerAvailable()
+    ? drawerTargetOf({ id: row.propertyId, propertyId: row.propertyId, bookingId: row.bookingId, period: row.period, handoffTopic: row.handoffTopic })
+    : undefined;
+  const title = rowTitle(t, row, language);
   const prefill: ProofUploadPrefill = { propertyId: row.propertyId, kind: proofKind, ...(row.kind === 'Alloggiati' ? { day: row.day ?? undefined } : { period: row.period ?? undefined }) };
   const reason = KNOWN_REASONS.has(row.reason) ? t(`complianceArchive.reason.${row.reason}`) : '';
   const deadline = row.deadlineAt && row.evidenceClass === 'Missing' ? formatRomeDateTime(row.deadlineAt, language, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '';
@@ -183,7 +188,7 @@ function CoverageRowItem({ row, canUpload, onUpload, language }: CoverageRowItem
   return (
     <li className="space-y-2 p-4" data-testid="coverage-row" data-evidence={row.evidenceClass}>
       <div className="min-w-0">
-        <p className="break-words font-medium">{rowTitle(t, row, language)}</p>
+        <p className="break-words font-medium">{title}</p>
         <p className="break-words text-sm text-muted-foreground">{row.propertyName}</p>
       </div>
 
@@ -211,14 +216,9 @@ function CoverageRowItem({ row, canUpload, onUpload, language }: CoverageRowItem
       {external ? (
         <div className="space-y-2" data-testid="coverage-external">
           <p className="text-sm font-medium">{t('complianceArchive.coverage.toVerifyTitle')}</p>
-          {topic && cassetto ? (
+          {drawer ? (
             <div className="flex flex-wrap items-start gap-2">
-              <CassettoVerifyButton
-                topic={topic}
-                propertyId={row.propertyId}
-                bookingId={row.kind === 'Alloggiati' ? row.bookingId : null}
-                period={row.kind === 'Istat' ? row.period : null}
-              />
+              <ComplianceDrawerButton target={drawer} subject={title} className="min-h-11" testId="coverage-drawer" />
               {mayUpload ? (
                 <Button type="button" size="sm" variant="ghost" className="min-h-11" onClick={() => onUpload(prefill)} data-testid="coverage-have-receipt">
                   {t('complianceArchive.coverage.haveReceipt')}
@@ -229,7 +229,7 @@ function CoverageRowItem({ row, canUpload, onUpload, language }: CoverageRowItem
             <p className="text-sm">{t('complianceArchive.coverage.toVerifyByHand')}</p>
           )}
           <p className="text-xs text-muted-foreground" data-testid="coverage-consulted">
-            {t('complianceArchive.cassetto.disclosureTitle')}
+            {t('compliance.drawer.disclosure.title')}
           </p>
         </div>
       ) : null}
