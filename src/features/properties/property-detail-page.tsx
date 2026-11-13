@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { ConnectionHealthPanel } from '@/features/compliance/components/connection-health-panel';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -229,6 +230,8 @@ export function PropertyDetailPage() {
           {panel === 'info' && (
             <div className="space-y-8">
               <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+              {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
+              <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
               {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
               {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
             </div>
