@@ -155,12 +155,15 @@ export function OwnerInvitationPage() {
   // True while the secret waits in memory on purpose for another try: the claims of the portal did not reach the identity provider, the request has to be sent again, or another
   // account has to sign in with it. A person who leaves the page (a link, the back button) takes it with them: the link of the e-mail still works and brings it back.
   const keepsSecret = useRef(false);
-  useEffect(
-    () => () => {
+  // And false once the person has left, so that the answer of a request still on its way does not keep a secret for somebody who is gone.
+  const onPage = useRef(false);
+  useEffect(() => {
+    onPage.current = true;
+    return () => {
+      onPage.current = false;
       if (keepsSecret.current) clearOwnerInvitationToken();
-    },
-    [],
-  );
+    };
+  }, []);
 
   /** A new token from Auth0 (the old one has no owner claims) and the portal in place of this address; a failure of either is told, not hidden. */
   const openPortal = useCallback(async () => {
@@ -180,8 +183,9 @@ export function OwnerInvitationPage() {
       reset();
       if (!claimsArePublished(accepted.claimsRefresh)) {
         // Accepted, but the portal would refuse the person (no claims in the token): not a success. The server repeats the hand-over of the claims at every acceptance of
-        // the same invitation by the same account, so the secret is kept, in memory only, for the «Riprova» that accepts again.
-        keepsSecret.current = true;
+        // the same invitation by the same account, so the secret is kept, in memory only, for the «Riprova» that accepts again (unless the person has left meanwhile).
+        keepsSecret.current = onPage.current;
+        if (!onPage.current) clearOwnerInvitationToken();
         setStage('claimsPending');
         return;
       }
@@ -201,7 +205,7 @@ export function OwnerInvitationPage() {
         // A link that does not work is final: the secret is forgotten. It is kept (in memory, until the person leaves) for a request worth sending again, for an account whose
         // e-mail is not verified yet and for an account that is not the invited one: the link is good, and the person can sign in with the right account and come back with it.
         const refused = ownerInvitationFailureOf(error);
-        const kept = refused.kind === 'retry' || refused.kind === 'other' || refused.kind === 'emailNotVerified' || refused.kind === 'emailMismatch';
+        const kept = (refused.kind === 'retry' || refused.kind === 'other' || refused.kind === 'emailNotVerified' || refused.kind === 'emailMismatch') && onPage.current;
         if (!kept) clearOwnerInvitationToken();
         keepsSecret.current = kept;
         setFailure(refused);

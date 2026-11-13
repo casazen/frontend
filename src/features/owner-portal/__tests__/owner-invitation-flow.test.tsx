@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
@@ -226,6 +226,23 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(refreshAccessToken).not.toHaveBeenCalled();
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
     expect(peekOwnerInvitationToken()).toBe(TOKEN);
+  });
+
+  it('OwnerInvitationRoute_LeavingThePageWhileARequestIsOnItsWay_TheAnswerDoesNotKeepTheSecretForWhoHasGone', async () => {
+    mockAuth(true);
+    let answer: (value: { data: unknown }) => void = () => undefined;
+    vi.mocked(axios.post).mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+    const view = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+    await waitFor(() => expect(axios.post).toHaveBeenCalledTimes(1));
+
+    // The person leaves before the answer comes, and the answer says the claims are not published.
+    view.unmount();
+    await act(async () => {
+      answer({ data: { ...ACCEPTED, claimsRefresh: 'failed' } });
+    });
+
+    // Nothing waits for them: the secret is not kept in memory by an answer that finds nobody on the page (nor is a request worth sending again kept for them).
+    expect(peekOwnerInvitationToken()).toBeNull();
   });
 
   it('OwnerInvitationRoute_LeavingThePageWhileTheClaimsAreNotPublished_ForgetsTheSecret', async () => {
