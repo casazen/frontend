@@ -99,4 +99,16 @@ describe('property condominium book', () => {
     expect(axios.post).not.toHaveBeenCalled();
   });
 
+  it('continues manual onboarding directly into the fiscal year after activation', async () => {
+    let active = false;
+    vi.mocked(axios.get).mockImplementation(async () => ({ data: [{ propertyId: 'property-1', propertyName: 'Appartamento sfitto', books: active ? [{ id: 'book-1', name: 'Appartamento sfitto', fiscalStartMonth: 1, periods: [] }] : [] }] }));
+    vi.mocked(axios.post).mockImplementation(async () => { active = true; return { data: {} }; });
+    show();
+    fireEvent.click(await screen.findByRole('button', { name: /Imposta manualmente/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Attiva gestione condominiale' }));
+    expect(await screen.findByLabelText('Nuovo esercizio')).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Come vuoi iniziare?' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Documento PDF')).not.toBeInTheDocument();
+  });
+
 });

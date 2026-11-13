@@ -13,8 +13,10 @@ test.beforeEach(async ({ page }) => {
 
 test('asks documents or manual setup first and activates a vacant apartment without uploads', async ({ page }) => {
   let active = false;
-  await page.route('**/api/long-rent/condominiums/properties', r => r.fulfill({ json: [{ propertyId: 'a1', propertyName: 'Appartamento sfitto', books: active ? [book] : [] }] }));
+  let createdYear = false;
+  await page.route('**/api/long-rent/condominiums/properties', r => r.fulfill({ json: [{ propertyId: 'a1', propertyName: 'Appartamento sfitto', books: active ? [{ ...book, periods: createdYear ? [period] : [] }] : [] }] }));
   await page.route('**/api/long-rent/condominiums/properties/a1', async r => { expect(r.request().postDataJSON()).toEqual({ name: 'Appartamento sfitto', fiscalStartMonth: 1 }); active = true; await r.fulfill({ json: book }); });
+  await page.route('**/api/long-rent/condominiums/b1/periods', async r => { expect(r.request().postDataJSON()).toEqual({ label: '2027' }); createdYear = true; await r.fulfill({ json: period }); });
   await page.route('**/api/long-rent/condominiums/b1/periods/y1/report', r => r.fulfill({ json: report }));
   await page.goto(demoUrl('/app/long-rent/payments', 'long-term'), { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Appartamento', { exact: true }).selectOption('a1');
@@ -23,8 +25,11 @@ test('asks documents or manual setup first and activates a vacant apartment with
   await page.getByRole('button', { name: /Imposta manualmente/ }).click();
   await expect(page.locator('input[type=file]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Attiva gestione condominiale' }).click();
-  await expect(page.getByRole('heading', { name: 'Panoramica', exact: true })).toBeVisible();
-  await expect(page.getByLabel('Quota ordinaria annuale (€)')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Preventivo e piano rate', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Come vuoi iniziare?' })).toHaveCount(0);
+  await page.getByLabel('Nuovo esercizio').fill('2027');
+  await page.getByRole('button', { name: 'Crea esercizio' }).click();
+  await expect(page.getByLabel('Quota ordinaria annuale (€)')).toBeVisible();
 });
 
 for (const width of [1440, 390]) test(`overview, payments and document review at ${width}px`, async ({ page }) => {

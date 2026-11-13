@@ -267,7 +267,7 @@ export function CondominiumManagement({ propertyId }: { propertyId?: string }) {
           key={book.id}
           book={book}
           canWrite={canWrite}
-          initialView={entry === "documents" ? "documents" : "panoramica"}
+          initialView={entry === "documents" ? "documents" : entry === "manual" ? "budget" : "panoramica"}
         />
       ) : null}
     </section>
