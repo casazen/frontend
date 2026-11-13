@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { publicCheckinApi } from '@/api/checkin.api';
+import { prepareDocumentPhoto } from '@/lib/image-capture';
 import type { IdentityVerificationState } from '@/types/public-checkin.types';
 import {
   afterConsent,
@@ -20,7 +21,10 @@ import {
 export interface IdentityVerificationController {
   /** Where the guest is; `null` while the page has no identity step (the verification is off, or the page has not loaded). */
   progress: IdentityProgress | null;
-  /** One call is in flight: every button of the step stays disabled until it ends (a second tap cannot start another). */
+  /**
+   * One call is in flight, or the photo for one is being made ready (decoded and redrawn in the browser, seconds for a large one): every button of the step
+   * stays disabled until it ends (a second tap, or a second photo, cannot start another).
+   */
   busy: boolean;
   /** Why the last call failed, for the sentence under the buttons; `null` when it worked. */
   problem: IdentityProblem | null;
@@ -30,16 +34,28 @@ export interface IdentityVerificationController {
   agree: () => Promise<void>;
   /** The guest refuses the face check: a person verifies. */
   refuse: () => Promise<void>;
-  /** The photo of the document. Resolves `true` when the API answered (the guest goes on or takes it again with the guidance), `false` when the call failed. */
-  sendDocument: (photo: Blob) => Promise<boolean>;
+  /**
+   * The photo of the document as the guest chose it: it is made ready (redrawn when it must be) and sent in one hold, so that the buttons are disabled from the
+   * pick. Resolves `true` when the API answered (the guest goes on or takes it again with the guidance), `false` when the photo could not be made ready or the
+   * call failed (`problem` says which).
+   */
+  sendDocument: (file: File) => Promise<boolean>;
   /** The selfie. Resolves `true` when the API answered, `false` when the call failed (the guest sends the same picture again). */
   sendSelfie: (selfie: Blob) => Promise<boolean>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
   retake: () => void;
-  /** A problem found before any call (a photo that cannot be sent). */
-  reportProblem: (problem: IdentityProblem) => void;
+}
+
+/** The photo could not be made ready in this browser: a type the API does not read, or a size it refuses that the browser could not reduce. */
+class PhotoNotReady extends Error {
+  readonly problem: IdentityProblem;
+
+  constructor(problem: IdentityProblem) {
+    super(problem);
+    this.problem = problem;
+  }
 }
 
 /**
@@ -88,7 +104,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
         update((current) => apply(current, answer));
         return true;
       } catch (error) {
-        const reason = classifyIdentityError(error);
+        const reason = error instanceof PhotoNotReady ? error.problem : classifyIdentityError(error);
         setProblem(reason);
         update((current) => afterProblem(current, reason));
         return false;
@@ -109,12 +125,17 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     await run(() => publicCheckinApi.postBiometricConsent(token, { consentGiven: false }), afterConsent);
   };
 
-  const sendDocument = (photo: Blob) =>
+  const sendDocument = (file: File) =>
     run(
       async () => {
-        const answer = await publicCheckinApi.postDocument(token, photo);
+        // A property that keeps no document gets the photo again with every selfie: the request of the selfie carries both pictures, so this one is held smaller.
+        // Made ready inside the hold of the call: a large photo takes seconds to decode and redraw, and no button may be live in that time.
+        const prepared = await prepareDocumentPhoto(file, { withSelfie: progress?.documentNotArchived === true });
+        if (!prepared.ok) throw new PhotoNotReady(prepared.problem);
+
+        const answer = await publicCheckinApi.postDocument(token, prepared.blob);
         // A property that keeps no document needs the photo again with every selfie: it stays in memory, for the step only.
-        documentPhoto.current = answer.documentNotArchived || progress?.documentNotArchived ? photo : null;
+        documentPhoto.current = answer.documentNotArchived || progress?.documentNotArchived ? prepared.blob : null;
         return answer;
       },
       afterDocument,
@@ -149,8 +170,6 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     update(afterRetake);
   };
 
-  const reportProblem = (reason: IdentityProblem) => setProblem(reason);
-
   return {
     progress,
     busy,
@@ -162,6 +181,5 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     sendSelfie,
     askOperator,
     retake,
-    reportProblem,
   };
 }

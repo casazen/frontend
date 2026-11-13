@@ -10,7 +10,7 @@ interface IdentityDocumentCaptureProps {
   refused: boolean;
   /** What to change in the photo, as codes of the API (empty when it gave none). */
   guidanceCodes: readonly string[];
-  /** A call of the step is in flight (this one or another): the buttons stay disabled. */
+  /** A call of the step is in flight, or the photo for one is being made ready (this one or another): the buttons and the file input stay disabled. */
   busy: boolean;
   /** The guest took or chose a photo. */
   onPhoto: (file: File) => void;
@@ -59,6 +59,7 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, busy, onPhoto,
           accept="image/jpeg,image/png"
           className="sr-only"
           tabIndex={-1}
+          disabled={busy}
           aria-label={t('checkin.identity.document.fileLabel')}
           data-testid="checkin-identity-document-file"
           onChange={(event) => {

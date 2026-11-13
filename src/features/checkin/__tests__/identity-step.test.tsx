@@ -46,6 +46,7 @@ function Harness({ initial }: { initial: IdentityVerificationState }) {
     <>
       <IdentityStep identity={identity} />
       <span data-testid="harness-concluded">{String(identity.concluded)}</span>
+      <span data-testid="harness-busy">{String(identity.busy)}</span>
     </>
   );
 }
@@ -312,6 +313,58 @@ describe('IdentityStep: the document (AC-NF51-1, AC-NF51-2)', () => {
     expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.unsupported'));
     expect(publicCheckinApi.postDocument).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('IdentityStep: a photo being made ready (one call at a time)', () => {
+  it('IdentityStep_AHeavyPhotoIsBeingMadeReady_EveryButtonAndTheFileInputAreDisabledAndTheStepIsBusyUntilItIsSent', async () => {
+    // A photo over 9 MB is decoded and redrawn in the browser, which takes seconds: the bitmap is held back here, so no call is in flight yet.
+    let decoded: (bitmap: unknown) => void = () => undefined;
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn().mockReturnValue(
+        new Promise((resolve) => {
+          decoded = resolve;
+        }),
+      ),
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn(), fillRect: vi.fn() } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (this: HTMLCanvasElement, callback, type) {
+      callback(new Blob(['redrawn'], { type }));
+    });
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValue({ success: true, acceptable: true, guidanceCodes: [], documentStored: true, documentNotArchived: false });
+    renderStep(state({ step: 'document', consentRecorded: true }));
+    expect(screen.getByTestId('harness-busy')).toHaveTextContent('false');
+
+    pickDocumentOfSize(9_500_000);
+
+    // Nothing can be started while it is made ready: not a second photo, not a person asked, and the page keeps Back and Next disabled (it reads busy).
+    await waitFor(() => expect(screen.getByTestId('checkin-identity-document-pick')).toBeDisabled());
+    expect(screen.getByTestId('checkin-identity-document-operator')).toBeDisabled();
+    expect(screen.getByTestId('checkin-identity-document-file')).toBeDisabled();
+    expect(screen.getByTestId('harness-busy')).toHaveTextContent('true');
+    expect(publicCheckinApi.postDocument).not.toHaveBeenCalled();
+
+    await act(async () => {
+      decoded({ width: 4000, height: 3000, close: vi.fn() });
+    });
+
+    await waitFor(() => expect(stage()).toBe('selfie'));
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('harness-busy')).toHaveTextContent('false');
+  });
+
+  it('IdentityStep_APhotoThatCannotBeMadeReady_SaysSoFreesTheButtonsAndCallsNothing', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockRejectedValue(new Error('cannot decode')));
+    renderStep(state({ step: 'document', consentRecorded: true }));
+
+    pickDocumentOfSize(9_500_000);
+
+    expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.too_large'));
+    expect(publicCheckinApi.postDocument).not.toHaveBeenCalled();
+    expect(screen.getByTestId('harness-busy')).toHaveTextContent('false');
+    expect(screen.getByTestId('checkin-identity-document-pick')).toBeEnabled();
+    expect(screen.getByTestId('checkin-identity-document-file')).toBeEnabled();
   });
 });
 

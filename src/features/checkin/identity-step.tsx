@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { BiometricConsent, SelfieCapture } from '@/components/checkin';
-import { prepareDocumentPhoto } from '@/lib/image-capture';
 import { IdentityDocumentCapture } from './components/identity-document-capture';
 import { IdentityResult } from './identity-result';
 import { BIOMETRIC_CONSENT_VERSION, problemKey } from './lib/identity-model';
@@ -20,16 +19,6 @@ export function IdentityStep({ identity }: IdentityStepProps) {
   const { t } = useTranslation();
   const { progress } = identity;
   if (!progress) return null;
-
-  const handleDocument = async (file: File) => {
-    // A property that keeps no document gets the photo again with every selfie: the request of the selfie carries both pictures, so this one is held smaller.
-    const prepared = await prepareDocumentPhoto(file, { withSelfie: progress.documentNotArchived });
-    if (!prepared.ok) {
-      identity.reportProblem(prepared.problem);
-      return;
-    }
-    await identity.sendDocument(prepared.blob);
-  };
 
   const { stage } = progress;
 
@@ -58,7 +47,7 @@ export function IdentityStep({ identity }: IdentityStepProps) {
           refused={progress.documentRefused}
           guidanceCodes={progress.guidanceCodes}
           busy={identity.busy}
-          onPhoto={(file) => void handleDocument(file)}
+          onPhoto={(file) => void identity.sendDocument(file)}
           onRequestOperator={() => void identity.askOperator()}
         />
       )}
