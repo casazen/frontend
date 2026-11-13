@@ -1363,6 +1363,7 @@
       "octorateRoomInvalid": "La camera scelta non è una camera di questo annuncio. Torna indietro e scegli di nuovo.",
       "octorateRoomNotChosen": "Manca la camera di un annuncio: scegli quale.",
       "octorateStateInvalid": "La richiesta di collegamento non è più valida (scaduta, già usata o avviata da un altro account). Ricomincia il collegamento.",
+      "octorateSyncNotRetryable": "Questa prenotazione non ha un invio al channel manager da ripetere.",
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
@@ -1548,6 +1549,7 @@
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
       "checkoutPaymentNotResumable": "Non c'è un pagamento da completare per questa prenotazione: è già in corso, completato oppure la prenotazione è chiusa.",
+      "paymentLinkUnavailable": "Non è possibile creare il link di pagamento: servono un conto Stripe pronto a incassare, un saldo da pagare e una prenotazione inserita da te e non annullata. Se un pagamento è già in corso, aspetta il suo esito.",
       "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto.",
       "stripeConnectUnavailable": "Stripe non risponde in questo momento. Il tuo account Stripe collegato non è stato modificato: riprova tra qualche istante.",
       "stripeConnectNotConfigured": "I pagamenti Stripe non sono configurati correttamente sul server. Il tuo account collegato non è stato modificato: contatta l'assistenza CasaZen.",
@@ -2181,6 +2183,9 @@
         "invalid": "Indica un numero di minori valido",
         "lessThanGuests": "Serve almeno un adulto: i minori devono essere meno degli ospiti"
       },
+      "paymentArrangement": {
+        "required": "Scegli come pagherà l'ospite"
+      },
       "priceNote": {
         "maxLength": "La nota sul prezzo può avere al massimo 80 caratteri"
       },
@@ -2347,12 +2352,17 @@
           "title": "Date libere, ma sotto il soggiorno minimo"
         },
         "blocked": "Queste date non sono libere: scegli altre date o usa quelle libere più vicine.",
+        "channelManagerBlocked": "Queste date risultano occupate nel tuo channel manager: scegli altre date.",
+        "channelManagerBlockedNamed": "Queste date risultano occupate su {{channel}}, nel tuo channel manager: scegli altre date.",
+        "channelManagerUnchecked": "Non siamo riusciti a controllare le date nel tuo channel manager. Puoi proseguire: le ricontrolliamo quando crei la prenotazione.",
         "checking": "Controllo se le date sono libere…",
         "conflict": {
           "block": "Si sovrappone al blocco «{{title}}» ({{range}}).",
           "blockUnnamed": "Si sovrappone a un blocco del calendario ({{range}}).",
           "booking": "Si sovrappone al soggiorno di {{name}} ({{range}}).",
           "bookingUnnamed": "Si sovrappone a un altro soggiorno ({{range}}).",
+          "channelManager": "Risultano occupate nel tuo channel manager ({{range}}).",
+          "channelManagerNamed": "Risultano occupate su {{channel}}, nel tuo channel manager ({{range}}).",
           "ical": "Si sovrappone alla prenotazione su {{portal}} ({{range}})."
         },
         "invalid": {
@@ -2383,15 +2393,73 @@
           "Other": "un altro portale"
         }
       },
-      "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
+      "description": "Per una prenotazione presa per telefono o di persona: pochi passi brevi, la bozza si salva da sola.",
       "done": {
+        "booking": {
+          "title": "Prenotazione creata in CasaZen"
+        },
         "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
+        "channelManager": {
+          "blocked": "Il canale non permette questa operazione: la prenotazione non è stata creata nel channel manager.",
+          "conflict": "La prenotazione nel tuo channel manager risulta diversa da quella di CasaZen: finché non si risolve, le date possono restare aperte sugli altri canali.",
+          "datesTaken": "Le date risultano già occupate nel tuo channel manager: la prenotazione è in CasaZen, ma lì non è stata creata e le stesse notti possono essere vendute due volte. Controlla il calendario dei canali e decidi quale prenotazione tenere.",
+          "failed": "Non è andata a buon fine: finché non riesce, le date possono restare aperte sugli altri canali.",
+          "notFound": "Non troviamo più questa prenotazione: controllala dall'elenco delle prenotazioni.",
+          "pending": "In invio: stiamo creando la prenotazione nel tuo channel manager, che chiuderà le date su tutti i canali.",
+          "reasons": {
+            "datesUnavailable": "Il channel manager dice che le date sono già occupate: controlla il calendario dei canali.",
+            "linkedElsewhere": "La prenotazione esiste già nel channel manager ed è collegata a un'altra prenotazione di CasaZen: controlla se è un doppione.",
+            "notMirrored": "L'immobile non è collegato al channel manager in questo momento: ricollegalo o conferma l'abbinamento, poi riprova.",
+            "paymentsNotRecorded": "La prenotazione è nel channel manager, ma non tutti gli incassi sono stati registrati lì: riprova.",
+            "rejected": "Il channel manager ha rifiutato la prenotazione: controlla i dati e riprova.",
+            "reservationChanged": "La prenotazione è stata cambiata nel channel manager dopo l'ultima lettura: controlla le differenze prima di riprovare.",
+            "roomNotChosen": "Manca la camera dell'immobile nel channel manager: scegli la camera nell'abbinamento, poi riprova.",
+            "unavailable": "Il channel manager non ha risposto: l'invio viene ripetuto e puoi riprovare anche tu.",
+            "unknown": "Il channel manager non ha completato l'operazione. Riprova tra poco."
+          },
+          "refresh": "Controlla di nuovo",
+          "retry": "Riprova l'invio",
+          "retryFailed": "Non siamo riusciti a ripetere l'invio. Riprova tra poco.",
+          "synced": "Fatto: la prenotazione è nel tuo channel manager e le date sono chiuse su tutti i canali.",
+          "title": "Channel manager",
+          "unreadable": "Non riusciamo a leggere a che punto è l'invio al channel manager.",
+          "waiting": "Non abbiamo ancora la conferma del channel manager: le date possono non essere ancora chiuse su tutti i canali."
+        },
         "checkin": "Pochi giorni prima dell'arrivo {{name}} riceve per email il link per il check-in online.",
         "description": "{{property}}, dal {{from}} al {{to}}",
         "guestFallback": "l'ospite",
+        "next": {
+          "checkChannelManager": "Apri la prenotazione e controlla come risulta nel channel manager: finché non è a posto, le date possono restare aperte sugli altri canali o essere vendute due volte.",
+          "recordIncome": "Quando l'ospite paga, segna l'incasso con «Registra incasso» nella prenotazione.",
+          "retryChannelManager": "Riprova l'invio al channel manager: finché non va a buon fine, le date possono restare aperte sugli altri canali.",
+          "sendPaymentLink": "Invia il link di pagamento a {{name}}: per ora non ha ricevuto nulla."
+        },
         "open": "Apri la prenotazione",
         "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "paymentBankTransfer": "L'ospite paga con un bonifico: quando arriva, segna l'incasso con «Registra incasso» nella prenotazione.",
+        "paymentLink": {
+          "copied": "Link copiato",
+          "copy": "Copia il link",
+          "copyFailed": "Non siamo riusciti a copiarlo: selezionalo qui sotto e copialo a mano.",
+          "field": "Link di pagamento da copiare",
+          "missing": "Il link non è stato creato: la prenotazione c'è, ma l'ospite non ha ricevuto nessun link.",
+          "notEmailed": "Il link è pronto, ma l'email all'ospite non è partita: copialo e mandaglielo tu.",
+          "resend": "Invia di nuovo",
+          "resendHint": "Un nuovo link sostituisce quello di prima, che smette di funzionare.",
+          "send": "Crea e invia il link",
+          "sendFailed": "Non siamo riusciti a creare il link. Riprova tra poco.",
+          "sent": "Link inviato all'ospite: potrà pagare il saldo online.",
+          "title": "Link di pagamento"
+        },
+        "paymentOnSite": "L'ospite paga in struttura: quando incassi, segna l'incasso con «Registra incasso» nella prenotazione.",
         "paymentPortal": "Il pagamento lo incassa {{portal}}: non registrarlo anche qui.",
+        "paymentTitle": "Pagamento",
+        "state": {
+          "done": "fatto",
+          "problem": "da controllare",
+          "todo": "da fare",
+          "working": "in corso"
+        },
         "title": "Prenotazione di {{name}} inserita",
         "toList": "Tutte le prenotazioni"
       },
@@ -2407,6 +2475,26 @@
         "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
         "phone": "Telefono",
         "phoneExample": "+39 333 123 4567"
+      },
+      "payment": {
+        "bankTransfer": {
+          "description": "L'ospite ti paga con un bonifico. Quando arriva, segni tu l'incasso con «Registra incasso».",
+          "title": "Bonifico"
+        },
+        "legend": "Come pagherà l'ospite?",
+        "onSite": {
+          "description": "L'ospite paga di persona, in struttura. Quando incassi, segni tu l'incasso con «Registra incasso».",
+          "title": "Paga in struttura"
+        },
+        "paymentLink": {
+          "description": "L'ospite riceve per email un link per pagare online il saldo con la carta. Quando paga, l'incasso si registra da solo.",
+          "title": "Link di pagamento"
+        },
+        "reason": {
+          "account": "Per usarlo serve un conto Stripe collegato e pronto a incassare: attivalo dalle impostazioni dei pagamenti, poi torna qui.",
+          "nothingToPay": "Non c'è nulla da pagare: il totale concordato è zero.",
+          "permission": "Per inviare un link di pagamento serve il permesso di gestire i pagamenti di questo immobile."
+        }
       },
       "portal": {
         "amount": "Importo",
@@ -2446,14 +2534,24 @@
           "purpose": "Bastano il nome e l'email di chi ha prenotato.",
           "title": "Chi viene a soggiornare?"
         },
+        "payment": {
+          "label": "Pagamento",
+          "purpose": "Scegli come pagherà l'ospite: da questa scelta dipende cosa succede dopo.",
+          "title": "Come pagherà l'ospite?"
+        },
+        "price": {
+          "label": "Prezzo",
+          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "title": "Quanto paga l'ospite?"
+        },
         "stay": {
           "label": "Soggiorno",
           "purpose": "Scegli l'immobile, le date e quante persone arrivano.",
           "title": "Per quale casa e quali date?"
         },
         "summary": {
-          "label": "Riepilogo e prezzo",
-          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "label": "Riepilogo",
+          "purpose": "Controlla le risposte e cosa succede quando crei la prenotazione.",
           "title": "Controlla e crea la prenotazione"
         }
       },
@@ -2469,8 +2567,30 @@
         "minors_one": "{{count}} minore",
         "minors_other": "{{count}} minori",
         "notes": "Note",
+        "payment": "Pagamento",
+        "paymentValue": {
+          "bankTransfer": "Bonifico",
+          "onSite": "Paga in struttura",
+          "paymentLink": "Link di pagamento",
+          "portal": "Incassa {{portal}}"
+        },
+        "portalAmount": "Importo del portale",
+        "price": "Totale",
+        "priceAgreed": "prezzo concordato",
         "property": "Immobile",
-        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo."
+        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo.",
+        "willHappen": {
+          "bankTransfer": "L'ospite paga con un bonifico: quando arriva, l'incasso lo segni tu.",
+          "casazen": "La prenotazione viene creata in CasaZen: le notti risultano subito occupate sul calendario e sul sito di prenotazione.",
+          "channelManager": "Viene creata anche nel tuo channel manager, che chiude queste date su tutti i canali.",
+          "channelManagerMaybe": "Se l'immobile è collegato al tuo channel manager, viene creata anche lì e le date si chiudono su tutti i canali.",
+          "onSite": "L'ospite paga in struttura: l'incasso lo segni tu.",
+          "paymentLink": "L'ospite riceve per email un link per pagare online il saldo; dopo la creazione puoi copiarlo da qui.",
+          "paymentMissing": "Manca la scelta di come pagherà l'ospite: torna al passo «Pagamento».",
+          "portal": "{{portal}} incassa per te: in CasaZen non registrare nessun pagamento.",
+          "portalCompleted": "La prenotazione di {{portal}} viene completata con i dati dell'ospite, senza crearne un'altra.",
+          "title": "Cosa succede quando crei la prenotazione"
+        }
       },
       "title": "Nuova prenotazione"
     },
