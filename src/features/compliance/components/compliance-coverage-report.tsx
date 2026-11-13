@@ -8,7 +8,8 @@ import { formatRomeDateTime, formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { CassettoTopic, ComplianceProofKind, CoverageEvidenceClass, CoverageReport, CoverageRow } from '@/types';
 import { COVERAGE_GROUPS, formatPeriod, proofKindOfRow, rowMatchesKind, rowsOf, summarizeCoverage, type SummaryTone } from '../lib/archive-model';
-import { CassettoVerifyButton, useCassettoAvailable } from './cassetto-verify-button';
+import { useCassettoAvailable } from '../lib/cassetto';
+import { CassettoVerifyButton } from './cassetto-verify-button';
 import type { ProofUploadPrefill } from './proof-upload-dialog';
 
 /** Rows of a group shown at first: a year of stays can hold hundreds, and the page is for what needs the host, not for a wall of rows. */
@@ -132,7 +133,7 @@ function CoverageGroup({ state, rows, canUpload, onUpload, language }: CoverageG
 
   return needsHost ? (
     <section className="space-y-2" aria-label={title}>
-      <h3 className="font-semibold">{title}</h3>
+      <h2 className="font-semibold">{title}</h2>
       {list}
     </section>
   ) : (

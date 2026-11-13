@@ -11,7 +11,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useConnectionHealth } from '@/queries/compliance-health';
 import type { CassettoTopic, ConnectionHealthLine, ConnectionHealthState } from '@/types';
-import { describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
+import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
 import { CassettoVerifyButton } from './cassetto-verify-button';
 
 /** The look of a state: an icon, a word and a colour together (the colour is never the only sign). The tones are the semantic tokens, with an AA fallback. */
@@ -188,7 +188,7 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   }
 
   return (
-    <PlainSection title={title} data-testid="connection-health-panel">
+    <PlainSection id={CONNECTION_HEALTH_SECTION} className="scroll-mt-6" title={title} data-testid="connection-health-panel">
       <p className="text-sm text-muted-foreground">{t('connectionHealth.description')}</p>
       {body}
     </PlainSection>

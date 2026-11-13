@@ -1,6 +1,12 @@
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { ConnectionHealthLine, ConnectionHealthSender, ConnectionHealthState } from '@/types';
 
+/**
+ * The section of the page of the property where the police and ISTAT send is told (`?section=connection-health`): the panel «Invio a Polizia e ISTAT».
+ * The button `ActivateOctorateSend` of the cockpit and of the To do opens the page on it.
+ */
+export const CONNECTION_HEALTH_SECTION = 'connection-health';
+
 /** The page where the sender of a property is activated or reconnected (E03/F01/US02/T02): the panel offers its button only when this route exists. */
 export const SENDER_WIZARD_PATH = '/app/short-rent/compliance/sender';
 

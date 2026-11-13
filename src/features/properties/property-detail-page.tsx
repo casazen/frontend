@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { ConnectionHealthPanel } from '@/features/compliance/components/connection-health-panel';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -75,6 +76,8 @@ export function PropertyDetailPage() {
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const panel = propertyPanelOf(tabParam);
+  // `?section=connection-health` (the button «Attiva l'invio» of the cockpit and of the To do): the panel that tells the police and ISTAT send.
+  const scrollToHealth = searchParams.get('section') === CONNECTION_HEALTH_SECTION && panel === 'info';
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   // Read again whenever the page opens: the activation, the CIN or the pause change on other pages, where these are not watched.
@@ -98,6 +101,10 @@ export function PropertyDetailPage() {
   useEffect(() => {
     if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
   }, [scrollToPricing]);
+  const scrollToConnectionHealth = scrollToHealth && property !== undefined;
+  useEffect(() => {
+    if (scrollToConnectionHealth) document.getElementById(CONNECTION_HEALTH_SECTION)?.scrollIntoView?.({ block: 'start' });
+  }, [scrollToConnectionHealth]);
 
   // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
   if (deleteProperty.isSuccess) return <Navigate to={PROPERTIES_PATH} replace />;

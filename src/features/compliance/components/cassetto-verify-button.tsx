@@ -7,34 +7,12 @@ import { HANDOFF_ERROR } from '@/api/compliance-handoff.api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { useWorkspace } from '@/hooks/use-workspace';
 import { complianceArchiveErrorCode } from '@/api/compliance-archive.api';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useStartCassettoHandoff } from '@/queries/compliance-handoff';
 import type { CassettoHandoff, CassettoTopic } from '@/types';
 import { formatPeriod } from '../lib/archive-model';
-
-/**
- * Whether the host can be taken to the Cassetto Compliance from here: the passage is behind the connector flag (the API answers 404 while it is
- * off) and asks `booking.read` (its policy). Without either the screens say where the outcome is and give no button: a button that can only fail is
- * not offered.
- */
-export function useCassettoAvailable(): boolean {
-  const { octorateConnector } = useFeatureFlags().flags;
-  const { hasPermission } = useWorkspace();
-  return octorateConnector && hasPermission('short-rent', 'booking.read');
-}
-
-/** The address a handoff opens: https, on no credentials. The server allowlists it; the page still refuses anything else instead of leaving CasaZen for it. */
-function isSafeDestination(address: string): boolean {
-  try {
-    const url = new URL(address);
-    return url.protocol === 'https:' && url.username === '' && url.password === '';
-  } catch {
-    return false;
-  }
-}
+import { isSafeDestination, sameTabNavigation, useCassettoAvailable } from '../lib/cassetto';
 
 interface CassettoVerifyButtonProps {
   topic: CassettoTopic;
@@ -136,7 +114,7 @@ function CassettoDialogContent({ handoff, onCancel }: { handoff: CassettoHandoff
       : null;
 
   // The same tab: the address was checked by the server and by `isSafeDestination`, and nothing opens a window.
-  const proceed = () => window.location.assign(handoff.destinationUrl);
+  const proceed = () => sameTabNavigation.to(handoff.destinationUrl);
 
   return (
     <DialogContent data-testid="cassetto-dialog" className="max-w-lg">

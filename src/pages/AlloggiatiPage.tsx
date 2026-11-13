@@ -36,6 +36,9 @@ import { COMPLIANCE_PROOF_KINDS, type ComplianceProofKind, type Property } from 
 /** Proofs in a page of the list. */
 const PAGE_SIZE = 25;
 
+/** The formats the coverage report is downloaded in. */
+const REPORT_FORMATS = ['pdf', 'csv'] as const;
+
 const NO_PROPERTIES: Property[] = [];
 
 /**
@@ -222,7 +225,7 @@ export function AlloggiatiPage() {
   const summary = (
     <div className="space-y-4" data-testid="archive-summary">
       <div className="flex flex-wrap items-center gap-2">
-        {(['pdf', 'csv'] as const).map((format) => (
+        {REPORT_FORMATS.map((format) => (
           <Button
             key={format}
             type="button"
