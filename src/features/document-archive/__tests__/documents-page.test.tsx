@@ -275,9 +275,22 @@ describe('DocumentsPage (NF-99)', () => {
     await waitFor(() => expect(documentArchiveApi.list).toHaveBeenCalledTimes(2));
   });
 
-  it('shows the error, not an empty list, with the words of the server for the days it refused, and tries again', async () => {
+  // The date field of the list has no limits, and the API answers 400 for a day outside 2000 to 2100: the page keeps the days of the address inside
+  // those years, for the list and for the counts of the chips, so that a day of 1999 or 2150 is never asked.
+  it('keeps the days of the address inside the years the API takes, for the list and for the counts of the chips', async () => {
+    renderPage('/app/short-rent/documents?f_days=1999-01-01..2150-12-31');
+
+    await findTable();
+    expect(documentArchiveApi.list).toHaveBeenCalledWith(expect.objectContaining({ from: '2000-01-01', to: '2100-12-31' }));
+    expect(documentArchiveApi.types).toHaveBeenCalledWith({ from: '2000-01-01', to: '2100-12-31', propertyId: undefined, q: undefined });
+    expect(documentArchiveApi.list).not.toHaveBeenCalledWith(expect.objectContaining({ from: '1999-01-01' }));
+    expect(documentArchiveApi.list).not.toHaveBeenCalledWith(expect.objectContaining({ to: '2150-12-31' }));
+    expect(documentArchiveApi.types).not.toHaveBeenCalledWith(expect.objectContaining({ from: '1999-01-01' }));
+  });
+
+  it('shows the error, not an empty list, with the words of the server when it refuses the read, and tries again', async () => {
     vi.mocked(documentArchiveApi.list).mockRejectedValueOnce(problem(400, { code: 'archive_invalid_period' })).mockResolvedValue(page([doc('d1')]));
-    renderPage('/app/short-rent/documents?f_days=1999-01-01..2026-03-31');
+    renderPage('/app/short-rent/documents?f_days=2026-01-01..2026-03-31');
 
     expect(await screen.findByText(i18n.t('documentArchive.error'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('apiErrors.codes.archiveInvalidPeriod'))).toBeInTheDocument();

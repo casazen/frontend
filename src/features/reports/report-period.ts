@@ -14,6 +14,14 @@ const MAX_REPORT_MONTHS = 24;
 const FIRST_DAY = '2000-01-01';
 const LAST_DAY = '2100-12-31';
 
+/**
+ * `day` (`YYYY-MM-DD`) kept inside the days the backend supports, for a day that comes from a field with no limits of its own (the filter of a
+ * list): any other day is a 400, and a day before the first or after the last means no limit on that side, so it is kept at the edge.
+ */
+export function withinSupportedDays(day: string): string {
+  return day < FIRST_DAY ? FIRST_DAY : day > LAST_DAY ? LAST_DAY : day;
+}
+
 /** The tourist tax report covers a year at most (366 days, both ends included). */
 const MAX_TOURIST_TAX_NIGHTS = 365;
 

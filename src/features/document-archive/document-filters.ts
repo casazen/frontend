@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import { parseDateRange, type ListState } from '@/components/shared/list-view/list-state';
 import type { ListChip, ListFilter } from '@/components/shared/list-view/list-types';
+import { withinSupportedDays } from '@/features/reports/report-period';
 import type { ArchiveDocument, ArchiveDocumentType, ArchiveListQuery, ArchiveTypeCount, ArchiveTypesQuery } from '@/types';
 import { archiveTypeMeta } from './document-type';
 
@@ -82,12 +83,16 @@ export function documentFilters(t: TFunction, properties: ReadonlyArray<{ id: st
   ];
 }
 
-/** What narrows the archive in the state of the list: the days, the property and the text. The types are the other half of a query. */
+/**
+ * What narrows the archive in the state of the list: the days, the property and the text. The types are the other half of a query. The date field
+ * of the list has no limits and the API answers 400 for a day outside 2000 to 2100 (and so would the counts of the chips), so the days are kept
+ * inside those years before they are asked: a day beyond them means no limit on that side anyway.
+ */
 export function archiveFilterParams(state: Pick<ListState, 'q' | 'filters'>): ArchiveTypesQuery {
   const { from, to } = parseDateRange(state.filters[DAYS_FILTER] ?? '');
   return {
-    from,
-    to,
+    from: from === undefined ? undefined : withinSupportedDays(from),
+    to: to === undefined ? undefined : withinSupportedDays(to),
     propertyId: state.filters[PROPERTY_FILTER] || undefined,
     q: state.q.trim() || undefined,
   };

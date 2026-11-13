@@ -105,6 +105,18 @@ describe('archiveFilterParams and archiveListQuery (NF-99)', () => {
     expect(archiveFilterParams(state())).toEqual({ from: undefined, to: undefined, propertyId: undefined, q: undefined });
   });
 
+  // The date field of the list has no limits, and the API answers 400 for a day outside 2000 to 2100: a day beyond them means no limit on that side.
+  it.each([
+    ['both days before and after the years', '1999-01-01..2150-12-31', '2000-01-01', '2100-12-31'],
+    ['a first day long before', '0100-05-05..2026-03-31', '2000-01-01', '2026-03-31'],
+    ['a last day after', '2026-01-01..2101-01-01', '2026-01-01', '2100-12-31'],
+    ['the first and the last day the API takes', '2000-01-01..2100-12-31', '2000-01-01', '2100-12-31'],
+    ['a first day after the years', '2150-01-01..', '2100-12-31', undefined],
+    ['a last day before the years', '..1999-12-31', undefined, '2000-01-01'],
+  ])('ArchiveFilterParams_%s_AreKeptInsideTheYearsOfTheApi', (_name, days, from, to) => {
+    expect(archiveFilterParams(state({ filters: { days } }))).toMatchObject({ from, to });
+  });
+
   it('ArchiveListQuery_AllChip_AsksEveryTypeTheCallerMayRead', () => {
     expect(archiveListQuery(state({ chip: ARCHIVE_ALL_TYPES, page: 3 }), 50)).toMatchObject({ types: undefined, page: 3, pageSize: 50 });
     // No chips at all (one type, or the types did not come): no type is asked either.
