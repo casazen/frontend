@@ -19389,6 +19389,60 @@
     "up": "Move up: {{item}}"
   },
   "reports": {
+    "channelCosts": {
+      "basis": "On an accrual basis, like the revenue of the Home: the nights of the confirmed stays in the period count. Commission, net and cost only cover the stays for which the channel reported a commission. The amounts are the Home’s: no conversion between currencies.",
+      "caption": "Channel costs from {{from}} to {{to}}",
+      "columns": {
+        "channel": "Channel",
+        "commission": "Commission",
+        "costRate": "Cost of the gross",
+        "gross": "Gross",
+        "mode": "How it is paid",
+        "net": "Net",
+        "stays": "Stays"
+      },
+      "description": "What each channel costs you: gross, commission and net, and how the commission is paid.",
+      "empty": "No confirmed stay in the chosen period: there is nothing to show.",
+      "error": "The channel costs could not be loaded.",
+      "groups": {
+        "channels": "Channels: commissions",
+        "free": "No cost for you"
+      },
+      "mode": {
+        "DeductedFromPayout": "Deducted from the payout",
+        "InvoicedSeparately": "Invoiced separately",
+        "Unknown": "Unknown",
+        "help": {
+          "DeductedFromPayout": "The channel already pays you net of the commission.",
+          "InvoicedSeparately": "The channel invoices the commission separately: you pay it afterwards.",
+          "Unknown": "We do not know how the channel collects its commission."
+        },
+        "notApplicable": "Does not apply"
+      },
+      "stripe": {
+        "title": "Direct bookings: card processing fees",
+        "unavailable": "Not recorded yet for these payments."
+      },
+      "summary": {
+        "amount": "{{channel}} costs you {{amount}}.",
+        "cardAmount": "{{channel}}: the card processing fees are {{amount}}.",
+        "cardLine": "{{channel}}: the card processing fees are {{rate}} of the gross ({{amount}}).",
+        "cardUnavailable": "{{channel}}: the card processing fees are not available.",
+        "free": "{{channel}}: no cost for you.",
+        "line": "{{channel}} costs you {{rate}} of the gross ({{amount}}).",
+        "mostExpensive": "The most expensive",
+        "title": "What each channel costs",
+        "unavailable": "{{channel}}: cost not available, the channel did not report any commission.",
+        "without_one": "{{count}} stay without a reported commission is not counted as free.",
+        "without_other": "{{count}} stays without a reported commission are not counted as free."
+      },
+      "title": "Channel costs",
+      "total": "Total",
+      "withoutCommissionRow_one": "{{count}} stay without a reported commission: not counted as free",
+      "withoutCommissionRow_other": "{{count}} stays without a reported commission: not counted as free",
+      "withoutCommission_one": "{{count}} stay has no commission reported by the channel: it is counted apart, it is not taken as free and it is not in the commission, the net or the cost.",
+      "withoutCommission_other": "{{count}} stays have no commission reported by the channel: they are counted apart, they are not taken as free and they are not in the commission, the net or the cost."
+    },
     "chips": {
       "all": "All",
       "financial": "Financial",
@@ -19528,6 +19582,10 @@
       "annual": {
         "description": "The income the flat tax is calculated on and the regime chosen for each property.",
         "name": "Flat tax and tax regime"
+      },
+      "channelCosts": {
+        "description": "What each channel costs you: gross, commission and net, and how the commission is paid.",
+        "name": "Channel costs"
       },
       "channels": {
         "description": "Where the bookings come from: your site, Airbnb, Booking.com, entered by hand. Revenue on an accrual basis.",

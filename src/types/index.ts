@@ -38,6 +38,7 @@ export * from './guest-cancellation.types';
 export * from './owner-portal.types';
 export * from './report.types';
 export * from './report-collections.types';
+export * from './report-channel-costs.types';
 export * from './verification.types';
 export * from './statement.types';
 export * from './owner-accounting.types';

@@ -3,7 +3,7 @@ import { REPORTS } from '@/features/reports/report-catalog';
 import { DEFAULT_FEATURE_FLAGS } from '../feature-flags';
 import { ROUTE_MANIFEST, getNavMatchEntries, getVisibleNavEntries, hasEntryPermission } from '../route-manifest';
 
-const PATHS = ['/app/short-rent/reports/collections'] as const;
+const PATHS = ['/app/short-rent/reports/collections', '/app/short-rent/reports/channel-costs'] as const;
 
 describe('route manifest: the money reports (NF-97, NF-98, E07/F03/US02)', () => {
   it.each(PATHS)('RouteManifest_%s_IsAPageOfShortRentThatAsksForPaymentRead', (path) => {
@@ -38,10 +38,13 @@ describe('route manifest: the money reports (NF-97, NF-98, E07/F03/US02)', () =>
     expect(typeof page?.default).toBe('function');
   });
 
-  it('ReportCatalog_Collections_IsAFinancialRowThatOpensItsPageWithNoFormat', () => {
+  it('ReportCatalog_CollectionsAndChannelCosts_AreFinancialRowsThatOpenTheirPageWithNoFormat', () => {
     const collections = REPORTS.find((report) => report.id === 'collections');
+    const costs = REPORTS.find((report) => report.id === 'channelCosts');
 
     expect(collections).toMatchObject({ type: 'financial', suggested: null, formats: [] });
+    expect(costs).toMatchObject({ type: 'financial', suggested: null, formats: [] });
     expect(collections?.source.kind === 'page' && collections.source.href('2026-10-09')).toBe(PATHS[0]);
+    expect(costs?.source.kind === 'page' && costs.source.href('2026-10-09')).toBe(PATHS[1]);
   });
 });

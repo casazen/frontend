@@ -19389,6 +19389,60 @@
     "up": "Sposta su: {{item}}"
   },
   "reports": {
+    "channelCosts": {
+      "basis": "Per competenza, come i ricavi della Home: contano le notti dei soggiorni confermati nel periodo. Commissione, netto e costo riguardano solo i soggiorni per cui il canale ha indicato una commissione. Gli importi sono quelli della Home: nessuna conversione tra valute.",
+      "caption": "Costi dei canali dal {{from}} al {{to}}",
+      "columns": {
+        "channel": "Canale",
+        "commission": "Commissione",
+        "costRate": "Costo sul lordo",
+        "gross": "Lordo",
+        "mode": "Come viene pagata",
+        "net": "Netto",
+        "stays": "Soggiorni"
+      },
+      "description": "Quanto ti costa ogni canale: lordo, commissione e netto, e come viene pagata la commissione.",
+      "empty": "Nessun soggiorno confermato nel periodo scelto: non c’è nulla da mostrare.",
+      "error": "Impossibile caricare i costi dei canali.",
+      "groups": {
+        "channels": "Canali: commissioni",
+        "free": "Senza costi per te"
+      },
+      "mode": {
+        "DeductedFromPayout": "Trattenuta dal pagamento",
+        "InvoicedSeparately": "Fatturata a parte",
+        "Unknown": "Non nota",
+        "help": {
+          "DeductedFromPayout": "Il canale ti paga già al netto della commissione.",
+          "InvoicedSeparately": "Il canale ti fattura la commissione a parte: la paghi tu dopo.",
+          "Unknown": "Non sappiamo come il canale incassa la commissione."
+        },
+        "notApplicable": "Non si applica"
+      },
+      "stripe": {
+        "title": "Prenotazioni dirette: commissioni di incasso con carta",
+        "unavailable": "Non ancora registrate per questi pagamenti."
+      },
+      "summary": {
+        "amount": "{{channel}} ti costa {{amount}}.",
+        "cardAmount": "{{channel}}: le commissioni di incasso con carta sono {{amount}}.",
+        "cardLine": "{{channel}}: le commissioni di incasso con carta sono il {{rate}} del lordo ({{amount}}).",
+        "cardUnavailable": "{{channel}}: le commissioni di incasso con carta non sono disponibili.",
+        "free": "{{channel}}: nessun costo per te.",
+        "line": "{{channel}} ti costa il {{rate}} del lordo ({{amount}}).",
+        "mostExpensive": "Il più costoso",
+        "title": "Quanto costa ogni canale",
+        "unavailable": "{{channel}}: costo non disponibile, il canale non ha indicato commissioni.",
+        "without_one": "{{count}} soggiorno senza commissione indicata non è contato come gratuito.",
+        "without_other": "{{count}} soggiorni senza commissione indicata non sono contati come gratuiti."
+      },
+      "title": "Costi dei canali",
+      "total": "Totale",
+      "withoutCommissionRow_one": "{{count}} soggiorno senza commissione indicata: non contato come gratuito",
+      "withoutCommissionRow_other": "{{count}} soggiorni senza commissione indicata: non contati come gratuiti",
+      "withoutCommission_one": "{{count}} soggiorno non ha una commissione indicata dal canale: è contato a parte, non è considerato gratuito e non è nella commissione, nel netto e nel costo.",
+      "withoutCommission_other": "{{count}} soggiorni non hanno una commissione indicata dal canale: sono contati a parte, non sono considerati gratuiti e non sono nella commissione, nel netto e nel costo."
+    },
     "chips": {
       "all": "Tutti",
       "financial": "Finanziari",
@@ -19528,6 +19582,10 @@
       "annual": {
         "description": "Gli incassi su cui si calcola la cedolare e il regime scelto per ogni immobile.",
         "name": "Cedolare secca e regime fiscale"
+      },
+      "channelCosts": {
+        "description": "Quanto ti costa ogni canale: lordo, commissione e netto, e come viene pagata la commissione.",
+        "name": "Costi dei canali"
       },
       "channels": {
         "description": "Da dove arrivano le prenotazioni: sito, Airbnb, Booking.com, inserite a mano. Ricavo per competenza.",

@@ -309,6 +309,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/collections/collections-report-page')).CollectionsReportPage }),
   },
   {
+    // What each channel costs (NF-98, REP-03): gross, commission and net of each channel, the card fees of the direct stays and how each channel
+    // settles its commission. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; it asks for `payment.read`, as
+    // the backend does, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/channel-costs',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/channel-costs/channel-costs-page')).ChannelCostsPage }),
+  },
+  {
     // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
     // answer of the host and the report to CasaZen. A tab of Prenotazioni, after the guests.
     path: '/app/short-rent/reviews',
