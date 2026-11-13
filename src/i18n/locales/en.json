@@ -1348,6 +1348,15 @@
       "archiveDocumentHasNoFile": "This document has no file to download.",
       "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
       "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
+      "complianceBookingNotFound": "We can't find this stay.",
+      "complianceExportTooLarge": "The period holds more proofs than one archive can carry: choose a shorter period.",
+      "complianceProofDayInvalid": "The day of the proof is not valid: choose a day in the past.",
+      "complianceProofFileInvalid": "Choose the file of the proof: the one you sent is empty or missing.",
+      "complianceProofNotFound": "We can't find this proof: it may no longer exist or you may not be able to see it.",
+      "complianceProofTooLarge": "The file is too large: choose a smaller one.",
+      "complianceProofTypeUnsupported": "The file must be a PDF, a JPG or a PNG.",
+      "reportInvalidPeriod": "The period is not valid: check the dates.",
+      "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
       "archiveInvalidPage": "The requested page is not valid.",
       "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
       "archiveInvalidType": "This type of document does not exist.",
@@ -4964,8 +4973,7 @@
         "toSendHint": "The report of this stay is not sent. CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
         "failedHint": "The report of this stay failed or was rejected: fix it and send it again on the portal. The check-out is not blocked.",
         "overdue": "Deadline passed on {{deadline}}.",
-        "dataIncomplete": "Guest data are missing.",
-        "open": "Open the Alloggiati section of the booking"
+        "dataIncomplete": "Guest data are missing."
       },
       "cleaning": {
         "existingTitle": "Requests already sent for this stay",
@@ -5011,6 +5019,16 @@
         "taxCollection": "Say how the tourist tax was collected.",
         "propertyReady": "Say whether the property is ready for the next guest."
       },
+      "guestData": {
+        "cancel": "Cancel",
+        "description": "Fill in what Alloggiati Web needs. Your check-out answers stay as they are.",
+        "done": "Done",
+        "open": "Complete the guests' data",
+        "saved": "Guests' data saved.",
+        "title": "Guests' data",
+        "unsaved": "You have changes that are not saved. Save the guests' data, or cancel to leave them."
+      },
+      "saveAndExit": "Save and exit",
       "summary": {
         "title": "Your answers",
         "departure": "Departure",
@@ -5021,14 +5039,29 @@
         "touristTax": "Tourist tax"
       },
       "done": {
-        "title": "The stay is closed",
-        "description": "The check-out of {{guest}} is recorded.",
-        "stayClosed": "In the booking the stay now shows as concluded.",
-        "propertyReady": "The property is marked as ready for the next guest.",
-        "propertyNotReady": "The property is not ready yet: it stays in the compliance summary until you declare it ready.",
-        "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
+        "alloggiatiSent": "The Alloggiati communication is recorded as sent.",
         "alloggiatiToSend": "The Alloggiati communication does not show as sent yet: check it from the booking page.",
-        "compliance": "Go to compliance"
+        "channelManager": {
+          "automatic": "The check-out is passed on to the channel manager automatically. CasaZen does not show here whether it arrived."
+        },
+        "cleaningNotSent": "The cleaning request does not show as sent: check it in the booking detail.",
+        "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
+        "cleaningSkipped": "Cleaning: no request, the step was skipped.",
+        "compliance": "Go to compliance",
+        "description": "The check-out of {{guest}} is recorded.",
+        "next": {
+          "alloggiatiLink": "Open the Alloggiati tab of the booking",
+          "markReady": "Declare the property ready from the compliance page, when it is.",
+          "nothing": "There is nothing else to do for this stay.",
+          "sendAlloggiati": "Send the Alloggiati communication from the booking page.",
+          "title": "Next step"
+        },
+        "propertyNotReady": "The property is not ready yet: it stays in the compliance summary until you declare it ready.",
+        "propertyReady": "The property is marked as ready for the next guest.",
+        "stayClosed": "In the booking the stay now shows as concluded.",
+        "title": "The stay is closed",
+        "touristTax": "Tourist tax declared: {{collection}}.",
+        "touristTaxNotCollected": "Tourist tax: not collected. It must be handled according to the municipality's rules."
       }
     },
     "safety": {
@@ -5156,6 +5189,215 @@
       "warnings": {
         "safety_floor_areas_missing": "Without the m² of each floor the minimum is based on the floors only. The law requires one extinguisher every 200 m² of floor or fraction, with at least one per floor."
       }
+    }
+  },
+  "complianceArchive": {
+    "coverage": {
+      "counts": "{{proven}} with proof · {{toVerify}} to check · {{missing}} missing · {{notApplicable}} not applicable",
+      "deadline": "Deadline: {{when}}",
+      "group": {
+        "ExternalVerificationRequired": "To check in the Cassetto Compliance",
+        "Missing": "Missing",
+        "NotApplicable": "Not applicable",
+        "OfficialProof": "Proof available"
+      },
+      "haveReceipt": "I already have the receipt",
+      "headline": {
+        "allProven": "Every required proof is archived",
+        "missing_one": "{{count}} proof is missing",
+        "missing_other": "{{count}} proofs are missing",
+        "nothingOwed": "Nothing needs proving in this period",
+        "toVerify_one": "{{count}} outcome to check in the Cassetto Compliance",
+        "toVerify_other": "{{count}} outcomes to check in the Cassetto Compliance",
+        "unknown": "We can't say that everything is in order: some outcomes are still to be checked"
+      },
+      "narrowed": "List limited to: {{kind}}.",
+      "openStay": "Open the stay",
+      "period": "From {{from}} to {{to}}",
+      "proofAt": "Proof archived on {{when}}",
+      "row": {
+        "Alloggiati": "Stay {{code}} · arrival {{day}}",
+        "Istat": "ISTAT · {{month}}",
+        "TouristTax": "Tourist tax · {{month}}"
+      },
+      "showMore": "Show {{count}} more",
+      "toVerifyByHand": "The outcome is in the area of your channel manager: check it there.",
+      "toVerifyTitle": "To check in the Cassetto Compliance",
+      "upload": "Upload the proof"
+    },
+    "description": "What CasaZen keeps to prove the communications to the police and ISTAT and the tourist tax.",
+    "download": {
+      "done": "Proof downloaded.",
+      "failed": "We couldn't download the proof. Try again."
+    },
+    "filters": {
+      "allKinds": "All kinds",
+      "allProperties": "All properties",
+      "clearDay": "Show the whole period",
+      "day": "Only the day {{day}}.",
+      "kind": "Kind of proof",
+      "period": "Period",
+      "property": "Property",
+      "recent": "Recent months",
+      "wholeYear": "All of {{year}}"
+    },
+    "kind": {
+      "AlloggiatiReceipt": "Alloggiati Web receipt",
+      "IstatProof": "ISTAT proof",
+      "other": "Proof",
+      "TouristTaxDeclaration": "Tourist tax declaration",
+      "TouristTaxPayment": "Tourist tax payment"
+    },
+    "proofs": {
+      "download": "Download",
+      "downloadLabel": "Download: {{kind}}, {{when}}",
+      "emptyDescription": "No file is archived for these filters. Change the period or upload the proof you have.",
+      "emptyTitle": "No proof in the archive",
+      "exportFailed": "We couldn't prepare the archive. Try again.",
+      "exportPeriod": "Period: {{period}}",
+      "exportZip": "Download the archive (ZIP)",
+      "keptUntil": "Kept until {{date}}",
+      "listLabel": "Archived proofs",
+      "loadError": "We couldn't load the proofs.",
+      "loading": "Loading the proofs…",
+      "next": "Next",
+      "notFound": "We can't find what you are looking for: the property does not exist or you can't see it.",
+      "pageOf": "Page {{page}} of {{pages}}",
+      "pagerLabel": "Archive pages",
+      "previous": "Previous",
+      "receivedOn": "on {{date}}"
+    },
+    "reason": {
+      "alloggiati_failed": "The submission failed or was rejected.",
+      "alloggiati_incomplete": "Only some of the guests were received: the stay is not complete.",
+      "alloggiati_not_sent": "The communication is due and has not been sent.",
+      "alloggiati_sending": "The submission is under way.",
+      "awaiting_receipt": "Communication sent: we are waiting for the receipt.",
+      "connection_inactive": "Your channel manager is not sending the data: this stay has to be sent by hand.",
+      "deadline_overdue": "The deadline has passed and nothing proves the communication.",
+      "entrusted_to_channel_manager": "The guests were handed to your channel manager: we are waiting for the receipt.",
+      "evidence_missing": "No proof is archived.",
+      "external_verification_required": "The outcome is in the area of your channel manager: CasaZen has no proof of it.",
+      "no_show": "The guests did not arrive: there is nothing to communicate.",
+      "over_thirty_nights_not_sent": "The stay is over 30 nights and the channel manager does not send it by itself: it must be sent by hand.",
+      "period_open": "The period is still open: the deadline has not passed.",
+      "receipt_archived": "The receipt is archived.",
+      "receipt_missing": "The communication shows as sent but the receipt is not in the archive.",
+      "short_stay_at_risk": "Short stay (6-hour term): the guests were not handed to the channel manager."
+    },
+    "source": {
+      "casazen_receipt": "Downloaded by CasaZen",
+      "manual_upload": "Uploaded by you",
+      "other": "Archived in CasaZen"
+    },
+    "summary": {
+      "export": {
+        "csv": "Report (CSV)",
+        "pdf": "Report (PDF)"
+      },
+      "exportFailed": "We couldn't prepare the report. Try again.",
+      "loadError": "We couldn't load the summary.",
+      "loading": "Loading the summary…",
+      "notAvailable": "The summary is not available right now."
+    },
+    "tabs": {
+      "proofs": "Proofs",
+      "summary": "Summary"
+    },
+    "tabsLabel": "Sections of the proof archive",
+    "title": "Proof archive",
+    "upload": {
+      "cancel": "Cancel",
+      "chooseMonth": "Choose the month",
+      "chooseProperty": "Choose the property",
+      "day": "Day of the communication",
+      "dayHint": "The day it was sent, not in the future.",
+      "dayInvalid": "Choose a day in the past, not in the future.",
+      "description": "PDF, JPG or PNG: the file stays in your private archive for five years.",
+      "done": "Proof uploaded to the archive.",
+      "failed": "We couldn't upload the proof. Try again.",
+      "file": "File",
+      "fileHint": "PDF, JPG or PNG.",
+      "fileInvalid": "The file must be a PDF, a JPG or a PNG.",
+      "kind": "What it proves",
+      "month": "Month",
+      "open": "Upload a proof",
+      "portalBody": "Sign in to the portal, download the receipt of the communication and then upload it below.",
+      "portalLink": "Open the Alloggiati Web portal",
+      "portalTitle": "First get the receipt",
+      "property": "Property",
+      "submit": "Upload the proof",
+      "title": "Upload a proof"
+    }
+  },
+  "connectionHealth": {
+    "activate": "Activate or reconnect the submission",
+    "archiveLink": "Upload the receipts to the proof archive",
+    "credentials": {
+      "none": "CasaZen doesn't hold the credentials of the Alloggiati Web portal: you upload the receipts yourself.",
+      "stored": "The portal credentials are saved in CasaZen but not verified: you upload the receipts yourself.",
+      "usable": "The portal credentials are verified: CasaZen can download the receipts."
+    },
+    "description": "Who sends the guest data to the police and ISTAT, and whether the submission works.",
+    "detail": {
+      "Active": {
+        "CasaZen": "CasaZen holds the portal credentials and can send the data.",
+        "ChannelManager": "Your channel manager confirms that the connection works and that the daily automatic submission is on.",
+        "other": "The submission shows as active."
+      },
+      "Inactive": {
+        "CasaZen": "CasaZen can't send the data with the saved credentials.",
+        "ChannelManager": "Your channel manager says the submission is not active: the guest data don't go out by themselves.",
+        "other": "The submission does not show as active."
+      },
+      "Manual": "You send the data to the portals yourself: CasaZen reminds you of the deadlines.",
+      "Unknown": {
+        "CasaZen": "CasaZen can't verify the submission with the saved credentials.",
+        "ChannelManager": "CasaZen can't verify this connection: your channel manager doesn't say whether the submission is active.",
+        "other": "CasaZen can't verify this connection."
+      }
+    },
+    "disclosureBody": "The state is read from your channel manager: CasaZen does not confirm it by itself and does not import the result.",
+    "disclosureTitle": "Data consulted on Octorate",
+    "instructions": {
+      "CasaZen": "Check the Alloggiati Web portal credentials saved in CasaZen.",
+      "ChannelManager": {
+        "Inactive": "Turn the automatic submission on in the panel of your channel manager (connection with the police and daily submission), then come back here and check again.",
+        "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
+      }
+    },
+    "lastRun": "Last automatic submission: {{when}}",
+    "loadError": "We couldn't read the state of the submission.",
+    "loading": "Reading the state of the submission…",
+    "notFound": "We can't find this property.",
+    "outsideItaly": "Outside Italy the guest data are not sent to the police and ISTAT from here.",
+    "reason": {
+      "connection_not_checked_yet": "We haven't checked it yet: we read it the next time you open this page.",
+      "credentials_refused": "The portal refused the saved credentials.",
+      "octorate_not_connected": "The property is not connected to the channel manager.",
+      "octorate_police_account_invalid": "The channel manager says the police portal account is not valid.",
+      "octorate_police_autorun_off": "The daily automatic submission is off in the channel manager.",
+      "octorate_police_not_exposed": "The channel manager doesn't let us read this state.",
+      "octorate_unavailable": "We couldn't reach the channel manager: try again later.",
+      "sender_casazen_not_available": "Sending by CasaZen is not available yet."
+    },
+    "refresh": "Check again",
+    "sender": {
+      "CasaZen": "CasaZen sends the data",
+      "ChannelManager": "Your channel manager sends the data",
+      "Manual": "Manual submission",
+      "unknown": "Who sends the data is not stated"
+    },
+    "state": {
+      "Active": "Active",
+      "Inactive": "Not active",
+      "Manual": "Manual",
+      "Unknown": "Cannot be verified"
+    },
+    "title": "Submission to the police and ISTAT",
+    "topic": {
+      "Alloggiati": "Alloggiati Web (police)",
+      "Istat": "ISTAT (tourism statistics)"
     }
   },
   "comune": {

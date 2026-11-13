@@ -100,6 +100,22 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyComplianceSummary) });
   });
 
+  // «Invio a Polizia e ISTAT» on the page of a property (E03/F03/US02/T01): nobody sends automatically, so the panel is quiet and asks nothing.
+  // A spec that tests the panel answers its own state over this one.
+  await page.route('**/api/properties/*/compliance/connection-health**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const propertyId = new URL(route.request().url()).pathname.split('/').at(-3);
+    const manual = { sender: 'Manual', state: 'Manual', connectionValid: null, autorun: null, lastAutomaticRunAt: null, reason: null, declaredAt: null };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ propertyId, applies: true, alloggiati: manual, istat: manual, credentialsInCasaZen: false, credentialsUsable: false, checkedAt: '2026-06-16T10:00:00Z' }),
+    });
+  });
+
   // The To do list of the host (NF-07): the Home asks for the items and the menu for the number of the urgent ones. None, unless a spec
   // answers otherwise.
   await page.route('**/api/me/activities**', async (route) => {
