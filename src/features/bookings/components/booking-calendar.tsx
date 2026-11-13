@@ -89,7 +89,7 @@ interface DayCellContextValue {
   selection: DaySelection | null;
   /** The one day that takes the Tab key (the others are reached with the arrows). */
   tabbableDay: string;
-  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
 }
 
@@ -120,7 +120,7 @@ function DayCellWrapper({ value, children }: DateCellWrapperProps) {
     if (step !== undefined) {
       event.preventDefault();
       const target = addDays(day, step);
-      if (event.shiftKey) onPressDay(context.propertyId, target, true);
+      if (event.shiftKey) onPressDay(context.propertyId, target, true, day);
       Array.from(grid?.querySelectorAll<HTMLElement>('[data-day-cell]') ?? [])
         .find((candidate) => candidate.dataset.dayCell === target)
         ?.focus();
@@ -172,7 +172,7 @@ interface BookingCalendarProps {
   dayLayer?: DayLayerProperty;
   /** The days selected (E08/F05/US03/T02) and what a press on a day by keyboard does; without `onPressDay` the days are not controls (the mouse selection is `onSelectSlot`). */
   selection?: DaySelection | null;
-  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
 }
 

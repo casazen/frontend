@@ -63,6 +63,10 @@ describe('day selection (E08/F05/US03/T02)', () => {
     expect(pressDay(range, 'p1', '2026-09-18', true)).toMatchObject({ anchor: '2026-09-12', from: '2026-09-12', to: '2026-09-18' });
   });
 
+  it('pressDay_ShiftArrowWithNothingSelected_StartsOnTheDayItWasPressedOnAndExtends', () => {
+    expect(pressDay(null, 'p1', '2026-09-13', true, '2026-09-12')).toMatchObject({ anchor: '2026-09-12', from: '2026-09-12', to: '2026-09-13' });
+  });
+
   it('clearSelection_Escape_SelectsNothing', () => {
     expect(clearSelection()).toBeNull();
   });

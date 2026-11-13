@@ -145,7 +145,7 @@ interface HostTimelineProps {
   /** The days selected (E08/F05/US03/T02). */
   selection?: DaySelection | null;
   /** A press on a day (a click, Enter or Space; with `shift` it extends the selection). Without it the days are not controls: they cannot be selected. */
-  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   /** Escape on a day: nothing is selected. */
   onClearSelection?: () => void;
 }
@@ -188,7 +188,7 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
         const target = days[index + (event.key === 'ArrowLeft' ? -1 : 1)];
         if (!target) return;
         // Shift plus arrow extends the selection of the row from where it was started (or from this day).
-        if (event.shiftKey) onPressDay(propertyId, target, true);
+        if (event.shiftKey) onPressDay(propertyId, target, true, day);
         focusDay(root, propertyId, target);
         return;
       }

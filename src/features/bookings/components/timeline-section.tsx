@@ -36,7 +36,7 @@ interface TimelineSectionProps {
   onRetryDayLayer?: () => void;
   /** The days selected and how they are selected (E08/F05/US03/T02); without `onPressDay` the days cannot be selected. */
   selection?: DaySelection | null;
-  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
 }
 

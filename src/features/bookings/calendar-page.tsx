@@ -174,10 +174,10 @@ export function CalendarPage() {
   );
 
   // A press on a day (a click, Enter or Space; with Shift the selection grows): the first press starts a selection, the second extends it.
-  const handlePressDay = useCallback((propertyId: string, day: string, shift: boolean) => {
+  const handlePressDay = useCallback((propertyId: string, day: string, shift: boolean, origin?: string) => {
     setSelectedBlockId(null);
     setFocusPanel(false);
-    setSelection((previous) => pressDay(previous, propertyId, day, shift));
+    setSelection((previous) => pressDay(previous, propertyId, day, shift, origin));
   }, []);
   const handleClearSelection = useCallback(() => setSelection(clearSelection()), []);
 

@@ -44,11 +44,11 @@ export function extendSelection(selection: DaySelection | null, propertyId: stri
 }
 
 /**
- * What a press on a day does (a click, Enter, Space): with Shift it extends the selection; without, a first press starts one, a press on the same row while only one day is
+ * What a press on a day does (a click, Enter, Space): with Shift it extends the selection (from `origin`, the day the key was pressed on, when nothing is selected yet); without, a first press starts one, a press on the same row while only one day is
  * selected is the second click that extends it, and a press when a range is already selected (or on another row) starts a new one.
  */
-export function pressDay(selection: DaySelection | null, propertyId: string, day: string, shift: boolean): DaySelection | null {
-  if (shift) return extendSelection(selection, propertyId, day);
+export function pressDay(selection: DaySelection | null, propertyId: string, day: string, shift: boolean, origin: string = day): DaySelection | null {
+  if (shift) return extendSelection(selection, propertyId, day, origin);
   if (selection && selection.propertyId === propertyId && selection.from === selection.to) return extendSelection(selection, propertyId, day);
   return startSelection(propertyId, day);
 }

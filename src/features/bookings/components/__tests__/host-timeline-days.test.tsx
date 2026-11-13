@@ -202,7 +202,7 @@ describe('the days of the Timeline as controls (E08/F05/US03/T02)', () => {
     // Plain arrows only move; Shift plus arrow extends the selection of the row.
     expect(onPressDay).not.toHaveBeenCalled();
     fireEvent.keyDown(cellOf('2026-09-13'), { key: 'ArrowRight', shiftKey: true });
-    expect(onPressDay).toHaveBeenCalledWith('p1', '2026-09-14', true);
+    expect(onPressDay).toHaveBeenCalledWith('p1', '2026-09-14', true, '2026-09-13');
     expect(cellOf('2026-09-14')).toHaveFocus();
     fireEvent.keyDown(cellOf('2026-09-14'), { key: 'Escape' });
     expect(onClearSelection).toHaveBeenCalledTimes(1);
