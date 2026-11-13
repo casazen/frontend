@@ -11,8 +11,10 @@ const DEFAULT_MONTHS_AHEAD = 12;
 
 /**
  * The nights of the whole site, for the «Quando» field of the home and of the results (DB-07a, DB-20-FU1): each night is free when
- * some home that sleeps the party is, and it costs what the cheapest of those homes asks. Same shape as the calendar of a single
- * home, so it is the same `StayCalendar`. The party counts: a night is not free for twelve people if no home takes twelve.
+ * some home that sleeps the party is free and a stay can start on it, and it costs what the cheapest of those homes asks. Same shape
+ * as the calendar of a single home, so it is the same `StayCalendar`. The party counts: a night is not free for twelve people if no
+ * home takes twelve. A night closed to arrival (or outside its advance limits) for every home is not free here although it can be slept
+ * in: the server does not say it apart from a taken night (a backend follow-up, see `PublicSiteCalendarDay`).
  *
  * With `platform` it is the calendar of ALL the booking sites (the public `/search`), and `where` narrows it to the homes of the place
  * chosen; `orgSlug` is then not used.
