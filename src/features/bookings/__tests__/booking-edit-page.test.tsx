@@ -618,6 +618,26 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
         await waitFor(() => expect(bookingsApi.retryOctorateSync).toHaveBeenCalledWith(BOOKING_ID, false), WAIT);
       });
 
+      it('BookingEditPage_VersionThatDoesNotSayTheGuests_OffersOnlyKeepingTheCasazenVersion', async () => {
+        // The server takes the version of the channel manager as the booking's only when it says the dates and the guests: this one would conflict again.
+        vi.mocked(bookingsApi.getById).mockResolvedValue(
+          booking({
+            source: 'Direct',
+            octorateSync: sync({
+              state: 'Conflict',
+              errorCode: 'octorate_reservation_changed',
+              canRetry: true,
+              octorateVersion: { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: null },
+            }),
+          }),
+        );
+        renderPage();
+
+        const alert = await screen.findByTestId('booking-sync-conflict', undefined, WAIT);
+        expect(within(alert).getByRole('button', { name: 'Tieni la versione di CasaZen' })).toBeInTheDocument();
+        expect(within(alert).queryByRole('button', { name: 'Usa la versione del channel manager' })).not.toBeInTheDocument();
+      });
+
       it('BookingEditPage_UseTheChannelManagerVersion_OpensTheFormWithItsDatesAndGuestsAndSavesNothing', async () => {
         vi.mocked(bookingsApi.getById).mockResolvedValue(conflicted());
         renderPage();

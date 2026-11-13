@@ -174,13 +174,16 @@ describe('channelVersionChange', () => {
     expect(channelVersionChange({ ...booking, numberOfChildren: 3 }, version)?.numberOfChildren).toBe(1);
   });
 
-  it('channelVersionChange_GuestsNotKept_KeepsTheGuestsOfTheBooking', () => {
-    const version = { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: null };
-    expect(channelVersionChange(booking, version)?.numberOfGuests).toBe(4);
+  it('channelVersionChange_GuestsNotKept_IsNullBecauseTheServerWouldNotTakeItAsTheirVersion', () => {
+    // The server adopts the version of the channel manager only when it says the dates AND the guests: with the guests of the booking in their place the save would be a
+    // change like any other and conflict again, so the version is not offered.
+    expect(channelVersionChange(booking, { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: null })).toBeNull();
+    expect(channelVersionChange(booking, { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: 0 })).toBeNull();
   });
 
   it('channelVersionChange_DatesNotKept_IsNullBecauseThereIsNothingToPutInTheForm', () => {
     expect(channelVersionChange(booking, { checkIn: null, checkOut: '2027-10-08T00:00:00Z', guests: 3 })).toBeNull();
+    expect(channelVersionChange(booking, { checkIn: '2027-10-03T00:00:00Z', checkOut: null, guests: 3 })).toBeNull();
     expect(channelVersionChange(booking, undefined)).toBeNull();
   });
 });

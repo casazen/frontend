@@ -88,16 +88,17 @@ export type StayChange = Required<Pick<UpdateBookingDto, 'checkInDate' | 'checkO
 
 /**
  * The stay of the channel manager as a form takes it, for the host who chooses its version after a conflict: its dates and its number of guests, the other fields of
- * the booking as they are. The minors stay as many as they were unless they would be all the guests. `null` when the channel manager did not keep its dates: there is
- * nothing to put in the form.
+ * the booking as they are. The minors stay as many as they were unless they would be all the guests. `null` when the channel manager did not keep its dates or its guests:
+ * there is nothing to put in the form. The server takes a stay as the channel manager's own only when the version says the dates AND the guests (a stay with the guests of
+ * the booking in their place would be a change like any other, and conflict again), so a version that does not is not offered.
  */
 export function channelVersionChange(
   booking: Pick<Booking, 'numberOfGuests' | 'numberOfChildren' | 'specialRequests'>,
   version: OctorateVersion | null | undefined,
 ): StayChange | null {
-  if (!version?.checkIn || !version.checkOut) return null;
+  if (!version?.checkIn || !version.checkOut || version.guests == null || version.guests < 1) return null;
 
-  const guests = version.guests ?? booking.numberOfGuests;
+  const guests = version.guests;
   return {
     checkInDate: stayDateOf(version.checkIn),
     checkOutDate: stayDateOf(version.checkOut),
