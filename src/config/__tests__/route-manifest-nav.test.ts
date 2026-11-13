@@ -352,12 +352,13 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/settings/site-documents',
       '/app/short-rent/settings/domain',
     ],
-    // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3.
+    // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3. Documenti fiscali (E06/F03/US04/T01, behind the flags of the documents) is next to Regime fiscale, at 3.5.
     '/app/short-rent/payments': [
       '/app/short-rent/payments/revenue',
       '/app/short-rent/reports',
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
+      '/app/short-rent/fiscal/documents',
       '/app/short-rent/settings/payments',
     ],
     '/app/short-rent/approval-queue': ['/app/short-rent/verifications'],
@@ -367,7 +368,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
   };
-  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
+  const EVERY_FLAG: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true, fiscalDocumentIssuance: true };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
     for (const [parent, pages] of Object.entries(SECTIONS)) {
@@ -549,7 +550,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
   });
 
   it('puts the entry a page hangs from first in its tabs, for a user who may open every page', () => {
-    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true };
+    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true, crmMarketing: true, fiscalDocumentIssuance: true };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));
       expect(tabs[0], entry.path).toBe(entry.navParent);

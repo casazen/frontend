@@ -7,12 +7,15 @@ import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled } from '@/config/route-manifest';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property-item';
+import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
 import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
 import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
@@ -171,6 +174,11 @@ export function FiscalDashboardPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'property.write');
+  // The page of the fiscal documents is offered only where it exists for this person: its route is in the manifest, its flags are on and the caller holds what it asks.
+  // With the flags off (the default) the page is as it was.
+  const { flags } = useFeatureFlags();
+  const documentsEntry = getManifestEntry(FISCAL_DOCUMENTS_PATH);
+  const canOpenDocuments = documentsEntry !== undefined && isEntryFeatureEnabled(documentsEntry, flags) && hasEntryPermission(documentsEntry, hasPermission);
   const taxYear = useMemo(() => currentFiscalYear(), []);
   const { data, isLoading, isError, error, refetch } = useFiscalRegime(taxYear);
   const assign = useAssignFiscalRegime(taxYear);
@@ -207,6 +215,19 @@ export function FiscalDashboardPage() {
           </div>
         ) : data ? (
           <FiscalOverview snapshot={data} canWrite={canWrite} pending={assign.isPending} onAssign={assignRegime} />
+        ) : null}
+
+        {/* The fiscal documents (E06/F03/US04/T01): a quiet section that leads to the list of the documents CasaZen issued and of the ones of the channel manager. */}
+        {canOpenDocuments ? (
+          <PlainSection
+            title={t('fiscalDocuments.list.title')}
+            actionLabel={t('fiscalDocuments.list.card.action')}
+            href={FISCAL_DOCUMENTS_PATH}
+            actionTestId="fiscal-documents-card-cta"
+            data-testid="fiscal-documents-card"
+          >
+            <p className="text-sm text-foreground/70">{t('fiscalDocuments.list.description')}</p>
+          </PlainSection>
         ) : null}
 
         {/* Who issues the fiscal documents of the organization: a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}

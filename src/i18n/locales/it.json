@@ -1392,6 +1392,7 @@
       "crmMergeSurvivorInvalid": "Il profilo da tenere deve essere uno dei due della proposta.",
       "crmProfileNotFound": "Il profilo non esiste, oppure non è tra gli immobili a cui hai accesso.",
       "crmTagsInvalid": "I tag non sono validi: al massimo 50, da 1 a 40 caratteri ciascuno, senza doppioni e non troppo lunghi in tutto.",
+      "csvTooManyRows": "Ci sono troppi documenti per un solo file CSV: restringi il periodo.",
       "d6ChannelFailed": "Il portale ha avuto un problema: riprova tra poco.",
       "d6OperationUnverified": "Questo passaggio per questo portale non è ancora attivo: resta guidato e te lo diciamo appena si può.",
       "d6ResultUnknown": "Non sappiamo com'è andata: controlla nel pannello e poi chiedi di nuovo.",
@@ -1407,6 +1408,11 @@
       "existingInventoryScopeInvalid": "La scelta degli immobili da importare non è valida.",
       "existingInventoryTooManyChannels": "Hai scelto troppi portali in una volta.",
       "f24TaxCodeMixed": "Nel mese ci sono ritenute con codici tributo diversi: non si può fare un solo F24.",
+      "fatturapaSchemaUnavailable": "Non ancora disponibile: lo schema della fattura elettronica lo aggiunge un operatore, e finché manca non si può emettere la fattura.",
+      "fiscalDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. Aggiorna l’elenco.",
+      "fiscalDocumentXmlUnavailable": "Questo documento non ha un file XML: ce l’hanno solo le fatture e le note di credito emesse da CasaZen.",
+      "fiscalExportInvalidFormat": "Il formato del file non è valido: scegli CSV o Excel.",
+      "fiscalExportInvalidRange": "Il periodo non è valido: il primo giorno deve essere prima dell’ultimo, tra il 2000 e il 2100.",
       "fiscalSettingsNeedWholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti.",
       "inventoryGroupRequired": "Manca il nome del gruppo.",
       "inventoryIntentAssignmentsInvalid": "Non c'è niente da salvare, oppure c'è troppo.",
@@ -1441,6 +1447,7 @@
       "octorateNotFound": "Il channel manager non trova questo annuncio.",
       "octoratePanelUrlMissing": "L'indirizzo del pannello non è ancora configurato. Contatta il supporto.",
       "octoratePartnerFailed": "Il canale non ha accettato la richiesta (accesso non valido o canale non raggiungibile): controlla i dati di accesso e riprova più tardi.",
+      "octoratePdfUnavailable": "Il tuo channel manager non ha il PDF di questo documento, oppure ora non è raggiungibile.",
       "octoratePropertyNotFound": "Non troviamo l'immobile scelto, oppure non hai accesso. Torna indietro e scegline un altro.",
       "octorateRateLimited": "Troppe richieste al channel manager: riprova tra qualche minuto.",
       "octorateRequestRejected": "Il channel manager ha rifiutato la richiesta.",
@@ -1478,6 +1485,7 @@
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
+      "xlsxTooManyRows": "Ci sono troppi documenti per un solo file Excel: restringi il periodo.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
@@ -7739,6 +7747,120 @@
         "legend": "Chi emette i documenti dei tuoi soggiorni?",
         "recommended": "Consigliato"
       }
+    },
+    "list": {
+      "actions": {
+        "pdf": "PDF",
+        "pdfLabel": "Scarica il PDF di {{document}}",
+        "xml": "XML",
+        "xmlLabel": "Scarica l'XML di {{document}}"
+      },
+      "booking": "Apri la prenotazione",
+      "bookingLinked": "Prenotazione collegata",
+      "card": {
+        "action": "Apri l'elenco"
+      },
+      "columns": {
+        "document": "Documento",
+        "recipient": "Destinatario",
+        "state": "Stato",
+        "total": "Totale"
+      },
+      "count_one": "{{count}} documento",
+      "count_other": "{{count}} documenti",
+      "description": "Fatture, note di credito e ricevute: quelle emesse da CasaZen e quelle del tuo channel manager, ognuna con il suo stato.",
+      "download": {
+        "done": "File scaricato.",
+        "failed": "Non siamo riusciti a scaricare il file. Riprova tra poco.",
+        "notFound": "Documento non trovato."
+      },
+      "empty": {
+        "action": "Scegli chi emette i documenti",
+        "filteredDescription": "Cambia il periodo o i filtri per vedere altri documenti.",
+        "filteredTitle": "Nessun documento con questi filtri",
+        "mode": {
+          "Accountant": "Li emette il tuo commercialista, fuori da CasaZen: qui non compare nulla.",
+          "CasaZenDirectOnly": "CasaZen emette i documenti delle prenotazioni dirette: li trovi qui appena ne viene emesso uno.",
+          "Octorate": "Li emette il tuo channel manager: CasaZen li importa in sola lettura e li mostra qui.",
+          "unknown": "Quando CasaZen emette un documento, o lo riceve dal tuo channel manager, lo trovi qui.",
+          "unset": "Non hai ancora scelto chi emette i documenti fiscali. Quando lo scegli, li trovi qui."
+        },
+        "title": "Ancora nessun documento fiscale"
+      },
+      "export": {
+        "csv": "CSV",
+        "failed": "Non siamo riusciti a preparare il file. Riprova tra poco.",
+        "hint": "I file CSV ed Excel contengono i documenti emessi, con gli stessi giorni, tipo e origine dei filtri.",
+        "label": "Scarica l'elenco",
+        "statusBlocked": "I file contengono solo i documenti emessi: togli il filtro sullo stato per scaricarli.",
+        "xlsx": "Excel"
+      },
+      "filters": {
+        "all": "Tutti",
+        "dateOrder": "Il primo giorno deve essere prima dell'ultimo.",
+        "dateRange": "Scegli giorni tra il 2000 e il 2100.",
+        "from": "Dal",
+        "kind": "Tipo",
+        "label": "Filtri dei documenti",
+        "reset": "Azzera i filtri",
+        "source": "Emesso da",
+        "status": "Stato",
+        "statuses": {
+          "Discarded": "Bozze eliminate",
+          "Draft": "Bozze",
+          "Issued": "Emessi"
+        },
+        "to": "Al"
+      },
+      "forbidden": "Il tuo ruolo non può vedere i documenti fiscali. Chiedi a chi amministra l'organizzazione di darti accesso.",
+      "gone": "Questo documento non c’è più.",
+      "kind": {
+        "CreditNote": "Nota di credito",
+        "Invoice": "Fattura",
+        "Proforma": "Proforma",
+        "Receipt": "Ricevuta"
+      },
+      "loadError": "Impossibile caricare i documenti fiscali.",
+      "named": "{{kind}} {{number}}",
+      "noBooking": "Senza prenotazione",
+      "noDate": "Senza data",
+      "noRecipient": "Destinatario non indicato",
+      "note": {
+        "sdiNotAvailable": "L’invio allo SDI non è ancora disponibile in CasaZen: le fatture emesse restano «da inviare» e il tuo commercialista le trasmette con il file XML."
+      },
+      "notFound": "Elenco non trovato.",
+      "pdfUnavailable": "PDF non disponibile",
+      "readOnly": "Sola lettura",
+      "source": {
+        "CasaZen": "Emesso da CasaZen",
+        "Octorate": "Dal tuo channel manager"
+      },
+      "state": {
+        "channelManaged": "Gestito dal tuo channel manager",
+        "delivered": "Consegnata",
+        "discarded": "Bozza eliminata",
+        "draft": "Bozza",
+        "issued": "Emessa",
+        "manualDeclared": "Inviata fuori da CasaZen (dichiarata)",
+        "paid": "Pagata",
+        "rejected": "Scartata dallo SDI",
+        "sdiCode": "Codice dello SDI: {{code}}",
+        "sdiUnavailable": "Stato dello SDI non disponibile",
+        "submitted": "Inviata allo SDI",
+        "toCollect": "Da incassare",
+        "toSend": "Emessa - da inviare allo SDI",
+        "unrecognizedPayment": "Incasso: {{code}}",
+        "unrecognizedSdi": "Stato dello SDI: {{code}}",
+        "unrecognizedStatus": "Stato: {{code}}"
+      },
+      "tableLabel": "Documenti fiscali",
+      "title": "Documenti fiscali",
+      "unnumbered": "{{kind}} (senza numero)",
+      "watch": {
+        "checkAgain": "Controlla di nuovo",
+        "over": "Non controlliamo più da soli se lo SDI ha risposto. Controlla di nuovo per vedere gli stati aggiornati."
+      },
+      "xmlUnavailable": "XML non disponibile"
     }
   },
   "guestCancellation": {
@@ -13451,6 +13573,7 @@
     "cin": "CIN",
     "identification": "Identificazione",
     "fiscal": "Regime fiscale",
+    "fiscalDocuments": "Documenti fiscali",
     "payments": "Incassi",
     "revenue": "Ricavi",
     "reports": "Report",

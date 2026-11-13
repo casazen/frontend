@@ -1392,6 +1392,7 @@
       "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
       "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
       "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
+      "csvTooManyRows": "There are too many documents for one CSV file: narrow the period.",
       "d6ChannelFailed": "The portal had a problem: try again shortly.",
       "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
       "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
@@ -1407,6 +1408,11 @@
       "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
       "existingInventoryTooManyChannels": "You chose too many portals at once.",
       "f24TaxCodeMixed": "The month has withholdings with different tax codes: a single F24 cannot be made.",
+      "fatturapaSchemaUnavailable": "Not available yet: an operator adds the schema of the electronic invoice, and until it is there an invoice cannot be issued.",
+      "fiscalDocumentNotFound": "We can no longer find this document, or it is not among the properties you can access. Refresh the list.",
+      "fiscalDocumentXmlUnavailable": "This document has no XML file: only the invoices and credit notes issued by CasaZen have one.",
+      "fiscalExportInvalidFormat": "The file format is not valid: choose CSV or Excel.",
+      "fiscalExportInvalidRange": "The period is not valid: the first day must be before the last one, between 2000 and 2100.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
       "inventoryGroupRequired": "The name of the group is missing.",
       "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
@@ -1441,6 +1447,7 @@
       "octorateNotFound": "The channel manager cannot find this listing.",
       "octoratePanelUrlMissing": "The address of the panel is not configured yet. Contact support.",
       "octoratePartnerFailed": "The channel did not accept the request (invalid access or channel not reachable): check the access details and try again later.",
+      "octoratePdfUnavailable": "Your channel manager has no PDF of this document, or it cannot be reached now.",
       "octoratePropertyNotFound": "We cannot find the property you chose, or you have no access to it. Go back and choose another one.",
       "octorateRateLimited": "Too many requests to the channel manager: try again in a few minutes.",
       "octorateRequestRejected": "The channel manager refused the request.",
@@ -1478,6 +1485,7 @@
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
+      "xlsxTooManyRows": "There are too many documents for one Excel file: narrow the period.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
@@ -7739,6 +7747,120 @@
         "legend": "Who issues the documents of your stays?",
         "recommended": "Recommended"
       }
+    },
+    "list": {
+      "actions": {
+        "pdf": "PDF",
+        "pdfLabel": "Download the PDF of {{document}}",
+        "xml": "XML",
+        "xmlLabel": "Download the XML of {{document}}"
+      },
+      "booking": "Open the booking",
+      "bookingLinked": "Linked booking",
+      "card": {
+        "action": "Open the list"
+      },
+      "columns": {
+        "document": "Document",
+        "recipient": "Recipient",
+        "state": "Status",
+        "total": "Total"
+      },
+      "count_one": "{{count}} document",
+      "count_other": "{{count}} documents",
+      "description": "Invoices, credit notes and receipts: the ones CasaZen issued and the ones of your channel manager, each with its status.",
+      "download": {
+        "done": "File downloaded.",
+        "failed": "We could not download the file. Try again in a moment.",
+        "notFound": "Document not found."
+      },
+      "empty": {
+        "action": "Choose who issues the documents",
+        "filteredDescription": "Change the period or the filters to see other documents.",
+        "filteredTitle": "No documents match these filters",
+        "mode": {
+          "Accountant": "Your accountant issues them, outside CasaZen: nothing shows up here.",
+          "CasaZenDirectOnly": "CasaZen issues the documents of direct bookings: you will find them here as soon as one is issued.",
+          "Octorate": "Your channel manager issues them: CasaZen imports them read-only and shows them here.",
+          "unknown": "When CasaZen issues a document, or receives one from your channel manager, you will find it here.",
+          "unset": "You have not chosen yet who issues the fiscal documents. Once you do, you will find them here."
+        },
+        "title": "No fiscal documents yet"
+      },
+      "export": {
+        "csv": "CSV",
+        "failed": "We could not prepare the file. Try again in a moment.",
+        "hint": "The CSV and Excel files hold the issued documents, with the same days, kind and source as the filters.",
+        "label": "Download the list",
+        "statusBlocked": "The files hold issued documents only: remove the status filter to download them.",
+        "xlsx": "Excel"
+      },
+      "filters": {
+        "all": "All",
+        "dateOrder": "The first day must be before the last one.",
+        "dateRange": "Choose days between 2000 and 2100.",
+        "from": "From",
+        "kind": "Kind",
+        "label": "Document filters",
+        "reset": "Clear filters",
+        "source": "Issued by",
+        "status": "Status",
+        "statuses": {
+          "Discarded": "Dropped drafts",
+          "Draft": "Drafts",
+          "Issued": "Issued"
+        },
+        "to": "To"
+      },
+      "forbidden": "Your role cannot see the fiscal documents. Ask whoever administers the organization to give you access.",
+      "gone": "This document is no longer there.",
+      "kind": {
+        "CreditNote": "Credit note",
+        "Invoice": "Invoice",
+        "Proforma": "Proforma",
+        "Receipt": "Receipt"
+      },
+      "loadError": "The fiscal documents could not be loaded.",
+      "named": "{{kind}} {{number}}",
+      "noBooking": "No booking",
+      "noDate": "No date",
+      "noRecipient": "Recipient not given",
+      "note": {
+        "sdiNotAvailable": "Sending to the SDI is not available in CasaZen yet: the invoices issued stay «to send» and your accountant sends them with the XML file."
+      },
+      "notFound": "List not found.",
+      "pdfUnavailable": "PDF not available",
+      "readOnly": "Read-only",
+      "source": {
+        "CasaZen": "Issued by CasaZen",
+        "Octorate": "From your channel manager"
+      },
+      "state": {
+        "channelManaged": "Managed by your channel manager",
+        "delivered": "Delivered",
+        "discarded": "Dropped draft",
+        "draft": "Draft",
+        "issued": "Issued",
+        "manualDeclared": "Sent outside CasaZen (declared)",
+        "paid": "Paid",
+        "rejected": "Rejected by the SDI",
+        "sdiCode": "SDI code: {{code}}",
+        "sdiUnavailable": "SDI status not available",
+        "submitted": "Sent to the SDI",
+        "toCollect": "To collect",
+        "toSend": "Issued - to send to the SDI",
+        "unrecognizedPayment": "Collection: {{code}}",
+        "unrecognizedSdi": "SDI status: {{code}}",
+        "unrecognizedStatus": "Status: {{code}}"
+      },
+      "tableLabel": "Fiscal documents",
+      "title": "Fiscal documents",
+      "unnumbered": "{{kind}} (no number)",
+      "watch": {
+        "checkAgain": "Check again",
+        "over": "We no longer check by ourselves whether the SDI has answered. Check again to see the updated statuses."
+      },
+      "xmlUnavailable": "XML not available"
     }
   },
   "guestCancellation": {
@@ -13451,6 +13573,7 @@
     "cin": "CIN",
     "identification": "Identification",
     "fiscal": "Fiscal regime",
+    "fiscalDocuments": "Fiscal documents",
     "payments": "Payments",
     "revenue": "Revenue",
     "reports": "Reports",
