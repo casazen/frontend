@@ -205,3 +205,42 @@ export function isOwnerImportFileName(name: string): boolean {
 
 /** How many rows of the result of the check or of the import are shown at a time. */
 export const OWNER_IMPORT_PAGE_SIZE = 50;
+
+/** What the form of one owner entered by hand holds (all text as typed): the fields of one row of the file. */
+export interface ManualOwnerValues {
+  /** The id of the property or its CIN: the form tells them apart. */
+  property: string;
+  ownerKey: string;
+  legalName: string;
+  email: string;
+  entityKind: string;
+  fiscalCode: string;
+  sharePercent: string;
+  ownershipStart: string;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** One cell of a CSV: quoted when it holds a separator, a quote or a line break. */
+function csvCell(value: string): string {
+  const text = value.trim();
+  return /[",;\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/**
+ * The owner entered by hand as a one-row file, the way the server reads a file (the header names are the columns of the import): the form builds it in the browser and it
+ * goes through the same check and the same confirmed import, so the server is the only judge of the row. A comma in the share is read as the decimal point.
+ */
+export function ownerManualCsv(values: ManualOwnerValues): string {
+  const cells: Array<[string, string]> = [
+    [UUID.test(values.property.trim()) ? 'propertyId' : 'cinCode', values.property],
+    ['ownerKey', values.ownerKey],
+    ['legalName', values.legalName],
+    ['email', values.email],
+    ['entityKind', values.entityKind],
+    ['fiscalCode', values.fiscalCode],
+    ['sharePercent', values.sharePercent.replace(',', '.')],
+    ['ownershipStart', values.ownershipStart],
+  ];
+  return `${cells.map(([name]) => name).join(',')}\r\n${cells.map(([, value]) => csvCell(value)).join(',')}\r\n`;
+}

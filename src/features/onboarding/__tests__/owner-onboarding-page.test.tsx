@@ -9,7 +9,8 @@ import { onboardingApi } from '@/api/onboarding.api';
 import { ownerOnboardingApi } from '@/api/owner-onboarding.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
-import { OWNER_STEP_PATH } from '@/lib/owner-onboarding';
+import { getVisibleNavEntries, ROUTE_MANIFEST } from '@/config/route-manifest';
+import { OWNER_STEP_PATH, ownerManualCsv } from '@/lib/owner-onboarding';
 import { ownerOnboardingKeys } from '@/queries/use-owner-onboarding';
 import type {
   OwnerImportResult,
@@ -681,5 +682,139 @@ describe('OnboardingPlanPage, the owner step in the plan (NF-109)', () => {
     await screen.findByTestId('onboarding-plan-parts');
     await waitFor(() => expect(ownerOnboardingApi.getReadiness).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByTestId('onboarding-owners-step')).not.toBeInTheDocument());
+  });
+});
+
+describe('the owner entered by hand (NF-109, manual completion)', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('it');
+    workspace.contexts = OWNER;
+    org.isAgency = true;
+    org.isLoading = false;
+    vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(plan());
+    for (const method of Object.keys(ownerOnboardingApi) as (keyof typeof ownerOnboardingApi)[]) vi.mocked(ownerOnboardingApi[method]).mockReset();
+    vi.mocked(ownerOnboardingApi.getReadiness).mockResolvedValue(readiness());
+    vi.mocked(ownerOnboardingApi.listInvitations).mockResolvedValue(INVITATIONS);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  function type(testId: string, value: string) {
+    fireEvent.change(screen.getByTestId(testId), { target: { value } });
+  }
+
+  async function openForm() {
+    fireEvent.click(await screen.findByTestId('owner-import-manual-toggle'));
+    await screen.findByTestId('owner-manual-form');
+  }
+
+  function fillRow() {
+    type('owner-manual-property', 'IT-CIN-9');
+    type('owner-manual-name', 'Maria Verdi');
+    type('owner-manual-key', 'P-9');
+    type('owner-manual-email', 'maria@example.com');
+    type('owner-manual-fiscal', 'VRDMRA80A41H501Z');
+    type('owner-manual-share', '100');
+    type('owner-manual-start', '2026-01-01');
+  }
+
+  it('OwnerOnboarding_ManualOwner_IsCheckedAsAOneRowFileThroughTheSameImportAndNeverInvites', async () => {
+    vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(importResult(dryRun)));
+    renderPage();
+    await openForm();
+    fillRow();
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+
+    await screen.findByTestId('owner-import-result');
+    expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(1);
+    const [sent, dryRun] = vi.mocked(ownerOnboardingApi.importOwners).mock.calls[0];
+    expect(dryRun).toBe(true);
+    // The row goes to the server as a file, with the columns the server reads; the server is the only judge of it.
+    expect((await sent.text()).split(/\r?\n/).slice(0, 2)).toEqual([
+      'cinCode,ownerKey,legalName,email,entityKind,fiscalCode,sharePercent,ownershipStart',
+      'IT-CIN-9,P-9,Maria Verdi,maria@example.com,person,VRDMRA80A41H501Z,100,2026-01-01',
+    ]);
+    // Then the same separate, confirmed import writes it; the form is emptied once something was written.
+    await waitFor(() => expect(screen.getByTestId('owner-import-apply')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('owner-import-apply'));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
+    await waitFor(() => expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(ownerOnboardingApi.importOwners).mock.calls[1][1]).toBe(false);
+    await waitFor(() => expect((screen.getByTestId('owner-manual-name') as HTMLInputElement).value).toBe(''));
+    for (const method of INVITATION_WRITES) expect(ownerOnboardingApi[method]).not.toHaveBeenCalled();
+  });
+
+  it('OwnerOnboarding_ManualOwner_WithoutWhatTheServerNeedsIsNotSentAndSaysWhy', async () => {
+    renderPage();
+    await openForm();
+
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    expect(await screen.findByTestId('owner-manual-problem')).toHaveTextContent(i18n.t('ownerOnboarding.manual.property'));
+
+    // An e-mail alone identifies nobody: a key or a tax code is needed.
+    type('owner-manual-property', 'IT-CIN-9');
+    type('owner-manual-name', 'Maria Verdi');
+    type('owner-manual-email', 'maria@example.com');
+    type('owner-manual-share', '100');
+    type('owner-manual-start', '2026-01-01');
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    expect(await screen.findByTestId('owner-manual-problem')).toHaveTextContent(i18n.t('ownerOnboarding.manual.needsIdentity'));
+    expect(ownerOnboardingApi.importOwners).not.toHaveBeenCalled();
+  });
+
+  it('OwnerOnboarding_ManualOwner_PersonalDataIsInNoStorageAndNoAddress', async () => {
+    vi.mocked(ownerOnboardingApi.importOwners).mockResolvedValue(importResult(true));
+    renderPage();
+    await openForm();
+    fillRow();
+    fireEvent.click(screen.getByTestId('owner-manual-submit'));
+    await screen.findByTestId('owner-import-result');
+
+    for (const secret of ['Maria Verdi', 'VRDMRA80A41H501Z', 'maria@example.com']) {
+      expect(JSON.stringify({ ...localStorage, ...sessionStorage })).not.toContain(secret);
+      expect(window.location.href).not.toContain(secret);
+    }
+  });
+
+  it('OwnerManualCsv_CommaInTheShareAndInTheName_IsReadAsTheDecimalPointAndQuoted', () => {
+    const csv = ownerManualCsv({
+      property: '11111111-1111-4111-8111-111111111111',
+      ownerKey: 'P-1',
+      legalName: 'Rossi, Mario "Gigi"',
+      email: '',
+      entityKind: 'company',
+      fiscalCode: '',
+      sharePercent: '33,33',
+      ownershipStart: '2026-02-01',
+    });
+
+    expect(csv.split(/\r?\n/)[0]).toBe('propertyId,ownerKey,legalName,email,entityKind,fiscalCode,sharePercent,ownershipStart');
+    expect(csv.split(/\r?\n/)[1]).toBe('11111111-1111-4111-8111-111111111111,P-1,"Rossi, Mario ""Gigi""",,company,,33.33,2026-02-01');
+  });
+});
+
+describe('route manifest: the owner step (E10/F03/US05/T01)', () => {
+  const entry = ROUTE_MANIFEST.find((candidate) => candidate.path === OWNER_STEP_PATH);
+
+  it('RouteManifest_OwnersStep_IsOnItsRouteOfShortRentBehindTheFlagAndInNoMenu', () => {
+    expect(entry).toBeDefined();
+    expect(entry?.context).toBe('short-rent');
+    expect(entry?.featureFlag).toBe('octorateOnboarding');
+    expect(entry?.requiredPermissions).toEqual(['property.read']);
+    expect(entry?.orgBillingAdmin).toBe(true);
+    expect(entry?.navPlacement).toBeUndefined();
+    expect(entry?.navParent).toBeUndefined();
+    const flagOn = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, agencyTier: true };
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS, flagOn]) {
+      expect(getVisibleNavEntries('short-rent', () => true, features).map((page) => page.path)).not.toContain(OWNER_STEP_PATH);
+    }
+  });
+
+  it('RouteManifest_OwnersStep_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await entry?.component();
+
+    expect(typeof page?.default).toBe('function');
   });
 });

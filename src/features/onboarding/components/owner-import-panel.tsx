@@ -17,6 +17,7 @@ import {
 } from '@/lib/owner-onboarding';
 import { useImportOwners } from '@/queries/use-owner-onboarding';
 import type { OwnerImportResult, OwnerImportRow } from '@/types/owner-onboarding.types';
+import { OwnerManualForm } from './owner-manual-form';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
@@ -188,6 +189,9 @@ export function OwnerImportPanel() {
   const [checkedFile, setCheckedFile] = useState<File | null>(null);
   const [page, setPage] = useState(0);
   const [confirming, setConfirming] = useState(false);
+  // The form of one owner entered by hand: shown on request, and emptied (a new key) when the file is forgotten or the import wrote something.
+  const [manualOpen, setManualOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   const { mutate, reset, isPending, error } = check;
   const result = check.data;
@@ -222,14 +226,33 @@ export function OwnerImportPanel() {
     mutate({ file: sent, dryRun: true }, { onSuccess: () => setCheckedFile(sent) });
   }
 
+  /** The row typed by hand, as a file: checked exactly as a file chosen from the computer is. */
+  function checkManual(manual: File) {
+    reset();
+    setProblem(null);
+    setPage(0);
+    setFile(manual);
+    setCheckedFile(null);
+    mutate({ file: manual, dryRun: true }, { onSuccess: () => setCheckedFile(manual) });
+  }
+
   function importFile() {
     if (!file || !canImport) return;
     setPage(0);
-    mutate({ file, dryRun: false }, { onSettled: () => setConfirming(false) });
+    mutate(
+      { file, dryRun: false },
+      {
+        onSuccess: (done) => {
+          if (done.summary.applied > 0) setFormKey((key) => key + 1);
+        },
+        onSettled: () => setConfirming(false),
+      },
+    );
   }
 
   function forget() {
     reset();
+    setFormKey((key) => key + 1);
     setFile(null);
     setCheckedFile(null);
     setProblem(null);
@@ -266,6 +289,23 @@ export function OwnerImportPanel() {
         hint={t('ownerOnboarding.import.hint')}
         data-testid="owner-import-dropzone"
       />
+
+      <div className="space-y-3">
+        <Button
+          type="button"
+          variant="ghost"
+          className={TOUCH_TARGET}
+          aria-expanded={manualOpen}
+          aria-controls="owner-manual-region"
+          onClick={() => setManualOpen((open) => !open)}
+          data-testid="owner-import-manual-toggle"
+        >
+          {t(manualOpen ? 'ownerOnboarding.manual.close' : 'ownerOnboarding.manual.open')}
+        </Button>
+        <div id="owner-manual-region" hidden={!manualOpen}>
+          {manualOpen ? <OwnerManualForm key={formKey} disabled={isPending} onFile={checkManual} /> : null}
+        </div>
+      </div>
 
       {problem ? (
         <Alert variant="danger" data-testid="owner-import-file-problem">
