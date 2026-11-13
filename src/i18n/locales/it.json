@@ -5479,7 +5479,8 @@
           "points": {
             "soon": "Per ora i dati li invii tu, oppure scegli il tuo channel manager."
           }
-        }
+        },
+        "forProperty": "Immobile: {{property}}"
       },
       "errors": {
         "chooseOne": "Scegli chi invia i dati.",
@@ -5601,7 +5602,8 @@
           "toManual": "Da ora i dati li invii tu, con il file. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello: altrimenti i dati partirebbero due volte.",
           "confirm": "Ho capito cosa cambia e confermo.",
           "same": "Questo è già l'invio in corso: non cambia nulla."
-        }
+        },
+        "property": "Immobile"
       },
       "test": {
         "run": "Controlla ora",
@@ -5636,7 +5638,8 @@
           "choice": "Cambia chi invia"
         }
       },
-      "title": "Attiva l'invio automatico alla Polizia"
+      "title": "Attiva l'invio automatico alla Polizia",
+      "descriptionFor": "Scegli chi invia ogni giorno i dati degli ospiti di «{{property}}» alla Polizia di Stato e controlla che funzioni."
     },
     "properties": {
       "openWizard": "Wizard attivazione",

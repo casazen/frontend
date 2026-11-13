@@ -9,6 +9,7 @@ import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-
 import { cn } from '@/lib/utils';
 import { useSender } from '@/queries/use-property-sender';
 import { outcomeOfSender, type SenderOutcome } from './sender-wizard-model';
+import { useSenderPropertyName } from './use-sender-property-name';
 
 const COMPLIANCE_PATH = '/app/short-rent/compliance';
 const PROPERTIES_PATH = '/app/short-rent/properties';
@@ -51,6 +52,7 @@ const POINT_ICON: Record<Tone, { Icon: LucideIcon; className: string }> = {
 export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const sender = useSender(propertyId);
+  const propertyName = useSenderPropertyName(propertyId, !!sender.data);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
   const whatNextId = useId();
@@ -96,6 +98,11 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
         <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold tracking-tight outline-none" data-testid="sender-done-title">
           {t(`compliance.sender.done.${outcome}.title`)}
         </h2>
+        {propertyName ? (
+          <p className="break-words text-sm text-foreground/70" data-testid="sender-done-property">
+            {t('compliance.sender.done.forProperty', { property: propertyName })}
+          </p>
+        ) : null}
         <p className="max-w-prose break-words text-base">{t(`compliance.sender.done.${outcome}.lead`)}</p>
       </div>
 

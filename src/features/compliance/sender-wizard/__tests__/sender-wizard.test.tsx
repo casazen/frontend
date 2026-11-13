@@ -6,10 +6,11 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { propertiesApi } from '@/api/properties.api';
 import { propertySenderApi } from '@/api/property-sender.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
 import { wizardDraftApi } from '@/api/wizard-draft.api';
-import type { PropertySender, SenderConnectionTest } from '@/types';
+import type { Property, PropertySender, SenderConnectionTest } from '@/types';
 import { SenderWizardPage } from '../sender-wizard';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -17,6 +18,10 @@ vi.mock('@/queries/use-users', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/queries/use-users')>()),
   useCurrentUser: () => ({ user: { id: 'user-1' }, org: { id: 'org-1' } }),
 }));
+vi.mock('@/api/properties.api', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/api/properties.api')>();
+  return { ...original, propertiesApi: { ...original.propertiesApi, getAll: vi.fn(), getById: vi.fn() } };
+});
 vi.mock('@/api/property-sender.api', () => ({ propertySenderApi: { get: vi.fn(), switch: vi.fn(), testConnection: vi.fn(), declareActivated: vi.fn() } }));
 vi.mock('@/api/questura-credentials.api', () => ({ questuraCredentialsApi: { getStatus: vi.fn(), set: vi.fn(), remove: vi.fn() } }));
 vi.mock('@/api/wizard-draft.api', async (importOriginal) => ({
@@ -35,7 +40,8 @@ vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+  PageHeader: ({ title, description }: { title: string; description?: string }) =>
+    createElement('div', null, createElement('h1', null, title), description ? createElement('p', { 'data-testid': 'page-description' }, description) : null),
 }));
 
 // A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
@@ -43,6 +49,7 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
 const PROPERTY_ID = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
+const PROPERTY_NAME = 'Casa Como';
 const ADDRESS = `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`;
 const VERSION = '2026-11-v1';
 const SECRET = 'S3cretPassw0rd!';
@@ -108,6 +115,8 @@ function installServer() {
     return { ...server };
   });
   vi.mocked(questuraCredentialsApi.set).mockResolvedValue({ configured: true, configuredAt: '2026-11-13T10:06:00Z' });
+  vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, name: PROPERTY_NAME } as Property);
+  vi.mocked(propertiesApi.getAll).mockResolvedValue([]);
   vi.mocked(wizardDraftApi.get).mockResolvedValue(null);
   vi.mocked(wizardDraftApi.save).mockResolvedValue({ status: 'saved', version: 1, lastSavedAt: '2026-11-13T10:00:00Z' });
   vi.mocked(wizardDraftApi.remove).mockResolvedValue(undefined);
@@ -769,6 +778,55 @@ describe('SenderWizardPage: the credentials that were typed are never lost in si
 
     await onStep('panel');
     expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+  });
+});
+
+// The change is about one property: the header, the summary and the result say which.
+describe('SenderWizardPage: which property it is about', () => {
+  it('SenderWizardPage_Header_SaysWhichPropertyTheSenderIsChangedFor', async () => {
+    await open();
+
+    await waitFor(() => expect(screen.getByTestId('page-description')).toHaveTextContent(text('compliance.sender.descriptionFor', { property: PROPERTY_NAME })), WAIT);
+  });
+
+  it('SenderWizardPage_Summary_SaysWhichPropertyTheChangeIsAbout', async () => {
+    await open();
+    click('sender-option-ChannelManager');
+    await screen.findByTestId('sender-delegation-consent');
+    click('sender-delegation-consent');
+    fireEvent.click(primary());
+    await onStep('summary');
+
+    await waitFor(() => expect(screen.getByTestId('sender-summary-step')).toHaveTextContent(PROPERTY_NAME), WAIT);
+    expect(screen.getByTestId('sender-summary-step')).toHaveTextContent(text('compliance.sender.summary.property'));
+  });
+
+  it('SenderWizardPage_Result_SaysWhichPropertyItIsAbout', async () => {
+    await open();
+    await toTheTest();
+    click('sender-test-run');
+    await waitFor(() => expect(screen.getByTestId('sender-test-state')).toHaveAttribute('data-state', 'active'), WAIT);
+    fireEvent.click(screen.getByTestId('sender-finish'));
+
+    expect(await screen.findByTestId('sender-done-property')).toHaveTextContent(text('compliance.sender.done.forProperty', { property: PROPERTY_NAME }));
+  });
+
+  it('SenderWizardPage_NameOfThePropertyThatCannotBeRead_IsLeftOutAndTheWizardWorks', async () => {
+    vi.mocked(propertiesApi.getById).mockRejectedValue(problem(500, {}));
+    await open();
+
+    await waitFor(() => expect(propertiesApi.getById).toHaveBeenCalled(), WAIT);
+    expect(screen.getByTestId('page-description')).toHaveTextContent(text('compliance.sender.description'));
+    expect(screen.getByTestId('sender-choice-step')).toBeInTheDocument();
+  });
+
+  it('SenderWizardPage_PropertyTheCallerDoesNotReach_NeverHasItsNameAsked', async () => {
+    // Every read of such a property answers 403, and a 403 on a read sends the whole app to the no-access page: its name is not asked.
+    vi.mocked(propertySenderApi.get).mockResolvedValue(null);
+    renderWizard();
+
+    await screen.findByText(text('compliance.sender.notFound.title'));
+    expect(propertiesApi.getById).not.toHaveBeenCalled();
   });
 });
 

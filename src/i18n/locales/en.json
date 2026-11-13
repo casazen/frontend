@@ -5479,7 +5479,8 @@
           "points": {
             "soon": "For now you send the data yourself, or you choose your channel manager."
           }
-        }
+        },
+        "forProperty": "Property: {{property}}"
       },
       "errors": {
         "chooseOne": "Choose who sends the data.",
@@ -5601,7 +5602,8 @@
           "toManual": "From now on you send the data yourself, with the file. If your channel manager sends today, switch its automatic sending off in its panel too: otherwise the data would be sent twice.",
           "confirm": "I understand what changes and I confirm.",
           "same": "This is already the sender in effect: nothing changes."
-        }
+        },
+        "property": "Property"
       },
       "test": {
         "run": "Check now",
@@ -5636,7 +5638,8 @@
           "choice": "Change who sends"
         }
       },
-      "title": "Activate automatic sending to the police"
+      "title": "Activate automatic sending to the police",
+      "descriptionFor": "Choose who sends the guest data of «{{property}}» to the State Police every day, and check that it works."
     },
     "properties": {
       "openWizard": "Activation wizard",

@@ -13,6 +13,7 @@ import {
   switchKind,
   type SenderWizardValues,
 } from '../sender-wizard-model';
+import { useSenderPropertyName } from '../use-sender-property-name';
 
 interface SenderSummaryStepProps {
   read: PropertySender;
@@ -30,6 +31,8 @@ export function SenderSummaryStep({ read }: SenderSummaryStepProps) {
   const kind = switchKind(read.sender, values.sender);
   const automatic = isAutomaticSender(values.sender);
   const token = confirmationOf(read.sender, values.sender);
+  // The change is about one property: the summary says which (its name is read after the sender, so only for a property the caller reaches).
+  const propertyName = useSenderPropertyName(read.propertyId, true);
 
   let delegation: string | null = null;
   if (!automatic) delegation = t('compliance.sender.summary.delegation.notNeeded');
@@ -37,6 +40,7 @@ export function SenderSummaryStep({ read }: SenderSummaryStepProps) {
   else if (consentGiven(values, read)) delegation = t('compliance.sender.summary.delegation.toRecord');
 
   const items: WizardSummaryItem[] = [
+    ...(propertyName ? [{ id: 'property', label: t('compliance.sender.summary.property'), value: propertyName }] : []),
     {
       id: 'sender',
       label: t('compliance.sender.summary.who'),

@@ -57,6 +57,7 @@ import { CredentialsStep } from './steps/credentials-step';
 import { SenderPanelStep } from './steps/panel-step';
 import { SenderChoiceStep } from './steps/sender-choice-step';
 import { SenderSummaryStep } from './steps/sender-summary-step';
+import { useSenderPropertyName } from './use-sender-property-name';
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
@@ -468,6 +469,10 @@ export function SenderWizardPage() {
   const canWrite = hasPermission('short-rent', SENDER_WRITE_PERMISSION);
   const propertyId = propertyOfAddress(searchParams);
   const title = t('compliance.sender.title');
+  // The header says which property it is about, once its sender was read (the same read as the wizard's: one request); a property that is not reachable never has its name asked.
+  const sender = useSender(propertyId, canWrite);
+  const propertyName = useSenderPropertyName(propertyId, !!sender.data);
+  const description = propertyName ? t('compliance.sender.descriptionFor', { property: propertyName }) : t('compliance.sender.description');
 
   let body: ReactNode;
   if (!canWrite) {
@@ -488,7 +493,7 @@ export function SenderWizardPage() {
   return (
     <AppShell>
       <div className={cn(FOCUS_COLUMN, 'space-y-6 md:space-y-8')} data-testid="sender-wizard-page">
-        <PageHeader title={title} description={t('compliance.sender.description')} crumbs={[{ label: t('nav.compliance'), to: COMPLIANCE_PATH }, { label: title }]} />
+        <PageHeader title={title} description={description} crumbs={[{ label: t('nav.compliance'), to: COMPLIANCE_PATH }, { label: title }]} />
         {body}
       </div>
     </AppShell>
