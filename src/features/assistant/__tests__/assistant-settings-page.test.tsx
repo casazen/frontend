@@ -418,6 +418,49 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       );
     });
 
+    it('situationEditDialog_ClosedWhileTheSaveGoesOn_TheTableStillSaysWhenTheServerRefusesIt', async () => {
+      let refuse!: (reason: unknown) => void;
+      vi.mocked(assistantSettingsApi.saveSituation).mockReturnValue(
+        new Promise<EffectiveSituation>((_resolve, reject) => {
+          refuse = reject;
+        }),
+      );
+      renderPage(URL);
+
+      const rows = await screen.findAllByTestId('assistant-situation');
+      fireEvent.click(within(rows.find((row) => row.getAttribute('data-code') === 'wifi')!).getByRole('button', { name: 'Modifica' }));
+      const dialog = await screen.findByTestId('assistant-situation-dialog');
+      fireEvent.click(within(dialog).getByTestId('assistant-situation-save'));
+      await waitFor(() => expect(assistantSettingsApi.saveSituation).toHaveBeenCalledTimes(1));
+
+      // The person closes the dialog (Esc) while the request goes on, and then the server refuses it: the dialog that would say so is gone, the table says it.
+      fireEvent.keyDown(dialog, { key: 'Escape', code: 'Escape' });
+      await waitFor(() => expect(screen.queryByTestId('assistant-situation-dialog')).not.toBeInTheDocument());
+      expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
+      refuse(httpError(422, { code: 'assistant_template_invalid' }));
+
+      expect(await screen.findByTestId('assistant-situations-save-error')).toHaveTextContent('Il testo della risposta non è valido');
+    });
+
+    it('situationEditDialog_RefusalSaidInTheDialog_IsNotRepeatedInTheTableOnceTheDialogIsClosed', async () => {
+      vi.mocked(assistantSettingsApi.saveSituation).mockRejectedValue(httpError(422, { code: 'assistant_template_invalid' }));
+      renderPage(URL);
+
+      const rows = await screen.findAllByTestId('assistant-situation');
+      fireEvent.click(within(rows.find((row) => row.getAttribute('data-code') === 'wifi')!).getByRole('button', { name: 'Modifica' }));
+      const dialog = await screen.findByTestId('assistant-situation-dialog');
+      fireEvent.click(within(dialog).getByTestId('assistant-situation-save'));
+
+      // The dialog is open: it says it, and the table does not say it twice.
+      expect(await within(dialog).findByTestId('assistant-situation-error')).toHaveTextContent('Il testo della risposta non è valido');
+      expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
+
+      // The person has read it and closes the dialog: nothing of it is left on the table.
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+      await waitFor(() => expect(screen.queryByTestId('assistant-situation-dialog')).not.toBeInTheDocument());
+      expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
+    });
+
     it('situationsTable_PersonWhoIsNotTheAdministrator_ReadsTheOrganizationsSituationsWithoutEditing', async () => {
       grants.permissions = new Set(['booking.read', 'property.read', 'property.write']);
       renderPage(URL);

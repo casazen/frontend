@@ -167,7 +167,22 @@ export function SituationsTable({ propertyId, canRead, canEdit }: SituationsTabl
           {assistantProblemMessage(remove.error, t) ?? t('assistant.situations.actionFailed')}
         </Alert>
       ) : null}
-      <SituationEditDialog situation={editing} propertyId={propertyId} save={save} onClose={() => setEditing(null)} />
+      {/* The refusal of a save whose dialog was closed while it went on (Esc, a tap outside): the dialog that would say it is gone, so the table does. While the dialog is open it says it itself. */}
+      {save.isError && editing === null ? (
+        <Alert variant="danger" role="alert" data-testid="assistant-situations-save-error">
+          {isNotFound(save.error) ? t('assistant.error.situationNotFound') : (assistantProblemMessage(save.error, t) ?? t('assistant.situations.edit.saveFailed'))}
+        </Alert>
+      ) : null}
+      <SituationEditDialog
+        situation={editing}
+        propertyId={propertyId}
+        save={save}
+        onClose={() => {
+          // Closed with nothing going on: what the dialog said has been said, and goes. Closed while the request goes on: how it ends is for the table to say.
+          if (!save.isPending) save.reset();
+          setEditing(null);
+        }}
+      />
     </div>
   );
 }
