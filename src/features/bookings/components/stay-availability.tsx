@@ -7,6 +7,9 @@ import { channelManagerBlockedMessage, channelManagerConflict, portalName, type 
 
 const RANGE_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
 
+/** The states of the availability the host may go on from: free, free but under the minimum stay, a portal's reservation to link. A taken or impossible stay stops the step. */
+const STATES_THE_HOST_MAY_GO_ON_FROM: ReadonlySet<StayAvailability['state']> = new Set(['ok', 'belowMinimum', 'linkableBlock']);
+
 /** "10 nov – 13 nov": a stay as the notice says it. */
 function stayRange(from: string, to: string, language: string): string {
   return `${formatStayDate(from, language, RANGE_DAY)} – ${formatStayDate(to, language, RANGE_DAY)}`;
@@ -68,13 +71,16 @@ interface StayAvailabilityNoticeProps {
  * host may go on), taken (what takes them, the channel manager included, and the nearest free dates), or a portal's reservation that only arrived as a block of its
  * calendar (the host completes it instead of creating a second booking). It is advice: nothing is shown while the answer cannot be
  * had, and the API checks again when the booking is created. When the channel manager could not be asked (`channelManagerChecked === false`) it is said under
- * the answer, without blocking anything: the dates are CasaZen's own answer and the check on the channel manager is repeated when the booking is created.
+ * the answer, without blocking anything: the dates are CasaZen's own answer and the check on the channel manager is repeated when the booking is created. It is said
+ * only where the host may go on (`STATES_THE_HOST_MAY_GO_ON_FROM`): a taken stay stops the step whatever the channel manager could say, and "you can go on" would
+ * not be true.
  */
 export function StayAvailabilityNotice(props: StayAvailabilityNoticeProps) {
   const { t } = useTranslation();
+  const { availability } = props;
   const state = <AvailabilityState {...props} />;
 
-  if (props.availability?.channelManagerChecked !== false) return state;
+  if (availability?.channelManagerChecked !== false || !STATES_THE_HOST_MAY_GO_ON_FROM.has(availability.state)) return state;
   return (
     <div className="space-y-3">
       {state}

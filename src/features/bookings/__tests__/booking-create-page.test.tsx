@@ -624,6 +624,36 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
     expect(screen.queryByTestId('booking-submit-error')).not.toBeInTheDocument();
   });
 
+  it('BookingCreatePage_ChannelManagerCouldNotBeAskedWhileCasaZenCalendarIsTaken_DoesNotSayTheHostCanGoOn', async () => {
+    // The step is stopped by CasaZen's own calendar: "you can go on" would not be true.
+    vi.mocked(bookingsApi.availability).mockResolvedValue({
+      ...freeStay,
+      state: 'occupied',
+      conflicts: [{ id: 'b-1', type: 'booking', title: 'Anna', channel: 'Direct', from: '2027-10-02', to: '2027-10-04' }],
+      channelManagerChecked: false,
+    });
+    renderPage();
+
+    await fillStay();
+
+    expect(await screen.findByTestId('booking-availability', undefined, WAIT)).toHaveAttribute('data-state', 'occupied');
+    expect(screen.queryByTestId('booking-availability-unchecked')).not.toBeInTheDocument();
+    next();
+    expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByLabelText(i18n.t('booking.create.guest.name'))).not.toBeInTheDocument();
+  });
+
+  it('BookingCreatePage_ChannelManagerCouldNotBeAskedAndTheStayIsUnderTheMinimum_StillSaysTheHostCanGoOn', async () => {
+    // Free but short: the host may go on, so the notice about the channel manager that could not be asked is said.
+    vi.mocked(bookingsApi.availability).mockResolvedValue({ ...freeStay, state: 'belowMinimum', minNights: 7, channelManagerChecked: false });
+    renderPage();
+
+    await fillStay();
+
+    expect(await screen.findByTestId('booking-availability-unchecked', undefined, WAIT)).toHaveTextContent(i18n.t('booking.create.availability.channelManagerUnchecked'));
+    expect(screen.getByTestId('booking-availability')).toHaveAttribute('data-state', 'belowMinimum');
+  });
+
   it('BookingCreatePage_PropertyNotConnected_SaysNothingOfTheChannelManager', async () => {
     renderPage();
 
