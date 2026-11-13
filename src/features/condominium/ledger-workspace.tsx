@@ -168,9 +168,7 @@ export function LedgerOverview({
   const next = report.installments
     .filter((i) => i.remaining > 0)
     .toSorted((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
-  const late =
-    !!next &&
-    next.dueDate.slice(0, 10) < todayInRome();
+  const late = !!next && next.dueDate.slice(0, 10) < todayInRome();
   return (
     <>
       <div className="ledger-overview-grid">
@@ -226,8 +224,15 @@ export function LedgerOverview({
                 )}
               </Button>
             ) : null}
-            <Button variant="outline" onClick={() => onNavigate(canWrite ? "bank" : "pagamenti")}>
-              {t(canWrite ? "condoLedger.bankTitle" : "condoLedger.allInstallments")}
+            <Button
+              variant="outline"
+              onClick={() => onNavigate(canWrite ? "bank" : "pagamenti")}
+            >
+              {t(
+                canWrite
+                  ? "condoLedger.bankTitle"
+                  : "condoLedger.allInstallments",
+              )}
             </Button>
           </div>
         </section>
@@ -236,7 +241,29 @@ export function LedgerOverview({
             <h3>{t("condoLedger.currentYear")}</h3>
             <span className="ledger-badge">{report.periodLabel}</span>
           </div>
-          <div className="ledger-progress-label"><span>{t('condoBook.totals.paid')} <strong>{euro(report.paid)}</strong></span><span>{euro((report.finalAmount ?? report.ordinary) + report.extraordinary + report.prior)}</span></div><progress className="ledger-progress" aria-label={t('condoBook.totals.paid')} value={Math.max(0, report.paid)} max={Math.max(1, (report.finalAmount ?? report.ordinary) + report.extraordinary + report.prior)} />
+          <div className="ledger-progress-label">
+            <span>
+              {t("condoBook.totals.paid")} <strong>{euro(report.paid)}</strong>
+            </span>
+            <span>
+              {euro(
+                (report.finalAmount ?? report.ordinary) +
+                  report.extraordinary +
+                  report.prior,
+              )}
+            </span>
+          </div>
+          <progress
+            className="ledger-progress"
+            aria-label={t("condoBook.totals.paid")}
+            value={Math.max(0, report.paid)}
+            max={Math.max(
+              1,
+              (report.finalAmount ?? report.ordinary) +
+                report.extraordinary +
+                report.prior,
+            )}
+          />
           <dl className="ledger-year-rows">
             {(
               ["ordinary", "extraordinary", "prior", "finalAmount"] as const
@@ -298,5 +325,33 @@ export function LedgerOverview({
         </div>
       </section>
     </>
+  );
+}
+
+export function LedgerStartChoice({
+  onDocuments,
+  onManual,
+}: {
+  onDocuments: () => void;
+  onManual: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <section className="ledger-onboarding">
+      <h2>{t("condoLedger.startTitle")}</h2>
+      <p>{t("condoLedger.startHint")}</p>
+      <div className="ledger-choices">
+        <button type="button" className="ledger-choice" onClick={onDocuments}>
+          <strong>{t("condoLedger.uploadChoice")}</strong>
+          <span>{t("condoLedger.uploadHint")}</span>
+          <small>{t("condoLedger.optional")}</small>
+        </button>
+        <button type="button" className="ledger-choice" onClick={onManual}>
+          <strong>{t("condoLedger.manualChoice")}</strong>
+          <span>{t("condoLedger.manualHint")}</span>
+          <small>{t("condoLedger.later")}</small>
+        </button>
+      </div>
+    </section>
   );
 }

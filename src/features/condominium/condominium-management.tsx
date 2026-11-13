@@ -14,6 +14,7 @@ import {
 import {
   InstallmentList,
   PaymentList,
+  LedgerStartChoice,
   LedgerOverview,
   LedgerNavigation,
   type LedgerView,
@@ -134,7 +135,10 @@ export function CondominiumManagement({ propertyId }: { propertyId?: string }) {
         </p>
       ) : null}
       {!propertyId && properties.data ? (
-        <Field className="ledger-property-picker" label={t("condoBook.property")}>
+        <Field
+          className="ledger-property-picker"
+          label={t("condoBook.property")}
+        >
           <select
             className={selectClass}
             value={selectedProperty}
@@ -142,8 +146,8 @@ export function CondominiumManagement({ propertyId }: { propertyId?: string }) {
               setProperty(e.target.value);
               setBook("");
               setEntry(null);
-              setName('');
-              setMonth('1');
+              setName("");
+              setMonth("1");
               setup.reset();
             }}
           >
@@ -361,7 +365,7 @@ function Book({
             ) : null}
           </div>
         </header>
-        {canWrite && (newYear || (!period && view !== "documents")) ? (
+        {canWrite && (newYear || (!period && view === "budget")) ? (
           <form
             className="flex flex-wrap items-end gap-3"
             onSubmit={(e) => {
@@ -394,6 +398,12 @@ function Book({
               </p>
             ) : null}
           </form>
+        ) : null}
+        {!period && view === "panoramica" && canWrite ? (
+          <LedgerStartChoice
+            onDocuments={() => setView("documents")}
+            onManual={() => setView("budget")}
+          />
         ) : null}
         {view === "documents" ? (
           <section className="ledger-panel ledger-document-panel">
@@ -520,7 +530,18 @@ function Period({
           </button>
         </p>
       ) : null}
-      {report.data && view === "panoramica" ? (
+      {report.data &&
+      view === "panoramica" &&
+      canWrite &&
+      report.data.ordinary === 0 &&
+      report.data.finalAmount === null &&
+      !report.data.installments.length &&
+      !report.data.payments.length ? (
+        <LedgerStartChoice
+          onDocuments={() => onNavigate("documents")}
+          onManual={() => onNavigate("budget")}
+        />
+      ) : report.data && view === "panoramica" ? (
         <LedgerOverview
           report={report.data}
           canWrite={canWrite}

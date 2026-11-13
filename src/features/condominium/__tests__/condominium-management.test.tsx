@@ -80,4 +80,23 @@ describe('property condominium book', () => {
     await waitFor(() => expect(axios.post).toHaveBeenCalledWith(`${base}/book-1/periods/year-1/budget`, { ordinaryAmount: 1750, extraordinary: [], cadence: 'Custom', ordinaryNeedsReview: true, customInstallments: [{ dueDate: '2027-01-31', ordinary: 750, extraordinary: 0 }, { dueDate: '2027-06-30', ordinary: 1000, extraordinary: 0 }] }, undefined));
   });
 
+  it('offers the initial choice for an already-created empty financial year', async () => {
+    const get = vi.mocked(axios.get).getMockImplementation()!;
+    vi.mocked(axios.get).mockImplementation(async (...args) => String(args[0]).endsWith('/report') ? { data: { ...report, ordinary: 0, stillToPay: 0 } } : get(...args));
+    show();
+    expect(await screen.findByRole('heading', { name: 'Come vuoi iniziare?' })).toBeVisible();
+    expect(screen.queryByLabelText('Quota ordinaria annuale (€)')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Carica i documenti/ }));
+    expect(screen.getByRole('button', { name: /Ripartizione rate/ })).toBeVisible();
+  });
+  it('does not ask for a new year before choosing manual setup on an empty existing book', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: [{ propertyId: 'property-1', propertyName: 'Appartamento sfitto', books: [{ id: 'book-1', name: 'Via Roma', fiscalStartMonth: 1, periods: [] }] }] });
+    show();
+    expect(await screen.findByRole('button', { name: /Imposta manualmente/ })).toBeVisible();
+    expect(screen.queryByLabelText('Nuovo esercizio')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Imposta manualmente/ }));
+    expect(screen.getByLabelText('Nuovo esercizio')).toBeVisible();
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
 });
