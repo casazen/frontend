@@ -22,7 +22,7 @@ test.describe('Context workspace switcher (#189)', () => {
   test('redirects legacy /leases to canonical long-rent route', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/leases', 'long-term'), { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+    await expect(page).toHaveURL(/\/app\/long-rent\/properties/);
   });
 
   test('short-rent profile uses canonical context path', async ({ page }) => {

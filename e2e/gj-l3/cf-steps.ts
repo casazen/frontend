@@ -107,7 +107,7 @@ export async function becomeLongTermLandlord(page: Page, propertyName: string): 
   await page.locator('#address').fill('Via Torino 20');
   await page.locator('#postalCode').fill('20123');
   await page.getByTestId('quick-property-submit').click();
-  await expect(page).toHaveURL(/\/app\/long-rent\/leases$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/app\/long-rent\/properties$/, { timeout: 30_000 });
 }
 
 /**

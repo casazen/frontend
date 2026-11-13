@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
+import { BackLink } from '@/components/shared/back-link';
+import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { PageHeader } from '@/components/layout/page-header';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useLongRentRules } from '@/queries/use-lease-draft';
@@ -67,7 +69,8 @@ export function LeaseCreatePage() {
     title.focus();
   }, [screen]);
   const header = (description: string) => (
-    <div ref={headerRef}>
+    <div ref={headerRef} className="space-y-4">
+      <BackLink to={defaultPropertyId ? `${longRentPropertyPath(defaultPropertyId)}?tab=contracts` : LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
       <PageHeader title={t('leases.createPageTitle')} description={description} />
     </div>
   );

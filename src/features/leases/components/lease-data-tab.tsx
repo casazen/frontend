@@ -29,7 +29,7 @@ function Fact({ label, children, testId }: { label: string; children: ReactNode;
  * The people of the lease: name, role and, masked by the server, fiscal code and e-mail. Under the role, the day the landlord checked the
  * identity document when they did (LR-12): a date and nothing more, the document itself is not kept (decision LR-D3).
  */
-function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
+export function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
   const { t, i18n } = useTranslation();
 
   if (parties.length === 0) return <p className="text-sm text-foreground/70">{t('leases.noParties')}</p>;
