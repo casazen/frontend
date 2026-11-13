@@ -2019,6 +2019,356 @@
       "current": "Area attuale: {{name}}. Cambia area"
     }
   },
+  "assistant": {
+    "draft": {
+      "approve": "Approva e invia",
+      "ask": "Chiedi una bozza all'assistente",
+      "confidence": {
+        "helpTitle": "Affidabilità della bozza",
+        "high": "Alta affidabilità",
+        "low": "Controllala con attenzione",
+        "score": "L'assistente valuta questa bozza al {{percent}}% di affidabilità. È solo un'indicazione: decidi sempre tu."
+      },
+      "edit": "Modifica",
+      "edited": "Modificata da te",
+      "loadError": "Non è stato possibile leggere le bozze in attesa. Riprova.",
+      "loading": "Cerco una bozza per questa conversazione…",
+      "none": "Non c’è nessuna bozza in attesa per questa conversazione.",
+      "notFound": "Questa conversazione non è stata trovata.",
+      "outcome": {
+        "escalated": {
+          "default": "L'assistente non ha scritto una bozza: ha aggiunto un'attività «Da fare» per te.",
+          "forbidden_topic": "L'argomento è tra quelli vietati all'assistente: non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te.",
+          "mode_escalate": "Per questa situazione hai chiesto che decida sempre una persona: l'assistente non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te.",
+          "topic_not_allowed": "L'argomento non è tra quelli consentiti all'assistente: non ha scritto una bozza e ha aggiunto un'attività «Da fare» per te."
+        },
+        "openSettings": "Apri le impostazioni dell'assistente",
+        "openTodo": "Apri le attività da fare"
+      },
+      "reason": {
+        "ai_budget_exceeded": "L'assistente ha raggiunto il suo limite di utilizzo per ora: riprova più tardi, oppure rispondi tu.",
+        "ai_invalid_answer": "L'assistente non è riuscito a scrivere una bozza utilizzabile: riprova, oppure rispondi tu.",
+        "ai_provider_error": "L'assistente non è riuscito a scrivere la bozza in questo momento: riprova tra qualche minuto, oppure rispondi tu.",
+        "ai_provider_not_configured": "L'assistente non è ancora disponibile in questo ambiente: nessuna bozza è stata scritta.",
+        "assistant_disabled": "L'assistente è spento per la tua organizzazione o per questo immobile: nessuna bozza è stata scritta.",
+        "host_already_replied": "Hai già risposto a questo messaggio: nessuna bozza è stata scritta.",
+        "mapping_not_confirmed": "L'annuncio di questa conversazione non è ancora confermato: conferma l'abbinamento con il canale e poi riprova.",
+        "message_not_found": "Il messaggio dell'ospite non è stato trovato: nessuna bozza è stata scritta.",
+        "message_too_old": "Il messaggio è troppo vecchio perché l’assistente risponda da solo: nessuna bozza è stata scritta.",
+        "octorate_not_connected": "Il collegamento con i canali non è attivo: ricollegalo per rispondere da qui.",
+        "property_unassigned": "Questa conversazione non è ancora collegata a un immobile, quindi l'assistente non ha informazioni con cui rispondere.",
+        "superseded": "L'ospite ha scritto di nuovo: nessuna bozza è stata scritta per il messaggio precedente.",
+        "thread_closed": "La conversazione è chiusa: non si può rispondere.",
+        "thread_not_found": "La conversazione non è stata trovata: nessuna bozza è stata scritta.",
+        "unknown": "L’assistente non ha completato la richiesta: nessuna bozza è stata scritta. Riprova tra poco, oppure rispondi tu."
+      },
+      "reject": "Rifiuta",
+      "rejected": "Bozza rifiutata. Non è stato inviato nulla.",
+      "requestFailed": "Non è stato possibile chiedere la bozza. Riprova tra poco.",
+      "situation": "Situazione",
+      "title": "Bozza dell'assistente"
+    },
+    "error": {
+      "concurrentChange": "Qualcuno ha cambiato le istruzioni dell’assistente mentre le modificavi: non è stato salvato nulla. Qui trovi i valori aggiornati: controllali e rifai la tua modifica.",
+      "entryInvalid": "La risposta non è valida: serve un testo di al massimo 1000 caratteri e, per una domanda frequente, anche la domanda.",
+      "entryNotFound": "Questa risposta non esiste più: l’elenco è stato aggiornato.",
+      "modeNotAllowed": "Questa situazione è delicata: può solo passare a una persona o preparare una bozza.",
+      "noGuestMessage": "L’ospite non ha ancora scritto nulla: non c’è un messaggio a cui rispondere.",
+      "propertyNotFound": "Questo immobile non è stato trovato tra i tuoi.",
+      "rulesInvalid": "Le regole non sono valide: scegli almeno una lingua, una firma di al massimo 300 caratteri, orari con inizio e fine diversi e argomenti dell’elenco.",
+      "situationInvalid": "La situazione non è valida: controlla i campi e riprova.",
+      "situationNotFound": "Questa situazione non esiste: ricarica la pagina.",
+      "templateInvalid": "Il testo della risposta non è valido: è troppo lungo o contiene una variabile che non esiste.",
+      "thresholdInvalid": "La soglia di affidabilità non è valida."
+    },
+    "knowledge": {
+      "accessCodesNote": "I codici di accesso dell’immobile (serrature, cassetta delle chiavi) non vengono mai letti dall’assistente.",
+      "actionFailed": "L’operazione non è riuscita. Riprova tra poco.",
+      "answers": {
+        "add": "Aggiungi una risposta",
+        "help": "Le risposte che scrivi tu. L’assistente le usa per scrivere le bozze di questo immobile; quelle spente non vengono usate.",
+        "none": "Non c’è ancora nessuna risposta.",
+        "title": "Le tue risposte"
+      },
+      "delete": {
+        "description": "La risposta viene eliminata per sempre. Le bozze future non la useranno più.",
+        "title": "Eliminare questa risposta?"
+      },
+      "entry": {
+        "active": "Usata dall’assistente",
+        "activeHelp": "Se la spegni resta qui, ma l’assistente non la usa.",
+        "addTitle": "Aggiungi una risposta",
+        "answer": "Risposta",
+        "anyLanguage": "Qualsiasi lingua",
+        "delete": "Elimina",
+        "description": "Scrivi quello che vuoi che l’assistente sappia. Il testo può contenere anche una password: non viene mai mostrato a chi non può leggere le risposte.",
+        "edit": "Modifica",
+        "editTitle": "Modifica la risposta",
+        "error": {
+          "questionRequired": "Scrivi la domanda.",
+          "textRequired": "Scrivi il testo.",
+          "textTooLong": "Il testo è troppo lungo: al massimo {{max}} caratteri.",
+          "titleTooLong": "La domanda è troppo lunga: al massimo {{max}} caratteri."
+        },
+        "inherited": "Dall’organizzazione",
+        "inheritedHelp": "Vale per tutti gli immobili. Si cambia nelle regole dell’organizzazione.",
+        "kind": "Tipo",
+        "language": "Lingua",
+        "languageHelp": "La lingua in cui è scritta, oppure qualsiasi.",
+        "off": "Spenta",
+        "question": "Domanda",
+        "save": "Salva la risposta",
+        "saveFailed": "Non è stato possibile salvare la risposta. Riprova.",
+        "switchOff": "Spenta",
+        "switchOn": "Usata",
+        "text": "Testo",
+        "textHelp": "Da 1 a 1000 caratteri.",
+        "topic": "Argomento"
+      },
+      "kind": {
+        "Fact": "Informazione",
+        "Faq": "Domanda frequente",
+        "Rule": "Regola"
+      },
+      "listing": {
+        "change": "Cambia i dati nell’annuncio",
+        "help": "Le informazioni che abbiamo letto dall’annuncio di questo immobile. Si cambiano nell’annuncio, non qui.",
+        "none": "Dall’annuncio non abbiamo ricavato nessuna informazione.",
+        "title": "Dal tuo annuncio"
+      },
+      "loadError": "Non è stato possibile leggere le informazioni dell’assistente. Riprova.",
+      "missing": {
+        "add": "Aggiungi",
+        "help": "Gli argomenti su cui non abbiamo nessuna informazione: senza, l’assistente non sa cosa rispondere.",
+        "none": "Su ogni argomento c’è almeno un’informazione.",
+        "title": "Informazioni che mancano"
+      },
+      "organization": {
+        "help": "Valgono per tutti gli immobili che non hanno una risposta propria sullo stesso argomento e dello stesso tipo. Le cambia solo l’amministratore dell’organizzazione.",
+        "title": "Risposte per tutti gli immobili"
+      },
+      "topic": {
+        "Amenities": "Servizi e dotazioni",
+        "CheckIn": "Check-in",
+        "CheckOut": "Check-out",
+        "Contacts": "Contatti",
+        "Directions": "Come arrivare",
+        "Faq": "Domande frequenti",
+        "Hours": "Orari",
+        "HouseRules": "Regole della casa",
+        "Parking": "Parcheggio",
+        "Pets": "Animali",
+        "WiFi": "Wi-Fi"
+      }
+    },
+    "language": {
+      "de": "Tedesco",
+      "en": "Inglese",
+      "es": "Spagnolo",
+      "fr": "Francese",
+      "it": "Italiano"
+    },
+    "mode": {
+      "draft": "Prepara una bozza",
+      "draftExplain": "L’assistente scrive una bozza che aspetta la tua approvazione: non parte nulla da sola.",
+      "escalate": "Decide una persona",
+      "escalateExplain": "L’assistente non scrive la bozza: crea un’attività «Da fare» per te.",
+      "notActive": "Non attiva in questa versione",
+      "notActiveExplain": "Questa modalità non è disponibile: l’assistente scrive solo bozze che approvi tu."
+    },
+    "noAccess": {
+      "knowledge": "Non hai i permessi per leggere le risposte dell’assistente.",
+      "property": "Non hai i permessi per leggere le impostazioni degli immobili.",
+      "rules": "Non hai i permessi per leggere le regole dell’assistente.",
+      "situations": "Non hai i permessi per leggere le situazioni dell’assistente."
+    },
+    "notice": {
+      "transparency": "Questa bozza è scritta da un modello di intelligenza artificiale. Non parte nulla senza la tua approvazione e gli ospiti non vengono avvisati che l'ha scritta l'assistente: questo avviso resta qui, in CasaZen."
+    },
+    "property": {
+      "asOrganization": "Come l’organizzazione",
+      "asOrganizationValue": "Come l’organizzazione: {{value}}",
+      "choose": "Scegli un immobile dall’elenco per vedere le sue impostazioni.",
+      "empty": "Non hai ancora nessun immobile di affitti brevi.",
+      "enabled": {
+        "help": "Con l’assistente acceso per l’organizzazione, qui puoi spegnerlo per questo solo immobile.",
+        "label": "Assistente per questo immobile",
+        "off": "Spento per questo immobile",
+        "on": "Acceso per questo immobile"
+      },
+      "error": {
+        "hoursRequired": "Scegli l’ora di inizio e quella di fine.",
+        "signatureRequired": "Scrivi la firma di questo immobile, oppure torna a «Come l’organizzazione»."
+      },
+      "listError": "Non è stato possibile leggere l’elenco degli immobili. Riprova.",
+      "listLabel": "Immobili",
+      "loadError": "Non è stato possibile leggere le impostazioni di questo immobile. Riprova.",
+      "loosen": {
+        "confirm": "Salva comunque",
+        "description": "Per questo immobile l’assistente seguirà regole più larghe di quelle dell’organizzazione. Controlla cosa cambia prima di salvare.",
+        "title": "Salvare regole meno restrittive?"
+      },
+      "noSignature": "nessuna firma",
+      "notFound": "Immobile non trovato",
+      "notFoundHint": "Questo immobile non è tra i tuoi, oppure non esiste più. Sceglilo dall’elenco.",
+      "noTopics": "nessun argomento vietato",
+      "organizationOff": "L’assistente è spento per l’organizzazione: finché non lo accendi nelle regole, non prepara bozze per nessun immobile.",
+      "own": "Solo per questo immobile",
+      "relaxedThreshold": "Questo immobile accetta bozze con una soglia di affidabilità più bassa ({{value}}) di quella dell’organizzazione ({{organization}}).",
+      "relaxedTopics": "Questo immobile permette argomenti che l’organizzazione vieta: {{topics}}.",
+      "reset": {
+        "button": "Usa le impostazioni dell’organizzazione per tutto",
+        "confirm": "Torna all’organizzazione",
+        "description": "Le eccezioni di questo immobile (interruttore, tono, firma, orari, argomenti vietati e soglia) vengono rimosse: l’immobile segue le regole dell’organizzazione. Le sue risposte restano.",
+        "failed": "Non è stato possibile rimuovere le eccezioni. Riprova.",
+        "title": "Rimuovere le eccezioni di questo immobile?"
+      },
+      "rulesError": "Non è stato possibile leggere le regole dell’organizzazione. Finché non le leggiamo non puoi salvare, perché non potremmo dirti cosa allenti.",
+      "rulesLoading": "Leggo le regole dell’organizzazione per controllare cosa allenti: potrai salvare tra un momento.",
+      "rulesNeeded": "Per salvare le eccezioni di questo immobile serve poter leggere le regole dell’organizzazione: senza non possiamo dirti cosa allenti.",
+      "save": "Salva le impostazioni dell’immobile",
+      "saveFailed": "Non è stato possibile salvare le impostazioni di questo immobile. Riprova.",
+      "signature": {
+        "own": "Firma di questo immobile"
+      },
+      "threshold": "Soglia di affidabilità di questo immobile: {{value}}. Non si cambia da questa pagina e resta com’è quando salvi.",
+      "topicsNone": "Nessun argomento vietato per questo immobile: l’assistente può rispondere su tutto, anche su ciò che l’organizzazione vieta.",
+      "topicsSome": "Su questi argomenti l’assistente non scrive mai una bozza: crea un’attività «Da fare». Questa lista sostituisce quella dell’organizzazione."
+    },
+    "readOnly": {
+      "property": "Puoi leggere queste impostazioni ma non cambiarle: serve il permesso di modificare gli immobili.",
+      "propertySituations": "Puoi leggere queste situazioni ma non cambiarle: serve il permesso di modificare gli immobili.",
+      "rules": "Puoi leggere queste regole ma non cambiarle: le cambia solo l’amministratore dell’organizzazione.",
+      "situations": "Puoi leggere queste situazioni ma non cambiarle: le cambia solo l’amministratore dell’organizzazione."
+    },
+    "rules": {
+      "allowedTopics": {
+        "label": "Argomenti su cui l’assistente può rispondere",
+        "none": "Nessun argomento scelto: nessuna restrizione, l’assistente può rispondere su qualsiasi argomento.",
+        "some": "L’assistente risponde solo sugli argomenti scelti; per gli altri crea un’attività «Da fare» per te."
+      },
+      "enabled": {
+        "help": "Acceso, l’assistente prepara una bozza per i messaggi degli ospiti. La bozza non parte mai da sola: la rivedi e la approvi tu.",
+        "label": "Assistente acceso"
+      },
+      "error": {
+        "hoursBothEnds": "Scegli sia l’ora di inizio sia quella di fine, oppure «In qualsiasi momento».",
+        "hoursSameTime": "L’ora di inizio e quella di fine devono essere diverse.",
+        "languages": "Scegli almeno una lingua.",
+        "signatureTooLong": "La firma è troppo lunga: al massimo 300 caratteri."
+      },
+      "forbiddenTopics": {
+        "label": "Argomenti vietati",
+        "none": "Nessun argomento vietato.",
+        "some": "Su questi argomenti l’assistente non scrive mai una bozza: crea un’attività «Da fare» per te."
+      },
+      "hours": {
+        "anyTime": "In qualsiasi momento",
+        "from": "Dalle",
+        "help": "Le ore in cui l’assistente prepara le bozze, secondo l’orario dell’immobile.",
+        "label": "Orari",
+        "to": "Alle"
+      },
+      "languages": {
+        "help": "Le lingue in cui l’assistente può scrivere le bozze.",
+        "label": "Lingue"
+      },
+      "loadError": "Non è stato possibile leggere le regole dell’assistente. Riprova.",
+      "save": "Salva le regole",
+      "saveFailed": "Non è stato possibile salvare le regole. Riprova.",
+      "signature": {
+        "help": "Il testo che chiude ogni bozza, per esempio il tuo nome. Lasciala vuota per nessuna firma.",
+        "label": "Firma"
+      },
+      "tone": {
+        "help": "Come scrive l’assistente: la bozza resta sempre una proposta che puoi cambiare.",
+        "label": "Tono"
+      }
+    },
+    "settings": {
+      "description": "Cosa sa e cosa può fare l’assistente che prepara le bozze di risposta ai tuoi ospiti.",
+      "draftsOnly": "In questa versione l’assistente prepara solo bozze: nessun messaggio parte senza la tua approvazione.",
+      "loading": "Caricamento delle impostazioni dell’assistente…",
+      "tabs": {
+        "properties": "Immobili",
+        "rules": "Regole",
+        "situations": "Situazioni"
+      },
+      "tabsLabel": "Sezioni delle impostazioni dell’assistente",
+      "title": "Assistente"
+    },
+    "situation": {
+      "cancellation_or_refund": "Cancellazione o rimborso",
+      "check_in_time": "Orario di check-in",
+      "complaint": "Reclamo",
+      "directions": "Come arrivare",
+      "discount_request": "Richiesta di sconto",
+      "early_arrival_or_late_checkout": "Arrivo anticipato o check-out in ritardo",
+      "emergency": "Emergenza",
+      "invoice_request": "Richiesta di fattura",
+      "malfunction": "Guasto o problema",
+      "noise": "Rumore",
+      "other": "Altro",
+      "parking": "Parcheggio",
+      "pets": "Animali",
+      "thank_you": "Ringraziamento",
+      "wifi": "Wi-Fi"
+    },
+    "situations": {
+      "actionFailed": "L’operazione non è riuscita. Riprova tra poco.",
+      "answer": {
+        "none": "Nessuna risposta fissa: l’assistente la scrive con le informazioni che ha.",
+        "template": "La risposta parte dal testo che hai scritto tu.",
+        "topic": "La risposta parte dai dati dell’immobile: {{topic}}."
+      },
+      "edit": {
+        "button": "Modifica",
+        "descriptionOrganization": "Vale per tutta l’organizzazione, per gli immobili che non hanno un’eccezione.",
+        "descriptionProperty": "Vale solo per questo immobile e sostituisce il valore dell’organizzazione.",
+        "mode": "Cosa fa l’assistente",
+        "noSource": "Nessuno",
+        "notOffered": "Il valore attuale non è disponibile in questa versione: salvando, la situazione passa a «Prepara una bozza».",
+        "save": "Salva la situazione",
+        "saveFailed": "Non è stato possibile salvare la situazione. Riprova.",
+        "source": "Argomento dei dati dell’immobile",
+        "sourceHelp": "Se non scrivi un testo, la risposta parte dai dati di questo argomento.",
+        "template": "Testo della risposta",
+        "templateHelp": "Facoltativo. Puoi usare le stesse variabili dei tuoi messaggi pronti.",
+        "templateHidden": "Questa situazione ha un testo scritto dall’amministratore dell’organizzazione, che non puoi leggere. Salvando un’eccezione per questo immobile lo sostituisci: la risposta partirà dai dati dell’immobile, se non ne scrivi uno tuo.",
+        "templateTooLong": "Il testo è troppo lungo: al massimo {{max}} caratteri.",
+        "title": "Situazione: {{situation}}"
+      },
+      "listLabel": "Situazioni",
+      "loadError": "Non è stato possibile leggere le situazioni dell’assistente. Riprova.",
+      "origin": {
+        "default": "Valore predefinito",
+        "organization": "Impostata per l’organizzazione",
+        "property": "Eccezione di questo immobile"
+      },
+      "scope": "Situazioni di",
+      "scopeHelp": "L’organizzazione, oppure un immobile con le sue eccezioni.",
+      "scopeOrganization": "Tutta l’organizzazione",
+      "sensitive": "Questa decisione spetta sempre a te.",
+      "sensitiveLabel": "Situazione delicata",
+      "since": "In vigore dal {{date}}",
+      "sinceUnknown": "Inizio non noto: non idonea alle modalità automatiche.",
+      "useOrganization": "Usa l’impostazione dell’organizzazione"
+    },
+    "toast": {
+      "entryDeleted": "Risposta eliminata",
+      "entrySaved": "Risposta salvata",
+      "propertyReset": "L’immobile segue di nuovo l’organizzazione",
+      "propertySaved": "Impostazioni dell’immobile salvate",
+      "rulesSaved": "Regole dell’assistente salvate",
+      "situationReset": "La situazione segue di nuovo l’organizzazione",
+      "situationSaved": "Situazione salvata"
+    },
+    "tone": {
+      "Formal": "Formale",
+      "Friendly": "Cordiale",
+      "Neutral": "Neutro"
+    }
+  },
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} al mese",
@@ -13083,6 +13433,7 @@
     "seo": "SEO & Contenuti",
     "ai": "Configurazione AI",
     "approvalQueue": "Coda di approvazione",
+    "assistant": "Assistente",
     "marketing": "Marketing",
     "more": "Altro",
     "brandShort": "CASAZEN",

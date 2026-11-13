@@ -58,7 +58,8 @@ const EXPECTED: Record<R6Action, string> = {
   UploadAlloggiatiProof: '/app/short-rent/alloggiati',
   UploadIstatProof: '/app/short-rent/compliance',
   FixListingError: `/app/short-rent/properties/create?propertyId=${PROPERTY_ID}&step=channels`,
-  ReplyToMessage: `/app/short-rent/bookings/${BOOKING_ID}?tab=messages`,
+  // The conversation of a direct booking in the hub of messages (E05/F05/US04): the key of the conversation is `direct:{bookingId}`, escaped in the address.
+  ReplyToMessage: `/app/short-rent/messages/direct%3A${BOOKING_ID}`,
   ApproveAiDraft: '/app/short-rent/approval-queue',
   ResumeWizard: `/app/short-rent/properties/${PROPERTY_ID}/activation`,
   ReconnectChannel: '/app/short-rent/channels',
@@ -80,11 +81,12 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
         ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === 'short-rent'),
         `${candidate.path} is not a route of the ROUTE_MANIFEST`,
       ).toBe(true);
-      // A page with `:id` says whose id fills it, and a page without it does not ask for one (but for the property in its address).
-      expect(candidate.path.includes(':id'), candidate.path).toBe(candidate.target !== undefined);
+      // A page with `:id` (or the `:threadKey` of a conversation) says whose id fills it, and a page without it does not ask for one (but for the property in its address).
+      expect(candidate.path.includes(':id') || candidate.path.includes(':threadKey'), candidate.path).toBe(candidate.target !== undefined);
       if (candidate.propertyParam !== undefined) expect(candidate.target, candidate.path).toBeUndefined();
-      // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's.
-      expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity');
+      // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's. A conversation also says its kind.
+      expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity' || candidate.target === 'thread');
+      if (candidate.target === 'thread') expect(['ota', 'direct'], candidate.path).toContain((candidate as { threadKind?: string }).threadKind);
       if (candidate.tab !== undefined) expect(BOOKING_TABS as readonly string[]).toContain(candidate.tab);
     }
   });
@@ -192,8 +194,13 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   it('todoActionRoute_ItemAboutAnotherKindOfEntity_ReturnsNullNeverTheIdOfSomethingThatIsNotABooking', () => {
     const readOnly = permissions(['property.read', 'booking.read']);
 
-    // A message thread of a channel is not a booking: its id opens no booking page.
-    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }))).toBeNull();
+    // A message thread of a channel is not a booking: its id opens no booking page, but its own conversation (`ota:{id}`, escaped in the address).
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }))).toBe(`/app/short-rent/messages/ota%3A${BOOKING_ID}`);
+    // An item about anything else than a thread or a booking has no conversation to open, and gets no half-built key.
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'ApprovalQueueItem' }))).toBeNull();
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread', entityId: NO_ID }))).toBeNull();
+    // The conversations are read with `booking.read`: who cannot is not offered a button that ends on «nessun accesso».
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }), permissions(['property.read']))).toBeNull();
     // A queue item reaches the queue, which needs no booking id, but not the read-only fallback that is a booking page.
     const queueItem = itemFor('ApproveAiDraft', { entityType: 'ApprovalQueueItem' });
     expect(todoActionRoute(queueItem)).toBe('/app/short-rent/approval-queue');
