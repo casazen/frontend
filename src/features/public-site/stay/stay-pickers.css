@@ -175,6 +175,22 @@
   display: none;
 }
 
+/* A night closed to arrival: free to sleep in and to leave on, but no stay starts on it. A small door in the corner, never only a color. */
+.stay-cal__x {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  color: var(--cz-public-muted);
+  pointer-events: none;
+}
+
+.stay-cal__day.is-start .stay-cal__x,
+.stay-cal__day.is-end .stay-cal__x {
+  color: var(--cz-public-on-primary);
+}
+
 .stay-cal__day.is-in,
 .stay-cal__day.is-pre {
   border-radius: 0;
@@ -265,6 +281,12 @@
 .stay-cal__key.is-sel {
   border-color: var(--cz-public-primary);
   background: var(--cz-public-primary);
+}
+
+.stay-cal__legend-x {
+  width: 16px;
+  height: 16px;
+  color: var(--cz-public-muted);
 }
 
 .stay-cal__link {
