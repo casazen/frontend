@@ -476,6 +476,22 @@
           "title": "Alloggiati Web in scadenza",
           "why": "Gli ospiti vanno comunicati alla Questura entro la scadenza."
         },
+        "BookingOverlap": {
+          "title": "Date già occupate sul gestionale dei canali",
+          "why": "Le date di questa prenotazione risultano occupate anche sul gestionale dei canali: controlla la prenotazione e i calendari prima che arrivi un secondo ospite."
+        },
+        "BookingSpecialRequest": {
+          "title": "Richiesta speciale dell'ospite",
+          "why": "L'ospite ha scritto una richiesta particolare: leggila prima dell'arrivo."
+        },
+        "BookingSyncConflict": {
+          "title": "Prenotazione cambiata anche sul gestionale dei canali",
+          "why": "La prenotazione è stata cambiata anche lì mentre la modificavi: scegli se tenere la versione di CasaZen o quella del gestionale."
+        },
+        "CheckImportedListing": {
+          "title": "Immobile importato da controllare",
+          "why": "L'immobile è stato creato da un annuncio del gestionale dei canali e resta inattivo finché non controlli i dati importati."
+        },
         "CheckInPending": {
           "title": "Check-in da completare",
           "why": "Il check-in di questo soggiorno non è ancora completo."
@@ -484,6 +500,14 @@
           "title": "Check-out da completare",
           "why": "Il soggiorno è finito: registra la partenza."
         },
+        "CleaningDue": {
+          "title": "Pulizia da richiedere",
+          "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Annuncio da collegare a un immobile",
+          "why": "Un annuncio trovato sul gestionale dei canali potrebbe corrispondere a più immobili, o a nessuno: conferma o rifiuta il collegamento."
+        },
         "CredentialsToRenew": {
           "title": "Credenziali da rinnovare",
           "why": "Le credenziali di un servizio stanno per scadere o sono già scadute."
@@ -491,6 +515,10 @@
         "FiscalDocument": {
           "title": "Documento fiscale da sistemare",
           "why": "Un documento fiscale ha bisogno di te."
+        },
+        "IdentityVerification": {
+          "title": "Identità dell'ospite da verificare",
+          "why": "L'identità dell'ospite non è ancora verificata: aspettiamo il suo selfie, oppure un operatore deve decidere."
         },
         "IntegrationError": {
           "title": "Collegamento da sistemare",
@@ -508,6 +536,26 @@
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
         },
+        "MessageToReply": {
+          "title": "Messaggio a cui rispondere",
+          "why": "L'assistente ha passato a te il messaggio di un ospite: rispondigli tu."
+        },
+        "MunicipalityTaxRateMissing": {
+          "title": "Imposta di soggiorno da inserire",
+          "why": "Non conosciamo l'imposta di soggiorno del comune: inseriscila, non la consideriamo mai pari a zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Documento del proprietario in scadenza",
+          "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Blocco del soggiorno del proprietario non accettato",
+          "why": "Il gestionale dei canali non ha accettato il blocco delle date: il soggiorno non è confermato finché non lo invii di nuovo."
+        },
+        "OwnerStayToReview": {
+          "title": "Soggiorno del proprietario da decidere",
+          "why": "Il proprietario ha chiesto di soggiornare nel suo immobile: approva o rifiuta la richiesta."
+        },
         "PublicationError": {
           "title": "Errore di pubblicazione",
           "why": "Un annuncio non è stato pubblicato su un canale."
@@ -519,6 +567,10 @@
         "ReconnectChannelManager": {
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
+        },
+        "TouristTaxDeadline": {
+          "title": "Imposta di soggiorno in scadenza",
+          "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."
         },
         "WizardResume": {
           "title": "Procedura da riprendere",
@@ -1296,6 +1348,15 @@
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
+      "complianceBookingNotFound": "Non troviamo questo soggiorno.",
+      "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
+      "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
+      "complianceProofFileInvalid": "Scegli il file della prova: quello che hai caricato è vuoto o non c'è.",
+      "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
+      "complianceProofTooLarge": "Il file è troppo grande: scegline uno più piccolo.",
+      "complianceProofTypeUnsupported": "Il file deve essere un PDF, un JPG o un PNG.",
+      "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
+      "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
       "archiveInvalidPeriod": "I giorni scelti non sono validi: il primo non può essere dopo l'ultimo e servono giorni tra il 2000 e il 2100.",
       "archiveInvalidType": "Questo tipo di documento non esiste.",
@@ -1343,10 +1404,16 @@
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
       "notificationLegalChannelRequired": "Le scadenze di legge non possono restare senza un canale: lascia attivo almeno un canale.",
       "octorateAuthFailed": "Il tuo channel manager ha rifiutato l'accesso di CasaZen. Riprova più tardi; se succede ancora, collega di nuovo l'account.",
+      "octorateCancelFailed": "Il channel manager non è riuscito ad annullare la prenotazione sul canale: la prenotazione è rimasta com'era.",
       "octorateConflict": "Il channel manager segnala un conflitto: riprova.",
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
       "octorateExistingInventoryMustImport": "Questo immobile esiste già sui portali: va importato e abbinato, non creato di nuovo.",
+      "octorateHandoffDestinationUnavailable": "L'area collegata non ha ancora un indirizzo da aprire da qui. Riprova più tardi; se succede ancora, contatta il supporto.",
+      "octorateHandoffPeriodInvalid": "Il periodo della verifica non è valido.",
+      "octorateHandoffPropertyNotMapped": "Questo immobile non è collegato al tuo channel manager: collegalo per fare la verifica da qui.",
+      "octorateHandoffReturnPathInvalid": "Non riusciamo a ricordare la pagina da cui parti, quindi non possiamo preparare la verifica. Ricarica la pagina e riprova.",
+      "octorateHandoffTargetNotFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso.",
       "octorateMappingAlreadyConfirmed": "Questo annuncio è già collegato a un immobile.",
       "octorateMappingLinkedToOtherProperty": "Questo annuncio è già stato collegato a un altro immobile nel frattempo. Torna indietro: l'elenco si aggiorna da solo.",
       "octorateMappingNotConfirmed": "Prima di scegliere la camera, l'annuncio va collegato a un immobile.",
@@ -1545,6 +1612,10 @@
       "bookingNotConfirmable": "Puoi confermare solo le prenotazioni in attesa inserite da te.",
       "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno confermato o con l'arrivo registrato.",
       "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di arrivo.",
+      "bookingEditPaymentInProgress": "Un pagamento di questa prenotazione è ancora in corso, oppure l'ospite deve ancora pagarlo: il prezzo non si cambia finché non è chiuso.",
+      "bookingEditPaymentPermissionRequired": "Questa modifica sposta denaro e serve il permesso sui pagamenti: chiedi a chi gestisce l'organizzazione.",
+      "bookingSettlementFailed": "Il pagamento della differenza non è andato a buon fine, quindi la modifica non è stata salvata. Puoi riprovare.",
+      "bookingTouristTaxUnavailable": "Per le nuove date non riusciamo a calcolare la tassa di soggiorno, che l'ospite ha già pagato: la modifica non è stata salvata.",
       "directBookingDeferredPaymentUnavailable": "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino. Scegli un altro metodo di pagamento.",
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
@@ -1587,6 +1658,8 @@
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
       "icalBlockNotFound": "Blocco del calendario non trovato.",
+      "otaBookingCancelNotAllowed": "Da CasaZen questa prenotazione non si può annullare: si annulla sul canale da cui arriva.",
+      "otaBookingChangeNotAllowed": "Da CasaZen questa prenotazione non si può modificare: si cambia sul canale da cui arriva.",
       "otaStayBlockNotImported": "Solo un blocco importato da un calendario OTA collegato può diventare un soggiorno.",
       "otaStayBlockAlreadyConverted": "Da questo blocco è già stato creato un soggiorno.",
       "otaStayBlockOverlapsBooking": "Le date del blocco si sovrappongono a una prenotazione già presente: verifica il calendario.",
@@ -1631,6 +1704,19 @@
       "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",
       "calendarBlockNotFound": "Il blocco non esiste più: aggiorna il calendario.",
       "calendarBlockHeldByModeChange": "Queste notti sono chiuse dal passaggio all'affitto lungo: per riaprirle annulla il passaggio.",
+      "calendarChangeNoProperties": "Scegli almeno un immobile.",
+      "calendarChangeNotFound": "Non troviamo più questa modifica.",
+      "calendarChangeNotRetryable": "Questa modifica non si può inviare di nuovo: si può fare solo per una modifica non inviata o inviata in parte.",
+      "calendarDayRuleInPast": "Questi giorni sono già passati: scegli giorni da oggi in poi.",
+      "calendarDayRuleInvalidAdvance": "L'anticipo deve essere tra 0 e 730 giorni e il massimo non può essere inferiore al minimo.",
+      "calendarDayRuleInvalidPrice": "Il prezzo deve essere maggiore di zero, con al massimo due decimali, fino a 100.000.",
+      "calendarDayRuleInvalidStay": "Il soggiorno minimo e massimo devono essere tra 1 e 365 notti e il massimo non può essere inferiore al minimo.",
+      "calendarDayRuleNothingToChange": "La modifica non cambia nulla: cambia almeno un valore.",
+      "calendarDayRuleRangeInvalid": "La data di fine non può essere precedente a quella di inizio.",
+      "calendarDayRuleRangeTooLong": "Una modifica può coprire al massimo 366 giorni.",
+      "calendarTooManyProperties": "Una modifica può riguardare al massimo 50 immobili.",
+      "calendarWindowTooLarge": "Il periodo è troppo lungo per essere letto in una volta.",
+      "propertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
       "propertyModeBlockedByBookings": "In quel giorno ci sono ancora soggiorni o date occupate sui portali. Scegli un giorno più avanti.",
       "propertyModeBlockedByDraftLease": "C'è una bozza di contratto: va eliminata prima del passaggio.",
       "propertyModeBlockedByLease": "In quel giorno c'è ancora un contratto in corso. Scegli il giorno dopo la sua fine.",
@@ -2146,6 +2232,274 @@
         "range_other": "dal {{arrival}} al {{departure}}, {{count}} notti",
         "shown": "Mostro {{shown}} immobili su {{total}}: scegline uno dal filtro per vedere gli altri.",
         "zoom": "Giorni mostrati"
+      },
+      "bulk": {
+        "apply": "Applica le modifiche",
+        "applyFailed": "Non siamo riusciti ad applicare le modifiche. Nulla è stato salvato: riprova.",
+        "changes": {
+          "clear": "Togli la regola",
+          "close": "Chiudi",
+          "daysLabel": "Quanti giorni",
+          "keep": "Lascia com'è",
+          "nightsLabel": "Quante notti",
+          "priceLabel": "Prezzo a notte",
+          "reopen": "Riapri",
+          "set": "Imposta"
+        },
+        "description": "Cambia il prezzo e le restrizioni di più giorni e di più immobili in un colpo solo. Prima di applicare vedi cosa succederà.",
+        "done": {
+          "description_one": "{{days}} su {{count}} immobile.",
+          "description_other": "{{days}} in tutto su {{count}} immobili.",
+          "next": {
+            "calendar": "Controlla il calendario: i nuovi prezzi e le nuove restrizioni sono sui giorni.",
+            "checkAgain": "Il tuo channel manager non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
+            "retry": "Premi «Riprova ora» sulla riga che non è partita: finché non va a buon fine, il tuo channel manager non ha quelle modifiche.",
+            "wait": "Puoi uscire: l'invio al tuo channel manager prosegue e lo vedi sopra il calendario."
+          },
+          "propertyFallback": "Immobile",
+          "title": "Modifica salvata in CasaZen"
+        },
+        "errors": {
+          "allPast": "Questi giorni sono già passati: scegli giorni da oggi in poi.",
+          "fromInvalid": "Scrivi il primo giorno.",
+          "propertiesRequired": "Scegli almeno un immobile.",
+          "propertiesTooMany": "Puoi scegliere al massimo 50 immobili alla volta.",
+          "toBeforeFrom": "L'ultimo giorno non può essere prima del primo.",
+          "toInvalid": "Scrivi l'ultimo giorno.",
+          "tooLong": "Una modifica può coprire al massimo 366 giorni.",
+          "weekdaysRequired": "Scegli almeno un giorno della settimana."
+        },
+        "fields": {
+          "closedToArrival": "Arrivi",
+          "closedToDeparture": "Partenze",
+          "maxAdvanceDays": "Anticipo massimo",
+          "maxNights": "Soggiorno massimo",
+          "minAdvanceDays": "Anticipo minimo",
+          "minNights": "Soggiorno minimo",
+          "price": "Prezzo"
+        },
+        "open": "Cambia più giorni",
+        "period": {
+          "days_one": "{{count}} giorno",
+          "days_other": "{{count}} giorni",
+          "from": "Dal giorno",
+          "to": "Al giorno",
+          "weekdays": "Giorni della settimana",
+          "weekdaysHint": "Di solito sono tutti. Togli quelli che non vuoi toccare."
+        },
+        "properties": {
+          "all": "Scegli tutti",
+          "connected": "Collegato al tuo channel manager: la modifica viene inviata anche lì.",
+          "none": "Togli la scelta",
+          "notConnected": "Non collegato al tuo channel manager: la modifica resta in CasaZen."
+        },
+        "reloaded": "Le modifiche sono già sul calendario: puoi controllarle da lì.",
+        "saveAndExit": "Salva ed esci",
+        "steps": {
+          "changes": {
+            "label": "Cosa cambia",
+            "purpose": "Per ogni valore: lascialo com'è, impostalo o toglila. Cambia almeno un valore.",
+            "title": "Cosa vuoi cambiare"
+          },
+          "period": {
+            "label": "Periodo",
+            "purpose": "Il primo e l'ultimo giorno (al massimo 366 giorni) e i giorni della settimana da toccare.",
+            "title": "Scegli i giorni"
+          },
+          "properties": {
+            "label": "Immobili",
+            "purpose": "Quelli che puoi modificare. Per ognuno vedi se è collegato al tuo channel manager.",
+            "title": "Scegli gli immobili"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa succederà. Non viene inviato nulla finché non applichi.",
+            "title": "Controlla prima di applicare"
+          }
+        },
+        "summary": {
+          "changed_one": "{{count}} giorno cambia",
+          "changed_other": "{{count}} giorni cambiano",
+          "diff": "{{field}}: {{from}} → {{to}}",
+          "headline_one": "Cambieremo {{what}} di {{days}} su {{count}} immobile in CasaZen.",
+          "headline_other": "Cambieremo {{what}} di {{days}} in tutto su {{count}} immobili in CasaZen.",
+          "invalid": {
+            "changes": "Cambia almeno un valore e controlla che sia scritto bene.",
+            "period": "Controlla i giorni scelti: l'ultimo non può essere prima del primo né già passato.",
+            "properties": "Scegli almeno un immobile."
+          },
+          "invalidTitle": "Manca qualcosa nei passi precedenti",
+          "loading": "Calcolo cosa succederebbe...",
+          "mirrored_one": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamata al channel manager).",
+          "mirrored_other": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamate al channel manager).",
+          "notMirrored": "{{name}} non è collegato al tuo channel manager: la sua modifica resta in CasaZen.",
+          "nothingChanges": "Nessun giorno cambierebbe: i valori sono già questi.",
+          "nothingSent": "Non viene inviato nulla finché non premi «Applica le modifiche».",
+          "previewFailed": "Non riusciamo a calcolare cosa succederebbe",
+          "previewFailedHint": "Riprova tra poco: non è stato salvato né inviato nulla.",
+          "quota_one": "In tutto circa {{count}} chiamata al channel manager: è solo una stima.",
+          "quota_other": "In tutto circa {{count}} chiamate al channel manager: è solo una stima.",
+          "retry": "Riprova",
+          "roomNotChosen": "Per {{name}} la camera non è scelta nel tuo channel manager: la modifica resta in CasaZen finché non la scegli.",
+          "samples": "Le prime modifiche, prima e dopo:",
+          "skippedPast_one": "{{count}} giorno già passato non si tocca",
+          "skippedPast_other": "{{count}} giorni già passati non si toccano",
+          "taken_one": "{{count}} notte occupata: la regola non cambia la prenotazione",
+          "taken_other": "{{count}} notti occupate: la regola non cambia le prenotazioni",
+          "unchanged_one": "{{count}} giorno resta com'era",
+          "unchanged_other": "{{count}} giorni restano com'erano",
+          "what": {
+            "closedToArrival": "gli arrivi",
+            "closedToDeparture": "le partenze",
+            "maxAdvanceDays": "l'anticipo massimo",
+            "maxNights": "il soggiorno massimo",
+            "minAdvanceDays": "l'anticipo minimo",
+            "minNights": "il soggiorno minimo",
+            "price": "il prezzo"
+          }
+        },
+        "title": "Cambia più giorni"
+      },
+      "change": {
+        "error": {
+          "channelError": "Il tuo channel manager ha preso la modifica ma ha segnalato un errore nell'invio ai canali.",
+          "notAuthorized": "Il tuo channel manager non ha accettato l'accesso di CasaZen: ricollega l'account e riprova.",
+          "quotaLow": "Il tuo channel manager ha quasi esaurito le richieste consentite: l'invio riprende da solo più tardi.",
+          "roomNotLicensed": "La camera non ha una licenza attiva nel tuo channel manager: attivala lì, poi riprova.",
+          "unknown": "Il tuo channel manager non ha completato l'invio. Riprova tra poco."
+        },
+        "list": {
+          "failed_one": "{{count}} modifica non è stata inviata.",
+          "failed_other": "{{count}} modifiche non sono state inviate.",
+          "kind": {
+            "Block": "Blocco di date",
+            "Bulk": "Modifica di più immobili",
+            "DayRules": "Prezzo e restrizioni",
+            "Publication": "Invio iniziale del calendario"
+          },
+          "noAnswer_one": "{{count}} modifica aspetta ancora: il tuo channel manager non ha risposto.",
+          "noAnswer_other": "{{count}} modifiche aspettano ancora: il tuo channel manager non ha risposto.",
+          "retry": "Riprova",
+          "toggle": "Ultime modifiche",
+          "unreadable": "Non riusciamo a leggere le modifiche inviate al tuo channel manager.",
+          "waiting_one": "{{count}} modifica è in invio al tuo channel manager.",
+          "waiting_other": "{{count}} modifiche sono in invio al tuo channel manager."
+        },
+        "result": {
+          "accepted": "Accettata dal tuo channel manager.",
+          "checkAgain": "Controlla di nuovo",
+          "confirmed": "Confermata dal tuo channel manager.",
+          "failed": "Non inviata al tuo channel manager.",
+          "noAnswer": "Il tuo channel manager non ha ancora risposto: la modifica è salvata in CasaZen.",
+          "notConnected": "Questo immobile non è collegato al tuo channel manager: la modifica resta in CasaZen.",
+          "notFound": "Non troviamo più questa modifica.",
+          "retry": "Riprova ora",
+          "retryFailed": "Non siamo riusciti a inviare di nuovo la modifica. Riprova.",
+          "saved": "La modifica è nel calendario di CasaZen.",
+          "savedTitle": "Salvato in CasaZen",
+          "sending": "Invio al tuo channel manager in corso.",
+          "unreadable": "Non riusciamo a leggere a che punto è l'invio al tuo channel manager.",
+          "waiting": "In attesa di essere inviata al tuo channel manager."
+        },
+        "state": {
+          "Applied": "Salvata in CasaZen",
+          "Confirmed": "Confermata dal tuo channel manager",
+          "Failed": "Non inviata",
+          "PartiallySent": "Inviata solo in parte",
+          "Queued": "In attesa di invio",
+          "Sending": "In invio",
+          "Sent": "Accettata dal tuo channel manager"
+        },
+        "tone": {
+          "done": "fatto",
+          "info": "da sapere",
+          "problem": "da guardare",
+          "working": "in corso"
+        }
+      },
+      "day": {
+        "closedToArrival": "arrivi chiusi",
+        "closedToArrivalShort": "no arrivi",
+        "closedToDeparture": "partenze chiuse",
+        "closedToDepartureShort": "no partenze",
+        "gridLabel": "Giorni di {{property}}",
+        "hasRule": "regola propria",
+        "loadError": "Non riusciamo a leggere prezzi e regole dei giorni: il calendario resta senza.",
+        "minNights_one": "minimo {{count}} notte",
+        "minNights_other": "minimo {{count}} notti",
+        "minShort": "min {{count}}",
+        "past": "giorno passato",
+        "price": "{{price}} a notte",
+        "retry": "Riprova",
+        "source": {
+          "Base": "prezzo abituale",
+          "DayRule": "prezzo che hai impostato sul calendario",
+          "Seasonal": "prezzo stagionale che hai confermato",
+          "Weekend": "prezzo del fine settimana"
+        },
+        "taken": "notte occupata"
+      },
+      "dayRules": {
+        "backToUsual": "Torna al prezzo abituale",
+        "clear": "Rimuovi la regola",
+        "closedToArrival": "Arrivi chiusi",
+        "closedToDeparture": "Partenze chiuse",
+        "current": {
+          "closed": "chiusi",
+          "days_one": "{{count}} giorno",
+          "days_other": "{{count}} giorni",
+          "mixed": "valori diversi nei giorni scelti",
+          "mixedPrices": "Prezzi diversi nei giorni scelti.",
+          "none": "nessun limite",
+          "nights_one": "{{count}} notte",
+          "nights_other": "{{count}} notti",
+          "now": "Ora: {{value}}",
+          "open": "aperti",
+          "price": "Prezzo attuale: {{price}} ({{source}})"
+        },
+        "errors": {
+          "advanceInvalid": "Scrivi un numero intero di giorni.",
+          "advanceRange": "Scrivi un numero di giorni da 0 a 730.",
+          "advanceRequired": "Scrivi quanti giorni, oppure rimuovi la regola.",
+          "maxAdvanceBelowMin": "L'anticipo massimo non può essere inferiore al minimo.",
+          "maxStayBelowMin": "Il soggiorno massimo non può essere inferiore al minimo.",
+          "nothingToChange": "Cambia almeno un valore, oppure chiudi il pannello.",
+          "priceDecimals": "Il prezzo può avere al massimo due decimali.",
+          "priceInvalid": "Scrivi un prezzo valido, per esempio 120 o 120,50.",
+          "priceRange": "Il prezzo deve essere tra 0,01 e 100.000.",
+          "priceRequired": "Scrivi il prezzo a notte, oppure torna al prezzo abituale.",
+          "stayInvalid": "Scrivi un numero intero di notti.",
+          "stayRange": "Scrivi un numero di notti da 1 a 365.",
+          "stayRequired": "Scrivi quante notti, oppure rimuovi la regola."
+        },
+        "keep": "Lascia com'è",
+        "keepPrice": "Lascia il prezzo com'è",
+        "maxAdvanceDays": "Anticipo massimo (giorni prima dell'arrivo)",
+        "maxNights": "Soggiorno massimo (notti)",
+        "minAdvanceDays": "Anticipo minimo (giorni prima dell'arrivo)",
+        "minNights": "Soggiorno minimo (notti)",
+        "price": "Nuovo prezzo a notte",
+        "priceHint": "Per esempio 120 o 120,50, nella valuta dell'immobile. Vale per ogni notte scelta.",
+        "priceWillClear": "Le notti scelte tornano al prezzo abituale.",
+        "saveFailed": "Non siamo riusciti a salvare la modifica. Riprova.",
+        "savePrice": "Salva il prezzo",
+        "saveRestrictions": "Salva le restrizioni",
+        "willClear": "La regola verrà rimossa."
+      },
+      "panel": {
+        "actions": "Cosa vuoi fare con questi giorni",
+        "allPast": "Questi giorni sono già passati: non si possono bloccare né modificare. Scegli giorni da oggi in poi.",
+        "block": "Blocca",
+        "description": "Scegli se bloccare i giorni, cambiare il prezzo o cambiare le restrizioni. Puoi ancora allargare la selezione dal calendario.",
+        "done": "Fatto",
+        "price": "Prezzo",
+        "restrictions": "Restrizioni",
+        "somePast_one": "{{count}} giorno è già passato: resta com'era.",
+        "somePast_other": "{{count}} giorni sono già passati: restano com'erano.",
+        "taken_one": "{{count}} notte della selezione è già occupata da una prenotazione, una richiesta o un blocco: il blocco verrà rifiutato.",
+        "taken_other": "{{count}} notti della selezione sono già occupate da una prenotazione, una richiesta o un blocco: il blocco verrà rifiutato.",
+        "title_one": "{{dates}} · {{property}} · {{count}} notte",
+        "title_other": "{{dates}} · {{property}} · {{count}} notti"
       }
     },
     "validation": {
@@ -2602,7 +2956,66 @@
       "notFound": "Prenotazione non trovata",
       "notFoundDescription": "La prenotazione che stai cercando non esiste.",
       "notEditable": "Una prenotazione annullata non si può modificare.",
-      "backToBooking": "Torna alla prenotazione"
+      "backToBooking": "Torna alla prenotazione",
+      "conflict": {
+        "casazen": "Versione di CasaZen",
+        "channelManager": "Versione del channel manager",
+        "description": "La modifica è salvata in CasaZen, ma nel tuo channel manager la prenotazione è diversa. Scegli quale versione tenere: finché non scegli, non si perde nulla.",
+        "keepCasazen": "Tieni la versione di CasaZen",
+        "keepCasazenHint": "Scriviamo la versione di CasaZen nel channel manager al posto della sua.",
+        "notAvailable": "non disponibile",
+        "title": "La prenotazione è stata modificata nel tuo channel manager",
+        "useChannelManager": "Usa la versione del channel manager",
+        "useChannelManagerHint": "Il modulo si apre con le sue date e i suoi ospiti: salvi tu quando vuoi."
+      },
+      "review": {
+        "back": "Indietro",
+        "confirm": "Conferma e salva",
+        "dates": "Date",
+        "description": "Controlla cosa succede ai pagamenti: finché non confermi, non è salvato nulla.",
+        "guests": "Ospiti",
+        "quoteFailed": "Non riusciamo a calcolare cosa succede ai pagamenti. Riprova.",
+        "title": "Controlla prima di salvare",
+        "total": "Nuovo totale"
+      },
+      "saved": {
+        "title": "Prenotazione aggiornata."
+      },
+      "settlement": {
+        "preview": {
+          "chargeSavedCard": "{{amount}} vengono addebitati sulla carta salvata dell'ospite.",
+          "noMoney": "Da qui non parte nessun pagamento: il saldo resta come concordato con l'ospite.",
+          "offlineRefundDue": "{{amount}} sono stati pagati fuori da CasaZen (contanti o bonifico): li restituisci tu all'ospite.",
+          "paymentLink": "L'ospite riceve un link per pagare {{amount}}.",
+          "priceChanges": "Il prezzo passa da {{from}} a {{to}}.",
+          "priceSame": "Il prezzo non cambia.",
+          "refund": "{{amount}} vengono rimborsati sulla carta dell'ospite."
+        },
+        "result": {
+          "chargeSavedCard": {
+            "done": "{{amount}} addebitati sulla carta salvata dell'ospite.",
+            "pending": "L'addebito di {{amount}} sulla carta salvata dell'ospite non è ancora confermato."
+          },
+          "offlineRefundDue": "Restano {{amount}} da restituire all'ospite: li aveva pagati fuori da CasaZen.",
+          "paymentLink": {
+            "done": "Il link per pagare {{amount}} è stato inviato all'ospite.",
+            "pending": "Il link per pagare {{amount}} non è ancora stato inviato all'ospite."
+          }
+        }
+      },
+      "sync": {
+        "checkAgain": "Controlla di nuovo",
+        "failed": {
+          "askAgain": "Quando hai sistemato il problema, riprova tu.",
+          "retrying": "Riproviamo in automatico.",
+          "title": "Salvata in CasaZen, non ancora nel tuo channel manager"
+        },
+        "notAllowed": "Il canale non permette questa modifica: al channel manager non è stato inviato nulla.",
+        "pending": "Sto inviando la modifica al tuo channel manager…",
+        "retry": "Riprova ora",
+        "retryFailed": "Non siamo riusciti a rimandare la modifica. Riprova.",
+        "waiting": "Il tuo channel manager non ha ancora risposto: la modifica è salvata in CasaZen, ma l'invio non risulta ancora concluso."
+      }
     },
     "amountSource": {
       "ChannelManager": "Channel manager",
@@ -2694,6 +3107,11 @@
         "action": "Completa il check-in",
         "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
         "title": "Completa i dati degli ospiti"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
       },
       "confirmManual": {
         "title": "Conferma la prenotazione"
@@ -2791,7 +3209,45 @@
         "intentsCanceled": "Il pagamento non completato è stato annullato su Stripe.",
         "noRefund": "Nessun rimborso richiesto."
       },
-      "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo."
+      "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo.",
+      "channel": {
+        "confirm": "Chiedi l'annullamento",
+        "confirmed": "Il tuo channel manager ha confermato l'annullamento.",
+        "description": "Il channel manager annulla la prenotazione sul canale: solo quando lo conferma, la prenotazione risulta annullata anche in CasaZen.",
+        "noMoney": "Da CasaZen non si muove nessun pagamento.",
+        "refused": "Il canale non l'ha annullata: la prenotazione è rimasta com'era.",
+        "submitting": "Chiedo l'annullamento…",
+        "title": "Chiedi al tuo channel manager di annullare questa prenotazione"
+      },
+      "sync": {
+        "checkAgain": "Controlla di nuovo",
+        "conflict": "Il tuo channel manager non ha accettato l'annullamento: la prenotazione lì è cambiata. L'annullamento in CasaZen resta valido.",
+        "failed": {
+          "askAgain": "Quando hai sistemato il problema, riprova tu.",
+          "retrying": "Riproviamo in automatico.",
+          "title": "Annullata in CasaZen, non ancora nel tuo channel manager"
+        },
+        "notAllowed": "Il canale non permette l'annullamento da qui: al channel manager non è stato inviato nulla.",
+        "pending": "Sto annullando la prenotazione nel tuo channel manager…",
+        "retry": "Riprova ora",
+        "retryFailed": "Non siamo riusciti a rimandare l'annullamento. Riprova.",
+        "synced": "Annullata anche nel tuo channel manager.",
+        "unconfirmed": "Il tuo channel manager non ha ancora confermato l'annullamento.",
+        "waiting": "Il tuo channel manager non ha ancora risposto: la prenotazione è annullata in CasaZen, ma l'annullamento non è ancora confermato lì.",
+        "willUpdate": "Anche il tuo channel manager viene aggiornato."
+      }
+    },
+    "changeGuidance": {
+      "cancel": {
+        "bookingCom": "Per cancellare questa prenotazione di Booking.com chiedi all'ospite di annullarla su Booking.com.",
+        "channel": "Per cancellare questa prenotazione di {{channel}} chiedi all'ospite di annullarla su {{channel}}.",
+        "default": "Per cancellare questa prenotazione chiedi all'ospite di annullarla sul canale da cui ha prenotato."
+      },
+      "modify": {
+        "bookingCom": "Su Booking.com l'ospite cambia le date dall'app o dall'extranet: chiedi all'ospite di farlo da lì.",
+        "channel": "Per modificare questa prenotazione di {{channel}} chiedi all'ospite di richiedere la modifica su {{channel}}.",
+        "default": "Per modificare questa prenotazione chiedi all'ospite di richiedere la modifica sul canale da cui ha prenotato."
+      }
     },
     "channels": {
       "Agoda": "Agoda",
@@ -2912,6 +3368,17 @@
       "markVerified": "Segna come verificato",
       "resolved": "Soggiorno verificato",
       "failed": "Impossibile aggiornare il soggiorno. Riprova."
+    },
+    "syncReason": {
+      "datesUnavailable": "Le date risultano già occupate nel channel manager: controlla il calendario dei canali.",
+      "linkedElsewhere": "La prenotazione nel channel manager è già collegata a un'altra prenotazione di CasaZen: controlla se è un duplicato.",
+      "notMirrored": "L'immobile non è collegato al channel manager in questo momento (connessione interrotta o abbinamento da confermare): ricollegalo o confermalo, poi riprova.",
+      "paymentsNotRecorded": "Nel channel manager non sono stati registrati tutti gli incassi. Controlla e riprova.",
+      "rejected": "Il channel manager ha rifiutato la richiesta. Controlla i dati e riprova.",
+      "reservationChanged": "La prenotazione è cambiata nel channel manager dopo l'ultima lettura: controlla le differenze prima di riprovare.",
+      "roomNotChosen": "Manca la camera del channel manager per questo immobile: scegli quale, poi riprova.",
+      "unavailable": "Il channel manager non ha risposto.",
+      "unknown": "Il channel manager non l'ha confermata."
     },
     "timeline": {
       "alloggiatiDeadline": "{{status}} · entro {{date}}",
@@ -4255,8 +4722,8 @@
       "Suspended": "Sospeso"
     },
     "page": {
-      "title": "Adempimenti",
-      "description": "Cosa manca per essere in regola, per gli immobili e per i soggiorni."
+      "title": "Sono in regola?",
+      "description": "Per ogni adempimento vedi se è a posto, a che punto è o cosa devi fare. Il verde c'è solo quando CasaZen ha la prova."
     },
     "summary": {
       "title": "Panoramica compliance",
@@ -4273,7 +4740,16 @@
       "alloggiatiManualRequired": "Alloggiati da inviare manualmente",
       "moreItems_one": "e {{count}} altro",
       "moreItems_other": "e altri {{count}}",
-      "turnoversPending": "Proprietà da dichiarare pronte"
+      "turnoversPending": "Proprietà da dichiarare pronte",
+      "line": {
+        "allClear": "Tutto in regola",
+        "red": "{{count}} da sistemare",
+        "todo_one": "{{count}} cosa da fare",
+        "todo_other": "{{count}} cose da fare",
+        "unknown": "{{count}} da verificare",
+        "withDetail": "{{todo}}: {{what}}",
+        "yellow": "{{count}} in corso"
+      }
     },
     "cockpit": {
       "kicker": {
@@ -4297,7 +4773,7 @@
       },
       "fine": {
         "title": "Scadenze di legge",
-        "intro": "Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24): se non parte in tempo rischi una sanzione.",
+        "intro": "Scadenze fissate dalla legge: Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24), poi ci sono ISTAT e l'imposta di soggiorno. Se non partono in tempo rischi una sanzione.",
         "moreLink": "Vedile tutte in Alloggiati"
       },
       "start": {
@@ -4321,6 +4797,10 @@
         "toggle_one": "{{count}} casa in regola",
         "toggle_other": "{{count}} case in regola"
       },
+      "green": {
+        "toggle_one": "{{count}} adempimento in regola",
+        "toggle_other": "{{count}} adempimenti in regola"
+      },
       "openAll": "Tutti gli adempimenti",
       "showMore": "Mostra le altre {{count}}",
       "showLess": "Mostra meno",
@@ -4332,6 +4812,81 @@
         "composition": "Composizione degli ospiti",
         "guestData": "Dati degli ospiti"
       }
+    },
+    "item": {
+      "ActivateOctorateSend": "Invio automatico alla Questura",
+      "ActivateProperty": "Attivazione dell'immobile",
+      "CheckOut": "Partenza",
+      "CompleteGuestCheckIn": "Dati degli ospiti",
+      "ConfirmPropertyReady": "Immobile pronto per il prossimo ospite",
+      "DeclareTouristTax": "Imposta di soggiorno di {{period}}",
+      "EnterMunicipalityTaxRate": "Imposta di soggiorno del comune",
+      "RenewPoliceCredentials": "Credenziali della Questura",
+      "ResolveAlloggiatiFailure": "Alloggiati Web",
+      "SendAlloggiati": "Alloggiati Web",
+      "SendAlloggiatiManually": "Invio di Alloggiati Web",
+      "UploadAlloggiatiReceipt": "Ricevuta di Alloggiati Web",
+      "UploadIstatProof": "ISTAT di {{period}}",
+      "VerifyIdentity": "Identità dell'ospite",
+      "noPeriod": "un periodo"
+    },
+    "light": {
+      "fallback": {
+        "green": "È in regola.",
+        "red": "C'è qualcosa da fare.",
+        "unknown": "CasaZen non ha ancora un esito: controllalo.",
+        "yellow": "È in corso: aspetta la conferma."
+      },
+      "green": "In regola",
+      "named": "{{light}}: {{reason}}",
+      "red": "Da fare",
+      "unknown": "Da verificare",
+      "yellow": "In corso"
+    },
+    "lines": {
+      "more_one": "e {{count}} altro adempimento",
+      "more_other": "e altri {{count}} adempimenti",
+      "ofProperty": "Adempimenti di questo immobile",
+      "ofStay": "Adempimenti di questo soggiorno",
+      "unavailable": {
+        "body": "Non sappiamo se è tutto in ordine: riprova tra un momento.",
+        "title": "Non riusciamo a controllare gli adempimenti"
+      }
+    },
+    "reason": {
+      "action_required": "C'è qualcosa da fare.",
+      "activation_incomplete": "L'attivazione non è finita: finché non lo è, la casa non si può prenotare dal tuo sito.",
+      "alloggiati_failed": "Alloggiati Web non ha accettato l'invio: correggi i dati e invia di nuovo.",
+      "alloggiati_incomplete": "Alloggiati Web ha preso solo alcuni ospiti: il soggiorno non è completo.",
+      "alloggiati_not_sent": "Alloggiati Web non è ancora stato inviato.",
+      "alloggiati_sending": "L'invio ad Alloggiati Web è in corso.",
+      "awaiting_receipt": "È stato inviato: manca la ricevuta da archiviare.",
+      "checkout_due": "La partenza va chiusa.",
+      "cin_invalid": "Il CIN non è nel formato corretto.",
+      "cin_missing": "Manca il CIN.",
+      "cin_valid": "Il CIN è nel formato corretto.",
+      "connection_inactive": "L'invio automatico non è attivo: attivalo oppure invia tu.",
+      "connection_unverified": "Non possiamo sapere se l'invio automatico è attivo: confermalo tu.",
+      "credentials_refused": "La Questura ha rifiutato le credenziali: inseriscile di nuovo.",
+      "deadline_overdue": "La scadenza è passata e non c'è nessuna prova.",
+      "entrusted_to_channel_manager": "Se ne occupa il tuo channel manager: aspettiamo la ricevuta.",
+      "evidence_missing": "Manca la prova archiviata.",
+      "external_verification_required": "L'esito c'è solo nel tuo channel manager: CasaZen non lo vede, controllalo lì.",
+      "guest_data_missing": "Mancano dei dati degli ospiti per Alloggiati Web.",
+      "identity_missing": "L'arrivo è vicino e l'identità dell'ospite non è ancora verificata.",
+      "identity_verified": "L'identità dell'ospite è verificata.",
+      "municipality_rate_missing": "Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).",
+      "operator_decision_required": "Un operatore deve decidere sulla verifica dell'identità.",
+      "over_thirty_nights_not_sent": "Oltre 30 notti il channel manager non invia da solo: invia tu Alloggiati Web.",
+      "period_open": "Il periodo è ancora aperto: la scadenza non è arrivata.",
+      "property_ready_not_confirmed": "Non hai ancora dichiarato la casa pronta per il prossimo ospite.",
+      "receipt_archived": "La ricevuta è archiviata.",
+      "receipt_missing": "È stato inviato, ma la ricevuta non è archiviata: caricala.",
+      "selfie_awaited": "Aspettiamo il selfie dell'ospite prima dell'arrivo.",
+      "short_stay_at_risk": "Soggiorno breve (6 ore per l'invio): gli ospiti non sono affidati al channel manager. Invia tu Alloggiati Web."
+    },
+    "row": {
+      "named": "{{what}}: {{label}}"
     },
     "autopilot": {
       "button": "Gestisci con AI",
@@ -4483,6 +5038,58 @@
     "properties": {
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
+    },
+    "drawer": {
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "continue": "Continua la verifica",
+      "continuing": "Apro l'area collegata…",
+      "destination": {
+        "deepLink": "Si apre in questa scheda, direttamente nella sezione da controllare. Per tornare qui usa il tasto Indietro del browser.",
+        "home": "Si apre in questa scheda, nella pagina iniziale della tua area collegata: segui il percorso indicato sopra. Per tornare qui usa il tasto Indietro del browser."
+      },
+      "disclosure": {
+        "body": "L'esito resta nell'area collegata: CasaZen non lo legge, non lo importa e non lo registra come prova. Quando torni, le tue pratiche sono come le hai lasciate.",
+        "title": "Dati consultati su Octorate"
+      },
+      "error": {
+        "destination": "Non riusciamo ad aprire l'area collegata da qui. Riprova tra poco.",
+        "generic": "Non riusciamo a preparare la verifica in questo momento. Riprova tra poco.",
+        "notFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso. Ricarica la pagina e riprova."
+      },
+      "fallback": {
+        "Alloggiati": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio Alloggiati di questo soggiorno risulti inviato e senza errori nell'area collegata.",
+        "Istat": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio ISTAT del periodo risulti inviato e senza errori nell'area collegata."
+      },
+      "guide": {
+        "checkTitle": "Cosa controllare",
+        "menuTitle": "Dove andare"
+      },
+      "intro": "Ti accompagniamo alla sezione giusta dell'area collegata e ti diciamo cosa controllare.",
+      "loading": "Preparo la verifica…",
+      "retry": "Riprova",
+      "section": {
+        "body": "Controlla nell'area collegata l'esito dell'invio di questo soggiorno: ti diciamo dove andare e cosa guardare.",
+        "title": "Cassetto Compliance"
+      },
+      "target": {
+        "booking": "Prenotazione",
+        "listing": "Annuncio",
+        "period": "Periodo",
+        "property": "Immobile",
+        "topic": "Argomento"
+      },
+      "title": "Cassetto Compliance",
+      "topic": {
+        "Alloggiati": "Alloggiati Web",
+        "Istat": "ISTAT"
+      },
+      "trigger": "Verifica nel tuo Cassetto Compliance",
+      "welcome": {
+        "body": "L'esito resta consultabile nell'area collegata: CasaZen non lo importa e non cambia nessuna delle tue pratiche.",
+        "dismiss": "Ho capito",
+        "title": "Bentornato nel Cassetto Compliance"
+      }
     },
     "activation": {
       "loading": "Caricamento wizard attivazione...",
@@ -4647,8 +5254,7 @@
         "toSendHint": "La comunicazione di questo soggiorno non risulta inviata. CasaZen non la trasmette: inviala sul portale Alloggiati Web e registrala come inviata. Il check-out non è bloccato.",
         "failedHint": "La comunicazione di questo soggiorno è in errore o respinta: correggila e inviala di nuovo sul portale. Il check-out non è bloccato.",
         "overdue": "Scadenza superata il {{deadline}}.",
-        "dataIncomplete": "Mancano dati degli ospiti.",
-        "open": "Apri la sezione Alloggiati della prenotazione"
+        "dataIncomplete": "Mancano dati degli ospiti."
       },
       "cleaning": {
         "existingTitle": "Richieste già inviate per questo soggiorno",
@@ -4694,6 +5300,16 @@
         "taxCollection": "Indica come è stata riscossa l'imposta di soggiorno.",
         "propertyReady": "Indica se la proprietà è pronta per il prossimo ospite."
       },
+      "guestData": {
+        "cancel": "Annulla",
+        "description": "Compila i dati che servono ad Alloggiati Web. Le risposte del check-out restano come sono.",
+        "done": "Fatto",
+        "open": "Completa i dati degli ospiti",
+        "saved": "Dati degli ospiti salvati.",
+        "title": "Dati degli ospiti",
+        "unsaved": "Hai modifiche non salvate. Salva i dati degli ospiti, oppure annulla per lasciarle."
+      },
+      "saveAndExit": "Salva ed esci",
       "summary": {
         "title": "Le tue risposte",
         "departure": "Partenza",
@@ -4704,14 +5320,29 @@
         "touristTax": "Imposta di soggiorno"
       },
       "done": {
-        "title": "Il soggiorno è chiuso",
-        "description": "Il check-out di {{guest}} è registrato.",
-        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
-        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
-        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
-        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "alloggiatiSent": "La comunicazione Alloggiati risulta inviata.",
         "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
-        "compliance": "Vai agli adempimenti"
+        "channelManager": {
+          "automatic": "Il check-out viene passato in automatico al channel manager. Qui CasaZen non mostra se è arrivato."
+        },
+        "cleaningNotSent": "La richiesta di pulizia non risulta inviata: controllala nel dettaglio della prenotazione.",
+        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "cleaningSkipped": "Pulizie: nessuna richiesta, il passaggio è stato saltato.",
+        "compliance": "Vai agli adempimenti",
+        "description": "Il check-out di {{guest}} è registrato.",
+        "next": {
+          "alloggiatiLink": "Apri la scheda Alloggiati della prenotazione",
+          "markReady": "Dichiara l'immobile pronto dagli adempimenti, quando lo è.",
+          "nothing": "Non resta altro da fare per questo soggiorno.",
+          "sendAlloggiati": "Invia la comunicazione Alloggiati dalla scheda della prenotazione.",
+          "title": "Prossimo passo"
+        },
+        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
+        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
+        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
+        "title": "Il soggiorno è chiuso",
+        "touristTax": "Imposta di soggiorno dichiarata: {{collection}}.",
+        "touristTaxNotCollected": "Imposta di soggiorno: non riscossa. Va gestita secondo il regolamento del comune."
       }
     },
     "safety": {
@@ -4839,6 +5470,215 @@
       "warnings": {
         "safety_floor_areas_missing": "Senza i m² di ogni piano il minimo è calcolato solo sui piani. La legge chiede un estintore ogni 200 m² di pavimento o frazione, con un minimo di uno per piano."
       }
+    }
+  },
+  "complianceArchive": {
+    "coverage": {
+      "counts": "{{proven}} con prova · {{toVerify}} da verificare · {{missing}} mancanti · {{notApplicable}} non applicabili",
+      "deadline": "Scadenza: {{when}}",
+      "group": {
+        "ExternalVerificationRequired": "Da verificare nel Cassetto Compliance",
+        "Missing": "Mancante",
+        "NotApplicable": "Non applicabile",
+        "OfficialProof": "Prova disponibile"
+      },
+      "haveReceipt": "Ho già la ricevuta",
+      "headline": {
+        "allProven": "Tutte le prove richieste sono archiviate",
+        "missing_one": "Manca {{count}} prova",
+        "missing_other": "Mancano {{count}} prove",
+        "nothingOwed": "In questo periodo non c'è niente da provare",
+        "toVerify_one": "{{count}} esito da verificare nel Cassetto Compliance",
+        "toVerify_other": "{{count}} esiti da verificare nel Cassetto Compliance",
+        "unknown": "Non possiamo dire che sia tutto in ordine: restano esiti da verificare"
+      },
+      "narrowed": "Elenco limitato a: {{kind}}.",
+      "openStay": "Apri il soggiorno",
+      "period": "Dal {{from}} al {{to}}",
+      "proofAt": "Prova archiviata il {{when}}",
+      "row": {
+        "Alloggiati": "Soggiorno {{code}} · arrivo {{day}}",
+        "Istat": "ISTAT · {{month}}",
+        "TouristTax": "Imposta di soggiorno · {{month}}"
+      },
+      "showMore": "Mostra altre {{count}}",
+      "toVerifyByHand": "L'esito si trova nell'area del tuo channel manager: controllalo lì.",
+      "toVerifyTitle": "Da verificare nel Cassetto Compliance",
+      "upload": "Carica la prova"
+    },
+    "description": "Quello che CasaZen conserva per dimostrare le comunicazioni a Polizia e ISTAT e l'imposta di soggiorno.",
+    "download": {
+      "done": "Prova scaricata.",
+      "failed": "Non siamo riusciti a scaricare la prova. Riprova."
+    },
+    "filters": {
+      "allKinds": "Tutti i tipi",
+      "allProperties": "Tutti gli immobili",
+      "clearDay": "Mostra tutto il periodo",
+      "day": "Solo il giorno {{day}}.",
+      "kind": "Tipo di prova",
+      "period": "Periodo",
+      "property": "Immobile",
+      "recent": "Ultimi mesi",
+      "wholeYear": "Tutto il {{year}}"
+    },
+    "kind": {
+      "AlloggiatiReceipt": "Ricevuta Alloggiati Web",
+      "IstatProof": "Prova ISTAT",
+      "other": "Prova",
+      "TouristTaxDeclaration": "Dichiarazione dell'imposta di soggiorno",
+      "TouristTaxPayment": "Pagamento dell'imposta di soggiorno"
+    },
+    "proofs": {
+      "download": "Scarica",
+      "downloadLabel": "Scarica: {{kind}}, {{when}}",
+      "emptyDescription": "Non c'è nessun file archiviato per questi filtri. Cambia il periodo oppure carica la prova che hai.",
+      "emptyTitle": "Nessuna prova in archivio",
+      "exportFailed": "Non siamo riusciti a preparare l'archivio. Riprova.",
+      "exportPeriod": "Periodo: {{period}}",
+      "exportZip": "Scarica l'archivio (ZIP)",
+      "keptUntil": "Conservata fino al {{date}}",
+      "listLabel": "Prove archiviate",
+      "loadError": "Non riusciamo a caricare le prove.",
+      "loading": "Carico le prove…",
+      "next": "Avanti",
+      "notFound": "Non troviamo quello che cerchi: l'immobile non esiste o non puoi vederlo.",
+      "pageOf": "Pagina {{page}} di {{pages}}",
+      "pagerLabel": "Pagine dell'archivio",
+      "previous": "Indietro",
+      "receivedOn": "il {{date}}"
+    },
+    "reason": {
+      "alloggiati_failed": "L'invio è fallito o è stato rifiutato.",
+      "alloggiati_incomplete": "Sono stati acquisiti solo alcuni ospiti: il soggiorno non è completo.",
+      "alloggiati_not_sent": "La comunicazione è dovuta e non è stata inviata.",
+      "alloggiati_sending": "L'invio è in corso.",
+      "awaiting_receipt": "Comunicazione inviata: aspettiamo la ricevuta.",
+      "connection_inactive": "Il tuo channel manager non invia i dati: questo soggiorno va inviato a mano.",
+      "deadline_overdue": "La scadenza è passata e nulla prova la comunicazione.",
+      "entrusted_to_channel_manager": "Gli ospiti sono stati affidati al tuo channel manager: aspettiamo la ricevuta.",
+      "evidence_missing": "Non c'è nessuna prova archiviata.",
+      "external_verification_required": "L'esito è nell'area del tuo channel manager: CasaZen non ne ha una prova.",
+      "no_show": "Gli ospiti non sono arrivati: non c'è niente da comunicare.",
+      "over_thirty_nights_not_sent": "Il soggiorno supera i 30 notti e il channel manager non lo invia da solo: va inviato a mano.",
+      "period_open": "Il periodo è ancora aperto: la scadenza non è passata.",
+      "receipt_archived": "La ricevuta è archiviata.",
+      "receipt_missing": "La comunicazione risulta inviata ma la ricevuta non è in archivio.",
+      "short_stay_at_risk": "Soggiorno breve (6 ore di tempo): gli ospiti non sono stati affidati al channel manager."
+    },
+    "source": {
+      "casazen_receipt": "Scaricata da CasaZen",
+      "manual_upload": "Caricata da te",
+      "other": "Archiviata in CasaZen"
+    },
+    "summary": {
+      "export": {
+        "csv": "Rapporto (CSV)",
+        "pdf": "Rapporto (PDF)"
+      },
+      "exportFailed": "Non siamo riusciti a preparare il rapporto. Riprova.",
+      "loadError": "Non riusciamo a caricare il riepilogo.",
+      "loading": "Carico il riepilogo…",
+      "notAvailable": "Il riepilogo non è disponibile in questo momento."
+    },
+    "tabs": {
+      "proofs": "Prove",
+      "summary": "Riepilogo"
+    },
+    "tabsLabel": "Sezioni dell'archivio delle prove",
+    "title": "Archivio delle prove",
+    "upload": {
+      "cancel": "Annulla",
+      "chooseMonth": "Scegli il mese",
+      "chooseProperty": "Scegli l'immobile",
+      "day": "Giorno della comunicazione",
+      "dayHint": "Il giorno in cui è stata inviata, non nel futuro.",
+      "dayInvalid": "Scegli un giorno passato, non nel futuro.",
+      "description": "PDF, JPG o PNG: il file resta nel tuo archivio privato per cinque anni.",
+      "done": "Prova caricata nell'archivio.",
+      "failed": "Non siamo riusciti a caricare la prova. Riprova.",
+      "file": "File",
+      "fileHint": "PDF, JPG o PNG.",
+      "fileInvalid": "Il file deve essere un PDF, un JPG o un PNG.",
+      "kind": "Cosa dimostra",
+      "month": "Mese",
+      "open": "Carica una prova",
+      "portalBody": "Entra nel portale, scarica la ricevuta della comunicazione e poi caricala qui sotto.",
+      "portalLink": "Apri il portale Alloggiati Web",
+      "portalTitle": "Prima prendi la ricevuta",
+      "property": "Immobile",
+      "submit": "Carica la prova",
+      "title": "Carica una prova"
+    }
+  },
+  "connectionHealth": {
+    "activate": "Attiva o ricollega l'invio",
+    "archiveLink": "Carica le ricevute nell'archivio delle prove",
+    "credentials": {
+      "none": "CasaZen non ha le credenziali del portale Alloggiati Web: le ricevute le carichi tu.",
+      "stored": "Le credenziali del portale sono salvate in CasaZen ma non verificate: le ricevute le carichi tu.",
+      "usable": "Le credenziali del portale sono verificate: CasaZen può scaricare le ricevute."
+    },
+    "description": "Chi invia i dati degli ospiti a Polizia e ISTAT e se l'invio funziona.",
+    "detail": {
+      "Active": {
+        "CasaZen": "CasaZen ha le credenziali del portale e può inviare i dati.",
+        "ChannelManager": "Il tuo channel manager conferma che il collegamento funziona e che l'invio automatico giornaliero è acceso.",
+        "other": "L'invio risulta attivo."
+      },
+      "Inactive": {
+        "CasaZen": "CasaZen non riesce a inviare i dati con le credenziali salvate.",
+        "ChannelManager": "Il tuo channel manager dice che l'invio non è attivo: i dati degli ospiti non partono da soli.",
+        "other": "L'invio non risulta attivo."
+      },
+      "Manual": "Invii tu i dati ai portali: CasaZen ti ricorda le scadenze.",
+      "Unknown": {
+        "CasaZen": "CasaZen non riesce a verificare l'invio con le credenziali salvate.",
+        "ChannelManager": "CasaZen non riesce a verificare questa connessione: il tuo channel manager non dice se l'invio è attivo.",
+        "other": "CasaZen non riesce a verificare questa connessione."
+      }
+    },
+    "disclosureBody": "Lo stato viene letto dal tuo channel manager: CasaZen non lo conferma da sola e non ne importa il risultato.",
+    "disclosureTitle": "Dati consultati su Octorate",
+    "instructions": {
+      "CasaZen": "Controlla le credenziali del portale Alloggiati Web salvate in CasaZen.",
+      "ChannelManager": {
+        "Inactive": "Accendi l'invio automatico nel pannello del tuo channel manager (collegamento con la Polizia e invio giornaliero), poi torna qui e controlla di nuovo.",
+        "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
+      }
+    },
+    "lastRun": "Ultimo invio automatico: {{when}}",
+    "loadError": "Non riusciamo a leggere lo stato dell'invio.",
+    "loading": "Leggo lo stato dell'invio…",
+    "notFound": "Non troviamo questo immobile.",
+    "outsideItaly": "Fuori dall'Italia i dati degli ospiti non si inviano a Polizia e ISTAT da qui.",
+    "reason": {
+      "connection_not_checked_yet": "Non l'abbiamo ancora controllata: la leggiamo alla prossima apertura.",
+      "credentials_refused": "Il portale ha rifiutato le credenziali salvate.",
+      "octorate_not_connected": "L'immobile non è collegato al channel manager.",
+      "octorate_police_account_invalid": "Il channel manager dice che l'account del portale della Polizia non è valido.",
+      "octorate_police_autorun_off": "L'invio automatico giornaliero è spento nel channel manager.",
+      "octorate_police_not_exposed": "Il channel manager non ci lascia leggere questo stato.",
+      "octorate_unavailable": "Non siamo riusciti a raggiungere il channel manager: riprova più tardi.",
+      "sender_casazen_not_available": "L'invio da parte di CasaZen non è ancora disponibile."
+    },
+    "refresh": "Controlla di nuovo",
+    "sender": {
+      "CasaZen": "CasaZen invia i dati",
+      "ChannelManager": "Il tuo channel manager invia i dati",
+      "Manual": "Invio manuale",
+      "unknown": "Non è indicato chi invia i dati"
+    },
+    "state": {
+      "Active": "Attivo",
+      "Inactive": "Non attivo",
+      "Manual": "Manuale",
+      "Unknown": "Non verificabile"
+    },
+    "title": "Invio a Polizia e ISTAT",
+    "topic": {
+      "Alloggiati": "Alloggiati Web (Polizia)",
+      "Istat": "ISTAT (statistiche del turismo)"
     }
   },
   "comune": {
@@ -5366,6 +6206,10 @@
       "requests_other": "{{count}} richieste da approvare"
     },
     "todo": {
+      "ActivateOctorateSend": {
+        "cta": "Controlla l'invio",
+        "title": "Attiva l'invio automatico alla Questura: {{label}}"
+      },
       "ActivateProperty": {
         "cta": "Completa",
         "ctaCin": "Aggiungi il CIN",
@@ -5387,9 +6231,21 @@
         "cta": "Conferma",
         "title": "Dichiara pronto l'immobile dopo {{label}}"
       },
+      "DeclareTouristTax": {
+        "cta": "Dichiara l'imposta",
+        "title": "Dichiara e paga l'imposta di soggiorno di {{period}}: {{label}}"
+      },
+      "EnterMunicipalityTaxRate": {
+        "cta": "Inserisci l'imposta",
+        "title": "Inserisci l'imposta di soggiorno del comune: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Paga",
         "title": "Paga l'intervento di {{label}}"
+      },
+      "RenewPoliceCredentials": {
+        "cta": "Aggiorna le credenziali",
+        "title": "Aggiorna le credenziali della Questura: {{label}}"
       },
       "RespondToRequest": {
         "cta": "Accetta",
@@ -5410,6 +6266,22 @@
       "SendAlloggiati": {
         "cta": "Prepara i dati",
         "title": "Alloggiati Web da inviare: {{label}}"
+      },
+      "SendAlloggiatiManually": {
+        "cta": "Prepara i dati",
+        "title": "Invia a mano Alloggiati Web: {{label}}"
+      },
+      "UploadAlloggiatiReceipt": {
+        "cta": "Carica la ricevuta",
+        "title": "Carica la ricevuta di Alloggiati Web: {{label}}"
+      },
+      "UploadIstatProof": {
+        "cta": "Carica la prova",
+        "title": "Carica la prova ISTAT di {{period}}: {{label}}"
+      },
+      "VerifyIdentity": {
+        "cta": "Controlla l'identità",
+        "title": "Verifica l'identità di {{label}}"
       },
       "decline": {
         "description": "L'ospite riceve un'email e le date tornano disponibili.",
@@ -14968,6 +15840,11 @@
         "action": "Inserisci il CIN",
         "title": "Manca il codice CIN"
       },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
+      },
       "heading": "Cosa fare ora",
       "paused": {
         "title": "L'immobile è in pausa"
@@ -15464,12 +16341,18 @@
       "totalFor_other": "totale per {{count}} notti"
     },
     "problem": {
+      "advance": "Queste date non si possono prenotare con questo anticipo.",
+      "arrivalClosed": "Gli arrivi sono chiusi il {{date}}.",
       "clearDates": "Cancella le date e ricomincia",
       "datesUnavailable": "Queste date non sono libere.",
+      "departureClosed": "Le partenze sono chiuse il {{date}}.",
       "extend_one": "Allunga fino a {{count}} notte",
       "extend_other": "Allunga fino a {{count}} notti",
       "firstFree": "Prime date libere: {{dates}}",
       "invalidStay": "Controlla le date: la partenza deve essere dopo l'arrivo.",
+      "maxNights": "Il soggiorno supera il massimo consentito per questo arrivo.",
+      "maxNights_one": "Il soggiorno massimo è di {{count}} notte.",
+      "maxNights_other": "Il soggiorno massimo è di {{count}} notti.",
       "minNights_one": "Il soggiorno minimo è di {{count}} notte.",
       "minNights_other": "Il soggiorno minimo è di {{count}} notti.",
       "notBookable": "Questa casa non è ancora prenotabile online.",
@@ -19318,7 +20201,11 @@
       "tooManyGuests_one": "Ospita al massimo {{count}} persona",
       "tooManyGuests_other": "Ospita al massimo {{count}} persone",
       "noPets": "Non accetta animali",
-      "notBookable": "Non prenotabile online"
+      "notBookable": "Non prenotabile online",
+      "advance": "Non prenotabile con questo anticipo",
+      "arrivalClosed": "Arrivi chiusi in questa data",
+      "departureClosed": "Partenze chiuse in questa data",
+      "maxNights": "Soggiorno troppo lungo per queste date"
     },
     "tags": {
       "mare": "Mare",
@@ -20284,6 +21171,7 @@
       "departureChosen": "partenza scelta",
       "freeNight": "notte libera",
       "legendBusy": "Occupata",
+      "legendClosedToArrival": "Arrivi chiusi",
       "legendFree": "Libera",
       "legendMine": "Le tue date",
       "loadError": "Non riusciamo a leggere le date libere.",
@@ -20299,6 +21187,9 @@
       "rangeTotal_other": "Arrivo {{checkIn}}, partenza {{checkOut}}: {{count}} notti, {{total}}.",
       "retry": "Riprova",
       "unknown": "non ancora disponibile"
+    },
+    "day": {
+      "closedToArrival": "arrivi chiusi"
     },
     "destination": {
       "all": "Tutte le destinazioni",
@@ -20321,8 +21212,13 @@
       "summaryWithPet": "{{people}} · con animale"
     },
     "problem": {
+      "advance": "Questo arrivo non si può prenotare con questo anticipo: scegli un altro giorno di arrivo.",
+      "arrivalClosed": "Gli arrivi sono chiusi il {{date}}: scegli un altro giorno di arrivo.",
       "busyArrival": "Il {{date}} è già occupato: scegli un altro giorno di arrivo.",
       "busyBetween": "Tra queste date ci sono notti già occupate: scegli una partenza prima, oppure un altro arrivo.",
+      "departureClosed": "Le partenze sono chiuse il {{date}}: scegli un altro giorno di partenza.",
+      "maxNights_one": "Il soggiorno massimo è di {{count}} notte: scegli una partenza entro il {{date}}.",
+      "maxNights_other": "Il soggiorno massimo è di {{count}} notti: scegli una partenza entro il {{date}}.",
       "minNights_one": "Il soggiorno minimo è di {{count}} notte: scegli una partenza dal {{date}} in poi.",
       "minNights_other": "Il soggiorno minimo è di {{count}} notti: scegli una partenza dal {{date}} in poi.",
       "past": "Questo giorno è già passato: scegli un altro giorno di arrivo.",

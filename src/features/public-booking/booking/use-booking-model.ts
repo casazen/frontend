@@ -5,7 +5,7 @@ import { useDirectBookingQuote } from '@/queries/use-public-booking';
 import { useStayState } from '@/features/public-site/stay/use-stay-state';
 import { usePublicPropertyCalendar } from '@/features/public-site/stay/use-public-calendar';
 import { buildCalendarIndex, minNightsAt, rangeProblem } from '@/features/public-site/stay/stay-calendar-model';
-import { problemOfCode, problemOfRange, type StayProblemKind } from '@/features/public-booking/booking/stay-exits';
+import { limitOfProblem, problemOfCode, problemOfRange, type StayProblemKind } from '@/features/public-booking/booking/stay-exits';
 import type { BookingModel, QuoteView } from '@/features/public-booking/booking/booking-context';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
@@ -41,12 +41,19 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   const nights = nightsBetween(stay.checkIn, stay.checkOut);
   const acceptsBookings = property.acceptsBookings !== false;
 
-  // What the calendar already says of the stay, so the server is not asked about dates that cannot be had.
-  const calendarProblem = useMemo<{ problem: StayProblemKind; minNights?: number } | null>(() => {
+  // What the calendar already says of the stay, so the server is not asked about dates that cannot be had: a taken night, and the rules
+  // of the host on the days (closed arrival or departure, the nights, the advance).
+  const calendarProblem = useMemo<{ problem: StayProblemKind; minNights?: number; maxNights?: number } | null>(() => {
     if (calendar.status !== 'ready' || nights <= 0) return null;
     const index = buildCalendarIndex(calendar.days, calendar.today, calendar.end);
-    const problem = problemOfRange(rangeProblem(index, stay.checkIn, stay.checkOut));
-    return problem ? { problem, minNights: problem === 'minNights' ? minNightsAt(index, stay.checkIn) : undefined } : null;
+    const found = rangeProblem(index, stay.checkIn, stay.checkOut);
+    const problem = problemOfRange(found);
+    if (!problem) return null;
+    return {
+      problem,
+      minNights: problem === 'minNights' ? minNightsAt(index, stay.checkIn) : undefined,
+      maxNights: found?.kind === 'maxNights' ? found.maxNights : undefined,
+    };
   }, [calendar.status, calendar.days, calendar.today, calendar.end, nights, stay.checkIn, stay.checkOut]);
 
   const overCapacity = problems.includes('overCapacity');
@@ -76,10 +83,18 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
     if (nights <= 0) return { status: 'none' };
     if (calendarProblem) return { status: 'problem', ...calendarProblem };
     if (query.isError) {
-      const code = isAxiosError(query.error) ? getProblemCode(query.error.response?.data) : undefined;
-      const problem = problemOfCode(code);
+      const body = isAxiosError(query.error) ? query.error.response?.data : undefined;
+      const problem = problemOfCode(getProblemCode(body));
       if (problem !== 'failed') {
-        return { status: 'problem', problem, minNights: property.minNights ?? undefined, maxGuests: property.maxGuests };
+        // A refusal for a rule of the nights carries the limit it broke (the minimum of the arrival date, the maximum): that completes the sentence.
+        const limit = limitOfProblem(body);
+        return {
+          status: 'problem',
+          problem,
+          minNights: (problem === 'minNights' ? limit : undefined) ?? property.minNights ?? undefined,
+          maxNights: problem === 'maxNights' ? limit : undefined,
+          maxGuests: property.maxGuests,
+        };
       }
       return {
         status: 'error',

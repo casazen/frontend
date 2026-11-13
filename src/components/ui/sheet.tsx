@@ -101,12 +101,16 @@ function SheetHandle({ onClose, className }: { onClose: () => void; className?: 
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> & { side?: 'left' | 'right' | 'bottom' }
->(({ side = 'left', className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> & {
+    side?: 'left' | 'right' | 'bottom';
+    /** `false` draws no dark layer over the page: a panel beside the content that stays in use (the days of the calendar), used with `modal={false}` on the `Sheet`. */
+    overlay?: boolean;
+  }
+>(({ side = 'left', overlay = true, className, children, ...props }, ref) => {
   const closeRef = React.useRef<HTMLButtonElement>(null);
   return (
     <SheetPortal>
-      <SheetOverlay data-sheet-overlay={side} className={cn(side === 'bottom' && 'bg-black/50')} />
+      {overlay ? <SheetOverlay data-sheet-overlay={side} className={cn(side === 'bottom' && 'bg-black/50')} /> : null}
       <SheetPrimitive.Content
         ref={ref}
         data-sheet-side={side}

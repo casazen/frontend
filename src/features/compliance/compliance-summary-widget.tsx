@@ -8,7 +8,10 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { ComplianceRow, ROW_BUTTON } from '@/features/compliance/components/compliance-row';
-import { focusToneOf, thenOf, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
+import { ComplianceSummaryLine } from '@/features/compliance/components/compliance-summary-line';
+import { ComplianceDrawerButton } from '@/features/compliance/compliance-drawer/compliance-drawer-button';
+import { useComplianceDrawerAvailable } from '@/features/compliance/compliance-drawer/use-compliance-drawer';
+import { focusBodyOf, focusToneOf, thenOf, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
 import { useCockpit } from '@/features/compliance/use-cockpit';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 
@@ -24,7 +27,13 @@ function Badge({ badge }: { badge: CockpitBadge }) {
 
 function CockpitRowItem({ row }: { row: CockpitRow }) {
   const { t } = useTranslation();
-  const urgent = row.tier === 'fine';
+  // What the law dates and is still to do is the urgent one: its icon takes the color of urgency and its button is the solid one. What is in
+  // hand (yellow) or done (green) is not.
+  const urgent = row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
+  // «Verifica nel tuo Cassetto Compliance»: for the rows whose outcome the server says is held by the connected area, where the connector is on.
+  const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
+  // The button of the row: where it goes, unless the row is only to read.
+  const link = row.quiet ? null : row.to;
   return (
     <ComplianceRow
       icon={row.icon}
@@ -33,18 +42,25 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
       to={row.quiet ? (row.to ?? undefined) : undefined}
       sub={row.sub}
       detail={row.detail}
+      light={row.light}
+      reason={row.reason}
       badge={row.badge ? <Badge badge={row.badge} /> : undefined}
       note={row.note ? <NoteLine note={row.note} /> : undefined}
       titleTestId={row.to || row.quiet ? undefined : `compliance-summary-${row.testKey}-item`}
       testId="compliance-summary-row"
       action={
-        row.to && !row.quiet ? (
-          // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
-          <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
-            <Link to={row.to} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
-              {row.cta}
-            </Link>
-          </Button>
+        link || drawer ? (
+          <>
+            {link ? (
+              // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
+              <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
+                <Link to={link} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
+                  {row.cta}
+                </Link>
+              </Button>
+            ) : null}
+            {drawer ? <ComplianceDrawerButton target={drawer} subject={row.subject} className={ROW_BUTTON} testId={`compliance-summary-${row.testKey}-drawer`} /> : null}
+          </>
         ) : undefined
       }
     />
@@ -62,18 +78,35 @@ function RowList({ rows }: { rows: readonly CockpitRow[] }) {
   );
 }
 
+/** A line that opens a list kept out of the way ("3 case in regola"): a button of 44 px, the list under it. */
+function Disclosure({ id, label, open, onToggle, testId, children }: { id: string; label: string; open: boolean; onToggle: () => void; testId: string; children: React.ReactNode }) {
+  return (
+    <div data-testid={testId}>
+      <Button type="button" variant="ghost" size="sm" className="h-auto min-h-11 gap-1.5 px-2 text-foreground/80" aria-expanded={open} aria-controls={id} onClick={onToggle}>
+        {open ? <ChevronDown aria-hidden="true" className="size-4" /> : <ChevronRight aria-hidden="true" className="size-4" />}
+        {label}
+      </Button>
+      {open ? <div id={id}>{children}</div> : null}
+    </div>
+  );
+}
+
 /**
- * What the host still has to do, on the page `/compliance`, in three levels that do not weigh the same (the Home no longer carries
- * it as a list): the one thing to do first in the block on top, then what the law dates (the Alloggiati Web communications and the
- * guest data they need: red, with its deadline in words, never cut, the nearest first), then what keeps a property from starting (the
- * activation, calm: without it the property just does not work), then the upkeep of the stays that are over. The properties in order
- * stay behind one line. Everything comes from `GET api/compliance/summary`.
+ * "Sono in regola?", on the page `/compliance`: first the answer in one line («5 cose da fare: 3 da sistemare, 2 in corso», from the lights
+ * the API sends; with nothing to do the block «Sei in regola» it always had, and no new green line: green is what the server proves), then the
+ * one thing to do first in the block on top, then what is still to do in three levels that
+ * do not weigh the same: what the law dates (the Alloggiati Web communications and the guest data they need, ISTAT, the tourist tax: red,
+ * with its deadline in words, never cut, the nearest first), what keeps a property from starting (the activation, calm: without it the
+ * property just does not work), and the upkeep of the stays. Inside a level the rows are red first, then yellow, then what has no light
+ * («da verificare»); what the API says is in order (green) is behind one line, as are the properties in order. Everything comes from
+ * `GET api/compliance/summary`.
  */
 export function ComplianceSummaryWidget() {
   const { t } = useTranslation();
   const { model, summary } = useCockpit({ freshProperties: true });
   const [showAllStart, setShowAllStart] = useState(false);
   const [showAllChore, setShowAllChore] = useState(false);
+  const [showGreen, setShowGreen] = useState(false);
   const [showActive, setShowActive] = useState(false);
 
   if (!model) {
@@ -100,12 +133,14 @@ export function ComplianceSummaryWidget() {
 
   return (
     <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
+      {model.total > 0 ? <ComplianceSummaryLine lights={model.lights} /> : null}
+
       {focus?.to ? (
         <FocusBlock
           tone={focusToneOf(focus)}
           kicker={t(`compliance.cockpit.kicker.${focus.tier}`)}
           title={focus.title}
-          body={[focus.sub, focus.detail].filter(Boolean).join(' · ') || undefined}
+          body={focusBodyOf(focus)}
           when={focus.note?.text}
           then={thenOf(model, focus, t)}
           primary={{ label: focus.cta, href: focus.to, ariaLabel: `${focus.cta}: ${focus.subject}`, testId: 'compliance-summary-focus-cta' }}
@@ -159,26 +194,32 @@ export function ComplianceSummaryWidget() {
         </PlainSection>
       ) : null}
 
+      {model.green.length > 0 ? (
+        <Disclosure
+          id="compliance-green-rows"
+          testId="compliance-summary-green"
+          label={t('compliance.cockpit.green.toggle', { count: model.green.length })}
+          open={showGreen}
+          onToggle={() => setShowGreen((value) => !value)}
+        >
+          <div data-testid="compliance-summary-green-section">
+            <RowList rows={model.green} />
+          </div>
+        </Disclosure>
+      ) : null}
+
       {model.activeProperties.length > 0 ? (
-        <div data-testid="compliance-summary-active">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-auto min-h-11 gap-1.5 px-2 text-foreground/80"
-            aria-expanded={showActive}
-            aria-controls="compliance-active-properties"
-            onClick={() => setShowActive((value) => !value)}
-          >
-            {showActive ? <ChevronDown aria-hidden="true" className="size-4" /> : <ChevronRight aria-hidden="true" className="size-4" />}
-            {t('compliance.cockpit.active.toggle', { count: model.activeProperties.length })}
-          </Button>
-          {showActive ? (
-            <div id="compliance-active-properties" data-testid="compliance-summary-properties-section">
-              <RowList rows={model.activeProperties} />
-            </div>
-          ) : null}
-        </div>
+        <Disclosure
+          id="compliance-active-properties"
+          testId="compliance-summary-active"
+          label={t('compliance.cockpit.active.toggle', { count: model.activeProperties.length })}
+          open={showActive}
+          onToggle={() => setShowActive((value) => !value)}
+        >
+          <div data-testid="compliance-summary-properties-section">
+            <RowList rows={model.activeProperties} />
+          </div>
+        </Disclosure>
       ) : null}
     </div>
   );

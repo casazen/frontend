@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import {
   completeCheckoutWizard,
   completeComplianceActivation,
@@ -12,16 +12,19 @@ import {
   saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
+import { summarizeLights } from '@/features/compliance/lib/compliance-light';
 import { fineCount } from '@/features/compliance/lib/compliance-tiers';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type {
   CheckoutWizardCompleteCommand,
   CheckoutWizardProgressCommand,
   CompletePropertyActivationCommand,
+  ComplianceSummaryResult,
   SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 
 export const COMPLIANCE_KEY = 'compliance';
 
@@ -104,19 +107,73 @@ export function useComplianceSummary() {
 /** How long the number on the menu is trusted before it is read again: the page itself always reads again when it opens. */
 const FINE_COUNT_STALE_MS = 60_000;
 
+/** The summary as the counters of the menu and of the Home read it: the cache entry of the page, trusted for a minute. */
+function useCountedSummary(enabled: boolean) {
+  return useQuery({
+    queryKey: [COMPLIANCE_KEY, 'summary'],
+    queryFn: fetchComplianceSummary,
+    enabled,
+    staleTime: FINE_COUNT_STALE_MS,
+  });
+}
+
 /**
  * How many things carry a risk of a sanction (`fineCount`): the number on the menu entry «Adempimenti» and the reason of the block
  * of the Home. It is the summary the page reads, in the same cache entry, so opening the page shows what the menu counted. A counter is
  * a hint: while it loads, when it fails or when the server answers something that is not the summary, there is no number.
  */
 export function useComplianceFineCount(enabled: boolean): number | undefined {
-  const query = useQuery({
+  const query = useCountedSummary(enabled);
+  return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
+}
+
+/**
+ * Whether the server sends the traffic light (NF-52): some item of the summary carries a light this version knows. With it the compliance
+ * reaches the «Adesso» block of the Home through the unified «Da fare» (the feeder keeps that list in step with the cockpit), so the Home does not
+ * hold a second block for it; without it (an older server, or the traffic light off) the Home is what it always was. False while it loads and when it fails.
+ */
+export function useComplianceLightsOn(enabled: boolean): boolean {
+  const query = useCountedSummary(enabled);
+  return enabled && query.data && typeof query.data === 'object' ? summarizeLights(query.data).lightsOn : false;
+}
+
+/**
+ * The lights of the stay or the property that a card of «Cosa succede ora» shows (NF-52, AC-NF52-9): the summary of the adempimenti, read again
+ * every time the page opens (the lights move with the clock and with what happens elsewhere, and the open page is kept in step by the live events
+ * that refresh the cockpit). `enabled` is the permission to read the bookings, which the API asks: a bare 403 on a GET would take the user to
+ * «nessun accesso». It never retries: the card does not wait for a second answer, and a read that failed says nothing (never green).
+ */
+export function useComplianceLights(enabled: boolean) {
+  return useQuery({
     queryKey: [COMPLIANCE_KEY, 'summary'],
     queryFn: fetchComplianceSummary,
     enabled,
-    staleTime: FINE_COUNT_STALE_MS,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    retry: false,
   });
-  return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
+}
+
+/** The read of the lights that a card holds: only what the helpers below need of it. */
+type LightsRead = Pick<UseQueryResult<ComplianceSummaryResult>, 'data' | 'error' | 'isError'>;
+
+/**
+ * Whether the summary is not there at all (a 404: the traffic light is off). The card is then what it always was, and an old answer left in the cache
+ * by the query is not an answer (TanStack Query keeps the data of a read that fails).
+ */
+const lightsAreOff = (read: LightsRead): boolean => read.isError && getHttpStatus(read.error) === 404;
+
+/** The summary a card reads its lines from: none when the lights are off, whatever the cache still holds. */
+export function lightsOf(read: LightsRead): ComplianceSummaryResult | undefined {
+  return lightsAreOff(read) ? undefined : read.data;
+}
+
+/**
+ * Whether a card could not read the lights and has to say so: the read failed with a 5xx, the network or a 403, which is «non lo so» and never
+ * «tutto in ordine». A 404 is the traffic light off: the card is what it was.
+ */
+export function lightsCouldNotBeRead(read: LightsRead): boolean {
+  return read.isError && !lightsAreOff(read);
 }
 
 const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];
@@ -169,24 +226,41 @@ export function useCheckoutWizard(bookingId: string, enabled = true) {
 }
 
 /**
- * Saves the progress of the wizard as the host moves between the steps (CO-17): the answer replaces the cached start,
- * so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
+ * Saves the progress of the wizard as the host moves between the steps and when it leaves with "Save and exit" (CO-17): the answer replaces
+ * the cached start, so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
+ *
+ * The answers hold free notes about the stay, so the mutation is dropped as soon as nothing observes it (`gcTime: 0`, not five minutes in the
+ * cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer stay).
  */
 export function useSaveCheckoutProgress(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CheckoutWizardProgressCommand) => saveCheckoutProgress(bookingId, payload),
+    gcTime: 0,
+    mutationFn: async (payload: CheckoutWizardProgressCommand) => {
+      try {
+        return await saveCheckoutProgress(bookingId, payload);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (state) => queryClient.setQueryData(checkoutStartKey(bookingId), state),
   });
 }
 
+/** Closes the stay with the answers of the wizard; kept like the progress (`gcTime: 0`, a refusal without its request). */
 export function useCompleteCheckoutWizard(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CheckoutWizardCompleteCommand) =>
-      completeCheckoutWizard(bookingId, payload),
+    gcTime: 0,
+    mutationFn: async (payload: CheckoutWizardCompleteCommand) => {
+      try {
+        return await completeCheckoutWizard(bookingId, payload);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (result) => {
       // The cockpit changes; the wizard start of this stay is never fetched again (it would answer 409 now).
       queryClient.setQueryData([COMPLIANCE_KEY, 'checkout-state', bookingId], result.wizard);

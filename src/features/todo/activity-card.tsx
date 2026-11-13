@@ -9,6 +9,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { cn } from '@/lib/utils';
 import { useCloseActivity } from '@/queries/internalActivities';
 import { describeTodo } from './lib/todo-model';
@@ -135,6 +136,30 @@ export const ACTION_ROUTE_MAP = {
   // host, where the documents are. The page that lists them (E06/F03/US04/T01) replaces this entry when it exists, as the notes above say.
   ReviewFiscalDocument: {
     route: { path: '/app/short-rent/fiscal' },
+  },
+  // The actions the traffic light of the cockpit raises (E03/F02/US01/T03, NF-52): the feeder opens a "To do" for each red or yellow item, with the
+  // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
+  // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
+  // - `SendAlloggiatiManually`: the Alloggiati section of the booking (the item is about the stay);
+  // - `ActivateOctorateSend`: the page of the property, on the section of its connection health (the police send is the property's);
+  // - `EnterMunicipalityTaxRate`: the page of the property (the tourist tax rate is the property's; no page enters it yet);
+  // - `RenewPoliceCredentials`: the Alloggiati dashboard;
+  // - `DeclareTouristTax`: the archive of the proofs, on the tax declaration of the property (the month is in the entity type of the item,
+  //   `PropertyPeriod:yyyy-MM`; the archive reads `kind` and `property` from the address).
+  SendAlloggiatiManually: {
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'alloggiati' },
+  },
+  ActivateOctorateSend: {
+    route: { path: '/app/short-rent/properties/:id', target: 'property', search: { section: CONNECTION_HEALTH_SECTION } },
+  },
+  RenewPoliceCredentials: {
+    route: { path: '/app/short-rent/alloggiati' },
+  },
+  EnterMunicipalityTaxRate: {
+    route: { path: '/app/short-rent/properties/:id', target: 'property' },
+  },
+  DeclareTouristTax: {
+    route: { path: '/app/short-rent/alloggiati/reports', propertyParam: 'property', search: { kind: 'TouristTaxDeclaration' } },
   },
 } satisfies Record<string, TodoActionTarget>;
 
