@@ -58,6 +58,15 @@ const answer = (items: PaymentLedgerLine[], totalCount = items.length, page = 1)
 const statusError = (status: number) =>
   new AxiosError('failed', 'ERR_BAD_RESPONSE', undefined, undefined, { status, statusText: '', data: {}, headers: {}, config: {} as never });
 
+/** A read that stays open until the test answers it: what the screen shows while it waits is what is looked at. */
+function pending<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 function Where() {
   return createElement('output', { 'data-testid': 'search' }, useLocation().search);
 }
@@ -179,6 +188,59 @@ describe('PaymentLedgerPeriod, the days and the pages', () => {
 
     await waitFor(() => expect(listLedger).toHaveBeenLastCalledWith({ from: '2026-10-01', to: '2026-10-31' }, 1, 20));
     expect(await screen.findByText('Pagina 1 di 3')).toBeInTheDocument();
+  });
+
+  it('PaymentLedgerPeriod_AnotherPeriodStillBeingRead_ShowsNoLineOfTheEarlierPeriodAndThenOnlyTheLinesOfTheNewOne', async () => {
+    // Data rule: the lines of November are never drawn under the days of October while October is still being read (money of one period read as the money of another).
+    const october = pending<PaymentLedgerPage>();
+    vi.mocked(listLedger).mockResolvedValueOnce(answer([line({ paymentId: 'nov', gross: 111.11 })])).mockImplementationOnce(() => october.promise);
+    renderPage();
+    await screen.findByTestId('payments-list');
+    await openLedger();
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(within(rows()[0]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^111,11\s€$/);
+
+    fireEvent.change(screen.getByTestId('payment-ledger-from'), { target: { value: '2026-10-01' } });
+
+    await waitFor(() => expect(listLedger).toHaveBeenLastCalledWith({ from: '2026-10-01', to: '2026-11-30' }, 1, 20));
+    // The new read has not answered: no row, no figure and no count of the earlier period (table and cards alike), a placeholder is read out instead.
+    const table = screen.getByTestId('payment-ledger-period-table');
+    expect(within(table).queryAllByTestId('payment-ledger-row')).toHaveLength(0);
+    expect(within(table).queryByText(/111,11/)).toBeNull();
+    expect(screen.queryByTestId('payment-ledger-count')).toBeNull();
+    expect(within(table).getAllByRole('status').length).toBeGreaterThan(0);
+
+    await act(async () => {
+      october.resolve(answer([line({ paymentId: 'oct', gross: 222.22 })]));
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(within(rows()[0]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^222,22\s€$/);
+    expect(screen.queryByText(/111,11/)).toBeNull();
+  });
+
+  it('PaymentLedgerPeriod_TheNextPageOfTheSamePeriod_StaysOnTheEarlierPageUntilTheNewOneIsThere', async () => {
+    // The other side of the rule above: for the same days the page before stays, quieter, so that the table does not flash.
+    const next = pending<PaymentLedgerPage>();
+    vi.mocked(listLedger).mockResolvedValueOnce(answer([line({ paymentId: 'p-1', gross: 111.11 })], 45, 1)).mockImplementationOnce(() => next.promise);
+    renderPage();
+    await screen.findByTestId('payments-list');
+    await openLedger();
+    await screen.findByText('Pagina 1 di 3');
+
+    fireEvent.click(screen.getByRole('button', { name: /Successiva/ }));
+
+    await waitFor(() => expect(listLedger).toHaveBeenLastCalledWith({ from: '2026-11-01', to: '2026-11-30' }, 2, 20));
+    expect(rows()).toHaveLength(1);
+    expect(within(rows()[0]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^111,11\s€$/);
+    expect(screen.getByTestId('payment-ledger-period-table')).toHaveAttribute('aria-busy', 'true');
+
+    await act(async () => {
+      next.resolve(answer([line({ paymentId: 'p-21', gross: 222.22 })], 45, 2));
+    });
+
+    await waitFor(() => expect(within(rows()[0]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^222,22\s€$/));
+    expect(screen.getByTestId('payment-ledger-period-table')).not.toHaveAttribute('aria-busy');
   });
 
   it('PaymentLedgerPeriod_TheFirstDayAfterTheLast_SaysSoAndAsksNothingAndShowsNothingOfTheEarlierPeriod', async () => {
