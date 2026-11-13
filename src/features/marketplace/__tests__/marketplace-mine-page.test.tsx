@@ -350,6 +350,28 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(groups[1]).toHaveAttribute('data-testid', 'marketplace-health-property-prop-2');
     expect(within(groups[1] as HTMLElement).queryAllByRole('listitem')).toHaveLength(0);
     expect(screen.getByTestId('marketplace-health-property-prop-2-calm')).toHaveTextContent('2 integrazioni attive, nessun problema segnalato.');
+    // As of when it is said: the last check (Europe/Rome), for the problem and for the calm line.
+    expect(screen.getByTestId('marketplace-health-property-prop-2-checked')).toHaveTextContent('Ultimo controllo: 12 novembre 2026');
+    expect(screen.getByTestId('marketplace-health-property-prop-2-checked')).toHaveTextContent('15:05');
+    expect(screen.getByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1-sync')).toHaveTextContent('15:05');
+  });
+
+  it('MarketplaceMinePage_CalmLine_SaysHowManyWereNeverChecked_NotJustThatNothingIsWrong', async () => {
+    api.getMarketplaceActive.mockResolvedValue({ integrations: [row(), row({ code: 'PORTAL2', name: 'TEST Two' })], providers: [] });
+    api.getMarketplaceHealth.mockResolvedValue(items(item(), item({ activationId: 'a2', code: 'PORTAL2', name: 'TEST Two', lastSyncedAt: null })));
+    renderPage();
+
+    const checked = await screen.findByTestId('marketplace-health-property-prop-1-checked');
+    expect(checked).toHaveTextContent('Ultimo controllo: 12 novembre 2026');
+    expect(checked).toHaveTextContent('1 non è ancora stata controllata.');
+    cleanup();
+
+    // None was ever read: no date is made up.
+    api.getMarketplaceHealth.mockResolvedValue(items(item({ lastSyncedAt: null }), item({ activationId: 'a2', code: 'PORTAL2', name: 'TEST Two', lastSyncedAt: null })));
+    renderPage();
+    const never = await screen.findByTestId('marketplace-health-property-prop-1-checked');
+    expect(never).toHaveTextContent('2 non sono ancora state controllate.');
+    expect(never).not.toHaveTextContent('Ultimo controllo');
   });
 
   it('MarketplaceMinePage_WaitingIntegration_IsNeverCountedAsWorking', async () => {

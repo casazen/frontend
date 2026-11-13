@@ -13260,6 +13260,7 @@
     "health": {
       "calm_one": "{{count}} integrazione attiva, nessun problema segnalato.",
       "calm_other": "{{count}} integrazioni attive, nessun problema segnalato.",
+      "checked": "Ultimo controllo: {{when}}.",
       "description": "Come stanno i collegamenti, in base all'ultimo controllo di CasaZen.",
       "details": "Dettagli",
       "detailsAria": "Dettagli di {{name}}",
@@ -13269,6 +13270,8 @@
       "forbidden": "Non hai il permesso di vedere lo stato dei collegamenti.",
       "loadError": "Non riesco a leggere lo stato dei collegamenti.",
       "loading": "Leggo lo stato dei collegamenti…",
+      "neverChecked_one": "{{count}} non è ancora stata controllata.",
+      "neverChecked_other": "{{count}} non sono ancora state controllate.",
       "notFound": "Lo stato dei collegamenti non è disponibile.",
       "others_one": "Un'altra integrazione attiva non ha problemi segnalati.",
       "others_other": "Altre {{count}} integrazioni attive non hanno problemi segnalati.",

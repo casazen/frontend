@@ -148,6 +148,28 @@ export function groupHealthByProperty(items: readonly MarketplaceHealthItem[]): 
   });
 }
 
+/**
+ * As of when a group of integrations says what it says: the oldest last sync among them (the whole group was read at least then), and how many were never read. A «no problem
+ * reported» that nobody has looked at for days is not the same as one read a minute ago, and one that was never read says nothing at all.
+ */
+export function checkedOf(items: ReadonlyArray<Pick<MarketplaceHealthItem, 'lastSyncedAt'>>): { oldest: string | null; never: number } {
+  let oldest: string | null = null;
+  let oldestTime = Number.POSITIVE_INFINITY;
+  let never = 0;
+
+  for (const item of items) {
+    const time = item.lastSyncedAt ? Date.parse(item.lastSyncedAt) : Number.NaN;
+    if (Number.isNaN(time)) {
+      never += 1;
+    } else if (time < oldestTime) {
+      oldest = item.lastSyncedAt;
+      oldestTime = time;
+    }
+  }
+
+  return { oldest, never };
+}
+
 /** The quota of the channel manager's API: it is the same on every row, so the first one read (the latest, if rows ever differ). `null` until a sync read it. */
 export function quotaOf(items: readonly MarketplaceHealthItem[]): MarketplaceQuota | null {
   let latest: MarketplaceQuota | null = null;

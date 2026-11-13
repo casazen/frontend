@@ -11,6 +11,7 @@ import type { useMarketplaceHealth } from '@/queries/use-marketplace';
 import type { MarketplaceHealthItem, MarketplaceQuota } from '@/types';
 import {
   badgeStatusOf,
+  checkedOf,
   fixPathOf,
   formatInstant,
   groupHealthByProperty,
@@ -69,12 +70,13 @@ interface ProblemRowProps {
   mayFix: (kind: string) => boolean;
 }
 
-/** An integration with a problem: what it is, where it stands, the problem in the words the server sent, and the two things to do about it: fix it, or read its card. */
+/** An integration with a problem: what it is, where it stands, the problem in the words the server sent, when it was last read, and the two things to do about it: fix it, or read its card. */
 function ProblemRow({ item, mayFix }: ProblemRowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const openDetails = useOpenEntryDetails();
   const testId = `marketplace-health-problem-${item.kind}-${item.code}-${item.propertyId ?? 'org'}`;
+  const lastSync = formatInstant(item.lastSyncedAt, i18n.language);
   const property = item.propertyId ? { id: item.propertyId, name: item.propertyName ?? '' } : null;
   const fixTo = mayFix(item.kind) ? fixPathOf({ kind: item.kind, code: item.code, property }, marketplaceReturnTarget(location)) : null;
 
@@ -87,6 +89,9 @@ function ProblemRow({ item, mayFix }: ProblemRowProps) {
         </div>
         <p className="break-words text-sm text-[color:var(--color-danger-foreground,#b4232a)]" data-testid={`${testId}-error`}>
           {item.error ? item.error.message || translateErrorCode(item.error.code, t) || t('marketplace.mine.card.errorGeneric') : t('marketplace.health.toFixNoDetail')}
+        </p>
+        <p className="text-sm text-foreground/70" data-testid={`${testId}-sync`}>
+          {lastSync ? t('marketplace.mine.card.lastSync', { when: lastSync }) : t('marketplace.mine.card.neverSynced')}
         </p>
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -117,8 +122,11 @@ function ProblemRow({ item, mayFix }: ProblemRowProps) {
  * the integrations that are active: what waits is counted as waiting, never as working.
  */
 function PropertyGroup({ group, mayFix }: { group: PropertyHealth; mayFix: (kind: string) => boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const name = group.propertyName ?? t('marketplace.mine.card.wholeOrganization');
+  // As of when «no problem reported» is said: the oldest read among the integrations it is said of, and how many were never read.
+  const { oldest, never } = checkedOf(group.fine);
+  const checked = formatInstant(oldest, i18n.language);
   const calm =
     group.problems.length > 0
       ? group.fine.length > 0
@@ -141,6 +149,13 @@ function PropertyGroup({ group, mayFix }: { group: PropertyHealth; mayFix: (kind
       {calm ? (
         <p className="text-sm text-foreground/70" data-testid={`marketplace-health-property-${group.key}-calm`}>
           {calm}
+        </p>
+      ) : null}
+      {group.fine.length > 0 && (checked || never > 0) ? (
+        <p className="text-xs text-muted-foreground" data-testid={`marketplace-health-property-${group.key}-checked`}>
+          {checked ? t('marketplace.health.checked', { when: checked }) : null}
+          {checked && never > 0 ? ' ' : null}
+          {never > 0 ? t('marketplace.health.neverChecked', { count: never }) : null}
         </p>
       ) : null}
       {group.waiting.length > 0 ? (

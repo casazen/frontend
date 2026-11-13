@@ -3,6 +3,7 @@ import type { MarketplaceActiveIntegration, MarketplaceHealthItem } from '@/type
 import {
   activationKeyOf,
   buildActiveRows,
+  checkedOf,
   fixPathOf,
   formatDeclaredDay,
   formatInstant,
@@ -144,6 +145,24 @@ describe('groupHealthByProperty', () => {
     expect(group.problems.map((entry) => entry.activationId)).toEqual(['c', 'b']);
     expect(group.waiting.map((entry) => entry.activationId)).toEqual(['d']);
     expect(group.fine.map((entry) => entry.activationId)).toEqual(['a']);
+  });
+});
+
+describe('checkedOf', () => {
+  it('checkedOf_TheOldestReadAmongThem_AndHowManyWereNeverRead', () => {
+    expect(
+      checkedOf([
+        { lastSyncedAt: '2026-11-12T14:05:00Z' },
+        { lastSyncedAt: '2026-11-10T09:00:00.500Z' },
+        { lastSyncedAt: null },
+        { lastSyncedAt: '2026-11-11T09:00:00Z' },
+      ]),
+    ).toEqual({ oldest: '2026-11-10T09:00:00.500Z', never: 1 });
+  });
+
+  it('checkedOf_NoneRead_HasNoDate_AndNothingIsInventedForAnEmptyGroup', () => {
+    expect(checkedOf([{ lastSyncedAt: null }, { lastSyncedAt: 'not a date' }])).toEqual({ oldest: null, never: 2 });
+    expect(checkedOf([])).toEqual({ oldest: null, never: 0 });
   });
 });
 

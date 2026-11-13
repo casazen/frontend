@@ -13260,6 +13260,7 @@
     "health": {
       "calm_one": "{{count}} active integration, no problem reported.",
       "calm_other": "{{count}} active integrations, no problem reported.",
+      "checked": "Last check: {{when}}.",
       "description": "How the connections are doing, as of CasaZen's last check.",
       "details": "Details",
       "detailsAria": "Details of {{name}}",
@@ -13269,6 +13270,8 @@
       "forbidden": "You do not have permission to see the state of the connections.",
       "loadError": "I cannot read the state of the connections.",
       "loading": "Reading the state of the connections…",
+      "neverChecked_one": "{{count}} has not been checked yet.",
+      "neverChecked_other": "{{count}} have not been checked yet.",
       "notFound": "The state of the connections is not available.",
       "others_one": "One other active integration has no problem reported.",
       "others_other": "{{count}} other active integrations have no problem reported.",
