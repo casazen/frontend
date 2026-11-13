@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { verificationApi } from '@/api/verification.api';
+import { VERIFICATION_KEY } from '@/queries/verification';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { PendingVerification, VerificationMetrics } from '@/types/verification.types';
 import { VerificationQueuePage } from '../VerificationQueuePage';
@@ -248,6 +249,34 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
     expect(screen.queryByTestId('verification-metric-ok')).not.toBeInTheDocument();
     // The queue is still usable.
     expect(screen.getByText('Villa Demo')).toBeInTheDocument();
+  });
+
+  it('VerificationQueuePage_MetricsReadAgainAndTheReadFails_SaysSoAndDoesNotKeepTheOldFiguresAsIfTheyWereCurrent', async () => {
+    const { client } = renderPage();
+    await waitFor(() => expect(screen.getByTestId('verification-metric-ok')).toHaveTextContent('12'));
+    expect(screen.getByTestId('verification-metrics')).toHaveTextContent(/15 set/);
+
+    // A live event (or a decision) makes the queue and the figures be read again, and this time the figures cannot be read.
+    vi.mocked(verificationApi.getMetrics).mockRejectedValue(httpError(400));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: [VERIFICATION_KEY] });
+    });
+
+    // TanStack keeps the data of the first read on the error: they must not stay on the card with the period as if they were current.
+    const unavailable = await screen.findByTestId('verification-metrics-error');
+    expect(unavailable).toHaveTextContent(i18n.t('verification.metrics.unavailable'));
+    expect(screen.queryByTestId('verification-metric-ok')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('verification-metric-operator-share')).not.toBeInTheDocument();
+    expect(screen.getByTestId('verification-metrics')).not.toHaveTextContent(/15 set/);
+    // The queue is still usable.
+    expect(screen.getByText('Villa Demo')).toBeInTheDocument();
+
+    // Trying again brings the figures back.
+    vi.mocked(verificationApi.getMetrics).mockResolvedValue({ ...metrics, ok: 13 });
+    fireEvent.click(within(unavailable).getByRole('button', { name: i18n.t('verification.metrics.retry') }));
+
+    await waitFor(() => expect(screen.getByTestId('verification-metric-ok')).toHaveTextContent('13'));
+    expect(screen.queryByTestId('verification-metrics-error')).not.toBeInTheDocument();
   });
 
   it('VerificationQueuePage_QueueCannotBeRead_ShowsTheErrorNotAnEmptyQueue', async () => {

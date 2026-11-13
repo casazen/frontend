@@ -21,7 +21,8 @@ function Figure({ label, value, hint, testId }: { label: string; value: string; 
 /**
  * The monitoring of the identity verifications (NF-51): how many passed on their own, how many went to a person and how many did not pass, and
  * the share of the concluded verifications that an operator concluded. A quiet summary above the queue, which stays the main block of the page.
- * The figures of the last 30 days for the properties the operator reaches; a figure that could not be read is said, never shown as a zero.
+ * The figures of the last 30 days for the properties the operator reaches; a figure that could not be read is said, never shown as a zero, and a
+ * read that failed after an earlier one that worked hides the old figures (TanStack keeps the data of an error: they would pass for current).
  */
 export function VerificationMetricsCard() {
   const { t, i18n } = useTranslation();
@@ -35,7 +36,7 @@ export function VerificationMetricsCard() {
     <Card data-testid="verification-metrics">
       <CardHeader className="pb-3">
         <h2 className="text-base font-semibold leading-none tracking-tight">{t('verification.metrics.title')}</h2>
-        {data && (
+        {data && !isError && (
           <CardDescription>{t('verification.metrics.period', { from: day(data.from), to: day(data.to) })}</CardDescription>
         )}
       </CardHeader>
@@ -45,7 +46,7 @@ export function VerificationMetricsCard() {
             {t('verification.metrics.loading')}
           </p>
         )}
-        {isError && !data && (
+        {isError && (
           <div className="flex flex-wrap items-center gap-3" data-testid="verification-metrics-error">
             <p className="text-sm text-muted-foreground" role="status">
               {t('verification.metrics.unavailable')}
@@ -55,7 +56,7 @@ export function VerificationMetricsCard() {
             </Button>
           </div>
         )}
-        {data && (
+        {data && !isError && (
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Figure label={t('verification.metrics.ok')} value={String(data.ok)} testId="verification-metric-ok" />
             <Figure label={t('verification.metrics.review')} value={String(data.review)} testId="verification-metric-review" />
