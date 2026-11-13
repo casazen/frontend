@@ -404,8 +404,8 @@ function SenderWizardLoader({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const sender = useSender(propertyId);
 
-  // A 404 is «not found» whatever the cache still holds of an older read (the query keeps the last data on an error).
-  if (sender.isError && getHttpStatus(sender.error) === 404) {
+  // A 404 is «not found» whatever the cache still holds of an older read (the query keeps the last data on an error); so is a property the caller does not reach (its read answers `null`).
+  if ((sender.isError && getHttpStatus(sender.error) === 404) || sender.data === null) {
     return (
       <EmptyState
         icon={Home}

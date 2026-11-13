@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
@@ -200,6 +200,30 @@ describe('SenderWizardPage: the way into the wizard', () => {
   it('SenderWizardPage_PropertyThatIsNotFound_IsSaidNotFoundAndNeverAWizard', async () => {
     vi.mocked(propertySenderApi.get).mockRejectedValue(problem(404, { code: 'property_not_found' }));
     renderWizard();
+
+    expect(await screen.findByText(text('compliance.sender.notFound.title'))).toBeInTheDocument();
+    expect(screen.queryByTestId('sender-wizard')).not.toBeInTheDocument();
+  });
+
+  it('SenderWizardPage_PropertyTheCallerDoesNotReach_IsSaidNotFoundAndNeverAWizard', async () => {
+    // A property of the organization outside the reach of the caller answers 403 to the read, which the API turns into `null`: «not found», never the no-access page, never a wizard.
+    vi.mocked(propertySenderApi.get).mockResolvedValue(null);
+    renderWizard();
+
+    expect(await screen.findByText(text('compliance.sender.notFound.title'))).toBeInTheDocument();
+    expect(screen.queryByTestId('sender-wizard')).not.toBeInTheDocument();
+    expect(wizardDraftApi.get).not.toHaveBeenCalled();
+  });
+
+  it('SenderWizardPage_ReadThatAnswers404AfterAGoodOne_IsNotFoundWhateverTheCacheStillHolds', async () => {
+    const { client } = await open();
+    expect(wizard()).toBeInTheDocument();
+
+    // The property is gone (or no longer the caller's): the query keeps the last good answer next to the error, and the page does not show it.
+    vi.mocked(propertySenderApi.get).mockRejectedValue(problem(404, { code: 'property_not_found' }));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['property-sender', PROPERTY_ID] });
+    });
 
     expect(await screen.findByText(text('compliance.sender.notFound.title'))).toBeInTheDocument();
     expect(screen.queryByTestId('sender-wizard')).not.toBeInTheDocument();

@@ -1,3 +1,4 @@
+import axios from '@/lib/axios';
 import { ApiClient } from './client';
 import type { PropertySender, SenderConnectionTest, SwitchSenderRequest } from '@/types';
 
@@ -9,8 +10,16 @@ const senderPath = (propertyId: string) => `/properties/${encodeURIComponent(pro
  * and hold no credential: the Questura credentials are only said to exist.
  */
 export const propertySenderApi = {
-  /** `GET /properties/{id}/sender`: the sender, its state, how it is known, who can be chosen and the version of the delegation text to accept. 404 `property_not_found`. */
-  get: (propertyId: string) => ApiClient.get<PropertySender>(senderPath(propertyId)),
+  /**
+   * `GET /properties/{id}/sender`: the sender, its state, how it is known, who can be chosen and the version of the delegation text to accept. 404 `property_not_found` (throws). A property of
+   * the organization that the caller does not reach answers 403 with no code (`PropertySenderController`): it resolves to `null`, which the wizard says as «not found» (nothing is said of a
+   * property the person cannot see), instead of throwing, because a 403 on a read makes the shared axios client send the whole app to the no-access page. A 403 `account_inactive` or
+   * `onboarding_required` is not routed from this one read either; the page's other reads raise it.
+   */
+  get: async (propertyId: string): Promise<PropertySender | null> => {
+    const response = await axios.get<PropertySender>(senderPath(propertyId), { validateStatus: (status) => (status >= 200 && status < 300) || status === 403 });
+    return response.status === 403 ? null : response.data;
+  },
 
   /**
    * `PUT /properties/{id}/sender`: changes the sender. 409 `sender_switch_confirmation_required` (the problem carries `currentSender` and `newSender`) without

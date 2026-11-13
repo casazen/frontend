@@ -13,7 +13,8 @@ const senderKey = (propertyId: string) => [PROPERTY_SENDER_KEY, propertyId] as c
  * The sender of a property (E03/F01/US02/T01). It is read again every time the wizard opens (the host may have changed it on another screen or in the channel
  * manager) and a read less than half a minute old is fresh; a return to the tab does not read it again, because for a channel-manager property each read asks
  * the channel manager (bounded in time): the steps ask again when they need to. `enabled` is false for who may not read the property: nothing is asked then.
- * What an error leaves in the cache is not an answer: the screens look at the error first (a 404 is «not found» whatever the cache still holds).
+ * What an error leaves in the cache is not an answer: the screens look at the error first (a 404 is «not found» whatever the cache still holds). `null` is the answer for a property the
+ * caller does not reach (the read of a 403): also «not found» for the person.
  */
 export function useSender(propertyId: string, enabled = true) {
   return useQuery({

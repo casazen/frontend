@@ -54,7 +54,7 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
   const whatNextId = useId();
-  const ready = !sender.isError && sender.data !== undefined;
+  const ready = !sender.isError && !!sender.data;
 
   // The focus goes to the result when it is on screen, so that a screen reader reads it.
   useEffect(() => {
@@ -62,7 +62,8 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   }, [ready]);
 
   if (sender.isError || !sender.data) {
-    return sender.isError ? (
+    // A state that cannot be read is an error: also the read of a property that is no longer reachable (`null`), never a fine result.
+    return sender.isError || sender.data === null ? (
       <ErrorState testId="sender-done-error" title={t('compliance.sender.done.readError')} error={sender.error} onRetry={() => void sender.refetch()} />
     ) : (
       <div role="status" aria-busy="true" data-testid="sender-done-loading" className="space-y-2">
