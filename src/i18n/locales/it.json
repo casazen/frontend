@@ -1392,7 +1392,7 @@
       "crmMergeSurvivorInvalid": "Il profilo da tenere deve essere uno dei due della proposta.",
       "crmProfileNotFound": "Il profilo non esiste, oppure non è tra gli immobili a cui hai accesso.",
       "crmTagsInvalid": "I tag non sono validi: al massimo 50, da 1 a 40 caratteri ciascuno, senza doppioni e non troppo lunghi in tutto.",
-      "csvTooManyRows": "Ci sono troppi documenti per un solo file CSV: restringi il periodo.",
+      "csvTooManyRows": "Troppe righe: un file CSV può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
       "d6ChannelFailed": "Il portale ha avuto un problema: riprova tra poco.",
       "d6OperationUnverified": "Questo passaggio per questo portale non è ancora attivo: resta guidato e te lo diciamo appena si può.",
       "d6ResultUnknown": "Non sappiamo com'è andata: controlla nel pannello e poi chiedi di nuovo.",
@@ -1521,7 +1521,7 @@
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
-      "xlsxTooManyRows": "Ci sono troppi documenti per un solo file Excel: restringi il periodo.",
+      "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
@@ -20497,11 +20497,156 @@
     "up": "Sposta su: {{item}}"
   },
   "reports": {
+    "channelCosts": {
+      "basis": "Per competenza, come i ricavi della Home: contano le notti dei soggiorni confermati nel periodo. Commissione, netto e costo riguardano solo i soggiorni per cui il canale ha indicato una commissione.",
+      "caption": "Costi dei canali dal {{from}} al {{to}}",
+      "columns": {
+        "channel": "Canale",
+        "commission": "Commissione",
+        "costRate": "Costo sul lordo",
+        "gross": "Lordo",
+        "mode": "Come viene pagata",
+        "net": "Netto",
+        "stays": "Soggiorni"
+      },
+      "description": "Quanto ti costa ogni canale: lordo, commissione e netto, e come viene pagata la commissione.",
+      "empty": "Nessun soggiorno confermato nel periodo scelto: non c’è nulla da mostrare.",
+      "error": "Impossibile caricare i costi dei canali.",
+      "groups": {
+        "channels": "Canali: commissioni",
+        "free": "Senza costi per te"
+      },
+      "mode": {
+        "DeductedFromPayout": "Trattenuta dal pagamento",
+        "InvoicedSeparately": "Fatturata a parte",
+        "Unknown": "Non nota",
+        "help": {
+          "DeductedFromPayout": "Il canale ti paga già al netto della commissione.",
+          "InvoicedSeparately": "Il canale ti fattura la commissione a parte: la paghi tu dopo.",
+          "Unknown": "Non sappiamo come il canale incassa la commissione."
+        },
+        "notApplicable": "Non si applica"
+      },
+      "noCost": "Nessun costo",
+      "stripe": {
+        "title": "Prenotazioni dirette: commissioni di incasso con carta",
+        "unavailable": "Non ancora registrate per questi pagamenti."
+      },
+      "summary": {
+        "amount": "{{channel}} ti costa {{amount}}.",
+        "cardAmount": "{{channel}}: le commissioni di incasso con carta sono {{amount}}.",
+        "cardLine": "{{channel}}: le commissioni di incasso con carta sono il {{rate}} del lordo ({{amount}}).",
+        "cardUnavailable": "{{channel}}: le commissioni di incasso con carta non sono disponibili.",
+        "free": "{{channel}}: nessun costo per te.",
+        "line": "{{channel}} ti costa il {{rate}} del lordo ({{amount}}).",
+        "mostExpensive": "Il più costoso",
+        "title": "Quanto costa ogni canale",
+        "unavailable": "{{channel}}: costo non disponibile, il canale non ha indicato commissioni.",
+        "without_one": "{{count}} soggiorno senza commissione indicata non è contato come gratuito.",
+        "without_other": "{{count}} soggiorni senza commissione indicata non sono contati come gratuiti."
+      },
+      "title": "Costi dei canali",
+      "total": "Totale",
+      "withoutCommissionRow_one": "{{count}} soggiorno senza commissione indicata: non contato come gratuito",
+      "withoutCommissionRow_other": "{{count}} soggiorni senza commissione indicata: non contati come gratuiti",
+      "withoutCommission_one": "{{count}} soggiorno non ha una commissione indicata dal canale: è contato a parte, non è considerato gratuito e non è nella commissione, nel netto e nel costo.",
+      "withoutCommission_other": "{{count}} soggiorni non hanno una commissione indicata dal canale: sono contati a parte, non sono considerati gratuiti e non sono nella commissione, nel netto e nel costo."
+    },
     "chips": {
       "all": "Tutti",
       "financial": "Finanziari",
       "fiscal": "Fiscali",
       "operational": "Operativi"
+    },
+    "collections": {
+      "balances": {
+        "asOf": "Situazione a oggi, {{date}}.",
+        "caption": "Soggiorni con un saldo da incassare",
+        "captionCurrency": "Soggiorni con un saldo da incassare, in {{currency}}",
+        "columns": {
+          "channel": "Canale",
+          "checkIn": "Arrivo",
+          "code": "Prenotazione",
+          "collected": "Incassato",
+          "property": "Immobile",
+          "toCollect": "Da incassare",
+          "total": "Totale"
+        },
+        "currency": "Saldi in {{currency}}",
+        "empty": "Non c’è nulla da incassare: tutti i soggiorni sono pagati.",
+        "error": "Impossibile caricare i saldi da incassare.",
+        "note": "«Scaduto» vuol dire che il soggiorno è finito e c’è ancora qualcosa da incassare. Qui non ci sono i nomi degli ospiti.",
+        "noteSince": "«Scaduto» vuol dire che il soggiorno è finito e c’è ancora qualcosa da incassare. Sono elencati i soggiorni finiti dal {{date}} in poi e quelli ancora da fare. Qui non ci sono i nomi degli ospiti.",
+        "overdue": "Scaduto",
+        "reported": "Saldo indicato dal channel manager",
+        "title": "Da incassare",
+        "total_one": "Totale da incassare ({{count}} soggiorno)",
+        "total_other": "Totale da incassare ({{count}} soggiorni)"
+      },
+      "basis": "Per cassa: conta il giorno in cui il denaro è entrato, non le notti del soggiorno che paga, e i rimborsi sono già tolti. Il totale è l’«incassato» della Home per gli stessi giorni.",
+      "captions": {
+        "channel": "Incassato per canale",
+        "date": "Incassato per data",
+        "method": "Incassato per metodo di pagamento"
+      },
+      "columns": {
+        "amount": "Incassato",
+        "channel": "Canale",
+        "day": "Giorno",
+        "method": "Metodo di pagamento",
+        "month": "Mese",
+        "payments": "Pagamenti",
+        "share": "Quota"
+      },
+      "credits": {
+        "channels": "Accrediti dei canali",
+        "channelsCaption": "Accrediti dei canali indicati dal channel manager",
+        "columns": {
+          "amount": "Importo",
+          "arrival": "Giorno di accredito",
+          "channel": "Canale",
+          "payments": "Pagamenti",
+          "status": "Stato",
+          "stays": "Soggiorni"
+        },
+        "reported": "Indicati dal channel manager: sono l’importo netto dei soggiorni che il canale incassa da sé, non un accredito sul tuo conto.",
+        "status": {
+          "Credited": "Accreditato",
+          "Expected": "Atteso"
+        },
+        "staysWithoutNet_one": "Per {{count}} soggiorno incassato dal canale il channel manager non ha indicato l’importo netto: non è in nessuna riga.",
+        "staysWithoutNet_other": "Per {{count}} soggiorni incassati dal canale il channel manager non ha indicato l’importo netto: non sono in nessuna riga.",
+        "stripe": "Accrediti dei pagamenti con carta",
+        "stripeCaption": "Accrediti dei pagamenti con carta, giorno per giorno",
+        "stripeNote": "Ogni riga somma i pagamenti accreditati lo stesso giorno, al netto delle commissioni di incasso: non è un bonifico sul tuo conto.",
+        "title": "Accrediti",
+        "unavailable": "Non disponibile: per questo periodo non abbiamo ancora i dati.",
+        "withoutFigures_one": "Su {{total}} pagamenti con carta, {{count}} non ha ancora le cifre dell’accredito: non è in nessuna riga.",
+        "withoutFigures_other": "Su {{total}} pagamenti con carta, {{count}} non hanno ancora le cifre dell’accredito: non sono in nessuna riga."
+      },
+      "description": "Quanto è entrato, quanto resta da incassare e cosa è arrivato sul conto. Ogni numero è quello del sistema.",
+      "empty": "Nessun incasso nel periodo scelto.",
+      "error": "Impossibile caricare gli incassi.",
+      "methods": {
+        "ApplePay": "Apple Pay",
+        "BankTransfer": "Bonifico bancario",
+        "CashOnArrival": "In struttura",
+        "CreditCard": "Carta",
+        "GooglePay": "Google Pay",
+        "PayPal": "PayPal"
+      },
+      "paymentCount_one": "{{count}} pagamento",
+      "paymentCount_other": "{{count}} pagamenti",
+      "sectionLabel": "Incassato nel periodo",
+      "title": "Incassato e da incassare",
+      "total": "Totale",
+      "totalCaption": "Incassato dal {{from}} al {{to}}",
+      "views": {
+        "channel": "Per canale",
+        "date": "Per data",
+        "label": "Come vuoi vedere gli incassi",
+        "method": "Per metodo"
+      }
     },
     "columns": {
       "format": "Formato",
@@ -20547,9 +20692,17 @@
         "description": "Gli incassi su cui si calcola la cedolare e il regime scelto per ogni immobile.",
         "name": "Cedolare secca e regime fiscale"
       },
+      "channelCosts": {
+        "description": "Quanto ti costa ogni canale: lordo, commissione e netto, e come viene pagata la commissione.",
+        "name": "Costi dei canali"
+      },
       "channels": {
         "description": "Da dove arrivano le prenotazioni: sito, Airbnb, Booking.com, inserite a mano. Ricavo per competenza.",
         "name": "Prenotazioni per canale"
+      },
+      "collections": {
+        "description": "Cosa è entrato per data, metodo e canale, cosa resta da incassare e cosa è arrivato sul conto.",
+        "name": "Incassato e da incassare"
       },
       "occupancy": {
         "description": "Quante notti sono occupate e quante restano libere, immobile per immobile.",
@@ -20575,6 +20728,17 @@
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
       }
+    },
+    "money": {
+      "currencyNote": "Importi nella valuta di ogni immobile, sommati senza conversione.",
+      "export": {
+        "csv": "Scarica CSV",
+        "failed": "Non è stato possibile scaricare il file. Riprova.",
+        "xlsx": "Scarica Excel"
+      },
+      "noAccess": "Non hai accesso a questo report.",
+      "notAvailable": "Non disponibile",
+      "notFound": "Non troviamo i dati richiesti. Se hai scelto un immobile, potrebbe non esistere più o non essere tra quelli a cui hai accesso."
     },
     "noResultsDescription": "Prova a togliere un filtro o a cercare con un'altra parola.",
     "noResultsTitle": "Nessun report con questi filtri",

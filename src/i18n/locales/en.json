@@ -1392,7 +1392,7 @@
       "crmMergeSurvivorInvalid": "The profile to keep must be one of the two of the proposal.",
       "crmProfileNotFound": "The profile does not exist, or it is not among the properties you have access to.",
       "crmTagsInvalid": "The tags are not valid: at most 50, each 1 to 40 characters, no duplicates, and not too long in all.",
-      "csvTooManyRows": "There are too many documents for one CSV file: narrow the period.",
+      "csvTooManyRows": "Too many rows: a CSV file can have at most 10,000 rows. Choose a shorter period and try again.",
       "d6ChannelFailed": "The portal had a problem: try again shortly.",
       "d6OperationUnverified": "This step is not active yet for this portal: it stays guided and we tell you as soon as it can run.",
       "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
@@ -1521,7 +1521,7 @@
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
-      "xlsxTooManyRows": "There are too many documents for one Excel file: narrow the period.",
+      "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
@@ -20497,11 +20497,156 @@
     "up": "Move up: {{item}}"
   },
   "reports": {
+    "channelCosts": {
+      "basis": "On an accrual basis, like the revenue of the Home: the nights of the confirmed stays in the period count. Commission, net and cost only cover the stays for which the channel reported a commission.",
+      "caption": "Channel costs from {{from}} to {{to}}",
+      "columns": {
+        "channel": "Channel",
+        "commission": "Commission",
+        "costRate": "Cost of the gross",
+        "gross": "Gross",
+        "mode": "How it is paid",
+        "net": "Net",
+        "stays": "Stays"
+      },
+      "description": "What each channel costs you: gross, commission and net, and how the commission is paid.",
+      "empty": "No confirmed stay in the chosen period: there is nothing to show.",
+      "error": "The channel costs could not be loaded.",
+      "groups": {
+        "channels": "Channels: commissions",
+        "free": "No cost for you"
+      },
+      "mode": {
+        "DeductedFromPayout": "Deducted from the payout",
+        "InvoicedSeparately": "Invoiced separately",
+        "Unknown": "Unknown",
+        "help": {
+          "DeductedFromPayout": "The channel already pays you net of the commission.",
+          "InvoicedSeparately": "The channel invoices the commission separately: you pay it afterwards.",
+          "Unknown": "We do not know how the channel collects its commission."
+        },
+        "notApplicable": "Does not apply"
+      },
+      "noCost": "No cost",
+      "stripe": {
+        "title": "Direct bookings: card processing fees",
+        "unavailable": "Not recorded yet for these payments."
+      },
+      "summary": {
+        "amount": "{{channel}} costs you {{amount}}.",
+        "cardAmount": "{{channel}}: the card processing fees are {{amount}}.",
+        "cardLine": "{{channel}}: the card processing fees are {{rate}} of the gross ({{amount}}).",
+        "cardUnavailable": "{{channel}}: the card processing fees are not available.",
+        "free": "{{channel}}: no cost for you.",
+        "line": "{{channel}} costs you {{rate}} of the gross ({{amount}}).",
+        "mostExpensive": "The most expensive",
+        "title": "What each channel costs",
+        "unavailable": "{{channel}}: cost not available, the channel did not report any commission.",
+        "without_one": "{{count}} stay without a reported commission is not counted as free.",
+        "without_other": "{{count}} stays without a reported commission are not counted as free."
+      },
+      "title": "Channel costs",
+      "total": "Total",
+      "withoutCommissionRow_one": "{{count}} stay without a reported commission: not counted as free",
+      "withoutCommissionRow_other": "{{count}} stays without a reported commission: not counted as free",
+      "withoutCommission_one": "{{count}} stay has no commission reported by the channel: it is counted apart, it is not taken as free and it is not in the commission, the net or the cost.",
+      "withoutCommission_other": "{{count}} stays have no commission reported by the channel: they are counted apart, they are not taken as free and they are not in the commission, the net or the cost."
+    },
     "chips": {
       "all": "All",
       "financial": "Financial",
       "fiscal": "Fiscal",
       "operational": "Operational"
+    },
+    "collections": {
+      "balances": {
+        "asOf": "Situation as of today, {{date}}.",
+        "caption": "Stays with a balance to collect",
+        "captionCurrency": "Stays with a balance to collect, in {{currency}}",
+        "columns": {
+          "channel": "Channel",
+          "checkIn": "Arrival",
+          "code": "Booking",
+          "collected": "Collected",
+          "property": "Property",
+          "toCollect": "To collect",
+          "total": "Total"
+        },
+        "currency": "Balances in {{currency}}",
+        "empty": "There is nothing to collect: every stay is paid.",
+        "error": "The balances to collect could not be loaded.",
+        "note": "“Overdue” means the stay is over and something is still to collect. The guests’ names are not shown here.",
+        "noteSince": "“Overdue” means the stay is over and something is still to collect. The stays that ended on {{date}} or later and the ones still to come are listed. The guests’ names are not shown here.",
+        "overdue": "Overdue",
+        "reported": "Balance reported by the channel manager",
+        "title": "To collect",
+        "total_one": "Total to collect ({{count}} stay)",
+        "total_other": "Total to collect ({{count}} stays)"
+      },
+      "basis": "On a cash basis: the day the money came in counts, not the nights of the stay it pays, and refunds are already taken out. The total is the Home’s “collected” for the same days.",
+      "captions": {
+        "channel": "Collected by channel",
+        "date": "Collected by date",
+        "method": "Collected by payment method"
+      },
+      "columns": {
+        "amount": "Collected",
+        "channel": "Channel",
+        "day": "Day",
+        "method": "Payment method",
+        "month": "Month",
+        "payments": "Payments",
+        "share": "Share"
+      },
+      "credits": {
+        "channels": "Channel credits",
+        "channelsCaption": "Channel credits reported by the channel manager",
+        "columns": {
+          "amount": "Amount",
+          "arrival": "Credit day",
+          "channel": "Channel",
+          "payments": "Payments",
+          "status": "Status",
+          "stays": "Stays"
+        },
+        "reported": "Reported by the channel manager: they are the net amount of the stays the channel collects itself, not a credit to your account.",
+        "status": {
+          "Credited": "Credited",
+          "Expected": "Expected"
+        },
+        "staysWithoutNet_one": "For {{count}} stay collected by the channel the channel manager did not report the net amount: it is in no row.",
+        "staysWithoutNet_other": "For {{count}} stays collected by the channel the channel manager did not report the net amount: they are in no row.",
+        "stripe": "Card payment credits",
+        "stripeCaption": "Card payment credits, day by day",
+        "stripeNote": "Each row adds up the payments credited on the same day, net of the processing fees: it is not a transfer to your account.",
+        "title": "Credits",
+        "unavailable": "Not available: we do not have the data for this period yet.",
+        "withoutFigures_one": "Of {{total}} card payments, {{count}} does not have its credit figures yet: it is in no row.",
+        "withoutFigures_other": "Of {{total}} card payments, {{count}} do not have their credit figures yet: they are in no row."
+      },
+      "description": "What came in, what is still to collect and what reached your account. Every number is the system’s own.",
+      "empty": "No payment collected in the chosen period.",
+      "error": "The collections could not be loaded.",
+      "methods": {
+        "ApplePay": "Apple Pay",
+        "BankTransfer": "Bank transfer",
+        "CashOnArrival": "At the property",
+        "CreditCard": "Card",
+        "GooglePay": "Google Pay",
+        "PayPal": "PayPal"
+      },
+      "paymentCount_one": "{{count}} payment",
+      "paymentCount_other": "{{count}} payments",
+      "sectionLabel": "Collected in the period",
+      "title": "Collected and still to collect",
+      "total": "Total",
+      "totalCaption": "Collected from {{from}} to {{to}}",
+      "views": {
+        "channel": "By channel",
+        "date": "By date",
+        "label": "How to see the collections",
+        "method": "By method"
+      }
     },
     "columns": {
       "format": "Format",
@@ -20547,9 +20692,17 @@
         "description": "The income the flat tax is calculated on and the regime chosen for each property.",
         "name": "Flat tax and tax regime"
       },
+      "channelCosts": {
+        "description": "What each channel costs you: gross, commission and net, and how the commission is paid.",
+        "name": "Channel costs"
+      },
       "channels": {
         "description": "Where the bookings come from: your site, Airbnb, Booking.com, entered by hand. Revenue on an accrual basis.",
         "name": "Bookings by channel"
+      },
+      "collections": {
+        "description": "What came in by date, method and channel, what is still to collect and what reached your account.",
+        "name": "Collected and still to collect"
       },
       "occupancy": {
         "description": "How many nights are occupied and how many stay free, property by property.",
@@ -20575,6 +20728,17 @@
         "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
         "name": "Portal withholdings"
       }
+    },
+    "money": {
+      "currencyNote": "Amounts in the currency of each property, added up with no conversion.",
+      "export": {
+        "csv": "Download CSV",
+        "failed": "The file could not be downloaded. Try again.",
+        "xlsx": "Download Excel"
+      },
+      "noAccess": "You do not have access to this report.",
+      "notAvailable": "Not available",
+      "notFound": "We cannot find the data you asked for. If you chose a property, it may no longer exist or may not be one you can access."
     },
     "noResultsDescription": "Try removing a filter or searching with another word.",
     "noResultsTitle": "No reports match",
