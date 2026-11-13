@@ -343,6 +343,24 @@ describe('the inbox (NF-111, AC-NF111-5)', () => {
   });
 });
 
+describe('a refusal is a refusal, whatever an earlier read left on the screen (ADR-011-R9)', () => {
+  it('OwnerInbox_AThreadThatWasReadAndIsRefusedTheNextTime_IsNotFound_NotTheOldMessages', async () => {
+    api.listConversations.mockResolvedValue([{ id: 'cv1', orgId: 'o1', propertyOwnerId: 'po1', topic: 'General', subject: 'Domanda', createdAt: '2026-11-05T10:00:00Z', lastMessageAt: '2026-11-06T10:00:00Z' }]);
+    api.listMessages.mockResolvedValueOnce([{ id: 'm1', conversationId: 'cv1', sender: 'Agency', authorName: 'Agenzia', body: 'Ciao, ti rispondiamo domani.', createdAt: '2026-11-06T10:00:00Z' }] as never);
+    renderPortal('/portale-proprietari/messaggi/cv1');
+    expect(await screen.findByTestId('owner-messages')).toBeInTheDocument();
+
+    // The access is withdrawn (the ownership ended, the contact was removed): the next read is a 404, and the old words leave the screen with it.
+    api.listMessages.mockRejectedValue(refusal(404, 'owner_conversation_not_found'));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiorna' }));
+    const notice = await screen.findByTestId('owner-messages-error');
+    expect(notice.getAttribute('data-state')).toBe('unavailable');
+    expect(screen.queryByTestId('owner-messages')).toBeNull();
+    expect(screen.queryByTestId('owner-reply')).toBeNull();
+    expect(document.body.textContent).not.toContain('ti rispondiamo domani');
+  });
+});
+
 describe('what the portal keeps (ADR-011, NF-111)', () => {
   it('OwnerPortal_LeavingThePortal_LeavesNothingOfTheOwnerInTheCacheOfTheQueries', async () => {
     api.listContacts.mockResolvedValue([contact(['calendar.read'])] as never);

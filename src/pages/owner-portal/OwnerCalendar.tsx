@@ -57,8 +57,8 @@ export function OwnerCalendar() {
   const unknownProperty = choicesReady && Boolean(routeProperty) && !known;
 
   const today = todayInRome();
-  const window = calendarWindow(today, periodId);
-  const calendar = useOwnerCalendar(known?.id, window.from, window.to);
+  const span = calendarWindow(today, periodId);
+  const calendar = useOwnerCalendar(known?.id, span.from, span.to);
   const rule = useOwnerStayRule(known?.id);
 
   if (properties.isLoading || stays.isLoading) return <PortalLoading label={t('ownerPortal.calendar.loading')} />;
