@@ -88,6 +88,7 @@ const MIRROR_TONE: Record<MirrorLineKind, Tone> = {
   synced: 'done',
   failed: 'problem',
   conflict: 'problem',
+  datesTaken: 'problem',
   blocked: 'problem',
   waiting: 'problem',
   unreadable: 'problem',
@@ -100,6 +101,7 @@ const MIRROR_TEXT_KEYS: Record<MirrorLineKind, string> = {
   synced: 'booking.create.done.channelManager.synced',
   failed: 'booking.create.done.channelManager.failed',
   conflict: 'booking.create.done.channelManager.conflict',
+  datesTaken: 'booking.create.done.channelManager.datesTaken',
   blocked: 'booking.create.done.channelManager.blocked',
   waiting: 'booking.create.done.channelManager.waiting',
   unreadable: 'booking.create.done.channelManager.unreadable',
@@ -233,7 +235,7 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
             <p>{t(MIRROR_TEXT_KEYS[mirror.kind])}</p>
             {mirror.reasonKey ? <p data-testid="booking-done-channel-manager-reason">{t(mirror.reasonKey)}</p> : null}
             {/* The refusal of the last «Retry», while there is still something to retry: once the state has moved on it is no longer the news. */}
-            {retry.isError && (mirror.kind === 'failed' || mirror.kind === 'conflict') ? (
+            {retry.isError && (mirror.kind === 'failed' || mirror.kind === 'conflict' || mirror.kind === 'datesTaken') ? (
               <p role="alert" className="text-destructive" data-testid="booking-done-channel-manager-error">
                 {getProblemMessage(retry.error, t) ?? t('booking.create.done.channelManager.retryFailed')}
               </p>

@@ -28,11 +28,12 @@ export function mirrorReadOf(input: { enabled: boolean; isError: boolean; notFou
 
 /**
  * What the result says about the channel manager. `pending` is "being sent", the only state that is on its way; every other one but `synced` is a state that is
- * not completed, and is said as such: `failed` and `conflict` with their reason, `blocked` (the channel does not allow it), `waiting` (the answer has not come in the
- * time the result waits), `unreadable` (the state could not be read) and `notFound` (the booking is not found: a 404 is that whatever an earlier read left in the
- * cache).
+ * not completed, and is said as such: `failed` and `conflict` with their reason, `datesTaken` (a creation the channel manager refused because the nights are already
+ * taken there: the booking is in CasaZen and not on the channel manager, and the same nights may be sold twice), `blocked` (the channel does not allow it),
+ * `waiting` (the answer has not come in the time the result waits), `unreadable` (the state could not be read) and `notFound` (the booking is not found: a 404 is
+ * that whatever an earlier read left in the cache).
  */
-export type MirrorLineKind = 'pending' | 'synced' | 'failed' | 'conflict' | 'blocked' | 'waiting' | 'unreadable' | 'notFound';
+export type MirrorLineKind = 'pending' | 'synced' | 'failed' | 'conflict' | 'datesTaken' | 'blocked' | 'waiting' | 'unreadable' | 'notFound';
 
 export interface MirrorLine {
   kind: MirrorLineKind;
@@ -44,9 +45,12 @@ export interface MirrorLine {
 
 const REASON_PREFIX = 'booking.create.done.channelManager.reasons';
 
+/** The code of a creation the channel manager refused because the nights are already taken there (`Conflict`, not tried again by itself). */
+const DATES_TAKEN_CODE = 'octorate_dates_unavailable';
+
 /** The words of each stable code of the sync, written out so that a missing translation is found by a test. */
 const REASON_KEYS: Readonly<Record<string, string>> = {
-  octorate_dates_unavailable: 'booking.create.done.channelManager.reasons.datesUnavailable',
+  [DATES_TAKEN_CODE]: 'booking.create.done.channelManager.reasons.datesUnavailable',
   octorate_unavailable: 'booking.create.done.channelManager.reasons.unavailable',
   octorate_rejected: 'booking.create.done.channelManager.reasons.rejected',
   octorate_reservation_changed: 'booking.create.done.channelManager.reasons.reservationChanged',
@@ -100,6 +104,9 @@ export function mirrorLineOf({ expected, sync, read, watchOver, retrying }: Mirr
       case 'Failed':
         return line('failed', syncReasonKey(sync.errorCode), sync.canRetry);
       case 'Conflict':
+        // The channel manager refused the creation because the nights are taken there: there is no reservation of CasaZen on it that could differ from the booking, and
+        // asking again meets the same refusal. Said as what it is; the button stays only where the API offers it.
+        if (sync.errorCode === DATES_TAKEN_CODE) return line('datesTaken', null, sync.canRetry);
         return line('conflict', syncReasonKey(sync.errorCode ?? 'octorate_reservation_changed'), sync.canRetry);
       case 'NotAllowedByChannel':
         return line('blocked', syncReasonKey(sync.errorCode));
@@ -157,7 +164,10 @@ export type NextStepKey = 'retryChannelManager' | 'checkChannelManager' | 'sendP
 export function nextStepOf(mirror: MirrorLine | null, payment: PaymentLineKind): NextStepKey {
   if (mirror) {
     if (mirror.kind === 'failed' || mirror.kind === 'conflict') return mirror.canRetry ? 'retryChannelManager' : 'checkChannelManager';
-    if (mirror.kind === 'blocked' || mirror.kind === 'waiting' || mirror.kind === 'unreadable' || mirror.kind === 'notFound') return 'checkChannelManager';
+    // Nights taken on the channel manager: a new try meets the same refusal, the host has to look at the calendars (the button, if the API offers it, stays on the line).
+    if (mirror.kind === 'datesTaken' || mirror.kind === 'blocked' || mirror.kind === 'waiting' || mirror.kind === 'unreadable' || mirror.kind === 'notFound') {
+      return 'checkChannelManager';
+    }
   }
   if (payment === 'linkMissing') return 'sendPaymentLink';
   if (payment === 'onSite' || payment === 'bankTransfer') return 'recordIncome';

@@ -2402,6 +2402,7 @@
         "channelManager": {
           "blocked": "The channel does not allow this operation: the booking was not created in the channel manager.",
           "conflict": "The booking in your channel manager differs from the one in CasaZen: until it is settled, the dates may stay open on the other channels.",
+          "datesTaken": "The dates are already taken in your channel manager: the booking is in CasaZen, but it was not created there and the same nights may be sold twice. Check the calendar of the channels and decide which booking to keep.",
           "failed": "It did not go through: until it does, the dates may stay open on the other channels.",
           "notFound": "We can no longer find this booking: check it from the list of bookings.",
           "pending": "Being sent: we are creating the booking in your channel manager, which will close the dates on every channel.",
@@ -2428,7 +2429,7 @@
         "description": "{{property}}, from {{from}} to {{to}}",
         "guestFallback": "the guest",
         "next": {
-          "checkChannelManager": "Open the booking and check how far the sending to the channel manager has got: until it is closed there, the dates may stay open on the other channels.",
+          "checkChannelManager": "Open the booking and check how it stands in the channel manager: until it is settled, the dates may stay open on the other channels or be sold twice.",
           "recordIncome": "When the guest pays, record the income with “Record payment” in the booking.",
           "retryChannelManager": "Retry the sending to the channel manager: until it goes through, the dates may stay open on the other channels.",
           "sendPaymentLink": "Send the payment link to {{name}}: so far they have received nothing."

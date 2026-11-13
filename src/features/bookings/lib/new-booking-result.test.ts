@@ -54,6 +54,16 @@ describe('the line of the channel manager', () => {
     expect(line?.canRetry).toBe(true);
   });
 
+  it('mirrorLineOf_CreationRefusedBecauseTheDatesAreTaken_IsSaidAsThatAndKeepsItsRetryOnlyWhereTheApiOffersIt', () => {
+    // The channel manager already has the nights, so there is no reservation of CasaZen on it that could differ from the booking.
+    const taken = { state: 'Conflict', errorCode: 'octorate_dates_unavailable' } as const;
+
+    expect(mirrorLineOf({ ...open, sync: sync({ ...taken, canRetry: true }) })).toEqual({ kind: 'datesTaken', reasonKey: null, canRetry: true });
+    expect(mirrorLineOf({ ...open, sync: sync({ ...taken, canRetry: false }) })?.canRetry).toBe(false);
+    // A conflict of another kind (the reservation changed there) is still a difference between the two versions.
+    expect(mirrorLineOf({ ...open, sync: sync({ state: 'Conflict', errorCode: 'octorate_reservation_changed', canRetry: true }) })?.kind).toBe('conflict');
+  });
+
   it('mirrorLineOf_NotAllowedByChannel_IsNotCompletedAndCannotBeRetried', () => {
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'NotAllowedByChannel' }) })).toMatchObject({ kind: 'blocked', canRetry: false });
   });
@@ -216,6 +226,12 @@ describe('the one next step', () => {
     expect(nextStepOf(line('unreadable'), 'onSite')).toBe('checkChannelManager');
     expect(nextStepOf(line('notFound'), 'onSite')).toBe('checkChannelManager');
     expect(nextStepOf(line('blocked'), 'onSite')).toBe('checkChannelManager');
+  });
+
+  it('nextStepOf_DatesTakenOnTheChannelManager_IsToCheckTheCalendarsNeverToRetry', () => {
+    // A new try meets the same refusal: the button, where the API offers it, stays on the line, and the host is sent to the calendars.
+    expect(nextStepOf(line('datesTaken', true), 'onSite')).toBe('checkChannelManager');
+    expect(nextStepOf(line('datesTaken', false), 'linkMissing')).toBe('checkChannelManager');
   });
 
   it('nextStepOf_LinkThatWasNotMade_IsToSendIt', () => {

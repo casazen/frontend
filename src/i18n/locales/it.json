@@ -2402,6 +2402,7 @@
         "channelManager": {
           "blocked": "Il canale non permette questa operazione: la prenotazione non è stata creata nel channel manager.",
           "conflict": "La prenotazione nel tuo channel manager risulta diversa da quella di CasaZen: finché non si risolve, le date possono restare aperte sugli altri canali.",
+          "datesTaken": "Le date risultano già occupate nel tuo channel manager: la prenotazione è in CasaZen, ma lì non è stata creata e le stesse notti possono essere vendute due volte. Controlla il calendario dei canali e decidi quale prenotazione tenere.",
           "failed": "Non è andata a buon fine: finché non riesce, le date possono restare aperte sugli altri canali.",
           "notFound": "Non troviamo più questa prenotazione: controllala dall'elenco delle prenotazioni.",
           "pending": "In invio: stiamo creando la prenotazione nel tuo channel manager, che chiuderà le date su tutti i canali.",
@@ -2428,7 +2429,7 @@
         "description": "{{property}}, dal {{from}} al {{to}}",
         "guestFallback": "l'ospite",
         "next": {
-          "checkChannelManager": "Apri la prenotazione e controlla a che punto è l'invio al channel manager: finché non è chiuso lì, le date possono restare aperte sugli altri canali.",
+          "checkChannelManager": "Apri la prenotazione e controlla come risulta nel channel manager: finché non è a posto, le date possono restare aperte sugli altri canali o essere vendute due volte.",
           "recordIncome": "Quando l'ospite paga, segna l'incasso con «Registra incasso» nella prenotazione.",
           "retryChannelManager": "Riprova l'invio al channel manager: finché non va a buon fine, le date possono restare aperte sugli altri canali.",
           "sendPaymentLink": "Invia il link di pagamento a {{name}}: per ora non ha ricevuto nulla."

@@ -310,6 +310,30 @@ describe('«Retry» of the channel manager', () => {
     expect(screen.getByTestId('booking-done-channel-manager-retry')).toBeInTheDocument();
   });
 
+  it('NewBookingDone_CreationRefusedBecauseTheDatesAreTaken_SaysSoAndTheNextStepIsToCheckTheCalendars', async () => {
+    // The channel manager already has the nights: there is no reservation of CasaZen there that could differ from the booking, and asking again meets the same refusal.
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Conflict', errorCode: 'octorate_dates_unavailable', canRetry: true }));
+    renderDone({ channelManager: true });
+
+    await waitFor(() => expect(line()).toHaveAttribute('data-state', 'datesTaken'));
+    expect(line()).toHaveAttribute('data-tone', 'problem');
+    expect(line()).toHaveTextContent(text('booking.create.done.channelManager.datesTaken'));
+    expect(line()).not.toHaveTextContent(text('booking.create.done.channelManager.conflict'));
+    expect(line()).not.toHaveTextContent(/octorate/i);
+    // The button is the API's to offer (`canRetry`); the next step is not to press it but to look at the calendars.
+    expect(screen.getByTestId('booking-done-channel-manager-retry')).toBeEnabled();
+    expect(screen.getByText(text('booking.create.done.next.checkChannelManager'))).toBeInTheDocument();
+    expect(screen.queryByText(text('booking.create.done.next.retryChannelManager'))).not.toBeInTheDocument();
+  });
+
+  it('NewBookingDone_CreationRefusedBecauseTheDatesAreTakenForACallerWhoMayNotWriteTheBooking_HasNoRetry', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Conflict', errorCode: 'octorate_dates_unavailable', canRetry: false }));
+    renderDone({ channelManager: true });
+
+    await waitFor(() => expect(line()).toHaveAttribute('data-state', 'datesTaken'));
+    expect(screen.queryByTestId('booking-done-channel-manager-retry')).not.toBeInTheDocument();
+  });
+
   it('NewBookingDone_FailedForACallerWhoMayNotWriteTheBooking_HasNoRetry', async () => {
     // `canRetry` is the API's, narrowed by what the caller may do: the button is not for them.
     vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ ...failed, canRetry: false }));
