@@ -32,7 +32,8 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
   const urgent = row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
   // «Verifica nel tuo Cassetto Compliance»: for an Alloggiati communication or an ISTAT month whose property is known, where the connector is on.
   const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
-  const hasLink = row.to !== null && !row.quiet;
+  // The button of the row: where it goes, unless the row is only to read.
+  const link = row.quiet ? null : row.to;
   return (
     <ComplianceRow
       icon={row.icon}
@@ -48,12 +49,12 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
       titleTestId={row.to || row.quiet ? undefined : `compliance-summary-${row.testKey}-item`}
       testId="compliance-summary-row"
       action={
-        hasLink || drawer ? (
+        link || drawer ? (
           <>
-            {hasLink && row.to ? (
+            {link ? (
               // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
               <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
-                <Link to={row.to} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
+                <Link to={link} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
                   {row.cta}
                 </Link>
               </Button>

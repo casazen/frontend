@@ -7,6 +7,7 @@ import { octorateComplianceHandoffApi } from '@/api/octorate-compliance-handoff.
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { expectNoAxeViolations } from '@/test/axe';
 import type { ComplianceHandoff } from '@/types/compliance-handoff.types';
 import { ComplianceDrawerButton } from '../compliance-drawer-button';
 import { RETURN_STORAGE_KEY, resetReturnForTests } from '../compliance-drawer-return';
@@ -153,6 +154,19 @@ describe('ComplianceDrawerButton: the dialog', () => {
     expect(within(dialog).queryByText(/password/i)).not.toBeInTheDocument();
     expect(open).not.toHaveBeenCalled();
     open.mockRestore();
+  });
+
+  it.each([
+    ['ready', () => start.mockResolvedValueOnce(HANDOFF), 'compliance-drawer-ready'],
+    ['failed', () => start.mockRejectedValueOnce(answered(503)), 'compliance-drawer-failed'],
+  ])('dialog_%s_HasNoAccessibilityViolationAxeCanFind', async (_state, arrange, ready) => {
+    arrange();
+    renderButton();
+
+    fireEvent.click(trigger());
+    await screen.findByTestId(ready);
+
+    await expectNoAxeViolations(document.body);
   });
 
   it('continue_Pressed_KeepsTheRouteAndTheFiltersAndGoesInTheSameTabToTheAddressTheServerGave', async () => {

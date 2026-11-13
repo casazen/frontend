@@ -189,7 +189,7 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
       ...HANDOFF,
       topic: 'Istat',
       context: { ...HANDOFF.context, bookingId: null, bookingCode: null, period: '2026-10' },
-      guide: { code: 'istat_period', menuPath: 'Strutture, poi ISTAT', check: 'Controlla l'invio del periodo.' },
+      guide: { code: 'istat_period', menuPath: 'Strutture, poi ISTAT', check: "Controlla l'invio del periodo." },
     });
     renderWidget();
 

@@ -15,6 +15,9 @@ import {
 import { forgetReturn, openDestination, saveReturn, useReturnFocus } from './compliance-drawer-return';
 import { useComplianceDrawerAvailable, useStartComplianceHandoff } from './use-compliance-drawer';
 
+/** How long the tab is given to leave after «Continua la verifica» before the layer can be used again (a navigation the browser cancelled never comes). */
+const LEAVING_GRACE_MS = 10_000;
+
 interface ComplianceDrawerButtonProps {
   target: ComplianceDrawerTarget;
   /** Whom or what the button is about, to tell it from the same button of another row for a screen reader («Verifica nel tuo Cassetto Compliance: Mario Rossi»). */
@@ -47,6 +50,9 @@ export function ComplianceDrawerButton({ target, subject, variant = 'outline', s
   const comingFrom = useRef({ route: '', filters: '' });
   // The dialog is closed: whatever the server answers from now on is dropped, not kept.
   const dismissed = useRef(true);
+  // «Continua la verifica» was pressed and the tab kept where to come back to; and the timer that gives the layer back if the tab does not leave.
+  const kept = useRef(false);
+  const leaveTimer = useRef<number | undefined>(undefined);
   const origin = originKeyOf(target);
   const focusRef = useReturnFocus<HTMLButtonElement>(origin);
   const { mutate, reset, isPending, isError, error, data } = start;
@@ -68,7 +74,12 @@ export function ComplianceDrawerButton({ target, subject, variant = 'outline', s
   };
 
   // A request that is still out is left to end (the button stays busy until it does, so no second handoff is asked for) and its answer is dropped then.
+  // A host who closes the layer after pressing «Continua la verifica» (the browser asked «Lasciare il sito?» and was told no) is not on their way any more:
+  // what the tab kept to come back to is forgotten.
   const close = () => {
+    window.clearTimeout(leaveTimer.current);
+    if (kept.current) forgetReturn();
+    kept.current = false;
     dismissed.current = true;
     setOpen(false);
     setLeaving(false);
@@ -81,23 +92,31 @@ export function ComplianceDrawerButton({ target, subject, variant = 'outline', s
     ask();
   };
 
-  // «Continua la verifica»: keep where to come back to, then go, in this same tab. An address that cannot be opened keeps the host here.
+  // «Continua la verifica»: keep where to come back to, then go, in this same tab. An address that cannot be opened keeps the host here. If the tab
+  // has not left after a while (the navigation was cancelled) the layer is usable again: nothing is left waiting for a page that is not coming.
   const proceed = (handoff: ComplianceHandoff) => {
     const { route, filters } = comingFrom.current;
-    saveReturn({ handoffId: handoff.handoffId, route, filters, origin, expiresAt: handoff.expiresAt });
+    kept.current = saveReturn({ handoffId: handoff.handoffId, route, filters, origin, expiresAt: handoff.expiresAt });
     setLeaving(true);
     if (!openDestination(handoff.destinationUrl)) {
       forgetReturn();
+      kept.current = false;
       setLeaving(false);
       setUnusable(true);
+      return;
     }
+    window.clearTimeout(leaveTimer.current);
+    leaveTimer.current = window.setTimeout(() => setLeaving(false), LEAVING_GRACE_MS);
   };
 
-  // The browser brings the page back from its memory (the back button of the host): the layer is still open, on its way out. It is closed.
+  // The browser brings the page back from its memory (the back button of the host): the layer is still open, on its way out. It is closed, and
+  // what the tab kept is left for the shell, which reads it once and restores it.
   useEffect(() => {
     if (!open) return undefined;
     const onShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
+      window.clearTimeout(leaveTimer.current);
+      kept.current = false;
       dismissed.current = true;
       setOpen(false);
       setLeaving(false);
