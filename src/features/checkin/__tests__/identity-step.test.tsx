@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { AxiosError, AxiosHeaders } from 'axios';
@@ -49,6 +50,20 @@ function Harness({ initial }: { initial: IdentityVerificationState }) {
 }
 
 const renderStep = (initial: IdentityVerificationState = state()) => render(<Harness initial={initial} />);
+
+/** What the page does: it keeps the state of the check and shows the step only while the guest is on it; «Back» takes the step away and leaves the state. */
+function PageHarness({ initial }: { initial: IdentityVerificationState }) {
+  const identity = useIdentityVerification(TOKEN, initial);
+  const [onTheStep, setOnTheStep] = useState(true);
+  return (
+    <>
+      {onTheStep && <IdentityStep identity={identity} />}
+      <button type="button" data-testid="harness-back" onClick={() => setOnTheStep(false)}>
+        back
+      </button>
+    </>
+  );
+}
 
 function httpError(status?: number, data?: unknown, code?: string): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
@@ -559,6 +574,112 @@ describe('IdentityStep: nothing of the pictures or of the code is kept', () => {
 
     expect(local).not.toHaveBeenCalled();
     expect(window.location.href).not.toContain('4821');
+  });
+});
+
+describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)', () => {
+  const selfieState = state({ step: 'selfie', consentRecorded: true, documentChecked: true });
+
+  /** The live preview is on: the camera is open (the button to take the picture is ready). */
+  const waitForPreview = () => waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
+
+  /** The guest takes the picture: it is on the canvas at the size of the camera (4000 x 3000 here). */
+  async function takePicture() {
+    await waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('selfie-take'));
+    const canvas = (await screen.findByTestId('checkin-selfie-capture')).querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas.width).toBe(4000);
+    expect(canvas.height).toBe(3000);
+    return canvas;
+  }
+
+  it('IdentityStep_TheGuestLeavesTheStepWithTheLivePreview_TheCameraIsSwitchedOffAtOnce', async () => {
+    const { stop } = stubCamera();
+    render(<PageHarness initial={selfieState} />);
+    await waitForPreview();
+    expect(stop).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('harness-back'));
+
+    expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('IdentityStep_TheGuestAsksForAPersonWithTheLivePreview_TheCameraIsSwitchedOffWhenTheStepChanges', async () => {
+    const { stop } = stubCamera();
+    vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({ result: 'operator', operatorPathOpen: true, state: state({ step: 'operator', operatorRequested: true }) });
+    renderStep(selfieState);
+    await waitForPreview();
+    expect(stop).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('selfie-ask-operator'));
+
+    await waitFor(() => expect(stage()).toBe('operator'));
+    expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('IdentityStep_TheCameraAnswersAfterTheGuestLeftTheStep_TheStreamIsSwitchedOffAtOnceAndNeverUsed', async () => {
+    const stop = vi.fn();
+    let answer: (stream: MediaStream) => void = () => undefined;
+    const getUserMedia = vi.fn().mockReturnValue(
+      new Promise<MediaStream>((resolve) => {
+        answer = resolve;
+      }),
+    );
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia } });
+    const view = renderStep(selfieState);
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
+
+    // The guest leaves while the browser is still asking for the camera: there is no stream to switch off yet.
+    view.unmount();
+    expect(stop).not.toHaveBeenCalled();
+    await act(async () => {
+      answer({ getTracks: () => [{ stop }] } as unknown as MediaStream);
+    });
+
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('IdentityStep_TheAnswerArrives_TheCanvasOfTheSelfieIsEmptied', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.postSelfie).mockResolvedValue({ result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821' });
+    renderStep(selfieState);
+    const canvas = await takePicture();
+
+    fireEvent.click(await screen.findByTestId('selfie-send'));
+    await screen.findByTestId('identity-lock-code');
+
+    // Nothing of the picture stays on a canvas a phone could keep.
+    expect(canvas.width).toBe(0);
+    expect(canvas.height).toBe(0);
+  });
+
+  it('IdentityStep_TheCallFails_ThePictureStaysOnTheCanvasToBeSentAgain', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.postSelfie).mockRejectedValue(httpError(undefined, undefined, AxiosError.ERR_NETWORK));
+    renderStep(selfieState);
+    const canvas = await takePicture();
+
+    fireEvent.click(await screen.findByTestId('selfie-send'));
+    await screen.findByTestId('checkin-identity-problem');
+
+    expect(canvas.width).toBe(4000);
+    expect(canvas.height).toBe(3000);
+  });
+
+  it('IdentityStep_TheGuestTakesTheSelfieAgain_TheFirstCanvasIsEmptiedAndTheCameraOpensAgain', async () => {
+    const { getUserMedia, stop } = stubCamera();
+    renderStep(selfieState);
+    const canvas = await takePicture();
+    // Taking the picture switches the camera off: the picture is all that is left.
+    expect(stop).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(await screen.findByTestId('selfie-retake'));
+
+    expect(canvas.width).toBe(0);
+    expect(canvas.height).toBe(0);
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
   });
 });
 

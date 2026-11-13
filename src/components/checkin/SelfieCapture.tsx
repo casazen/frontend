@@ -119,9 +119,8 @@ export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessin
     setHasCapture(true);
   };
 
-  /** Lets the picture go: the pixels of the canvas are emptied. */
-  const clearCapture = () => {
-    const canvas = canvasRef.current;
+  /** Lets the picture go: the pixels of the canvas are emptied (the canvas of the screen, or the one that was sent when the answer has ended the screen). */
+  const clearCapture = (canvas: HTMLCanvasElement | null = canvasRef.current) => {
     if (canvas) {
       canvas.width = 0;
       canvas.height = 0;
@@ -150,7 +149,8 @@ export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessin
       // The picture is a local of this call: once the API has answered nothing refers to it.
       const answered = await onCapture(image);
       if (answered) {
-        clearCapture();
+        // The canvas that was sent, not whatever the screen holds now: the answer may have ended the screen (a pass, a person), and the pixels go all the same.
+        clearCapture(canvas);
         setHasCapture(false);
       }
     } finally {
