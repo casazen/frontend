@@ -1116,6 +1116,12 @@
       }
     }
   },
+  "agencyFinance": {
+    "adminRequired": {
+      "description": "I rendiconti, le ritenute e i bonifici riguardano i soldi dei proprietari: li gestiscono il titolare e gli amministratori. Chiedi a uno di loro di aprire questa pagina.",
+      "title": "Serve l'amministratore dell'organizzazione"
+    }
+  },
   "aiContentNotice": {
     "label": "Contenuto generato con AI",
     "seo": "Testo generato con l'ausilio dell'AI e approvato da un amministratore CasaZen prima della pubblicazione: verifica sempre le fonti ufficiali.",
@@ -1845,7 +1851,28 @@
       "taxNotCalculable": "L'imposta di soggiorno non si può ancora calcolare.",
       "taxRateInvalid": "I valori dell’imposta non sono validi: controlla importo, età, notti e stagione.",
       "taxRateOfficialExists": "Per questo comune esiste già un'aliquota ufficiale: non puoi inserirne un'altra.",
-      "taxRateSourceRequired": "Indica da dove viene l'importo."
+      "taxRateSourceRequired": "Indica da dove viene l'importo.",
+      "batchAlreadyPaid": "Questo file dei bonifici è già stato segnato come pagato.",
+      "batchNotDownloaded": "Prima di segnare il file come pagato va scaricato.",
+      "batchXmlNotFound": "Questo file dei bonifici non ha contenuto: non si può scaricare.",
+      "f24NotFound": "Per questo mese non c'è un F24.",
+      "invalidDebitAccountIban": "L'IBAN del conto di addebito non è valido: controllalo e riprova.",
+      "mixedCurrenciesNotAllowed": "Un file dei bonifici ha una sola valuta: scegli rendiconti tutti in euro o tutti in franchi.",
+      "noStatementsProvided": "Scegli almeno un rendiconto.",
+      "ownerInvalidIban": "L'IBAN di un proprietario dei rendiconti scelti non è valido: correggilo prima di creare il file.",
+      "ownerMissingIban": "Manca l'IBAN di un proprietario dei rendiconti scelti: aggiungilo prima di creare il file.",
+      "statementNotApproved": "Il rendiconto deve prima essere approvato.",
+      "statementNotDraft": "Questo rendiconto non è più una bozza: l'elenco è stato aggiornato.",
+      "statementNotExportable": "Il PDF e il CSV si scaricano solo dopo l'approvazione del rendiconto.",
+      "statementNotFound": "Non troviamo questo rendiconto: l'elenco è stato aggiornato.",
+      "statementsAlreadyInBatch": "Almeno uno dei rendiconti scelti è già in un file dei bonifici: un rendiconto si paga una volta sola.",
+      "statementsNotFoundOrNotOwned": "Uno dei rendiconti scelti non esiste più: l'elenco è stato aggiornato.",
+      "statementsNotPublished": "I bonifici si fanno solo sui rendiconti pubblicati: pubblica prima quelli scelti.",
+      "wireAmountInvalid": "L'importo di un bonifico non è valido: deve essere maggiore di zero e avere al massimo due decimali. Non è stato creato nessun file.",
+      "wireBatchContentInvalid": "Il file dei bonifici non corrisponde ai rendiconti scelti (importi, numero di bonifici o valuta), quindi non è stato creato. Nessun rendiconto è stato bloccato.",
+      "wireBatchSchemaUnavailable": "I bonifici non sono ancora attivabili: manca il file di controllo, lo aggiunge un operatore. Non è stato creato nessun file e i rendiconti restano liberi.",
+      "wireBatchXmlInvalid": "Il file dei bonifici non supera il controllo del formato, quindi non è stato creato. Nessun rendiconto è stato bloccato: riprova o chiedi a un operatore.",
+      "wireCurrencyNotSupported": "I bonifici si fanno solo in euro (EUR) o in franchi svizzeri (CHF): i rendiconti scelti sono in un'altra valuta."
     }
   },
   "appShell": {
@@ -15319,15 +15346,13 @@
     },
     "statements": {
       "title": "Rendiconti",
-      "description": "Consulta i rendiconti mensili pubblicati. Scarica in formato PDF o CSV.",
+      "description": "Consulta i rendiconti mensili pubblicati.",
       "noStatements": "Nessun rendiconto disponibile",
       "monthYear": "{{month}} {{year}}",
       "totalRevenue": "Ricavi totali",
       "agencyCommission": "Commissione agenzia",
       "netAmount": "Importo netto",
       "publishedAt": "Pubblicato il {{date}}",
-      "downloadSuccess": "Download completato",
-      "downloadError": "Impossibile scaricare il rendiconto. Riprova più tardi.",
       "error": "Errore nel caricamento",
       "errorMessage": "Impossibile caricare i rendiconti. Riprova più tardi."
     }
@@ -20873,54 +20898,64 @@
     }
   },
   "statement": {
-    "title": "Rendiconti proprietari",
-    "description": "Visualizza e gestisci i rendiconti mensili dei proprietari",
-    "loading": "Caricamento rendiconti…",
-    "loadError": "Impossibile caricare i rendiconti",
-    "emptyTitle": "Nessun rendiconto",
-    "emptyList": "Non ci sono ancora rendiconti generati",
-    "emptyFiltered": "Nessun rendiconto trovato con i filtri selezionati",
-    "viewDetails": "Vedi dettagli",
-    "period": "Periodo",
-    "revenue": "Ricavi",
-    "commission": "Commissioni",
-    "expenses": "Spese",
-    "withholdingTax": "Ritenuta",
-    "netPayable": "Netto pagabile",
-    "summary": "Riepilogo",
-    "publishedAt": "Pubblicato il",
-    "ownershipPercent": "Quota di proprietà: {{percent}}%",
-    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
-    "status": {
-      "draft": "Bozza",
-      "approved": "Approvato",
-      "published": "Pubblicato"
+    "approve": {
+      "confirmDescription": "Rendiconto di {{owner}} per {{property}}, periodo {{period}}: netto pagabile {{amount}}.",
+      "confirmTitle": "Approvare il rendiconto?",
+      "consequenceLocked": "Dopo l'approvazione il rendiconto non si può più modificare.",
+      "error": "Impossibile approvare il rendiconto",
+      "success": "Rendiconto approvato con successo"
     },
-    "filter": {
-      "status": "Filtra per stato",
-      "allStatuses": "Tutti gli stati"
-    },
-    "generateButton": "Genera rendiconto",
     "approveButton": "Approva",
-    "publishButton": "Pubblica",
+    "commission": "Commissioni",
+    "description": "Visualizza e gestisci i rendiconti mensili dei proprietari",
+    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
     "download": {
-      "pdf": "Scarica PDF",
       "csv": "Scarica CSV",
-      "pdfError": "Impossibile scaricare il PDF",
-      "csvError": "Impossibile scaricare il CSV"
+      "csvError": "Impossibile scaricare il CSV",
+      "draft": "Il PDF e il CSV si scaricano dopo l'approvazione del rendiconto.",
+      "pdf": "Scarica PDF",
+      "pdfError": "Impossibile scaricare il PDF"
+    },
+    "emptyFiltered": "Nessun rendiconto trovato con i filtri selezionati",
+    "emptyList": "Non ci sono ancora rendiconti generati",
+    "emptyTitle": "Nessun rendiconto",
+    "expenses": "Spese",
+    "filter": {
+      "allStatuses": "Tutti gli stati",
+      "status": "Filtra per stato"
     },
     "generate": {
-      "success": "Rendiconto generato con successo",
-      "error": "Impossibile generare il rendiconto"
+      "error": "Impossibile generare il rendiconto",
+      "success": "Rendiconto generato con successo"
     },
-    "approve": {
-      "success": "Rendiconto approvato con successo",
-      "error": "Impossibile approvare il rendiconto"
-    },
+    "generateButton": "Genera rendiconto",
+    "loadError": "Impossibile caricare i rendiconti",
+    "loading": "Caricamento rendiconti…",
+    "netPayable": "Netto pagabile",
+    "notFound": "Rendiconto non trovato",
+    "notFoundHint": "Il rendiconto non è più nell'elenco: potrebbe essere stato tolto o essere di un'altra organizzazione. Torna all'elenco.",
+    "ownershipPercent": "Quota di proprietà: {{percent}}%",
+    "period": "Periodo",
     "publish": {
-      "success": "Rendiconto pubblicato con successo",
-      "error": "Impossibile pubblicare il rendiconto"
-    }
+      "confirmDescription": "Rendiconto di {{owner}} per {{property}}, periodo {{period}}: netto pagabile {{amount}}.",
+      "confirmTitle": "Pubblicare il rendiconto?",
+      "consequenceImmutable": "Dopo la pubblicazione non si modifica più: una correzione va nel rendiconto del mese dopo.",
+      "consequenceOwner": "Il rendiconto viene inviato al proprietario.",
+      "error": "Impossibile pubblicare il rendiconto",
+      "success": "Rendiconto pubblicato con successo"
+    },
+    "publishButton": "Pubblica",
+    "publishedAt": "Pubblicato il",
+    "revenue": "Ricavi",
+    "status": {
+      "approved": "Approvato",
+      "draft": "Bozza",
+      "published": "Pubblicato"
+    },
+    "summary": "Riepilogo",
+    "title": "Rendiconti proprietari",
+    "viewDetails": "Vedi dettagli",
+    "withholdingTax": "Ritenuta"
   },
   "status": {
     "channel": {
@@ -25751,88 +25786,113 @@
     "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
   },
   "withholding": {
-    "title": "Ritenuta d'acconto",
-    "description": "Gestisci la ritenuta d'acconto sui compensi dei proprietari e genera i modelli F24.",
-    "error": "Errore durante il caricamento dei dati della ritenuta",
-    "month": "Mese",
-    "year": "Anno",
+    "description": "La ritenuta d'acconto sui compensi dei proprietari, mese per mese, e l'F24 per versarla.",
     "dueDate": "Scadenza",
-    "downloadPdf": "PDF",
-    "downloadExcel": "Excel",
-    "summary": {
-      "title": "Riepilogo ritenute",
-      "description": "Dettaglio delle ritenute per mese, proprietario e appartamento.",
-      "total": "Totale ritenuto",
-      "byOwner": "Per proprietario",
-      "ownerTotal": "Totale: {{amount}}",
-      "property": "Immobile",
-      "grossBase": "Base imponibile",
-      "commission": "Commissione",
-      "withheld": "Ritenuto",
-      "crossYear": "Incasso anno {{cashYear}}, soggiorno anno {{stayYear}}",
-      "noData": "Nessuna ritenuta per il periodo selezionato",
-      "downloadSuccess": "Riepilogo scaricato con successo",
-      "downloadError": "Impossibile scaricare il riepilogo"
-    },
+    "error": "Errore durante il caricamento dei dati della ritenuta",
     "f24": {
-      "title": "Modello F24",
-      "description": "Anteprima del modello F24 per {{month}} {{year}}",
-      "taxCode": "Codice tributo",
-      "reference": "Riferimento",
-      "totalAmount": "Importo totale",
-      "download": "Scarica F24",
-      "downloadSuccess": "F24 scaricato con successo",
+      "description": "I dati per compilare l'F24 di {{period}}, come li ha il server.",
+      "download": "Scarica l'F24 (PDF)",
       "downloadError": "Impossibile scaricare l'F24",
-      "pastDue": "Scadenza superata: la scadenza era il {{date}}"
+      "filingLink": "Stato di invio e ricevute",
+      "none": "Per questo mese non c'è un F24: si prepara dalla chiusura mensile quando ci sono ritenute da versare.",
+      "notFound": "Per questo mese non c'è un F24.",
+      "openClose": "Apri la chiusura mensile",
+      "overdueUnpaid": "La scadenza era il {{date}} e il pagamento non è registrato.",
+      "paidRegistered": "Pagamento registrato dall'amministratore il {{date}}. CasaZen non verifica il versamento.",
+      "reference": "Riferimento",
+      "sectionTitle": "F24 di {{period}}",
+      "taxCode": "Codice tributo",
+      "title": "Modello F24",
+      "totalAmount": "Importo totale",
+      "unpaid": "Pagamento non ancora registrato."
     },
+    "loading": "Caricamento delle ritenute…",
+    "month": "Mese",
+    "notFound": "Dati della ritenuta non trovati",
     "payment": {
-      "title": "Riconciliazione pagamento",
-      "description": "Registra la data in cui hai effettuato il pagamento dell'F24.",
-      "date": "Data pagamento",
-      "dateRequired": "Seleziona la data del pagamento",
+      "confirmDescription": "F24 di {{period}}, importo {{amount}}, pagato il {{date}}.",
+      "confirmTitle": "Registrare il pagamento dell'F24?",
+      "consequenceFinal": "Non si può annullare da qui.",
+      "consequenceWord": "Lo registri tu: CasaZen non sa se il versamento è andato a buon fine.",
+      "date": "Giorno del pagamento",
+      "description": "Quando hai versato l'F24, scrivi qui il giorno: lo registri tu, CasaZen non sa se il versamento è andato a buon fine.",
       "record": "Registra pagamento",
-      "recordSuccess": "Pagamento registrato con successo",
-      "recordError": "Impossibile registrare il pagamento"
-    }
+      "recordError": "Impossibile registrare il pagamento",
+      "title": "Registra il pagamento"
+    },
+    "summary": {
+      "byOwner": "Per proprietario",
+      "description": "Le ritenute dei pagamenti ai proprietari fatti nel mese, con gli storni. Le cifre sono quelle del server, in euro.",
+      "grossBase": "Base imponibile",
+      "noData": "Nessuna ritenuta per il periodo selezionato",
+      "owner": "Proprietario",
+      "payouts": "Pagamenti",
+      "taxable": "Base imponibile totale",
+      "title": "Ritenute del mese",
+      "total": "Totale ritenuto",
+      "withheld": "Ritenuto"
+    },
+    "title": "Ritenuta d'acconto",
+    "year": "Anno"
   },
   "wire": {
+    "alreadyInFile": "Questo rendiconto è già in un file creato in questa visita.",
     "batch": {
-      "confirmDownload": "Conferma download",
-      "confirmDownloadError": "Impossibile confermare il download",
-      "confirmDownloadSuccess": "Download confermato con successo",
-      "confirmPaid": "Conferma pagamento",
-      "confirmPaidError": "Impossibile confermare il pagamento",
-      "confirmPaidSuccess": "Pagamento confermato con successo",
-      "create": "Crea batch bonifici",
-      "createAnother": "Crea un altro batch",
-      "createError": "Impossibile creare il batch",
-      "createSuccess": "Batch creato con successo",
+      "confirmCreateDescription_one": "Stai per creare il file con {{count}} rendiconto in {{currency}}, da pagare dal conto {{account}}.",
+      "confirmCreateDescription_other": "Stai per creare il file con {{count}} rendiconti in {{currency}}, da pagare dal conto {{account}}.",
+      "confirmCreateTitle": "Creare il file dei bonifici?",
+      "confirmPaidDescription": "Stai per segnare come pagato il file {{reference}}. Controlla che sia quello giusto.",
+      "confirmPaidError": "Impossibile segnare il file come pagato",
+      "confirmPaidTitle": "Segnare il file come pagato?",
+      "consequenceFinal": "Non si può annullare: i rendiconti del file risultano pagati nel conto dei proprietari.",
+      "consequenceLocked": "I rendiconti scelti entrano in questo file e non si possono mettere in un altro.",
+      "consequenceNoExecution": "CasaZen crea il file ma non esegue i bonifici: lo carichi tu nella tua banca.",
+      "consequenceWord": "Lo segni tu: CasaZen non sa se la banca ha eseguito i bonifici.",
+      "create": "Crea il file dei bonifici",
+      "createError": "Impossibile creare il file dei bonifici",
       "currency": "Valuta",
-      "details": "Dettagli batch",
-      "detailsDescription": "Informazioni sul batch di bonifici creato",
-      "download": "Scarica file",
+      "debitAccount": "Conto di addebito",
+      "details": "File dei bonifici",
+      "detailsDescription": "Il file creato in questa visita e a che punto è",
+      "download": "Scarica il file",
       "downloadError": "Impossibile scaricare il file",
-      "downloadSuccess": "File scaricato con successo",
-      "id": "ID batch",
-      "paidComplete": "Il batch è stato confermato come pagato",
+      "id": "Riferimento",
+      "leaveHint": "Questa pagina non conserva i file creati: se la chiudi o la ricarichi, il file non si ritrova qui e non si può più segnare come pagato.",
+      "markPaid": "Segna come pagato",
+      "nextDownload": "Il file è pronto: scaricalo per caricarlo nella tua banca.",
+      "nextUpload": "File scaricato. Caricalo nella tua banca e, quando i bonifici sono partiti, segnalo come pagato.",
+      "notFound": "Questo file dei bonifici non esiste più o non è della tua organizzazione.",
+      "paidComplete": "Segnato come pagato dall'amministratore. CasaZen non verifica che la banca abbia eseguito i bonifici.",
+      "sessionTitle": "File creati in questa visita",
       "status": "Stato",
       "totalAmount": "Importo totale",
-      "transferCount": "Numero bonifici"
+      "transferCount": "Numero di bonifici"
     },
+    "chosenCount_one": "{{count}} rendiconto scelto in {{currency}}",
+    "chosenCount_other": "{{count}} rendiconti scelti in {{currency}}",
+    "currencyGroup": "Rendiconti in {{currency}}",
+    "currencyNotSupported": "I bonifici si fanno solo in euro (EUR) o in franchi svizzeri (CHF): i rendiconti in {{currency}} non si pagano con questo file.",
     "debitAccount": "Conto di addebito (IBAN)",
+    "debitAccountHint": "Il conto della tua agenzia da cui partiranno i bonifici. Non viene salvato e non si rivede per intero.",
     "debitAccountPlaceholder": "IT00X0000000000000000000000",
-    "description": "Genera file SEPA per pagare i proprietari.",
-    "loadError": "Impossibile caricare i dati",
+    "description": "Crea il file dei bonifici per pagare i proprietari: scegli i rendiconti pubblicati di una sola valuta, indica il conto di addebito e carica il file nella tua banca. CasaZen non esegue i bonifici.",
+    "loadError": "Impossibile caricare i rendiconti",
     "loading": "Caricamento bonifici...",
-    "noApprovedStatements": "Nessun estratto conto approvato",
-    "noApprovedStatementsDescription": "Approva gli estratti conto prima di creare un batch di bonifici.",
-    "selectStatements": "Seleziona estratti conto",
+    "noPublishedStatements": "Nessun rendiconto pubblicato",
+    "noPublishedStatementsDescription": "Pubblica i rendiconti prima di creare il file dei bonifici.",
+    "notFound": "Rendiconti non trovati",
+    "oneCurrencyHint": "Un file ha una sola valuta: quando ne scegli uno, i rendiconti in un'altra valuta restano spenti finché non togli la scelta.",
+    "selectStatements": "Scegli i rendiconti da pagare",
     "status": {
-      "downloaded": "Scaricato",
-      "generated": "Generato",
-      "paid": "Pagato"
+      "downloaded": "File scaricato, non ancora segnato come pagato",
+      "generated": "File creato, non ancora scaricato",
+      "paid": "Segnato come pagato dall'amministratore"
     },
-    "title": "Bonifici proprietari"
+    "title": "Bonifici proprietari",
+    "unavailable": {
+      "body": "Manca il file di controllo, lo aggiunge un operatore. Non è stato creato nessun file e i rendiconti restano liberi: riprova quando i bonifici saranno attivi.",
+      "title": "I bonifici non sono ancora attivabili"
+    }
   },
   "tenantArea": {
     "title": "Area conduttore",

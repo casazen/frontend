@@ -1,7 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
-import { saveBlobAs } from '@/lib/file-download';
-import axios from '@/lib/axios';
 import type { OwnerPortalReportQuery } from '@/types';
 
 const OWNER_PORTAL_KEY = 'owner-portal';
@@ -62,18 +60,4 @@ export function useOwnerInvoices(params?: { year?: number; propertyId?: string }
     queryFn: () => ownerPortalApi.getInvoices(params),
     refetchOnMount: 'always' as const,
   });
-}
-
-/**
- * Download statement as PDF or CSV.
- * Usage: await downloadStatement(statementId, 'pdf');
- */
-export async function downloadStatement(statementId: string, format: 'pdf' | 'csv'): Promise<void> {
-  const response = await axios.get(`/owner-portal/statements/${statementId}/download`, {
-    params: { format },
-    responseType: 'blob',
-  });
-  const extension = format === 'pdf' ? 'pdf' : 'csv';
-  const filename = `statement-${statementId}.${extension}`;
-  saveBlobAs(response.data, filename);
 }

@@ -1,12 +1,15 @@
 import { ApiClient } from './client';
-import axios from '@/lib/axios';
-import { withJsonErrorBody } from '@/lib/file-download';
+import { fileApi, type DownloadedFile } from './file.api';
 import type {
   OwnerStatement,
   StatementFilters,
   GenerateStatementRequest,
 } from '@/types';
 
+/**
+ * The monthly statements of the agency's owners (backend `api/statements`, ADR-017). Paths are relative to the API base URL, which already ends in `/api`.
+ * The reads and the files need `agency.statement.view`, the writes `agency.statement.manage`: the owner and the administrators of an org on the agency plan.
+ */
 export const statementsApi = {
   /** List of owner statements, optionally filtered by property owner and/or property. */
   getAll: (filters?: StatementFilters) =>
@@ -24,27 +27,9 @@ export const statementsApi = {
   publish: (id: string) =>
     ApiClient.post<void>(`/statements/${id}/publish`),
 
-  /** Exports a statement as PDF. */
-  downloadPdf: async (id: string): Promise<Blob> => {
-    try {
-      const res = await axios.get<Blob>(`/statements/${id}/pdf`, {
-        responseType: 'blob',
-      });
-      return res.data;
-    } catch (error) {
-      throw await withJsonErrorBody(error);
-    }
-  },
+  /** The statement as a PDF, as the server stored it (only an Approved or a Published statement: 422 `statement_not_exportable` for a Draft). */
+  downloadPdf: (id: string): Promise<DownloadedFile> => fileApi.get(`/statements/${id}/pdf`),
 
-  /** Exports a statement as CSV. */
-  downloadCsv: async (id: string): Promise<Blob> => {
-    try {
-      const res = await axios.get<Blob>(`/statements/${id}/csv`, {
-        responseType: 'blob',
-      });
-      return res.data;
-    } catch (error) {
-      throw await withJsonErrorBody(error);
-    }
-  },
+  /** The statement as a CSV, under the same rules as the PDF. */
+  downloadCsv: (id: string): Promise<DownloadedFile> => fileApi.get(`/statements/${id}/csv`),
 };

@@ -1160,8 +1160,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
-    // Withholding tax management (ADR-018): withholding summary by month/owner/apartment, F24 preview and download,
-    // and payment reconciliation. For org billing administrators who handle tax compliance. Agency plan only (`agencyTier`).
+    // «Rendiconti» (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners, with the real PDF and CSV. It reads and writes the agency
+    // endpoint `/statements` (ADR-010: only an org on the Agency plan, so behind `agencyTier`), which is the agency's own and not the platform console's:
+    // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
+    // `agency.statement.manage` to approve and publish), which the owner and the administrators hold from their role in the org and which is not among the
+    // context permissions of `/me/contexts` (so it cannot be a `requiredPermissions` entry): like the other pages of the agency's money, the entry is for
+    // the org billing administrator, who is that owner or administrator, and the page checks the role before it reads anything.
+    path: '/app/account/statements',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.statements',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+    legacyPaths: ['/app/admin/statements'],
+  },
+  {
+    // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
+    // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
     context: 'account',
     requiredPermissions: [],
@@ -1175,8 +1195,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
   {
-    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
-    // For org billing administrators who handle owner payments. Agency plan only (`agencyTier`).
+    // Wire transfer batch management (ADR-017): the payment files (SEPA for EUR, Swiss for CHF) that pay the owners' published statements. The backend asks
+    // `agency.wire.manage`, which only the owner and the administrators hold: the entry is for the org billing administrator, and the page checks the role
+    // before it reads anything. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],
@@ -1519,19 +1540,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 25,
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
-  },
-  {
-    // Reads the agency endpoint `/statements` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
-    path: '/app/admin/statements',
-    context: 'admin',
-    requiredPermissions: ['admin.statements.read'],
-    featureFlag: 'agencyTier',
-    navKey: 'nav.statements',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 7,
-    icon: 'FileText',
-    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
   },
   {
     // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.

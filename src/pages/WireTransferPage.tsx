@@ -1,280 +1,301 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
-import { useStatements } from '@/queries/statements';
-import { useCreateBatch, useDownloadBatchFile, useConfirmDownload, useConfirmPayment } from '@/queries/wireTransfer';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { useMemo, useRef, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
+import { AgencyAdminRequired } from '@/components/finance/agency-admin-required';
+import { WireBatchCard, type CreatedBatch } from '@/components/finance/WireBatchCard';
+import { PlainSection } from '@/components/shared/calm';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
-import { AlertCircle, Download, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { WireBatch, WireBatchStatus } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { useExactMoney } from '@/hooks/use-exact-money';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { failureMessage, problemCodeOf } from '@/lib/agency-finance';
+import { getHttpStatus } from '@/lib/api-errors';
+import { maskIban } from '@/lib/iban';
+import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { useStatements } from '@/queries/statements';
+import { useCreateBatch } from '@/queries/wireTransfer';
+import type { OwnerStatement } from '@/types';
 
+/** The currencies a wire file exists for: SEPA for the euro, the Swiss file for the franc. The server refuses any other (`wire_currency_not_supported`). */
+const WIRE_CURRENCIES = ['EUR', 'CHF'];
+
+/** The server compares currencies without the case or the spaces of the stored code, and so does the page. */
+const currencyOf = (statement: OwnerStatement) => statement.currency.trim().toUpperCase();
+
+/**
+ * «Bonifici proprietari» of the Amministrazione (ADR-017, E06/F05/US01/T02): the wire file that pays the owners' published statements, one currency per file. The
+ * backend gives it only to the owner and the administrators of an org on the agency plan (`agency.wire.manage`), so the role is checked before anything is read.
+ * CasaZen makes the file and records what the administrator says; it does not move money and does not know whether the bank executed the transfers.
+ */
 export function WireTransferPage() {
   const { t } = useTranslation();
-  const [selectedStatements, setSelectedStatements] = useState<Set<string>>(new Set());
+  const { contexts } = useWorkspace();
+
+  if (!isOrgBillingAdmin(contexts)) {
+    return (
+      <div className="space-y-6" data-testid="wire-transfer-page">
+        <PageHeader title={t('wire.title')} description={t('wire.description')} crumbs="auto" />
+        <AgencyAdminRequired />
+      </div>
+    );
+  }
+  return <WireTransferBody />;
+}
+
+function WireTransferBody() {
+  const { t } = useTranslation();
+  const money = useExactMoney();
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+  // The statements that went into a file in this visit: the list has no «already in a file» field, so the page keeps them off the choice (the server refuses them
+  // anyway, `statements_already_in_batch`, also for the ones another visit or person put in a file).
+  const [batchedIds, setBatchedIds] = useState<ReadonlySet<string>>(new Set());
   const [debitAccount, setDebitAccount] = useState('');
-  const [createdBatch, setCreatedBatch] = useState<WireBatch | null>(null);
-  const [batchStatus, setBatchStatus] = useState<WireBatchStatus>('Generated');
+  const [confirming, setConfirming] = useState(false);
+  const [batches, setBatches] = useState<CreatedBatch[]>([]);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [schemaUnavailable, setSchemaUnavailable] = useState(false);
+  // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
+  const sending = useRef(false);
 
-  const { data: statements, isLoading, error } = useStatements();
+  const { data: statements, isPending, isError, error, refetch } = useStatements();
   const createBatch = useCreateBatch();
-  const downloadFile = useDownloadBatchFile();
-  const confirmDownload = useConfirmDownload();
-  const confirmPayment = useConfirmPayment();
 
-  const approvedStatements = useMemo(() => {
-    if (!statements) return [];
-    return statements.filter((s) => s.status === 'Approved');
-  }, [statements]);
-
-  const handleToggleStatement = (id: string) => {
-    const newSelection = new Set(selectedStatements);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
+  // Only a published statement goes into a file (the server refuses the others: `statements_not_published`).
+  const published = useMemo(() => (statements ?? []).filter((statement) => statement.status === 'Published'), [statements]);
+  const byId = useMemo(() => new Map(published.map((statement) => [statement.id, statement])), [published]);
+  // One currency per file: the first statement chosen decides it, and the statements of another currency wait until the choice is cleared.
+  const chosenCurrency = useMemo(() => {
+    const first = [...selected].map((id) => byId.get(id)).find((statement): statement is OwnerStatement => statement !== undefined);
+    return first ? currencyOf(first) : null;
+  }, [selected, byId]);
+  const groups = useMemo(() => {
+    const byCurrency = new Map<string, OwnerStatement[]>();
+    for (const statement of published) {
+      const currency = currencyOf(statement);
+      byCurrency.set(currency, [...(byCurrency.get(currency) ?? []), statement]);
     }
-    setSelectedStatements(newSelection);
+    return [...byCurrency.entries()].sort(([a], [b]) => {
+      const rank = (currency: string) => (WIRE_CURRENCIES.includes(currency) ? WIRE_CURRENCIES.indexOf(currency) : WIRE_CURRENCIES.length);
+      return rank(a) - rank(b) || a.localeCompare(b);
+    });
+  }, [published]);
+
+  const pending = createBatch.isPending;
+  const chosen = [...selected].filter((id) => byId.has(id));
+  const canCreate = chosen.length > 0 && debitAccount.trim() !== '' && !pending;
+
+  const toggle = (id: string) => {
+    if (pending) return;
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
-  const handleCreateBatch = async () => {
-    if (selectedStatements.size === 0 || !debitAccount.trim()) {
-      return;
+  /**
+   * The file is made once the person has confirmed it. The debit account is sent and forgotten: it is not kept after the answer, whatever the answer is, and a
+   * refusal is told here, never as a success (`wire_batch_schema_unavailable`: no file exists, say so plainly).
+   */
+  const onCreate = async () => {
+    if (sending.current || pending || chosen.length === 0 || debitAccount.trim() === '') return;
+    sending.current = true;
+    setFailure(null);
+    const ids = chosen;
+    const maskedAccount = maskIban(debitAccount);
+    try {
+      const batch = await createBatch.mutateAsync({ statementIds: ids, debitAccount: debitAccount.trim() });
+      setBatches((current) => [{ ...batch, debitMasked: maskedAccount }, ...current]);
+      setBatchedIds((current) => new Set([...current, ...ids]));
+      setSelected(new Set());
+      setDebitAccount('');
+      setSchemaUnavailable(false);
+    } catch (createError) {
+      if (problemCodeOf(createError) === 'wire_batch_schema_unavailable') {
+        setSchemaUnavailable(true);
+      } else {
+        setSchemaUnavailable(false);
+        setFailure(failureMessage(createError, t, t('wire.batch.createError'), t('wire.batch.notFound')));
+      }
+    } finally {
+      sending.current = false;
+      createBatch.reset();
     }
-
-    const result = await createBatch.mutateAsync({
-      statementIds: Array.from(selectedStatements),
-      debitAccount: debitAccount.trim(),
-    });
-
-    setCreatedBatch({
-      batchId: result.batchId,
-      currency: result.currency,
-      totalAmount: result.totalAmount,
-      transferCount: result.transferCount,
-    });
-    setBatchStatus('Generated');
-    setSelectedStatements(new Set());
-    setDebitAccount('');
   };
 
-  const handleDownload = async () => {
-    if (!createdBatch) return;
-
-    const fileName = `wire-batch-${createdBatch.batchId}-${createdBatch.currency}.xml`;
-    await downloadFile.mutateAsync({ batchId: createdBatch.batchId, fileName });
+  const dismissConfirmation = (open: boolean) => {
+    // The request is on its way: the dialog stays until the server has answered.
+    if (!open && !pending && !sending.current) setConfirming(false);
   };
 
-  const handleConfirmDownload = async () => {
-    if (!createdBatch) return;
+  const header = <PageHeader title={t('wire.title')} description={t('wire.description')} crumbs="auto" />;
 
-    await confirmDownload.mutateAsync(createdBatch.batchId);
-    setBatchStatus('Downloaded');
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!createdBatch) return;
-
-    await confirmPayment.mutateAsync(createdBatch.batchId);
-    setBatchStatus('Paid');
-  };
-
-  if (isLoading) {
-    return <LoadingScreen message={t('wire.loading')} />;
+  if (isPending) {
+    return (
+      <div className="space-y-6" data-testid="wire-transfer-page">
+        {header}
+        <SkeletonCard lines={4} label={t('wire.loading')} />
+      </div>
+    );
   }
 
-  if (error) {
+  // A 404 is «not found» whatever the cache still holds; any other failure with nothing to show is told with a retry.
+  if (isError && (!statements || getHttpStatus(error) === 404)) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
-          {t('wire.loadError')}
-        </Alert>
+      <div className="space-y-6" data-testid="wire-transfer-page">
+        {header}
+        <ErrorState
+          title={getHttpStatus(error) === 404 ? t('wire.notFound') : t('wire.loadError')}
+          error={getHttpStatus(error) === 404 ? undefined : error}
+          onRetry={() => void refetch()}
+        />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('wire.title')}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t('wire.description')}
-        </p>
-      </div>
+    <div className="space-y-6" data-testid="wire-transfer-page">
+      {header}
 
-      {createdBatch ? (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{t('wire.batch.details')}</CardTitle>
-            <CardDescription>{t('wire.batch.detailsDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-sm text-muted-foreground">{t('wire.batch.id')}:</span>
-                <p className="font-mono text-sm">{createdBatch.batchId}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">{t('wire.batch.currency')}:</span>
-                <p className="font-medium">{createdBatch.currency}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">{t('wire.batch.totalAmount')}:</span>
-                <p className="font-medium text-green-600">
-                  {createdBatch.currency} {createdBatch.totalAmount.toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">{t('wire.batch.transferCount')}:</span>
-                <p className="font-medium">{createdBatch.transferCount}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-sm text-muted-foreground">{t('wire.batch.status')}:</span>
-                <div className="mt-1">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      batchStatus === 'Generated'
-                        ? 'bg-blue-100 text-blue-800'
-                        : batchStatus === 'Downloaded'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                    }`}
-                  >
-                    {t(`wire.status.${batchStatus.toLowerCase()}`)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3 pt-4">
-              {batchStatus === 'Generated' && (
-                <>
-                  <Button
-                    onClick={handleDownload}
-                    disabled={downloadFile.isPending}
-                    variant="default"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {t('wire.batch.download')}
-                  </Button>
-                  <Button
-                    onClick={handleConfirmDownload}
-                    disabled={confirmDownload.isPending}
-                    variant="outline"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {t('wire.batch.confirmDownload')}
-                  </Button>
-                </>
-              )}
-              {batchStatus === 'Downloaded' && (
-                <Button
-                  onClick={handleConfirmPayment}
-                  disabled={confirmPayment.isPending}
-                  variant="default"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {t('wire.batch.confirmPaid')}
-                </Button>
-              )}
-              {batchStatus === 'Paid' && (
-                <Alert variant="success" icon={CheckCircle}>
-                  {t('wire.batch.paidComplete')}
-                </Alert>
-              )}
-              <Button
-                onClick={() => setCreatedBatch(null)}
-                variant="ghost"
-              >
-                {t('wire.batch.createAnother')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="mb-6 space-y-4">
-            <div>
-              <Label htmlFor="debit-account">{t('wire.debitAccount')}</Label>
-              <Input
-                id="debit-account"
-                type="text"
-                value={debitAccount}
-                onChange={(e) => setDebitAccount(e.target.value)}
-                placeholder={t('wire.debitAccountPlaceholder')}
-                className="mt-1"
-              />
-            </div>
-
-            <Button
-              onClick={handleCreateBatch}
-              disabled={selectedStatements.size === 0 || !debitAccount.trim() || createBatch.isPending}
-            >
-              {t('wire.batch.create')}
-            </Button>
-          </div>
-
-          {approvedStatements.length === 0 ? (
-            <Alert variant="info" title={t('wire.noApprovedStatements')} icon={AlertCircle}>
-              {t('wire.noApprovedStatementsDescription')}
-            </Alert>
-          ) : (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">{t('wire.selectStatements')}</h2>
-              {approvedStatements.map((statement) => (
-                <div
-                  key={statement.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    selectedStatements.has(statement.id)
-                      ? 'bg-blue-50 border-blue-300'
-                      : 'hover:bg-muted/50'
-                  }`}
-                  onClick={() => handleToggleStatement(statement.id)}
-                >
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      checked={selectedStatements.has(statement.id)}
-                      onChange={() => handleToggleStatement(statement.id)}
-                      className="mt-1 mr-3"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold">
-                          {statement.propertyName}
-                        </h3>
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                          {t('statement.status.approved')}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {statement.ownerName}
-                      </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">{t('statement.period')}:</span>{' '}
-                          <span className="font-medium">
-                            {statement.month}/{statement.year}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">{t('statement.netPayable')}:</span>{' '}
-                          <span className="font-medium text-green-600">
-                            {statement.currency} {statement.netPayable.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+      {schemaUnavailable && (
+        <Alert variant="warning" title={t('wire.unavailable.title')} data-testid="wire-unavailable">
+          {t('wire.unavailable.body')}
+        </Alert>
       )}
+      {failure && (
+        <Alert variant="danger" data-testid="wire-failure">
+          {failure}
+        </Alert>
+      )}
+
+      <PlainSection title={t('wire.selectStatements')} data-testid="wire-compose">
+        {published.length === 0 ? (
+          <Alert variant="info" title={t('wire.noPublishedStatements')} icon={AlertCircle}>
+            {t('wire.noPublishedStatementsDescription')}
+          </Alert>
+        ) : (
+          <div className="space-y-6">
+            <p className="text-sm text-muted-foreground">{t('wire.oneCurrencyHint')}</p>
+            {groups.map(([currency, items]) => {
+              const supported = WIRE_CURRENCIES.includes(currency);
+              return (
+                <div key={currency} className="space-y-3" data-testid={`wire-group-${currency}`}>
+                  <h3 className="text-lg font-semibold">{t('wire.currencyGroup', { currency })}</h3>
+                  {!supported && (
+                    <p className="text-sm text-muted-foreground">{t('wire.currencyNotSupported', { currency })}</p>
+                  )}
+                  {items.map((statement) => {
+                    const inBatch = batchedIds.has(statement.id);
+                    const otherCurrency = chosenCurrency !== null && chosenCurrency !== currency;
+                    const disabled = pending || inBatch || !supported || otherCurrency;
+                    return (
+                      <label
+                        key={statement.id}
+                        data-testid={`wire-statement-${statement.id}`}
+                        className={`flex items-start gap-3 border rounded-lg p-4 transition-colors ${
+                          selected.has(statement.id) ? 'bg-blue-50 border-blue-300' : disabled ? 'opacity-60' : 'cursor-pointer hover:bg-muted/50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selected.has(statement.id)}
+                          disabled={disabled}
+                          onChange={() => toggle(statement.id)}
+                          className="mt-1 size-4"
+                        />
+                        <span className="flex-1">
+                          <span className="flex flex-wrap items-center gap-3 mb-1">
+                            <span className="text-lg font-semibold">{statement.propertyName}</span>
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                              {t('statement.status.published')}
+                            </span>
+                          </span>
+                          <span className="block text-sm text-muted-foreground mb-2">{statement.ownerName}</span>
+                          <span className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                            <span>
+                              <span className="text-muted-foreground">{t('statement.period')}:</span>{' '}
+                              <span className="font-medium">
+                                {statement.month}/{statement.year}
+                              </span>
+                            </span>
+                            <span>
+                              <span className="text-muted-foreground">{t('statement.netPayable')}:</span>{' '}
+                              <span className="font-medium">{money(statement.netPayable, statement.currency)}</span>
+                            </span>
+                          </span>
+                          {inBatch && <span className="block mt-2 text-xs text-muted-foreground">{t('wire.alreadyInFile')}</span>}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            <div className="space-y-4 border-t pt-6">
+              <div>
+                <Label htmlFor="debit-account">{t('wire.debitAccount')}</Label>
+                <Input
+                  id="debit-account"
+                  type="text"
+                  value={debitAccount}
+                  onChange={(e) => setDebitAccount(e.target.value)}
+                  placeholder={t('wire.debitAccountPlaceholder')}
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  disabled={pending}
+                  className="mt-1"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t('wire.debitAccountHint')}</p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button onClick={() => setConfirming(true)} disabled={!canCreate} data-testid="wire-create">
+                  {t('wire.batch.create')}
+                </Button>
+                {chosen.length > 0 && chosenCurrency && (
+                  <span className="text-sm text-muted-foreground" data-testid="wire-selection">
+                    {t('wire.chosenCount', { count: chosen.length, currency: chosenCurrency })}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </PlainSection>
+
+      {batches.length > 0 && (
+        <PlainSection title={t('wire.batch.sessionTitle')} data-testid="wire-batches">
+          <div className="space-y-4">
+            {batches.map((batch) => (
+              <WireBatchCard key={batch.batchId} batch={batch} />
+            ))}
+          </div>
+        </PlainSection>
+      )}
+
+      <ConfirmationDialog
+        open={confirming}
+        onOpenChange={dismissConfirmation}
+        title={t('wire.batch.confirmCreateTitle')}
+        description={t('wire.batch.confirmCreateDescription', {
+          count: chosen.length,
+          currency: chosenCurrency ?? '',
+          account: maskIban(debitAccount),
+        })}
+        consequences={[t('wire.batch.consequenceLocked'), t('wire.batch.consequenceNoExecution')]}
+        confirmLabel={t('wire.batch.create')}
+        isLoading={pending}
+        onConfirm={onCreate}
+      />
     </div>
   );
 }
