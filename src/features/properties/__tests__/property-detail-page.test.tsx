@@ -140,27 +140,32 @@ function mockDetailError(status: number) {
   return refetch;
 }
 
-function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
+function pageElement(queryClient: QueryClient, otaPartnerApi: boolean, search: string, crmMarketing: boolean) {
+  return createElement(
+    QueryClientProvider,
+    { client: queryClient },
     createElement(
-      QueryClientProvider,
-      { client: queryClient },
+      FeatureFlagsContext.Provider,
+      { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi, crmMarketing }, isLoading: false } },
       createElement(
-        FeatureFlagsContext.Provider,
-        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi, crmMarketing }, isLoading: false } },
+        MemoryRouter,
+        { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
         createElement(
-          MemoryRouter,
-          { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
-          createElement(
-            Routes,
-            null,
-            createElement(Route, { path: '/properties/:id', element: createElement(PropertyDetailPage) })
-          )
+          Routes,
+          null,
+          createElement(Route, { path: '/properties/:id', element: createElement(PropertyDetailPage) })
         )
       )
     )
   );
+}
+
+function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
+  /** Draws the page again with what the hooks answer now: the answer of a request that arrived after the first drawing. */
+  const again = () => view.rerender(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
+  return { ...view, again };
 }
 
 /** Opens the menu "⋯" of the header and gives it back. */
@@ -448,6 +453,28 @@ describe('PropertyDetailPage', () => {
 
     expect(scroll).toHaveBeenCalledTimes(1);
     expect(scroll.mock.contexts[0]).toBe(document.getElementById('connection-health'));
+    // The focus goes to the section too, so a screen reader says where the link led.
+    expect(document.getElementById('connection-health')).toHaveFocus();
+  });
+
+  // The section exists only once the whole page is there: the skeleton shows until the record is read as well as the detail. The detail may come first, and
+  // the scroll must wait for the section instead of running on the skeleton and never again.
+  it('PropertyDetailPage_SectionInTheUrlAndTheRecordStillComing_ScrollsAndFocusesTheSectionWhenTheRecordArrives', () => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({ data: undefined, isLoading: true, isError: false } as unknown as ReturnType<typeof propertyQueries.useProperty>);
+    const { again } = renderPage(false, '?section=connection-health');
+
+    expect(screen.queryByTestId('connection-health-panel')).not.toBeInTheDocument();
+    expect(scroll).not.toHaveBeenCalled();
+
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({ data: mockRecord, isLoading: false, isError: false } as ReturnType<typeof propertyQueries.useProperty>);
+    again();
+
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.contexts[0]).toBe(document.getElementById('connection-health'));
+    expect(document.getElementById('connection-health')).toHaveFocus();
   });
 
   it('PropertyDetailPage_NoSectionInTheUrl_DoesNotScroll', () => {

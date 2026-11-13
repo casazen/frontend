@@ -188,7 +188,8 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   }
 
   return (
-    <PlainSection id={CONNECTION_HEALTH_SECTION} className="scroll-mt-6" title={title} data-testid="connection-health-panel">
+    // `tabIndex={-1}`: the link of the cockpit (`?section=connection-health`) takes the focus here, so a screen reader says where it led.
+    <PlainSection id={CONNECTION_HEALTH_SECTION} tabIndex={-1} className="scroll-mt-6 outline-none" title={title} data-testid="connection-health-panel">
       <p className="text-sm text-muted-foreground">{t('connectionHealth.description')}</p>
       {body}
     </PlainSection>

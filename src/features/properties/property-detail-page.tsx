@@ -101,9 +101,14 @@ export function PropertyDetailPage() {
   useEffect(() => {
     if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
   }, [scrollToPricing]);
-  const scrollToConnectionHealth = scrollToHealth && property !== undefined;
+  // The section is there once the whole page is: the skeleton shows until the record is read as well as the detail, and an effect that ran on the skeleton
+  // would find nothing and never run again. So the scroll waits for both, and the focus goes to the section too (a region named by its title).
+  const scrollToConnectionHealth = scrollToHealth && property !== undefined && record.data !== undefined;
   useEffect(() => {
-    if (scrollToConnectionHealth) document.getElementById(CONNECTION_HEALTH_SECTION)?.scrollIntoView?.({ block: 'start' });
+    if (!scrollToConnectionHealth) return;
+    const section = document.getElementById(CONNECTION_HEALTH_SECTION);
+    section?.scrollIntoView?.({ block: 'start' });
+    section?.focus?.({ preventScroll: true });
   }, [scrollToConnectionHealth]);
 
   // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
