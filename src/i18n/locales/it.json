@@ -2338,6 +2338,7 @@
       "sensitive": "Questa decisione spetta sempre a te.",
       "sensitiveLabel": "Situazione delicata",
       "since": "In vigore dal {{date}}",
+      "sinceUnknown": "Inizio non noto: non idonea alle modalità automatiche.",
       "useOrganization": "Usa l’impostazione dell’organizzazione"
     },
     "toast": {

@@ -358,8 +358,13 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       expect(within(wifi).getByTestId('assistant-situation-mode')).toHaveTextContent('Prepara una bozza');
       expect(within(wifi).getByTestId('assistant-situation-answer')).toHaveTextContent('La risposta parte dai dati dell’immobile: Wi-Fi.');
       expect(within(wifi).getByTestId('assistant-situation-origin')).toHaveTextContent('Valore predefinito');
-      // A situation nobody configured has no start: none is shown.
+      // A situation nobody configured has no start: no date is shown, and the row says what that means (not eligible for the automatic modes), it does not stay silent.
       expect(within(wifi).queryByTestId('assistant-situation-since')).not.toBeInTheDocument();
+      expect(within(wifi).getByTestId('assistant-situation-since-unknown')).toHaveTextContent('Inizio non noto: non idonea alle modalità automatiche.');
+      // One that has a start shows the date, and not the sentence of the unknown one.
+      const checkIn = rows.find((row) => row.getAttribute('data-code') === 'check_in_time')!;
+      expect(within(checkIn).getByTestId('assistant-situation-since')).toHaveTextContent('In vigore dal');
+      expect(within(checkIn).queryByTestId('assistant-situation-since-unknown')).not.toBeInTheDocument();
     });
 
     it('situationsTable_SensitiveSituation_ShowsALockAndSaysItAlwaysNeedsTheDecisionOfTheHost', async () => {

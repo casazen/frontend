@@ -64,12 +64,17 @@ function SituationRow({ situation, inProperty, editable, busy, onEdit, onUseOrga
           </Badge>
         </div>
         {situation.isSensitive ? <p className="break-words text-xs text-foreground/70">{t('assistant.situations.sensitive')}</p> : null}
-        {/* The start of the value as the server keeps it: a situation nobody configured has none, and none is never shown as a date. */}
+        {/* The start of the value as the server keeps it. A situation nobody configured has none: its start is unknown, which is never read as «long enough», so it is not
+            eligible for the automatic modes (closed by default, PO-08). The row says so; it never invents a date. */}
         {situation.modeSince ? (
           <p className="text-xs text-foreground/70" data-testid="assistant-situation-since">
             {t('assistant.situations.since', { date: new Date(situation.modeSince).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }) })}
           </p>
-        ) : null}
+        ) : (
+          <p className="text-xs text-foreground/70" data-testid="assistant-situation-since-unknown">
+            {t('assistant.situations.sinceUnknown')}
+          </p>
+        )}
       </div>
 
       <div className="min-w-0 space-y-1 text-sm">

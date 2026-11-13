@@ -2338,6 +2338,7 @@
       "sensitive": "This always needs your decision.",
       "sensitiveLabel": "Sensitive situation",
       "since": "In force since {{date}}",
+      "sinceUnknown": "Start not known: not eligible for the automatic modes.",
       "useOrganization": "Use the organization’s setting"
     },
     "toast": {
