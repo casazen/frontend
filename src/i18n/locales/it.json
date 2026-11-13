@@ -15704,6 +15704,414 @@
       }
     }
   },
+  "ownerInvitation": {
+    "accepting": "Stiamo attivando il tuo accesso",
+    "claimsPending": {
+      "description": "Abbiamo registrato il tuo invito, ma il tuo accesso richiede ancora qualche istante. Riprova tra poco: se non si attiva, scrivi all'assistenza.",
+      "title": "Il tuo accesso al portale non è ancora attivo"
+    },
+    "emailMismatch": {
+      "action": "Accedi con un altro account",
+      "description": "Hai effettuato l'accesso con un indirizzo diverso da quello a cui l'agenzia ha inviato l'invito. Accedi con l'indirizzo giusto: l'invito resta valido e lo attivi da qui.",
+      "title": "Questo invito è per un altro indirizzo e-mail"
+    },
+    "emailNotVerified": {
+      "description": "Ti abbiamo scritto un messaggio per confermare l'indirizzo. Aprilo, poi torna qui e riprova.",
+      "login": "Accedi di nuovo",
+      "title": "Conferma prima il tuo indirizzo e-mail"
+    },
+    "failure": {
+      "other": "Non è stato possibile accettare l'invito. Se il problema continua, scrivi all'assistenza.",
+      "retry": "Non abbiamo ricevuto risposta dal servizio. Riprova tra poco.",
+      "title": "Non siamo riusciti ad attivare il tuo accesso"
+    },
+    "invite": {
+      "description": "Accedi per vedere le tue strutture, i soggiorni, i rendiconti e i documenti che l'agenzia condivide con te.",
+      "login": "Ho già un account",
+      "sameEmail": "Usa lo stesso indirizzo e-mail a cui è arrivato l'invito: è l'unico con cui puoi accettarlo.",
+      "signup": "Crea il tuo account",
+      "title": "Sei stato invitato al portale proprietari di CasaZen"
+    },
+    "loading": "Un momento",
+    "notFound": {
+      "description": "Il portale proprietari non è ancora attivo. Riprova più tardi o chiedi all'agenzia.",
+      "title": "Pagina non disponibile"
+    },
+    "openPortal": "Apri il portale",
+    "opening": "Ti portiamo al tuo portale",
+    "pageTitle": "Invito al portale proprietari",
+    "retry": "Riprova",
+    "support": "Scrivi all'assistenza",
+    "tokenPending": {
+      "description": "Il tuo invito è stato accettato, ma non siamo riusciti a rinnovare il tuo accesso. Riprova: se continua, esci e accedi di nuovo.",
+      "title": "Non siamo riusciti ad aprire il portale"
+    },
+    "unusable": {
+      "expired": {
+        "description": "Il link non è più valido. Chiedi all'agenzia di inviarti un nuovo invito.",
+        "title": "Questo invito è scaduto"
+      },
+      "goToPortal": "Vai al portale proprietari",
+      "invalid": {
+        "description": "Il link non è valido o è incompleto. Apri di nuovo il link che hai ricevuto per e-mail, oppure chiedi all'agenzia di inviartene uno nuovo.",
+        "title": "Questo invito non funziona"
+      },
+      "revoked": {
+        "description": "L'agenzia ha ritirato questo invito. Se pensi sia un errore, chiedile di inviartene uno nuovo.",
+        "title": "Questo invito è stato ritirato"
+      },
+      "used": {
+        "description": "Il link è già stato usato da un account. Se sei tu, apri il portale e accedi; altrimenti chiedi all'agenzia un nuovo invito.",
+        "title": "Questo invito è già stato usato"
+      }
+    }
+  },
+  "ownerOnboarding": {
+    "adminOnly": "Questa pagina la gestisce l'amministratore dell'organizzazione.",
+    "backToPlan": "Torna a Inizia con CasaZen",
+    "counts": {
+      "owners_one": "{{count}} proprietario nel registro, {{toComplete}} da completare",
+      "owners_other": "{{count}} proprietari nel registro, {{toComplete}} da completare"
+    },
+    "description": "Importa o completa i proprietari, associali alle strutture con le loro quote, raccogli i dati per i rendiconti e invitali al portale. Le strutture possono funzionare con i canali anche prima che tutto questo sia completo.",
+    "dimensions": {
+      "fiscalProfile": "Dati fiscali",
+      "mandate": "Mandato",
+      "ownership": "Quote",
+      "payment": "Pagamenti",
+      "portal": "Portale",
+      "registry": "Anagrafica"
+    },
+    "fields": {
+      "bic": "BIC",
+      "billingCity": "Città",
+      "billingCivic": "Civico",
+      "billingCountry": "Paese",
+      "billingPostalCode": "CAP",
+      "billingProvince": "Provincia",
+      "billingStreet": "Via",
+      "cinCode": "CIN",
+      "email": "E-mail",
+      "entityKind": "Persona o società",
+      "fiscalCode": "Codice fiscale",
+      "iban": "IBAN",
+      "legalName": "Nome o ragione sociale",
+      "ownerKey": "Codice proprietario",
+      "ownershipEnd": "Fine",
+      "ownershipStart": "Inizio",
+      "propertyId": "ID struttura",
+      "settlementCurrency": "Valuta",
+      "sharePercent": "Quota",
+      "taxResidence": "Residenza fiscale",
+      "vatNumber": "Partita IVA"
+    },
+    "import": {
+      "apply": "Importa le righe giuste",
+      "applyNeedsCheck": "Prima controlla il file: l'importazione si abilita solo dopo un controllo di questo stesso file con almeno una riga giusta.",
+      "applySummary": "Righe importate: {{applied}}. Righe da correggere: {{invalid}}.",
+      "candidates": "Più proprietari corrispondono: scegli indicando nel file l'id (colonna ownerId): {{owners}}",
+      "check": "Controlla il file",
+      "checkSummary": "Righe giuste: {{valid}}. Righe da correggere: {{invalid}}.",
+      "choose": "Scegli il file",
+      "chooseAnother": "Scegli un altro file",
+      "chosen": "File scelto: {{name}}",
+      "columns": {
+        "effect": "Cosa succede",
+        "property": "Struttura",
+        "result": "Esito",
+        "row": "Riga"
+      },
+      "confirm": {
+        "action": "Importa",
+        "cancel": "Annulla",
+        "description": "Solo le righe giuste vengono scritte; quelle con errori restano fuori e puoi correggerle e importarle dopo.",
+        "effect": "Cosa viene scritto: {{owners}} nuovi proprietari, {{matched}} già nel registro, {{ownerships}} nuove associazioni, {{periods}} periodi aggiornati.",
+        "file": "File: {{name}}",
+        "invalid_one": "{{count}} riga con errori resta fuori.",
+        "invalid_other": "{{count}} righe con errori restano fuori.",
+        "noInvitation": "Non viene inviato nessun invito: gli inviti sono un passaggio separato.",
+        "row": "Riga inserita a mano: {{owner}}, struttura {{property}}, quota {{share}}%, dal {{start}}.",
+        "title_one": "Importare {{count}} riga giusta?",
+        "title_other": "Importare {{count}} righe giuste?",
+        "valid_one": "Verrà importata {{count}} riga.",
+        "valid_other": "Verranno importate {{count}} righe.",
+        "working": "Importazione in corso…"
+      },
+      "drop": "Trascina qui il file dei proprietari",
+      "effect": "Importando: {{owners}} nuovi proprietari, {{matched}} già nel registro, {{ownerships}} nuove associazioni, {{periods}} periodi aggiornati. Nessun invito viene inviato.",
+      "error": "Non è stato possibile controllare o importare il file. Riprova.",
+      "fileSize": "Il file è troppo grande: al massimo 2 MB.",
+      "fileType": "Scegli un file .csv o .xlsx.",
+      "forget": "Togli il file",
+      "hint": "Il file viene letto solo dal server: l'app non ne mostra il contenuto.",
+      "limits": "File .csv o .xlsx fino a 2 MB e 1.000 righe. Una riga per ogni proprietario di ogni struttura.",
+      "matchedBy": {
+        "external_key": "trovato con il codice proprietario",
+        "fiscal_identifier": "trovato con il codice fiscale o la partita IVA",
+        "owner_id": "trovato con l'id indicato"
+      },
+      "nextPage": "Pagina successiva",
+      "nothingApplied": "Nessuna riga è stata importata: correggi le righe con errori e ricontrolla il file.",
+      "ownerActions": {
+        "conflict": "Proprietario in conflitto",
+        "create_owner": "Crea il proprietario",
+        "match_owner": "Usa un proprietario già presente"
+      },
+      "ownershipActions": {
+        "conflict": "Associazione in conflitto",
+        "create_ownership": "Crea l'associazione",
+        "unchanged": "Nessuna modifica",
+        "update_future_period": "Aggiorna il periodo"
+      },
+      "pageOf": "Pagina {{page}} di {{pages}}",
+      "pagesLabel": "Pagine dei risultati",
+      "previousPage": "Pagina precedente",
+      "rowApplied": "Importata",
+      "rowOk": "Giusta",
+      "rowsCaption": "Una riga per ogni riga del file, con il suo esito",
+      "sendsNothing": "Importare i proprietari non invia nessun invito. Gli inviti partono solo quando li confermi nella fase «Accesso al portale».",
+      "sharesTitle": "Strutture con quote da sistemare",
+      "template": "Scarica il modello",
+      "unknownColumns": "Colonne che non conosciamo e che vengono ignorate: {{columns}}."
+    },
+    "invitations": {
+      "acceptedOn": "Accettato il {{date}}",
+      "actionError": "Non è stato possibile completare l'operazione.",
+      "anOwner": "Un proprietario",
+      "checkAgain": "Controlla di nuovo",
+      "closedOn": "Chiuso il {{date}}",
+      "confirm": {
+        "action_one": "Invia {{count}} invito",
+        "action_other": "Invia {{count}} inviti",
+        "cancel": "Annulla",
+        "description": "Controlla a chi arriva l'e-mail: dopo la conferma gli inviti partono.",
+        "error": "Non è stato possibile completare l'invio. Controlla lo stato degli inviti prima di riprovare.",
+        "exclusions": "Restano fuori",
+        "link": "Il link vale per un solo uso e scade: potrai reinviarlo o ritirarlo da questa pagina.",
+        "noRecipients": "Nessun destinatario: con questa selezione non c'è nulla da inviare.",
+        "overQuota": "La selezione supera il limite di oggi: riduci i proprietari o riprova domani.",
+        "permissions": "Potrà consultare calendario, soggiorni, rendiconti, fatture e documenti, registrare i propri soggiorni e scrivere all'agenzia.",
+        "quota": "Oggi puoi ancora inviare {{remaining}} inviti su {{limit}}.",
+        "recipients": "Riceveranno l'invito",
+        "scope": "Ogni proprietario vedrà solo le strutture a cui è associato con una quota in vigore (su {{properties}} strutture dell'organizzazione), mai i dati di altri proprietari né i dati personali degli ospiti.",
+        "stale": "I proprietari sono cambiati dopo l'anteprima: nessun invito è stato inviato. Chiudi e rifai l'anteprima.",
+        "title_one": "Inviare l'invito a {{count}} proprietario?",
+        "title_other": "Inviare l'invito a {{count}} proprietari?",
+        "to_one": "Invieremo un'e-mail con il link di accesso a {{count}} proprietario, all'indirizzo indicato qui sopra.",
+        "to_other": "Invieremo un'e-mail con il link di accesso a {{count}} proprietari, ognuno all'indirizzo indicato qui sopra."
+      },
+      "countsLabel": "Inviti per stato",
+      "empty": "Non ci sono ancora proprietari da invitare: importali nella prima fase.",
+      "exclusions": {
+        "alreadyAccepted": "ha già accettato",
+        "alreadyInvited": "ha già un invito in corso",
+        "ownerNotFound": "proprietario non trovato"
+      },
+      "expiresOn": "Il link scade il {{date}}",
+      "listHint": "Puoi invitare i proprietari pronti e quelli il cui invito è scaduto o è stato ritirato. Il link vale per un solo uso.",
+      "loadError": "Non riusciamo a leggere lo stato degli inviti.",
+      "previewError": "Non è stato possibile preparare l'anteprima.",
+      "preview_one": "Anteprima dell'invito ({{count}} proprietario)",
+      "preview_other": "Anteprima dell'invito ({{count}} proprietari)",
+      "resend": "Reinvia",
+      "resendConfirm": {
+        "action": "Reinvia l'invito",
+        "description": "Il proprietario riceverà una nuova e-mail con un nuovo link.",
+        "effect": "Il link che ha adesso smette di funzionare.",
+        "title": "Reinviare l'invito a {{name}}?"
+      },
+      "resendFor": "Reinvia l'invito a {{name}}",
+      "resent": "Nuovo invito inviato a {{name}}: il link precedente non funziona più.",
+      "revoke": "Ritira",
+      "revokeConfirm": {
+        "action": "Ritira l'invito",
+        "description": "Il proprietario non potrà più usare il link che ha ricevuto.",
+        "effect": "Non gli viene inviato nulla di nuovo: per invitarlo di nuovo dovrai rifare l'anteprima.",
+        "title": "Ritirare l'invito a {{name}}?"
+      },
+      "revokeFor": "Ritira l'invito a {{name}}",
+      "revoked": "Invito a {{name}} ritirato: il link non funziona più.",
+      "select": "Seleziona {{name}} per l'invito",
+      "selectFirst": "Seleziona almeno un proprietario per vedere l'anteprima.",
+      "sendsNothing": "Importare i proprietari non invia nessun invito. Un invito parte solo quando lo confermi qui, dopo aver visto chi lo riceve.",
+      "sentNone": "Nessun invito è stato inviato.",
+      "sentSome": "Inviti inviati: {{sent}}. L'e-mail non è partita per {{failed}}: {{owners}}. Per loro l'invito è stato ritirato.",
+      "sent_one": "{{count}} invito inviato.",
+      "sent_other": "{{count}} inviti inviati.",
+      "watchOver": "Non aggiorniamo più da soli lo stato degli inviti. Controlla di nuovo per vedere se qualcuno ha accettato."
+    },
+    "issues": {
+      "excess": "Quote al {{total}}%",
+      "gap": "Nessun proprietario",
+      "openRange": "dal {{from}}, senza fine",
+      "ownerOverlap": "Lo stesso proprietario due volte",
+      "range": "dal {{from}} al {{to}}",
+      "shortfall": "Quote al {{total}}%",
+      "unknown": "Quote da controllare"
+    },
+    "loadError": "Non riusciamo a leggere lo stato dei proprietari",
+    "loading": "Carico i proprietari",
+    "manual": {
+      "close": "Chiudi",
+      "company": "Società",
+      "description": "Compila una riga: la controlliamo come un file, prima di cambiare qualcosa.",
+      "email": "E-mail",
+      "entityKind": "Persona o società",
+      "fiscalCode": "Codice fiscale",
+      "legalName": "Nome o ragione sociale",
+      "needsIdentity": "Indica il codice proprietario o il codice fiscale: l'e-mail da sola non basta.",
+      "open": "Aggiungi a mano",
+      "ownerKey": "Codice proprietario",
+      "ownerKeyHint": "Il codice che usi tu per questo proprietario. Serve se non indichi il codice fiscale.",
+      "person": "Persona",
+      "privacy": "I dati restano in questa pagina solo finché lavori qui: non vengono salvati nel browser.",
+      "property": "ID o CIN della struttura",
+      "propertyHint": "L'id che vedi nella scheda della struttura, oppure il suo codice CIN.",
+      "required": "Compila: {{fields}}.",
+      "share": "Quota (%)",
+      "shareHint": "Da 0,01 a 100, al massimo due decimali.",
+      "start": "Proprietario dal",
+      "submit": "Controlla questa riga",
+      "title": "Aggiungi un proprietario a mano"
+    },
+    "notFound": "Questa funzione non è disponibile.",
+    "outcomes": {
+      "accounting": {
+        "noOwners": "Non c'è ancora nessun proprietario nel registro.",
+        "notBlocking": "Finché questa parte è da completare i rendiconti non partono; le strutture operative non sono bloccate.",
+        "owners_one": "{{count}} proprietario da completare",
+        "owners_other": "{{count}} proprietari da completare",
+        "properties_one": "{{count}} struttura da completare",
+        "properties_other": "{{count}} strutture da completare",
+        "title": "Rendicontazione proprietari",
+        "what": "I rendiconti dei proprietari partono solo quando proprietari, quote e dati fiscali sono completi."
+      },
+      "label": "Come stanno le due parti dell'attivazione",
+      "operational": {
+        "link": "Vedi il riepilogo delle strutture",
+        "title": "Strutture operative",
+        "unknown": "Non riusciamo a leggere lo stato delle strutture: riprova più tardi.",
+        "what": "Le strutture si attivano con i canali anche se i dati dei proprietari non sono completi: questa parte non li aspetta."
+      }
+    },
+    "phases": {
+      "accounting": {
+        "title": "Dati per rendiconti",
+        "what": "Dati fiscali, indirizzo di fatturazione e pagamenti di ogni proprietario, per poter preparare i rendiconti."
+      },
+      "owners": {
+        "title": "Proprietari",
+        "what": "Chi sono i proprietari delle strutture: importali da un file o completa quelli già presenti."
+      },
+      "portal": {
+        "title": "Accesso al portale",
+        "what": "Invita i proprietari al portale dopo aver visto l'anteprima: nessun invito parte da solo."
+      },
+      "shares": {
+        "title": "Associazioni e quote",
+        "what": "Per ogni struttura, chi la possiede e con quale quota: le quote in vigore devono fare esattamente 100%."
+      }
+    },
+    "portalStates": {
+      "accepted": "Accettato",
+      "expired": "Scaduto",
+      "invited": "Invitato",
+      "notReady": "Non pronto",
+      "ready": "Pronto da invitare",
+      "revoked": "Ritirato"
+    },
+    "ready": "Pronto",
+    "reasons": {
+      "bicInvalid": "BIC non valido",
+      "bicMissing": "BIC mancante",
+      "billingAddressIncomplete": "Indirizzo di fatturazione incompleto",
+      "emailInvalid": "E-mail non valida",
+      "emailMissing": "E-mail mancante",
+      "entityKindMissing": "Manca se è una persona o una società",
+      "fiscalCodeInvalid": "Codice fiscale non valido",
+      "fiscalIdMissing": "Codice fiscale o partita IVA mancante",
+      "ibanInvalid": "IBAN non valido",
+      "ibanMissing": "IBAN mancante",
+      "legalNameMissing": "Nome o ragione sociale mancante",
+      "mandateDocumentMissing": "Documento del mandato mancante",
+      "mandateMissing": "Mandato dell'agenzia mancante",
+      "mandateOutsideOwnership": "Mandato fuori dal periodo di proprietà",
+      "ownerOverlap": "Lo stesso proprietario compare due volte negli stessi giorni",
+      "ownershipMissing": "Nessun proprietario associato alla struttura",
+      "ownershipNotReady": "Quote da sistemare",
+      "registryNotReady": "Anagrafica da completare",
+      "settlementCurrencyMissing": "Valuta di regolamento mancante",
+      "sharesExcess": "Quote superiori al 100%",
+      "sharesGap": "Periodo senza proprietario",
+      "sharesShortfall": "Quote inferiori al 100%",
+      "taxResidenceMissing": "Residenza fiscale mancante",
+      "unknown": "Un dato è da completare",
+      "vatNumberInvalid": "Partita IVA non valida"
+    },
+    "rowCodes": {
+      "bicInvalid": "BIC non valido",
+      "billingAddressInvalid": "Indirizzo di fatturazione non valido",
+      "currencyInvalid": "Valuta non valida",
+      "dateInvalid": "Data non valida",
+      "duplicateRow": "Riga ripetuta",
+      "emailInvalid": "E-mail non valida",
+      "entityKindInvalid": "Tipo non valido: persona o società",
+      "fiscalCodeInvalid": "Codice fiscale non valido",
+      "ibanInvalid": "IBAN non valido",
+      "legalNameInvalid": "Nome o ragione sociale non valido",
+      "legalNameRequired": "Nome o ragione sociale mancante",
+      "mandateOutsideOwnership": "Il mandato uscirebbe dal periodo di proprietà",
+      "ownerAmbiguous": "Più proprietari corrispondono",
+      "ownerFieldConflict": "Il proprietario ha già un valore diverso per questo dato",
+      "ownerIdentityConflict": "Il codice e l'identificativo fiscale indicano proprietari diversi",
+      "ownerIdentityMissing": "Serve un codice proprietario o un codice fiscale: l'e-mail da sola non basta",
+      "ownerKeyInvalid": "Codice proprietario non valido",
+      "ownerNotFound": "Proprietario non trovato",
+      "ownerSharedOutsideReach": "Il proprietario ha anche altre strutture che non gestisci",
+      "ownershipOverlap": "Lo stesso proprietario ha due periodi sovrapposti",
+      "ownershipPeriodConflict": "Il periodo non può essere modificato",
+      "ownershipSharesInvalid": "Le quote della struttura non fanno 100%",
+      "ownershipStartRequired": "Manca la data di inizio",
+      "periodInvalid": "La fine viene prima dell'inizio",
+      "propertyAmbiguous": "Più strutture corrispondono: usa l'id",
+      "propertyNotFound": "Struttura non trovata",
+      "shareInvalid": "Quota non valida",
+      "taxResidenceInvalid": "Residenza fiscale non valida",
+      "unknown": "Errore che questa versione non conosce",
+      "vatNumberInvalid": "Partita IVA non valida"
+    },
+    "states": {
+      "done": "Completato",
+      "notStarted": "Da iniziare",
+      "toComplete": "Da completare"
+    },
+    "step": {
+      "checking": "Controllo a che punto sei…",
+      "counts_one": "{{count}} proprietario nel registro, {{toComplete}} dati da completare.",
+      "counts_other": "{{count}} proprietari nel registro, {{toComplete}} dati da completare.",
+      "noOwners": "Non c'è ancora nessun proprietario nel registro.",
+      "open": "Apri",
+      "readError": "Non riusciamo a leggere lo stato dei proprietari.",
+      "title": "Proprietari e rendiconti",
+      "what": "Importa i proprietari, associali alle strutture con le loro quote, completa i dati per i rendiconti e invitali al portale."
+    },
+    "table": {
+      "aProperty": "una struttura",
+      "accountingAllReady": "Tutti i proprietari hanno i dati per i rendiconti.",
+      "caption": "Proprietari e che cosa manca a ciascuno",
+      "complete": "Completa a mano",
+      "mandateAllReady": "Nessun proprietario ha quote o mandati da sistemare.",
+      "missing": "Cosa manca",
+      "nothingMissing": "Niente da completare",
+      "owner": "Proprietario",
+      "registryAllReady": "Tutti i proprietari hanno i dati di base.",
+      "sharesAllReady": "Le quote di tutte le strutture fanno esattamente 100%."
+    },
+    "title": "Proprietari e rendiconti",
+    "toComplete": "Da completare",
+    "truncated": "L'elenco è molto lungo e mostra solo una parte dei proprietari. I conteggi sono completi.",
+    "updateFailed": "Non riusciamo ad aggiornare lo stato dei proprietari: quello che vedi è l'ultimo letto e potrebbe non essere aggiornato. Quello che stai compilando resta qui."
+  },
   "ownerPortal": {
     "dashboard": {
       "title": "Portale Proprietari",
