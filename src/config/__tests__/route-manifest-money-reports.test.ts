@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { REPORTS } from '@/features/reports/report-catalog';
+import { getManifestCrumbs } from '@/lib/page-crumbs';
 import { DEFAULT_FEATURE_FLAGS } from '../feature-flags';
 import { ROUTE_MANIFEST, getNavMatchEntries, getVisibleNavEntries, hasEntryPermission } from '../route-manifest';
 
@@ -28,6 +29,13 @@ describe('route manifest: the money reports (NF-97, NF-98, E07/F03/US02)', () =>
     expect(entry?.featureFlag).toBeUndefined();
     expect(getVisibleNavEntries('short-rent', () => true, DEFAULT_FEATURE_FLAGS).map((page) => page.path)).not.toContain(path);
     expect(getNavMatchEntries('short-rent', () => true, DEFAULT_FEATURE_FLAGS).map((page) => page.path)).not.toContain(path);
+  });
+
+  it.each(PATHS)('RouteManifest_%s_HasATrailThroughIncassiAndTheListOfReports', (path) => {
+    // The trail of the header (`crumbs="auto"`): Incassi, Report, and the page itself (last, with no address).
+    const trail = getManifestCrumbs({ contextKey: 'short-rent', pathname: path, current: 'Report', t: ((key: string) => key) as never });
+
+    expect(trail.map((step) => step.to)).toEqual(['/app/short-rent/payments', '/app/short-rent/reports', undefined]);
   });
 
   // The pages are loaded for the first time here, with their tables behind them: the 5 s of the default are not enough on a loaded CI runner.
