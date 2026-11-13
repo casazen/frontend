@@ -270,6 +270,24 @@ describe("WizardShell steps and address", () => {
     expect(onStepChange).toHaveBeenNthCalledWith(2, { from: "home", to: "person", values: expect.objectContaining({ name: "Anna" }) });
     expect(onStepChange).toHaveBeenCalledTimes(2);
   });
+
+  it("WizardShell_NavigationDisabled_ShutsBackSkipAndTheListOfStepsButNotTheMainButton", async () => {
+    const onStepChange = vi.fn();
+    renderWizard({ navigationDisabled: true, onStepChange }, "/app/short-rent/properties/new?step=home");
+
+    await screen.findByRole("heading", { level: 2, name: "La casa" });
+    expect(screen.getByTestId("wizard-back")).toBeDisabled();
+    expect(screen.getByTestId("wizard-skip")).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /Persona/ })).not.toBeInTheDocument();
+    // The main button has its own switch (`nextDisabled`): this one is not about it.
+    expect(screen.getByTestId("wizard-next")).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId("wizard-back"));
+    fireEvent.click(screen.getByTestId("wizard-skip"));
+
+    expect(screen.getByRole("heading", { level: 2, name: "La casa" })).toBeInTheDocument();
+    expect(onStepChange).not.toHaveBeenCalled();
+  });
 });
 
 describe("WizardShell validation", () => {

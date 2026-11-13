@@ -1,6 +1,6 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -306,7 +306,7 @@ interface SaveAndExitProps {
   save: (command: CheckoutWizardProgressCommand) => Promise<unknown>;
   /** A request of the wizard is on its way (a save, the closing of the stay): the button stays off until it has answered. */
   busy: boolean;
-  /** The host is leaving: told to the wizard, whose "Continue" and last button stay off from the press until the save has answered. */
+  /** The host is leaving: told to the wizard, whose "Continue", last button, "Back" and list of steps stay off from the press until the save has answered. */
   onExiting: (exiting: boolean) => void;
 }
 
@@ -372,8 +372,15 @@ function CheckoutWizardForm({
   const { mutate: saveProgressNow, mutateAsync: saveProgressAsync } = saveProgress;
   // The panel that completes the guests' data, over the wizard (opened from the Alloggiati step): it is not a step, so the answers and the step stay as they are.
   const [guestDataOpen, setGuestDataOpen] = useState(false);
-  // "Save and exit" is on its way: "Continue" and the last button take no press meanwhile (a second request of the same wizard would race the save).
+  // "Save and exit" is on its way: "Continue", the last button, "Back" and the list of steps take no press meanwhile (a second request of the same wizard would race the save).
   const [exiting, setExiting] = useState(false);
+  // The same, for the changes of step that still get through (a link of the summary, the address): they save no progress while the host is leaving. A ref, because the
+  // function that is called on a change of step must not read the state of an earlier render.
+  const exitingRef = useRef(false);
+  const onExiting = useCallback((value: boolean) => {
+    exitingRef.current = value;
+    setExiting(value);
+  }, []);
 
   const steps: WizardStep<CheckoutAnswers>[] = CHECKOUT_WIZARD_STEPS.map((stepId) => ({
     id: stepId,
@@ -385,9 +392,15 @@ function CheckoutWizardForm({
     render: () => <CheckoutStepPanel step={stepId} state={state} onCompleteGuestData={() => setGuestDataOpen(true)} />,
   }));
 
-  /** Lands on a step: the answers so far are saved, and the wizard reopens there, on the web or in the app. */
+  /**
+   * Lands on a step: the answers so far are saved, and the wizard reopens there, on the web or in the app. Not while "Save and exit" is saving the answers on the
+   * step the host leaves from: a second save would race it, and the one that answers last would decide where the wizard reopens.
+   */
   const onStepChange = useCallback(
-    ({ to, values }: { to: string; values: CheckoutAnswers }) => saveProgressNow(progressCommand(values, to as CheckoutWizardStepId)),
+    ({ to, values }: { to: string; values: CheckoutAnswers }) => {
+      if (exitingRef.current) return;
+      saveProgressNow(progressCommand(values, to as CheckoutWizardStepId));
+    },
     [saveProgressNow]
   );
 
@@ -406,6 +419,7 @@ function CheckoutWizardForm({
           return result;
         }}
         onStepChange={onStepChange}
+        navigationDisabled={exiting}
         // The server remembers the answers too, and so does the app: a draft of a step behind the one the server is on is older
         // than what the server knows, and would put old answers over newer ones.
         draft={{
@@ -431,7 +445,7 @@ function CheckoutWizardForm({
               bookingId={bookingId}
               save={saveProgressAsync}
               busy={saveProgress.isPending || completeCheckout.isPending}
-              onExiting={setExiting}
+              onExiting={onExiting}
             />
           </>
         }

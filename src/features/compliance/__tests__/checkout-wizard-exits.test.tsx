@@ -309,6 +309,60 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
     expect(completeCheckoutWizard).not.toHaveBeenCalled();
   });
 
+  it('CheckoutWizardPage_SaveAndExitOnItsWay_BackAndTheListOfStepsTakeNoPressAndNoSecondSaveRaces', async () => {
+    renderPage();
+    await goToAlloggiati();
+    await waitFor(() => expect(saveCheckoutProgress).toHaveBeenCalledTimes(1));
+    let finishSaving: (state: CheckoutWizardState) => void = () => undefined;
+    vi.mocked(saveCheckoutProgress).mockImplementationOnce(() => new Promise<CheckoutWizardState>((resolve) => { finishSaving = resolve; }));
+
+    fireEvent.click(screen.getByTestId('checkout-save-exit'));
+    await waitFor(() => expect(saveCheckoutProgress).toHaveBeenCalledTimes(2));
+
+    // The way between the steps is shut while the progress is saved on the step the host leaves from: a change of step would save the progress again, in a race.
+    expect(screen.getByTestId('checkout-step-back')).toBeDisabled();
+    expect(within(screen.getByRole('list', { name: i18n.t('ui.stepper.label') })).queryAllByRole('button')).toHaveLength(0);
+    fireEvent.click(screen.getByTestId('checkout-step-back'));
+    await settle();
+    expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', 'alloggiati');
+    expect(saveCheckoutProgress).toHaveBeenCalledTimes(2);
+
+    await act(async () => finishSaving(wizardState({ currentStep: 'alloggiati' })));
+
+    expect(await screen.findByTestId('booking-detail-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(saveCheckoutProgress).toHaveBeenCalledTimes(2);
+  });
+
+  it('CheckoutWizardPage_SaveAndExitOnItsWay_AChangeOfStepFromTheSummaryLaunchesNoSecondSave', async () => {
+    vi.mocked(startCheckoutWizard).mockResolvedValue(
+      wizardState({
+        currentStep: 'property-ready',
+        stay: { ...wizardState().stay, departureConfirmed: true },
+        cleaning: { choice: 'Skip', supplierOrgId: null, category: null, notes: null, requestId: null },
+        touristTax: { recordedAmount: 12, currency: 'EUR', collectedWithOnlinePayment: false, collection: 'CollectedAtProperty' },
+      }),
+    );
+    renderPage();
+    await onStep('property-ready');
+    expect(saveCheckoutProgress).not.toHaveBeenCalled();
+    let finishSaving: (state: CheckoutWizardState) => void = () => undefined;
+    vi.mocked(saveCheckoutProgress).mockImplementationOnce(() => new Promise<CheckoutWizardState>((resolve) => { finishSaving = resolve; }));
+
+    fireEvent.click(screen.getByTestId('checkout-save-exit'));
+    await waitFor(() => expect(saveCheckoutProgress).toHaveBeenCalledTimes(1));
+
+    // A link of the summary changes the step all the same (it is a link of the page, and the address is the shell's): it saves nothing while the host is leaving.
+    fireEvent.click(within(screen.getByTestId('checkout-summary')).getAllByRole('link', { name: /^Modifica / })[0]);
+    await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', 'stay-summary'));
+    await settle();
+    expect(saveCheckoutProgress).toHaveBeenCalledTimes(1);
+
+    await act(async () => finishSaving(wizardState({ currentStep: 'property-ready' })));
+
+    expect(await screen.findByTestId('booking-detail-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(saveCheckoutProgress).toHaveBeenCalledTimes(1);
+  });
+
   it('CheckoutWizardPage_SaveAndExitNotSaved_StaysWithTheReasonAndTheAnswers', async () => {
     renderPage();
     await goToAlloggiati();
