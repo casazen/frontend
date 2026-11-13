@@ -1348,6 +1348,15 @@
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
+      "complianceBookingNotFound": "Non troviamo questo soggiorno.",
+      "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
+      "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
+      "complianceProofFileInvalid": "Scegli il file della prova: quello che hai caricato è vuoto o non c'è.",
+      "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
+      "complianceProofTooLarge": "Il file è troppo grande: scegline uno più piccolo.",
+      "complianceProofTypeUnsupported": "Il file deve essere un PDF, un JPG o un PNG.",
+      "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
+      "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
       "archiveInvalidPeriod": "I giorni scelti non sono validi: il primo non può essere dopo l'ultimo e servono giorni tra il 2000 e il 2100.",
       "archiveInvalidType": "Questo tipo di documento non esiste.",
@@ -1400,6 +1409,11 @@
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
       "octorateExistingInventoryMustImport": "Questo immobile esiste già sui portali: va importato e abbinato, non creato di nuovo.",
+      "octorateHandoffDestinationUnavailable": "L'area collegata non ha ancora un indirizzo da aprire da qui. Riprova più tardi; se succede ancora, contatta il supporto.",
+      "octorateHandoffPeriodInvalid": "Il periodo della verifica non è valido.",
+      "octorateHandoffPropertyNotMapped": "Questo immobile non è collegato al tuo channel manager: collegalo per fare la verifica da qui.",
+      "octorateHandoffReturnPathInvalid": "Non riusciamo a ricordare la pagina da cui parti, quindi non possiamo preparare la verifica. Ricarica la pagina e riprova.",
+      "octorateHandoffTargetNotFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso.",
       "octorateMappingAlreadyConfirmed": "Questo annuncio è già collegato a un immobile.",
       "octorateMappingLinkedToOtherProperty": "Questo annuncio è già stato collegato a un altro immobile nel frattempo. Torna indietro: l'elenco si aggiorna da solo.",
       "octorateMappingNotConfirmed": "Prima di scegliere la camera, l'annuncio va collegato a un immobile.",
@@ -5085,6 +5099,58 @@
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
     },
+    "drawer": {
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "continue": "Continua la verifica",
+      "continuing": "Apro l'area collegata…",
+      "destination": {
+        "deepLink": "Si apre in questa scheda, direttamente nella sezione da controllare. Per tornare qui usa il tasto Indietro del browser.",
+        "home": "Si apre in questa scheda, nella pagina iniziale della tua area collegata: segui il percorso indicato sopra. Per tornare qui usa il tasto Indietro del browser."
+      },
+      "disclosure": {
+        "body": "L'esito resta nell'area collegata: CasaZen non lo legge, non lo importa e non lo registra come prova. Quando torni, le tue pratiche sono come le hai lasciate.",
+        "title": "Dati consultati su Octorate"
+      },
+      "error": {
+        "destination": "Non riusciamo ad aprire l'area collegata da qui. Riprova tra poco.",
+        "generic": "Non riusciamo a preparare la verifica in questo momento. Riprova tra poco.",
+        "notFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso. Ricarica la pagina e riprova."
+      },
+      "fallback": {
+        "Alloggiati": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio Alloggiati di questo soggiorno risulti inviato e senza errori nell'area collegata.",
+        "Istat": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio ISTAT del periodo risulti inviato e senza errori nell'area collegata."
+      },
+      "guide": {
+        "checkTitle": "Cosa controllare",
+        "menuTitle": "Dove andare"
+      },
+      "intro": "Ti accompagniamo alla sezione giusta dell'area collegata e ti diciamo cosa controllare.",
+      "loading": "Preparo la verifica…",
+      "retry": "Riprova",
+      "section": {
+        "body": "Controlla nell'area collegata l'esito dell'invio di questo soggiorno: ti diciamo dove andare e cosa guardare.",
+        "title": "Cassetto Compliance"
+      },
+      "target": {
+        "booking": "Prenotazione",
+        "listing": "Annuncio",
+        "period": "Periodo",
+        "property": "Immobile",
+        "topic": "Argomento"
+      },
+      "title": "Cassetto Compliance",
+      "topic": {
+        "Alloggiati": "Alloggiati Web",
+        "Istat": "ISTAT"
+      },
+      "trigger": "Verifica nel tuo Cassetto Compliance",
+      "welcome": {
+        "body": "L'esito resta consultabile nell'area collegata: CasaZen non lo importa e non cambia nessuna delle tue pratiche.",
+        "dismiss": "Ho capito",
+        "title": "Bentornato nel Cassetto Compliance"
+      }
+    },
     "activation": {
       "loading": "Caricamento wizard attivazione...",
       "notFound": "Immobile non trovato",
@@ -5248,8 +5314,7 @@
         "toSendHint": "La comunicazione di questo soggiorno non risulta inviata. CasaZen non la trasmette: inviala sul portale Alloggiati Web e registrala come inviata. Il check-out non è bloccato.",
         "failedHint": "La comunicazione di questo soggiorno è in errore o respinta: correggila e inviala di nuovo sul portale. Il check-out non è bloccato.",
         "overdue": "Scadenza superata il {{deadline}}.",
-        "dataIncomplete": "Mancano dati degli ospiti.",
-        "open": "Apri la sezione Alloggiati della prenotazione"
+        "dataIncomplete": "Mancano dati degli ospiti."
       },
       "cleaning": {
         "existingTitle": "Richieste già inviate per questo soggiorno",
@@ -5295,6 +5360,16 @@
         "taxCollection": "Indica come è stata riscossa l'imposta di soggiorno.",
         "propertyReady": "Indica se la proprietà è pronta per il prossimo ospite."
       },
+      "guestData": {
+        "cancel": "Annulla",
+        "description": "Compila i dati che servono ad Alloggiati Web. Le risposte del check-out restano come sono.",
+        "done": "Fatto",
+        "open": "Completa i dati degli ospiti",
+        "saved": "Dati degli ospiti salvati.",
+        "title": "Dati degli ospiti",
+        "unsaved": "Hai modifiche non salvate. Salva i dati degli ospiti, oppure annulla per lasciarle."
+      },
+      "saveAndExit": "Salva ed esci",
       "summary": {
         "title": "Le tue risposte",
         "departure": "Partenza",
@@ -5305,14 +5380,29 @@
         "touristTax": "Imposta di soggiorno"
       },
       "done": {
-        "title": "Il soggiorno è chiuso",
-        "description": "Il check-out di {{guest}} è registrato.",
-        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
-        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
-        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
-        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "alloggiatiSent": "La comunicazione Alloggiati risulta inviata.",
         "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
-        "compliance": "Vai agli adempimenti"
+        "channelManager": {
+          "automatic": "Il check-out viene passato in automatico al channel manager. Qui CasaZen non mostra se è arrivato."
+        },
+        "cleaningNotSent": "La richiesta di pulizia non risulta inviata: controllala nel dettaglio della prenotazione.",
+        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "cleaningSkipped": "Pulizie: nessuna richiesta, il passaggio è stato saltato.",
+        "compliance": "Vai agli adempimenti",
+        "description": "Il check-out di {{guest}} è registrato.",
+        "next": {
+          "alloggiatiLink": "Apri la scheda Alloggiati della prenotazione",
+          "markReady": "Dichiara l'immobile pronto dagli adempimenti, quando lo è.",
+          "nothing": "Non resta altro da fare per questo soggiorno.",
+          "sendAlloggiati": "Invia la comunicazione Alloggiati dalla scheda della prenotazione.",
+          "title": "Prossimo passo"
+        },
+        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
+        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
+        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
+        "title": "Il soggiorno è chiuso",
+        "touristTax": "Imposta di soggiorno dichiarata: {{collection}}.",
+        "touristTaxNotCollected": "Imposta di soggiorno: non riscossa. Va gestita secondo il regolamento del comune."
       }
     },
     "safety": {
@@ -5440,6 +5530,215 @@
       "warnings": {
         "safety_floor_areas_missing": "Senza i m² di ogni piano il minimo è calcolato solo sui piani. La legge chiede un estintore ogni 200 m² di pavimento o frazione, con un minimo di uno per piano."
       }
+    }
+  },
+  "complianceArchive": {
+    "coverage": {
+      "counts": "{{proven}} con prova · {{toVerify}} da verificare · {{missing}} mancanti · {{notApplicable}} non applicabili",
+      "deadline": "Scadenza: {{when}}",
+      "group": {
+        "ExternalVerificationRequired": "Da verificare nel Cassetto Compliance",
+        "Missing": "Mancante",
+        "NotApplicable": "Non applicabile",
+        "OfficialProof": "Prova disponibile"
+      },
+      "haveReceipt": "Ho già la ricevuta",
+      "headline": {
+        "allProven": "Tutte le prove richieste sono archiviate",
+        "missing_one": "Manca {{count}} prova",
+        "missing_other": "Mancano {{count}} prove",
+        "nothingOwed": "In questo periodo non c'è niente da provare",
+        "toVerify_one": "{{count}} esito da verificare nel Cassetto Compliance",
+        "toVerify_other": "{{count}} esiti da verificare nel Cassetto Compliance",
+        "unknown": "Non possiamo dire che sia tutto in ordine: restano esiti da verificare"
+      },
+      "narrowed": "Elenco limitato a: {{kind}}.",
+      "openStay": "Apri il soggiorno",
+      "period": "Dal {{from}} al {{to}}",
+      "proofAt": "Prova archiviata il {{when}}",
+      "row": {
+        "Alloggiati": "Soggiorno {{code}} · arrivo {{day}}",
+        "Istat": "ISTAT · {{month}}",
+        "TouristTax": "Imposta di soggiorno · {{month}}"
+      },
+      "showMore": "Mostra altre {{count}}",
+      "toVerifyByHand": "L'esito si trova nell'area del tuo channel manager: controllalo lì.",
+      "toVerifyTitle": "Da verificare nel Cassetto Compliance",
+      "upload": "Carica la prova"
+    },
+    "description": "Quello che CasaZen conserva per dimostrare le comunicazioni a Polizia e ISTAT e l'imposta di soggiorno.",
+    "download": {
+      "done": "Prova scaricata.",
+      "failed": "Non siamo riusciti a scaricare la prova. Riprova."
+    },
+    "filters": {
+      "allKinds": "Tutti i tipi",
+      "allProperties": "Tutti gli immobili",
+      "clearDay": "Mostra tutto il periodo",
+      "day": "Solo il giorno {{day}}.",
+      "kind": "Tipo di prova",
+      "period": "Periodo",
+      "property": "Immobile",
+      "recent": "Ultimi mesi",
+      "wholeYear": "Tutto il {{year}}"
+    },
+    "kind": {
+      "AlloggiatiReceipt": "Ricevuta Alloggiati Web",
+      "IstatProof": "Prova ISTAT",
+      "other": "Prova",
+      "TouristTaxDeclaration": "Dichiarazione dell'imposta di soggiorno",
+      "TouristTaxPayment": "Pagamento dell'imposta di soggiorno"
+    },
+    "proofs": {
+      "download": "Scarica",
+      "downloadLabel": "Scarica: {{kind}}, {{when}}",
+      "emptyDescription": "Non c'è nessun file archiviato per questi filtri. Cambia il periodo oppure carica la prova che hai.",
+      "emptyTitle": "Nessuna prova in archivio",
+      "exportFailed": "Non siamo riusciti a preparare l'archivio. Riprova.",
+      "exportPeriod": "Periodo: {{period}}",
+      "exportZip": "Scarica l'archivio (ZIP)",
+      "keptUntil": "Conservata fino al {{date}}",
+      "listLabel": "Prove archiviate",
+      "loadError": "Non riusciamo a caricare le prove.",
+      "loading": "Carico le prove…",
+      "next": "Avanti",
+      "notFound": "Non troviamo quello che cerchi: l'immobile non esiste o non puoi vederlo.",
+      "pageOf": "Pagina {{page}} di {{pages}}",
+      "pagerLabel": "Pagine dell'archivio",
+      "previous": "Indietro",
+      "receivedOn": "il {{date}}"
+    },
+    "reason": {
+      "alloggiati_failed": "L'invio è fallito o è stato rifiutato.",
+      "alloggiati_incomplete": "Sono stati acquisiti solo alcuni ospiti: il soggiorno non è completo.",
+      "alloggiati_not_sent": "La comunicazione è dovuta e non è stata inviata.",
+      "alloggiati_sending": "L'invio è in corso.",
+      "awaiting_receipt": "Comunicazione inviata: aspettiamo la ricevuta.",
+      "connection_inactive": "Il tuo channel manager non invia i dati: questo soggiorno va inviato a mano.",
+      "deadline_overdue": "La scadenza è passata e nulla prova la comunicazione.",
+      "entrusted_to_channel_manager": "Gli ospiti sono stati affidati al tuo channel manager: aspettiamo la ricevuta.",
+      "evidence_missing": "Non c'è nessuna prova archiviata.",
+      "external_verification_required": "L'esito è nell'area del tuo channel manager: CasaZen non ne ha una prova.",
+      "no_show": "Gli ospiti non sono arrivati: non c'è niente da comunicare.",
+      "over_thirty_nights_not_sent": "Il soggiorno supera i 30 notti e il channel manager non lo invia da solo: va inviato a mano.",
+      "period_open": "Il periodo è ancora aperto: la scadenza non è passata.",
+      "receipt_archived": "La ricevuta è archiviata.",
+      "receipt_missing": "La comunicazione risulta inviata ma la ricevuta non è in archivio.",
+      "short_stay_at_risk": "Soggiorno breve (6 ore di tempo): gli ospiti non sono stati affidati al channel manager."
+    },
+    "source": {
+      "casazen_receipt": "Scaricata da CasaZen",
+      "manual_upload": "Caricata da te",
+      "other": "Archiviata in CasaZen"
+    },
+    "summary": {
+      "export": {
+        "csv": "Rapporto (CSV)",
+        "pdf": "Rapporto (PDF)"
+      },
+      "exportFailed": "Non siamo riusciti a preparare il rapporto. Riprova.",
+      "loadError": "Non riusciamo a caricare il riepilogo.",
+      "loading": "Carico il riepilogo…",
+      "notAvailable": "Il riepilogo non è disponibile in questo momento."
+    },
+    "tabs": {
+      "proofs": "Prove",
+      "summary": "Riepilogo"
+    },
+    "tabsLabel": "Sezioni dell'archivio delle prove",
+    "title": "Archivio delle prove",
+    "upload": {
+      "cancel": "Annulla",
+      "chooseMonth": "Scegli il mese",
+      "chooseProperty": "Scegli l'immobile",
+      "day": "Giorno della comunicazione",
+      "dayHint": "Il giorno in cui è stata inviata, non nel futuro.",
+      "dayInvalid": "Scegli un giorno passato, non nel futuro.",
+      "description": "PDF, JPG o PNG: il file resta nel tuo archivio privato per cinque anni.",
+      "done": "Prova caricata nell'archivio.",
+      "failed": "Non siamo riusciti a caricare la prova. Riprova.",
+      "file": "File",
+      "fileHint": "PDF, JPG o PNG.",
+      "fileInvalid": "Il file deve essere un PDF, un JPG o un PNG.",
+      "kind": "Cosa dimostra",
+      "month": "Mese",
+      "open": "Carica una prova",
+      "portalBody": "Entra nel portale, scarica la ricevuta della comunicazione e poi caricala qui sotto.",
+      "portalLink": "Apri il portale Alloggiati Web",
+      "portalTitle": "Prima prendi la ricevuta",
+      "property": "Immobile",
+      "submit": "Carica la prova",
+      "title": "Carica una prova"
+    }
+  },
+  "connectionHealth": {
+    "activate": "Attiva o ricollega l'invio",
+    "archiveLink": "Carica le ricevute nell'archivio delle prove",
+    "credentials": {
+      "none": "CasaZen non ha le credenziali del portale Alloggiati Web: le ricevute le carichi tu.",
+      "stored": "Le credenziali del portale sono salvate in CasaZen ma non verificate: le ricevute le carichi tu.",
+      "usable": "Le credenziali del portale sono verificate: CasaZen può scaricare le ricevute."
+    },
+    "description": "Chi invia i dati degli ospiti a Polizia e ISTAT e se l'invio funziona.",
+    "detail": {
+      "Active": {
+        "CasaZen": "CasaZen ha le credenziali del portale e può inviare i dati.",
+        "ChannelManager": "Il tuo channel manager conferma che il collegamento funziona e che l'invio automatico giornaliero è acceso.",
+        "other": "L'invio risulta attivo."
+      },
+      "Inactive": {
+        "CasaZen": "CasaZen non riesce a inviare i dati con le credenziali salvate.",
+        "ChannelManager": "Il tuo channel manager dice che l'invio non è attivo: i dati degli ospiti non partono da soli.",
+        "other": "L'invio non risulta attivo."
+      },
+      "Manual": "Invii tu i dati ai portali: CasaZen ti ricorda le scadenze.",
+      "Unknown": {
+        "CasaZen": "CasaZen non riesce a verificare l'invio con le credenziali salvate.",
+        "ChannelManager": "CasaZen non riesce a verificare questa connessione: il tuo channel manager non dice se l'invio è attivo.",
+        "other": "CasaZen non riesce a verificare questa connessione."
+      }
+    },
+    "disclosureBody": "Lo stato viene letto dal tuo channel manager: CasaZen non lo conferma da sola e non ne importa il risultato.",
+    "disclosureTitle": "Dati consultati su Octorate",
+    "instructions": {
+      "CasaZen": "Controlla le credenziali del portale Alloggiati Web salvate in CasaZen.",
+      "ChannelManager": {
+        "Inactive": "Accendi l'invio automatico nel pannello del tuo channel manager (collegamento con la Polizia e invio giornaliero), poi torna qui e controlla di nuovo.",
+        "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
+      }
+    },
+    "lastRun": "Ultimo invio automatico: {{when}}",
+    "loadError": "Non riusciamo a leggere lo stato dell'invio.",
+    "loading": "Leggo lo stato dell'invio…",
+    "notFound": "Non troviamo questo immobile.",
+    "outsideItaly": "Fuori dall'Italia i dati degli ospiti non si inviano a Polizia e ISTAT da qui.",
+    "reason": {
+      "connection_not_checked_yet": "Non l'abbiamo ancora controllata: la leggiamo alla prossima apertura.",
+      "credentials_refused": "Il portale ha rifiutato le credenziali salvate.",
+      "octorate_not_connected": "L'immobile non è collegato al channel manager.",
+      "octorate_police_account_invalid": "Il channel manager dice che l'account del portale della Polizia non è valido.",
+      "octorate_police_autorun_off": "L'invio automatico giornaliero è spento nel channel manager.",
+      "octorate_police_not_exposed": "Il channel manager non ci lascia leggere questo stato.",
+      "octorate_unavailable": "Non siamo riusciti a raggiungere il channel manager: riprova più tardi.",
+      "sender_casazen_not_available": "L'invio da parte di CasaZen non è ancora disponibile."
+    },
+    "refresh": "Controlla di nuovo",
+    "sender": {
+      "CasaZen": "CasaZen invia i dati",
+      "ChannelManager": "Il tuo channel manager invia i dati",
+      "Manual": "Invio manuale",
+      "unknown": "Non è indicato chi invia i dati"
+    },
+    "state": {
+      "Active": "Attivo",
+      "Inactive": "Non attivo",
+      "Manual": "Manuale",
+      "Unknown": "Non verificabile"
+    },
+    "title": "Invio a Polizia e ISTAT",
+    "topic": {
+      "Alloggiati": "Alloggiati Web (Polizia)",
+      "Istat": "ISTAT (statistiche del turismo)"
     }
   },
   "comune": {

@@ -15,6 +15,7 @@ export type FeatureFlagKey =
   | 'supplierRequestBackups'
   | 'agencyTier'
   | 'crmMarketing'
+  | 'complianceTrafficLight'
   | 'messageAssistant';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
@@ -99,6 +100,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */
   crmMarketing: false,
+  /**
+   * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
+   * proofs of a period (`GET /api/compliance/report` and its export, which answer 404 while it is off). Off until the product owner turns it on. The
+   * page of the proofs (`/app/short-rent/alloggiati/reports`) offers its summary («Riepilogo») only while it is on: off, it is the archive of the proofs
+   * alone, which does not depend on it.
+   */
+  complianceTrafficLight: false,
   /**
    * The assistant of the guests' messages (backend `MessageAssistant`, E05/F05, NF-66, NF-67, PO-08, PO-09), off until the product owner turns it on: what a guest
    * writes is personal data and the AI provider is an external sub-processor, so the privacy notice and the processing agreement of PO-09 come first. While it is
