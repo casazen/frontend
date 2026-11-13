@@ -1,4 +1,5 @@
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
+import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import type { DashboardMissing } from '@/types/dashboard.types';
 import type { TouristTaxRateRule, TouristTaxRateVerification } from '@/types/tourist-tax.types';
 
@@ -289,6 +290,12 @@ export interface ComplianceSummaryItem {
   reason?: string | null;
   /** The month (`yyyy-MM`) of an ISTAT or tourist tax item; null or absent for the others. */
   period?: string | null;
+  /**
+   * `Alloggiati` or `Istat` when the outcome is held only by the connected area and CasaZen has no proof of it (`HandoffTopic` of the backend, E03/F05):
+   * the one signal that offers «Verifica nel tuo Cassetto Compliance» on the row, with this topic. Null or absent when none applies (a communication that
+   * was never sent, a failure CasaZen knows, a month the host sends by hand): no action is offered. A server that does not send it offers none.
+   */
+  handoffTopic?: ComplianceHandoffTopic | null;
 }
 
 export interface ComplianceSummarySection {

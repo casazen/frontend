@@ -1400,6 +1400,11 @@
       "octorateConnectionNeedsWholeOrg": "Il collegamento del channel manager riguarda tutti gli immobili dell'organizzazione: può gestirlo solo chi li vede tutti.",
       "octorateExchangeFailed": "Il tuo channel manager non ha confermato l'autorizzazione. Ricomincia il collegamento.",
       "octorateExistingInventoryMustImport": "Questo immobile esiste già sui portali: va importato e abbinato, non creato di nuovo.",
+      "octorateHandoffDestinationUnavailable": "L'area collegata non ha ancora un indirizzo da aprire da qui. Riprova più tardi; se succede ancora, contatta il supporto.",
+      "octorateHandoffPeriodInvalid": "Il periodo della verifica non è valido.",
+      "octorateHandoffPropertyNotMapped": "Questo immobile non è collegato al tuo channel manager: collegalo per fare la verifica da qui.",
+      "octorateHandoffReturnPathInvalid": "Non riusciamo a ricordare la pagina da cui parti, quindi non possiamo preparare la verifica. Ricarica la pagina e riprova.",
+      "octorateHandoffTargetNotFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso.",
       "octorateMappingAlreadyConfirmed": "Questo annuncio è già collegato a un immobile.",
       "octorateMappingLinkedToOtherProperty": "Questo annuncio è già stato collegato a un altro immobile nel frattempo. Torna indietro: l'elenco si aggiorna da solo.",
       "octorateMappingNotConfirmed": "Prima di scegliere la camera, l'annuncio va collegato a un immobile.",
@@ -4743,6 +4748,58 @@
     "properties": {
       "openWizard": "Wizard attivazione",
       "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
+    },
+    "drawer": {
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "continue": "Continua la verifica",
+      "continuing": "Apro l'area collegata…",
+      "destination": {
+        "deepLink": "Si apre in questa scheda, direttamente nella sezione da controllare. Per tornare qui usa il tasto Indietro del browser.",
+        "home": "Si apre in questa scheda, nella pagina iniziale della tua area collegata: segui il percorso indicato sopra. Per tornare qui usa il tasto Indietro del browser."
+      },
+      "disclosure": {
+        "body": "L'esito resta nell'area collegata: CasaZen non lo legge, non lo importa e non lo registra come prova. Quando torni, le tue pratiche sono come le hai lasciate.",
+        "title": "Dati consultati su Octorate"
+      },
+      "error": {
+        "destination": "Non riusciamo ad aprire l'area collegata da qui. Riprova tra poco.",
+        "generic": "Non riusciamo a preparare la verifica in questo momento. Riprova tra poco.",
+        "notFound": "Non troviamo questa prenotazione o questo immobile, oppure non hai accesso. Ricarica la pagina e riprova."
+      },
+      "fallback": {
+        "Alloggiati": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio Alloggiati di questo soggiorno risulti inviato e senza errori nell'area collegata.",
+        "Istat": "Quando la verifica sarà di nuovo disponibile ti indicheremo la sezione esatta. Intanto, controlla che l'invio ISTAT del periodo risulti inviato e senza errori nell'area collegata."
+      },
+      "guide": {
+        "checkTitle": "Cosa controllare",
+        "menuTitle": "Dove andare"
+      },
+      "intro": "Ti accompagniamo alla sezione giusta dell'area collegata e ti diciamo cosa controllare.",
+      "loading": "Preparo la verifica…",
+      "retry": "Riprova",
+      "section": {
+        "body": "Controlla nell'area collegata l'esito dell'invio di questo soggiorno: ti diciamo dove andare e cosa guardare.",
+        "title": "Cassetto Compliance"
+      },
+      "target": {
+        "booking": "Prenotazione",
+        "listing": "Annuncio",
+        "period": "Periodo",
+        "property": "Immobile",
+        "topic": "Argomento"
+      },
+      "title": "Cassetto Compliance",
+      "topic": {
+        "Alloggiati": "Alloggiati Web",
+        "Istat": "ISTAT"
+      },
+      "trigger": "Verifica nel tuo Cassetto Compliance",
+      "welcome": {
+        "body": "L'esito resta consultabile nell'area collegata: CasaZen non lo importa e non cambia nessuna delle tue pratiche.",
+        "dismiss": "Ho capito",
+        "title": "Bentornato nel Cassetto Compliance"
+      }
     },
     "activation": {
       "loading": "Caricamento wizard attivazione...",

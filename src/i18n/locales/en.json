@@ -1400,6 +1400,11 @@
       "octorateConnectionNeedsWholeOrg": "The channel manager connection covers all the properties of the organization: only someone who sees all of them can manage it.",
       "octorateExchangeFailed": "Your channel manager did not confirm the authorization. Start the connection again.",
       "octorateExistingInventoryMustImport": "This property already exists on the portals: it has to be imported and matched, not created again.",
+      "octorateHandoffDestinationUnavailable": "The connected area has no address to open from here yet. Try again later; if it keeps happening, contact support.",
+      "octorateHandoffPeriodInvalid": "The period of the check is not valid.",
+      "octorateHandoffPropertyNotMapped": "This property is not connected to your channel manager: connect it to do the check from here.",
+      "octorateHandoffReturnPathInvalid": "We can't remember the page you start from, so we can't prepare the check. Reload the page and try again.",
+      "octorateHandoffTargetNotFound": "We can't find this booking or property, or you don't have access.",
       "octorateMappingAlreadyConfirmed": "This listing is already linked to a property.",
       "octorateMappingLinkedToOtherProperty": "This listing has meanwhile been linked to another property. Go back: the list updates by itself.",
       "octorateMappingNotConfirmed": "Before choosing the room, the listing has to be linked to a property.",
@@ -4743,6 +4748,58 @@
     "properties": {
       "openWizard": "Activation wizard",
       "publishBlocked": "Complete the activation wizard before publishing the property."
+    },
+    "drawer": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "continue": "Continue the check",
+      "continuing": "Opening the connected area…",
+      "destination": {
+        "deepLink": "Opens in this tab, straight at the section to check. To come back here use your browser's Back button.",
+        "home": "Opens in this tab, on the home page of your connected area: follow the path above. To come back here use your browser's Back button."
+      },
+      "disclosure": {
+        "body": "The outcome stays in the connected area: CasaZen does not read it, import it or record it as proof. When you come back, your records are as you left them.",
+        "title": "Data consulted on Octorate"
+      },
+      "error": {
+        "destination": "We can't open the connected area from here. Please try again shortly.",
+        "generic": "We can't prepare the check right now. Please try again shortly.",
+        "notFound": "We can't find this booking or property, or you don't have access. Reload the page and try again."
+      },
+      "fallback": {
+        "Alloggiati": "When the check is available again we will show you the exact section. For now, make sure the Alloggiati communication of this stay shows as sent, with no errors, in the connected area.",
+        "Istat": "When the check is available again we will show you the exact section. For now, make sure the ISTAT communication of the period shows as sent, with no errors, in the connected area."
+      },
+      "guide": {
+        "checkTitle": "What to check",
+        "menuTitle": "Where to go"
+      },
+      "intro": "We take you to the right section of the connected area and tell you what to check.",
+      "loading": "Preparing the check…",
+      "retry": "Try again",
+      "section": {
+        "body": "Check the outcome of this stay's communication in the connected area: we tell you where to go and what to look at.",
+        "title": "Cassetto Compliance"
+      },
+      "target": {
+        "booking": "Booking",
+        "listing": "Listing",
+        "period": "Period",
+        "property": "Property",
+        "topic": "Topic"
+      },
+      "title": "Cassetto Compliance",
+      "topic": {
+        "Alloggiati": "Alloggiati Web",
+        "Istat": "ISTAT"
+      },
+      "trigger": "Verify in your Cassetto Compliance",
+      "welcome": {
+        "body": "The outcome can still be read in the connected area: CasaZen does not import it and changes none of your records.",
+        "dismiss": "Got it",
+        "title": "Welcome back to the Cassetto Compliance"
+      }
     },
     "activation": {
       "loading": "Loading activation wizard...",

@@ -9,6 +9,7 @@ import { CommandPaletteTrigger } from '@/components/shared/command-palette/comma
 import { AlertPopup } from '@/components/shared/alert-popup';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
+import { ComplianceDrawerReturn } from '@/features/compliance/compliance-drawer/compliance-drawer-welcome';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
@@ -87,6 +88,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
             >
               {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
               <LegalConsentsNotice />
+              {/* The way back from the Cassetto Compliance (CHK-15): puts the host back where they left and says «Bentornato». Nothing on the page otherwise. */}
+              <ComplianceDrawerReturn />
               {children}
             </main>
             <BottomNav contextKey={contextKey} />
