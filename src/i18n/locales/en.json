@@ -19912,6 +19912,7 @@
         },
         "notApplicable": "Does not apply"
       },
+      "noCost": "No cost",
       "stripe": {
         "title": "Direct bookings: card processing fees",
         "unavailable": "Not recorded yet for these payments."

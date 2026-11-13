@@ -19912,6 +19912,7 @@
         },
         "notApplicable": "Non si applica"
       },
+      "noCost": "Nessun costo",
       "stripe": {
         "title": "Prenotazioni dirette: commissioni di incasso con carta",
         "unavailable": "Non ancora registrate per questi pagamenti."

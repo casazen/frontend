@@ -277,6 +277,39 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(within(screen.getByTestId('channel-costs-group-channels')).queryByText('Sito diretto')).toBeNull();
   });
 
+  // Money: a stay nobody charges the host for (entered by hand, local) is "no cost" in words, in the commission and in the rate: the server
+  // says it with zeros, and a "0,00" or a "0%" would read as a figure that was reported; "not available" would say the cost is unknown.
+  it('Table_NoCostRow_SaysNoCostInWordsNeverZeroNorNotAvailable', async () => {
+    serve(() => ok(REPORT));
+    renderPage();
+
+    const group = await screen.findByTestId('channel-costs-group-free');
+
+    expect(group).toHaveTextContent('Senza costi per te');
+    const manual = within(group).getByTestId('channel-costs-row');
+    expect(within(manual).getByTestId('channel-costs-no-cost')).toHaveTextContent('Nessun costo');
+    expect(within(manual).getByTestId('channel-costs-rate')).toHaveTextContent('Nessun costo');
+    // No zero amount, no zero rate and no "not available" in the line (the gross and the net, 300,00, have zeros of their own).
+    expect(manual).not.toHaveTextContent(/(?<![\d.,])0,00/);
+    expect(manual).not.toHaveTextContent(/(?<![\d.,])0%/);
+    expect(manual).not.toHaveTextContent('Non disponibile');
+    expect(within(manual).queryByTestId('channel-costs-unavailable')).toBeNull();
+    expect(manual).toHaveTextContent('300,00');
+  });
+
+  // A figure of the server is never dropped: a stay with no cost that comes with a cost that is not zero is shown as it is.
+  it('Table_NoCostRowWithACostThatIsNotZero_ShowsTheFigureAsTheServerSaysIt', async () => {
+    const odd = row({ source: 'Manual', kind: 'NoCost', stayCount: 1, commission: 12, commissionCents: 1200, net: 288, netCents: 28800, costRate: 0.04, commissionMode: null });
+    serve(() => ok({ ...REPORT, rows: [odd] }));
+    renderPage();
+
+    const manual = await screen.findByTestId('channel-costs-row');
+
+    expect(manual).toHaveTextContent('12,00');
+    expect(within(manual).getByTestId('channel-costs-rate')).toHaveTextContent('4%');
+    expect(within(manual).queryByTestId('channel-costs-no-cost')).toBeNull();
+  });
+
   it('Table_StaysWithoutACommission_AreNotedForTheRowAndForTheTotalNeverPresentedAsFree', async () => {
     serve(() => ok(REPORT));
     renderPage();

@@ -39,6 +39,9 @@ function CostRow({ row, group }: RowProps) {
   // The figures carry no currency (the server adds every property in its own, with no conversion): the number alone.
   const money = (cents: number | null) => formatSummedCents(cents, locale) ?? na;
   const mode = modeOf(row);
+  // A stay nobody charges the host for (entered by hand, a local one) is "no cost" in words, never "0,00" nor "0%" (the server says it with a
+  // zero) and never "not available": only an exact zero is said so, any other figure of the server is shown as it is.
+  const noCost = group === 'free' && row.commissionCents === 0;
 
   return (
     <tr className="border-b border-border" data-testid="channel-costs-row">
@@ -48,7 +51,11 @@ function CostRow({ row, group }: RowProps) {
       <td className={FIGURE}>{row.stayCount}</td>
       <td className={FIGURE}>{money(row.grossCents)}</td>
       <td className={FIGURE}>
-        {row.commissionCents === null ? (
+        {noCost ? (
+          <div className="font-medium" data-testid="channel-costs-no-cost">
+            {t('reports.channelCosts.noCost')}
+          </div>
+        ) : row.commissionCents === null ? (
           <div data-testid="channel-costs-unavailable">
             <div>{na}</div>
             {group === 'cardFees' ? <div className="mt-0.5 text-xs font-normal text-foreground/70">{t('reports.channelCosts.stripe.unavailable')}</div> : null}
@@ -63,7 +70,9 @@ function CostRow({ row, group }: RowProps) {
         ) : null}
       </td>
       <td className={FIGURE}>{money(row.netCents)}</td>
-      <td className={FIGURE}>{formatRate(row.costRate, locale) ?? na}</td>
+      <td className={FIGURE} data-testid="channel-costs-rate">
+        {noCost ? t('reports.channelCosts.noCost') : (formatRate(row.costRate, locale) ?? na)}
+      </td>
       <td className="px-3 py-2 align-top">
         {group === 'channels' ? (
           <div data-testid="channel-costs-mode">
