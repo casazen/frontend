@@ -115,6 +115,7 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/payments/revenue', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/payments/create', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/reports', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/documents', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/settings/payments', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/alloggiati', '/app/short-rent/compliance'],
     ['short-rent', '/app/short-rent/compliance/cin', '/app/short-rent/compliance'],

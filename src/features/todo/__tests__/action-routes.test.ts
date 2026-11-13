@@ -201,6 +201,17 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('ApproveAiDraft'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=messages`);
   });
 
+  it('todoActionRoute_ReviewFiscalDocument_OpensTheFiscalPageOfTheHostForWhoMayReadTheProperties', () => {
+    // `ActivityAction` 30 (E06/F03/US02/T01): a rejected or to-collect fiscal document of the channel manager. Its page is the fiscal page of the
+    // host until the list of the documents exists; the item is about a document, never a booking, so no id fills the address.
+    const item = itemFor('ReviewFiscalDocument', { entityType: 'FiscalDocument', entityId: BOOKING_ID, propertyId: null });
+
+    expect(todoActionRoute(item)).toBe('/app/short-rent/fiscal');
+    expect(todoActionRoute(item, permissions(['property.read']))).toBe('/app/short-rent/fiscal');
+    // Who cannot open the page is not offered a button that ends on «nessun accesso».
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
+  });
+
   it('todoActionRoute_UnknownAction_ReturnsNullNeverTheDashboard', () => {
     // A later version of the server may send an action this one does not know yet; an inherited name is not one either.
     expect(todoActionRoute(itemFor('SomethingNew'))).toBeNull();

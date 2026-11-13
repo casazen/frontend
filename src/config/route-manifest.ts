@@ -276,6 +276,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
+    // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
+    // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
+    // `property.read` (backend policy `SharedPropertyRead`); the server then opens each type with the permission of its own area, and the page
+    // offers only the types it sends. For who may not read payments, the page that hangs from Incassi takes a place in "Altro" (UI-04a).
+    path: '/app/short-rent/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.documents',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
+  },
+  {
     // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
     // the list of reports (its row "Apri" leads here), in no menu and no tab; reading it asks for payments, and the buttons that write
     // ask for `payment.write` inside the page.
@@ -1157,6 +1172,42 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 4.5,
     icon: 'Send',
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
+  },
+  {
+    // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
+    // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
+    // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the
+    // org billing administrator like the other pages of the agency's money. In "Altro": the main menu of the area is at its limit.
+    path: '/app/account/owner-close',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.ownerClose',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
+  },
+  {
+    // One version of the statement of an owner (E06/F05/US02/T04): the formula, every line with its source, what changed since the version before, the
+    // payouts and the withholding evidence, the invoices linked from the external fiscal system. In no menu: «Chiusura mensile» leads here.
+    path: '/app/account/owner-close/versions/:versionId',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owner-accounting/statement-detail-page')).StatementDetailPage }),
+  },
+  {
+    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109): the fiscal profile masked, the mandate, the rule set with the accountant's approval, what the
+    // activation still misses. In no menu: the month-end close and its anomalies lead here.
+    path: '/app/account/owners/:ownerId/financial',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owners/owner-financial-profile-page')).OwnerFinancialProfilePage }),
   },
   {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the

@@ -157,9 +157,24 @@ describe('route-manifest main menu (UI-04a)', () => {
     ['short-rent', '/app/short-rent/trusted-suppliers'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
+    ['account', '/app/account/owner-close'],
     ['admin', '/app/admin/statements'],
     ['admin', '/app/admin/activities'],
   ];
+
+  it('keeps the pages of the owner accounting behind the agency plan and for the finance administrators of the org', () => {
+    // E06/F05/US02/T04: the endpoints they read answer only an org on the agency plan and the owner and the administrators (`agency.*` permissions).
+    for (const path of ['/app/account/owner-close', '/app/account/owner-close/versions/:versionId', '/app/account/owners/:ownerId/financial']) {
+      const entry = entryOf(path);
+      expect(entry.context, path).toBe('account');
+      expect(entry.featureFlag, path).toBe('agencyTier');
+      expect(entry.orgBillingAdmin, path).toBe(true);
+    }
+    // The month-end close is in «Altro»: the main menu of the area is at its limit. The statement and the profile are pages opened from it, in no menu.
+    expect(entryOf('/app/account/owner-close').navPlacement).toBe('secondary');
+    expect(entryOf('/app/account/owner-close/versions/:versionId').navPlacement).toBeUndefined();
+    expect(entryOf('/app/account/owners/:ownerId/financial').navPlacement).toBeUndefined();
+  });
 
   it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
     expect(entryOf(path).featureFlag).toBe('agencyTier');
@@ -295,9 +310,11 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/settings/site-documents',
       '/app/short-rent/settings/domain',
     ],
+    // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3.
     '/app/short-rent/payments': [
       '/app/short-rent/payments/revenue',
       '/app/short-rent/reports',
+      '/app/short-rent/documents',
       '/app/short-rent/fiscal',
       '/app/short-rent/settings/payments',
     ],
@@ -379,6 +396,24 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       expect.arrayContaining(['/app/short-rent/fiscal', '/app/short-rent/settings/payments']),
     );
     expect(paths(getSecondaryNavEntries('short-rent', noPayments))).not.toContain('/app/short-rent/reports');
+    // The documents page asks what the API asks at its door, the properties and not the payments: it is in "Altro" for them too.
+    expect(paths(getSecondaryNavEntries('short-rent', noPayments))).toContain('/app/short-rent/documents');
+  });
+
+  // NF-99 (E07/F03/US03/T03): the documents of the organization are a tab of Incassi, right after Report. They ask `property.read`, the door of
+  // the API (`SharedPropertyRead`), and nothing more: what each type needs is decided by the server, and the page offers what it sends.
+  it('has the documents page as the tab after Report, for who may read the properties', () => {
+    const entry = entryOf('/app/short-rent/documents');
+    expect(entry.context).toBe('short-rent');
+    expect(entry.requiredPermissions).toEqual(['property.read']);
+    expect(entry.navKey).toBe('nav.documents');
+    expect(entry.navParent).toBe('/app/short-rent/payments');
+    expect(entry.featureFlag).toBeUndefined();
+
+    const tabs = paths(getNavChildren('/app/short-rent/payments', allowAll));
+    expect(tabs.indexOf('/app/short-rent/documents')).toBe(tabs.indexOf('/app/short-rent/reports') + 1);
+    // Who cannot read the properties has no tab for it.
+    expect(paths(getNavChildren('/app/short-rent/payments', without('property.read')))).not.toContain('/app/short-rent/documents');
   });
 
   it('lists only the pages the user may open', () => {
@@ -409,6 +444,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       '/app/short-rent/payments',
       '/app/short-rent/payments/revenue',
       '/app/short-rent/reports',
+      '/app/short-rent/documents',
       '/app/short-rent/fiscal',
       '/app/short-rent/settings/payments',
     ];

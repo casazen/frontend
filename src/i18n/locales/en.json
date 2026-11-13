@@ -1293,6 +1293,13 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "archiveDocumentHasNoFile": "This document has no file to download.",
+      "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
+      "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
+      "archiveInvalidPage": "The requested page is not valid.",
+      "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
+      "archiveInvalidType": "This type of document does not exist.",
+      "archiveTypeForbidden": "You do not have access to this type of document.",
       "assistContextInvalid": "This help request is not about a step we can do for you.",
       "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
       "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
@@ -1321,6 +1328,7 @@
       "existingInventoryNotReady": "The listings have not been imported yet.",
       "existingInventoryScopeInvalid": "The choice of the properties to import is not valid.",
       "existingInventoryTooManyChannels": "You chose too many portals at once.",
+      "f24TaxCodeMixed": "The month has withholdings with different tax codes: a single F24 cannot be made.",
       "fiscalSettingsNeedWholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it.",
       "inventoryGroupRequired": "The name of the group is missing.",
       "inventoryIntentAssignmentsInvalid": "There is nothing to save, or too much.",
@@ -1359,6 +1367,21 @@
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
+      "ownerCloseNotReady": "The month cannot be closed: there are anomalies to resolve.",
+      "ownerCloseUnreconciled": "The balance does not match the payments: closing needs a reason.",
+      "ownerCloseWaiverForbidden": "Only who manages the owners' finances can close with a difference.",
+      "ownerExternalDocumentDuplicate": "This invoice is already linked to a statement.",
+      "ownerFiscalProfileOverlap": "A profile already applies from that day or later: pick a later date.",
+      "ownerFxRateExists": "A rate already exists for these currencies on that day.",
+      "ownerPayoutKeyReused": "This payment was already recorded with different data: start again from the statement.",
+      "ownerPeriodClosed": "The month is closed: nothing is posted any more.",
+      "ownerPeriodDirty": "The ledger changed after this version: make a new version.",
+      "ownerPeriodNotEnded": "The month is not over yet: it closes after its last day.",
+      "ownerPolicyAlreadyApproved": "This rule is already approved and never changes.",
+      "ownerStatementFlagged": "This version has anomalies: resolve them and make a new version.",
+      "ownerStatementNotApproved": "The statement must be approved first.",
+      "ownerStatementNotDraft": "This version is no longer a draft.",
+      "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
       "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
       "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
       "panelStepChannelInvalid": "The channel of this step is not valid.",
@@ -1398,6 +1421,11 @@
       "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
       "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
       "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
+      "taxApplicabilityUnresolved": "A fact is missing to decide the withholding: CasaZen does not guess it.",
+      "taxFileAlreadyFiled": "The file was already sent: it cannot be generated again.",
+      "taxFilingReferenceRequired": "The reference is needed: who handed it over, the receipt or the reason.",
+      "taxFilingTransitionInvalid": "The file cannot go to this state from where it is.",
+      "taxNoObligations": "There are no withholdings to declare for this period.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
       "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
@@ -5469,6 +5497,74 @@
     "openPropertyPage": "Open property page",
     "orgUrlSectionTitle": "Org URL",
     "selectPropertyHint": "Select a property to preview its booking page."
+  },
+  "documentArchive": {
+    "booking": "Booking",
+    "columns": {
+      "booking": "Booking",
+      "date": "Date",
+      "document": "Document",
+      "property": "Property",
+      "size": "Size"
+    },
+    "count_one": "{{count}} document",
+    "count_other": "{{count}} documents",
+    "description": "Every document you can read, in one place: search, filter and download a file or the archive of a period.",
+    "download": "Download",
+    "downloadDone": "Document downloaded.",
+    "downloadFailed": "The document could not be downloaded. Try again.",
+    "emptyDescription": "Documents show up here as soon as you upload or receive them.",
+    "emptyTitle": "No documents",
+    "error": "Unable to load the documents.",
+    "export": {
+      "description": "A ZIP file with the documents of the period: a folder for each type and the index as a CSV. A document with no file is in the index with an empty file column.",
+      "done": "Archive downloaded.",
+      "error": {
+        "invalidDates": "Check the dates: a first day and a last day are needed, the first not after the last.",
+        "noTypes": "Choose at least one type of document.",
+        "tooLong": "The period is too long: the archive covers 24 months at most."
+      },
+      "failed": "The archive could not be downloaded. Try again.",
+      "open": "Download archive",
+      "period": "Period",
+      "preparing": "Preparing the archive: it can take a while. Do not close this window.",
+      "property": "Property",
+      "received": "Downloading the archive: {{size}} received so far. Do not close this window.",
+      "retry": "Try again",
+      "start": "Download",
+      "title": "Download the document archive",
+      "tooBig_one": "The archive would be too large: the file found goes over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooBig_other": "The archive would be too large: the {{count}} files found go over the size allowed for one archive (at most {{max}} files and {{size}} in all). Choose a shorter period or fewer types of document.",
+      "tooLarge_one": "We found {{count}} file: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
+      "tooLarge_other": "We found {{count}} files: too many for one archive (at most {{max}}). Choose a shorter period or fewer types of document.",
+      "types": "Types of document"
+    },
+    "filters": {
+      "all": "All",
+      "allProperties": "All properties",
+      "days": "Document date",
+      "property": "Property"
+    },
+    "noFile": "No file",
+    "noResultsDescription": "Try removing a filter or searching with another word.",
+    "noResultsTitle": "No documents with these filters",
+    "pageSize": "Documents per page",
+    "search": {
+      "label": "Search the documents",
+      "placeholder": "Search by title, property or booking code"
+    },
+    "title": "Documents",
+    "types": {
+      "AlloggiatiReceipt": "Alloggiati receipt",
+      "Contract": "Contract",
+      "CreditNote": "Credit note",
+      "Invoice": "Invoice",
+      "IstatProof": "ISTAT proof",
+      "Other": "Other document",
+      "PropertyDocument": "Property document",
+      "Receipt": "Receipt",
+      "TouristTax": "Tourist tax"
+    }
   },
   "documentPages": {
     "select": "Choose a PDF or page photos",
@@ -11832,6 +11928,7 @@
     "crmMerge": "Duplicates",
     "crmSegments": "Audiences",
     "demoEnvironment": "Demo environment",
+    "documents": "Documents",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
     "menuLabel": "{{area}} menu",
@@ -11855,6 +11952,7 @@
     "channels": "Channels and calendars",
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
+    "ownerClose": "Month-end close",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -13181,6 +13279,708 @@
       "WARNING": "Warning"
     }
   },
+  "ownerAccounting": {
+    "actions": {
+      "approve": {
+        "label": "Approve"
+      },
+      "close": {
+        "label": "Close the month"
+      },
+      "closeWaits": "The month can be closed once it is over.",
+      "generate": {
+        "flagged": "The statement of {{owner}} is ready (version {{version}}) but has anomalies: resolve them and make a new one.",
+        "success": "Statement of {{owner}} prepared: version {{version}}."
+      },
+      "more": "More actions",
+      "payout": {
+        "label": "Record a payment"
+      },
+      "prepare": {
+        "label": "Prepare the statement"
+      },
+      "publish": {
+        "label": "Publish"
+      },
+      "regenerate": {
+        "label": "Make a new version"
+      },
+      "stale": "The ledger changed after this version: you need a new version before approving or publishing it."
+    },
+    "adminRequired": {
+      "description": "Closing the statements is about the owners' money: the account owner and the administrators handle it. Ask one of them to open this page.",
+      "title": "An administrator of the organization is needed"
+    },
+    "anomalies": {
+      "actions": {
+        "correction": "Record a correction",
+        "fx": "Add the exchange rate",
+        "onboarding": "Complete it in the activation",
+        "payment": "Open the payment",
+        "post": "Check the month",
+        "profile": "Open the owner's data",
+        "row": "Go to the statement"
+      },
+      "notBlocking": "Does not block the close",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "times": "×{{count}}",
+      "title": "Anomalies to resolve",
+      "wholeMonth": "The whole month"
+    },
+    "changes": {
+      "added": "Lines posted since then: {{count}}",
+      "addedLine": "{{type}}: {{amount}}",
+      "figure": {
+        "channelFees": "Channel fees",
+        "charges": "Charges and expenses",
+        "closingBalance": "Closing balance",
+        "commission": "Agency commission",
+        "corrections": "Corrections",
+        "openingBalance": "Opening balance",
+        "payments": "Payments",
+        "revenue": "Owner's revenue"
+      },
+      "first": "This is the first version of the month: there is nothing to compare it with.",
+      "from": "{{before}} → {{after}}",
+      "history": "Versions of the month",
+      "intro": "Compared with version {{version}}, cut on {{cutoff}}:",
+      "none": "Nothing changed since version {{version}}.",
+      "title": "What changed since the previous version",
+      "versionLine": "Version {{version}} · {{status}} · cut on {{cutoff}}"
+    },
+    "close": {
+      "confirm": "Close the month",
+      "consequences": {
+        "evidence": "The evidence of the month (versions, lines and published files) is kept for the time the tax rule asks.",
+        "nothingPosted": "Nothing is posted in a closed month any more: what comes after goes into a correction of an open month."
+      },
+      "description": "Close the month of {{owner}} on the approved statement, after checking that the balance matches the payments.",
+      "done": "The month of {{period}} of {{owner}} is closed.",
+      "notReady": "The month cannot be closed yet",
+      "title": "Close {{period}}",
+      "waiverHint": "It stays on record with your name and the date.",
+      "waiverNotice": "The balance does not match the payments, or it is negative. Closing needs a reason, and only who manages the owners' finances can do it.",
+      "waiverReason": "Reason for closing with a difference",
+      "word": "CLOSE"
+    },
+    "correction": {
+      "amount": "Amount ({{currency}})",
+      "attachment": "Attachment or reference",
+      "attachmentHint": "An https address or the reference of a document.",
+      "currency": "Currency",
+      "currencyHint": "Three letters, as in the owner's statements (for example EUR).",
+      "date": "Date of the correction",
+      "dateHint": "It counts in the month of this date: a closed month takes no lines, pick an open one.",
+      "description": "Add a line to the ledger of {{owner}}, with its reason. Lines already posted are never changed: the correction is one line more.",
+      "direction": "In whose favour",
+      "done": "Correction recorded for {{owner}}.",
+      "fromOwner": "Charged to the owner (taken off the balance)",
+      "open": "Record a correction",
+      "reason": "Reason",
+      "reasonHint": "Write what you correct and why: whoever checks the month will read it.",
+      "submit": "Record the correction",
+      "title": "Record a correction",
+      "toOwner": "In favour of the owner (added to the balance)"
+    },
+    "description": "Check, approve and publish the owners' statements, then close the month.",
+    "errors": {
+      "generic": "It did not work. Try again in a moment.",
+      "withField": "{{message}} (field: {{field}})"
+    },
+    "external": {
+      "add": "Link an invoice",
+      "added": "Invoice linked.",
+      "dialog": {
+        "date": "Invoice date",
+        "description": "Enter the details of the invoice your agency's fiscal system has already issued. CasaZen keeps the link, not the amount.",
+        "externalId": "Identifier in the system",
+        "externalIdHint": "The code your system knows the invoice by.",
+        "fromFile": "Work out the fingerprint from a file",
+        "fromFileHint": "The file stays on your computer: CasaZen only receives its fingerprint.",
+        "hash": "File fingerprint (SHA-256)",
+        "hashHint": "64 hexadecimal characters: it tells the file apart if someone changes it.",
+        "hashInvalid": "The fingerprint is 64 hexadecimal characters.",
+        "number": "Invoice number",
+        "provider": "System that issued it",
+        "providerHint": "For example the name of the management or invoicing software.",
+        "submit": "Link the invoice",
+        "title": "Link an issued invoice",
+        "url": "Address of the document",
+        "urlHint": "Where the issued invoice is (https).",
+        "urlInvalid": "It needs an address that starts with https://."
+      },
+      "empty": "No invoice linked.",
+      "entered": "To check",
+      "hash": "File fingerprint: {{hash}}…",
+      "hashError": "I cannot read the file.",
+      "loading": "Looking for the linked invoices…",
+      "needsApproval": "You will be able to link an invoice once the statement is approved.",
+      "notice": "The statement is not a fiscal document and CasaZen does not issue invoices to owners. If your agency has to invoice, it does so from its own fiscal system: here you link the invoice already issued, to find it with the statement.",
+      "open": "Open the document",
+      "removalReason": "Unlinked on {{date}}: {{reason}}",
+      "remove": "Unlink",
+      "removeDialog": {
+        "confirm": "Unlink",
+        "description": "The link to invoice no. {{number}} will no longer be active, but it stays in the history with its reason.",
+        "hint": "For example: linked to the wrong statement by mistake.",
+        "reason": "Why you unlink it",
+        "title": "Unlink the invoice"
+      },
+      "removed": "Unlinked",
+      "removedDone": "Link removed: it stays in the history.",
+      "row": "{{provider}} · no. {{number}} of {{date}}",
+      "title": "Invoices issued outside CasaZen",
+      "verified": "Checked",
+      "verifiedAt": "Checked on {{date}}.",
+      "verifiedDone": "Link marked as checked.",
+      "verify": "Mark as checked"
+    },
+    "fields": {
+      "agencyCollected": "agency collection",
+      "amount": "amount",
+      "approvedByName": "approver's name",
+      "attachmentReference": "attachment",
+      "baseCurrency": "from currency",
+      "components": "base components",
+      "currency": "currency",
+      "date": "date",
+      "description": "reason",
+      "documentSha256": "file fingerprint",
+      "documentUrl": "document address",
+      "externalDate": "invoice date",
+      "externalId": "identifier in the system",
+      "externalNumber": "invoice number",
+      "grossAmount": "gross amount",
+      "grossBaseComponents": "gross base components",
+      "handoffReference": "who handed it over and how",
+      "jurisdiction": "jurisdiction",
+      "paidOn": "payment date",
+      "parameters": "parameters",
+      "provider": "issuing system",
+      "qualifyingShortLet": "short-term let",
+      "quoteCurrency": "to currency",
+      "rate": "exchange rate",
+      "rateDate": "rate date",
+      "reason": "reason",
+      "receiptReference": "receipt",
+      "reference": "reference",
+      "retentionYears": "years of retention",
+      "rounding": "rounding",
+      "ruleCode": "rule code",
+      "source": "source",
+      "sourceSha256": "source fingerprint",
+      "sourceUrl": "source address",
+      "validFrom": "valid from",
+      "validTo": "valid until",
+      "version": "version",
+      "withholdingRatePercent": "withholding rate",
+      "withholdingTaxCode": "tax code"
+    },
+    "filing": {
+      "dialog": {
+        "Accepted": {
+          "confirm": "Record the receipt",
+          "description": "Record the receipt with which the Revenue Agency accepted the file.",
+          "field": "Number or reference of the receipt",
+          "hint": "You find it on the receipt of the Revenue Agency.",
+          "title": "Record the receipt"
+        },
+        "Rejected": {
+          "confirm": "Mark as rejected",
+          "description": "Record that the file was rejected, with the reason.",
+          "field": "Reason for the rejection",
+          "hint": "Copy the reason given in the notice of rejection.",
+          "title": "Mark as rejected"
+        },
+        "Reviewed": {
+          "confirm": "Mark as reviewed",
+          "description": "Do you confirm you checked the data of this file?",
+          "title": "File reviewed"
+        },
+        "Submitted": {
+          "confirm": "Record the handoff",
+          "description": "CasaZen sends nothing to the Revenue Agency: you or your intermediary do. Here you record that it happened.",
+          "field": "Who handed it over and how",
+          "hint": "For example: handed over by the accountant on 16/11, protocol 123456.",
+          "title": "Record the handoff"
+        }
+      },
+      "done": {
+        "Accepted": "Receipt recorded.",
+        "Rejected": "Rejection recorded.",
+        "Reviewed": "File marked as reviewed.",
+        "Submitted": "Handoff recorded."
+      },
+      "handoff": "Handoff reference: {{reference}}",
+      "label": {
+        "accepted": "Accepted",
+        "acceptedWithoutProof": "Outcome to confirm",
+        "calculated": "Calculated",
+        "generated": "Generated",
+        "rejected": "Rejected",
+        "reviewed": "Reviewed",
+        "submitted": "Submitted",
+        "submittedWithoutProof": "Handoff to confirm"
+      },
+      "missingProof": "The handoff reference or the receipt is missing: until it is there, CasaZen does not count it as sent or accepted.",
+      "receipt": "Receipt: {{reference}}",
+      "rejection": "Reason for the rejection: {{reason}}",
+      "step": {
+        "Accepted": "Record the receipt",
+        "Rejected": "Mark as rejected",
+        "Reviewed": "Mark as reviewed",
+        "Submitted": "Record the handoff"
+      }
+    },
+    "focus": {
+      "blocked": {
+        "title_one": "{{count}} anomaly to resolve before closing",
+        "title_other": "{{count}} anomalies to resolve before closing"
+      },
+      "body": "Statements with no anomaly: {{ready}} out of {{owners}} ({{percent}}%). Approve, publish and close the ones below.",
+      "check": "Check the month",
+      "closed": {
+        "body": "All the statements of the month are closed: nothing is posted in this month any more.",
+        "title": "{{period}} is closed"
+      },
+      "empty": {
+        "body": "This month has no owner revenue, charges or payments. If you expected something, check the month.",
+        "title": "No statement to prepare in {{period}}"
+      },
+      "kicker": "Close of {{period}}",
+      "ready": {
+        "title": "All in order: you can go on"
+      },
+      "then": "Then: approve, publish and close the statements below.",
+      "who": "Your turn"
+    },
+    "fx": {
+      "base": "From currency",
+      "baseHint": "For example CHF.",
+      "date": "Day of the rate",
+      "description": "CasaZen does not look rates up on its own: write the one your agency uses, with its source. One unit of the first currency is worth the rate in the second, on the day given and the 7 days after it.",
+      "done": "Rate added: check the month again.",
+      "quote": "To currency",
+      "quoteHint": "For example EUR.",
+      "rate": "Rate",
+      "rateInvalid": "Write a number above zero, with at most 8 decimals.",
+      "source": "Source of the rate",
+      "sourceHint": "For example: Bank of Italy, rate of 12/10.",
+      "submit": "Add the rate",
+      "title": "Add an exchange rate"
+    },
+    "groups": {
+      "approved": {
+        "hint": "Ready to publish to the owner.",
+        "title": "Approved"
+      },
+      "published": {
+        "hint": "The owner sees them. Record the payment and close the month.",
+        "title": "Published"
+      },
+      "toPrepare": {
+        "hint": "There is no statement yet.",
+        "title": "To prepare"
+      },
+      "toVerify": {
+        "hint": "Drafts to check and approve, or flagged for anomalies to resolve.",
+        "title": "To check"
+      }
+    },
+    "issue": {
+      "currencyMixed": {
+        "how": "The owner's lines are in different currencies: pick the currency he is paid in, in his financial data.",
+        "title": "The statement mixes several currencies"
+      },
+      "duplicateEntry": {
+        "how": "Check the month again. If it stays, open the statement and fix the double line with a correction.",
+        "title": "A line is posted twice"
+      },
+      "fxMissing": {
+        "how": "A line is in a currency other than the owner's and there is no rate for that day: add it and check the month again.",
+        "title": "An exchange rate is missing"
+      },
+      "lateSourceAfterClose": {
+        "how": "The month stays closed. Record a correction in an open month to settle the owner's account.",
+        "title": "A movement arrived after the close"
+      },
+      "ledgerStatementImbalance": {
+        "how": "Lines changed after the version: make a new version.",
+        "title": "The statement does not match the ledger"
+      },
+      "negativeBalance": {
+        "how": "It can be closed only with a reason and the permission of who manages the owners' finances.",
+        "title": "The owner's balance is negative"
+      },
+      "ownerFiscalPolicyJurisdictionMismatch": {
+        "how": "In the financial data, pick a rule of the same jurisdiction as the profile.",
+        "title": "The tax rule is of another jurisdiction"
+      },
+      "ownerFiscalPolicyMissing": {
+        "how": "Pick or create a rule in the financial data and have the accountant's approval recorded.",
+        "title": "The owner's tax rule is missing"
+      },
+      "ownerFiscalPolicyNotApproved": {
+        "how": "Record the accountant's approval in the financial data.",
+        "title": "The tax rule is not approved yet"
+      },
+      "ownerFiscalPolicyNotEffective": {
+        "how": "Pick a rule valid in the period, or create a new one.",
+        "title": "The tax rule is not in force this month"
+      },
+      "ownerFiscalProfileIncomplete": {
+        "how": "Complete the profile: name, tax residence, jurisdiction, identifier, currency and revenue rule.",
+        "title": "The owner's financial data is incomplete"
+      },
+      "ownerFiscalProfileMissing": {
+        "how": "Enter his profile, valid from this month.",
+        "title": "The owner's financial data is missing"
+      },
+      "ownershipMissing": {
+        "how": "State who owns it in the activation: with no owner its revenue goes to no statement.",
+        "title": "A property has no owner in this period"
+      },
+      "ownershipShareGap": {
+        "how": "Fix the shares in the activation: the revenue of that property stays out until they add up.",
+        "title": "The shares of a property do not make 100%"
+      },
+      "periodClosed": {
+        "how": "Nothing is posted in this month any more.",
+        "title": "Month closed"
+      },
+      "periodDirty": {
+        "how": "Make a new version: the current one can no longer be approved or published.",
+        "title": "The ledger changed after the last version"
+      },
+      "sourceAmountMissing": {
+        "how": "Open the payment and fill in the amount: without it the line does not enter the statement.",
+        "title": "A payment has no amount"
+      },
+      "statementMissing": {
+        "how": "Prepare it from the owner's row.",
+        "title": "The statement is missing"
+      },
+      "statementNotApproved": {
+        "how": "Check it and approve it.",
+        "title": "The statement is not approved yet"
+      },
+      "unknown": {
+        "how": "The system reported it but this version of the app does not know it: check the month or ask for help.",
+        "title": "Anomaly {{code}}"
+      },
+      "unpostedSource": {
+        "how": "Press «Check the month»: the missing lines are posted to the ledger.",
+        "title": "Some movements are not posted yet"
+      }
+    },
+    "line": {
+      "credit": "Credit",
+      "debit": "Debit",
+      "document": "This line is linked to a fiscal document.",
+      "facts": {
+        "payment": "Payment",
+        "posted": "Posted",
+        "property": "Property",
+        "recognition": "Counts for the month",
+        "rule": "Rule",
+        "service": "Service",
+        "source": "Origin",
+        "taxCode": "Tax code",
+        "title": "Dates and rule"
+      },
+      "formula": {
+        "AgencyCommission": "Agency commission under the mandate, on the owner's revenue. It is taken off the balance.",
+        "AgencyPayment": "Payment from the owner to the agency, for instance to cover a negative balance. It is added to the balance.",
+        "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
+        "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
+        "Correction": "Manual correction with its reason: it replaces a line or adds one.",
+        "OwnerCharge": "Charge of the agency to the owner, for his share. It is taken off the balance.",
+        "OwnerExpense": "Expense paid by the agency on behalf of the owner, for his share. It is taken off the balance.",
+        "OwnerPayment": "Transfer paid to the owner: it settles what was owed. It is taken off the balance.",
+        "Withholding": "Withholding kept from the payment and due to the tax authority. It is taken off the balance."
+      },
+      "open": {
+        "attachment": "Open the attachment",
+        "attachmentText": "Attachment: {{reference}}",
+        "booking": "Open the booking",
+        "payment": "Open the payment",
+        "title": "Open the source",
+        "wires": "Open the transfers"
+      },
+      "reversal": "Reversal",
+      "reverses": "Cancels line {{id}}.",
+      "source": {
+        "Booking": "Booking",
+        "Manual": "Manual correction",
+        "OwnerCharge": "Charge or expense",
+        "OwnerPayout": "Payout to the owner",
+        "Payment": "Payment",
+        "WireBatch": "Wire transfer"
+      },
+      "steps": {
+        "fx": "Exchange rate",
+        "fxSource": "Rate taken from: {{source}}, of {{date}}",
+        "original": "Owner's amount",
+        "rate": "1 {{from}} = {{rate}} {{to}}",
+        "result": "Amount in the statement",
+        "sameCurrency": "none ({{currency}})",
+        "share": "Owner's share",
+        "source": "Amount of the source",
+        "title": "How the amount is reached"
+      },
+      "type": {
+        "AgencyCommission": "Agency commission",
+        "AgencyPayment": "Payment from the owner",
+        "BookingRevenue": "Revenue of a booking",
+        "ChannelFee": "Channel fee",
+        "Correction": "Correction",
+        "OwnerCharge": "Agency charge",
+        "OwnerExpense": "Expense for the owner",
+        "OwnerPayment": "Payment to the owner",
+        "Withholding": "Withholding"
+      }
+    },
+    "lines": {
+      "amount": "Amount",
+      "caption": "Lines of the statement",
+      "date": "Date",
+      "empty": "No line in this statement.",
+      "item": "Item",
+      "share": "Share",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "summary": "{{share}}% share of {{source}}",
+      "title": "Lines of the statement"
+    },
+    "loadError": "We cannot read the month-end close.",
+    "loading": "Reading the month…",
+    "owner": {
+      "unnamed": "Owner {{id}}"
+    },
+    "payments": {
+      "evidenceLoading": "Reading the withholding decision…",
+      "noEvidence": "No withholding decision recorded for this payment.",
+      "payout": "Payment of {{date}}: {{amount}}",
+      "title": "Payments and reconciliation",
+      "withholdingOfAnotherVersion": "The withholdings of this statement come from payments recorded on another version of the month."
+    },
+    "payout": {
+      "agencyCollected": "Did the agency collect the rent or step in the payment?",
+      "blocked": {
+        "policy_jurisdiction_mismatch": "The rule picked is of another jurisdiction than the profile.",
+        "policy_missing": "The profile has no tax rule.",
+        "policy_not_approved": "The tax rule is not yet approved by the accountant.",
+        "policy_not_effective": "The tax rule is not in force on the payment day.",
+        "profile_incomplete": "The owner's profile is incomplete for the payment day: complete it first.",
+        "profile_missing": "There is no valid owner profile on the payment day."
+      },
+      "checking": "Checking the tax rule for this day…",
+      "choose": "Choose…",
+      "component": "Amount of the item «{{component}}»",
+      "confirm": "Record the payment",
+      "description": "Record the transfer paid to {{owner}}. The withholding, if the approved rule asks for it, is decided by CasaZen when you confirm.",
+      "done": "Payment to {{owner}} recorded.",
+      "errors": {
+        "answer": "Pick an answer: without it CasaZen cannot decide.",
+        "components": "Write an amount for each item (0 is fine).",
+        "gross": "Write an amount above zero, with at most two decimals.",
+        "paidOn": "Pick the payment date.",
+        "reference": "At most 100 characters."
+      },
+      "facts": "What the rule needs",
+      "factsHint": "These are the facts the approved rule asks for to decide whether there is a withholding. If you do not know them yet, do not record the payment.",
+      "gross": "Gross amount paid ({{currency}})",
+      "left": "Left to pay: {{amount}}",
+      "loading": "Reading the owner's tax rule…",
+      "no": "No",
+      "noVersion": "First prepare and approve the statement.",
+      "nothingLeft": "Nothing is left to pay: the payments already cover the balance. Record another one only if you are sure.",
+      "openProfile": "Open the owner's data",
+      "overLeft": "The amount is more than what is left to pay ({{amount}}). Check it before recording.",
+      "paidOn": "Payment date",
+      "qualifyingShortLet": "Do the stays fall under a short-term let according to the rule?",
+      "recorded": "Payment recorded",
+      "recordedBody": "Gross {{gross}}, withholding {{withheld}}, net {{net}}.",
+      "reference": "Reference of the transfer",
+      "rule": "Rule applied: {{rule}} version {{version}} ({{jurisdiction}}), approved by {{approver}} on {{date}}.",
+      "ruleBlocked": "A payment cannot be recorded yet",
+      "ruleError": "We cannot read the owner's tax rule",
+      "title": "Record a payment",
+      "unresolved": "A fact is missing to decide the withholding: {{field}}.",
+      "useLeft": "Use the amount left",
+      "withholdingNote": "CasaZen does not work out the withholding in advance: it decides it when you confirm, with the approved rule in force on the payment day, and keeps the evidence.",
+      "yes": "Yes"
+    },
+    "period": {
+      "backToSuggested": "Back to {{period}}",
+      "label": "Month to close",
+      "next": "Next month",
+      "previous": "Previous month"
+    },
+    "post": {
+      "done": "Check done: {{posted}} lines posted, {{reversed}} reversed, {{unchanged}} unchanged."
+    },
+    "readiness": {
+      "label": "Statements with no anomaly",
+      "percent": "{{percent}}% ready: {{ready}} out of {{owners}}",
+      "valueText": "{{ready}} statements out of {{owners}} with no anomaly"
+    },
+    "reconciliation": {
+      "difference": "Difference",
+      "due": "Due (approved balance)",
+      "gross": "gross {{amount}}",
+      "loading": "Reading the payments…",
+      "negative": "The balance is negative: closing needs a reason.",
+      "net": "net {{amount}}",
+      "noPayouts": "No payment recorded for this month.",
+      "notReconciled": "The balance does not match the payments: closing needs a reason.",
+      "paid": "Paid",
+      "payouts": "Payments of the month",
+      "reconciled": "The balance matches the payments: the month can be closed.",
+      "reversed": "Reversed",
+      "title": "Payment reconciliation",
+      "withheld": "withholding {{amount}}",
+      "wires": "With no payment recorded here, at the close CasaZen counts the transfers marked as paid for this month: the close gives the final figures."
+    },
+    "row": {
+      "blocking_one": "{{count}} anomaly",
+      "blocking_other": "{{count}} anomalies",
+      "closed": "Closed",
+      "loading": "Reading the statement…",
+      "noStatement": "No statement",
+      "paymentsError": "I cannot read the payments.",
+      "profile": "Financial data",
+      "stale": "Out of date",
+      "state": "Version {{version}} · {{status}} · balance {{balance}}",
+      "versionsError": "I cannot read the versions.",
+      "warnings_one": "{{count}} notice",
+      "warnings_other": "{{count}} notices"
+    },
+    "rows": {
+      "title": "Statements of the month"
+    },
+    "statement": {
+      "backToClose": "Back to the month-end close",
+      "closed": "Month closed",
+      "closing": "Closing balance",
+      "costs": "Commissions and costs",
+      "description": "Version {{version}} · {{status}}",
+      "downloadPublished": "Download the published file",
+      "figures": "At a glance",
+      "fileBody": "Published on {{date}}. File fingerprint: {{hash}}…",
+      "fileTitle": "Published file",
+      "flaggedTitle": "Anomalies that flagged this version",
+      "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
+      "focusTitle": "Version {{version}} · {{status}}",
+      "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
+      "kicker": "Statement of {{period}}",
+      "loadError": "We cannot read the statement.",
+      "loading": "Reading the statement…",
+      "nonFiscal": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. If an invoice is needed, your agency's fiscal system issues it and you link it here.",
+      "notFound": "This statement does not exist",
+      "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
+      "openLatest": "Open the latest version",
+      "opening": "Opening balance {{amount}}",
+      "ownerProfile": "Owner's financial data",
+      "paidAndWithheld": "Payments and withholdings",
+      "revenue": "Owner's revenue",
+      "superseded": "This version was replaced by a newer one. It stays here as it was, with its file.",
+      "title": "Statement of {{owner}} · {{period}}",
+      "titleGeneric": "Statement"
+    },
+    "step": {
+      "approve": {
+        "confirm": "Approve",
+        "consequence1": "After the approval the statement is not edited: changing anything needs a new version.",
+        "consequence2": "It does not go to the owner yet: publishing does that.",
+        "description": "The statement of {{owner}} for {{period}} is checked and can be published.",
+        "done": "Version {{version}} of {{owner}} approved.",
+        "title": "Approve version {{version}}"
+      },
+      "publish": {
+        "confirm": "Publish",
+        "consequence1": "The file and its fingerprint are kept and never change.",
+        "consequence2": "Changing anything needs a new version: this one stays as it is, readable.",
+        "description": "The statement of {{owner}} for {{period}} becomes the one the owner sees.",
+        "done": "Version {{version}} of {{owner}} published.",
+        "title": "Publish version {{version}}"
+      },
+      "regenerate": {
+        "confirm": "Make a new version",
+        "consequence1": "Version {{version}} stays readable as superseded, with its original file.",
+        "consequence2": "The new version starts as a draft: it must be approved and published again.",
+        "description": "The ledger of {{owner}} changed after version {{version}} of {{period}}: a new one is needed.",
+        "done": "New version of {{owner}} prepared.",
+        "title": "New version after {{version}}"
+      }
+    },
+    "tax": {
+      "amount": "Amount",
+      "annualGenerated": "Annual data generated.",
+      "annualNone": "The annual data of this year has not been generated yet.",
+      "annualRegenerated": "Annual data generated again.",
+      "annualTitle": "Annual data for the Certificazione Unica {{year}}",
+      "applicable": "Withholding applies",
+      "base": "Gross base",
+      "calculated": "Withholdings calculated: {{amount}} to pay with an F24. The F24 file has not been generated yet.",
+      "downloadData": "Download the data",
+      "downloadPdf": "Download the PDF",
+      "dueDate": "Due date",
+      "evidenceCount": "Payments",
+      "evidenceHash": "Fingerprint of the evidence: {{hash}}…",
+      "f24Generated": "F24 generated.",
+      "f24Regenerated": "F24 generated again from the withholdings.",
+      "f24Title": "F24 of {{period}}",
+      "generateAnnual": "Generate the annual data",
+      "generateF24": "Generate the F24",
+      "generatedAt": "Generated on",
+      "loading": "Reading the withholdings…",
+      "mismatch": "The F24 ({{f24}}) does not match the withholdings of the month ({{obligations}}): generate it again before going on.",
+      "none": "No withholding to pay for this month: with no withholding there is no F24.",
+      "notApplicable": "No withholding",
+      "note": "CasaZen prepares the data but does not send it to the Revenue Agency: you or your intermediary do, and here you record the reference and the receipt.",
+      "overdue": "Overdue, to pay",
+      "paidAt": "Paid on {{date}}",
+      "paidOn": "Paid on {{date}}",
+      "payment": "Payment",
+      "rate": "Rate",
+      "reason": {
+        "applicable": "Withholding applies under the approved rule.",
+        "noCollectionOrIntervention": "The agency neither collected nor stepped in the payment: the rule asks for no withholding.",
+        "notQualifyingShortLet": "The stays do not fall under a short-term let according to the rule: no withholding.",
+        "other": "Reason: {{code}}",
+        "ruleWithoutWithholding": "The approved rule does not ask for a withholding."
+      },
+      "regenerate": "Generate again from the data",
+      "reversal": "Reversal",
+      "rule": "Rule {{rule}} version {{version}} ({{jurisdiction}})",
+      "ruleVersion": "Rule used: {{version}}",
+      "taxCode": "Tax code",
+      "title": "Withholdings and tax filings",
+      "toPay": "To pay",
+      "withheld": "Withheld",
+      "yearAnnualMatch": "In {{year}} the annual data ({{amount}}) match the withholdings.",
+      "yearAnnualMismatch": "The annual data of {{year}} ({{annual}}) do not match the withholdings of the year ({{obligations}}).",
+      "yearEmpty": "In {{year}} there are no withholdings: there is nothing to reconcile.",
+      "yearF24Match": "In {{year}} the withholdings ({{amount}}) match the F24.",
+      "yearF24Mismatch_one": "In {{year}} the F24 of {{count}} month does not match the withholdings:",
+      "yearF24Mismatch_other": "In {{year}} the F24 of {{count}} months do not match the withholdings:",
+      "yearF24MonthLine": "{{month}}: withholdings {{obligations}}, F24 {{f24}}",
+      "yearF24NotGenerated": "{{month}}: withholdings {{obligations}}, F24 not generated yet",
+      "yearReconciled": "In {{year}} the withholdings ({{amount}}) match the F24 and the annual data."
+    },
+    "title": "Month-end close",
+    "version": {
+      "status": {
+        "Approved": "Approved",
+        "Draft": "Draft",
+        "Flagged": "Flagged",
+        "Published": "Published",
+        "Superseded": "Superseded"
+      }
+    }
+  },
   "ownerPortal": {
     "dashboard": {
       "title": "Owner Portal",
@@ -13232,6 +14032,259 @@
       "error": "Loading error",
       "errorMessage": "Unable to load statements. Please try again later."
     }
+  },
+  "ownerProfile": {
+    "approveDialog": {
+      "confirm": "Record the approval",
+      "consequence1": "The approval stays on record with the name and the date.",
+      "consequence2": "An approved rule never changes: changing a value needs a new version of the rule.",
+      "description": "You record that the accountant approved this rule. CasaZen does not approve rules: it takes note of who did.",
+      "done": "Approval recorded.",
+      "name": "Name of who approved",
+      "nameHint": "The accountant or the qualified person who approved the rule.",
+      "title": "Approval of rule {{rule}} version {{version}}"
+    },
+    "description": "Who the owner is for statements, payments and withholdings, how he is paid and which tax rule applies. Sensitive data is hidden.",
+    "dialog": {
+      "choose": "Choose…",
+      "countryHint": "Two letters, for example IT or CH.",
+      "countryInvalid": "It takes two letters.",
+      "currencyHint": "Three letters, for example EUR or CHF.",
+      "currencyInvalid": "It takes three letters.",
+      "description": "The new version applies from the day given: the one in force ends the day before. What is already posted does not change.",
+      "done": "Financial data saved.",
+      "identity": "Who he is",
+      "jurisdictionHint": "For example IT, CH or CH-TI.",
+      "jurisdictionInvalid": "Two letters, and if needed a dash and the code (CH-TI).",
+      "mandate": "Mandate",
+      "mandateInvalid": "The end cannot come before the start.",
+      "model": "How it is accounted for",
+      "noPolicy": "No rule picked",
+      "payment": "Payment",
+      "policyOption": "{{rule}} version {{version}} · {{jurisdiction}} · {{state}}",
+      "rule": "Tax rule",
+      "ruleHint": "The country does not pick the rule: you do, among those the accountant approved. The system blocks a rule that is not approved, not in force or of another jurisdiction.",
+      "submit": "Save the new version",
+      "title": "New version of the financial data",
+      "validFrom": "Applies from",
+      "validFromFirst": "The first profile of this owner. The data covers the days from this one on: the months before it stay blocked, and a profile cannot be moved back later. Start it from the first month you still have to close.",
+      "validFromHint": "The first day the new data applies.",
+      "validFromTooEarly": "A profile already applies from {{date}}: pick a later day."
+    },
+    "facts": {
+      "empty": "Not given",
+      "hide": "Hide the data",
+      "reveal": "Show the full data",
+      "rule": "rule {{rule}} version {{version}}",
+      "title": "Profile in force",
+      "validBetween": "Valid from {{from}} to {{to}}",
+      "validFrom": "Valid from {{from}}"
+    },
+    "fields": {
+      "accountingPolicyId": "Tax rule",
+      "bankAccountReference": "Payment account (IBAN)",
+      "entityKind": "Kind of subject",
+      "expenseCommissionModel": "Expenses and commissions",
+      "fiscalCode": "Fiscal code",
+      "foreignTaxId": "Foreign tax identifier",
+      "legalAddress": "Legal address",
+      "legalName": "Legal name",
+      "mandateFrom": "Mandate from",
+      "mandateRole": "Role in the mandate",
+      "mandateTo": "Mandate until",
+      "revenueRecognitionRule": "When revenue counts",
+      "settlementCurrency": "Payment currency",
+      "taxJurisdiction": "Tax jurisdiction",
+      "taxResidenceCountry": "Tax residence",
+      "vatNumber": "VAT number",
+      "workingCapitalRule": "Working capital"
+    },
+    "focus": {
+      "approve": "Record the approval",
+      "back": "Back to the month-end close",
+      "blocked": {
+        "policy_jurisdiction_mismatch": {
+          "body": "The rule picked is of another jurisdiction than the profile: pick one of the same.",
+          "title": "The tax rule is not the right one"
+        },
+        "policy_missing": {
+          "body": "The profile has no tax rule. Pick one already approved or create a new one with the accountant's values.",
+          "title": "The tax rule is missing"
+        },
+        "policy_not_approved": {
+          "body": "Until the accountant approves it, the rule cannot be used for statements and payments.",
+          "title": "The tax rule is waiting for approval"
+        },
+        "policy_not_effective": {
+          "body": "The rule picked does not apply today. Pick one in force or create a new one.",
+          "title": "The tax rule is not in force"
+        },
+        "profile_incomplete": {
+          "body": "Missing: {{fields}}.",
+          "title": "The financial data is incomplete"
+        },
+        "profile_missing": {
+          "body": "Without a profile no statement can be prepared and no payment recorded for this owner.",
+          "title": "The owner's financial data is missing"
+        }
+      },
+      "complete": "Complete the data",
+      "kicker": "Today",
+      "newPolicy": "Create a rule",
+      "ready": {
+        "body": "Rule {{rule}} version {{version}} ({{jurisdiction}}) applies, approved by {{approver}}.",
+        "title": "The data is ready from {{from}}: statements and payments can be prepared from that day on"
+      },
+      "who": "Your turn"
+    },
+    "history": {
+      "current": "In force",
+      "noRule": "No rule",
+      "title": "Earlier versions"
+    },
+    "loadError": "We cannot read the financial data.",
+    "loading": "Reading the financial data…",
+    "maskedNotice": "For safety you only see the last digits of identifiers, address and account. Only who manages the owners' finances sees them in full and can change them.",
+    "monthNotCovered": {
+      "body": "The data applies from {{from}}, so the statement of that month stays blocked: a new profile cannot start on a day before the one in force. Ask for help to cover that month.",
+      "title": "The data does not cover {{period}}"
+    },
+    "newVersion": "New version of the data",
+    "noProfile": "This owner has no financial data yet.",
+    "notFound": "This owner does not exist",
+    "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
+    "onboarding": {
+      "complete": "The activation reports nothing left to complete for this owner.",
+      "completeAction": "Complete it in the activation",
+      "title": "What the activation still misses",
+      "unavailable": "The owners' activation is not available now: shares and mandate are completed there once it is."
+    },
+    "options": {
+      "entityKind": {
+        "LegalEntity": "Company or entity",
+        "NaturalPerson": "Natural person"
+      },
+      "expenseCommissionModel": {
+        "gross": "Gross",
+        "net_of_commission": "Net of commission"
+      },
+      "mandateRole": {
+        "landlord": "Landlord",
+        "owner": "Owner",
+        "usufructuary": "Usufructuary"
+      },
+      "revenueRecognitionRule": {
+        "cash": "When collected",
+        "stay": "At the end of the stay"
+      },
+      "workingCapitalRule": {
+        "none": "None",
+        "reserve": "Reserve"
+      }
+    },
+    "ownership": {
+      "excess": "From {{from}} {{until}} the shares make {{percent}}%: they exceed 100%.",
+      "gap": "From {{from}} {{until}} nobody owns the property.",
+      "onward": "onward",
+      "ownerOverlap": "From {{from}} {{until}} this owner appears twice.",
+      "shortfall": "From {{from}} {{until}} the shares make {{percent}}%: the rest is missing.",
+      "title": "Shares by period",
+      "until": "to {{date}}"
+    },
+    "policy": {
+      "approve": "Record the approval",
+      "approved": "Approved",
+      "approvedBy": "Approved by {{name}} on {{date}}.",
+      "approvedShort": "approved",
+      "available": "Tax rules of the agency: {{count}}",
+      "components": "Base items",
+      "hash": "fingerprint {{hash}}…",
+      "name": "{{rule}} version {{version}} · {{jurisdiction}}",
+      "new": "New rule",
+      "no": "No",
+      "none": "The profile has no tax rule.",
+      "pending": "To approve",
+      "pendingShort": "to approve",
+      "rate": "Rate",
+      "retention": "Retention",
+      "rounding": "Rounding",
+      "roundingValue": {
+        "half_even": "Half to even",
+        "half_up": "Half up"
+      },
+      "source": "Official source",
+      "taxCode": "Tax code",
+      "title": "Tax rule and approval",
+      "waiting": "It is waiting for the accountant's approval.",
+      "withholding": "Withholding at payment",
+      "years_one": "{{count}} year",
+      "years_other": "{{count}} years",
+      "yes": "Yes"
+    },
+    "policyDialog": {
+      "components": "Items of the gross base",
+      "componentsHint": "Codes separated by a comma, for example: rent, cleaning.",
+      "description": "A rule says whether there is a withholding at the payment to the owner and how it is worked out. It stays a draft until the accountant approves it.",
+      "done": "Rule created: now it needs to be approved.",
+      "halfEven": "Half to even",
+      "halfUp": "Half up",
+      "jurisdiction": "Jurisdiction",
+      "notice": "CasaZen proposes no rates, tax codes or jurisdictions: write the ones your accountant gives you, with the official source.",
+      "parameters": "Parameters",
+      "rate": "Withholding rate (%)",
+      "rateHint": "The value given by the approved rule.",
+      "rateInvalid": "Write a number between 0 and 100.",
+      "requiresCollection": "The agency must have collected or stepped in the payment",
+      "requiresShortLet": "A short-term let is needed",
+      "retention": "Years of retention",
+      "retentionHint": "How long the evidence is kept (1 to 50).",
+      "rounding": "Rounding",
+      "ruleCode": "Rule code",
+      "source": "Official source",
+      "sourceSha": "Fingerprint of the source (SHA-256)",
+      "sourceShaHint": "64 hexadecimal characters of the official document.",
+      "sourceShaInvalid": "The fingerprint is 64 hexadecimal characters.",
+      "sourceUrl": "Address of the source",
+      "sourceUrlHint": "The official page or document (https).",
+      "sourceUrlInvalid": "It needs an address that starts with https://.",
+      "submit": "Create the rule",
+      "taxCode": "Tax code",
+      "taxCodeHint": "The one given by the approved rule.",
+      "title": "New tax rule",
+      "validFrom": "Applies from",
+      "validTo": "Applies until",
+      "version": "Version",
+      "withholdingApplies": "The rule asks for a withholding at payment"
+    },
+    "reason": {
+      "billingAddressIncomplete": "The billing address is incomplete.",
+      "bicInvalid": "The BIC is not valid.",
+      "bicMissing": "The BIC is missing (needed for an IBAN outside the SEPA area).",
+      "emailInvalid": "The e-mail address is not valid.",
+      "emailMissing": "The e-mail address is missing.",
+      "entityKindMissing": "The kind of subject is missing.",
+      "fiscalCodeInvalid": "The fiscal code is not valid.",
+      "fiscalIdMissing": "A tax identifier is missing.",
+      "ibanInvalid": "The IBAN is not valid.",
+      "ibanMissing": "The IBAN is missing.",
+      "legalNameMissing": "The legal name is missing.",
+      "mandateDocumentMissing": "The signed mandate document is missing.",
+      "mandateMissing": "The agency's mandate is missing.",
+      "mandateOutsideOwnership": "The mandate goes outside the period of ownership.",
+      "other": "To complete: {{code}}",
+      "ownerOverlap": "The same owner appears twice in the same period.",
+      "ownershipMissing": "No ownership is on record.",
+      "ownershipNotReady": "The ownership shares are not in order.",
+      "registryNotReady": "The registry is not complete.",
+      "settlementCurrencyMissing": "The payment currency is missing.",
+      "sharesExcess": "The shares of a property exceed 100%.",
+      "sharesGap": "For a period nobody owns the property.",
+      "sharesShortfall": "The shares of a property do not reach 100%.",
+      "taxResidenceMissing": "The tax residence is missing.",
+      "vatNumberInvalid": "The VAT number is not valid."
+    },
+    "title": "Financial data of {{owner}}",
+    "titleGeneric": "Owner's financial data"
   },
   "pageHeader": {
     "moreActions": "More actions",
