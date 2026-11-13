@@ -212,6 +212,16 @@ describe('making the file (the debit account is a bank account)', () => {
     expect(checkboxOf(CHF)).toBeDisabled();
   });
 
+  it('WirePage_DebitAccountHint_SaysWhatIsTrue_TheServerKeepsTheAccountInTheWireFile_NotThatNothingIsSaved', async () => {
+    renderPage();
+
+    await screen.findByTestId('wire-compose');
+    // The server stores the debit account with the batch and in the file it keeps: the hint must not promise the opposite.
+    const hint = screen.getByText(/Il conto della tua agenzia da cui partiranno i bonifici/);
+    expect(hint).toHaveTextContent('è scritto nel file dei bonifici, che CasaZen conserva');
+    expect(hint.textContent).not.toMatch(/non viene salvato/i);
+  });
+
   it('WirePage_Create_WhileTheRequestIsOnItsWay_NothingCanBeSentTwice', async () => {
     const request = deferred<typeof CREATED>();
     api.createBatch.mockReturnValue(request.promise);

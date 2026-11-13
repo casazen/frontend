@@ -26547,7 +26547,7 @@
     "currencyGroup": "Statements in {{currency}}",
     "currencyNotSupported": "Wire transfers are only made in euro (EUR) or Swiss francs (CHF): statements in {{currency}} cannot be paid with this file.",
     "debitAccount": "Debit account (IBAN)",
-    "debitAccountHint": "The account of your agency the transfers will leave from. It is not saved and never shown in full again.",
+    "debitAccountHint": "The account of your agency the transfers will leave from. It does not stay on this page and is shown masked on screen; it is written in the wire file, which CasaZen keeps.",
     "debitAccountPlaceholder": "IT00X0000000000000000000000",
     "description": "Create the wire file that pays the owners: choose published statements of a single currency, give the debit account and upload the file to your bank. CasaZen does not make the transfers.",
     "loadError": "Could not load the statements",
