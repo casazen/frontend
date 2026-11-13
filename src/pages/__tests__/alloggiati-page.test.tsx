@@ -128,6 +128,7 @@ function Where() {
 
 interface Setup {
   flags?: Partial<typeof DEFAULT_FEATURE_FLAGS>;
+  flagsLoading?: boolean;
 }
 
 function renderPage(initial = ARCHIVE, setup: Setup = {}) {
@@ -138,7 +139,7 @@ function renderPage(initial = ARCHIVE, setup: Setup = {}) {
       { client },
       createElement(
         FeatureFlagsContext.Provider,
-        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, ...setup.flags }, isLoading: false } },
+        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, ...setup.flags }, isLoading: setup.flagsLoading ?? false } },
         createElement(MemoryRouter, { initialEntries: [initial] }, createElement(AlloggiatiPage), createElement(Where)),
       ),
     ),
@@ -230,6 +231,15 @@ describe('the archive of the proofs: the address and the filters', () => {
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`${ARCHIVE}?kind=TouristTaxPayment`));
     expect(screen.getByTestId('where')).not.toHaveTextContent('page=');
+  });
+
+  // Before the flags are read the page cannot know whether it has a summary: it asks nothing and shows no tab, instead of showing the proofs and then the summary.
+  it('AlloggiatiPage_WhileTheFlagsLoad_AsksNothingAndShowsTheListLoading', () => {
+    renderPage(ARCHIVE, { flagsLoading: true, flags: { complianceTrafficLight: true } });
+
+    expect(screen.getByTestId('archive-loading')).toBeInTheDocument();
+    expect(complianceArchiveApi.listEvidence).not.toHaveBeenCalled();
+    expect(complianceArchiveApi.getCoverageReport).not.toHaveBeenCalled();
   });
 
   it('AlloggiatiPage_ByDefault_LooksAtTheThreeWholeMonthsBeforeAndTheCurrentOne', async () => {

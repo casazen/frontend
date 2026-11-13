@@ -54,7 +54,8 @@ export function AlloggiatiPage() {
   const language = i18n.language;
   const [params, setParams] = useSearchParams();
   const { hasPermission } = useWorkspace();
-  const hasSummary = useFeatureFlags().flags.complianceTrafficLight;
+  const features = useFeatureFlags();
+  const hasSummary = features.flags.complianceTrafficLight;
   const today = todayInRome();
   const address = readArchiveAddress(params, hasSummary);
   const { from, to } = archiveWindow(address, today);
@@ -71,8 +72,9 @@ export function AlloggiatiPage() {
 
   const properties = useProperties({}, { fresh: true });
   const propertyList = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
-  // The queries wait for the properties, which the address is checked against: a property that is not one of the caller's is no filter.
-  const ready = !properties.isLoading;
+  // The queries wait for the properties, which the address is checked against (a property that is not one of the caller's is no filter), and for the
+  // flags, which decide whether the page has a summary: before they are read the page would show the proofs for a moment and then the summary.
+  const ready = !properties.isLoading && !features.isLoading;
   const propertyId = address.propertyId && (properties.isError || propertyList.some((property) => property.id === address.propertyId)) ? address.propertyId : undefined;
 
   const list = useComplianceEvidence({ propertyId, from, to, kind, page: address.page, pageSize: PAGE_SIZE }, ready);
