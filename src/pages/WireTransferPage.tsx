@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useExactMoney } from '@/hooks/use-exact-money';
+import { useLeaveGuard } from '@/hooks/use-leave-guard';
 import { failureMessage, problemCodeOf } from '@/lib/agency-finance';
 import { getHttpStatus } from '@/lib/api-errors';
 import { maskIban } from '@/lib/iban';
@@ -51,6 +52,9 @@ function WireTransferBody() {
   const [debitAccount, setDebitAccount] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [batches, setBatches] = useState<CreatedBatch[]>([]);
+  // The files made in this visit that are not paid yet: the page does not keep them, so leaving it with one of them open loses it (and its statements stay locked).
+  const [unpaid, setUnpaid] = useState<ReadonlySet<string>>(new Set());
+  const leaving = useLeaveGuard(unpaid.size > 0);
   const [failure, setFailure] = useState<string | null>(null);
   const [schemaUnavailable, setSchemaUnavailable] = useState(false);
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
@@ -94,8 +98,9 @@ function WireTransferBody() {
   };
 
   /**
-   * The file is made once the person has confirmed it. The debit account is sent and forgotten: it is not kept after the answer, whatever the answer is, and a
-   * refusal is told here, never as a success (`wire_batch_schema_unavailable`: no file exists, say so plainly).
+   * The file is made once the person has confirmed it. The debit account is sent and forgotten: whatever the answer is (the file, a refusal of the server or a lost
+   * connection) the field is emptied, and the person types the account again to try once more (the page says so). The account lives only in this component's state
+   * and in the field, so leaving the page drops it too. A refusal is told here, never as a success (`wire_batch_schema_unavailable`: no file exists, say so plainly).
    */
   const onCreate = async () => {
     if (sending.current || pending || chosen.length === 0 || debitAccount.trim() === '') return;
@@ -106,9 +111,9 @@ function WireTransferBody() {
     try {
       const batch = await createBatch.mutateAsync({ statementIds: ids, debitAccount: debitAccount.trim() });
       setBatches((current) => [{ ...batch, debitMasked: maskedAccount }, ...current]);
+      setUnpaid((current) => new Set([...current, batch.batchId]));
       setBatchedIds((current) => new Set([...current, ...ids]));
       setSelected(new Set());
-      setDebitAccount('');
       setSchemaUnavailable(false);
     } catch (createError) {
       if (problemCodeOf(createError) === 'wire_batch_schema_unavailable') {
@@ -120,8 +125,17 @@ function WireTransferBody() {
     } finally {
       sending.current = false;
       createBatch.reset();
+      // Whatever the answer: the account is forgotten.
+      setDebitAccount('');
     }
   };
+
+  const markPaid = (batchId: string) =>
+    setUnpaid((current) => {
+      const next = new Set(current);
+      next.delete(batchId);
+      return next;
+    });
 
   const dismissConfirmation = (open: boolean) => {
     // The request is on its way: the dialog stays until the server has answered.
@@ -176,6 +190,11 @@ function WireTransferBody() {
         <Alert variant="danger" data-testid="wire-failure">
           {failure}
         </Alert>
+      )}
+      {(schemaUnavailable || failure) && (
+        <p className="text-sm text-muted-foreground" data-testid="wire-account-cleared">
+          {t('wire.accountCleared')}
+        </p>
       )}
 
       <PlainSection title={t('wire.selectStatements')} data-testid="wire-compose">
@@ -279,7 +298,7 @@ function WireTransferBody() {
         <PlainSection title={t('wire.batch.sessionTitle')} data-testid="wire-batches">
           <div className="space-y-4">
             {batches.map((batch) => (
-              <WireBatchCard key={batch.batchId} batch={batch} />
+              <WireBatchCard key={batch.batchId} batch={batch} onPaid={markPaid} />
             ))}
           </div>
         </PlainSection>
@@ -298,6 +317,22 @@ function WireTransferBody() {
         confirmLabel={t('wire.batch.create')}
         isLoading={pending}
         onConfirm={onCreate}
+      />
+
+      {/* A link of the app to another page while a file is not paid: the file would not be found again here. */}
+      <ConfirmationDialog
+        open={leaving.state === 'blocked'}
+        onOpenChange={(open) => {
+          if (!open && leaving.state === 'blocked') leaving.reset();
+        }}
+        title={t('wire.leave.title')}
+        description={t('wire.leave.description')}
+        consequences={[t('wire.leave.consequenceLocked'), t('wire.leave.consequenceNeedsPage')]}
+        confirmLabel={t('wire.leave.confirm')}
+        cancelLabel={t('wire.leave.stay')}
+        onConfirm={() => {
+          if (leaving.state === 'blocked') leaving.proceed();
+        }}
       />
     </div>
   );

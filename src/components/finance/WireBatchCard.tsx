@@ -17,6 +17,8 @@ export interface CreatedBatch extends CreateBatchResponse {
 
 interface WireBatchCardProps {
   batch: CreatedBatch;
+  /** The batch is paid (the administrator marked it, or the server said it already was): the page stops asking before it is left. */
+  onPaid: (batchId: string) => void;
 }
 
 const STATUS_CLASS: Record<WireBatchStatus, string> = {
@@ -33,7 +35,7 @@ const STATUS_CLASS: Record<WireBatchStatus, string> = {
  * amount and the currency. The card owns its requests: while any of them is on its way every button of the card waits, and an answer of the server that contradicts the
  * step shown (already paid, never downloaded) corrects the step instead of being hidden.
  */
-export function WireBatchCard({ batch }: WireBatchCardProps) {
+export function WireBatchCard({ batch, onPaid }: WireBatchCardProps) {
   const { t } = useTranslation();
   const money = useExactMoney();
   const download = useDownloadBatchFile();
@@ -72,10 +74,13 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
     try {
       await confirmPaid.mutateAsync(batch.batchId);
       setStatus('Paid');
+      onPaid(batch.batchId);
     } catch (error) {
       const code = problemCodeOf(error);
-      if (code === 'batch_already_paid') setStatus('Paid');
-      else if (code === 'batch_not_downloaded') setStatus('Generated');
+      if (code === 'batch_already_paid') {
+        setStatus('Paid');
+        onPaid(batch.batchId);
+      } else if (code === 'batch_not_downloaded') setStatus('Generated');
       setFailure(failureMessage(error, t, t('wire.batch.confirmPaidError'), t('wire.batch.notFound')));
     } finally {
       sending.current = false;

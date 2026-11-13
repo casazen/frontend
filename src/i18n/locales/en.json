@@ -26510,6 +26510,7 @@
     "year": "Year"
   },
   "wire": {
+    "accountCleared": "For safety the debit account was cleared from the field: type it again to try once more.",
     "alreadyInFile": "This statement is already in a file made in this visit.",
     "batch": {
       "confirmCreateDescription_one": "You are about to create the file with {{count}} statement in {{currency}}, to be paid from the account {{account}}.",
@@ -26550,6 +26551,14 @@
     "debitAccountHint": "The account of your agency the transfers will leave from. It does not stay on this page and is shown masked on screen; it is written in the wire file, which CasaZen keeps.",
     "debitAccountPlaceholder": "IT00X0000000000000000000000",
     "description": "Create the wire file that pays the owners: choose published statements of a single currency, give the debit account and upload the file to your bank. CasaZen does not make the transfers.",
+    "leave": {
+      "confirm": "Leave the page",
+      "consequenceLocked": "A file that is not marked as paid keeps its statements locked: they cannot go into another file.",
+      "consequenceNeedsPage": "To download it again or mark it as paid this page has to stay open.",
+      "description": "The file you made cannot be found again once you leave the page: this page does not keep the files it creates.",
+      "stay": "Stay here",
+      "title": "Leave the page?"
+    },
     "loadError": "Could not load the statements",
     "loading": "Loading wire transfers...",
     "noPublishedStatements": "No published statements",

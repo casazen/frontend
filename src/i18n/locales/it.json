@@ -26510,6 +26510,7 @@
     "year": "Anno"
   },
   "wire": {
+    "accountCleared": "Per sicurezza il conto di addebito è stato tolto dal campo: scrivilo di nuovo per riprovare.",
     "alreadyInFile": "Questo rendiconto è già in un file creato in questa visita.",
     "batch": {
       "confirmCreateDescription_one": "Stai per creare il file con {{count}} rendiconto in {{currency}}, da pagare dal conto {{account}}.",
@@ -26550,6 +26551,14 @@
     "debitAccountHint": "Il conto della tua agenzia da cui partiranno i bonifici. Non resta in questa pagina e a video si vede mascherato; è scritto nel file dei bonifici, che CasaZen conserva.",
     "debitAccountPlaceholder": "IT00X0000000000000000000000",
     "description": "Crea il file dei bonifici per pagare i proprietari: scegli i rendiconti pubblicati di una sola valuta, indica il conto di addebito e carica il file nella tua banca. CasaZen non esegue i bonifici.",
+    "leave": {
+      "confirm": "Lascia la pagina",
+      "consequenceLocked": "Un file non segnato come pagato resta con i suoi rendiconti bloccati: non si possono mettere in un altro file.",
+      "consequenceNeedsPage": "Per scaricarlo di nuovo o segnarlo come pagato serve questa pagina aperta.",
+      "description": "Il file generato non si ritrova dopo aver lasciato la pagina: questa pagina non conserva i file creati.",
+      "stay": "Resta qui",
+      "title": "Lasciare la pagina?"
+    },
     "loadError": "Impossibile caricare i rendiconti",
     "loading": "Caricamento bonifici...",
     "noPublishedStatements": "Nessun rendiconto pubblicato",

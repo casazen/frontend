@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { WireTransferPage } from '../WireTransferPage';
 import { deferred, file, problem, statement } from './agency-money-fixtures';
@@ -40,9 +40,19 @@ const USD = statement({ id: 'f0000000-0000-4000-8000-000000000005', currency: 'U
 
 const CREATED = { batchId: BATCH_ID, currency: 'CHF', totalAmount: 1234.5, transferCount: 1 };
 
+// A data router, as the app has: the page asks before it is left (a blocker of the router).
+let router: ReturnType<typeof createMemoryRouter>;
+
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
-  render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(WireTransferPage))));
+  router = createMemoryRouter(
+    [
+      { path: '/app/account/wire-transfers', element: createElement(WireTransferPage) },
+      { path: '/app/account', element: createElement('p', null, 'account home') },
+    ],
+    { initialEntries: ['/app/account/wire-transfers'] },
+  );
+  render(createElement(QueryClientProvider, { client }, createElement(RouterProvider, { router })));
   return client;
 }
 
@@ -258,8 +268,10 @@ describe('making the file (the debit account is a bank account)', () => {
     expect(screen.queryByText(/creato con successo/i)).not.toBeInTheDocument();
     expect(checkboxOf(CHF)).toBeEnabled();
     expect(checkboxOf(CHF)).toBeChecked();
-    // The account stays in the field for the next try and is in no cache.
-    expect(screen.getByLabelText(/Conto di addebito \(IBAN\)/)).toHaveValue(IBAN);
+    // The account is forgotten whatever the answer (the person types it again to try once more, and the page says so): not in the field, not on the page, in no cache.
+    expect(screen.getByLabelText(/Conto di addebito \(IBAN\)/)).toHaveValue('');
+    expect(screen.getByTestId('wire-account-cleared')).toHaveTextContent('scrivilo di nuovo per riprovare');
+    expect(document.body.textContent).not.toContain(IBAN);
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
@@ -280,6 +292,24 @@ describe('making the file (the debit account is a bank account)', () => {
     expect(await screen.findByTestId('wire-failure')).toHaveTextContent(words);
     expect(screen.queryByTestId('wire-batch-reference')).not.toBeInTheDocument();
     expect(screen.queryByTestId('wire-unavailable')).not.toBeInTheDocument();
+    // A refusal of the server empties the debit account too.
+    expect(screen.getByLabelText(/Conto di addebito \(IBAN\)/)).toHaveValue('');
+    expect(document.body.textContent).not.toContain(IBAN);
+  });
+
+  it('WirePage_Create_LostConnection_EmptiesTheDebitAccountToo_AndSaysToTypeItAgain', async () => {
+    api.createBatch.mockRejectedValue(Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' }));
+    renderPage();
+
+    const dialog = await askForTheFile();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Crea il file dei bonifici' }));
+
+    expect(await screen.findByTestId('wire-failure')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Conto di addebito \(IBAN\)/)).toHaveValue('');
+    expect(screen.getByTestId('wire-account-cleared')).toBeInTheDocument();
+    // Nothing to send until the account is typed again.
+    expect(screen.getByTestId('wire-create')).toBeDisabled();
+    expect(document.body.textContent).not.toContain(IBAN);
   });
 });
 
@@ -491,5 +521,83 @@ describe('the plan of the organization is checked before anything is read (any o
 
     expect(await screen.findByTestId('agency-access-refused')).toHaveTextContent('Questa pagina non è disponibile per il tuo accesso');
     expect(screen.queryByTestId('wire-compose')).not.toBeInTheDocument();
+  });
+});
+
+describe('a file that is not paid is not found again once the page is left, so leaving it asks first', () => {
+  const leavingTheTab = () => {
+    const event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  };
+  const goToTheAccountHome = () => act(() => void router.navigate('/app/account'));
+
+  it('WirePage_NoFileYet_NothingIsAskedWhenLeaving', async () => {
+    renderPage();
+    await screen.findByTestId('wire-compose');
+
+    expect(leavingTheTab()).toBe(false);
+    await goToTheAccountHome();
+
+    expect(await screen.findByText('account home')).toBeInTheDocument();
+  });
+
+  it('WirePage_FileMadeAndNotPaid_ClosingOrReloadingTheTabAsks', async () => {
+    renderPage();
+    await makeTheFile();
+
+    expect(leavingTheTab()).toBe(true);
+    await downloadTheFile();
+    // Downloaded is not paid either: the file is still lost on leaving.
+    expect(leavingTheTab()).toBe(true);
+  });
+
+  it('WirePage_FileMadeAndNotPaid_ALinkToAnotherPageAsks_StayKeepsThePage_LeaveGoes', async () => {
+    renderPage();
+    await makeTheFile();
+
+    await goToTheAccountHome();
+    const dialog = await screen.findByRole('dialog');
+
+    expect(dialog).toHaveTextContent('Lasciare la pagina?');
+    expect(dialog).toHaveTextContent('Il file generato non si ritrova dopo aver lasciato la pagina');
+    expect(dialog).toHaveTextContent('resta con i suoi rendiconti bloccati');
+    expect(router.state.location.pathname).toBe('/app/account/wire-transfers');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Resta qui' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(router.state.location.pathname).toBe('/app/account/wire-transfers');
+    expect(screen.getByTestId('wire-batch-reference')).toBeInTheDocument();
+
+    await goToTheAccountHome();
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Lascia la pagina' }));
+
+    expect(await screen.findByText('account home')).toBeInTheDocument();
+  });
+
+  it('WirePage_FilePaid_NothingIsAskedAnyMore', async () => {
+    renderPage();
+    await makeTheFile();
+    await downloadTheFile();
+    const dialog = await openThePaidConfirmation();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Segna come pagato' }));
+    await screen.findByTestId('wire-batch-paid');
+
+    expect(leavingTheTab()).toBe(false);
+    await goToTheAccountHome();
+
+    expect(await screen.findByText('account home')).toBeInTheDocument();
+  });
+
+  it('WirePage_ServerSaysItIsAlreadyPaid_NothingIsAskedAnyMore', async () => {
+    api.confirmPaid.mockRejectedValue(problem(422, 'batch_already_paid'));
+    renderPage();
+    await makeTheFile();
+    await downloadTheFile();
+    const dialog = await openThePaidConfirmation();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Segna come pagato' }));
+    await screen.findByTestId('wire-batch-paid');
+
+    expect(leavingTheTab()).toBe(false);
   });
 });
