@@ -4,7 +4,7 @@ import { ExternalLink, MessageSquare } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DocumentsList } from '@/features/owner-portal/documents-list';
-import { isAccountingDocument, safeExternalUrl, visibleStatements } from '@/features/owner-portal/owner-portal-model';
+import { currentData, isAccountingDocument, safeExternalUrl, visibleStatements } from '@/features/owner-portal/owner-portal-model';
 import { PortalLoading, PortalPageHeading, PortalReadProblem, StatusPill, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
@@ -92,7 +92,9 @@ export function OwnerStatements() {
   const { t } = useTranslation();
   const documents = useOwnerDocuments();
   const invoices = useOwnerExternalDocuments();
-  const statements = documents.data ? visibleStatements(documents.data.statements) : [];
+  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice (the documents, the statements the invoices are named after).
+  const answer = currentData(documents);
+  const statements = answer ? visibleStatements(answer.statements) : [];
 
   return (
     <div className="space-y-8">
@@ -154,13 +156,13 @@ export function OwnerStatements() {
         )}
       </section>
 
-      {documents.data ? (
+      {answer ? (
         <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
           <h2 id="owner-accounting-documents-title" className="text-xl font-semibold text-[#1f3a3d]">
             {t('ownerPortal.accounting.documentsTitle')}
           </h2>
           <DocumentsList
-            documents={documents.data.documents.filter(isAccountingDocument)}
+            documents={answer.documents.filter(isAccountingDocument)}
             emptyText={t('ownerPortal.accounting.noDocuments')}
             testId="owner-accounting-documents"
           />

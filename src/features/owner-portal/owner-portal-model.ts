@@ -43,6 +43,14 @@ export function ownerReadStateOf(error: unknown): OwnerReadState {
   return 'failed';
 }
 
+/**
+ * What a read holds that may still be drawn: nothing once its last answer was an error. TanStack Query keeps the data of an earlier answer when a later one fails, and a page that
+ * draws `data` next to the notice of the refusal would show what the server no longer gives (a document of an access that was withdrawn): a refusal is a refusal (ADR-011-R9).
+ */
+export function currentData<T>(read: { data: T | undefined; isError: boolean }): T | undefined {
+  return read.isError ? undefined : read.data;
+}
+
 /** True when the server said that only an owner (not a contact it let in) manages the contacts. */
 export function isOwnerOnlyRefusal(error: unknown): boolean {
   return ownerReadStateOf(error) === 'ownerOnly';

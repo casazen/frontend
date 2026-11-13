@@ -6,6 +6,7 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { addDays, todayInRome } from '@/lib/stay-dates';
 import { OwnerPortalShell } from '@/features/owner-portal/owner-portal-shell';
+import { OWNER_PORTAL_KEY } from '@/queries/ownerPortal';
 import { OwnerCalendar } from '@/pages/owner-portal/OwnerCalendar';
 import { OwnerContacts } from '@/pages/owner-portal/OwnerContacts';
 import { OwnerConversation } from '@/pages/owner-portal/OwnerConversation';
@@ -358,6 +359,28 @@ describe('a refusal is a refusal, whatever an earlier read left on the screen (A
     expect(screen.queryByTestId('owner-messages')).toBeNull();
     expect(screen.queryByTestId('owner-reply')).toBeNull();
     expect(document.body.textContent).not.toContain('ti rispondiamo domani');
+  });
+  it('OwnerInbox_TheItemsOnOfferAreTheLastAnswer_AnItemOfAReadThatIsRefusedTheNextTimeIsNoLongerOnOffer', async () => {
+    api.listDocuments.mockResolvedValue({
+      documents: [{ id: 'd1', orgId: 'o1', propertyOwnerId: 'po1', type: 'Mandate', title: 'Mandato di gestione', expiryState: 'none', versions: [], updatedAt: '2026-11-01T10:00:00Z' }],
+      statements: [],
+    });
+    const { client } = renderPortal('/portale-proprietari/messaggi?topic=document&documentId=d1');
+    const form = await screen.findByTestId('owner-new-conversation');
+    await waitFor(() => expect((within(form).getByTestId('owner-new-reference') as HTMLSelectElement).value).toBe('d1'));
+
+    // The access to the documents is withdrawn: the next read is refused, and the document of the answer before it is not on offer any more.
+    api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, 'documents'] });
+    });
+    await waitFor(() => expect(within(form).queryByRole('option', { name: 'Mandato di gestione' })).toBeNull());
+
+    fireEvent.change(within(form).getByTestId('owner-new-subject'), { target: { value: 'Scadenza' } });
+    fireEvent.change(within(form).getByTestId('owner-new-body'), { target: { value: 'Quando scade?' } });
+    fireEvent.click(within(form).getByTestId('owner-new-submit'));
+    expect((await within(form).findByTestId('owner-new-problem')).textContent).toContain('Scegli a cosa si riferisce');
+    expect(api.startConversation).not.toHaveBeenCalled();
   });
 });
 

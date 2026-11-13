@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import { OwnerPortalShell } from '@/features/owner-portal/owner-portal-shell';
+import { OWNER_PORTAL_KEY } from '@/queries/ownerPortal';
 import { OwnerCalendar } from '../OwnerCalendar';
 import { OwnerContacts } from '../OwnerContacts';
 import { OwnerConversation } from '../OwnerConversation';
@@ -242,6 +243,39 @@ describe('the accounting of the owner (E06): published versions only, and no wor
     expect(screen.queryByTestId('owner-statements-empty')).toBeNull();
     // The rest of the portal is still there: the menu is.
     expect(screen.getByTestId('owner-nav')).toBeInTheDocument();
+  });
+  it('OwnerPortal_Accounting_AReadThatWasGoodAndIsRefusedTheNextTime_LeavesNoDocumentNorStatementUnderTheNotice', async () => {
+    api.listDocuments.mockResolvedValueOnce({
+      documents: [
+        {
+          id: 'd9',
+          orgId: 'o1',
+          propertyOwnerId: 'po1',
+          type: 'Invoice',
+          title: 'Fattura di novembre',
+          expiryState: 'none',
+          updatedAt: '2026-11-01T10:00:00Z',
+          versions: [{ id: 'v9', versionNumber: 1, fileName: 'fattura.pdf', contentType: 'application/pdf', sizeBytes: 100, sha256: 'a', state: 'current', uploadedAt: '2026-11-01T10:00:00Z' }],
+        },
+      ],
+      statements: [statement('Published', 10)],
+    } as never);
+    const { client } = renderPortal('/portale-proprietari/contabilita');
+    expect(await screen.findByTestId('owner-accounting-documents')).toBeInTheDocument();
+    expect(screen.getByTestId('owner-statements')).toBeInTheDocument();
+
+    // The access is withdrawn: the next read is refused, and what the read before it left (TanStack Query keeps it) is not drawn under the notice.
+    api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, 'documents'] });
+    });
+
+    const notice = await screen.findByTestId('owner-accounting-error');
+    expect(notice.getAttribute('data-state')).toBe('permission');
+    expect(screen.queryByTestId('owner-accounting-documents')).toBeNull();
+    expect(screen.queryByTestId('owner-accounting-documents-empty')).toBeNull();
+    expect(screen.queryByTestId('owner-statements')).toBeNull();
+    expect(document.body.textContent).not.toContain('Fattura di novembre');
   });
 });
 

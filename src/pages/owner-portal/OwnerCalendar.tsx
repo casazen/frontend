@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { CalendarRuns } from '@/features/owner-portal/calendar-runs';
-import { calendarRuns, calendarWindow, type CalendarPeriodId, CALENDAR_PERIODS } from '@/features/owner-portal/owner-portal-model';
+import { calendarRuns, calendarWindow, currentData, type CalendarPeriodId, CALENDAR_PERIODS } from '@/features/owner-portal/owner-portal-model';
 import { PortalLoading, PortalNotice, PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { StayList, StayRequestForm, StayRulePanel } from '@/features/owner-portal/stays-panel';
@@ -43,12 +43,15 @@ export function OwnerCalendar() {
   const cancel = useCancelOwnerStay();
   const busy = request.isPending || cancel.isPending;
 
+  // The last answer of each read, never an earlier one a refusal left in the cache (a property of an access that was withdrawn stays out).
+  const propertiesNow = currentData(properties);
+  const staysNow = currentData(stays);
   const choices = useMemo<PropertyChoice[]>(() => {
     const byId = new Map<string, PropertyChoice>();
-    for (const property of properties.data ?? []) byId.set(property.propertyId, { id: property.propertyId, name: property.propertyName });
-    for (const stay of stays.data ?? []) if (!byId.has(stay.propertyId)) byId.set(stay.propertyId, { id: stay.propertyId, name: stay.propertyName });
+    for (const property of propertiesNow ?? []) byId.set(property.propertyId, { id: property.propertyId, name: property.propertyName });
+    for (const stay of staysNow ?? []) if (!byId.has(stay.propertyId)) byId.set(stay.propertyId, { id: stay.propertyId, name: stay.propertyName });
     return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [properties.data, stays.data]);
+  }, [propertiesNow, staysNow]);
 
   // The address wins; without one, the first property. An id that is not one of the owner's is not drawn: it is «not found», never somebody else's calendar.
   const selected = routeProperty ?? choices[0]?.id;

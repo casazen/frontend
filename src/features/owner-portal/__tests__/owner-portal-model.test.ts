@@ -8,6 +8,7 @@ import {
   calendarWindow,
   canCancelStay,
   contactName,
+  currentData,
   formatBytes,
   isAccountingDocument,
   isContactEditable,
@@ -52,6 +53,13 @@ describe('what a failed read means for a section', () => {
     expect(ownerReadStateOf(new Error('no answer'))).toBe('failed');
     expect(isOwnerOnlyRefusal(failure(403, 'owner_contact_owner_only'))).toBe(true);
     expect(isOwnerOnlyRefusal(failure(403, 'owner_portal_permission_missing'))).toBe(false);
+  });
+
+  it('CurrentData_IsNothingOnceTheLastAnswerWasAnError_WhateverAnEarlierAnswerLeftInTheCache', () => {
+    expect(currentData({ data: ['a'], isError: false })).toEqual(['a']);
+    // TanStack Query keeps the data of the answer before when the next one fails: it is not drawn next to the notice of the refusal.
+    expect(currentData({ data: ['a'], isError: true })).toBeUndefined();
+    expect(currentData({ data: undefined, isError: false })).toBeUndefined();
   });
 });
 

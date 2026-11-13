@@ -11,7 +11,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useOwnerDocuments, useOwnerProperties, useOwnerStays, useStartOwnerConversation } from '@/queries/ownerPortal';
 import type { OwnerConversationTopicCode, StartOwnerConversationBody } from '@/types';
-import { CONVERSATION_TOPICS, visibleStatements, type NewConversationInitial } from './owner-portal-model';
+import { CONVERSATION_TOPICS, currentData, visibleStatements, type NewConversationInitial } from './owner-portal-model';
 import { ownerPortalPaths } from './paths';
 import { TOUCH } from './portal-parts';
 
@@ -61,15 +61,19 @@ export function NewConversationForm({ initial, onCancel }: NewConversationFormPr
   const [body, setBody] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
 
+  // What is on offer is what the last answer of each read says: after a refusal nothing of the answer before it stays on offer (a document of an access that was withdrawn).
+  const propertiesNow = currentData(properties);
+  const staysNow = currentData(stays);
+  const documentsNow = currentData(documents);
   const propertyChoices = useMemo(() => {
     const byId = new Map<string, string>();
-    for (const property of properties.data ?? []) byId.set(property.propertyId, property.propertyName);
-    for (const stay of stays.data ?? []) if (!byId.has(stay.propertyId)) byId.set(stay.propertyId, stay.propertyName);
+    for (const property of propertiesNow ?? []) byId.set(property.propertyId, property.propertyName);
+    for (const stay of staysNow ?? []) if (!byId.has(stay.propertyId)) byId.set(stay.propertyId, stay.propertyName);
     return [...byId.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [properties.data, stays.data]);
-  const stayChoices = stays.data ?? [];
-  const documentChoices = documents.data?.documents ?? [];
-  const statementChoices = documents.data ? visibleStatements(documents.data.statements) : [];
+  }, [propertiesNow, staysNow]);
+  const stayChoices = staysNow ?? [];
+  const documentChoices = documentsNow?.documents ?? [];
+  const statementChoices = documentsNow ? visibleStatements(documentsNow.statements) : [];
 
   const reference = referenceOf(topic, ids);
   const referenceValue = Object.values(reference)[0] ?? '';
