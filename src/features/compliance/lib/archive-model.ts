@@ -92,10 +92,16 @@ export function listedMonths(today: string): string[] {
   return Array.from({ length: LISTED_MONTHS }, (_, index) => addMonths(thisMonth, -index).slice(0, 7));
 }
 
-/** The year of `today` and the one before, for the periods of a whole year. */
+/**
+ * The years a proof is kept for: a proof is kept five years from its upload (`ManualComplianceProof.RetentionYears` of the backend), so the list of the years
+ * reaches back as far as the oldest proof that can still be there: the year of `today` and the five before it.
+ */
+const RETENTION_YEARS = 5;
+
+/** The years of the periods of a whole year, newest first: the year of `today` and the five before it, as far back as a proof is kept. */
 export function listedYears(today: string): string[] {
   const year = Number(today.slice(0, 4));
-  return [String(year), String(year - 1)].filter((value) => inSupportedYears(Number(value)));
+  return Array.from({ length: RETENTION_YEARS + 1 }, (_, index) => String(year - index)).filter((value) => inSupportedYears(Number(value)));
 }
 
 /** A month (`yyyy-MM`), a year (`yyyy`) or a day (`yyyy-MM-dd`) as a person reads it, in the language of the page: «agosto 2026», «2026», «15 agosto 2026». */

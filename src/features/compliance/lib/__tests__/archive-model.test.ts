@@ -104,8 +104,13 @@ describe('periods of the list', () => {
     expect(months[11]).toBe('2025-12');
   });
 
-  it('listedYears_Today_IsThisYearAndTheOneBefore', () => {
-    expect(listedYears('2026-11-13')).toEqual(['2026', '2025']);
+  // A proof is kept five years from its upload: the years offered reach back as far as one that can still be there, so none is out of the reach of the page.
+  it('listedYears_Today_IsThisYearAndTheFiveBeforeAsFarBackAsAProofIsKept', () => {
+    expect(listedYears('2026-11-13')).toEqual(['2026', '2025', '2024', '2023', '2022', '2021']);
+  });
+
+  it('listedYears_NearTheFirstSupportedYear_StopsThere', () => {
+    expect(listedYears('2003-05-01')).toEqual(['2003', '2002', '2001', '2000']);
   });
 
   it('formatPeriod_MonthYearAndDay_ReadsInTheLanguageOfThePage', () => {

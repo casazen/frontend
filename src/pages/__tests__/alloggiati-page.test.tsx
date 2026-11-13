@@ -259,6 +259,30 @@ describe('the archive of the proofs: the address and the filters', () => {
     expect(complianceArchiveApi.getCoverageReport).not.toHaveBeenCalled();
   });
 
+  // A proof is kept five years from its upload: the period list reaches back as far, so the oldest proofs that can still be there are in the reach of the page,
+  // for the list and for the ZIP of that year.
+  it('AlloggiatiPage_Period_OffersTheYearsAProofIsKeptAndAnOldYearFiltersTheListAndTheZip', async () => {
+    vi.mocked(complianceArchiveApi.exportProofs).mockResolvedValue({ blob: new Blob(['zip'], { type: 'application/zip' }), contentDisposition: null });
+    renderPage();
+    await screen.findByTestId('proof-archive-table');
+    const periods = within(screen.getByTestId('archive-filter-period'));
+    expect(periods.getAllByRole('option').map((option) => option.textContent).filter((text) => text?.startsWith('Tutto il'))).toEqual([
+      'Tutto il 2026',
+      'Tutto il 2025',
+      'Tutto il 2024',
+      'Tutto il 2023',
+      'Tutto il 2022',
+      'Tutto il 2021',
+    ]);
+
+    fireEvent.change(screen.getByTestId('archive-filter-period'), { target: { value: '2021' } });
+
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`${ARCHIVE}?period=2021`));
+    await waitFor(() => expect(complianceArchiveApi.listEvidence).toHaveBeenLastCalledWith(expect.objectContaining({ from: '2021-01-01', to: '2021-12-31' })));
+    fireEvent.click(screen.getByTestId('archive-export-zip'));
+    await waitFor(() => expect(complianceArchiveApi.exportProofs).toHaveBeenCalledWith('2021-01-01', '2021-12-31', undefined));
+  });
+
   it('AlloggiatiPage_ByDefault_LooksAtTheThreeWholeMonthsBeforeAndTheCurrentOne', async () => {
     renderPage();
 
