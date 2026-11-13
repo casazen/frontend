@@ -310,10 +310,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
-    // Biometric verification queue (NF-12): operator verifications pending decision. A tab of "Da approvare", the other queue of decisions.
+    // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
+    // A tab of "Da approvare", the other queue of decisions. It asks the permission the API asks for every call of it, `verification.decision` (the
+    // owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
     path: '/app/short-rent/verifications',
     context: 'short-rent',
-    requiredPermissions: ['verification.decide'],
+    requiredPermissions: ['verification.decision'],
     navKey: 'nav.verifications',
     navParent: '/app/short-rent/approval-queue',
     navOrder: 1,

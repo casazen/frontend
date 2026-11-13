@@ -11854,7 +11854,8 @@
       "serviceRequestBackupInvited": "Sei una riserva per una nuova richiesta di servizio.",
       "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
-      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa."
+      "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
+      "verificationRequired": "L'identità di un ospite aspetta la tua verifica."
     }
   },
   "octorate": {
@@ -23122,33 +23123,49 @@
   },
   "verification": {
     "action": {
-      "photoRequested": "Richiesta foto inviata al cliente",
-      "photoRequestFailed": "Impossibile inviare la richiesta foto",
-      "reject": "Rifiuta",
-      "rejectFailed": "Impossibile rifiutare la verifica",
-      "rejected": "Verifica rifiutata",
-      "request_photo": "Richiedi nuova foto",
-      "verified": "Verifica registrata",
-      "verification": "Verifica",
-      "verificationRejected": "Verifica respinta",
-      "verify": "Verifica",
-      "verifyFailed": "Impossibile registrare la verifica"
+      "photoRequestFailed": "Impossibile inviare la richiesta della foto",
+      "photoRequested": "Nuova foto richiesta: all'ospite è stato inviato un nuovo link.",
+      "reject": "Rifiuta il check-in",
+      "rejectFailed": "Impossibile rifiutare il check-in",
+      "rejected": "Check-in rifiutato",
+      "request_photo": "Richiedi una nuova foto",
+      "verificationRejected": "Verifica non approvata: nessun codice di accesso viene inviato.",
+      "verified": "Verifica approvata. Il codice di accesso della struttura viene inviato all'ospite per email, se la struttura ne ha uno.",
+      "verify": "Registra la decisione",
+      "verifyFailed": "Impossibile registrare la decisione"
     },
-    "attempts": "Tentativi",
-    "checkIn": "Check-in",
-    "checkOut": "Check-out",
+    "arrivalDeparture": "Soggiorno dal {{arrival}} al {{departure}}",
+    "attempts": "Tentativi automatici",
+    "check": {
+      "document_validity": "Documento",
+      "liveness": "Ripresa dal vivo",
+      "mrz_consistency": "Documento e dati del check-in",
+      "other": "Controllo {{code}}",
+      "processing": "Elaborazione automatica",
+      "quality": "Qualità della foto",
+      "similarity": "Confronto del volto"
+    },
+    "checks": {
+      "title": "Cosa ha rilevato il controllo automatico"
+    },
     "dialog": {
-      "acceptButton": "Accetta verifica",
-      "confirmReject": "Conferma rifiuto",
-      "noteLabel": "Nota (opzionale per accettazione, obbligatoria per rifiuto)",
-      "notePlaceholder": "Inserisci una nota...",
-      "reasonLabel": "Motivo del rifiuto",
-      "reasonPlaceholder": "Inserisci il motivo del rifiuto...",
-      "rejectButton": "Rifiuta verifica",
-      "rejectDescription": "Il rifiuto impedirà ulteriori tentativi di verifica per questa prenotazione.",
-      "rejectTitle": "Rifiuta verifica biometrica",
-      "verifyDescription": "Accetta la verifica per completare il check-in, oppure rifiutala con una nota.",
-      "verifyTitle": "Registra verifica manuale"
+      "acceptButton": "Approva la verifica",
+      "confirmReject": "Conferma il rifiuto",
+      "noteHint": "La nota è facoltativa per approvare e obbligatoria per non approvare. Resta nel registro delle verifiche.",
+      "noteLabel": "Nota",
+      "notePlaceholder": "Scrivi cosa hai verificato con l'ospite...",
+      "reasonLabel": "Motivo del rifiuto (obbligatorio)",
+      "reasonPlaceholder": "Scrivi perché rifiuti il check-in...",
+      "rejectButton": "Non verificato",
+      "rejectDescription": "Il check-in viene chiuso e l'ospite non può riprovare. Nessun codice di accesso viene inviato.",
+      "rejectTitle": "Rifiuta il check-in",
+      "verifyDescription": "Contatta l'ospite fuori da CasaZen e poi registra la decisione. Approvando, all'ospite arriva per email il codice di accesso della struttura (se ne ha uno); «Non verificato» non invia nulla e richiede una nota.",
+      "verifyTitle": "Registra la tua decisione"
+    },
+    "figures": {
+      "threshold": "soglia {{threshold}}",
+      "value": "valore {{value}}",
+      "valueAndThreshold": "valore {{value}}, soglia {{threshold}}"
     },
     "filter": {
       "allDeadlines": "Tutte le scadenze",
@@ -23159,20 +23176,68 @@
       "today": "Oggi",
       "upcoming": "Prossime"
     },
+    "guest": {
+      "contactHint": "Contatta l'ospite fuori da CasaZen (per esempio con una videochiamata) e poi registra la tua decisione.",
+      "noContact": "Nessun indirizzo email registrato: cerca il contatto dell'ospite nella prenotazione.",
+      "openBooking": "Apri la prenotazione",
+      "title": "Ospite"
+    },
+    "metrics": {
+      "loading": "Caricamento dei numeri...",
+      "notOk": "Non superate",
+      "ok": "Superate da sole",
+      "operatorDecisions_one": "{{count}} decisione di un operatore",
+      "operatorDecisions_other": "{{count}} decisioni di un operatore",
+      "operatorShare": "Concluse da un operatore",
+      "period": "Dal {{from}} al {{to}}",
+      "retry": "Riprova",
+      "review": "Passate a una persona",
+      "title": "Verifiche degli ultimi 30 giorni",
+      "unavailable": "Al momento non è stato possibile leggere i numeri."
+    },
+    "provisional": {
+      "badge": "Soglie provvisorie",
+      "explain": "Le soglie di questo controllo non sono mai state tarate: considera provvisorio l'esito automatico."
+    },
     "queue": {
-      "description": "Prenotazioni in attesa di verifica biometrica manuale",
-      "emptyFiltered": "Nessuna verifica corrisponde ai filtri selezionati",
+      "description": "Ospiti la cui identità aspetta la verifica di una persona",
+      "emptyFiltered": "Nessuna verifica corrisponde ai filtri scelti",
       "emptyQueue": "Nessuna verifica in attesa",
       "emptyTitle": "Nessun elemento",
       "loadError": "Impossibile caricare la coda di verifica",
       "loading": "Caricamento coda di verifica...",
+      "retry": "Riprova",
       "title": "Coda di verifica"
     },
-    "reason": {
-      "consent_refused": "Consenso rifiutato",
-      "label": "Motivo",
-      "model_error": "Errore del modello",
-      "unverified": "Foto non verificata"
+    "result": {
+      "between_thresholds": "tra le due soglie: decide una persona",
+      "birth_date_mismatch": "la data di nascita non corrisponde ai dati del check-in",
+      "check_digits_invalid": "le cifre di controllo del documento non sono corrette",
+      "document_number_mismatch": "il numero del documento non corrisponde ai dati del check-in",
+      "error": "errore imprevisto",
+      "expired": "il documento è scaduto",
+      "face_too_small": "il volto è troppo piccolo nella foto",
+      "failed": "non superato",
+      "image_unreadable": "la foto non è leggibile",
+      "multiple_faces": "più di un volto nella foto",
+      "names_mismatch": "i nomi non corrispondono ai dati del check-in",
+      "nationality_mismatch": "la cittadinanza non corrisponde ai dati del check-in",
+      "no_face": "nessun volto trovato",
+      "not_run": "non eseguito: un controllo precedente lo ha fermato",
+      "other": "esito {{code}}",
+      "passed": "superato",
+      "timeout": "ha impiegato troppo tempo",
+      "unavailable": "i modelli non sono disponibili",
+      "unreadable": "il documento non è leggibile"
+    },
+    "why": {
+      "no_match": "Il volto nella foto non corrisponde al documento.",
+      "not_passed": "Il controllo automatico non è stato superato.",
+      "operator_requested": "L'ospite ha chiesto una persona, oppure non ha dato il consenso biometrico.",
+      "review": "Un controllo ha rilevato qualcosa che richiede lo sguardo di una persona.",
+      "technical_error": "Il controllo automatico non ha potuto essere eseguito.",
+      "title": "Perché è qui",
+      "uncertain": "Il confronto è incerto: cade tra le due soglie."
     }
   },
   "vetrina": {

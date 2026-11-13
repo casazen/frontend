@@ -62,7 +62,7 @@ describe('NavChildLinks (UI-04a)', () => {
 
   it('NavChildLinks_UserWhoMayOpenNone_ShowsNothing', () => {
     // The verifications are the only page that hangs from the approval queue, and they ask their own permission.
-    const { container } = renderLinks('/app/short-rent/approval-queue', (_ctx, permission) => permission !== 'verification.decide');
+    const { container } = renderLinks('/app/short-rent/approval-queue', (_ctx, permission) => permission !== 'verification.decision');
 
     expect(container).toBeEmptyDOMElement();
   });

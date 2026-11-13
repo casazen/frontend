@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 
@@ -20,6 +20,9 @@ const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
 
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
 
+/** The console of the identity verifications: the bell tells the operators (who hold `verification.decision`) that a guest waits for a person. */
+const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
+
 /**
  * The push types of the backend (`PushTypes`) the bell knows. A type that is not here is shown with a generic sentence and
  * opens nothing: a newer server must not break an older app.
@@ -30,6 +33,8 @@ const KINDS: Record<string, NotificationKind> = {
   // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
   'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
+  // E03/F04/US02/T03: a guest handed the verification of the identity to a person; the operators open the console.
+  'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },

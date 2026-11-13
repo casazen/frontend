@@ -11854,7 +11854,8 @@
       "serviceRequestBackupInvited": "You are a backup for a new service request.",
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
-      "serviceRequestBackupClosed": "A request you were a backup for was closed."
+      "serviceRequestBackupClosed": "A request you were a backup for was closed.",
+      "verificationRequired": "A guest's identity is waiting for you to verify it."
     }
   },
   "octorate": {
@@ -23122,33 +23123,49 @@
   },
   "verification": {
     "action": {
-      "photoRequested": "Photo request sent to guest",
       "photoRequestFailed": "Failed to send photo request",
-      "reject": "Reject",
-      "rejectFailed": "Failed to reject verification",
-      "rejected": "Verification rejected",
+      "photoRequested": "New photo requested: the guest has been sent a new link.",
+      "reject": "Reject check-in",
+      "rejectFailed": "Failed to reject the check-in",
+      "rejected": "Check-in rejected",
       "request_photo": "Request new photo",
-      "verified": "Verification recorded",
-      "verification": "Verification",
-      "verificationRejected": "Verification rejected",
-      "verify": "Verify",
-      "verifyFailed": "Failed to record verification"
+      "verificationRejected": "Verification not approved: no access code is sent.",
+      "verified": "Verification approved. The access code of the property is sent to the guest by email, if the property has one.",
+      "verify": "Record decision",
+      "verifyFailed": "Failed to record the decision"
     },
-    "attempts": "Attempts",
-    "checkIn": "Check-in",
-    "checkOut": "Check-out",
+    "arrivalDeparture": "Stay from {{arrival}} to {{departure}}",
+    "attempts": "Automatic attempts",
+    "check": {
+      "document_validity": "Document",
+      "liveness": "Live capture",
+      "mrz_consistency": "Document and check-in data",
+      "other": "Check {{code}}",
+      "processing": "Automatic processing",
+      "quality": "Photo quality",
+      "similarity": "Face comparison"
+    },
+    "checks": {
+      "title": "What the automatic check found"
+    },
     "dialog": {
-      "acceptButton": "Accept verification",
+      "acceptButton": "Approve verification",
       "confirmReject": "Confirm rejection",
-      "noteLabel": "Note (optional for acceptance, required for rejection)",
-      "notePlaceholder": "Enter a note...",
-      "reasonLabel": "Reason for rejection",
-      "reasonPlaceholder": "Enter the reason for rejection...",
-      "rejectButton": "Reject verification",
-      "rejectDescription": "Rejection will prevent further verification attempts for this booking.",
-      "rejectTitle": "Reject biometric verification",
-      "verifyDescription": "Accept the verification to complete check-in, or reject it with a note.",
-      "verifyTitle": "Record manual verification"
+      "noteHint": "The note is optional to approve and required to not approve. It is kept in the verification log.",
+      "noteLabel": "Note",
+      "notePlaceholder": "Write what you checked with the guest...",
+      "reasonLabel": "Reason for rejection (required)",
+      "reasonPlaceholder": "Write why the check-in is rejected...",
+      "rejectButton": "Not verified",
+      "rejectDescription": "The check-in is closed and the guest cannot try again. No access code is sent.",
+      "rejectTitle": "Reject the check-in",
+      "verifyDescription": "Contact the guest outside CasaZen, then record your decision. Approving sends the guest the access code of the property by email (if the property has one); \"Not verified\" sends nothing and needs a note.",
+      "verifyTitle": "Record your decision"
+    },
+    "figures": {
+      "threshold": "threshold {{threshold}}",
+      "value": "value {{value}}",
+      "valueAndThreshold": "value {{value}}, threshold {{threshold}}"
     },
     "filter": {
       "allDeadlines": "All deadlines",
@@ -23159,20 +23176,68 @@
       "today": "Today",
       "upcoming": "Upcoming"
     },
+    "guest": {
+      "contactHint": "Contact the guest outside CasaZen (for example by video call) and then record your decision.",
+      "noContact": "No email address on file: look for the guest's contact in the booking.",
+      "openBooking": "Open the booking",
+      "title": "Guest"
+    },
+    "metrics": {
+      "loading": "Loading the figures...",
+      "notOk": "Not passed",
+      "ok": "Passed on their own",
+      "operatorDecisions_one": "{{count}} decision of an operator",
+      "operatorDecisions_other": "{{count}} decisions of an operator",
+      "operatorShare": "Concluded by an operator",
+      "period": "From {{from}} to {{to}}",
+      "retry": "Try again",
+      "review": "Sent to a person",
+      "title": "Verifications of the last 30 days",
+      "unavailable": "The figures could not be read right now."
+    },
+    "provisional": {
+      "badge": "Provisional thresholds",
+      "explain": "The thresholds of this check were never calibrated: treat the automatic outcome as provisional."
+    },
     "queue": {
-      "description": "Bookings awaiting manual biometric verification",
+      "description": "Guests whose identity waits for a person to verify it",
       "emptyFiltered": "No verifications match the selected filters",
       "emptyQueue": "No verifications pending",
       "emptyTitle": "No items",
       "loadError": "Failed to load verification queue",
       "loading": "Loading verification queue...",
+      "retry": "Try again",
       "title": "Verification Queue"
     },
-    "reason": {
-      "consent_refused": "Consent refused",
-      "label": "Reason",
-      "model_error": "Model error",
-      "unverified": "Photo unverified"
+    "result": {
+      "between_thresholds": "between the two thresholds: a person decides",
+      "birth_date_mismatch": "the birth date does not match the check-in data",
+      "check_digits_invalid": "the check digits of the document are wrong",
+      "document_number_mismatch": "the document number does not match the check-in data",
+      "error": "an unexpected error",
+      "expired": "the document is expired",
+      "face_too_small": "the face is too small in the picture",
+      "failed": "not passed",
+      "image_unreadable": "the picture could not be read",
+      "multiple_faces": "more than one face in the picture",
+      "names_mismatch": "the names do not match the check-in data",
+      "nationality_mismatch": "the nationality does not match the check-in data",
+      "no_face": "no face found",
+      "not_run": "not reached: an earlier check stopped it",
+      "other": "result {{code}}",
+      "passed": "passed",
+      "timeout": "it took too long",
+      "unavailable": "the models are not available",
+      "unreadable": "the document could not be read"
+    },
+    "why": {
+      "no_match": "The face in the photo does not match the document.",
+      "not_passed": "The automatic check did not pass.",
+      "operator_requested": "The guest asked for a person, or did not give the biometric consent.",
+      "review": "A check found something that needs a person to look at it.",
+      "technical_error": "The automatic check could not run.",
+      "title": "Why it is here",
+      "uncertain": "The comparison is uncertain: it falls between the two thresholds."
     }
   },
   "vetrina": {
