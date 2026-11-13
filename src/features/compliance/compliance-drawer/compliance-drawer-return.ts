@@ -5,8 +5,8 @@ import { isRelativeAppRoute } from './compliance-drawer-model';
 /**
  * The way out of CasaZen and back in, for «Verifica nel tuo Cassetto Compliance» (CHK-15, E03/F05/US02).
  *
- * Out: the host leaves in the SAME tab (`openDestination`: top-level navigation to the one address the server returned; never an iframe, a
- * new tab or `window.open`), after the tab has kept where to come back to. That record holds the relative route, its filters and the id of
+ * Out: the host leaves in the SAME tab (`openDestination`: top-level navigation to the one address the server returned; never an embedded
+ * frame, a second window or a new tab), after the tab has kept where to come back to. That record holds the relative route, its filters and the id of
  * the handoff, and nothing else: no name, no outcome, no credential. It is `sessionStorage`, so it dies with the tab.
  *
  * Back: when CasaZen is loaded again (the browser's back, or a normal navigation) the record is read ONCE and forgotten: the shell leads to the
