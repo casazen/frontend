@@ -93,9 +93,10 @@ export function BookingDetailPage() {
   }
 
   // An API error is never shown as "not found" (only a 404 is), and a 404 is "not found" whatever the cache still holds of the booking: the query keeps the old data
-  // when a read fails, and the page of a booking that is gone must not open on it.
+  // when a read fails, and the page of a booking that is gone must not open on it. A read that fails when the page already shows the booking (the page is read again
+  // whenever it opens) leaves the page as it is: the error screen is for a page that has nothing to show.
   const gone = isError && getHttpStatus(error) === 404;
-  if (isError && !gone) {
+  if (isError && !gone && !booking) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">

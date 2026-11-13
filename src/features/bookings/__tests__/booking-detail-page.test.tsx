@@ -517,6 +517,19 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByText('5 ospiti')).not.toBeInTheDocument();
   });
 
+  it('BookingDetailPage_FreshReadFailsWhileThePageShowsTheBooking_LeavesThePageAsItIs', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(['bookings', BOOKING_ID], booking());
+    vi.mocked(bookingsApi.getById).mockRejectedValue(axiosError(500, { status: 500, title: 'Errore' }));
+
+    renderPage(undefined, client);
+
+    // The error screen is for a page that has nothing to show: a booking already in hand stays on screen.
+    await waitFor(() => expect(bookingsApi.getById).toHaveBeenCalledTimes(1), WAIT);
+    expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-load-error')).not.toBeInTheDocument();
+  });
+
   it('BookingDetailPage_NotFoundWhileTheCacheStillHoldsTheBooking_ShowsNotFound', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData(['bookings', BOOKING_ID], booking());
