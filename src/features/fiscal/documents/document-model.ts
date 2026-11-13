@@ -248,19 +248,20 @@ export function documentActionsOf(document: FiscalDocumentEntry, flags: Partial<
   return { pdf: issued, xml: issued && document.hasXml, readOnly: false, pdfUnavailable: false };
 }
 
-/** What a download that failed leaves out of the row: the whole document, or only its PDF or its XML. */
-export type Unavailable = 'document' | 'pdf' | 'xml';
+/** What a download that failed leaves out of the row: the whole document, or only its XML. */
+export type Unavailable = 'document' | 'xml';
 
 /**
  * What a failed download says is gone. A 404 is always «not found» (a query keeps its old rows when a later read fails, and a document that is not found is not one that is
- * on the list): the document itself, or, when the server names it, only its XML (`fiscal_document_xml_unavailable`) or the PDF of the channel manager
- * (`octorate_pdf_unavailable`). Any other failure leaves the row as it is: the person may ask again.
+ * on the list): the document itself, or, when the server names it, only its XML (`fiscal_document_xml_unavailable`). Any other failure leaves the row as it is: the person may
+ * ask again. That holds for `octorate_pdf_unavailable` too: the server sends it also when the channel manager could not be read just now (not only when it holds no PDF), so
+ * the PDF button stays and the message of the code is all that is said; whether the channel manager holds a PDF at all is the `octoratePdfAvailable` of the list.
  */
 export function unavailabilityOf(error: unknown): Unavailable | null {
   if (!isAxiosError(error) || error.response?.status !== 404) return null;
   const code = getProblemCode(error.response.data);
   if (code === FISCAL_DOCUMENT_ERROR.xmlUnavailable) return 'xml';
-  if (code === FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable) return 'pdf';
+  if (code === FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable) return null;
   return 'document';
 }
 

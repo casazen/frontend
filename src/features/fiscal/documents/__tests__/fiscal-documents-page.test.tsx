@@ -503,6 +503,28 @@ describe('FiscalDocumentsPage: the downloads', () => {
     await waitFor(() => expect(api.downloadPdf).toHaveBeenCalledWith(expect.objectContaining({ source: 'Octorate' })));
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'documento-2026-77.pdf'));
   });
+
+  // The server sends `octorate_pdf_unavailable` also when the channel manager could not be read just now (not only when it holds no PDF): nothing is taken away from the row.
+  it('FiscalDocumentsPage_AnImportedPdfTheChannelManagerCouldNotGive_KeepsItsButtonSaysWhyAndMayBeAskedAgain', async () => {
+    vi.mocked(api.listDocuments).mockResolvedValue(page([importedDocument()]));
+    vi.mocked(api.downloadPdf).mockRejectedValueOnce(failure(404, { code: api.FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable }));
+    vi.mocked(api.downloadPdf).mockResolvedValueOnce({ blob: new Blob(['%PDF']), contentDisposition: null });
+    env.flags = { octorateConnector: true, octorateDocumentImport: true };
+    renderPage();
+
+    const [row] = await tableRows();
+    fireEvent.click(within(row).getByTestId('fiscal-document-pdf'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.octoratePdfUnavailable')));
+    await waitFor(() => expect(within(row).getByTestId('fiscal-document-pdf')).toBeEnabled());
+    expect(within(row).queryByTestId('fiscal-document-pdf-unavailable')).not.toBeInTheDocument();
+    expect(within(row).queryByTestId('fiscal-document-gone')).not.toBeInTheDocument();
+
+    // The person may ask again, and the second answer is the file.
+    fireEvent.click(within(row).getByTestId('fiscal-document-pdf'));
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
+    expect(api.downloadPdf).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('FiscalDocumentsPage: the files of the list', () => {

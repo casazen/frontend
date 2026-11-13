@@ -173,7 +173,8 @@ describe('unavailabilityOf (a 404 is always "not found", even when the list stil
     ['a document that is not found', failure(404, { code: FISCAL_DOCUMENT_ERROR.notFound }), 'document'],
     ['a 404 with no code', failure(404, undefined), 'document'],
     ['an XML the document does not have', failure(404, { code: FISCAL_DOCUMENT_ERROR.xmlUnavailable }), 'xml'],
-    ['a PDF the channel manager does not have', failure(404, { code: FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable }), 'pdf'],
+    // The server also sends it when the channel manager could not be read just now: nothing is taken away, the person may ask again.
+    ['a PDF the channel manager could not give', failure(404, { code: FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable }), null],
     ['a failure that is not a 404', failure(500, { code: FISCAL_DOCUMENT_ERROR.notFound }), null],
     ['the schema of the invoice not installed (422)', failure(422, { code: FISCAL_DOCUMENT_ERROR.schemaUnavailable }), null],
     ['an error that is not one of axios', new Error('offline'), null],

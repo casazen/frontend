@@ -49,8 +49,9 @@ function documentName(t: TFunction, document: FiscalDocumentEntry): string {
 /**
  * The buttons of a document: its PDF and, for a document CasaZen issued, its XML. A document of the channel manager is «sola lettura», and has a PDF button only when the
  * channel manager holds one and the endpoint exists here. The buttons of a card wait for each other: while any download of this document is on the way every one of them is
- * disabled, so a second click cannot start a second download. A document that is not found any more (404) is told as such and has no button left; a PDF or an XML that the server
- * says it does not have is told next to the other button.
+ * disabled, so a second click cannot start a second download. A document that is not found any more (404) is told as such and has no button left; an XML that the server
+ * says it does not have is told next to the PDF. A PDF the channel manager could not give (`octorate_pdf_unavailable`, which the server also sends for a read that failed just
+ * now) keeps its button: the message says why and the person may ask again.
  */
 function DocumentActions({ document, flags }: { document: FiscalDocumentEntry; flags: Partial<FeatureFlags> }) {
   const { t } = useTranslation();
@@ -78,7 +79,7 @@ function DocumentActions({ document, flags }: { document: FiscalDocumentEntry; f
     );
   }
 
-  const showPdf = actions.pdf && !gone.has('pdf');
+  const showPdf = actions.pdf;
   const showXml = actions.xml && !gone.has('xml');
 
   return (
@@ -121,7 +122,7 @@ function DocumentActions({ document, flags }: { document: FiscalDocumentEntry; f
           {t('fiscalDocuments.list.readOnly')}
         </span>
       ) : null}
-      {actions.pdfUnavailable || gone.has('pdf') ? (
+      {actions.pdfUnavailable ? (
         <span className="text-xs text-foreground/70" data-testid="fiscal-document-pdf-unavailable">
           {t('fiscalDocuments.list.pdfUnavailable')}
         </span>
