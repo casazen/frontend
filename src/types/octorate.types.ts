@@ -198,6 +198,11 @@ export interface ExistingInventoryChannel {
   counts: ExistingInventoryCounts;
   capabilities: ExistingInventoryCapabilities;
   items: ExistingInventoryItem[];
+  /**
+   * The accommodation ids (`octorateAccommodationId`) whose id on the portal CasaZen gave to the channel manager with `connect`: the access then waits
+   * only for the approval on the portal's own site. Absent or empty when nothing was connected that way.
+   */
+  connectedAccommodationIds?: string[];
 }
 
 /** `GET api/octorate/existing-inventory/batches/{id}`: progress, counts and stable error codes of an import; never a credential or a payload. */
@@ -231,6 +236,17 @@ export interface ChannelAccessStart {
   alreadyComplete: boolean;
   handoffMode: 'redirectCallback' | 'managedWindow' | null;
   panelUrl: string | null;
+}
+
+/** A structure of the channel manager and the id it has on the portal (the id of the hotel, of the property): an identifier, never a credential. */
+export interface ConnectChannelAccommodation {
+  accommodationId: string;
+  hotelId: string;
+}
+
+/** Body of `POST .../channels/{code}/connect`: only the structures that are on the portal, each with its id there. */
+export interface ConnectChannelRequest {
+  accommodations: ConnectChannelAccommodation[];
 }
 
 /** The scenario declared for a property, or for a named group with no property yet (`GET` and `PUT api/octorate/inventory-intents`). */

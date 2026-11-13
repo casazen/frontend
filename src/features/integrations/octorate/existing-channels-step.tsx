@@ -13,18 +13,25 @@ import { getProblemMessage, translateErrorCode } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import {
   useConfirmChannelAccess,
+  useConnectChannel,
   useCreateExistingInventoryBatch,
   useExistingInventoryBatch,
   useOtaChannelChoices,
   useStartChannelAccess,
 } from '@/queries/use-existing-inventory-import';
-import type { ExistingInventoryBatch, ExistingInventoryChannel } from '@/types';
+import { useFoundListings } from '@/queries/use-octorate-mapping';
+import type { ExistingInventoryBatch, ExistingInventoryChannel, OctorateListing } from '@/types';
+import { channelRowMode, checkPortalIds, connectableStructures, portalGuide, type PortalIds } from './channel-connect-model';
+import { ChannelIdFields, ChannelLastStep } from './channel-connect-parts';
 import { batchChannelCodes, channelAccessView, channelOf, isAccessGiven, isWaitingForAccess, type ChannelAccessView } from './existing-inventory';
 import type { ConnectWizardValues } from './inventory-scenario';
 import { StepProblem } from './listing-parts';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
+
+/** No id of a structure is wrong yet: the fields say nothing until the host presses «Collega». */
+const NO_INVALID_IDS: ReadonlySet<string> = new Set();
 
 const VIEW_BADGE: Readonly<Record<ChannelAccessView, 'secondary' | 'warning' | 'success' | 'destructive' | 'outline'>> = {
   notStarted: 'outline',
@@ -44,18 +51,41 @@ interface ChannelRowProps {
   /** The batch is read again: the explicit trigger of a check of the access (the window closed, the tab came back). */
   onCheck: () => void;
   batchId: string | null;
+  /** The portal needs only the id of each structure on it (the catalog says so): the host writes them here and approves the channel manager on the portal. */
+  connectByPropertyId: boolean;
+  /** The structures the channel manager holds, to ask the id of each one; `reading` while they are being read. */
+  structures: { items: readonly OctorateListing[]; reading: boolean };
 }
 
 /**
- * One channel of the list: its state in the words of the wizard, the button that opens the panel of the channel manager (the access is given
- * there, never in CasaZen), the confirmation that is offered only after a check that could not tell, and «Fallo per me». The panel opens in a
- * secondary window while this step stays on screen; the step and the point to come back to are stored before it opens.
+ * One channel of the list: its state in the words of the wizard and what it asks of the host.
+ *
+ * - A portal that needs only the id of each structure on it (`connectByPropertyId`) asks for those ids here: «Collega» gives them to the channel manager
+ *   and the last step is the approval on the portal's own site, which CasaZen sees by itself. With no structure to ask for, it goes through the panel.
+ * - Any other portal has the button that opens the panel of the channel manager (the access is given there, never in CasaZen) and, under it, exactly what
+ *   to do there. The panel opens in a secondary window while this step stays on screen; the step and the point to come back to are stored before it opens.
+ *
+ * Both have the confirmation that is offered only after a check that could not tell, and «Fallo per me».
  */
-function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: ChannelRowProps) {
+function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId, connectByPropertyId, structures }: ChannelRowProps) {
   const { t } = useTranslation();
   const startAccess = useStartChannelAccess();
   const confirmAccess = useConfirmChannelAccess();
+  const connectChannel = useConnectChannel();
   const view = channel ? channelAccessView(channel) : 'notStarted';
+
+  // The ids of the structures are written in the row, not in the values of the wizard: they are not kept in its draft.
+  const [ids, setIds] = useState<PortalIds>({});
+  const [asked, setAsked] = useState(false);
+  const [sending, setSending] = useState(false);
+  const check = checkPortalIds(structures.items, ids);
+  const mode = channelRowMode({
+    byId: connectByPropertyId,
+    view,
+    idsSent: connectChannel.isSuccess || (channel?.connectedAccommodationIds?.length ?? 0) > 0,
+    reading: structures.reading,
+    structures: structures.items.length,
+  });
 
   const handoff = useExternalHandoff({
     start: async () => {
@@ -75,6 +105,32 @@ function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: Chan
   const stopped = channel?.errorCode ? (translateErrorCode(channel.errorCode, t) ?? t('octorate.connect.existing.errors.unknown')) : null;
   const askConfirmation = view === 'needsConfirmation' && (handoff.ended || !handoff.launched);
 
+  // The refusal of the server (a 422 with its code) is said under the fields; anything else it could not do has the generic words.
+  const connectProblem = connectChannel.isError ? (getProblemMessage(connectChannel.error, t) ?? t('octorate.connect.existing.channels.byId.failed')) : null;
+  const needsOneId = asked && check.accommodations.length === 0;
+
+  const changeId = (accommodationId: string, value: string) => {
+    setIds((current) => ({ ...current, [accommodationId]: value }));
+    // What the server refused was about what was written before.
+    if (connectChannel.isError) connectChannel.reset();
+  };
+
+  /** «Collega»: the ids written (only the structures that have one) go to the channel manager, in a batch that has this channel. */
+  const send = async () => {
+    if (sending) return;
+    setAsked(true);
+    if (check.accommodations.length === 0 || check.invalid.length > 0) return;
+    setSending(true);
+    try {
+      const id = await ensureBatch();
+      await connectChannel.mutateAsync({ batchId: id, channelCode: code, accommodations: check.accommodations });
+    } catch {
+      // Said where the host is looking: the refusal of the server under the fields, a batch that could not be made at the foot of the step.
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <li className="min-w-0 space-y-3 rounded-lg border p-4" data-testid={`existing-channel-${code}`} data-state={view}>
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -85,20 +141,72 @@ function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: Chan
       </div>
 
       {view === 'connected' ? null : (
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Button
-            type="button"
-            variant={view === 'notStarted' || view === 'error' ? 'default' : 'outline'}
-            className={TOUCH_TARGET}
-            loading={handoff.starting}
-            onClick={() => void handoff.open()}
-            iconRight={<ExternalLink />}
-            data-testid={`existing-channel-${code}-open`}
-          >
-            {t(view === 'notStarted' ? 'octorate.connect.existing.channels.connect' : 'octorate.connect.existing.channels.reopen')}
-          </Button>
-          <AssistRequestButton part="channels" context="panelChannelAccess" channelCode={code} />
-        </div>
+        <>
+          {mode === 'ids' ? (
+            <>
+              <ChannelIdFields
+                code={code}
+                name={name}
+                structures={structures.items}
+                ids={ids}
+                invalid={asked ? new Set(check.invalid) : NO_INVALID_IDS}
+                onChange={changeId}
+                onEnter={() => void send()}
+              />
+              {needsOneId ? (
+                <p className="text-sm text-danger-foreground" role="alert" data-testid={`existing-channel-${code}-need-one`}>
+                  {t('octorate.connect.existing.channels.byId.needOne')}
+                </p>
+              ) : null}
+              {connectProblem ? (
+                <p className="text-sm text-danger-foreground" role="alert" data-testid={`existing-channel-${code}-connect-problem`}>
+                  {connectProblem}
+                </p>
+              ) : null}
+            </>
+          ) : null}
+          {mode === 'lastStep' ? <ChannelLastStep code={code} name={name} /> : null}
+          {mode === 'reading' ? (
+            <p className="text-sm text-muted-foreground" role="status" data-testid={`existing-channel-${code}-reading`}>
+              {t('octorate.connect.existing.channels.byId.reading')}
+            </p>
+          ) : null}
+          {/* A portal that is connected by id and has no structure to ask the id of: the panel is the way, and the row says why. */}
+          {mode === 'panel' && connectByPropertyId && (view === 'notStarted' || view === 'error') ? (
+            <p className="text-sm text-muted-foreground" data-testid={`existing-channel-${code}-no-structures`}>
+              {t('octorate.connect.existing.channels.byId.noStructures')}
+            </p>
+          ) : null}
+
+          <div className="flex flex-col gap-2 empty:hidden sm:flex-row sm:flex-wrap">
+            {mode === 'ids' ? (
+              <Button type="button" className={TOUCH_TARGET} loading={sending} onClick={() => void send()} data-testid={`existing-channel-${code}-connect`}>
+                {t('octorate.connect.existing.channels.byId.action')}
+              </Button>
+            ) : null}
+            {mode === 'panel' ? (
+              <Button
+                type="button"
+                variant={view === 'notStarted' || view === 'error' ? 'default' : 'outline'}
+                className={TOUCH_TARGET}
+                loading={handoff.starting}
+                onClick={() => void handoff.open()}
+                iconRight={<ExternalLink />}
+                data-testid={`existing-channel-${code}-open`}
+              >
+                {t(view === 'notStarted' ? 'octorate.connect.existing.channels.connect' : 'octorate.connect.existing.channels.reopen')}
+              </Button>
+            ) : null}
+            <AssistRequestButton part="channels" context="panelChannelAccess" channelCode={code} />
+          </div>
+
+          {/* Under the button of the panel: exactly what to do there, for this portal. */}
+          {mode === 'panel' ? (
+            <p className="break-words text-sm text-muted-foreground" data-testid={`existing-channel-${code}-hint`}>
+              {t(portalGuide(code).panelHintKey, { name })}
+            </p>
+          ) : null}
+        </>
       )}
 
       {handoff.blocked ? (
@@ -106,7 +214,7 @@ function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: Chan
           {t('octorate.connect.existing.channels.blocked')}
         </Alert>
       ) : null}
-      {view === 'waiting' || view === 'verifying' ? (
+      {mode === 'panel' && (view === 'waiting' || view === 'verifying') ? (
         <p className="text-sm text-muted-foreground" role="status" data-testid={`existing-channel-${code}-waiting`}>
           {t('octorate.connect.existing.channels.waiting')}
         </p>
@@ -136,7 +244,7 @@ function ChannelRow({ code, name, channel, ensureBatch, onCheck, batchId }: Chan
 
       {view === 'error' ? (
         <p className="text-sm text-danger-foreground" role="alert" data-testid={`existing-channel-${code}-error`}>
-          {stopped ?? t('octorate.connect.existing.channels.notValid')}
+          {stopped ?? (mode === 'ids' ? t('octorate.connect.existing.channels.byId.notValid') : t('octorate.connect.existing.channels.notValid'))}
         </p>
       ) : null}
       {problem ? (
@@ -162,10 +270,12 @@ interface ExistingChannelsStepProps {
 
 /**
  * Step «Collega i canali» of the road `onOtas` (E02/F01/US03/T02, D6): the host chooses the OTAs where the listings are today, and for each one
- * gives CasaZen's channel manager the access on its panel. CasaZen owns the handoff: the step is stored before the panel opens, the panel
- * opens in a controlled window while this step stays visible, the result is read at the pace the server asks for, and when every channel has
- * its access the wizard goes on by itself. «Da confermare» appears only after a check that could not tell. Credentials are given on the panel of
- * the channel manager or the OTA, never here: there is no field for them in this wizard.
+ * gives CasaZen's channel manager the access. A portal that needs only the id of each structure on it is connected from CasaZen (the host writes the
+ * ids, and the last step is the approval on the portal's own site); any other goes through the panel of the channel manager. CasaZen owns the handoff:
+ * the step is stored before the panel opens, the panel opens in a controlled window while this step stays visible, the result is read at the pace the
+ * server asks for, and when every channel has its access the wizard goes on by itself. «Da confermare» appears only after a check that could not tell.
+ * Credentials are given on the panel of the channel manager or the OTA, never here: the only thing written here is the id of a structure on a portal,
+ * which is an identifier and not a credential.
  */
 export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepProps) {
   const { t } = useTranslation();
@@ -177,7 +287,13 @@ export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepP
   const createBatch = useCreateExistingInventoryBatch();
   const { refetch } = batch;
 
-  const nameOf = (code: string) => catalog.choices.find((choice) => choice.code === code)?.name ?? code;
+  const choiceOf = (code: string) => catalog.choices.find((choice) => choice.code === code);
+  const nameOf = (code: string) => choiceOf(code)?.name ?? code;
+  const connectsById = (code: string) => choiceOf(code)?.connectByPropertyId === true;
+
+  // The structures of the channel manager are read only while a portal chosen needs the id of each one on it.
+  const found = useFoundListings({ enabled: selected.some(connectsById) });
+  const structures = { items: connectableStructures(found.data), reading: found.isLoading };
 
   // The main portals at once, the others behind «Visualizza altri»: a portal already chosen is never hidden.
   const [showAll, setShowAll] = useState(false);
@@ -277,6 +393,8 @@ export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepP
               ensureBatch={ensureBatch}
               onCheck={() => void refetch()}
               batchId={batchId}
+              connectByPropertyId={connectsById(code)}
+              structures={structures}
             />
           ))}
         </ul>

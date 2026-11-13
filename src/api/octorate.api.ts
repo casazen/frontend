@@ -2,6 +2,7 @@ import { ApiClient } from './client';
 import type {
   ChannelAccessStart,
   ConfirmMappingRequest,
+  ConnectChannelRequest,
   CreateExistingInventoryBatchRequest,
   ExistingInventoryBatch,
   ImportListingResult,
@@ -19,7 +20,8 @@ const mappingPath = (octorateAccommodationId: string) => `/octorate/mapping/${en
 
 /** The import of the listings that already exist on OTAs: a batch, and the channels of a batch by the portal code. */
 const batchPath = (batchId: string) => `/octorate/existing-inventory/batches/${encodeURIComponent(batchId)}`;
-const channelAccessPath = (batchId: string, channelCode: string) => `${batchPath(batchId)}/channels/${encodeURIComponent(channelCode)}/access`;
+const channelPath = (batchId: string, channelCode: string) => `${batchPath(batchId)}/channels/${encodeURIComponent(channelCode)}`;
+const channelAccessPath = (batchId: string, channelCode: string) => `${channelPath(batchId, channelCode)}/access`;
 
 /**
  * The connection of the org to its channel manager (E02/F01, ADR-023): the endpoints of `api/octorate`. All of them answer 404 while the
@@ -111,6 +113,16 @@ export const octorateApi = {
    * `panel_step_not_valid`.
    */
   confirmChannelAccess: (batchId: string, channelCode: string) => ApiClient.post<ExistingInventoryBatch>(`${channelAccessPath(batchId, channelCode)}/confirm`),
+
+  /**
+   * For a portal that needs only the id of each property on it (`connectByPropertyId` in the catalog): gives the id of each structure that is on the
+   * portal (`accommodations`, only those) and answers the batch. CasaZen makes the connection on the channel manager; what is left is the approval of
+   * the channel manager on the portal's own site, which the access then reads by itself like any other. 422 `existing_inventory_connect_not_supported`
+   * (a portal that is not connected by id), `existing_inventory_hotel_id_invalid`, `existing_inventory_connect_empty`,
+   * `existing_inventory_accommodation_unknown`.
+   */
+  connectChannel: (batchId: string, channelCode: string, request: ConnectChannelRequest) =>
+    ApiClient.post<ExistingInventoryBatch>(`${channelPath(batchId, channelCode)}/connect`, request),
 
   /**
    * Imports the rooms of every channel whose access is given and stops at `AwaitingMapping`; repeating it is safe. `retryUnknown` names the
