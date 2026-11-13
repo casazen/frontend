@@ -5,10 +5,16 @@ import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { CalendarDayInfo, CalendarDaysResponse } from '@/types/calendar-days.types';
 import type { HostCalendarProperty, HostCalendarResponse } from '@/types/host-calendar.types';
-import { toDayLayer } from '../../lib/day-layer';
+import { dayLabel, toDayLayer } from '../../lib/day-layer';
 import { buildTimelineRows } from '../../lib/host-timeline';
 import { extendSelection, startSelection } from '../../lib/day-selection';
 import { HostTimeline } from '../host-timeline';
+
+// The names of the days are worked out by `dayLabel`: counted, to prove that drawing the Timeline again (the focus moves) does not work them out again.
+vi.mock('../../lib/day-layer', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/day-layer')>();
+  return { ...actual, dayLabel: vi.fn(actual.dayLabel) };
+});
 
 const PROPERTY: HostCalendarProperty = {
   id: 'p1', name: 'Casa Mare', city: 'Rimini', rentalMode: 'Short', status: 'Active', minNights: 1, baseRateCents: 10000, weekendSurchargePercent: 0, cleaningFeeCents: 0,
@@ -196,6 +202,20 @@ describe('the days of the Timeline as controls (E08/F05/US03/T02)', () => {
     const { container } = renderTimeline({ onPressDay: vi.fn(), selection: startSelection('p1', '2026-09-12') });
 
     await expectNoAxeViolations(container);
+  });
+
+  it('HostTimeline_MovingTheFocusWithTheArrows_DoesNotWorkOutTheNamesOfTheDaysAgain', () => {
+    vi.mocked(dayLabel).mockClear();
+    renderTimeline({ onPressDay: vi.fn() });
+    // One name for each day of the row, once.
+    expect(vi.mocked(dayLabel)).toHaveBeenCalledTimes(DAYS.length);
+
+    cellOf('2026-09-10').focus();
+    for (const date of ['2026-09-10', '2026-09-11', '2026-09-12']) fireEvent.keyDown(cellOf(date), { key: 'ArrowRight' });
+    expect(cellOf('2026-09-13')).toHaveFocus();
+    // The Timeline was drawn again for the day that takes the Tab key, and the names were not worked out again.
+    expect(cellOf('2026-09-13')).toHaveAttribute('tabindex', '0');
+    expect(vi.mocked(dayLabel)).toHaveBeenCalledTimes(DAYS.length);
   });
 
   it('HostTimeline_AClickOrEnterOrSpace_PressesTheDay_AndShiftExtends', () => {

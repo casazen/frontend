@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { useMemo, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Briefcase, CalendarX2, Sparkles, Wrench } from 'lucide-react';
@@ -162,6 +162,19 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
   const style = { '--n': days.length } as CSSProperties;
   // The days are controls only where they can be selected; the one that takes the Tab key is the last the person was on, else today, else the first.
   const selectable = onPressDay !== undefined;
+  // The name in words of every day of every row that has one, worked out once for the rows, the days and the layer on screen: moving the focus from day to day draws the Timeline again
+  // (it holds the day that takes the Tab key), and must not work out fifteen hundred names each time.
+  const labels = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const { property } of rows) {
+      const layer = dayLayer?.get(property.id);
+      if (!selectable && !layer) continue;
+      for (const day of days) {
+        names.set(`${property.id}|${day}`, dayLabel({ date: day, propertyName: property.name, today, language: i18n.language, currency: layer?.currency, info: layer?.days.get(day) }, t));
+      }
+    }
+    return names;
+  }, [rows, days, dayLayer, today, i18n.language, t, selectable]);
   const [active, setActive] = useState<{ propertyId: string; day: string } | null>(null);
   const firstRow = rows[0]?.property.id;
   const stillThere = active !== null && rows.some((row) => row.property.id === active.propertyId) && days.includes(active.day);
@@ -295,7 +308,7 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
                               className={classes}
                               data-testid="timeline-cell"
                               data-date={day}
-                              aria-label={dayLabel({ date: day, propertyName: property.name, today, language: i18n.language, currency: layer?.currency, info }, t)}
+                              aria-label={labels.get(`${property.id}|${day}`)}
                             >
                               {content}
                             </div>
@@ -316,7 +329,7 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLaye
                             data-cell={`${property.id}|${day}`}
                             data-date={day}
                             aria-selected={isDaySelected(selection, property.id, day)}
-                            aria-label={dayLabel({ date: day, propertyName: property.name, today, language: i18n.language, currency: layer?.currency, info }, t)}
+                            aria-label={labels.get(`${property.id}|${day}`)}
                             onFocus={() => setActive({ propertyId: property.id, day })}
                             onClick={(event) => onPressDay(property.id, day, event.shiftKey)}
                             onKeyDown={(event) => handleCellKeyDown(event, property.id, day)}
