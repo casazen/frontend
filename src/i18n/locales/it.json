@@ -13985,6 +13985,7 @@
         "org": "Organizzazione",
         "request": "Richiesta"
       },
+      "lastPage": "Vai all'ultima pagina",
       "listLabel": "Richieste di aiuto",
       "loadError": "Non è stato possibile caricare le richieste.",
       "loading": "Carico le richieste...",
@@ -13996,6 +13997,7 @@
         "hint": "Non scrivere indirizzi email.",
         "label": "Nota (facoltativa)"
       },
+      "pageEmpty": "Su questa pagina non ci sono più richieste: le altre sono in quelle precedenti.",
       "row": {
         "actions": "Azioni sulla richiesta",
         "note": "Nota:",

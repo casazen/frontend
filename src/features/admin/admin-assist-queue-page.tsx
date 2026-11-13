@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
+import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -70,9 +71,22 @@ function QueueSection({ title, query, page, onPage, now, busy, onUpdate, testId,
     const items = Array.isArray(data.items) ? data.items : [];
     const total = Number.isFinite(data.totalCount) ? data.totalCount : items.length;
     const size = data.pageSize > 0 ? data.pageSize : PAGE_SIZE;
+    const current = data.page > 0 ? data.page : page;
+    const pages = Math.max(1, Math.ceil(total / size));
     body =
       items.length === 0 ? (
-        empty ? (
+        total > 0 ? (
+          // The page on screen is past the last one (the staff worked the last requests of it, and the server does not bring the page back): the list is NOT empty, so it never
+          // says so, and, since the pager of a list of one page draws nothing, the way to the requests that are left is a button of its own.
+          <div className="space-y-2" data-testid={`${testId}-past-end`}>
+            <p className="text-sm text-foreground/70">{t('onboardingPlan.assist.pageEmpty')}</p>
+            {current !== pages ? (
+              <Button type="button" variant="outline" className="h-auto min-h-11" onClick={() => onPage(pages)} data-testid={`${testId}-past-end-last`}>
+                {t('onboardingPlan.assist.lastPage')}
+              </Button>
+            ) : null}
+          </div>
+        ) : empty ? (
           <p className="text-sm text-foreground/70" data-testid={`${testId}-empty`}>
             {empty}
           </p>
@@ -89,7 +103,7 @@ function QueueSection({ title, query, page, onPage, now, busy, onUpdate, testId,
               <AssistRequestRow key={request.id} request={request} now={now} busy={busy} onUpdate={onUpdate} />
             ))}
           </ul>
-          <ClientPager page={data.page > 0 ? data.page : page} pages={Math.max(1, Math.ceil(total / size))} total={total} onPage={onPage} testId={`${testId}-pager`} />
+          <ClientPager page={current} pages={pages} total={total} onPage={onPage} testId={`${testId}-pager`} />
         </>
       );
   }

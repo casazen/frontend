@@ -13985,6 +13985,7 @@
         "org": "Organization",
         "request": "Request"
       },
+      "lastPage": "Go to the last page",
       "listLabel": "Help requests",
       "loadError": "The requests could not be loaded.",
       "loading": "Loading the requests...",
@@ -13996,6 +13997,7 @@
         "hint": "Do not write e-mail addresses.",
         "label": "Note (optional)"
       },
+      "pageEmpty": "There are no more requests on this page: the others are on the earlier ones.",
       "row": {
         "actions": "Actions on the request",
         "note": "Note:",

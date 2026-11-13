@@ -167,6 +167,47 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     await waitFor(() => expect(onboardingApi.listAssistQueue).toHaveBeenCalledWith({ status: 'Requested', page: 2, pageSize: 25 }));
   });
 
+  it('AdminAssistQueuePage_APagePastTheEnd_IsNeverToldAsNoRequestsAndTheWayToTheLastPageIsOffered', async () => {
+    // The staff is on the second of three pages of requests to take, and somebody works the last ones of it: the server answers an empty page 2 of a list that is down to one
+    // page (it does not bring the page back). The list is not empty, so it must not say so, and the pager of a list of one page draws nothing.
+    // (reset first: the calls of the tests before it are not this test's, and it counts them)
+    vi.mocked(onboardingApi.listAssistQueue).mockReset().mockImplementation((query?: AssistQueueQuery) => {
+      if (query?.status === 'InProgress') return Promise.resolve(page([]));
+      if (query?.page === 2) return Promise.resolve(page([], { totalCount: 25, page: 2, pageSize: 25 }));
+      return Promise.resolve(page([request(R1, 'Requested')], { totalCount: 60, page: 1, pageSize: 25 }));
+    });
+    renderPage();
+    fireEvent.click(await screen.findByTestId('assist-requested-pager-next'));
+
+    const pastTheEnd = await screen.findByTestId('assist-requested-past-end');
+    expect(pastTheEnd).toHaveTextContent(i18n.t('onboardingPlan.assist.pageEmpty'));
+    expect(pastTheEnd).not.toHaveTextContent(i18n.t('onboardingPlan.assist.emptySection'));
+    expect(screen.queryByTestId('assist-requested-empty')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('assist-empty')).not.toBeInTheDocument();
+    // A list with no request at all says so, as it always did.
+    expect(screen.getByTestId('assist-in-progress-empty')).toHaveTextContent(i18n.t('onboardingPlan.assist.emptySection'));
+    expect(screen.queryByTestId('assist-in-progress-past-end')).not.toBeInTheDocument();
+    // Nothing asks again by itself: the first page of each list and the second of the one to take, no more.
+    expect(onboardingApi.listAssistQueue).toHaveBeenCalledTimes(3);
+
+    // The way back is one press, to the last page of what is left.
+    fireEvent.click(within(pastTheEnd).getByRole('button', { name: i18n.t('onboardingPlan.assist.lastPage') }));
+
+    expect(await screen.findByTestId('assist-requested-rows')).toBeInTheDocument();
+    expect(screen.queryByTestId('assist-requested-past-end')).not.toBeInTheDocument();
+  });
+
+  it('AdminAssistQueuePage_AFilterWithNoRequestAtAll_StillSaysSoAndOffersNoWayBack', async () => {
+    answerQueue({ Done: page([]) });
+    renderPage();
+    await screen.findByTestId('assist-requested');
+
+    fireEvent.change(screen.getByTestId('assist-filter'), { target: { value: 'done' } });
+
+    expect(await screen.findByTestId('assist-list-empty')).toHaveTextContent(i18n.t('onboardingPlan.assist.emptyFiltered'));
+    expect(screen.queryByTestId('assist-list-past-end')).not.toBeInTheDocument();
+  });
+
   it('AdminAssistQueuePage_AStatusFilter_AsksTheServerForThatStatusOnlyAndAClosedRequestHasNoAction', async () => {
     answerQueue({ Done: page([request(R3, 'Done', { completedAt: '2026-11-12T09:00:00Z' })]) });
     renderPage();
