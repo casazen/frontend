@@ -36,7 +36,14 @@ function RowEffect({ row }: { row: OwnerImportRow }) {
     (key): key is string => key !== null,
   );
   if (parts.length === 0) return <span className="text-foreground/70">-</span>;
-  return <span className="break-words">{parts.map((key) => t(key)).join(' · ')}</span>;
+  // How an owner already in the registry was found (never by e-mail): the proposed match, said before anything is written.
+  const matched = row.matchedBy && ['owner_id', 'external_key', 'fiscal_identifier'].includes(row.matchedBy) ? t(`ownerOnboarding.import.matchedBy.${row.matchedBy}`) : null;
+  return (
+    <span className="break-words">
+      {parts.map((key) => t(key)).join(' · ')}
+      {matched ? ` (${matched})` : ''}
+    </span>
+  );
 }
 
 /** The outcome of one row: ok, or each error with the column it is about, in words; never a bare code. */

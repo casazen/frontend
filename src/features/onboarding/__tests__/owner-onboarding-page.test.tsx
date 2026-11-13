@@ -428,6 +428,21 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(screen.getByTestId('owner-import-unknown-columns')).toHaveTextContent('colonnaStrana');
     });
 
+    it('OwnerOnboarding_ImportCheck_SaysHowAnOwnerAlreadyInTheRegistryWasMatchedBeforeAnythingIsWritten', async () => {
+      const checked = importResult(true);
+      checked.rows = [{ ...checked.rows[0], ownerAction: 'match_owner', matchedBy: 'fiscal_identifier', ownerId: OWNER_A, ownershipAction: 'update_future_period' }];
+      vi.mocked(ownerOnboardingApi.importOwners).mockResolvedValue(checked);
+      renderPage();
+      await chooseFile(file());
+      fireEvent.click(screen.getByTestId('owner-import-check'));
+
+      const row = await screen.findByTestId('owner-import-row');
+      expect(row).toHaveTextContent(i18n.t('ownerOnboarding.import.ownerActions.match_owner'));
+      expect(row).toHaveTextContent(i18n.t('ownerOnboarding.import.matchedBy.fiscal_identifier'));
+      // An owner is never found by e-mail, and no fiscal identifier is shown: only how it was found.
+      expect(row).not.toHaveTextContent(/@/);
+    });
+
     it('OwnerOnboarding_ImportThatWroteNothing_IsToldAsNotDoneAndNeverAsASuccess', async () => {
       vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(dryRun ? importResult(true) : { ...importResult(false), summary: { ...importResult(false).summary, applied: 0 } }));
       renderPage();

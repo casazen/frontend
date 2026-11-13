@@ -15066,6 +15066,11 @@
       "forget": "Remove the file",
       "hint": "The file is read only by the server: the app does not show its content.",
       "limits": ".csv or .xlsx file up to 2 MB and 1,000 rows. One row for each owner of each property.",
+      "matchedBy": {
+        "external_key": "found by the owner code",
+        "fiscal_identifier": "found by the tax code or VAT number",
+        "owner_id": "found by the id given"
+      },
       "nextPage": "Next page",
       "nothingApplied": "No row was imported: fix the rows with errors and check the file again.",
       "ownerActions": {

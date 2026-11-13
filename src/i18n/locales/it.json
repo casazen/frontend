@@ -15066,6 +15066,11 @@
       "forget": "Togli il file",
       "hint": "Il file viene letto solo dal server: l'app non ne mostra il contenuto.",
       "limits": "File .csv o .xlsx fino a 2 MB e 1.000 righe. Una riga per ogni proprietario di ogni struttura.",
+      "matchedBy": {
+        "external_key": "trovato con il codice proprietario",
+        "fiscal_identifier": "trovato con il codice fiscale o la partita IVA",
+        "owner_id": "trovato con l'id indicato"
+      },
       "nextPage": "Pagina successiva",
       "nothingApplied": "Nessuna riga è stata importata: correggi le righe con errori e ricontrolla il file.",
       "ownerActions": {
