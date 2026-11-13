@@ -12795,6 +12795,7 @@
     "profile": "Profilo",
     "notificationPreferences": "Notifiche",
     "onboardingPlan": "Inizia con CasaZen",
+    "onboardingAssist": "Richieste di aiuto",
     "integrationSettings": "Integrazione",
     "plan": "Piano",
     "billing": "Fatturazione",
@@ -13577,6 +13578,97 @@
       "group": "Uscita e aiuto",
       "later": "Lo faccio dopo",
       "resume": "Riprendi"
+    },
+    "assist": {
+      "actions": {
+        "cancel": {
+          "confirm": "Annulla la richiesta",
+          "description": "La richiesta si chiude senza essere fatta. L'utente lo vede in Da fare. Puoi aggiungere una nota.",
+          "label": "Annulla",
+          "title": "Annulli la richiesta?"
+        },
+        "done": {
+          "confirm": "Segna come fatta",
+          "description": "Hai fatto quello che l'utente chiedeva: la sua attività in Da fare si chiude. Puoi aggiungere una nota.",
+          "label": "Segna come fatta",
+          "title": "La richiesta è fatta?"
+        },
+        "take": {
+          "confirm": "Prendi in carico",
+          "description": "La richiesta passa a «In corso» e risulta a te. Puoi aggiungere una nota per l'utente.",
+          "label": "Prendi in carico",
+          "title": "Prendi in carico la richiesta?"
+        }
+      },
+      "askTheUser": "Per i dati che non vedi, chiedili all'utente dalla sua attività in Da fare.",
+      "contexts": {
+        "panelChannelAccess": "Accesso a un canale",
+        "panelIstat": "Collegamento ISTAT",
+        "panelPolice": "Collegamento Questura",
+        "part": "Aiuto su un passo del piano",
+        "unknown": "Altra richiesta"
+      },
+      "copied": "Copiato",
+      "copy": "Copia",
+      "copyError": "Non è stato possibile copiare.",
+      "copyLabel": "Copia {{what}}",
+      "description": "Le richieste «Fallo per me» degli utenti: prendile in carico e chiudile con una nota.",
+      "dialogCancel": "Chiudi senza cambiare",
+      "empty": "Nessuna richiesta aperta",
+      "emptyFiltered": "Nessuna richiesta con questo stato.",
+      "emptySection": "Nessuna richiesta.",
+      "filter": {
+        "all": "Tutte",
+        "cancelled": "Annullate",
+        "done": "Fatte",
+        "inProgress": "In corso",
+        "label": "Mostra",
+        "open": "Aperte (da prendere in carico e in corso)",
+        "requested": "Da prendere in carico"
+      },
+      "hostSees": "L'utente vede lo stato in Da fare.",
+      "ids": {
+        "assigned": "Preso in carico da",
+        "draft": "Bozza collegata",
+        "draftOf": "Bozza collegata ({{type}})",
+        "org": "Organizzazione",
+        "request": "Richiesta"
+      },
+      "listLabel": "Richieste di aiuto",
+      "loadError": "Non è stato possibile caricare le richieste.",
+      "loading": "Carico le richieste...",
+      "noAccess": "Non hai l'accesso a questa pagina.",
+      "notFound": "Questa pagina non è ancora disponibile.",
+      "note": {
+        "counter": "{{count}}/{{max}}",
+        "error": "La nota non è valida.",
+        "hint": "Non scrivere indirizzi email.",
+        "label": "Nota (facoltativa)"
+      },
+      "row": {
+        "actions": "Azioni sulla richiesta",
+        "note": "Nota:",
+        "org": "{{context}}: tutta l'organizzazione",
+        "part": "Passo: {{part}}",
+        "partUnknown": "Passo non riconosciuto",
+        "property": "{{context}}: struttura {{property}}",
+        "propertyComune": "{{context}}: struttura {{property}}, comune {{comune}}",
+        "requested": "Richiesta il {{date}}"
+      },
+      "sections": {
+        "inProgress": "In corso",
+        "requested": "Da prendere in carico"
+      },
+      "stale": "Non siamo riusciti ad aggiornare l'elenco: potrebbe non essere aggiornato.",
+      "status": {
+        "cancelled": "Annullata",
+        "done": "Fatta",
+        "inProgress": "In corso",
+        "requested": "Da prendere in carico",
+        "unknown": "Stato non riconosciuto"
+      },
+      "title": "Richieste di aiuto",
+      "updated": "Richiesta aggiornata"
     },
     "bulk": {
       "adminOnly": "Questa pagina la gestisce l'amministratore dell'organizzazione.",

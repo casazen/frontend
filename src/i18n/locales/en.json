@@ -12795,6 +12795,7 @@
     "profile": "Profile",
     "notificationPreferences": "Notifications",
     "onboardingPlan": "Start with CasaZen",
+    "onboardingAssist": "Help requests",
     "integrationSettings": "Integration",
     "plan": "Plan",
     "billing": "Billing",
@@ -13577,6 +13578,97 @@
       "group": "Exit and help",
       "later": "I'll do it later",
       "resume": "Resume"
+    },
+    "assist": {
+      "actions": {
+        "cancel": {
+          "confirm": "Cancel the request",
+          "description": "The request is closed without being done. The user sees it in To do. You can add a note.",
+          "label": "Cancel",
+          "title": "Cancel the request?"
+        },
+        "done": {
+          "confirm": "Mark as done",
+          "description": "You did what the user asked: their activity in To do closes. You can add a note.",
+          "label": "Mark as done",
+          "title": "Is the request done?"
+        },
+        "take": {
+          "confirm": "Take it",
+          "description": "The request moves to «In progress» and is yours. You can add a note for the user.",
+          "label": "Take it",
+          "title": "Take the request?"
+        }
+      },
+      "askTheUser": "For the data you cannot see, ask the user from their activity in To do.",
+      "contexts": {
+        "panelChannelAccess": "Access to a channel",
+        "panelIstat": "ISTAT connection",
+        "panelPolice": "Police (Questura) connection",
+        "part": "Help with a step of the plan",
+        "unknown": "Other request"
+      },
+      "copied": "Copied",
+      "copy": "Copy",
+      "copyError": "It could not be copied.",
+      "copyLabel": "Copy {{what}}",
+      "description": "The «Do it for me» requests of the users: take them and close them with a note.",
+      "dialogCancel": "Close without changing",
+      "empty": "No open request",
+      "emptyFiltered": "No request with this status.",
+      "emptySection": "No request.",
+      "filter": {
+        "all": "All",
+        "cancelled": "Cancelled",
+        "done": "Done",
+        "inProgress": "In progress",
+        "label": "Show",
+        "open": "Open (to take and in progress)",
+        "requested": "To take"
+      },
+      "hostSees": "The user sees the status in To do.",
+      "ids": {
+        "assigned": "Taken by",
+        "draft": "Linked draft",
+        "draftOf": "Linked draft ({{type}})",
+        "org": "Organization",
+        "request": "Request"
+      },
+      "listLabel": "Help requests",
+      "loadError": "The requests could not be loaded.",
+      "loading": "Loading the requests...",
+      "noAccess": "You do not have access to this page.",
+      "notFound": "This page is not available yet.",
+      "note": {
+        "counter": "{{count}}/{{max}}",
+        "error": "The note is not valid.",
+        "hint": "Do not write e-mail addresses.",
+        "label": "Note (optional)"
+      },
+      "row": {
+        "actions": "Actions on the request",
+        "note": "Note:",
+        "org": "{{context}}: the whole organization",
+        "part": "Step: {{part}}",
+        "partUnknown": "Step not recognised",
+        "property": "{{context}}: property {{property}}",
+        "propertyComune": "{{context}}: property {{property}}, municipality {{comune}}",
+        "requested": "Requested on {{date}}"
+      },
+      "sections": {
+        "inProgress": "In progress",
+        "requested": "To take"
+      },
+      "stale": "We could not refresh the list: it may be out of date.",
+      "status": {
+        "cancelled": "Cancelled",
+        "done": "Done",
+        "inProgress": "In progress",
+        "requested": "Requested",
+        "unknown": "Status not recognised"
+      },
+      "title": "Help requests",
+      "updated": "Request updated"
     },
     "bulk": {
       "adminOnly": "The organization administrator manages this page.",

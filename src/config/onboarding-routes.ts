@@ -86,4 +86,19 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     featureFlag: 'octorateOnboarding',
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-bulk-page')).OnboardingBulkPage }),
   },
+  {
+    // The staff queue of the «Fallo per me» requests (E10/F03/US03/T03, NF-107, NF-15, UX-15): where CasaZen support takes a request, closes it or cancels it with a
+    // short note. An entry of «Altro» of the staff area, asking what the other queue pages of the staff ask (`admin.users.read`); the backend still decides: the
+    // endpoints answer only to a platform administrator, and every update is logged in the log of the organization of the request.
+    path: '/app/admin/onboarding-assist',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    featureFlag: 'octorateOnboarding',
+    navKey: 'nav.onboardingAssist',
+    navGroup: 'platform',
+    navPlacement: 'secondary',
+    navOrder: 27,
+    icon: 'Wrench',
+    component: async () => ({ default: (await import('@/features/admin/admin-assist-queue-page')).AdminAssistQueuePage }),
+  },
 ];

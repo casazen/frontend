@@ -182,6 +182,43 @@ describe('route manifest: the bulk configuration (E10/F03/US03/T02)', () => {
   });
 });
 
+describe('route manifest: the staff queue of the assist requests (E10/F03/US03/T03)', () => {
+  const ASSIST_PATH = '/app/admin/onboarding-assist';
+  const assist = ROUTE_MANIFEST.find((candidate) => candidate.path === ASSIST_PATH);
+  const staff = (_context: string, permission: string) => permission === 'admin.users.read';
+
+  it('RouteManifest_TheAssistQueue_IsAnEntryOfAltroOfTheStaffAreaBehindTheFlagAndAsksWhatTheOtherQueuePagesAsk', () => {
+    expect(assist?.context).toBe('admin');
+    expect(assist?.requiredPermissions).toEqual(['admin.users.read']);
+    expect(assist?.featureFlag).toBe('octorateOnboarding');
+    expect(assist?.navKey).toBe('nav.onboardingAssist');
+    expect(assist?.navGroup).toBe('platform');
+    expect(assist?.navPlacement).toBe('secondary');
+    expect(assist?.navOrder).toBe(27);
+    expect(assist?.icon).toBe('Wrench');
+    expect(assist?.icon && NAV_ICONS[assist.icon]).toBeDefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === ASSIST_PATH)).toHaveLength(1);
+  });
+
+  it('RouteManifest_TheAssistQueue_IsInTheMenuOnlyForTheStaffWithTheFlagOnAndInNoOtherArea', () => {
+    const inAltro = (area: 'admin' | 'short-rent', hasPermission: (context: string, permission: string) => boolean, features?: Partial<typeof flagOn>) =>
+      getSecondaryNavEntries(area, hasPermission as never, features).map((page) => page.path);
+
+    expect(inAltro('admin', staff, flagOn)).toContain(ASSIST_PATH);
+    expect(assist && hasEntryPermission(assist, () => false)).toBe(false);
+    expect(inAltro('admin', () => false, flagOn)).not.toContain(ASSIST_PATH);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS]) expect(inAltro('admin', staff, features)).not.toContain(ASSIST_PATH);
+    expect(inAltro('short-rent', allowAll, flagOn)).not.toContain(ASSIST_PATH);
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheAssistQueue_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await assist?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
 describe('feature flag octorateOnboarding (mirror of the backend Features:OctorateOnboarding)', () => {
   it('FeatureFlags_OctorateOnboarding_IsOffByDefaultAndWhileTheFlagsAreNotLoaded', () => {
     expect(DEFAULT_FEATURE_FLAGS.octorateOnboarding).toBe(false);
