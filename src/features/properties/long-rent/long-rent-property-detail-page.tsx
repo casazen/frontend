@@ -154,7 +154,7 @@ export function LongRentPropertyDetailPage() {
 
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
-        {panel === 'contracts' && <ContractsPanel leases={leases.data} />}
+        {panel === 'contracts' && <ContractsPanel leases={leases.data} propertyId={property.id} canCreateLease={canCreateLease} />}
         {panel === 'expenses' && <ExpensesPanel leases={leases.data} />}
         {panel === 'maintenance' && <MaintenancePanel leases={leases.data} />}
         {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}

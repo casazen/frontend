@@ -35,11 +35,11 @@ const PAGES: HeaderPage[] = [
   { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Adempimenti', controls: sectionMenu },
   { name: 'booking site (menu of its section)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: sectionMenu },
   { name: 'guests (menu of the section of the bookings)', path: '/app/short-rent/guests', profile: 'dual', heading: 'Ospiti', controls: sectionMenu },
-  { name: 'tenants (menu of the section of the contracts)', path: '/app/long-rent/tenants', profile: 'dual', heading: 'Inquilini', controls: sectionMenu },
+  { name: 'fiscal report (standalone)', path: '/app/long-rent/fiscal', profile: 'dual', heading: 'Report fiscale', controls: (page) => page.getByRole('heading', { level: 1 }) },
   { name: 'CIN audit of the console (pages that hang from it)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: childLinks },
   { name: 'supplier availability (link to the calendar)', path: '/app/supplier/availability', profile: 'supplier', heading: 'Disponibilità', controls: childLinks, supplier: true },
   { name: 'bookings (new booking)', path: '/app/short-rent/bookings', profile: 'dual', heading: 'Prenotazioni', controls: (page) => page.getByTestId('new-booking') },
-  { name: 'long-term contracts (new contract)', path: '/app/long-rent/leases', profile: 'dual', heading: 'Contratti', controls: (page) => page.getByTestId('lease-list-new') },
+  { name: 'long-term properties (add property)', path: '/app/long-rent/properties', profile: 'dual', heading: 'Immobili', controls: (page) => page.getByTestId('long-rent-property-add') },
 ];
 
 test.describe('Page header on a phone (UI-04a CI fix)', () => {

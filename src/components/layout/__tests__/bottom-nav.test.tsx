@@ -115,7 +115,7 @@ describe('BottomNav (UI-04b)', () => {
       renderBar('long-rent', '/app/long-rent/leases');
 
       // Contracts are reached from the property, including on mobile.
-      expect(labels()).toEqual(['Panoramica', 'Immobili', 'Interventi']);
+      expect(labels()).toEqual(['Panoramica', 'Immobili']);
       expect(more()).toBeInTheDocument();
     });
 

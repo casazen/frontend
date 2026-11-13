@@ -38,6 +38,7 @@ test.describe('Long-rent information architecture', () => {
   });
 
   test('property sections, canoni on the contract, and manual condominium payments in settings', async ({ page }) => {
+    test.setTimeout(90_000);
     await mockPropertiesApi(page, [
       buildCreatedProperty({
         id: PROPERTY_ID,
@@ -68,6 +69,25 @@ test.describe('Long-rent information architecture', () => {
         return;
       }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(lease) });
+    });
+    await page.route('**/api/long-rent/rules', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        termMonths: { Libero: 48, Concordato: 36, Transitorio: 18 }, renewalMonths: { Libero: 48, Concordato: 24 },
+        noticeMonths: 6, registrationDays: 30, depositMaxRents: 3,
+        availableTypes: ['Libero', 'Transitorio'], importedTypes: ['Libero', 'Concordato', 'Transitorio'],
+        transitoryTermMonths: { min: 1, max: 18 }, transitoryDocumentationAfterDays: 30, transitoryBandFromInhabitants: 10000,
+      }) });
+    });
+    await page.route(`**/api/leases/${LEASE_ID}/rli/checklist`, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        registrationDeadline: null, daysRemaining: null, tosVersion: 'test', attestationText: '', providerFilingAvailable: false,
+        items: [{ key: 'rli_registered', done: true }],
+      }) });
+    });
+    await page.route('**/api/long-rent/deadlines**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        from: '2026-01-01', to: '2029-12-31', items: [], truncated: false,
+      }) });
     });
     await page.route(`**/api/leases/${LEASE_ID}/rent`, async (route) => {
       await route.fulfill({
@@ -124,6 +144,26 @@ test.describe('Long-rent information architecture', () => {
     await page.goto(demoUrl(`/app/long-rent/properties/${PROPERTY_ID}`, 'long-term'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Bilocale Monza' })).toBeVisible();
 
+    const sidebar = page.getByRole('complementary');
+    await expect(sidebar.getByRole('link', { name: /^(Contratti|Inquilini|Scadenze|Interventi)$/ })).toHaveCount(0);
+    await sidebar.getByRole('button', { name: 'Altro', exact: true }).click();
+    await expect(sidebar.getByRole('link', { name: /^(Contratti|Inquilini|Scadenze|Interventi)$/ })).toHaveCount(0);
+    await expect(sidebar.getByRole('link', { name: 'Report fiscale', exact: true })).toBeVisible();
+    await expect(page.getByTestId('long-rent-property-create-contract')).toHaveAttribute('href', `/app/long-rent/leases/new?propertyId=${PROPERTY_ID}`);
+    await page.getByTestId('long-rent-property-create-contract').click();
+    await expect(page.getByTestId('lease-kind-choice')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`propertyId=${PROPERTY_ID}`));
+    await page.locator('label', { has: page.getByTestId('lease-kind-libero') }).click();
+    await page.getByTestId('lease-kind-continue').click();
+    await page.locator('label', { has: page.getByTestId('lease-way-casazen') }).click();
+    await page.getByTestId('lease-way-continue').click();
+    await expect(page.getByTestId('lease-property-select')).toHaveValue(PROPERTY_ID);
+    await page.getByRole('link', { name: 'Torna a Immobili', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/properties/${PROPERTY_ID}\\?tab=contracts`));
+    await page.getByTestId('long-rent-property-tab-requests').click();
+    await expect(page.getByTestId('long-rent-service-requests')).toBeVisible();
+    await page.getByTestId('long-rent-property-tab-contracts').click();
+
     const tabs = page.getByRole('tab');
     await expect(tabs.nth(0)).toHaveText('Contratti');
     await expect(tabs.nth(1)).toHaveText('Spese condominiali');
@@ -147,6 +187,12 @@ test.describe('Long-rent information architecture', () => {
       `/app/long-rent/leases/${LEASE_ID}`,
     );
     await page.goto(demoUrl(`/app/long-rent/leases/${LEASE_ID}?tab=pagamenti`, 'long-term'), { waitUntil: 'domcontentloaded' });
+
+    await page.getByTestId('lease-tab-inquilini').click();
+    await expect(page.getByTestId('lease-tenants')).toContainText('Giulia Verdi');
+    await page.getByTestId('lease-tab-scadenze').click();
+    await expect(page.getByTestId('lease-dates')).toBeVisible();
+    await page.getByTestId('lease-tab-pagamenti').click();
     await expect(page.getByTestId('lease-tab-pagamenti')).toHaveText('Canoni');
     await expect(page.getByTestId('rent-schedule-panel')).toBeVisible();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
@@ -156,5 +202,11 @@ test.describe('Long-rent information architecture', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Spese condominiali' })).toBeVisible();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
     await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
+
+    await page.goto(demoUrl('/app/long-rent/fiscal', 'long-term'));
+    await expect(page.getByRole('heading', { level: 1, name: 'Report fiscale' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^(Contratti|Inquilini|Scadenze)$/ })).toHaveCount(0);
+    await expect(page.getByTestId('nav-section-tabs')).toHaveCount(0);
+
   });
 });

@@ -219,7 +219,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.getByTestId('quick-property-submit').click();
 
       // The guide of the area: property done, lease next.
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/app\/long-rent\/properties$/, { timeout: 30_000 });
       const guide = page.getByTestId('long-rent-guide');
       await expect(guide).toBeVisible({ timeout: 20_000 });
       await expect(page.getByTestId('long-rent-guide-property')).toHaveAttribute('data-state', 'done');
