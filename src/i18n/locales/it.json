@@ -15059,7 +15059,8 @@
         "title_one": "Importare {{count}} riga giusta?",
         "title_other": "Importare {{count}} righe giuste?",
         "valid_one": "Verrà importata {{count}} riga.",
-        "valid_other": "Verranno importate {{count}} righe."
+        "valid_other": "Verranno importate {{count}} righe.",
+        "working": "Importazione in corso…"
       },
       "drop": "Trascina qui il file dei proprietari",
       "effect": "Importando: {{owners}} nuovi proprietari, {{matched}} già nel registro, {{ownerships}} nuove associazioni, {{periods}} periodi aggiornati. Nessun invito viene inviato.",

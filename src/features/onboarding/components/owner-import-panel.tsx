@@ -204,7 +204,7 @@ export function OwnerImportPanel() {
   const [manualOpen, setManualOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  const { mutate, reset, isPending, error } = check;
+  const { mutate, mutateAsync, reset, isPending, error } = check;
   const result = check.data;
   // Only the check of THIS file opens the import: another file, or a file that was changed, is checked again; a check with no valid row opens nothing; and what an import
   // already answered is not imported again by the same check.
@@ -264,18 +264,15 @@ export function OwnerImportPanel() {
     setPage(0);
   }
 
-  function importFile() {
+  /**
+   * Writes the valid rows of what was checked. It returns the promise of the import, so that the confirmation stays open (its buttons off, saying it is working) until the server has
+   * answered, closes by itself when it did, and stays open with the refusal when the server refused (the confirmation closes after what it asked has been done, never before).
+   */
+  async function importFile() {
     if (!file || !canImport) return;
     setPage(0);
-    mutate(
-      { file, dryRun: false },
-      {
-        onSuccess: (done) => {
-          if (done.summary.applied > 0) setFormKey((key) => key + 1);
-        },
-        onSettled: () => setConfirming(false),
-      },
-    );
+    const done = await mutateAsync({ file, dryRun: false });
+    if (done.summary.applied > 0) setFormKey((key) => key + 1);
   }
 
   function forget() {
@@ -363,7 +360,7 @@ export function OwnerImportPanel() {
           </Button>
         ) : null}
       </div>
-      {!canImport ? (
+      {!canImport && !isPending ? (
         <p id="owner-import-apply-note" className="text-sm text-foreground/70">
           {t('ownerOnboarding.import.applyNeedsCheck')}
         </p>
@@ -407,6 +404,17 @@ export function OwnerImportPanel() {
               ? t('ownerOnboarding.import.confirm.row', { owner: manual.row.owner, property: manual.row.property, share: manual.row.share, start: manual.row.start })
               : t('ownerOnboarding.import.confirm.file', { name: checked.file.name })}
           </p>
+        ) : null}
+        {isPending ? (
+          <p className="text-sm text-foreground/70" role="status" data-testid="owner-import-confirm-working">
+            {t('ownerOnboarding.import.confirm.working')}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          // The server refused the import: the confirmation stays where the person is, with the reason, and the same button tries again.
+          <Alert variant="danger" role="alert" data-testid="owner-import-confirm-error">
+            {errorMessage}
+          </Alert>
         ) : null}
       </ConfirmationDialog>
     </div>

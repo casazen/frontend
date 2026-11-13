@@ -474,6 +474,65 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       for (const method of INVITATION_WRITES) expect(ownerOnboardingApi[method]).not.toHaveBeenCalled();
     });
 
+    it('OwnerOnboarding_ImportInFlight_KeepsTheConfirmationOpenWithItsButtonsOffAndSaysItIsWorking', async () => {
+      let answer: (value: OwnerImportResult) => void = () => undefined;
+      vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) =>
+        dryRun
+          ? Promise.resolve(importResult(true))
+          : new Promise<OwnerImportResult>((resolve) => {
+              answer = resolve;
+            }),
+      );
+      renderPage();
+      await chooseFile(file());
+      fireEvent.click(screen.getByTestId('owner-import-check'));
+      await screen.findByTestId('owner-import-result');
+      fireEvent.click(screen.getByTestId('owner-import-apply'));
+      fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
+
+      // The write is on its way: the confirmation stays, says so, and neither of its buttons works (no second import); the page behind does not say «check the file first».
+      const working = await screen.findByTestId('owner-import-confirm-working');
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toContainElement(working);
+      expect(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') })).toBeDisabled();
+      expect(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.cancel') })).toBeDisabled();
+      expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2);
+      expect(screen.queryByText(i18n.t('ownerOnboarding.import.applyNeedsCheck'))).not.toBeInTheDocument();
+
+      // The answer comes: the confirmation closes and the page shows the answer of the import.
+      await act(async () => {
+        answer(importResult(false));
+      });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(screen.getByTestId('owner-import-result')).toHaveAttribute('data-dry-run', 'false');
+    });
+
+    it('OwnerOnboarding_ImportRefusedInTheConfirmation_StaysOpenWithTheRefusalAndTheSameButtonTriesAgain', async () => {
+      vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) =>
+        dryRun ? Promise.resolve(importResult(true)) : Promise.reject(problemError(500, { code: 'server_error' })),
+      );
+      renderPage();
+      await chooseFile(file());
+      fireEvent.click(screen.getByTestId('owner-import-check'));
+      await screen.findByTestId('owner-import-result');
+      fireEvent.click(screen.getByTestId('owner-import-apply'));
+      fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
+
+      // The server refused: the confirmation does not close as if it had worked; it shows the reason where the person is, and nothing is written twice.
+      const dialog = screen.getByRole('dialog');
+      expect(await within(dialog).findByTestId('owner-import-confirm-error')).toHaveTextContent(i18n.t('ownerOnboarding.import.error'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') })).toBeEnabled();
+      expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(2);
+
+      // The same button tries again, and when the server answers the confirmation closes.
+      vi.mocked(ownerOnboardingApi.importOwners).mockImplementation((_file, dryRun) => Promise.resolve(importResult(dryRun)));
+      fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('ownerOnboarding.import.confirm.action') }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(ownerOnboardingApi.importOwners).toHaveBeenCalledTimes(3);
+      expect(screen.getByTestId('owner-import-result')).toHaveAttribute('data-dry-run', 'false');
+    });
+
     it('OwnerOnboarding_ImportConfirmationOfAFile_NamesTheFileAndWhatIsWritten', async () => {
       vi.mocked(ownerOnboardingApi.importOwners).mockResolvedValue(importResult(true));
       renderPage();

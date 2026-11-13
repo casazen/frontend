@@ -15059,7 +15059,8 @@
         "title_one": "Import {{count}} valid row?",
         "title_other": "Import {{count}} valid rows?",
         "valid_one": "{{count}} row will be imported.",
-        "valid_other": "{{count}} rows will be imported."
+        "valid_other": "{{count}} rows will be imported.",
+        "working": "Importing…"
       },
       "drop": "Drop the owners file here",
       "effect": "Importing: {{owners}} new owners, {{matched}} already in the registry, {{ownerships}} new links, {{periods}} periods updated. No invitation is sent.",
