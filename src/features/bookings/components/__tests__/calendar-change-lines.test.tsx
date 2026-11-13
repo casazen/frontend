@@ -29,12 +29,12 @@ function statusError(status: number): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: {} });
 }
 
-function renderLines(change: CalendarChange = WAITING, permissions: string[] = ['property.read', 'property.write']) {
+function renderLines(change: CalendarChange = WAITING, permissions: string[] = ['property.read', 'property.write'], connector = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = { hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission) } as unknown as WorkspaceContextValue;
   render(
     <QueryClientProvider client={client}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: true }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
         <WorkspaceContext.Provider value={workspace}>
           <CalendarChangeLines change={change} propertyName={() => 'Villa Mare'} />
         </WorkspaceContext.Provider>
@@ -112,6 +112,19 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
 
     await waitFor(() => expect(state()).toBe('unreadable'));
     expect(screen.getByTestId('calendar-change-check-again')).toBeInTheDocument();
+  });
+
+  it('CalendarChangeLines_ConnectorOff_AsksForNothingAndSaysOnlySavedInCasaZen', async () => {
+    // Whatever the change says (a waiting one left from when the connector was on): with the connector off nothing is sent to the channel manager, so nothing is followed or said of it.
+    renderLines(WAITING, ['property.read', 'property.write'], false);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(calendarChangesApi.get).not.toHaveBeenCalled();
+    expect(screen.getByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
+    expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/channel manager/i);
   });
 
   it('CalendarChangeLines_WithoutTheRightToRead_AsksForNothing', async () => {

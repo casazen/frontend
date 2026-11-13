@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CalendarCheck, Clock, RotateCw, type LucideIcon } from 'lucide-react';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useCalendarChange } from '@/queries/use-calendar-changes';
 import { useProperties } from '@/queries/use-properties';
 import type { CalendarChange } from '@/types/calendar-changes.types';
@@ -34,10 +35,15 @@ export function BulkChangeDone({ change, values }: BulkChangeDoneProps) {
   const { t } = useTranslation();
   const properties = useProperties({ mode: 'short' });
   const mayRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
+  // With the connector of the channel manager off nothing is sent there: nothing is followed or asked, and the one step is to look at the calendar.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
+  const canFollow = mayRead && connectorOn;
   // The same read as the lines (one entry of the cache): the suggested step follows the state the lines show.
-  const detail = useCalendarChange(change.id, { enabled: mayRead, initial: change });
+  const detail = useCalendarChange(change.id, { enabled: canFollow, initial: change });
   const current = detail.data ?? change;
-  const next = NEXT_STEP[nextStepOfChange(current, detail.watchOver || (!mayRead && (current.state === 'Queued' || current.state === 'Sending')))];
+  const next = NEXT_STEP[
+    connectorOn ? nextStepOfChange(current, detail.watchOver || (!canFollow && (current.state === 'Queued' || current.state === 'Sending'))) : 'calendar'
+  ];
   const names = new Map((Array.isArray(properties.data) ? properties.data : []).map((property) => [property.id, property.name] as const));
 
   return (

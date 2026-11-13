@@ -20,6 +20,7 @@ import { UnreadMessagesContext } from './lib/unread-messages-context';
 import { useProperties } from '@/queries/use-properties';
 import { CalendarDays, CalendarOff, CalendarRange, List, Loader2, Plus } from 'lucide-react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { SlotInfo } from 'react-big-calendar';
 import { toStayDate, todayInRome } from '@/lib/stay-dates';
@@ -68,6 +69,8 @@ export function CalendarPage() {
   const canWriteProperty = workspace?.hasPermission('short-rent', 'property.write') ?? false;
   // The price and the rules of every day are property data: read only by who may read properties (without the right nothing is asked, and the calendar is what it was).
   const canReadProperty = workspace?.hasPermission('short-rent', 'property.read') ?? false;
+  // The changes sent to the channel manager are followed only while its connector is on (`octorateConnector`): with it off nothing is sent there, asked or said about it.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   // The guests' messages not read yet, once for the whole calendar: the entries of a stay with some carry a counter (SR-12).
   const unreadMessages = useUnreadMessagesByBooking(workspace?.hasPermission('short-rent', 'booking.read') ?? false);
   // The days selected on the calendar (the Timeline, the month, the week or the day): they open the panel that blocks them or changes their price and rules.
@@ -245,8 +248,8 @@ export function CalendarPage() {
           </div>
         ) : (
           <>
-            {/* The changes sent to the channel manager that are waiting or failed: a line that goes away when everything is delivered. Only who may read properties gets it. */}
-            {canReadProperty ? (
+            {/* The changes sent to the channel manager that are waiting or failed: a line that goes away when everything is delivered. Only who may read properties gets it, and only with the connector on. */}
+            {canReadProperty && connectorOn ? (
               <CalendarChangeStatus propertyName={(id) => propertyList.find((property) => property.id === id)?.name ?? ''} canRetry={canWriteProperty} />
             ) : null}
             <CalendarToolbar

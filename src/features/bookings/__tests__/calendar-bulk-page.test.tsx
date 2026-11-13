@@ -179,6 +179,21 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     expect(screen.queryByTestId('bulk-property-connection')).not.toBeInTheDocument();
   });
 
+  it('CalendarBulkPage_ConnectorOff_TheResultAsksForNoStateAndSaysNothingOfTheChannelManager', { timeout: 30_000 }, async () => {
+    // The change is saved in CasaZen and nothing is sent anywhere: no read of its state, one line, one next step (the calendar).
+    vi.mocked(calendarChangesApi.apply).mockResolvedValue({ ...CHANGE, state: 'Applied', properties: [{ propertyId: 'p1', state: 'Skipped', chunkCount: 0 }, { propertyId: 'p2', state: 'Skipped', chunkCount: 0 }] });
+    renderPage(['property.read', 'property.write'], false);
+    await toSummary();
+    fireEvent.click(screen.getByTestId('bulk-wizard-apply'));
+
+    expect(await screen.findByText('Modifica salvata in CasaZen', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
+    expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
+    expect(calendarChangesApi.get).not.toHaveBeenCalled();
+    expect(screen.getByTestId('wizard-done-primary')).toHaveTextContent('Salva ed esci');
+    expect(document.body.textContent).not.toMatch(/channel manager/i);
+  });
+
   it('CalendarBulkPage_PeriodEntirelyPast_IsRefusedWithAPlainSentence_AndNothingGoesOn', { timeout: 30_000 }, async () => {
     renderPage();
     await chooseProperties();

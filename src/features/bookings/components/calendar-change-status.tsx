@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useCalendarChanges, useRetryCalendarChange } from '@/queries/use-calendar-changes';
@@ -28,14 +29,17 @@ function reasonOf(change: CalendarChange): string {
  * being sent to your channel manager", "1 change was not sent"), with the list of the last changes (date, what, state) one click away, and it disappears when everything is delivered.
  * It reads `GET /api/calendar/changes` (the state words are those of the wizard result and of the panel of the days) every few seconds while a change is on its way, up to a time
  * (then a neutral "no answer yet" with "Check again"). A list that cannot be read is said, never taken for "all delivered"; a caller who may not read it gets nothing, and no error.
- * The buttons stay off while any request of the card is on its way.
+ * The buttons stay off while any request of the card is on its way. With the connector of the channel manager off (`octorateConnector`) nothing is sent there and so there is
+ * nothing to follow: the line is not drawn, nothing is asked and nothing is said of the channel manager.
  */
 export function CalendarChangeStatus({ propertyName, canRetry }: CalendarChangeStatusProps) {
   const { t, i18n } = useTranslation();
-  const changes = useCalendarChanges();
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
+  const changes = useCalendarChanges({ enabled: connectorOn });
   const retry = useRetryCalendarChange();
   const [open, setOpen] = useState(false);
 
+  if (!connectorOn) return null;
   // A caller with no right to read the changes is not told of an error: the calendar is what it was.
   if (changes.isError && getHttpStatus(changes.error) === 403) return null;
 

@@ -101,18 +101,20 @@ interface CalendarChangeLinesProps {
 export function CalendarChangeLines({ change: initial, propertyName }: CalendarChangeLinesProps) {
   const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
-  // With the connector of the channel manager off nothing is sent or asked: a property that is not connected has nothing to say about it, and the change is just saved in CasaZen.
+  // With the connector of the channel manager off nothing is sent there and there is nothing to follow: the change is just saved in CasaZen, nothing is asked and no line speaks
+  // of the channel manager.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   // Without a workspace (a test) nothing is offered; the change is read only by who may read properties (a read they may not make would be a 403), and sent again only by who may write them.
   const mayRead = workspace?.hasPermission('short-rent', 'property.read') ?? false;
   const mayRetry = workspace?.hasPermission('short-rent', 'property.write') ?? false;
+  const canFollow = mayRead && connectorOn;
 
-  const detail = useCalendarChange(initial.id, { enabled: mayRead, initial });
+  const detail = useCalendarChange(initial.id, { enabled: canFollow, initial });
   const retry = useRetryCalendarChange();
   const change = detail.data ?? initial;
   const read = changeReadOf({ enabled: true, isError: detail.isError, notFound: getHttpStatus(detail.error) === 404, hasData: detail.data !== undefined });
   // Whoever may not read the change cannot follow it: what it was when the API answered is all there is, and it does not say more than that.
-  const watchOver = detail.watchOver || (!mayRead && (change.state === 'Queued' || change.state === 'Sending'));
+  const watchOver = detail.watchOver || (!canFollow && (change.state === 'Queued' || change.state === 'Sending'));
   const busy = retry.isPending;
 
   return (
@@ -121,9 +123,8 @@ export function CalendarChangeLines({ change: initial, propertyName }: CalendarC
         <p>{t('booking.calendar.change.result.saved')}</p>
       </ResultLine>
 
-      {change.properties.map((property) => {
+      {(connectorOn ? change.properties : []).map((property) => {
         const line = propertyLineOf({ change, property, read, watchOver, mayRetry });
-        if (line.kind === 'notConnected' && !connectorOn) return null;
         const reasonWithRetry = retry.isError && line.kind === 'failed';
         return (
           <ResultLine
@@ -133,7 +134,7 @@ export function CalendarChangeLines({ change: initial, propertyName }: CalendarC
             state={line.kind}
             title={propertyName(property.propertyId)}
             action={
-              (line.kind === 'noAnswer' || line.kind === 'unreadable') && mayRead ? (
+              (line.kind === 'noAnswer' || line.kind === 'unreadable') && canFollow ? (
                 <Button
                   type="button"
                   size="sm"

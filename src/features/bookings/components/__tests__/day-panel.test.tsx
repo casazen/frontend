@@ -186,6 +186,8 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     expect(await screen.findByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
     expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/channel manager/i);
+    // Nothing is sent there, so the state of the change is not asked either.
+    expect(calendarChangesApi.get).not.toHaveBeenCalled();
   });
 
   it('DayPanel_AChangeThatFailed_SaysWhyAndOffersRetryNow_WhichSendsItAgain', async () => {

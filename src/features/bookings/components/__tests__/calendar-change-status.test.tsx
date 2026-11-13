@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { CalendarChangeStatus } from '../calendar-change-status';
 
@@ -26,13 +28,16 @@ function statusError(status: number): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: {} });
 }
 
-function renderStatus(canRetry = true) {
+function renderStatus(canRetry = true, connector = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 0 }, mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <CalendarChangeStatus propertyName={(id) => (id === 'p1' ? 'Villa Mare' : 'Casa Lago')} canRetry={canRetry} />
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <CalendarChangeStatus propertyName={(id) => (id === 'p1' ? 'Villa Mare' : 'Casa Lago')} canRetry={canRetry} />
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
+  return client;
 }
 
 describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
@@ -48,6 +53,19 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
 
     expect(await screen.findByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
     expect(screen.getByTestId('calendar-change-status')).toHaveAttribute('data-state', 'waiting');
+  });
+
+  it('CalendarChangeStatus_ConnectorOff_AsksForNothingAndSaysNothingOfTheChannelManager', async () => {
+    // Changes left waiting or failed from when the connector was on: with it off nothing is sent there, so nothing is followed, asked or said.
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' }), change({ id: 'c2', state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', chunkCount: 1 }] })]);
+    renderStatus(true, false);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/channel manager/i);
   });
 
   it('CalendarChangeStatus_AChangeThatWasNotSent_SaysSoWithRetry_AndTheListIsOneClickAway', async () => {
