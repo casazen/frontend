@@ -2,13 +2,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiClient } from '@/api/client';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import axios from '@/lib/axios';
-import { getMarketplaceActive, getMarketplaceHealth } from '../marketplace.api';
+import {
+  deactivateActivation,
+  getDeactivationPreview,
+  getMarketplaceActive,
+  getMarketplaceHealth,
+  requestFunctionChange,
+  updateActivationSettings,
+} from '../marketplace.api';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
-vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn() } }));
+vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn(), patch: vi.fn() } }));
 
 const rawGet = vi.mocked(axios.get);
 const clientGet = vi.mocked(ApiClient.get);
+const clientPost = vi.mocked(ApiClient.post);
+const clientPatch = vi.mocked(ApiClient.patch);
 
 const HEALTH_ROW = {
   activationId: 'act-1',
@@ -98,5 +107,59 @@ describe('getMarketplaceActive', () => {
     clientGet.mockResolvedValue({ integrations: [{ kind: 'Channel' }], providers: [] } as never);
 
     await expect(getMarketplaceActive(undefined, 'it')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+});
+
+const CHANGE = { activationId: 'act-1', kind: 'Channel', code: 'PORTAL1', propertyId: 'prop-1', status: 'Deactivated', changeRequestedAt: null };
+
+describe('the change of an activation', () => {
+  it('deactivateActivation_PostsTheConfirmationOnTheActivationAndReturnsTheStatusTheServerGave', async () => {
+    clientPost.mockResolvedValue({ ...CHANGE, status: 'Pending' } as never);
+
+    const outcome = await deactivateActivation('act 1/x');
+
+    // The id is encoded, and the body says yes: nothing else is sent.
+    expect(clientPost).toHaveBeenCalledWith('/marketplace/activations/act%201%2Fx/deactivate', { confirmed: true });
+    expect(outcome.status).toBe('Pending');
+  });
+
+  it('deactivateActivation_AnswerThatIsNotAnActivation_IsALoadError_NeverADeactivation', async () => {
+    clientPost.mockResolvedValue('<html>proxy</html>' as never);
+
+    await expect(deactivateActivation('act-1')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+
+  it('updateActivationSettings_PatchesOnlyTheMembersGiven', async () => {
+    clientPatch.mockResolvedValue({ ...CHANGE, status: 'Active' } as never);
+
+    await updateActivationSettings('act-1', { hotelId: '4711' });
+
+    expect(clientPatch).toHaveBeenCalledWith('/marketplace/activations/act-1', { hotelId: '4711' });
+  });
+
+  it('requestFunctionChange_PostsToTheChangeRequestAndKeepsTheDateTheServerGave', async () => {
+    clientPost.mockResolvedValue({ ...CHANGE, kind: 'LicensedFunction', changeRequestedAt: '2026-11-13T10:00:00Z' } as never);
+
+    const outcome = await requestFunctionChange('act-f');
+
+    expect(clientPost).toHaveBeenCalledWith('/marketplace/activations/act-f/change-request', {});
+    expect(outcome.changeRequestedAt).toBe('2026-11-13T10:00:00Z');
+  });
+
+  it('getDeactivationPreview_AsksForTheLanguage_AndKeepsTheSentencesAsTheServerWroteThem', async () => {
+    clientGet.mockResolvedValue({ activationId: 'act-1', kind: 'Channel', code: 'PORTAL1', name: 'TEST Portal', effects: ['One.', 'Two.'], requiresConfirmation: true, guided: false } as never);
+
+    const preview = await getDeactivationPreview('act-1', 'en');
+
+    expect(clientGet).toHaveBeenCalledWith('/marketplace/activations/act-1/deactivation-preview', { lang: 'en' });
+    expect(preview.effects).toEqual(['One.', 'Two.']);
+  });
+
+  it('getDeactivationPreview_NoSentence_IsALoadError_ThePersonIsNeverAskedToConfirmWhatWasNotShown', async () => {
+    clientGet.mockResolvedValue({ activationId: 'act-1', kind: 'Channel', code: 'PORTAL1', name: 'TEST Portal', effects: [], requiresConfirmation: true, guided: false } as never);
+    await expect(getDeactivationPreview('act-1', 'it')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+
+    clientGet.mockResolvedValue({ activationId: 'act-1', effects: ['One.', 42] } as never);
+    await expect(getDeactivationPreview('act-1', 'it')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
   });
 });

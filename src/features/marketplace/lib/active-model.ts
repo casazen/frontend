@@ -1,6 +1,7 @@
 import { formatRomeDateTime, formatStayDate, utcStayDate } from '@/lib/stay-dates';
 import type {
   MarketplaceActiveIntegration,
+  MarketplaceActivationStatus,
   MarketplaceCardStatus,
   MarketplaceEntryKind,
   MarketplaceHealthItem,
@@ -32,7 +33,7 @@ export interface ActiveRow {
   lastSyncedAt: string | null;
   /** The health row of the same activation; `null` when the health was not read (no permission, the connector is off, the read failed) and for a partner. */
   health: MarketplaceHealthItem | null;
-  /** The id of the activation, which the change and the deactivation need: only the health rows carry it, so a partner has none. */
+  /** The id of the activation, which the change and the deactivation need: the health row has it (a partner has none), and so does the list when the server sends it. */
   activationId: string | null;
 }
 
@@ -51,10 +52,14 @@ function compareRows(a: ActiveRow, b: ActiveRow): number {
   return byKind !== 0 ? byKind : a.name.localeCompare(b.name);
 }
 
+/** The status of an activation as a badge says it: `Deactivated` is not one of the tab (it is not listed), and is drawn as «not active» if one ever comes. */
+export function badgeStatusOf(status: MarketplaceActivationStatus): ActiveRowStatus {
+  return status === 'Deactivated' ? 'NotActive' : status;
+}
+
 /** The status a row says: the health row's word where it was read (it tells `Requested` from `Pending`), else the status of the card. */
 function statusOf(integration: MarketplaceActiveIntegration, health: MarketplaceHealthItem | null): ActiveRowStatus {
-  if (!health) return integration.status;
-  return health.status === 'Deactivated' ? 'NotActive' : health.status;
+  return health ? badgeStatusOf(health.status) : integration.status;
 }
 
 /**
@@ -81,7 +86,7 @@ export function buildActiveRows(integrations: readonly MarketplaceActiveIntegrat
         verifiedAt: integration.verifiedAt,
         lastSyncedAt: integration.lastSyncedAt ?? row?.lastSyncedAt ?? null,
         health: row,
-        activationId: row?.activationId ?? null,
+        activationId: row?.activationId ?? integration.activationId ?? null,
       };
     })
     .sort(compareRows);
@@ -186,11 +191,16 @@ export function fixPathOf(row: Pick<ActiveRow, 'kind' | 'code' | 'property'>, re
   return marketplaceAction({ kind: row.kind, code: row.code, status: 'ToFix', canActivate: true }, row.property?.id, returnTo)?.to ?? null;
 }
 
+/** Whether an activation of this kind goes through the channel manager (a channel, a tool, a function of the license): a partner never does, and never depends on the connector. */
+export function goesThroughConnector(kind: string): boolean {
+  return kind.toLowerCase() !== 'partner';
+}
+
 /**
  * Whether the person may change or turn off an activation of this kind: the permission to write (`ota.write`) and, for what goes through the channel manager (a channel, a
  * tool, a function of the license), the connector being on, as the backend asks. A partner never depends on the connector.
  */
 export function mayManageKind(kind: string, hasPermission: (context: 'short-rent', permission: string) => boolean, connectorOn: boolean): boolean {
   if (!hasPermission('short-rent', 'ota.write')) return false;
-  return kind.toLowerCase() === 'partner' ? true : connectorOn;
+  return goesThroughConnector(kind) ? connectorOn : true;
 }

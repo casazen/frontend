@@ -3,12 +3,14 @@ import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import axios from '@/lib/axios';
 import type {
   MarketplaceActiveResponse,
+  MarketplaceActivationChange,
   MarketplaceActivationMapping,
   MarketplaceActivationPlan,
   MarketplaceActivationState,
   MarketplaceCatalogEntry,
   MarketplaceCatalogResponse,
   MarketplaceConnectionKind,
+  MarketplaceDeactivationPreview,
   MarketplaceEntryDetail,
   MarketplaceFunction,
   MarketplaceFunctionList,
@@ -21,6 +23,7 @@ import type {
   MarketplaceQuota,
   MarketplaceRoomChoice,
   StartMarketplaceActivationRequest,
+  UpdateMarketplaceSettingsRequest,
 } from '@/types';
 
 const CATALOG_PATH = '/marketplace/catalog';
@@ -273,4 +276,64 @@ export async function declarePartner(code: string, propertyId: string | undefine
   const data = await ApiClient.post<unknown>(`${PARTNERS_PATH}/${encodeURIComponent(code)}/declare`, { propertyId, declaredOn });
   if (!isRecord(data) || typeof data.activationId !== 'string' || typeof data.status !== 'string') throw new UnexpectedApiResponseError(path);
   return data as unknown as MarketplacePartnerActivation;
+}
+
+// ─── The change and the deactivation of an activation (E09/F03/US02/T02, MKT-05) ─────────────────────────────────────────────────────────
+
+/** An answer that is the activation as it stands after a change; anything else (the page of a proxy, say) is a load error, never an outcome. */
+function activationChangeOf(data: unknown, path: string): MarketplaceActivationChange {
+  if (!isRecord(data) || typeof data.activationId !== 'string' || typeof data.status !== 'string') throw new UnexpectedApiResponseError(path);
+
+  return {
+    ...(data as unknown as MarketplaceActivationChange),
+    propertyId: typeof data.propertyId === 'string' ? data.propertyId : null,
+    changeRequestedAt: typeof data.changeRequestedAt === 'string' ? data.changeRequestedAt : null,
+  };
+}
+
+/**
+ * `PATCH /api/marketplace/activations/{id}` (needs `ota.write` and the connector): changes the settings of a channel or a tool on the channel manager: the identifier of the property
+ * on the channel and the login details the portal asks for, only the members given. `username` and `password` travel in this one call; no answer carries them and CasaZen keeps none.
+ * 422 `marketplace_settings_required` (nothing given), 422 `marketplace_change_not_supported`, 409 `marketplace_connection_missing`, 502 (nothing was changed).
+ */
+export async function updateActivationSettings(id: string, settings: UpdateMarketplaceSettingsRequest): Promise<MarketplaceActivationChange> {
+  return activationChangeOf(await ApiClient.patch<unknown>(activationPath(id), settings), `${ACTIVATIONS_PATH}/{id}`);
+}
+
+/**
+ * `GET /api/marketplace/activations/{id}/deactivation-preview`: what a deactivation does, in plain sentences in `language` with the name put in. Nothing is asked of the channel manager
+ * and nothing is written. An answer with no sentence is not a preview: the person is never asked to confirm what was not shown.
+ */
+export async function getDeactivationPreview(id: string, language: MarketplaceLanguage): Promise<MarketplaceDeactivationPreview> {
+  const path = `${ACTIVATIONS_PATH}/{id}/deactivation-preview`;
+  const data = await ApiClient.get<unknown>(activationPath(id, '/deactivation-preview'), { lang: language });
+  if (!isRecord(data) || typeof data.activationId !== 'string' || !Array.isArray(data.effects)) throw new UnexpectedApiResponseError(path);
+
+  const effects = data.effects.filter((effect): effect is string => typeof effect === 'string' && effect.trim() !== '');
+  if (effects.length === 0 || effects.length !== data.effects.length) throw new UnexpectedApiResponseError(path);
+
+  return {
+    ...(data as unknown as MarketplaceDeactivationPreview),
+    effects,
+    name: typeof data.name === 'string' ? data.name : '',
+    requiresConfirmation: data.requiresConfirmation !== false,
+    guided: data.guided === true,
+  };
+}
+
+/**
+ * `POST /api/marketplace/activations/{id}/deactivate` with `confirmed: true`: a channel or a tool has its connection deleted on the channel manager and becomes `Deactivated`; for a
+ * partner the host says it turned it off on the partner's site. The answer is the activation as it stands: only `Deactivated` is a deactivation. A function of the license is never
+ * deactivated by CasaZen (422 `marketplace_change_not_supported`: ask for a change). 502: the channel manager or the channel failed and nothing was changed.
+ */
+export async function deactivateActivation(id: string): Promise<MarketplaceActivationChange> {
+  return activationChangeOf(await ApiClient.post<unknown>(activationPath(id, '/deactivate'), { confirmed: true }), `${ACTIVATIONS_PATH}/{id}/deactivate`);
+}
+
+/**
+ * `POST /api/marketplace/activations/{id}/change-request`: records that the host asked its channel manager for a change of a function of the license (`changeRequestedAt` is set and the
+ * status stays until the license shows a different state). CasaZen asks the channel manager nothing and never writes the license. 409 `marketplace_change_already_requested`.
+ */
+export async function requestFunctionChange(id: string): Promise<MarketplaceActivationChange> {
+  return activationChangeOf(await ApiClient.post<unknown>(activationPath(id, '/change-request'), {}), `${ACTIVATIONS_PATH}/{id}/change-request`);
 }

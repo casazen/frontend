@@ -13,7 +13,7 @@ import { IntegrationHealthPanel } from './components/integration-health-panel';
 import { MarketplaceEntryDrawer } from './components/marketplace-entry-drawer';
 import { MarketplaceAccountFrame } from './components/marketplace-frame';
 import { UsedProvidersList } from './components/used-providers-list';
-import { buildActiveRows, fixPathOf, mayManageKind, rowHasProblem } from './lib/active-model';
+import { buildActiveRows, fixPathOf, goesThroughConnector, mayManageKind, rowHasProblem } from './lib/active-model';
 import { marketplaceReturnTarget } from './lib/marketplace-entry';
 import { MARKETPLACE_PATH, marketplaceHref } from './lib/marketplace-paths';
 import { useMarketplaceProperty } from './lib/marketplace-property';
@@ -57,7 +57,11 @@ function ActiveTab() {
 
   const healthItems = canReadHealth && !health.isError && health.data?.outcome === 'items' ? health.data.items : null;
   const activeData = active.isError ? undefined : active.data;
-  const rows = useMemo(() => (activeData ? buildActiveRows(activeData.integrations, healthItems) : []), [activeData, healthItems]);
+  // With the connector off what goes through the channel manager does not exist (for the server too: it answers 404 to it): the tab shows the partners and what CasaZen has of its own, as before.
+  const rows = useMemo(
+    () => (activeData ? buildActiveRows(activeData.integrations.filter((integration) => connectorOn || !goesThroughConnector(integration.kind)), healthItems) : []),
+    [activeData, connectorOn, healthItems],
+  );
   const providers = activeData?.providers ?? [];
   const builtInActive = builtIns.filter((integration) => integration.status === 'active');
   const builtInReading = builtIns.some((integration) => integration.status === 'loading');
@@ -98,7 +102,7 @@ function ActiveTab() {
               <BuiltInIntegrationCard key={integration.id} integration={integration} />
             ))}
             {rows.map((row) => (
-              <ActiveIntegrationCard key={row.key} row={row} fixTo={rowHasProblem(row) && mayFix(row.kind) ? fixPathOf(row, returnTo) : null} />
+              <ActiveIntegrationCard key={row.key} row={row} fixTo={rowHasProblem(row) && mayFix(row.kind) ? fixPathOf(row, returnTo) : null} mayManage={mayFix(row.kind)} />
             ))}
           </ul>
         ) : null}

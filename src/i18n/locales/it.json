@@ -1520,6 +1520,10 @@
       "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
       "marketplaceActivationNotFound": "Non troviamo più questa attivazione. Ricomincia dal Marketplace.",
+      "marketplaceChangeAlreadyRequested": "Hai già chiesto questa modifica: aspetta che compaia nella licenza dell'immobile.",
+      "marketplaceChangeNoteInvalid": "La nota è troppo lunga: al massimo 500 caratteri.",
+      "marketplaceChangeNotSupported": "Questa modifica non è possibile per questo tipo di attivazione: usa la procedura guidata della sua scheda.",
+      "marketplaceConfirmationRequired": "Per disattivare serve una conferma esplicita: non è stato cambiato nulla.",
       "marketplaceConnectionExists": "Questo immobile ha già un collegamento a questo canale nel tuo channel manager, creato fuori da CasaZen. Toglilo da lì e riprova.",
       "marketplaceConnectionMissing": "Il collegamento non c'è più sul channel manager: torna al passo «Collegamento».",
       "marketplaceCredentialsRequired": "Per questo canale servono i dati di accesso: torna al passo «Accesso».",
@@ -1536,6 +1540,7 @@
       "marketplacePortalUnknown": "Questo canale non è disponibile per te.",
       "marketplacePropertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
       "marketplacePropertyNotLinked": "L'immobile non è ancora collegato al tuo channel manager.",
+      "marketplaceSettingsRequired": "Compila almeno un'impostazione da cambiare.",
       "memberCannotOnboard": "Fai già parte di un'organizzazione come collaboratore: non puoi attivare un nuovo account né cambiare il tuo ruolo. Se ti serve un altro ruolo, chiedilo al titolare dell'organizzazione.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",
@@ -13180,6 +13185,78 @@
       "notFound": "Fornitore non trovato",
       "notFoundDescription": "Non è più tra i fornitori attivi della zona di questo immobile."
     },
+    "change": {
+      "function": {
+        "after": "Quando hai mandato il messaggio, premi «Ho fatto la richiesta»: CasaZen non lo manda per te e non cambia la licenza.",
+        "ask": "Ho fatto la richiesta",
+        "copied": "Testo copiato.",
+        "copy": "Copia il testo",
+        "copyFailed": "Non sono riuscito a copiare: selezionalo e copialo a mano.",
+        "explain": "La licenza è del tuo channel manager e CasaZen non può cambiarla: la modifica la chiedi tu al tuo channel manager. Copia il testo qui sotto e mandaglielo.",
+        "failed": "Non sono riuscito a registrare la richiesta.",
+        "requested": "Richiesta registrata: la scheda mostra la data finché la licenza non cambia.",
+        "template": "Buongiorno, vorrei chiedere una modifica della funzione «{{name}}» della licenza per l'immobile «{{property}}». Potete aiutarmi? Grazie.",
+        "templateOrganization": "Buongiorno, vorrei chiedere una modifica della funzione «{{name}}» della licenza. Potete aiutarmi? Grazie.",
+        "textLabel": "Testo da mandare al tuo channel manager",
+        "title": "Chiedi una modifica: {{name}}"
+      },
+      "menu": {
+        "change": "Chiedi una modifica",
+        "deactivate": "Disattiva",
+        "settings": "Modifica impostazioni"
+      },
+      "outcome": {
+        "unchanged": "Non è stato cambiato nulla.",
+        "unknown": "Non sappiamo se l'operazione è andata a buon fine: controlla l'elenco prima di riprovare."
+      },
+      "settings": {
+        "credentialsHint": "Il nome utente e la password vanno al channel manager in questa sola richiesta: CasaZen non li salva.",
+        "description": "{{name}} per l'immobile «{{property}}». Cambia solo quello che serve: i campi lasciati vuoti restano come sono.",
+        "descriptionOrganization": "{{name}}. Cambia solo quello che serve: i campi lasciati vuoti restano come sono.",
+        "failed": "Non sono riuscito a salvare le impostazioni.",
+        "hotelId": "Identificativo dell'immobile sul canale",
+        "hotelIdHint": "Lo trovi nel pannello del canale.",
+        "nothingGiven": "Compila almeno un campo da cambiare.",
+        "nothingToChange": "Per questo canale non ci sono impostazioni da modificare da qui.",
+        "password": "Password",
+        "planError": "Non riesco a leggere cosa chiede questo canale.",
+        "planLoading": "Leggo cosa chiede questo canale…",
+        "planNotFound": "Non troviamo più questo canale: chiudi e controlla l'elenco.",
+        "retry": "Riprova",
+        "save": "Salva le impostazioni",
+        "saved": "Impostazioni salvate.",
+        "savedNotActive": "Impostazioni salvate, ma il collegamento non risulta attivo: lo stato è «{{status}}».",
+        "title": "Impostazioni di {{name}}",
+        "username": "Nome utente"
+      }
+    },
+    "deactivate": {
+      "channelNote": "Dopo la disattivazione controlla sul canale le prenotazioni che ricevi: non arrivano più in CasaZen.",
+      "confirm": "Disattiva",
+      "confirmCheck": "Ho letto cosa succede e voglio disattivare {{name}}.",
+      "descriptionOrganization": "Stai per disattivare «{{name}}» per tutta l'organizzazione.",
+      "descriptionProperty": "Stai per disattivare «{{name}}» per l'immobile «{{property}}».",
+      "done": "Disattivazione completata: {{name}}.",
+      "effectsTitle": "Cosa succede",
+      "failed": "La disattivazione non è riuscita.",
+      "keep": "Lascia com'è",
+      "notDone": "La disattivazione non risulta completata: lo stato è «{{status}}». Controlla l'elenco prima di riprovare.",
+      "partner": {
+        "confirm": "L'ho fatto",
+        "confirmCheck": "Ho già disattivato {{name}} sul sito del partner e voglio registrarlo in CasaZen.",
+        "loading": "Leggo le istruzioni…",
+        "noText": "Segui le istruzioni sul sito del partner per disattivarlo.",
+        "notFound": "Non troviamo le istruzioni di questo partner.",
+        "readError": "Non riesco a leggere le istruzioni.",
+        "stepsTitle": "Come si disattiva {{name}}"
+      },
+      "previewError": "Non riesco a leggere cosa succede con la disattivazione: per sicurezza non si può confermare.",
+      "previewLoading": "Leggo cosa succede…",
+      "previewNotFound": "Questa attivazione non c'è più: chiudi e controlla l'elenco.",
+      "reactivate": "Se cambi idea, potrai riattivarla da Scopri ripetendo l'attivazione.",
+      "retry": "Riprova",
+      "title": "Disattivare {{name}}?"
+    },
     "health": {
       "calm_one": "{{count}} integrazione attiva, nessun problema segnalato.",
       "calm_other": "{{count}} integrazioni attive, nessun problema segnalato.",
@@ -13198,8 +13275,8 @@
       "quota": {
         "label": "Quota usata del canale",
         "readAt": "Letta il {{when}}.",
-        "unknown": "La quota del canale non è ancora stata letta.",
         "units": "Quota del canale: {{used}} unità usate su {{limit}}.",
+        "unknown": "La quota del canale non è ancora stata letta.",
         "usage": "Quota del canale usata: {{percent}}% ({{used}} su {{limit}} unità).",
         "warn": "La quota del canale è quasi esaurita: gli aggiornamenti potrebbero fermarsi finché non torna disponibile."
       },
@@ -13211,6 +13288,7 @@
     },
     "mine": {
       "card": {
+        "actionsAria": "Azioni per {{name}}",
         "changeRequested": "Modifica richiesta il {{date}}",
         "declared": "Attivazione dichiarata da te il {{date}}",
         "declaredNoDate": "Attivazione dichiarata da te",

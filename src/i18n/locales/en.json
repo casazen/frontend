@@ -1520,6 +1520,10 @@
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
       "marketplaceActivationNotFound": "We cannot find this activation any more. Start again from the Marketplace.",
+      "marketplaceChangeAlreadyRequested": "You already asked for this change: wait until it shows in the license of the property.",
+      "marketplaceChangeNoteInvalid": "The note is too long: at most 500 characters.",
+      "marketplaceChangeNotSupported": "This change is not possible for this kind of activation: use the guided procedure on its card.",
+      "marketplaceConfirmationRequired": "To deactivate you have to confirm explicitly: nothing was changed.",
       "marketplaceConnectionExists": "This property already has a connection to this channel in your channel manager, created outside CasaZen. Remove it there and try again.",
       "marketplaceConnectionMissing": "The connection is no longer on the channel manager: go back to the “Connection” step.",
       "marketplaceCredentialsRequired": "This channel needs the access details: go back to the “Access” step.",
@@ -1536,6 +1540,7 @@
       "marketplacePortalUnknown": "This channel is not available to you.",
       "marketplacePropertyNotFound": "We cannot find the property, or you have no access to it.",
       "marketplacePropertyNotLinked": "The property is not linked to your channel manager yet.",
+      "marketplaceSettingsRequired": "Fill in at least one setting to change.",
       "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
@@ -13180,6 +13185,78 @@
       "notFound": "Supplier not found",
       "notFoundDescription": "It is no longer among the active suppliers of this property's area."
     },
+    "change": {
+      "function": {
+        "after": "When you have sent the message, press “I made the request”: CasaZen does not send it for you and does not change the license.",
+        "ask": "I made the request",
+        "copied": "Text copied.",
+        "copy": "Copy the text",
+        "copyFailed": "I could not copy it: select it and copy it by hand.",
+        "explain": "The license belongs to your channel manager and CasaZen cannot change it: you ask your channel manager for the change. Copy the text below and send it to them.",
+        "failed": "I could not record the request.",
+        "requested": "Request recorded: the card shows the date until the license changes.",
+        "template": "Hello, I would like to ask for a change to the function “{{name}}” of the license for the property “{{property}}”. Can you help me? Thank you.",
+        "templateOrganization": "Hello, I would like to ask for a change to the function “{{name}}” of the license. Can you help me? Thank you.",
+        "textLabel": "Text to send to your channel manager",
+        "title": "Ask for a change: {{name}}"
+      },
+      "menu": {
+        "change": "Ask for a change",
+        "deactivate": "Deactivate",
+        "settings": "Change settings"
+      },
+      "outcome": {
+        "unchanged": "Nothing was changed.",
+        "unknown": "We do not know whether it went through: check the list before trying again."
+      },
+      "settings": {
+        "credentialsHint": "The username and the password go to the channel manager in this one request: CasaZen does not keep them.",
+        "description": "{{name}} for the property “{{property}}”. Change only what you need: the fields left empty stay as they are.",
+        "descriptionOrganization": "{{name}}. Change only what you need: the fields left empty stay as they are.",
+        "failed": "I could not save the settings.",
+        "hotelId": "Identifier of the property on the channel",
+        "hotelIdHint": "You find it on the channel’s panel.",
+        "nothingGiven": "Fill in at least one field to change.",
+        "nothingToChange": "This channel has no settings to change from here.",
+        "password": "Password",
+        "planError": "I cannot read what this channel asks for.",
+        "planLoading": "Reading what this channel asks for…",
+        "planNotFound": "We can no longer find this channel: close and check the list.",
+        "retry": "Try again",
+        "save": "Save the settings",
+        "saved": "Settings saved.",
+        "savedNotActive": "Settings saved, but the connection does not show as active: its status is “{{status}}”.",
+        "title": "Settings of {{name}}",
+        "username": "Username"
+      }
+    },
+    "deactivate": {
+      "channelNote": "After deactivating, check on the channel the bookings you receive: they no longer arrive in CasaZen.",
+      "confirm": "Deactivate",
+      "confirmCheck": "I have read what happens and I want to deactivate {{name}}.",
+      "descriptionOrganization": "You are about to deactivate “{{name}}” for the whole organization.",
+      "descriptionProperty": "You are about to deactivate “{{name}}” for the property “{{property}}”.",
+      "done": "Deactivation completed: {{name}}.",
+      "effectsTitle": "What happens",
+      "failed": "The deactivation did not work.",
+      "keep": "Leave it as it is",
+      "notDone": "The deactivation does not show as completed: the status is “{{status}}”. Check the list before trying again.",
+      "partner": {
+        "confirm": "I did it",
+        "confirmCheck": "I have already turned off {{name}} on the partner’s site and I want to record it in CasaZen.",
+        "loading": "Reading the instructions…",
+        "noText": "Follow the instructions on the partner’s site to turn it off.",
+        "notFound": "We cannot find the instructions of this partner.",
+        "readError": "I cannot read the instructions.",
+        "stepsTitle": "How to turn off {{name}}"
+      },
+      "previewError": "I cannot read what the deactivation does: for safety it cannot be confirmed.",
+      "previewLoading": "Reading what happens…",
+      "previewNotFound": "This activation is no longer there: close and check the list.",
+      "reactivate": "If you change your mind, you can activate it again from Discover by repeating the activation.",
+      "retry": "Try again",
+      "title": "Deactivate {{name}}?"
+    },
     "health": {
       "calm_one": "{{count}} active integration, no problem reported.",
       "calm_other": "{{count}} active integrations, no problem reported.",
@@ -13198,8 +13275,8 @@
       "quota": {
         "label": "Quota of the channel used",
         "readAt": "Read on {{when}}.",
-        "unknown": "The quota of the channel has not been read yet.",
         "units": "Channel quota: {{used}} of {{limit}} units used.",
+        "unknown": "The quota of the channel has not been read yet.",
         "usage": "Channel quota used: {{percent}}% ({{used}} of {{limit}} units).",
         "warn": "The channel quota is almost used up: updates may stop until it is available again."
       },
@@ -13211,6 +13288,7 @@
     },
     "mine": {
       "card": {
+        "actionsAria": "Actions for {{name}}",
         "changeRequested": "Change requested on {{date}}",
         "declared": "Activation declared by you on {{date}}",
         "declaredNoDate": "Activation declared by you",

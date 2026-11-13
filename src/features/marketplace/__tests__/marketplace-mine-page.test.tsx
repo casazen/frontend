@@ -306,8 +306,15 @@ describe('MarketplaceMinePage · Attivi', () => {
 
   it('MarketplaceMinePage_ConnectorOffOrNoRightToRead_AsksNothingOfTheHealthAndSaysNothingOfIt', async () => {
     flags.connector = false;
+    api.getMarketplaceActive.mockResolvedValue({
+      integrations: [row(), row({ kind: 'Partner', code: 'beds', name: 'TEST Beds', property: null, isDeclared: true, declaredAt: '2026-11-10T00:00:00Z' })],
+      providers: [],
+    });
     renderPage();
     await screen.findByTestId('marketplace-active-integrations');
+    // What goes through the channel manager does not exist with the connector off (the server says 404 to it): only the partner and what CasaZen has of its own are in the tab.
+    expect(await screen.findByTestId('marketplace-active-Partner-beds-org')).toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-active-Channel-PORTAL1-prop-1')).not.toBeInTheDocument();
     expect(api.getMarketplaceHealth).not.toHaveBeenCalled();
     expect(screen.queryByTestId('marketplace-health-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-health-error')).not.toBeInTheDocument();

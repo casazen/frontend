@@ -141,6 +141,8 @@ export interface MarketplaceActiveIntegration {
   lastSyncedAt: string | null;
   declaredAt: string | null;
   verifiedAt: string | null;
+  /** The id of the activation, if the list carries it. It does not today: only the health rows have it, and a partner has no health row. */
+  activationId?: string | null;
 }
 
 /** A CasaZen supplier the host already asked for a job (the shape of `HostUsedSupplier`, camelCase). */

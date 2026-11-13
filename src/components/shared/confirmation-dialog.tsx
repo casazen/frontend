@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -20,7 +20,10 @@ interface ConfirmationDialogProps {
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "default" | "destructive";
+  /** The look of the confirm button. `destructive` is the filled red; a confirmation that must not be the main button of the dialog takes `danger-outline`. */
+  variant?: ButtonProps["variant"];
+  /** The look of the cancel button (`outline` by default). A dialog that asks to keep what is there makes «keep it» the main button with `default`. */
+  cancelVariant?: ButtonProps["variant"];
   onConfirm: () => void | Promise<void>;
   isLoading?: boolean;
   /**
@@ -48,7 +51,7 @@ function sameWord(typed: string, asked: string): boolean {
 
 type ConfirmationFormProps = Pick<
   ConfirmationDialogProps,
-  'title' | 'description' | 'variant' | 'isLoading' | 'requireText' | 'consequences' | 'children' | 'confirmDisabled'
+  'title' | 'description' | 'variant' | 'cancelVariant' | 'isLoading' | 'requireText' | 'consequences' | 'children' | 'confirmDisabled'
 > & {
   confirmLabel: string;
   cancelLabel: string;
@@ -64,6 +67,7 @@ function ConfirmationForm({
   title,
   description,
   variant,
+  cancelVariant = "outline",
   isLoading,
   requireText,
   consequences,
@@ -136,7 +140,7 @@ function ConfirmationForm({
       ) : null}
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button type="button" variant={cancelVariant} onClick={onCancel} disabled={isLoading}>
           {cancelLabel}
         </Button>
         <Button type="submit" variant={variant} disabled={isLoading || !mayConfirm}>
@@ -155,6 +159,7 @@ export function ConfirmationDialog({
   confirmLabel,
   cancelLabel,
   variant = "default",
+  cancelVariant,
   onConfirm,
   isLoading = false,
   requireText,
@@ -183,6 +188,7 @@ export function ConfirmationDialog({
           title={title}
           description={description}
           variant={variant}
+          cancelVariant={cancelVariant}
           isLoading={isLoading}
           requireText={requireText}
           consequences={consequences}

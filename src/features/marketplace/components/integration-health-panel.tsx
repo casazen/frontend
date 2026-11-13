@@ -10,6 +10,7 @@ import { translateErrorCode } from '@/lib/api-errors';
 import type { useMarketplaceHealth } from '@/queries/use-marketplace';
 import type { MarketplaceHealthItem, MarketplaceQuota } from '@/types';
 import {
+  badgeStatusOf,
   fixPathOf,
   formatInstant,
   groupHealthByProperty,
@@ -82,7 +83,7 @@ function ProblemRow({ item, mayFix }: ProblemRowProps) {
       <div className="min-w-0 space-y-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <p className="break-words font-medium">{item.name}</p>
-          <MarketplaceStatusBadge status={item.status} declared={item.isDeclared} data-testid={`${testId}-status`} />
+          <MarketplaceStatusBadge status={badgeStatusOf(item.status)} declared={item.isDeclared} data-testid={`${testId}-status`} />
         </div>
         <p className="break-words text-sm text-[color:var(--color-danger-foreground,#b4232a)]" data-testid={`${testId}-error`}>
           {item.error ? item.error.message || translateErrorCode(item.error.code, t) || t('marketplace.mine.card.errorGeneric') : t('marketplace.health.toFixNoDetail')}
