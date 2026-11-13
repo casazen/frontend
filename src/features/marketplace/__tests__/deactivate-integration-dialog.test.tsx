@@ -221,6 +221,9 @@ describe('DeactivateIntegrationDialog · the real effect', () => {
 
     await waitFor(() => expect(button).toBeDisabled());
     expect(api.deactivateActivation).toHaveBeenCalledTimes(1);
+    // What is not finished is said as that: the dialog tells that it is deactivating, not that it did.
+    expect(within(dialog).getByTestId('deactivate-working')).toHaveTextContent('Disattivazione in corso');
+    expect(toast.success).not.toHaveBeenCalled();
     // Every button of the dialog and of the card is shut, and Escape does not close the dialog that is waiting for the answer.
     expect(within(dialog).getByRole('button', { name: "Lascia com'è" })).toBeDisabled();
     expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1-actions')).toBeDisabled();

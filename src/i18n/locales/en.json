@@ -13198,7 +13198,8 @@
         "template": "Hello, I would like to ask for a change to the function “{{name}}” of the license for the property “{{property}}”. Can you help me? Thank you.",
         "templateOrganization": "Hello, I would like to ask for a change to the function “{{name}}” of the license. Can you help me? Thank you.",
         "textLabel": "Text to send to your channel manager",
-        "title": "Ask for a change: {{name}}"
+        "title": "Ask for a change: {{name}}",
+        "working": "Recording the request…"
       },
       "menu": {
         "change": "Ask for a change",
@@ -13227,7 +13228,8 @@
         "saved": "Settings saved.",
         "savedNotActive": "Settings saved, but the connection does not show as active: its status is “{{status}}”.",
         "title": "Settings of {{name}}",
-        "username": "Username"
+        "username": "Username",
+        "working": "Saving the settings…"
       }
     },
     "deactivate": {
@@ -13255,7 +13257,8 @@
       "previewNotFound": "This activation is no longer there: close and check the list.",
       "reactivate": "If you change your mind, you can activate it again from Discover by repeating the activation.",
       "retry": "Try again",
-      "title": "Deactivate {{name}}?"
+      "title": "Deactivate {{name}}?",
+      "working": "Deactivating…"
     },
     "health": {
       "calm_one": "{{count}} active integration, no problem reported.",

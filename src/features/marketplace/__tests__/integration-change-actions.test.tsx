@@ -243,6 +243,7 @@ describe('IntegrationSettingsDialog', () => {
 
     await waitFor(() => expect(screen.getByTestId('settings-save')).toBeDisabled());
     expect(api.updateActivationSettings).toHaveBeenCalledTimes(1);
+    expect(within(dialog).getByTestId('settings-working')).toHaveTextContent('Salvo le impostazioni');
     expect(within(dialog).getByRole('button', { name: 'Annulla' })).toBeDisabled();
     expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1-actions')).toBeDisabled();
     fireEvent.keyDown(dialog, { key: 'Escape' });
@@ -327,6 +328,29 @@ describe('LicensedFunctionChangePanel', () => {
     await waitFor(() => expect(api.requestFunctionChange).toHaveBeenCalledTimes(1));
     expect(api.requestFunctionChange).toHaveBeenCalledWith('act-f');
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Richiesta registrata: la scheda mostra la data finché la licenza non cambia.'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('LicensedFunctionChangePanel_OnItsWay_SaysSoShutsEveryButtonAndRecordsOnce', async () => {
+    let finish: (value: MarketplaceActivationChange) => void = () => undefined;
+    api.requestFunctionChange.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderCard(functionRow());
+    const dialog = await chooseFromMenu('TEST Chat', 'Chiedi una modifica');
+
+    fireEvent.click(within(dialog).getByTestId('change-asked'));
+    fireEvent.click(within(dialog).getByTestId('change-asked'));
+
+    await waitFor(() => expect(within(dialog).getByTestId('change-asked')).toBeDisabled());
+    expect(within(dialog).getByTestId('change-working')).toHaveTextContent('Registro la richiesta');
+    expect(within(dialog).getByTestId('change-copy')).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Annulla' })).toBeDisabled();
+    expect(screen.getByTestId('marketplace-active-LicensedFunction-chat-prop-1-actions')).toBeDisabled();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(api.requestFunctionChange).toHaveBeenCalledTimes(1);
+
+    await act(async () => finish(change({ kind: 'LicensedFunction', code: 'chat', activationId: 'act-f', changeRequestedAt: '2026-11-13T10:00:00Z' })));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 

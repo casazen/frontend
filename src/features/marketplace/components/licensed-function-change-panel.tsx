@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Copy } from 'lucide-react';
+import { Copy, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
@@ -96,6 +96,12 @@ export function LicensedFunctionChangePanel({ target, request, onClose }: Licens
           </div>
           <p className="text-sm text-muted-foreground">{t('marketplace.change.function.after')}</p>
 
+          {busy ? (
+            <p className="flex items-center gap-2 text-sm font-medium" role="status" data-testid="change-working">
+              <Loader2 aria-hidden="true" className="size-4 animate-spin motion-reduce:animate-none" />
+              {t('marketplace.change.function.working')}
+            </p>
+          ) : null}
           {request.isError ? (
             <Alert variant="danger" data-testid="change-error">
               <p>{failure}</p>

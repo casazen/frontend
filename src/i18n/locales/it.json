@@ -13198,7 +13198,8 @@
         "template": "Buongiorno, vorrei chiedere una modifica della funzione «{{name}}» della licenza per l'immobile «{{property}}». Potete aiutarmi? Grazie.",
         "templateOrganization": "Buongiorno, vorrei chiedere una modifica della funzione «{{name}}» della licenza. Potete aiutarmi? Grazie.",
         "textLabel": "Testo da mandare al tuo channel manager",
-        "title": "Chiedi una modifica: {{name}}"
+        "title": "Chiedi una modifica: {{name}}",
+        "working": "Registro la richiesta…"
       },
       "menu": {
         "change": "Chiedi una modifica",
@@ -13227,7 +13228,8 @@
         "saved": "Impostazioni salvate.",
         "savedNotActive": "Impostazioni salvate, ma il collegamento non risulta attivo: lo stato è «{{status}}».",
         "title": "Impostazioni di {{name}}",
-        "username": "Nome utente"
+        "username": "Nome utente",
+        "working": "Salvo le impostazioni…"
       }
     },
     "deactivate": {
@@ -13255,7 +13257,8 @@
       "previewNotFound": "Questa attivazione non c'è più: chiudi e controlla l'elenco.",
       "reactivate": "Se cambi idea, potrai riattivarla da Scopri ripetendo l'attivazione.",
       "retry": "Riprova",
-      "title": "Disattivare {{name}}?"
+      "title": "Disattivare {{name}}?",
+      "working": "Disattivazione in corso…"
     },
     "health": {
       "calm_one": "{{count}} integrazione attiva, nessun problema segnalato.",

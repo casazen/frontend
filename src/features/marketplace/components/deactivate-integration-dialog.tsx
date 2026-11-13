@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -144,6 +144,12 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
           </Label>
         </div>
 
+        {busy ? (
+          <p className="flex items-center gap-2 text-sm font-medium" role="status" data-testid="deactivate-working">
+            <Loader2 aria-hidden="true" className="size-4 animate-spin motion-reduce:animate-none" />
+            {t('marketplace.deactivate.working')}
+          </p>
+        ) : null}
         {deactivate.isError ? (
           <Alert variant="danger" data-testid="deactivate-error">
             <p>{failure}</p>
