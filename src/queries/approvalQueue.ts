@@ -91,12 +91,16 @@ export const APPROVAL_QUEUE_STALE_MS = 30_000;
  * read only data that is stale, and the list of the last visit, up to five minutes old, would be shown without the new item), every minute while the page
  * is visible (not while the tab is hidden), when the window comes back to the front and its reading is older than {@link APPROVAL_QUEUE_STALE_MS}, and
  * when the in-app notifications change (AC-NF68-4).
+ *
+ * The items carry the text of the drafts of messages to guests: the reading is dropped as soon as no page shows it (`gcTime: 0`, the app keeps unobserved data for ten
+ * minutes otherwise); it is read again at every visit anyway.
  */
 export function usePendingApprovals() {
   useRefetchOnNotificationsChange();
   return useQuery({
     queryKey: PENDING_KEY,
     queryFn: () => approvalQueueApi.getPending(),
+    gcTime: 0,
     staleTime: APPROVAL_QUEUE_STALE_MS,
     refetchOnMount: 'always',
     refetchInterval: APPROVAL_QUEUE_POLL_MS,

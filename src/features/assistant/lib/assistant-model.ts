@@ -6,8 +6,6 @@ import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import type { AssistantDraftOutcome } from '@/types/assistant-drafts.types';
 import {
   KNOWLEDGE_TOPICS,
-  OFFERED_MODES,
-  type AssistantMode,
   type EffectiveSituation,
   type KnowledgeEntry,
   type KnowledgeEntryKind,
@@ -276,22 +274,12 @@ export function assistantProblemMessage(error: unknown, t: TFunction): string | 
   return key === undefined ? getProblemMessage(error, t) : t(key);
 }
 
-/** Someone changed the instructions at the same moment (409 `assistant_concurrent_change`): the screen reads them again and the person tries again. */
-export function isConcurrentChange(error: unknown): boolean {
-  return getHttpStatus(error) === 409 && errorCodeOf(error) === 'assistant_concurrent_change';
-}
-
 /** A 404: whatever the code, the thing is not there (not in the caller's organization, not within its reach, or gone), even when an older answer is still in the cache. */
 export function isNotFound(error: unknown): boolean {
   return getHttpStatus(error) === 404;
 }
 
 // -- the modes -------------------------------------------------------------------------------------------------------------------------
-
-/** Whether this release offers a mode: only `Escalate` and `Draft`, the assistant never sends by itself. */
-export function isOfferedMode(mode: string): mode is AssistantMode {
-  return (OFFERED_MODES as readonly string[]).includes(mode);
-}
 
 /**
  * What a situation does, as the screen says it, from the real mode the server answers. A mode this release does not offer (an automatic one set through the API)

@@ -364,6 +364,28 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       expect(await screen.findByTestId('assistant-draft-outcome')).toHaveTextContent('L’assistente non ha completato la richiesta');
     });
 
+    it('draftPanel_OutcomeOfAnEarlierAsk_IsNotShownAgainAfterTheHostDecidedALaterDraft', async () => {
+      vi.mocked(assistantDraftsApi.requestDraft).mockResolvedValue(outcome({ decision: 'NotHandled', reason: 'thread_closed', approvalItemId: null }));
+      vi.mocked(approvalQueueApi.approve).mockResolvedValue(item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent' }));
+      const { client } = renderPanel();
+
+      fireEvent.click(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" }));
+      expect(await screen.findByTestId('assistant-draft-outcome')).toBeInTheDocument();
+
+      // A draft arrives later (the job of the assistant) and the host approves it: once it is gone the old sentence is not the state of the panel.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item()]);
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+      const approveButton = await screen.findByRole('button', { name: 'Approva e invia' });
+      expect(screen.queryByTestId('assistant-draft-outcome')).not.toBeInTheDocument();
+
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([]);
+      fireEvent.click(approveButton);
+
+      expect(await screen.findByTestId('assistant-draft-notice')).toHaveTextContent("Messaggio inviato all'ospite.");
+      await screen.findByTestId('assistant-draft-none');
+      expect(screen.queryByTestId('assistant-draft-outcome')).not.toBeInTheDocument();
+    });
+
     it('draftPanel_AskForAConversationThatIsGone_SaysItWasNotFoundWhateverTheCacheHolds', async () => {
       vi.mocked(assistantDraftsApi.requestDraft).mockRejectedValue(httpError(404, { code: 'thread_not_found' }));
       renderPanel();
@@ -371,6 +393,21 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       fireEvent.click(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" }));
 
       expect(await screen.findByTestId('assistant-draft-request-error')).toHaveTextContent('Questa conversazione non è stata trovata.');
+    });
+
+    it('draftPanel_FailureOfAnEarlierAsk_IsNotShownOnceADraftIsThere', async () => {
+      vi.mocked(assistantDraftsApi.requestDraft).mockRejectedValue(httpError(404, { code: 'thread_not_found' }));
+      const { client } = renderPanel();
+
+      fireEvent.click(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" }));
+      expect(await screen.findByTestId('assistant-draft-request-error')).toBeInTheDocument();
+
+      // The job of the assistant writes a draft meanwhile: it is the draft that counts, not the failure of the request.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item()]);
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+
+      expect(await screen.findByTestId('assistant-draft-text')).toBeInTheDocument();
+      expect(screen.queryByTestId('assistant-draft-request-error')).not.toBeInTheDocument();
     });
 
     it('draftPanel_AskWhenTheGuestWroteNothing_SaysSoInPlainWords', async () => {

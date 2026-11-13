@@ -5,7 +5,7 @@ import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import type { KnowledgeEntry } from '@/types/assistant-settings.types';
-import { ASSISTANT_TONES, KNOWLEDGE_ENTRY_KINDS, KNOWLEDGE_TOPICS } from '@/types/assistant-settings.types';
+import { ASSISTANT_TONES, KNOWLEDGE_ENTRY_KINDS, KNOWLEDGE_TOPICS, OFFERED_MODES } from '@/types/assistant-settings.types';
 import {
   ASSISTANT_LANGUAGES,
   SITUATION_CODES,
@@ -20,9 +20,7 @@ import {
   hoursApi,
   hoursInput,
   hoursProblem,
-  isConcurrentChange,
   isNotFound,
-  isOfferedMode,
   modeKey,
   pendingDraftOf,
   relaxedThreshold,
@@ -240,21 +238,17 @@ describe('errors', () => {
     expect(assistantProblemMessage(httpError(422, { code: 'assistant_threshold_invalid' }), t)).toBe('La soglia di affidabilità non è valida.');
   });
 
-  it('isConcurrentChange_And_isNotFound_TellTheStatusAndTheCode', () => {
-    expect(isConcurrentChange(httpError(409, { code: 'assistant_concurrent_change' }))).toBe(true);
-    expect(isConcurrentChange(httpError(409, { code: 'something_else' }))).toBe(false);
+  it('isNotFound_AnyFourOhFour_IsNotFoundWhateverTheCodeAndOnlyThat', () => {
     expect(isNotFound(httpError(404, {}))).toBe(true);
+    expect(isNotFound(httpError(404, { code: 'property_not_found' }))).toBe(true);
     expect(isNotFound(httpError(403, {}))).toBe(false);
     expect(isNotFound(new Error('x'))).toBe(false);
   });
 });
 
 describe('the modes', () => {
-  it('isOfferedMode_OnlyEscalateAndDraft_ThisReleaseNeverSendsByItself', () => {
-    expect(isOfferedMode('Escalate')).toBe(true);
-    expect(isOfferedMode('Draft')).toBe(true);
-    expect(isOfferedMode('Automatic')).toBe(false);
-    expect(isOfferedMode('AutomaticWithExceptions')).toBe(false);
+  it('offeredModes_OnlyEscalateAndDraft_ThisReleaseNeverSendsByItself', () => {
+    expect([...OFFERED_MODES]).toEqual(['Escalate', 'Draft']);
   });
 
   it('modeKey_AnAutomaticMode_IsNotShownAsIfItWorked', () => {

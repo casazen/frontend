@@ -86,6 +86,8 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
   const handleApprove = (item: ApprovalQueueItem) => {
     setFailure(null);
     setNotice(null);
+    // What an earlier request for a draft ended in says nothing about this decision: it is not shown again when the draft is gone.
+    request.reset();
     approve.mutate(item.id, {
       onSuccess: (approved) => setNotice(noticeOf(approvalOutcome(approved))),
       onError: (error) => {
@@ -169,6 +171,7 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
             onClose={() => setEditing(false)}
             onApproved={(approved) => {
               setFailure(null);
+              request.reset();
               setNotice(noticeOf(approvalOutcome(approved)));
             }}
             onApproveFailed={(id, code) => setFailure({ id, code })}
@@ -216,8 +219,9 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
     );
   }
 
+  // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts.
   const outcome = request.data ? draftOutcomeView(request.data) : null;
-  const requestError = request.isError ? request.error : null;
+  const requestError = request.isError && draft === null ? request.error : null;
 
   return (
     <section aria-label={t('assistant.draft.title')} className="space-y-3 rounded-xl border bg-card p-4" data-testid="assistant-draft-panel">
@@ -270,6 +274,7 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
         onClose={() => setRejecting(null)}
         onRejected={() => {
           setFailure(null);
+          request.reset();
           setNotice({ tone: 'success', key: 'assistant.draft.rejected' });
         }}
       />
