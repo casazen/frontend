@@ -59,15 +59,27 @@ export function presetPeriod(preset: Exclude<PeriodPresetId, 'custom'>, today: s
 export type PeriodProblem = 'invalidDates' | 'tooLong' | 'fiscalYear' | 'fiscalSameYear' | 'fiscalTooLong';
 
 /**
+ * What is wrong with the days of any period that is asked of the backend, or null: they are not two days in order (and in the years the
+ * backend knows), or they cover more than 24 months. The reports and the export of the document archive share these two checks.
+ */
+export function basicPeriodProblem(period: ReportPeriod): Extract<PeriodProblem, 'invalidDates' | 'tooLong'> | null {
+  const { from, to } = period;
+  if (!isStayDate(from) || !isStayDate(to) || to < from || from < FIRST_DAY || to > LAST_DAY) return 'invalidDates';
+  if (to > addDays(addMonths(from, MAX_REPORT_MONTHS), -1)) return 'tooLong';
+  return null;
+}
+
+/**
  * Why the report cannot be asked for these days, or null: the days are not two days in order (and in the years the backend
  * knows), the period is longer than 24 months, and for the fiscal reports the rules of their endpoints (a tax year from 2026 and
  * one only for the summary and the withholdings, at most a year for the tourist tax). The backend says the same with a problem
  * body; this tells it before the call.
  */
 export function periodProblem(period: ReportPeriod, source: ReportSource): PeriodProblem | null {
+  const basic = basicPeriodProblem(period);
+  if (basic) return basic;
+
   const { from, to } = period;
-  if (!isStayDate(from) || !isStayDate(to) || to < from || from < FIRST_DAY || to > LAST_DAY) return 'invalidDates';
-  if (to > addDays(addMonths(from, MAX_REPORT_MONTHS), -1)) return 'tooLong';
 
   if (source.kind === 'fiscal') {
     if (source.report === 'touristTax') return nightsBetween(from, to) > MAX_TOURIST_TAX_NIGHTS ? 'fiscalTooLong' : null;

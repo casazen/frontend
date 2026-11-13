@@ -1293,6 +1293,13 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "archiveDocumentHasNoFile": "This document has no file to download.",
+      "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
+      "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
+      "archiveInvalidPage": "The requested page is not valid.",
+      "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
+      "archiveInvalidType": "This type of document does not exist.",
+      "archiveTypeForbidden": "You do not have access to this type of document.",
       "assistContextInvalid": "This help request is not about a step we can do for you.",
       "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
       "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
@@ -5350,6 +5357,72 @@
     "openPropertyPage": "Open property page",
     "orgUrlSectionTitle": "Org URL",
     "selectPropertyHint": "Select a property to preview its booking page."
+  },
+  "documentArchive": {
+    "booking": "Booking",
+    "columns": {
+      "booking": "Booking",
+      "date": "Date",
+      "document": "Document",
+      "property": "Property",
+      "size": "Size"
+    },
+    "count_one": "{{count}} document",
+    "count_other": "{{count}} documents",
+    "description": "Every document you can read, in one place: search, filter and download a file or the archive of a period.",
+    "download": "Download",
+    "downloadDone": "Document downloaded.",
+    "downloadFailed": "The document could not be downloaded. Try again.",
+    "emptyDescription": "Documents show up here as soon as you upload or receive them.",
+    "emptyTitle": "No documents",
+    "error": "Unable to load the documents.",
+    "export": {
+      "description": "A ZIP file with the documents of the period: a folder for each type and the index as a CSV.",
+      "done": "Archive downloaded.",
+      "error": {
+        "invalidDates": "Check the dates: a first day and a last day are needed, the first not after the last.",
+        "noTypes": "Choose at least one type of document.",
+        "tooLong": "The period is too long: the archive covers 24 months at most."
+      },
+      "failed": "The archive could not be downloaded. Try again.",
+      "open": "Download archive",
+      "period": "Period",
+      "preparing": "Preparing the archive: it can take a while. Do not close this window.",
+      "property": "Property",
+      "received": "Downloading the archive: {{size}} received so far. Do not close this window.",
+      "retry": "Try again",
+      "start": "Download",
+      "title": "Download the document archive",
+      "tooLarge_one": "We found {{count}} file: too many for one archive. Choose a shorter period or fewer types of document.",
+      "tooLarge_other": "We found {{count}} files: too many for one archive. Choose a shorter period or fewer types of document.",
+      "types": "Types of document"
+    },
+    "filters": {
+      "all": "All",
+      "allProperties": "All properties",
+      "days": "Document date",
+      "property": "Property"
+    },
+    "noFile": "No file",
+    "noResultsDescription": "Try removing a filter or searching with another word.",
+    "noResultsTitle": "No documents with these filters",
+    "pageSize": "Documents per page",
+    "search": {
+      "label": "Search the documents",
+      "placeholder": "Search by title, property or booking code"
+    },
+    "title": "Documents",
+    "types": {
+      "AlloggiatiReceipt": "Alloggiati receipt",
+      "Contract": "Contract",
+      "CreditNote": "Credit note",
+      "Invoice": "Invoice",
+      "IstatProof": "ISTAT proof",
+      "Other": "Other document",
+      "PropertyDocument": "Property document",
+      "Receipt": "Receipt",
+      "TouristTax": "Tourist tax"
+    }
   },
   "documentPages": {
     "select": "Choose a PDF or page photos",
@@ -11713,6 +11786,7 @@
     "crmMerge": "Duplicates",
     "crmSegments": "Audiences",
     "demoEnvironment": "Demo environment",
+    "documents": "Documents",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
     "menuLabel": "{{area}} menu",
