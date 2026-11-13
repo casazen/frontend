@@ -50,7 +50,8 @@ export function useProposeCondominiumExpense(leaseId: string) {
     mutationFn: (body: ProposeTenantExpense) => condominiumProposalApi.propose(leaseId, body),
     onSuccess: (proposal, request) => {
       rememberCondominiumExpense(queryClient, leaseId, proposal, request);
-      void queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, leaseId] });
+      // Refresh the review, not the draft values: those may still be edited in the form.
+      void queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, leaseId, 'review'] });
     },
   });
 }

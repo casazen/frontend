@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryObserver } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
@@ -64,6 +64,25 @@ describe('Condominium expenses on the contract wizard', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('saving an advance refreshes review without refetching draft values still being edited', async () => {
+    const qc = client();
+    const draftKey = ['lease-draft', 'lease-1'];
+    const draft = { values: { monthlyRent: '' } };
+    qc.setQueryData(draftKey, draft);
+    const refetchDraft = vi.fn(async () => draft);
+    const observer = new QueryObserver(qc, { queryKey: draftKey, queryFn: refetchDraft, staleTime: Infinity });
+    const unsubscribe = observer.subscribe(() => {});
+    post.mockResolvedValue({ data: proposal({ source: 'Manual', settledAtConsuntivo: true }) });
+    try {
+      render(expenses(qc));
+      fireEvent.change(await screen.findByLabelText('Importo per rata (€)'), { target: { value: '120' } });
+      fireEvent.click(screen.getByTestId('lease-condominium-manual'));
+      expect(await screen.findByTestId('lease-condominium-saved')).toBeInTheDocument();
+      expect(refetchDraft).not.toHaveBeenCalled();
+      expect(qc.getQueryData(draftKey)).toBe(draft);
+    } finally { unsubscribe(); }
   });
 
   it('restores a saved amount after a fresh page load', async () => {
