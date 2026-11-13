@@ -3,7 +3,7 @@ import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ReportAccessDeniedError, type ReportFileFormat } from '@/api/report-files';
 import { Button } from '@/components/ui/button';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 
 interface ReportExportButtonsProps {
@@ -40,10 +40,15 @@ export function ReportExportButtons({ requestKey, disabled, fetchFile, fileName,
     try {
       saveBlobAs(await fetchFile(format), fileName(format));
     } catch (error) {
+      // Each failure is said as it is: not for this person (403), nothing to export (404: the property is not one of the person's, or no longer
+      // exists, and trying again cannot work), a file with too many rows (422, its own words), and anything else (a 500, the network) as a file
+      // that did not come, with a retry.
       const message =
         error instanceof ReportAccessDeniedError
           ? t('reports.money.noAccess')
-          : (getProblemMessage(error, t) ?? t('reports.money.export.failed'));
+          : getHttpStatus(error) === 404
+            ? t('reports.money.notFound')
+            : (getProblemMessage(error, t) ?? t('reports.money.export.failed'));
       setFailure({ requestKey, message });
     } finally {
       inFlight.current = false;
