@@ -1357,6 +1357,8 @@
       "complianceProofTypeUnsupported": "Il file deve essere un PDF, un JPG o un PNG.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
+      "csvTooManyRows": "Il file avrebbe troppe righe: scegli un periodo più breve e riprova.",
+      "xlsxTooManyRows": "Il file Excel avrebbe troppe righe: scegli un periodo più breve e riprova.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
       "archiveInvalidPeriod": "I giorni scelti non sono validi: il primo non può essere dopo l'ultimo e servono giorni tra il 2000 e il 2100.",
       "archiveInvalidType": "Questo tipo di documento non esiste.",
@@ -19393,6 +19395,96 @@
       "fiscal": "Fiscali",
       "operational": "Operativi"
     },
+    "collections": {
+      "balances": {
+        "asOf": "Situazione a oggi, {{date}}.",
+        "caption": "Soggiorni con un saldo da incassare",
+        "captionCurrency": "Soggiorni con un saldo da incassare, in {{currency}}",
+        "columns": {
+          "channel": "Canale",
+          "checkIn": "Arrivo",
+          "code": "Prenotazione",
+          "collected": "Incassato",
+          "property": "Immobile",
+          "toCollect": "Da incassare",
+          "total": "Totale"
+        },
+        "currency": "Saldi in {{currency}}",
+        "empty": "Non c’è nulla da incassare: tutti i soggiorni sono pagati.",
+        "error": "Impossibile caricare i saldi da incassare.",
+        "note": "«Scaduto» vuol dire che il soggiorno è finito e c’è ancora qualcosa da incassare. Qui non ci sono i nomi degli ospiti.",
+        "noteSince": "«Scaduto» vuol dire che il soggiorno è finito e c’è ancora qualcosa da incassare. Sono elencati i soggiorni finiti dal {{date}} in poi e quelli ancora da fare. Qui non ci sono i nomi degli ospiti.",
+        "overdue": "Scaduto",
+        "reported": "Saldo indicato dal channel manager",
+        "title": "Da incassare",
+        "total_one": "Totale da incassare ({{count}} soggiorno)",
+        "total_other": "Totale da incassare ({{count}} soggiorni)"
+      },
+      "basis": "Per cassa: conta il giorno in cui il denaro è entrato, non le notti del soggiorno che paga, e i rimborsi sono già tolti. Il totale è l’«incassato» della Home per gli stessi giorni, con gli importi come li conta la Home: nessuna conversione tra valute.",
+      "captions": {
+        "channel": "Incassato per canale",
+        "date": "Incassato per data",
+        "method": "Incassato per metodo di pagamento"
+      },
+      "columns": {
+        "amount": "Incassato",
+        "channel": "Canale",
+        "day": "Giorno",
+        "method": "Metodo di pagamento",
+        "month": "Mese",
+        "payments": "Pagamenti",
+        "share": "Quota"
+      },
+      "credits": {
+        "channels": "Accrediti dei canali",
+        "channelsCaption": "Accrediti dei canali indicati dal channel manager",
+        "columns": {
+          "amount": "Importo",
+          "arrival": "Giorno di accredito",
+          "channel": "Canale",
+          "payments": "Pagamenti",
+          "status": "Stato",
+          "stays": "Soggiorni"
+        },
+        "reported": "Indicati dal channel manager: sono l’importo netto dei soggiorni che il canale incassa da sé, non un accredito sul tuo conto.",
+        "status": {
+          "Credited": "Accreditato",
+          "Expected": "Atteso"
+        },
+        "staysWithoutNet_one": "Per {{count}} soggiorno incassato dal canale il channel manager non ha indicato l’importo netto: non è in nessuna riga.",
+        "staysWithoutNet_other": "Per {{count}} soggiorni incassati dal canale il channel manager non ha indicato l’importo netto: non sono in nessuna riga.",
+        "stripe": "Accrediti dei pagamenti con carta",
+        "stripeCaption": "Accrediti dei pagamenti con carta, giorno per giorno",
+        "stripeNote": "Ogni riga somma i pagamenti accreditati lo stesso giorno, al netto delle commissioni di incasso: non è un bonifico sul tuo conto.",
+        "title": "Accrediti",
+        "unavailable": "Non disponibile: per questo periodo non abbiamo ancora i dati.",
+        "withoutFigures_one": "Su {{total}} pagamenti con carta, {{count}} non ha ancora le cifre dell’accredito: non è in nessuna riga.",
+        "withoutFigures_other": "Su {{total}} pagamenti con carta, {{count}} non hanno ancora le cifre dell’accredito: non sono in nessuna riga."
+      },
+      "description": "Quanto è entrato, quanto resta da incassare e cosa è arrivato sul conto. Ogni numero è quello del sistema.",
+      "empty": "Nessun incasso nel periodo scelto.",
+      "error": "Impossibile caricare gli incassi.",
+      "methods": {
+        "ApplePay": "Apple Pay",
+        "BankTransfer": "Bonifico bancario",
+        "CashOnArrival": "In struttura",
+        "CreditCard": "Carta",
+        "GooglePay": "Google Pay",
+        "PayPal": "PayPal"
+      },
+      "paymentCount_one": "{{count}} pagamento",
+      "paymentCount_other": "{{count}} pagamenti",
+      "sectionLabel": "Incassato nel periodo",
+      "title": "Incassato e da incassare",
+      "total": "Totale",
+      "totalCaption": "Incassato dal {{from}} al {{to}}",
+      "views": {
+        "channel": "Per canale",
+        "date": "Per data",
+        "label": "Come vuoi vedere gli incassi",
+        "method": "Per metodo"
+      }
+    },
     "columns": {
       "format": "Formato",
       "name": "Report",
@@ -19441,6 +19533,10 @@
         "description": "Da dove arrivano le prenotazioni: sito, Airbnb, Booking.com, inserite a mano. Ricavo per competenza.",
         "name": "Prenotazioni per canale"
       },
+      "collections": {
+        "description": "Cosa è entrato per data, metodo e canale, cosa resta da incassare e cosa è arrivato sul conto.",
+        "name": "Incassato e da incassare"
+      },
       "occupancy": {
         "description": "Quante notti sono occupate e quante restano libere, immobile per immobile.",
         "name": "Occupazione per immobile"
@@ -19465,6 +19561,16 @@
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
       }
+    },
+    "money": {
+      "export": {
+        "csv": "Scarica CSV",
+        "failed": "Non è stato possibile scaricare il file. Riprova.",
+        "xlsx": "Scarica Excel"
+      },
+      "noAccess": "Non hai accesso a questo report.",
+      "notAvailable": "Non disponibile",
+      "notFound": "Non troviamo i dati richiesti. Se hai scelto un immobile, potrebbe non esistere più o non essere tra quelli a cui hai accesso."
     },
     "noResultsDescription": "Prova a togliere un filtro o a cercare con un'altra parola.",
     "noResultsTitle": "Nessun report con questi filtri",

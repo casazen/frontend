@@ -7,6 +7,7 @@ export type ReportId =
   | 'revenue'
   | 'occupancy'
   | 'channels'
+  | 'collections'
   | 'touristTax'
   | 'touristTaxSummary'
   | 'annual'
@@ -39,7 +40,7 @@ interface PageSource {
 
 export type ReportSource = HostSource | FiscalSource | PageSource;
 
-/** One row of the page "Report": fixed configuration, nine of them. The words of each are `reports.items.<id>.*`. */
+/** One row of the page "Report": fixed configuration, ten of them. The words of each are `reports.items.<id>.*`. */
 export interface ReportDefinition {
   id: ReportId;
   type: ReportType;
@@ -59,11 +60,15 @@ export function isDownloadable(report: ReportDefinition): report is Downloadable
 
 const ALLOGGIATI_PATH = '/app/short-rent/alloggiati';
 const TOURIST_TAX_SUMMARY_PATH = '/app/short-rent/reports/tourist-tax';
+const COLLECTIONS_PATH = '/app/short-rent/reports/collections';
 
 export const REPORTS: readonly ReportDefinition[] = [
   { id: 'revenue', type: 'financial', suggested: 'thisMonth', source: { kind: 'host', report: 'revenue-by-property' }, formats: ['csv'] },
   { id: 'occupancy', type: 'operational', suggested: 'thisMonth', source: { kind: 'host', report: 'occupancy-by-property' }, formats: ['csv'] },
   { id: 'channels', type: 'operational', suggested: 'last3Months', source: { kind: 'host', report: 'bookings-by-channel' }, formats: ['csv'] },
+  // What came in, what is still to collect and what reached the account (NF-97): a page of its own, where the files (CSV and Excel) are
+  // downloaded too.
+  { id: 'collections', type: 'financial', suggested: null, source: { kind: 'page', href: () => COLLECTIONS_PATH }, formats: [] },
   { id: 'touristTax', type: 'fiscal', suggested: 'last3Months', source: { kind: 'fiscal', report: 'touristTax' }, formats: ['csv', 'pdf'] },
   // What is owed and what was paid, comune by comune, with the receipts: it has a page of its own, where the host also records a payment.
   { id: 'touristTaxSummary', type: 'fiscal', suggested: null, source: { kind: 'page', href: () => TOURIST_TAX_SUMMARY_PATH }, formats: [] },

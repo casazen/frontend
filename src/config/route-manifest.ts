@@ -300,6 +300,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-summary-page')).TouristTaxSummaryPage }),
   },
   {
+    // What came in, what is still to collect and what reached the account (NF-97, REP-02): by date, payment method and channel, the balances
+    // of the stays and the credits. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; money in aggregate, so
+    // it asks for `payment.read`, as the backend does for every read, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/collections',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/collections/collections-report-page')).CollectionsReportPage }),
+  },
+  {
     // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
     // answer of the host and the report to CasaZen. A tab of Prenotazioni, after the guests.
     path: '/app/short-rent/reviews',

@@ -1357,6 +1357,8 @@
       "complianceProofTypeUnsupported": "The file must be a PDF, a JPG or a PNG.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
+      "csvTooManyRows": "The file would have too many rows: choose a shorter period and try again.",
+      "xlsxTooManyRows": "The Excel file would have too many rows: choose a shorter period and try again.",
       "archiveInvalidPage": "The requested page is not valid.",
       "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
       "archiveInvalidType": "This type of document does not exist.",
@@ -19393,6 +19395,96 @@
       "fiscal": "Fiscal",
       "operational": "Operational"
     },
+    "collections": {
+      "balances": {
+        "asOf": "Situation as of today, {{date}}.",
+        "caption": "Stays with a balance to collect",
+        "captionCurrency": "Stays with a balance to collect, in {{currency}}",
+        "columns": {
+          "channel": "Channel",
+          "checkIn": "Arrival",
+          "code": "Booking",
+          "collected": "Collected",
+          "property": "Property",
+          "toCollect": "To collect",
+          "total": "Total"
+        },
+        "currency": "Balances in {{currency}}",
+        "empty": "There is nothing to collect: every stay is paid.",
+        "error": "The balances to collect could not be loaded.",
+        "note": "“Overdue” means the stay is over and something is still to collect. The guests’ names are not shown here.",
+        "noteSince": "“Overdue” means the stay is over and something is still to collect. The stays that ended on {{date}} or later and the ones still to come are listed. The guests’ names are not shown here.",
+        "overdue": "Overdue",
+        "reported": "Balance reported by the channel manager",
+        "title": "To collect",
+        "total_one": "Total to collect ({{count}} stay)",
+        "total_other": "Total to collect ({{count}} stays)"
+      },
+      "basis": "On a cash basis: the day the money came in counts, not the nights of the stay it pays, and refunds are already taken out. The total is the Home’s “collected” for the same days, with the amounts as the Home counts them: no conversion between currencies.",
+      "captions": {
+        "channel": "Collected by channel",
+        "date": "Collected by date",
+        "method": "Collected by payment method"
+      },
+      "columns": {
+        "amount": "Collected",
+        "channel": "Channel",
+        "day": "Day",
+        "method": "Payment method",
+        "month": "Month",
+        "payments": "Payments",
+        "share": "Share"
+      },
+      "credits": {
+        "channels": "Channel credits",
+        "channelsCaption": "Channel credits reported by the channel manager",
+        "columns": {
+          "amount": "Amount",
+          "arrival": "Credit day",
+          "channel": "Channel",
+          "payments": "Payments",
+          "status": "Status",
+          "stays": "Stays"
+        },
+        "reported": "Reported by the channel manager: they are the net amount of the stays the channel collects itself, not a credit to your account.",
+        "status": {
+          "Credited": "Credited",
+          "Expected": "Expected"
+        },
+        "staysWithoutNet_one": "For {{count}} stay collected by the channel the channel manager did not report the net amount: it is in no row.",
+        "staysWithoutNet_other": "For {{count}} stays collected by the channel the channel manager did not report the net amount: they are in no row.",
+        "stripe": "Card payment credits",
+        "stripeCaption": "Card payment credits, day by day",
+        "stripeNote": "Each row adds up the payments credited on the same day, net of the processing fees: it is not a transfer to your account.",
+        "title": "Credits",
+        "unavailable": "Not available: we do not have the data for this period yet.",
+        "withoutFigures_one": "Of {{total}} card payments, {{count}} does not have its credit figures yet: it is in no row.",
+        "withoutFigures_other": "Of {{total}} card payments, {{count}} do not have their credit figures yet: they are in no row."
+      },
+      "description": "What came in, what is still to collect and what reached your account. Every number is the system’s own.",
+      "empty": "No payment collected in the chosen period.",
+      "error": "The collections could not be loaded.",
+      "methods": {
+        "ApplePay": "Apple Pay",
+        "BankTransfer": "Bank transfer",
+        "CashOnArrival": "At the property",
+        "CreditCard": "Card",
+        "GooglePay": "Google Pay",
+        "PayPal": "PayPal"
+      },
+      "paymentCount_one": "{{count}} payment",
+      "paymentCount_other": "{{count}} payments",
+      "sectionLabel": "Collected in the period",
+      "title": "Collected and still to collect",
+      "total": "Total",
+      "totalCaption": "Collected from {{from}} to {{to}}",
+      "views": {
+        "channel": "By channel",
+        "date": "By date",
+        "label": "How to see the collections",
+        "method": "By method"
+      }
+    },
     "columns": {
       "format": "Format",
       "name": "Report",
@@ -19441,6 +19533,10 @@
         "description": "Where the bookings come from: your site, Airbnb, Booking.com, entered by hand. Revenue on an accrual basis.",
         "name": "Bookings by channel"
       },
+      "collections": {
+        "description": "What came in by date, method and channel, what is still to collect and what reached your account.",
+        "name": "Collected and still to collect"
+      },
       "occupancy": {
         "description": "How many nights are occupied and how many stay free, property by property.",
         "name": "Occupancy by property"
@@ -19465,6 +19561,16 @@
         "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
         "name": "Portal withholdings"
       }
+    },
+    "money": {
+      "export": {
+        "csv": "Download CSV",
+        "failed": "The file could not be downloaded. Try again.",
+        "xlsx": "Download Excel"
+      },
+      "noAccess": "You do not have access to this report.",
+      "notAvailable": "Not available",
+      "notFound": "We cannot find the data you asked for. If you chose a property, it may no longer exist or may not be one you can access."
     },
     "noResultsDescription": "Try removing a filter or searching with another word.",
     "noResultsTitle": "No reports match",
