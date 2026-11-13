@@ -14214,8 +14214,8 @@
         "confirmWhich": "Cambia per queste strutture:",
         "description": "Scegli quali strutture e cosa impostare. Prima controlli l'effetto, poi applichi.",
         "filter": {
-          "channels": "Canali (codici come booking_xml, separati da virgola)",
-          "channelsError": "Ogni canale è un codice di lettere minuscole, numeri e trattini bassi, come booking_xml.",
+          "channels": "Canali (i codici dei canali, separati da virgola)",
+          "channelsError": "Ogni canale è un codice di lettere minuscole, numeri e trattini bassi.",
           "comuni": "Comuni (codici ISTAT di 6 cifre, separati da virgola)",
           "comuniError": "Ogni codice ISTAT ha 6 cifre.",
           "flow": "Flusso",

@@ -12,7 +12,6 @@ import {
   type BulkApplyItem,
   type BulkApplyResult,
   type BulkProgress,
-  type OnboardingFlowKey,
   type PilotGroup,
 } from '@/types/onboarding.types';
 import { OnboardingBulkPage } from '../onboarding-bulk-page';

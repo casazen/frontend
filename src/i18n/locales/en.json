@@ -14214,8 +14214,8 @@
         "confirmWhich": "It changes for these properties:",
         "description": "Choose which properties and what to set. First you check the effect, then you apply.",
         "filter": {
-          "channels": "Channels (codes like booking_xml, separated by commas)",
-          "channelsError": "Each channel is a code of lower-case letters, digits and underscores, like booking_xml.",
+          "channels": "Channels (the codes of the channels, separated by commas)",
+          "channelsError": "Each channel is a code of lower-case letters, digits and underscores.",
           "comuni": "Municipalities (6-digit ISTAT codes, separated by commas)",
           "comuniError": "Each ISTAT code has 6 digits.",
           "flow": "Flow",

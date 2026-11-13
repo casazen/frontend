@@ -44,7 +44,7 @@ export interface FilterDraft {
   comuni: string;
   /** Region codes (`LOM`). */
   regions: string;
-  /** Codes of a channel (`booking_xml`). */
+  /** Codes of a channel the property has a listing on. */
   channels: string;
   flow: OnboardingFlowKey | '';
   flowState: OnboardingFlowState | '';

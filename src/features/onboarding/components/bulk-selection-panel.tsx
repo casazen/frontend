@@ -28,6 +28,9 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 const SENDERS: readonly ComplianceSenderType[] = ['ChannelManager', 'CasaZen', 'Manual'];
 
+/** The two ways to say which properties: all of them (asked for by name), or a filter. */
+const SCOPES = ['all', 'filter'] as const;
+
 /** How each outcome of an apply looks: a tone, an icon and its words, so that it is never told by color alone (UX-09). */
 const OUTCOME_VIEW: Record<string, { tone: StatusTone; Icon: LucideIcon; key: string }> = {
   applied: { tone: 'success', Icon: CheckCircle2, key: 'applied' },
@@ -209,7 +212,7 @@ export function BulkSelectionPanel() {
 
       <fieldset className="min-w-0 space-y-1" disabled={busy} data-testid="bulk-scope">
         <legend className="text-sm font-semibold">{t('onboardingPlan.bulk.selection.scope')}</legend>
-        {(['all', 'filter'] as const).map((value) => (
+        {SCOPES.map((value) => (
           <label key={value} className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
             <input type="radio" name={`${ids}-scope`} className="size-5 shrink-0" checked={scope === value} onChange={() => setScope(value)} data-testid={`bulk-scope-${value}`} />
             {t(`onboardingPlan.bulk.selection.scopes.${value}`)}
