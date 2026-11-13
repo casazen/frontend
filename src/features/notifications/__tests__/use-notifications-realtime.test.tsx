@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { createElement } from 'react';
 import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
+import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
+import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
@@ -354,6 +356,28 @@ describe('applyNotificationsChange', () => {
     // It is the cockpit that moves: not the rest of what a completed check-in changes.
     expect(keys).not.toContainEqual([BOOKINGS_KEY]);
     expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
+  });
+
+  // E03/F03/US02: an open archive of the proofs shows the new row of its report without a reload; the files of the archive are not touched by an alert.
+  it.each(['receipt-missing', 'istat-deadline', 'connection-inactive'])('applyNotificationsChange_ComplianceAlert_%s_ReadsTheCoverageReportOfTheArchiveAgain', (type) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'p-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'report']);
+    expect(keys).not.toContainEqual([COMPLIANCE_ARCHIVE_KEY]);
+    expect(keys).not.toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'list']);
+  });
+
+  it.each([
+    ['connection-inactive', true],
+    ['receipt-missing', false],
+  ])('applyNotificationsChange_ComplianceAlert_%s_ReadsTheConnectionHealthAgain_%s', (type, reads) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'p-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys.some((key) => key[0] === COMPLIANCE_HEALTH_KEY)).toBe(reads);
   });
 
   it('applyNotificationsChange_ComplianceAlert_AnOpenCockpitReadsTheSummaryAgainWithoutAReload', async () => {
