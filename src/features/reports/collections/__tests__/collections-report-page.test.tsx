@@ -151,32 +151,80 @@ describe('CollectionsReportPage (NF-97)', () => {
     serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
     renderPage();
 
-    expect(await screen.findByTestId('collections-total-amount')).toHaveTextContent(/1\.?234,56 €/);
+    expect(await screen.findByTestId('collections-total-amount')).toHaveTextContent(/^1\.?234,56$/);
     expect(screen.getByTestId('collections-total-count')).toHaveTextContent('3 pagamenti');
     expect(callsTo('/reports/collections')[0]![1]).toMatchObject({ params: { from: '2026-09-01', to: '2026-09-30' } });
 
     // By date: a row for each bucket of the server, a day without payments a real zero, and the server's total under them.
     const byDate = screen.getByTestId('collections-by-date');
     expect(within(byDate).getAllByTestId('collections-by-date-row')).toHaveLength(3);
-    expect(within(byDate).getByTestId('collections-by-date-total')).toHaveTextContent(/1\.?234,56 €/);
-    expect(within(byDate).getAllByTestId('collections-by-date-row')[2]).toHaveTextContent('0,00 €');
+    expect(within(byDate).getByTestId('collections-by-date-total')).toHaveTextContent(/1\.?234,56/);
+    expect(within(byDate).getAllByTestId('collections-by-date-row')[2]).toHaveTextContent('0,00');
 
     // By method: the amount, the payments and the share the server gives.
     fireEvent.click(screen.getByTestId('collections-view-method'));
     const byMethod = await screen.findByTestId('collections-by-method');
     const [card, transfer] = within(byMethod).getAllByTestId('collections-by-method-row');
     expect(card).toHaveTextContent('Carta');
-    expect(card).toHaveTextContent(/1\.?000,00 €/);
+    expect(card).toHaveTextContent(/1\.?000,00/);
     expect(card).toHaveTextContent('81,01%');
     expect(transfer).toHaveTextContent('Bonifico bancario');
     expect(transfer).toHaveTextContent('19%');
-    expect(within(byMethod).getByTestId('collections-by-method-total')).toHaveTextContent(/1\.?234,56 €/);
+    expect(within(byMethod).getByTestId('collections-by-method-total')).toHaveTextContent(/1\.?234,56/);
 
     // By channel.
     fireEvent.click(screen.getByTestId('collections-view-channel'));
     const byChannel = await screen.findByTestId('collections-by-channel');
     expect(within(byChannel).getAllByTestId('collections-by-channel-row')[1]).toHaveTextContent('Airbnb');
-    expect(within(byChannel).getByTestId('collections-by-channel-total')).toHaveTextContent(/1\.?234,56 €/);
+    expect(within(byChannel).getByTestId('collections-by-channel-total')).toHaveTextContent(/1\.?234,56/);
+  });
+
+  // Money: the server adds every property in the currency of the property, with no conversion, and sends no currency with the total and the
+  // cuts. A euro sign would be false for a house in francs, so the figures are the number alone and the page says why above them. The rows
+  // that do carry a currency (the credits, the balances) keep it.
+  it('Page_FiguresOfTheCollections_HaveNoCurrencySymbolAndTheNoteIsAboveThem', async () => {
+    const withFrancs: CollectionsReport = {
+      ...COLLECTIONS,
+      credits: {
+        stripe: {
+          available: true,
+          payouts: [{ arrivalDate: '2026-09-02', currency: 'CHF', amount: 55, amountCents: 5500, paymentCount: 1, status: 'Credited' }],
+          cardPaymentCount: 1,
+          paymentsWithoutFigures: 0,
+        },
+        channels: UNAVAILABLE_CREDITS.channels,
+      },
+    };
+    serve({ collections: ok(withFrancs), balances: ok(NOTHING_TO_COLLECT) });
+    renderPage();
+
+    const total = await screen.findByTestId('collections-total');
+    const note = screen.getByTestId('collections-currency-note');
+    expect(note).toHaveTextContent('Importi nella valuta di ogni immobile, sommati senza conversione.');
+    expect(note.compareDocumentPosition(total) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    // The headline and the three cuts: the number alone, no euro sign, no code.
+    const ANY_CURRENCY = /€|EUR|CHF|\$/;
+    expect(screen.getByTestId('collections-total-amount')).toHaveTextContent(/^1\.?234,56$/);
+    expect(total).not.toHaveTextContent(ANY_CURRENCY);
+    expect(screen.getByTestId('collections-by-date')).not.toHaveTextContent(ANY_CURRENCY);
+    fireEvent.click(screen.getByTestId('collections-view-method'));
+    expect(await screen.findByTestId('collections-by-method')).not.toHaveTextContent(ANY_CURRENCY);
+    fireEvent.click(screen.getByTestId('collections-view-channel'));
+    expect(await screen.findByTestId('collections-by-channel')).not.toHaveTextContent(ANY_CURRENCY);
+
+    // The credits of the same page keep the currency of each row.
+    expect(screen.getByTestId('collections-credits-stripe-row')).toHaveTextContent('55,00 CHF');
+  });
+
+  it('Page_FiguresOfTheCollections_InEnglishAreTheNumberAloneToo', async () => {
+    await i18n.changeLanguage('en');
+    serve({ collections: ok(COLLECTIONS), balances: ok(NOTHING_TO_COLLECT) });
+    renderPage();
+
+    expect(await screen.findByTestId('collections-total-amount')).toHaveTextContent(/^1,234\.56$/);
+    expect(screen.getByTestId('collections-currency-note')).toHaveTextContent('Amounts in the currency of each property, added up with no conversion.');
+    expect(screen.getByTestId('collections-total')).not.toHaveTextContent(/€|EUR|CHF|\$/);
   });
 
   it('Page_ShareThatTheServerDoesNotHave_IsNotAvailableNeverZero', async () => {

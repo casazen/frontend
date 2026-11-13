@@ -81,7 +81,13 @@ function ChannelCostsContent() {
             </p>
           ) : (
             <>
-              <CostSummaryLine rows={costs.data.rows} />
+              {/* The figures have no symbol: the server adds every property in its own currency and does not say it, so the page says so first. */}
+              <div className="space-y-2">
+                <p className="text-sm text-foreground/70" data-testid="channel-costs-currency-note">
+                  {t('reports.money.currencyNote')}
+                </p>
+                <CostSummaryLine rows={costs.data.rows} />
+              </div>
               <ChannelCostsTable report={costs.data} />
             </>
           )

@@ -26,6 +26,18 @@ function moneyFormat(locale: string, currency: string): Intl.NumberFormat {
   return format;
 }
 
+const PLAIN_FORMATS = new Map<string, Intl.NumberFormat>();
+
+/** The number alone, with the two decimals of the cents and the grouping of the language (`1.234,56`): no symbol and no code. */
+function plainFormat(locale: string): Intl.NumberFormat {
+  let format = PLAIN_FORMATS.get(locale);
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    PLAIN_FORMATS.set(locale, format);
+  }
+  return format;
+}
+
 /** The amount of `cents` as the decimal text of the number (`123456` is `1234.56`), made of the digits alone: no division, no float. */
 function decimalOfCents(cents: number): string {
   const digits = String(Math.abs(cents)).padStart(3, '0');
@@ -34,14 +46,27 @@ function decimalOfCents(cents: number): string {
 
 /**
  * An amount the server sends in cents, written in the currency and the language of the app (`1.234,56 €`, `CHF 1,234.56`). The server
- * gives every amount as an exact count of cents next to the euros; this writes the digits it gives. Null when there is no amount (the
- * caller says "not available") or when the value is not a whole count of cents (never a guess).
+ * gives every amount as an exact count of cents next to the euros; this writes the digits it gives. With no currency (`null`: the figure
+ * does not say one) it is the number alone, `1.234,56`, never a symbol that may be false. Null when there is no amount (the caller says
+ * "not available") or when the value is not a whole count of cents (never a guess).
  */
-export function formatCents(cents: number | null | undefined, currency: string, locale: string): string | null {
+export function formatCents(cents: number | null | undefined, currency: string | null, locale: string): string | null {
   if (typeof cents !== 'number' || !Number.isSafeInteger(cents)) return null;
   const amount = Number(decimalOfCents(cents));
-  if (!CURRENCY_CODE.test(currency)) return `${new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)} ${currency}`.trim();
+  if (currency === null) return plainFormat(locale).format(amount);
+  if (!CURRENCY_CODE.test(currency)) return `${plainFormat(locale).format(amount)} ${currency}`.trim();
   return moneyFormat(locale, currency.toUpperCase()).format(amount);
+}
+
+/**
+ * An amount of the collections (the total, by date, by payment method, by channel) or of the channel costs. The server adds the payments
+ * and the stays of every property in the currency of the property, with no conversion (a house in Switzerland is in francs, any other in
+ * euros: "a CHF house is added as it is"), and it sends no currency with these figures; the list of the properties does not say it
+ * either. So the figure is written as the number alone: a euro symbol would be false for a house in francs. The page says so above the
+ * figures (`reports.money.currencyNote`). The balances and the credits carry the currency of each row and use `formatCents`.
+ */
+export function formatSummedCents(cents: number | null | undefined, locale: string): string | null {
+  return formatCents(cents, null, locale);
 }
 
 const RATE_FORMATS = new Map<string, Intl.NumberFormat>();

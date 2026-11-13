@@ -1,8 +1,5 @@
 import type { ChannelCommissionMode, ChannelCostRow } from '@/types';
 
-/** The channel costs are in euros as the Home counts its revenue: the server converts nothing, and its figures carry no currency of their own. */
-export const COST_CURRENCY = 'EUR';
-
 /** The ways a commission is settled that the page has words for, in the order they are explained. */
 export const COMMISSION_MODES: readonly ChannelCommissionMode[] = ['DeductedFromPayout', 'InvoicedSeparately', 'Unknown'];
 

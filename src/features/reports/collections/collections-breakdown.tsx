@@ -3,11 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { ReportTableFrame } from '@/features/reports/overview/performance-table';
-import { bucketName, channelLabel, formatCents, formatRate, isPartialMonth, paymentMethodLabel, shortDay } from '@/features/reports/money-reports/money-model';
+import { bucketName, channelLabel, formatRate, formatSummedCents, isPartialMonth, paymentMethodLabel, shortDay } from '@/features/reports/money-reports/money-model';
 import type { CollectionsReport, CollectionsTotal } from '@/types';
-
-/** The collections are in euros as the Home counts them: the server converts nothing, and its figures carry no currency of their own. */
-const COLLECTIONS_CURRENCY = 'EUR';
 
 const VIEWS = ['date', 'method', 'channel'] as const;
 type CollectionsView = (typeof VIEWS)[number];
@@ -39,7 +36,8 @@ function CutTable({ caption, nameHeader, rows, withShare, total, testId }: CutTa
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const na = t('reports.money.notAvailable');
-  const money = (cents: number) => formatCents(cents, COLLECTIONS_CURRENCY, locale) ?? na;
+  // The figures of the collections carry no currency (the server adds every property in its own, with no conversion): the number alone.
+  const money = (cents: number) => formatSummedCents(cents, locale) ?? na;
 
   return (
     <ReportTableFrame caption={caption} testId={testId}>
@@ -111,12 +109,17 @@ export function CollectionsBreakdown({ report }: CollectionsBreakdownProps) {
 
   return (
     <section aria-label={t('reports.collections.sectionLabel')} className="min-w-0 space-y-4" data-testid="collections-breakdown">
+      {/* The figures below have no symbol: the server adds every property in its own currency and does not say it, so the page says so first. */}
+      <p className="text-sm text-foreground/70" data-testid="collections-currency-note">
+        {t('reports.money.currencyNote')}
+      </p>
+
       <div className="rounded-xl border border-border bg-card p-4" data-testid="collections-total">
         <p className="text-sm text-foreground/70">
           {t('reports.collections.totalCaption', { from: shortDay(report.period.from, locale), to: shortDay(report.period.to, locale) })}
         </p>
         <p className="mt-1 text-3xl font-semibold tabular-nums" data-testid="collections-total-amount">
-          {formatCents(total.amountCents, COLLECTIONS_CURRENCY, locale) ?? na}
+          {formatSummedCents(total.amountCents, locale) ?? na}
         </p>
         <p className="mt-1 text-sm text-foreground/70" data-testid="collections-total-count">
           {t('reports.collections.paymentCount', { count: total.paymentCount })}

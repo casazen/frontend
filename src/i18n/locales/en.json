@@ -19883,7 +19883,7 @@
   },
   "reports": {
     "channelCosts": {
-      "basis": "On an accrual basis, like the revenue of the Home: the nights of the confirmed stays in the period count. Commission, net and cost only cover the stays for which the channel reported a commission. The amounts are the Home’s: no conversion between currencies.",
+      "basis": "On an accrual basis, like the revenue of the Home: the nights of the confirmed stays in the period count. Commission, net and cost only cover the stays for which the channel reported a commission.",
       "caption": "Channel costs from {{from}} to {{to}}",
       "columns": {
         "channel": "Channel",
@@ -19967,7 +19967,7 @@
         "total_one": "Total to collect ({{count}} stay)",
         "total_other": "Total to collect ({{count}} stays)"
       },
-      "basis": "On a cash basis: the day the money came in counts, not the nights of the stay it pays, and refunds are already taken out. The total is the Home’s “collected” for the same days, with the amounts as the Home counts them: no conversion between currencies.",
+      "basis": "On a cash basis: the day the money came in counts, not the nights of the stay it pays, and refunds are already taken out. The total is the Home’s “collected” for the same days.",
       "captions": {
         "channel": "Collected by channel",
         "date": "Collected by date",
@@ -20114,6 +20114,7 @@
       }
     },
     "money": {
+      "currencyNote": "Amounts in the currency of each property, added up with no conversion.",
       "export": {
         "csv": "Download CSV",
         "failed": "The file could not be downloaded. Try again.",

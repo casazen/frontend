@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
-import { channelLabel, formatCents, formatRate, shortDay } from '@/features/reports/money-reports/money-model';
+import { channelLabel, formatRate, formatSummedCents, shortDay } from '@/features/reports/money-reports/money-model';
 import { ReportTableFrame } from '@/features/reports/overview/performance-table';
 import type { ChannelCommissionMode, ChannelCostRow, ChannelCostsReport } from '@/types';
-import { COST_CURRENCY, groupCostRows, modeOf } from './channel-costs-model';
+import { groupCostRows, modeOf } from './channel-costs-model';
 
 const STICKY = 'sticky left-0 z-10 bg-background';
 const HEAD = 'px-3 py-2 font-medium';
@@ -36,7 +36,8 @@ function CostRow({ row, group }: RowProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const na = t('reports.money.notAvailable');
-  const money = (cents: number | null) => formatCents(cents, COST_CURRENCY, locale) ?? na;
+  // The figures carry no currency (the server adds every property in its own, with no conversion): the number alone.
+  const money = (cents: number | null) => formatSummedCents(cents, locale) ?? na;
   const mode = modeOf(row);
 
   return (
@@ -113,7 +114,7 @@ export function ChannelCostsTable({ report }: ChannelCostsTableProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const na = t('reports.money.notAvailable');
-  const money = (cents: number | null) => formatCents(cents, COST_CURRENCY, locale) ?? na;
+  const money = (cents: number | null) => formatSummedCents(cents, locale) ?? na;
   const groups = groupCostRows(report.rows);
   const { total } = report;
 

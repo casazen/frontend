@@ -2,9 +2,8 @@ import { useId } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
-import { channelLabel, formatCents, formatRate } from '@/features/reports/money-reports/money-model';
+import { channelLabel, formatRate, formatSummedCents } from '@/features/reports/money-reports/money-model';
 import type { ChannelCostRow } from '@/types';
-import { COST_CURRENCY } from './channel-costs-model';
 
 interface CostSummaryLineProps {
   /** The rows in the order the server sent them: the highest cost rate first. */
@@ -25,7 +24,8 @@ export function CostSummaryLine({ rows }: CostSummaryLineProps) {
 
   const sentence = (row: ChannelCostRow): string => {
     const channel = channelLabel(row.source, t);
-    const amount = formatCents(row.commissionCents, COST_CURRENCY, locale);
+    // The amount carries no currency (the server adds every property in its own, with no conversion): the number alone.
+    const amount = formatSummedCents(row.commissionCents, locale);
     const rate = formatRate(row.costRate, locale);
 
     if (row.kind === 'NoCost') return t('reports.channelCosts.summary.free', { channel });

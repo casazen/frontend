@@ -19883,7 +19883,7 @@
   },
   "reports": {
     "channelCosts": {
-      "basis": "Per competenza, come i ricavi della Home: contano le notti dei soggiorni confermati nel periodo. Commissione, netto e costo riguardano solo i soggiorni per cui il canale ha indicato una commissione. Gli importi sono quelli della Home: nessuna conversione tra valute.",
+      "basis": "Per competenza, come i ricavi della Home: contano le notti dei soggiorni confermati nel periodo. Commissione, netto e costo riguardano solo i soggiorni per cui il canale ha indicato una commissione.",
       "caption": "Costi dei canali dal {{from}} al {{to}}",
       "columns": {
         "channel": "Canale",
@@ -19967,7 +19967,7 @@
         "total_one": "Totale da incassare ({{count}} soggiorno)",
         "total_other": "Totale da incassare ({{count}} soggiorni)"
       },
-      "basis": "Per cassa: conta il giorno in cui il denaro è entrato, non le notti del soggiorno che paga, e i rimborsi sono già tolti. Il totale è l’«incassato» della Home per gli stessi giorni, con gli importi come li conta la Home: nessuna conversione tra valute.",
+      "basis": "Per cassa: conta il giorno in cui il denaro è entrato, non le notti del soggiorno che paga, e i rimborsi sono già tolti. Il totale è l’«incassato» della Home per gli stessi giorni.",
       "captions": {
         "channel": "Incassato per canale",
         "date": "Incassato per data",
@@ -20114,6 +20114,7 @@
       }
     },
     "money": {
+      "currencyNote": "Importi nella valuta di ogni immobile, sommati senza conversione.",
       "export": {
         "csv": "Scarica CSV",
         "failed": "Non è stato possibile scaricare il file. Riprova.",

@@ -176,8 +176,8 @@ describe('ChannelCostsPage (NF-98)', () => {
 
     const lines = await screen.findAllByTestId('channel-costs-summary-line');
     expect(lines.map((line) => line.textContent?.replace(/[\u00a0\u202f]/g, ' '))).toEqual([
-      'Booking.com ti costa il 15,34% del lordo (375,50 €).',
-      'Airbnb ti costa il 12% del lordo (240,00 €).',
+      'Booking.com ti costa il 15,34% del lordo (375,50).',
+      'Airbnb ti costa il 12% del lordo (240,00).',
       'Sito diretto: le commissioni di incasso con carta non sono disponibili.',
       'Manuale: nessun costo per te.',
     ]);
@@ -188,6 +188,34 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(marks).toHaveLength(1);
     expect(marks[0]).toHaveTextContent('Il più costoso');
     expect(screen.getAllByTestId('channel-costs-summary-row')[0]).toContainElement(marks[0]!);
+  });
+
+  // Money: the server adds every property in the currency of the property, with no conversion, and sends no currency with these figures. A
+  // euro sign would be false for a house in francs, so the lines, the rows and the total are numbers alone and the page says why above them.
+  it('Page_FiguresOfTheCosts_HaveNoCurrencySymbolAndTheNoteIsAboveThem', async () => {
+    serve(() => ok(REPORT));
+    renderPage();
+
+    const summary = await screen.findByTestId('channel-costs-summary');
+    const note = screen.getByTestId('channel-costs-currency-note');
+    expect(note).toHaveTextContent('Importi nella valuta di ogni immobile, sommati senza conversione.');
+    expect(note.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const ANY_CURRENCY = /€|EUR|CHF|\$/;
+    expect(summary).not.toHaveTextContent(ANY_CURRENCY);
+    expect(screen.getByTestId('channel-costs-table')).not.toHaveTextContent(ANY_CURRENCY);
+    expect(screen.getByTestId('channel-costs-total')).toHaveTextContent(/^Totale.*5\.?600,00/);
+  });
+
+  it('Page_FiguresOfTheCosts_InEnglishAreTheNumberAloneToo', async () => {
+    await i18n.changeLanguage('en');
+    serve(() => ok(REPORT));
+    renderPage();
+
+    const lines = await screen.findAllByTestId('channel-costs-summary-line');
+    expect(lines[0]).toHaveTextContent('Booking.com costs you 15.34% of the gross (375.50).');
+    expect(screen.getByTestId('channel-costs-currency-note')).toHaveTextContent('Amounts in the currency of each property, added up with no conversion.');
+    expect(screen.getByTestId('channel-costs-table')).not.toHaveTextContent(/€|EUR|CHF|\$/);
   });
 
   it('Summary_StaysWithoutACommission_AreSaidApartInTheLineNeverTakenAsFree', async () => {
@@ -209,9 +237,9 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(rows.map((candidate) => within(candidate).getAllByRole('rowheader')[0]!.textContent)).toEqual(['Booking.com', 'Airbnb', 'Sito diretto', 'Manuale']);
 
     const booking = rows[0]!;
-    expect(booking).toHaveTextContent(/2\.?500,00 €/);
-    expect(booking).toHaveTextContent('375,50 €');
-    expect(booking).toHaveTextContent(/1\.?500,25 €/);
+    expect(booking).toHaveTextContent(/2\.?500,00/);
+    expect(booking).toHaveTextContent('375,50');
+    expect(booking).toHaveTextContent(/1\.?500,25/);
     expect(booking).toHaveTextContent('15,34%');
     expect(within(booking).getByTestId('channel-costs-mode')).toHaveTextContent('Fatturata a parte');
     expect(within(booking).getByTestId('channel-costs-mode')).toHaveTextContent('Il canale ti fattura la commissione a parte: la paghi tu dopo.');
@@ -278,9 +306,9 @@ describe('ChannelCostsPage (NF-98)', () => {
 
     expect(total).toHaveTextContent('Totale');
     expect(total).toHaveTextContent('12');
-    expect(total).toHaveTextContent(/5\.?600,00 €/);
-    expect(total).toHaveTextContent('615,50 €');
-    expect(total).toHaveTextContent(/3\.?460,25 €/);
+    expect(total).toHaveTextContent(/5\.?600,00/);
+    expect(total).toHaveTextContent('615,50');
+    expect(total).toHaveTextContent(/3\.?460,25/);
     expect(total).toHaveTextContent('13,68%');
   });
 
@@ -292,7 +320,7 @@ describe('ChannelCostsPage (NF-98)', () => {
     const total = await screen.findByTestId('channel-costs-total');
 
     expect(total).toHaveTextContent('Non disponibile');
-    expect(total).not.toHaveTextContent(/(?<![\d.,])0,00 €/);
+    expect(total).not.toHaveTextContent(/(?<![\d.,])0,00/);
     expect(total).not.toHaveTextContent(/(?<![\d.,])0%/);
   });
 

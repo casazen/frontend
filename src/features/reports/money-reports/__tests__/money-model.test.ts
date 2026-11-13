@@ -7,6 +7,7 @@ import {
   bucketName,
   formatCents,
   formatRate,
+  formatSummedCents,
   isPartialMonth,
   paymentMethodLabel,
   reportView,
@@ -78,6 +79,28 @@ describe('money reports: the numbers of the server are written, never worked out
 
   it('FormatCents_CurrencyThatIsNotACode_KeepsTheAmountAndSaysWhatTheServerSaid', () => {
     expect(plain(formatCents(1050, 'XX', 'it'))).toBe('10,50 XX');
+  });
+
+  // Money: the collections and the channel costs add every property in the currency of the property and say no currency, so a symbol would
+  // be false for a house in francs: their amounts are written as the number alone, with the same digits as every other amount.
+  it.each([
+    { cents: 123456, locale: 'it', text: /^1\.?234,56$/ },
+    { cents: 123456, locale: 'en', text: /^1,234\.56$/ },
+    { cents: 5, locale: 'it', text: /^0,05$/ },
+    { cents: -1999, locale: 'it', text: /^-19,99$/ },
+    { cents: -1999, locale: 'en', text: /^-19\.99$/ },
+    { cents: 0, locale: 'it', text: /^0,00$/ },
+    { cents: 99999999999, locale: 'it', text: /^999\.999\.999,99$/ },
+  ])('FormatSummedCents_IsTheNumberAloneWithNoSymbolNorCode_$cents_$locale', ({ cents, locale, text }) => {
+    const written = formatSummedCents(cents, locale);
+
+    expect(plain(written)).toMatch(text);
+    expect(written).not.toMatch(/[€$]|EUR|CHF/);
+    expect(formatCents(cents, null, locale)).toBe(written);
+  });
+
+  it.each([null, undefined, 12.5, Number.NaN, 2 ** 60])('FormatSummedCents_%s_IsNotAnAmount', (value) => {
+    expect(formatSummedCents(value as number | null, 'it')).toBeNull();
   });
 
   // Money: percentages are the server's four decimals, written as they are (never rounded to a whole number).
