@@ -51,6 +51,11 @@ vi.mock('@/api/invoice-data.api', () => ({
   getInvoiceData: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', invoiceRequested: false }),
   saveInvoiceData: vi.fn(),
 }));
+// ...and «Incassi» (FIS-05), which reads the ledger of the booking: kept off the network here too.
+vi.mock('@/api/payment-ledger.api', () => ({
+  getBookingLedger: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', bookingCode: '', channel: '', currency: 'EUR', lines: [], degraded: false }),
+  listLedger: vi.fn(),
+}));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: () => true }),
 }));

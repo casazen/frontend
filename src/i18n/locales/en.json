@@ -16483,6 +16483,73 @@
       "refund": "Refund"
     }
   },
+  "paymentLedger": {
+    "columns": {
+      "booking": "Booking",
+      "credit": "Credited on",
+      "document": "Document",
+      "fee": "Commission",
+      "gross": "Gross",
+      "net": "Net",
+      "payment": "Payment",
+      "state": "Status"
+    },
+    "degraded": "The details from the channel are not available right now: you are seeing the amounts we had already saved.",
+    "document": {
+      "kind": {
+        "CreditNote": "Credit note",
+        "Invoice": "Invoice",
+        "Proforma": "Proforma",
+        "Receipt": "Receipt"
+      },
+      "named": "{{kind}} no. {{number}}",
+      "none": "No document",
+      "paymentState": {
+        "Paid": "Collected",
+        "ToCollect": "To collect",
+        "Unknown": "Collection unknown"
+      },
+      "status": {
+        "Draft": "Draft",
+        "Issued": "Issued"
+      }
+    },
+    "notAvailable": "Not available",
+    "period": {
+      "count_one": "{{count}} line in the period",
+      "count_other": "{{count}} lines in the period",
+      "emptyDescription": "Recorded payments and the ones of the channel appear here. If you expected one, check the dates.",
+      "emptyTitle": "No lines in this period",
+      "forbidden": "You do not have permission to see the payments of the period.",
+      "incomplete": "Choose the first and the last day of the period.",
+      "label": "Period",
+      "loadError": "We cannot read the payments of the period right now.",
+      "tableLabel": "Payments of the period"
+    },
+    "section": {
+      "emptyDescription": "Card payments, bank transfers, cash and the payments collected by the channel appear here as soon as there are any.",
+      "emptyTitle": "No payments recorded",
+      "forbidden": "You do not have permission to see the payments of this booking.",
+      "label": "Payments of the booking",
+      "loadError": "We cannot read the payments right now.",
+      "notFound": "We cannot find the payments of this booking.",
+      "title": "Payments"
+    },
+    "source": {
+      "BankTransfer": "Bank transfer",
+      "Card": "Card",
+      "Cash": "Cash",
+      "Ota": "From the channel",
+      "OtaCollected": "Collected by the channel",
+      "OtaHost": "From the channel, you collect",
+      "Other": "Other method"
+    },
+    "switch": {
+      "byPayment": "By payment",
+      "byPeriod": "By booking and period",
+      "label": "View of the payments"
+    }
+  },
   "plan": {
     "unlimitedProperties": "Unlimited properties",
     "oneProperty": "1 property",
