@@ -2198,6 +2198,28 @@
         "range_other": "dal {{arrival}} al {{departure}}, {{count}} notti",
         "shown": "Mostro {{shown}} immobili su {{total}}: scegline uno dal filtro per vedere gli altri.",
         "zoom": "Giorni mostrati"
+      },
+      "day": {
+        "closedToArrival": "arrivi chiusi",
+        "closedToArrivalShort": "no arrivi",
+        "closedToDeparture": "partenze chiuse",
+        "closedToDepartureShort": "no partenze",
+        "gridLabel": "Giorni di {{property}}",
+        "hasRule": "regola propria",
+        "loadError": "Non riusciamo a leggere prezzi e regole dei giorni: il calendario resta senza.",
+        "minNights_one": "minimo {{count}} notte",
+        "minNights_other": "minimo {{count}} notti",
+        "minShort": "min {{count}}",
+        "past": "giorno passato",
+        "price": "{{price}} a notte",
+        "retry": "Riprova",
+        "source": {
+          "Base": "prezzo abituale",
+          "DayRule": "prezzo che hai impostato sul calendario",
+          "Seasonal": "prezzo stagionale che hai confermato",
+          "Weekend": "prezzo del fine settimana"
+        },
+        "taken": "notte occupata"
       }
     },
     "validation": {

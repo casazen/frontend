@@ -2198,6 +2198,28 @@
         "range_other": "{{arrival}} to {{departure}}, {{count}} nights",
         "shown": "Showing {{shown}} of {{total}} properties: pick one in the filter to see the others.",
         "zoom": "Days shown"
+      },
+      "day": {
+        "closedToArrival": "arrivals closed",
+        "closedToArrivalShort": "no arrivals",
+        "closedToDeparture": "departures closed",
+        "closedToDepartureShort": "no departures",
+        "gridLabel": "Days of {{property}}",
+        "hasRule": "own rule",
+        "loadError": "We cannot read the prices and rules of the days: the calendar goes on without them.",
+        "minNights_one": "minimum {{count}} night",
+        "minNights_other": "minimum {{count}} nights",
+        "minShort": "min {{count}}",
+        "past": "day gone by",
+        "price": "{{price}} a night",
+        "retry": "Try again",
+        "source": {
+          "Base": "usual price",
+          "DayRule": "price you set on the calendar",
+          "Seasonal": "seasonal price you confirmed",
+          "Weekend": "weekend price"
+        },
+        "taken": "night taken"
       }
     },
     "validation": {

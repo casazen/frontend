@@ -11,8 +11,11 @@ import { todayInRome } from '@/lib/stay-dates';
 import { useHostCalendar } from '@/queries/use-host-calendar';
 import type { HostCalendarItem } from '@/types/host-calendar.types';
 import { TIMELINE_KINDS } from '../lib/calendar-kinds';
+import type { DayLayer } from '../lib/day-layer';
+import type { DaySelection } from '../lib/day-selection';
 import { buildTimelineRows, drawerKindOf, timelineDays, timelineQuery } from '../lib/host-timeline';
 import { CalendarLegend } from './calendar-legend';
+import { DayLayerNotice } from './day-layer-notice';
 import { HostTimeline } from './host-timeline';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
@@ -26,14 +29,34 @@ interface TimelineSectionProps {
   propertyId: string;
   /** The id of the item the address points to (`?focus=`): it is brought into view and its drawer opens once. */
   focusId: string;
+  /** The price and the rules of the days of the window (E08/F05/US03/T01), read by the page for the days shown; absent when the caller may not read them. */
+  dayLayer?: DayLayer;
+  /** The read of the days failed (not for a missing right to read them): the Timeline goes on without them and says so. */
+  dayLayerFailed?: boolean;
+  onRetryDayLayer?: () => void;
+  /** The days selected and how they are selected (E08/F05/US03/T02); without `onPressDay` the days cannot be selected. */
+  selection?: DaySelection | null;
+  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  onClearSelection?: () => void;
 }
 
 /**
- * The Timeline of every property (SR-02): reads `GET /api/calendar` for the days shown, draws the legend and the rows, and opens
- * the drawer of whatever is pressed. A failed read is an error with "Riprova", never an empty calendar; moving the window keeps the
- * last one on screen until the next arrives.
+ * The Timeline of every property (SR-02): reads `GET /api/calendar` for the days shown, draws the legend and the rows (with the price and the rules of each day when the page
+ * has them), and opens the drawer of whatever is pressed. A failed read is an error with "Riprova", never an empty calendar; moving the window keeps the last one on screen
+ * until the next arrives.
  */
-export function TimelineSection({ start, zoom, propertyId, focusId }: TimelineSectionProps) {
+export function TimelineSection({
+  start,
+  zoom,
+  propertyId,
+  focusId,
+  dayLayer,
+  dayLayerFailed = false,
+  onRetryDayLayer,
+  selection,
+  onPressDay,
+  onClearSelection,
+}: TimelineSectionProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const drawer = useDetailDrawer();
@@ -106,8 +129,20 @@ export function TimelineSection({ start, zoom, propertyId, focusId }: TimelineSe
           {t('booking.calendar.timeline.shown', { shown: data.properties.length, total: data.propertiesTotal })}
         </p>
       ) : null}
+      {dayLayerFailed && onRetryDayLayer ? <DayLayerNotice onRetry={onRetryDayLayer} /> : null}
       <div ref={gridRef}>
-        <HostTimeline rows={rows} days={days} today={today} focusId={focusId} busy={isPlaceholderData} onOpen={handleOpen} />
+        <HostTimeline
+          rows={rows}
+          days={days}
+          today={today}
+          focusId={focusId}
+          busy={isPlaceholderData}
+          onOpen={handleOpen}
+          dayLayer={dayLayer}
+          selection={selection}
+          onPressDay={onPressDay}
+          onClearSelection={onClearSelection}
+        />
       </div>
       {data.items.length === 0 ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-sm" data-testid="timeline-empty">

@@ -1,15 +1,17 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, Building2, CalendarX2, Globe, House, Link2, Pencil, Sparkles, Wrench, type LucideIcon } from 'lucide-react';
+import { Briefcase, CalendarX2, Sparkles, Wrench } from 'lucide-react';
 import { propertyPath } from '@/features/properties/properties-paths';
 import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import type { HostCalendarItem, HostCalendarItemChannel } from '@/types/host-calendar.types';
+import type { HostCalendarItem } from '@/types/host-calendar.types';
 import { calendarKindInfo } from '../lib/calendar-kinds';
 import { useUnreadMessagesOf } from '../lib/unread-messages-context';
 import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
+import { dayLabel, showsPrice, type DayLayer } from '../lib/day-layer';
+import { isDaySelected, type DaySelection } from '../lib/day-selection';
 import {
   channelLabel,
   isWeekendDay,
@@ -21,19 +23,13 @@ import {
   type TimelineChip,
   type TimelineRow,
 } from '../lib/host-timeline';
+import { CHANNEL_ICONS, channelOf } from '../lib/ota-stay';
+import { DayCellContent } from './day-cell-content';
 import './host-calendar.css';
 import './host-timeline.css';
 
 /** A share of the area of the days, in percent to three decimals: bars and columns line up without a pixel of drift. */
 const percent = (days: number, total: number) => Math.round((days / total) * 100_000) / 1000;
-
-const CHANNEL_ICONS: Record<HostCalendarItemChannel, LucideIcon> = {
-  Direct: Globe,
-  Manual: Pencil,
-  Airbnb: House,
-  BookingCom: Building2,
-  Other: Link2,
-};
 
 const SERVICE_ICONS = { Cleaning: Sparkles, Maintenance: Wrench, Other: Briefcase } as const;
 
@@ -60,7 +56,7 @@ function StayBar({ bar, propertyName, days, focused, onOpen }: BarProps) {
   const title = stayItemTitle(item, t);
   const unread = useUnreadMessagesOf(item.type === 'Booking' ? item.id : null);
   const channel = item.type === 'Booking' ? channelLabel(item.channel, t) : '';
-  const ChannelIcon = item.type === 'Booking' && item.channel ? CHANNEL_ICONS[item.channel] : null;
+  const ChannelIcon = item.type === 'Booking' && item.channel ? CHANNEL_ICONS[channelOf(item.channel)] : null;
   const label = [title, propertyName, itemRangeText(item, t, i18n.language), t(info.labelKey), channel, conflict ? t('booking.calendar.timeline.conflict') : '', unread > 0 ? t('booking.messages.unread', { count: unread }) : '']
     .filter(Boolean)
     .join(', ');
@@ -144,6 +140,14 @@ interface HostTimelineProps {
   /** The window is moving: what is on screen is still the last one. */
   busy: boolean;
   onOpen: OpenItem;
+  /** The price and the rules of every day (E08/F05/US03/T01), when the caller may read them; without it the Timeline is what it always was. */
+  dayLayer?: DayLayer;
+  /** The days selected (E08/F05/US03/T02). */
+  selection?: DaySelection | null;
+  /** A press on a day (a click, Enter or Space; with `shift` it extends the selection). Without it the days are not controls: they cannot be selected. */
+  onPressDay?: (propertyId: string, day: string, shift: boolean) => void;
+  /** Escape on a day: nothing is selected. */
+  onClearSelection?: () => void;
 }
 
 /**
@@ -153,9 +157,69 @@ interface HostTimelineProps {
  * Its structure is a list of buttons per property, in the order of the days, so that Tab and a screen reader go through it
  * property by property.
  */
-export function HostTimeline({ rows, days, today, focusId, busy, onOpen }: HostTimelineProps) {
+export function HostTimeline({ rows, days, today, focusId, busy, onOpen, dayLayer, selection = null, onPressDay, onClearSelection }: HostTimelineProps) {
   const { t, i18n } = useTranslation();
   const style = { '--n': days.length } as CSSProperties;
+  // The days are controls only where they can be selected; the one that takes the Tab key is the last the person was on, else today, else the first.
+  const selectable = onPressDay !== undefined;
+  const [active, setActive] = useState<{ propertyId: string; day: string } | null>(null);
+  const firstRow = rows[0]?.property.id;
+  const stillThere = active !== null && rows.some((row) => row.property.id === active.propertyId) && days.includes(active.day);
+  const tabbable = stillThere ? active : firstRow ? { propertyId: firstRow, day: days.includes(today) ? today : (days[0] ?? '') } : null;
+
+  /** Moves the focus to a day of a row: the controls are found by what they say they are, not by their place in the page. */
+  const focusDay = (root: HTMLElement, propertyId: string, day: string) => {
+    const key = `${propertyId}|${day}`;
+    Array.from(root.querySelectorAll<HTMLElement>('[data-cell]'))
+      .find((cell) => cell.dataset.cell === key)
+      ?.focus();
+  };
+
+  const handleCellKeyDown = (event: KeyboardEvent<HTMLElement>, propertyId: string, day: string) => {
+    if (!onPressDay) return;
+    const root = event.currentTarget.closest<HTMLElement>('[data-testid="host-timeline"]');
+    if (!root) return;
+    const index = days.indexOf(day);
+    const rowIndex = rows.findIndex((row) => row.property.id === propertyId);
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight': {
+        event.preventDefault();
+        const target = days[index + (event.key === 'ArrowLeft' ? -1 : 1)];
+        if (!target) return;
+        // Shift plus arrow extends the selection of the row from where it was started (or from this day).
+        if (event.shiftKey) onPressDay(propertyId, target, true);
+        focusDay(root, propertyId, target);
+        return;
+      }
+      case 'ArrowUp':
+      case 'ArrowDown': {
+        event.preventDefault();
+        const other = rows[rowIndex + (event.key === 'ArrowUp' ? -1 : 1)];
+        if (other) focusDay(root, other.property.id, day);
+        return;
+      }
+      case 'Home':
+      case 'End': {
+        event.preventDefault();
+        const target = event.key === 'Home' ? days[0] : days[days.length - 1];
+        if (target) focusDay(root, propertyId, target);
+        return;
+      }
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        onPressDay(propertyId, day, event.shiftKey);
+        return;
+      case 'Escape':
+        if (selection) {
+          event.preventDefault();
+          onClearSelection?.();
+        }
+        return;
+      default:
+    }
+  };
 
   return (
     <div className="host-timeline" style={style} data-zoom={days.length} data-testid="host-timeline" aria-busy={busy}>
@@ -199,18 +263,54 @@ export function HostTimeline({ rows, days, today, focusId, busy, onOpen }: HostT
                   </span>
                 </div>
                 <div className="host-timeline__track">
-                  <div className="host-timeline__cells" aria-hidden="true">
-                    {days.map((day) => (
-                      <span
-                        key={day}
-                        className={cn(
+                  <div
+                    className="host-timeline__cells"
+                    role={selectable ? 'grid' : undefined}
+                    aria-label={selectable ? t('booking.calendar.day.gridLabel', { property: property.name }) : undefined}
+                    aria-hidden={selectable ? undefined : true}
+                    data-testid="timeline-cells"
+                  >
+                    {/* A row of the grid that takes no box of its own: the cells keep the columns of the days. */}
+                    <div role={selectable ? 'row' : undefined} className="host-timeline__cells-row">
+                      {days.map((day) => {
+                        const layer = dayLayer?.get(property.id);
+                        const info = layer?.days.get(day);
+                        const classes = cn(
                           'host-timeline__cell',
                           isWeekendDay(day) && 'is-weekend',
                           day < today && 'is-past',
                           day === today && 'is-today',
-                        )}
-                      />
-                    ))}
+                          isDaySelected(selection, property.id, day) && 'is-selected',
+                        );
+                        const content = layer && showsPrice(info, day, today) ? <DayCellContent info={info} currency={layer.currency} zoom={days.length} /> : null;
+                        if (!selectable) {
+                          return (
+                            <span key={day} className={classes} data-testid="timeline-cell" data-date={day}>
+                              {content}
+                            </span>
+                          );
+                        }
+                        const isTabbable = tabbable?.propertyId === property.id && tabbable.day === day;
+                        return (
+                          <div
+                            key={day}
+                            role="gridcell"
+                            tabIndex={isTabbable ? 0 : -1}
+                            className={classes}
+                            data-testid="timeline-cell"
+                            data-cell={`${property.id}|${day}`}
+                            data-date={day}
+                            aria-selected={isDaySelected(selection, property.id, day)}
+                            aria-label={dayLabel({ date: day, propertyName: property.name, today, language: i18n.language, currency: layer?.currency, info }, t)}
+                            onFocus={() => setActive({ propertyId: property.id, day })}
+                            onClick={(event) => onPressDay(property.id, day, event.shiftKey)}
+                            onKeyDown={(event) => handleCellKeyDown(event, property.id, day)}
+                          >
+                            {content}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                   {bars.length > 0 ? (
                     <ul className="host-timeline__bars">

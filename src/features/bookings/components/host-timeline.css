@@ -216,8 +216,30 @@
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
 }
 
+/* The row of the grid of days takes no box of its own: its cells are the columns of the days. */
+.host-timeline__cells-row {
+  display: contents;
+}
+
 .host-timeline__cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 0.0625rem;
   border-right: 1px solid var(--color-border);
+}
+
+/* The days of a row are controls where they can be selected (E08/F05/US03/T02): a finger needs 44 px, the keyboard a visible place. */
+.host-timeline__cell[role='gridcell'] {
+  cursor: pointer;
+}
+
+.host-timeline__cell[role='gridcell']:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--color-ring);
+  outline-offset: -2px;
 }
 
 .host-timeline__cell.is-weekend {
@@ -233,6 +255,12 @@
 .host-timeline__cell.is-today {
   background: color-mix(in oklab, var(--color-primary-soft) 75%, var(--color-card));
   box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+/* The days selected: a frame all around and a tint, so that they are told by shape and not by color alone (the cell says it too: aria-selected). */
+.host-timeline__cell.is-selected {
+  background: color-mix(in oklab, var(--color-primary) 16%, var(--color-card));
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------

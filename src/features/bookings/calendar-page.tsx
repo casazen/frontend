@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select';
 import { BlockDetails } from './components/block-details';
 import { BookingCalendar } from './components/booking-calendar';
 import { CalendarToolbar } from './components/calendar-toolbar';
+import { DayLayerNotice } from './components/day-layer-notice';
 import { ManualBlockForm } from './components/manual-block-form';
 import { TimelineSection } from './components/timeline-section';
 import { useBookingCalendar } from '@/queries/use-bookings';
@@ -34,9 +35,11 @@ import {
   parseCalendarView,
   parseTimelineZoom,
   resolveCalendarAnchor,
+  timelineQuery,
   type CalendarPageView,
   type TimelineZoom,
 } from './lib/host-timeline';
+import { useDayLayer } from './lib/use-day-layer';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 const NO_UNREAD: ReadonlyMap<string, number> = new Map();
@@ -62,6 +65,8 @@ export function CalendarPage() {
   const canWriteBookings = workspace?.hasPermission('short-rent', 'booking.write') ?? false;
   // "Blocca date" and "Elimina blocco" need property.write (PC-09).
   const canWriteProperty = workspace?.hasPermission('short-rent', 'property.write') ?? false;
+  // The price and the rules of every day are property data: read only by who may read properties (without the right nothing is asked, and the calendar is what it was).
+  const canReadProperty = workspace?.hasPermission('short-rent', 'property.read') ?? false;
   // The guests' messages not read yet, once for the whole calendar: the entries of a stay with some carry a counter (SR-12).
   const unreadMessages = useUnreadMessagesByBooking(workspace?.hasPermission('short-rent', 'booking.read') ?? false);
   // The "Blocca date" form, open with the nights selected on the calendar (or from today).
@@ -80,6 +85,7 @@ export function CalendarPage() {
   // The Timeline shows every property unless one is asked for; the month, the week and the day always show one (the first by default).
   const activePropertyId = requestedProperty || (view === 'timeline' ? '' : (propertyList[0]?.id ?? ''));
   const formPropertyId = activePropertyId || blockPropertyId || propertyList[0]?.id || '';
+  const activeProperty = propertyList.find((property) => property.id === activePropertyId);
 
   const setQuery = useCallback(
     (changes: Record<string, string | null>) => {
@@ -110,6 +116,19 @@ export function CalendarPage() {
   } = useBookingCalendar(
     monthRange && activePropertyId ? { propertyId: activePropertyId, startDate: monthRange.startDate, endDate: monthRange.endDate } : undefined,
   );
+
+  // The price and the rules of the days the view shows (E08/F05/US03/T01): the window of the Timeline (it shares the entry of the cache of its own read) or the range of the
+  // month, the week or the day of the property shown.
+  const daysQuery = useMemo(
+    () =>
+      view === 'timeline'
+        ? timelineQuery(anchor, zoom, activePropertyId)
+        : monthRange && activePropertyId
+          ? { from: monthRange.startDate, to: monthRange.endDate, propertyId: activePropertyId }
+          : undefined,
+    [view, anchor, zoom, activePropertyId, monthRange],
+  );
+  const dayRead = useDayLayer(daysQuery, canReadProperty);
 
   const events = useMemo(() => toHostCalendarEvents(calendarResponse?.items ?? []), [calendarResponse]);
   const selectedBlock = events.find(
@@ -250,7 +269,15 @@ export function CalendarPage() {
             )}
 
             {view === 'timeline' ? (
-              <TimelineSection start={anchor} zoom={zoom} propertyId={activePropertyId} focusId={focusId} />
+              <TimelineSection
+                start={anchor}
+                zoom={zoom}
+                propertyId={activePropertyId}
+                focusId={focusId}
+                dayLayer={dayRead.layer}
+                dayLayerFailed={dayRead.failed}
+                onRetryDayLayer={dayRead.retry}
+              />
             ) : isError ? (
               // An API error is never shown as an empty calendar.
               <ErrorState title={t('booking.calendar.loadError')} error={error} onRetry={() => void refetch()} />
@@ -273,6 +300,7 @@ export function CalendarPage() {
                     }}
                   />
                 )}
+                {dayRead.failed ? <DayLayerNotice onRetry={dayRead.retry} /> : null}
                 <BookingCalendar
                   events={calendarLoading ? [] : events}
                   date={anchor}
@@ -282,6 +310,8 @@ export function CalendarPage() {
                   onSelectEvent={handleSelectEvent}
                   onSelectSlot={canWriteProperty ? handleSelectSlot : undefined}
                   loading={calendarLoading}
+                  property={activeProperty}
+                  dayLayer={activePropertyId ? dayRead.layer?.get(activePropertyId) : undefined}
                 />
               </>
             )}
