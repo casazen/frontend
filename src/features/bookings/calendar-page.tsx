@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { BlockDetails } from './components/block-details';
 import { BookingCalendar } from './components/booking-calendar';
+import { CalendarChangeStatus } from './components/calendar-change-status';
 import { CalendarToolbar } from './components/calendar-toolbar';
 import { DayLayerNotice } from './components/day-layer-notice';
 import { DayPanel } from './components/day-panel';
@@ -17,7 +18,7 @@ import { useBookingCalendar } from '@/queries/use-bookings';
 import { useUnreadMessagesByBooking } from '@/queries/use-booking-messages';
 import { UnreadMessagesContext } from './lib/unread-messages-context';
 import { useProperties } from '@/queries/use-properties';
-import { CalendarDays, CalendarOff, List, Loader2, Plus } from 'lucide-react';
+import { CalendarDays, CalendarOff, CalendarRange, List, Loader2, Plus } from 'lucide-react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { SlotInfo } from 'react-big-calendar';
@@ -41,6 +42,7 @@ import {
 import { useDayLayer } from './lib/use-day-layer';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
+const BULK_PATH = '/app/short-rent/bookings/calendar/bulk';
 const NO_UNREAD: ReadonlyMap<string, number> = new Map();
 
 /**
@@ -193,18 +195,27 @@ export function CalendarPage() {
           mobilePrimary="none"
           action={
             canWriteProperty && propertyList.length > 0 ? (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  // The panel opens on tonight of the property shown (or the first): the dates and the property are changed by selecting other days on the calendar.
-                  setSelectedBlockId(null);
-                  setSelection(startSelection(startPropertyId, todayInRome()));
-                }}
-                data-testid="manual-block-open"
-              >
-                <CalendarOff className="mr-2 h-4 w-4" />
-                {t('booking.calendar.manualBlock.action')}
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // The panel opens on tonight of the property shown (or the first): the dates and the property are changed by selecting other days on the calendar.
+                    setSelectedBlockId(null);
+                    setSelection(startSelection(startPropertyId, todayInRome()));
+                  }}
+                  data-testid="manual-block-open"
+                >
+                  <CalendarOff className="mr-2 h-4 w-4" />
+                  {t('booking.calendar.manualBlock.action')}
+                </Button>
+                {/* A change of many days: a guided wizard of its own (E08/F05/US03/T03). */}
+                <Button asChild variant="outline">
+                  <Link to={BULK_PATH} data-testid="calendar-bulk-open">
+                    <CalendarRange className="mr-2 h-4 w-4" aria-hidden="true" />
+                    {t('booking.calendar.bulk.open')}
+                  </Link>
+                </Button>
+              </div>
             ) : undefined
           }
         />
@@ -229,6 +240,10 @@ export function CalendarPage() {
           </div>
         ) : (
           <>
+            {/* The changes sent to the channel manager that are waiting or failed: a line that goes away when everything is delivered. Only who may read properties gets it. */}
+            {canReadProperty ? (
+              <CalendarChangeStatus propertyName={(id) => propertyList.find((property) => property.id === id)?.name ?? ''} canRetry={canWriteProperty} />
+            ) : null}
             <CalendarToolbar
               properties={propertyList}
               propertyId={activePropertyId}

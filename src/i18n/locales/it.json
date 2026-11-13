@@ -2212,6 +2212,133 @@
         "shown": "Mostro {{shown}} immobili su {{total}}: scegline uno dal filtro per vedere gli altri.",
         "zoom": "Giorni mostrati"
       },
+      "bulk": {
+        "apply": "Applica le modifiche",
+        "applyFailed": "Non siamo riusciti ad applicare le modifiche. Nulla è stato salvato: riprova.",
+        "changes": {
+          "clear": "Togli la regola",
+          "close": "Chiudi",
+          "daysLabel": "Quanti giorni",
+          "keep": "Lascia com'è",
+          "nightsLabel": "Quante notti",
+          "priceLabel": "Prezzo a notte",
+          "reopen": "Riapri",
+          "set": "Imposta"
+        },
+        "description": "Cambia il prezzo e le restrizioni di più giorni e di più immobili in un colpo solo. Prima di applicare vedi cosa succederà.",
+        "done": {
+          "description_one": "{{days}} giorni su {{count}} immobile.",
+          "description_other": "{{days}} giorni su {{count}} immobili.",
+          "next": {
+            "calendar": "Controlla il calendario: i nuovi prezzi e le nuove restrizioni sono sui giorni.",
+            "checkAgain": "Il tuo gestionale non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
+            "retry": "Premi «Riprova ora» sulla riga che non è partita: finché non va a buon fine, il tuo gestionale non ha quelle modifiche.",
+            "wait": "Puoi uscire: l'invio al tuo gestionale prosegue e lo vedi sopra il calendario."
+          },
+          "propertyFallback": "Immobile",
+          "title": "Modifica salvata in CasaZen"
+        },
+        "errors": {
+          "allPast": "Questi giorni sono già passati: scegli giorni da oggi in poi.",
+          "fromInvalid": "Scrivi il primo giorno.",
+          "propertiesRequired": "Scegli almeno un immobile.",
+          "propertiesTooMany": "Puoi scegliere al massimo 50 immobili alla volta.",
+          "toBeforeFrom": "L'ultimo giorno non può essere prima del primo.",
+          "toInvalid": "Scrivi l'ultimo giorno.",
+          "tooLong": "Una modifica può coprire al massimo 366 giorni.",
+          "weekdaysRequired": "Scegli almeno un giorno della settimana."
+        },
+        "fields": {
+          "closedToArrival": "Arrivi",
+          "closedToDeparture": "Partenze",
+          "maxAdvanceDays": "Anticipo massimo",
+          "maxNights": "Soggiorno massimo",
+          "minAdvanceDays": "Anticipo minimo",
+          "minNights": "Soggiorno minimo",
+          "price": "Prezzo"
+        },
+        "open": "Cambia più giorni",
+        "period": {
+          "days_one": "{{count}} giorno",
+          "days_other": "{{count}} giorni",
+          "from": "Dal giorno",
+          "to": "Al giorno",
+          "weekdays": "Giorni della settimana",
+          "weekdaysHint": "Di solito sono tutti. Togli quelli che non vuoi toccare."
+        },
+        "properties": {
+          "all": "Scegli tutti",
+          "connected": "Collegato al tuo gestionale: la modifica viene inviata anche lì.",
+          "none": "Togli la scelta",
+          "notConnected": "Non collegato al tuo gestionale: la modifica resta in CasaZen."
+        },
+        "reloaded": "Le modifiche sono già sul calendario: puoi controllarle da lì.",
+        "saveAndExit": "Salva ed esci",
+        "steps": {
+          "changes": {
+            "label": "Cosa cambia",
+            "purpose": "Per ogni valore: lascialo com'è, impostalo o toglila. Cambia almeno un valore.",
+            "title": "Cosa vuoi cambiare"
+          },
+          "period": {
+            "label": "Periodo",
+            "purpose": "Il primo e l'ultimo giorno (al massimo 366 giorni) e i giorni della settimana da toccare.",
+            "title": "Scegli i giorni"
+          },
+          "properties": {
+            "label": "Immobili",
+            "purpose": "Quelli che puoi modificare. Per ognuno vedi se è collegato al tuo gestionale.",
+            "title": "Scegli gli immobili"
+          },
+          "summary": {
+            "label": "Riepilogo",
+            "purpose": "Ecco cosa succederà. Non viene inviato nulla finché non applichi.",
+            "title": "Controlla prima di applicare"
+          }
+        },
+        "summary": {
+          "changed_one": "{{count}} giorno cambia",
+          "changed_other": "{{count}} giorni cambiano",
+          "diff": "{{field}}: {{from}} → {{to}}",
+          "headline_one": "Cambieremo {{what}} di {{days}} giorni su {{count}} immobile in CasaZen.",
+          "headline_other": "Cambieremo {{what}} di {{days}} giorni su {{count}} immobili in CasaZen.",
+          "invalid": {
+            "changes": "Cambia almeno un valore e controlla che sia scritto bene.",
+            "period": "Controlla i giorni scelti: l'ultimo non può essere prima del primo né già passato.",
+            "properties": "Scegli almeno un immobile."
+          },
+          "invalidTitle": "Manca qualcosa nei passi precedenti",
+          "loading": "Calcolo cosa succederebbe...",
+          "mirrored_one": "Per {{name}} la modifica viene inviata anche al tuo gestionale (circa {{count}} chiamata al gestionale).",
+          "mirrored_other": "Per {{name}} la modifica viene inviata anche al tuo gestionale (circa {{count}} chiamate al gestionale).",
+          "notMirrored": "{{name}} non è collegato al tuo gestionale: la sua modifica resta in CasaZen.",
+          "nothingChanges": "Nessun giorno cambierebbe: i valori sono già questi.",
+          "nothingSent": "Non viene inviato nulla finché non premi «Applica le modifiche».",
+          "previewFailed": "Non riusciamo a calcolare cosa succederebbe",
+          "previewFailedHint": "Riprova tra poco: non è stato salvato né inviato nulla.",
+          "quota_one": "In tutto circa {{count}} chiamata al gestionale: è solo una stima.",
+          "quota_other": "In tutto circa {{count}} chiamate al gestionale: è solo una stima.",
+          "retry": "Riprova",
+          "roomNotChosen": "Per {{name}} la stanza non è scelta nel tuo gestionale: la modifica resta in CasaZen finché non la scegli.",
+          "samples": "Le prime modifiche, prima e dopo:",
+          "skippedPast_one": "{{count}} giorno già passato non si tocca",
+          "skippedPast_other": "{{count}} giorni già passati non si toccano",
+          "taken_one": "{{count}} notte occupata: la regola non cambia la prenotazione",
+          "taken_other": "{{count}} notti occupate: la regola non cambia le prenotazioni",
+          "unchanged_one": "{{count}} giorno resta com'era",
+          "unchanged_other": "{{count}} giorni restano com'erano",
+          "what": {
+            "closedToArrival": "gli arrivi",
+            "closedToDeparture": "le partenze",
+            "maxAdvanceDays": "l'anticipo massimo",
+            "maxNights": "il soggiorno massimo",
+            "minAdvanceDays": "l'anticipo minimo",
+            "minNights": "il soggiorno minimo",
+            "price": "il prezzo"
+          }
+        },
+        "title": "Cambia più giorni"
+      },
       "change": {
         "error": {
           "channelError": "Il tuo gestionale ha preso la modifica ma ha segnalato un errore nell'invio ai canali.",
@@ -2222,6 +2349,23 @@
           "roomNotLicensed": "La stanza non ha una licenza attiva nel tuo gestionale: attivala lì, poi riprova.",
           "unavailable": "Il tuo gestionale non risponde: riprova tra qualche minuto.",
           "unknown": "Il tuo gestionale non ha completato l'invio. Riprova tra poco."
+        },
+        "list": {
+          "failed_one": "{{count}} modifica non è stata inviata.",
+          "failed_other": "{{count}} modifiche non sono state inviate.",
+          "kind": {
+            "Block": "Blocco di date",
+            "Bulk": "Modifica di più immobili",
+            "DayRules": "Prezzo e restrizioni",
+            "Publication": "Invio iniziale del calendario"
+          },
+          "noAnswer_one": "{{count}} modifica aspetta ancora: il tuo gestionale non ha risposto.",
+          "noAnswer_other": "{{count}} modifiche aspettano ancora: il tuo gestionale non ha risposto.",
+          "retry": "Riprova",
+          "toggle": "Ultime modifiche",
+          "unreadable": "Non riusciamo a leggere le modifiche inviate al tuo gestionale.",
+          "waiting_one": "{{count}} modifica è in invio al tuo gestionale.",
+          "waiting_other": "{{count}} modifiche sono in invio al tuo gestionale."
         },
         "result": {
           "accepted": "Accettata dal tuo gestionale.",

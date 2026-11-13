@@ -115,3 +115,12 @@ export function changeGroupOf(change: Pick<CalendarChange, 'state'>): 'waiting' 
   if (change.state === 'Failed' || change.state === 'PartiallySent') return 'failed';
   return 'delivered';
 }
+
+/** The one step the result of a change suggests, the most urgent first: a part that failed, a part that is still on its way, or the calendar to look at. */
+export type ChangeNextStep = 'retry' | 'wait' | 'checkAgain' | 'calendar';
+
+export function nextStepOfChange(change: Pick<CalendarChange, 'state' | 'properties'>, watchOver: boolean): ChangeNextStep {
+  if (change.properties.some((property) => property.state === 'Failed')) return 'retry';
+  if (change.state === 'Queued' || change.state === 'Sending') return watchOver ? 'checkAgain' : 'wait';
+  return 'calendar';
+}
