@@ -24,6 +24,7 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const BOOKING_A = '11111111-1111-4111-8111-111111111111';
 const BOOKING_B = '22222222-2222-4222-8222-222222222222';
 const BOOKING_C = '33333333-3333-4333-8333-333333333333';
+const BOOKING_D = '44444444-4444-4444-8444-444444444444';
 
 const uncertain: PendingVerification = {
   bookingId: BOOKING_A,
@@ -165,6 +166,38 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
       'href',
       `/app/short-rent/bookings/${BOOKING_B}`,
     );
+  });
+
+  it('VerificationQueuePage_AFailedAttemptThenARequestForAPerson_SaysWhatTheLastCheckFoundAndThatTheGuestMayHaveAskedNeverThatTheFacesDoNotMatch', async () => {
+    // The API does not say why the verification was handed to a person: a guest who failed an attempt and then asked for one carries the reasons of
+    // that attempt, exactly like one the flow handed over. The words must not state a cause the page does not know.
+    const failedThenAsked: PendingVerification = {
+      bookingId: BOOKING_D,
+      propertyId: 'p-4',
+      propertyName: 'Porto Blu',
+      checkInDate: '2099-12-01T00:00:00Z',
+      checkOutDate: '2099-12-03T00:00:00Z',
+      guestName: 'Sara Bianchi',
+      guestEmail: 'sara@example.test',
+      biometricOutcome: 'Reject',
+      biometricAttempts: 1,
+      raisedAt: '2099-11-20T08:00:00Z',
+      reasons: [
+        { check: 'quality', result: 'passed' },
+        { check: 'similarity', result: 'failed', value: 0.4, threshold: 0.7 },
+      ],
+      provisional: false,
+    };
+    vi.mocked(verificationApi.getPending).mockResolvedValue([failedThenAsked]);
+    renderPage();
+    await screen.findByText('Porto Blu');
+
+    const why = card('Porto Blu').getByTestId('verification-why');
+    expect(why).toHaveAttribute('data-reason', 'no_match');
+    expect(why).toHaveTextContent(i18n.t('verification.why.no_match'));
+    expect(why).toHaveTextContent(/L'ultimo controllo automatico/);
+    expect(why).toHaveTextContent(/L'ospite può anche aver chiesto lui una persona\./);
+    expect(why).not.toHaveTextContent('Il volto nella foto non corrisponde al documento');
   });
 
   it('VerificationQueuePage_GuestWithAnEmail_ShowsTheContactAsALinkForTheCallOutsideCasaZen', async () => {

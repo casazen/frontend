@@ -41,8 +41,12 @@ export const VERIFICATION_RESULTS = [
 
 /**
  * Why a verification is in the queue, as far as the queue itself can tell (the pending item carries the last automatic outcome and its checks, not
- * what the guest did): the models could not run, the comparison is between the thresholds, the faces do not match, a check other than the comparison
- * asks for a person, the automatic check did not pass, or there is no automatic outcome (the guest asked for a person or did not give the consent).
+ * what the guest did, and not why the verification was handed to a person): the models could not run, the comparison is between the thresholds, the
+ * last comparison found another face, a check other than the comparison asks for a person, the last automatic check did not pass, or there is no
+ * automatic outcome (the guest asked for a person or did not give the consent, the face check is not used for the organization, the guest is a minor).
+ *
+ * `no_match` and `not_passed` are what the LAST automatic check found: a guest who failed an attempt and then asked for a person looks the same, so
+ * their words say the guest may also have asked. The reason of the hand-off is the backend's to give (follow-up: the pending verification DTO).
  */
 export const QUEUE_REASONS = ['operator_requested', 'uncertain', 'no_match', 'technical_error', 'review', 'not_passed'] as const;
 export type QueueReason = (typeof QUEUE_REASONS)[number];
@@ -57,7 +61,10 @@ export function resultKey(result: string): string {
   return (VERIFICATION_RESULTS as readonly string[]).includes(result) ? `verification.result.${result}` : 'verification.result.other';
 }
 
-/** The reason of the queue of a pending verification. The checks are read in the order of what they say about the guest, the most telling first. */
+/**
+ * The reason of the queue of a pending verification, read from the last automatic outcome. The checks are read in the order of what they say about the
+ * guest, the most telling first.
+ */
 export function queueReasonOf(item: Pick<PendingVerification, 'biometricOutcome' | 'reasons'>): QueueReason {
   const reasons = item.reasons ?? [];
   const found = (check: string, result?: string) =>

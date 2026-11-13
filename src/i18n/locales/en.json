@@ -24300,9 +24300,9 @@
       "past": "Past due",
       "reason": "Reason",
       "reasons": {
-        "no_match": "Faces do not match",
-        "not_passed": "Check not passed",
-        "operator_requested": "Asked for a person",
+        "no_match": "Last check: different face",
+        "not_passed": "Last check not passed",
+        "operator_requested": "No automatic check",
         "review": "A check needs a person",
         "technical_error": "Technical error",
         "uncertain": "Uncertain comparison"
@@ -24365,9 +24365,9 @@
       "unreadable": "the document could not be read"
     },
     "why": {
-      "no_match": "The face in the photo does not match the document.",
-      "not_passed": "The automatic check did not pass.",
-      "operator_requested": "The guest asked for a person, or did not give the biometric consent.",
+      "no_match": "The last automatic check did not find the face the same as the one on the document. The guest may also have asked for a person.",
+      "not_passed": "The last automatic check did not pass. The guest may also have asked for a person.",
+      "operator_requested": "No automatic check was concluded: the guest asked for a person or did not give the biometric consent, or the face check is not used (a setting of the organization, a minor guest).",
       "review": "A check found something that needs a person to look at it.",
       "technical_error": "The automatic check could not run.",
       "title": "Why it is here",

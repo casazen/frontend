@@ -24300,9 +24300,9 @@
       "past": "Scadute",
       "reason": "Motivo",
       "reasons": {
-        "no_match": "Volti non corrispondenti",
-        "not_passed": "Controllo non superato",
-        "operator_requested": "Ha chiesto una persona",
+        "no_match": "Ultimo controllo: volto diverso",
+        "not_passed": "Ultimo controllo non superato",
+        "operator_requested": "Nessun controllo automatico",
         "review": "Un controllo richiede una persona",
         "technical_error": "Errore tecnico",
         "uncertain": "Confronto incerto"
@@ -24365,9 +24365,9 @@
       "unreadable": "il documento non è leggibile"
     },
     "why": {
-      "no_match": "Il volto nella foto non corrisponde al documento.",
-      "not_passed": "Il controllo automatico non è stato superato.",
-      "operator_requested": "L'ospite ha chiesto una persona, oppure non ha dato il consenso biometrico.",
+      "no_match": "L'ultimo controllo automatico non ha trovato il volto uguale a quello del documento. L'ospite può anche aver chiesto lui una persona.",
+      "not_passed": "L'ultimo controllo automatico non è stato superato. L'ospite può anche aver chiesto lui una persona.",
+      "operator_requested": "Nessun controllo automatico concluso: l'ospite ha chiesto una persona o non ha dato il consenso biometrico, oppure il controllo del volto non si usa (impostazione dell'organizzazione, ospite minorenne).",
       "review": "Un controllo ha rilevato qualcosa che richiede lo sguardo di una persona.",
       "technical_error": "Il controllo automatico non ha potuto essere eseguito.",
       "title": "Perché è qui",

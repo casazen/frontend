@@ -68,6 +68,19 @@ describe('the words of the checks and of the results', () => {
     }
   });
 
+  it.each([
+    ['it', /^L'ultimo controllo automatico/, /può anche aver chiesto lui una persona\.$/],
+    ['en', /^The last automatic check/, /may also have asked for a person\.$/],
+  ])('theWordsOfWhatTheLastCheckFound_%s_SayWhoFoundItAndThatTheGuestMayAlsoHaveAskedForAPerson', (language, found, maybeAsked) => {
+    // The queue reads the last automatic outcome, not why the verification was handed to a person: a guest who failed an attempt and then asked
+    // looks the same as one the flow handed over, so these two words never state the cause as if it were known.
+    for (const reason of ['no_match', 'not_passed'] as const) {
+      const words = i18n.t(`verification.why.${reason}`, { lng: language });
+      expect(words, `${language} ${reason}`).toMatch(found);
+      expect(words, `${language} ${reason}`).toMatch(maybeAsked);
+    }
+  });
+
   it('checkKeyAndResultKey_ACodeTheConsoleDoesNotKnow_UseTheGenericTextThatCarriesTheCode', () => {
     expect(checkKey('from_the_future')).toBe('verification.check.other');
     expect(resultKey('from_the_future')).toBe('verification.result.other');
