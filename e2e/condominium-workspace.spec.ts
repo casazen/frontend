@@ -47,7 +47,7 @@ for (const width of [1440, 390]) test(`overview, payments and document review at
   await page.getByRole('button', { name: 'Carica i documenti', exact: true }).click();
   await page.getByRole('button', { name: /Ripartizione rate/ }).click();
   await page.getByLabel('Documento PDF').setInputFiles({ name: 'rate.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 test') });
-  await expect(page.getByLabel('Ordinario 1')).toHaveValue('800');
+  await expect(page.getByLabel('Ordinario 1', { exact: true })).toHaveValue('800');
   expect(posted).toBe(false);
   await page.getByRole('button', { name: 'Conferma piano rate' }).click();
   await expect(page.getByRole('status')).toContainText('rate già emesse');
