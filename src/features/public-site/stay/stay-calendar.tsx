@@ -13,7 +13,7 @@ import {
 } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ChevronLeft, ChevronRight, WifiOff } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, DoorClosed, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useOnlineStatus } from '@/hooks/use-online-status';
@@ -80,6 +80,8 @@ interface DayCellProps {
   date: string;
   state: DayState;
   priceCents: number | null;
+  /** A free night that no stay can start on (the host closed the arrival): marked with an icon and named in the label of the day. */
+  closedToArrival: boolean;
   currency: string;
   locale: string;
   showPrice: boolean;
@@ -94,13 +96,15 @@ interface DayCellProps {
 
 /**
  * One day (the night that starts on it). A day that is over or not known is not a button; every other day is, taken ones
- * included (a taken night can still be a check-out day, and a click on one as an arrival says why it cannot be). Its name tells
- * everything a color tells: free or taken, the price, whether it is the arrival or the departure.
+ * included (a taken night can still be a check-out day, and a click on one as an arrival says why it cannot be; the same for a night
+ * closed to arrival). Its name tells everything a color tells: free or taken, the price, closed to arrival, whether it is the arrival
+ * or the departure.
  */
 const DayCell = memo(function DayCell({
   date,
   state,
   priceCents,
+  closedToArrival,
   currency,
   locale,
   showPrice,
@@ -124,6 +128,7 @@ const DayCell = memo(function DayCell({
     if (showPrice && priceCents !== null) {
       label += `, ${t('stayPickers.calendar.perNight', { price: formatPrice(priceCents, currency, locale) })}`;
     }
+    if (closedToArrival) label += `, ${t('stayPickers.day.closedToArrival')}`;
   }
   if (role === 'start') label += `, ${t('stayPickers.calendar.arrivalChosen')}`;
   if (role === 'end') label += `, ${t('stayPickers.calendar.departureChosen')}`;
@@ -149,6 +154,7 @@ const DayCell = memo(function DayCell({
         ref={(element) => register(date, element)}
         data-date={date}
         data-state={busy ? 'busy' : 'free'}
+        data-closed-arrival={closedToArrival ? 'true' : undefined}
         tabIndex={tabStop ? 0 : -1}
         aria-label={label}
         aria-current={isToday ? 'date' : undefined}
@@ -168,6 +174,7 @@ const DayCell = memo(function DayCell({
         {showPrice && !busy && priceCents !== null ? (
           <span className="stay-cal__p">{formatPrice(priceCents, currency, locale)}</span>
         ) : null}
+        {closedToArrival ? <DoorClosed className="stay-cal__x" aria-hidden="true" /> : null}
       </button>
     </div>
   );
@@ -239,12 +246,14 @@ function CalendarMonth({
                   </div>
                 );
               }
+              const state = dayState(index, date);
               return (
                 <DayCell
                   key={date}
                   date={date}
-                  state={dayState(index, date)}
+                  state={state}
                   priceCents={index.days.get(date)?.priceCents ?? null}
+                  closedToArrival={state === 'free' && index.days.get(date)?.closedToArrival === true}
                   currency={currency}
                   locale={locale}
                   showPrice={showPrices && !index.unverified}
@@ -276,20 +285,32 @@ function problemSentence(t: TFunction, problem: RangeProblem, locale: string): s
       return t('stayPickers.problem.busyArrival', { date: formatDayMonth(problem.date, locale) });
     case 'busyBetween':
       return t('stayPickers.problem.busyBetween');
+    case 'arrivalClosed':
+      return t('stayPickers.problem.arrivalClosed', { date: formatDayMonth(problem.date, locale) });
+    case 'departureClosed':
+      return t('stayPickers.problem.departureClosed', { date: formatDayMonth(problem.date, locale) });
     case 'minNights':
       return t('stayPickers.problem.minNights', {
         count: problem.minNights,
         date: formatDayMonth(problem.earliestCheckOut, locale),
       });
+    case 'maxNights':
+      return t('stayPickers.problem.maxNights', {
+        count: problem.maxNights,
+        date: formatDayMonth(problem.latestCheckOut, locale),
+      });
+    case 'advance':
+      return t('stayPickers.problem.advance');
   }
 }
 
 /**
  * The range calendar of the public site (DB-20): one component for the search, the property page and the checkout. It is
  * controlled (`value`, `onChange`) and draws what the data says: the price of each night, the nights that are taken (struck
- * through and named "occupata" for a screen reader, never only a color), and why a stay cannot be had (a taken night inside it,
- * fewer nights than the minimum of that arrival). The arrival is chosen first, then the departure: a click on a day before the
- * arrival, or with a whole stay already chosen, starts again.
+ * through and named "occupata" for a screen reader, never only a color), the nights closed to arrival (a small door and the name
+ * "arrivi chiusi", never only a color), and why a stay cannot be had (a taken night inside it, an arrival or a departure the host
+ * closed, fewer nights than the minimum or more than the maximum of that arrival, an advance the host does not allow). The arrival
+ * is chosen first, then the departure: a click on a day before the arrival, or with a whole stay already chosen, starts again.
  *
  * Keyboard: the arrows move by a day or a week, Home and End to the ends of the week, Page up and Page down by a month; Enter
  * or Space chooses. What changes is said in a `status` area: the stay with its nights and what they cost together, or what is
@@ -318,6 +339,11 @@ export function StayCalendar({
     [data.days, data.today, data.end, unverified],
   );
   const monthList = useMemo(() => calendarMonths(index), [index]);
+  // The legend names the door of «arrivi chiusi» only when the calendar has a night that carries it.
+  const hasClosedArrival = useMemo(
+    () => data.days.some((day) => day.closedToArrival === true && day.available && day.date >= data.today),
+    [data.days, data.today],
+  );
   const scroll = layout === 'scroll';
   const shown = scroll ? monthList.length : (months ?? (fromTablet ? 2 : 1));
 
@@ -537,6 +563,12 @@ export function StayCalendar({
             <i className="stay-cal__key is-busy" />
             <s>{t('stayPickers.calendar.legendBusy')}</s>
           </span>
+          {hasClosedArrival ? (
+            <span>
+              <DoorClosed className="stay-cal__legend-x" />
+              {t('stayPickers.calendar.legendClosedToArrival')}
+            </span>
+          ) : null}
           <span>
             <i className="stay-cal__key is-sel" />
             {t('stayPickers.calendar.legendMine')}

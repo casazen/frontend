@@ -15464,12 +15464,18 @@
       "totalFor_other": "total for {{count}} nights"
     },
     "problem": {
+      "advance": "These dates can't be booked this far ahead, or this close to the day.",
+      "arrivalClosed": "Arrivals are closed on {{date}}.",
       "clearDates": "Clear the dates and start again",
       "datesUnavailable": "These dates are not free.",
+      "departureClosed": "Departures are closed on {{date}}.",
       "extend_one": "Stay {{count}} night",
       "extend_other": "Stay {{count}} nights",
       "firstFree": "First free dates: {{dates}}",
       "invalidStay": "Check the dates: the departure must be after the arrival.",
+      "maxNights": "The stay is longer than the maximum for this arrival.",
+      "maxNights_one": "The maximum stay is {{count}} night.",
+      "maxNights_other": "The maximum stay is {{count}} nights.",
       "minNights_one": "The minimum stay is {{count}} night.",
       "minNights_other": "The minimum stay is {{count}} nights.",
       "notBookable": "This home can't be booked online yet.",
@@ -19318,7 +19324,11 @@
       "tooManyGuests_one": "Sleeps {{count}} person at most",
       "tooManyGuests_other": "Sleeps {{count}} people at most",
       "noPets": "Pets not allowed",
-      "notBookable": "Not bookable online"
+      "notBookable": "Not bookable online",
+      "advance": "Can't be booked this far ahead, or this close to the day",
+      "arrivalClosed": "Arrivals closed on this date",
+      "departureClosed": "Departures closed on this date",
+      "maxNights": "Stay too long for these dates"
     },
     "tags": {
       "mare": "Seaside",
@@ -20284,6 +20294,7 @@
       "departureChosen": "departure chosen",
       "freeNight": "night available",
       "legendBusy": "Taken",
+      "legendClosedToArrival": "Arrivals closed",
       "legendFree": "Available",
       "legendMine": "Your dates",
       "loadError": "We cannot read the available dates.",
@@ -20299,6 +20310,9 @@
       "rangeTotal_other": "Arrival {{checkIn}}, departure {{checkOut}}: {{count}} nights, {{total}}.",
       "retry": "Try again",
       "unknown": "not available yet"
+    },
+    "day": {
+      "closedToArrival": "arrivals closed"
     },
     "destination": {
       "all": "All destinations",
@@ -20321,8 +20335,13 @@
       "summaryWithPet": "{{people}} · with a pet"
     },
     "problem": {
+      "advance": "This arrival can't be booked this far ahead, or this close to the day: choose another day of arrival.",
+      "arrivalClosed": "Arrivals are closed on {{date}}: choose another day of arrival.",
       "busyArrival": "{{date}} is already taken: choose another day of arrival.",
       "busyBetween": "There are nights already taken between these dates: choose an earlier departure, or another arrival.",
+      "departureClosed": "Departures are closed on {{date}}: choose another day of departure.",
+      "maxNights_one": "The maximum stay is {{count}} night: choose a departure by {{date}}.",
+      "maxNights_other": "The maximum stay is {{count}} nights: choose a departure by {{date}}.",
       "minNights_one": "The minimum stay is {{count}} night: choose a departure from {{date}} on.",
       "minNights_other": "The minimum stay is {{count}} nights: choose a departure from {{date}} on.",
       "past": "This day has already gone by: choose another day of arrival.",

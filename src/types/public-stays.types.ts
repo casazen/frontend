@@ -5,8 +5,21 @@ import type { RatingSummary } from './review.types';
  * site for a stay, in one call. The prices are the ones of the quote, to the cent (the server adds them up, the page never does).
  */
 
-/** Why a home is not free for the stay asked (the stable `reason` of the backend: never renamed). */
-export type PublicStayReason = 'busy' | 'min_nights' | 'guests' | 'pets' | 'past' | 'not_bookable';
+/**
+ * Why a home is not free for the stay asked (the stable `reason` of the backend: never renamed). `arrival_closed`, `departure_closed`,
+ * `max_nights` and `advance` are the rules of the nights the host set (E08/F05/US01, NF-36).
+ */
+export type PublicStayReason =
+  | 'busy'
+  | 'min_nights'
+  | 'arrival_closed'
+  | 'departure_closed'
+  | 'max_nights'
+  | 'advance'
+  | 'guests'
+  | 'pets'
+  | 'past'
+  | 'not_bookable';
 
 /** How much of the tourist tax a price includes: the tax worked out for this party, an estimate, or left out. */
 export type PublicStayTaxState = 'exact' | 'estimated' | 'notIncluded';
