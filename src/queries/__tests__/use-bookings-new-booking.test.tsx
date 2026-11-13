@@ -48,6 +48,14 @@ function refusal(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
+const ACCESS_TOKEN = 'secret-access-token';
+
+/** A refusal of the retry as axios keeps it: the request that was sent carries the access token of the call in its headers. */
+function refusalOfTheRetry(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders({ Authorization: `Bearer ${ACCESS_TOKEN}` }) } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: { status }, statusText: '', headers: {}, config });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -176,6 +184,29 @@ describe('«Retry» of the sync with the channel manager', () => {
     });
 
     expect(invalidate).toHaveBeenCalledWith({ queryKey: [BOOKINGS_KEY, 'b-1'] });
+  });
+
+  it.each([404, 409])('useRetryOctorateSync_Refused%s_KeepsNoAccessTokenAndNothingOnceTheResultIsGone', async (status) => {
+    // The request of a failed call holds the access token of the user in its headers: the mutation cache keeps a mutation for five minutes by default.
+    const { queryClient, wrapper } = setup();
+    const refused = refusalOfTheRetry(status);
+    expect(JSON.stringify(refused.config)).toContain(ACCESS_TOKEN);
+    vi.mocked(bookingsApi.retryOctorateSync).mockRejectedValue(refused);
+    const { result, unmount } = renderHook(() => useRetryOctorateSync(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync({ id: 'b-1' })).rejects.toMatchObject({ response: { status } });
+    });
+
+    // What a screen turns into words stays (the status); the request, and the token in it, does not.
+    const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
+    expect(kept.response?.status).toBe(status);
+    expect(JSON.stringify(kept.config ?? {})).not.toContain(ACCESS_TOKEN);
+    expect(JSON.stringify(kept.response?.config ?? {})).not.toContain(ACCESS_TOKEN);
+
+    // As soon as nothing watches the mutation it is gone.
+    unmount();
+    await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });
 });
 

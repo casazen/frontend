@@ -186,6 +186,58 @@ export function useCreateManualBooking() {
 }
 
 /**
+ * Asks again for the push of a booking to the channel manager (NF-74, NF-80): the edit and the cancellation offer it when the sync is `Failed` or `Conflict`
+ * (`overwrite` is the host's choice to write CasaZen's version over the one that changed there). No toast: the line of the channel manager shows the outcome and the
+ * error. Whatever the answer (a 409 "nothing to retry" included), the booking is read again, so the line shows what the server holds. A refusal is kept without the request
+ * that was sent (`withoutRequest`: it holds the access token of the call).
+ */
+export function useRetryOctorateSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async ({ id, overwrite }: { id: string; overwrite?: boolean }) => {
+      try {
+        return await bookingsApi.retryOctorateSync(id, overwrite);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: (_data, _error, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, id] });
+    },
+  });
+}
+
+const stayAvailabilityKey = (params: StayAvailabilityParams | null) => [BOOKINGS_KEY, 'availability', params] as const;
+
+/**
+ * Whether the stay is free (SR-06a), said as soon as the property and the dates are known. It is advice for the host: when the
+ * answer cannot be had the wizard goes on without it, and the API checks again when the booking is created. Other screens change what takes the nights
+ * (a booking made, a calendar that changed) and the client does not read an unobserved query again by default (`refetchOnMount: false`), so the answer
+ * of an earlier visit is never the one shown: it is read again whenever the step opens.
+ */
+export function useStayAvailability(params: StayAvailabilityParams | null) {
+  return useQuery({
+    queryKey: stayAvailabilityKey(params),
+    queryFn: () => bookingsApi.availability(params!),
+    enabled: params !== null,
+    staleTime: 15_000,
+    refetchOnMount: 'always',
+    retry: false,
+  });
+}
+
+/** The same answer, asked afresh from an event handler (the wizard checks it before it leaves the stay): never the one on screen. */
+export function fetchStayAvailability(queryClient: QueryClient, params: StayAvailabilityParams) {
+  return queryClient.fetchQuery({
+    queryKey: stayAvailabilityKey(params),
+    queryFn: () => bookingsApi.availability(params),
+    staleTime: 0,
+  });
+}
+
+/**
  * A new payment link of the balance of a booking the host entered, e-mailed to the guest (NF-74): the result of the new-booking wizard sends it again from
  * there, or makes it when the creation could not. The link is a credential, so as for the creation the mutation is not kept (`gcTime: 0`) and a failure
  * keeps no request. No error toast: the result shows the error next to the link. The payments are read again (the link opens a payment).
@@ -204,22 +256,6 @@ export function useCreatePaymentLink() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-    },
-  });
-}
-
-/**
- * Asks again for the push of a booking to the channel manager (NF-74, NF-80): the result of the new-booking wizard offers it when the sync is `Failed` or
- * `Conflict`. No toast: the line of the channel manager shows the outcome and the error. Whatever the answer (a 409 "nothing to retry" included), the booking
- * is read again, so the line shows what the server holds.
- */
-export function useRetryOctorateSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, overwrite }: { id: string; overwrite?: boolean }) => bookingsApi.retryOctorateSync(id, overwrite),
-    onSettled: (_data, _error, { id }) => {
-      void queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, id] });
     },
   });
 }
@@ -281,34 +317,6 @@ export function useBookingMirror(id: string, options: { enabled: boolean; keepWa
     // No retry of its own: while the answer is still to come the next read is a few seconds away anyway, and a failure is said at once.
     retry: false,
     refetchInterval: (query) => (keepWatching(query.state.data) ? MIRROR_POLL_MS : false),
-  });
-}
-
-const stayAvailabilityKey = (params: StayAvailabilityParams | null) => [BOOKINGS_KEY, 'availability', params] as const;
-
-/**
- * Whether the stay is free (SR-06a), said as soon as the property and the dates are known. It is advice for the host: when the
- * answer cannot be had the wizard goes on without it, and the API checks again when the booking is created. Other screens change what takes the nights
- * (a booking made, a calendar that changed) and the client does not read an unobserved query again by default (`refetchOnMount: false`), so the answer
- * of an earlier visit is never the one shown: it is read again whenever the step opens.
- */
-export function useStayAvailability(params: StayAvailabilityParams | null) {
-  return useQuery({
-    queryKey: stayAvailabilityKey(params),
-    queryFn: () => bookingsApi.availability(params!),
-    enabled: params !== null,
-    staleTime: 15_000,
-    refetchOnMount: 'always',
-    retry: false,
-  });
-}
-
-/** The same answer, asked afresh from an event handler (the wizard checks it before it leaves the stay): never the one on screen. */
-export function fetchStayAvailability(queryClient: QueryClient, params: StayAvailabilityParams) {
-  return queryClient.fetchQuery({
-    queryKey: stayAvailabilityKey(params),
-    queryFn: () => bookingsApi.availability(params),
-    staleTime: 0,
   });
 }
 
