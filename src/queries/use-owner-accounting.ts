@@ -91,12 +91,13 @@ export function useOwnerPayouts(ownerId: string | undefined, enabled = true) {
   });
 }
 
-/** A payout with its withholding evidence. */
+/** A payout with its withholding evidence: a detail, read again every time it is shown (a reversal adds to its evidence). */
 export function useOwnerPayout(payoutId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.payout(payoutId ?? ''),
     queryFn: () => ownerAccountingApi.getPayout(payoutId ?? ''),
     enabled: Boolean(payoutId),
+    refetchOnMount: 'always' as const,
   });
 }
 
