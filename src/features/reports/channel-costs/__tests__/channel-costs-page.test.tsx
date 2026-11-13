@@ -21,14 +21,13 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
-vi.mock('@/queries/use-properties', () => ({
-  useProperties: () => ({
-    data: [
-      { id: 'p-1', name: 'Villa del Lago' },
-      { id: 'p-2', name: 'Casa in centro' },
-    ],
-  }),
-}));
+// The list of the properties, as the hook answers it: with `enabled: false` nothing is asked and there is nothing to choose from.
+const useProperties = vi.hoisted(() => vi.fn());
+vi.mock('@/queries/use-properties', () => ({ useProperties }));
+const PROPERTIES = [
+  { id: 'p-1', name: 'Villa del Lago' },
+  { id: 'p-2', name: 'Casa in centro' },
+];
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: ReactNode }) => createElement('div', null, children),
 }));
@@ -155,8 +154,10 @@ const reads = () => get.mock.calls.filter(([, config]) => !(config as FileParams
 describe('ChannelCostsPage (NF-98)', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
+    useProperties.mockImplementation((_params: unknown, options?: { enabled?: boolean }) => ({ data: options?.enabled === false ? undefined : PROPERTIES }));
     granted.clear();
     granted.add('short-rent:payment.read');
+    granted.add('short-rent:property.read');
     // 24 September 2026 is "today" in Rome in these tests: the page opens on the three whole months before this one (June to August).
     freezeClock(NOON_UTC);
     await i18n.changeLanguage('it');
@@ -319,7 +320,23 @@ describe('ChannelCostsPage (NF-98)', () => {
 
     expect(await screen.findByTestId('channel-costs-no-access')).toBeInTheDocument();
     expect(get).not.toHaveBeenCalled();
+    expect(useProperties).not.toHaveBeenCalled();
     expect(screen.queryByTestId('channel-costs-export-csv')).toBeNull();
+  });
+
+  // Permission: the list of the properties is another permission (property.read). Without it the list is not asked for (the server would
+  // answer 403 and the shared client would send the app to the page of the missing access): there is no property to choose and the report
+  // covers the whole scope of the person.
+  it('Page_WithoutPropertyRead_DoesNotAskForTheListOfPropertiesAndTheReportCoversTheWholeScope', async () => {
+    granted.delete('short-rent:property.read');
+    serve(() => ok(REPORT));
+    renderPage();
+
+    expect(await screen.findByTestId('channel-costs-table')).toBeInTheDocument();
+    expect(useProperties).toHaveBeenCalled();
+    expect(useProperties.mock.calls.every(([, options]) => (options as { enabled?: boolean } | undefined)?.enabled === false)).toBe(true);
+    expect(screen.queryByTestId('channel-costs-property')).toBeNull();
+    expect(reads()[0]![1]!.params).toEqual({ from: '2026-06-01', to: '2026-08-31' });
   });
 
   it('Page_403_SaysTheReportIsNotOpenToThePersonAndShowsNoFigure', async () => {
@@ -413,8 +430,22 @@ describe('ChannelCostsPage (NF-98)', () => {
 
     fireEvent.click(screen.getByTestId('channel-costs-export-xlsx'));
 
-    expect(await screen.findByTestId('channel-costs-export-failure')).toHaveTextContent('troppe righe: scegli un periodo più breve');
+    // The cap is said in words: too many rows, the most a sheet can have, and what to do about it.
+    const failureText = await screen.findByTestId('channel-costs-export-failure');
+    expect(failureText).toHaveTextContent('Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe.');
+    expect(failureText).toHaveTextContent('Scegli un periodo più breve e riprova.');
     expect(save).not.toHaveBeenCalled();
     expect(screen.getByTestId('channel-costs-export-xlsx')).not.toBeDisabled();
+  });
+
+  it('Export_CsvTooManyRows_SaysTheCapOfTheCsvInWords', async () => {
+    serve(() => ok(REPORT), () => Promise.reject(failure(422, { code: 'csv_too_many_rows' }, true)));
+    renderPage();
+    await screen.findByTestId('channel-costs-table');
+
+    fireEvent.click(screen.getByTestId('channel-costs-export-csv'));
+
+    expect(await screen.findByTestId('channel-costs-export-failure')).toHaveTextContent('Troppe righe: un file CSV può avere al massimo 10.000 righe.');
+    expect(save).not.toHaveBeenCalled();
   });
 });
