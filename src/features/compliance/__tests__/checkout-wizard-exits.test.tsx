@@ -12,8 +12,10 @@ import { alloggiatiApi } from '@/api/alloggiati.api';
 import { completeCheckoutWizard, fetchCheckoutWizard, saveCheckoutProgress, startCheckoutWizard } from '@/api/compliance.api';
 import { fetchServiceRequests, fetchSuppliersByProperty } from '@/api/service-requests.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { NOON_UTC, freezeClock } from '@/test/clock';
-import type { Booking } from '@/types';
+import type { Booking, BookingOctorateSync } from '@/types';
 import type { AlloggiatiStatusDto } from '@/types/alloggiati.types';
 import type { CheckoutWizardState } from '@/types/compliance.types';
 import { CheckoutWizardPage } from '../checkout-wizard';
@@ -134,19 +136,21 @@ function axiosError(status: number, data: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+function renderPage(options: { connector?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? false };
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, { initialEntries: [CHECKOUT_PATH] },
-          createElement(Routes, null,
-            createElement(Route, { path: '/app/short-rent/bookings/:id/checkout', element: createElement(CheckoutWizardPage) }),
-            createElement(Route, {
-              path: '/app/short-rent/bookings/:id',
-              element: createElement('div', { 'data-testid': 'booking-detail-stub' }),
-            }),
-          )))),
+        createElement(FeatureFlagsContext.Provider, { value: { flags, isLoading: false } },
+          createElement(MemoryRouter, { initialEntries: [CHECKOUT_PATH] },
+            createElement(Routes, null,
+              createElement(Route, { path: '/app/short-rent/bookings/:id/checkout', element: createElement(CheckoutWizardPage) }),
+              createElement(Route, {
+                path: '/app/short-rent/bookings/:id',
+                element: createElement('div', { 'data-testid': 'booking-detail-stub' }),
+              }),
+            ))))),
   );
 }
 
@@ -340,5 +344,56 @@ describe('Checkout wizard without exits (E08/F04/US01)', { timeout: 30000 }, () 
     await waitFor(() => expect(screen.queryByTestId('checkout-guest-data-subflow')).not.toBeInTheDocument());
     expect(screen.getByTestId('checkout-arrival-missing')).toBeInTheDocument();
     expect(startCheckoutWizard).not.toHaveBeenCalled();
+  });
+});
+
+describe('The result of the check-out and the channel manager (E08/F04/US01)', { timeout: 30000 }, () => {
+  const MIRROR: BookingOctorateSync = { state: 'Synced', lastOperation: 'Create', lastSyncedAt: '2026-09-20T08:00:00Z', errorCode: null, canRetry: false };
+
+  /** The wizard opens on its last step with every earlier answer given: only the readiness of the property and the closing are left. */
+  async function closeTheStay() {
+    vi.mocked(startCheckoutWizard).mockResolvedValue(
+      wizardState({
+        currentStep: 'property-ready',
+        stay: { ...wizardState().stay, departureConfirmed: true },
+        cleaning: { choice: 'Skip', supplierOrgId: null, category: null, notes: null, requestId: null },
+        touristTax: { recordedAmount: 12, currency: 'EUR', collectedWithOnlinePayment: false, collection: 'CollectedAtProperty' },
+      }),
+    );
+    renderPage({ connector: true });
+    await onStep('property-ready');
+    fireEvent.click(screen.getByTestId('checkout-property-ready-yes'));
+    fireEvent.click(screen.getByTestId('checkout-complete-button'));
+    expect(await screen.findByText(i18n.t('compliance.checkout.done.stayClosed'), undefined, WAIT)).toBeInTheDocument();
+  }
+
+  it('CheckoutWizardPage_ClosedStayThatIsOnTheChannelManager_ResultHasTheOneNeutralLine', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: MIRROR }));
+
+    await closeTheStay();
+
+    expect(screen.getByText(i18n.t('compliance.checkout.done.channelManager.automatic'))).toBeInTheDocument();
+    expect(screen.queryByTestId('checkout-done-channel-manager')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /riprova|controlla di nuovo/i })).not.toBeInTheDocument();
+  });
+
+  it.each(['Pending', 'Failed', 'Conflict', 'NotAllowedByChannel'] as const)(
+    'CheckoutWizardPage_ClosedStayWhoseMirrorIs%s_ResultSaysNothingAboutTheChannelManager',
+    async (state) => {
+      vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: { ...MIRROR, state, errorCode: 'octorate_unavailable', canRetry: true } }));
+
+      await closeTheStay();
+
+      expect(screen.queryByText(/channel manager/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /riprova|controlla di nuovo/i })).not.toBeInTheDocument();
+    },
+  );
+
+  it('CheckoutWizardPage_ClosedStayThatIsNotOnTheChannelManager_ResultSaysNothingAboutIt', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: null }));
+
+    await closeTheStay();
+
+    expect(screen.queryByText(/channel manager/i)).not.toBeInTheDocument();
   });
 });

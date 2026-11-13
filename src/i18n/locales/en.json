@@ -4976,19 +4976,7 @@
         "alloggiatiSent": "The Alloggiati communication is recorded as sent.",
         "alloggiatiToSend": "The Alloggiati communication does not show as sent yet: check it from the booking page.",
         "channelManager": {
-          "blocked": "The channel does not allow this check-out to be recorded on the channel manager.",
-          "checkAgain": "Check again",
-          "conflict": "The channel manager holds a different version of the booking: the check-out was not recorded there.",
-          "failed": "The check-out did not reach the channel manager.",
-          "notFound": "We cannot find the booking: we cannot say whether the check-out is on the channel manager.",
-          "pending": "The check-out is being sent to the channel manager.",
-          "retry": "Retry now",
-          "retryFailed": "We could not try again. Try again in a moment.",
-          "synced": "The check-out was sent to the channel manager.",
-          "title": "The check-out on the channel manager needs a look",
-          "unreadable": "We cannot read the state of the check-out on the channel manager.",
-          "waiting": "The channel manager has not answered yet: the check-out does not show as recorded there.",
-          "waitingText": "It may take a few minutes. Check again shortly."
+          "automatic": "The check-out is passed on to the channel manager automatically. CasaZen does not show here whether it arrived."
         },
         "cleaningNotSent": "The cleaning request does not show as sent: check it in the booking detail.",
         "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
@@ -4997,10 +4985,8 @@
         "description": "The check-out of {{guest}} is recorded.",
         "next": {
           "alloggiatiLink": "Open the Alloggiati tab of the booking",
-          "checkChannelManager": "Check the state of the booking on the channel manager.",
           "markReady": "Declare the property ready from the compliance page, when it is.",
           "nothing": "There is nothing else to do for this stay.",
-          "retryChannelManager": "Send the check-out to the channel manager again.",
           "sendAlloggiati": "Send the Alloggiati communication from the booking page.",
           "title": "Next step"
         },

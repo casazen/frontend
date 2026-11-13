@@ -4976,19 +4976,7 @@
         "alloggiatiSent": "La comunicazione Alloggiati risulta inviata.",
         "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
         "channelManager": {
-          "blocked": "Il canale non permette di registrare questo check-out nel channel manager.",
-          "checkAgain": "Controlla di nuovo",
-          "conflict": "Il channel manager ha una versione diversa della prenotazione: il check-out non è stato registrato lì.",
-          "failed": "Il check-out non è arrivato al channel manager.",
-          "notFound": "Non troviamo la prenotazione: non possiamo dire se il check-out è nel channel manager.",
-          "pending": "Il check-out è in invio al channel manager.",
-          "retry": "Riprova ora",
-          "retryFailed": "Non siamo riusciti a riprovare. Riprova tra un momento.",
-          "synced": "Il check-out è stato inviato al channel manager.",
-          "title": "Il check-out sul channel manager richiede un controllo",
-          "unreadable": "Non riusciamo a leggere lo stato del check-out sul channel manager.",
-          "waiting": "Il channel manager non ha ancora risposto: il check-out non risulta ancora registrato lì.",
-          "waitingText": "Può servire qualche minuto. Controlla di nuovo tra poco."
+          "automatic": "Il check-out viene passato in automatico al channel manager. Qui CasaZen non mostra se è arrivato."
         },
         "cleaningNotSent": "La richiesta di pulizia non risulta inviata: controllala nel dettaglio della prenotazione.",
         "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
@@ -4997,10 +4985,8 @@
         "description": "Il check-out di {{guest}} è registrato.",
         "next": {
           "alloggiatiLink": "Apri la scheda Alloggiati della prenotazione",
-          "checkChannelManager": "Controlla lo stato della prenotazione sul channel manager.",
           "markReady": "Dichiara l'immobile pronto dagli adempimenti, quando lo è.",
           "nothing": "Non resta altro da fare per questo soggiorno.",
-          "retryChannelManager": "Riprova l'invio del check-out al channel manager.",
           "sendAlloggiati": "Invia la comunicazione Alloggiati dalla scheda della prenotazione.",
           "title": "Prossimo passo"
         },

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -9,8 +9,9 @@ import { bookingsApi } from '@/api/bookings.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { Booking, BookingOctorateSync } from '@/types';
+import type { BookingOctorateSync } from '@/types';
 import type { CheckoutWizardCompleteResult, CheckoutWizardState } from '@/types/compliance.types';
+import { channelManagerLinked } from '../../lib/checkout-result';
 import { CheckoutDone } from '../checkout-wizard-done';
 
 vi.mock('@/api/bookings.api', () => ({
@@ -56,28 +57,32 @@ function result(overrides: Partial<CheckoutWizardCompleteResult> = {}, state: Pa
 }
 
 function sync(changes: Partial<BookingOctorateSync> = {}): BookingOctorateSync {
-  return { state: 'Synced', lastOperation: 'Update', lastSyncedAt: '2026-09-24T10:05:00Z', errorCode: null, canRetry: false, ...changes };
+  return { state: 'Synced', lastOperation: 'Create', lastSyncedAt: '2026-09-20T08:00:00Z', errorCode: null, canRetry: false, ...changes };
 }
 
-/** `GET /bookings/:id`, the only answer that carries the mirror of the booking on the channel manager. */
-function detail(mirror: Partial<BookingOctorateSync> | null): Booking {
-  return { id: 'b-1', propertyId: 'p-1', octorateSync: mirror === null ? null : sync(mirror) } as Booking;
-}
-
-function renderDone(completion: CheckoutWizardCompleteResult, options: { connector?: boolean } = {}) {
+/** What the page passes to the result: whether the booking is on the channel manager, from the mirror it already read (the result reads nothing itself). */
+function renderDone(completion: CheckoutWizardCompleteResult, options: { connector?: boolean; mirror?: BookingOctorateSync | null } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const flags = { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? false };
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
         createElement(FeatureFlagsContext.Provider, { value: { flags, isLoading: false } },
-          createElement(MemoryRouter, null, createElement(CheckoutDone, { bookingId: 'b-1', guestName: 'Mario Rossi', result: completion }))))),
+          createElement(MemoryRouter, null,
+            createElement(CheckoutDone, {
+              bookingId: 'b-1',
+              guestName: 'Mario Rossi',
+              result: completion,
+              channelManager: channelManagerLinked(options.mirror),
+            }))))),
   );
 }
 
 const region = () => screen.getByRole('region', { name: 'Cosa succede ora' });
 const points = () => within(region()).getAllByRole('listitem').map((item) => item.textContent);
 const tones = () => within(region()).getAllByRole('listitem').map((item) => item.getAttribute('data-tone'));
+
+const NEUTRAL_LINE = 'Il check-out viene passato in automatico al channel manager. Qui CasaZen non mostra se è arrivato.';
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -198,116 +203,73 @@ describe('CheckoutDone: the next step', () => {
 });
 
 describe('CheckoutDone: the channel manager', () => {
-  it('CheckoutDone_BookingNotMirrored_HasNoLineForTheChannelManager', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail(null));
+  it('CheckoutDone_BookingNotOnTheChannelManager_HasNoLineForIt', () => {
+    renderDone(result(), { connector: true, mirror: null });
 
-    renderDone(result(), { connector: true });
-
-    await waitFor(() => expect(bookingsApi.getById).toHaveBeenCalledWith('b-1'));
     expect(points()).toHaveLength(5);
-    expect(screen.queryByTestId('checkout-done-channel-manager')).not.toBeInTheDocument();
+    expect(screen.queryByText(/channel manager/i)).not.toBeInTheDocument();
   });
 
-  it('CheckoutDone_ConnectorOff_ReadsNothingAndSaysNothingAboutTheChannelManager', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }));
+  it('CheckoutDone_ConnectorOff_SaysNothingAboutTheChannelManager', () => {
+    renderDone(result(), { connector: false, mirror: sync() });
 
-    renderDone(result(), { connector: false });
-
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(bookingsApi.getById).not.toHaveBeenCalled();
     expect(points()).toHaveLength(5);
-    expect(screen.queryByTestId('checkout-done-channel-manager')).not.toBeInTheDocument();
+    expect(screen.queryByText(/channel manager/i)).not.toBeInTheDocument();
   });
 
-  it('CheckoutDone_CheckOutBeingSent_IsNotDoneYet', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Pending', lastSyncedAt: null }));
+  it('CheckoutDone_BookingOnTheChannelManager_HasOneNeutralLineThatIsNotASuccess', () => {
+    renderDone(result(), { connector: true, mirror: sync() });
 
-    renderDone(result(), { connector: true });
-
-    expect(await screen.findByText('Il check-out è in invio al channel manager.')).toBeInTheDocument();
-    expect(tones()[1]).toBe('attention');
-    expect(screen.queryByTestId('checkout-done-channel-manager-retry')).not.toBeInTheDocument();
-  });
-
-  it('CheckoutDone_SyncConfirmedAfterTheStayWasClosed_SaysTheCheckOutWasSent', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Synced', lastSyncedAt: '2026-09-24T10:05:00Z' }));
-
-    renderDone(result(), { connector: true });
-
-    expect(await screen.findByText('Il check-out è stato inviato al channel manager.')).toBeInTheDocument();
-    expect(tones()[1]).toBe('done');
-  });
-
-  it('CheckoutDone_SyncConfirmedBeforeTheStayWasClosed_IsNotTakenForTheCheckOut', async () => {
-    // The channel manager confirmed the creation of the booking, not the check-out: a success it has not given is never said.
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Synced', lastOperation: 'Create', lastSyncedAt: '2026-09-20T08:00:00Z' }));
-
-    renderDone(result(), { connector: true });
-
-    expect(await screen.findByText('Il check-out è in invio al channel manager.')).toBeInTheDocument();
-    expect(screen.queryByText('Il check-out è stato inviato al channel manager.')).not.toBeInTheDocument();
+    expect(points()).toEqual([
+      'Nella prenotazione il soggiorno risulta concluso.',
+      NEUTRAL_LINE,
+      'La comunicazione Alloggiati risulta inviata.',
+      'Pulizie: nessuna richiesta, il passaggio è stato saltato.',
+      'Imposta di soggiorno dichiarata: Riscossa in struttura.',
+      "L'immobile è segnato come pronto per il prossimo ospite.",
+    ]);
+    // Neither the check mark of a done point nor the colour of a problem: the outcome is not known here.
     expect(tones()[1]).toBe('attention');
   });
 
-  it('CheckoutDone_CheckOutFailed_SaysWhyAndRetriesNowFromHere', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true, lastSyncedAt: null }));
-    vi.mocked(bookingsApi.retryOctorateSync).mockResolvedValue({ bookingId: 'b-1', state: 'Pending' });
+  it('CheckoutDone_BookingOnTheChannelManager_TheNextStepIsStillAlloggiatiThenTheProperty', () => {
+    renderDone(
+      result({ propertyReady: false }, { alloggiati: { status: 'DaInviareManualmente', sent: false, deadlineAt: '2026-09-22T22:00:00Z', isOverdue: false, dataComplete: true } }),
+      { connector: true, mirror: sync() },
+    );
 
-    renderDone(result(), { connector: true });
+    expect(screen.getByTestId('checkout-done-next')).toHaveTextContent('Invia la comunicazione Alloggiati dalla scheda della prenotazione.');
+    cleanup();
 
-    expect(await screen.findByText('Il check-out non è arrivato al channel manager.')).toBeInTheDocument();
-    expect(tones()[1]).toBe('problem');
-    expect(screen.getByTestId('checkout-done-channel-manager-reason')).not.toBeEmptyDOMElement();
-    expect(screen.getByTestId('checkout-done-next')).toHaveTextContent("Riprova l'invio del check-out al channel manager.");
+    renderDone(result({ propertyReady: false }), { connector: true, mirror: sync() });
 
-    const retry = screen.getByTestId('checkout-done-channel-manager-retry');
-    expect(retry).toHaveTextContent('Riprova ora');
-    fireEvent.click(retry);
-
-    await waitFor(() => expect(bookingsApi.retryOctorateSync).toHaveBeenCalledWith('b-1', undefined));
-    // The sync keeps its old state until the push starts: for a moment the line says it is on its way, not that it failed.
-    expect(await screen.findByText('Il check-out è in invio al channel manager.')).toBeInTheDocument();
-    expect(screen.queryByTestId('checkout-done-channel-manager-retry')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkout-done-next')).toHaveTextContent("Dichiara l'immobile pronto dagli adempimenti, quando lo è.");
+    expect(screen.getByTestId('checkout-done-next')).not.toHaveTextContent(/channel manager/i);
   });
 
-  it('CheckoutDone_RetryRefused_ShowsTheRefusalAndKeepsTheButton', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true, lastSyncedAt: null }));
-    vi.mocked(bookingsApi.retryOctorateSync).mockRejectedValue(new Error('network'));
+  it.each(['Pending', 'Synced', 'Failed', 'Conflict', 'NotAllowedByChannel'] as const)(
+    'CheckoutDone_MirrorOfTheBookingIs%s_TheResultShowsNoStateOfTheChannelManager',
+    async (state) => {
+      renderDone(result(), { connector: true, mirror: sync({ state, errorCode: 'octorate_unavailable', canRetry: true }) });
+      // Nothing is read or polled meanwhile: the result has no request of its own for the channel manager.
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-    renderDone(result(), { connector: true });
+      const text = document.body.textContent ?? '';
+      expect(text).not.toMatch(
+        /in invio|è stato inviato|non è arrivato|versione diversa|non ha ancora risposto|non risulta ancora registrato|non troviamo la prenotazione|richiede un controllo/i,
+      );
+      expect(screen.queryByRole('button', { name: /riprova|controlla di nuovo/i })).not.toBeInTheDocument();
+      expect(screen.queryByTestId(/^checkout-done-channel-manager/)).not.toBeInTheDocument();
+      expect(bookingsApi.getById).not.toHaveBeenCalled();
+      expect(bookingsApi.retryOctorateSync).not.toHaveBeenCalled();
+      // The only thing said about the channel manager is the neutral line, and only for a booking that is on it (`Synced`).
+      expect(points().filter((point) => /channel manager/i.test(point ?? ''))).toEqual(state === 'Synced' ? [NEUTRAL_LINE] : []);
+    },
+  );
 
-    fireEvent.click(await screen.findByTestId('checkout-done-channel-manager-retry'));
+  it('CheckoutDone_NeutralChannelManagerLine_HasNoAccessibilityViolation', async () => {
+    const { container } = renderDone(result({ propertyReady: false }), { connector: true, mirror: sync() });
 
-    expect(await screen.findByTestId('checkout-done-channel-manager-error')).toHaveTextContent('Non siamo riusciti a riprovare. Riprova tra un momento.');
-    expect(screen.getByTestId('checkout-done-channel-manager-retry')).toBeEnabled();
-  });
-
-  it('CheckoutDone_CheckOutFailedAndCallerMayNotWriteTheBooking_HasNoRetryButton', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: false, lastSyncedAt: null }));
-
-    renderDone(result(), { connector: true });
-
-    expect(await screen.findByText('Il check-out non è arrivato al channel manager.')).toBeInTheDocument();
-    expect(screen.queryByTestId('checkout-done-channel-manager-retry')).not.toBeInTheDocument();
-    expect(screen.getByTestId('checkout-done-next')).toHaveTextContent('Controlla lo stato della prenotazione sul channel manager.');
-  });
-
-  it('CheckoutDone_BookingNotFoundWhenReadingTheMirror_IsSaidAsNotFoundWhateverTheCacheHolds', async () => {
-    const notFound = Object.assign(new Error('Not found'), { isAxiosError: true, response: { status: 404, data: {} } });
-    vi.mocked(bookingsApi.getById).mockRejectedValue(notFound);
-
-    renderDone(result(), { connector: true });
-
-    expect(await screen.findByText('Non troviamo la prenotazione: non possiamo dire se il check-out è nel channel manager.')).toBeInTheDocument();
-    expect(tones()[1]).toBe('problem');
-  });
-
-  it('CheckoutDone_FailedLine_HasNoAccessibilityViolation', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(detail({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true, lastSyncedAt: null }));
-
-    const { container } = renderDone(result({ propertyReady: false }), { connector: true });
-
-    await screen.findByTestId('checkout-done-channel-manager-retry');
     await expectNoAxeViolations(container);
   });
 });

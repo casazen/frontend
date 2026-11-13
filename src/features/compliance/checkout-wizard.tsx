@@ -53,6 +53,7 @@ import {
 } from './components/checkout-wizard-steps';
 import { CheckoutDone } from './components/checkout-wizard-done';
 import { CheckoutGuestDataSubflow } from './components/checkout-guest-data-subflow';
+import { channelManagerLinked } from './lib/checkout-result';
 
 /**
  * Check-out of a stay (CO-08, CO-17, A5-24). The wizard is opened (`checkout-wizard/start`, same rules as
@@ -207,6 +208,7 @@ export function CheckoutWizardPage() {
             guestName={guestName}
             state={wizardState}
             onClosed={setClosedHere}
+            channelManager={channelManagerLinked(booking.octorateSync)}
           />
         )}
 
@@ -355,11 +357,14 @@ function CheckoutWizardForm({
   guestName,
   state,
   onClosed,
+  channelManager,
 }: {
   bookingId: string;
   guestName: string;
   state: CheckoutWizardState;
   onClosed: (result: CheckoutWizardCompleteResult) => void;
+  /** The booking is on the channel manager for sure: the result says one neutral thing about it. */
+  channelManager: boolean;
 }) {
   const { t } = useTranslation();
   const saveProgress = useSaveCheckoutProgress(bookingId);
@@ -409,7 +414,11 @@ function CheckoutWizardForm({
         }}
         // Reopening the confirmation (a typed address) when nothing was closed here: there is nothing to confirm, start over.
         renderDone={({ result }) =>
-          result ? <CheckoutDone bookingId={bookingId} guestName={guestName} result={result} /> : <Navigate to={{ search: '' }} replace />
+          result ? (
+            <CheckoutDone bookingId={bookingId} guestName={guestName} result={result} channelManager={channelManager} />
+          ) : (
+            <Navigate to={{ search: '' }} replace />
+          )
         }
         aboveFooter={
           <>
