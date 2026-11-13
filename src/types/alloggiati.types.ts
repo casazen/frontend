@@ -204,34 +204,3 @@ export interface GuestCheckInDataResponse {
 export interface GuestDocumentUploadResponse {
   documentScanUrl: string;
 }
-
-export interface AlloggiatiReportDto {
-  reportId: string;
-  bookingId: string;
-  propertyId: string;
-  propertyName: string;
-  guestName: string;
-  checkInDate: string;
-  status: AlloggiatiWebStatus;
-  confirmationNumber: string | null;
-  reportedAt: string | null;
-  deadlineAt: string;
-  hoursUntilDeadline: number;
-  isOverdue: boolean;
-  hasErrors: boolean;
-  errorCount: number;
-}
-
-export interface AlloggiatiReportFilters {
-  propertyId?: string;
-  status?: AlloggiatiWebStatus;
-  fromDate?: string;
-  toDate?: string;
-}
-
-export interface AlloggiatiRowErrorDto {
-  rowNumber: number;
-  guestName: string;
-  tipoErrore: string;
-  errorMessage: string;
-}

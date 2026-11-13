@@ -102,29 +102,34 @@ afterEach(() => {
 
 // E03/F03/US01/T02 (NF-52, AC-NF52-9): the property card shows the light of its compliance items, with the same component and words as the page.
 describe('PropertyNextStep and the compliance lights of the property', () => {
-  // The police send and the tourist tax rate lead to the page of the property: the card is on that page and the page has no field for either yet.
-  it.each([
-    ['ActivateOctorateSend', 'connection_inactive', "Attiva l'invio automatico alla Questura: Casa Como", "L'invio automatico non è attivo: attivalo oppure invia tu."],
-    [
-      'EnterMunicipalityTaxRate',
-      'municipality_rate_missing',
-      "Inserisci l'imposta di soggiorno del comune: Casa Como",
-      "Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).",
-    ],
-  ] as const)('PropertyNextStep_Red%s_SaysWhatIsWrongAndOffersNoButtonThatOpensThePageItIsOn', async (action, reason, title, words) => {
-    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item(action, 'Red', reason)) }));
+  // The tourist tax rate leads to the page of the property: the card is on that page and the page has no field for it yet.
+  it('PropertyNextStep_RedEnterMunicipalityTaxRate_SaysWhatIsWrongAndOffersNoButtonThatOpensThePageItIsOn', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('EnterMunicipalityTaxRate', 'Red', 'municipality_rate_missing')) }));
     renderStep();
 
     const block = await screen.findByTestId('property-next-step');
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
-    expect(block).toHaveTextContent(title);
-    expect(block).toHaveTextContent(words);
+    expect(block).toHaveTextContent("Inserisci l'imposta di soggiorno del comune: Casa Como");
+    expect(block).toHaveTextContent("Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).");
     expect(block).toHaveAttribute('data-tone', 'warning');
     // A button to `/properties/<id>` would open the page it is on and do nothing: the block leads back to the list and does not say «Tocca a te».
     expect(screen.queryByTestId('property-next-compliance')).not.toBeInTheDocument();
     expect(within(block).queryByRole('link', { name: /Controlla l'invio|Inserisci l'imposta/ })).not.toBeInTheDocument();
     expect(block).not.toHaveTextContent('Tocca a te');
     expect(within(block).getByRole('link', { name: 'Torna agli immobili' })).toHaveAttribute('href', '/app/short-rent/properties');
+  });
+
+  // The police send has its place on the page of the property (the connection health, E03/F03/US02/T01): the button leads to that section.
+  it('PropertyNextStep_RedActivateOctorateSend_OffersTheButtonThatOpensTheConnectionHealthSection', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('ActivateOctorateSend', 'Red', 'connection_inactive')) }));
+    renderStep();
+
+    const block = await screen.findByTestId('property-next-step');
+    await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
+    expect(block).toHaveTextContent("Attiva l'invio automatico alla Questura: Casa Como");
+    expect(block).toHaveTextContent("L'invio automatico non è attivo: attivalo oppure invia tu.");
+    expect(screen.getByTestId('property-next-compliance')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+    expect(block).toHaveTextContent('Tocca a te');
   });
 
   it('PropertyNextStep_ItemWhosePageIsAnotherOne_KeepsItsButtonAndSaysItIsTheHostsTurn', async () => {
@@ -141,7 +146,8 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({
         periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08', dueAt: '2026-09-10T00:00:00Z' })),
-        connectionsToFix: section(item('ActivateOctorateSend', 'Yellow', 'connection_unverified'), item('RenewPoliceCredentials', 'Yellow', 'connection_unverified')),
+        // The tourist tax rate leads to the page of the property, which has no field for it yet: no button. The police credentials lead to another page.
+        connectionsToFix: section(item('EnterMunicipalityTaxRate', 'Yellow', 'municipality_rate_missing'), item('RenewPoliceCredentials', 'Yellow', 'connection_unverified')),
       }),
     );
     renderStep();
@@ -149,10 +155,26 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     const lines = await screen.findByTestId('compliance-lines');
     const rows = within(lines).getAllByTestId('compliance-line');
     expect(rows).toHaveLength(2);
-    const send = rows.find((row) => row.getAttribute('data-action') === 'ActivateOctorateSend')!;
+    const rate = rows.find((row) => row.getAttribute('data-action') === 'EnterMunicipalityTaxRate')!;
     const credentials = rows.find((row) => row.getAttribute('data-action') === 'RenewPoliceCredentials')!;
-    expect(within(send).queryByTestId('compliance-line-action')).not.toBeInTheDocument();
+    expect(within(rate).queryByTestId('compliance-line-action')).not.toBeInTheDocument();
     expect(within(credentials).getByTestId('compliance-line-action')).toHaveAttribute('href', '/app/short-rent/alloggiati');
+  });
+
+  // The police send has its section on the page of the property (E03/F03/US02/T01): the line of the list under the block leads to it as well.
+  it('PropertyNextStep_OtherLineAboutThePoliceSend_KeepsItsButtonToTheConnectionHealthSection', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryOf({
+        periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08', dueAt: '2026-09-10T00:00:00Z' })),
+        connectionsToFix: section(item('ActivateOctorateSend', 'Yellow', 'connection_unverified')),
+      }),
+    );
+    renderStep();
+
+    const lines = await screen.findByTestId('compliance-lines');
+    const send = within(lines).getByTestId('compliance-line');
+    expect(send).toHaveAttribute('data-action', 'ActivateOctorateSend');
+    expect(within(send).getByTestId('compliance-line-action')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
   });
 
   it('PropertyNextStep_RedMonthOfIstatPastItsDeadline_IsRedAsTheDeadlineAndOpensTheArchive', async () => {

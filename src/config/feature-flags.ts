@@ -14,7 +14,8 @@ export type FeatureFlagKey =
   | 'concordatoFacile'
   | 'supplierRequestBackups'
   | 'agencyTier'
-  | 'crmMarketing';
+  | 'crmMarketing'
+  | 'complianceTrafficLight';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -98,6 +99,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */
   crmMarketing: false,
+  /**
+   * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
+   * proofs of a period (`GET /api/compliance/report` and its export, which answer 404 while it is off). Off until the product owner turns it on. The
+   * page of the proofs (`/app/short-rent/alloggiati/reports`) offers its summary («Riepilogo») only while it is on: off, it is the archive of the proofs
+   * alone, which does not depend on it.
+   */
+  complianceTrafficLight: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

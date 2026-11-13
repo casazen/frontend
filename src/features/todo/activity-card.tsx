@@ -9,6 +9,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { cn } from '@/lib/utils';
 import { useCloseActivity } from '@/queries/internalActivities';
 import { describeTodo } from './lib/todo-model';
@@ -140,7 +141,8 @@ export const ACTION_ROUTE_MAP = {
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
   // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
   // - `SendAlloggiatiManually`: the Alloggiati section of the booking (the item is about the stay);
-  // - `ActivateOctorateSend`, `EnterMunicipalityTaxRate`: the page of the property (the police send and the tourist tax rate are the property's);
+  // - `ActivateOctorateSend`: the page of the property, on the section of its connection health (the police send is the property's);
+  // - `EnterMunicipalityTaxRate`: the page of the property (the tourist tax rate is the property's; no page enters it yet);
   // - `RenewPoliceCredentials`: the Alloggiati dashboard;
   // - `DeclareTouristTax`: the archive of the proofs, on the tax declaration of the property (the month is in the entity type of the item,
   //   `PropertyPeriod:yyyy-MM`; the archive reads `kind` and `property` from the address).
@@ -148,7 +150,7 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'alloggiati' },
   },
   ActivateOctorateSend: {
-    route: { path: '/app/short-rent/properties/:id', target: 'property' },
+    route: { path: '/app/short-rent/properties/:id', target: 'property', search: { section: CONNECTION_HEALTH_SECTION } },
   },
   RenewPoliceCredentials: {
     route: { path: '/app/short-rent/alloggiati' },
