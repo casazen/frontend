@@ -7,13 +7,11 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { BlockDetails } from './components/block-details';
 import { BookingCalendar } from './components/booking-calendar';
 import { CalendarToolbar } from './components/calendar-toolbar';
 import { DayLayerNotice } from './components/day-layer-notice';
-import { ManualBlockForm } from './components/manual-block-form';
+import { DayPanel } from './components/day-panel';
 import { TimelineSection } from './components/timeline-section';
 import { useBookingCalendar } from '@/queries/use-bookings';
 import { useUnreadMessagesByBooking } from '@/queries/use-booking-messages';
@@ -23,7 +21,8 @@ import { CalendarDays, CalendarOff, List, Loader2, Plus } from 'lucide-react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { SlotInfo } from 'react-big-calendar';
-import { addDays, toStayDate, todayInRome } from '@/lib/stay-dates';
+import { toStayDate, todayInRome } from '@/lib/stay-dates';
+import { clearSelection, pressDay, selectionOfDays, startSelection, type DaySelection } from './lib/day-selection';
 import {
   hostCalendarRange,
   toHostCalendarEvents,
@@ -63,16 +62,14 @@ export function CalendarPage() {
   // "Crea soggiorno OTA" needs booking.write (CO-21); without a workspace (e.g. tests) nothing is offered.
   const workspace = useContext(WorkspaceContext);
   const canWriteBookings = workspace?.hasPermission('short-rent', 'booking.write') ?? false;
-  // "Blocca date" and "Elimina blocco" need property.write (PC-09).
+  // Selecting days to block them or change their price and rules, and "Elimina blocco", need property.write (PC-09, NF-78).
   const canWriteProperty = workspace?.hasPermission('short-rent', 'property.write') ?? false;
   // The price and the rules of every day are property data: read only by who may read properties (without the right nothing is asked, and the calendar is what it was).
   const canReadProperty = workspace?.hasPermission('short-rent', 'property.read') ?? false;
   // The guests' messages not read yet, once for the whole calendar: the entries of a stay with some carry a counter (SR-12).
   const unreadMessages = useUnreadMessagesByBooking(workspace?.hasPermission('short-rent', 'booking.read') ?? false);
-  // The "Blocca date" form, open with the nights selected on the calendar (or from today).
-  const [blockDraft, setBlockDraft] = useState<{ start?: string; end?: string } | null>(null);
-  // The property the form closes dates of, when the calendar shows all of them and does not say which.
-  const [blockPropertyId, setBlockPropertyId] = useState('');
+  // The days selected on the calendar (the Timeline, the month, the week or the day): they open the panel that blocks them or changes their price and rules.
+  const [selection, setSelection] = useState<DaySelection | null>(null);
 
   const view = parseCalendarView(searchParams.get('view'), wideScreen);
   const zoom = parseTimelineZoom(searchParams.get('zoom'));
@@ -84,7 +81,8 @@ export function CalendarPage() {
   const requestedProperty = propertyList.some((property) => property.id === requestedPropertyId) ? requestedPropertyId : '';
   // The Timeline shows every property unless one is asked for; the month, the week and the day always show one (the first by default).
   const activePropertyId = requestedProperty || (view === 'timeline' ? '' : (propertyList[0]?.id ?? ''));
-  const formPropertyId = activePropertyId || blockPropertyId || propertyList[0]?.id || '';
+  // The property "Blocca date" starts from: the one shown, else the first (the Timeline of every property does not say which; the next click on a day does).
+  const startPropertyId = activePropertyId || propertyList[0]?.id || '';
   const activeProperty = propertyList.find((property) => property.id === activePropertyId);
 
   const setQuery = useCallback(
@@ -141,7 +139,7 @@ export function CalendarPage() {
         // The drawer of the booking (UI-15), as in the Home and the list; a page without a drawer goes to the page of the booking.
         if (!detailDrawer.open('booking', event.id)) navigate(`${BOOKINGS_PATH}/${event.id}`);
       } else {
-        setBlockDraft(null);
+        setSelection(clearSelection());
         setSelectedBlockId(event.id);
       }
     },
@@ -159,15 +157,23 @@ export function CalendarPage() {
 
   const handleMonthView = useCallback((next: HostCalendarView) => setQuery({ view: next }), [setQuery]);
 
-  // Days selected on the calendar: the nights from the first to the last selected day are closed.
-  const handleSelectSlot = useCallback((slot: SlotInfo) => {
-    const days = (slot.slots.length > 0 ? slot.slots : [slot.start]).map(toStayDate).filter(Boolean).sort();
-    const first = days[0];
-    const last = days[days.length - 1];
-    if (!first || !last) return;
+  // Days selected on the month, the week or the day (a click or a drag of the library): the same selection as the Timeline's, and it opens the same panel.
+  const handleSelectSlot = useCallback(
+    (slot: SlotInfo) => {
+      const next = selectionOfDays(activePropertyId, (slot.slots.length > 0 ? slot.slots : [slot.start]).map(toStayDate));
+      if (!next) return;
+      setSelectedBlockId(null);
+      setSelection(next);
+    },
+    [activePropertyId],
+  );
+
+  // A press on a day (a click, Enter or Space; with Shift the selection grows): the first press starts a selection, the second extends it.
+  const handlePressDay = useCallback((propertyId: string, day: string, shift: boolean) => {
     setSelectedBlockId(null);
-    setBlockDraft({ start: first, end: addDays(last, 1) });
+    setSelection((previous) => pressDay(previous, propertyId, day, shift));
   }, []);
+  const handleClearSelection = useCallback(() => setSelection(clearSelection()), []);
 
   return (
     <UnreadMessagesContext.Provider value={unreadMessages.data ?? NO_UNREAD}>
@@ -190,8 +196,9 @@ export function CalendarPage() {
               <Button
                 variant="outline"
                 onClick={() => {
+                  // The panel opens on tonight of the property shown (or the first): the dates and the property are changed by selecting other days on the calendar.
                   setSelectedBlockId(null);
-                  setBlockDraft({});
+                  setSelection(startSelection(startPropertyId, todayInRome()));
                 }}
                 data-testid="manual-block-open"
               >
@@ -227,7 +234,7 @@ export function CalendarPage() {
               propertyId={activePropertyId}
               onPropertyChange={(propertyId) => {
                 setSelectedBlockId(null);
-                setBlockDraft(null);
+                setSelection(clearSelection());
                 setQuery({ propertyId: propertyId || null });
               }}
               view={view}
@@ -239,35 +246,6 @@ export function CalendarPage() {
               showPeriod={view === 'timeline' || !isError}
             />
 
-            {blockDraft && formPropertyId && (
-              <section aria-labelledby="manual-block-form-title" className="space-y-3 rounded-xl border bg-card p-4">
-                <h2 id="manual-block-form-title" className="font-semibold">
-                  {t('booking.calendar.manualBlock.formTitle')}
-                </h2>
-                {/* The Timeline may show every property: then the form asks which one the dates are closed for. */}
-                {!activePropertyId && propertyList.length > 1 && (
-                  <div className="max-w-xs space-y-2">
-                    <Label htmlFor="manual-block-property">{t('booking.calendar.property')}</Label>
-                    <Select id="manual-block-property" value={formPropertyId} onChange={(event) => setBlockPropertyId(event.target.value)}>
-                      {propertyList.map((property) => (
-                        <option key={property.id} value={property.id}>
-                          {property.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                )}
-                <ManualBlockForm
-                  key={`${formPropertyId}-${blockDraft.start ?? ''}-${blockDraft.end ?? ''}`}
-                  propertyId={formPropertyId}
-                  initialStart={blockDraft.start}
-                  initialEnd={blockDraft.end}
-                  onCreated={() => setBlockDraft(null)}
-                  onCancel={() => setBlockDraft(null)}
-                />
-              </section>
-            )}
-
             {view === 'timeline' ? (
               <TimelineSection
                 start={anchor}
@@ -277,6 +255,9 @@ export function CalendarPage() {
                 dayLayer={dayRead.layer}
                 dayLayerFailed={dayRead.failed}
                 onRetryDayLayer={dayRead.retry}
+                selection={selection}
+                onPressDay={canWriteProperty ? handlePressDay : undefined}
+                onClearSelection={handleClearSelection}
               />
             ) : isError ? (
               // An API error is never shown as an empty calendar.
@@ -312,12 +293,25 @@ export function CalendarPage() {
                   loading={calendarLoading}
                   property={activeProperty}
                   dayLayer={activePropertyId ? dayRead.layer?.get(activePropertyId) : undefined}
+                  selection={selection}
+                  onPressDay={canWriteProperty ? handlePressDay : undefined}
+                  onClearSelection={handleClearSelection}
                 />
               </>
             )}
           </>
         )}
       </div>
+      {/* The panel of the days selected: block them, change their price or their rules. Only who may write properties gets it. */}
+      {selection && canWriteProperty ? (
+        <DayPanel
+          selection={selection}
+          propertyName={propertyList.find((property) => property.id === selection.propertyId)?.name ?? ''}
+          layer={dayRead.layer?.get(selection.propertyId)}
+          today={todayInRome()}
+          onClose={handleClearSelection}
+        />
+      ) : null}
     </AppShell>
     </UnreadMessagesContext.Provider>
   );

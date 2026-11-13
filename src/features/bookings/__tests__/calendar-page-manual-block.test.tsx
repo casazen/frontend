@@ -75,9 +75,10 @@ function renderPage(permissions: string[] = ['property.write', 'booking.write'])
   );
 }
 
+// "Blocca date" opens the panel of the days (E08/F05/US03/T02) on tonight of the property shown, with the block form in it.
 function openForm() {
   fireEvent.click(screen.getByRole('button', { name: 'Blocca date' }));
-  return screen.getByRole('region', { name: 'Blocca date' });
+  return screen.getByTestId('manual-block-form');
 }
 
 async function openMaintenanceBlock() {
@@ -105,7 +106,7 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     vi.useRealTimers();
   });
 
-  it('BloccaDate_ValidForm_SendsStayDatesReasonAndNoteAndClosesTheForm', async () => {
+  it('BloccaDate_ValidForm_SendsStayDatesReasonAndNoteAndClosesThePanel', async () => {
     vi.mocked(manualBlocksApi.create).mockResolvedValue({ id: 'mb9' } as ManualBlockDto);
     renderPage();
     await screen.findByRole('button', { name: 'Giorno' });
@@ -129,7 +130,7 @@ describe('CalendarPage manual blocks (PC-09)', () => {
         note: 'Ferie',
       }),
     );
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Blocca date' })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByTestId('day-panel')).not.toBeInTheDocument());
     // The calendar of the range is asked again with the new block.
     await waitFor(() => expect(bookingsApi.getCalendar).toHaveBeenCalledTimes(2));
   });
@@ -162,7 +163,8 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     expect(await within(form).findByTestId('manual-block-error')).toHaveTextContent(
       'Una prenotazione occupa già una di queste notti: annullala o scegli altre date.',
     );
-    expect(screen.getByRole('region', { name: 'Blocca date' })).toBeInTheDocument();
+    expect(screen.getByTestId('day-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('manual-block-form')).toBeInTheDocument();
   });
 
   it('ManualBlock_Opened_ShowsReasonNoteAndRemovesItAfterConfirmation', async () => {
