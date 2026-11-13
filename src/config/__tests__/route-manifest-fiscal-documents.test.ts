@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
+import { documentLinkOf, FISCAL_DOCUMENTS_PATH as LEDGER_DOCUMENTS_PATH } from '@/features/payments/lib/payment-ledger';
 import { DEFAULT_FEATURE_FLAGS, isFeatureRuleEnabled, parseFeatureFlags } from '../feature-flags';
 import { ROUTE_MANIFEST, getManifestEntry, getNavSection, hasEntryPermission, isEntryFeatureEnabled } from '../route-manifest';
 
@@ -67,20 +68,17 @@ describe('route manifest: the fiscal documents (E06/F03/US04/T01)', () => {
     expect(getNavSection('/app/short-rent/fiscal', withoutPayments, ISSUANCE).map((page) => page.path)).not.toContain(FISCAL_DOCUMENTS_PATH);
   });
 
-  // The payment ledger (E06/F04/US01/T04) draws the link to the documents only when this entry is in the manifest, its flags are on and the caller holds what it asks:
-  // the same three things, in the same order, as its `documentLinkOf`. With the flags off the link is not drawn; with them on it lights up by itself.
+  // The payment ledger (E06/F04/US01/T04) draws the link to the documents only when this entry is in the manifest, its flags are on and the caller holds what it asks
+  // (`documentLinkOf`). With the flags off the link is not drawn; with them on it lights up by itself, on the very route of this page.
   it('RouteManifest_FiscalDocuments_TheLinkOfThePaymentLedgerLightsUpByItselfOnlyWhereThePageExists', () => {
-    const linkOf = (permission: (context: 'short-rent', permission: string) => boolean, flags: Partial<typeof DEFAULT_FEATURE_FLAGS> | undefined) => {
-      const found = getManifestEntry(FISCAL_DOCUMENTS_PATH);
-      return found && isEntryFeatureEnabled(found, flags) && hasEntryPermission(found, permission) ? found.path : null;
-    };
-    const withoutPayments = (_context: 'short-rent', permission: string) => permission !== 'payment.read';
+    const withoutPayments = (_context: string, permission: string) => permission !== 'payment.read';
 
-    expect(linkOf(allow, DEFAULT_FEATURE_FLAGS)).toBeNull();
-    expect(linkOf(allow, ISSUANCE)).toBe(FISCAL_DOCUMENTS_PATH);
-    expect(linkOf(allow, IMPORT)).toBe(FISCAL_DOCUMENTS_PATH);
-    expect(linkOf(withoutPayments, ISSUANCE)).toBeNull();
-    expect(linkOf(allow, undefined)).toBeNull();
+    expect(LEDGER_DOCUMENTS_PATH).toBe(FISCAL_DOCUMENTS_PATH);
+    expect(documentLinkOf(allow, DEFAULT_FEATURE_FLAGS)).toBeNull();
+    expect(documentLinkOf(allow, undefined)).toBeNull();
+    expect(documentLinkOf(allow, ISSUANCE)).toBe(FISCAL_DOCUMENTS_PATH);
+    expect(documentLinkOf(allow, IMPORT)).toBe(FISCAL_DOCUMENTS_PATH);
+    expect(documentLinkOf(withoutPayments, ISSUANCE)).toBeNull();
   });
 
   it('RouteManifest_FiscalDocuments_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async () => {
