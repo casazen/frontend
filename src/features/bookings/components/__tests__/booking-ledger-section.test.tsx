@@ -94,7 +94,7 @@ describe('BookingLedgerSection, who may read it (permission rule)', () => {
     permissions.read = false;
     const { container } = renderSection();
 
-    // A read they may not make would be a 403 (and the client would move them away): it is never made, and nothing is said about it.
+    // A read they may not make would be a 403 (told as a refusal, see payment-ledger-refusal.test.tsx): it is never made, and nothing is said about it.
     expect(container).toBeEmptyDOMElement();
     expect(getBookingLedger).not.toHaveBeenCalled();
     await act(async () => {});

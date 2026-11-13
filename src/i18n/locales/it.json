@@ -16262,6 +16262,7 @@
       "count_other": "{{count}} righe nel periodo",
       "emptyDescription": "Qui compaiono gli incassi registrati e quelli del canale. Se ne aspettavi qualcuno, controlla le date.",
       "emptyTitle": "Nessuna riga nel periodo",
+      "forbidden": "Non hai il permesso di vedere gli incassi del periodo.",
       "incomplete": "Scegli il primo e l’ultimo giorno del periodo.",
       "label": "Periodo",
       "loadError": "Non riusciamo a leggere gli incassi del periodo in questo momento.",

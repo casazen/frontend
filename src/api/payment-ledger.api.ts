@@ -1,8 +1,25 @@
+import { AxiosError } from 'axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import axios from '@/lib/axios';
 import type { PaymentLedgerBooking, PaymentLedgerCriteria, PaymentLedgerDocument, PaymentLedgerLine, PaymentLedgerPage } from '@/types';
-import { ApiClient } from './client';
 
 const PATH = '/payment-ledger';
+
+/**
+ * A 403 is an answer of these reads, not a failure of the app: for a read the shared client sends the whole app to the no-access page, and a refusal of the ledger must be
+ * told in its own section with the rest of the page still there. The status is accepted here, as `reportsApi.getByOwner` and `propertySenderApi.get` do, and `readLedger` raises it
+ * again as the error it is, so that the screens read it with `getHttpStatus` as any other. A 403 `account_inactive` or `onboarding_required` is not routed by these reads either: the
+ * other reads of the page raise it.
+ */
+const acceptsRefusal = (status: number) => (status >= 200 && status < 300) || status === 403;
+
+async function readLedger(path: string, params?: object): Promise<unknown> {
+  const response = await axios.get<unknown>(path, { params, validateStatus: acceptsRefusal });
+  if (response.status === 403) {
+    throw new AxiosError(`Request failed with status code ${response.status}`, AxiosError.ERR_BAD_REQUEST, response.config, response.request, response);
+  }
+  return response.data;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -83,11 +100,11 @@ function ensurePage(data: unknown, path: string): PaymentLedgerPage {
 /**
  * The ledger of one booking (`GET api/payment-ledger/bookings/{bookingId}`, FIS-05): its lines, newest first, and `degraded` when the collections of its channel
  * could not be read (the stored amounts are answered then, never an error). Needs `payment.read`: a booking of another organization, or one the caller may not
- * read the payments of, is a 404.
+ * read the payments of, is a 404 and a caller who may not read payments at all a 403, which is thrown as an error with its response (no redirect to the no-access page).
  */
 export async function getBookingLedger(bookingId: string): Promise<PaymentLedgerBooking> {
   const path = `${PATH}/bookings/${encodeURIComponent(bookingId)}`;
-  return ensureBookingLedger(await ApiClient.get<unknown>(path), path);
+  return ensureBookingLedger(await readLedger(path), path);
 }
 
 /**
@@ -96,5 +113,5 @@ export async function getBookingLedger(bookingId: string): Promise<PaymentLedger
  * in it; a `propertyId` or a `bookingId` the caller may not read the payments of is a 404.
  */
 export async function listLedger(criteria: PaymentLedgerCriteria, page: number, pageSize: number): Promise<PaymentLedgerPage> {
-  return ensurePage(await ApiClient.get<unknown>(PATH, { ...criteria, page, pageSize }), PATH);
+  return ensurePage(await readLedger(PATH, { ...criteria, page, pageSize }), PATH);
 }

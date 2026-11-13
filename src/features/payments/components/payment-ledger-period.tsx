@@ -31,7 +31,7 @@ const NO_LINES: readonly PaymentLedgerLine[] = [];
  *
  * It is for who may read payments (`payment.read`): without it nothing is asked. The server narrows the lines to the properties the caller reaches. The table adds
  * no total of money (the server gives none, and the amounts of a period are in more than one currency); a read that failed is a failed read, with a retry, and is never
- * an empty period.
+ * an empty period; a refusal of the server (403) is told as a refusal and not as a failure.
  */
 export function PaymentLedgerPeriod() {
   const { t } = useTranslation();
@@ -94,15 +94,20 @@ export function PaymentLedgerPeriod() {
         <p className="text-sm text-foreground/70" data-testid="payment-ledger-period-problem" data-problem={problem}>
           {t('paymentLedger.period.incomplete')}
         </p>
+      ) : read === 'forbidden' ? (
+        // The read accepts a 403 (`listLedger`), so the shared client does not move the person to the no-access page: the refusal is told here, in words, with no retry and no table.
+        <p className="text-sm text-foreground/70" data-testid="payment-ledger-forbidden">
+          {t('paymentLedger.period.forbidden')}
+        </p>
       ) : (
         <PaymentLedgerTable
           lines={data?.items ?? NO_LINES}
           label={t('paymentLedger.period.tableLabel')}
           showBooking
           documentHref={documentLinkOf(hasPermission, flags)}
-          // Whatever the failure, a period that could not be read is never drawn as an empty one; a refusal is moved to its own page by the client.
+          // Whatever the failure, a period that could not be read is never drawn as an empty one.
           isLoading={read === 'loading'}
-          isError={read === 'failed' || read === 'notFound' || read === 'forbidden'}
+          isError={read === 'failed' || read === 'notFound'}
           error={ledger.error}
           errorTitle={t('paymentLedger.period.loadError')}
           onRetry={() => void ledger.refetch()}

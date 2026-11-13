@@ -16262,6 +16262,7 @@
       "count_other": "{{count}} lines in the period",
       "emptyDescription": "Recorded payments and the ones of the channel appear here. If you expected one, check the dates.",
       "emptyTitle": "No lines in this period",
+      "forbidden": "You do not have permission to see the payments of the period.",
       "incomplete": "Choose the first and the last day of the period.",
       "label": "Period",
       "loadError": "We cannot read the payments of the period right now.",
