@@ -11,7 +11,7 @@ import {
 } from '@/queries/use-service-requests';
 import type { ServiceRequest } from '@/types/service-request';
 import { cancellationReasonText, hostPhaseOf, instantToCome, supplierRef, whenText, type HostPhase } from './long-rent-request-model';
-import { LONG_RENT_REQUESTS_PATH } from './paths';
+import { longRentPropertyPath } from '@/features/properties/long-rent/paths';
 
 const DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
 
@@ -78,7 +78,7 @@ export function RequestNextStep({ request, canManage, onPay, paying, onMarkPaid,
   const amount = money(request.price?.amountCents);
 
   // A block always has a way to go on: where the landlord has nothing to do (or may not do it), the list of the requests.
-  const allRequests: CalmAction = { label: t('longRentRequests.next.allRequests'), href: LONG_RENT_REQUESTS_PATH };
+  const allRequests: CalmAction = { label: t('longRentRequests.next.allRequests'), href: `${longRentPropertyPath(request.propertyId)}?tab=requests` };
   const ifAllowed = (action: CalmAction): CalmAction => (canManage ? action : allRequests);
 
   const block = ({ tone, title, body, primary, secondary, then }: BlockProps) => (

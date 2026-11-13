@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { useModeChangeMenuItems } from '@/features/properties/mode/use-mode-entry';
 import { holdForUndo } from '@/lib/hold-for-undo';
 import { toastUndo } from '@/lib/toast-undo';
@@ -25,8 +26,6 @@ import type { LeaseSubject } from './lifecycle-format';
 import { RecordNoticeDialog } from './record-notice-dialog';
 import { SwitchToShortDialog } from './switch-to-short-dialog';
 import { TerminateLeaseDialog } from './terminate-lease-dialog';
-
-const LEASES_PATH = '/app/long-rent/leases';
 
 export interface LeaseActions {
   /** The entries of the menu «⋯» of the sheet, for the stage the lease is in; the one that destroys comes last, apart. */
@@ -106,7 +105,7 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
       return;
     }
     leftTheSheet.current = true;
-    navigate(LEASES_PATH, { replace: true });
+    navigate(`${longRentPropertyPath(lease.propertyId)}?tab=contracts`, { replace: true });
   }
 
   // ---- the download for the signature: taken back, and «Annulla» downloads it again when the server would let it ----------------------------

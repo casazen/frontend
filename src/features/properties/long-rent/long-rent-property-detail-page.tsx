@@ -21,7 +21,8 @@ import { useModeChangeMenuItems } from '../mode/use-mode-entry';
 import { formatPropertyLocation } from '../property-location';
 import { leaseOfRow } from './long-rent-property-format';
 import { LongRentPropertyNextStep } from './long-rent-property-next-step';
-import { ContractsPanel, DataPanel, DocumentsPanel, ExpensesPanel, MaintenancePanel } from './long-rent-property-panels';
+import { CondominiumManagement } from '@/features/condominium/condominium-management';
+import { ContractsPanel, DataPanel, DocumentsPanel, MaintenancePanel } from './long-rent-property-panels';
 import { longRentPropertyPanelOf, longRentPropertyPanels, type LongRentPropertyPanel } from './long-rent-property-sheet';
 import { longRentPropertyRows } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
@@ -154,8 +155,8 @@ export function LongRentPropertyDetailPage() {
 
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
-        {panel === 'contracts' && <ContractsPanel leases={leases.data} />}
-        {panel === 'expenses' && <ExpensesPanel leases={leases.data} />}
+        {panel === 'contracts' && <ContractsPanel leases={leases.data} propertyId={property.id} canCreateLease={canCreateLease} />}
+        {panel === 'expenses' && <CondominiumManagement propertyId={property.id} />}
         {panel === 'maintenance' && <MaintenancePanel leases={leases.data} />}
         {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}
         {panel === 'requests' && <LongRentServiceRequests propertyId={property.id} />}

@@ -19,7 +19,8 @@ import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
 import { formatPropertyLocation } from '../property-location';
 import { LongRentPropertyLeases } from './long-rent-property-leases';
-import { longRentLeasePath } from './paths';
+import { longRentLeasePath, newLeaseForPropertyPath } from './paths';
+import { Button } from '@/components/ui/button';
 
 const FISCAL_REPORT_PATH = '/app/long-rent/fiscal';
 const SEPA_ACCOUNT_PATH = '/app/long-rent/payments';
@@ -55,17 +56,22 @@ function ApeStatus({ hasApe }: { hasApe: boolean }) {
  * Contratti: the leases of the property, the last started first. Not loaded yet, or failed: nothing here, the note above the tabs
  * says it (a property is never "without contracts" because a list failed).
  */
-export function ContractsPanel({ leases }: { leases: readonly LeaseSummary[] | undefined }) {
+export function ContractsPanel({ leases, propertyId, canCreateLease }: { leases: readonly LeaseSummary[] | undefined; propertyId: string; canCreateLease: boolean }) {
   const { t } = useTranslation();
-  if (!leases) return null;
-  if (leases.length === 0) {
-    return (
-      <p className="text-sm text-foreground/70" data-testid="long-rent-property-leases-empty">
-        {t('longRentProperties.detail.contractsEmpty')}
-      </p>
-    );
-  }
-  return <LongRentPropertyLeases leases={leases} />;
+  return (
+    <div className="space-y-4">
+      {canCreateLease ? (
+        <Button asChild data-testid="long-rent-property-create-contract">
+          <Link to={newLeaseForPropertyPath(propertyId)}>{t('longRentProperties.detail.newLease')}</Link>
+        </Button>
+      ) : null}
+      {leases === undefined ? null : leases.length === 0 ? (
+        <p className="text-sm text-foreground/70" data-testid="long-rent-property-leases-empty">
+          {t('longRentProperties.detail.contractsEmpty')}
+        </p>
+      ) : <LongRentPropertyLeases leases={leases} />}
+    </div>
+  );
 }
 
 /** Documenti: whether the APE is there and the documents of the property, with the upload that opens on the APE. */
