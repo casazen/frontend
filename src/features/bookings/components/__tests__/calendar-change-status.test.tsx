@@ -126,6 +126,9 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
     renderStatus();
+    // The window of a change opens when the change is on screen (and again each time a new one starts to wait): the first read has to be on screen before the clock moves. Moved
+    // at once, on a loaded runner the read arrives after the clock and the window starts from there, so it is never over.
+    expect(await screen.findByTestId('calendar-change-status-waiting', undefined, { timeout: 5000 })).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
     });
