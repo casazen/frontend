@@ -4,7 +4,7 @@ import i18n from '@/i18n/config';
 import type { ComplianceCockpitAction, ComplianceSummaryItem, ComplianceSummaryResult } from '@/types/compliance.types';
 import type { DashboardTodoItem } from '@/types/dashboard.types';
 import type { Property } from '@/types/property.types';
-import { buildCockpit, deadlineNote, focusToneOf, thenOf, type CockpitContext, type CockpitRow } from '../lib/cockpit-model';
+import { buildCockpit, deadlineNote, focusBodyOf, focusToneOf, thenOf, type CockpitContext, type CockpitRow } from '../lib/cockpit-model';
 import { fineCount } from '../lib/compliance-tiers';
 
 // 12:00 UTC of 24 September 2026: 14:00 in Rome (CEST), the same day. The clock is handed in, never read.
@@ -34,6 +34,17 @@ const booking = (action: ComplianceCockpitAction, id: string, label: string, due
   dueAt,
 });
 const property = (id: string, label: string): ComplianceSummaryItem => ({ id, label, action: 'ActivateProperty', propertyId: id, bookingId: null });
+/** An item with its light, as the API sends it with the traffic light on. */
+const lit = (item: ComplianceSummaryItem, light: ComplianceSummaryItem['light'], reason?: string): ComplianceSummaryItem => ({ ...item, light, reason });
+/** An item about a month of a property (ISTAT, tourist tax) or about its connection. */
+const period = (action: ComplianceCockpitAction, propertyId: string, month: string): ComplianceSummaryItem => ({
+  id: propertyId,
+  label: 'Casa Como',
+  action,
+  propertyId,
+  bookingId: null,
+  period: month,
+});
 
 const build = (summary: ComplianceSummaryResult, extras: Parameters<typeof buildCockpit>[1] = {}) => buildCockpit(summary, extras, context, NOW);
 const subjects = (rows: readonly CockpitRow[]) => rows.map((row) => row.subject);
@@ -256,5 +267,230 @@ describe('focus, then and the number of the menu', () => {
     expect(fineCount(null)).toBe(0);
     expect(fineCount({})).toBe(0);
     expect(fineCount('<!doctype html>' as never)).toBe(0);
+  });
+
+  it('fineCount_TrafficLightOn_CountsTheRedStaysThatTheLightMovedOutOfTheOldSection', () => {
+    // With the light on, a stay to send by hand or with its receipt awaited is in the new sections: the menu keeps counting it while it is red.
+    const summary = summaryOf({
+      alloggiatiManualRequired: { count: 1, items: [booking('SendAlloggiati', 'b0', 'Anna Verdi')] },
+      manualSendsRequired: { count: 3, items: [lit(booking('SendAlloggiatiManually', 'b1', 'Mario Rossi'), 'Red'), lit(booking('SendAlloggiatiManually', 'b2', 'Carla Neri'), 'Yellow')] },
+      receiptsToUpload: { count: 1, items: [lit(booking('UploadAlloggiatiReceipt', 'b3', 'Luigi Bianchi'), 'Red'), lit(booking('UploadAlloggiatiReceipt', 'b4', 'Paolo Gialli'), 'Green')] },
+      // The other new sections are not what the menu counts: ISTAT, the tax and the police send are on the page.
+      periodItems: { count: 1, items: [lit(period('UploadIstatProof', 'p1', '2026-08'), 'Red')] },
+    });
+
+    // The one of the old section, and the two reds of the new ones: not the yellow, not the green, not the period.
+    expect(fineCount(summary)).toBe(3);
+  });
+});
+
+describe('buildCockpit and the traffic light (NF-52)', () => {
+  it('buildCockpit_AnItemWithoutALight_IsToVerifyAndNeverGreen', () => {
+    const model = build(summaryOf({ alloggiatiManualRequired: { count: 1, items: [booking('SendAlloggiati', 'b1', 'Mario Rossi')] } }));
+
+    expect(model.fine.rows[0].light).toBe('unknown');
+    expect(model.green).toEqual([]);
+    expect(model.lights).toMatchObject({ unknown: 1, green: 0, needs: 1, lightsOn: false });
+  });
+
+  it.each(['green', 'GREEN', 'Blue', 3, {}, ''])('buildCockpit_LightThisVersionDoesNotKnow_%j_IsToVerifyNeverGreen', (light) => {
+    const item = lit(booking('SendAlloggiati', 'b1', 'Mario Rossi'), light as never);
+    const model = build(summaryOf({ alloggiatiManualRequired: { count: 1, items: [item] } }));
+
+    expect(model.fine.rows[0].light).toBe('unknown');
+    expect(model.green).toEqual([]);
+  });
+
+  it('buildCockpit_RowsOfALevel_AreRedFirstThenYellowThenWhatHasNoLightWhateverTheDeadline', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: {
+          count: 3,
+          items: [
+            lit(booking('UploadAlloggiatiReceipt', 'b1', 'Gialla', hoursFromNow(-80)), 'Yellow'),
+            booking('UploadAlloggiatiReceipt', 'b2', 'Senza luce', hoursFromNow(-100)),
+            lit(booking('UploadAlloggiatiReceipt', 'b3', 'Rossa lontana', hoursFromNow(200)), 'Red'),
+          ],
+        },
+      }),
+    );
+
+    // The deadline orders inside a light, never across lights.
+    expect(subjects(model.fine.rows)).toEqual(['Rossa lontana', 'Gialla', 'Senza luce']);
+    expect(model.fine.rows.map((row) => row.light)).toEqual(['red', 'yellow', 'unknown']);
+  });
+
+  it('buildCockpit_GreenItems_AreListedApartAndNeverCountedAsThingsToDo', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: {
+          count: 1,
+          items: [
+            lit(booking('UploadAlloggiatiReceipt', 'b1', 'Mario Rossi'), 'Green', 'receipt_archived'),
+            lit(booking('UploadAlloggiatiReceipt', 'b2', 'Carla Neri'), 'Red', 'receipt_missing'),
+          ],
+        },
+      }),
+    );
+
+    expect(subjects(model.fine.rows)).toEqual(['Carla Neri']);
+    expect(model.fine.total).toBe(1);
+    expect(model.fine.hidden).toBe(0);
+    expect(model.total).toBe(1);
+    // The green one is named for what it is (nothing is asked), has no button and its page is the title.
+    expect(subjects(model.green)).toEqual(['Mario Rossi']);
+    expect(model.green[0]).toMatchObject({ light: 'green', quiet: true, title: 'Ricevuta di Alloggiati Web: Mario Rossi', reason: 'La ricevuta è archiviata.' });
+    expect(model.green[0].note).toBeUndefined();
+  });
+
+  it('buildCockpit_ServerCountsMoreThanItLists_GreensAreNotPartOfWhatIsHidden', () => {
+    const items = [
+      lit(booking('SendAlloggiatiManually', 'b1', 'Uno'), 'Red'),
+      lit(booking('SendAlloggiatiManually', 'b2', 'Due'), 'Red'),
+      ...['Tre', 'Quattro', 'Cinque'].map((name, index) => lit(booking('SendAlloggiatiManually', `g${index}`, name), 'Green')),
+    ];
+    const model = build(summaryOf({ manualSendsRequired: { count: 5, items } }));
+
+    // Five need attention and two are listed: three are not, whatever the three green ones listed say.
+    expect(model.fine.total).toBe(5);
+    expect(model.fine.hidden).toBe(3);
+    expect(model.fine.rows).toHaveLength(2);
+    expect(model.green).toHaveLength(3);
+  });
+
+  it('buildCockpit_ReasonOfTheApi_IsInPlainWordsAndACodeThisVersionDoesNotKnowIsGeneric', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: {
+          count: 2,
+          items: [
+            lit(booking('UploadAlloggiatiReceipt', 'b1', 'Mario Rossi'), 'Yellow', 'entrusted_to_channel_manager'),
+            lit(booking('UploadAlloggiatiReceipt', 'b2', 'Carla Neri'), 'Red', 'a_code_of_a_newer_server'),
+          ],
+        },
+      }),
+    );
+
+    const [red, yellow] = model.fine.rows;
+    expect(yellow.reason).toBe('Se ne occupa il tuo channel manager: aspettiamo la ricevuta.');
+    expect(red.reason).toBe("C'è qualcosa da fare.");
+    expect(JSON.stringify(model)).not.toContain('a_code_of_a_newer_server');
+  });
+
+  it('buildCockpit_EntrustedToTheChannelManager_IsYellowWithItsOwnReasonAndStillOpensTheStay', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: { count: 1, items: [lit(booking('UploadAlloggiatiReceipt', 'b1', 'Mario Rossi'), 'Yellow', 'entrusted_to_channel_manager')] },
+      }),
+    );
+
+    const [row] = model.fine.rows;
+    expect(row).toMatchObject({ light: 'yellow', to: '/app/short-rent/bookings/b1?tab=alloggiati' });
+    // Still something the host may do (it opens the stay with a button), unlike an item that is done.
+    expect(row.quiet).toBeUndefined();
+    expect(row.title).toBe('Carica la ricevuta di Alloggiati Web: Mario Rossi');
+    expect(focusToneOf(row)).toBe('info');
+  });
+
+  it('buildCockpit_SectionsOfTheLight_AreInTheirLevels', () => {
+    const model = build(
+      summaryOf({
+        identityPending: { count: 1, items: [lit(booking('VerifyIdentity', 'b1', 'Anna Verdi'), 'Red', 'identity_missing')] },
+        connectionsToFix: { count: 1, items: [lit(period('ActivateOctorateSend', 'p1', '2026-08'), 'Red', 'connection_inactive')] },
+        periodItems: { count: 1, items: [lit(period('UploadIstatProof', 'p1', '2026-08'), 'Red', 'deadline_overdue')] },
+        manualSendsRequired: { count: 1, items: [lit(booking('SendAlloggiatiManually', 'b2', 'Mario Rossi'), 'Red', 'over_thirty_nights_not_sent')] },
+      }),
+    );
+
+    expect(subjects(model.fine.rows).sort()).toEqual(['Casa Como', 'Casa Como', 'Mario Rossi']);
+    expect(subjects(model.chore.rows)).toEqual(['Anna Verdi']);
+    expect(model.total).toBe(4);
+  });
+
+  it('buildCockpit_TwoMonthsOfTheSameProperty_AreTwoRowsEachWithItsMonth', () => {
+    const model = build(
+      summaryOf({
+        periodItems: {
+          count: 2,
+          items: [lit(period('UploadIstatProof', 'p1', '2026-08'), 'Red'), lit(period('UploadIstatProof', 'p1', '2026-09'), 'Red')],
+        },
+      }),
+    );
+
+    expect(new Set(model.fine.rows.map((row) => row.id)).size).toBe(2);
+    expect(model.fine.rows.map((row) => row.title)).toEqual(
+      expect.arrayContaining(['Carica la prova ISTAT di agosto 2026: Casa Como', 'Carica la prova ISTAT di settembre 2026: Casa Como']),
+    );
+    // Each opens the archive on its own month.
+    expect(model.fine.rows.map((row) => row.to).sort()).toEqual([
+      '/app/short-rent/alloggiati/reports?kind=IstatProof&property=p1&period=2026-08',
+      '/app/short-rent/alloggiati/reports?kind=IstatProof&property=p1&period=2026-09',
+    ]);
+  });
+
+  it('buildCockpit_AnItemListedInTwoSections_IsOneRow', () => {
+    const same = lit(booking('SendAlloggiatiManually', 'b1', 'Mario Rossi'), 'Red');
+    const model = build(summaryOf({ manualSendsRequired: { count: 1, items: [same] }, receiptsToUpload: { count: 1, items: [{ ...same }] } }));
+
+    expect(model.fine.rows).toHaveLength(1);
+  });
+
+  it('buildCockpit_FocusIsTheWorstLightFirst_ARedOfTheUpkeepBeatsAYellowOfTheLaw', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: { count: 1, items: [lit(booking('UploadAlloggiatiReceipt', 'b1', 'In corso'), 'Yellow')] },
+        checkoutsDue: { count: 1, items: [lit(booking('CheckOut', 'b2', 'Da chiudere'), 'Red')] },
+      }),
+    );
+
+    expect(model.focus?.subject).toBe('Da chiudere');
+    // Without lights the level decides, as it always did.
+    const legacy = build(
+      summaryOf({
+        receiptsToUpload: { count: 1, items: [booking('UploadAlloggiatiReceipt', 'b1', 'Della legge')] },
+        checkoutsDue: { count: 1, items: [booking('CheckOut', 'b2', 'Da chiudere')] },
+      }),
+    );
+    expect(legacy.focus?.subject).toBe('Della legge');
+  });
+
+  it('buildCockpit_PropertyWithSomethingToDo_IsNotInOrderWhateverItsStatusSays', () => {
+    const properties = [
+      { id: 'p1', name: 'Con la connessione spenta', complianceStatus: 'Active' },
+      { id: 'p2', name: 'A posto', complianceStatus: 'Active' },
+    ] as unknown as Property[];
+    const model = build(summaryOf({ connectionsToFix: { count: 1, items: [lit(period('ActivateOctorateSend', 'p1', '2026-08'), 'Red')] } }), { properties });
+
+    expect(subjects(model.activeProperties)).toEqual(['A posto']);
+  });
+
+  it('buildCockpit_RowsOfTheLights_DropTheOldStatusBadgeOfAlloggiatiWhenTheApiSendsTheLight', () => {
+    const withLight = build(summaryOf({ alloggiatiFailures: { count: 1, items: [lit(booking('ResolveAlloggiatiFailure', 'b1', 'Mario Rossi'), 'Red', 'alloggiati_failed')] } }));
+    const withoutLight = build(summaryOf({ alloggiatiFailures: { count: 1, items: [booking('ResolveAlloggiatiFailure', 'b1', 'Mario Rossi')] } }));
+
+    // One pill, not two: the reason says what the badge said once the light is the API's.
+    expect(withLight.fine.rows[0].badge).toBeUndefined();
+    expect(withoutLight.fine.rows[0].badge).toEqual({ kind: 'alloggiati', status: 'Errore' });
+  });
+
+  it('buildCockpit_RowsOfTheLaw_HaveNoDeadlineInWordsOnceTheyAreDone', () => {
+    const model = build(
+      summaryOf({
+        receiptsToUpload: { count: 0, items: [lit(booking('UploadAlloggiatiReceipt', 'b1', 'Mario Rossi', hoursFromNow(-30)), 'Green')] },
+      }),
+    );
+
+    expect(model.green[0].note).toBeUndefined();
+  });
+
+  it('focusToneOf_InProgress_IsCalmInfoNotAWarning', () => {
+    expect(focusToneOf({ tier: 'fine', light: 'yellow', note: { text: 'x', tone: 'danger' } } as CockpitRow)).toBe('info');
+    expect(focusToneOf({ tier: 'fine', light: 'red', note: { text: 'x', tone: 'danger' } } as CockpitRow)).toBe('danger');
+  });
+
+  it('focusBodyOf_ReasonThenWhereAndWhatIsLacking', () => {
+    expect(focusBodyOf({ reason: 'Non è stato inviato.', sub: 'Casa Como', detail: 'Manca: Documento' })).toBe('Non è stato inviato. Casa Como · Manca: Documento');
+    expect(focusBodyOf({ reason: undefined, sub: 'Casa Como', detail: undefined })).toBe('Casa Como');
+    expect(focusBodyOf({})).toBeUndefined();
   });
 });

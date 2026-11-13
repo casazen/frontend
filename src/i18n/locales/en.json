@@ -4034,8 +4034,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance",
-      "description": "What is missing to be compliant, for your properties and your stays."
+      "title": "Am I compliant?",
+      "description": "For each obligation you see whether it is in order, in progress or yours to do. Green only shows when CasaZen holds the proof."
     },
     "summary": {
       "title": "Compliance overview",
@@ -4052,7 +4052,16 @@
       "alloggiatiManualRequired": "Alloggiati to send manually",
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
-      "turnoversPending": "Properties to declare ready"
+      "turnoversPending": "Properties to declare ready",
+      "line": {
+        "allClear": "All compliant",
+        "red": "{{count}} to fix",
+        "todo_one": "{{count}} thing to do",
+        "todo_other": "{{count}} things to do",
+        "unknown": "{{count}} to verify",
+        "withDetail": "{{todo}}: {{what}}",
+        "yellow": "{{count}} in progress"
+      }
     },
     "cockpit": {
       "kicker": {
@@ -4061,7 +4070,7 @@
         "chore": "To close"
       },
       "allClear": {
-        "title": "You are all set",
+        "title": "All compliant",
         "body": "Nothing is pending: your properties are active and your stays are in order.",
         "cta": "Open properties"
       },
@@ -4076,7 +4085,7 @@
       },
       "fine": {
         "title": "Legal deadlines",
-        "intro": "Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24): if it is not sent in time you risk a penalty.",
+        "intro": "Deadlines set by law: Alloggiati Web must be sent within 24 hours of arrival (6 hours if the stay is not longer than 24), then there are ISTAT and the tourist tax. If they are not sent in time you risk a penalty.",
         "moreLink": "See them all in Alloggiati"
       },
       "start": {
@@ -4100,6 +4109,10 @@
         "toggle_one": "{{count}} property in order",
         "toggle_other": "{{count}} properties in order"
       },
+      "green": {
+        "toggle_one": "{{count}} obligation in order",
+        "toggle_other": "{{count}} obligations in order"
+      },
       "openAll": "All duties",
       "showMore": "Show the other {{count}}",
       "showLess": "Show less",
@@ -4111,6 +4124,71 @@
         "composition": "Guest composition",
         "guestData": "Guest details"
       }
+    },
+    "item": {
+      "ActivateOctorateSend": "Automatic send to the Questura",
+      "ActivateProperty": "Property activation",
+      "CheckOut": "Departure",
+      "CompleteGuestCheckIn": "Guest details",
+      "ConfirmPropertyReady": "Property ready for the next guest",
+      "DeclareTouristTax": "Tourist tax of {{period}}",
+      "EnterMunicipalityTaxRate": "Tourist tax rate of the municipality",
+      "RenewPoliceCredentials": "Questura credentials",
+      "ResolveAlloggiatiFailure": "Alloggiati Web",
+      "SendAlloggiati": "Alloggiati Web",
+      "SendAlloggiatiManually": "Alloggiati Web sent by hand",
+      "UploadAlloggiatiReceipt": "Alloggiati Web receipt",
+      "UploadIstatProof": "ISTAT of {{period}}",
+      "VerifyIdentity": "Guest identity",
+      "noPeriod": "a period"
+    },
+    "light": {
+      "fallback": {
+        "green": "This is in order.",
+        "red": "Something has to be done.",
+        "unknown": "CasaZen has no result for this yet: check it.",
+        "yellow": "This is in progress: wait for the confirmation."
+      },
+      "green": "Compliant",
+      "named": "{{light}}: {{reason}}",
+      "red": "To do",
+      "unknown": "To verify",
+      "yellow": "In progress"
+    },
+    "reason": {
+      "action_required": "There is something to do.",
+      "activation_incomplete": "The activation is not finished: until it is, the property cannot be booked from your site.",
+      "alloggiati_failed": "Alloggiati Web did not accept the communication: fix the data and send it again.",
+      "alloggiati_incomplete": "Alloggiati Web took only some of the guests: the stay is not complete.",
+      "alloggiati_not_sent": "Alloggiati Web has not been sent yet.",
+      "alloggiati_sending": "The communication to Alloggiati Web is in progress.",
+      "awaiting_receipt": "It was sent: the receipt still has to be archived.",
+      "checkout_due": "The departure has to be closed.",
+      "cin_invalid": "The CIN is not in the right format.",
+      "cin_missing": "The CIN is missing.",
+      "cin_valid": "The CIN is in the right format.",
+      "connection_inactive": "The automatic send is not active: activate it or send it yourself.",
+      "connection_unverified": "We cannot tell whether the automatic send is active: confirm it yourself.",
+      "credentials_refused": "The Questura refused the credentials: enter them again.",
+      "deadline_overdue": "The deadline has passed and there is no proof.",
+      "entrusted_to_channel_manager": "Your channel manager takes care of it: we are waiting for the receipt.",
+      "evidence_missing": "The archived proof is missing.",
+      "external_verification_required": "The result is only in your channel manager: CasaZen cannot see it, check it there.",
+      "guest_data_missing": "Some guest details needed for Alloggiati Web are missing.",
+      "identity_missing": "The arrival is near and the guest's identity is not verified yet.",
+      "identity_verified": "The guest's identity is verified.",
+      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it (it is never taken as zero).",
+      "operator_decision_required": "An operator has to decide on the identity check.",
+      "over_thirty_nights_not_sent": "Over 30 nights the channel manager does not send by itself: send Alloggiati Web yourself.",
+      "period_open": "The period is still open: the deadline has not come.",
+      "property_ready_not_confirmed": "You have not declared the property ready for the next guest yet.",
+      "receipt_archived": "The receipt is archived.",
+      "receipt_missing": "It was sent, but the receipt is not archived: upload it.",
+      "selfie_awaited": "We are waiting for the guest's selfie before the arrival.",
+      "short_stay_at_risk": "Short stay (6 hours to send): the guests are not entrusted to the channel manager. Send Alloggiati Web yourself."
+    },
+    "row": {
+      "named": "{{what}}: {{label}}"
     },
     "autopilot": {
       "button": "Handle with AI",
@@ -5145,6 +5223,10 @@
       "requests_other": "{{count}} requests to approve"
     },
     "todo": {
+      "ActivateOctorateSend": {
+        "cta": "Check the send",
+        "title": "Activate the automatic send to the Questura: {{label}}"
+      },
       "ActivateProperty": {
         "cta": "Finish",
         "ctaCin": "Add the CIN",
@@ -5166,9 +5248,21 @@
         "cta": "Confirm",
         "title": "Declare the property ready after {{label}}"
       },
+      "DeclareTouristTax": {
+        "cta": "Declare the tax",
+        "title": "Declare and pay the tourist tax of {{period}}: {{label}}"
+      },
+      "EnterMunicipalityTaxRate": {
+        "cta": "Enter the rate",
+        "title": "Enter the tourist tax rate of the municipality: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Pay",
         "title": "Pay {{label}}'s job"
+      },
+      "RenewPoliceCredentials": {
+        "cta": "Update the credentials",
+        "title": "Update the Questura credentials: {{label}}"
       },
       "RespondToRequest": {
         "cta": "Accept",
@@ -5189,6 +5283,22 @@
       "SendAlloggiati": {
         "cta": "Prepare the data",
         "title": "Alloggiati Web to send: {{label}}"
+      },
+      "SendAlloggiatiManually": {
+        "cta": "Prepare the data",
+        "title": "Send Alloggiati Web by hand: {{label}}"
+      },
+      "UploadAlloggiatiReceipt": {
+        "cta": "Upload the receipt",
+        "title": "Upload the Alloggiati Web receipt: {{label}}"
+      },
+      "UploadIstatProof": {
+        "cta": "Upload the proof",
+        "title": "Upload the ISTAT proof of {{period}}: {{label}}"
+      },
+      "VerifyIdentity": {
+        "cta": "Check the identity",
+        "title": "Verify the identity of {{label}}"
       },
       "decline": {
         "description": "The guest gets an email and the dates become available again.",
