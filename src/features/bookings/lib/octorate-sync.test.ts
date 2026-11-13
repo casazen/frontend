@@ -73,12 +73,12 @@ describe('syncReasonKey', () => {
 });
 
 describe('syncRetriesByItself', () => {
-  it('syncRetriesByItself_TheServerDeliversThePushAgain_IsTrueForNoAnswerAndPaymentsOnly', () => {
+  it('syncRetriesByItself_TheServerDeliversThePushAgain_IsTrueForNoAnswerOnly', () => {
     expect(syncRetriesByItself('octorate_unavailable')).toBe(true);
-    expect(syncRetriesByItself('octorate_payments_not_recorded')).toBe(true);
   });
 
-  it.each(['octorate_rejected', 'octorate_dates_unavailable', 'octorate_not_mirrored', null, undefined])(
+  // A payment the channel manager refused to record is left to the host (only one that failed for want of an answer is delivered again, and the row cannot tell which).
+  it.each(['octorate_rejected', 'octorate_dates_unavailable', 'octorate_not_mirrored', 'octorate_payments_not_recorded', null, undefined])(
     'syncRetriesByItself_WaitsForTheHost_%s',
     (code) => {
       expect(syncRetriesByItself(code)).toBe(false);

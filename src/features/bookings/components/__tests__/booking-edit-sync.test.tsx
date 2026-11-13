@@ -94,6 +94,18 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
     expect(failed).toHaveTextContent('riprova tu');
   });
 
+  it('render_FailedPaymentsNotRecorded_DoesNotPromiseARetryTheServerMayNotMake', () => {
+    const onRetry = vi.fn();
+    renderSync(booking(sync({ state: 'Failed', lastOperation: 'Payment', errorCode: 'octorate_payments_not_recorded', canRetry: true })), { onRetry });
+
+    const failed = screen.getByTestId('booking-sync-failed');
+    expect(failed).toHaveTextContent('Nel channel manager non sono stati registrati tutti gli incassi');
+    expect(failed).not.toHaveTextContent('Riproviamo in automatico');
+    expect(failed).toHaveTextContent('riprova tu');
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova ora' }));
+    expect(onRetry).toHaveBeenCalledWith(false);
+  });
+
   it('render_FailedWhoCannotWrite_HasNoButtonAndNoRequestToTryAgain', () => {
     renderSync(booking(sync({ state: 'Failed', errorCode: 'octorate_rejected', canRetry: false })));
 

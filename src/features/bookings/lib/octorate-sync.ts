@@ -46,8 +46,12 @@ export function syncReasonKey(code: string | null | undefined): string {
   return (code ? SYNC_REASON_KEYS[code] : undefined) ?? 'booking.syncReason.unknown';
 }
 
-/** The failures the server tries again by itself (the event bus delivers the push again): the others wait for the host. */
-const SELF_RETRIED_CODES: readonly string[] = ['octorate_unavailable', 'octorate_payments_not_recorded'];
+/**
+ * The failures the server tries again by itself (the event bus delivers the push again): the channel manager that gave no answer, a 429 or a 5xx. The others wait for the
+ * host: a refusal is not tried again, and neither is a payment the channel manager refused to record; a payment that failed for want of an answer is, but the row carries
+ * the same code for both (`octorate_payments_not_recorded`), so it cannot promise a retry.
+ */
+const SELF_RETRIED_CODES: readonly string[] = ['octorate_unavailable'];
 
 /** Whether the server tries a push that failed with `code` again without being asked. */
 export function syncRetriesByItself(code: string | null | undefined): boolean {
