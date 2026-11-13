@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import type { Booking, BookingOctorateSync } from '@/types';
+import { expectNoAxeViolations } from '@/test/axe';
 import { BookingEditSync } from '../booking-edit-sync';
 
 const booking = (sync: BookingOctorateSync | null | undefined): Booking => ({
@@ -173,6 +174,13 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
       renderSync(booking({ ...conflict, canRetry: false }));
 
       expect(screen.queryByRole('button', { name: 'Tieni la versione di CasaZen' })).not.toBeInTheDocument();
+    });
+
+    it.each(["Conflict", "Failed", "Pending", "NotAllowedByChannel"] as const)('render_%s_HasNoAccessibilityViolation', async (state) => {
+      const row = state === 'Conflict' ? conflict : sync({ state, errorCode: 'octorate_unavailable', canRetry: true });
+      const { container } = renderSync(booking(row), { onUseChannelVersion: vi.fn() });
+
+      await expectNoAxeViolations(container);
     });
 
     it('render_ConflictBusy_DisablesBothChoices', () => {

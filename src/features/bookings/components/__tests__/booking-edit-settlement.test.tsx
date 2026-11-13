@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import type { BookingEditQuote, BookingEditSettlement as SavedSettlement } from '@/types';
+import { expectNoAxeViolations } from '@/test/axe';
 import { BookingEditSettlement, BookingEditSettlementResult } from '../booking-edit-settlement';
 
 const quote = (overrides: Partial<BookingEditQuote> = {}): BookingEditQuote => ({
@@ -71,6 +72,12 @@ describe('BookingEditSettlement (the money before the save, NF-75)', () => {
     render(<BookingEditSettlement quote={quote({ newTotal: 380, action: 'refund', amount: 40, offlineRefundDue: 30 })} />);
 
     expect(screen.getByTestId('booking-edit-settlement-offline')).toHaveTextContent(/30,00\s€ sono stati pagati fuori da CasaZen.*li restituisci tu/);
+  });
+
+  it('render_WithEveryLine_HasNoAccessibilityViolation', async () => {
+    const { container } = render(<BookingEditSettlement quote={quote({ offlineRefundDue: 30 })} />);
+
+    await expectNoAxeViolations(container);
   });
 
   it('render_English_UsesTheEnglishWords', async () => {

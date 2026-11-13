@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import type { Booking, BookingOctorateSync } from '@/types';
+import { expectNoAxeViolations } from '@/test/axe';
 import { BookingCancelSync } from '../booking-cancel-sync';
 
 const booking = (sync: BookingOctorateSync | null | undefined): Booking => ({
@@ -119,6 +120,12 @@ describe('BookingCancelSync (the channel manager line of a cancellation, NF-76)'
     renderSync(booking(sync({ state: 'NotAllowedByChannel' })));
 
     expect(screen.getByTestId('booking-cancel-sync-not-allowed')).toHaveTextContent('al channel manager non è stato inviato nulla');
+  });
+
+  it.each(["Synced", "Pending", "Failed", "Conflict", "NotAllowedByChannel"] as const)('render_%s_HasNoAccessibilityViolation', async (state) => {
+    const { container } = renderSync(booking(sync({ state, errorCode: 'octorate_unavailable', canRetry: true })));
+
+    await expectNoAxeViolations(container);
   });
 
   it('render_RetryBusyOrRefused_DisablesTheButtonAndSaysWhy', () => {
