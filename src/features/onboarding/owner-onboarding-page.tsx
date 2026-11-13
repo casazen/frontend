@@ -187,9 +187,12 @@ export function OwnerOnboardingPage() {
   // The agency plan is off (the flag, or the plan of this org): this step does not exist, and the plan is where the person was.
   if (!flags.agencyTier || (!orgLoading && !isAgency)) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
 
-  // An error of a read comes before the data it leaves in memory: a 404 is «not found», any other failure is told, and neither reads as «all in order».
+  // An error of a read comes before the data it leaves in memory when it is a 404: «not found», whatever an older answer was (the module is off). Any other failure of the
+  // first read is told with a retry, and a failure of a later read (the refresh every thirty seconds, the return to the tab) keeps the page, with the last answer and a notice
+  // that it could not be updated: a page that went away would take with it the file the person chose, the check of it and the row being typed. None reads as «all in order».
   const notFound = readiness.isError && getHttpStatus(readiness.error) === 404;
-  const report = readiness.isError ? null : (readiness.data ?? null);
+  const report = notFound ? null : (readiness.data ?? null);
+  const updateFailed = readiness.isError && !notFound && report !== null;
   const activated = plan.isError || plan.data === undefined ? null : plan.data.activated;
 
   let content: ReactNode;
@@ -221,7 +224,7 @@ export function OwnerOnboardingPage() {
         <Skeleton className="h-24 w-full rounded-lg motion-reduce:animate-none" aria-hidden="true" />
       </div>
     );
-  } else if (readiness.isError || report === null) {
+  } else if (report === null) {
     content = (
       <ErrorState testId="owner-onboarding-error" title={t('ownerOnboarding.loadError')} error={readiness.error} onRetry={() => void readiness.refetch()} showSupport />
     );
@@ -230,6 +233,21 @@ export function OwnerOnboardingPage() {
     const focus = OWNER_PHASES.find((phase) => states[phase] !== 'done') ?? null;
     content = (
       <>
+        {updateFailed ? (
+          <Alert
+            variant="warning"
+            role="alert"
+            data-testid="owner-onboarding-update-failed"
+            action={
+              <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={() => void readiness.refetch()}>
+                {t('shared.errorState.retry')}
+              </Button>
+            }
+          >
+            {t('ownerOnboarding.updateFailed')}
+          </Alert>
+        ) : null}
+
         <Outcomes report={report} activated={activated} />
 
         {report.truncated ? (

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -327,6 +327,45 @@ describe('OwnerOnboardingPage, the owner step of «Inizia con CasaZen» (NF-109)
       expect(await screen.findByTestId('owner-onboarding-error')).toBeInTheDocument();
       expect(screen.queryByTestId('owner-phases')).not.toBeInTheDocument();
       expect(screen.queryByTestId('owner-outcomes')).not.toBeInTheDocument();
+    });
+
+    it('OwnerOnboarding_ReadFailsAfterAnAnswer_KeepsThePageAndTheWorkInProgressAndSaysItCouldNotUpdate', async () => {
+      const { client } = renderPage();
+      fireEvent.click(await screen.findByTestId('owner-import-manual-toggle'));
+      fireEvent.change(await screen.findByTestId('owner-manual-name'), { target: { value: 'Maria Verdi' } });
+
+      // The next read fails (the refresh of the page, the return to the tab): what the person is filling in must not go with the page.
+      vi.mocked(ownerOnboardingApi.getReadiness).mockRejectedValue(problemError(500, { code: 'server_error' }));
+      await act(async () => {
+        await client.refetchQueries({ queryKey: ownerOnboardingKeys.readiness });
+      });
+
+      const notice = await screen.findByTestId('owner-onboarding-update-failed');
+      expect(screen.getByTestId('owner-phases')).toBeInTheDocument();
+      expect((screen.getByTestId('owner-manual-name') as HTMLInputElement).value).toBe('Maria Verdi');
+      expect(screen.queryByTestId('owner-onboarding-error')).not.toBeInTheDocument();
+      // What stays on the page is the last answer, told as such: the notice is a warning and the retry is next to it.
+      expect(notice).toHaveTextContent(i18n.t('ownerOnboarding.updateFailed'));
+
+      // «Riprova» reads again and the notice goes.
+      vi.mocked(ownerOnboardingApi.getReadiness).mockResolvedValue(readiness());
+      fireEvent.click(within(notice).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
+      await waitFor(() => expect(screen.queryByTestId('owner-onboarding-update-failed')).not.toBeInTheDocument());
+      expect((screen.getByTestId('owner-manual-name') as HTMLInputElement).value).toBe('Maria Verdi');
+    });
+
+    it('OwnerOnboarding_NotFoundAfterAnAnswer_StillShowsNotFoundAndNotTheOldPage', async () => {
+      const { client } = renderPage();
+      await screen.findByTestId('owner-phases');
+
+      vi.mocked(ownerOnboardingApi.getReadiness).mockRejectedValue(problemError(404, { code: 'not_found' }));
+      await act(async () => {
+        await client.refetchQueries({ queryKey: ownerOnboardingKeys.readiness });
+      });
+
+      expect(await screen.findByTestId('owner-onboarding-not-found')).toBeInTheDocument();
+      expect(screen.queryByTestId('owner-phases')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('owner-onboarding-update-failed')).not.toBeInTheDocument();
     });
 
     it('OwnerOnboarding_NotFoundEvenWithAnOlderAnswerInMemory_ShowsNotFoundAndNotTheOldData', async () => {

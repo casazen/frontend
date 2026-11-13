@@ -15331,7 +15331,8 @@
     },
     "title": "Proprietari e rendiconti",
     "toComplete": "Da completare",
-    "truncated": "L'elenco è molto lungo e mostra solo una parte dei proprietari. I conteggi sono completi."
+    "truncated": "L'elenco è molto lungo e mostra solo una parte dei proprietari. I conteggi sono completi.",
+    "updateFailed": "Non riusciamo ad aggiornare lo stato dei proprietari: quello che vedi è l'ultimo letto e potrebbe non essere aggiornato. Quello che stai compilando resta qui."
   },
   "ownerPortal": {
     "dashboard": {

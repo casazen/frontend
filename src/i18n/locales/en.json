@@ -15331,7 +15331,8 @@
     },
     "title": "Owners and statements",
     "toComplete": "To complete",
-    "truncated": "The list is very long and shows only part of the owners. The counts are complete."
+    "truncated": "The list is very long and shows only part of the owners. The counts are complete.",
+    "updateFailed": "We cannot update the state of the owners: what you see is the last one we read and may be out of date. What you are filling in stays here."
   },
   "ownerPortal": {
     "dashboard": {
