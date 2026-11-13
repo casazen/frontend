@@ -107,6 +107,7 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Queued' })]);
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['bookings', 'calendar'] });
+      await new Promise((resolve) => setTimeout(resolve, 20));
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
@@ -116,6 +117,7 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] })]);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
+      await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
   });
@@ -161,7 +163,9 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     expect(line).toHaveTextContent('Non riusciamo a leggere le modifiche inviate al tuo channel manager.');
   });
 
-  it('CalendarChangeStatus_ACallerWhoMayNotReadTheList_GetsNothingAndNoError', async () => {
+  // What this proves is what the line does with a 403 body; it does not prove what the app does with a refused GET (the interceptor of axios moves to the page of "no access").
+  // The guard that matters is the right to read, checked before the line is mounted (`calendar-page-manual-block.test.tsx`: no right, no list asked).
+  it('CalendarChangeStatus_A403AnswerOfTheList_IsNotSaidAsAFailure', async () => {
     vi.mocked(calendarChangesApi.list).mockRejectedValue(statusError(403));
     renderStatus();
 

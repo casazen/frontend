@@ -116,6 +116,7 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
     vi.mocked(calendarChangesApi.get).mockResolvedValue(WAITING);
     await act(async () => {
       fireEvent.click(screen.getByTestId('calendar-change-retry'));
+      await new Promise((resolve) => setTimeout(resolve, 20));
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(calendarChangesApi.retry).toHaveBeenCalledWith('c1');
@@ -124,6 +125,7 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
     vi.mocked(calendarChangesApi.get).mockResolvedValue({ ...WAITING, state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
+      await new Promise((resolve) => setTimeout(resolve, 20));
     });
     expect(state()).toBe('accepted');
   });
