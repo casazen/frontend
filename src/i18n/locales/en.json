@@ -4973,8 +4973,7 @@
         "toSendHint": "The report of this stay is not sent. CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
         "failedHint": "The report of this stay failed or was rejected: fix it and send it again on the portal. The check-out is not blocked.",
         "overdue": "Deadline passed on {{deadline}}.",
-        "dataIncomplete": "Guest data are missing.",
-        "open": "Open the Alloggiati section of the booking"
+        "dataIncomplete": "Guest data are missing."
       },
       "cleaning": {
         "existingTitle": "Requests already sent for this stay",
@@ -5020,6 +5019,16 @@
         "taxCollection": "Say how the tourist tax was collected.",
         "propertyReady": "Say whether the property is ready for the next guest."
       },
+      "guestData": {
+        "cancel": "Cancel",
+        "description": "Fill in what Alloggiati Web needs. Your check-out answers stay as they are.",
+        "done": "Done",
+        "open": "Complete the guests' data",
+        "saved": "Guests' data saved.",
+        "title": "Guests' data",
+        "unsaved": "You have changes that are not saved. Save the guests' data, or cancel to leave them."
+      },
+      "saveAndExit": "Save and exit",
       "summary": {
         "title": "Your answers",
         "departure": "Departure",
@@ -5030,14 +5039,29 @@
         "touristTax": "Tourist tax"
       },
       "done": {
-        "title": "The stay is closed",
-        "description": "The check-out of {{guest}} is recorded.",
-        "stayClosed": "In the booking the stay now shows as concluded.",
-        "propertyReady": "The property is marked as ready for the next guest.",
-        "propertyNotReady": "The property is not ready yet: it stays in the compliance summary until you declare it ready.",
-        "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
+        "alloggiatiSent": "The Alloggiati communication is recorded as sent.",
         "alloggiatiToSend": "The Alloggiati communication does not show as sent yet: check it from the booking page.",
-        "compliance": "Go to compliance"
+        "channelManager": {
+          "automatic": "The check-out is passed on to the channel manager automatically. CasaZen does not show here whether it arrived."
+        },
+        "cleaningNotSent": "The cleaning request does not show as sent: check it in the booking detail.",
+        "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
+        "cleaningSkipped": "Cleaning: no request, the step was skipped.",
+        "compliance": "Go to compliance",
+        "description": "The check-out of {{guest}} is recorded.",
+        "next": {
+          "alloggiatiLink": "Open the Alloggiati tab of the booking",
+          "markReady": "Declare the property ready from the compliance page, when it is.",
+          "nothing": "There is nothing else to do for this stay.",
+          "sendAlloggiati": "Send the Alloggiati communication from the booking page.",
+          "title": "Next step"
+        },
+        "propertyNotReady": "The property is not ready yet: it stays in the compliance summary until you declare it ready.",
+        "propertyReady": "The property is marked as ready for the next guest.",
+        "stayClosed": "In the booking the stay now shows as concluded.",
+        "title": "The stay is closed",
+        "touristTax": "Tourist tax declared: {{collection}}.",
+        "touristTaxNotCollected": "Tourist tax: not collected. It must be handled according to the municipality's rules."
       }
     },
     "safety": {

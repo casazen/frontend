@@ -5,6 +5,14 @@ import { Check, CheckCircle2, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+/** How a point of "What happens now" stands, besides done (the default). It is the colour of its icon; the text of the point says it in words. */
+export type WizardDoneTone = "attention" | "problem";
+
+const TONE_CLASS: Record<WizardDoneTone, string> = {
+  attention: "text-[color:var(--color-warning-foreground,#8a4b05)]",
+  problem: "text-[color:var(--color-danger-foreground,#b4232a)]",
+};
+
 /** Where an action of the confirmation goes. `label` says what it does ("Open the property"), already translated. */
 export interface WizardDoneAction {
   label: string;
@@ -18,8 +26,12 @@ export interface WizardDoneProps {
   description?: string;
   /** One sentence that says what the screen is for, between the confirmation and the list («Ecco cosa succede ora»). */
   lead?: string;
-  /** What happens now, in two or three short points. Only true things: what the system does, and what is still up to the person. */
-  whatNext: ReadonlyArray<{ text: string; icon?: LucideIcon }>;
+  /**
+   * What happens now, in two or three short points (a flow with an element for each part may have a line for each). Only true things: what the system
+   * does, and what is still up to the person. A point that is not completed says so in its words and takes `tone`: `attention` (still to do, or on its
+   * way) or `problem` (it failed); the check mark of a done point is for what is done.
+   */
+  whatNext: ReadonlyArray<{ text: string; icon?: LucideIcon; tone?: WizardDoneTone }>;
   /** The recommended next step: toward the thing that was created. */
   primary: WizardDoneAction;
   /** The other thing the person is likely to want. */
@@ -62,9 +74,9 @@ export function WizardDone({ title, description, lead, whatNext, primary, second
           {t("wizard.done.whatNext")}
         </h3>
         <ul className="space-y-2" role="list">
-          {whatNext.map(({ text, icon: Icon = Check }) => (
-            <li key={text} className="flex min-w-0 items-start gap-2 text-sm">
-              <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success-foreground" />
+          {whatNext.map(({ text, icon: Icon = Check, tone }) => (
+            <li key={text} className="flex min-w-0 items-start gap-2 text-sm" data-tone={tone ?? "done"}>
+              <Icon aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", tone ? TONE_CLASS[tone] : "text-success-foreground")} />
               <span className="min-w-0 break-words">{text}</span>
             </li>
           ))}

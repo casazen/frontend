@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -14,15 +13,16 @@ import {
   getServiceCategoryLabel,
   getServiceRequestStatusLabel,
 } from '@/lib/i18n-labels';
+import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-service-requests';
 import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
-import { guestDataCompletionPath } from '@/features/bookings/lib/stay-actions';
 import {
   TOURIST_TAX_COLLECTIONS,
   type CheckoutWizardState,
   type TouristTaxCollection,
 } from '@/types/compliance.types';
 import type { CheckoutAnswers } from '../checkout-wizard-model';
+import { alloggiatiNow } from '../lib/checkout-result';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -91,10 +91,15 @@ export function StaySummaryStep({
   );
 }
 
-/** Step 2: the Alloggiati Web communication of the stay; never blocking, with the link where the host sends it. */
-export function AlloggiatiStep({ state }: { state: CheckoutWizardState }) {
+/**
+ * Step 2: the Alloggiati Web communication of the stay; never blocking. The data of the guests are completed in a panel over the wizard (a sub-step that
+ * gives back this same step), never on another page. The status is the one the server holds now: it is read again when the step opens and after the
+ * guests were saved, over the one the wizard started with (a failed read leaves the wizard's own).
+ */
+export function AlloggiatiStep({ state, onCompleteGuestData }: { state: CheckoutWizardState; onCompleteGuestData: () => void }) {
   const { t, i18n } = useTranslation();
-  const { alloggiati } = state;
+  const live = useAlloggiatiStatus(state.bookingId, true, { refetchOnMount: 'always' });
+  const alloggiati = alloggiatiNow(state.alloggiati, live.isError ? undefined : live.data);
   const failed = alloggiati.status === 'Errore' || alloggiati.status === 'Rifiutato';
 
   return (
@@ -130,14 +135,10 @@ export function AlloggiatiStep({ state }: { state: CheckoutWizardState }) {
           {!alloggiati.dataComplete && <p>{t('compliance.checkout.alloggiati.dataIncomplete')}</p>}
         </div>
       )}
-      <Link
-        to={guestDataCompletionPath(state.bookingId)}
-        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-        data-testid="checkout-alloggiati-link"
-      >
-        {t('compliance.checkout.alloggiati.open')}
-        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-      </Link>
+      <Button type="button" variant="outline" onClick={onCompleteGuestData} data-testid="checkout-alloggiati-complete">
+        <Users aria-hidden className="mr-2 h-4 w-4" />
+        {t('compliance.checkout.guestData.open')}
+      </Button>
     </div>
   );
 }

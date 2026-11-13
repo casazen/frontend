@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { checkInWizardApi } from '@/api/checkin-wizard.api';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { retryTransientErrors } from '@/lib/query-client';
 import type {
@@ -48,13 +49,24 @@ function useRefreshAfterGuestsChange(bookingId: string) {
 /**
  * Saves the guests of the stay as the host (the list is the whole truth). Field errors (400, keyed `Guests[i].Field`) are shown by the
  * caller on the fields; nothing is toasted here.
+ *
+ * What it is given is the personal data of the guests (names, birth, documents): the mutation is dropped as soon as nothing observes it
+ * (`gcTime: 0`, not five minutes in the cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the
+ * status and the body of the answer stay, which is what the form turns into words on the fields).
  */
 export function useSaveCheckInGuests(bookingId: string) {
   const queryClient = useQueryClient();
   const refresh = useRefreshAfterGuestsChange(bookingId);
 
   return useMutation({
-    mutationFn: (guests: StayGuestSubmit[]) => checkInWizardApi.saveGuests(bookingId, guests),
+    gcTime: 0,
+    mutationFn: async (guests: StayGuestSubmit[]) => {
+      try {
+        return await checkInWizardApi.saveGuests(bookingId, guests);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (state) => {
       queryClient.setQueryData<CheckInWizardState>([WIZARD_KEY, bookingId], state);
       refresh();
