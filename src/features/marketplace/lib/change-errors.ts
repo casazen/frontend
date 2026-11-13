@@ -5,10 +5,13 @@ import { problemCodeOf } from '../activation/activation-wizard-model';
 /**
  * The words of a refusal of a call that changes an activation (the settings, the deactivation, the change request): the text of its code (`apiErrors.codes`), else what the
  * answer says in plain words (a status that asks a thing of the person, the `detail` of a 4xx), else `fallbackKey`. A text of the channel manager's own is never among them: the
- * server sends codes and its own words.
+ * server sends codes and its own words. `keysByCode` gives a code the text of the screen that asks (a text written for a step of a wizard would send the person to a step this screen
+ * does not have): it wins over the text of the code.
  */
-export function changeErrorText(error: unknown, t: TFunction, fallbackKey: string): string {
-  return translateErrorCode(problemCodeOf(error), t) ?? getProblemMessage(error, t) ?? t(fallbackKey);
+export function changeErrorText(error: unknown, t: TFunction, fallbackKey: string, keysByCode: Readonly<Record<string, string>> = {}): string {
+  const code = problemCodeOf(error);
+  const own = code ? keysByCode[code] : undefined;
+  return own ? t(own) : (translateErrorCode(code, t) ?? getProblemMessage(error, t) ?? t(fallbackKey));
 }
 
 /**

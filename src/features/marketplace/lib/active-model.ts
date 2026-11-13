@@ -92,6 +92,14 @@ export function buildActiveRows(integrations: readonly MarketplaceActiveIntegrat
     .sort(compareRows);
 }
 
+/** The code of the problem of a connection that is no longer on the channel manager (`MarketplaceHealthErrorCodes.ConnectionMissing`: the sync found it gone). */
+const CONNECTION_GONE_CODE = 'connection_missing';
+
+/** Whether the health says the connection of this row is no longer on the channel manager: there are no settings to change there (the change would be refused), and «Correggi» makes it again. */
+export function connectionIsGone(row: Pick<ActiveRow, 'health'>): boolean {
+  return row.health?.error?.code === CONNECTION_GONE_CODE;
+}
+
 /** A row with a problem: the connection is to fix, or it carries an error. Waiting (`Pending`, `Requested`) is not a problem, and it is not «working» either. */
 export function rowHasProblem(row: Pick<ActiveRow, 'status' | 'health'>): boolean {
   return row.status === 'ToFix' || row.health?.error != null;

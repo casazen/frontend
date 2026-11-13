@@ -13211,6 +13211,7 @@
         "unknown": "We do not know whether it went through: check the list before trying again."
       },
       "settings": {
+        "connectionMissing": "The connection is no longer on the channel manager, so its settings cannot be changed. When CasaZen next checks it, the card shows «Fix» to make it again.",
         "credentialsHint": "The username and the password go to the channel manager in this one request: CasaZen does not keep them.",
         "description": "{{name}} for the property “{{property}}”. Change only what you need: the fields left empty stay as they are.",
         "descriptionOrganization": "{{name}}. Change only what you need: the fields left empty stay as they are.",

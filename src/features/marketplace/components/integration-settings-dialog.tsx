@@ -87,7 +87,10 @@ export function IntegrationSettingsDialog({ target, update, onClose }: Integrati
   };
 
   // The words of a refusal, and whether the settings were left as they were (said outside the markup: a key given to a function is not text to translate).
-  const failure = update.isError ? changeErrorText(update.error, t, 'marketplace.change.settings.failed') : null;
+  // The connection that is gone is told in this dialog's own words: the text of its code sends the person back to a step of the wizard, which is not here.
+  const failure = update.isError
+    ? changeErrorText(update.error, t, 'marketplace.change.settings.failed', { marketplace_connection_missing: 'marketplace.change.settings.connectionMissing' })
+    : null;
 
   const description = target.property
     ? t('marketplace.change.settings.description', { name: target.name, property: target.property.name })

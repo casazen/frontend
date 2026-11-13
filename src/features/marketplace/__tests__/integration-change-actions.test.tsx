@@ -230,6 +230,23 @@ describe('IntegrationSettingsDialog', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
+  it('IntegrationSettingsDialog_ConnectionGone409_SaysSoWithoutSendingToAStepOfAWizard', async () => {
+    api.updateActivationSettings.mockRejectedValue(apiError(409, { code: 'marketplace_connection_missing' }));
+    renderCard(channelRow());
+    const dialog = await chooseFromMenu('TEST Portal', 'Modifica impostazioni');
+    await within(dialog).findByTestId('settings-hotel-id');
+    type('settings-hotel-id', '4711');
+
+    fireEvent.click(screen.getByTestId('settings-save'));
+
+    const error = await within(dialog).findByTestId('settings-error');
+    expect(error).toHaveTextContent("Il collegamento non c'è più sul channel manager, quindi le impostazioni non si possono cambiare.");
+    expect(error).toHaveTextContent('«Correggi»');
+    // The text of the code itself sends the person to the step of a wizard, which this dialog does not have.
+    expect(error).not.toHaveTextContent('torna al passo');
+    expect(error).toHaveTextContent('Non è stato cambiato nulla.');
+  });
+
   it('IntegrationSettingsDialog_OnItsWay_ShutsTheButtonsOfTheCardAndIsSentOnce', async () => {
     let finish: (value: MarketplaceActivationChange) => void = () => undefined;
     api.updateActivationSettings.mockReturnValue(new Promise((resolve) => (finish = resolve)));

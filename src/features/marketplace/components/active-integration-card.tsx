@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { translateErrorCode } from '@/lib/api-errors';
 import { useDeactivateActivation, useRequestFunctionChange, useUpdateActivationSettings } from '@/queries/use-marketplace';
-import { formatDeclaredDay, formatInstant, formatInstantDay, type ActiveRow } from '../lib/active-model';
+import { connectionIsGone, formatDeclaredDay, formatInstant, formatInstantDay, type ActiveRow } from '../lib/active-model';
 import { initialsOf } from '../lib/marketplace-entry';
 import { useOpenEntryDetails } from '../lib/use-entry-details';
 import type { Integration, IntegrationStatus } from '../lib/use-integrations';
@@ -44,14 +44,15 @@ function Initials({ name }: { name: string }) {
 /**
  * What the menu of a card offers, by what the card is (MKT-05): the settings of a channel or a tool, the deactivation of a channel, a tool or a partner, the change request of a
  * function of the license (a function that is on, or to fix, and has no request open). It needs the id of the activation, which only the health row (or a list that sends it) has:
- * without it nothing is offered.
+ * without it nothing is offered. A connection the health says is no longer on the channel manager has no settings to change (the server would refuse it): «Correggi» makes it again,
+ * and it can still be turned off.
  */
 function actionsOf(row: ActiveRow, mayManage: boolean): CardAction[] {
   if (!mayManage || !row.activationId) return [];
   switch (row.kind) {
     case 'Channel':
     case 'Tool':
-      return ['settings', 'deactivate'];
+      return connectionIsGone(row) ? ['deactivate'] : ['settings', 'deactivate'];
     case 'Partner':
       return ['deactivate'];
     case 'LicensedFunction':

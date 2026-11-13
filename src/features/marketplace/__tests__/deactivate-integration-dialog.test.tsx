@@ -377,6 +377,20 @@ describe('the menu of a card', () => {
     expect(screen.queryByTestId('marketplace-active-Partner-beds-org-actions')).not.toBeInTheDocument();
   });
 
+  it('ActiveIntegrationCard_ConnectionGone_OffersNoSettings_ButStillTheDeactivation', async () => {
+    // The health says the connection is no longer on the channel manager: its settings cannot be changed (the server would refuse), «Correggi» makes it again.
+    renderCard(rowOf({ status: 'ToFix' }, { status: 'ToFix', error: { code: 'connection_missing', message: 'Il collegamento non c’è più.' } }));
+    fireEvent.keyDown(await screen.findByRole('button', { name: 'Azioni per TEST Portal' }), { key: 'Enter' });
+    expect(within(await screen.findByRole('menu')).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Disattiva']);
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    cleanup();
+
+    // A connection that is only switched off on the channel manager is still there: it keeps its settings.
+    renderCard(rowOf({ status: 'ToFix' }, { status: 'ToFix', error: { code: 'connection_disabled', message: 'Il collegamento è spento.' } }));
+    fireEvent.keyDown(await screen.findByRole('button', { name: 'Azioni per TEST Portal' }), { key: 'Enter' });
+    expect(within(await screen.findByRole('menu')).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Modifica impostazioni', 'Disattiva']);
+  });
+
   it('ActiveIntegrationCard_ByKind_OffersTheSettingsAndTheDeactivationOfAChannel_TheChangeOfAFunction_AndNeverADeactivationOfAFunction', async () => {
     renderCard(rowOf());
     fireEvent.keyDown(await screen.findByRole('button', { name: 'Azioni per TEST Portal' }), { key: 'Enter' });

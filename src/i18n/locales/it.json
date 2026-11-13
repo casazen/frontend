@@ -13211,6 +13211,7 @@
         "unknown": "Non sappiamo se l'operazione è andata a buon fine: controlla l'elenco prima di riprovare."
       },
       "settings": {
+        "connectionMissing": "Il collegamento non c'è più sul channel manager, quindi le impostazioni non si possono cambiare. Appena CasaZen lo controlla, la scheda mostra «Correggi» per rifarlo.",
         "credentialsHint": "Il nome utente e la password vanno al channel manager in questa sola richiesta: CasaZen non li salva.",
         "description": "{{name}} per l'immobile «{{property}}». Cambia solo quello che serve: i campi lasciati vuoti restano come sono.",
         "descriptionOrganization": "{{name}}. Cambia solo quello che serve: i campi lasciati vuoti restano come sono.",
