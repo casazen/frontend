@@ -1293,6 +1293,13 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
+      "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
+      "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
+      "archiveInvalidPage": "La pagina richiesta non è valida.",
+      "archiveInvalidPeriod": "I giorni scelti non sono validi: il primo non può essere dopo l'ultimo e servono giorni tra il 2000 e il 2100.",
+      "archiveInvalidType": "Questo tipo di documento non esiste.",
+      "archiveTypeForbidden": "Non hai accesso a questo tipo di documento.",
       "assistContextInvalid": "Questa richiesta di aiuto non riguarda un passaggio che possiamo fare per te.",
       "assistRequestAlreadyOpen": "Hai già una richiesta aperta per questo passaggio: la trovi in Da fare.",
       "assistStepAlreadyDone": "Questo passaggio è già stato fatto: non serve altro.",
@@ -5444,6 +5451,74 @@
     "openPropertyPage": "Apri pagina struttura",
     "orgUrlSectionTitle": "URL organizzazione",
     "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione."
+  },
+  "documentArchive": {
+    "booking": "Prenotazione",
+    "columns": {
+      "booking": "Prenotazione",
+      "date": "Data",
+      "document": "Documento",
+      "property": "Immobile",
+      "size": "Dimensione"
+    },
+    "count_one": "{{count}} documento",
+    "count_other": "{{count}} documenti",
+    "description": "Tutti i documenti che puoi leggere, in un posto solo: cerca, filtra e scarica un file o l'archivio di un periodo.",
+    "download": "Scarica",
+    "downloadDone": "Documento scaricato.",
+    "downloadFailed": "Non è stato possibile scaricare il documento. Riprova.",
+    "emptyDescription": "I documenti compaiono qui appena li carichi o li ricevi.",
+    "emptyTitle": "Nessun documento",
+    "error": "Impossibile caricare i documenti.",
+    "export": {
+      "description": "Un file ZIP con i documenti del periodo: una cartella per ogni tipo e l'indice in CSV. Un documento senza file è nell'indice con la colonna del file vuota.",
+      "done": "Archivio scaricato.",
+      "error": {
+        "invalidDates": "Controlla le date: servono un giorno di inizio e uno di fine, con l'inizio non dopo la fine.",
+        "noTypes": "Scegli almeno un tipo di documento.",
+        "tooLong": "Il periodo è troppo lungo: l'archivio copre al massimo 24 mesi."
+      },
+      "failed": "Non è stato possibile scaricare l'archivio. Riprova.",
+      "open": "Scarica archivio",
+      "period": "Periodo",
+      "preparing": "Sto preparando l'archivio: può volerci un po'. Non chiudere questa finestra.",
+      "property": "Immobile",
+      "received": "Sto scaricando l'archivio: {{size}} ricevuti finora. Non chiudere questa finestra.",
+      "retry": "Riprova",
+      "start": "Scarica",
+      "title": "Scarica l'archivio dei documenti",
+      "tooBig_one": "L'archivio sarebbe troppo grande: il file trovato supera le dimensioni ammesse per un solo archivio (al massimo {{max}} file e {{size}} in tutto). Scegli un periodo più breve o meno tipi di documento.",
+      "tooBig_other": "L'archivio sarebbe troppo grande: i {{count}} file trovati superano le dimensioni ammesse per un solo archivio (al massimo {{max}} file e {{size}} in tutto). Scegli un periodo più breve o meno tipi di documento.",
+      "tooLarge_one": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio (al massimo {{max}}). Scegli un periodo più breve o meno tipi di documento.",
+      "tooLarge_other": "Abbiamo trovato {{count}} file: sono troppi per un solo archivio (al massimo {{max}}). Scegli un periodo più breve o meno tipi di documento.",
+      "types": "Tipi di documento"
+    },
+    "filters": {
+      "all": "Tutti",
+      "allProperties": "Tutti gli immobili",
+      "days": "Data del documento",
+      "property": "Immobile"
+    },
+    "noFile": "Nessun file",
+    "noResultsDescription": "Prova a togliere un filtro o a cercare con un'altra parola.",
+    "noResultsTitle": "Nessun documento con questi filtri",
+    "pageSize": "Documenti per pagina",
+    "search": {
+      "label": "Cerca tra i documenti",
+      "placeholder": "Cerca per titolo, immobile o codice prenotazione"
+    },
+    "title": "Documenti",
+    "types": {
+      "AlloggiatiReceipt": "Ricevuta Alloggiati",
+      "Contract": "Contratto",
+      "CreditNote": "Nota di credito",
+      "Invoice": "Fattura",
+      "IstatProof": "Prova ISTAT",
+      "Other": "Altro documento",
+      "PropertyDocument": "Documento dell'immobile",
+      "Receipt": "Ricevuta",
+      "TouristTax": "Imposta di soggiorno"
+    }
   },
   "documentPages": {
     "select": "Scegli PDF o foto delle pagine",
@@ -11807,6 +11882,7 @@
     "crmMerge": "Duplicati",
     "crmSegments": "Pubblici",
     "demoEnvironment": "Ambiente demo",
+    "documents": "Documenti",
     "collapse": "Comprimi menu",
     "expand": "Espandi menu",
     "menuLabel": "Menu {{area}}",
