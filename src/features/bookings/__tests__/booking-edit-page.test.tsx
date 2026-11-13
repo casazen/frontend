@@ -488,6 +488,33 @@ describe('BookingEditPage', { timeout: 20000 }, () => {
       expect(await within(screen.getByTestId('booking-sync-failed')).findByText(i18n.t('apiErrors.codes.octorateSyncNotRetryable'), undefined, WAIT)).toBeInTheDocument();
     });
 
+    it('BookingEditPage_PushUnderWay_AsksTheBookingAgainByItselfUntilTheChannelManagerAnswers', async () => {
+      // The outcome of a sync has no push notification: the open page asks again, and stops when the row is final.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ octorateSync: sync({ state: 'Pending' }) }));
+        renderPage();
+        expect(await screen.findByTestId('booking-sync-pending', undefined, WAIT)).toBeInTheDocument();
+        const reads = vi.mocked(bookingsApi.getById).mock.calls.length;
+
+        // The channel manager answers; the page finds out without a reload.
+        vi.mocked(bookingsApi.getById).mockResolvedValue(
+          booking({ octorateSync: sync({ state: 'Failed', errorCode: 'octorate_unavailable', canRetry: true }) }),
+        );
+        await vi.advanceTimersByTimeAsync(3500);
+        expect(await screen.findByTestId('booking-sync-failed', undefined, WAIT)).toBeInTheDocument();
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(reads);
+
+        // A final state is final for this visit: it stops asking.
+        await vi.advanceTimersByTimeAsync(500);
+        const settled = vi.mocked(bookingsApi.getById).mock.calls.length;
+        await vi.advanceTimersByTimeAsync(20_000);
+        expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     describe('conflict', () => {
       const conflicted = () =>
         booking({
