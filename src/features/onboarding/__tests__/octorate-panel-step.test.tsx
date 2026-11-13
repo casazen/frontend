@@ -336,6 +336,32 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('channels'));
     });
 
+    it('OctoratePanelStep_PoliceConnectionStartedByTheSenderWizard_GoesBackToTheStepOfTheWizardForTheSameProperty', async () => {
+      // The step the sender wizard started (E03/F01/US02/T02): the server stored the wizard, its draft (the property) and the step it comes back to.
+      server = panelStep({
+        kind: 'policeConnection',
+        propertyId: PROPERTY_ID,
+        channelCode: null,
+        instructionsKey: 'panelPolice',
+        resume: { wizardType: 'ComplianceSender', draftEntityId: PROPERTY_ID, stepCode: 'panel' },
+      });
+      const { win } = fakeWindow();
+      vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);
+      renderPage(`/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY_ID}`);
+      await screen.findByTestId('panel-step-open');
+      press('panel-step-open');
+      await waitFor(() => expect(phase()).toBe('waiting'));
+
+      server = { ...server, status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null };
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+
+      // Same tab, same step: back to the wizard where the person was, for the property of the step (only its id is in the address), not to the part of the plan.
+      expect(await screen.findByTestId('arrived')).toHaveTextContent(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}&step=panel`);
+      expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('compliance'));
+    });
+
     it('OctoratePanelStep_ResultCasaZenCannotTell_AsksTheQuestionOnlyAfterTheWindowClosedAndNeverBefore', async () => {
       const { win } = await openPanel();
 

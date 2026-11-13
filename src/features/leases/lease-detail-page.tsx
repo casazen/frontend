@@ -19,6 +19,8 @@ import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labe
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { LeaseDetail, LeaseNextStep, LeaseStage, LeaseStatus } from '@/types';
+import { LeaseTenantsTab } from './components/lease-tenants-tab';
+import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { LeaseDataTab } from './components/lease-data-tab';
 import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
 import { LeaseFiles } from './components/lease-files';
@@ -38,7 +40,6 @@ import { CfImportPanel } from './components/cf-import-panel';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
-const LEASES_PATH = '/app/long-rent/leases';
 
 /** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
 function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
@@ -76,13 +77,13 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
 }
 
 /**
- * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
- * (Guida, Dati, Documenti, Canoni, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
+ * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then six tabs
+ * (Guida, Inquilini, Dati, Documenti, Canoni, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
  * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
  * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
  * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
  * and then what can be done to the lease while it lives (delete the draft, record a notice, end it early…, LR-10), which opens from the
- * address too (`?azione=`). The jobs asked of the suppliers are followed in the area «Interventi», not here.
+ * address too (`?azione=`). The jobs asked of the suppliers are followed in the property's Interventi tab.
  *
  * The lease of the guided service (CF-DONE) follows its practice: the sheet shows the state of the practice and never asks for the data of
  * the contract, which are read from the documents the service delivers; as soon as the practice and the documents allow it the draft
@@ -120,6 +121,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
 
   const tabs: TabItem<LeaseTab>[] = [
     { value: 'guida', label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
+    { value: 'inquilini', label: t('nav.longRentTenants'), testId: 'lease-tab-inquilini' },
     { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
     { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
     { value: 'pagamenti', label: t('leaseSheet.tabs.canoni'), testId: 'lease-tab-pagamenti' },
@@ -135,7 +137,11 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-sheet">
       <PageHeader
-        crumbs="auto"
+        crumbs={[
+          { label: t('nav.properties'), to: LONG_RENT_PROPERTIES_PATH },
+          { label: lease.property?.name ?? t('leaseList.property.unknown'), to: `${longRentPropertyPath(lease.propertyId)}?tab=contracts` },
+          { label: title },
+        ]}
         title={title}
         description={leasePurpose(lease, t)}
         action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
@@ -162,6 +168,7 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
         <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB} selectTestId="lease-sheet-tabs">
             {tab === 'guida' && <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />}
+            {tab === 'inquilini' && <LeaseTenantsTab lease={lease} onRequestErasure={actions.requestErasure} />}
             {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
             {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{serviceDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
@@ -193,7 +200,7 @@ export function LeaseDetailPage() {
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-4">
-        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <BackLink to={LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
         <ErrorState testId="lease-load-error" title={t('leases.detailLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -206,7 +213,7 @@ export function LeaseDetailPage() {
           icon={FileText}
           title={t('leases.notFound')}
           description={t('leases.notFoundDescription')}
-          action={{ label: t('leases.backToList'), href: LEASES_PATH }}
+          action={{ label: t('longRentProperties.detail.backToList'), href: LONG_RENT_PROPERTIES_PATH }}
         />
       </div>
     );

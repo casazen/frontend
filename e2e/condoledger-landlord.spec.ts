@@ -24,8 +24,8 @@ test.describe('CondoLedger landlord on the test app', () => {
 
     await pinE2eLocale(page, 'it');
     await loginViaAuth0(page);
-    await page.goto('/app/long-rent/leases');
-    await expect(page.getByRole('heading', { name: 'Contratti' })).toBeVisible({ timeout: 60_000 });
+    await page.goto('/app/long-rent/properties');
+    await expect(page.getByRole('heading', { name: 'Immobili' })).toBeVisible({ timeout: 60_000 });
 
     await openCondominiumStep(page);
     const leaseId = await exerciseDocuments(page);
@@ -57,7 +57,7 @@ async function openCondominiumStep(page: Page): Promise<void> {
   await expect(expenses.getByTestId('lease-condominium-proposed').or(expenses.getByTestId('lease-condominium-empty'))).toBeVisible();
   if (await expenses.getByTestId('lease-condominium-empty').isVisible()) {
     await expect(expenses.getByTestId('lease-condominium-limits')).toContainText('millesimi');
-    await expenses.getByLabel('Importo a mano (€ al mese)').fill('80');
+    await expenses.getByLabel('Importo per rata (€)').fill('80');
     await expenses.getByTestId('lease-condominium-manual').click();
     await expect(expenses.getByTestId('lease-condominium-saved')).toContainText('80,00');
     await expect(expenses.getByTestId('lease-condominium-accept')).toHaveCount(0);
@@ -107,5 +107,5 @@ async function exercisePayments(page: Page, leaseId: string): Promise<void> {
   await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
   await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Collega il conto' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Apri i contratti' })).toBeVisible();
+  await expect(page.getByTestId('condominium-management')).toBeVisible();
 }

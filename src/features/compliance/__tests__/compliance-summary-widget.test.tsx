@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ComplianceSummaryWidget } from '../compliance-summary-widget';
 import { fetchComplianceSummary } from '@/api/compliance.api';
 import type { AppContextKey } from '@/config/route-manifest';
+import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock, NOON_UTC } from '@/test/clock';
 import type { ComplianceSummaryItem, ComplianceSummaryResult } from '@/types/compliance.types';
 
@@ -347,7 +348,9 @@ describe('ComplianceSummaryWidget levels', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({}));
     renderWidget();
 
-    expect(await screen.findByTestId('compliance-summary-all-clear')).toBeInTheDocument();
+    // What it always said, with no light at all: the page keeps its block, and there is no new green line next to it.
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Sei in regola');
+    expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
   });
 });
@@ -363,3 +366,187 @@ function summaryWith(parts: Partial<ComplianceSummaryResult>): ComplianceSummary
     ...parts,
   };
 }
+
+// E03/F03/US01/T01 (NF-52, CHK-12): "Sono in regola?". The API sends a light and a reason for each item; the page only shows them.
+describe('ComplianceSummaryWidget traffic light', () => {
+  const stay = (action: ComplianceSummaryItem['action'], id: string, label: string, light: ComplianceSummaryItem['light'], reason: string): ComplianceSummaryItem => ({
+    id,
+    label,
+    action,
+    propertyId: null,
+    bookingId: id,
+    light,
+    reason,
+  });
+  const month = (action: ComplianceSummaryItem['action'], period: string, light: ComplianceSummaryItem['light'], reason: string): ComplianceSummaryItem => ({
+    id: PROPERTY_ID,
+    label: 'Villa Test',
+    action,
+    propertyId: PROPERTY_ID,
+    bookingId: null,
+    period,
+    light,
+    reason,
+  });
+
+  const RED = stay('UploadAlloggiatiReceipt', 'r1', 'Mario Rossi', 'Red', 'receipt_missing');
+  const YELLOW = stay('UploadAlloggiatiReceipt', 'r2', 'Carla Neri', 'Yellow', 'entrusted_to_channel_manager');
+  const GREEN = stay('UploadAlloggiatiReceipt', 'r3', 'Anna Verdi', 'Green', 'receipt_archived');
+  const mixed = () => summaryWith({ receiptsToUpload: { count: 2, items: [GREEN, YELLOW, RED] } });
+
+  it('widget_EveryRow_ShowsItsLightWithIconAndWordsAndItsReasonRedFirst', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(mixed());
+    renderWidget();
+
+    const rows = (await screen.findByTestId('compliance-tier-fine')).querySelectorAll<HTMLElement>('[data-testid="compliance-summary-row"]');
+    // The server listed them green first and yellow before red: the page puts the red one first and keeps the green one out of the list.
+    expect(rows).toHaveLength(2);
+    const [red, yellow] = Array.from(rows);
+    expect(within(red).getByTestId('compliance-light')).toHaveAttribute('data-light', 'red');
+    expect(within(red).getByTestId('compliance-light')).toHaveTextContent('Da fare');
+    expect(within(red).getByTestId('compliance-light').querySelector('svg')).toBeInTheDocument();
+    expect(within(red).getByTestId('compliance-reason')).toHaveTextContent('È stato inviato, ma la ricevuta non è archiviata: caricala.');
+    expect(within(red).getByRole('img', { name: 'Da fare: È stato inviato, ma la ricevuta non è archiviata: caricala.' })).toBeInTheDocument();
+    // AC-NF52-7: entrusted to the channel manager is yellow, with its own words.
+    expect(within(yellow).getByTestId('compliance-light')).toHaveAttribute('data-light', 'yellow');
+    expect(within(yellow).getByTestId('compliance-light')).toHaveTextContent('In corso');
+    expect(within(yellow).getByTestId('compliance-reason')).toHaveTextContent('Se ne occupa il tuo channel manager: aspettiamo la ricevuta.');
+    expect(within(yellow).getByTestId('compliance-summary-receipts-link')).toHaveTextContent('Carica la ricevuta');
+  });
+
+  it('widget_SummaryLine_CountsTheRedAndYellowFromTheLightsOfTheApi', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({ receiptsToUpload: { count: 3, items: [RED, YELLOW, stay('UploadAlloggiatiReceipt', 'r4', 'Luigi Bianchi', 'Red', 'receipt_missing'), GREEN] } }),
+    );
+    renderWidget();
+
+    const line = await screen.findByTestId('compliance-summary-line');
+    expect(line).toHaveTextContent('3 cose da fare: 2 da sistemare, 1 in corso');
+    expect(line).toHaveAttribute('data-tone', 'danger');
+    // The title answers the question of the page; the line is above the list and the block.
+    expect(screen.getByTestId('compliance-summary-focus').compareDocumentPosition(line) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
+
+  it('widget_OnlyYellow_TheLineIsCalmAndSaysSo', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ receiptsToUpload: { count: 1, items: [YELLOW] } }));
+    renderWidget();
+
+    const line = await screen.findByTestId('compliance-summary-line');
+    expect(line).toHaveTextContent('1 cosa da fare');
+    expect(line).toHaveAttribute('data-tone', 'warning');
+  });
+
+  it('widget_EverythingGreen_SaysAllClearAndKeepsTheGreenRowsBehindOneLine', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ receiptsToUpload: { count: 0, items: [GREEN] } }));
+    renderWidget();
+
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Sei in regola');
+    expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: '1 adempimento in regola' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('compliance-summary-green-section')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    const section = screen.getByTestId('compliance-summary-green-section');
+    expect(section).toHaveTextContent('Ricevuta di Alloggiati Web: Anna Verdi');
+    expect(within(section).getByTestId('compliance-light')).toHaveAttribute('data-light', 'green');
+    // Nothing is asked of the host here: no button.
+    expect(within(section).queryByRole('link', { name: /Carica la ricevuta/ })).not.toBeInTheDocument();
+  });
+
+  it('widget_ItemsWithoutALight_AreToVerifyNeverGreenAndTheLineNeverSaysAllClear', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(cockpit);
+    renderWidget();
+
+    const lights = await screen.findAllByTestId('compliance-light');
+    // An older API (or the traffic light off) sends none: every row says so, and none of them is green.
+    expect(lights.length).toBeGreaterThanOrEqual(6);
+    for (const light of lights) {
+      expect(light).toHaveAttribute('data-light', 'unknown');
+      expect(light).toHaveTextContent('Da verificare');
+    }
+    expect(screen.queryByText('In regola')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('6 cose da fare');
+  });
+
+  it('widget_LightThisVersionDoesNotKnow_IsToVerifyAndItsCodeIsNeverShown', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({
+        receiptsToUpload: { count: 1, items: [{ ...stay('UploadAlloggiatiReceipt', 'r9', 'Mario Rossi', 'Blue' as never, 'a_code_of_a_newer_server') }] },
+      }),
+    );
+    renderWidget();
+
+    const [light] = await screen.findAllByTestId('compliance-light');
+    expect(light).toHaveAttribute('data-light', 'unknown');
+    expect(screen.getByTestId('compliance-reason')).toHaveTextContent('CasaZen non ha ancora un esito: controllalo.');
+    expect(document.body).not.toHaveTextContent('a_code_of_a_newer_server');
+  });
+
+  it('widget_PeriodItem_OpensTheArchiveOnTheKindThePropertyAndTheMonth', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({
+        periodItems: {
+          count: 2,
+          items: [month('UploadIstatProof', '2026-08', 'Red', 'deadline_overdue'), month('DeclareTouristTax', '2026-07', 'Yellow', 'period_open')],
+        },
+      }),
+    );
+    renderWidget();
+
+    const rows = (await screen.findByTestId('compliance-tier-fine')).querySelectorAll('[data-testid="compliance-summary-row"]');
+    expect(rows[0]).toHaveTextContent('Carica la prova ISTAT di agosto 2026: Villa Test');
+    expect(rows[1]).toHaveTextContent('Dichiara e paga l\'imposta di soggiorno di luglio 2026: Villa Test');
+
+    const links = screen.getAllByTestId('compliance-summary-periods-link');
+    fireEvent.click(links[0]);
+
+    expect(await screen.findByTestId('current-location')).toHaveTextContent(
+      `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-08`,
+    );
+  });
+
+  it('widget_ItemOfAPageTheUserCannotOpen_ShowsTheLightAndNoDeadButton', async () => {
+    // `booking.read` and `booking.write` only: the property page asks `property.read`.
+    permissions.granted = ['booking.read', 'booking.write'];
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({ connectionsToFix: { count: 1, items: [month('ActivateOctorateSend', '2026-08', 'Red', 'connection_inactive')] } }),
+    );
+    renderWidget();
+
+    const row = await screen.findByTestId('compliance-summary-row');
+    expect(within(row).getByTestId('compliance-light')).toHaveAttribute('data-light', 'red');
+    expect(row).toHaveTextContent("L'invio automatico non è attivo: attivalo oppure invia tu.");
+    expect(screen.queryByTestId('compliance-summary-connections-link')).not.toBeInTheDocument();
+    expect(within(row).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('widget_NewSectionsOfTheLight_AreRowsWithTheirOwnButton', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryWith({
+        identityPending: { count: 1, items: [stay('VerifyIdentity', 'i1', 'Anna Verdi', 'Red', 'identity_missing')] },
+        manualSendsRequired: { count: 1, items: [stay('SendAlloggiatiManually', 'm1', 'Mario Rossi', 'Red', 'over_thirty_nights_not_sent')] },
+        connectionsToFix: { count: 1, items: [month('RenewPoliceCredentials', '2026-08', 'Red', 'credentials_refused')] },
+      }),
+    );
+    renderWidget();
+
+    fireEvent.click(await screen.findByTestId('compliance-summary-identity-link'));
+    expect(await screen.findByTestId('current-location')).toHaveTextContent('/app/short-rent/bookings/i1?tab=guest');
+  });
+
+  it('widget_TextsOfTheLights_AreAllInTheLocaleFilesAndHaveNoAccessibilityViolation', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(mixed());
+    const { container } = renderWidget();
+    await screen.findByTestId('compliance-tier-fine');
+
+    // Every text came from the locale files: a key that is not there would show as its own name.
+    expect(container.textContent).not.toMatch(/compliance\.(reason|light|item|row|summary|cockpit)\./);
+    expect(container.textContent).not.toContain('dashboard.todo.');
+    await expectNoAxeViolations(container);
+  });
+});

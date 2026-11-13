@@ -3,21 +3,27 @@ import { useMutation, useQueries, useQuery, useQueryClient, type QueryClient } f
 import { useTranslation } from 'react-i18next';
 import {
   activateActivation,
+  deactivateActivation,
   declarePartner,
   getActivation,
   getActivationMapping,
   getActivationPlan,
+  getDeactivationPreview,
   getLicensedFunctions,
   getMarketplaceActive,
   getMarketplaceCatalog,
   getMarketplaceEntry,
+  getMarketplaceHealth,
   getPartnerBrief,
   importActivation,
   refreshLicensedFunctions,
+  requestFunctionChange,
   requestLicensedFunction,
   saveActivationMapping,
   startActivation,
+  updateActivationSettings,
 } from '@/api/marketplace.api';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { useWorkspace } from '@/hooks/use-workspace';
 import type {
   MarketplaceActivationMapping,
@@ -31,6 +37,7 @@ import type {
   MarketplaceLanguage,
   MarketplaceRoomChoice,
   StartMarketplaceActivationRequest,
+  UpdateMarketplaceSettingsRequest,
 } from '@/types';
 
 /** Prefix of every marketplace query: a wizard that changes what the page shows can read them again with `invalidateQueries`. */
@@ -92,13 +99,36 @@ export function useMarketplaceEntry(kind: string | undefined, code: string | und
   });
 }
 
-/** The integrations that are on and the suppliers already used (the Active tab). Read again every time the page opens. */
+/**
+ * The integrations that are on and the suppliers already used (the Active tab), the names of the licensed functions in the language of the interface. Read again every
+ * time the page opens. Without a property it is the whole scope of the caller.
+ */
 export function useMarketplaceActive(propertyId: string | undefined) {
+  const language = useMarketplaceLanguage();
+
   return useQuery({
-    queryKey: [MARKETPLACE_KEY, 'active', propertyId ?? null],
-    queryFn: () => getMarketplaceActive(propertyId),
+    queryKey: [MARKETPLACE_KEY, 'active', propertyId ?? null, language],
+    queryFn: () => getMarketplaceActive(propertyId, language),
     staleTime: 0,
     refetchOnMount: true,
+  });
+}
+
+/**
+ * The health of the active integrations: the status, the last sync, the problem and the quota of each channel, tool or function of the license (the Active tab). A read of
+ * CasaZen's own rows, so the window gaining the focus may read it again; every visit of the page reads it again and a stale answer is never trusted (`staleTime: 0`). `enabled`
+ * is false for who may not read it and while the connector is off: nothing is asked then. The answer says `items`, `forbidden` or `notFound`: a read that failed is the query's
+ * error, and the rows of an older read are not to be shown for it.
+ */
+export function useMarketplaceHealth(propertyId: string | undefined, enabled = true) {
+  const language = useMarketplaceLanguage();
+
+  return useQuery({
+    queryKey: [MARKETPLACE_KEY, 'health', propertyId ?? null, language],
+    queryFn: () => getMarketplaceHealth(propertyId, language),
+    enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
@@ -419,5 +449,93 @@ export function useDeclarePartner() {
     mutationFn: ({ code, propertyId, declaredOn }: { code: string; propertyId: string | undefined; declaredOn: string }) =>
       declarePartner(code, propertyId, declaredOn),
     onSuccess: () => refreshMarketplace(queryClient),
+  });
+}
+
+// ─── The change and the deactivation of an activation (E09/F03/US02/T02) ─────────────────────────────────────────────────────────────────
+
+/**
+ * Prefix of what a dialog of the change reads for itself (the preview of a deactivation). It is not under {@link MARKETPLACE_KEY}: a change that went through makes the pages of the
+ * marketplace read again, and must not also make the dialog that is still on screen read what it has just been told.
+ */
+const CHANGE_KEY = 'marketplace-change';
+
+/**
+ * Changes the settings of a channel or a tool (`PATCH .../activations/{id}`). The body holds the login details of the portal, so the mutation is not kept once nothing observes it
+ * (`gcTime: 0`, not five minutes in the cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer
+ * stay, the body of the request does not). Whatever the answer the pages of the marketplace read again: they show what the server holds. No toast here: the dialog says the outcome.
+ */
+export function useUpdateActivationSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async ({ id, settings }: { id: string; settings: UpdateMarketplaceSettingsRequest }) => {
+      try {
+        return await updateActivationSettings(id, settings);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: () => refreshMarketplace(queryClient),
+  });
+}
+
+/**
+ * What a deactivation would do (`GET .../deactivation-preview`): read every time the dialog opens, in the language of the interface, and not kept once nothing shows it. `enabled`
+ * is false while the dialog is closed and for an activation whose id is not known: nothing is asked then.
+ */
+export function useDeactivationPreview(id: string | null | undefined, enabled = true) {
+  const language = useMarketplaceLanguage();
+
+  return useQuery({
+    queryKey: [CHANGE_KEY, 'deactivation-preview', id ?? '', language],
+    queryFn: () => getDeactivationPreview(id ?? '', language),
+    enabled: !!id && enabled,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Turns an activation off (`POST .../deactivate`, always with `confirmed: true`: the dialog asks before it calls). Not kept once nothing observes it (`gcTime: 0`), a refusal is kept
+ * without the request (`withoutRequest`), and whatever the answer the pages of the marketplace read again: an answer that is not `Deactivated`, or one that never came, must show what
+ * the server holds and not what the person hoped.
+ */
+export function useDeactivateActivation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (id: string) => {
+      try {
+        return await deactivateActivation(id);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: () => refreshMarketplace(queryClient),
+  });
+}
+
+/**
+ * Records that the host asked the channel manager for a change of a function of the license (`POST .../change-request`): the card says «change requested on …» afterwards. Not kept
+ * once nothing observes it (`gcTime: 0`); the pages of the marketplace read again whatever the answer (a 409 «already requested» shows the date that exists).
+ */
+export function useRequestFunctionChange() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (id: string) => {
+      try {
+        return await requestFunctionChange(id);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: () => refreshMarketplace(queryClient),
   });
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
+import { COMPLIANCE_ACTION_TARGETS } from '@/lib/compliance-routes';
 import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -57,7 +58,8 @@ const EXPECTED: Record<R6Action, string> = {
   UploadAlloggiatiProof: '/app/short-rent/alloggiati',
   UploadIstatProof: '/app/short-rent/compliance',
   FixListingError: `/app/short-rent/properties/create?propertyId=${PROPERTY_ID}&step=channels`,
-  ReplyToMessage: `/app/short-rent/bookings/${BOOKING_ID}?tab=messages`,
+  // The conversation of a direct booking in the hub of messages (E05/F05/US04): the key of the conversation is `direct:{bookingId}`, escaped in the address.
+  ReplyToMessage: `/app/short-rent/messages/direct%3A${BOOKING_ID}`,
   ApproveAiDraft: '/app/short-rent/approval-queue',
   ResumeWizard: `/app/short-rent/properties/${PROPERTY_ID}/activation`,
   ReconnectChannel: '/app/short-rent/channels',
@@ -79,11 +81,12 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
         ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === 'short-rent'),
         `${candidate.path} is not a route of the ROUTE_MANIFEST`,
       ).toBe(true);
-      // A page with `:id` says whose id fills it, and a page without it does not ask for one (but for the property in its address).
-      expect(candidate.path.includes(':id'), candidate.path).toBe(candidate.target !== undefined);
+      // A page with `:id` (or the `:threadKey` of a conversation) says whose id fills it, and a page without it does not ask for one (but for the property in its address).
+      expect(candidate.path.includes(':id') || candidate.path.includes(':threadKey'), candidate.path).toBe(candidate.target !== undefined);
       if (candidate.propertyParam !== undefined) expect(candidate.target, candidate.path).toBeUndefined();
-      // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's.
-      expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity');
+      // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's. A conversation also says its kind.
+      expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity' || candidate.target === 'thread');
+      if (candidate.target === 'thread') expect(['ota', 'direct'], candidate.path).toContain((candidate as { threadKind?: string }).threadKind);
       if (candidate.tab !== undefined) expect(BOOKING_TABS as readonly string[]).toContain(candidate.tab);
     }
   });
@@ -104,7 +107,7 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   });
 
   it('todoActionRoute_WithTheWritePermissions_OpensThePageOfTheAction', () => {
-    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decide', 'approval.decide']);
+    const everything = permissions(['property.read', 'property.write', 'booking.read', 'booking.write', 'verification.decision', 'approval.decide']);
 
     for (const action of R6_ACTIONS) {
       expect(todoActionRoute(itemFor(action), everything), action).toBe(EXPECTED[action]);
@@ -118,7 +121,7 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('CompleteCheckOut'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
     // The wizard "Guest check-in" saves the guests (`booking.write`): who may only read the bookings finds the documents of the stay.
     expect(todoActionRoute(itemFor('StartCheckIn'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
-    // The queue of the verifications is decided by who holds `verification.decide`: the others find the documents of the stay.
+    // The queue of the verifications is decided by who holds `verification.decision`: the others find the documents of the stay.
     expect(todoActionRoute(itemFor('VerifyIdentity'), readOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
     // The queue of the approvals is decided by who holds `approval.decide`: the others find the messages of the stay.
     expect(todoActionRoute(itemFor('ApproveAiDraft'), permissions(['property.read', 'property.write', 'booking.read', 'booking.write']))).toBe(
@@ -191,8 +194,13 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
   it('todoActionRoute_ItemAboutAnotherKindOfEntity_ReturnsNullNeverTheIdOfSomethingThatIsNotABooking', () => {
     const readOnly = permissions(['property.read', 'booking.read']);
 
-    // A message thread of a channel is not a booking: its id opens no booking page.
-    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }))).toBeNull();
+    // A message thread of a channel is not a booking: its id opens no booking page, but its own conversation (`ota:{id}`, escaped in the address).
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }))).toBe(`/app/short-rent/messages/ota%3A${BOOKING_ID}`);
+    // An item about anything else than a thread or a booking has no conversation to open, and gets no half-built key.
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'ApprovalQueueItem' }))).toBeNull();
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread', entityId: NO_ID }))).toBeNull();
+    // The conversations are read with `booking.read`: who cannot is not offered a button that ends on «nessun accesso».
+    expect(todoActionRoute(itemFor('ReplyToMessage', { entityType: 'OtaMessageThread' }), permissions(['property.read']))).toBeNull();
     // A queue item reaches the queue, which needs no booking id, but not the read-only fallback that is a booking page.
     const queueItem = itemFor('ApproveAiDraft', { entityType: 'ApprovalQueueItem' });
     expect(todoActionRoute(queueItem)).toBe('/app/short-rent/approval-queue');
@@ -217,5 +225,119 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(itemFor('SomethingNew'))).toBeNull();
     expect(todoActionRoute(itemFor('toString'))).toBeNull();
     expect(todoActionRoute(itemFor(''))).toBeNull();
+  });
+});
+
+// E03/F02/US01/T03 (NF-52): the feeder opens a "To do" for each red or yellow item of the cockpit, with the action of the cockpit. The «Adesso» block of the
+// Home must lead where the cockpit leads.
+describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
+  const stay = (action: string) => ({ action, entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null });
+  const ofProperty = (action: string, entityType = 'Property') => ({ action, entityType, entityId: PROPERTY_ID, propertyId: PROPERTY_ID as string | null });
+  const ACTIONS_OF_THE_LIGHT = ['SendAlloggiatiManually', 'ActivateOctorateSend', 'RenewPoliceCredentials', 'EnterMunicipalityTaxRate', 'DeclareTouristTax'] as const;
+
+  it.each(ACTIONS_OF_THE_LIGHT)('actionRouteMap_%s_HasAnEntryThatLeadsWhereTheCockpitLeads', (action) => {
+    expect(Object.hasOwn(ACTION_ROUTE_MAP, action)).toBe(true);
+    const todo = ACTION_ROUTE_MAP[action].route;
+    const cockpit = COMPLIANCE_ACTION_TARGETS[action].route;
+
+    expect(todo.path).toBe(cockpit.path);
+    if ('tab' in todo) expect(todo.tab).toBe(cockpit.tab);
+  });
+
+  it('todoActionRoute_SendAlloggiatiManually_OpensTheAlloggiatiSectionOfTheStay', () => {
+    expect(todoActionRoute(stay('SendAlloggiatiManually'))).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+    // The id of anything else than a booking is not a booking's.
+    expect(todoActionRoute({ ...stay('SendAlloggiatiManually'), entityType: 'Property' })).toBeNull();
+  });
+
+  it.each([
+    ['ActivateOctorateSend', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`],
+    ['EnterMunicipalityTaxRate', `/app/short-rent/properties/${PROPERTY_ID}`],
+  ])('todoActionRoute_%s_OpensThePageOfTheProperty', (action, address) => {
+    // The police send opens the wizard that activates it, for the property of the item (E03/F01/US02/T02); the tourist tax rate has no page of its own yet.
+    expect(todoActionRoute(ofProperty(action))).toBe(address);
+    // The property is the one the item names, or the entity itself.
+    expect(todoActionRoute({ ...ofProperty(action), propertyId: null })).toBe(address);
+    expect(todoActionRoute({ ...ofProperty(action, 'Booking'), propertyId: null })).toBeNull();
+  });
+
+  it('todoActionRoute_ActivateOctorateSend_IsTheWizardOnlyForWhoMayChangeTheSenderAndTheSectionOfThePropertyForWhoMayOnlyRead', () => {
+    const everything = permissions(['property.read', 'property.write']);
+    const readOnly = permissions(['property.read']);
+
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), everything)).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    // The wizard changes the sender (`property.write`): whoever lacks it finds the section of the property page that tells who sends, never a page that would refuse them.
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), readOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+  });
+
+  it('todoActionRoute_RenewPoliceCredentials_OpensTheAlloggiatiDashboard', () => {
+    expect(todoActionRoute(ofProperty('RenewPoliceCredentials'))).toBe('/app/short-rent/alloggiati');
+  });
+
+  it('todoActionRoute_DeclareTouristTax_OpensTheArchiveOnTheTaxDeclarationOfTheProperty', () => {
+    // The item of a month is about the property and carries the month in its entity type.
+    expect(todoActionRoute(ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'))).toBe(
+      `/app/short-rent/alloggiati/reports?property=${PROPERTY_ID}&kind=TouristTaxDeclaration`,
+    );
+    // Without a property there is nothing to filter on: no half-built address.
+    expect(todoActionRoute({ ...ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'), propertyId: null })).toBeNull();
+  });
+
+  it('todoActionRoute_ActionsOfTheLight_NeverOfferAPageThePersonCannotOpen', () => {
+    // The page of a property asks `property.read`; the Alloggiati pages and the archive ask `booking.read`.
+    const bookingsOnly = permissions(['booking.read']);
+    const propertiesOnly = permissions(['property.read']);
+
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), bookingsOnly)).toBeNull();
+    expect(todoActionRoute(ofProperty('RenewPoliceCredentials'), propertiesOnly)).toBeNull();
+    expect(todoActionRoute(ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'), propertiesOnly)).toBeNull();
+    expect(todoActionRoute(stay('SendAlloggiatiManually'), propertiesOnly)).toBeNull();
+    // `propertiesOnly` reads the properties and may not write them: the read-only fallback of the wizard.
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), propertiesOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+    expect(todoActionRoute(stay('SendAlloggiatiManually'), bookingsOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 21 values): the map has an entry for each, or the action is
+// in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
+// the page adds the entry and takes the action out of the list (the test below fails until it does).
+const BACKEND_ACTIONS = [
+  'ReviewBooking',
+  'StartCheckIn',
+  'CompleteCheckOut',
+  'VerifyIdentity',
+  'UploadAlloggiatiProof',
+  'UploadIstatProof',
+  'FixListingError',
+  'ReplyToMessage',
+  'ApproveAiDraft',
+  'ResumeWizard',
+  'ReconnectChannel',
+  'ConfirmChannelMapping',
+  'CheckImportedListing',
+  'SendAlloggiatiManually',
+  'ActivateOctorateSend',
+  'EnterMunicipalityTaxRate',
+  'DeclareTouristTax',
+  'RenewPoliceCredentials',
+  'ReviewFiscalDocument',
+  'ReviewOwnerStay',
+  'RenewOwnerDocument',
+] as const;
+
+/** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */
+const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'CheckImportedListing', 'ReviewOwnerStay', 'RenewOwnerDocument'];
+
+describe('ACTION_ROUTE_MAP and the actions of the backend', () => {
+  it.each(BACKEND_ACTIONS)('actionRouteMap_BackendAction_%s_HasAnEntryOrIsInTheListOfThoseWithoutAPageYet', (action) => {
+    expect(Object.hasOwn(ACTION_ROUTE_MAP, action), action).toBe(!ACTIONS_WITHOUT_A_PAGE_YET.includes(action));
+  });
+
+  it('actionRouteMap_EveryEntry_IsAnActionOfTheBackend', () => {
+    expect(Object.keys(ACTION_ROUTE_MAP).filter((action) => !(BACKEND_ACTIONS as readonly string[]).includes(action))).toEqual([]);
+  });
+
+  it.each(ACTIONS_WITHOUT_A_PAGE_YET)('todoActionRoute_%s_WithoutAPageYet_OffersNoButtonAndNeverADeadOne', (action) => {
+    expect(todoActionRoute(itemFor(action))).toBeNull();
   });
 });

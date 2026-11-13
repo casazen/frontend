@@ -28,6 +28,7 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
   };
 
   await mockPropertiesApi(page, []);
+  await page.route('**/api/long-rent/condominiums/properties', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await mockCinComplianceApi(page, {
     items: [],
     totalCount: 0,
@@ -97,6 +98,22 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyComplianceSummary) });
+  });
+
+  // «Invio a Polizia e ISTAT» on the page of a property (E03/F03/US02/T01): nobody sends automatically, so the panel is quiet and asks nothing.
+  // A spec that tests the panel answers its own state over this one.
+  await page.route('**/api/properties/*/compliance/connection-health**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const propertyId = new URL(route.request().url()).pathname.split('/').at(-3);
+    const manual = { sender: 'Manual', state: 'Manual', connectionValid: null, autorun: null, lastAutomaticRunAt: null, reason: null, declaredAt: null };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ propertyId, applies: true, alloggiati: manual, istat: manual, credentialsInCasaZen: false, credentialsUsable: false, checkedAt: '2026-06-16T10:00:00Z' }),
+    });
   });
 
   // The To do list of the host (NF-07): the Home asks for the items and the menu for the number of the urgent ones. None, unless a spec
@@ -173,6 +190,30 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+
+  // The payment ledger (FIS-05) of a booking (the tab Pagamento) and of a period (the payments page, «Per prenotazione e periodo»): nothing recorded,
+  // unless a spec answers otherwise. `**/api/payment-ledger**` also matches the Vite module `/src/api/payment-ledger.api.ts`: only the API is answered.
+  await page.route('**/api/payment-ledger**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const path = new URL(route.request().url()).pathname.replace(/\/$/, '');
+    if (/\/payment-ledger\/bookings\/[^/]+$/.test(path)) {
+      const bookingId = path.split('/').at(-1);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bookingId, bookingCode: '', channel: 'Direct', currency: 'EUR', lines: [], degraded: false }),
+      });
+      return;
+    }
+    if (path.endsWith('/api/payment-ledger')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], totalCount: 0, page: 1, pageSize: 20 }) });
+      return;
+    }
+    await route.fallback();
   });
 
   await page.route('**/api/ota/integrations**', async (route) => {

@@ -30,13 +30,17 @@ function directives(policy: string): Map<string, string[]> {
   );
 }
 
-const APP_PATHS = ['/', '/login', '/app/short-rent/bookings', '/checkin/some-token', '/p/tassa-soggiorno/milano', '/book'];
+// `/checkin` alone is no page of the guest (the link carries a token): it stays with the app and keeps the camera off.
+const APP_PATHS = ['/', '/login', '/app/short-rent/bookings', '/checkin', '/p/tassa-soggiorno/milano', '/book'];
+// The guest check-in page: the one page that opens the camera, for the selfie of the identity check (E03/F04/US03/T01). With `camera=()` the browser
+// refuses `getUserMedia` outright and the selfie can never start; the page can still not be framed.
+const CHECKIN_PATHS = ['/checkin/some-token', '/checkin/another-token'];
 const BOOKING_SITE_PATHS = ['/book/demo-org', '/book/demo-org/property/villa/checkout'];
 // The public site of a supplier: the editor of its showcase previews it in a same-origin iframe (SP-09-FE).
 const SUPPLIER_SITE_PATHS = ['/fornitori/pulizie-roma', '/fornitori/pulizie-roma/servizi/pulizia-standard'];
 
 describe('vercel.json security headers', () => {
-  it.each(APP_PATHS)('headers_appPath_%s_cannotBeFramed', (path) => {
+  it.each([...APP_PATHS, ...CHECKIN_PATHS])('headers_appPath_%s_cannotBeFramed', (path) => {
     const headers = headersFor(path);
 
     expect(headers['x-frame-options']).toBe('DENY');
@@ -61,13 +65,42 @@ describe('vercel.json security headers', () => {
     expect(directives(headers['content-security-policy-report-only']).get('frame-ancestors')).toEqual(["'self'"]);
   });
 
-  it.each([...APP_PATHS, ...BOOKING_SITE_PATHS, ...SUPPLIER_SITE_PATHS])('headers_%s_haveBaselineHeaders', (path) => {
+  it.each([...APP_PATHS, ...CHECKIN_PATHS, ...BOOKING_SITE_PATHS, ...SUPPLIER_SITE_PATHS])('headers_%s_haveBaselineHeaders', (path) => {
     const headers = headersFor(path);
 
     expect(headers['x-content-type-options']).toBe('nosniff');
     expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
-    expect(headers['permissions-policy']).toContain('camera=()');
     expect(headers['permissions-policy']).toContain('microphone=()');
+  });
+
+  it.each([...APP_PATHS, ...BOOKING_SITE_PATHS, ...SUPPLIER_SITE_PATHS])('headers_%s_keepTheCameraOff', (path) => {
+    expect(headersFor(path)['permissions-policy']).toContain('camera=()');
+  });
+
+  it.each(CHECKIN_PATHS)('headers_checkinPath_%s_letsThePageOpenTheCameraForTheSelfie', (path) => {
+    const policy = headersFor(path)['permissions-policy'];
+
+    // `camera=()` would make the browser refuse `getUserMedia` before the guest is even asked: the selfie step could never start.
+    expect(policy).not.toContain('camera=()');
+    expect(policy).toContain('camera=(self)');
+    expect(policy).toContain('microphone=()');
+  });
+
+  it('permissionsPolicy_onlyTheCheckinRuleOpensTheCamera', () => {
+    const opening = vercel.headers.filter((rule) =>
+      rule.headers.some((header) => header.key.toLowerCase() === 'permissions-policy' && !header.value.includes('camera=()')),
+    );
+
+    expect(opening.map((rule) => rule.source)).toEqual(['/checkin/(.*)']);
+  });
+
+  it('headers_checkinPage_differFromTheAppOnlyInTheCamera', () => {
+    const app = headersFor('/');
+    const checkin = headersFor('/checkin/some-token');
+    delete app['permissions-policy'];
+    delete checkin['permissions-policy'];
+
+    expect(checkin).toEqual(app);
   });
 
   it('contentSecurityPolicy_allowsStripeAuth0ApiAndStorage_withoutInlineScriptsOrEval', () => {

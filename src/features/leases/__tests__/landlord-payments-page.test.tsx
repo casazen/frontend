@@ -70,6 +70,17 @@ describe('Pagamenti of the long-term landlord', () => {
     await i18n.changeLanguage('it');
   });
 
+  it('manages a vacant apartment without requesting contracts', async () => {
+    permissions.add('property.read'); permissions.add('property.write');
+    get.mockImplementation(async (url) => ({ data: String(url).endsWith('/properties') ? [{ propertyId: 'property-1', propertyName: 'Appartamento sfitto', books: [] }] : [] }));
+    renderPage();
+    fireEvent.change(await screen.findByLabelText('Appartamento'), { target: { value: 'property-1' } });
+    fireEvent.click(await screen.findByRole('button', { name: /Imposta manualmente/ }));
+    expect(await screen.findByRole('button', { name: 'Attiva gestione condominiale' })).toBeInTheDocument();
+    expect(screen.queryByText('Apri i contratti')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).includes('/leases'))).toBe(false);
+  });
+
   it('requires property.read to list manual condominium dues', () => {
     expect(ROUTE_MANIFEST.find((route) => route.path === PATH)?.requiredPermissions).toEqual(['property.read']);
   });
@@ -87,9 +98,10 @@ describe('Pagamenti of the long-term landlord', () => {
 
   it('records only a confirmed home banking payment and never starts Stripe', async () => {
     permissions.add('lease.read'); permissions.add('lease.create'); permissions.add('property.write'); permissions.add('property.read');
-    get.mockResolvedValue({ data: [{ id: 'due-1', name: 'Via Roma', label: 'Novembre', dueDate: '2026-11-30', amount: 150, paid: false }] });
+    get.mockImplementation(async (url) => ({ data: String(url).endsWith('/properties') ? [] : [{ id: 'due-1', name: 'Via Roma', label: 'Novembre', dueDate: '2026-11-30', amount: 150, paid: false }] }));
     vi.mocked(axios.post).mockResolvedValue({ data: null });
     renderPage();
+    fireEvent.click(await screen.findByText('Scadenze di tutti gli appartamenti'));
     fireEvent.click(await screen.findByRole('button', { name: 'Segna come pagato' }));
     expect(axios.post).not.toHaveBeenCalled();
     expect(screen.getByText(/già pagato 150,00/)).toBeInTheDocument();

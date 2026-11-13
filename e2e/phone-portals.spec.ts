@@ -312,14 +312,15 @@ test.describe('Phone portals: tenant and landlord', () => {
       await expect(page.getByTestId('long-rent-payments')).toBeVisible();
       await expect(page.getByTestId('long-rent-payments')).toContainText('home banking');
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
+      await page.getByText('Scadenze di tutti gli appartamenti', { exact: true }).click();
       const manualPaid = page.getByRole('button', { name: 'Segna come pagato', exact: true });
       await expect(manualPaid).toBeVisible();
       const linkBox = await manualPaid.boundingBox();
       expect(linkBox).not.toBeNull();
       expect(linkBox!.x + linkBox!.width).toBeLessThanOrEqual(viewport.width + 1);
 
-      await page.getByTestId('long-rent-payments-contracts').click();
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page.getByTestId('long-rent-payments-contracts')).toHaveCount(0);
+      await expect(page.getByTestId('condominium-management')).toBeVisible();
 
       // Canoni are no longer linked from Conto SEPA. The reminder still lives on the rent register.
       await page.goto(demoUrl('/app/long-rent/rents', 'long-term'));

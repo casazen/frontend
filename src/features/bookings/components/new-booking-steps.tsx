@@ -1,6 +1,7 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { IdCard } from 'lucide-react';
+import { ArrowRight, IdCard } from 'lucide-react';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -17,13 +18,14 @@ import { resizeChildrenAges } from '@/lib/tourist-tax';
 import { formatCurrency } from '@/lib/utils';
 import { useHostBookingQuote, useStayAvailability } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
-import type { Property } from '@/types';
+import type { HostPaymentArrangement, Property } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import {
   NEW_BOOKING_MAX_GUESTS,
   NEW_BOOKING_STEP,
   PRICE_NOTE_MAX_LENGTH,
   activeLink,
+  agreedTotal,
   portalName,
   toAvailabilityParams,
   toQuotePayload,
@@ -406,20 +408,73 @@ function PortalPayment({ portal }: { portal: string }) {
 }
 
 /**
- * Step 3: the price the API calculated (and the total the host may agree instead), what was answered (each block with its "Edit"
- * back to the step) and the note on what a booking entered by hand is. For a portal's reservation the portal collects: no price,
- * only the amount it shows, if the host wants to keep it. The button of the wizard creates the booking.
+ * Step 3: the price the API calculated (and the total the host may agree instead, with a note), one topic for the step. For a portal's reservation the portal
+ * collects: no price, only the amount it shows, if the host wants to keep it.
  */
-export function SummaryStep() {
+export function PriceStep() {
+  const { t } = useTranslation();
+  const { control } = useFormContext<NewBookingValues>();
+  const values = useWatch({ control }) as NewBookingValues;
+
+  const payload = toQuotePayload(values);
+  const quote = useHostBookingQuote(payload);
+  const link = activeLink(values);
+  const calculated = payload ? quote.data : undefined;
+
+  if (link) return <PortalPayment portal={portalName(link.channel, t)} />;
+
+  return (
+    <div className="min-w-0 space-y-6">
+      <PriceBlock
+        hasStay={payload !== null}
+        quote={calculated}
+        isLoading={quote.isLoading}
+        error={payload && quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
+      />
+      {calculated && <AgreedPrice quote={calculated} />}
+    </div>
+  );
+}
+
+/** How the guest pays, as the summary says it in a few words (the row of the list). The keys are written out so that the i18n test finds a missing translation. */
+const PAYMENT_VALUE_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
+  paymentLink: 'booking.create.summary.paymentValue.paymentLink',
+  onSite: 'booking.create.summary.paymentValue.onSite',
+  bankTransfer: 'booking.create.summary.paymentValue.bankTransfer',
+};
+
+/** What happens to the payment once the booking is created, in plain words, for each way. */
+const PAYMENT_HAPPENS_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
+  paymentLink: 'booking.create.summary.willHappen.paymentLink',
+  onSite: 'booking.create.summary.willHappen.onSite',
+  bankTransfer: 'booking.create.summary.willHappen.bankTransfer',
+};
+
+interface SummaryStepProps {
+  /** The property is mirrored on the channel manager, as the availability said on the way out of the stay step; `null` when it is not known. */
+  channelManager: boolean | null;
+  /** The connector of the channel manager is on (`octorateConnector`): with it off nothing is pushed or asked, so nothing is said about a channel manager, whatever else is known. */
+  connectorOn: boolean;
+}
+
+/**
+ * Step 5: what was answered (each block with its "Edit" back to the step: the price and the way of paying are steps of their own), and, in plain words, what
+ * happens when the button creates the booking: it is created in CasaZen and, for a property connected to the channel manager, there too, which closes the dates
+ * on every channel (said only with the connector on); and how the guest pays. A portal's reservation is completed with the name of the guest and nothing is
+ * paid here: the portal collects.
+ */
+export function SummaryStep({ channelManager, connectorOn }: SummaryStepProps) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<NewBookingValues>();
   const values = useWatch({ control }) as NewBookingValues;
   const { property } = useShortProperties(values.propertyId);
+  const happensId = useId();
 
   const payload = toQuotePayload(values);
   const quote = useHostBookingQuote(payload);
   const link = activeLink(values);
   const portal = portalName(link?.channel, t);
+  const arrangement = values.paymentArrangement;
 
   const nights = nightsBetween(values.checkInDate, values.checkOutDate);
   const dates =
@@ -439,6 +494,17 @@ export function SummaryStep() {
   const contact = [guest?.email?.trim(), guest?.phone?.trim()].filter(Boolean).join(' · ');
   const notes = values.specialRequests?.trim();
 
+  // The total: what the host agreed (for a portal's reservation, the amount the portal shows) or what the API calculated; nothing while there is none: never an
+  // amount invented here.
+  const agreed = agreedTotal(values);
+  const currency = quote.data?.currency ?? 'EUR';
+  let total: string | null = null;
+  if (agreed !== null) {
+    total = link ? formatCurrency(agreed, currency) : `${formatCurrency(agreed, currency)} · ${t('booking.create.summary.priceAgreed')}`;
+  } else if (!link && payload && quote.data) {
+    total = formatCurrency(quote.data.totalPrice, quote.data.currency);
+  }
+
   const items: WizardSummaryItem[] = [
     { id: 'property', label: t('booking.create.summary.property'), value: property ? `${property.name} · ${property.city}` : null, stepId: NEW_BOOKING_STEP.stay },
     { id: 'dates', label: t('booking.create.summary.dates'), value: dates, stepId: NEW_BOOKING_STEP.stay },
@@ -446,31 +512,48 @@ export function SummaryStep() {
     { id: 'guest', label: t('booking.create.summary.guest'), value: name, stepId: NEW_BOOKING_STEP.guest },
     { id: 'contact', label: t('booking.create.summary.contact'), value: contact, stepId: NEW_BOOKING_STEP.guest },
     ...(notes ? [{ id: 'notes', label: t('booking.create.summary.notes'), value: notes, stepId: NEW_BOOKING_STEP.guest }] : []),
+    { id: 'price', label: t(link ? 'booking.create.summary.portalAmount' : 'booking.create.summary.price'), value: total, stepId: NEW_BOOKING_STEP.price },
+    link
+      ? { id: 'payment', label: t('booking.create.summary.payment'), value: t('booking.create.summary.paymentValue.portal', { portal }) }
+      : {
+          id: 'payment',
+          label: t('booking.create.summary.payment'),
+          value: arrangement !== '' ? t(PAYMENT_VALUE_KEYS[arrangement]) : null,
+          stepId: NEW_BOOKING_STEP.payment,
+        },
   ];
 
-  const calculated = payload ? quote.data : undefined;
+  // What will happen, one sentence each. Only things that are true: the channel manager is told only with the connector on, and only for a property that is
+  // connected (or, when that is not known, said as a condition), and nothing is promised about the payment of a portal's reservation.
+  const mentionsChannelManager = connectorOn && !link;
+  const happens: { id: string; text: string }[] = [
+    {
+      id: 'casazen',
+      text: link ? t('booking.create.summary.willHappen.portalCompleted', { portal }) : t('booking.create.summary.willHappen.casazen'),
+    },
+    ...(mentionsChannelManager && channelManager === true ? [{ id: 'channelManager', text: t('booking.create.summary.willHappen.channelManager') }] : []),
+    ...(mentionsChannelManager && channelManager === null ? [{ id: 'channelManagerMaybe', text: t('booking.create.summary.willHappen.channelManagerMaybe') }] : []),
+    link
+      ? { id: 'payment', text: t('booking.create.summary.willHappen.portal', { portal }) }
+      : { id: 'payment', text: arrangement !== '' ? t(PAYMENT_HAPPENS_KEYS[arrangement]) : t('booking.create.summary.willHappen.paymentMissing') },
+  ];
 
   return (
     <div className="min-w-0 space-y-6">
-      {link ? (
-        <PortalPayment portal={portal} />
-      ) : (
-        <>
-          <PriceBlock
-            hasStay={payload !== null}
-            quote={calculated}
-            isLoading={quote.isLoading}
-            error={payload && quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
-          />
-          {calculated && <AgreedPrice quote={calculated} />}
-        </>
-      )}
       <WizardSummary items={items} />
-      {!link && (
-        <Alert variant="info" data-testid="booking-manual-notice">
-          {t('booking.form.manualNotice')}
-        </Alert>
-      )}
+      <section aria-labelledby={happensId} className="space-y-3 rounded-lg bg-muted p-4" data-testid="booking-summary-what-happens">
+        <h3 id={happensId} className="text-base font-semibold">
+          {t('booking.create.summary.willHappen.title')}
+        </h3>
+        <ul className="space-y-2" role="list">
+          {happens.map(({ id, text }) => (
+            <li key={id} className="flex min-w-0 items-start gap-2 text-sm" data-testid={`booking-summary-happens-${id}`}>
+              <ArrowRight aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
+              <span className="min-w-0 break-words">{text}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

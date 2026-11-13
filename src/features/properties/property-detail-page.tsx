@@ -11,6 +11,8 @@ import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { ConnectionHealthPanel } from '@/features/compliance/components/connection-health-panel';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -74,6 +76,8 @@ export function PropertyDetailPage() {
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const panel = propertyPanelOf(tabParam);
+  // `?section=connection-health` (the button «Attiva l'invio» of the cockpit and of the To do for who may not open its wizard, and the way back from the wizard): the panel that tells the police and ISTAT send.
+  const scrollToHealth = searchParams.get('section') === CONNECTION_HEALTH_SECTION && panel === 'info';
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   // Read again whenever the page opens: the activation, the CIN or the pause change on other pages, where these are not watched.
@@ -97,6 +101,15 @@ export function PropertyDetailPage() {
   useEffect(() => {
     if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
   }, [scrollToPricing]);
+  // The section is there once the whole page is: the skeleton shows until the record is read as well as the detail, and an effect that ran on the skeleton
+  // would find nothing and never run again. So the scroll waits for both, and the focus goes to the section too (a region named by its title).
+  const scrollToConnectionHealth = scrollToHealth && property !== undefined && record.data !== undefined;
+  useEffect(() => {
+    if (!scrollToConnectionHealth) return;
+    const section = document.getElementById(CONNECTION_HEALTH_SECTION);
+    section?.scrollIntoView?.({ block: 'start' });
+    section?.focus?.({ preventScroll: true });
+  }, [scrollToConnectionHealth]);
 
   // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
   if (deleteProperty.isSuccess) return <Navigate to={PROPERTIES_PATH} replace />;
@@ -229,6 +242,8 @@ export function PropertyDetailPage() {
           {panel === 'info' && (
             <div className="space-y-8">
               <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+              {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
+              <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
               {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
               {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
             </div>

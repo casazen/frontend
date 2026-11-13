@@ -1,4 +1,4 @@
-import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { isFeatureRuleEnabled, type FeatureFlagRule, type FeatureFlags } from './feature-flags';
 import { ONBOARDING_ROUTES } from './onboarding-routes';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { profilePathForContext } from '@/lib/profile-path';
@@ -84,8 +84,11 @@ export interface RouteManifestEntry {
   homeWhenDenied?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
-  /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
-  featureFlag?: FeatureFlagKey;
+  /**
+   * Backend feature flag: while off the entry is in no menu and its route redirects to the context home. A list of flags is met while ANY of them is on (a page that serves
+   * two sources, each behind a flag of its own).
+   */
+  featureFlag?: FeatureFlagRule;
   /**
    * Plan and billing of the org (backend policy `OrgBillingAdmin`, TN-3): the entry is in the menu only for the org
    * billing administrator ({@link ORG_BILLING_ADMIN_PERMISSION}). The route stays reachable: the page itself tells
@@ -263,6 +266,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The fiscal documents (FIS-04, FIS-07, NF-84, NF-87, E06/F03/US04/T01): the list of the ones CasaZen issued for its direct bookings and of the ones imported read-only from the
+    // channel manager, with the state of each in simple words, the PDF and the XML, and the CSV and the Excel file. A tab of Incassi next to Regime fiscale. It asks what the backend asks:
+    // `payment.read` for the list, the downloads and the files (`FiscalDocumentsController`), plus `property.read` for the setting that tells who issues. It exists while either flag of the
+    // documents is on (CasaZen issues, or the channel manager's documents are imported): with both off the tab, the card of the fiscal page and the link of the payment ledger are not there
+    // and the address leads to the home of the area. The ledger of the payments (E06/F04/US01/T04) links to it only while this entry is here, its flags are on and the caller holds these.
+    path: '/app/short-rent/fiscal/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read', 'payment.read'],
+    featureFlag: ['fiscalDocumentIssuance', 'octorateDocumentImport'],
+    navKey: 'nav.fiscalDocuments',
+    navParent: '/app/short-rent/payments',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/fiscal/documents/fiscal-documents-page')).FiscalDocumentsPage,
+    }),
+  },
+  {
     // The reports of short rent (SR-10): revenue, occupancy and bookings by channel to download, the fiscal ones as the fiscal page
     // has them, and the pages that already hold the rest (Alloggiati, payments). For who may read payments (aggregated money):
     // the others find the reserved page. A tab of Incassi, with Ricavi and Regime fiscale.
@@ -276,6 +297,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
+    // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
+    // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
+    // `property.read` (backend policy `SharedPropertyRead`); the server then opens each type with the permission of its own area, and the page
+    // offers only the types it sends. For who may not read payments, the page that hangs from Incassi takes a place in "Altro" (UI-04a).
+    path: '/app/short-rent/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.documents',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
+  },
+  {
     // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
     // the list of reports (its row "Apri" leads here), in no menu and no tab; reading it asks for payments, and the buttons that write
     // ask for `payment.write` inside the page.
@@ -283,6 +319,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-summary-page')).TouristTaxSummaryPage }),
+  },
+  {
+    // What came in, what is still to collect and what reached the account (NF-97, REP-02): by date, payment method and channel, the balances
+    // of the stays and the credits. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; money in aggregate, so
+    // it asks for `payment.read`, as the backend does for every read, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/collections',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/collections/collections-report-page')).CollectionsReportPage }),
+  },
+  {
+    // What each channel costs (NF-98, REP-03): gross, commission and net of each channel, the card fees of the direct stays and how each channel
+    // settles its commission. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; it asks for `payment.read`, as
+    // the backend does, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/channel-costs',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/channel-costs/channel-costs-page')).ChannelCostsPage }),
   },
   {
     // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
@@ -310,10 +364,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
-    // Biometric verification queue (NF-12): operator verifications pending decision. A tab of "Da approvare", the other queue of decisions.
+    // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
+    // A tab of "Da approvare", the other queue of decisions. It asks the permission the API asks for every call of it, `verification.decision` (the
+    // owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
     path: '/app/short-rent/verifications',
     context: 'short-rent',
-    requiredPermissions: ['verification.decide'],
+    requiredPermissions: ['verification.decision'],
     navKey: 'nav.verifications',
     navParent: '/app/short-rent/approval-queue',
     navOrder: 1,
@@ -456,6 +512,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, in "Altro". Only with the flag `messageAssistant`
+    // (backend `MessageAssistant`, off by default): while it is off the entry is in no menu, the address leads to the home of the area and the server answers 404 to every
+    // endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the rules, the situations
+    // and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
+    path: '/app/short-rent/settings/assistant',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    featureFlag: 'messageAssistant',
+    navKey: 'nav.assistant',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'Sparkles',
+    component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
@@ -489,6 +560,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CalendarDays',
     component: async () => ({ default: (await import('@/features/bookings/calendar-page')).CalendarPage }),
     legacyPaths: ['/bookings/calendar'],
+  },
+  {
+    // A change of the price and the rules of many days of many properties, in a guided wizard with a summary before anything is sent (NF-78, NF-05). It is not in a menu: the
+    // calendar has the button that opens it, and it needs the right to write properties (the API checks it again for every property).
+    path: '/app/short-rent/bookings/calendar/bulk',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({ default: (await import('@/features/bookings/calendar-bulk-page')).CalendarBulkPage }),
   },
   {
     path: '/app/short-rent/bookings/:id/checkout',
@@ -652,6 +731,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Attiva l'invio automatico alla Polizia» (E03/F01/US02/T02, NF-42): the wizard that sets who sends the guest data to the police and to ISTAT for one property
+    // (`?property=<id>`), with the passage on the panel of the channel manager and the connection test. In no menu: the panel «Invio a Polizia e ISTAT» of the property page
+    // (its «Attiva o ricollega» appears because this route exists), the cockpit of the adempimenti, the «Da fare» of the activation and the onboarding lead here. It asks what
+    // changing the sender asks, `property.write` (the endpoints it calls ask it); the property is read with `property.read`. No flag: the channel manager is offered only where
+    // the server says it can send, so with the connector off the wizard has only the other ways.
+    path: '/app/short-rent/compliance/sender',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/compliance/sender-wizard/sender-wizard')).SenderWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/bookings/:id',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
@@ -797,10 +889,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     // Contracts are managed from the property's Contracts tab, not a separate menu entry.
-    // Keep this route for existing links and the area-wide tenant, deadline and fiscal pages.
+    // Old list addresses now lead back to the properties.
     navKey: 'nav.leases',
     icon: 'FileText',
-    component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
+    component: async () => ({ default: (await import('@/features/leases/legacy-leases-redirect')).LegacyLeasesRedirect }),
     legacyPaths: ['/leases'],
   },
   {
@@ -814,14 +906,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
   },
   {
-    // Scadenze (LR-05): the agenda of the dates not to miss, month by month. A tab of Contratti, after the tenants; the overview links
-    // here too. Reading it asks what the leases ask.
+    // Compatibility address for the area agenda. Contract deadlines live on the contract sheet.
     path: '/app/long-rent/deadlines',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentDeadlines',
-    navParent: '/app/long-rent/leases',
-    navOrder: 2,
     icon: 'CalendarDays',
     component: async () => ({
       default: (await import('@/features/leases/deadlines/long-rent-deadlines-page')).LongRentDeadlinesPage,
@@ -829,14 +918,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Inquilini (LR-09): who lives in the properties let long term, since when, for how much and how punctually, with the copy of a
-    // person's data and the request to erase them. A tab of Contratti, before the deadlines. Reading it asks what the leases ask; the
+    // person's data and the request to erase them. Tenant data lives inside each contract. The compatibility address remains available; the
     // copy and the erasure ask `lease.create` too (the sheet hides them from who may not).
     path: '/app/long-rent/tenants',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentTenants',
-    navParent: '/app/long-rent/leases',
-    navOrder: 1,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/leases/tenants/tenants-page')).TenantsPage }),
   },
@@ -956,15 +1043,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not). Fourth of the main menu, and the fourth place of the phone bar.
+    // hides the buttons from who may not). The entry point is the Interventi tab of each property.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
-    navGroup: 'portfolio',
-    navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 3,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -980,12 +1063,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. A tab of Contratti. It is not a condominium balance sheet.
+    // the leases; the others find the reserved page. A standalone report, without contract-list tabs.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentFiscal',
-    navParent: '/app/long-rent/leases',
+    navPlacement: 'secondary',
     navOrder: 3,
     icon: 'Receipt',
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
@@ -1129,8 +1212,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
-    // Withholding tax management (ADR-018): withholding summary by month/owner/apartment, F24 preview and download,
-    // and payment reconciliation. For org billing administrators who handle tax compliance. Agency plan only (`agencyTier`).
+    // «Rendiconti» (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners, with the real PDF and CSV. It reads and writes the agency
+    // endpoint `/statements` (ADR-010: only an org on the Agency plan, so behind `agencyTier`), which is the agency's own and not the platform console's:
+    // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
+    // `agency.statement.manage` to approve and publish), which the owner and the administrators hold from their role in the org and which is not among the
+    // context permissions of `/me/contexts` (so it cannot be a `requiredPermissions` entry): like the other pages of the agency's money, the entry is for
+    // the org billing administrator, who is that owner or administrator, and the page checks the role and the plan of the organization before it reads anything (the flag is the environment's, the plan is each organization's: the backend refuses any other plan with a bare 403).
+    path: '/app/account/statements',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.statements',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+    legacyPaths: ['/app/admin/statements'],
+  },
+  {
+    // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
+    // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
     context: 'account',
     requiredPermissions: [],
@@ -1144,8 +1247,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
   {
-    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
-    // For org billing administrators who handle owner payments. Agency plan only (`agencyTier`).
+    // Wire transfer batch management (ADR-017): the payment files (SEPA for EUR, Swiss for CHF) that pay the owners' published statements. The backend asks
+    // `agency.wire.manage`, which only the owner and the administrators hold: the entry is for the org billing administrator, and the page checks the role
+    // before it reads anything, the plan of the organization too. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],
@@ -1490,19 +1594,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
   {
-    // Reads the agency endpoint `/statements` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
-    path: '/app/admin/statements',
-    context: 'admin',
-    requiredPermissions: ['admin.statements.read'],
-    featureFlag: 'agencyTier',
-    navKey: 'nav.statements',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 7,
-    icon: 'FileText',
-    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
-  },
-  {
     // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
     path: '/app/admin/activities',
     context: 'admin',
@@ -1712,7 +1803,7 @@ export type PermissionPredicate = (contextKey: AppContextKey, permission: string
 
 /** Entries behind a feature flag need the flag on; without flags (not loaded) they are hidden. */
 export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Partial<FeatureFlags>): boolean {
-  return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
+  return isFeatureRuleEnabled(features, entry.featureFlag);
 }
 
 /** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */

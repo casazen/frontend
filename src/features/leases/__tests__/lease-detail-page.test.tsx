@@ -299,7 +299,7 @@ describe('LeaseDetailPage', () => {
     expect(screen.getByTestId('lease-tab-guida')).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('render_TheSheet_HasFiveTabsAndNoTabOfTheJobs_NorAWayToAskForOneInItsMenu', async () => {
+  it('render_TheSheet_HasSixTabsAndNoTabOfTheJobs_NorAWayToAskForOneInItsMenu', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
 
     renderPage('?tab=dati');
@@ -308,6 +308,7 @@ describe('LeaseDetailPage', () => {
     const tabs = within(screen.getByRole('tablist')).getAllByRole('tab');
     expect(tabs.map((tab) => tab.getAttribute('data-testid'))).toEqual([
       'lease-tab-guida',
+      'lease-tab-inquilini',
       'lease-tab-dati',
       'lease-tab-documenti',
       'lease-tab-pagamenti',
@@ -319,6 +320,17 @@ describe('LeaseDetailPage', () => {
     fireEvent.keyDown(screen.getByTestId('page-header-more'), { key: 'Enter' });
     expect(await screen.findByTestId('lease-menu-documents')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-menu-request-job')).not.toBeInTheDocument();
+  });
+
+  it('shows only this contract tenants in its tenant tab', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
+    renderPage('?tab=inquilini');
+    const tenants = await screen.findByTestId('lease-tenants');
+    expect(within(tenants).getAllByTestId('lease-party')).toHaveLength(1);
+    expect(tenants).toHaveTextContent('Giulia Verdi');
+    expect(tenants).not.toHaveTextContent('Mario Rossi');
+    expect(tenants).toHaveTextContent('g***@example.com');
+    expect(screen.getByTestId('lease-tab-inquilini')).toHaveAttribute('aria-selected', 'true');
   });
 
   it('render_ConcordatoDraftForThePartner_WaitsForItsContractWithoutDatesOrRentOfTheDraft', async () => {

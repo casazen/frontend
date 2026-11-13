@@ -14,7 +14,11 @@ export type FeatureFlagKey =
   | 'concordatoFacile'
   | 'supplierRequestBackups'
   | 'agencyTier'
-  | 'crmMarketing';
+  | 'crmMarketing'
+  | 'complianceTrafficLight'
+  | 'messageAssistant'
+  | 'fiscalDocumentIssuance'
+  | 'octorateDocumentImport';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -98,6 +102,34 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */
   crmMarketing: false,
+  /**
+   * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
+   * proofs of a period (`GET /api/compliance/report` and its export, which answer 404 while it is off). Off until the product owner turns it on. The
+   * page of the proofs (`/app/short-rent/alloggiati/reports`) offers its summary («Riepilogo») only while it is on: off, it is the archive of the proofs
+   * alone, which does not depend on it.
+   */
+  complianceTrafficLight: false,
+  /**
+   * The assistant of the guests' messages (backend `MessageAssistant`, E05/F05, NF-66, NF-67, PO-08, PO-09), off until the product owner turns it on: what a guest
+   * writes is personal data and the AI provider is an external sub-processor, so the privacy notice and the processing agreement of PO-09 come first. While it is
+   * off the draft panel of the conversation and the page of its settings (`/app/short-rent/settings/assistant`, in «Altro») do not exist: the address leads to the
+   * home of the area, nothing asks the server and the backend answers 404 to every endpoint of the assistant. Even with the flag on, an organization is served only
+   * after it switches its own assistant on in its rules, and a draft is never sent without the host's approval.
+   */
+  messageAssistant: false,
+  /**
+   * The issuance of fiscal documents by CasaZen (backend `FiscalDocumentIssuance`, E06/F02/US02/T02, NF-82, FIS-02, PO-05), off until the accountant has approved the rules of the
+   * documents. The backend gates only the issuance (the draft, the issue, the credit note, the discard) and the choice of the mode «CasaZen emette» of the issuer setting; the reading of the
+   * documents is not behind it. With `octorateDocumentImport` it decides whether the page of the fiscal documents (`/app/short-rent/fiscal/documents`) exists: while both are off the tab,
+   * the card of the fiscal page and the link of the payment ledger are not there and the address leads to the home of the area.
+   */
+  fiscalDocumentIssuance: false,
+  /**
+   * The import of the documents the channel manager issued (backend `OctorateDocumentImport`, E06/F03/US02/T01, NF-84, FIS-04, D19), off until the documents list is proven on a structure
+   * with the invoice module. It gates the import job and `GET api/fiscal/documents/{id}/octorate-pdf` (404 while it is off, as while `octorateConnector` is). With `fiscalDocumentIssuance` it
+   * decides whether the page of the fiscal documents exists, and on its own whether an imported document has a PDF button.
+   */
+  octorateDocumentImport: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
@@ -113,4 +145,16 @@ export function parseFeatureFlags(data: unknown): FeatureFlags {
 /** A missing flag set (no provider, not loaded) means off. */
 export function isFeatureEnabled(flags: Partial<FeatureFlags> | undefined, key: FeatureFlagKey): boolean {
   return flags?.[key] === true;
+}
+
+/**
+ * The flags a page waits for: one, or a list of which at least ONE must be on (a page that serves two sources, each behind a flag of its own, exists while either of them does).
+ * A list with no flag in it is never on: a page nobody can turn on is hidden, not shown.
+ */
+export type FeatureFlagRule = FeatureFlagKey | readonly FeatureFlagKey[];
+
+/** No rule is no limit; otherwise the rule is met when its flag, or any flag of its list, is on. */
+export function isFeatureRuleEnabled(flags: Partial<FeatureFlags> | undefined, rule: FeatureFlagRule | undefined): boolean {
+  if (rule === undefined) return true;
+  return typeof rule === 'string' ? isFeatureEnabled(flags, rule) : rule.some((key) => isFeatureEnabled(flags, key));
 }

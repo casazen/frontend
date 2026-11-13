@@ -10,8 +10,10 @@ import { formatDateTime } from '@/lib/utils';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import type { Booking } from '@/types';
 import { stayDateOf } from '../lib/booking-price';
+import { channelGuidanceOf } from '../lib/booking-change';
 import { bookingChannelText } from '../lib/ota-stay';
 import { BookingSourceValue, FACT_LINK, Fact, Facts } from './booking-facts';
+import { OtaChangeGuidance } from './ota-change-guidance';
 
 interface BookingStayTabProps {
   booking: Booking;
@@ -30,12 +32,15 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   // request or ask another supplier after a rejection (SU-09). No new request for a cancelled stay.
   const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
   const canRequestSupplier = canManageSupplierRequests && booking.status !== 'Cancelled';
+  const canWrite = hasPermission('short-rent', 'booking.write');
+  // A booking of a channel that the channel does not let the host change or cancel from CasaZen (E08/F03/US02, NF-75, NF-76): the one sentence that says how to ask the
+  // guest or the channel, in place of the action. It replaces the lock sentence below, which would send the host to cancel a booking that cannot be cancelled here.
+  const modifyGuidance = canWrite ? channelGuidanceOf(booking.changeOptions, 'modify') : null;
+  const cancelGuidance = canWrite ? channelGuidanceOf(booking.changeOptions, 'cancel') : null;
   // Why the dates and guests cannot be changed (SR-05c), for who would have changed them: the page offers no "Modifica" then, and the
   // server's `canEdit` says why. A cancelled booking says it itself.
   const editLock =
-    hasPermission('short-rent', 'booking.write') && booking.canEdit && !booking.canEdit.allowed && booking.canEdit.reason !== 'Cancelled'
-      ? booking.canEdit.reason
-      : null;
+    canWrite && !modifyGuidance && booking.canEdit && !booking.canEdit.allowed && booking.canEdit.reason !== 'Cancelled' ? booking.canEdit.reason : null;
 
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
   const channelText = bookingChannelText(booking, t);
@@ -86,6 +91,12 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
             {t(`booking.detailPage.editLocked.${editLock}`)}
           </p>
         ) : null}
+        {modifyGuidance || cancelGuidance ? (
+          <div className="space-y-2" data-testid="booking-channel-guidance">
+            {modifyGuidance ? <OtaChangeGuidance action="modify" channel={modifyGuidance.channel} /> : null}
+            {cancelGuidance ? <OtaChangeGuidance action="cancel" channel={cancelGuidance.channel} /> : null}
+          </div>
+        ) : null}
       </PlainSection>
 
       {guest ? (
@@ -112,7 +123,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
       ) : null}
 
       {/* DB-12b: the host asks the guest of a stay that is over for a review; the panel draws nothing for any other booking. */}
-      <ReviewInvitePanel booking={booking} canWrite={hasPermission('short-rent', 'booking.write')} />
+      <ReviewInvitePanel booking={booking} canWrite={canWrite} />
 
       <ServiceRequestsCard
         plain

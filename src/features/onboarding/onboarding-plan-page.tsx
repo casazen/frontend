@@ -1,5 +1,5 @@
-import { useId, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { CircleHelp } from 'lucide-react';
@@ -10,16 +10,19 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supportConfig } from '@/config/support.config';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import { firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
+import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
+import { useFlowSummaries } from '@/queries/use-onboarding-flows';
 import { useExitPart, useOnboardingPlan } from '@/queries/use-onboarding-plan';
 import type { OnboardingPart } from '@/types/onboarding.types';
 import { OnboardingDeferDialog } from './components/onboarding-defer-dialog';
 import { OnboardingNeedsPanel } from './components/onboarding-needs-panel';
 import { OnboardingPartRow } from './components/onboarding-part-row';
+import { OwnerStep } from './components/owner-step-row';
 
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
@@ -45,7 +48,13 @@ export function OnboardingPlanPage() {
   const navigate = useNavigate();
   const { contexts, getDefaultRoute } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
+  const { flags } = useFeatureFlags();
+  // The owner step (NF-109) exists only for an org on the agency plan (the flag here, the plan of the org in `OwnerStep`) whose administrator may read the owners:
+  // otherwise nothing of it is drawn or read.
+  const showOwnerStep = flags.agencyTier && isAdmin;
   const plan = useOnboardingPlan();
+  // The offer of the bulk configuration is the administrator's (the page is, and the server asks `OrgBillingAdmin`): nobody else asks for the counts.
+  const flowSummaries = useFlowSummaries({ enabled: isAdmin });
   const exit = useExitPart();
   const adminNoteId = useId();
   const [deferring, setDeferring] = useState<Deferring | null>(null);
@@ -53,6 +62,9 @@ export function OnboardingPlanPage() {
   const parts = useMemo(() => knownParts(plan.data), [plan.data]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   const focus = firstOpenPart(parts);
+  // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.
+  const propertyCount = (flowSummaries.data ?? []).reduce((largest, summary) => Math.max(largest, Number.isFinite(summary.total) ? summary.total : 0), 0);
+  const offerBulk = isAdmin && propertyCount > BULK_OFFER_ABOVE;
 
   /** The home of the host: the plan is a page of Affitti brevi. */
   const home = getDefaultRoute('short-rent');
@@ -120,18 +132,36 @@ export function OnboardingPlanPage() {
           </h2>
           <ol role="list" className="space-y-3" data-testid="onboarding-plan-parts">
             {parts.map((part) => (
-              <OnboardingPartRow
-                key={part.code}
-                part={part}
-                parts={parts}
-                highlighted={focus?.code === part.code}
-                canDefer={isAdmin}
-                adminNoteId={adminNoteId}
-                onDefer={(chosen) => setDeferring({ part: chosen, open: true })}
-              />
+              <Fragment key={part.code}>
+                <OnboardingPartRow
+                  part={part}
+                  parts={parts}
+                  highlighted={focus?.code === part.code}
+                  canDefer={isAdmin}
+                  adminNoteId={adminNoteId}
+                  onDefer={(chosen) => setDeferring({ part: chosen, open: true })}
+                />
+                {/* After the reconciliation of the properties, before the fiscal documents and the summary: a plain row, never the highlighted block. */}
+                {showOwnerStep && part.code === 'properties' ? <OwnerStep /> : null}
+              </Fragment>
             ))}
+            {showOwnerStep && !parts.some((part) => part.code === 'properties') ? <OwnerStep /> : null}
           </ol>
         </section>
+
+        {offerBulk ? (
+          <section aria-labelledby={`${adminNoteId}-bulk`} className="min-w-0 space-y-2 rounded-lg border bg-card p-4" data-testid="onboarding-plan-bulk">
+            <h2 id={`${adminNoteId}-bulk`} className="text-lg font-semibold">
+              {t('onboardingPlan.bulk.entry.title')}
+            </h2>
+            <p className="text-sm text-foreground/70">{t('onboardingPlan.bulk.entry.text')}</p>
+            <Button asChild variant="outline" className={TOUCH_TARGET}>
+              <Link to={ONBOARDING_BULK_PATH} data-testid="onboarding-plan-bulk-link">
+                {t('onboardingPlan.bulk.entry.action')}
+              </Link>
+            </Button>
+          </section>
+        ) : null}
       </>
     );
   }

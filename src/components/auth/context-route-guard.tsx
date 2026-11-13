@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { isFeatureEnabled, type FeatureFlagKey } from '@/config/feature-flags';
+import { isFeatureRuleEnabled, type FeatureFlagRule } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
 import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -12,8 +12,8 @@ import { ReservedPage } from './reserved-page';
 interface ContextRouteGuardProps {
   contextKey: AppContextKey;
   requiredPermissions?: string[];
-  /** Route behind a backend feature flag: redirects to the context home while the flag is off. */
-  featureFlag?: FeatureFlagKey;
+  /** Route behind a backend feature flag (or a list of them, met while any is on): redirects to the context home while the flag is off. */
+  featureFlag?: FeatureFlagRule;
   /**
    * The same page in other contexts (plan and billing, PL-16): a user without `contextKey` who works in one of them is
    * sent there, query string included (e.g. `?checkout=success` of an old Stripe return page), instead of to a home.
@@ -57,7 +57,7 @@ export function ContextRouteGuard({
   }
 
   // A page behind a flag that is off does not exist yet, for anyone: back to the home of the area.
-  const featureEnabled = !featureFlag || isFeatureEnabled(flags, featureFlag);
+  const featureEnabled = isFeatureRuleEnabled(flags, featureFlag);
   if (!featureEnabled) {
     return <Navigate to={getDefaultRoute(current.contextKey)} replace />;
   }

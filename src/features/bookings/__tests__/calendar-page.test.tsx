@@ -17,6 +17,8 @@ vi.mock('../components/booking-calendar', () => ({
 vi.mock('@/queries/use-bookings', () => ({ useBookingCalendar: vi.fn() }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('@/queries/use-booking-messages', () => ({ useUnreadMessagesByBooking: () => ({ data: undefined }) }));
+// The day layer (E08/F05/US03/T01) reads through the client of the queries, which this page is rendered without: it reads nothing here.
+vi.mock('@/queries/use-calendar-days', () => ({ useCalendarDays: () => ({ data: undefined, isError: false, error: null, refetch: vi.fn() }) }));
 
 function renderPage() {
   render(

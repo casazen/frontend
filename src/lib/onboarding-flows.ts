@@ -2,6 +2,7 @@ import {
   ONBOARDING_FLOW_KEYS,
   ONBOARDING_FLOW_REASONS,
   ONBOARDING_FLOW_STATES,
+  ONBOARDING_PREREQUISITE_KEYS,
   type FlowPropertyStatus,
   type OnboardingFlowKey,
   type OnboardingFlowState,
@@ -17,6 +18,7 @@ import {
 const FLOW_KEYS: ReadonlySet<string> = new Set(ONBOARDING_FLOW_KEYS);
 const FLOW_STATES: ReadonlySet<string> = new Set(ONBOARDING_FLOW_STATES);
 const FLOW_REASONS: ReadonlySet<string> = new Set(ONBOARDING_FLOW_REASONS);
+const PREREQUISITE_KEYS: ReadonlySet<string> = new Set(ONBOARDING_PREREQUISITE_KEYS);
 
 export const flowNameKey = (flow: OnboardingFlowKey) => `onboardingPlan.flows.names.${flow}`;
 export const flowStateKey = (state: OnboardingFlowState) => `onboardingPlan.flows.states.${state}`;
@@ -34,6 +36,14 @@ export function normalizeFlowState(state: unknown): OnboardingFlowState {
 /** The text of the reason a flow is not active on a property, in plain words (`onboardingPlan.reasons.property.<code>`); a code it has no text for reads as a neutral line. */
 export function flowReasonKey(reason: string | null | undefined): string {
   return reason && FLOW_REASONS.has(reason) ? `onboardingPlan.reasons.property.${reason}` : 'onboardingPlan.reasons.property.unknown';
+}
+
+/**
+ * The text of a prerequisite a flow still lacks («l'abbinamento degli annunci», `onboardingPlan.summary.prerequisites.<key>`). A key this version does not
+ * know (the server is newer than the app) reads as a neutral phrase: the key itself is never printed.
+ */
+export function prerequisiteKey(key: string | null | undefined): string {
+  return key && PREREQUISITE_KEYS.has(key) ? `onboardingPlan.summary.prerequisites.${key}` : 'onboardingPlan.summary.prerequisites.unknown';
 }
 
 /** The reason to tell for a property: its own, or the first prerequisite it lacks; `null` when the flow is active. */

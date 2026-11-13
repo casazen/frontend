@@ -113,6 +113,7 @@
     "firstName": "Prénom *",
     "lastName": "Nom *",
     "stepDocument": "Pièce d'identité",
+    "stepIdentity": "Vérification d'identité",
     "stepConsents": "Information sur la protection des données et consentements",
     "stepOf": "Étape {{step}} sur {{total}}",
     "next": "Suivant",
@@ -165,6 +166,39 @@
     "citizenship": "Nationalité *",
     "removeGuest": "Retirer l'invité",
     "addGuest": "Ajouter un invité",
+    "biometric": {
+      "capture": {
+        "attemptsRemaining": "Essais restants : {{count}}",
+        "cameraDenied": "Le navigateur a bloqué la caméra. Pour l'autoriser, touchez l'icône du cadenas ou de la caméra à côté de l'adresse web, choisissez « Autoriser » pour la caméra, puis appuyez sur « Réessayer ».",
+        "cameraNotFound": "Aucune caméra n'a été trouvée sur cet appareil.",
+        "cameraTitle": "La caméra n'est pas disponible",
+        "cameraUnknown": "La caméra n'a pas pu être démarrée.",
+        "cameraUnsupported": "Cette page ne peut pas utiliser la caméra dans ce navigateur. Ouvrez le lien dans votre navigateur habituel ou demandez à une personne de vous vérifier.",
+        "capturedLabel": "Le selfie que vous avez pris",
+        "instructions": "Regardez la caméra dans un endroit bien éclairé et gardez votre visage dans le cadre. Nous comparons la photo avec celle de votre pièce d'identité.",
+        "noFile": "Pour votre sécurité, le selfie doit être pris maintenant avec la caméra : il ne peut pas être choisi parmi vos fichiers ou votre galerie.",
+        "notPrepared": "La photo n'a pas pu être préparée. Veuillez la reprendre.",
+        "previewLabel": "Aperçu en direct de votre caméra",
+        "retake": "La reprendre",
+        "retryCamera": "Réessayer",
+        "sending": "Vérification en cours...",
+        "submit": "Envoyer la photo",
+        "takePhoto": "Prendre la photo",
+        "title": "Prendre un selfie"
+      },
+      "consent": {
+        "accept": "J'accepte la vérification du visage",
+        "decline": "Je n'accepte pas : une personne me vérifiera",
+        "description": "Pour vous donner le code d'accès du logement, nous comparons un selfie avec la photo de votre pièce d'identité.",
+        "documentKept": "La photo de votre document n'est conservée, chiffrée, que jusqu'à la fin de la vérification, puis elle est supprimée.",
+        "optional": "Vous pouvez refuser. Une personne du logement vérifiera alors votre identité avec vous et le code d'accès vous parviendra après sa décision. Refuser n'arrête pas votre enregistrement.",
+        "optionalTitle": "C'est votre choix",
+        "purpose": "Vous photographiez votre document puis prenez un selfie avec la caméra. Un programme sur notre serveur compare les deux. Votre selfie n'est jamais enregistré : il est supprimé dès que la comparaison est terminée.",
+        "purposeTitle": "Ce qui se passe",
+        "title": "Vérifier votre identité avec votre visage",
+        "version": "Version de ce texte : {{version}}"
+      }
+    },
     "consent": {
       "title": "Consentement aux communications commerciales (facultatif)",
       "intro": "Souhaitez-vous recevoir des nouvelles, des offres et des actualités du logement ? Choisissez vos canaux préférés. Ce n'est pas obligatoire : vous pouvez terminer le check-in sans donner votre consentement.",
@@ -231,6 +265,76 @@
       "HeadOfFamily": "Chef de famille",
       "HeadOfGroup": "Chef de groupe",
       "SingleGuest": "Invité individuel"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Photo de la pièce d'identité",
+        "instructions": "Posez le document sur une surface plane et bien éclairée. Montrez tout le côté avec votre photo et les deux lignes de lettres en bas, sans reflets.",
+        "notAcceptable": "La photo n'est pas encore assez bonne. Veuillez la reprendre.",
+        "pick": "Photographier le document",
+        "pickAgain": "Le photographier de nouveau",
+        "sending": "Lecture du document...",
+        "title": "Photographiez votre pièce d'identité"
+      },
+      "documentNotArchived": "Le document ne sera pas archivé.",
+      "guidance": {
+        "avoid_glare": "Évitez les reflets : inclinez un peu le document ou éloignez-vous de la lumière.",
+        "hold_still": "Tenez le téléphone immobile : la photo est floue.",
+        "less_light": "Il y a trop de lumière : placez-vous sous une lumière plus douce.",
+        "more_light": "Il n'y a pas assez de lumière : placez-vous dans un endroit plus lumineux.",
+        "move_closer": "Rapprochez-vous : votre visage est trop petit sur l'image.",
+        "one_face_only": "Vous devez être seul sur l'image.",
+        "other": "Veuillez reprendre la photo.",
+        "retake_picture": "L'image n'a pas pu être lue : veuillez la reprendre.",
+        "retake_selfie": "Reprenez le selfie en regardant droit la caméra.",
+        "show_document_photo": "Montrez le côté du document avec votre photo.",
+        "show_whole_document": "Montrez tout le côté du document, avec les deux lignes de lettres en bas.",
+        "show_your_face": "Montrez votre visage : on ne le voyait pas sur l'image.",
+        "tip_remove_glasses": "Retirez vos lunettes.",
+        "tip_remove_mask": "Retirez le masque ou tout ce qui couvre votre visage.",
+        "upload_document_again": "Photographiez de nouveau le document : il n'a pas pu être lu.",
+        "use_live_camera": "Prenez le selfie maintenant avec la caméra, pas à partir d'une photo ou d'un écran.",
+        "use_valid_document": "Le document est expiré : utilisez un document valide."
+      },
+      "intro": "Seule la personne qui remet la pièce d'identité participe à cette étape. Les autres invités n'ont pas à prendre de selfie.",
+      "nextHint": "Terminez cette étape pour continuer. Si vous préférez, demandez la vérification par une personne.",
+      "operator": {
+        "ask": "Demander la vérification par une personne",
+        "requested": "Nous avons prévenu l'hôte. Il vérifiera votre identité et le code d'accès vous parviendra après sa décision."
+      },
+      "problem": {
+        "consent_required": "Nous avons d'abord besoin de votre réponse sur la vérification du visage.",
+        "document_photo": "Nous avons de nouveau besoin de la photo du document : veuillez la reprendre.",
+        "document_required": "Veuillez d'abord photographier le document.",
+        "failed": "Un problème est survenu. Veuillez réessayer.",
+        "link_unavailable": "Ce lien n'est plus valide, ou l'enregistrement est déjà terminé. Demandez un nouveau lien à votre hôte.",
+        "network": "Nous n'avons pas pu joindre le serveur. Rien n'a été enregistré : vérifiez votre connexion et réessayez.",
+        "processing": "Nous n'avons pas pu traiter la photo. Veuillez réessayer.",
+        "too_large": "La photo est trop volumineuse. Reprenez-la avec une résolution plus basse.",
+        "too_many_requests": "Trop de tentatives en peu de temps. Attendez un instant puis réessayez.",
+        "unsupported": "Ce type de fichier n'est pas pris en charge. Utilisez une photo JPEG ou PNG."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "Si votre réservation comporte une adresse e-mail, nous y avons aussi envoyé le code.",
+          "codeLabel": "Votre code d'accès",
+          "noCode": "Votre identité est vérifiée. Si votre réservation comporte une adresse e-mail, le code d'accès y a été envoyé ; sinon, votre hôte vous donnera les instructions d'accès.",
+          "title": "Vous êtes vérifié"
+        },
+        "operator": {
+          "notOffered": "La vérification du visage n'est pas utilisée pour ce séjour : une personne doit vérifier votre identité. Demandez-la ici et l'hôte sera prévenu. Le code d'accès vous parvient après sa décision.",
+          "text": "L'hôte vérifiera votre identité. Le code d'accès vous parvient après sa décision.",
+          "title": "Une personne vérifiera votre identité"
+        },
+        "retry": {
+          "again": "Reprendre le selfie",
+          "againDocument": "Photographier de nouveau le document",
+          "attempts": "Essais restants : {{count}}",
+          "intro": "La vérification n'a pas abouti cette fois. Voici ce qu'il faut changer :",
+          "noReason": "La vérification n'a pas abouti cette fois.",
+          "title": "Nous n'avons pas encore pu vous vérifier"
+        }
+      }
     },
     "invoice": {
       "fields": {

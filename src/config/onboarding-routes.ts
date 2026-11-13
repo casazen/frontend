@@ -42,6 +42,19 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-summary-page')).OnboardingSummaryPage }),
   },
   {
+    // The owner step of the plan (E10/F03/US05/T01, NF-109, ONB-06), for an org on the agency plan: the owners imported or completed, their associations and shares,
+    // the data for the statements and the invitations to the portal, with the accounting for the owners told apart from the properties that work. In no menu: a row of
+    // the plan (`OwnerStepRow`, drawn only for the agency plan and its administrator) leads here. It asks `property.read` like the plan; the owners are the organization
+    // administrator's (the server asks the agency permissions of the owner and the administrators), and the page tells anyone else so instead of meeting a 403. The page
+    // also reads the agency plan flag (`agencyTier`): while it is off the address leads back to the plan.
+    path: '/app/short-rent/onboarding/owners',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    component: async () => ({ default: (await import('@/features/onboarding/owner-onboarding-page')).OwnerOnboardingPage }),
+  },
+  {
     // A step that Octorate allows only from its panel (E10/F03/US02/T01, NF-107): `police`, `istat` or `channel-access`, with the property and the
     // channel in the query. In no menu: the plan, the parts and the «Da fare» of a step left half way lead here. The panel steps are written
     // (`property.write`); the page tells anyone who is not the organization administrator who does the step, instead of meeting a 403.
@@ -58,5 +71,47 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     requiredPermissions: ['property.write'],
     featureFlag: 'octorateOnboarding',
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-panel-step-page')).OnboardingPanelResumePage }),
+  },
+  {
+    // The integration settings (E10/F03/US03/T01, NF-108, ONB-05): the health of the connection, what can be reopened (the sender of the Alloggiati communications,
+    // a channel, the properties, any part of the plan) and how the properties and the listings stand. An entry of «Altro» for the organization administrator
+    // (`orgBillingAdmin`, as the server asks `OrgBillingAdmin`): anyone else who opens the address reads who manages the page and no request is sent.
+    path: '/app/short-rent/settings/integration',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    navKey: 'nav.integrationSettings',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/onboarding/integration-settings-page')).IntegrationSettingsPage }),
+  },
+  {
+    // The bulk configuration (E10/F03/US03/T02, NF-105, ONB-02): an agency with many properties applies one choice to all of them or to a selection, fills the
+    // data that changes per property from a file, follows how many are ready and activates a pilot group first. In no menu: the plan leads here when the agency
+    // has more than 10 properties. The organization administrator's page (`orgBillingAdmin`: the server asks `OrgBillingAdmin`): anyone else who opens the
+    // address reads who manages it and no request is sent.
+    path: '/app/short-rent/onboarding/bulk',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'octorateOnboarding',
+    component: async () => ({ default: (await import('@/features/onboarding/onboarding-bulk-page')).OnboardingBulkPage }),
+  },
+  {
+    // The staff queue of the «Fallo per me» requests (E10/F03/US03/T03, NF-107, NF-15, UX-15): where CasaZen support takes a request, closes it or cancels it with a
+    // short note. An entry of «Altro» of the staff area, asking what the other queue pages of the staff ask (`admin.users.read`); the backend still decides: the
+    // endpoints answer only to a platform administrator, and every update is logged in the log of the organization of the request.
+    path: '/app/admin/onboarding-assist',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    featureFlag: 'octorateOnboarding',
+    navKey: 'nav.onboardingAssist',
+    navGroup: 'platform',
+    navPlacement: 'secondary',
+    navOrder: 27,
+    icon: 'Wrench',
+    component: async () => ({ default: (await import('@/features/admin/admin-assist-queue-page')).AdminAssistQueuePage }),
   },
 ];

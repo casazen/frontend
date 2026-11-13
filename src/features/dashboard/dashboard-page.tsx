@@ -11,7 +11,7 @@ import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ComplianceUrgentBlock } from '@/features/compliance/components/compliance-urgent-block';
-import { useComplianceFineCount } from '@/features/compliance/use-compliance';
+import { useComplianceFineCount, useComplianceLightsOn } from '@/features/compliance/use-compliance';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
 import { TodoFocusBlock } from '@/features/todo/focus-block';
 import { isTruncatedList, urgentCountOf } from '@/features/todo/lib/todo-model';
@@ -82,7 +82,11 @@ export function DashboardPage() {
   const todoItems = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
   const todoTruncated = isTruncatedList(todoItems.length);
   const complianceFines = useComplianceFineCount(canReadBookings);
-  const todoFocus = todoItems.length > 0 && !(typeof complianceFines === 'number' && complianceFines > 0);
+  // With the traffic light on (NF-52) the compliance reaches the "Adesso" block through this very list (the feeder keeps it in step with the cockpit):
+  // the block of the sanctions steps aside, so there is no second path to the "Adesso" block and no item twice. Without it, that block still holds it.
+  const complianceLights = useComplianceLightsOn(canReadBookings);
+  const complianceBlock = !complianceLights && typeof complianceFines === 'number' && complianceFines > 0;
+  const todoFocus = todoItems.length > 0 && !complianceBlock;
   const propertyNames = useMemo(() => new Map(propertyList.map((property) => [property.id, property.name] as const)), [propertyList]);
 
   const setQuery = useCallback(
@@ -135,7 +139,7 @@ export function DashboardPage() {
           mobilePrimary="fab"
         />
 
-        {/* What carries a risk of a sanction is the first thing on the Home, whatever the filter below says: it is the host's, not a property's. */}
+        {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
         {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}
 
         {/* The "To do" list (NF-07): the first item in "Adesso", the next ones and the count of the urgent ones under it; nothing while there is nothing to do. */}

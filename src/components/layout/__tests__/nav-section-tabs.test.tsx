@@ -115,13 +115,12 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_SectionOfThePayments_NamesTheSectionAfterItsEntry', () => {
     renderAt('/app/short-rent/fiscal');
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale', 'Stripe Connect']);
   });
 
-  it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
-    renderAt('/app/long-rent/tenants');
-
-    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze', 'Report fiscale']);
+  it.each(['/app/long-rent/fiscal', '/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/leases'])('keeps %s free of the redundant contract-list tabs', (path) => {
+    renderAt(path);
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
   it('NavSectionTabs_EnglishUi_UsesTheEnglishNames', async () => {
@@ -134,7 +133,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
     renderAt('/app/short-rent/payments', { hasPermission: (_ctx, permission) => permission !== 'property.write' });
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
   it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {

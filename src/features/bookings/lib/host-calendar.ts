@@ -120,6 +120,8 @@ export interface HostCalendarBookingEvent extends HostCalendarEventBase {
   kind: 'booking';
   status: string;
   guestName: string;
+  /** Where the booking came from, as the API names the source (`Direct`, `Manual`, `Airbnb`, `Expedia`, ...): the event says it with the icon and the name of its channel (NF-78). */
+  source?: string;
   /** OTA stay created from an iCal block that a sync marked "da verificare" (CO-21); null otherwise. */
   otaReviewReason: OtaReviewReason | null;
 }
@@ -187,6 +189,7 @@ export function toHostCalendarEvents(items: readonly CalendarItemDto[]): HostCal
         kind: 'booking',
         status: item.status ?? '',
         guestName: trimmed(item.guestName) ?? '',
+        source: trimmed(item.source) ?? undefined,
         otaReviewReason: item.status === 'Cancelled' ? null : (item.otaReviewReason ?? null),
       });
     } else {
