@@ -15536,6 +15536,414 @@
       }
     }
   },
+  "ownerInvitation": {
+    "accepting": "We are activating your access",
+    "claimsPending": {
+      "description": "We have recorded your invitation, but your access needs a few more moments. Try again shortly: if it does not activate, write to support.",
+      "title": "Your access to the portal is not active yet"
+    },
+    "emailMismatch": {
+      "action": "Sign in with another account",
+      "description": "You signed in with an address other than the one your agency sent the invitation to. Sign in with the right address: the invitation is still valid and you activate it from here.",
+      "title": "This invitation is for another e-mail address"
+    },
+    "emailNotVerified": {
+      "description": "We sent you a message to confirm the address. Open it, then come back here and try again.",
+      "login": "Sign in again",
+      "title": "Confirm your e-mail address first"
+    },
+    "failure": {
+      "other": "The invitation could not be accepted. If the problem continues, write to support.",
+      "retry": "The service did not answer. Try again in a moment.",
+      "title": "We could not activate your access"
+    },
+    "invite": {
+      "description": "Sign in to see your properties, stays, statements and the documents your agency shares with you.",
+      "login": "I already have an account",
+      "sameEmail": "Use the same e-mail address the invitation was sent to: it is the only one you can accept it with.",
+      "signup": "Create your account",
+      "title": "You are invited to the CasaZen owner portal"
+    },
+    "loading": "One moment",
+    "notFound": {
+      "description": "The owner portal is not active yet. Try again later or ask your agency.",
+      "title": "Page not available"
+    },
+    "openPortal": "Open the portal",
+    "opening": "Taking you to your portal",
+    "pageTitle": "Invitation to the owner portal",
+    "retry": "Try again",
+    "support": "Write to support",
+    "tokenPending": {
+      "description": "Your invitation was accepted, but we could not renew your access. Try again: if it continues, sign out and sign in again.",
+      "title": "We could not open the portal"
+    },
+    "unusable": {
+      "expired": {
+        "description": "The link is no longer valid. Ask your agency to send you a new invitation.",
+        "title": "This invitation has expired"
+      },
+      "goToPortal": "Go to the owner portal",
+      "invalid": {
+        "description": "The link is not valid or is incomplete. Open the link from your e-mail again, or ask your agency to send you a new one.",
+        "title": "This invitation does not work"
+      },
+      "revoked": {
+        "description": "Your agency has withdrawn this invitation. If you think this is a mistake, ask it to send you a new one.",
+        "title": "This invitation has been withdrawn"
+      },
+      "used": {
+        "description": "The link has already been used by an account. If that was you, open the portal and sign in; otherwise ask your agency for a new invitation.",
+        "title": "This invitation has already been used"
+      }
+    }
+  },
+  "ownerOnboarding": {
+    "adminOnly": "This page is managed by the organization administrator.",
+    "backToPlan": "Back to Get started with CasaZen",
+    "counts": {
+      "owners_one": "{{count}} owner in the registry, {{toComplete}} to complete",
+      "owners_other": "{{count}} owners in the registry, {{toComplete}} to complete"
+    },
+    "description": "Import or complete the owners, link them to the properties with their shares, collect the data for the statements and invite them to the portal. The properties can work with the channels even before all of this is complete.",
+    "dimensions": {
+      "fiscalProfile": "Tax data",
+      "mandate": "Mandate",
+      "ownership": "Shares",
+      "payment": "Payments",
+      "portal": "Portal",
+      "registry": "Registry"
+    },
+    "fields": {
+      "bic": "BIC",
+      "billingCity": "City",
+      "billingCivic": "Number",
+      "billingCountry": "Country",
+      "billingPostalCode": "Postal code",
+      "billingProvince": "Province",
+      "billingStreet": "Street",
+      "cinCode": "CIN",
+      "email": "E-mail",
+      "entityKind": "Person or company",
+      "fiscalCode": "Tax code",
+      "iban": "IBAN",
+      "legalName": "Legal name",
+      "ownerKey": "Owner code",
+      "ownershipEnd": "End",
+      "ownershipStart": "Start",
+      "propertyId": "Property ID",
+      "settlementCurrency": "Currency",
+      "sharePercent": "Share",
+      "taxResidence": "Tax residence",
+      "vatNumber": "VAT number"
+    },
+    "import": {
+      "apply": "Import the valid rows",
+      "applyNeedsCheck": "Check the file first: the import is enabled only after a check of this same file with at least one valid row.",
+      "applySummary": "Rows imported: {{applied}}. Rows to fix: {{invalid}}.",
+      "candidates": "More than one owner matches: choose by putting the id in the file (column ownerId): {{owners}}",
+      "check": "Check the file",
+      "checkSummary": "Valid rows: {{valid}}. Rows to fix: {{invalid}}.",
+      "choose": "Choose the file",
+      "chooseAnother": "Choose another file",
+      "chosen": "File chosen: {{name}}",
+      "columns": {
+        "effect": "What happens",
+        "property": "Property",
+        "result": "Outcome",
+        "row": "Row"
+      },
+      "confirm": {
+        "action": "Import",
+        "cancel": "Cancel",
+        "description": "Only the valid rows are written; the ones with errors stay out and you can fix and import them later.",
+        "effect": "What is written: {{owners}} new owners, {{matched}} already in the registry, {{ownerships}} new associations, {{periods}} periods updated.",
+        "file": "File: {{name}}",
+        "invalid_one": "{{count}} row with errors stays out.",
+        "invalid_other": "{{count}} rows with errors stay out.",
+        "noInvitation": "No invitation is sent: invitations are a separate step.",
+        "row": "Row entered by hand: {{owner}}, property {{property}}, share {{share}}%, from {{start}}.",
+        "title_one": "Import {{count}} valid row?",
+        "title_other": "Import {{count}} valid rows?",
+        "valid_one": "{{count}} row will be imported.",
+        "valid_other": "{{count}} rows will be imported.",
+        "working": "Importing…"
+      },
+      "drop": "Drop the owners file here",
+      "effect": "Importing: {{owners}} new owners, {{matched}} already in the registry, {{ownerships}} new links, {{periods}} periods updated. No invitation is sent.",
+      "error": "The file could not be checked or imported. Try again.",
+      "fileSize": "The file is too large: 2 MB at most.",
+      "fileType": "Choose a .csv or .xlsx file.",
+      "forget": "Remove the file",
+      "hint": "The file is read only by the server: the app does not show its content.",
+      "limits": ".csv or .xlsx file up to 2 MB and 1,000 rows. One row for each owner of each property.",
+      "matchedBy": {
+        "external_key": "found by the owner code",
+        "fiscal_identifier": "found by the tax code or VAT number",
+        "owner_id": "found by the id given"
+      },
+      "nextPage": "Next page",
+      "nothingApplied": "No row was imported: fix the rows with errors and check the file again.",
+      "ownerActions": {
+        "conflict": "Owner in conflict",
+        "create_owner": "Creates the owner",
+        "match_owner": "Uses an owner already there"
+      },
+      "ownershipActions": {
+        "conflict": "Link in conflict",
+        "create_ownership": "Creates the link",
+        "unchanged": "No change",
+        "update_future_period": "Updates the period"
+      },
+      "pageOf": "Page {{page}} of {{pages}}",
+      "pagesLabel": "Result pages",
+      "previousPage": "Previous page",
+      "rowApplied": "Imported",
+      "rowOk": "Valid",
+      "rowsCaption": "One row for each row of the file, with its outcome",
+      "sendsNothing": "Importing the owners sends no invitation. Invitations go out only when you confirm them in the «Portal access» phase.",
+      "sharesTitle": "Properties with shares to fix",
+      "template": "Download the template",
+      "unknownColumns": "Columns we do not know and that are ignored: {{columns}}."
+    },
+    "invitations": {
+      "acceptedOn": "Accepted on {{date}}",
+      "actionError": "The operation could not be completed.",
+      "anOwner": "An owner",
+      "checkAgain": "Check again",
+      "closedOn": "Closed on {{date}}",
+      "confirm": {
+        "action_one": "Send {{count}} invitation",
+        "action_other": "Send {{count}} invitations",
+        "cancel": "Cancel",
+        "description": "Check who receives the e-mail: after you confirm, the invitations go out.",
+        "error": "The sending could not be completed. Check the state of the invitations before trying again.",
+        "exclusions": "Left out",
+        "link": "The link works only once and expires: you can send it again or withdraw it from this page.",
+        "noRecipients": "No recipient: with this selection there is nothing to send.",
+        "overQuota": "The selection is over today's limit: reduce the owners or try again tomorrow.",
+        "permissions": "They will be able to see the calendar, stays, statements, invoices and documents, record their own stays and write to the agency.",
+        "quota": "Today you can still send {{remaining}} invitations out of {{limit}}.",
+        "recipients": "Will receive the invitation",
+        "scope": "Each owner will see only the properties they are linked to with a share in force (out of {{properties}} properties of the organization), never the data of other owners or the personal data of guests.",
+        "stale": "The owners changed after the preview: no invitation was sent. Close this and preview again.",
+        "title_one": "Send the invitation to {{count}} owner?",
+        "title_other": "Send the invitation to {{count}} owners?",
+        "to_one": "We will send an e-mail with the access link to {{count}} owner, at the address shown above.",
+        "to_other": "We will send an e-mail with the access link to {{count}} owners, each at the address shown above."
+      },
+      "countsLabel": "Invitations by state",
+      "empty": "There are no owners to invite yet: import them in the first phase.",
+      "exclusions": {
+        "alreadyAccepted": "has already accepted",
+        "alreadyInvited": "already has an invitation in progress",
+        "ownerNotFound": "owner not found"
+      },
+      "expiresOn": "The link expires on {{date}}",
+      "listHint": "You can invite the owners who are ready and those whose invitation expired or was withdrawn. The link works only once.",
+      "loadError": "We cannot read the state of the invitations.",
+      "previewError": "The preview could not be prepared.",
+      "preview_one": "Preview the invitation ({{count}} owner)",
+      "preview_other": "Preview the invitation ({{count}} owners)",
+      "resend": "Send again",
+      "resendConfirm": {
+        "action": "Send the invitation again",
+        "description": "The owner will receive a new e-mail with a new link.",
+        "effect": "The link they have now stops working.",
+        "title": "Send the invitation to {{name}} again?"
+      },
+      "resendFor": "Send the invitation to {{name}} again",
+      "resent": "New invitation sent to {{name}}: the previous link no longer works.",
+      "revoke": "Withdraw",
+      "revokeConfirm": {
+        "action": "Withdraw the invitation",
+        "description": "The owner will no longer be able to use the link they received.",
+        "effect": "Nothing new is sent to them: to invite them again you will have to preview again.",
+        "title": "Withdraw the invitation to {{name}}?"
+      },
+      "revokeFor": "Withdraw the invitation to {{name}}",
+      "revoked": "Invitation to {{name}} withdrawn: the link no longer works.",
+      "select": "Select {{name}} for the invitation",
+      "selectFirst": "Select at least one owner to see the preview.",
+      "sendsNothing": "Importing the owners sends no invitation. An invitation goes out only when you confirm it here, after seeing who receives it.",
+      "sentNone": "No invitation was sent.",
+      "sentSome": "Invitations sent: {{sent}}. The e-mail did not go out for {{failed}}: {{owners}}. Their invitation was withdrawn.",
+      "sent_one": "{{count}} invitation sent.",
+      "sent_other": "{{count}} invitations sent.",
+      "watchOver": "We no longer update the state of the invitations by ourselves. Check again to see whether somebody accepted."
+    },
+    "issues": {
+      "excess": "Shares at {{total}}%",
+      "gap": "No owner",
+      "openRange": "from {{from}}, with no end",
+      "ownerOverlap": "The same owner twice",
+      "range": "from {{from}} to {{to}}",
+      "shortfall": "Shares at {{total}}%",
+      "unknown": "Shares to check"
+    },
+    "loadError": "We cannot read the state of the owners",
+    "loading": "Loading the owners",
+    "manual": {
+      "close": "Close",
+      "company": "Company",
+      "description": "Fill in one row: we check it like a file, before anything changes.",
+      "email": "E-mail",
+      "entityKind": "Person or company",
+      "fiscalCode": "Tax code",
+      "legalName": "Legal name",
+      "needsIdentity": "Give the owner code or the tax code: an e-mail alone is not enough.",
+      "open": "Add by hand",
+      "ownerKey": "Owner code",
+      "ownerKeyHint": "The code you use for this owner. It is needed if you give no tax code.",
+      "person": "Person",
+      "privacy": "The data stays on this page only while you work here: it is not saved in the browser.",
+      "property": "Property ID or CIN",
+      "propertyHint": "The id you see on the property page, or its CIN code.",
+      "required": "Fill in: {{fields}}.",
+      "share": "Share (%)",
+      "shareHint": "From 0.01 to 100, two decimals at most.",
+      "start": "Owner since",
+      "submit": "Check this row",
+      "title": "Add an owner by hand"
+    },
+    "notFound": "This feature is not available.",
+    "outcomes": {
+      "accounting": {
+        "noOwners": "There is no owner in the registry yet.",
+        "notBlocking": "While this part is to complete the statements do not start; the operating properties are not held up.",
+        "owners_one": "{{count}} owner to complete",
+        "owners_other": "{{count}} owners to complete",
+        "properties_one": "{{count}} property to complete",
+        "properties_other": "{{count}} properties to complete",
+        "title": "Owner statements",
+        "what": "The owner statements start only when owners, shares and tax data are complete."
+      },
+      "label": "How the two parts of the activation stand",
+      "operational": {
+        "link": "See the summary of the properties",
+        "title": "Operating properties",
+        "unknown": "We cannot read the state of the properties: try again later.",
+        "what": "The properties are activated with the channels even if the owner data is not complete: this part does not wait for it."
+      }
+    },
+    "phases": {
+      "accounting": {
+        "title": "Data for statements",
+        "what": "Tax data, billing address and payment details of every owner, so that the statements can be prepared."
+      },
+      "owners": {
+        "title": "Owners",
+        "what": "Who owns the properties: import them from a file or complete the ones already there."
+      },
+      "portal": {
+        "title": "Portal access",
+        "what": "Invite the owners to the portal after seeing the preview: no invitation is ever sent by itself."
+      },
+      "shares": {
+        "title": "Links and shares",
+        "what": "For each property, who owns it and with which share: the shares in force must add up to exactly 100%."
+      }
+    },
+    "portalStates": {
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "invited": "Invited",
+      "notReady": "Not ready",
+      "ready": "Ready to invite",
+      "revoked": "Withdrawn"
+    },
+    "ready": "Ready",
+    "reasons": {
+      "bicInvalid": "BIC not valid",
+      "bicMissing": "BIC missing",
+      "billingAddressIncomplete": "Billing address incomplete",
+      "emailInvalid": "E-mail not valid",
+      "emailMissing": "E-mail missing",
+      "entityKindMissing": "Person or company not stated",
+      "fiscalCodeInvalid": "Tax code not valid",
+      "fiscalIdMissing": "Tax code or VAT number missing",
+      "ibanInvalid": "IBAN not valid",
+      "ibanMissing": "IBAN missing",
+      "legalNameMissing": "Legal name missing",
+      "mandateDocumentMissing": "Mandate document missing",
+      "mandateMissing": "Agency mandate missing",
+      "mandateOutsideOwnership": "Mandate outside the ownership period",
+      "ownerOverlap": "The same owner appears twice on the same days",
+      "ownershipMissing": "No owner linked to the property",
+      "ownershipNotReady": "Shares to fix",
+      "registryNotReady": "Registry data to complete",
+      "settlementCurrencyMissing": "Settlement currency missing",
+      "sharesExcess": "Shares above 100%",
+      "sharesGap": "A period with no owner",
+      "sharesShortfall": "Shares below 100%",
+      "taxResidenceMissing": "Tax residence missing",
+      "unknown": "Something is still to complete",
+      "vatNumberInvalid": "VAT number not valid"
+    },
+    "rowCodes": {
+      "bicInvalid": "BIC not valid",
+      "billingAddressInvalid": "Billing address not valid",
+      "currencyInvalid": "Currency not valid",
+      "dateInvalid": "Date not valid",
+      "duplicateRow": "Row repeated",
+      "emailInvalid": "E-mail not valid",
+      "entityKindInvalid": "Type not valid: person or company",
+      "fiscalCodeInvalid": "Tax code not valid",
+      "ibanInvalid": "IBAN not valid",
+      "legalNameInvalid": "Legal name not valid",
+      "legalNameRequired": "Legal name missing",
+      "mandateOutsideOwnership": "The mandate would fall outside the ownership period",
+      "ownerAmbiguous": "More than one owner matches",
+      "ownerFieldConflict": "The owner already holds a different value for this field",
+      "ownerIdentityConflict": "The code and the tax identifier point to different owners",
+      "ownerIdentityMissing": "An owner code or a tax code is needed: an e-mail alone is not enough",
+      "ownerKeyInvalid": "Owner code not valid",
+      "ownerNotFound": "Owner not found",
+      "ownerSharedOutsideReach": "The owner also has properties you do not manage",
+      "ownershipOverlap": "The same owner has two overlapping periods",
+      "ownershipPeriodConflict": "The period cannot be changed",
+      "ownershipSharesInvalid": "The shares of the property do not add up to 100%",
+      "ownershipStartRequired": "Start date missing",
+      "periodInvalid": "The end is before the start",
+      "propertyAmbiguous": "More than one property matches: use the id",
+      "propertyNotFound": "Property not found",
+      "shareInvalid": "Share not valid",
+      "taxResidenceInvalid": "Tax residence not valid",
+      "unknown": "An error this version does not know",
+      "vatNumberInvalid": "VAT number not valid"
+    },
+    "states": {
+      "done": "Done",
+      "notStarted": "Not started",
+      "toComplete": "To complete"
+    },
+    "step": {
+      "checking": "Checking where you are…",
+      "counts_one": "{{count}} owner in the registry, {{toComplete}} items to complete.",
+      "counts_other": "{{count}} owners in the registry, {{toComplete}} items to complete.",
+      "noOwners": "There is no owner in the registry yet.",
+      "open": "Open",
+      "readError": "We cannot read the state of the owners.",
+      "title": "Owners and statements",
+      "what": "Import the owners, link them to the properties with their shares, complete the data for the statements and invite them to the portal."
+    },
+    "table": {
+      "aProperty": "a property",
+      "accountingAllReady": "Every owner has the data for the statements.",
+      "caption": "Owners and what each is missing",
+      "complete": "Complete by hand",
+      "mandateAllReady": "No owner has shares or mandates to fix.",
+      "missing": "What is missing",
+      "nothingMissing": "Nothing to complete",
+      "owner": "Owner",
+      "registryAllReady": "Every owner has the basic data.",
+      "sharesAllReady": "The shares of every property add up to exactly 100%."
+    },
+    "title": "Owners and statements",
+    "toComplete": "To complete",
+    "truncated": "The list is very long and shows only part of the owners. The counts are complete.",
+    "updateFailed": "We cannot update the state of the owners: what you see is the last one we read and may be out of date. What you are filling in stays here."
+  },
   "ownerPortal": {
     "dashboard": {
       "title": "Owner Portal",
@@ -26524,5 +26932,104 @@
     "savePrior": "Record prior balance",
     "tenantNewAmount": "From {{date}}: condominium advance {{advance}}, installment total {{total}}.",
     "fixedAdvanceHint": "Fixed contractual advance, without automatic recalculation at the final statement."
+  },
+  "condoLedger": {
+    "brand": "Condominium",
+    "house": "Home",
+    "navigation": "Condominium management",
+    "railNote": "Property accounts, including vacant homes.",
+    "startTitle": "How would you like to start?",
+    "startHint": "Manage this apartment’s expenses. Start with administrator documents or enter amounts manually.",
+    "uploadChoice": "Upload documents",
+    "uploadHint": "Annual statement, budget and installment breakdown. Review data before confirming.",
+    "optional": "Optional",
+    "manualChoice": "Set up manually",
+    "manualHint": "Enter the budget, installments and opening balance without documents.",
+    "later": "You can add documents later",
+    "changeChoice": "Change setup method",
+    "houseSettings": "Condominium details",
+    "views": {
+      "panoramica": "Overview",
+      "pagamenti": "Payments",
+      "resoconti": "Reports",
+      "impostazioni": "Settings",
+      "budget": "Budget and installments",
+      "final": "Annual statement and settlement",
+      "prior": "Opening balance",
+      "record": "Record payment",
+      "documents": "Upload documents",
+      "bank": "Import bank statement",
+      "plan": "Custom installment plan"
+    },
+    "subtitles": {
+      "panoramica": "Your situation, home by home.",
+      "pagamenti": "Condominium deadlines and payments.",
+      "resoconti": "Annual accounts, installments and documents.",
+      "impostazioni": "Property and financial years.",
+      "budget": "Enter your apartment’s share and choose due dates.",
+      "final": "Close the year and manage the balance.",
+      "prior": "Carry over last year’s credit or debit.",
+      "record": "Record what you paid to the condominium.",
+      "documents": "Every document is optional. Manual setup is always available.",
+      "bank": "Review transactions before recording them.",
+      "plan": "Amounts and due dates, from a document or entered manually."
+    },
+    "due": "To pay",
+    "paid": "Paid",
+    "paymentFilter": "Show payments",
+    "remaining": "Remaining amount",
+    "allPaid": "No open deadlines: all installments for the year have been paid.",
+    "noPlan": "Add the annual budget to see installments and due dates.",
+    "noPayments": "No payments recorded for this year.",
+    "dueBy": "Due by {{date}}",
+    "late": "Overdue",
+    "upcoming": "Upcoming",
+    "ownerPayment": "Owner payment to the condominium",
+    "addBudget": "Add budget",
+    "allInstallments": "All installments",
+    "currentYear": "This year",
+    "yearDetails": "Annual accounts",
+    "latestPayments": "Latest payments",
+    "allPayments": "All payments",
+    "totalDue": "Total due",
+    "calendar": "Add installments to calendar",
+    "addStatement": "Add budget or annual statement",
+    "statementType": "Record type",
+    "documentTitle": "Start with administrator documents",
+    "documentHint": "Upload one document at a time. Extracted data is presented for review: uploading alone does not change accounts.",
+    "documents": {
+      "budget": "Budget",
+      "final": "Annual statement",
+      "plan": "Installment breakdown"
+    },
+    "planHint": "Use your apartment’s breakdown. Rows with a readable date and amount are proposed; check ordinary and extraordinary shares before confirming.",
+    "reading": "Reading document…",
+    "manualFallback": "You can enter the data manually.",
+    "review": "Review extracted data",
+    "sourceDocument": "Document text and rows to review",
+    "reviewPlan": "Check the year, due dates and your apartment’s shares. Previously issued installments keep their amounts. Imported shares require review before being charged to a tenant.",
+    "planDate": "Installment due date",
+    "remove": "Remove",
+    "addRow": "Add installment",
+    "planTotal": "Plan total",
+    "confirmPlan": "Confirm installment plan",
+    "manualPlan": "Enter installments manually",
+    "allHomesDues": "Due installments across all apartments",
+    "archiveTitle": "Data and archive",
+    "archiveHint": "Download reports for all years or transfer your CondoLedger history.",
+    "exportData": "Download all reports (JSON)",
+    "importHistory": "Import CondoLedger history",
+    "importHistoryHint": "Upload a condo-export-v1 file. Verify the property for every home before confirming the transfer.",
+    "archiveFileLimit": "The file exceeds the 5 MB limit.",
+    "historyImported": "History transferred. These homes are now managed in CasaZen.",
+    "historyReview": "Review the summaries and map each home to the correct property. Balances have not changed yet.",
+    "verifyProperty": "Verify property",
+    "confirmHistory": "Confirm history transfer",
+    "issuedKept": "Budget updated. Previously issued installments retain their original amounts.",
+    "bankTitle": "Import bank statement",
+    "bankHint": "Upload an Intesa bank statement (Excel or CSV). Select only this apartment’s condominium payments and check the destination installment. No movement is recorded automatically.",
+    "bankFile": "Bank statement (Excel or CSV)",
+    "confirmBank": "Confirm selected payments",
+    "imported": "Recorded"
   }
 }
