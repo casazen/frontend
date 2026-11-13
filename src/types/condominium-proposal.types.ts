@@ -28,6 +28,7 @@ export interface TenantExpenseProposal {
 
 /** Body of the proposal. Omit a field rather than sending null. */
 export interface ProposeTenantExpense {
+  settlementRequired?: boolean;
   advanceMode?: 'FixedContractAmount' | 'BudgetAllocation' | 'None' | 'NeedsReview';
   contractualAdvance?: number;
   cadence?: RentExpenseCadence;

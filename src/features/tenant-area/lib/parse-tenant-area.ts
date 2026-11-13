@@ -175,6 +175,11 @@ export function parseTenantContractArea(data: unknown): TenantContractArea {
     ? data.maintenanceCategories.filter((item): item is string => typeof item === 'string' && item.trim() !== '')
     : [];
   return {
+    condominiumReports: Array.isArray(data.condominiumReports) ? data.condominiumReports.map(item => {
+      if (!isRecord(item)) fail(path);
+      return { id: text(item, 'id', path), periodLabel: text(item, 'periodLabel', path), periodEnd: text(item, 'periodEnd', path),
+        recoverable: amount(item, 'recoverable', path), advances: amount(item, 'advances', path), prior: amount(item, 'prior', path), balance: amount(item, 'balance', path) };
+    }) : [],
     contract: contractOf(data.contract, path),
     property: propertyOf(data.property, path),
     dues: Array.isArray(data.dues) ? data.dues.map((item) => dueOf(item, path)) : [],
