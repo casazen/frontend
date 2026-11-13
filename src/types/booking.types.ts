@@ -71,6 +71,11 @@ export interface Booking {
   checkedOutAt?: string | null;
   /** Whether the host may change the dates and the guests, and if not why: the rule of `PUT /bookings/:id`, never guessed here. */
   canEdit?: BookingEditability;
+  /**
+   * What the host may do with the booking, to change it and to cancel it, and when not why and how to ask for it (E08/F03/US02, NF-75, NF-76): the answer of
+   * the API for every booking, the lists included, so no screen works it out. For a booking that came from a channel it carries the rule of that channel.
+   */
+  changeOptions?: BookingChangeOptions;
   /** Booking detail only (`GET /bookings/:id`): how much of the total came in. Missing on the booking an action answers with. */
   paymentState?: BookingPaymentState;
   /** Booking detail only: the money that came in; missing for who may not read payments (the collaborator). */
@@ -182,6 +187,25 @@ export type BookingEditLock = 'Cancelled' | 'Started' | 'SourceLocked';
 export interface BookingEditability {
   allowed: boolean;
   reason: BookingEditLock | null;
+}
+
+/**
+ * `changeOptions` of a booking (E08/F03/US02): what the host may do with it. `reasonCode` and `guidanceKey` explain the first thing that is not allowed (the
+ * change, else the cancellation), `cancelReasonCode` and `cancelGuidanceKey` the cancellation whatever the change. A booking that came from a channel through
+ * the channel manager has a `channel` (`BookingCom`); the others have none. A code is one of the API (`ota_booking_change_not_allowed`,
+ * `ota_booking_cancel_not_allowed`, `booking_stay_locked`...); a key is one of its own sentences, which this client does not read: it says the same in its own words.
+ */
+export interface BookingChangeOptions {
+  /** The host may change the dates and the guests: what `PUT /bookings/:id` accepts. */
+  canEdit: boolean;
+  /** The host may cancel the booking from CasaZen. */
+  canCancel: boolean;
+  reasonCode?: string | null;
+  guidanceKey?: string | null;
+  /** The channel of a booking that came from one (`Airbnb`, `BookingCom`, `Expedia`, `Vrbo`, `TripAdvisor`, `Agoda`, `OtherChannel`); null otherwise. */
+  channel?: string | null;
+  cancelReasonCode?: string | null;
+  cancelGuidanceKey?: string | null;
 }
 
 /** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
@@ -449,6 +473,44 @@ export interface UpdateBookingDto {
   specialRequests?: string;
 }
 
+/** What an edit does with the difference between the new price and what the guest has paid. */
+export type BookingSettlementAction = 'refund' | 'chargeSavedCard' | 'paymentLink' | 'none';
+
+/** Where the money of a saved edit stands: `done` (confirmed by Stripe, or the link sent), `pending` (Stripe has not confirmed it yet) or `none`. */
+export type BookingSettlementState = 'done' | 'pending' | 'none';
+
+/**
+ * The money of an edit that was saved (`settlement` of `PUT /bookings/:id`, E08/F02/US01/T01, NF-75): what was done with the difference. `offlineRefundDue` is
+ * what the host still has to give back outside CasaZen (paid in cash or by transfer).
+ */
+export interface BookingEditSettlement {
+  action: BookingSettlementAction;
+  state: BookingSettlementState;
+  amount: number;
+  offlineRefundDue: number;
+  currency: string;
+}
+
+/**
+ * `POST /bookings/:id/edit-quote`: what the same edit would do with the money, worked out and not done. `difference` is `newTotal` minus `paidSoFar`; `amount` is
+ * the money that moves online (the refund, the charge or the payment link), zero for `none`. Needs `payment.read`.
+ */
+export interface BookingEditQuote {
+  currency: string;
+  previousTotal: number;
+  newTotal: number;
+  paidSoFar: number;
+  difference: number;
+  action: BookingSettlementAction;
+  amount: number;
+  offlineRefundDue: number;
+}
+
+/** The answer of `PUT /bookings/:id`: the booking as the edit left it, and what happened to the money. */
+export interface UpdatedBooking extends Booking {
+  settlement?: BookingEditSettlement;
+}
+
 /** POST /bookings/quote — price of a stay the host is entering or changing (tourist tax of BK-03 included). */
 export interface HostBookingQuotePayload {
   propertyId: string;
@@ -495,12 +557,16 @@ export interface BookingCancellationQuote {
   requiresRefundDecision: boolean;
 }
 
-/** POST /bookings/:id/cancel */
+/** POST /bookings/:id/cancel. For a booking of a channel only `reason` is read: no money moves from CasaZen. */
 export interface CancelBookingDto {
   refundAmount?: number;
   reason?: string;
 }
 
+/**
+ * The answer of POST /bookings/:id/cancel. A booking of a channel answers 200 only after the channel manager confirmed the cancellation, with no refund and
+ * no cancelled intent; a refusal (422 `octorate_cancel_failed`, 422 `ota_booking_cancel_not_allowed`, 503 `octorate_unavailable`) leaves the booking as it was.
+ */
 export interface CancelBookingResult {
   bookingId: string;
   status: BookingStatus;
