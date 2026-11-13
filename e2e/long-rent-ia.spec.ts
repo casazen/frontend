@@ -181,6 +181,8 @@ test.describe('Long-rent information architecture', () => {
 
     await page.getByTestId('long-rent-property-tab-expenses').click();
     await expect(page.getByTestId('condominium-management')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Carica i documenti/ })).toBeVisible();
+    await page.getByRole('button', { name: /Imposta manualmente/ }).click();
     await expect(page.getByRole('button', { name: 'Attiva gestione condominiale' })).toBeVisible();
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Canoni', exact: true })).toHaveCount(0);
