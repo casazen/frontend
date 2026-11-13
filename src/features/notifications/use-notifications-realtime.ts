@@ -8,6 +8,7 @@ import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
 import {
   createRealtimeClient,
@@ -24,6 +25,12 @@ export function isServiceRequestType(type: string | null): boolean {
 
 /** The guest of a booking completed the online check-in (`PushTypes.GuestCheckInCompleted`); its `entityId` is the booking. */
 const GUEST_CHECKIN_COMPLETED = 'guest-checkin-completed';
+
+/**
+ * A guest handed the verification of the identity to a person (`PushTypes.VerificationRequired`, E03/F04/US02/T03): the operators who hold
+ * `verification.decision` are told at once; its `entityId` is the booking.
+ */
+const VERIFICATION_REQUIRED = 'verification-required';
 
 /** The guests list and the guest card (`['guests', …]`, not shared as a constant by the pages that read them). */
 const GUESTS_QUERY = 'guests';
@@ -52,7 +59,8 @@ function refreshCheckInData(queryClient: QueryClient): void {
  * The notifications that say a light of the compliance cockpit changed (`PushTypes` of the stay alerts and of the alerts about a period or the
  * connection of a property, E03/F02/US02): the guest data missing, the deadline of Alloggiati Web near or past, a communication that failed, the
  * departure to close, the receipt missing, a short stay at risk, a stay over 30 nights, ISTAT and the tourist tax of a month, the police send that is
- * not active, an identity that waits for an operator. An open page of the adempimenti, a booking or a property shows the new light without a reload.
+ * not active. An open page of the adempimenti, a booking or a property shows the new light without a reload. A verification handed to an operator
+ * (`verification-required`) is not here: `refreshVerifications` reads the cockpit again together with the queue.
  */
 const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
   'guest-data-missing',
@@ -66,8 +74,16 @@ const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
   'istat-deadline',
   'tourist-tax-deadline',
   'connection-inactive',
-  'verification-required',
 ]);
+
+/**
+ * What a verification handed to an operator changes on screen: the queue of the verifications and its figures (the console open in front of the
+ * operator shows the new guest without a reload), and the red mark of the cockpit and the counter of the menu (`operator_decision_required`).
+ */
+function refreshVerifications(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: [VERIFICATION_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+}
 
 /**
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
@@ -87,6 +103,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   }
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+  if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -97,6 +114,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   // A check-in completed while the channel was down sent no message: the pages that show its data read it again.
   refreshCheckInData(queryClient);
+  // The same for a verification handed to an operator.
+  refreshVerifications(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

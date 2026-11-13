@@ -3418,6 +3418,7 @@
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
     "stepDocument": "Identity document",
+    "stepIdentity": "Identity check",
     "stepConsents": "Privacy notice and consents",
     "stepOf": "Step {{step}} of {{total}}",
     "next": "Next",
@@ -3483,34 +3484,36 @@
     "removeGuest": "Remove guest",
     "addGuest": "Add guest",
     "biometric": {
-      "consent": {
-        "title": "Optional biometric verification",
-        "description": "We can compare your photo with your document to speed up check-in.",
-        "purposeTitle": "What it's for",
-        "purpose": "Biometric verification compares your face with the photo on your document. The comparison happens on the server and your photo is deleted immediately after.",
-        "optionalTitle": "It's optional",
-        "optional": "You can refuse without consequences: the property manager will still receive your data and document. The refusal is noted but does not block check-in.",
-        "accept": "I consent to verification",
-        "decline": "I refuse",
-        "version": "Consent version: {{version}}"
-      },
       "capture": {
-        "title": "Take a selfie",
-        "instructions": "Frame your face, make sure it's well lit and centered, then take the photo. We'll compare it with your document.",
-        "cameraError": "Cannot access camera. Check browser permissions.",
-        "takePhoto": "Take photo",
-        "retake": "Retake",
-        "submit": "Submit photo",
-        "attemptsRemaining": "Attempts remaining: {{count}}",
-        "maxAttemptsReached": "You have reached the maximum number of attempts. Check-in will be verified manually by the manager."
+        "attemptsRemaining": "Attempts left: {{count}}",
+        "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
+        "cameraNotFound": "No camera was found on this device.",
+        "cameraTitle": "The camera is not available",
+        "cameraUnknown": "The camera could not be started.",
+        "cameraUnsupported": "This page cannot use the camera in this browser. Open the link in your usual browser, or ask an operator to verify you.",
+        "capturedLabel": "The selfie you took",
+        "instructions": "Look at the camera in a well-lit place and keep your face in the frame. We compare the photo with the one on your document.",
+        "noFile": "For your safety the selfie has to be taken now with the camera: it cannot be chosen from your files or gallery.",
+        "notPrepared": "The photo could not be prepared. Please take it again.",
+        "previewLabel": "Live view of your camera",
+        "retake": "Take it again",
+        "retryCamera": "Try again",
+        "sending": "Checking...",
+        "submit": "Send the photo",
+        "takePhoto": "Take the photo",
+        "title": "Take a selfie"
       },
-      "outcome": {
-        "accept": "Verified",
-        "acceptMessage": "Biometric verification succeeded. Your check-in is complete.",
-        "escalate": "To be verified",
-        "escalateMessage": "Biometric verification requires manual confirmation. The property manager will check your details.",
-        "reject": "Not verified",
-        "rejectMessage": "Biometric verification failed. Try again or the property manager will verify manually."
+      "consent": {
+        "accept": "I agree to the face check",
+        "decline": "I do not agree: a person will check me",
+        "description": "To give you the access code of the property, we compare a selfie with the photo on your identity document.",
+        "documentKept": "The photo of your document is kept encrypted only until the check is over, then it is deleted.",
+        "optional": "You can say no. A person at the property will then check your identity with you, and the access code reaches you after their decision. Saying no does not stop your check-in.",
+        "optionalTitle": "It is your choice",
+        "purpose": "You photograph your document and then take a selfie with the camera. A program on our server compares the two. Your selfie is never saved: it is deleted as soon as the comparison ends.",
+        "purposeTitle": "What happens",
+        "title": "Check your identity with your face",
+        "version": "Version of this text: {{version}}"
       }
     },
     "consent": {
@@ -3616,6 +3619,76 @@
       "HeadOfFamily": "Head of family",
       "HeadOfGroup": "Head of group",
       "SingleGuest": "Single guest"
+    },
+    "identity": {
+      "document": {
+        "fileLabel": "Photo of the identity document",
+        "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo and the two lines of letters at the bottom, without reflections.",
+        "notAcceptable": "The photo is not good enough yet. Please take it again.",
+        "pick": "Photograph the document",
+        "pickAgain": "Photograph it again",
+        "sending": "Reading the document...",
+        "title": "Photograph your identity document"
+      },
+      "documentNotArchived": "The document will not be archived.",
+      "guidance": {
+        "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
+        "hold_still": "Hold the phone still: the photo is blurred.",
+        "less_light": "There is too much light: move to a softer light.",
+        "more_light": "There is too little light: move to a brighter place.",
+        "move_closer": "Move closer: your face is too small in the picture.",
+        "one_face_only": "Only you should be in the picture.",
+        "other": "Please take the photo again.",
+        "retake_picture": "The picture could not be read: please take it again.",
+        "retake_selfie": "Take the selfie again, looking straight at the camera.",
+        "show_document_photo": "Show the side of the document with your photo.",
+        "show_whole_document": "Show the whole side of the document with the two lines of letters at the bottom.",
+        "show_your_face": "Show your face: we could not see it in the picture.",
+        "tip_remove_glasses": "Take off your glasses.",
+        "tip_remove_mask": "Take off any mask or anything that covers your face.",
+        "upload_document_again": "Photograph the document again: it could not be read.",
+        "use_live_camera": "Take the selfie now with the camera, not from a photo or a screen.",
+        "use_valid_document": "The document is expired: use a valid one."
+      },
+      "intro": "Only the guest who leaves the identity document takes part in this step. The other guests do not need to take a selfie.",
+      "nextHint": "Finish this step to go on. If you prefer, ask an operator to verify you.",
+      "operator": {
+        "ask": "Ask an operator to verify me",
+        "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
+      },
+      "problem": {
+        "consent_required": "We need your answer about the face check first.",
+        "document_photo": "We need the photo of the document again: please take it once more.",
+        "document_required": "Please photograph the document first.",
+        "failed": "Something went wrong. Please try again.",
+        "link_unavailable": "This link is no longer valid, or the check-in is already complete. Ask your host for a new link.",
+        "network": "We could not reach the server. Nothing was saved: check your connection and try again.",
+        "processing": "We could not process the photo. Please try again.",
+        "too_large": "The photo is too large. Take it again with a lower resolution.",
+        "too_many_requests": "Too many attempts in a short time. Wait a moment and try again.",
+        "unsupported": "This type of file is not supported. Use a JPEG or PNG photo."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "If your booking has an email address, we also sent the code there.",
+          "codeLabel": "Your access code",
+          "noCode": "Your identity is verified. If your booking has an email address, we sent the access code there; otherwise your host will give you the access instructions.",
+          "title": "You are verified"
+        },
+        "operator": {
+          "notOffered": "The face check is not used for this stay: a person has to verify your identity. Ask for it here and the host will be told. The access code reaches you after their decision.",
+          "text": "The host will verify your identity. The access code reaches you after their decision.",
+          "title": "A person will check your identity"
+        },
+        "retry": {
+          "again": "Take the selfie again",
+          "againDocument": "Photograph the document again",
+          "attempts": "Attempts left: {{count}}",
+          "intro": "The check did not pass this time. Here is what to change:",
+          "noReason": "The check did not pass this time.",
+          "title": "We could not verify you yet"
+        }
+      }
     },
     "invoice": {
       "fields": {
@@ -12250,7 +12323,8 @@
       "serviceRequestBackupInvited": "You are a backup for a new service request.",
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
-      "serviceRequestBackupClosed": "A request you were a backup for was closed."
+      "serviceRequestBackupClosed": "A request you were a backup for was closed.",
+      "verificationRequired": "A guest's identity is waiting for you to verify it."
     }
   },
   "octorate": {
@@ -24478,33 +24552,49 @@
   },
   "verification": {
     "action": {
-      "photoRequested": "Photo request sent to guest",
       "photoRequestFailed": "Failed to send photo request",
-      "reject": "Reject",
-      "rejectFailed": "Failed to reject verification",
-      "rejected": "Verification rejected",
+      "photoRequested": "New photo requested: the guest has been sent a new link.",
+      "reject": "Reject check-in",
+      "rejectFailed": "Failed to reject the check-in",
+      "rejected": "Check-in rejected",
       "request_photo": "Request new photo",
-      "verified": "Verification recorded",
-      "verification": "Verification",
-      "verificationRejected": "Verification rejected",
-      "verify": "Verify",
-      "verifyFailed": "Failed to record verification"
+      "verificationRejected": "Verification not approved: no access code is sent.",
+      "verified": "Verification approved. The access code of the property is sent to the guest by email, if the property has one.",
+      "verify": "Record decision",
+      "verifyFailed": "Failed to record the decision"
     },
-    "attempts": "Attempts",
-    "checkIn": "Check-in",
-    "checkOut": "Check-out",
+    "arrivalDeparture": "Stay from {{arrival}} to {{departure}}",
+    "attempts": "Automatic attempts",
+    "check": {
+      "document_validity": "Document",
+      "liveness": "Live capture",
+      "mrz_consistency": "Document and check-in data",
+      "other": "Check {{code}}",
+      "processing": "Automatic processing",
+      "quality": "Photo quality",
+      "similarity": "Face comparison"
+    },
+    "checks": {
+      "title": "What the automatic check found"
+    },
     "dialog": {
-      "acceptButton": "Accept verification",
+      "acceptButton": "Approve verification",
       "confirmReject": "Confirm rejection",
-      "noteLabel": "Note (optional for acceptance, required for rejection)",
-      "notePlaceholder": "Enter a note...",
-      "reasonLabel": "Reason for rejection",
-      "reasonPlaceholder": "Enter the reason for rejection...",
-      "rejectButton": "Reject verification",
-      "rejectDescription": "Rejection will prevent further verification attempts for this booking.",
-      "rejectTitle": "Reject biometric verification",
-      "verifyDescription": "Accept the verification to complete check-in, or reject it with a note.",
-      "verifyTitle": "Record manual verification"
+      "noteHint": "The note is optional to approve and required to not approve. It is kept in the verification log.",
+      "noteLabel": "Note",
+      "notePlaceholder": "Write what you checked with the guest...",
+      "reasonLabel": "Reason for rejection (required)",
+      "reasonPlaceholder": "Write why the check-in is rejected...",
+      "rejectButton": "Not verified",
+      "rejectDescription": "The check-in is closed and the guest cannot try again. No access code is sent.",
+      "rejectTitle": "Reject the check-in",
+      "verifyDescription": "Contact the guest outside CasaZen, then record your decision. Approving sends the guest the access code of the property by email (if the property has one); \"Not verified\" sends nothing and needs a note.",
+      "verifyTitle": "Record your decision"
+    },
+    "figures": {
+      "threshold": "threshold {{threshold}}",
+      "value": "value {{value}}",
+      "valueAndThreshold": "value {{value}}, threshold {{threshold}}"
     },
     "filter": {
       "allDeadlines": "All deadlines",
@@ -24512,23 +24602,79 @@
       "deadline": "Deadline",
       "past": "Past due",
       "reason": "Reason",
+      "reasons": {
+        "no_match": "Last check: different face",
+        "not_passed": "Last check not passed",
+        "operator_requested": "No automatic check",
+        "review": "A check needs a person",
+        "technical_error": "Technical error",
+        "uncertain": "Uncertain comparison"
+      },
       "today": "Today",
       "upcoming": "Upcoming"
     },
+    "guest": {
+      "contactHint": "Contact the guest outside CasaZen (for example by video call) and then record your decision.",
+      "noContact": "No email address on file: look for the guest's contact in the booking.",
+      "openBooking": "Open the booking",
+      "title": "Guest"
+    },
+    "metrics": {
+      "loading": "Loading the figures...",
+      "notOk": "Not passed",
+      "ok": "Passed on their own",
+      "operatorDecisions_one": "{{count}} decision of an operator",
+      "operatorDecisions_other": "{{count}} decisions of an operator",
+      "operatorShare": "Concluded by an operator",
+      "period": "From {{from}} to {{to}}",
+      "retry": "Try again",
+      "review": "Sent to a person",
+      "title": "Verifications of the last 30 days",
+      "unavailable": "The figures could not be read right now."
+    },
+    "provisional": {
+      "badge": "Provisional thresholds",
+      "explain": "The thresholds of this check were never calibrated: treat the automatic outcome as provisional."
+    },
     "queue": {
-      "description": "Bookings awaiting manual biometric verification",
+      "description": "Guests whose identity waits for a person to verify it",
       "emptyFiltered": "No verifications match the selected filters",
       "emptyQueue": "No verifications pending",
       "emptyTitle": "No items",
       "loadError": "Failed to load verification queue",
       "loading": "Loading verification queue...",
+      "retry": "Try again",
       "title": "Verification Queue"
     },
-    "reason": {
-      "consent_refused": "Consent refused",
-      "label": "Reason",
-      "model_error": "Model error",
-      "unverified": "Photo unverified"
+    "result": {
+      "between_thresholds": "between the two thresholds: a person decides",
+      "birth_date_mismatch": "the birth date does not match the check-in data",
+      "check_digits_invalid": "the check digits of the document are wrong",
+      "document_number_mismatch": "the document number does not match the check-in data",
+      "error": "an unexpected error",
+      "expired": "the document is expired",
+      "face_too_small": "the face is too small in the picture",
+      "failed": "not passed",
+      "image_unreadable": "the picture could not be read",
+      "multiple_faces": "more than one face in the picture",
+      "names_mismatch": "the names do not match the check-in data",
+      "nationality_mismatch": "the nationality does not match the check-in data",
+      "no_face": "no face found",
+      "not_run": "not reached: an earlier check stopped it",
+      "other": "result {{code}}",
+      "passed": "passed",
+      "timeout": "it took too long",
+      "unavailable": "the models are not available",
+      "unreadable": "the document could not be read"
+    },
+    "why": {
+      "no_match": "The last automatic check did not find the face the same as the one on the document. The guest may also have asked for a person.",
+      "not_passed": "The last automatic check did not pass. The guest may also have asked for a person.",
+      "operator_requested": "No automatic check was concluded: the guest asked for a person or did not give the biometric consent, or the face check is not used (a setting of the organization, a minor guest).",
+      "review": "A check found something that needs a person to look at it.",
+      "technical_error": "The automatic check could not run.",
+      "title": "Why it is here",
+      "uncertain": "The comparison is uncertain: it falls between the two thresholds."
     }
   },
   "vetrina": {

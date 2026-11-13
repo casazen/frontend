@@ -40,23 +40,35 @@ import { CheckCircle2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import { INVOICE_DATA_FIELDS } from '@/types/invoice-data.types';
 import type { AlloggiatiCodeList, CheckInDocumentReadResult, StayGuestType } from '@/types/public-checkin.types';
 import { ConsentStep } from './ConsentStep';
+import { IdentityStep } from './identity-step';
+import { useIdentityVerification } from './use-identity-verification';
 
 type FormPath = FieldPath<PublicCheckInFormValues>;
 
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
 
 /**
- * The steps of the page, in order: the photo of the document, the guests, the document, the invoice (FIS-01, optional) and the consents. The
- * invoice step comes after everything the guests say about themselves and before the privacy notice, which stays the last thing the guest reads
- * before sending.
+ * The steps of the page, in order: the photo of the document, the guests, the document, the identity check (E03/F04/US03/T01, only while the API
+ * offers it), the invoice (FIS-01, optional) and the consents. The invoice step comes after everything the guests say about themselves and before the
+ * privacy notice, which stays the last thing the guest reads before sending. A number is the name of a step, not its place: the place is its position
+ * in `stepsOf`.
  */
 const STEP_SCAN = 1;
 const STEP_GUESTS = 2;
 const STEP_DOCUMENT = 3;
 const STEP_INVOICE = 4;
 const STEP_CONSENTS = 5;
-const STEPS = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_INVOICE, STEP_CONSENTS] as const;
-const TOTAL_STEPS = STEPS.length;
+const STEP_IDENTITY = 6;
+
+/**
+ * The steps of the page in order. The identity step is there only while the API offers the identity verification (`identityVerification` in the
+ * context): with the verification off the page has the steps it has always had.
+ */
+function stepsOf(identity: boolean): readonly number[] {
+  return identity
+    ? [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_IDENTITY, STEP_INVOICE, STEP_CONSENTS]
+    : [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_INVOICE, STEP_CONSENTS];
+}
 
 function scanReasonKey(reason?: string | null): string {
   return reason === 'unavailable' || reason === 'budget' ? 'checkin.scanUnavailable' : 'checkin.scanUnread';
@@ -153,7 +165,14 @@ export function CheckInPage() {
   const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const saveLanguage = useSetCheckInLanguage(token);
+  // The identity check (CHK-11): its state lives here, so that going back and forth between the steps keeps where the guest is in it.
+  const identity = useIdentityVerification(token, context?.identityVerification);
+  const steps = stepsOf(identity.progress !== null);
   const [step, setStep] = useState<number>(STEP_SCAN);
+  // An identity step that went away (the verification was switched off while the page was open) leaves the guest at the step that follows it.
+  const current = steps.includes(step) ? step : STEP_INVOICE;
+  const stepIndex = steps.indexOf(current);
+  const totalSteps = steps.length;
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [languageNotSaved, setLanguageNotSaved] = useState(false);
@@ -254,20 +273,22 @@ export function CheckInPage() {
   const problemCount = countFieldErrors(form.formState.errors);
 
   const goNext = async () => {
-    if (step === STEP_SCAN) {
+    if (current === STEP_SCAN) {
       setStep(STEP_GUESTS);
       return;
     }
+    // The identity check goes on only when it is over: it passed, or a person was asked and has it (the way to a person is always open).
+    if (current === STEP_IDENTITY && !identity.concluded) return;
     // The official lists belong to the two steps of the guests; the invoice step has none (and is never in the way of the check-in without a reason).
     const extra =
-      step === STEP_GUESTS || step === STEP_DOCUMENT
+      current === STEP_GUESTS || current === STEP_DOCUMENT
         ? officialListIssues(getValues('guests'), context?.availableCodeTables ?? []).filter((issue) =>
-            step === STEP_GUESTS ? issue.field !== 'documentIssuePlaceName' : issue.field === 'documentIssuePlaceName',
+            current === STEP_GUESTS ? issue.field !== 'documentIssuePlaceName' : issue.field === 'documentIssuePlaceName',
           )
         : [];
-    const valid = await trigger(stepPaths(step));
+    const valid = await trigger(stepPaths(current));
     extra.forEach((issue) => setError(`guests.${issue.index}.${issue.field}`, { type: 'official', message: issue.message }));
-    if (valid && extra.length === 0) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+    if (valid && extra.length === 0) setStep(steps[Math.min(totalSteps - 1, stepIndex + 1)]);
     else reportProblems();
   };
 
@@ -471,20 +492,21 @@ export function CheckInPage() {
           )}
         </div>
         <div className="flex justify-center gap-2" data-testid="checkin-progress">
-          {STEPS.map((n) => (
-            <div key={n} className={`h-2 w-16 rounded-full ${n <= step ? 'bg-primary' : 'bg-muted'}`} />
+          {steps.map((n, index) => (
+            <div key={n} className={`h-2 w-16 rounded-full ${index <= stepIndex ? 'bg-primary' : 'bg-muted'}`} />
           ))}
         </div>
         <Card>
           <CardHeader>
             <CardTitle>
-              {step === STEP_SCAN && t('checkin.stepScan')}
-              {step === STEP_GUESTS && t('checkin.stepGuests')}
-              {step === STEP_DOCUMENT && t('checkin.stepDocument')}
-              {step === STEP_INVOICE && t('checkin.invoice.title')}
-              {step === STEP_CONSENTS && t('checkin.stepConsents')}
+              {current === STEP_SCAN && t('checkin.stepScan')}
+              {current === STEP_GUESTS && t('checkin.stepGuests')}
+              {current === STEP_DOCUMENT && t('checkin.stepDocument')}
+              {current === STEP_IDENTITY && t('checkin.stepIdentity')}
+              {current === STEP_INVOICE && t('checkin.invoice.title')}
+              {current === STEP_CONSENTS && t('checkin.stepConsents')}
             </CardTitle>
-            <CardDescription>{t('checkin.stepOf', { step, total: TOTAL_STEPS })}</CardDescription>
+            <CardDescription>{t('checkin.stepOf', { step: stepIndex + 1, total: totalSteps })}</CardDescription>
           </CardHeader>
           <CardContent>
             <FormProvider {...form}>
@@ -493,7 +515,7 @@ export function CheckInPage() {
                 <p key={focusRequest} role="status" className="sr-only" data-testid="checkin-announcement">
                   {focusRequest > 0 && problemCount > 0 ? t('checkin.errors.summary', { count: problemCount }) : null}
                 </p>
-                {step === STEP_SCAN && (
+                {current === STEP_SCAN && (
                   <DocumentReadStep
                     reading={readingDocument}
                     message={scanMessage}
@@ -503,7 +525,7 @@ export function CheckInPage() {
                     onContinue={() => setStep(STEP_GUESTS)}
                   />
                 )}
-                {step === STEP_GUESTS && (
+                {current === STEP_GUESTS && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
                     {fields.length !== declaredGuests && (
@@ -530,7 +552,7 @@ export function CheckInPage() {
                     )}
                   </div>
                 )}
-                {step === STEP_DOCUMENT && (
+                {current === STEP_DOCUMENT && (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
                     {leaders.map(({ field, index }) => (
@@ -538,8 +560,9 @@ export function CheckInPage() {
                     ))}
                   </div>
                 )}
-                {step === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}
-                {step === STEP_CONSENTS && (
+                {current === STEP_IDENTITY && <IdentityStep identity={identity} />}
+                {current === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}
+                {current === STEP_CONSENTS && (
                   <ConsentStep
                     privacyNoticeVersion={context.privacyNoticeVersion}
                     marketingConsentVersion={context.marketingConsentVersion}
@@ -550,15 +573,21 @@ export function CheckInPage() {
                     {submitError}
                   </p>
                 )}
-                {step > STEP_SCAN && (
+                {current !== STEP_SCAN && (
                 <div className="flex justify-between pt-4">
-                  <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(STEP_SCAN, s - 1))} disabled={step === STEP_SCAN}>
+                  <Button type="button" variant="outline" onClick={() => setStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
-                  {step < TOTAL_STEPS ? (
+                  {current !== STEP_CONSENTS ? (
                     // Own key: the same DOM button must not turn from "button" to "submit" during the click that moves
                     // to the last step, or the browser submits the form and the privacy notice is never shown.
-                    <Button key="checkin-next" type="button" onClick={goNext}>
+                    <Button
+                      key="checkin-next"
+                      type="button"
+                      onClick={goNext}
+                      disabled={current === STEP_IDENTITY && (!identity.concluded || identity.busy)}
+                      data-testid="checkin-next"
+                    >
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
