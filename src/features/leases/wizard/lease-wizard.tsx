@@ -315,11 +315,11 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     }
   };
 
-  /** «Salva e continua dopo»: what is typed is saved, the person leaves, and the contract waits among the drafts. */
+  /** «Salva e continua dopo»: what is typed is saved, the person opens the saved contract, whose property tab keeps the draft reachable. */
   const saveAndLeave = async () => {
     if (!(await flush())) return;
     toast.success(t('leaseWizardGuide.later.saved'));
-    navigate(LEASES_PATH);
+    navigate(sheetPath);
   };
 
   /**
