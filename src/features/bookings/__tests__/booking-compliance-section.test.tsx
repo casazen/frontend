@@ -6,12 +6,21 @@ import { octorateComplianceHandoffApi } from '@/api/octorate-compliance-handoff.
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
-import type { Booking } from '@/types';
+import type { AlloggiatiStatusDto, AlloggiatiWebStatus } from '@/types/alloggiati.types';
 import type { ComplianceHandoff } from '@/types/compliance-handoff.types';
 import { BookingComplianceSection } from '../booking-compliance-section';
 
 vi.mock('@/api/octorate-compliance-handoff.api', () => ({
   octorateComplianceHandoffApi: { start: vi.fn() },
+}));
+
+// The status of the stay is the one the Alloggiati panel reads (the same hook): a no-show owes no communication.
+const alloggiati = vi.hoisted(() => ({ status: undefined as AlloggiatiStatusDto | undefined, loading: false, read: vi.fn() }));
+vi.mock('@/queries/use-alloggiati', () => ({
+  useAlloggiatiStatus: (...args: unknown[]) => {
+    alloggiati.read(...args);
+    return { data: alloggiati.status, isLoading: alloggiati.loading };
+  },
 }));
 
 const permissions = vi.hoisted(() => ({ granted: [] as string[] }));
@@ -37,13 +46,30 @@ const HANDOFF: ComplianceHandoff = {
   guide: { code: 'alloggiati_short_stay', menuPath: 'Strutture, poi Questura', check: 'Controlla l\'invio manuale del soggiorno.' },
 };
 
-function renderSection(status: Booking['status'] = 'Confirmed', connector = true) {
+function statusOf(status: AlloggiatiWebStatus): AlloggiatiStatusDto {
+  return {
+    bookingId: BOOKING_ID,
+    status,
+    confirmationNumber: null,
+    errorCode: null,
+    reportedAt: null,
+    deadlineAt: '2026-11-14T08:00:00Z',
+    isShortStay: false,
+    hoursUntilDeadline: 5,
+    isOverdue: false,
+    dataComplete: true,
+  };
+}
+
+function renderSection({ status = 'DaInviareManualmente', connector = true, loading = false }: { status?: AlloggiatiWebStatus | null; connector?: boolean; loading?: boolean } = {}) {
+  alloggiati.status = status === null ? undefined : statusOf(status);
+  alloggiati.loading = loading;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
       <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
         <MemoryRouter initialEntries={[ROUTE]}>
-          <BookingComplianceSection booking={{ id: BOOKING_ID, propertyId: PROPERTY_ID, status }} />
+          <BookingComplianceSection booking={{ id: BOOKING_ID, propertyId: PROPERTY_ID }} />
         </MemoryRouter>
       </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
@@ -61,13 +87,16 @@ afterEach(() => {
 });
 
 describe('BookingComplianceSection', () => {
-  it.each(['Confirmed', 'CheckedIn', 'CheckedOut'] as const)('section_%sBooking_OffersTheActionWithItsGuide', (status) => {
-    renderSection(status);
+  it.each(['DaInviare', 'DaInviareManualmente', 'SentReceiptPending', 'Inviato', 'InviatoManualmente', 'Errore'] as const)(
+    'section_StayWhoseCommunicationIs%s_OffersTheActionWithItsGuide',
+    (status) => {
+      renderSection({ status });
 
-    const section = screen.getByRole('region', { name: 'Cassetto Compliance' });
-    expect(section).toHaveTextContent('esito dell\'invio di questo soggiorno');
-    expect(screen.getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance' })).toBeInTheDocument();
-  });
+      const section = screen.getByRole('region', { name: 'Cassetto Compliance' });
+      expect(section).toHaveTextContent("esito dell'invio di questo soggiorno");
+      expect(screen.getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance' })).toBeInTheDocument();
+    },
+  );
 
   it('section_ActionPressed_AsksForTheAlloggiatiOfThisStayAndComesBackToThisPage', async () => {
     renderSection();
@@ -84,14 +113,39 @@ describe('BookingComplianceSection', () => {
     });
   });
 
-  it.each(['Pending', 'Cancelled'] as const)('section_%sBooking_IsNotShown_ThereIsNoStayToCheck', (status) => {
-    renderSection(status);
+  it('section_NoShow_IsNotOfferedTheGuestsNeverCameAndNoCommunicationIsDue', () => {
+    renderSection({ status: 'NotDue' });
+
+    expect(screen.queryByTestId('booking-compliance-section')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Verifica nel tuo Cassetto Compliance' })).not.toBeInTheDocument();
+    expect(octorateComplianceHandoffApi.start).not.toHaveBeenCalled();
+  });
+
+  it('section_StatusBeingRead_WaitsAndDoesNotAppearAndGo', () => {
+    renderSection({ status: null, loading: true });
 
     expect(screen.queryByTestId('booking-compliance-section')).not.toBeInTheDocument();
   });
 
+  it('section_StatusThatCannotBeRead_StillOffersTheActionTheHandoffDoesNotDependOnIt', () => {
+    renderSection({ status: null });
+
+    expect(screen.getByTestId('booking-compliance-section')).toBeInTheDocument();
+  });
+
+  it('section_ReadsTheStatusOfThisStayWithTheHookOfThePanelAndOnlyWhenTheActionIsOffered', () => {
+    renderSection();
+    expect(alloggiati.read).toHaveBeenCalledWith(BOOKING_ID, true);
+
+    cleanup();
+    alloggiati.read.mockClear();
+    renderSection({ connector: false });
+    // Not offered: nothing more is read for it.
+    expect(alloggiati.read).toHaveBeenCalledWith(BOOKING_ID, false);
+  });
+
   it('section_ConnectorOff_IsNotOnThePage', () => {
-    renderSection('Confirmed', false);
+    renderSection({ connector: false });
 
     expect(screen.queryByTestId('booking-compliance-section')).not.toBeInTheDocument();
   });
