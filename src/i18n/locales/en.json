@@ -1355,6 +1355,7 @@
       "octorateRoomInvalid": "The room you chose is not a room of this listing. Go back and choose again.",
       "octorateRoomNotChosen": "The room of a listing is missing: choose which one.",
       "octorateStateInvalid": "The connection request is no longer valid (expired, already used or started from another account). Start the connection again.",
+      "octorateSyncNotRetryable": "This booking has no sending to the channel manager to repeat.",
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
@@ -1520,6 +1521,7 @@
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
+      "paymentLinkUnavailable": "The payment link cannot be created: it needs a Stripe account ready to take payments, a balance to pay and a booking you entered yourself that is not cancelled. If a payment is already under way, wait for its outcome.",
       "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
       "stripeConnectUnavailable": "Stripe is not responding right now. Your connected Stripe account was not changed: try again in a moment.",
       "stripeConnectNotConfigured": "Stripe payments are not configured correctly on the server. Your connected account was not changed: contact CasaZen support.",
@@ -2153,6 +2155,9 @@
         "invalid": "Enter a valid number of minors",
         "lessThanGuests": "At least one adult is needed: minors must be fewer than the guests"
       },
+      "paymentArrangement": {
+        "required": "Choose how the guest will pay"
+      },
       "priceNote": {
         "maxLength": "The note on the price can have at most 80 characters"
       },
@@ -2319,12 +2324,17 @@
           "title": "Dates are free, but under the minimum stay"
         },
         "blocked": "These dates are not free: choose other dates or use the nearest free ones.",
+        "channelManagerBlocked": "These dates are taken in your channel manager: choose other dates.",
+        "channelManagerBlockedNamed": "These dates are taken on {{channel}}, in your channel manager: choose other dates.",
+        "channelManagerUnchecked": "We could not check the dates in your channel manager. You can go on: we check them again when you create the booking.",
         "checking": "Checking whether the dates are free…",
         "conflict": {
           "block": "It overlaps the block \"{{title}}\" ({{range}}).",
           "blockUnnamed": "It overlaps a block of the calendar ({{range}}).",
           "booking": "It overlaps the stay of {{name}} ({{range}}).",
           "bookingUnnamed": "It overlaps another stay ({{range}}).",
+          "channelManager": "Taken in your channel manager ({{range}}).",
+          "channelManagerNamed": "Taken on {{channel}}, in your channel manager ({{range}}).",
           "ical": "It overlaps the reservation on {{portal}} ({{range}})."
         },
         "invalid": {
@@ -2355,15 +2365,72 @@
           "Other": "another portal"
         }
       },
-      "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
+      "description": "For a booking taken by phone or in person: a few short steps, and the draft saves itself.",
       "done": {
+        "booking": {
+          "title": "Booking created in CasaZen"
+        },
         "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
+        "channelManager": {
+          "blocked": "The channel does not allow this operation: the booking was not created in the channel manager.",
+          "conflict": "The booking in your channel manager differs from the one in CasaZen: until it is settled, the dates may stay open on the other channels.",
+          "failed": "It did not go through: until it does, the dates may stay open on the other channels.",
+          "notFound": "We can no longer find this booking: check it from the list of bookings.",
+          "pending": "Being sent: we are creating the booking in your channel manager, which will close the dates on every channel.",
+          "reasons": {
+            "datesUnavailable": "The channel manager says the dates are already taken: check the calendar of the channels.",
+            "linkedElsewhere": "The booking already exists in the channel manager and is linked to another booking of CasaZen: check whether it is a duplicate.",
+            "notMirrored": "The property is not connected to the channel manager right now: reconnect it or confirm the match, then try again.",
+            "paymentsNotRecorded": "The booking is in the channel manager, but not every payment was recorded there: try again.",
+            "rejected": "The channel manager refused the booking: check the details and try again.",
+            "reservationChanged": "The booking was changed in the channel manager after it was last read: check the differences before trying again.",
+            "roomNotChosen": "The room of the property is missing in the channel manager: choose the room in the match, then try again.",
+            "unavailable": "The channel manager did not answer: the sending is repeated, and you can try again too.",
+            "unknown": "The channel manager did not complete the operation. Try again in a moment."
+          },
+          "refresh": "Check again",
+          "retry": "Retry sending",
+          "retryFailed": "We could not send it again. Try again in a moment.",
+          "synced": "Done: the booking is in your channel manager and the dates are closed on every channel.",
+          "title": "Channel manager",
+          "unreadable": "We cannot read how far the sending to the channel manager has got.",
+          "waiting": "We have no confirmation from the channel manager yet: the dates may not be closed on every channel."
+        },
         "checkin": "A few days before arrival {{name}} gets the link for the online check-in by email.",
         "description": "{{property}}, from {{from}} to {{to}}",
         "guestFallback": "the guest",
+        "next": {
+          "checkChannelManager": "Open the booking and check how far the sending to the channel manager has got: until it is closed there, the dates may stay open on the other channels.",
+          "recordIncome": "When the guest pays, record the income with “Record payment” in the booking.",
+          "retryChannelManager": "Retry the sending to the channel manager: until it goes through, the dates may stay open on the other channels.",
+          "sendPaymentLink": "Send the payment link to {{name}}: so far they have received nothing."
+        },
         "open": "Open the booking",
         "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "paymentBankTransfer": "The guest pays by bank transfer: when it arrives, record the income with “Record payment” in the booking.",
+        "paymentLink": {
+          "copied": "Link copied",
+          "copy": "Copy link",
+          "copyFailed": "We could not copy it: select it below and copy it by hand.",
+          "field": "Payment link to copy",
+          "missing": "The link was not created: the booking is there, but the guest has not received any link.",
+          "notEmailed": "The link is ready, but the email to the guest did not go out: copy it and send it yourself.",
+          "resend": "Send again",
+          "resendHint": "A new link replaces the previous one, which stops working.",
+          "send": "Create and send the link",
+          "sendFailed": "We could not create the link. Try again in a moment.",
+          "sent": "Link sent to the guest: they can pay the balance online.",
+          "title": "Payment link"
+        },
+        "paymentOnSite": "The guest pays at the property: when you collect, record the income with “Record payment” in the booking.",
         "paymentPortal": "{{portal}} collects the payment: do not record it here as well.",
+        "paymentTitle": "Payment",
+        "state": {
+          "done": "done",
+          "problem": "to check",
+          "todo": "to do",
+          "working": "in progress"
+        },
         "title": "Booking for {{name}} added",
         "toList": "All bookings"
       },
@@ -2379,6 +2446,26 @@
         "notesHint": "For example the arrival time or a special request.",
         "phone": "Phone",
         "phoneExample": "+39 333 123 4567"
+      },
+      "payment": {
+        "bankTransfer": {
+          "description": "The guest pays you by bank transfer. When it arrives, you record the income with “Record payment”.",
+          "title": "Bank transfer"
+        },
+        "legend": "How will the guest pay?",
+        "onSite": {
+          "description": "The guest pays in person, at the property. When you collect, you record the income with “Record payment”.",
+          "title": "Pays at the property"
+        },
+        "paymentLink": {
+          "description": "The guest gets a link by email to pay the balance online by card. When they pay, the income is recorded by itself.",
+          "title": "Payment link"
+        },
+        "reason": {
+          "account": "You need a Stripe account that is connected and ready to take payments: set it up in the payment settings, then come back here.",
+          "nothingToPay": "There is nothing to pay: the agreed total is zero.",
+          "permission": "To send a payment link you need the permission to manage the payments of this property."
+        }
       },
       "portal": {
         "amount": "Amount",
@@ -2418,14 +2505,24 @@
           "purpose": "The name and the email of the person who booked are enough.",
           "title": "Who is coming to stay?"
         },
+        "payment": {
+          "label": "Payment",
+          "purpose": "Choose how the guest will pay: what happens next depends on it.",
+          "title": "How will the guest pay?"
+        },
+        "price": {
+          "label": "Price",
+          "purpose": "CasaZen works out the price from the settings of the property.",
+          "title": "How much does the guest pay?"
+        },
         "stay": {
           "label": "Stay",
           "purpose": "Choose the property, the dates and how many people are coming.",
           "title": "Which property, and which dates?"
         },
         "summary": {
-          "label": "Summary and price",
-          "purpose": "CasaZen works out the price from the settings of the property.",
+          "label": "Summary",
+          "purpose": "Check your answers and what happens when you create the booking.",
           "title": "Check and create the booking"
         }
       },
@@ -2441,8 +2538,30 @@
         "minors_one": "{{count}} minor",
         "minors_other": "{{count}} minors",
         "notes": "Notes",
+        "payment": "Payment",
+        "paymentValue": {
+          "bankTransfer": "Bank transfer",
+          "onSite": "Pays at the property",
+          "paymentLink": "Payment link",
+          "portal": "Collected by {{portal}}"
+        },
+        "portalAmount": "Amount of the portal",
+        "price": "Total",
+        "priceAgreed": "agreed price",
         "property": "Property",
-        "stayMissing": "The property and the dates are missing: without them we cannot work out the price."
+        "stayMissing": "The property and the dates are missing: without them we cannot work out the price.",
+        "willHappen": {
+          "bankTransfer": "The guest pays by bank transfer: when it arrives, you record the income.",
+          "casazen": "The booking is created in CasaZen: the nights are taken at once on the calendar and on the booking site.",
+          "channelManager": "It is created in your channel manager as well, which closes these dates on every channel.",
+          "channelManagerMaybe": "If the property is connected to your channel manager, it is created there too and the dates close on every channel.",
+          "onSite": "The guest pays at the property: you record the income.",
+          "paymentLink": "The guest gets a link by email to pay the balance online; after the booking is created you can copy it from here.",
+          "paymentMissing": "How the guest will pay is not chosen: go back to the “Payment” step.",
+          "portal": "{{portal}} collects for you: do not record any payment in CasaZen.",
+          "portalCompleted": "The reservation of {{portal}} is completed with the guest's details, without creating another one.",
+          "title": "What happens when you create the booking"
+        }
       },
       "title": "New booking"
     },
