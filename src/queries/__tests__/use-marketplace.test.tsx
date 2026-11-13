@@ -218,7 +218,7 @@ describe('useMarketplaceActive', () => {
   it('useMarketplaceActive_Property_AsksTheActiveListAndReadsItAgainWhenThePageOpens', async () => {
     const first = renderHook(() => useMarketplaceActive(PROPERTY_ID), { wrapper });
     await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
-    expect(get).toHaveBeenCalledWith('/marketplace/active', { propertyId: PROPERTY_ID });
+    expect(get).toHaveBeenCalledWith('/marketplace/active', { propertyId: PROPERTY_ID, lang: 'it' });
     first.unmount();
 
     renderHook(() => useMarketplaceActive(PROPERTY_ID), { wrapper });

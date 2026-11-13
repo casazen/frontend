@@ -13136,6 +13136,7 @@
       "Active": "Attivo",
       "NotActive": "Non attivo",
       "Pending": "In attesa",
+      "Requested": "Richiesta",
       "ToFix": "Da correggere"
     },
     "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
@@ -13179,12 +13180,71 @@
       "notFound": "Fornitore non trovato",
       "notFoundDescription": "Non è più tra i fornitori attivi della zona di questo immobile."
     },
+    "health": {
+      "calm_one": "{{count}} integrazione attiva, nessun problema segnalato.",
+      "calm_other": "{{count}} integrazioni attive, nessun problema segnalato.",
+      "description": "Come stanno i collegamenti, in base all'ultimo controllo di CasaZen.",
+      "details": "Dettagli",
+      "detailsAria": "Dettagli di {{name}}",
+      "empty": "Non ci sono collegamenti da controllare.",
+      "fix": "Correggi",
+      "fixAria": "Correggi {{name}}",
+      "forbidden": "Non hai il permesso di vedere lo stato dei collegamenti.",
+      "loadError": "Non riesco a leggere lo stato dei collegamenti.",
+      "loading": "Leggo lo stato dei collegamenti…",
+      "notFound": "Lo stato dei collegamenti non è disponibile.",
+      "others_one": "Un'altra integrazione attiva non ha problemi segnalati.",
+      "others_other": "Altre {{count}} integrazioni attive non hanno problemi segnalati.",
+      "quota": {
+        "label": "Quota usata del canale",
+        "readAt": "Letta il {{when}}.",
+        "unknown": "La quota del canale non è ancora stata letta.",
+        "units": "Quota del canale: {{used}} unità usate su {{limit}}.",
+        "usage": "Quota del canale usata: {{percent}}% ({{used}} su {{limit}} unità).",
+        "warn": "La quota del canale è quasi esaurita: gli aggiornamenti potrebbero fermarsi finché non torna disponibile."
+      },
+      "refresh": "Controlla di nuovo",
+      "title": "Stato dei collegamenti",
+      "toFixNoDetail": "Questa connessione va corretta.",
+      "waiting_one": "{{count}} integrazione in attesa di essere completata.",
+      "waiting_other": "{{count}} integrazioni in attesa di essere completate."
+    },
     "mine": {
-      "title": "Le mie app",
-      "description": "Le integrazioni che hai attivato.",
+      "card": {
+        "changeRequested": "Modifica richiesta il {{date}}",
+        "declared": "Attivazione dichiarata da te il {{date}}",
+        "declaredNoDate": "Attivazione dichiarata da te",
+        "details": "Dettagli",
+        "detailsAria": "Dettagli di {{name}}",
+        "errorGeneric": "C'è un problema con questo collegamento.",
+        "fix": "Correggi",
+        "fixAria": "Correggi {{name}}",
+        "lastSync": "Ultimo controllo: {{when}}",
+        "neverSynced": "Ultimo controllo: non ancora eseguito",
+        "property": "Immobile: {{name}}",
+        "quotaWarn": "La quota del canale è quasi esaurita.",
+        "verified": "Attivazione verificata il {{date}}",
+        "verifiedNoDate": "Attivazione verificata",
+        "wholeOrganization": "Tutta l'organizzazione"
+      },
+      "description": "Le integrazioni e i fornitori CasaZen che stai usando, con lo stato di ogni collegamento.",
+      "discover": "Scopri le integrazioni",
+      "emptyHint": "Quando attivi un canale, uno strumento, una funzione o un partner lo trovi qui, insieme ai fornitori CasaZen che hai già usato.",
       "emptyTitle": "Nessuna integrazione attiva",
-      "emptyHint": "Quando colleghi un calendario o attivi i pagamenti con carta li trovi qui.",
-      "discover": "Scopri le integrazioni"
+      "integrations": {
+        "loadError": "Non riesco a caricare le integrazioni attive.",
+        "title": "Integrazioni"
+      },
+      "providers": {
+        "description": "I fornitori CasaZen a cui hai già chiesto un intervento.",
+        "lastCategory": "Ultimo lavoro: {{category}}",
+        "openRequests_one": "{{count}} richiesta aperta",
+        "openRequests_other": "{{count}} richieste aperte",
+        "title": "Fornitori CasaZen",
+        "view": "Vedi il fornitore",
+        "viewAria": "Vedi {{name}}"
+      },
+      "title": "Attivi"
     },
     "supplier": {
       "title": "Fornitore",

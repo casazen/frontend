@@ -11,6 +11,7 @@ import {
   getMarketplaceActive,
   getMarketplaceCatalog,
   getMarketplaceEntry,
+  getMarketplaceHealth,
   getPartnerBrief,
   importActivation,
   refreshLicensedFunctions,
@@ -92,13 +93,36 @@ export function useMarketplaceEntry(kind: string | undefined, code: string | und
   });
 }
 
-/** The integrations that are on and the suppliers already used (the Active tab). Read again every time the page opens. */
+/**
+ * The integrations that are on and the suppliers already used (the Active tab), the names of the licensed functions in the language of the interface. Read again every
+ * time the page opens. Without a property it is the whole scope of the caller.
+ */
 export function useMarketplaceActive(propertyId: string | undefined) {
+  const language = useMarketplaceLanguage();
+
   return useQuery({
-    queryKey: [MARKETPLACE_KEY, 'active', propertyId ?? null],
-    queryFn: () => getMarketplaceActive(propertyId),
+    queryKey: [MARKETPLACE_KEY, 'active', propertyId ?? null, language],
+    queryFn: () => getMarketplaceActive(propertyId, language),
     staleTime: 0,
     refetchOnMount: true,
+  });
+}
+
+/**
+ * The health of the active integrations: the status, the last sync, the problem and the quota of each channel, tool or function of the license (the Active tab). A read of
+ * CasaZen's own rows, so the window gaining the focus may read it again; every visit of the page reads it again and a stale answer is never trusted (`staleTime: 0`). `enabled`
+ * is false for who may not read it and while the connector is off: nothing is asked then. The answer says `items`, `forbidden` or `notFound`: a read that failed is the query's
+ * error, and the rows of an older read are not to be shown for it.
+ */
+export function useMarketplaceHealth(propertyId: string | undefined, enabled = true) {
+  const language = useMarketplaceLanguage();
+
+  return useQuery({
+    queryKey: [MARKETPLACE_KEY, 'health', propertyId ?? null, language],
+    queryFn: () => getMarketplaceHealth(propertyId, language),
+    enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

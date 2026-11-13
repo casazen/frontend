@@ -1,5 +1,6 @@
 import { ApiClient } from '@/api/client';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import axios from '@/lib/axios';
 import type {
   MarketplaceActiveResponse,
   MarketplaceActivationMapping,
@@ -12,9 +13,12 @@ import type {
   MarketplaceFunction,
   MarketplaceFunctionList,
   MarketplaceGroupId,
+  MarketplaceHealthItem,
+  MarketplaceHealthRead,
   MarketplaceLanguage,
   MarketplacePartnerActivation,
   MarketplacePartnerBrief,
+  MarketplaceQuota,
   MarketplaceRoomChoice,
   StartMarketplaceActivationRequest,
 } from '@/types';
@@ -22,6 +26,7 @@ import type {
 const CATALOG_PATH = '/marketplace/catalog';
 const ENTRIES_PATH = '/marketplace/entries';
 const ACTIVE_PATH = '/marketplace/active';
+const HEALTH_PATH = '/marketplace/health';
 const ACTIVATIONS_PATH = '/marketplace/activations';
 const FUNCTIONS_PATH = '/marketplace/functions';
 const PARTNERS_PATH = '/marketplace/partners';
@@ -77,12 +82,85 @@ export async function getMarketplaceEntry(
   };
 }
 
-/** `GET /api/marketplace/active`: the integrations that are on (or waiting, or to fix) and the suppliers already used. */
-export async function getMarketplaceActive(propertyId: string | undefined): Promise<MarketplaceActiveResponse> {
-  const data = await ApiClient.get<MarketplaceActiveResponse | null | undefined>(ACTIVE_PATH, { propertyId });
+/** A row of the Active tab as the page reads it: the members a card is drawn from are checked, the ones a row may leave out are `null`. A row that is not one is a load error. */
+function activeIntegrationOf(row: unknown): MarketplaceActiveResponse['integrations'][number] {
+  if (!isRecord(row) || typeof row.kind !== 'string' || typeof row.code !== 'string' || typeof row.name !== 'string' || typeof row.status !== 'string') {
+    throw new UnexpectedApiResponseError(ACTIVE_PATH);
+  }
+
+  const property = isRecord(row.property) && typeof row.property.id === 'string' ? { id: row.property.id, name: typeof row.property.name === 'string' ? row.property.name : '' } : null;
+  return {
+    ...(row as unknown as MarketplaceActiveResponse['integrations'][number]),
+    property,
+    isDeclared: row.isDeclared === true,
+    lastSyncedAt: typeof row.lastSyncedAt === 'string' ? row.lastSyncedAt : null,
+    declaredAt: typeof row.declaredAt === 'string' ? row.declaredAt : null,
+    verifiedAt: typeof row.verifiedAt === 'string' ? row.verifiedAt : null,
+  };
+}
+
+/**
+ * `GET /api/marketplace/active`: the integrations that are on (or waiting, or to fix) and the suppliers already used. The names of the licensed functions come in `language`.
+ * A row that is not an activation makes the whole read a load error: a shorter list would say «nothing is wrong» about what it left out.
+ */
+export async function getMarketplaceActive(propertyId: string | undefined, language: MarketplaceLanguage): Promise<MarketplaceActiveResponse> {
+  const data = await ApiClient.get<unknown>(ACTIVE_PATH, { propertyId, lang: language });
   if (!isRecord(data) || !Array.isArray(data.integrations) || !Array.isArray(data.providers)) throw new UnexpectedApiResponseError(ACTIVE_PATH);
 
-  return data;
+  return { integrations: data.integrations.map(activeIntegrationOf), providers: data.providers as MarketplaceActiveResponse['providers'] };
+}
+
+/** One row of the health read; a row that is not an activation (no id, no kind, no code, no name, no status) makes the whole read a load error, never a shorter list. */
+function healthItemOf(row: unknown): MarketplaceHealthItem {
+  if (
+    !isRecord(row) ||
+    typeof row.activationId !== 'string' ||
+    typeof row.kind !== 'string' ||
+    typeof row.code !== 'string' ||
+    typeof row.name !== 'string' ||
+    typeof row.status !== 'string'
+  ) {
+    throw new UnexpectedApiResponseError(HEALTH_PATH);
+  }
+
+  const error = row.error;
+  // A problem is a problem even when its words are missing: it is never read as «no problem».
+  const problem = isRecord(error) ? { code: typeof error.code === 'string' ? error.code : '', message: typeof error.message === 'string' ? error.message : '' } : null;
+  const quota = row.quota;
+  const quotaRead: MarketplaceQuota | null =
+    isRecord(quota) && typeof quota.used === 'number' && typeof quota.limit === 'number' && typeof quota.readAt === 'string'
+      ? { used: quota.used, limit: quota.limit, warn: quota.warn === true, readAt: quota.readAt }
+      : null;
+
+  return {
+    ...(row as unknown as MarketplaceHealthItem),
+    propertyId: typeof row.propertyId === 'string' ? row.propertyId : null,
+    propertyName: typeof row.propertyName === 'string' ? row.propertyName : null,
+    isDeclared: row.isDeclared === true,
+    lastSyncedAt: typeof row.lastSyncedAt === 'string' ? row.lastSyncedAt : null,
+    error: problem,
+    quota: quotaRead,
+    changeRequestedAt: typeof row.changeRequestedAt === 'string' ? row.changeRequestedAt : null,
+  };
+}
+
+/**
+ * `GET /api/marketplace/health` (needs `ota.read` and the connector): one row for each channel, tool or function of the license of the caller's properties that is not turned
+ * off, with its status, last sync, problem and the quota of the last sync. A read of CasaZen's own rows: nothing is asked of the channel manager. A 403 and a 404 (the connector is
+ * off, or the property is not the caller's) are answers of this read, not errors of the app: a 403 does not send the person to the page of no access, and neither leaves the rows
+ * of an older read behind (the query keeps the last data of a read that failed, never of one that answered).
+ */
+export async function getMarketplaceHealth(propertyId: string | undefined, language: MarketplaceLanguage): Promise<MarketplaceHealthRead> {
+  const response = await axios.get<unknown>(HEALTH_PATH, {
+    params: { propertyId, lang: language },
+    validateStatus: (status) => (status >= 200 && status < 300) || status === 403 || status === 404,
+  });
+  if (response.status === 403) return { outcome: 'forbidden' };
+  if (response.status === 404) return { outcome: 'notFound' };
+
+  const data = response.data;
+  if (!isRecord(data) || !Array.isArray(data.items)) throw new UnexpectedApiResponseError(HEALTH_PATH);
+  return { outcome: 'items', items: data.items.map(healthItemOf) };
 }
 
 /** The address of one activation (`…/{id}` and its steps). The id is what the server wrote, and is encoded all the same. */

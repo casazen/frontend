@@ -117,17 +117,30 @@ export interface MarketplaceEntryDetail {
   };
 }
 
-/** An activation of the Active tab. Best reading of the list the backend describes (E09/F01/US01/T03): the Active tab task refines it. */
+/** The property an integration of the Active tab is about (`MarketplaceIntegrationPropertyDto`). */
+export interface MarketplaceIntegrationProperty {
+  id: string;
+  name: string;
+}
+
+/**
+ * An activation of the Active tab (`MarketplaceIntegrationDto`). `status` is the status of a card (a request that waits for the license is `Pending`
+ * here); the health rows say `Requested`. `declaredAt` is the day the host gave when it declared the activation (midnight UTC of that day) and
+ * `verifiedAt` is when a connection or the license first showed it: «declared by you on …» is said from the first, «verified» only when the second is
+ * set. The list carries no id of the activation: the health rows do (channels, tools and functions of the license).
+ */
 export interface MarketplaceActiveIntegration {
   kind: MarketplaceEntryKind;
   code: string;
   name: string;
-  propertyId: string | null;
-  propertyName: string | null;
-  status: 'Requested' | 'Pending' | 'Active' | 'ToFix';
+  /** `null` for a row of the whole organization (a partner declared for all of it). */
+  property: MarketplaceIntegrationProperty | null;
+  status: MarketplaceCardStatus;
   /** The person declared it and the channel manager has not proven it. */
   isDeclared: boolean;
   lastSyncedAt: string | null;
+  declaredAt: string | null;
+  verifiedAt: string | null;
 }
 
 /** A CasaZen supplier the host already asked for a job (the shape of `HostUsedSupplier`, camelCase). */
@@ -310,4 +323,94 @@ export interface MarketplacePartnerActivation {
   isDeclared: boolean;
   declaredAt: string | null;
   verifiedAt: string | null;
+}
+
+/*
+ * The health of the active integrations and the change of an activation (E09/F03, MKT-04, MKT-05). The shapes mirror `MarketplaceHealthDtos` and
+ * `MarketplaceChangeDtos`. No shape carries a credential: the username and the password of a portal are only in the body of the settings change.
+ */
+
+/** A problem in simple words: `code` is the stable code a client may translate, `message` is the text in the language asked (never a text of the channel manager's). */
+export interface MarketplaceHealthError {
+  code: string;
+  message: string;
+}
+
+/**
+ * The quota of the channel manager's API at the last sync of the organization (the same on every row): `used` of `limit` units. `warn` is the server's
+ * word: `used` reached `Marketplace:Health:QuotaWarnPercent` of `limit`. `readAt` is when it was read (UTC).
+ */
+export interface MarketplaceQuota {
+  used: number;
+  limit: number;
+  warn: boolean;
+  readAt: string;
+}
+
+/** One activation in the health panel: a channel, a tool or a function of the license, for a property. */
+export interface MarketplaceHealthItem {
+  activationId: string;
+  /** `null` for a row of the whole organization. */
+  propertyId: string | null;
+  propertyName: string | null;
+  kind: MarketplaceEntryKind;
+  code: string;
+  name: string;
+  /** `Pending`, `Active`, `ToFix`, or `Requested` (a function that waits for the license). */
+  status: MarketplaceActivationStatus;
+  /** True while only the host's word backs the status. */
+  isDeclared: boolean;
+  /** When CasaZen last read the state of it from the channel manager (UTC); `null` until then. */
+  lastSyncedAt: string | null;
+  error: MarketplaceHealthError | null;
+  /** `null` until a sync read the quota. */
+  quota: MarketplaceQuota | null;
+  /** Set while a change the host asked for waits for the license (UTC). */
+  changeRequestedAt: string | null;
+}
+
+/**
+ * What a read of `GET /api/marketplace/health` came to. `forbidden` (403) and `notFound` (404: the connector is off, or the property is not the caller's) are answers,
+ * not errors: neither sends the app to the page of no access, and neither leaves the rows of an older read on the screen.
+ */
+export type MarketplaceHealthRead =
+  | { outcome: 'items'; items: MarketplaceHealthItem[] }
+  | { outcome: 'forbidden' }
+  | { outcome: 'notFound' };
+
+/**
+ * Body of `PATCH /api/marketplace/activations/{id}`: only what the portal asks for, and only the members that are given. `username` and `password` are sent in this one
+ * call and are not kept anywhere by CasaZen.
+ */
+export interface UpdateMarketplaceSettingsRequest {
+  hotelId?: string;
+  username?: string;
+  password?: string;
+}
+
+/**
+ * The answer of a change, a deactivation or a change request: the activation as it stands now (`MarketplaceActivationChangeDto`). `status` is `Deactivated` after a
+ * deactivation; `changeRequestedAt` is set after the change request of a function, until the license answers it. No login detail, ever.
+ */
+export interface MarketplaceActivationChange {
+  activationId: string;
+  kind: MarketplaceEntryKind;
+  code: string;
+  propertyId: string | null;
+  status: MarketplaceActivationStatus;
+  changeRequestedAt: string | null;
+}
+
+/**
+ * `GET /api/marketplace/activations/{id}/deactivation-preview`: what a deactivation does, to be read before it is confirmed. `effects` are plain sentences in the language
+ * asked with the name put in; `guided` is true for a partner (it is turned off on its own site) and for a function of the license (it is asked of the channel manager).
+ */
+export interface MarketplaceDeactivationPreview {
+  activationId: string;
+  kind: MarketplaceEntryKind;
+  code: string;
+  name: string;
+  effects: string[];
+  requiresConfirmation: boolean;
+  guided: boolean;
 }

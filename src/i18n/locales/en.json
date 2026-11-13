@@ -13136,6 +13136,7 @@
       "Active": "Active",
       "NotActive": "Not active",
       "Pending": "Pending",
+      "Requested": "Requested",
       "ToFix": "To fix"
     },
     "suppliersLoadError": "Could not load the suppliers. Please try again later.",
@@ -13179,12 +13180,71 @@
       "notFound": "Supplier not found",
       "notFoundDescription": "It is no longer among the active suppliers of this property's area."
     },
+    "health": {
+      "calm_one": "{{count}} active integration, no problem reported.",
+      "calm_other": "{{count}} active integrations, no problem reported.",
+      "description": "How the connections are doing, as of CasaZen's last check.",
+      "details": "Details",
+      "detailsAria": "Details of {{name}}",
+      "empty": "There are no connections to check.",
+      "fix": "Fix",
+      "fixAria": "Fix {{name}}",
+      "forbidden": "You do not have permission to see the state of the connections.",
+      "loadError": "I cannot read the state of the connections.",
+      "loading": "Reading the state of the connections…",
+      "notFound": "The state of the connections is not available.",
+      "others_one": "One other active integration has no problem reported.",
+      "others_other": "{{count}} other active integrations have no problem reported.",
+      "quota": {
+        "label": "Quota of the channel used",
+        "readAt": "Read on {{when}}.",
+        "unknown": "The quota of the channel has not been read yet.",
+        "units": "Channel quota: {{used}} of {{limit}} units used.",
+        "usage": "Channel quota used: {{percent}}% ({{used}} of {{limit}} units).",
+        "warn": "The channel quota is almost used up: updates may stop until it is available again."
+      },
+      "refresh": "Check again",
+      "title": "State of the connections",
+      "toFixNoDetail": "This connection needs fixing.",
+      "waiting_one": "{{count}} integration is waiting to be completed.",
+      "waiting_other": "{{count}} integrations are waiting to be completed."
+    },
     "mine": {
-      "title": "My apps",
-      "description": "The integrations you have turned on.",
+      "card": {
+        "changeRequested": "Change requested on {{date}}",
+        "declared": "Activation declared by you on {{date}}",
+        "declaredNoDate": "Activation declared by you",
+        "details": "Details",
+        "detailsAria": "Details of {{name}}",
+        "errorGeneric": "There is a problem with this connection.",
+        "fix": "Fix",
+        "fixAria": "Fix {{name}}",
+        "lastSync": "Last check: {{when}}",
+        "neverSynced": "Last check: not done yet",
+        "property": "Property: {{name}}",
+        "quotaWarn": "The channel quota is almost used up.",
+        "verified": "Activation verified on {{date}}",
+        "verifiedNoDate": "Activation verified",
+        "wholeOrganization": "The whole organization"
+      },
+      "description": "The integrations and the CasaZen suppliers you are using, with where each connection stands.",
+      "discover": "Discover the integrations",
+      "emptyHint": "When you turn on a channel, a tool, a function or a partner you will find it here, with the CasaZen suppliers you have already used.",
       "emptyTitle": "No integration is on",
-      "emptyHint": "When you link a calendar or turn on card payments you will find them here.",
-      "discover": "Discover the integrations"
+      "integrations": {
+        "loadError": "I cannot load the active integrations.",
+        "title": "Integrations"
+      },
+      "providers": {
+        "description": "The CasaZen suppliers you have already asked for a job.",
+        "lastCategory": "Last job: {{category}}",
+        "openRequests_one": "{{count}} open request",
+        "openRequests_other": "{{count}} open requests",
+        "title": "CasaZen suppliers",
+        "view": "See the supplier",
+        "viewAria": "See {{name}}"
+      },
+      "title": "Active"
     },
     "supplier": {
       "title": "Supplier",
