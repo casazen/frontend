@@ -631,6 +631,23 @@ describe('the summary of the period', () => {
     expect(within(missing).queryByTestId('coverage-upload')).not.toBeInTheDocument();
   });
 
+  // A stay whose send the channel manager does not make (its police send is off) is red because the host has to send it by hand: the reason of the row is
+  // `connection_inactive`, and the row says it in plain words, in both languages, without naming the supplier.
+  it.each([
+    ['it', 'Il tuo channel manager non invia i dati: questo soggiorno va inviato a mano.'],
+    ['en', 'Your channel manager is not sending the data: this stay has to be sent by hand.'],
+  ])('AlloggiatiPage_MissingRowOfAStayTheChannelManagerDoesNotSend_SaysItIsToBeSentByHand_%s', async (language, words) => {
+    await i18n.changeLanguage(language);
+    vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(
+      report([row('Missing', { kind: 'Alloggiati', bookingId: 'b1', bookingCode: 'AB123-CD456', day: '2026-08-15', period: null, reason: 'connection_inactive', action: 'SendAlloggiatiManually' })]),
+    );
+    renderPage(ARCHIVE, flags);
+
+    const missing = await screen.findByTestId('coverage-row');
+    expect(missing).toHaveTextContent(words);
+    expect(missing.textContent).not.toMatch(/octorate/i);
+  });
+
   it('AlloggiatiPage_ReportExport_AsksPdfOrCsvOfTheFilteredPeriodOneAtATime', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(report([row('Missing')]));
     vi.mocked(complianceArchiveApi.exportCoverageReport).mockResolvedValue({ blob: new Blob(['csv'], { type: 'text/csv' }), contentDisposition: null });

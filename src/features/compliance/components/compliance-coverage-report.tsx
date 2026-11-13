@@ -36,6 +36,7 @@ const KNOWN_REASONS: ReadonlySet<string> = new Set([
   'alloggiati_not_sent',
   'alloggiati_sending',
   'awaiting_receipt',
+  'connection_inactive',
   'deadline_overdue',
   'entrusted_to_channel_manager',
   'evidence_missing',

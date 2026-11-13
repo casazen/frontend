@@ -5217,6 +5217,7 @@
       "alloggiati_not_sent": "La comunicazione è dovuta e non è stata inviata.",
       "alloggiati_sending": "L'invio è in corso.",
       "awaiting_receipt": "Comunicazione inviata: aspettiamo la ricevuta.",
+      "connection_inactive": "Il tuo channel manager non invia i dati: questo soggiorno va inviato a mano.",
       "deadline_overdue": "La scadenza è passata e nulla prova la comunicazione.",
       "entrusted_to_channel_manager": "Gli ospiti sono stati affidati al tuo channel manager: aspettiamo la ricevuta.",
       "evidence_missing": "Non c'è nessuna prova archiviata.",

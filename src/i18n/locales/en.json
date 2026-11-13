@@ -5217,6 +5217,7 @@
       "alloggiati_not_sent": "The communication is due and has not been sent.",
       "alloggiati_sending": "The submission is under way.",
       "awaiting_receipt": "Communication sent: we are waiting for the receipt.",
+      "connection_inactive": "Your channel manager is not sending the data: this stay has to be sent by hand.",
       "deadline_overdue": "The deadline has passed and nothing proves the communication.",
       "entrusted_to_channel_manager": "The guests were handed to your channel manager: we are waiting for the receipt.",
       "evidence_missing": "No proof is archived.",
