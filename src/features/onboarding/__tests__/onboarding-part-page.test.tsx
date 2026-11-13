@@ -119,8 +119,8 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(row).toHaveAttribute('data-state', 'toComplete');
     expect(within(row).getByTestId('flow-state')).toHaveTextContent(i18n.t('onboardingPlan.flows.states.toComplete'));
     expect(screen.getByTestId(`part-property-${PROPERTY}-reason`)).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.sender_missing'));
-    // «chooseSender» is the compliance with the focus «sender»: the sender wizard is not registered yet, so the page of the property that exists opens.
-    expect(screen.getByTestId(`part-property-${PROPERTY}-do`)).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY}/activation`);
+    // «chooseSender» is the compliance with the focus «sender»: the sender wizard (E03/F01/US02/T02) opens, for that property.
+    expect(screen.getByTestId(`part-property-${PROPERTY}-do`)).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY}`);
     // The compliance part adds the guided steps of the police and ISTAT for each property.
     expect(screen.getByTestId(`part-property-${PROPERTY}-police`)).toHaveAttribute('href', `/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY}`);
     expect(screen.getByTestId(`part-property-${PROPERTY}-istat`)).toHaveAttribute('href', `/app/short-rent/onboarding/panel/istat?propertyId=${PROPERTY}`);

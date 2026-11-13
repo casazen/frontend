@@ -197,14 +197,27 @@ describe('ConnectionHealthPanel', () => {
     }
   });
 
-  // AC 4: the «activate or reconnect» button is rendered only when the wizard exists in the ROUTE_MANIFEST: there is none here yet.
-  it('ConnectionHealthPanel_NoSenderWizardInTheManifest_ShowsTheInstructionsAndNoActivateButton', async () => {
+  // AC 4: the «activate or reconnect» button is rendered only when the wizard exists in the ROUTE_MANIFEST and the person may open it. The wizard of the sender
+  // (E03/F01/US02/T02) is in the manifest and asks `property.write`: who may only read the property gets the instructions and no button that would be refused.
+  it('ConnectionHealthPanel_PersonWhoMayNotOpenTheSenderWizard_ShowsTheInstructionsAndNoActivateButton', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: line({ state: 'Inactive' }) }));
     renderPanel(false);
 
     await screen.findByTestId('connection-health-Alloggiati');
     expect(screen.queryByTestId('connection-health-Alloggiati-activate')).not.toBeInTheDocument();
     expect(screen.getByTestId('connection-health-Alloggiati-instructions')).toBeInTheDocument();
+  });
+
+  it.each(['Alloggiati', 'Istat'] as const)('ConnectionHealthPanel_PersonWhoMayOpenTheSenderWizard_%sOffersTheActivateButtonThatLeadsToIt', async (topic) => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    const off = line({ state: 'Inactive' });
+    vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: off, istat: off }));
+    renderPanel(false);
+
+    await screen.findByTestId(`connection-health-${topic}`);
+    expect(screen.getByTestId(`connection-health-${topic}-activate`)).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    // The button replaces the instructions: one way on, not both.
+    expect(screen.queryByTestId(`connection-health-${topic}-instructions`)).not.toBeInTheDocument();
   });
 
   it('ConnectionHealthPanel_UnknownChannelManagerWithTheConnectorOn_OffersTheSharedVerificationNotAnInternalResultScreen', async () => {

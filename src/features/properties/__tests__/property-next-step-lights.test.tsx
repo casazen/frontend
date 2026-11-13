@@ -119,8 +119,8 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     expect(within(block).getByRole('link', { name: 'Torna agli immobili' })).toHaveAttribute('href', '/app/short-rent/properties');
   });
 
-  // The police send has its place on the page of the property (the connection health, E03/F03/US02/T01): the button leads to that section.
-  it('PropertyNextStep_RedActivateOctorateSend_OffersTheButtonThatOpensTheConnectionHealthSection', async () => {
+  // The police send is activated by its wizard (E03/F01/US02/T02), another page than the one the card is on: the button leads to it, for the property of the card.
+  it('PropertyNextStep_RedActivateOctorateSend_OffersTheButtonThatOpensTheSenderWizard', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('ActivateOctorateSend', 'Red', 'connection_inactive')) }));
     renderStep();
 
@@ -128,7 +128,7 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
     expect(block).toHaveTextContent("Attiva l'invio automatico alla Questura: Casa Como");
     expect(block).toHaveTextContent("L'invio automatico non è attivo: attivalo oppure invia tu.");
-    expect(screen.getByTestId('property-next-compliance')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+    expect(screen.getByTestId('property-next-compliance')).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
     expect(block).toHaveTextContent('Tocca a te');
   });
 
@@ -161,8 +161,8 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     expect(within(credentials).getByTestId('compliance-line-action')).toHaveAttribute('href', '/app/short-rent/alloggiati');
   });
 
-  // The police send has its section on the page of the property (E03/F03/US02/T01): the line of the list under the block leads to it as well.
-  it('PropertyNextStep_OtherLineAboutThePoliceSend_KeepsItsButtonToTheConnectionHealthSection', async () => {
+  // The police send is activated by its wizard (E03/F01/US02/T02): the line of the list under the block leads to it as well.
+  it('PropertyNextStep_OtherLineAboutThePoliceSend_KeepsItsButtonToTheSenderWizard', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({
         periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08', dueAt: '2026-09-10T00:00:00Z' })),
@@ -174,7 +174,7 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     const lines = await screen.findByTestId('compliance-lines');
     const send = within(lines).getByTestId('compliance-line');
     expect(send).toHaveAttribute('data-action', 'ActivateOctorateSend');
-    expect(within(send).getByTestId('compliance-line-action')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+    expect(within(send).getByTestId('compliance-line-action')).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
   });
 
   it('PropertyNextStep_RedMonthOfIstatPastItsDeadline_IsRedAsTheDeadlineAndOpensTheArchive', async () => {

@@ -251,14 +251,23 @@ describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
   });
 
   it.each([
-    ['ActivateOctorateSend', `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`],
+    ['ActivateOctorateSend', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`],
     ['EnterMunicipalityTaxRate', `/app/short-rent/properties/${PROPERTY_ID}`],
   ])('todoActionRoute_%s_OpensThePageOfTheProperty', (action, address) => {
-    // The police send opens the section of the property page that tells it (E03/F03/US02/T01); the tourist tax rate has no page of its own yet.
+    // The police send opens the wizard that activates it, for the property of the item (E03/F01/US02/T02); the tourist tax rate has no page of its own yet.
     expect(todoActionRoute(ofProperty(action))).toBe(address);
     // The property is the one the item names, or the entity itself.
     expect(todoActionRoute({ ...ofProperty(action), propertyId: null })).toBe(address);
     expect(todoActionRoute({ ...ofProperty(action, 'Booking'), propertyId: null })).toBeNull();
+  });
+
+  it('todoActionRoute_ActivateOctorateSend_IsTheWizardOnlyForWhoMayChangeTheSenderAndTheSectionOfThePropertyForWhoMayOnlyRead', () => {
+    const everything = permissions(['property.read', 'property.write']);
+    const readOnly = permissions(['property.read']);
+
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), everything)).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    // The wizard changes the sender (`property.write`): whoever lacks it finds the section of the property page that tells who sends, never a page that would refuse them.
+    expect(todoActionRoute(ofProperty('ActivateOctorateSend'), readOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
   });
 
   it('todoActionRoute_RenewPoliceCredentials_OpensTheAlloggiatiDashboard', () => {
@@ -283,6 +292,7 @@ describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
     expect(todoActionRoute(ofProperty('RenewPoliceCredentials'), propertiesOnly)).toBeNull();
     expect(todoActionRoute(ofProperty('DeclareTouristTax', 'PropertyPeriod:2026-08'), propertiesOnly)).toBeNull();
     expect(todoActionRoute(stay('SendAlloggiatiManually'), propertiesOnly)).toBeNull();
+    // `propertiesOnly` reads the properties and may not write them: the read-only fallback of the wizard.
     expect(todoActionRoute(ofProperty('ActivateOctorateSend'), propertiesOnly)).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
     expect(todoActionRoute(stay('SendAlloggiatiManually'), bookingsOnly)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
   });

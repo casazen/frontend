@@ -10,6 +10,7 @@ import type { Booking, BookingAmountSources } from '@/types';
 import { bookingPriceBreakdown } from '../lib/booking-price';
 import { Amount, AmountSourceLine } from './booking-facts';
 import { BookingInvoiceDataSection } from './booking-invoice-data-section';
+import { BookingLedgerSection } from './booking-ledger-section';
 import { BookingOtaAmounts } from './booking-ota-amounts';
 
 /**
@@ -22,7 +23,9 @@ import { BookingOtaAmounts } from './booking-ota-amounts';
  * site, the host's own entry for a payment recorded by hand. A channel booking has its own section under this one, "Importi del
  * canale", where every figure carries its source, so the summary does not tag the same numbers twice.
  *
- * Under the amounts there is "Dati di fatturazione" (FIS-01, NF-81): who the invoice of the booking is made out to, for who may read payments.
+ * Under the amounts there is "Incassi" (FIS-05, NF-85): the ledger of the booking, everything collected for it, card, manual and channel payments, each with its
+ * commission, its net, its state and the fiscal document. "Registra incasso" above it marks the payments stale when it succeeds, and the ledger is read again.
+ * After the amounts of the channel there is "Dati di fatturazione" (FIS-01, NF-81): who the invoice of the booking is made out to. Both are for who may read payments.
  */
 export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const { t } = useTranslation();
@@ -94,6 +97,9 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
           ) : null}
         </div>
       </PlainSection>
+
+      {/* FIS-05, NF-85: everything collected for the booking, line by line; not there for who may not read payments (nothing is asked for them). */}
+      <BookingLedgerSection bookingId={booking.id} />
 
       {/* NF-77, ADR-033-R8: what the channel says about the money of an imported booking; nothing for any other booking and for who
           may not read payments (the API sends no amounts to them). */}
