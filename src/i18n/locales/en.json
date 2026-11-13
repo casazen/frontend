@@ -1473,6 +1473,42 @@
       "ownerStatementNotApproved": "The statement must be approved first.",
       "ownerStatementNotDraft": "This version is no longer a draft.",
       "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
+      "ownerAttachmentNotFound": "This attachment is not available.",
+      "ownerCalendarRangeInvalid": "The chosen period is not valid.",
+      "ownerContactAgencyRequired": "Your profile is linked to more than one agency: to invite a contact write to the agency concerned.",
+      "ownerContactDailyLimitReached": "You have sent too many invitations today. Try again tomorrow.",
+      "ownerContactEmailNotQueued": "We could not send the invitation e-mail: the invitation was cancelled. Try again.",
+      "ownerContactExists": "This person is already one of your contacts.",
+      "ownerContactInvalid": "Check the name and the e-mail address of the contact.",
+      "ownerContactLimitReached": "You have reached the maximum number of contacts.",
+      "ownerContactNotFound": "This contact does not exist.",
+      "ownerContactOwnerOnly": "Only the owner can manage the contacts.",
+      "ownerContactRevoked": "The access of this contact has already been withdrawn.",
+      "ownerConversationInvalid": "Check the subject and what the conversation is about.",
+      "ownerConversationNotFound": "This conversation is not available.",
+      "ownerConversationReferenceNotFound": "What the conversation refers to is not one of your items.",
+      "ownerDocumentNotFound": "This document is not available.",
+      "ownerFileActiveContent": "The file cannot be accepted because it is password protected or contains parts we cannot check. Export it again as a plain PDF.",
+      "ownerFileMissing": "Choose a file.",
+      "ownerFileTooLarge": "The file is too large: 10 MB at most.",
+      "ownerFileTypeNotAllowed": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image.",
+      "ownerMessageInvalid": "Write the message before sending it.",
+      "ownerPortalPermissionMissing": "The owner has not given you permission for this operation.",
+      "ownerPortalPermissionUnknown": "One of the chosen permissions does not exist.",
+      "ownerPortalPermissionsEmpty": "Choose at least one permission: no permission does not mean “all”.",
+      "ownerPortalPropertyNotFound": "This property is not one of yours.",
+      "ownerStayAllowanceExceeded": "With this stay you would pass the nights you have available this year.",
+      "ownerStayBeyondWindow": "The arrival is further ahead than the rules allow.",
+      "ownerStayBlackout": "One of the nights falls on dates closed to owner stays.",
+      "ownerStayDatesUnavailable": "One or more nights are no longer free. Choose other dates.",
+      "ownerStayInPast": "The arrival cannot be a day that has already passed.",
+      "ownerStayInvalidRange": "The departure must be after the arrival.",
+      "ownerStayNotCancellable": "This stay can no longer be cancelled.",
+      "ownerStayNotFound": "This stay does not exist.",
+      "ownerStayNoticeTooShort": "The arrival is closer than the notice the rules ask for.",
+      "ownerStayOutsidePeriod": "One of the nights is outside the period in which the rules allow owner stays.",
+      "ownerStayTooLong": "The stay is longer than the rules allow.",
+      "ownerStayTooShort": "The stay is shorter than the rules allow.",
       "panelStepAssistOpen": "CasaZen support is taking care of it: there is no need to confirm.",
       "panelStepCallbackUnsupported": "This step does not come back from the panel by itself.",
       "panelStepChannelInvalid": "The channel of this step is not valid.",
@@ -16123,6 +16159,68 @@
       }
     }
   },
+  "ownerContactInvitation": {
+    "accepting": "We are activating your access",
+    "claimsPending": {
+      "description": "We have recorded your invitation, but your access needs a few more moments. Try again shortly: if it does not activate, write to support.",
+      "title": "Your access to the portal is not active yet"
+    },
+    "emailMismatch": {
+      "action": "Sign in with another account",
+      "description": "You signed in with an address other than the one the invitation was sent to. Sign in with the right address: the invitation is still valid and you activate it from here.",
+      "title": "This invitation is for another e-mail address"
+    },
+    "emailNotVerified": {
+      "description": "We sent you a message to confirm the address. Open it, then come back here and try again.",
+      "login": "Sign in again",
+      "title": "Confirm your e-mail address first"
+    },
+    "failure": {
+      "other": "The invitation could not be accepted. If the problem continues, write to support.",
+      "retry": "The service did not answer. Try again in a moment.",
+      "title": "We could not activate your access"
+    },
+    "invite": {
+      "description": "Sign in to enter the CasaZen owner portal with the permissions the owner has given you.",
+      "login": "I already have an account",
+      "sameEmail": "Use the same e-mail address the invitation was sent to: it is the only one you can accept it with.",
+      "signup": "Create your account",
+      "title": "You are invited to an owner’s portal"
+    },
+    "loading": "One moment",
+    "notFound": {
+      "description": "The owner portal is not active yet. Try again later or ask whoever invited you.",
+      "title": "Page not available"
+    },
+    "openPortal": "Open the portal",
+    "opening": "Taking you to the portal",
+    "pageTitle": "Invitation to the owner portal",
+    "retry": "Try again",
+    "support": "Write to support",
+    "tokenPending": {
+      "description": "Your invitation was accepted, but we could not renew your access. Try again: if it continues, sign out and sign in again.",
+      "title": "We could not open the portal"
+    },
+    "unusable": {
+      "expired": {
+        "description": "The link is no longer valid. Ask the owner to send you a new invitation.",
+        "title": "This invitation has expired"
+      },
+      "goToPortal": "Go to the owner portal",
+      "invalid": {
+        "description": "The link is not valid or is incomplete. Open the link you received by e-mail again, or ask the owner to send you a new one.",
+        "title": "This invitation does not work"
+      },
+      "revoked": {
+        "description": "The owner has withdrawn this invitation. If you think it is a mistake, ask them to send you a new one.",
+        "title": "This invitation has been withdrawn"
+      },
+      "used": {
+        "description": "The link has already been used by an account. If it was you, open the portal and sign in; otherwise ask the owner for a new invitation.",
+        "title": "This invitation has already been used"
+      }
+    }
+  },
   "ownerInvitation": {
     "accepting": "We are activating your access",
     "claimsPending": {
@@ -16532,53 +16630,413 @@
     "updateFailed": "We cannot update the state of the owners: what you see is the last one we read and may be out of date. What you are filling in stays here."
   },
   "ownerPortal": {
-    "dashboard": {
-      "title": "Owner Portal",
-      "viewStatements": "View statements",
-      "yourProperties": "Your properties",
-      "noProperties": "No properties available",
-      "revenue": "Revenue",
-      "bookings": "Bookings",
-      "occupancy": "Occupancy",
-      "adr": "ADR",
-      "revPar": "RevPAR",
+    "accounting": {
+      "ask": "Ask about this statement",
+      "description": "The statements your agency has published, the linked invoices and the accounting documents shared with you.",
+      "documentsTitle": "Accounting documents",
+      "error": "The statements could not be loaded",
+      "invoiceOf": "Linked to the statement of {{period}}",
+      "invoiceStatus": {
+        "Entered": "Link recorded",
+        "Verified": "Link checked"
+      },
+      "invoiceTitle": "Invoice no. {{number}} of {{date}}",
+      "invoicesError": "The linked invoices could not be loaded",
+      "invoicesNote": "These are invoices issued by the agency in its own system: here you find the link the agency recorded. CasaZen does not issue invoices.",
+      "invoicesTitle": "Linked invoices",
+      "loading": "Loading the accounting",
+      "noDocuments": "The agency has not shared any accounting document with you.",
+      "noInvoiceLink": "The link to this invoice is not available.",
+      "noInvoices": "There are no invoices linked to your statements.",
+      "noPaymentNote": "You only see published statements here. Amounts and the state of payments are not shown in the portal yet: ask your agency in the messages for the detail.",
+      "noStatements": "The agency has not published any statement for you yet.",
+      "openInvoice": "Open the invoice",
+      "opensNewTab": "(opens in a new tab)",
+      "publishedOn": "published on {{date}}",
+      "statementTitle": "Statement of {{period}}",
+      "statementsTitle": "Published statements",
+      "status": {
+        "published": "Published",
+        "superseded": "Superseded"
+      },
+      "supersededNote": "A newer version of this statement has taken its place: this one stays here as a record.",
+      "title": "Accounting",
+      "version": "Version {{number}}"
+    },
+    "calendar": {
+      "description": "See the free, occupied and blocked nights of your properties and ask for your own stays. To protect guests’ privacy you only see dates.",
+      "empty": "No date of this period falls within your period of ownership: there is nothing to show.",
+      "error": "The calendar could not be loaded",
+      "kinds": {
+        "available": "Free",
+        "blocked": "Blocked",
+        "occupied": "Occupied",
+        "ownerStay": "Owner stay"
+      },
+      "loading": "Loading the calendar",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "noProperties": "There are no properties whose calendar you can see.",
       "period": "Period",
-      "tilesLabel": "The numbers for your properties",
-      "previousYear": "Compared with the same days last year: {{from}} to {{to}}.",
-      "share": "Revenue on an accrual basis, on your share of each property: the nights of the confirmed stays, lodging and cleaning, tourist tax excluded.",
-      "trendTitle": "Trend over time",
-      "overviewError": "Could not load the numbers for the period.",
-      "trendError": "Could not load the trend.",
+      "periods": {
+        "sixMonths": "Next 6 months",
+        "threeMonths": "Next 3 months",
+        "twelveMonths": "Next 12 months"
+      },
+      "privacyNote": "To protect guests’ privacy you only find dates and one word here: never names, contacts or sales channels.",
+      "propertiesError": "Your properties could not be loaded",
+      "property": "Property",
+      "range": "From {{from}} to {{to}}",
+      "runsLabel": "Dates of {{property}}",
+      "sectionTitle": "Calendar of {{property}}",
+      "summary": {
+        "available": "Free nights",
+        "blocked": "Blocked nights",
+        "occupied": "Occupied nights",
+        "ownerStay": "Your stays"
+      },
+      "summaryLabel": "Nights of the period",
+      "title": "Properties and calendar"
+    },
+    "contacts": {
+      "description": "Let another person into the portal with their own account and only the permissions you choose. Each permission is independent and you can withdraw it at any time: it applies from their next request.",
+      "empty": "You have not invited any contact yet.",
+      "error": "The contacts could not be loaded",
+      "failed": "The operation could not be completed. Try again.",
+      "invite": {
+        "description": "It receives an e-mail with a link valid for 7 days. To get in it must use the same address and an account of its own: you never share yours.",
+        "detailsRequired": "Write a first name, a last name and a valid e-mail address.",
+        "email": "E-mail address",
+        "failed": "The invitation could not be sent. Try again.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "permissionRequired": "Choose at least one permission: no permission does not mean “all”.",
+        "permissions": "What it can do",
+        "sending": "Sending",
+        "sent": "We wrote to {{email}}. It has no access yet: it will have it only when it accepts the invitation.",
+        "sentTitle": "Invitation sent",
+        "submit": "Send the invitation",
+        "title": "Invite a contact"
+      },
+      "listTitle": "Your contacts",
+      "loading": "Loading the contacts",
+      "permissions": {
+        "accounting": {
+          "read": {
+            "description": "Published statements and accounting documents.",
+            "label": "See the accounting"
+          }
+        },
+        "calendar": {
+          "read": {
+            "description": "Free, occupied and blocked dates, never guest data.",
+            "label": "See the calendar"
+          }
+        },
+        "documents": {
+          "read": {
+            "description": "The documents the agency shares with you.",
+            "label": "See the documents"
+          }
+        },
+        "inbox": {
+          "use": {
+            "description": "Read and write in the conversations.",
+            "label": "Use the messages with the agency"
+          }
+        },
+        "label": "Permissions",
+        "noneLeft": "Leave at least one permission: to take all access away use “Withdraw access”.",
+        "save": "Save the permissions",
+        "stays": {
+          "request": {
+            "description": "Requests follow the rules of the agency.",
+            "label": "Ask for and cancel stays"
+          }
+        }
+      },
+      "revoke": {
+        "button": "Withdraw access",
+        "confirm": "Withdraw access",
+        "consequenceNow": "It applies from its next request.",
+        "consequenceRecord": "A record of the invitation and of its access remains.",
+        "description": "This person will no longer be able to enter your portal.",
+        "keep": "Leave it as it is",
+        "title": "Withdraw the access of {{name}}?"
+      },
+      "status": {
+        "active": {
+          "description": "It has access with the permissions below.",
+          "title": "Active"
+        },
+        "expired": {
+          "description": "The invitation expired on {{date}}: it has no access. You can invite it again, or revoke it: until you do, it counts towards the most contacts.",
+          "title": "Invitation expired"
+        },
+        "invited": {
+          "description": "It has not accepted yet: until it accepts, by {{date}}, it has no access at all.",
+          "title": "Invitation sent"
+        },
+        "revoked": {
+          "description": "Access withdrawn on {{date}}: it no longer has any access.",
+          "title": "Withdrawn"
+        }
+      },
+      "title": "Contacts"
+    },
+    "dashboard": {
+      "bookings": "Bookings",
+      "description": "Your properties and what you can do with your agency: calendar, accounting, documents and messages.",
+      "error": "The properties could not be loaded",
+      "noProperties": "There are no properties available",
+      "numbersUnavailable": {
+        "description": "Occupancy, revenue and the trend over time are not shown in the portal yet: here you only find your properties and their bookings. For the numbers, ask the agency in the messages.",
+        "title": "The numbers of your properties are not available yet"
+      },
       "recentBookings": "Recent bookings",
-      "error": "Loading error",
-      "errorMessage": "Unable to load portal data. Please try again later."
+      "title": "Owner Portal",
+      "yourProperties": "Your properties"
+    },
+    "documents": {
+      "ask": "Write to the agency",
+      "description": "The documents your agency shares with you: mandate, contracts, insurance, statements and invoices. Each one has its version in force, its dates and its expiry.",
+      "download": "Download",
+      "downloadAria": "Download {{title}}, version {{number}}",
+      "downloadFailed": "The file could not be downloaded. Try again.",
+      "effectiveFrom": "In force from {{date}}",
+      "empty": "The agency has not shared any document with you yet.",
+      "error": "The documents could not be loaded",
+      "expiresOn": "Expires on {{date}}",
+      "expiry": {
+        "expired": "Expired on {{date}}",
+        "expiring": "Expiring on {{date}}",
+        "valid": "Valid until {{date}}"
+      },
+      "expiryNoDate": {
+        "expired": "Expired",
+        "expiring": "Expiring",
+        "valid": "Valid"
+      },
+      "loading": "Loading the documents",
+      "noVersion": "This document has no file yet.",
+      "olderVersions_one": "{{count}} earlier version",
+      "olderVersions_other": "{{count}} earlier versions",
+      "title": "Documents",
+      "type": {
+        "Contract": "Contract",
+        "Insurance": "Insurance",
+        "Invoice": "Invoice",
+        "Mandate": "Mandate",
+        "Other": "Other document",
+        "Statement": "Statement"
+      },
+      "version": "Version {{number}}",
+      "versionState": {
+        "current": "In force",
+        "expired": "Expired",
+        "superseded": "Superseded",
+        "upcoming": "Not in force yet"
+      }
+    },
+    "inbox": {
+      "description": "Write to the agency and find your conversations about a property, a stay, a document or a statement. Notification e-mails never contain the text of the messages.",
+      "empty": "There are no conversations with the agency yet.",
+      "error": "The conversations could not be loaded",
+      "lastMessage": "last message {{when}}",
+      "listTitle": "Your conversations",
+      "loading": "Loading the messages",
+      "new": {
+        "agencyNeeded": "Your profile is linked to more than one agency, and a general question does not say which one to write to. Choose a property, a stay, a document or a statement: the conversation goes to the agency of that item.",
+        "body": "Your message",
+        "cancel": "Cancel",
+        "choose": "Choose…",
+        "document": "Document",
+        "failed": "The message could not be sent. Try again.",
+        "open": "New conversation",
+        "privacyNote": "Write only what is needed here. Do not enter card or bank account details.",
+        "property": "Property",
+        "referenceRequired": "Choose what the conversation is about.",
+        "send": "Send the message",
+        "sending": "Sending",
+        "statement": "Statement",
+        "statementOption": "Statement {{month}}/{{year}}, version {{version}}",
+        "stay": "Stay",
+        "subject": "Subject",
+        "title": "New conversation with the agency",
+        "topic": "What it is about",
+        "topics": {
+          "document": "A document",
+          "general": "A general question",
+          "ownerStay": "A stay",
+          "property": "A property",
+          "statementVersion": "A statement"
+        },
+        "wordsRequired": "Write the subject and the message."
+      },
+      "preferences": {
+        "description": "The e-mail only says there is a message and links back here: it never contains the words of the message.",
+        "label": "Get an e-mail when the agency writes to you",
+        "readFailed": "Your e-mail preference could not be read.",
+        "saveFailed": "The preference could not be saved. Try again."
+      },
+      "thread": {
+        "agency": "Agency",
+        "attach": "Attach a file",
+        "attachHint": "PDF, JPEG or PNG, up to 10 MB. The file is checked before it is stored.",
+        "attachment": {
+          "empty": "The file is empty.",
+          "size": "The file is too large: 10 MB at most.",
+          "type": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image."
+        },
+        "attachmentFallbackName": "attachment",
+        "back": "All conversations",
+        "body": "Your message",
+        "bodyRequired": "Write the message.",
+        "downloadAria": "Download the attachment {{name}}",
+        "empty": "This conversation has no messages yet.",
+        "error": "The messages could not be loaded",
+        "messagesLabel": "Messages of the conversation",
+        "refresh": "Refresh",
+        "remove": "Remove",
+        "removeFile": "Remove the file {{name}}",
+        "replyTitle": "Reply",
+        "send": "Send",
+        "sendFailed": "The message could not be sent. Try again.",
+        "sending": "Sending",
+        "title": "Conversation"
+      },
+      "title": "Messages",
+      "topic": {
+        "Document": "Document",
+        "General": "General",
+        "OwnerStay": "Stay",
+        "Property": "Property",
+        "StatementVersion": "Statement"
+      }
     },
     "properties": {
-      "title": "Property details",
-      "totalRevenue": "Total revenue",
-      "totalBookings": "Total bookings",
-      "occupancyRate": "Occupancy rate",
-      "recentBookings": "Recent bookings",
-      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and amounts visible)",
-      "noBookings": "No recent bookings",
+      "backToDashboard": "Back to the overview",
       "channel": "Channel",
+      "error": "The details of the property could not be loaded",
+      "noBookings": "No recent bookings",
       "notFound": "Property not found",
-      "notFoundMessage": "The requested property is not available or you do not have permission to view it.",
-      "backToDashboard": "Back to dashboard",
-      "error": "Loading error",
-      "errorMessage": "Unable to load property details. Please try again later."
+      "openCalendar": "Calendar and stays",
+      "recentBookings": "Recent bookings",
+      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
+      "summaryTitle": "Summary of the property",
+      "totalBookings": "Total bookings",
+      "writeToAgency": "Write to the agency"
     },
-    "statements": {
-      "title": "Statements",
-      "description": "View your published monthly statements.",
-      "noStatements": "No statements available",
-      "monthYear": "{{month}} {{year}}",
-      "totalRevenue": "Total revenue",
-      "agencyCommission": "Agency commission",
-      "netAmount": "Net amount",
-      "publishedAt": "Published on {{date}}",
-      "error": "Loading error",
-      "errorMessage": "Unable to load statements. Please try again later."
+    "shell": {
+      "nav": {
+        "accounting": "Accounting",
+        "calendar": "Properties and calendar",
+        "contacts": "Contacts",
+        "documents": "Documents",
+        "home": "Overview",
+        "label": "Owner portal",
+        "messages": "Messages"
+      },
+      "pageTitle": "Owner portal - CasaZen",
+      "signOut": "Sign out",
+      "title": "Owner portal"
+    },
+    "states": {
+      "backHome": "Back to the overview",
+      "forbidden": {
+        "description": "Your access does not include this section. If you think this is a mistake, write to your agency.",
+        "title": "You cannot see this part of the portal"
+      },
+      "ownerOnly": {
+        "description": "Only the owner can manage the contacts who enter the portal. Your access does not change.",
+        "title": "This part is for the owner only"
+      },
+      "permission": {
+        "description": "The owner has not given you permission for this section. Ask them to change your permissions: the rest of the portal is still yours to use.",
+        "title": "You do not have permission to see this part"
+      },
+      "unavailable": {
+        "description": "It is not active yet, or what you are looking for does not exist. It does not mean there is nothing to see: try again later or write to your agency.",
+        "title": "This part of the portal is not available"
+      }
+    },
+    "stays": {
+      "ask": "Write to the agency about this stay",
+      "byContact": "Asked for by one of your contacts.",
+      "cancel": "Cancel the stay",
+      "cancelConfirm": {
+        "confirm": "Cancel the stay",
+        "consequence": "If it was already approved, its dates are made available again on the sales channels.",
+        "description": "The stay is cancelled and the dates become free again. You can ask for a new stay whenever you like.",
+        "keep": "Keep it",
+        "title": "Cancel this stay?"
+      },
+      "cancelFailed": "The stay could not be cancelled. Try again.",
+      "empty": "You have not asked for any stay yet.",
+      "endDate": "Departure",
+      "error": "Your stays could not be loaded",
+      "errors": {
+        "allowanceExceeded": "With this stay you would pass the {{nights}} nights you have available in {{year}}.",
+        "beyondWindow": "The arrival is too far ahead: it cannot be more than {{days}} days from today.",
+        "datesRequired": "Choose the arrival day and the departure day.",
+        "endBeforeStart": "The departure must be after the arrival.",
+        "generic": "The request could not be sent. Try again.",
+        "noticeTooShort": "The arrival is too close: at least {{days}} days of notice are needed.",
+        "startInPast": "The arrival cannot be a day that has already passed.",
+        "tooLong": "The stay is too long: {{nights}} nights at most.",
+        "tooShort": "The stay is too short: at least {{nights}} nights are needed."
+      },
+      "listTitle": "Your stays",
+      "requestSent": "Request sent. It is not a confirmed stay yet: the dates are not blocked until it is approved and the sales channels have recorded it.",
+      "requestTitle": "New stay request",
+      "rule": {
+        "activePeriod": "Valid from {{from}} to {{to}}.",
+        "allowance_one": "Up to {{count}} night in {{year}}: you already hold {{used}}, {{left}} left.",
+        "allowance_other": "Up to {{count}} nights in {{year}}: you already hold {{used}}, {{left}} left.",
+        "approvalAutomatic": "If it follows the rules the request is approved automatically, but the stay is confirmed only once the dates have been blocked on the sales channels.",
+        "approvalRequired": "Every request is approved by the agency. Until it is approved it does not block the dates.",
+        "blackout": "Not available from {{from}} to {{to}}.",
+        "maxAdvance_one": "The arrival cannot be more than {{count}} day from today.",
+        "maxAdvance_other": "The arrival cannot be more than {{count}} days from today.",
+        "minAdvance_one": "At least {{count}} day of notice.",
+        "minAdvance_other": "At least {{count}} days of notice.",
+        "nightsAtLeast_one": "At least {{count}} night.",
+        "nightsAtLeast_other": "At least {{count}} nights.",
+        "nightsBetween": "From {{min}} to {{max}} nights.",
+        "noNotice": "No minimum notice.",
+        "title": "The rules for this property"
+      },
+      "ruleError": "The stay rules could not be loaded",
+      "sectionTitle": "Ask for a stay",
+      "startDate": "Arrival",
+      "state": {
+        "approved_syncing": {
+          "description": "Approved, but the dates are still being blocked on the sales channels: it is not confirmed yet.",
+          "title": "Approved, dates being blocked"
+        },
+        "cancelled": {
+          "description": "The stay was cancelled: the dates are no longer yours.",
+          "title": "Cancelled"
+        },
+        "confirmed": {
+          "description": "The dates are blocked: the stay is confirmed.",
+          "title": "Confirmed"
+        },
+        "rejected": {
+          "description": "The agency declined the request: the dates were not blocked.",
+          "title": "Declined"
+        },
+        "requested": {
+          "description": "Waiting for approval. The dates are not blocked yet.",
+          "title": "Request sent"
+        },
+        "sync_failed": {
+          "description": "Approved, but blocking the dates did not succeed: the agency is putting it right. It is not confirmed.",
+          "title": "Approved, blocking failed"
+        }
+      },
+      "submit": "Send the request",
+      "submitting": "Sending"
     }
   },
   "ownerProfile": {

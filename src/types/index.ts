@@ -37,6 +37,7 @@ export * from './review.types';
 export * from './guest-message.types';
 export * from './guest-cancellation.types';
 export * from './owner-portal.types';
+export * from './owner-portal-operations.types';
 export * from './report.types';
 export * from './verification.types';
 export * from './statement.types';

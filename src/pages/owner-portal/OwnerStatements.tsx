@@ -1,138 +1,173 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ExternalLink, MessageSquare } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ErrorState } from '@/components/shared/error-state';
-import { SkeletonCard } from '@/components/ui/skeleton';
-import { useOwnerStatements } from '@/queries/ownerPortal';
-import { formatCurrency } from '@/lib/utils';
+import { DocumentsList } from '@/features/owner-portal/documents-list';
+import { currentData, isAccountingDocument, safeExternalUrl, visibleStatements } from '@/features/owner-portal/owner-portal-model';
+import { PortalLoading, PortalPageHeading, PortalReadProblem, StatusPill, TOUCH } from '@/features/owner-portal/portal-parts';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
+import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
+import { useOwnerDocuments, useOwnerExternalDocuments } from '@/queries/ownerPortal';
+import type { OwnerPortalExternalDocument, OwnerStatementReference } from '@/types';
+
+const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+
+/** «Novembre 2026» in the language of the person: never a month name written in one language into a page of another. */
+function periodLabel(year: number, month: number, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
+function StatementCard({ statement }: { statement: OwnerStatementReference }) {
+  const { t, i18n } = useTranslation();
+  const superseded = statement.status === 'Superseded';
+  return (
+    <li className="min-w-0 rounded-md border bg-card p-4" data-testid="owner-statement" data-status={statement.status}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="break-words text-base font-semibold">{t('ownerPortal.accounting.statementTitle', { period: periodLabel(statement.periodYear, statement.periodMonth, i18n.language) })}</h3>
+          <p className="text-sm text-muted-foreground">
+            {t('ownerPortal.accounting.version', { number: statement.versionNumber })} ·{' '}
+            {t('ownerPortal.accounting.publishedOn', { date: formatStayDate(romeDateOf(statement.publishedAt), i18n.language, DATE) })}
+          </p>
+        </div>
+        <StatusPill tone={superseded ? 'neutral' : 'success'}>{superseded ? t('ownerPortal.accounting.status.superseded') : t('ownerPortal.accounting.status.published')}</StatusPill>
+      </div>
+      {superseded ? <p className="mt-2 text-sm text-muted-foreground">{t('ownerPortal.accounting.supersededNote')}</p> : null}
+      <div className="mt-3">
+        <Button asChild variant="outline" className={TOUCH}>
+          <Link to={`${ownerPortalPaths.messages}?topic=statementVersion&statementVersionId=${encodeURIComponent(statement.statementVersionId)}`}>
+            <MessageSquare aria-hidden="true" className="h-4 w-4" />
+            {t('ownerPortal.accounting.ask')}
+          </Link>
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+function InvoiceCard({ invoice, statements }: { invoice: OwnerPortalExternalDocument; statements: readonly OwnerStatementReference[] }) {
+  const { t, i18n } = useTranslation();
+  const url = safeExternalUrl(invoice.documentUrl);
+  const statement = statements.find((item) => item.statementVersionId === invoice.statementVersionId);
+  return (
+    <li className="min-w-0 rounded-md border bg-card p-4" data-testid="owner-invoice">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="break-words text-base font-semibold">
+            {t('ownerPortal.accounting.invoiceTitle', { number: invoice.externalNumber, date: formatStayDate(invoice.externalDate, i18n.language, DATE) })}
+          </h3>
+          {statement ? (
+            <p className="text-sm text-muted-foreground">
+              {t('ownerPortal.accounting.invoiceOf', { period: periodLabel(statement.periodYear, statement.periodMonth, i18n.language) })}
+            </p>
+          ) : null}
+        </div>
+        <StatusPill tone="neutral">{t(`ownerPortal.accounting.invoiceStatus.${invoice.status}`)}</StatusPill>
+      </div>
+      <div className="mt-3">
+        {url ? (
+          <Button asChild variant="outline" className={TOUCH}>
+            <a href={url} target="_blank" rel="noopener noreferrer" data-testid="owner-invoice-link">
+              <ExternalLink aria-hidden="true" className="h-4 w-4" />
+              {t('ownerPortal.accounting.openInvoice')}
+              <span className="sr-only"> {t('ownerPortal.accounting.opensNewTab')}</span>
+            </a>
+          </Button>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.noInvoiceLink')}</p>
+        )}
+      </div>
+    </li>
+  );
+}
 
 /**
- * Owner portal statements (ADR-011-R2): the published statements of the owner.
- * Only published statements are visible (AC-NF16-3). The portal has no download of a statement: the backend serves none to the owner
- * (`api/owner-portal/statements` is the list only), so the page offers none instead of a button that answers 404.
+ * The accounting of the owner (E07/F07/US01/T03, E06): the statement versions the agency PUBLISHED (and the ones a newer version superseded: nothing that is a draft, flagged
+ * or only approved is ever drawn, whatever an answer carries), the links of the invoices the agency issued in its own system, and the accounting documents it shares. The portal has no
+ * amount, no payout state and no evidence of a payment or of a submission for the owner, so the page says none of them: no «paid», no «sent», no «accepted» appears here. The
+ * page says so in words, and sends the owner to the inbox for what it asks.
  */
 export function OwnerStatements() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data: statements, isLoading, error } = useOwnerStatements();
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-6xl p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-[#1f3a3d]">{t('ownerPortal.statements.title')}</h1>
-        <div className="space-y-4">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto max-w-6xl p-6">
-        <ErrorState
-          title={t('ownerPortal.statements.error')}
-          error={error}
-        />
-      </div>
-    );
-  }
-
-  const groupedByYear = statements?.reduce((acc, statement) => {
-    const year = statement.year;
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(statement);
-    return acc;
-  }, {} as Record<number, typeof statements>) ?? {};
-
-  const years = Object.keys(groupedByYear)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const documents = useOwnerDocuments();
+  const invoices = useOwnerExternalDocuments();
+  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice (the documents, the statements the invoices are named after).
+  const answer = currentData(documents);
+  const statements = answer ? visibleStatements(answer.statements) : [];
 
   return (
-    <div className="container mx-auto max-w-6xl p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/portale-proprietari')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-3xl font-bold text-[#1f3a3d]">{t('ownerPortal.statements.title')}</h1>
-      </div>
+    <div className="space-y-8">
+      <PortalPageHeading title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
+      <Alert variant="info" data-testid="owner-accounting-note">
+        {t('ownerPortal.accounting.noPaymentNote')}
+      </Alert>
 
-      <p className="text-muted-foreground">{t('ownerPortal.statements.description')}</p>
+      <section aria-labelledby="owner-statements-title" className="space-y-3">
+        <h2 id="owner-statements-title" className="text-xl font-semibold text-[#1f3a3d]">
+          {t('ownerPortal.accounting.statementsTitle')}
+        </h2>
+        {documents.isLoading ? (
+          <PortalLoading label={t('ownerPortal.accounting.loading')} />
+        ) : documents.isError ? (
+          <PortalReadProblem
+            error={documents.error}
+            failedTitle={t('ownerPortal.accounting.error')}
+            onRetry={() => void documents.refetch()}
+            testId="owner-accounting-error"
+          />
+        ) : statements.length === 0 ? (
+          <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid="owner-statements-empty">
+            {t('ownerPortal.accounting.noStatements')}
+          </p>
+        ) : (
+          <ul className="space-y-3" data-testid="owner-statements">
+            {statements.map((statement) => (
+              <StatementCard key={statement.statementVersionId} statement={statement} />
+            ))}
+          </ul>
+        )}
+      </section>
 
-      {!statements || statements.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">{t('ownerPortal.statements.noStatements')}</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-8">
-          {years.map((year) => (
-            <div key={year} className="space-y-4">
-              <h2 className="text-2xl font-semibold text-[#1f3a3d]">{year}</h2>
-              <div className="grid gap-4">
-                {groupedByYear[year]
-                  ?.sort((a, b) => b.month - a.month)
-                  .map((statement) => (
-                    <Card key={statement.statementId}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-[#1f3a3d]" />
-                            <span>
-                              {t('ownerPortal.statements.monthYear', {
-                                month: new Date(statement.year, statement.month - 1).toLocaleDateString('it-IT', {
-                                  month: 'long',
-                                }),
-                                year: statement.year,
-                              })}
-                            </span>
-                          </div>
-                        </CardTitle>
-                        <CardDescription>{statement.propertyName}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <dl className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <dt className="text-muted-foreground">{t('ownerPortal.statements.totalRevenue')}</dt>
-                            <dd className="font-semibold text-lg">{formatCurrency(statement.totalRevenue, 'EUR')}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-muted-foreground">{t('ownerPortal.statements.agencyCommission')}</dt>
-                            <dd className="font-semibold text-lg">{formatCurrency(statement.agencyCommission, 'EUR')}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-muted-foreground">{t('ownerPortal.statements.netAmount')}</dt>
-                            <dd className="font-semibold text-lg text-green-700">{formatCurrency(statement.netAmount, 'EUR')}</dd>
-                          </div>
-                        </dl>
-                        <p className="text-xs text-muted-foreground mt-4">
-                          {t('ownerPortal.statements.publishedAt', {
-                            date: new Date(statement.publishedAt).toLocaleDateString('it-IT', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                            }),
-                          })}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <section aria-labelledby="owner-invoices-title" className="space-y-3">
+        <h2 id="owner-invoices-title" className="text-xl font-semibold text-[#1f3a3d]">
+          {t('ownerPortal.accounting.invoicesTitle')}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.invoicesNote')}</p>
+        {invoices.isLoading ? (
+          <PortalLoading label={t('ownerPortal.accounting.loading')} />
+        ) : invoices.isError ? (
+          <PortalReadProblem
+            error={invoices.error}
+            failedTitle={t('ownerPortal.accounting.invoicesError')}
+            onRetry={() => void invoices.refetch()}
+            testId="owner-invoices-error"
+          />
+        ) : invoices.data && invoices.data.length > 0 ? (
+          <ul className="space-y-3" data-testid="owner-invoices">
+            {invoices.data.map((invoice) => (
+              <InvoiceCard key={invoice.id} invoice={invoice} statements={statements} />
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid="owner-invoices-empty">
+            {t('ownerPortal.accounting.noInvoices')}
+          </p>
+        )}
+      </section>
+
+      {answer ? (
+        <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
+          <h2 id="owner-accounting-documents-title" className="text-xl font-semibold text-[#1f3a3d]">
+            {t('ownerPortal.accounting.documentsTitle')}
+          </h2>
+          <DocumentsList
+            documents={answer.documents.filter(isAccountingDocument)}
+            emptyText={t('ownerPortal.accounting.noDocuments')}
+            testId="owner-accounting-documents"
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

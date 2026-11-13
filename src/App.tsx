@@ -18,6 +18,7 @@ import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-o
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { recordLandingTouch } from '@/lib/signup-attribution';
 import { stashOwnerInvitationToken } from '@/lib/owner-invitation';
+import { stashOwnerContactToken } from '@/lib/owner-contact-invitation';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { getRouter } from '@/routes';
@@ -71,7 +72,7 @@ function AppShell() {
  * `history.replaceState` would not re-render the route), otherwise only drop `code`/`state` from the
  * URL as the SDK does by default.
  */
-function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unknown; ownerInvitation?: unknown }) {
+function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unknown; ownerInvitation?: unknown; ownerContactInvitation?: unknown }) {
   // Supplier registered without an account (SU-02): keep the claim for `/register/claim`, even when it could not be
   // stored before the redirect.
   const supplierClaim = parsePendingSupplierClaim(appState?.supplierClaim);
@@ -80,6 +81,8 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
   // Property owner who came from the link of an invitation (NF-109): the secret travelled in the `appState` of the login, and waits in memory (no
   // storage) for `/portale-proprietari/invito`, which sends it once.
   stashOwnerInvitationToken(appState?.ownerInvitation);
+  // The same for a CONTACT an owner invited (NF-111): its secret waits in memory for `/portale-proprietari/contatto`, which sends it once.
+  stashOwnerContactToken(appState?.ownerContactInvitation);
 
   const returnTo = safeReturnTo(appState?.returnTo);
   if (returnTo) {

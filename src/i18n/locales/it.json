@@ -1473,6 +1473,42 @@
       "ownerStatementNotApproved": "Il rendiconto deve prima essere approvato.",
       "ownerStatementNotDraft": "Questa versione non è più una bozza.",
       "ownerStatementUnchanged": "Dopo l'ultima versione non è cambiato niente: non serve una nuova versione.",
+      "ownerAttachmentNotFound": "Questo allegato non è disponibile.",
+      "ownerCalendarRangeInvalid": "Il periodo scelto non è valido.",
+      "ownerContactAgencyRequired": "Il tuo profilo è collegato a più agenzie: per invitare un contatto scrivi all’agenzia interessata.",
+      "ownerContactDailyLimitReached": "Hai fatto troppi inviti oggi. Riprova domani.",
+      "ownerContactEmailNotQueued": "Non siamo riusciti a inviare l’e-mail di invito: l’invito è stato annullato. Riprova.",
+      "ownerContactExists": "Questa persona è già tra i tuoi contatti.",
+      "ownerContactInvalid": "Controlla il nome e l’indirizzo e-mail del contatto.",
+      "ownerContactLimitReached": "Hai raggiunto il numero massimo di contatti.",
+      "ownerContactNotFound": "Questo contatto non esiste.",
+      "ownerContactOwnerOnly": "Solo il proprietario può gestire i contatti.",
+      "ownerContactRevoked": "L’accesso di questo contatto è già stato revocato.",
+      "ownerConversationInvalid": "Controlla l’oggetto e a cosa si riferisce la conversazione.",
+      "ownerConversationNotFound": "Questa conversazione non è disponibile.",
+      "ownerConversationReferenceNotFound": "Ciò a cui si riferisce la conversazione non è tra i tuoi elementi.",
+      "ownerDocumentNotFound": "Questo documento non è disponibile.",
+      "ownerFileActiveContent": "Il file non può essere accettato perché è protetto da password o contiene parti che non possiamo controllare. Esportalo di nuovo come PDF semplice.",
+      "ownerFileMissing": "Scegli un file.",
+      "ownerFileTooLarge": "Il file è troppo grande: al massimo 10 MB.",
+      "ownerFileTypeNotAllowed": "Questo tipo di file non è accettato: scegli un PDF, un’immagine JPEG o PNG.",
+      "ownerMessageInvalid": "Scrivi il messaggio prima di inviarlo.",
+      "ownerPortalPermissionMissing": "Il proprietario non ti ha dato il permesso per questa operazione.",
+      "ownerPortalPermissionUnknown": "Uno dei permessi scelti non esiste.",
+      "ownerPortalPermissionsEmpty": "Scegli almeno un permesso: nessun permesso non significa «tutti».",
+      "ownerPortalPropertyNotFound": "Questo immobile non è tra i tuoi.",
+      "ownerStayAllowanceExceeded": "Con questo soggiorno supereresti le notti che hai a disposizione in questo anno.",
+      "ownerStayBeyondWindow": "L’arrivo è più lontano di quanto le regole consentono.",
+      "ownerStayBlackout": "Una delle notti cade in date chiuse ai soggiorni dei proprietari.",
+      "ownerStayDatesUnavailable": "Una o più notti non sono più libere. Scegli altre date.",
+      "ownerStayInPast": "L’arrivo non può essere un giorno già passato.",
+      "ownerStayInvalidRange": "La partenza deve essere dopo l’arrivo.",
+      "ownerStayNotCancellable": "Questo soggiorno non si può più annullare.",
+      "ownerStayNotFound": "Questo soggiorno non esiste.",
+      "ownerStayNoticeTooShort": "L’arrivo è più vicino del preavviso richiesto dalle regole.",
+      "ownerStayOutsidePeriod": "Una delle notti è fuori dal periodo in cui le regole consentono i soggiorni dei proprietari.",
+      "ownerStayTooLong": "Il soggiorno è più lungo di quanto consentito dalle regole.",
+      "ownerStayTooShort": "Il soggiorno è più breve di quanto consentito dalle regole.",
       "panelStepAssistOpen": "Se ne sta occupando il supporto di CasaZen: non serve confermare.",
       "panelStepCallbackUnsupported": "Questo passaggio non prevede il ritorno automatico dal pannello.",
       "panelStepChannelInvalid": "Il canale di questo passaggio non è valido.",
@@ -16123,6 +16159,68 @@
       }
     }
   },
+  "ownerContactInvitation": {
+    "accepting": "Stiamo attivando il tuo accesso",
+    "claimsPending": {
+      "description": "Abbiamo registrato il tuo invito, ma il tuo accesso richiede ancora qualche istante. Riprova tra poco: se non si attiva, scrivi all’assistenza.",
+      "title": "Il tuo accesso al portale non è ancora attivo"
+    },
+    "emailMismatch": {
+      "action": "Accedi con un altro account",
+      "description": "Hai effettuato l’accesso con un indirizzo diverso da quello a cui è stato inviato l’invito. Accedi con l’indirizzo giusto: l’invito resta valido e lo attivi da qui.",
+      "title": "Questo invito è per un altro indirizzo e-mail"
+    },
+    "emailNotVerified": {
+      "description": "Ti abbiamo scritto un messaggio per confermare l’indirizzo. Aprilo, poi torna qui e riprova.",
+      "login": "Accedi di nuovo",
+      "title": "Conferma prima il tuo indirizzo e-mail"
+    },
+    "failure": {
+      "other": "Non è stato possibile accettare l’invito. Se il problema continua, scrivi all’assistenza.",
+      "retry": "Non abbiamo ricevuto risposta dal servizio. Riprova tra poco.",
+      "title": "Non siamo riusciti ad attivare il tuo accesso"
+    },
+    "invite": {
+      "description": "Accedi per entrare nel portale proprietari di CasaZen con i permessi che il proprietario ti ha dato.",
+      "login": "Ho già un account",
+      "sameEmail": "Usa lo stesso indirizzo e-mail a cui è arrivato l’invito: è l’unico con cui puoi accettarlo.",
+      "signup": "Crea il tuo account",
+      "title": "Sei stato invitato nel portale di un proprietario"
+    },
+    "loading": "Un momento",
+    "notFound": {
+      "description": "Il portale proprietari non è ancora attivo. Riprova più tardi o chiedi a chi ti ha invitato.",
+      "title": "Pagina non disponibile"
+    },
+    "openPortal": "Apri il portale",
+    "opening": "Ti portiamo al portale",
+    "pageTitle": "Invito al portale proprietari",
+    "retry": "Riprova",
+    "support": "Scrivi all’assistenza",
+    "tokenPending": {
+      "description": "Il tuo invito è stato accettato, ma non siamo riusciti a rinnovare il tuo accesso. Riprova: se continua, esci e accedi di nuovo.",
+      "title": "Non siamo riusciti ad aprire il portale"
+    },
+    "unusable": {
+      "expired": {
+        "description": "Il link non è più valido. Chiedi al proprietario di inviarti un nuovo invito.",
+        "title": "Questo invito è scaduto"
+      },
+      "goToPortal": "Vai al portale proprietari",
+      "invalid": {
+        "description": "Il link non è valido o è incompleto. Apri di nuovo il link che hai ricevuto per e-mail, oppure chiedi al proprietario di inviartene uno nuovo.",
+        "title": "Questo invito non funziona"
+      },
+      "revoked": {
+        "description": "Il proprietario ha ritirato questo invito. Se pensi sia un errore, chiedigli di inviartene uno nuovo.",
+        "title": "Questo invito è stato ritirato"
+      },
+      "used": {
+        "description": "Il link è già stato usato da un account. Se sei tu, apri il portale e accedi; altrimenti chiedi al proprietario un nuovo invito.",
+        "title": "Questo invito è già stato usato"
+      }
+    }
+  },
   "ownerInvitation": {
     "accepting": "Stiamo attivando il tuo accesso",
     "claimsPending": {
@@ -16532,53 +16630,413 @@
     "updateFailed": "Non riusciamo ad aggiornare lo stato dei proprietari: quello che vedi è l'ultimo letto e potrebbe non essere aggiornato. Quello che stai compilando resta qui."
   },
   "ownerPortal": {
-    "dashboard": {
-      "title": "Portale Proprietari",
-      "viewStatements": "Visualizza rendiconti",
-      "yourProperties": "I tuoi immobili",
-      "noProperties": "Non ci sono immobili disponibili",
-      "revenue": "Ricavi",
-      "bookings": "Prenotazioni",
-      "occupancy": "Occupazione",
-      "adr": "ADR",
-      "revPar": "RevPAR",
+    "accounting": {
+      "ask": "Chiedi informazioni su questo rendiconto",
+      "description": "I rendiconti che l’agenzia ha pubblicato, le fatture collegate e i documenti contabili condivisi con te.",
+      "documentsTitle": "Documenti contabili",
+      "error": "Impossibile caricare i rendiconti",
+      "invoiceOf": "Collegata al rendiconto di {{period}}",
+      "invoiceStatus": {
+        "Entered": "Collegamento registrato",
+        "Verified": "Collegamento verificato"
+      },
+      "invoiceTitle": "Fattura n. {{number}} del {{date}}",
+      "invoicesError": "Impossibile caricare le fatture collegate",
+      "invoicesNote": "Sono fatture emesse dall’agenzia nel suo sistema: qui trovi il collegamento che l’agenzia ha registrato. CasaZen non emette fatture.",
+      "invoicesTitle": "Fatture collegate",
+      "loading": "Caricamento della contabilità",
+      "noDocuments": "L’agenzia non ha condiviso documenti contabili con te.",
+      "noInvoiceLink": "Il collegamento a questa fattura non è disponibile.",
+      "noInvoices": "Non ci sono fatture collegate ai tuoi rendiconti.",
+      "noPaymentNote": "Qui vedi solo i rendiconti pubblicati. Gli importi e lo stato dei pagamenti non sono ancora mostrati nel portale: per il dettaglio chiedi all’agenzia nei messaggi.",
+      "noStatements": "L’agenzia non ha ancora pubblicato rendiconti per te.",
+      "openInvoice": "Apri la fattura",
+      "opensNewTab": "(si apre in una nuova scheda)",
+      "publishedOn": "pubblicato il {{date}}",
+      "statementTitle": "Rendiconto di {{period}}",
+      "statementsTitle": "Rendiconti pubblicati",
+      "status": {
+        "published": "Pubblicato",
+        "superseded": "Sostituito"
+      },
+      "supersededNote": "Una versione più recente di questo rendiconto ha preso il suo posto: questa resta qui come traccia.",
+      "title": "Contabilità",
+      "version": "Versione {{number}}"
+    },
+    "calendar": {
+      "description": "Vedi le notti libere, occupate e bloccate dei tuoi immobili e chiedi i tuoi soggiorni. Per la privacy degli ospiti vedi solo le date.",
+      "empty": "Nessuna data di questo periodo rientra nel tuo periodo di proprietà: non c’è nulla da mostrare.",
+      "error": "Impossibile caricare il calendario",
+      "kinds": {
+        "available": "Libero",
+        "blocked": "Bloccato",
+        "occupied": "Occupato",
+        "ownerStay": "Soggiorno proprietario"
+      },
+      "loading": "Caricamento del calendario",
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noProperties": "Non ci sono immobili di cui puoi vedere il calendario.",
       "period": "Periodo",
-      "tilesLabel": "I numeri dei tuoi immobili",
-      "previousYear": "Confronto con gli stessi giorni dell'anno scorso: dal {{from}} al {{to}}.",
-      "share": "Ricavi per competenza, sulla tua quota di ogni immobile: le notti dei soggiorni confermati, alloggio e pulizie, tassa di soggiorno esclusa.",
-      "trendTitle": "Andamento nel tempo",
-      "overviewError": "Impossibile caricare i numeri del periodo.",
-      "trendError": "Impossibile caricare l'andamento.",
+      "periods": {
+        "sixMonths": "Prossimi 6 mesi",
+        "threeMonths": "Prossimi 3 mesi",
+        "twelveMonths": "Prossimi 12 mesi"
+      },
+      "privacyNote": "Per la privacy degli ospiti qui trovi solo le date e una parola: mai nomi, contatti o canali di vendita.",
+      "propertiesError": "Impossibile caricare i tuoi immobili",
+      "property": "Immobile",
+      "range": "Dal {{from}} al {{to}}",
+      "runsLabel": "Date di {{property}}",
+      "sectionTitle": "Calendario di {{property}}",
+      "summary": {
+        "available": "Notti libere",
+        "blocked": "Notti bloccate",
+        "occupied": "Notti occupate",
+        "ownerStay": "I tuoi soggiorni"
+      },
+      "summaryLabel": "Notti del periodo",
+      "title": "Immobili e calendario"
+    },
+    "contacts": {
+      "description": "Fai entrare nel portale un’altra persona con il suo account e solo i permessi che scegli tu. Ogni permesso è indipendente e puoi ritirarlo in qualsiasi momento: vale dalla richiesta successiva.",
+      "empty": "Non hai ancora invitato nessun contatto.",
+      "error": "Impossibile caricare i contatti",
+      "failed": "Non è stato possibile completare l’operazione. Riprova.",
+      "invite": {
+        "description": "Riceve un’e-mail con un link valido per 7 giorni. Per entrare deve usare lo stesso indirizzo e un suo account: non condividi mai il tuo.",
+        "detailsRequired": "Scrivi nome, cognome e un indirizzo e-mail valido.",
+        "email": "Indirizzo e-mail",
+        "failed": "Non è stato possibile inviare l’invito. Riprova.",
+        "firstName": "Nome",
+        "lastName": "Cognome",
+        "permissionRequired": "Scegli almeno un permesso: nessun permesso non significa «tutti».",
+        "permissions": "Cosa può fare",
+        "sending": "Invio in corso",
+        "sent": "Abbiamo scritto a {{email}}. Non ha ancora nessun accesso: lo avrà solo quando accetta l’invito.",
+        "sentTitle": "Invito inviato",
+        "submit": "Invia l’invito",
+        "title": "Invita un contatto"
+      },
+      "listTitle": "I tuoi contatti",
+      "loading": "Caricamento dei contatti",
+      "permissions": {
+        "accounting": {
+          "read": {
+            "description": "I rendiconti pubblicati e i documenti contabili.",
+            "label": "Vedere la contabilità"
+          }
+        },
+        "calendar": {
+          "read": {
+            "description": "Le date libere, occupate e bloccate, mai i dati degli ospiti.",
+            "label": "Vedere il calendario"
+          }
+        },
+        "documents": {
+          "read": {
+            "description": "I documenti che l’agenzia condivide con te.",
+            "label": "Vedere i documenti"
+          }
+        },
+        "inbox": {
+          "use": {
+            "description": "Leggere e scrivere nelle conversazioni.",
+            "label": "Usare i messaggi con l’agenzia"
+          }
+        },
+        "label": "Permessi",
+        "noneLeft": "Lascia almeno un permesso: per togliere tutto l’accesso usa «Revoca l’accesso».",
+        "save": "Salva i permessi",
+        "stays": {
+          "request": {
+            "description": "Le richieste seguono le regole dell’agenzia.",
+            "label": "Chiedere e annullare soggiorni"
+          }
+        }
+      },
+      "revoke": {
+        "button": "Revoca l’accesso",
+        "confirm": "Revoca l’accesso",
+        "consequenceNow": "Vale dalla sua prossima richiesta.",
+        "consequenceRecord": "Resta una traccia dell’invito e dei suoi accessi.",
+        "description": "Questa persona non potrà più entrare nel tuo portale.",
+        "keep": "Lascia com’è",
+        "title": "Revocare l’accesso di {{name}}?"
+      },
+      "status": {
+        "active": {
+          "description": "Ha accesso con i permessi qui sotto.",
+          "title": "Attivo"
+        },
+        "expired": {
+          "description": "L’invito è scaduto il {{date}}: non ha nessun accesso. Puoi invitarlo di nuovo, oppure revocarlo: finché non lo revochi conta nel numero massimo di contatti.",
+          "title": "Invito scaduto"
+        },
+        "invited": {
+          "description": "Non ha ancora accettato: finché non accetta, entro il {{date}}, non ha nessun accesso.",
+          "title": "Invito inviato"
+        },
+        "revoked": {
+          "description": "Accesso revocato il {{date}}: non ha più nessun accesso.",
+          "title": "Revocato"
+        }
+      },
+      "title": "Contatti"
+    },
+    "dashboard": {
+      "bookings": "Prenotazioni",
+      "description": "I tuoi immobili e le cose che puoi fare con l’agenzia: calendario, contabilità, documenti e messaggi.",
+      "error": "Impossibile caricare gli immobili",
+      "noProperties": "Non ci sono immobili disponibili",
+      "numbersUnavailable": {
+        "description": "Occupazione, ricavi e andamento nel tempo non sono ancora mostrati nel portale: qui trovi solo i tuoi immobili e le loro prenotazioni. Per i numeri chiedi all’agenzia nei messaggi.",
+        "title": "I numeri dei tuoi immobili non sono ancora disponibili"
+      },
       "recentBookings": "Prenotazioni recenti",
-      "error": "Errore nel caricamento",
-      "errorMessage": "Impossibile caricare i dati del portale. Riprova più tardi."
+      "title": "Portale Proprietari",
+      "yourProperties": "I tuoi immobili"
+    },
+    "documents": {
+      "ask": "Scrivi all’agenzia",
+      "description": "I documenti che l’agenzia condivide con te: mandato, contratti, assicurazioni, rendiconti e fatture. Ognuno ha la sua versione in vigore, le date e la scadenza.",
+      "download": "Scarica",
+      "downloadAria": "Scarica {{title}}, versione {{number}}",
+      "downloadFailed": "Non è stato possibile scaricare il file. Riprova.",
+      "effectiveFrom": "In vigore dal {{date}}",
+      "empty": "L’agenzia non ha ancora condiviso documenti con te.",
+      "error": "Impossibile caricare i documenti",
+      "expiresOn": "Scade il {{date}}",
+      "expiry": {
+        "expired": "Scaduto il {{date}}",
+        "expiring": "In scadenza il {{date}}",
+        "valid": "Valido fino al {{date}}"
+      },
+      "expiryNoDate": {
+        "expired": "Scaduto",
+        "expiring": "In scadenza",
+        "valid": "Valido"
+      },
+      "loading": "Caricamento dei documenti",
+      "noVersion": "Questo documento non ha ancora un file.",
+      "olderVersions_one": "{{count}} versione precedente",
+      "olderVersions_other": "{{count}} versioni precedenti",
+      "title": "Documenti",
+      "type": {
+        "Contract": "Contratto",
+        "Insurance": "Assicurazione",
+        "Invoice": "Fattura",
+        "Mandate": "Mandato",
+        "Other": "Altro documento",
+        "Statement": "Rendiconto"
+      },
+      "version": "Versione {{number}}",
+      "versionState": {
+        "current": "In vigore",
+        "expired": "Scaduta",
+        "superseded": "Sostituita",
+        "upcoming": "Non ancora in vigore"
+      }
+    },
+    "inbox": {
+      "description": "Scrivi all’agenzia e ritrova le conversazioni su un immobile, un soggiorno, un documento o un rendiconto. Le e-mail di avviso non contengono mai il testo dei messaggi.",
+      "empty": "Non ci sono ancora conversazioni con l’agenzia.",
+      "error": "Impossibile caricare le conversazioni",
+      "lastMessage": "ultimo messaggio {{when}}",
+      "listTitle": "Le tue conversazioni",
+      "loading": "Caricamento dei messaggi",
+      "new": {
+        "agencyNeeded": "Il tuo profilo è collegato a più agenzie e una domanda generale non dice a quale scrivere. Scegli un immobile, un soggiorno, un documento o un rendiconto: la conversazione va all’agenzia di quell’elemento.",
+        "body": "Il tuo messaggio",
+        "cancel": "Annulla",
+        "choose": "Scegli…",
+        "document": "Documento",
+        "failed": "Non è stato possibile inviare il messaggio. Riprova.",
+        "open": "Nuova conversazione",
+        "privacyNote": "Scrivi qui solo ciò che serve. Non inserire dati di carte o di conti bancari.",
+        "property": "Immobile",
+        "referenceRequired": "Scegli a cosa si riferisce la conversazione.",
+        "send": "Invia il messaggio",
+        "sending": "Invio in corso",
+        "statement": "Rendiconto",
+        "statementOption": "Rendiconto {{month}}/{{year}}, versione {{version}}",
+        "stay": "Soggiorno",
+        "subject": "Oggetto",
+        "title": "Nuova conversazione con l’agenzia",
+        "topic": "Di cosa vuoi parlare",
+        "topics": {
+          "document": "Un documento",
+          "general": "Una domanda generale",
+          "ownerStay": "Un soggiorno",
+          "property": "Un immobile",
+          "statementVersion": "Un rendiconto"
+        },
+        "wordsRequired": "Scrivi l’oggetto e il messaggio."
+      },
+      "preferences": {
+        "description": "L’e-mail dice solo che c’è un messaggio e rimanda qui: non contiene mai le parole del messaggio.",
+        "label": "Ricevi un’e-mail quando l’agenzia ti scrive",
+        "readFailed": "Non è stato possibile leggere la tua preferenza per le e-mail.",
+        "saveFailed": "Non è stato possibile salvare la preferenza. Riprova."
+      },
+      "thread": {
+        "agency": "Agenzia",
+        "attach": "Allega un file",
+        "attachHint": "PDF, JPEG o PNG, fino a 10 MB. Il file viene controllato prima di essere salvato.",
+        "attachment": {
+          "empty": "Il file è vuoto.",
+          "size": "Il file è troppo grande: al massimo 10 MB.",
+          "type": "Questo tipo di file non è accettato: scegli un PDF, un’immagine JPEG o PNG."
+        },
+        "attachmentFallbackName": "allegato",
+        "back": "Tutte le conversazioni",
+        "body": "Il tuo messaggio",
+        "bodyRequired": "Scrivi il messaggio.",
+        "downloadAria": "Scarica l’allegato {{name}}",
+        "empty": "Questa conversazione non ha ancora messaggi.",
+        "error": "Impossibile caricare i messaggi",
+        "messagesLabel": "Messaggi della conversazione",
+        "refresh": "Aggiorna",
+        "remove": "Togli",
+        "removeFile": "Togli il file {{name}}",
+        "replyTitle": "Rispondi",
+        "send": "Invia",
+        "sendFailed": "Non è stato possibile inviare il messaggio. Riprova.",
+        "sending": "Invio in corso",
+        "title": "Conversazione"
+      },
+      "title": "Messaggi",
+      "topic": {
+        "Document": "Documento",
+        "General": "Generale",
+        "OwnerStay": "Soggiorno",
+        "Property": "Immobile",
+        "StatementVersion": "Rendiconto"
+      }
     },
     "properties": {
-      "title": "Dettaglio immobile",
-      "totalRevenue": "Ricavi totali",
-      "totalBookings": "Prenotazioni totali",
-      "occupancyRate": "Tasso di occupazione",
-      "recentBookings": "Prenotazioni recenti",
-      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e importi visibili)",
-      "noBookings": "Nessuna prenotazione recente",
+      "backToDashboard": "Torna alla panoramica",
       "channel": "Canale",
+      "error": "Impossibile caricare i dettagli dell’immobile",
+      "noBookings": "Nessuna prenotazione recente",
       "notFound": "Immobile non trovato",
-      "notFoundMessage": "L’immobile richiesto non è disponibile o non hai i permessi per visualizzarlo.",
-      "backToDashboard": "Torna alla dashboard",
-      "error": "Errore nel caricamento",
-      "errorMessage": "Impossibile caricare i dettagli dell’immobile. Riprova più tardi."
+      "openCalendar": "Calendario e soggiorni",
+      "recentBookings": "Prenotazioni recenti",
+      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e stato visibili)",
+      "summaryTitle": "Riepilogo dell’immobile",
+      "totalBookings": "Prenotazioni totali",
+      "writeToAgency": "Scrivi all’agenzia"
     },
-    "statements": {
-      "title": "Rendiconti",
-      "description": "Consulta i rendiconti mensili pubblicati.",
-      "noStatements": "Nessun rendiconto disponibile",
-      "monthYear": "{{month}} {{year}}",
-      "totalRevenue": "Ricavi totali",
-      "agencyCommission": "Commissione agenzia",
-      "netAmount": "Importo netto",
-      "publishedAt": "Pubblicato il {{date}}",
-      "error": "Errore nel caricamento",
-      "errorMessage": "Impossibile caricare i rendiconti. Riprova più tardi."
+    "shell": {
+      "nav": {
+        "accounting": "Contabilità",
+        "calendar": "Immobili e calendario",
+        "contacts": "Contatti",
+        "documents": "Documenti",
+        "home": "Panoramica",
+        "label": "Portale proprietari",
+        "messages": "Messaggi"
+      },
+      "pageTitle": "Portale proprietari - CasaZen",
+      "signOut": "Esci",
+      "title": "Portale proprietari"
+    },
+    "states": {
+      "backHome": "Torna alla panoramica",
+      "forbidden": {
+        "description": "Il tuo accesso non comprende questa sezione. Se pensi sia un errore, scrivi all’agenzia.",
+        "title": "Non puoi vedere questa parte del portale"
+      },
+      "ownerOnly": {
+        "description": "Solo il proprietario può gestire i contatti che entrano nel portale. Il tuo accesso non cambia.",
+        "title": "Questa parte è solo per il proprietario"
+      },
+      "permission": {
+        "description": "Il proprietario non ti ha dato il permesso per questa sezione. Chiedigli di cambiare i tuoi permessi: il resto del portale resta a tua disposizione.",
+        "title": "Non hai il permesso di vedere questa parte"
+      },
+      "unavailable": {
+        "description": "Non è ancora attiva, oppure ciò che cerchi non esiste. Non significa che non ci sia nulla da vedere: riprova più tardi o scrivi all’agenzia.",
+        "title": "Questa parte del portale non è disponibile"
+      }
+    },
+    "stays": {
+      "ask": "Scrivi all’agenzia su questo soggiorno",
+      "byContact": "Richiesto da un tuo contatto.",
+      "cancel": "Annulla il soggiorno",
+      "cancelConfirm": {
+        "confirm": "Annulla il soggiorno",
+        "consequence": "Se era già approvato, le sue date vengono rimesse a disposizione sui canali di vendita.",
+        "description": "Il soggiorno viene annullato e le date tornano libere. Puoi chiedere un nuovo soggiorno quando vuoi.",
+        "keep": "Tienilo",
+        "title": "Annullare questo soggiorno?"
+      },
+      "cancelFailed": "Non è stato possibile annullare il soggiorno. Riprova.",
+      "empty": "Non hai ancora chiesto nessun soggiorno.",
+      "endDate": "Partenza",
+      "error": "Impossibile caricare i tuoi soggiorni",
+      "errors": {
+        "allowanceExceeded": "Con questo soggiorno supereresti le {{nights}} notti che hai a disposizione nel {{year}}.",
+        "beyondWindow": "L’arrivo è troppo lontano: non può essere oltre {{days}} giorni da oggi.",
+        "datesRequired": "Scegli il giorno di arrivo e quello di partenza.",
+        "endBeforeStart": "La partenza deve essere dopo l’arrivo.",
+        "generic": "Non è stato possibile inviare la richiesta. Riprova.",
+        "noticeTooShort": "L’arrivo è troppo vicino: servono almeno {{days}} giorni di preavviso.",
+        "startInPast": "L’arrivo non può essere un giorno già passato.",
+        "tooLong": "Il soggiorno è troppo lungo: al massimo {{nights}} notti.",
+        "tooShort": "Il soggiorno è troppo breve: servono almeno {{nights}} notti."
+      },
+      "listTitle": "I tuoi soggiorni",
+      "requestSent": "Richiesta inviata. Non è ancora un soggiorno confermato: le date non sono bloccate finché non viene approvata e i canali di vendita non l’hanno registrata.",
+      "requestTitle": "Nuova richiesta di soggiorno",
+      "rule": {
+        "activePeriod": "Valide dal {{from}} al {{to}}.",
+        "allowance_one": "Fino a {{count}} notte nel {{year}}: ne hai già {{used}}, ne restano {{left}}.",
+        "allowance_other": "Fino a {{count}} notti nel {{year}}: ne hai già {{used}}, ne restano {{left}}.",
+        "approvalAutomatic": "Se rispetta le regole la richiesta viene approvata in automatico, ma il soggiorno risulta confermato solo quando le date sono state bloccate sui canali di vendita.",
+        "approvalRequired": "Ogni richiesta viene approvata dall’agenzia. Finché non è approvata non blocca le date.",
+        "blackout": "Non disponibile dal {{from}} al {{to}}.",
+        "maxAdvance_one": "L’arrivo non può essere oltre {{count}} giorno da oggi.",
+        "maxAdvance_other": "L’arrivo non può essere oltre {{count}} giorni da oggi.",
+        "minAdvance_one": "Almeno {{count}} giorno di preavviso.",
+        "minAdvance_other": "Almeno {{count}} giorni di preavviso.",
+        "nightsAtLeast_one": "Almeno {{count}} notte.",
+        "nightsAtLeast_other": "Almeno {{count}} notti.",
+        "nightsBetween": "Da {{min}} a {{max}} notti.",
+        "noNotice": "Nessun preavviso minimo.",
+        "title": "Le regole per questo immobile"
+      },
+      "ruleError": "Impossibile caricare le regole dei soggiorni",
+      "sectionTitle": "Chiedi un soggiorno",
+      "startDate": "Arrivo",
+      "state": {
+        "approved_syncing": {
+          "description": "Approvato, ma le date si stanno ancora bloccando sui canali di vendita: non è ancora confermato.",
+          "title": "Approvato, date in blocco"
+        },
+        "cancelled": {
+          "description": "Il soggiorno è stato annullato: le date non sono più tue.",
+          "title": "Annullato"
+        },
+        "confirmed": {
+          "description": "Le date sono bloccate: il soggiorno è confermato.",
+          "title": "Confermato"
+        },
+        "rejected": {
+          "description": "L’agenzia ha rifiutato la richiesta: le date non sono state bloccate.",
+          "title": "Rifiutato"
+        },
+        "requested": {
+          "description": "In attesa di approvazione. Le date non sono ancora bloccate.",
+          "title": "Richiesta inviata"
+        },
+        "sync_failed": {
+          "description": "Approvato, ma il blocco delle date non è andato a buon fine: l’agenzia lo sta sistemando. Non è confermato.",
+          "title": "Approvato, blocco non riuscito"
+        }
+      },
+      "submit": "Invia la richiesta",
+      "submitting": "Invio in corso"
     }
   },
   "ownerProfile": {
