@@ -134,7 +134,8 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     first.unmount();
 
     // 2. The browser goes to the identity provider and comes back: the page is loaded again (memory is gone) and the app gives the `appState` back, which is
-    //    all that `handleAuthRedirect` of the app does with the secret. Nothing was stored in the browser by the page.
+    //    all that `handleAuthRedirect` of the app does with the secret (here by hand: the real hand-over, through `App` and its auth provider, is proved in
+    //    `src/__tests__/app-owner-invitation-round-trip.test.tsx`, which fails when the app does not hand the secret over). Nothing was stored in the browser by the page.
     clearOwnerInvitationToken();
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
