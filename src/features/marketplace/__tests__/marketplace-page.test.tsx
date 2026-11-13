@@ -10,7 +10,6 @@ import type { CalendarOverview } from '@/types/property-ical';
 import type { SupplierPicker } from '@/types/service-request';
 import { MarketplaceCategoriesRedirect } from '../categories-redirect';
 import { MarketplacePage } from '../marketplace-page';
-import { MarketplaceMinePage } from '../mine-page';
 
 const api = vi.hoisted(() => ({
   fetchMarketplaceSuppliers: vi.fn(),
@@ -489,35 +488,6 @@ describe('MarketplacePage · Scopri', () => {
     expect(screen.getAllByTestId('marketplace-section-mine')[0]).toHaveTextContent('Attivi');
     expect(screen.queryByTestId('marketplace-section-categories')).not.toBeInTheDocument();
     expect(screen.queryByText('Categorie')).not.toBeInTheDocument();
-  });
-});
-
-describe('MarketplaceMinePage · Attivi', () => {
-  it('MarketplaceMinePage_ShowsOnlyTheIntegrationsThatAreOn', async () => {
-    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
-
-    const list = await screen.findByTestId('marketplace-active-integrations');
-    expect(within(list).getByTestId('marketplace-integration-calendars')).toHaveTextContent('2 calendari collegati');
-    expect(within(list).queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
-    // What was used (suppliers and requests) is not here: it is in Interventi.
-    expect(screen.queryByText('Pulizie Express Srl')).not.toBeInTheDocument();
-    expect(api.fetchMarketplaceSuppliers).not.toHaveBeenCalled();
-  });
-
-  it('MarketplaceMinePage_NothingOn_SaysSoAndLeadsToScopri', async () => {
-    api.getCalendarOverview.mockResolvedValue(feeds(0));
-    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
-
-    expect(await screen.findByText('Nessuna integrazione attiva')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Scopri le integrazioni' })).toHaveAttribute('href', expect.stringContaining('/app/short-rent/marketplace'));
-  });
-
-  it('MarketplaceMinePage_PendingPayments_IsNotListedAsActive', async () => {
-    api.getConnectStatus.mockResolvedValue({ ...NO_STRIPE, connectedAccountId: 'acct_1' });
-    renderAt(<MarketplaceMinePage />, '/app/short-rent/marketplace/mine');
-
-    await screen.findByTestId('marketplace-active-integrations');
-    expect(screen.queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
   });
 });
 
