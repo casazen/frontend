@@ -6,7 +6,9 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import { approvalQueueApi } from '@/api/approvalQueue.api';
 import { assistantDraftsApi } from '@/api/assistant-drafts.api';
 import { assistantSettingsApi } from '@/api/assistant-settings.api';
+import { StaleSettingsError } from '@/features/assistant/lib/assistant-model';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
+import type { AssistantRules, SaveAssistantRulesRequest } from '@/types/assistant-settings.types';
 import { useApproveItem, useEditItem, useRejectItem, useSaveAndApproveItem } from '../approvalQueue';
 import { useRequestDraft } from '../use-assistant-drafts';
 import { useSaveAssistantRules, useSaveKnowledgeEntry } from '../use-assistant-settings';
@@ -14,7 +16,7 @@ import { useSaveAssistantRules, useSaveKnowledgeEntry } from '../use-assistant-s
 vi.mock('@/api/approvalQueue.api', () => ({ approvalQueueApi: { getPending: vi.fn(), edit: vi.fn(), approve: vi.fn(), reject: vi.fn() } }));
 vi.mock('@/api/assistant-drafts.api', () => ({ assistantDraftsApi: { requestDraft: vi.fn() } }));
 vi.mock('@/api/assistant-settings.api', () => ({
-  assistantSettingsApi: { createPropertyEntry: vi.fn(), createOrganizationEntry: vi.fn(), saveRules: vi.fn() },
+  assistantSettingsApi: { createPropertyEntry: vi.fn(), createOrganizationEntry: vi.fn(), getRules: vi.fn(), saveRules: vi.fn() },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 
@@ -132,22 +134,55 @@ describe('the mutations that carry the text of a message or a draft keep nothing
     expect(held).toEqual([]);
   });
 
+  const RULES: AssistantRules = {
+    enabled: true,
+    tone: 'Neutral',
+    languages: ['it'],
+    signature: 'Sofia',
+    hoursFrom: null,
+    hoursTo: null,
+    allowedTopics: [],
+    forbiddenTopics: [],
+    confidenceThreshold: 0.85,
+    instructionVersion: 2,
+  };
+  const RULES_REQUEST: SaveAssistantRulesRequest = {
+    enabled: true,
+    tone: 'Neutral',
+    languages: ['it'],
+    signature: 'Sofia',
+    hoursFrom: null,
+    hoursTo: null,
+    allowedTopics: [],
+    forbiddenTopics: [],
+    confidenceThreshold: 0.85,
+  };
+
   it('useSaveAssistantRules_AfterTheScreenIsLeft_KeepsNothingInTheMutationCache', async () => {
+    vi.mocked(assistantSettingsApi.getRules).mockResolvedValue(RULES);
     vi.mocked(assistantSettingsApi.saveRules).mockResolvedValue({} as never);
 
-    const held = await heldAfterLeaving(() => useSaveAssistantRules(), {
-      enabled: true,
-      tone: 'Neutral',
-      languages: ['it'],
-      signature: 'Sofia',
-      hoursFrom: null,
-      hoursTo: null,
-      allowedTopics: [],
-      forbiddenTopics: [],
-      confidenceThreshold: 0.85,
-    });
+    const held = await heldAfterLeaving(() => useSaveAssistantRules(), { request: RULES_REQUEST, base: RULES });
 
     expect(held).toEqual([]);
+  });
+
+  it('useSaveAssistantRules_RulesChangedMeanwhile_RefusesWithoutSendingPutsTheServersValuesOnTheScreenAndKeepsNothing', async () => {
+    vi.mocked(assistantSettingsApi.getRules).mockResolvedValue({ ...RULES, tone: 'Formal', instructionVersion: 3 });
+    const { client, wrapper } = setup();
+    const { result, unmount } = renderHook(() => useSaveAssistantRules(), { wrapper });
+
+    const failure = await result.current.mutateAsync({ request: RULES_REQUEST, base: RULES }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+
+    // Nothing was sent, the refusal says what it is, and the rules the server holds are the ones in the cache now.
+    expect(failure).toBeInstanceOf(StaleSettingsError);
+    expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
+    expect(client.getQueryData(['assistant', 'rules'])).toMatchObject({ tone: 'Formal', instructionVersion: 3 });
+    unmount();
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
   it.each([
