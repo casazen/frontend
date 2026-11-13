@@ -171,6 +171,16 @@ export function FiscalDocumentsPage() {
               </p>
             ) : null}
 
+            {/* The page asked by itself for the answer of the SDI for a while and stopped (no endless polling of a tab left open): it says so in neutral words, never as a failure. */}
+            {read === 'ok' && documents.watchOver ? (
+              <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/70" data-testid="fiscal-documents-watch-over">
+                <p>{t('fiscalDocuments.list.watch.over')}</p>
+                <Button type="button" variant="outline" size="sm" disabled={documents.isFetching} onClick={documents.checkAgain} data-testid="fiscal-documents-check-again">
+                  {t('fiscalDocuments.list.watch.checkAgain')}
+                </Button>
+              </div>
+            ) : null}
+
             {problem === null ? (
               <DocumentList
                 documents={rows}

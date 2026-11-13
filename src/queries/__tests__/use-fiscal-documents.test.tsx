@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import * as api from '@/api/fiscal-documents.api';
 import { document } from '@/features/fiscal/documents/__tests__/document-fixtures';
-import { SDI_POLL_MS, useDownloadFiscalDocument, useExportFiscalDocuments, useFiscalDocuments } from '../use-fiscal-documents';
+import { SDI_POLL_MS, SDI_WATCH_MS, useDownloadFiscalDocument, useExportFiscalDocuments, useFiscalDocuments } from '../use-fiscal-documents';
 
 vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
@@ -161,6 +161,86 @@ describe('useFiscalDocuments (the list is read again, and is not kept)', () => {
       vi.mocked(api.listDocuments).mockResolvedValue(page([document({ sdiStatus: 'delivered' })]));
       const settled = renderHook(() => useFiscalDocuments({}, 1, 20), { wrapper });
       await waitFor(() => expect(settled.result.current.isSuccess).toBe(true));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_POLL_MS * 3);
+      });
+      expect(api.listDocuments).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // Cost rule: a tab left open does not ask for days. The answer of the SDI is followed for `SDI_WATCH_MS`; after it the page stops, says so (`watchOver`) and «Controlla di nuovo»
+  // (`checkAgain`) reads at once and opens the window again. The first read is waited for BEFORE the clock moves.
+  it('UseFiscalDocuments_ADocumentStillWaitingForTheSdiAfterTheWindow_IsNoLongerReadByItselfUntilCheckedAgain', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      vi.mocked(api.listDocuments).mockResolvedValue(page([document({ sdiStatus: 'submitted' })]));
+      const { wrapper } = setup();
+      const waiting = renderHook(() => useFiscalDocuments({}, 1, 20), { wrapper });
+      await waitFor(() => expect(waiting.result.current.isSuccess).toBe(true));
+      expect(waiting.result.current.watchOver).toBe(false);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_WATCH_MS + SDI_POLL_MS);
+      });
+      const reads = vi.mocked(api.listDocuments).mock.calls.length;
+      // It asked by itself while the window was open, once a minute and no more than the window holds...
+      expect(reads).toBeGreaterThan(10);
+      expect(reads).toBeLessThanOrEqual(SDI_WATCH_MS / SDI_POLL_MS + 2);
+      expect(waiting.result.current.watchOver).toBe(true);
+
+      // ...and it asks no more once the window is over, however long the tab stays open.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_POLL_MS * 10);
+      });
+      expect(api.listDocuments).toHaveBeenCalledTimes(reads);
+
+      // «Controlla di nuovo» reads at once, opens the window again, and the page follows the document by itself again.
+      await act(async () => {
+        waiting.result.current.checkAgain();
+      });
+      await waitFor(() => expect(vi.mocked(api.listDocuments).mock.calls.length).toBe(reads + 1));
+      expect(waiting.result.current.watchOver).toBe(false);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_POLL_MS + 1000);
+      });
+      expect(vi.mocked(api.listDocuments).mock.calls.length).toBeGreaterThanOrEqual(reads + 2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UseFiscalDocuments_ATabInTheBackground_DoesNotAskByItself', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      vi.mocked(api.listDocuments).mockResolvedValue(page([document({ sdiStatus: 'submitted' })]));
+      const { wrapper } = setup();
+      const waiting = renderHook(() => useFiscalDocuments({}, 1, 20), { wrapper });
+      await waitFor(() => expect(waiting.result.current.isSuccess).toBe(true));
+      expect(api.listDocuments).toHaveBeenCalledTimes(1);
+
+      focusManager.setFocused(false);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_POLL_MS * 3);
+      });
+      expect(api.listDocuments).toHaveBeenCalledTimes(1);
+    } finally {
+      focusManager.setFocused(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it('UseFiscalDocuments_APageThatIsLeft_AsksNothingMore', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      vi.mocked(api.listDocuments).mockResolvedValue(page([document({ sdiStatus: 'submitted' })]));
+      const { wrapper } = setup();
+      const waiting = renderHook(() => useFiscalDocuments({}, 1, 20), { wrapper });
+      await waitFor(() => expect(waiting.result.current.isSuccess).toBe(true));
+      expect(api.listDocuments).toHaveBeenCalledTimes(1);
+
+      waiting.unmount();
       await act(async () => {
         await vi.advanceTimersByTimeAsync(SDI_POLL_MS * 3);
       });

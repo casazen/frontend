@@ -7818,6 +7818,10 @@
       "tableLabel": "Fiscal documents",
       "title": "Fiscal documents",
       "unnumbered": "{{kind}} (no number)",
+      "watch": {
+        "checkAgain": "Check again",
+        "over": "We no longer check by ourselves whether the SDI has answered. Check again to see the updated statuses."
+      },
       "xmlUnavailable": "XML not available"
     }
   },

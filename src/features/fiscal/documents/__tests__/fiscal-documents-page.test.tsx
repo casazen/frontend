@@ -10,6 +10,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
 import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
+import { SDI_POLL_MS, SDI_WATCH_MS } from '@/queries/use-fiscal-documents';
 import type { FiscalDocumentEntry, FiscalDocumentFile, FiscalDocumentsContext } from '@/types';
 import { FiscalDocumentsPage } from '../fiscal-documents-page';
 import { document, importedDocument } from './document-fixtures';
@@ -239,6 +240,50 @@ describe('FiscalDocumentsPage: the list', () => {
     fireEvent.click(screen.getByRole('button', { name: new RegExp(i18n.t('listView.pagination.next')) }));
 
     await waitFor(() => expect(api.listDocuments).toHaveBeenLastCalledWith({}, 2, 20));
+  });
+});
+
+describe('FiscalDocumentsPage: the answer of the SDI is not waited for forever', () => {
+  // Cost rule: the page asks by itself for a while and stops; it says so in neutral words (never as a failure) and «Controlla di nuovo» asks again. The first read comes before the clock moves.
+  it('FiscalDocumentsPage_ADocumentStillWaitingForTheSdiAfterTheWindow_SaysItNoLongerAsksByItselfAndOffersToCheckAgain', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      vi.mocked(api.listDocuments).mockResolvedValue(page([document({ sdiStatus: 'submitted' })]));
+      renderPage();
+      await tableRows();
+      expect(screen.queryByTestId('fiscal-documents-watch-over')).not.toBeInTheDocument();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_WATCH_MS + SDI_POLL_MS);
+      });
+      const note = await screen.findByTestId('fiscal-documents-watch-over');
+      expect(note).toHaveTextContent(i18n.t('fiscalDocuments.list.watch.over'));
+      expect(note.textContent).not.toMatch(/errore|error|non riuscit/i);
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      const reads = vi.mocked(api.listDocuments).mock.calls.length;
+
+      fireEvent.click(screen.getByTestId('fiscal-documents-check-again'));
+      await waitFor(() => expect(vi.mocked(api.listDocuments).mock.calls.length).toBeGreaterThan(reads));
+      await waitFor(() => expect(screen.queryByTestId('fiscal-documents-watch-over')).not.toBeInTheDocument());
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('FiscalDocumentsPage_NoDocumentWaitingForTheSdi_NeverSaysItStoppedAsking', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      renderPage();
+      await tableRows();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SDI_WATCH_MS + SDI_POLL_MS);
+      });
+      expect(screen.queryByTestId('fiscal-documents-watch-over')).not.toBeInTheDocument();
+      expect(api.listDocuments).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
