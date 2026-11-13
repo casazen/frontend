@@ -21614,7 +21614,7 @@
       "confirmDescription": "Rendiconto di {{owner}} per {{property}}, periodo {{period}}: netto pagabile {{amount}}.",
       "confirmTitle": "Pubblicare il rendiconto?",
       "consequenceImmutable": "Dopo la pubblicazione non si modifica più: una correzione va nel rendiconto del mese dopo.",
-      "consequenceOwner": "Il rendiconto viene inviato al proprietario.",
+      "consequenceWire": "Il rendiconto risulta pubblicato e può entrare in un file di bonifici. Da qui non parte nessun invio al proprietario.",
       "error": "Impossibile pubblicare il rendiconto",
       "success": "Rendiconto pubblicato con successo"
     },

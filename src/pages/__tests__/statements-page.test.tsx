@@ -199,7 +199,7 @@ describe('the steps of a statement cannot be undone, so they ask to be confirmed
     expect(toasts.success).not.toHaveBeenCalled();
   });
 
-  it('StatementDetail_Publish_AsksWhatItDoes_ToTheOwnerAndFinal_AndSendsOnlyAfterConfirm', async () => {
+  it('StatementDetail_Publish_AsksWhatItReallyDoes_NothingIsSentToTheOwner_AndFinal_AndSendsOnlyAfterConfirm', async () => {
     api.getAll.mockResolvedValue([withStatus(CHF, 'Approved'), EUR]);
     renderPage();
     const detail = await openDetail(CHF);
@@ -208,7 +208,10 @@ describe('the steps of a statement cannot be undone, so they ask to be confirmed
     const dialog = await screen.findByRole('dialog');
 
     expect(dialog).toHaveTextContent('Pubblicare il rendiconto?');
-    expect(dialog).toHaveTextContent('inviato al proprietario');
+    // What the server does: the status changes and the statement can go into a wire file. It sends nothing to the owner, and the dialog does not say it does.
+    expect(dialog).toHaveTextContent('risulta pubblicato e può entrare in un file di bonifici');
+    expect(dialog).toHaveTextContent('Da qui non parte nessun invio al proprietario');
+    expect(dialog.textContent).not.toMatch(/viene inviato/);
     expect(dialog).toHaveTextContent('non si modifica più');
     expect(api.publish).not.toHaveBeenCalled();
 

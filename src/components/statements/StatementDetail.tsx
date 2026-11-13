@@ -92,7 +92,7 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
       amount: money(statement.netPayable, statement.currency),
     }),
     consequences: step === 'publish'
-      ? [t('statement.publish.consequenceOwner'), t('statement.publish.consequenceImmutable')]
+      ? [t('statement.publish.consequenceWire'), t('statement.publish.consequenceImmutable')]
       : [t('statement.approve.consequenceLocked')],
   };
 

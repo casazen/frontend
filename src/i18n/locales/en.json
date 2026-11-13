@@ -21614,7 +21614,7 @@
       "confirmDescription": "Statement of {{owner}} for {{property}}, period {{period}}: net payable {{amount}}.",
       "confirmTitle": "Publish the statement?",
       "consequenceImmutable": "Once published it can no longer be changed: a correction goes in next month's statement.",
-      "consequenceOwner": "The statement is sent to the owner.",
+      "consequenceWire": "The statement shows as published and can go into a wire file. Nothing is sent to the owner from here.",
       "error": "Could not publish the statement",
       "success": "Statement published successfully"
     },

@@ -30,7 +30,10 @@ export const statementsApi = {
   approve: (id: string) =>
     ApiClient.post<void>(`/statements/${id}/approve`),
 
-  /** Publishes an Approved statement, sending it to the owner. */
+  /**
+   * Publishes an Approved statement: it becomes immutable and can go into a wire file. The server only changes its status: it sends nothing to the owner (no
+   * message, and the owner portal lists no statement yet).
+   */
   publish: (id: string) =>
     ApiClient.post<void>(`/statements/${id}/publish`),
 

@@ -74,8 +74,8 @@ export function useApproveStatement() {
 }
 
 /**
- * Publishes an Approved statement, sending it to the owner: the statement becomes immutable and a correction goes in the next month's statement. Same
- * rules as the approval.
+ * Publishes an Approved statement: it becomes immutable (a correction goes in the next month's statement) and can go into a wire file. The server only changes
+ * its status, it sends nothing to the owner, so the confirmation says no more than that. Same rules as the approval.
  */
 export function usePublishStatement() {
   const queryClient = useQueryClient();
