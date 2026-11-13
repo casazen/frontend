@@ -81,8 +81,9 @@ function Disclosure({ id, label, open, onToggle, testId, children }: { id: strin
 }
 
 /**
- * "Sono in regola?", on the page `/compliance`: first the answer in one line («Tutto in regola», or «5 cose da fare: 3 da sistemare, 2 in
- * corso», from the lights the API sends), then the one thing to do first in the block on top, then what is still to do in three levels that
+ * "Sono in regola?", on the page `/compliance`: first the answer in one line («5 cose da fare: 3 da sistemare, 2 in corso», from the lights
+ * the API sends; with nothing to do the block «Sei in regola» it always had, and no new green line: green is what the server proves), then the
+ * one thing to do first in the block on top, then what is still to do in three levels that
  * do not weigh the same: what the law dates (the Alloggiati Web communications and the guest data they need, ISTAT, the tourist tax: red,
  * with its deadline in words, never cut, the nearest first), what keeps a property from starting (the activation, calm: without it the
  * property just does not work), and the upkeep of the stays. Inside a level the rows are red first, then yellow, then what has no light

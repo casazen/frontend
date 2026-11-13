@@ -16,6 +16,7 @@ const COMPLIANCE_PATH = '/app/short-rent/compliance';
  * Without the traffic light (an older server, or the flag off) nothing feeds that list, so the block it always was stays: the one thing that carries
  * a risk of a sanction (an Alloggiati Web communication to send or to fix, the guest data it needs), with the button that does it. It reads what the
  * page reads (the same cache entry), so the Home and the menu say the same number. Only for whoever may read the bookings: the summary asks for it.
+ * With no light at all and nothing to do the Home says nothing, as it did: «Tutto in regola» is only said when the server sent a light (`ComplianceSummaryLine`).
  */
 export function ComplianceUrgentBlock() {
   const { t } = useTranslation();

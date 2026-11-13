@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,6 +8,7 @@ import type { AppContextKey } from '@/config/route-manifest';
 import { freezeClock, NOON_UTC } from '@/test/clock';
 import type { ComplianceSummaryItem, ComplianceSummaryResult } from '@/types/compliance.types';
 import { ComplianceUrgentBlock } from '../components/compliance-urgent-block';
+import { COMPLIANCE_KEY } from '../use-compliance';
 
 vi.mock('@/api/compliance.api', () => ({
   fetchComplianceSummary: vi.fn(),
@@ -43,9 +44,10 @@ const stay = (id: string, label: string, dueAt?: string): ComplianceSummaryItem 
 
 function renderBlock() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(ComplianceUrgentBlock))),
-  );
+  return {
+    client,
+    ...render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(ComplianceUrgentBlock)))),
+  };
 }
 
 describe('ComplianceUrgentBlock (the Home)', () => {
@@ -90,15 +92,19 @@ describe('ComplianceUrgentBlock (the Home)', () => {
     expect(screen.getByTestId('home-compliance-all')).toHaveAttribute('href', '/app/short-rent/compliance');
   });
 
-  it('ComplianceUrgentBlock_NothingPending_SaysAllClearInOneLine', async () => {
+  it('ComplianceUrgentBlock_NothingPendingAndNoLightAtAll_ShowsNothingAsItAlwaysDid', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({}));
-    renderBlock();
+    const { client } = renderBlock();
 
-    const line = await screen.findByTestId('home-compliance-line');
-    expect(line).toHaveTextContent('Tutto in regola');
-    expect(line).toHaveAttribute('data-tone', 'success');
+    // The traffic light is off (or the server is older): nobody evaluated ISTAT, the tourist tax, the receipts, the identity, so an empty list is
+    // not «tutto in regola». Green is what the server proves, never what is missing from the list. The summary is read before anything is asserted.
+    await vi.waitFor(() => expect(client.getQueryState([COMPLIANCE_KEY, 'summary'])?.status).toBe('success'));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(screen.queryByTestId('home-compliance-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('home-compliance-block')).not.toBeInTheDocument();
-    expect(screen.getByTestId('home-compliance-all')).toHaveAttribute('href', '/app/short-rent/compliance');
+    expect(screen.queryByText('Tutto in regola')).not.toBeInTheDocument();
   });
 
   // E03/F03/US01/T02 (NF-52, AC-NF52-8): with the traffic light on the compliance reaches the "Adesso" block through the unified "Da fare".

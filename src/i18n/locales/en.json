@@ -4115,7 +4115,7 @@
         "chore": "To close"
       },
       "allClear": {
-        "title": "All compliant",
+        "title": "You are all set",
         "body": "Nothing is pending: your properties are active and your stays are in order.",
         "cta": "Open properties"
       },

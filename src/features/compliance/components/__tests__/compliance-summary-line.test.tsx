@@ -23,12 +23,26 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
     await i18n.changeLanguage('it');
   });
 
-  it('render_NothingNeedsAttention_SaysAllClearInTheToneOfSuccess', () => {
-    renderLine(lights({ green: 4 }));
+  it('render_NothingNeedsAttentionAndTheServerSentLights_SaysAllClearInTheToneOfSuccess', () => {
+    renderLine(lights({ green: 4, lightsOn: true }));
 
     const line = screen.getByTestId('compliance-summary-line');
     expect(line).toHaveTextContent('Tutto in regola');
     expect(line).toHaveAttribute('data-tone', 'success');
+  });
+
+  // Green is what the server proves: with no light at all an empty list says nothing of what nobody evaluated (traffic light off, older server).
+  it.each(['page', 'home'] as const)('render_%s_NothingToDoButNoLightAtAll_SaysNothingNeverAllClear', (variant) => {
+    const { container } = renderLine(lights({}), variant);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('render_NothingToDoButSomethingWithNoLight_IsNotAllClear', () => {
+    // An item with no light is «da verificare»: it counts as something to do, whatever the other counters say.
+    renderLine(lights({ needs: 1, unknown: 1 }));
+
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('1 cosa da fare');
   });
 
   it.each([
@@ -80,7 +94,7 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
   });
 
   it('render_Home_AllClear_SaysIt', () => {
-    renderLine(lights({ green: 2 }), 'home');
+    renderLine(lights({ green: 2, lightsOn: true }), 'home');
 
     expect(screen.getByTestId('home-compliance-line')).toHaveTextContent('Tutto in regola');
   });

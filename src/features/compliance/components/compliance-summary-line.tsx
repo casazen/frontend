@@ -29,9 +29,14 @@ function toneOf(lights: LightSummary): NoteTone {
  * "Sono in regola?" in one line (NF-52): «Tutto in regola» when nothing needs attention, otherwise «N cose da fare» with what the lights
  * say («3 da sistemare, 2 in corso»). Everything is counted from the lights the API sends: an item with no light is never in order, it
  * is «da verificare» and counts as something to do. The icon and the words say it, the color is never the only signal.
+ *
+ * «Tutto in regola» is green, and green is only ever what the server proves: when no item carries a light (an older server, or the traffic
+ * light off) an empty list says nothing about what nobody evaluated (ISTAT, the tourist tax, the receipts, the identity), so the line is
+ * left out, as it was before the lights.
  */
 export function ComplianceSummaryLine({ lights, variant = 'page' }: ComplianceSummaryLineProps) {
   const { t } = useTranslation();
+  if (lights.needs === 0 && !lights.lightsOn) return null;
 
   const todo = t('compliance.summary.line.todo', { count: lights.needs });
   // The parts only when they tell more than the total does: all of them one kind is the total again.

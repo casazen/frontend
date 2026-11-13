@@ -348,7 +348,9 @@ describe('ComplianceSummaryWidget levels', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({}));
     renderWidget();
 
-    expect(await screen.findByTestId('compliance-summary-all-clear')).toBeInTheDocument();
+    // What it always said, with no light at all: the page keeps its block, and there is no new green line next to it.
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Sei in regola');
+    expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
   });
 });
@@ -438,7 +440,7 @@ describe('ComplianceSummaryWidget traffic light', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ receiptsToUpload: { count: 0, items: [GREEN] } }));
     renderWidget();
 
-    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Tutto in regola');
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Sei in regola');
     expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
 
