@@ -5591,9 +5591,9 @@
         },
         "switch": {
           "title": "What changes",
-          "automaticToAutomatic": "The other automatic sender will be switched off: from now on only the service you chose sends.",
-          "manualToAutomatic": "From now on the service you chose sends the data automatically: you no longer have to send it by hand.",
-          "toManual": "Automatic sending will be switched off: from now on you send the data yourself, with the file.",
+          "automaticToAutomatic": "The current automatic sending will be switched off: two automatic senders at once would send the data twice. If your channel manager sends today, switch its automatic sending off in its panel too. Until the state of the new sender is «Active» you keep sending it yourself.",
+          "manualToAutomatic": "The service you chose becomes the one that sends the data. Until the state is «Active» you keep sending it yourself, with the file: automatic sending only starts once the connection is made and verified.",
+          "toManual": "From now on you send the data yourself, with the file. If your channel manager sends today, switch its automatic sending off in its panel too: otherwise the data would be sent twice.",
           "confirm": "I understand what changes and I confirm.",
           "same": "This is already the sender in effect: nothing changes."
         }

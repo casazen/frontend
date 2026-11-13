@@ -5591,9 +5591,9 @@
         },
         "switch": {
           "title": "Cosa cambia",
-          "automaticToAutomatic": "L'altro invio automatico verrà spento: da ora invia solo il servizio che hai scelto.",
-          "manualToAutomatic": "Da ora i dati li invia in automatico il servizio che hai scelto: non devi più inviarli a mano.",
-          "toManual": "L'invio automatico verrà spento: da ora i dati li invii tu, con il file.",
+          "automaticToAutomatic": "L'invio automatico in corso verrà spento: due invii automatici insieme farebbero partire i dati due volte. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello. Finché lo stato del nuovo invio non è «Attivo» continui a inviare tu.",
+          "manualToAutomatic": "Il servizio che hai scelto diventa chi invia i dati. Finché lo stato non è «Attivo» continui a inviarli tu, con il file: l'invio automatico parte solo quando il collegamento è fatto e verificato.",
+          "toManual": "Da ora i dati li invii tu, con il file. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello: altrimenti i dati partirebbero due volte.",
           "confirm": "Ho capito cosa cambia e confermo.",
           "same": "Questo è già l'invio in corso: non cambia nulla."
         }

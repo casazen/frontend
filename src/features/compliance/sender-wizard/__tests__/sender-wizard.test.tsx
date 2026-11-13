@@ -300,6 +300,8 @@ describe('SenderWizardPage: the change of the sender (NF-05)', () => {
 
     // The summary says what goes off and asks the host to confirm it; nothing is sent before.
     expect(screen.getByTestId('sender-switch-confirmation')).toHaveTextContent(text('compliance.sender.summary.switch.toManual'));
+    // The exact effect: the daily sending of the channel manager is the host's to switch off in its panel, or the data would go out twice.
+    expect(screen.getByTestId('sender-switch-confirmation')).toHaveTextContent(/spegni l'invio automatico anche nel suo pannello/i);
     fireEvent.click(primary());
     expect(await screen.findByTestId('wizard-error-summary')).toHaveTextContent(text('compliance.sender.errors.confirmRequired'));
     expect(propertySenderApi.switch).not.toHaveBeenCalled();
@@ -312,6 +314,21 @@ describe('SenderWizardPage: the change of the sender (NF-05)', () => {
     expect(propertySenderApi.switch).toHaveBeenCalledWith(PROPERTY_ID, { sender: 'Manual', confirmed: true, delegationConsent: false });
     const done = await screen.findByTestId('sender-wizard-done');
     expect(done).toHaveAttribute('data-outcome', 'manual');
+  });
+
+  it('SenderWizardPage_SwitchingOnFromTheOwnSend_DoesNotPromiseAutomaticSendingBeforeItIsActive', async () => {
+    await open();
+    click('sender-option-ChannelManager');
+    await screen.findByTestId('sender-delegation-consent');
+    click('sender-delegation-consent');
+    fireEvent.click(primary());
+    await onStep('summary');
+
+    // After the change the state can still be «Non verificato» or «Non attivo»: the host keeps sending until it is «Attivo».
+    const confirmation = screen.getByTestId('sender-switch-confirmation');
+    expect(confirmation).toHaveTextContent(text('compliance.sender.summary.switch.manualToAutomatic'));
+    expect(confirmation).toHaveTextContent(/finché lo stato non è «Attivo» continui a inviarli tu/i);
+    expect(confirmation.textContent ?? '').not.toMatch(/non devi più inviarli a mano/i);
   });
 
   it('SenderWizardPage_ConsentAndChange_AreSentTogetherWithTheVersionOfTheTextTheHostRead', async () => {
