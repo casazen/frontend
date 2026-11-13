@@ -55,6 +55,9 @@ const STALE_ON_CHECK_IN: readonly string[] = [
 
 function refreshCheckInData(queryClient: QueryClient): void {
   STALE_ON_CHECK_IN.forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));
+  // The coverage report of the archive of the proofs (E03/F03/US02) says what the cockpit says, obligation by obligation: the guests of the stay changed,
+  // so an open «Riepilogo» reads it again too. The files of the archive are not here: a check-in adds none.
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
 }
 
 /**

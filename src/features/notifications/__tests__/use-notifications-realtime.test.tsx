@@ -151,6 +151,8 @@ describe('useNotificationsRealtime', () => {
     expect(keys).toContainEqual([CHECKIN_SESSION_KEY]);
     // The invoice data the guest wrote at that check-in (FIS-01) is one of them.
     expect(keys).toContainEqual([INVOICE_DATA_KEY]);
+    // So is the coverage report of the archive of the proofs, which an open «Riepilogo» shows (E03/F03/US02).
+    expect(keys).toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'report']);
   });
 
   it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheVerificationsOfTheOperator', () => {
@@ -332,6 +334,18 @@ describe('applyNotificationsChange', () => {
       expect(keys, root).toContainEqual([root]);
     // The entity is a booking, so its thread is read again too, as for any booking event.
     expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
+  });
+
+  // E03/F03/US02: the guests of a stay change what the coverage report of the archive of the proofs says about it, and an open «Riepilogo» shows it
+  // without a reload; the files of the archive are not touched by a check-in.
+  it('applyNotificationsChange_GuestCheckInCompleted_ReadsAgainTheCoverageReportOfTheArchiveAndNotItsFiles', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'report']);
+    expect(keys).not.toContainEqual([COMPLIANCE_ARCHIVE_KEY]);
+    expect(keys).not.toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'list']);
   });
 
   // NF-52: a light of the cockpit changes with an alert, and a page of the adempimenti, a booking or a property that is open shows it without a reload.
