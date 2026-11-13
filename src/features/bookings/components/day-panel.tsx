@@ -26,6 +26,8 @@ interface DayPanelProps {
   today: string;
   /** The panel is closed (Escape, the close button, "Close"): the selection is dropped. */
   onClose: () => void;
+  /** The focus goes into the panel when it opens. Not when the days are selected from the keyboard on the calendar: the focus stays on the day, so that Shift plus arrow goes on extending the selection. */
+  moveFocus?: boolean;
 }
 
 /**
@@ -37,7 +39,7 @@ interface DayPanelProps {
  * It sits beside the calendar and does not cover it, so the selection can still be extended with the next click, Shift plus click or Shift plus arrow; the buttons stay off while
  * a request of the panel is on its way.
  */
-export function DayPanel({ selection, propertyName, layer, today, onClose }: DayPanelProps) {
+export function DayPanel({ selection, propertyName, layer, today, onClose, moveFocus = true }: DayPanelProps) {
   const { t, i18n } = useTranslation();
   const phone = useMediaQuery(PHONE_QUERY);
   const [action, setAction] = useState<PanelAction>('block');
@@ -76,6 +78,9 @@ export function DayPanel({ selection, propertyName, layer, today, onClose }: Day
         overlay={false}
         // The calendar beside the panel stays in use (the next click extends the selection): a press outside does not close it.
         onInteractOutside={(event) => event.preventDefault()}
+        onOpenAutoFocus={(event) => {
+          if (!moveFocus) event.preventDefault();
+        }}
         className="w-full overflow-y-auto sm:max-w-md"
         data-testid="day-panel"
       >

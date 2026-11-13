@@ -72,6 +72,8 @@ export function CalendarPage() {
   const unreadMessages = useUnreadMessagesByBooking(workspace?.hasPermission('short-rent', 'booking.read') ?? false);
   // The days selected on the calendar (the Timeline, the month, the week or the day): they open the panel that blocks them or changes their price and rules.
   const [selection, setSelection] = useState<DaySelection | null>(null);
+  // The panel takes the focus when it is opened from the button; from a day of the calendar the focus stays there (Shift plus arrow goes on extending the selection).
+  const [focusPanel, setFocusPanel] = useState(false);
 
   const view = parseCalendarView(searchParams.get('view'), wideScreen);
   const zoom = parseTimelineZoom(searchParams.get('zoom'));
@@ -165,6 +167,7 @@ export function CalendarPage() {
       const next = selectionOfDays(activePropertyId, (slot.slots.length > 0 ? slot.slots : [slot.start]).map(toStayDate));
       if (!next) return;
       setSelectedBlockId(null);
+      setFocusPanel(false);
       setSelection(next);
     },
     [activePropertyId],
@@ -173,6 +176,7 @@ export function CalendarPage() {
   // A press on a day (a click, Enter or Space; with Shift the selection grows): the first press starts a selection, the second extends it.
   const handlePressDay = useCallback((propertyId: string, day: string, shift: boolean) => {
     setSelectedBlockId(null);
+    setFocusPanel(false);
     setSelection((previous) => pressDay(previous, propertyId, day, shift));
   }, []);
   const handleClearSelection = useCallback(() => setSelection(clearSelection()), []);
@@ -201,6 +205,7 @@ export function CalendarPage() {
                   onClick={() => {
                     // The panel opens on tonight of the property shown (or the first): the dates and the property are changed by selecting other days on the calendar.
                     setSelectedBlockId(null);
+                    setFocusPanel(true);
                     setSelection(startSelection(startPropertyId, todayInRome()));
                   }}
                   data-testid="manual-block-open"
@@ -325,6 +330,7 @@ export function CalendarPage() {
           layer={dayRead.layer?.get(selection.propertyId)}
           today={todayInRome()}
           onClose={handleClearSelection}
+          moveFocus={focusPanel}
         />
       ) : null}
     </AppShell>

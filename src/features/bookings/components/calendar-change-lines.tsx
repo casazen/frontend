@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CheckCircle2, Info, Loader2, RotateCw, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContext } from '@/contexts/workspace-context';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useCalendarChange, useRetryCalendarChange } from '@/queries/use-calendar-changes';
@@ -100,6 +101,8 @@ interface CalendarChangeLinesProps {
 export function CalendarChangeLines({ change: initial, propertyName }: CalendarChangeLinesProps) {
   const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
+  // With the connector of the channel manager off nothing is sent or asked: a property that is not connected has nothing to say about it, and the change is just saved in CasaZen.
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
   // Without a workspace (a test) nothing is offered; the change is read only by who may read properties (a read they may not make would be a 403), and sent again only by who may write them.
   const mayRead = workspace?.hasPermission('short-rent', 'property.read') ?? false;
   const mayRetry = workspace?.hasPermission('short-rent', 'property.write') ?? false;
@@ -120,6 +123,7 @@ export function CalendarChangeLines({ change: initial, propertyName }: CalendarC
 
       {change.properties.map((property) => {
         const line = propertyLineOf({ change, property, read, watchOver, mayRetry });
+        if (line.kind === 'notConnected' && !connectorOn) return null;
         const reasonWithRetry = retry.isError && line.kind === 'failed';
         return (
           <ResultLine

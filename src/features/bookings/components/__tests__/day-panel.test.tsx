@@ -5,6 +5,8 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import type { CalendarDayInfo } from '@/types/calendar-days.types';
@@ -61,15 +63,17 @@ function problemError(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data });
 }
 
-function renderPanel(props: Partial<Parameters<typeof DayPanel>[0]> = {}, permissions: string[] = ['property.read', 'property.write']) {
+function renderPanel(props: Partial<Parameters<typeof DayPanel>[0]> = {}, permissions: string[] = ['property.read', 'property.write'], connector = true) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = { hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission) } as unknown as WorkspaceContextValue;
   const onClose = vi.fn();
   render(
     <QueryClientProvider client={queryClient}>
-      <WorkspaceContext.Provider value={workspace}>
-        <DayPanel selection={SELECTION} propertyName="Casa Roma" layer={LAYER} today={TODAY} onClose={onClose} {...props} />
-      </WorkspaceContext.Provider>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <WorkspaceContext.Provider value={workspace}>
+          <DayPanel selection={SELECTION} propertyName="Casa Roma" layer={LAYER} today={TODAY} onClose={onClose} {...props} />
+        </WorkspaceContext.Provider>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
   return onClose;
@@ -169,6 +173,21 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     expect(line).toHaveTextContent('la modifica resta in CasaZen');
   });
 
+  it('DayPanel_ConnectorOff_SaysOnlySavedInCasaZen_NothingOfTheChannelManager', async () => {
+    const stays = change({ state: 'Applied', properties: [{ propertyId: 'p1', state: 'Skipped', chunkCount: 0 }] });
+    vi.mocked(calendarChangesApi.apply).mockResolvedValue(stays);
+    vi.mocked(calendarChangesApi.get).mockResolvedValue(stays);
+    renderPanel({}, ['property.read', 'property.write'], false);
+
+    fireEvent.click(screen.getByTestId('day-panel-price'));
+    fireEvent.change(screen.getByTestId('day-price-input'), { target: { value: '99' } });
+    fireEvent.click(screen.getByTestId('day-rules-submit'));
+
+    expect(await screen.findByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
+    expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
+    expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/gestionale/i);
+  });
+
   it('DayPanel_AChangeThatFailed_SaysWhyAndOffersRetryNow_WhichSendsItAgain', async () => {
     const failed = change({ state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', errorCode: 'octorate_unavailable', chunkCount: 1 }] });
     vi.mocked(calendarChangesApi.apply).mockResolvedValue(failed);
@@ -209,7 +228,8 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     fireEvent.change(screen.getByTestId('day-price-input'), { target: { value: '99' } });
     fireEvent.click(screen.getByTestId('day-rules-submit'));
 
-    expect(await screen.findByTestId('day-rules-error')).toHaveTextContent('I giorni sono già passati.');
+    // The sentence of the code, in the words of the app (the text of the server is the fallback for a code with none).
+    expect(await screen.findByTestId('day-rules-error')).toHaveTextContent('Questi giorni sono già passati: scegli giorni da oggi in poi.');
     expect(screen.queryByTestId('day-panel-result')).not.toBeInTheDocument();
   });
 
