@@ -131,6 +131,11 @@ export const ACTION_ROUTE_MAP = {
   ReconnectChannel: {
     route: { path: '/app/short-rent/channels' },
   },
+  // A fiscal document of the channel manager the SDI rejected or that is still to collect (E06/F03/US02/T01, `ActivityAction` 30): the fiscal page of the
+  // host, where the documents are. The page that lists them (E06/F03/US04/T01) replaces this entry when it exists, as the notes above say.
+  ReviewFiscalDocument: {
+    route: { path: '/app/short-rent/fiscal' },
+  },
 } satisfies Record<string, TodoActionTarget>;
 
 /** An action this version of the app opens. The server may send one it does not know yet: it has no button. */
