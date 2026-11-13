@@ -220,7 +220,9 @@ export function OwnerInvitationPage() {
   if (token === null) return <UnusableCard reason="invalid" />;
   if (!isAuthenticated) return <SignedOutCard token={token} />;
 
-  if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={logout} onNewLogin={() => login({ returnTo: OWNER_INVITATION_PATH })} />;
+  // A new sign-in carries the secret again, in the `appState`, because the page is loaded again when the person comes back.
+  const signInAgain = () => login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token } });
+  if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={logout} onNewLogin={signInAgain} />;
   return <WaitingCard title={t('ownerInvitation.accepting')} />;
 }
 

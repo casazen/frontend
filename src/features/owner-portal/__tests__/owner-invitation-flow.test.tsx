@@ -220,6 +220,23 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
   });
 
+  it('OwnerInvitationRoute_EmailNotVerified_KeepsTheTokenAndANewSignInCarriesItAgain', async () => {
+    mockAuth(true);
+    vi.mocked(axios.post).mockRejectedValueOnce(problem(403, 'owner_invitation_email_not_verified')).mockResolvedValue({ data: ACCEPTED });
+    openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('ownerInvitation.emailNotVerified.login') }));
+    // The page is loaded again after the sign-in: the secret goes with the login, in the `appState`, and in no address.
+    expect(login).toHaveBeenLastCalledWith({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: TOKEN } });
+    expect(axios.post).toHaveBeenCalledTimes(1);
+
+    // And «Riprova» sends the same secret once more, only because the person asked.
+    fireEvent.click(screen.getByTestId('owner-invitation-retry'));
+    await screen.findByTestId('owner-portal');
+    expect(axios.post).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(axios.post).mock.calls[1][1]).toEqual({ token: TOKEN });
+  });
+
   it('OwnerInvitationRoute_PortalOff_IsNotFoundAndNeverAnError', async () => {
     mockAuth(true);
     vi.mocked(axios.post).mockRejectedValue(problem(404, 'not_found'));
