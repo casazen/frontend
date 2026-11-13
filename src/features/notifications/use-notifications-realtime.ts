@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
+import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
+import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
@@ -53,6 +55,9 @@ const STALE_ON_CHECK_IN: readonly string[] = [
 
 function refreshCheckInData(queryClient: QueryClient): void {
   STALE_ON_CHECK_IN.forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));
+  // The coverage report of the archive of the proofs (E03/F03/US02) says what the cockpit says, obligation by obligation: the guests of the stay changed,
+  // so an open «Riepilogo» reads it again too. The files of the archive are not here: a check-in adds none.
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
 }
 
 /**
@@ -62,6 +67,9 @@ function refreshCheckInData(queryClient: QueryClient): void {
  * not active. An open page of the adempimenti, a booking or a property shows the new light without a reload. A verification handed to an operator
  * (`verification-required`) is not here: `refreshVerifications` reads the cockpit again together with the queue.
  */
+/** The police send of the channel manager is not active (`PushTypes.ConnectionInactive`): the connection health of the property says so too. */
+const CONNECTION_INACTIVE = 'connection-inactive';
+
 const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
   'guest-data-missing',
   'alloggiati-deadline',
@@ -73,8 +81,19 @@ const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
   'over-thirty-nights',
   'istat-deadline',
   'tourist-tax-deadline',
-  'connection-inactive',
+  CONNECTION_INACTIVE,
 ]);
+
+/**
+ * What an alert that changes a light makes stale: the cockpit, the coverage report of the archive of the proofs (it says the same things by obligation:
+ * an open page shows the new row without a reload) and, for a police send that is not active, the connection health of the properties. The list of the
+ * files of the archive is not here: no alert adds or removes a file.
+ */
+function refreshComplianceLights(queryClient: QueryClient, type: string): void {
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
+  if (type === CONNECTION_INACTIVE) void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_HEALTH_KEY] });
+}
 
 /**
  * What a verification handed to an operator changes on screen: the queue of the verifications and its figures (the console open in front of the
@@ -102,7 +121,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   }
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
-  else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+  else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
 }
 

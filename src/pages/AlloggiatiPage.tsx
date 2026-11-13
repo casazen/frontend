@@ -1,229 +1,325 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import { Archive, ChevronLeft, ChevronRight, Download, Upload } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAlloggiatiReports, useAlloggiatiErrors } from '@/queries/use-alloggiati';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
-import { ReportStatus } from '@/components/alloggiati/ReportStatus';
-import { AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
-import type { AlloggiatiReportFilters, AlloggiatiWebStatus } from '@/types/alloggiati.types';
-import { format, parseISO } from 'date-fns';
-import { it } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { ComplianceCoverageReport } from '@/features/compliance/components/compliance-coverage-report';
+import { ProofArchiveTable } from '@/features/compliance/components/proof-archive-table';
+import { ProofUploadDialog, type ProofUploadPrefill } from '@/features/compliance/components/proof-upload-dialog';
+import {
+  ARCHIVE_PARAMS,
+  archiveWindow,
+  formatPeriod,
+  isTaxKind,
+  listedMonths,
+  listedYears,
+  readArchiveAddress,
+  type ArchiveTab,
+} from '@/features/compliance/lib/archive-model';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { todayInRome } from '@/lib/stay-dates';
+import { useComplianceEvidence, useCoverageReport, useDownloadProof, useExportCoverageReport, useExportProofs } from '@/queries/compliance-archive';
+import { useProperties } from '@/queries/use-properties';
+import { COMPLIANCE_PROOF_KINDS, type ComplianceProofKind, type Property } from '@/types';
 
+/** Proofs in a page of the list. */
+const PAGE_SIZE = 25;
+
+/** The formats the coverage report is downloaded in. */
+const REPORT_FORMATS = ['pdf', 'csv'] as const;
+
+const NO_PROPERTIES: Property[] = [];
+
+/**
+ * `/app/short-rent/alloggiati/reports`: the archive of the proofs (NF-47, NF-52, CHK-08, CHK-12 point 8). «Prove» lists the files CasaZen actually holds
+ * (the receipts of the Alloggiati communications, the proofs of ISTAT, the tax receipts), each one downloaded through the API, with the ZIP of the
+ * filtered period and the way to upload a proof; «Riepilogo» (behind the traffic light) says what is expected for the period and what is still to
+ * prove. The filters (property, kind, month or year, one day) are in the address, and the links of the cockpit open the page with them
+ * (`?kind=IstatProof&property=<id>&period=2026-08`): the address wins over anything else. What the caller may read is decided by the server; this page
+ * offers a tax proof only to who may read (and, to upload, write) payments, and an upload only to who may submit the Alloggiati.
+ */
 export function AlloggiatiPage() {
-  const { t } = useTranslation();
-  const [filters, setFilters] = useState<AlloggiatiReportFilters>({});
-  const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
+  const [params, setParams] = useSearchParams();
+  const { hasPermission } = useWorkspace();
+  const features = useFeatureFlags();
+  const hasSummary = features.flags.complianceTrafficLight;
+  const today = todayInRome();
+  const address = readArchiveAddress(params, hasSummary);
+  const { from, to } = archiveWindow(address, today);
 
-  const { data: reports, isLoading, error } = useAlloggiatiReports(filters);
-  const { data: errors } = useAlloggiatiErrors(expandedReportId || '');
+  // A tax receipt is a record of money: it is read with `payment.read` and uploaded with `payment.write`, an upload of any kind with `alloggiati.submit`.
+  const canReadMoney = hasPermission('short-rent', 'payment.read');
+  const canWriteMoney = hasPermission('short-rent', 'payment.write');
+  const readableKinds = COMPLIANCE_PROOF_KINDS.filter((candidate) => canReadMoney || !isTaxKind(candidate));
+  const uploadKinds = hasPermission('short-rent', 'alloggiati.submit')
+    ? readableKinds.filter((candidate) => !isTaxKind(candidate) || canWriteMoney)
+    : [];
+  const kind = readableKinds.find((candidate) => candidate === address.kind);
+  const canUpload = (candidate: ComplianceProofKind) => uploadKinds.includes(candidate);
 
-  // Group reports by status for dashboard view
-  const reportsByStatus = useMemo(() => {
-    if (!reports) return {};
+  const properties = useProperties({}, { fresh: true });
+  const propertyList = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
+  // The queries wait for the properties, which the address is checked against (a property that is not one of the caller's is no filter), and for the
+  // flags, which decide whether the page has a summary: before they are read the page would show the proofs for a moment and then the summary.
+  const ready = !properties.isLoading && !features.isLoading;
+  const propertyId = address.propertyId && (properties.isError || propertyList.some((property) => property.id === address.propertyId)) ? address.propertyId : undefined;
 
-    const grouped: Record<string, typeof reports> = {};
-    reports.forEach((report) => {
-      if (!grouped[report.status]) {
-        grouped[report.status] = [];
-      }
-      grouped[report.status].push(report);
+  const list = useComplianceEvidence({ propertyId, from, to, kind, page: address.page, pageSize: PAGE_SIZE }, ready);
+  const report = useCoverageReport({ from, to, propertyId }, ready && hasSummary && address.tab === 'summary');
+  const download = useDownloadProof();
+  const exportZip = useExportProofs();
+  const exportReport = useExportCoverageReport();
+  // Every button of the page waits while any of these is under way: one file at a time.
+  const busy = download.isPending || exportZip.isPending || exportReport.isPending;
+  const [uploading, setUploading] = useState<ProofUploadPrefill | null>(null);
+
+  const change = (changes: Record<string, string | null>, keepPage = false) => {
+    const next = new URLSearchParams(params);
+    for (const [name, value] of Object.entries(changes)) {
+      if (value) next.set(name, value);
+      else next.delete(name);
+    }
+    if (!keepPage) next.delete(ARCHIVE_PARAMS.page);
+    setParams(next, { replace: true, preventScrollReset: true });
+  };
+
+  const current = address.day ?? address.period ?? '';
+  const periodOptions = [
+    { value: '', label: t('complianceArchive.filters.recent') },
+    ...listedMonths(today).map((month) => ({ value: month, label: formatPeriod(month, language) })),
+    ...listedYears(today).map((year) => ({ value: year, label: t('complianceArchive.filters.wholeYear', { year }) })),
+  ];
+  // A day or a month the address asks for that the list does not offer is still the one in use.
+  if (current && !periodOptions.some((option) => option.value === current)) periodOptions.push({ value: current, label: formatPeriod(current, language) });
+
+  const startUpload = (prefill?: ProofUploadPrefill) =>
+    setUploading({
+      propertyId,
+      kind,
+      day: address.day,
+      period: address.period && address.period.length === 7 ? address.period : undefined,
+      ...prefill,
     });
 
-    return grouped;
-  }, [reports]);
-
-  const handleFilterChange = (key: keyof AlloggiatiReportFilters, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value || undefined,
-    }));
-  };
-
-  const toggleReportExpansion = (reportId: string) => {
-    setExpandedReportId(expandedReportId === reportId ? null : reportId);
-  };
-
-  if (isLoading) {
-    return <LoadingScreen message={t('alloggiati.loading')} />;
-  }
-
-  if (error) {
-    return (
-      <AppShell>
-        <div className="space-y-6 md:space-y-8">
-          <PageHeader title={t('alloggiati.title')} description={t('alloggiati.description')} crumbs="auto" />
-          <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
-            {t('alloggiati.loadError')}
-          </Alert>
-        </div>
-      </AppShell>
-    );
-  }
-
-  const statusOptions: AlloggiatiWebStatus[] = [
-    'DaInviare',
-    'DaInviareManualmente',
-    'SentReceiptPending',
-    'InviatoManualmente',
-    'Inviato',
-    'Errore',
-    'Rifiutato',
+  const tabs: TabItem<ArchiveTab>[] = [
+    { value: 'summary', label: t('complianceArchive.tabs.summary'), testId: 'archive-tab-summary' },
+    { value: 'proofs', label: t('complianceArchive.tabs.proofs'), testId: 'archive-tab-proofs' },
   ];
 
-  return (
-    <AppShell>
-      <div className="space-y-6 md:space-y-8" data-testid="alloggiati-dashboard">
-        <PageHeader title={t('alloggiati.title')} description={t('alloggiati.description')} crumbs="auto" />
-
-        {/* Dashboard summary cards */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Object.entries(reportsByStatus).map(([status, statusReports]) => (
-          <div
-            key={status}
-            className="rounded-lg border bg-card p-4 shadow-sm"
-          >
-            <div className="mb-2">
-              <ReportStatus status={status as AlloggiatiWebStatus} />
-            </div>
-            <div className="text-2xl font-bold">{statusReports.length}</div>
-            <div className="text-sm text-muted-foreground">
-              {statusReports.length === 1 ? t('alloggiati.report') : t('alloggiati.reports')}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4">
-        <div className="w-full sm:w-64">
-          <label htmlFor="status-filter" className="text-sm font-medium mb-2 block">
-            {t('alloggiati.filter.status')}
-          </label>
-          <Select
-            id="status-filter"
-            value={filters.status || ''}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-          >
-            <option value="">{t('alloggiati.filter.allStatuses')}</option>
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {t(`alloggiati.status.${status.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')}`)}
+  const filters = (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="archive-filters">
+      {propertyList.length > 1 ? (
+        <Field label={t('complianceArchive.filters.property')}>
+          <Select value={propertyId ?? ''} onChange={(event) => change({ [ARCHIVE_PARAMS.property]: event.target.value || null })} data-testid="archive-filter-property">
+            <option value="">{t('complianceArchive.filters.allProperties')}</option>
+            {propertyList.map((property) => (
+              <option key={property.id} value={property.id}>
+                {property.name}
               </option>
             ))}
           </Select>
-        </div>
+        </Field>
+      ) : null}
+      <Field label={t('complianceArchive.filters.kind')}>
+        <Select value={kind ?? ''} onChange={(event) => change({ [ARCHIVE_PARAMS.kind]: event.target.value || null })} data-testid="archive-filter-kind">
+          <option value="">{t('complianceArchive.filters.allKinds')}</option>
+          {readableKinds.map((candidate) => (
+            <option key={candidate} value={candidate}>
+              {t(`complianceArchive.kind.${candidate}`)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Field label={t('complianceArchive.filters.period')}>
+        <Select
+          value={current}
+          onChange={(event) => change({ [ARCHIVE_PARAMS.period]: event.target.value || null, [ARCHIVE_PARAMS.day]: null })}
+          data-testid="archive-filter-period"
+        >
+          {periodOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
+    </div>
+  );
 
-        <div className="w-full sm:w-64">
-          <label htmlFor="date-from" className="text-sm font-medium mb-2 block">
-            {t('alloggiati.filter.fromDate')}
-          </label>
-          <input
-            type="date"
-            id="date-from"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={filters.fromDate || ''}
-            onChange={(e) => handleFilterChange('fromDate', e.target.value)}
-          />
-        </div>
+  const totalPages = list.data ? Math.max(1, Math.ceil(list.data.totalCount / (list.data.pageSize || PAGE_SIZE))) : 1;
 
-        <div className="w-full sm:w-64">
-          <label htmlFor="date-to" className="text-sm font-medium mb-2 block">
-            {t('alloggiati.filter.toDate')}
-          </label>
-          <input
-            type="date"
-            id="date-to"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={filters.toDate || ''}
-            onChange={(e) => handleFilterChange('toDate', e.target.value)}
-          />
-        </div>
+  const proofs = (
+    <div className="space-y-4" data-testid="archive-proofs">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="min-h-11"
+          loading={exportZip.isPending}
+          disabled={busy}
+          onClick={() => exportZip.mutate({ from, to, propertyId })}
+          data-testid="archive-export-zip"
+        >
+          <Download className="size-4" aria-hidden="true" />
+          {t('complianceArchive.proofs.exportZip')}
+        </Button>
+        <span className="text-sm text-muted-foreground">{t('complianceArchive.proofs.exportPeriod', { period: current ? formatPeriod(current, language) : t('complianceArchive.filters.recent') })}</span>
       </div>
+      {exportZip.isError ? (
+        <Alert variant="danger" role="alert" data-testid="archive-export-error">
+          {getProblemMessage(exportZip.error, t) ?? t('complianceArchive.proofs.exportFailed')}
+        </Alert>
+      ) : null}
 
-      {/* Reports list */}
-      <div className="space-y-2">
-        {!reports || reports.length === 0 ? (
-          <div className="rounded-lg border bg-card p-8 text-center">
-            <p className="text-muted-foreground">{t('alloggiati.noReports')}</p>
-          </div>
+      {!ready || list.isLoading ? (
+        <ListSkeleton label={t('complianceArchive.proofs.loading')} />
+      ) : list.isError ? (
+        // An error is never an empty list, and a 404 is «not found» whatever the cache still holds of an older read.
+        <ErrorState
+          testId="archive-proofs-error"
+          title={t(getHttpStatus(list.error) === 404 ? 'complianceArchive.proofs.notFound' : 'complianceArchive.proofs.loadError')}
+          error={getHttpStatus(list.error) === 404 ? undefined : list.error}
+          onRetry={() => void list.refetch()}
+        />
+      ) : list.data && list.data.items.length > 0 ? (
+        <div className={list.isPlaceholderData ? 'opacity-60 transition-opacity' : undefined} aria-busy={list.isPlaceholderData}>
+          <ProofArchiveTable items={list.data.items} downloading={busy} onDownload={(entry) => download.mutate(entry)} />
+          {totalPages > 1 ? (
+            <nav className="mt-3 flex items-center justify-between gap-2" aria-label={t('complianceArchive.proofs.pagerLabel')} data-testid="archive-pager">
+              <Button type="button" variant="outline" size="sm" className="min-h-11" disabled={address.page <= 1} onClick={() => change({ [ARCHIVE_PARAMS.page]: address.page > 2 ? String(address.page - 1) : null }, true)}>
+                <ChevronLeft className="size-4" aria-hidden="true" />
+                {t('complianceArchive.proofs.previous')}
+              </Button>
+              <span className="text-sm text-muted-foreground">{t('complianceArchive.proofs.pageOf', { page: list.data.page, pages: totalPages })}</span>
+              <Button type="button" variant="outline" size="sm" className="min-h-11" disabled={address.page >= totalPages} onClick={() => change({ [ARCHIVE_PARAMS.page]: String(address.page + 1) }, true)}>
+                {t('complianceArchive.proofs.next')}
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Button>
+            </nav>
+          ) : null}
+        </div>
+      ) : (
+        // No file is not «everything is fine»: the page says only that none is archived for these filters, and where one can be added.
+        <EmptyState
+          icon={Archive}
+          title={t('complianceArchive.proofs.emptyTitle')}
+          description={t('complianceArchive.proofs.emptyDescription')}
+          action={uploadKinds.length > 0 ? { label: t('complianceArchive.upload.open'), onClick: () => startUpload() } : undefined}
+        />
+      )}
+    </div>
+  );
+
+  const summary = (
+    <div className="space-y-4" data-testid="archive-summary">
+      <div className="flex flex-wrap items-center gap-2">
+        {REPORT_FORMATS.map((format) => (
+          <Button
+            key={format}
+            type="button"
+            variant="outline"
+            size="sm"
+            className="min-h-11"
+            loading={exportReport.isPending && exportReport.variables?.format === format}
+            disabled={busy}
+            onClick={() => exportReport.mutate({ format, filters: { from, to, propertyId } })}
+            data-testid={`archive-export-report-${format}`}
+          >
+            <Download className="size-4" aria-hidden="true" />
+            {t(`complianceArchive.summary.export.${format}`)}
+          </Button>
+        ))}
+      </div>
+      {exportReport.isError ? (
+        <Alert variant="danger" role="alert" data-testid="archive-report-export-error">
+          {getProblemMessage(exportReport.error, t) ?? t('complianceArchive.summary.exportFailed')}
+        </Alert>
+      ) : null}
+
+      {!ready || report.isLoading ? (
+        <ListSkeleton label={t('complianceArchive.summary.loading')} />
+      ) : report.isError ? (
+        <ErrorState
+          testId="archive-summary-error"
+          title={t(getHttpStatus(report.error) === 404 ? 'complianceArchive.summary.notAvailable' : 'complianceArchive.summary.loadError')}
+          error={getHttpStatus(report.error) === 404 ? undefined : report.error}
+          onRetry={() => void report.refetch()}
+        />
+      ) : report.data ? (
+        <div className={report.isPlaceholderData ? 'opacity-60 transition-opacity' : undefined} aria-busy={report.isPlaceholderData}>
+          <ComplianceCoverageReport report={report.data} kind={kind} canUpload={canUpload} onUpload={startUpload} />
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <AppShell>
+      <div className="space-y-6" data-testid="compliance-archive-page">
+        <PageHeader
+          title={t('complianceArchive.title')}
+          description={t('complianceArchive.description')}
+          crumbs="auto"
+          primary={uploadKinds.length > 0 ? { label: t('complianceArchive.upload.open'), icon: Upload, onClick: () => startUpload(), testId: 'archive-upload-open' } : undefined}
+          mobilePrimary="none"
+        />
+
+        {address.day ? (
+          <p className="text-sm" data-testid="archive-day-filter">
+            {t('complianceArchive.filters.day', { day: formatPeriod(address.day, language) })}{' '}
+            <Button type="button" variant="link" size="sm" className="min-h-11" onClick={() => change({ [ARCHIVE_PARAMS.day]: null })}>
+              {t('complianceArchive.filters.clearDay')}
+            </Button>
+          </p>
+        ) : null}
+
+        {filters}
+
+        {hasSummary ? (
+          <Tabs label={t('complianceArchive.tabsLabel')} items={tabs} defaultValue="summary" value={address.tab} param={ARCHIVE_PARAMS.tab}>
+            {address.tab === 'summary' ? summary : proofs}
+          </Tabs>
         ) : (
-          reports.map((report) => (
-            <div
-              key={report.reportId}
-              className="rounded-lg border bg-card shadow-sm"
-            >
-              <button
-                type="button"
-                onClick={() => toggleReportExpansion(report.reportId)}
-                className="w-full p-4 text-left hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {expandedReportId === report.reportId ? (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      )}
-                      <h3 className="font-semibold">{report.guestName}</h3>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      {report.propertyName} · {format(parseISO(report.checkInDate), 'dd MMM yyyy', { locale: it })}
-                    </div>
-                    <ReportStatus
-                      status={report.status}
-                      deadlineAt={report.deadlineAt}
-                      hoursUntilDeadline={report.hoursUntilDeadline}
-                      isOverdue={report.isOverdue}
-                    />
-                  </div>
-                  {report.confirmationNumber && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">{t('alloggiati.confirmationNumber')}:</span>{' '}
-                      <span className="font-mono">{report.confirmationNumber}</span>
-                    </div>
-                  )}
-                </div>
-              </button>
-
-              {/* Expanded error details */}
-              {expandedReportId === report.reportId && report.hasErrors && errors && (
-                <div className="border-t bg-muted/30 p-4">
-                  <h4 className="font-medium mb-3 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    {t('alloggiati.error.row_invalid')}
-                  </h4>
-                  <div className="space-y-2">
-                    {errors.map((error, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-md border border-red-200 bg-red-50 p-3 text-sm"
-                      >
-                        <div className="font-medium text-red-900">
-                          {t('alloggiati.error.row')} {error.rowNumber}: {error.guestName}
-                        </div>
-                        <div className="mt-1 text-red-700">
-                          <span className="font-mono text-xs">{error.tipoErrore}</span> - {error.errorMessage}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {expandedReportId === report.reportId && !report.hasErrors && (
-                <div className="border-t bg-muted/30 p-4 text-sm text-muted-foreground">
-                  {t('alloggiati.noErrors')}
-                </div>
-              )}
-            </div>
-          ))
+          proofs
         )}
       </div>
-      </div>
+
+      <ProofUploadDialog
+        open={uploading !== null}
+        onClose={() => setUploading(null)}
+        properties={propertyList}
+        kinds={uploadKinds}
+        prefill={uploading ?? undefined}
+        alloggiatiPortalUrl={list.data?.alloggiatiPortalUrl}
+      />
     </AppShell>
+  );
+}
+
+/** The list while it loads: the shape of the rows, announced once, with no spinner in the middle of nothing. */
+function ListSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-busy="true" className="space-y-3" data-testid="archive-loading">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-3">
+        <Skeleton className="h-20 w-full rounded-xl motion-reduce:animate-none" />
+        <Skeleton className="h-20 w-full rounded-xl motion-reduce:animate-none" />
+        <Skeleton className="h-20 w-full rounded-xl motion-reduce:animate-none" />
+      </div>
+    </div>
   );
 }

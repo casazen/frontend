@@ -17,6 +17,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
 import { useBookingThread } from '@/queries/use-booking-messages';
+import { BookingComplianceSection } from './booking-compliance-section';
 import { BookingMessagesSection } from './components/booking-messages-section';
 import { BookingNextStep } from './components/booking-next-step';
 import { BookingPaymentTab } from './components/booking-payment-tab';
@@ -229,6 +230,7 @@ export function BookingDetailPage() {
                   <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
                 </PlainSection>
               </div>
+              <BookingComplianceSection booking={booking} />
             </div>
           )}
 

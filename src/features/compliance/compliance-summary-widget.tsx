@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { ComplianceRow, ROW_BUTTON } from '@/features/compliance/components/compliance-row';
 import { ComplianceSummaryLine } from '@/features/compliance/components/compliance-summary-line';
+import { ComplianceDrawerButton } from '@/features/compliance/compliance-drawer/compliance-drawer-button';
+import { useComplianceDrawerAvailable } from '@/features/compliance/compliance-drawer/use-compliance-drawer';
 import { focusBodyOf, focusToneOf, thenOf, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
 import { useCockpit } from '@/features/compliance/use-cockpit';
 import { NoteLine } from '@/features/dashboard/components/note-line';
@@ -28,6 +30,10 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
   // What the law dates and is still to do is the urgent one: its icon takes the color of urgency and its button is the solid one. What is in
   // hand (yellow) or done (green) is not.
   const urgent = row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
+  // «Verifica nel tuo Cassetto Compliance»: for the rows whose outcome the server says is held by the connected area, where the connector is on.
+  const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
+  // The button of the row: where it goes, unless the row is only to read.
+  const link = row.quiet ? null : row.to;
   return (
     <ComplianceRow
       icon={row.icon}
@@ -43,13 +49,18 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
       titleTestId={row.to || row.quiet ? undefined : `compliance-summary-${row.testKey}-item`}
       testId="compliance-summary-row"
       action={
-        row.to && !row.quiet ? (
-          // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
-          <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
-            <Link to={row.to} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
-              {row.cta}
-            </Link>
-          </Button>
+        link || drawer ? (
+          <>
+            {link ? (
+              // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
+              <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
+                <Link to={link} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
+                  {row.cta}
+                </Link>
+              </Button>
+            ) : null}
+            {drawer ? <ComplianceDrawerButton target={drawer} subject={row.subject} className={ROW_BUTTON} testId={`compliance-summary-${row.testKey}-drawer`} /> : null}
+          </>
         ) : undefined
       }
     />

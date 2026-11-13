@@ -1,6 +1,7 @@
 import { generatePath } from 'react-router-dom';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 
 /** The kinds of proof the archive page can open on (`ManualProofKind` of the backend): the one a period item is about. */
@@ -12,12 +13,13 @@ const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 /**
  * Parameters a page of the cockpit opens with, for a page that shows its content already filtered (the archive of the proofs): a fixed
  * `kind`, and, when asked, the `property` and the `period` (`yyyy-MM`) of the item. A parameter the item cannot give is left out: the page then
- * shows more than the item, never another thing.
+ * shows more than the item, never another thing. `section` is a fixed part of the page to open on (the connection health of the property page).
  */
 interface ComplianceActionQuery {
   kind?: ComplianceArchiveKind;
   property?: boolean;
   period?: boolean;
+  section?: typeof CONNECTION_HEALTH_SECTION;
 }
 
 /** A page of the ROUTE_MANIFEST (pattern with `:id`), optionally on a tab of the booking detail or with the filters of the archive. */
@@ -101,10 +103,10 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // The send of the channel manager is the property's: its page.
+  // The send of the channel manager is the property's: its page, on the section that tells who sends, whether it works and what to do (E03/F03/US02/T01).
   ActivateOctorateSend: {
     target: 'property',
-    route: { path: '/app/short-rent/properties/:id' },
+    route: { path: '/app/short-rent/properties/:id', query: { section: CONNECTION_HEALTH_SECTION } },
     write: 'property.write',
   },
   // A stay the channel manager does not send by itself: the same section as every Alloggiati to send by hand (CO-11).
@@ -155,6 +157,7 @@ function buildRoute(
   if (route.query?.kind) params.set('kind', route.query.kind);
   if (route.query?.property && item.propertyId) params.set('property', item.propertyId);
   if (route.query?.period && item.period && PERIOD.test(item.period)) params.set('period', item.period);
+  if (route.query?.section) params.set('section', route.query.section);
   const query = params.toString();
   return query ? `${path}?${query}` : path;
 }
@@ -182,7 +185,8 @@ export function complianceActionRoute(
  * Whether an address of `complianceActionRoute` is the one the person is already at: the same page, with every parameter it carries (the tab, the
  * filters) already in the address of the page. The police send and the tourist tax rate of a property lead to the page of the property, and a card on
  * that page (it sits above every tab) that offered them would offer a button that opens the page it is on and changes nothing: the card leaves the
- * button out, and still says what is wrong and why, until the page where it is done exists (E03/F03/US02).
+ * button out, and still says what is wrong and why. The police send opens the section of its connection health (`?section=connection-health`), which is
+ * not the address the person is on until they have opened it; the tourist tax rate has no page where it is entered yet, so its button stays out.
  */
 export function isCurrentAddress(address: string, location: { pathname: string; search: string }): boolean {
   const [path, query = ''] = address.split('?');

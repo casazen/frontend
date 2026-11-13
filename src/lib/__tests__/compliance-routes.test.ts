@@ -47,7 +47,8 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   // CHK-12 (NF-52): without a month the archive opens on the kind and the property only.
   VerifyIdentity: `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`,
   UploadAlloggiatiReceipt: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
-  ActivateOctorateSend: `/app/short-rent/properties/${PROPERTY_ID}`,
+  // The section of the property page that tells the police send (E03/F03/US02/T01).
+  ActivateOctorateSend: `/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`,
   SendAlloggiatiManually: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   UploadIstatProof: `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`,
   EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
@@ -199,17 +200,27 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
   });
 });
 
-// A card on the page of the property must not offer a button that opens the page it is on (the police send and the tourist tax rate lead there).
+// A card on the page of the property must not offer a button that opens the page it is on (the tourist tax rate leads there; the police send opens its section).
 describe('isCurrentAddress', () => {
   const propertyPage = `/app/short-rent/properties/${PROPERTY_ID}`;
 
-  it.each(['ActivateOctorateSend', 'EnterMunicipalityTaxRate'] as const)('isCurrentAddress_%s_IsThePageOfThePropertyWhateverTabItIsOn', (action) => {
-    const address = complianceActionRoute(itemFor(action))!;
+  it('isCurrentAddress_EnterMunicipalityTaxRate_IsThePageOfThePropertyWhateverTabItIsOn', () => {
+    const address = complianceActionRoute(itemFor('EnterMunicipalityTaxRate'))!;
 
     expect(address).toBe(propertyPage);
     expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(true);
-    // The tab is what a button may change, but the page of the property has no field for them in any tab: nothing to offer.
+    // The tab is what a button may change, but the page of the property has no field for the rate in any tab: nothing to offer.
     expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(true);
+  });
+
+  it('isCurrentAddress_ActivateOctorateSend_IsSomewhereToGoUntilTheSectionIsOpen', () => {
+    const address = complianceActionRoute(itemFor('ActivateOctorateSend'))!;
+
+    expect(address).toBe(`${propertyPage}?section=connection-health`);
+    // On the plain page the section is a place to go to: the button is offered. Once it is in the address there is nothing left to open.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?section=connection-health' })).toBe(true);
   });
 
   it('isCurrentAddress_AnotherPageOrAnotherTab_IsNotTheCurrentAddress', () => {

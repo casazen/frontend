@@ -1,4 +1,5 @@
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
+import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import type { DashboardMissing } from '@/types/dashboard.types';
 import type { TouristTaxRateRule, TouristTaxRateVerification } from '@/types/tourist-tax.types';
 
@@ -289,6 +290,12 @@ export interface ComplianceSummaryItem {
   reason?: string | null;
   /** The month (`yyyy-MM`) of an ISTAT or tourist tax item; null or absent for the others. */
   period?: string | null;
+  /**
+   * `Alloggiati` or `Istat` when the outcome is held only by the connected area and CasaZen has no proof of it (`HandoffTopic` of the backend, E03/F05):
+   * the one signal that offers «Verifica nel tuo Cassetto Compliance» on the row, with this topic. Null or absent when none applies (a communication that
+   * was never sent, a failure CasaZen knows, a month the host sends by hand): no action is offered. A server that does not send it offers none.
+   */
+  handoffTopic?: ComplianceHandoffTopic | null;
 }
 
 export interface ComplianceSummarySection {
@@ -404,6 +411,19 @@ export interface CheckoutWizardCompleteResult {
   bookingStatus: string;
   serviceRequestId: string | null;
   wizard: CheckoutWizardState;
+}
+
+/** The elements "What happens now" tells about after the check-out, one line each (NF-45, NF-05): the channel manager only for a booking that is mirrored there. */
+export type CheckoutResultElementId = 'departure' | 'channelManager' | 'alloggiati' | 'cleaning' | 'touristTax' | 'propertyReady';
+
+/** How an element stands: `done`, `attention` (not completed: still to do, or on its way) or `problem` (it failed). It is said in words as well, never by colour alone. */
+export type CheckoutResultTone = 'done' | 'attention' | 'problem';
+
+/** One line of the result: the element, how it stands and what is said about it. */
+export interface CheckoutResultLine {
+  element: CheckoutResultElementId;
+  tone: CheckoutResultTone;
+  text: string;
 }
 
 /** Body of `POST /bookings/:id/checkout-wizard/start` (CO-08). */

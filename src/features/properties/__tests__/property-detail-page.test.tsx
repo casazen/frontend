@@ -11,6 +11,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { fetchComplianceSummary } from '@/api/compliance.api';
 import { fetchServiceRequests } from '@/api/service-requests.api';
 import { welcomeApi } from '@/api/welcome.api';
+import { complianceHealthApi } from '@/api/compliance-health.api';
 import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
@@ -51,6 +52,8 @@ vi.mock('@/api/welcome.api', () => ({
   },
 }));
 vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,QRCODE')) } }));
+// «Invio a Polizia e ISTAT» (E03/F03/US02/T01) is covered by its own test; here only whether the page mounts it (and so reads its API) is asked.
+vi.mock('@/api/compliance-health.api', () => ({ complianceHealthApi: { getConnectionHealth: vi.fn(() => new Promise(() => undefined)) } }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'app-shell' }, children),
@@ -137,27 +140,32 @@ function mockDetailError(status: number) {
   return refetch;
 }
 
-function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
+function pageElement(queryClient: QueryClient, otaPartnerApi: boolean, search: string, crmMarketing: boolean) {
+  return createElement(
+    QueryClientProvider,
+    { client: queryClient },
     createElement(
-      QueryClientProvider,
-      { client: queryClient },
+      FeatureFlagsContext.Provider,
+      { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi, crmMarketing }, isLoading: false } },
       createElement(
-        FeatureFlagsContext.Provider,
-        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi, crmMarketing }, isLoading: false } },
+        MemoryRouter,
+        { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
         createElement(
-          MemoryRouter,
-          { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
-          createElement(
-            Routes,
-            null,
-            createElement(Route, { path: '/properties/:id', element: createElement(PropertyDetailPage) })
-          )
+          Routes,
+          null,
+          createElement(Route, { path: '/properties/:id', element: createElement(PropertyDetailPage) })
         )
       )
     )
   );
+}
+
+function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
+  /** Draws the page again with what the hooks answer now: the answer of a request that arrived after the first drawing. */
+  const again = () => view.rerender(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
+  return { ...view, again };
 }
 
 /** Opens the menu "⋯" of the header and gives it back. */
@@ -173,6 +181,7 @@ describe('PropertyDetailPage', () => {
   beforeEach(() => {
     workspace.permissions = ['property.write', 'booking.read', 'booking.write'];
     vi.mocked(welcomeApi.getLink).mockClear();
+    vi.mocked(complianceHealthApi.getConnectionHealth).mockClear();
     vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
     const noSection = { count: 0, items: [] };
     vi.mocked(fetchComplianceSummary).mockResolvedValue({
@@ -416,5 +425,64 @@ describe('PropertyDetailPage', () => {
 
     expect(screen.queryByTestId('welcome-qr-card')).not.toBeInTheDocument();
     expect(welcomeApi.getLink).not.toHaveBeenCalled();
+  });
+
+  // CHK-12 point 7 (E03/F03/US02/T01): the page says whether the police and ISTAT send works, for who may read the property (what its API asks).
+  it('PropertyDetailPage_PropertyRead_MountsTheConnectionHealthOfThePropertyAndReadsItsApi', () => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    renderPage();
+
+    expect(screen.getByTestId('connection-health-panel')).toBeInTheDocument();
+    expect(complianceHealthApi.getConnectionHealth).toHaveBeenCalledWith(PROPERTY_ID);
+  });
+
+  it('PropertyDetailPage_WithoutPropertyRead_NoConnectionHealthAndNoCallToItsApi', () => {
+    workspace.permissions = ['property.write', 'booking.read'];
+    renderPage();
+
+    expect(screen.queryByTestId('connection-health-panel')).not.toBeInTheDocument();
+    expect(complianceHealthApi.getConnectionHealth).not.toHaveBeenCalled();
+  });
+
+  // The button «Attiva l'invio» of the cockpit and of the To do opens the page on that section.
+  it('PropertyDetailPage_SectionInTheUrl_ScrollsToTheConnectionHealth', () => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    renderPage(false, '?section=connection-health');
+
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.contexts[0]).toBe(document.getElementById('connection-health'));
+    // The focus goes to the section too, so a screen reader says where the link led.
+    expect(document.getElementById('connection-health')).toHaveFocus();
+  });
+
+  // The section exists only once the whole page is there: the skeleton shows until the record is read as well as the detail. The detail may come first, and
+  // the scroll must wait for the section instead of running on the skeleton and never again.
+  it('PropertyDetailPage_SectionInTheUrlAndTheRecordStillComing_ScrollsAndFocusesTheSectionWhenTheRecordArrives', () => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({ data: undefined, isLoading: true, isError: false } as unknown as ReturnType<typeof propertyQueries.useProperty>);
+    const { again } = renderPage(false, '?section=connection-health');
+
+    expect(screen.queryByTestId('connection-health-panel')).not.toBeInTheDocument();
+    expect(scroll).not.toHaveBeenCalled();
+
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({ data: mockRecord, isLoading: false, isError: false } as ReturnType<typeof propertyQueries.useProperty>);
+    again();
+
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.contexts[0]).toBe(document.getElementById('connection-health'));
+    expect(document.getElementById('connection-health')).toHaveFocus();
+  });
+
+  it('PropertyDetailPage_NoSectionInTheUrl_DoesNotScroll', () => {
+    workspace.permissions = ['property.read', 'property.write', 'booking.read'];
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    renderPage();
+
+    expect(scroll).not.toHaveBeenCalled();
   });
 });
