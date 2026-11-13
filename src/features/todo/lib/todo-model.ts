@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { ActivityUrgency, TodoActivity } from '@/api/internal-activities.api';
 import { addDays, formatStayDate, romeWallClock, todayInRome } from '@/lib/stay-dates';
+import { COMPLIANCE_REASON_CODES } from '@/types/compliance.types';
 
 /** The page of the whole list (ADR-026-R8): the Home links here, and so does the nav. */
 export const TODO_LIST_PATH = '/app/short-rent/activities';
@@ -44,6 +45,25 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
     titleKey: 'activity.todo.type.ReconnectChannelManager.title',
     whyKey: 'activity.todo.type.ReconnectChannelManager.why',
   },
+  // The types the traffic light of the cockpit raises besides the ones above (E03/F02/US01/T03, NF-52).
+  IdentityVerification: { titleKey: 'activity.todo.type.IdentityVerification.title', whyKey: 'activity.todo.type.IdentityVerification.why' },
+  MunicipalityTaxRateMissing: {
+    titleKey: 'activity.todo.type.MunicipalityTaxRateMissing.title',
+    whyKey: 'activity.todo.type.MunicipalityTaxRateMissing.why',
+  },
+  TouristTaxDeadline: { titleKey: 'activity.todo.type.TouristTaxDeadline.title', whyKey: 'activity.todo.type.TouristTaxDeadline.why' },
+  // The types of the other modules already in the backend (the channel manager, the stays, the assistant, the owner portal): each item has its words.
+  // Where the page of its action does not exist yet (`ACTIONS_WITHOUT_A_PAGE_YET` in the test of the registry) it has no button, but it is not told as «Attività da completare».
+  CleaningDue: { titleKey: 'activity.todo.type.CleaningDue.title', whyKey: 'activity.todo.type.CleaningDue.why' },
+  BookingSpecialRequest: { titleKey: 'activity.todo.type.BookingSpecialRequest.title', whyKey: 'activity.todo.type.BookingSpecialRequest.why' },
+  ConfirmChannelMapping: { titleKey: 'activity.todo.type.ConfirmChannelMapping.title', whyKey: 'activity.todo.type.ConfirmChannelMapping.why' },
+  CheckImportedListing: { titleKey: 'activity.todo.type.CheckImportedListing.title', whyKey: 'activity.todo.type.CheckImportedListing.why' },
+  BookingOverlap: { titleKey: 'activity.todo.type.BookingOverlap.title', whyKey: 'activity.todo.type.BookingOverlap.why' },
+  BookingSyncConflict: { titleKey: 'activity.todo.type.BookingSyncConflict.title', whyKey: 'activity.todo.type.BookingSyncConflict.why' },
+  MessageToReply: { titleKey: 'activity.todo.type.MessageToReply.title', whyKey: 'activity.todo.type.MessageToReply.why' },
+  OwnerStayToReview: { titleKey: 'activity.todo.type.OwnerStayToReview.title', whyKey: 'activity.todo.type.OwnerStayToReview.why' },
+  OwnerStaySyncFailed: { titleKey: 'activity.todo.type.OwnerStaySyncFailed.title', whyKey: 'activity.todo.type.OwnerStaySyncFailed.why' },
+  OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };
@@ -170,11 +190,22 @@ function entityLabelKeyOf(entityType: string, exists: (key: string) => boolean):
   return entityType && exists(own) ? own : null;
 }
 
+/** The start of the kind of entity of an item about a property and a month (`PropertyPeriod:yyyy-MM`: ISTAT, the tourist tax), which the feeder of the compliance raises. */
+const PERIOD_ENTITY = /^PropertyPeriod:(\d{4}-(?:0[1-9]|1[0-2]))$/;
+
+/** The month an item is about, said as the host says it («agosto 2026»): none for an item that is not about a month. */
+function monthOf(entityType: string, locale: string): string | null {
+  const month = PERIOD_ENTITY.exec(entityType)?.[1];
+  return month ? formatStayDate(`${month}-01`, locale, { month: 'long', year: 'numeric' }) || null : null;
+}
+
 function describeObject(activity: TodoActivity, ctx: TodoTextContext): string {
   const { t } = ctx;
-  const entityKey = entityLabelKeyOf(activity.entityType, ctx.exists);
+  // An item about a month is about a property: it says the month too, or two months of the same property are two rows that look the same.
+  const month = monthOf(activity.entityType, ctx.locale);
+  const entityKey = entityLabelKeyOf(month ? 'Property' : activity.entityType, ctx.exists);
   const property = activity.propertyId ? ctx.propertyNames.get(activity.propertyId) : undefined;
-  const parts = [entityKey ? t(entityKey) : null, property ?? null].filter((part): part is string => Boolean(part));
+  const parts = [entityKey ? t(entityKey) : null, property ?? null, month].filter((part): part is string => Boolean(part));
   if (parts.length > 0) return parts.join(' · ');
   return activity.propertyId ? t('activity.todo.object.property') : t('activity.todo.object.organization');
 }
@@ -184,6 +215,10 @@ function describeWhy(activity: TodoActivity, ctx: TodoTextContext): string | nul
   if (reason) {
     const key = `${REASON_PREFIX}${reason}`;
     if (ctx.exists(key)) return ctx.t(key);
+    // The reasons of the traffic light of the compliance are its codes (E03/F02/US01/T03): the words are the cockpit's own, the ones the page of the
+    // adempimenti shows. Only a code this version knows is looked up: a text of the server is never a way into the tree of the texts.
+    const own = `compliance.reason.${reason}`;
+    if ((COMPLIANCE_REASON_CODES as readonly string[]).includes(reason) && ctx.exists(own)) return ctx.t(own);
     // A short text written by the server is read as it is; a code nobody translated yet is not shown, the type tells why.
     if (/\s/.test(reason)) return reason;
   }

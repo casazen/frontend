@@ -476,6 +476,22 @@
           "title": "Alloggiati Web in scadenza",
           "why": "Gli ospiti vanno comunicati alla Questura entro la scadenza."
         },
+        "BookingOverlap": {
+          "title": "Date già occupate sul gestionale dei canali",
+          "why": "Le date di questa prenotazione risultano occupate anche sul gestionale dei canali: controlla la prenotazione e i calendari prima che arrivi un secondo ospite."
+        },
+        "BookingSpecialRequest": {
+          "title": "Richiesta speciale dell'ospite",
+          "why": "L'ospite ha scritto una richiesta particolare: leggila prima dell'arrivo."
+        },
+        "BookingSyncConflict": {
+          "title": "Prenotazione cambiata anche sul gestionale dei canali",
+          "why": "La prenotazione è stata cambiata anche lì mentre la modificavi: scegli se tenere la versione di CasaZen o quella del gestionale."
+        },
+        "CheckImportedListing": {
+          "title": "Immobile importato da controllare",
+          "why": "L'immobile è stato creato da un annuncio del gestionale dei canali e resta inattivo finché non controlli i dati importati."
+        },
         "CheckInPending": {
           "title": "Check-in da completare",
           "why": "Il check-in di questo soggiorno non è ancora completo."
@@ -484,6 +500,14 @@
           "title": "Check-out da completare",
           "why": "Il soggiorno è finito: registra la partenza."
         },
+        "CleaningDue": {
+          "title": "Pulizia da richiedere",
+          "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
+        },
+        "ConfirmChannelMapping": {
+          "title": "Annuncio da collegare a un immobile",
+          "why": "Un annuncio trovato sul gestionale dei canali potrebbe corrispondere a più immobili, o a nessuno: conferma o rifiuta il collegamento."
+        },
         "CredentialsToRenew": {
           "title": "Credenziali da rinnovare",
           "why": "Le credenziali di un servizio stanno per scadere o sono già scadute."
@@ -491,6 +515,10 @@
         "FiscalDocument": {
           "title": "Documento fiscale da sistemare",
           "why": "Un documento fiscale ha bisogno di te."
+        },
+        "IdentityVerification": {
+          "title": "Identità dell'ospite da verificare",
+          "why": "L'identità dell'ospite non è ancora verificata: aspettiamo il suo selfie, oppure un operatore deve decidere."
         },
         "IntegrationError": {
           "title": "Collegamento da sistemare",
@@ -508,6 +536,26 @@
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
         },
+        "MessageToReply": {
+          "title": "Messaggio a cui rispondere",
+          "why": "L'assistente ha passato a te il messaggio di un ospite: rispondigli tu."
+        },
+        "MunicipalityTaxRateMissing": {
+          "title": "Imposta di soggiorno da inserire",
+          "why": "Non conosciamo l'imposta di soggiorno del comune: inseriscila, non la consideriamo mai pari a zero."
+        },
+        "OwnerDocumentExpiring": {
+          "title": "Documento del proprietario in scadenza",
+          "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
+        },
+        "OwnerStaySyncFailed": {
+          "title": "Blocco del soggiorno del proprietario non accettato",
+          "why": "Il gestionale dei canali non ha accettato il blocco delle date: il soggiorno non è confermato finché non lo invii di nuovo."
+        },
+        "OwnerStayToReview": {
+          "title": "Soggiorno del proprietario da decidere",
+          "why": "Il proprietario ha chiesto di soggiornare nel suo immobile: approva o rifiuta la richiesta."
+        },
         "PublicationError": {
           "title": "Errore di pubblicazione",
           "why": "Un annuncio non è stato pubblicato su un canale."
@@ -519,6 +567,10 @@
         "ReconnectChannelManager": {
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
+        },
+        "TouristTaxDeadline": {
+          "title": "Imposta di soggiorno in scadenza",
+          "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."
         },
         "WizardResume": {
           "title": "Procedura da riprendere",
@@ -2695,6 +2747,11 @@
         "body": "Mancano dei dati degli ospiti: puoi inserirli tu adesso, passo dopo passo.",
         "title": "Completa i dati degli ospiti"
       },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
+      },
       "confirmManual": {
         "title": "Conferma la prenotazione"
       },
@@ -4255,8 +4312,8 @@
       "Suspended": "Sospeso"
     },
     "page": {
-      "title": "Adempimenti",
-      "description": "Cosa manca per essere in regola, per gli immobili e per i soggiorni."
+      "title": "Sono in regola?",
+      "description": "Per ogni adempimento vedi se è a posto, a che punto è o cosa devi fare. Il verde c'è solo quando CasaZen ha la prova."
     },
     "summary": {
       "title": "Panoramica compliance",
@@ -4273,7 +4330,16 @@
       "alloggiatiManualRequired": "Alloggiati da inviare manualmente",
       "moreItems_one": "e {{count}} altro",
       "moreItems_other": "e altri {{count}}",
-      "turnoversPending": "Proprietà da dichiarare pronte"
+      "turnoversPending": "Proprietà da dichiarare pronte",
+      "line": {
+        "allClear": "Tutto in regola",
+        "red": "{{count}} da sistemare",
+        "todo_one": "{{count}} cosa da fare",
+        "todo_other": "{{count}} cose da fare",
+        "unknown": "{{count}} da verificare",
+        "withDetail": "{{todo}}: {{what}}",
+        "yellow": "{{count}} in corso"
+      }
     },
     "cockpit": {
       "kicker": {
@@ -4297,7 +4363,7 @@
       },
       "fine": {
         "title": "Scadenze di legge",
-        "intro": "Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24): se non parte in tempo rischi una sanzione.",
+        "intro": "Scadenze fissate dalla legge: Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24), poi ci sono ISTAT e l'imposta di soggiorno. Se non partono in tempo rischi una sanzione.",
         "moreLink": "Vedile tutte in Alloggiati"
       },
       "start": {
@@ -4321,6 +4387,10 @@
         "toggle_one": "{{count}} casa in regola",
         "toggle_other": "{{count}} case in regola"
       },
+      "green": {
+        "toggle_one": "{{count}} adempimento in regola",
+        "toggle_other": "{{count}} adempimenti in regola"
+      },
       "openAll": "Tutti gli adempimenti",
       "showMore": "Mostra le altre {{count}}",
       "showLess": "Mostra meno",
@@ -4332,6 +4402,81 @@
         "composition": "Composizione degli ospiti",
         "guestData": "Dati degli ospiti"
       }
+    },
+    "item": {
+      "ActivateOctorateSend": "Invio automatico alla Questura",
+      "ActivateProperty": "Attivazione dell'immobile",
+      "CheckOut": "Partenza",
+      "CompleteGuestCheckIn": "Dati degli ospiti",
+      "ConfirmPropertyReady": "Immobile pronto per il prossimo ospite",
+      "DeclareTouristTax": "Imposta di soggiorno di {{period}}",
+      "EnterMunicipalityTaxRate": "Imposta di soggiorno del comune",
+      "RenewPoliceCredentials": "Credenziali della Questura",
+      "ResolveAlloggiatiFailure": "Alloggiati Web",
+      "SendAlloggiati": "Alloggiati Web",
+      "SendAlloggiatiManually": "Invio di Alloggiati Web",
+      "UploadAlloggiatiReceipt": "Ricevuta di Alloggiati Web",
+      "UploadIstatProof": "ISTAT di {{period}}",
+      "VerifyIdentity": "Identità dell'ospite",
+      "noPeriod": "un periodo"
+    },
+    "light": {
+      "fallback": {
+        "green": "È in regola.",
+        "red": "C'è qualcosa da fare.",
+        "unknown": "CasaZen non ha ancora un esito: controllalo.",
+        "yellow": "È in corso: aspetta la conferma."
+      },
+      "green": "In regola",
+      "named": "{{light}}: {{reason}}",
+      "red": "Da fare",
+      "unknown": "Da verificare",
+      "yellow": "In corso"
+    },
+    "lines": {
+      "more_one": "e {{count}} altro adempimento",
+      "more_other": "e altri {{count}} adempimenti",
+      "ofProperty": "Adempimenti di questo immobile",
+      "ofStay": "Adempimenti di questo soggiorno",
+      "unavailable": {
+        "body": "Non sappiamo se è tutto in ordine: riprova tra un momento.",
+        "title": "Non riusciamo a controllare gli adempimenti"
+      }
+    },
+    "reason": {
+      "action_required": "C'è qualcosa da fare.",
+      "activation_incomplete": "L'attivazione non è finita: finché non lo è, la casa non si può prenotare dal tuo sito.",
+      "alloggiati_failed": "Alloggiati Web non ha accettato l'invio: correggi i dati e invia di nuovo.",
+      "alloggiati_incomplete": "Alloggiati Web ha preso solo alcuni ospiti: il soggiorno non è completo.",
+      "alloggiati_not_sent": "Alloggiati Web non è ancora stato inviato.",
+      "alloggiati_sending": "L'invio ad Alloggiati Web è in corso.",
+      "awaiting_receipt": "È stato inviato: manca la ricevuta da archiviare.",
+      "checkout_due": "La partenza va chiusa.",
+      "cin_invalid": "Il CIN non è nel formato corretto.",
+      "cin_missing": "Manca il CIN.",
+      "cin_valid": "Il CIN è nel formato corretto.",
+      "connection_inactive": "L'invio automatico non è attivo: attivalo oppure invia tu.",
+      "connection_unverified": "Non possiamo sapere se l'invio automatico è attivo: confermalo tu.",
+      "credentials_refused": "La Questura ha rifiutato le credenziali: inseriscile di nuovo.",
+      "deadline_overdue": "La scadenza è passata e non c'è nessuna prova.",
+      "entrusted_to_channel_manager": "Se ne occupa il tuo channel manager: aspettiamo la ricevuta.",
+      "evidence_missing": "Manca la prova archiviata.",
+      "external_verification_required": "L'esito c'è solo nel tuo channel manager: CasaZen non lo vede, controllalo lì.",
+      "guest_data_missing": "Mancano dei dati degli ospiti per Alloggiati Web.",
+      "identity_missing": "L'arrivo è vicino e l'identità dell'ospite non è ancora verificata.",
+      "identity_verified": "L'identità dell'ospite è verificata.",
+      "municipality_rate_missing": "Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).",
+      "operator_decision_required": "Un operatore deve decidere sulla verifica dell'identità.",
+      "over_thirty_nights_not_sent": "Oltre 30 notti il channel manager non invia da solo: invia tu Alloggiati Web.",
+      "period_open": "Il periodo è ancora aperto: la scadenza non è arrivata.",
+      "property_ready_not_confirmed": "Non hai ancora dichiarato la casa pronta per il prossimo ospite.",
+      "receipt_archived": "La ricevuta è archiviata.",
+      "receipt_missing": "È stato inviato, ma la ricevuta non è archiviata: caricala.",
+      "selfie_awaited": "Aspettiamo il selfie dell'ospite prima dell'arrivo.",
+      "short_stay_at_risk": "Soggiorno breve (6 ore per l'invio): gli ospiti non sono affidati al channel manager. Invia tu Alloggiati Web."
+    },
+    "row": {
+      "named": "{{what}}: {{label}}"
     },
     "autopilot": {
       "button": "Gestisci con AI",
@@ -5366,6 +5511,10 @@
       "requests_other": "{{count}} richieste da approvare"
     },
     "todo": {
+      "ActivateOctorateSend": {
+        "cta": "Controlla l'invio",
+        "title": "Attiva l'invio automatico alla Questura: {{label}}"
+      },
       "ActivateProperty": {
         "cta": "Completa",
         "ctaCin": "Aggiungi il CIN",
@@ -5387,9 +5536,21 @@
         "cta": "Conferma",
         "title": "Dichiara pronto l'immobile dopo {{label}}"
       },
+      "DeclareTouristTax": {
+        "cta": "Dichiara l'imposta",
+        "title": "Dichiara e paga l'imposta di soggiorno di {{period}}: {{label}}"
+      },
+      "EnterMunicipalityTaxRate": {
+        "cta": "Inserisci l'imposta",
+        "title": "Inserisci l'imposta di soggiorno del comune: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Paga",
         "title": "Paga l'intervento di {{label}}"
+      },
+      "RenewPoliceCredentials": {
+        "cta": "Aggiorna le credenziali",
+        "title": "Aggiorna le credenziali della Questura: {{label}}"
       },
       "RespondToRequest": {
         "cta": "Accetta",
@@ -5410,6 +5571,22 @@
       "SendAlloggiati": {
         "cta": "Prepara i dati",
         "title": "Alloggiati Web da inviare: {{label}}"
+      },
+      "SendAlloggiatiManually": {
+        "cta": "Prepara i dati",
+        "title": "Invia a mano Alloggiati Web: {{label}}"
+      },
+      "UploadAlloggiatiReceipt": {
+        "cta": "Carica la ricevuta",
+        "title": "Carica la ricevuta di Alloggiati Web: {{label}}"
+      },
+      "UploadIstatProof": {
+        "cta": "Carica la prova",
+        "title": "Carica la prova ISTAT di {{period}}: {{label}}"
+      },
+      "VerifyIdentity": {
+        "cta": "Controlla l'identità",
+        "title": "Verifica l'identità di {{label}}"
       },
       "decline": {
         "description": "L'ospite riceve un'email e le date tornano disponibili.",
@@ -14967,6 +15144,11 @@
       "cinMissing": {
         "action": "Inserisci il CIN",
         "title": "Manca il codice CIN"
+      },
+      "compliance": {
+        "waiting": {
+          "title": "Un adempimento è in corso"
+        }
       },
       "heading": "Cosa fare ora",
       "paused": {
