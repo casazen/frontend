@@ -1704,6 +1704,19 @@
       "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
       "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
       "calendarBlockHeldByModeChange": "These nights are closed by the change to long-term rental: to reopen them, cancel the change.",
+      "calendarChangeNoProperties": "Choose at least one property.",
+      "calendarChangeNotFound": "We cannot find this change any more.",
+      "calendarChangeNotRetryable": "This change cannot be sent again: that can be done only for a change that was not sent or was sent in part.",
+      "calendarDayRuleInPast": "These days are gone by: choose days from today on.",
+      "calendarDayRuleInvalidAdvance": "The advance must be between 0 and 730 days, and the maximum cannot be below the minimum.",
+      "calendarDayRuleInvalidPrice": "The price must be above zero, with two decimals at most, up to 100,000.",
+      "calendarDayRuleInvalidStay": "The minimum and maximum stay must be between 1 and 365 nights, and the maximum cannot be below the minimum.",
+      "calendarDayRuleNothingToChange": "The change changes nothing: change at least one value.",
+      "calendarDayRuleRangeInvalid": "The end date cannot be before the start date.",
+      "calendarDayRuleRangeTooLong": "A change can cover 366 days at most.",
+      "calendarTooManyProperties": "A change can cover 50 properties at most.",
+      "calendarWindowTooLarge": "The period is too long to be read at once.",
+      "propertyNotFound": "We cannot find the property, or you have no access to it.",
       "propertyModeBlockedByBookings": "On that day there are still stays or dates taken on the portals. Choose a later day.",
       "propertyModeBlockedByDraftLease": "There is a draft lease: it has to be deleted before the change.",
       "propertyModeBlockedByLease": "On that day there is still a lease running. Choose the day after it ends.",
@@ -2219,6 +2232,274 @@
         "range_other": "{{arrival}} to {{departure}}, {{count}} nights",
         "shown": "Showing {{shown}} of {{total}} properties: pick one in the filter to see the others.",
         "zoom": "Days shown"
+      },
+      "bulk": {
+        "apply": "Apply changes",
+        "applyFailed": "We could not apply the changes. Nothing was saved: try again.",
+        "changes": {
+          "clear": "Clear the rule",
+          "close": "Close",
+          "daysLabel": "How many days",
+          "keep": "Leave as is",
+          "nightsLabel": "How many nights",
+          "priceLabel": "Price per night",
+          "reopen": "Open again",
+          "set": "Set"
+        },
+        "description": "Change the price and the restrictions of many days and many properties at once. Before you apply you see what will happen.",
+        "done": {
+          "description_one": "{{days}} on {{count}} property.",
+          "description_other": "{{days}} in total on {{count}} properties.",
+          "next": {
+            "calendar": "Look at the calendar: the new prices and restrictions are on the days.",
+            "checkAgain": "Your channel manager has not answered yet: press “Check again” in a few minutes.",
+            "retry": "Press “Retry now” on the line that did not go: until it goes through, your channel manager does not have those changes.",
+            "wait": "You can leave: the sending to your channel manager goes on and you see it above the calendar."
+          },
+          "propertyFallback": "Property",
+          "title": "Change saved in CasaZen"
+        },
+        "errors": {
+          "allPast": "These days are gone by: choose days from today on.",
+          "fromInvalid": "Write the first day.",
+          "propertiesRequired": "Choose at least one property.",
+          "propertiesTooMany": "You can choose 50 properties at most at a time.",
+          "toBeforeFrom": "The last day cannot be before the first.",
+          "toInvalid": "Write the last day.",
+          "tooLong": "A change can cover 366 days at most.",
+          "weekdaysRequired": "Choose at least one weekday."
+        },
+        "fields": {
+          "closedToArrival": "Arrivals",
+          "closedToDeparture": "Departures",
+          "maxAdvanceDays": "Maximum advance",
+          "maxNights": "Maximum stay",
+          "minAdvanceDays": "Minimum advance",
+          "minNights": "Minimum stay",
+          "price": "Price"
+        },
+        "open": "Change many days",
+        "period": {
+          "days_one": "{{count}} day",
+          "days_other": "{{count}} days",
+          "from": "From day",
+          "to": "To day",
+          "weekdays": "Weekdays",
+          "weekdaysHint": "Usually every one. Take off the ones you do not want to touch."
+        },
+        "properties": {
+          "all": "Choose all",
+          "connected": "Connected to your channel manager: the change is sent there too.",
+          "none": "Clear the choice",
+          "notConnected": "Not connected to your channel manager: the change stays in CasaZen."
+        },
+        "reloaded": "The changes are already on the calendar: you can check them from there.",
+        "saveAndExit": "Save and exit",
+        "steps": {
+          "changes": {
+            "label": "What changes",
+            "purpose": "For each value: leave it as it is, set it or clear it. Change at least one value.",
+            "title": "What do you want to change"
+          },
+          "period": {
+            "label": "Period",
+            "purpose": "The first and the last day (366 days at most) and the weekdays to touch.",
+            "title": "Choose the days"
+          },
+          "properties": {
+            "label": "Properties",
+            "purpose": "The ones you can change. For each you see whether it is connected to your channel manager.",
+            "title": "Choose the properties"
+          },
+          "summary": {
+            "label": "Summary",
+            "purpose": "Here is what will happen. Nothing is sent until you apply.",
+            "title": "Check before you apply"
+          }
+        },
+        "summary": {
+          "changed_one": "{{count}} day changes",
+          "changed_other": "{{count}} days change",
+          "diff": "{{field}}: {{from}} → {{to}}",
+          "headline_one": "We will change {{what}} of {{days}} on {{count}} property in CasaZen.",
+          "headline_other": "We will change {{what}} of {{days}} in total on {{count}} properties in CasaZen.",
+          "invalid": {
+            "changes": "Change at least one value and check that it is written right.",
+            "period": "Check the days chosen: the last cannot be before the first or already gone by.",
+            "properties": "Choose at least one property."
+          },
+          "invalidTitle": "Something is missing in the steps before",
+          "loading": "Working out what would happen...",
+          "mirrored_one": "For {{name}} the change is also sent to your channel manager (about {{count}} channel manager call).",
+          "mirrored_other": "For {{name}} the change is also sent to your channel manager (about {{count}} channel manager calls).",
+          "notMirrored": "{{name}} is not connected to your channel manager: its change stays in CasaZen.",
+          "nothingChanges": "No day would change: the values are already these.",
+          "nothingSent": "Nothing is sent until you press “Apply changes”.",
+          "previewFailed": "We cannot work out what would happen",
+          "previewFailedHint": "Try again in a moment: nothing was saved or sent.",
+          "quota_one": "About {{count}} channel manager call in all: it is only an estimate.",
+          "quota_other": "About {{count}} channel manager calls in all: it is only an estimate.",
+          "retry": "Try again",
+          "roomNotChosen": "For {{name}} the room is not chosen in your channel manager: the change stays in CasaZen until you choose it.",
+          "samples": "The first changes, before and after:",
+          "skippedPast_one": "{{count}} day gone by is left alone",
+          "skippedPast_other": "{{count}} days gone by are left alone",
+          "taken_one": "{{count}} night taken: the rule does not change the booking",
+          "taken_other": "{{count}} nights taken: the rule does not change the bookings",
+          "unchanged_one": "{{count}} day stays as it was",
+          "unchanged_other": "{{count}} days stay as they were",
+          "what": {
+            "closedToArrival": "the arrivals",
+            "closedToDeparture": "the departures",
+            "maxAdvanceDays": "the maximum advance",
+            "maxNights": "the maximum stay",
+            "minAdvanceDays": "the minimum advance",
+            "minNights": "the minimum stay",
+            "price": "the price"
+          }
+        },
+        "title": "Change many days"
+      },
+      "change": {
+        "error": {
+          "channelError": "Your channel manager took the change but reported an error while sending it to the channels.",
+          "notAuthorized": "Your channel manager refused CasaZen's access: connect the account again and try again.",
+          "quotaLow": "Your channel manager has almost used up the requests it allows: the sending resumes by itself later.",
+          "roomNotLicensed": "The room has no active license in your channel manager: activate it there, then try again.",
+          "unknown": "Your channel manager did not complete the sending. Try again in a moment."
+        },
+        "list": {
+          "failed_one": "{{count}} change was not sent.",
+          "failed_other": "{{count}} changes were not sent.",
+          "kind": {
+            "Block": "Block of dates",
+            "Bulk": "Change of many properties",
+            "DayRules": "Price and restrictions",
+            "Publication": "First sending of the calendar"
+          },
+          "noAnswer_one": "{{count}} change is still waiting: your channel manager has not answered.",
+          "noAnswer_other": "{{count}} changes are still waiting: your channel manager has not answered.",
+          "retry": "Retry",
+          "toggle": "Latest changes",
+          "unreadable": "We cannot read the changes sent to your channel manager.",
+          "waiting_one": "{{count}} change is being sent to your channel manager.",
+          "waiting_other": "{{count}} changes are being sent to your channel manager."
+        },
+        "result": {
+          "accepted": "Accepted by your channel manager.",
+          "checkAgain": "Check again",
+          "confirmed": "Confirmed by your channel manager.",
+          "failed": "Not sent to your channel manager.",
+          "noAnswer": "Your channel manager has not answered yet: the change is saved in CasaZen.",
+          "notConnected": "This property is not connected to your channel manager: the change stays in CasaZen.",
+          "notFound": "We cannot find this change any more.",
+          "retry": "Retry now",
+          "retryFailed": "We could not send the change again. Try again.",
+          "saved": "The change is in the calendar of CasaZen.",
+          "savedTitle": "Saved in CasaZen",
+          "sending": "Being sent to your channel manager.",
+          "unreadable": "We cannot read how far the sending to your channel manager has got.",
+          "waiting": "Waiting to be sent to your channel manager."
+        },
+        "state": {
+          "Applied": "Saved in CasaZen",
+          "Confirmed": "Confirmed by your channel manager",
+          "Failed": "Not sent",
+          "PartiallySent": "Only partly sent",
+          "Queued": "Waiting to be sent",
+          "Sending": "Being sent",
+          "Sent": "Accepted by your channel manager"
+        },
+        "tone": {
+          "done": "done",
+          "info": "good to know",
+          "problem": "needs a look",
+          "working": "in progress"
+        }
+      },
+      "day": {
+        "closedToArrival": "arrivals closed",
+        "closedToArrivalShort": "no arrivals",
+        "closedToDeparture": "departures closed",
+        "closedToDepartureShort": "no departures",
+        "gridLabel": "Days of {{property}}",
+        "hasRule": "own rule",
+        "loadError": "We cannot read the prices and rules of the days: the calendar goes on without them.",
+        "minNights_one": "minimum {{count}} night",
+        "minNights_other": "minimum {{count}} nights",
+        "minShort": "min {{count}}",
+        "past": "day gone by",
+        "price": "{{price}} a night",
+        "retry": "Try again",
+        "source": {
+          "Base": "usual price",
+          "DayRule": "price you set on the calendar",
+          "Seasonal": "seasonal price you confirmed",
+          "Weekend": "weekend price"
+        },
+        "taken": "night taken"
+      },
+      "dayRules": {
+        "backToUsual": "Back to the usual price",
+        "clear": "Clear the rule",
+        "closedToArrival": "Arrivals closed",
+        "closedToDeparture": "Departures closed",
+        "current": {
+          "closed": "closed",
+          "days_one": "{{count}} day",
+          "days_other": "{{count}} days",
+          "mixed": "different values on the chosen days",
+          "mixedPrices": "Different prices on the chosen days.",
+          "none": "no limit",
+          "nights_one": "{{count}} night",
+          "nights_other": "{{count}} nights",
+          "now": "Now: {{value}}",
+          "open": "open",
+          "price": "Current price: {{price}} ({{source}})"
+        },
+        "errors": {
+          "advanceInvalid": "Write a whole number of days.",
+          "advanceRange": "Write a number of days from 0 to 730.",
+          "advanceRequired": "Write how many days, or clear the rule.",
+          "maxAdvanceBelowMin": "The maximum advance cannot be below the minimum.",
+          "maxStayBelowMin": "The maximum stay cannot be below the minimum.",
+          "nothingToChange": "Change at least one value, or close the panel.",
+          "priceDecimals": "The price can have two decimals at most.",
+          "priceInvalid": "Write a valid price, for example 120 or 120.50.",
+          "priceRange": "The price must be between 0.01 and 100,000.",
+          "priceRequired": "Write the price per night, or go back to the usual price.",
+          "stayInvalid": "Write a whole number of nights.",
+          "stayRange": "Write a number of nights from 1 to 365.",
+          "stayRequired": "Write how many nights, or clear the rule."
+        },
+        "keep": "Leave as it is",
+        "keepPrice": "Leave the price as it is",
+        "maxAdvanceDays": "Maximum advance (days before arrival)",
+        "maxNights": "Maximum stay (nights)",
+        "minAdvanceDays": "Minimum advance (days before arrival)",
+        "minNights": "Minimum stay (nights)",
+        "price": "New price per night",
+        "priceHint": "For example 120 or 120.50, in the currency of the property. It applies to every night chosen.",
+        "priceWillClear": "The nights chosen go back to the usual price.",
+        "saveFailed": "We could not save the change. Try again.",
+        "savePrice": "Save the price",
+        "saveRestrictions": "Save the restrictions",
+        "willClear": "The rule will be removed."
+      },
+      "panel": {
+        "actions": "What to do with these days",
+        "allPast": "These days are gone by: they cannot be blocked or changed. Choose days from today on.",
+        "block": "Block",
+        "description": "Choose whether to block the days, change the price or change the restrictions. You can still widen the selection from the calendar.",
+        "done": "Done",
+        "price": "Price",
+        "restrictions": "Restrictions",
+        "somePast_one": "{{count}} day has gone by: it stays as it was.",
+        "somePast_other": "{{count}} days have gone by: they stay as they were.",
+        "taken_one": "{{count}} night of the selection is already taken by a booking, a request or a block: the block will be refused.",
+        "taken_other": "{{count}} nights of the selection are already taken by a booking, a request or a block: the block will be refused.",
+        "title_one": "{{dates}} · {{property}} · {{count}} night",
+        "title_other": "{{dates}} · {{property}} · {{count}} nights"
       }
     },
     "validation": {
