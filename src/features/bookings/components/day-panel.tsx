@@ -44,6 +44,9 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
   const phone = useMediaQuery(PHONE_QUERY);
   const [action, setAction] = useState<PanelAction>('block');
   const apply = useApplyCalendarChange();
+  // A block of the days is a request of its own (the form owns it) and is on its way: the panel keeps its tabs and its close off, as for a change of price or rules.
+  const [blocking, setBlocking] = useState(false);
+  const busy = apply.isPending || blocking;
   const [applied, setApplied] = useState<{ key: string; change: CalendarChange } | null>(null);
 
   const key = `${selection.propertyId}|${selection.from}|${selection.to}`;
@@ -70,7 +73,7 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
       modal={false}
       onOpenChange={(open) => {
         // A request on its way is not abandoned by a press of Escape: the panel stays until it has answered.
-        if (!open && !apply.isPending) onClose();
+        if (!open && !busy) onClose();
       }}
     >
       <SheetContent
@@ -104,9 +107,9 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
                 value={activeAction}
                 onValueChange={setAction}
                 options={[
-                  { value: 'block', label: t('booking.calendar.panel.block'), icon: CalendarOff, disabled: allPast || apply.isPending, testId: 'day-panel-block' },
-                  { value: 'price', label: t('booking.calendar.panel.price'), icon: CircleDollarSign, disabled: allPast || apply.isPending, testId: 'day-panel-price' },
-                  { value: 'restrictions', label: t('booking.calendar.panel.restrictions'), icon: SlidersHorizontal, disabled: allPast || apply.isPending, testId: 'day-panel-restrictions' },
+                  { value: 'block', label: t('booking.calendar.panel.block'), icon: CalendarOff, disabled: allPast || busy, testId: 'day-panel-block' },
+                  { value: 'price', label: t('booking.calendar.panel.price'), icon: CircleDollarSign, disabled: allPast || busy, testId: 'day-panel-price' },
+                  { value: 'restrictions', label: t('booking.calendar.panel.restrictions'), icon: SlidersHorizontal, disabled: allPast || busy, testId: 'day-panel-restrictions' },
                 ]}
               />
 
@@ -135,6 +138,7 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
                       initialEnd={addDays(selection.to, 1)}
                       onCreated={onClose}
                       onCancel={onClose}
+                      onPendingChange={setBlocking}
                     />
                   )}
                 </div>

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
@@ -114,6 +115,58 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
 
     expect(await screen.findByTestId('manual-block-error')).toHaveTextContent('Una prenotazione occupa già una di queste notti');
     expect(screen.getByTestId('day-panel')).toBeInTheDocument();
+    // The form is there: it says the refusal next to its fields and nothing says it twice.
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('DayPanel_WhileABlockIsOnItsWay_TheTabsAndTheCloseAreOff', async () => {
+    vi.mocked(manualBlocksApi.create).mockReturnValue(new Promise(() => undefined));
+    const onClose = renderPanel();
+
+    fireEvent.change(within(screen.getByTestId('manual-block-form')).getByLabelText('Motivo'), { target: { value: 'Owner' } });
+    fireEvent.click(within(screen.getByTestId('manual-block-form')).getByRole('button', { name: 'Blocca date' }));
+
+    await waitFor(() => expect(screen.getByTestId('day-panel-price')).toBeDisabled());
+    expect(screen.getByTestId('day-panel-restrictions')).toBeDisabled();
+    // Escape and the close button do not abandon a request that is on its way: its answer is seen in the form.
+    fireEvent.keyDown(screen.getByTestId('day-panel'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('DayPanel_ABlockThatIsRefusedAfterThePanelMovedToOtherDays_IsStillSaid_AndDoesNotCloseTheNewSelection', async () => {
+    let refuse!: (error: unknown) => void;
+    vi.mocked(manualBlocksApi.create).mockReturnValue(
+      new Promise((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const workspace = { hasPermission: (context: string, permission: string) => context === 'short-rent' && ['property.read', 'property.write'].includes(permission) } as unknown as WorkspaceContextValue;
+    const onClose = vi.fn();
+    const tree = (selection: typeof SELECTION) => (
+      <QueryClientProvider client={queryClient}>
+        <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: true }, isLoading: false }}>
+          <WorkspaceContext.Provider value={workspace}>
+            <DayPanel selection={selection} propertyName="Casa Roma" layer={LAYER} today={TODAY} onClose={onClose} />
+          </WorkspaceContext.Provider>
+        </FeatureFlagsContext.Provider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(tree(SELECTION));
+
+    fireEvent.change(within(screen.getByTestId('manual-block-form')).getByLabelText('Motivo'), { target: { value: 'Owner' } });
+    fireEvent.click(within(screen.getByTestId('manual-block-form')).getByRole('button', { name: 'Blocca date' }));
+    await waitFor(() => expect(manualBlocksApi.create).toHaveBeenCalledTimes(1));
+
+    // The host clicks other days of the calendar while the request is on its way: the form of the new days replaces the old one, which is gone when the answer comes.
+    rerender(tree(extendSelection(startSelection('p1', '2026-09-20'), 'p1', '2026-09-22')!));
+    await waitFor(() => expect(screen.getByTestId('day-panel-price')).toBeEnabled());
+    await act(async () => refuse(problemError(409, { code: 'calendar_block_overlaps_booking', detail: 'server text' })));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Una prenotazione occupa già una di queste notti: annullala o scegli altre date.'));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('manual-block-error')).not.toBeInTheDocument();
   });
 
   it('DayPanel_PastDays_DisableEveryActionAndSayWhy', () => {
