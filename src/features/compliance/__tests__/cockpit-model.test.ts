@@ -275,12 +275,37 @@ describe('focus, then and the number of the menu', () => {
       alloggiatiManualRequired: { count: 1, items: [booking('SendAlloggiati', 'b0', 'Anna Verdi')] },
       manualSendsRequired: { count: 3, items: [lit(booking('SendAlloggiatiManually', 'b1', 'Mario Rossi'), 'Red'), lit(booking('SendAlloggiatiManually', 'b2', 'Carla Neri'), 'Yellow')] },
       receiptsToUpload: { count: 1, items: [lit(booking('UploadAlloggiatiReceipt', 'b3', 'Luigi Bianchi'), 'Red'), lit(booking('UploadAlloggiatiReceipt', 'b4', 'Paolo Gialli'), 'Green')] },
-      // The other new sections are not what the menu counts: ISTAT, the tax and the police send are on the page.
-      periodItems: { count: 1, items: [lit(period('UploadIstatProof', 'p1', '2026-08'), 'Red')] },
+      // The identity of the guest is the upkeep of a stay, not what the law dates: it is on the page, not on the menu.
+      identityPending: { count: 1, items: [lit(booking('VerifyIdentity', 'b5', 'Marta Rosa'), 'Red')] },
     });
 
-    // The one of the old section, and the two reds of the new ones: not the yellow, not the green, not the period.
+    // The one of the old section, and the two reds of the new ones: not the yellow, not the green, not the identity.
     expect(fineCount(summary)).toBe(3);
+  });
+
+  it('fineCount_TrafficLightOn_CountsTheRedMonthsAndTheRedPoliceSendTooBecauseThePageHasThemInTheLevelOfTheLaw', () => {
+    const summary = summaryOf({
+      connectionsToFix: {
+        count: 3,
+        items: [
+          lit(period('ActivateOctorateSend', 'p1', '2026-08'), 'Red'),
+          lit(period('RenewPoliceCredentials', 'p1', '2026-08'), 'Yellow'),
+          lit(period('RenewPoliceCredentials', 'p2', '2026-08'), 'Green'),
+        ],
+      },
+      periodItems: {
+        count: 3,
+        items: [
+          lit(period('UploadIstatProof', 'p1', '2026-08'), 'Red'),
+          lit(period('DeclareTouristTax', 'p1', '2026-08'), 'Red'),
+          lit(period('EnterMunicipalityTaxRate', 'p2', '2026-08'), 'Yellow'),
+        ],
+      },
+    });
+
+    // The three reds only: a yellow is in hand and a green is done. The menu says what the page says is red in «Scadenze di legge».
+    expect(fineCount(summary)).toBe(3);
+    expect(build(summary).fine.rows.filter((row) => row.light === 'red')).toHaveLength(3);
   });
 });
 

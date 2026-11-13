@@ -16,11 +16,11 @@ export type CockpitTier = 'fine' | 'start' | 'chore';
 export const FINE_FIELDS = ['alloggiatiFailures', 'alloggiatiManualRequired', 'guestCheckInsIncomplete'] as const satisfies readonly (keyof ComplianceSummaryResult)[];
 
 /**
- * The sections the traffic light adds for the Alloggiati Web communication of a stay: the stays it takes out of `alloggiatiManualRequired`
- * (to send by hand, sent or entrusted with the receipt awaited). Only their red items carry a risk of a sanction now: a yellow one is in
- * hand and a green one is done.
+ * The sections the traffic light adds to the level of the law (`TIER_OF_FIELD`): the stays it takes out of `alloggiatiManualRequired` (to send by hand, sent
+ * or entrusted with the receipt awaited), the police send and credentials of a property, and the ISTAT and the tourist tax of a month. Only their red
+ * items carry a risk of a sanction now: a yellow one is in hand and a green one is done.
  */
-const LIT_FINE_FIELDS = ['manualSendsRequired', 'receiptsToUpload'] as const satisfies readonly SectionField[];
+const LIT_FINE_FIELDS = ['manualSendsRequired', 'receiptsToUpload', 'connectionsToFix', 'periodItems'] as const satisfies readonly SectionField[];
 
 export const TIER_OF_FIELD: Readonly<Record<keyof ComplianceSummaryResult, CockpitTier>> = {
   alloggiatiFailures: 'fine',
@@ -41,7 +41,8 @@ const countOf = (section: ComplianceSummarySection | null | undefined): number =
 /**
  * How many things carry a risk of a sanction right now (what the server counts, which is more than it lists). It is the number on
  * the menu entry «Adempimenti» and the reason of the block on the Home: a section a version of the API does not send is zero. With the
- * traffic light on, the stays it moves into `manualSendsRequired` and `receiptsToUpload` still count while they are red.
+ * traffic light on, the red items of the sections it adds to that level count too (the stays it moves into `manualSendsRequired` and `receiptsToUpload`, the
+ * police send, the ISTAT and the tourist tax of a month): the menu and the level «Scadenze di legge» of the page agree on what is red.
  */
 export function fineCount(summary: Partial<ComplianceSummaryResult> | null | undefined): number {
   const legacy = FINE_FIELDS.reduce((sum, field) => sum + countOf(summary?.[field]), 0);
