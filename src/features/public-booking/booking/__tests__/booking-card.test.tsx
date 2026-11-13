@@ -7,7 +7,7 @@ import i18n from '@/i18n/config';
 import { publicOrgApi } from '@/api/public-org.api';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { freezeClock } from '@/test/clock';
-import { addDays } from '@/lib/stay-dates';
+import { addDays, nightsBetween } from '@/lib/stay-dates';
 import { BookingCard } from '../booking-card';
 import { BookingProvider } from '../booking-provider';
 import type { DirectBookingQuote, PublicCalendarDto, PublicPropertyDetailDto } from '@/types';
@@ -299,12 +299,42 @@ describe('BookingCard', () => {
       expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
     });
 
-    it('BookingCard_QuoteRefusedForTheMinimumOfTheArrivalDate_SaysTheNumberOfTheServerNotTheOneOfTheHome', async () => {
-      // The home asks for no minimum, the rule of that night asks for five: the server says it in `limit`, and the card says the same.
-      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'direct_booking_min_nights_not_met', limit: 5 }));
+    it('BookingCard_QuoteRefusedForTheMinimumOfTheArrivalDate_SaysTheNumberOfTheServerAndStretchesTheStayToIt', async () => {
+      // The home asks for no minimum and the calendar (older than the rule) none either; the rule of that night asks for five: the server
+      // says it in `limit`, and the card says the same. The server takes any stay of five nights or more.
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockImplementation(async (payload) => {
+        const nights = nightsBetween(payload.checkInDate, payload.checkOutDate);
+        if (nights < 5) throw refusal({ code: 'direct_booking_min_nights_not_met', limit: 5 });
+        return { ...quote, checkInDate: payload.checkInDate, checkOutDate: payload.checkOutDate, nights };
+      });
       renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
 
       expect(await screen.findByTestId('stay-problem')).toHaveTextContent('Il soggiorno minimo è di 5 notti.');
+
+      // The way out is the five nights the server asked for (the 16th to the 21st), not the one night that the calendar knows of, which is
+      // shorter than the three nights the guest has.
+      expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent('Allunga fino a 5 notti');
+      fireEvent.click(screen.getByTestId('stay-problem-exit'));
+      await waitFor(() =>
+        expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
+          expect.objectContaining({ checkInDate: '2026-10-16', checkOutDate: '2026-10-21' }),
+          expect.anything(),
+        ),
+      );
+      await waitFor(() => expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument());
+    });
+
+    it('BookingCard_QuoteRefusedForAMinimumThatIsNotAboveTheStay_OffersNoShorterStayOnlyToClearTheDates', async () => {
+      // The refusal carries no limit and the home asks for two nights: «stretching» the three nights of the guest to two would give back a
+      // shorter stay than the one that was refused. That is no way out; the dates are cleared instead.
+      vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'direct_booking_min_nights_not_met' }));
+      renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, minNights: 2 });
+
+      const problem = await screen.findByTestId('stay-problem');
+      expect(problem).toHaveAttribute('data-problem', 'minNights');
+      expect(problem).toHaveTextContent('Il soggiorno minimo è di 2 notti.');
+      expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent(i18n.t('propertyBooking.problem.clearDates'));
+      expect(problem).not.toHaveTextContent('Allunga');
     });
 
     it('BookingCard_QuoteRefusedForTheMaximumWithoutALimit_DoesNotInventANumber', async () => {

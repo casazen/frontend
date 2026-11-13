@@ -134,4 +134,21 @@ describe('extendToMinimum', () => {
 
     expect(extendToMinimum(index, '2026-11-10')).toEqual({ checkIn: '2026-11-10', checkOut: '2026-11-13' });
   });
+
+  it('extendToMinimum_MinimumOfTheServerAboveTheOneOfTheCalendar_IsThatManyNights', () => {
+    // The calendar (older than the rule) asks for no minimum, the refusal of the server said five: the stay has five nights, not one.
+    expect(extendToMinimum(indexWith({}), '2026-11-10', 5)).toEqual({ checkIn: '2026-11-10', checkOut: '2026-11-15' });
+  });
+
+  it('extendToMinimum_MinimumOfTheServerBelowTheOneOfTheCalendar_IsTheOneOfTheCalendar', () => {
+    const index = indexWith({ '2026-11-10': { minNights: 4 } });
+
+    expect(extendToMinimum(index, '2026-11-10', 2)).toEqual({ checkIn: '2026-11-10', checkOut: '2026-11-14' });
+  });
+
+  it('extendToMinimum_NightsOfTheServerMinimumThatAreNotFree_IsNoWayOut', () => {
+    const index = indexWith({ '2026-11-13': { available: false } });
+
+    expect(extendToMinimum(index, '2026-11-10', 5)).toBeNull();
+  });
 });

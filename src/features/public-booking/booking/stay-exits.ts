@@ -75,9 +75,13 @@ export function firstFreeStay(index: CalendarIndex, nights: number, from: string
   return null;
 }
 
-/** The same arrival with as many nights as its minimum asks, when those nights are free; null when they are not. */
-export function extendToMinimum(index: CalendarIndex, checkIn: string): StayRange | null {
-  const minimum = minNightsAt(index, checkIn);
+/**
+ * The same arrival with as many nights as its minimum asks, when those nights are free; null when they are not. `atLeast` is the minimum
+ * that a refusal of the server gave (its `limit`): the calendar can be older than the rule, so the stay has the larger of the two and is
+ * never shorter than what the server asked for.
+ */
+export function extendToMinimum(index: CalendarIndex, checkIn: string, atLeast = 1): StayRange | null {
+  const minimum = Math.max(minNightsAt(index, checkIn), Math.max(1, Math.round(atLeast)));
   const checkOut = addDays(checkIn, minimum);
   return rangeProblem(index, checkIn, checkOut) === null ? { checkIn, checkOut } : null;
 }

@@ -6,6 +6,7 @@ import { formatDayMonth, formatStayRange } from '@/features/public-site/stay/sta
 import { useBooking, type QuoteView } from '@/features/public-booking/booking/booking-context';
 import { extendToMinimum, firstFreeStay, fitGuests } from '@/features/public-booking/booking/stay-exits';
 import { siteLocale } from '@/lib/site-language';
+import { nightsBetween } from '@/lib/stay-dates';
 import '@/features/public-booking/booking/booking.css';
 
 type ProblemView = Extract<QuoteView, { status: 'problem' }>;
@@ -69,8 +70,14 @@ export function StayProblem({ problem }: { problem: ProblemView }) {
     case 'minNights': {
       const minimum = problem.minNights ?? property.minNights ?? 2;
       sentence = t('propertyBooking.problem.minNights', { count: minimum });
-      const longer = index ? extendToMinimum(index, stay.checkIn) : null;
-      exit = longer ? { label: t('propertyBooking.problem.extend', { count: minimum }), apply: () => setStay(longer) } : startAgain;
+      // The stay stretched to the larger of the minimum said above and the one of the calendar (which can be older than the rule). It is a
+      // way out only when it is longer than the stay the guest has: a stay that is not longer is not what the minimum asks for.
+      const longer = index ? extendToMinimum(index, stay.checkIn, minimum) : null;
+      const longerNights = longer ? nightsBetween(longer.checkIn, longer.checkOut) : 0;
+      exit =
+        longer && longerNights > nights
+          ? { label: t('propertyBooking.problem.extend', { count: longerNights }), apply: () => setStay(longer) }
+          : startAgain;
       break;
     }
     case 'maxNights': {
