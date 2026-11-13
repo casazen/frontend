@@ -31,7 +31,7 @@ interface IntegrationHealthPanelProps {
   mayFix: (kind: string) => boolean;
 }
 
-/** What the server says of the quota of the channel's API, as it says it: the numbers, the share they make, when they were read and whether it warns. Never a green bar. */
+/** What the server says of the quota of the channel manager's API, as it says it:the numbers, the share they make, when they were read and whether it warns. Never a green bar. */
 function QuotaLine({ quota }: { quota: MarketplaceQuota | null }) {
   const { t, i18n } = useTranslation();
 
@@ -168,7 +168,7 @@ function PropertyGroup({ group, mayFix }: { group: PropertyHealth; mayFix: (kind
 }
 
 /**
- * The health of the active integrations (E09/F03/US02/T01, MKT-04, NF-57): the quota of the channel's API as the server reports it, and for each property the integrations that
+ * The health of the active integrations (E09/F03/US02/T01, MKT-04, NF-57): the quota of the channel manager's API as the server reports it, and for each property the integrations that
  * have a problem (with `Correggi`, which opens the wizard of their kind for that property, and `Dettagli`, which opens their card), the problems first. It is a read of CasaZen's own
  * rows: «Controlla di nuovo» reads it again, it does not ask the channel manager. A read that failed is said and can be tried again, never read as «no problem»; a 403 and a 404
  * are said as what they are, and the rows of an older read are not shown for any of them.

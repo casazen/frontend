@@ -13280,12 +13280,12 @@
       "others_one": "One other active integration has no problem reported.",
       "others_other": "{{count}} other active integrations have no problem reported.",
       "quota": {
-        "label": "Quota of the channel used",
+        "label": "Channel manager quota used",
         "readAt": "Read on {{when}}.",
-        "units": "Channel quota: {{used}} of {{limit}} units used.",
-        "unknown": "The quota of the channel has not been read yet.",
-        "usage": "Channel quota used: {{percent}}% ({{used}} of {{limit}} units).",
-        "warn": "The channel quota is almost used up: updates may stop until it is available again."
+        "units": "Channel manager quota: {{used}} of {{limit}} units used.",
+        "unknown": "The channel manager quota has not been read yet.",
+        "usage": "Channel manager quota used: {{percent}}% ({{used}} of {{limit}} units).",
+        "warn": "The channel manager quota is almost used up: updates may stop until it is available again."
       },
       "refresh": "Check again",
       "title": "State of the connections",
@@ -13307,7 +13307,7 @@
         "lastSync": "Last check: {{when}}",
         "neverSynced": "Last check: not done yet",
         "property": "Property: {{name}}",
-        "quotaWarn": "The channel quota is almost used up.",
+        "quotaWarn": "The channel manager quota is almost used up.",
         "verified": "Activation verified on {{date}}",
         "verifiedNoDate": "Activation verified",
         "wholeOrganization": "The whole organization"

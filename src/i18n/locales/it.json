@@ -13280,12 +13280,12 @@
       "others_one": "Un'altra integrazione attiva non ha problemi segnalati.",
       "others_other": "Altre {{count}} integrazioni attive non hanno problemi segnalati.",
       "quota": {
-        "label": "Quota usata del canale",
+        "label": "Quota usata del channel manager",
         "readAt": "Letta il {{when}}.",
-        "units": "Quota del canale: {{used}} unità usate su {{limit}}.",
-        "unknown": "La quota del canale non è ancora stata letta.",
-        "usage": "Quota del canale usata: {{percent}}% ({{used}} su {{limit}} unità).",
-        "warn": "La quota del canale è quasi esaurita: gli aggiornamenti potrebbero fermarsi finché non torna disponibile."
+        "units": "Quota del channel manager: {{used}} unità usate su {{limit}}.",
+        "unknown": "La quota del channel manager non è ancora stata letta.",
+        "usage": "Quota del channel manager usata: {{percent}}% ({{used}} su {{limit}} unità).",
+        "warn": "La quota del channel manager è quasi esaurita: gli aggiornamenti potrebbero fermarsi finché non torna disponibile."
       },
       "refresh": "Controlla di nuovo",
       "title": "Stato dei collegamenti",
@@ -13307,7 +13307,7 @@
         "lastSync": "Ultimo controllo: {{when}}",
         "neverSynced": "Ultimo controllo: non ancora eseguito",
         "property": "Immobile: {{name}}",
-        "quotaWarn": "La quota del canale è quasi esaurita.",
+        "quotaWarn": "La quota del channel manager è quasi esaurita.",
         "verified": "Attivazione verificata il {{date}}",
         "verifiedNoDate": "Attivazione verificata",
         "wholeOrganization": "Tutta l'organizzazione"

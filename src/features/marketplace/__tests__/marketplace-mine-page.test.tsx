@@ -233,7 +233,7 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(sync).not.toHaveTextContent('14:05');
     // The problem is in the words the server sent; the quota warning is one sentence.
     expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-error')).toHaveTextContent('Il collegamento è spento sul channel manager.');
-    expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-quota')).toHaveTextContent('La quota del canale è quasi esaurita.');
+    expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-quota')).toHaveTextContent('La quota del channel manager è quasi esaurita.');
 
     // A function that waits for the license is «Richiesta» (never «Attivo»), has no sync to tell, and says when the change was asked.
     const chat = screen.getByTestId('marketplace-active-LicensedFunction-chat-prop-1');
@@ -406,7 +406,7 @@ describe('MarketplaceMinePage · Attivi', () => {
     renderPage();
 
     const quota = await screen.findByTestId('marketplace-health-quota');
-    expect(quota).toHaveTextContent('Quota del canale usata: 82% (412 su 500 unità).');
+    expect(quota).toHaveTextContent('Quota del channel manager usata: 82% (412 su 500 unità).');
     expect(quota).toHaveAttribute('data-warn', 'false');
     expect(screen.queryByTestId('marketplace-health-quota-warn')).not.toBeInTheDocument();
     expect(within(quota).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '82');

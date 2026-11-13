@@ -55,6 +55,12 @@ describe('what the words promise', () => {
     expect(locale.marketplace.status.Requested).not.toBe(locale.marketplace.status.Active);
   });
 
+  it.each(LOCALES)('$language: the quota is the channel manager\'s: every sentence that names it says so, never «the quota of the channel»', ({ locale }) => {
+    // «Canale» is a sales channel (Airbnb, Booking.com) in this interface; the quota is the one of the channel manager's API, as the sentence of the sync says (`…quotaLow`).
+    const { label, units, unknown, usage, warn } = locale.marketplace.health.quota;
+    for (const text of [label, units, unknown, usage, warn, locale.marketplace.mine.card.quotaWarn]) expect(text).toMatch(/channel manager/i);
+  });
+
   it.each(LOCALES)('$language: «declared» never says «verified», and «verified» is a line of its own', ({ locale }) => {
     const { declared, declaredNoDate, verified } = locale.marketplace.mine.card;
 
