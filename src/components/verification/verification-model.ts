@@ -79,6 +79,15 @@ export function resultTone(result: string): ResultTone {
   return 'attention';
 }
 
+/**
+ * The `mailto:` link of the e-mail address of a guest, or `null` when it is not one to put there: the address comes from the booking, and one with a
+ * `?` or an `&` in it would add a header or a body to the message the operator opens. A plain address only.
+ */
+export function mailtoOf(email: string | null | undefined): string | null {
+  const address = email?.trim() ?? '';
+  return /^[^\s@?&#,;<>"']+@[^\s@?&#,;<>"']+$/.test(address) ? `mailto:${address}` : null;
+}
+
 /** A number of a check (a score, a threshold) with at most two decimals in the language of the page. */
 export function formatFigure(value: number, language: string): string {
   return new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(value);

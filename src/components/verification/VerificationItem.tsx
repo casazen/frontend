@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { checkKey, figuresOf, queueReasonOf, resultKey, resultTone, type ResultTone } from './verification-model';
+import { checkKey, figuresOf, mailtoOf, queueReasonOf, resultKey, resultTone, type ResultTone } from './verification-model';
 
 interface VerificationItemProps {
   verification: PendingVerification;
@@ -135,6 +135,7 @@ export function VerificationItem({ verification }: VerificationItemProps) {
   const reasons = verification.reasons ?? [];
   const provisional = verification.provisional === true;
   const email = verification.guestEmail?.trim();
+  const mailto = mailtoOf(email);
 
   return (
     <>
@@ -177,9 +178,13 @@ export function VerificationItem({ verification }: VerificationItemProps) {
                 {email && (
                   <>
                     {' · '}
-                    <a className="underline underline-offset-2" href={`mailto:${email}`} data-testid="verification-guest-email">
-                      {email}
-                    </a>
+                    {mailto ? (
+                      <a className="underline underline-offset-2" href={mailto} data-testid="verification-guest-email">
+                        {email}
+                      </a>
+                    ) : (
+                      <span data-testid="verification-guest-email">{email}</span>
+                    )}
                   </>
                 )}
               </dd>

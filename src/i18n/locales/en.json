@@ -24299,6 +24299,14 @@
       "deadline": "Deadline",
       "past": "Past due",
       "reason": "Reason",
+      "reasons": {
+        "no_match": "Faces do not match",
+        "not_passed": "Check not passed",
+        "operator_requested": "Asked for a person",
+        "review": "A check needs a person",
+        "technical_error": "Technical error",
+        "uncertain": "Uncertain comparison"
+      },
       "today": "Today",
       "upcoming": "Upcoming"
     },

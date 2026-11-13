@@ -176,6 +176,17 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
     expect(villa.getByTestId('verification-contact-hint')).toHaveTextContent(i18n.t('verification.guest.contactHint'));
   });
 
+  it('VerificationQueuePage_AGuestAddressWithAQueryInIt_IsShownAsTextNeverAsALinkThatAddsToTheMessage', async () => {
+    vi.mocked(verificationApi.getPending).mockResolvedValue([{ ...uncertain, guestEmail: 'mario@example.test?cc=someone@else.test' }]);
+    renderPage();
+    await screen.findByText('Villa Demo');
+
+    const email = card('Villa Demo').getByTestId('verification-guest-email');
+    expect(email).toHaveTextContent('mario@example.test?cc=someone@else.test');
+    expect(email.tagName).toBe('SPAN');
+    expect(email).not.toHaveAttribute('href');
+  });
+
   it('VerificationQueuePage_ThresholdsNotCalibrated_ShowsTheProvisionalBadgeOnThatItemOnly', async () => {
     renderPage();
     await screen.findByText('Villa Demo');

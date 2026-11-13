@@ -4,6 +4,7 @@ import {
   arrivalTiming,
   checkKey,
   figuresOf,
+  mailtoOf,
   percentOf,
   QUEUE_REASONS,
   queueReasonOf,
@@ -61,7 +62,10 @@ describe('the words of the checks and of the results', () => {
   it.each(['it', 'en'])('everyCheckAndEveryResultTheApiSends_HasItsWordsIn_%s', (language) => {
     for (const check of VERIFICATION_CHECKS) expect(i18n.exists(checkKey(check), { lng: language }), `${language} ${check}`).toBe(true);
     for (const result of VERIFICATION_RESULTS) expect(i18n.exists(resultKey(result), { lng: language }), `${language} ${result}`).toBe(true);
-    for (const reason of QUEUE_REASONS) expect(i18n.exists(`verification.why.${reason}`, { lng: language }), `${language} ${reason}`).toBe(true);
+    for (const reason of QUEUE_REASONS) {
+      expect(i18n.exists(`verification.why.${reason}`, { lng: language }), `${language} why ${reason}`).toBe(true);
+      expect(i18n.exists(`verification.filter.reasons.${reason}`, { lng: language }), `${language} filter ${reason}`).toBe(true);
+    }
   });
 
   it('checkKeyAndResultKey_ACodeTheConsoleDoesNotKnow_UseTheGenericTextThatCarriesTheCode', () => {
@@ -102,6 +106,30 @@ describe('figuresOf', () => {
 
   it('figuresOf_AZeroValue_IsAFigureNotNothing', () => {
     expect(figuresOf({ check: 'liveness', result: 'failed', value: 0, threshold: 0.8 }, 'en')?.values).toEqual({ value: '0', threshold: '0.8' });
+  });
+});
+
+describe('mailtoOf', () => {
+  it('mailtoOf_APlainAddress_IsALinkToIt', () => {
+    expect(mailtoOf('mario.rossi+stay@example.test')).toBe('mailto:mario.rossi+stay@example.test');
+    expect(mailtoOf('  mario@example.test  ')).toBe('mailto:mario@example.test');
+  });
+
+  it.each([
+    'mario@example.test?cc=someone@else.test',
+    'mario@example.test&body=hello',
+    'mario@example.test#frag',
+    'a@b.test, c@d.test',
+    'two words@example.test',
+    'no-at-sign',
+    '',
+  ])('mailtoOf_%s_IsNotALinkBecauseItWouldAddToTheMessage', (address) => {
+    expect(mailtoOf(address)).toBeNull();
+  });
+
+  it('mailtoOf_NoAddress_IsNotALink', () => {
+    expect(mailtoOf(null)).toBeNull();
+    expect(mailtoOf(undefined)).toBeNull();
   });
 });
 

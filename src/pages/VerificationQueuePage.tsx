@@ -78,7 +78,7 @@ export function VerificationQueuePage() {
             <option value="all">{t('verification.filter.allReasons')}</option>
             {QUEUE_REASONS.map((reason) => (
               <option key={reason} value={reason}>
-                {t(`verification.why.${reason}`)}
+                {t(`verification.filter.reasons.${reason}`)}
               </option>
             ))}
           </Select>

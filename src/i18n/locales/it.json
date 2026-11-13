@@ -24299,6 +24299,14 @@
       "deadline": "Scadenza",
       "past": "Scadute",
       "reason": "Motivo",
+      "reasons": {
+        "no_match": "Volti non corrispondenti",
+        "not_passed": "Controllo non superato",
+        "operator_requested": "Ha chiesto una persona",
+        "review": "Un controllo richiede una persona",
+        "technical_error": "Errore tecnico",
+        "uncertain": "Confronto incerto"
+      },
       "today": "Oggi",
       "upcoming": "Prossime"
     },
