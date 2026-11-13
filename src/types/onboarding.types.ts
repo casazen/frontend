@@ -163,10 +163,15 @@ export const ONBOARDING_FLOW_REASONS = [
   'channel_content_to_fix',
   'cin_missing_or_invalid',
   'tax_rate_missing',
+  'message_sync_not_ready',
+  'issuer_missing',
+  'no_bookings_yet',
   'flow_not_activated',
   'property_long_rent',
   'property_inactive',
   'content_managed_on_channel',
+  'chat_not_licensed',
+  'accountant_handles',
   'not_provided',
 ] as const;
 export type OnboardingFlowReason = (typeof ONBOARDING_FLOW_REASONS)[number];
@@ -181,11 +186,12 @@ export const ONBOARDING_FLOW_ACTIONS = [
   'enterCin',
   'enterTaxRate',
   'activate',
+  'chooseIssuer',
 ] as const;
 export type OnboardingFlowAction = (typeof ONBOARDING_FLOW_ACTIONS)[number];
 
 /** What a flow needs on a property (backend `OnboardingPrerequisiteKeys`). */
-export const ONBOARDING_PREREQUISITE_KEYS = ['connection', 'mapping', 'singleSender', 'content', 'cin', 'taxRate'] as const;
+export const ONBOARDING_PREREQUISITE_KEYS = ['connection', 'mapping', 'singleSender', 'content', 'cin', 'taxRate', 'messageSync', 'issuer', 'bookings'] as const;
 export type OnboardingPrerequisiteKey = (typeof ONBOARDING_PREREQUISITE_KEYS)[number];
 
 /** How many properties are in each state of one flow (`flows` of `GET /onboarding/status`, NF-106). `total` is the sum of the other three. */
@@ -282,6 +288,12 @@ export const ONBOARDING_PART_REASONS = [
   'identification_off',
   'access_code_missing',
   'flows_incomplete',
+  'notification_preferences_missing',
+  'assistant_situation_missing',
+  'issuer_missing',
+  'accountant_handles',
+  'partner_integration_missing',
+  'connector_off',
   'no_property',
   'required_part_not_done',
   'not_provided',

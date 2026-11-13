@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
-import { flowNameKey } from '@/lib/onboarding-flows';
+import { flowNameKey, prerequisiteKey } from '@/lib/onboarding-flows';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 import { TODO_LIST_PATH } from '@/features/todo/lib/todo-model';
 import { useActivateReady, useActivationReadiness, type FlowActivationSummary } from '@/queries/use-flow-activation';
@@ -139,6 +140,11 @@ export function ActivationDialog({ open, onOpenChange }: ActivationDialogProps) 
   );
 }
 
+/** What a property still lacks, in plain words and once each: a prerequisite this version does not know reads as a neutral phrase, never as its key. */
+function unmetText(unmet: readonly string[], t: TFunction): string {
+  return Array.from(new Set(unmet.map((key) => t(prerequisiteKey(key))))).join(', ');
+}
+
 /** The result, flow by flow: how many were switched on, the properties that were not with what they lack, and the one next step. */
 function ActivationResult({ result }: { result: readonly FlowActivationSummary[] }) {
   const { t } = useTranslation();
@@ -166,7 +172,7 @@ function ActivationResult({ result }: { result: readonly FlowActivationSummary[]
                   <li key={property.propertyId} className="break-words" data-testid={`activation-not-${flow.flow}-${property.propertyId}`}>
                     {property.name}
                     {property.unmet.length > 0
-                      ? ` · ${t('onboardingPlan.summary.activation.lacks', { what: property.unmet.map((key) => t(`onboardingPlan.summary.prerequisites.${key}`)).join(', ') })}`
+                      ? ` · ${t('onboardingPlan.summary.activation.lacks', { what: unmetText(property.unmet, t) })}`
                       : ''}
                   </li>
                 ))}
