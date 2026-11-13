@@ -12,6 +12,7 @@ import {
   type KnowledgeEntry,
   type KnowledgeEntryKind,
   type KnowledgeTopic,
+  type PropertyAssistantSettings,
   type SaveKnowledgeEntryRequest,
 } from '@/types/assistant-settings.types';
 
@@ -144,6 +145,36 @@ export function hoursProblem(from: string, to: string): 'bothEnds' | 'sameTime' 
 
 /** The longest signature (`OrgAssistantRules.SignatureMaxLength`); the server checks again. */
 export const SIGNATURE_MAX_LENGTH = 300;
+
+// -- the exceptions of a property ------------------------------------------------------------------------------------------------------
+
+/** Whether a property has any exception to the rules of the organization (a `null` field is «as the organization»). */
+export function hasPropertyExceptions(settings: PropertyAssistantSettings): boolean {
+  return (
+    settings.enabled !== null ||
+    settings.tone !== null ||
+    settings.signature !== null ||
+    settings.hoursFrom !== null ||
+    settings.hoursTo !== null ||
+    settings.confidenceThreshold !== null ||
+    settings.forbiddenTopics !== null
+  );
+}
+
+/**
+ * The topics the organization forbids and the property's own list lets through: an exception can loosen what the organization forbids, and the screen says so, so that
+ * nothing is relaxed in silence. `null` for a property that follows the organization (it loosens nothing); an empty list of its own means that nothing is forbidden.
+ */
+export function relaxedTopics(organization: readonly string[], property: readonly string[] | null): string[] {
+  if (property === null) return [];
+  const kept = new Set(property.map((name) => name.toLowerCase()));
+  return organization.filter((name) => !kept.has(name.toLowerCase()));
+}
+
+/** Whether the threshold of confidence of the property is lower than the organization's (the property accepts drafts the organization would not): a looser rule, said as such. */
+export function relaxedThreshold(property: number | null, organization: number | undefined): boolean {
+  return property !== null && organization !== undefined && property < organization;
+}
 
 // -- the draft of a conversation -------------------------------------------------------------------------------------------------------
 

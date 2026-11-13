@@ -473,6 +473,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, in "Altro". Only with the flag `messageAssistant`
+    // (backend `MessageAssistant`, off by default): while it is off the entry is in no menu, the address leads to the home of the area and the server answers 404 to every
+    // endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the rules, the situations
+    // and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
+    path: '/app/short-rent/settings/assistant',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    featureFlag: 'messageAssistant',
+    navKey: 'nav.assistant',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'Sparkles',
+    component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

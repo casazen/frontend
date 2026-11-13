@@ -2042,10 +2042,225 @@
       "title": "Assistant draft"
     },
     "error": {
-      "noGuestMessage": "The guest has not written anything yet: there is no message to answer."
+      "concurrentChange": "Someone changed the assistant’s instructions at the same moment: we read them again, check and try again.",
+      "entryInvalid": "The answer is not valid: it needs a text of at most 1,000 characters and, for a frequently asked question, the question too.",
+      "entryNotFound": "This answer no longer exists: the list has been updated.",
+      "modeNotAllowed": "This situation is sensitive: it can only go to a person or prepare a draft.",
+      "noGuestMessage": "The guest has not written anything yet: there is no message to answer.",
+      "propertyNotFound": "This property was not found among yours.",
+      "rulesInvalid": "The rules are not valid: choose at least one language, a signature of at most 300 characters, hours with different start and end, and topics from the list.",
+      "situationInvalid": "The situation is not valid: check the fields and try again.",
+      "situationNotFound": "This situation does not exist: reload the page.",
+      "templateInvalid": "The text of the answer is not valid: it is too long or it has a variable that does not exist.",
+      "thresholdInvalid": "The confidence threshold is not valid."
+    },
+    "knowledge": {
+      "accessCodesNote": "The access codes of the property (locks, key box) are never read by the assistant.",
+      "actionFailed": "The operation did not go through. Try again in a moment.",
+      "answers": {
+        "add": "Add an answer",
+        "help": "The answers you write yourself. The assistant uses them to write the drafts of this property; the ones that are switched off are not used.",
+        "none": "There is no answer yet.",
+        "title": "Your answers"
+      },
+      "delete": {
+        "description": "The answer is deleted for good. Future drafts will not use it.",
+        "title": "Delete this answer?"
+      },
+      "entry": {
+        "active": "Used by the assistant",
+        "activeHelp": "If you switch it off it stays here, but the assistant does not use it.",
+        "addTitle": "Add an answer",
+        "answer": "Answer",
+        "anyLanguage": "Any language",
+        "delete": "Delete",
+        "description": "Write what you want the assistant to know. The text may also hold a password: it is never shown to people who cannot read the answers.",
+        "edit": "Edit",
+        "editTitle": "Edit the answer",
+        "error": {
+          "questionRequired": "Write the question.",
+          "textRequired": "Write the text.",
+          "textTooLong": "The text is too long: at most {{max}} characters.",
+          "titleTooLong": "The question is too long: at most {{max}} characters."
+        },
+        "inherited": "From the organization",
+        "inheritedHelp": "It applies to every property. It is changed in the rules of the organization.",
+        "kind": "Type",
+        "language": "Language",
+        "languageHelp": "The language it is written in, or any.",
+        "off": "Off",
+        "question": "Question",
+        "save": "Save the answer",
+        "saveFailed": "The answer could not be saved. Try again.",
+        "switchOff": "Off",
+        "switchOn": "Used",
+        "text": "Text",
+        "textHelp": "From 1 to 1,000 characters.",
+        "topic": "Topic"
+      },
+      "kind": {
+        "Fact": "Information",
+        "Faq": "Frequently asked question",
+        "Rule": "Rule"
+      },
+      "listing": {
+        "change": "Change the data in the listing",
+        "help": "The information we read from the listing of this property. It is changed in the listing, not here.",
+        "none": "We found no information in the listing.",
+        "title": "From your listing"
+      },
+      "loadError": "The information of the assistant could not be loaded. Try again.",
+      "missing": {
+        "add": "Add",
+        "help": "The topics we have no information about: without it the assistant does not know what to answer.",
+        "none": "Every topic has at least one piece of information.",
+        "title": "Missing information"
+      },
+      "organization": {
+        "help": "They apply to every property that has no answer of its own for the same topic and of the same type. Only the administrator of the organization changes them.",
+        "title": "Answers for every property"
+      },
+      "topic": {
+        "Amenities": "Amenities",
+        "CheckIn": "Check-in",
+        "CheckOut": "Check-out",
+        "Contacts": "Contacts",
+        "Directions": "Directions",
+        "Faq": "Frequently asked questions",
+        "Hours": "Hours",
+        "HouseRules": "House rules",
+        "Parking": "Parking",
+        "Pets": "Pets",
+        "WiFi": "Wi-Fi"
+      }
+    },
+    "language": {
+      "de": "German",
+      "en": "English",
+      "es": "Spanish",
+      "fr": "French",
+      "it": "Italian"
+    },
+    "mode": {
+      "draft": "Prepares a draft",
+      "draftExplain": "The assistant writes a draft that waits for your approval: nothing is sent by itself.",
+      "escalate": "A person decides",
+      "escalateExplain": "The assistant does not write a draft: it adds a «To do» for you.",
+      "notActive": "Not active in this version",
+      "notActiveExplain": "This mode is not available: the assistant only writes drafts that you approve."
+    },
+    "noAccess": {
+      "knowledge": "You do not have the permission to read the answers of the assistant.",
+      "property": "You do not have the permission to read the settings of the properties.",
+      "rules": "You do not have the permission to read the rules of the assistant.",
+      "situations": "You do not have the permission to read the situations of the assistant."
     },
     "notice": {
       "transparency": "This draft is written by an AI model. Nothing is sent without your approval, and guests are not told that the assistant wrote it: this notice stays here, in CasaZen."
+    },
+    "property": {
+      "asOrganization": "As the organization",
+      "asOrganizationValue": "As the organization: {{value}}",
+      "choose": "Choose a property from the list to see its settings.",
+      "empty": "You have no short-term rental property yet.",
+      "enabled": {
+        "help": "With the assistant switched on for the organization, you can switch it off here for this property only.",
+        "label": "Assistant for this property",
+        "off": "Off for this property",
+        "on": "On for this property"
+      },
+      "error": {
+        "hoursRequired": "Choose the start and the end time.",
+        "signatureRequired": "Write the signature of this property, or go back to «As the organization»."
+      },
+      "listError": "The list of the properties could not be loaded. Try again.",
+      "listLabel": "Properties",
+      "loadError": "The settings of this property could not be loaded. Try again.",
+      "noSignature": "no signature",
+      "notFound": "Property not found",
+      "notFoundHint": "This property is not among yours, or it no longer exists. Choose it from the list.",
+      "noTopics": "no topic forbidden",
+      "organizationOff": "The assistant is switched off for the organization: until you switch it on in the rules, it prepares no drafts for any property.",
+      "own": "This property only",
+      "relaxedThreshold": "This property accepts drafts at a lower confidence threshold ({{value}}) than the organization’s ({{organization}}).",
+      "relaxedTopics": "This property allows topics that the organization forbids: {{topics}}.",
+      "reset": {
+        "button": "Use the organization’s settings for everything",
+        "confirm": "Go back to the organization",
+        "description": "The exceptions of this property (switch, tone, signature, hours, forbidden topics and threshold) are removed: the property follows the rules of the organization. Its answers stay.",
+        "failed": "The exceptions could not be removed. Try again.",
+        "title": "Remove the exceptions of this property?"
+      },
+      "save": "Save the property settings",
+      "saveFailed": "The settings of this property could not be saved. Try again.",
+      "signature": {
+        "own": "Signature of this property"
+      },
+      "threshold": "Confidence threshold of this property: {{value}}. It is not changed from this page and stays as it is when you save.",
+      "topicsNone": "No topic is forbidden for this property: the assistant may answer on anything, even on what the organization forbids.",
+      "topicsSome": "On these topics the assistant never writes a draft: it adds a «To do». This list replaces the organization’s."
+    },
+    "readOnly": {
+      "property": "You can read these settings but not change them: it takes the permission to edit properties.",
+      "propertySituations": "You can read these situations but not change them: it takes the permission to edit properties.",
+      "rules": "You can read these rules but not change them: only the administrator of the organization does.",
+      "situations": "You can read these situations but not change them: only the administrator of the organization does."
+    },
+    "rules": {
+      "allowedTopics": {
+        "label": "Topics the assistant may answer on",
+        "none": "No topic chosen: no restriction, the assistant may answer on any topic.",
+        "some": "The assistant answers only on the chosen topics; for the others it adds a «To do» for you."
+      },
+      "enabled": {
+        "help": "When on, the assistant prepares a draft for the messages of your guests. The draft is never sent by itself: you review it and approve it.",
+        "label": "Assistant on"
+      },
+      "error": {
+        "hoursBothEnds": "Choose both the start and the end time, or «At any time».",
+        "hoursSameTime": "The start and the end time must be different.",
+        "languages": "Choose at least one language.",
+        "signatureTooLong": "The signature is too long: at most 300 characters."
+      },
+      "forbiddenTopics": {
+        "label": "Forbidden topics",
+        "none": "No topic is forbidden.",
+        "some": "On these topics the assistant never writes a draft: it adds a «To do» for you."
+      },
+      "hours": {
+        "anyTime": "At any time",
+        "from": "From",
+        "help": "The hours in which the assistant prepares drafts, by the clock of the property.",
+        "label": "Hours",
+        "to": "To"
+      },
+      "languages": {
+        "help": "The languages the assistant may write the drafts in.",
+        "label": "Languages"
+      },
+      "loadError": "The rules of the assistant could not be loaded. Try again.",
+      "save": "Save the rules",
+      "saveFailed": "The rules could not be saved. Try again.",
+      "signature": {
+        "help": "The text that closes every draft, for example your name. Leave it empty for no signature.",
+        "label": "Signature"
+      },
+      "tone": {
+        "help": "How the assistant writes: the draft is always a proposal you can change.",
+        "label": "Tone"
+      }
+    },
+    "settings": {
+      "description": "What the assistant that prepares draft answers to your guests knows and what it may do.",
+      "draftsOnly": "In this version the assistant only prepares drafts: no message is sent without your approval.",
+      "loading": "Loading the settings of the assistant…",
+      "tabs": {
+        "properties": "Properties",
+        "rules": "Rules",
+        "situations": "Situations"
+      },
+      "tabsLabel": "Sections of the assistant settings",
+      "title": "Assistant"
     },
     "situation": {
       "cancellation_or_refund": "Cancellation or refund",
@@ -2063,6 +2278,59 @@
       "pets": "Pets",
       "thank_you": "Thank you",
       "wifi": "Wi-Fi"
+    },
+    "situations": {
+      "actionFailed": "The operation did not go through. Try again in a moment.",
+      "answer": {
+        "none": "No fixed answer: the assistant writes it from the information it has.",
+        "template": "The answer starts from the text you wrote.",
+        "topic": "The answer starts from the data of the property: {{topic}}."
+      },
+      "edit": {
+        "button": "Edit",
+        "descriptionOrganization": "It applies to the whole organization, to the properties that have no exception.",
+        "descriptionProperty": "It applies to this property only and replaces the organization’s value.",
+        "mode": "What the assistant does",
+        "noSource": "None",
+        "notOffered": "The current value is not available in this version: when you save, the situation becomes «Prepares a draft».",
+        "save": "Save the situation",
+        "saveFailed": "The situation could not be saved. Try again.",
+        "source": "Topic of the data of the property",
+        "sourceHelp": "If you do not write a text, the answer starts from the data of this topic.",
+        "template": "Text of the answer",
+        "templateHelp": "Optional. You can use the same variables as your ready-made messages.",
+        "templateHidden": "This situation has a text written by the administrator of the organization, which you cannot read. If you save an exception for this property you replace it: the answer will start from the data of the property, unless you write your own.",
+        "templateTooLong": "The text is too long: at most {{max}} characters.",
+        "title": "Situation: {{situation}}"
+      },
+      "listLabel": "Situations",
+      "loadError": "The situations of the assistant could not be loaded. Try again.",
+      "origin": {
+        "default": "Default value",
+        "organization": "Set for the organization",
+        "property": "Exception of this property"
+      },
+      "scope": "Situations of",
+      "scopeHelp": "The organization, or a property with its exceptions.",
+      "scopeOrganization": "The whole organization",
+      "sensitive": "This always needs your decision.",
+      "sensitiveLabel": "Sensitive situation",
+      "since": "In force since {{date}}",
+      "useOrganization": "Use the organization’s setting"
+    },
+    "toast": {
+      "entryDeleted": "Answer deleted",
+      "entrySaved": "Answer saved",
+      "propertyReset": "The property follows the organization again",
+      "propertySaved": "Property settings saved",
+      "rulesSaved": "Assistant rules saved",
+      "situationReset": "The situation follows the organization again",
+      "situationSaved": "Situation saved"
+    },
+    "tone": {
+      "Formal": "Formal",
+      "Friendly": "Friendly",
+      "Neutral": "Neutral"
     }
   },
   "billing": {
@@ -12328,6 +12596,7 @@
     "seo": "SEO & Content",
     "ai": "AI configuration",
     "approvalQueue": "Approval Queue",
+    "assistant": "Assistant",
     "marketing": "Marketing",
     "more": "More",
     "brandShort": "CASAZEN",
