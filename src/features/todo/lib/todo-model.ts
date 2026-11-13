@@ -44,6 +44,13 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
     titleKey: 'activity.todo.type.ReconnectChannelManager.title',
     whyKey: 'activity.todo.type.ReconnectChannelManager.why',
   },
+  // The types the traffic light of the cockpit raises besides the ones above (E03/F02/US01/T03, NF-52).
+  IdentityVerification: { titleKey: 'activity.todo.type.IdentityVerification.title', whyKey: 'activity.todo.type.IdentityVerification.why' },
+  MunicipalityTaxRateMissing: {
+    titleKey: 'activity.todo.type.MunicipalityTaxRateMissing.title',
+    whyKey: 'activity.todo.type.MunicipalityTaxRateMissing.why',
+  },
+  TouristTaxDeadline: { titleKey: 'activity.todo.type.TouristTaxDeadline.title', whyKey: 'activity.todo.type.TouristTaxDeadline.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

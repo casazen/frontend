@@ -492,6 +492,10 @@
           "title": "Documento fiscale da sistemare",
           "why": "Un documento fiscale ha bisogno di te."
         },
+        "IdentityVerification": {
+          "title": "Identità dell'ospite da verificare",
+          "why": "L'identità dell'ospite non è ancora verificata: aspettiamo il suo selfie, oppure un operatore deve decidere."
+        },
         "IntegrationError": {
           "title": "Collegamento da sistemare",
           "why": "Un collegamento con un servizio esterno non funziona."
@@ -508,6 +512,10 @@
           "title": "Messaggio da approvare",
           "why": "Un messaggio aspetta la tua approvazione prima di partire."
         },
+        "MunicipalityTaxRateMissing": {
+          "title": "Imposta di soggiorno da inserire",
+          "why": "Non conosciamo l'imposta di soggiorno del comune: inseriscila, non la consideriamo mai pari a zero."
+        },
         "PublicationError": {
           "title": "Errore di pubblicazione",
           "why": "Un annuncio non è stato pubblicato su un canale."
@@ -519,6 +527,10 @@
         "ReconnectChannelManager": {
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
+        },
+        "TouristTaxDeadline": {
+          "title": "Imposta di soggiorno in scadenza",
+          "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."
         },
         "WizardResume": {
           "title": "Procedura da riprendere",

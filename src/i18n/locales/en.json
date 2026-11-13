@@ -492,6 +492,10 @@
           "title": "Fiscal document to fix",
           "why": "A fiscal document needs you."
         },
+        "IdentityVerification": {
+          "title": "Guest identity to verify",
+          "why": "The guest's identity is not verified yet: we are waiting for their selfie, or an operator has to decide."
+        },
         "IntegrationError": {
           "title": "Connection to fix",
           "why": "A connection with an external service is not working."
@@ -508,6 +512,10 @@
           "title": "Message to approve",
           "why": "A message waits for your approval before it is sent."
         },
+        "MunicipalityTaxRateMissing": {
+          "title": "Tourist tax rate to enter",
+          "why": "We do not know the tourist tax rate of the municipality: enter it, we never take it as zero."
+        },
         "PublicationError": {
           "title": "Publication error",
           "why": "A listing could not be published on a channel."
@@ -519,6 +527,10 @@
         "ReconnectChannelManager": {
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
+        },
+        "TouristTaxDeadline": {
+          "title": "Tourist tax due",
+          "why": "The tax of the period has to be declared and paid, with the receipts archived."
         },
         "WizardResume": {
           "title": "Setup to resume",
