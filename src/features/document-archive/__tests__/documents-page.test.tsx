@@ -127,6 +127,10 @@ describe('DocumentsPage (NF-99)', () => {
     expect(table.getByRole('link', { name: 'CZ-123' })).toHaveAttribute('href', '/app/short-rent/bookings/b1');
     expect(table.getByText(/2[.,]4 MB/)).toBeInTheDocument();
     expect(downloadButtons()).toHaveLength(2);
+    // The day is the one of the row, written as a person reads it (a stay date: never moved by the time zone of the browser).
+    expect(table.getAllByText(/Oct.*12.*2026|12.*Oct.*2026/).length).toBeGreaterThan(0);
+    // The button of a row is 44 px high whatever the pointer (the table is where the mouse is).
+    expect(screen.getByTestId('documents-list')).toHaveClass('[&_td_button]:min-h-11');
     expect(documentArchiveApi.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, pageSize: 25, types: undefined }));
   });
 
