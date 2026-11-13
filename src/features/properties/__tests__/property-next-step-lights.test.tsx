@@ -65,7 +65,8 @@ function renderStep(options: { status?: PropertyStatus; photos?: string[]; canWr
       { client },
       createElement(
         MemoryRouter,
-        null,
+        // The card sits on the page of the property, above every tab.
+        { initialEntries: [`/app/short-rent/properties/${PROPERTY_ID}`] },
         createElement(PropertyNextStep, {
           property: property(options.photos),
           status: options.status ?? 'Active',
@@ -95,17 +96,57 @@ afterEach(() => {
 
 // E03/F03/US01/T02 (NF-52, AC-NF52-9): the property card shows the light of its compliance items, with the same component and words as the page.
 describe('PropertyNextStep and the compliance lights of the property', () => {
-  it('PropertyNextStep_RedPoliceSend_IsTheNextStepWithItsButton', async () => {
-    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('ActivateOctorateSend', 'Red', 'connection_inactive')) }));
+  // The police send and the tourist tax rate lead to the page of the property: the card is on that page and the page has no field for either yet.
+  it.each([
+    ['ActivateOctorateSend', 'connection_inactive', "Attiva l'invio automatico alla Questura: Casa Como", "L'invio automatico non è attivo: attivalo oppure invia tu."],
+    [
+      'EnterMunicipalityTaxRate',
+      'municipality_rate_missing',
+      "Inserisci l'imposta di soggiorno del comune: Casa Como",
+      "Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).",
+    ],
+  ] as const)('PropertyNextStep_Red%s_SaysWhatIsWrongAndOffersNoButtonThatOpensThePageItIsOn', async (action, reason, title, words) => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item(action, 'Red', reason)) }));
     renderStep();
 
     const block = await screen.findByTestId('property-next-step');
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
-    expect(block).toHaveTextContent("Attiva l'invio automatico alla Questura: Casa Como");
-    expect(block).toHaveTextContent("L'invio automatico non è attivo: attivalo oppure invia tu.");
-    expect(block).toHaveTextContent('Tocca a te');
+    expect(block).toHaveTextContent(title);
+    expect(block).toHaveTextContent(words);
     expect(block).toHaveAttribute('data-tone', 'warning');
-    expect(screen.getByTestId('property-next-compliance')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}`);
+    // A button to `/properties/<id>` would open the page it is on and do nothing: the block leads back to the list and does not say «Tocca a te».
+    expect(screen.queryByTestId('property-next-compliance')).not.toBeInTheDocument();
+    expect(within(block).queryByRole('link', { name: /Controlla l'invio|Inserisci l'imposta/ })).not.toBeInTheDocument();
+    expect(block).not.toHaveTextContent('Tocca a te');
+    expect(within(block).getByRole('link', { name: 'Torna agli immobili' })).toHaveAttribute('href', '/app/short-rent/properties');
+  });
+
+  it('PropertyNextStep_ItemWhosePageIsAnotherOne_KeepsItsButtonAndSaysItIsTheHostsTurn', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('RenewPoliceCredentials', 'Red', 'credentials_refused')) }));
+    renderStep();
+
+    const block = await screen.findByTestId('property-next-step');
+    await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
+    expect(screen.getByTestId('property-next-compliance')).toHaveAttribute('href', '/app/short-rent/alloggiati');
+    expect(block).toHaveTextContent('Tocca a te');
+  });
+
+  it('PropertyNextStep_OtherLineOfTheSamePage_HasNoButtonWhileTheOnesOfOtherPagesKeepIt', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(
+      summaryOf({
+        periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08', dueAt: '2026-09-10T00:00:00Z' })),
+        connectionsToFix: section(item('ActivateOctorateSend', 'Yellow', 'connection_unverified'), item('RenewPoliceCredentials', 'Yellow', 'connection_unverified')),
+      }),
+    );
+    renderStep();
+
+    const lines = await screen.findByTestId('compliance-lines');
+    const rows = within(lines).getAllByTestId('compliance-line');
+    expect(rows).toHaveLength(2);
+    const send = rows.find((row) => row.getAttribute('data-action') === 'ActivateOctorateSend')!;
+    const credentials = rows.find((row) => row.getAttribute('data-action') === 'RenewPoliceCredentials')!;
+    expect(within(send).queryByTestId('compliance-line-action')).not.toBeInTheDocument();
+    expect(within(credentials).getByTestId('compliance-line-action')).toHaveAttribute('href', '/app/short-rent/alloggiati');
   });
 
   it('PropertyNextStep_RedMonthOfIstatPastItsDeadline_IsRedAsTheDeadlineAndOpensTheArchive', async () => {
@@ -221,10 +262,10 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
   });
 
   it('PropertyNextStep_UserWhoMayNotWriteTheProperty_IsLedToThePageNotToldToDoIt', async () => {
-    // The page of the item is one this user can open (every reader of the card holds `property.read`); without `property.write` the button only
-    // opens it («Apri») and the block does not say it is their turn.
+    // The page of the item is one this user can open (the archive asks `booking.read`); without `booking.write` the button only opens it («Apri») and
+    // the block does not say it is their turn.
     workspace.granted = ['property.read', 'booking.read'];
-    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('ActivateOctorateSend', 'Red', 'connection_inactive')) }));
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08' })) }));
     renderStep({ canWrite: false });
 
     const action = await screen.findByTestId('property-next-compliance');

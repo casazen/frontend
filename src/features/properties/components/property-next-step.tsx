@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FocusBlock, type CalmAction, type CalmTone } from '@/components/shared/calm';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,7 +11,7 @@ import { periodName, reasonText } from '@/features/compliance/lib/compliance-lig
 import { hasLinesToShow, propertyLinesOf, viewOfLines } from '@/features/compliance/lib/compliance-lines';
 import { useComplianceActivation, useComplianceLights } from '@/features/compliance/use-compliance';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute, isCurrentAddress } from '@/lib/compliance-routes';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { formatStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import type { PropertyStatus } from '@/lib/status-dictionary';
@@ -63,6 +64,7 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const { hasPermission } = useWorkspace();
+  const location = useLocation();
   // The lights of the property's compliance items (the police send, the tourist tax, ISTAT: NF-52, AC-NF52-9) come from the summary of the adempimenti:
   // only for a property that works (the others are about their activation), and only for whoever may read the bookings (the API asks that: a bare 403
   // on a GET takes the user to «nessun accesso»).
@@ -136,9 +138,14 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
         if (!line) return { title: t('property.next.compliance.waiting.title'), primary: toProperties };
         const route = complianceActionRoute(line.item, hasPermission);
         const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
-        const action: CalmAction = route
-          ? { label: mayAct ? t(`dashboard.todo.${line.action}.cta`) : t('dashboard.todo.open'), href: route, testId: 'property-next-compliance' }
-          : toProperties;
+        // The police send and the tourist tax rate lead to the page of the property, which is the page this card is on (above every tab) and has no
+        // field for either yet: a button that opens the page you are on does nothing, so there is none. The block still says what is wrong and why,
+        // and leads back to the list; it is not the host's turn here until the page where it is done exists (E03/F03/US02).
+        const opens = route !== null && !isCurrentAddress(route, location);
+        const action: CalmAction =
+          route && opens
+            ? { label: mayAct ? t(`dashboard.todo.${line.action}.cta`) : t('dashboard.todo.open'), href: route, testId: 'property-next-compliance' }
+            : toProperties;
         const reason = reasonText(line.reason, line.state, { t, exists: (key) => i18n.exists(key) });
         const when = deadlineNote(line.dueAt, { t, locale: language })?.text;
         return line.state === 'red'
@@ -146,7 +153,7 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
               title: t(`dashboard.todo.${line.action}.title`, { label: property.name, period: periodName(line.period, language) || t('compliance.item.noPeriod') }),
               body: reason,
               when,
-              hostTurn: mayAct,
+              hostTurn: mayAct && opens,
               primary: action,
             }
           : { title: t('property.next.compliance.waiting.title'), body: reason, when, primary: action };

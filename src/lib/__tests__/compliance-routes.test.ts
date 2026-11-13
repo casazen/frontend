@@ -3,7 +3,7 @@ import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
 import { guestDataCompletionPath } from '@/features/bookings/lib/stay-actions';
-import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute, isCurrentAddress } from '@/lib/compliance-routes';
 import {
   COMPLIANCE_COCKPIT_ACTIONS,
   type ComplianceCockpitAction,
@@ -196,5 +196,38 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
   it('complianceActionRoute_PropertyItemWithoutItsProperty_HasNoLink', () => {
     // A property item without its property has no target at all: no link, never the archive of the whole organisation.
     expect(complianceActionRoute({ ...periodItem('UploadIstatProof', '2026-09'), propertyId: null })).toBeNull();
+  });
+});
+
+// A card on the page of the property must not offer a button that opens the page it is on (the police send and the tourist tax rate lead there).
+describe('isCurrentAddress', () => {
+  const propertyPage = `/app/short-rent/properties/${PROPERTY_ID}`;
+
+  it.each(['ActivateOctorateSend', 'EnterMunicipalityTaxRate'] as const)('isCurrentAddress_%s_IsThePageOfThePropertyWhateverTabItIsOn', (action) => {
+    const address = complianceActionRoute(itemFor(action))!;
+
+    expect(address).toBe(propertyPage);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(true);
+    // The tab is what a button may change, but the page of the property has no field for them in any tab: nothing to offer.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(true);
+  });
+
+  it('isCurrentAddress_AnotherPageOrAnotherTab_IsNotTheCurrentAddress', () => {
+    expect(isCurrentAddress(propertyPage, { pathname: '/app/short-rent/properties', search: '' })).toBe(false);
+    expect(isCurrentAddress(propertyPage, { pathname: '/app/short-rent/bookings/b1', search: '' })).toBe(false);
+    // The same page on another tab is somewhere to go: the tab of the address is a parameter the person is not on yet.
+    const guestTab = complianceActionRoute(itemFor('VerifyIdentity'))!;
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '' })).toBe(false);
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '?tab=alloggiati' })).toBe(false);
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '?tab=guest' })).toBe(true);
+  });
+
+  it('isCurrentAddress_ArchiveOfAnotherMonthOrKind_IsNotTheCurrentAddress', () => {
+    const address = complianceActionRoute({ ...itemFor('UploadIstatProof'), period: '2026-08' })!;
+    const archive = '/app/short-rent/alloggiati/reports';
+
+    expect(isCurrentAddress(address, { pathname: archive, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: archive, search: `?kind=IstatProof&property=${PROPERTY_ID}&period=2026-07` })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: archive, search: `?kind=IstatProof&property=${PROPERTY_ID}&period=2026-08` })).toBe(true);
   });
 });

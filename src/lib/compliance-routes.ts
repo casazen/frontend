@@ -177,3 +177,16 @@ export function complianceActionRoute(
     (target.fallback ? buildRoute(target.fallback, id, item, hasPermission) : null)
   );
 }
+
+/**
+ * Whether an address of `complianceActionRoute` is the one the person is already at: the same page, with every parameter it carries (the tab, the
+ * filters) already in the address of the page. The police send and the tourist tax rate of a property lead to the page of the property, and a card on
+ * that page (it sits above every tab) that offered them would offer a button that opens the page it is on and changes nothing: the card leaves the
+ * button out, and still says what is wrong and why, until the page where it is done exists (E03/F03/US02).
+ */
+export function isCurrentAddress(address: string, location: { pathname: string; search: string }): boolean {
+  const [path, query = ''] = address.split('?');
+  if (path !== location.pathname) return false;
+  const here = new URLSearchParams(location.search);
+  return [...new URLSearchParams(query)].every(([name, value]) => here.get(name) === value);
+}

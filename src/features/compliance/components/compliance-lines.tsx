@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { PermissionPredicate } from '@/config/route-manifest';
-import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute, isCurrentAddress } from '@/lib/compliance-routes';
 import { periodName, reasonText } from '../lib/compliance-light';
 import { hasLinesToShow, viewOfLines, type ComplianceLine } from '../lib/compliance-lines';
 import { ComplianceLight } from './compliance-light';
@@ -84,8 +84,11 @@ function ComplianceLineItem({ line, hasPermission, reason }: ComplianceLineItemP
   const { t, i18n } = useTranslation();
   const name = t(`compliance.item.${line.action}`, { period: periodName(line.period, i18n.language) || t('compliance.item.noPeriod') });
 
-  // Only what is not in order has a button: the page it opens is the one of the action, or the read-only one for whoever cannot do it.
-  const route = line.state === 'green' ? null : complianceActionRoute(line.item, hasPermission);
+  // Only what is not in order has a button: the page it opens is the one of the action, or the read-only one for whoever cannot do it. A button
+  // that opens the page the card is on does nothing (the police send and the tourist tax rate of the property card): there is none.
+  const location = useLocation();
+  const target = line.state === 'green' ? null : complianceActionRoute(line.item, hasPermission);
+  const route = target !== null && !isCurrentAddress(target, location) ? target : null;
   const cta = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write) ? t(`dashboard.todo.${line.action}.cta`) : t('dashboard.todo.open');
 
   return (
