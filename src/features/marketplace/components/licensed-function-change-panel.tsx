@@ -90,7 +90,7 @@ export function LicensedFunctionChangePanel({ target, request, onClose }: Licens
 
           <div className="space-y-2">
             <Textarea readOnly rows={5} value={text} aria-label={t('marketplace.change.function.textLabel')} data-testid="change-text" />
-            <Button type="button" variant="outline" className="h-auto min-h-11 whitespace-normal py-2" onClick={() => void copy()} iconRight={<Copy />} data-testid="change-copy">
+            <Button type="button" variant="outline" className="h-auto min-h-11 whitespace-normal py-2" onClick={() => void copy()} disabled={busy} iconRight={<Copy />} data-testid="change-copy">
               {t('marketplace.change.function.copy')}
             </Button>
           </div>
