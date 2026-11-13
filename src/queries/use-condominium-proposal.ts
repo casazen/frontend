@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { DRAFT_KEY } from './use-lease-draft';
 import { condominiumProposalApi } from '@/api/condominium-proposal.api';
 import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
 
@@ -49,6 +50,7 @@ export function useProposeCondominiumExpense(leaseId: string) {
     mutationFn: (body: ProposeTenantExpense) => condominiumProposalApi.propose(leaseId, body),
     onSuccess: (proposal, request) => {
       rememberCondominiumExpense(queryClient, leaseId, proposal, request);
+      void queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, leaseId] });
     },
   });
 }

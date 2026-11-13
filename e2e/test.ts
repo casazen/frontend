@@ -28,6 +28,7 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
   };
 
   await mockPropertiesApi(page, []);
+  await page.route('**/api/long-rent/condominiums/properties', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await mockCinComplianceApi(page, {
     items: [],
     totalCount: 0,
