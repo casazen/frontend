@@ -40,7 +40,8 @@ export function CalendarChangeStatus({ propertyName, canRetry }: CalendarChangeS
   const [open, setOpen] = useState(false);
 
   if (!connectorOn) return null;
-  // A caller with no right to read the changes is not told of an error: the calendar is what it was.
+  // The guard is the right to read properties, checked before the line is mounted (the page): a 403 that comes anyway is not said as a failure here (what the app does with a GET
+  // that is refused is the interceptor's, not this line's).
   if (changes.isError && getHttpStatus(changes.error) === 403) return null;
 
   const busy = retry.isPending;

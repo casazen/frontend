@@ -6,7 +6,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
+import { calendarChangesApi } from '@/api/calendar-changes.api';
+import { calendarDaysApi } from '@/api/calendar-days.api';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useProperties } from '@/queries/use-properties';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { freezeClock, withBrowserTimeZone } from '@/test/clock';
@@ -22,6 +26,8 @@ vi.mock('@/components/layout/app-shell', () => ({
 }));
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getCalendar: vi.fn(), createOtaStay: vi.fn() } }));
 vi.mock('@/api/manual-blocks.api', () => ({ manualBlocksApi: { create: vi.fn(), remove: vi.fn() } }));
+vi.mock('@/api/calendar-days.api', () => ({ calendarDaysApi: { getDays: vi.fn() } }));
+vi.mock('@/api/calendar-changes.api', () => ({ calendarChangesApi: { apply: vi.fn(), get: vi.fn(), retry: vi.fn(), list: vi.fn(), preview: vi.fn() } }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -59,18 +65,20 @@ function problemError(status: number, data: unknown): AxiosError {
   });
 }
 
-function renderPage(permissions: string[] = ['property.write', 'booking.write']) {
+function renderPage(permissions: string[] = ['property.write', 'booking.write'], connector = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = {
     hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission),
   } as unknown as WorkspaceContextValue;
   render(
     <QueryClientProvider client={queryClient}>
-      <WorkspaceContext.Provider value={workspace}>
-        <MemoryRouter>
-          <CalendarPage />
-        </MemoryRouter>
-      </WorkspaceContext.Provider>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: connector }, isLoading: false }}>
+        <WorkspaceContext.Provider value={workspace}>
+          <MemoryRouter>
+            <CalendarPage />
+          </MemoryRouter>
+        </WorkspaceContext.Provider>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
 }
@@ -99,11 +107,40 @@ describe('CalendarPage manual blocks (PC-09)', () => {
       isLoading: false,
     } as unknown as ReturnType<typeof useProperties>);
     vi.mocked(bookingsApi.getCalendar).mockResolvedValue(calendarResponse([]));
+    vi.mocked(calendarDaysApi.getDays).mockResolvedValue({ today: '2026-09-30', properties: [] });
+    vi.mocked(calendarChangesApi.list).mockResolvedValue([]);
   });
 
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+  });
+
+  // The guard of the reads of the days and of the changes: the right to read properties, and for the changes the connector of the channel manager. Nothing is asked without them.
+  it('CalendarPage_WithoutTheRightToReadProperties_AsksForNoDaysAndNoChanges', async () => {
+    renderPage(['property.write', 'booking.write'], true);
+    await screen.findByRole('button', { name: 'Giorno' });
+    await waitFor(() => expect(bookingsApi.getCalendar).toHaveBeenCalled());
+
+    expect(calendarDaysApi.getDays).not.toHaveBeenCalled();
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+  });
+
+  it('CalendarPage_WithTheRightToReadProperties_AsksForTheDaysAndTheChanges', async () => {
+    renderPage(['property.read', 'property.write', 'booking.write'], true);
+    await screen.findByRole('button', { name: 'Giorno' });
+
+    await waitFor(() => expect(calendarDaysApi.getDays).toHaveBeenCalled());
+    await waitFor(() => expect(calendarChangesApi.list).toHaveBeenCalled());
+  });
+
+  it('CalendarPage_ConnectorOff_AsksForTheDaysButNotForTheChanges', async () => {
+    renderPage(['property.read', 'property.write', 'booking.write'], false);
+    await screen.findByRole('button', { name: 'Giorno' });
+
+    await waitFor(() => expect(calendarDaysApi.getDays).toHaveBeenCalled());
+    expect(calendarChangesApi.list).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
   });
 
   it('TheDaysPanel_WhileOpen_LeavesItsRoomToTheCalendarOnAWideScreen_AndGivesItBack', async () => {

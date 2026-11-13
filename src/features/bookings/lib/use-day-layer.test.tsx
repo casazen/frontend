@@ -40,7 +40,9 @@ describe('useDayLayer (E08/F05/US03/T01, permission rule)', () => {
     expect(result.current.failed).toBe(false);
   });
 
-  it('useDayLayer_A403_IsNoLayerAndNoErrorState', async () => {
+  // What this proves is what the hook does with a 403 body; it does not prove what the app does with a refused GET (the interceptor of axios moves to the page of "no access").
+  // The guard that matters is the test above: without the right nothing is asked, and the page asks nothing either (`calendar-page-manual-block.test.tsx`).
+  it('useDayLayer_A403Answer_IsNotSaidAsAFailureOfTheDays', async () => {
     vi.mocked(calendarDaysApi.getDays).mockRejectedValue(statusError(403));
     const { result } = renderHook(() => useDayLayer(QUERY, true), { wrapper });
 
