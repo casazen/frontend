@@ -16183,7 +16183,7 @@
           "title": "Attivo"
         },
         "expired": {
-          "description": "L’invito è scaduto il {{date}}: non ha nessun accesso. Puoi invitarlo di nuovo.",
+          "description": "L’invito è scaduto il {{date}}: non ha nessun accesso. Puoi invitarlo di nuovo, oppure revocarlo: finché non lo revochi conta nel numero massimo di contatti.",
           "title": "Invito scaduto"
         },
         "invited": {

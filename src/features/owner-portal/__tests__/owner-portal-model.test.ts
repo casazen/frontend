@@ -12,6 +12,7 @@ import {
   formatBytes,
   isAccountingDocument,
   isContactEditable,
+  isContactRevocable,
   isOwnerOnlyRefusal,
   looksLikeEmail,
   otherVersions,
@@ -221,6 +222,13 @@ describe('delegated contacts', () => {
     expect(isContactEditable({ status: 'active' })).toBe(true);
     expect(isContactEditable({ status: 'revoked' })).toBe(false);
     expect(isContactEditable({ status: 'expired' })).toBe(false);
+  });
+
+  it('IsContactRevocable_EveryContactThatIsNotWithdrawn_ALapsedInvitationToo_BecauseItStillCountsInTheMostContacts', () => {
+    expect(isContactRevocable({ status: 'invited' })).toBe(true);
+    expect(isContactRevocable({ status: 'active' })).toBe(true);
+    expect(isContactRevocable({ status: 'expired' })).toBe(true);
+    expect(isContactRevocable({ status: 'revoked' })).toBe(false);
   });
 
   it('ContactName_AndEmailShape', () => {

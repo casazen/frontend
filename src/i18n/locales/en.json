@@ -16183,7 +16183,7 @@
           "title": "Active"
         },
         "expired": {
-          "description": "The invitation expired on {{date}}: it has no access. You can invite it again.",
+          "description": "The invitation expired on {{date}}: it has no access. You can invite it again, or revoke it: until you do, it counts towards the most contacts.",
           "title": "Invitation expired"
         },
         "invited": {

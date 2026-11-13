@@ -239,9 +239,18 @@ export function samePermissions(a: readonly OwnerPortalPermission[], b: readonly
   return a.length === b.length && OWNER_PORTAL_PERMISSIONS.every((permission) => a.includes(permission) === b.includes(permission));
 }
 
-/** A contact whose permissions can still be changed or withdrawn: invited or active. A revoked or lapsed one is a record. */
+/** A contact whose permissions can still be changed: invited or active. A lapsed or revoked one is a record. */
 export function isContactEditable(contact: Pick<OwnerContact, 'status'>): boolean {
   return contact.status === 'active' || contact.status === 'invited';
+}
+
+/**
+ * A contact that can still be withdrawn: every one that is not withdrawn yet, a lapsed invitation too. For the server a lapsed invitation stays «invited» (it grants nothing, but it counts in the
+ * most of 10 contacts of an owner until it is replaced by a new invitation of the same address or withdrawn), so the owner must be able to clear it: with 10 lapsed invitations no new contact could
+ * ever be invited.
+ */
+export function isContactRevocable(contact: Pick<OwnerContact, 'status'>): boolean {
+  return contact.status !== 'revoked';
 }
 
 /** The first and last name of a contact, or its address when it has neither: what the page calls it. */

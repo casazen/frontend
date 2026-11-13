@@ -10,7 +10,7 @@ import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import { useInviteOwnerContact, useRevokeOwnerContact, useSetOwnerContactPermissions } from '@/queries/ownerPortal';
 import type { OwnerContact, OwnerContactStatus, OwnerPortalPermission } from '@/types';
 import { OWNER_PORTAL_PERMISSIONS } from '@/types';
-import { contactName, isContactEditable, looksLikeEmail, samePermissions, togglePermission } from './owner-portal-model';
+import { contactName, isContactEditable, isContactRevocable, looksLikeEmail, samePermissions, togglePermission } from './owner-portal-model';
 import { CheckRow, StatusPill, type PillTone, TOUCH } from './portal-parts';
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -159,8 +159,9 @@ interface ContactCardProps {
 }
 
 /**
- * A contact of the owner: who, where its invitation stands, and what it may do. An invited contact has no access yet (the page says it); a lapsed invitation, or a withdrawn contact,
- * is a record with nothing to change. The permissions are changed one by one, saved together, and effective at the contact's next request; withdrawing asks first and also takes
+ * A contact of the owner: who, where its invitation stands, and what it may do. An invited contact has no access yet (the page says it); a withdrawn contact is a record with nothing to
+ * change; a lapsed invitation has no permission to change but can still be withdrawn (the same question first): for the server it counts in the most contacts until it is, and the owner
+ * must be able to clear it. The permissions are changed one by one, saved together, and effective at the contact's next request; withdrawing asks first and also takes
  * effect at the next request. The card is made again when the server's permissions change, so the boxes are always the server's after a save.
  */
 function ContactCard({ contact, busy, save, revoke }: ContactCardProps) {
@@ -169,6 +170,7 @@ function ContactCard({ contact, busy, save, revoke }: ContactCardProps) {
   const [confirming, setConfirming] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
   const editable = isContactEditable(contact);
+  const revocable = isContactRevocable(contact);
   const changed = !samePermissions(draft, contact.permissions);
 
   const saveDraft = async () => {
@@ -228,11 +230,21 @@ function ContactCard({ contact, busy, save, revoke }: ContactCardProps) {
           </div>
         </div>
       ) : (
-        <ul className="mt-3 list-disc pl-5 text-sm text-muted-foreground" aria-label={t('ownerPortal.contacts.permissions.label')}>
-          {contact.permissions.map((permission) => (
-            <li key={permission}>{t(`ownerPortal.contacts.permissions.${permission}.label`)}</li>
-          ))}
-        </ul>
+        <>
+          <ul className="mt-3 list-disc pl-5 text-sm text-muted-foreground" aria-label={t('ownerPortal.contacts.permissions.label')}>
+            {contact.permissions.map((permission) => (
+              <li key={permission}>{t(`ownerPortal.contacts.permissions.${permission}.label`)}</li>
+            ))}
+          </ul>
+          {/* A lapsed invitation has no access, but for the server it is still «invited» and counts in the most contacts until it is withdrawn: the owner can clear it. */}
+          {revocable ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="danger-outline" className={TOUCH} disabled={busy} onClick={() => setConfirming(true)} data-testid="owner-contact-revoke">
+                {t('ownerPortal.contacts.revoke.button')}
+              </Button>
+            </div>
+          ) : null}
+        </>
       )}
 
       {failure ? (

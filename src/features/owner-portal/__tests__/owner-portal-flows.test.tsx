@@ -257,6 +257,34 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
     expect(api.revokeContact).toHaveBeenCalledWith('c1');
   });
 
+  it('OwnerContact_ALapsedInvitation_CanBeWithdrawnToo_WithTheSameQuestion_AndHasNoPermissionToChange', async () => {
+    // For the server a lapsed invitation is still «invited» and counts in the most of 10 contacts: with no way to clear it, ten of them would stop every new invitation.
+    api.listContacts.mockResolvedValue([contact(['calendar.read'], 'expired')] as never);
+    api.revokeContact.mockResolvedValue(contact(['calendar.read'], 'revoked') as never);
+    renderPortal('/portale-proprietari/contatti');
+    const card = await screen.findByTestId('owner-contact');
+    expect(card.getAttribute('data-status')).toBe('expired');
+    expect(card.textContent).toContain('non ha nessun accesso');
+    expect(within(card).queryByTestId('owner-contact-save')).toBeNull();
+    expect(within(card).queryByTestId('owner-contact-c1-calendar.read')).toBeNull();
+
+    fireEvent.click(within(card).getByTestId('owner-contact-revoke'));
+    const dialog = await screen.findByRole('dialog');
+    expect(api.revokeContact).not.toHaveBeenCalled();
+    expect(dialog.textContent).toContain('Vale dalla sua prossima richiesta');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Revoca l’accesso' }));
+    await waitFor(() => expect(api.revokeContact).toHaveBeenCalledTimes(1));
+    expect(api.revokeContact).toHaveBeenCalledWith('c1');
+  });
+
+  it('OwnerContact_AContactAlreadyWithdrawn_HasNoButtonToWithdrawItAgain', async () => {
+    api.listContacts.mockResolvedValue([contact(['calendar.read'], 'revoked')] as never);
+    renderPortal('/portale-proprietari/contatti');
+    const card = await screen.findByTestId('owner-contact');
+    expect(card.getAttribute('data-status')).toBe('revoked');
+    expect(within(card).queryByTestId('owner-contact-revoke')).toBeNull();
+  });
+
   it('OwnerContact_AFailedInvitation_KeepsNothingOfTheRequestInTheCacheOfTheMutations', async () => {
     api.inviteContact.mockRejectedValue(refusal(409, 'owner_contact_exists', { email: 'secret.person@example.com', firstName: 'Secret' }));
     const { client } = renderPortal('/portale-proprietari/contatti');
