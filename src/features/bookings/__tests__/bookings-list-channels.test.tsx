@@ -53,6 +53,30 @@ afterEach(() => {
 });
 
 describe('booking list: channels', () => {
+  describe('the row menu (E08/F03/US02, NF-76)', () => {
+    const menuOf = (row: BookingListItem) => (listDefinition().menu?.(row) ?? []).filter((entry) => entry !== 'separator');
+    const cancelEntry = (row: BookingListItem) => menuOf(row).find((entry) => typeof entry === 'object' && entry.id === 'cancel');
+
+    it('BookingsList_BookingOfTheHostOrTheSite_OffersCancelWhenTheApiSaysItMayBeCancelled', () => {
+      expect(cancelEntry(item({ changeOptions: { canEdit: true, canCancel: true, channel: null } }))).toBeDefined();
+    });
+
+    it('BookingsList_AnswerWithNoChangeOptions_OffersCancelByTheStatusAsItAlwaysDid', () => {
+      expect(cancelEntry(item({ status: 'Confirmed' }))).toBeDefined();
+      expect(cancelEntry(item({ status: 'Cancelled' }))).toBeUndefined();
+    });
+
+    it('BookingsList_ChannelClosedForTheCancellation_OffersNoCancel', () => {
+      const closed = { canEdit: false, canCancel: false, channel: 'Airbnb', cancelReasonCode: 'ota_booking_cancel_not_allowed', cancelGuidanceKey: 'OtaChannelCancelGuidanceAirbnb' };
+
+      expect(cancelEntry(item({ source: 'Airbnb', channel: 'Airbnb', changeOptions: closed }))).toBeUndefined();
+    });
+
+    it('BookingsList_ChannelOpenForTheCancellation_OffersCancel', () => {
+      expect(cancelEntry(item({ source: 'Airbnb', channel: 'Airbnb', changeOptions: { canEdit: false, canCancel: true, channel: 'Airbnb' } }))).toBeDefined();
+    });
+  });
+
   it('BookingsList_ChannelBooking_ShowsItsChannelWithTheOtaBadge', () => {
     renderChannelCell(item({ source: 'Expedia', channel: 'Expedia', otaSource: 'Expedia' }));
 
