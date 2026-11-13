@@ -117,9 +117,12 @@ type Stage = 'opening' | 'claimsPending' | 'tokenPending';
  *
  * The secret of the link is read once, taken out of the address bar at once, kept in memory only while the person signs in (it travels in the `appState` of the
  * Auth0 login) and sent once, in the body of `POST /owner-invitations/accept`, when the person is signed in. The server consumes it idempotently: this page never
- * sends it twice for one attempt. When the claims of the owner portal reached the identity provider the page asks Auth0 for a new token and replaces the address
- * with the portal; when they did not, it says so and offers to try again, never a success that did not happen. A link that is expired, withdrawn, used by another
- * account or invalid, an account whose e-mail is not the invited one and a portal that is off each have their own CasaZen-branded card.
+ * sends it twice for one attempt. When the claims of the owner portal reached the identity provider the page forgets the secret, asks Auth0 for a new token and
+ * replaces the address with the portal. When they did not, it says so, never a success that did not happen, and the secret stays in memory (nowhere else) for a new
+ * try: the server hands the claims over again every time the same account accepts the same invitation, so «Riprova» accepts again, and only a portal opened without
+ * the claims would be refused. The secret is forgotten when the claims are published, when the link is refused for good and when the person leaves the page. A link
+ * that is expired, withdrawn, used by another account or invalid, an account whose e-mail is not the invited one and a portal that is off each have their own
+ * CasaZen-branded card.
  */
 export function OwnerInvitationPage() {
   const { t } = useTranslation();
@@ -149,6 +152,16 @@ export function OwnerInvitationPage() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [failure, setFailure] = useState<OwnerInvitationFailure | null>(null);
 
+  // True while the invitation is accepted but the claims of the portal did not reach the identity provider: the secret then waits in memory for a new acceptance, and
+  // a person who leaves the page (a link, the back button) takes it with them: the link of the e-mail still works and brings it back.
+  const waitingForClaims = useRef(false);
+  useEffect(
+    () => () => {
+      if (waitingForClaims.current) clearOwnerInvitationToken();
+    },
+    [],
+  );
+
   /** A new token from Auth0 (the old one has no owner claims) and the portal in place of this address; a failure of either is told, not hidden. */
   const openPortal = useCallback(async () => {
     setStage('opening');
@@ -163,13 +176,18 @@ export function OwnerInvitationPage() {
 
   const finish = useCallback(
     (accepted: OwnerInvitationAccepted) => {
-      // Used: the secret is forgotten here and in the mutation (its variables), and the portal opens in place of this address.
-      clearOwnerInvitationToken();
+      // The variables of the mutation (the secret) are dropped with every answer.
       reset();
       if (!claimsArePublished(accepted.claimsRefresh)) {
+        // Accepted, but the portal would refuse the person (no claims in the token): not a success. The server repeats the hand-over of the claims at every acceptance of
+        // the same invitation by the same account, so the secret is kept, in memory only, for the «Riprova» that accepts again.
+        waitingForClaims.current = true;
         setStage('claimsPending');
         return;
       }
+      // Published: the secret is forgotten for good and the portal opens in place of this address.
+      waitingForClaims.current = false;
+      clearOwnerInvitationToken();
       void openPortal();
     },
     [openPortal, reset],
@@ -195,9 +213,11 @@ export function OwnerInvitationPage() {
     start(token);
   }, [authLoading, isAuthenticated, start, token]);
 
+  /** A new acceptance with the same secret, only because the person asked: after a failure that is worth trying again and while the claims of the portal are not published. */
   const again = () => {
     if (!token) return;
     setFailure(null);
+    setStage(null);
     started.current = false;
     start(token);
   };
@@ -205,10 +225,23 @@ export function OwnerInvitationPage() {
   if (authLoading) return <WaitingCard title={t('ownerInvitation.loading')} />;
   if (stage === 'opening') return <WaitingCard title={t('ownerInvitation.opening')} />;
 
-  if (stage === 'claimsPending' || stage === 'tokenPending') {
-    // The invitation is accepted but the portal cannot be opened yet: this is not a success, and it says what to do.
+  if (stage === 'claimsPending') {
+    // The invitation is accepted but the claims of the portal did not reach the identity provider: the portal would refuse the person, so this is not a success and
+    // opening it is no remedy. The remedy is to accept again, which hands the claims over again.
     return (
-      <InviteAcceptCard tone="attention" title={t(`ownerInvitation.${stage}.title`)} description={t(`ownerInvitation.${stage}.description`)}>
+      <InviteAcceptCard tone="attention" title={t('ownerInvitation.claimsPending.title')} description={t('ownerInvitation.claimsPending.description')}>
+        <Button className={TOUCH_TARGET} onClick={again} data-testid="owner-invitation-retry">
+          {t('ownerInvitation.retry')}
+        </Button>
+        <SupportLink />
+      </InviteAcceptCard>
+    );
+  }
+
+  if (stage === 'tokenPending') {
+    // The claims are published but a new token could not be asked for: this is not a success either, and asking again is all there is to do.
+    return (
+      <InviteAcceptCard tone="attention" title={t('ownerInvitation.tokenPending.title')} description={t('ownerInvitation.tokenPending.description')}>
         <Button className={TOUCH_TARGET} onClick={() => void openPortal()} data-testid="owner-invitation-open-portal">
           {t('ownerInvitation.openPortal')}
         </Button>

@@ -170,16 +170,74 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
   });
 
-  it('OwnerInvitationRoute_ClaimsNotPublished_SaysTheAccessIsNotActiveAndDoesNotOpenThePortal', async () => {
+  it('OwnerInvitationRoute_ClaimsNotPublished_SaysTheAccessIsNotActiveAndKeepsTheSecretForANewTry', async () => {
     mockAuth(true);
     vi.mocked(axios.post).mockResolvedValue({ data: { ...ACCEPTED, claimsRefresh: 'failed' } });
     openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
 
     expect(await screen.findByText(i18n.t('ownerInvitation.claimsPending.title'))).toBeInTheDocument();
-    // Not a success: no portal, no new token asked for, and a way to try again.
+    // Not a success: no portal, no new token asked for (the portal would refuse a token without the claims), and a way to try again.
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('owner-invitation-open-portal')).not.toBeInTheDocument();
     expect(refreshAccessToken).not.toHaveBeenCalled();
-    expect(screen.getByTestId('owner-invitation-open-portal')).toBeInTheDocument();
+    expect(screen.getByTestId('owner-invitation-retry')).toBeInTheDocument();
+    // The server hands the claims over again at every acceptance of the same invitation, so the secret waits for the new try: in memory, in no storage.
+    expect(peekOwnerInvitationToken()).toBe(TOKEN);
+    expect(Object.keys(localStorage)).toHaveLength(0);
+    expect(Object.keys(sessionStorage)).toHaveLength(0);
+  });
+
+  it('OwnerInvitationRoute_ClaimsFailedThenPublished_TheRetryAcceptsAgainWithTheSameSecretAndOpensThePortal', async () => {
+    mockAuth(true);
+    vi.mocked(axios.post)
+      .mockResolvedValueOnce({ data: { ...ACCEPTED, claimsRefresh: 'failed' } })
+      .mockResolvedValueOnce({ data: { ...ACCEPTED, alreadyAccepted: true, claimsRefresh: 'published' } });
+    openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+
+    fireEvent.click(await screen.findByTestId('owner-invitation-retry'));
+    await screen.findByTestId('owner-portal');
+
+    // Accepted twice with the same secret, in the body and in no address; the claims were published the second time, so the new token is asked for once.
+    expect(axios.post).toHaveBeenCalledTimes(2);
+    for (const [url, body] of vi.mocked(axios.post).mock.calls) {
+      expect(url).toBe('/owner-invitations/accept');
+      expect(body).toEqual({ token: TOKEN });
+    }
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    // Published: the secret is forgotten, and nothing was written to the browser.
+    expect(peekOwnerInvitationToken()).toBeNull();
+    expect(Object.keys(localStorage)).toHaveLength(0);
+    expect(Object.keys(sessionStorage)).toHaveLength(0);
+  });
+
+  it('OwnerInvitationRoute_ClaimsStillNotPublishedAfterTheRetry_StaysOnTheCardAndSendsOnlyWhenAsked', async () => {
+    mockAuth(true);
+    vi.mocked(axios.post).mockResolvedValue({ data: { ...ACCEPTED, claimsRefresh: 'not_configured' } });
+    openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+
+    fireEvent.click(await screen.findByTestId('owner-invitation-retry'));
+    await waitFor(() => expect(axios.post).toHaveBeenCalledTimes(2));
+
+    // Back on the same card, with the secret still in memory and no portal: one acceptance for each click, never by itself.
+    expect(await screen.findByText(i18n.t('ownerInvitation.claimsPending.title'))).toBeInTheDocument();
+    expect(screen.getByTestId('owner-invitation-retry')).toBeInTheDocument();
+    expect(axios.post).toHaveBeenCalledTimes(2);
+    expect(refreshAccessToken).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
+    expect(peekOwnerInvitationToken()).toBe(TOKEN);
+  });
+
+  it('OwnerInvitationRoute_LeavingThePageWhileTheClaimsAreNotPublished_ForgetsTheSecret', async () => {
+    mockAuth(true);
+    vi.mocked(axios.post).mockResolvedValue({ data: { ...ACCEPTED, claimsRefresh: 'failed' } });
+    const view = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+    await screen.findByText(i18n.t('ownerInvitation.claimsPending.title'));
+    expect(peekOwnerInvitationToken()).toBe(TOKEN);
+
+    // The person goes away: the secret does not outlive the page (the link of the e-mail brings it back).
+    view.unmount();
+
+    expect(peekOwnerInvitationToken()).toBeNull();
   });
 
   it('OwnerInvitationRoute_NewTokenCannotBeAsked_SaysSoInsteadOfOpeningThePortal', async () => {
